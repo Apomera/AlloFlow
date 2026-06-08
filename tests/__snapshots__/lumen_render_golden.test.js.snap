@@ -12,11 +12,11 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="false" title="For your own analysis — the full technical wording." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="true" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -45,7 +45,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -53,7 +53,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -221,7 +221,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -237,11 +237,11 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -270,7 +270,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -278,7 +278,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -446,7 +446,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -462,11 +462,11 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="true" class="bg-amber-600 text-white border-amber-600 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="false" title="For your own analysis — the full technical wording." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="true" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -495,7 +495,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -503,7 +503,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -625,7 +625,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <p class="mt-1 text-[10px] text-slate-500">the model&#x27;s own ranking of its guesses, not a measured probability. Regenerates each run. Export needs your sign-off.</p>
 <div class="mt-1 text-xs">
 <span>
-<span class="text-amber-700 mr-2">⚠ Sign off before an IEP-team export:</span>
+<span class="text-amber-700 mr-2">⚠ Sign off before a formal export:</span>
 <button class="underline mr-2">Own it</button>
 <button class="underline">Demote (remove)</button>
 </span>
@@ -699,7 +699,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -715,11 +715,11 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -748,7 +748,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -756,7 +756,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -934,7 +934,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -950,11 +950,11 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -983,7 +983,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -991,7 +991,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -1135,7 +1135,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -1151,11 +1151,11 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -1184,7 +1184,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -1192,7 +1192,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -1309,7 +1309,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -1325,11 +1325,11 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -1358,7 +1358,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -1366,7 +1366,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -1609,7 +1609,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -1625,11 +1625,11 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -1658,7 +1658,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -1666,7 +1666,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -1800,7 +1800,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -1816,11 +1816,11 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -1867,7 +1867,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -1875,7 +1875,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -1932,7 +1932,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -1948,11 +1948,11 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -1981,7 +1981,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -1989,7 +1989,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -2232,7 +2232,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -2248,11 +2248,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -2281,7 +2281,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -2289,7 +2289,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -2417,7 +2417,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -2433,11 +2433,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -2466,7 +2466,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -2474,7 +2474,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -2592,7 +2592,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -2608,11 +2608,11 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -2643,7 +2643,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <label class="text-xs text-slate-600 flex flex-col">Series (category)<input type="text" class="w-28 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -2651,7 +2651,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use multi-series sample</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
@@ -2799,7 +2799,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -2815,11 +2815,11 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -2848,7 +2848,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -2856,7 +2856,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -2920,7 +2920,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -2946,11 +2946,11 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -2981,7 +2981,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <label class="text-xs text-slate-600 flex flex-col">Comprehension (y2)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -2989,7 +2989,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use paired sample</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
@@ -3099,7 +3099,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -3115,11 +3115,11 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -3150,7 +3150,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <label class="text-xs text-slate-600 flex flex-col">Comprehension (y2)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -3158,7 +3158,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use paired sample</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
@@ -3223,7 +3223,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -3239,11 +3239,11 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -3272,7 +3272,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -3280,7 +3280,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -3420,7 +3420,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -3432,7 +3432,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 </div>
 <div role="note" class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2" style="background:#6d28d9;color:#ffffff">
 <span>⚗ Synthetic practice data — NOT a real student.</span>
-<span class="font-normal text-[11px]" style="opacity:0.9">For exploring Lumen; marked on every chart + export, and blocked from a defensible IEP-team export.</span>
+<span class="font-normal text-[11px]" style="opacity:0.9">For exploring Lumen; marked on every chart + export, and blocked from a defensible formal export.</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -3440,11 +3440,11 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -3473,7 +3473,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -3481,7 +3481,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-violet-300 text-violet-700 hover:bg-violet-50" title="Re-roll: a fresh random draw of the same scenario.">↻ Re-roll</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
@@ -3628,7 +3628,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;
 
@@ -3644,11 +3644,11 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L2 · Assisted</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">L3 · Interpretive</button>
 </div>
-<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience face">
+<div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Audience">
 <span class="text-xs text-slate-500 mr-1">Audience:</span>
-<button aria-pressed="true" class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">IEP team</button>
-<button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Family</button>
+<button aria-pressed="true" title="For your own analysis — the full technical wording." class="bg-slate-700 text-white border-slate-700 px-2 py-1 text-xs rounded border">Working</button>
+<button aria-pressed="false" title="A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Formal</button>
+<button aria-pressed="false" title="For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates." class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Plain language</button>
 </div>
 <div class="mt-1 flex items-center gap-1 flex-wrap" role="group" aria-label="Chart type">
 <span class="text-xs text-slate-500 mr-1">Chart:</span>
@@ -3677,7 +3677,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <label class="text-xs text-slate-600 flex flex-col">Measure (y)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
 <button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
-<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample (Reyna ORF)</button>
+<button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50">Use sample data</button>
 <select aria-label="Practice-data scenario" class="px-2 py-1 text-sm border border-slate-300 rounded">
 <option value="improving" selected="">improving</option>
 <option value="flat">flat</option>
@@ -3685,7 +3685,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <option value="declining">declining</option>
 <option value="responsive">responsive</option>
 </select>
-<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.">⚗ Generate practice data</button>
+<button class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Generate practice data</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
 <input id="lumen-file-input" type="file" accept=".csv,.tsv,.txt,.json,.xlsx,.ods,.xls,.xlsb,text/csv,text/tab-separated-values,text/plain,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet,application/vnd.ms-excel" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"/>
@@ -3814,6 +3814,6 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 </label>
 <p class="m-0 text-[9px] italic opacity-60">Inquiry widget — no score, no reveal, no answer dump. Slope-to-noise is a heuristic; Lumen argues from the data you bring, it does not set goals. For formal IEP goal decisions (aimlines, decision rules, RTI tiers) use the Teacher Dashboard or BehaviorLens.</p>
 </div>
-<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.</p>
+<p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 </div>"
 `;

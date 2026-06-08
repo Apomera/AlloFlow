@@ -574,6 +574,18 @@
     { x: 9, y: 60, phase: 'tier2' }, { x: 10, y: 66, phase: 'tier2' }
   ];
 
+  // A neutral, NON-CLINICAL example — Lumen is a GENERAL data-argument tool, so the
+  // first 'Try a sample' a new user meets is a plant's height over 10 weeks, before
+  // vs after a fertilizer change. The phase line here is a generic A/B annotation (a
+  // category on observations, squarely in charter) — NOT IEP progress monitoring.
+  var GROWTH_SAMPLE = [
+    { x: 1, y: 2.1, phase: 'before' }, { x: 2, y: 2.8, phase: 'before' },
+    { x: 3, y: 3.2, phase: 'before' }, { x: 4, y: 3.9, phase: 'before' },
+    { x: 5, y: 4.3, phase: 'before' }, { x: 6, y: 5.6, phase: 'after fertilizer' },
+    { x: 7, y: 6.8, phase: 'after fertilizer' }, { x: 8, y: 7.9, phase: 'after fertilizer' },
+    { x: 9, y: 9.1, phase: 'after fertilizer' }, { x: 10, y: 10.2, phase: 'after fertilizer' }
+  ];
+
   // A PAIRED sample (each probe carries a 2nd measure y2) for the scatter pathway:
   // WCPM (y) vs reading-comprehension % (y2). Two MEASURES of one student — not two students.
   var PAIRED_SAMPLE = [
@@ -1206,7 +1218,7 @@
   // ══════════════════════════════════════════════════════════════════════
   // PHASE 1 — export (a view artifact) + the FERPA + L3 sign-off gates.
   // Every field is escHtml'd into the HTML sink (the symbol_studio printBook
-  // XSS lesson). assertDefensible() hard-blocks an IEP-team export that carries
+  // XSS lesson). assertDefensible() hard-blocks a formal export that carries
   // an unsigned AI reading (§7). PII CSV is OFF by default (FERPA).
   // ══════════════════════════════════════════════════════════════════════
 
@@ -1235,7 +1247,7 @@
     if (req.signoff && req.signoff === current) return { ok: true, blocked: false };
     return {
       ok: false, blocked: true, need: current,
-      reason: 'This view contains an AI reading (L3). Own it or remove it before an IEP-team export.'
+      reason: 'This view contains an AI reading (L3). Own it or remove it before a formal export.'
     };
   }
 
@@ -1245,7 +1257,7 @@
   // Working/family exports still proceed (always watermarked) for exploration.
   function assertNotSynthetic(req) {
     if (!req || req.audience !== 'iep-team' || !req.synthetic) return { ok: true, blocked: false };
-    return { ok: false, blocked: true, reason: 'This view contains synthetic practice data and cannot be exported as a defensible IEP-team document.' };
+    return { ok: false, blocked: true, reason: 'This view contains synthetic practice data and cannot be exported as a defensible formal document.' };
   }
 
   function buildExportHtml(comp, claim, opts) {
@@ -1482,7 +1494,7 @@
       return false;                                                                  // verified curated ref is clean
     });
     if (!offenders.length) return { ok: true, blocked: false };
-    return { ok: false, blocked: true, reason: 'This view has ' + offenders.length + ' external benchmark(s) unverified or with a stale sign-off. Verify the source(s) before an IEP-team export.', offenders: offenders.map(function (r) { return r.id; }) };
+    return { ok: false, blocked: true, reason: 'This view has ' + offenders.length + ' external benchmark(s) unverified or with a stale sign-off. Verify the source(s) before a formal export.', offenders: offenders.map(function (r) { return r.id; }) };
   }
   // ══════════════════════════════════════════════════════════════════════
   // §16 SOURCED — Phase 2A: human-assisted benchmark-document workspace.
@@ -2027,7 +2039,7 @@
     deriveTrendClaim: deriveTrendClaim, deriveAssociationClaim: deriveAssociationClaim, associationSentence: associationSentence,
     trendSentence: trendSentence, refusalSentence: refusalSentence,
     // chart geometry + SR data-table peer (Phase 1)
-    REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, MULTI_SAMPLE: MULTI_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
+    REYNA_SAMPLE: REYNA_SAMPLE, PAIRED_SAMPLE: PAIRED_SAMPLE, MULTI_SAMPLE: MULTI_SAMPLE, GROWTH_SAMPLE: GROWTH_SAMPLE, DEFAULT_BOX: DEFAULT_BOX, plotGeometry: plotGeometry, barGeometry: barGeometry,
     quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
     scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry, multiSeriesGeometry: multiSeriesGeometry, groupedBarGeometry: groupedBarGeometry,
     SERIES_PALETTE: SERIES_PALETTE, seriesColor: seriesColor, seriesColorOK: seriesColorOK,
@@ -2223,10 +2235,17 @@
             upd('exportMsg', 'Exported ' + out.filename + '.');
           };
           var kids = [];
-          // Load a curated EXAMPLE dataset (REYNA/PAIRED/MULTI) — stamped synthetic
-          // so it self-declares + is export-guarded exactly like generated data (a
-          // sample is not a real student's record either).
-          var loadExample = function (rows, msg) {
+          // Load a curated EXAMPLE dataset — stamped synthetic so it self-declares +
+          // is export-guarded exactly like generated data (an example is not real data).
+          // Optional meta sets the measure/unit/x-axis labels so the example is
+          // self-explanatory (e.g. the plant-growth sample labels itself in cm/Week).
+          var loadExample = function (rows, msg, meta) {
+            meta = meta || {};
+            if (meta.variable != null) upd('variable', meta.variable);
+            if (meta.unit != null) upd('unit', meta.unit);
+            if (meta.xLabel != null) upd('xLabel', meta.xLabel);
+            if (meta.variable2 != null) upd('variable2', meta.variable2);
+            if (meta.unit2 != null) upd('unit2', meta.unit2);
             upd('observations', rows.map(function (r) { return Object.assign({}, r, { synthetic: true }); }));
             announce(msg);
           };
@@ -2276,7 +2295,7 @@
           if (compHasSynthetic(comp)) {
             kids.push(h('div', { key: 'synBanner', role: 'note', className: 'mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2', style: { background: '#6d28d9', color: '#ffffff' } },
               h('span', null, '⚗ Synthetic practice data — NOT a real student.'),
-              h('span', { className: 'font-normal text-[11px]', style: { opacity: 0.9 } }, 'For exploring Lumen; marked on every chart + export, and blocked from a defensible IEP-team export.')));
+              h('span', { className: 'font-normal text-[11px]', style: { opacity: 0.9 } }, 'For exploring Lumen; marked on every chart + export, and blocked from a defensible formal export.')));
           }
           // The AI-involvement dial (default L1 = zero callGemini) + the audience faces.
           var ceilBtn = function (lvl, label) {
@@ -2289,16 +2308,22 @@
           kids.push(h('div', { key: 'dial', className: 'mt-2 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'AI involvement ceiling' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'AI ceiling:'),
             ceilBtn('L1', 'L1 · Data only'), ceilBtn('L2', 'L2 · Assisted'), ceilBtn('L3', 'L3 · Interpretive')));
-          var faceBtn = function (a, label) {
+          var faceBtn = function (a, label, title) {
             return h('button', {
-              key: 'f' + a, 'aria-pressed': audience === a ? 'true' : 'false',
+              key: 'f' + a, 'aria-pressed': audience === a ? 'true' : 'false', title: title,
               className: (audience === a ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border',
               onClick: function () { upd('audience', a); }
             }, label);
           };
-          kids.push(h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Audience face' },
+          // Domain-general audience tiers (the FUNCTION is general; education is one application):
+          // Working = your own analysis · Formal = a defensible artifact for a decision (IEP team, review
+          // board, grant reviewer; sign-off + FERPA gates live here) · Plain = a lay audience that the
+          // projection can never over-confidently mislead. (Enum values kept for the gates: iep-team/family.)
+          kids.push(h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Audience' },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Audience:'),
-            faceBtn('working', 'Working'), faceBtn('iep-team', 'IEP team'), faceBtn('family', 'Family')));
+            faceBtn('working', 'Working', 'For your own analysis — the full technical wording.'),
+            faceBtn('iep-team', 'Formal', 'A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here.'),
+            faceBtn('family', 'Plain language', 'For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates.')));
           // Chart-type switcher — multiple visualization pathways for the same provenance-bound data.
           var ctBtn = function (tp, label) {
             return h('button', { key: 'ct' + tp, 'aria-pressed': chartType === tp ? 'true' : 'false', className: (chartType === tp ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border', onClick: function () { upd('chartType', tp); } }, label);
@@ -2320,7 +2345,7 @@
                 h('li', { key: 's2' }, h('b', null, 'Add data'), ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
                 h('li', { key: 's3' }, h('b', null, 'Read the finding'), ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.')),
               h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
-                h('button', { key: 'obSample', className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { loadExample(REYNA_SAMPLE.slice(), 'Loaded the Reyna ORF example — synthetic practice data, not a real student: 10 weekly probes across two phases.'); } }, 'Try a sample'),
+                h('button', { key: 'obSample', className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); } }, 'Try a sample'),
                 h('button', { key: 'obPaste', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, '⎘ Paste data'),
                 h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100 cursor-pointer' }, '⇪ Import file')),
               h('p', { className: 'mt-2 text-[11px] text-slate-500' }, 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.')));
@@ -2367,8 +2392,8 @@
             }, '+ Add'),
             h('button', {
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { loadExample(REYNA_SAMPLE.slice(), 'Loaded the Reyna ORF example — synthetic practice data, not a real student: 10 weekly probes across two phases.'); }
-            }, 'Use sample (Reyna ORF)'),
+              onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); }
+            }, 'Use sample data'),
             // Generate fresh synthetic practice data (the "generate sample" feature) — a scenario picker + Generate + Re-roll.
             h('select', {
               key: 'genScenario', value: d.genScenario || 'improving',
@@ -2378,7 +2403,7 @@
             }, Object.keys(PRACTICE_SCENARIOS).map(function (s) { return h('option', { key: s, value: s }, s); })),
             h('button', {
               key: 'genBtn', className: 'px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50',
-              title: 'Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not a real student; cannot be exported as a defensible IEP document.',
+              title: 'Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.',
               onClick: function () { genPractice(false); }
             }, '⚗ Generate practice data'),
             (obs.length && compHasSynthetic(comp) ? h('button', {
@@ -2388,10 +2413,10 @@
             }, '↻ Re-roll') : null),
             // A PAIRED sample (WCPM + comprehension) only in the scatter view, so the correlation has data to read.
             (chartType === 'scatter' ? h('button', { key: 'paired', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { loadExample(PAIRED_SAMPLE.slice(), 'Loaded the paired example — synthetic practice data, not a real student: 10 probes with WCPM and comprehension.'); } }, 'Use paired sample') : null),
+              onClick: function () { loadExample(PAIRED_SAMPLE.slice(), 'Loaded the paired example — synthetic practice data: 10 paired points (reading rate vs comprehension).', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week', variable2: 'Comprehension', unit2: '%' }); } }, 'Use paired sample') : null),
             // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
             (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              onClick: function () { loadExample(MULTI_SAMPLE.slice(), 'Loaded the multi-series example — synthetic practice data, not a real student: cold vs practiced WCPM across 8 weeks.'); } }, 'Use multi-series sample') : null),
+              onClick: function () { loadExample(MULTI_SAMPLE.slice(), 'Loaded the multi-series example — synthetic practice data: two conditions compared across 8 weeks.', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week' }); } }, 'Use multi-series sample') : null),
             h('button', {
               key: 'pasteBtn',
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
@@ -2743,7 +2768,7 @@
                   h('div', { className: 'text-[11px] font-semibold text-slate-700' }, 'Spine cells JSON (paste into stem_tool_lumen.js → NORM_SPINE.cells)'),
                   bound.collisions.length ? h('p', { className: 'mt-1 text-[10px] text-amber-700' }, bound.collisions.length + ' cell(s) excluded: ' + bound.collisions.map(function (c) { return (c.id || c.idx) + ' (' + c.reason + ')'; }).join('; ')) : null,
                   h('pre', { className: 'mt-1 text-[10.5px] leading-snug whitespace-pre-wrap break-words max-h-48 overflow-auto bg-slate-50 p-2 rounded border border-slate-200', id: 'lumen-spine-json' }, jsonOut),
-                  h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'After pasting + setting reviewedOn in source, the spine\'s `validateNormSpine` returns "ready" and assertExportClean lets curated benchmark refs draw at IEP-team export. The signoff hash spans every truth-bearing field, so a stale (edited-after) cell re-blocks.'));
+                  h('p', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'After pasting + setting reviewedOn in source, the spine\'s `validateNormSpine` returns "ready" and assertExportClean lets curated benchmark refs draw at a formal export. The signoff hash spans every truth-bearing field, so a stale (edited-after) cell re-blocks.'));
               })()));
           })();
 
@@ -2967,7 +2992,7 @@
                     (d.signoff === signoffHash(d.aiHyps))
                       ? h('span', { className: 'text-emerald-700' }, '✓ Signed off — kept as an AI reading, not a measured finding.')
                       : h('span', null,
-                        h('span', { className: 'text-amber-700 mr-2' }, '⚠ Sign off before an IEP-team export:'),
+                        h('span', { className: 'text-amber-700 mr-2' }, '⚠ Sign off before a formal export:'),
                         h('button', { className: 'underline mr-2', onClick: function () { upd('signoff', signoffHash(d.aiHyps)); announce('Signed off: AI reading owned.'); } }, 'Own it'),
                         h('button', { className: 'underline', onClick: function () { upd('aiHyps', null); upd('signoff', null); announce('Demoted: AI reading removed.'); } }, 'Demote (remove)'))
                   ) : null));
@@ -3112,7 +3137,7 @@
           })());
 
           kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-700' },
-            'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.'));
+            'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.'));
 
           return h('div', { className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' }, kids);
         } catch (e) {
