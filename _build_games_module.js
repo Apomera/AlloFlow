@@ -49,7 +49,13 @@ function detectIcons() {
   // a string literal — it'd just yield an alias that's harmless if unused.
 
   const jsxRefs = new Set();
-  const jsxRe = /<\s*([A-Z][A-Za-z0-9]+)\b/g;
+  // `*` (not `+`) so single-letter icon tags like <X/> (the lucide close
+  // icon) are detected — otherwise X stays an un-aliased free global that the
+  // module resolves from host scope at runtime instead of from window.AlloIcons
+  // like every other icon (and every sibling build script). Non-icon false
+  // positives are harmless: the loop below keeps only refs present in the
+  // AlloIcons catalog (others are warned + skipped).
+  const jsxRe = /<\s*([A-Z][A-Za-z0-9]*)\b/g;
   let m;
   while ((m = jsxRe.exec(stripped)) !== null) jsxRefs.add(m[1]);
 

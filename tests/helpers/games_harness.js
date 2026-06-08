@@ -29,23 +29,21 @@ if (typeof window.fisherYatesShuffle !== 'function') {
   window.fisherYatesShuffle = (arr) => (Array.isArray(arr) ? arr.slice() : arr);
 }
 
-// games_module.js (like its sibling CDN modules) resolves a couple of
-// identifiers from the global scope at runtime — the "script-tag injection"
-// pattern the host satisfies: window.AlloIcons is populated
-// (AlloFlowANTI.txt:4298) and a global `t` translation shim routes to
-// window.__alloT (:14768). setup.js already stubs warnLog/debugLog the same
-// way. We provide faithful stand-ins so SSR resolves them instead of throwing
-// ReferenceError:
-//   • t — global translation shim; identity-on-key (no translation pack
-//         loaded), matching the host shim's untranslated fallback. (Most game
-//         labels come from the per-component `const {t}=useContext` context
-//         default; this covers the few module-scope bare-`t` references.)
-//   • X — the lucide close icon. The build's icon auto-detector skips the
-//         single-letter name, so unlike every other icon (aliased from
-//         window.AlloIcons with a null fallback) it stays a bare global.
-const _iconStub = () => React.createElement('span', { 'aria-hidden': 'true' });
+// games_module.js references a global `t` translation shim that the host
+// provides from global scope at runtime — the "script-tag injection" pattern
+// setup.js documents for warnLog/debugLog (the host's `t` routes to
+// window.__alloT, AlloFlowANTI.txt:14768). We stub it as identity-on-key,
+// matching the host shim's untranslated fallback, so SSR resolves it instead
+// of throwing ReferenceError. (Most game labels come from the per-component
+// `const {t}=useContext` context default; this covers the few module-scope
+// bare-`t` references.)
+//
+// We deliberately do NOT stub the lucide close icon `X`: the build now
+// self-aliases it from window.AlloIcons like every other icon
+// (_build_games_module.js), so the module supplies its own null fallback. By
+// not masking X here, this golden master also guards that the build keeps
+// aliasing it — a regression would resurface as a ReferenceError.
 if (typeof globalThis.t !== 'function') { globalThis.t = (k) => k; window.t = globalThis.t; }
-if (typeof globalThis.X === 'undefined') { globalThis.X = _iconStub; window.X = _iconStub; }
 
 let _loaded = false;
 
