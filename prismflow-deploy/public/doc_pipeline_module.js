@@ -2923,7 +2923,7 @@ var createDocPipeline = function(deps) {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) return { hasTags: false };
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
-      const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+      const bytes = _b64ToBytes(base64); // capped at _MAX_PDF_BYTES (was raw atob — uncapped OOM on low-RAM devices)
       const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
       const roleCounts = {};
       const headings = []; // { level, text, page }
@@ -3803,7 +3803,7 @@ var createDocPipeline = function(deps) {
       await ensureTesseractLoaded();
       if (!window.pdfjsLib || !window.Tesseract) throw new Error('pdf.js or Tesseract unavailable');
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
-      const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+      const bytes = _b64ToBytes(base64); // capped at _MAX_PDF_BYTES (was raw atob — uncapped OOM on low-RAM devices)
       const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
       const useLang = lang || 'eng';
       // 2026-06-08: per-page try/catch — a single page's OOM/canvas/recognize
@@ -3849,6 +3849,41 @@ var createDocPipeline = function(deps) {
       warnLog('[Tesseract] extractPdfTextTesseract failed:', e && e.message);
       return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message, pageErrors: [] };
     }
+  };
+
+  // Render + OCR a SPECIFIC SET of 1-indexed pages (Tesseract only — zero API cost). Used to
+  // rescue image-only pages embedded in an otherwise text-layer PDF (mixed scanned+digital),
+  // which the whole-document isScanned average silently drops. Fail-safe: returns a partial /
+  // empty map on any failure so the caller can always keep its original text-layer result.
+  const _ocrSpecificPages = async (base64, pageNums, lang) => {
+    const out = {};
+    try {
+      await ensurePdfJsLoaded();
+      await ensureTesseractLoaded();
+      if (!window.pdfjsLib || !window.Tesseract) return out;
+      const bytes = _b64ToBytes(base64);
+      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const useLang = lang || 'eng';
+      for (let i = 0; i < pageNums.length; i++) {
+        const p = pageNums[i];
+        if (p < 1 || p > pdf.numPages) continue;
+        try {
+          const page = await pdf.getPage(p);
+          const viewport = page.getViewport({ scale: 2.0 });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width; canvas.height = viewport.height;
+          const cctx = canvas.getContext('2d');
+          await page.render({ canvasContext: cctx, viewport }).promise;
+          let result;
+          try { result = await window.Tesseract.recognize(canvas, useLang, undefined, { blocks: true }); }
+          catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
+          const txt = ((result && result.data && result.data.text) || '').trim();
+          if (txt) out[p] = txt;
+          canvas.width = 0; canvas.height = 0; // free memory
+        } catch (_pageErr) { try { warnLog('[Mixed-page OCR] page ' + p + ' failed: ' + (_pageErr && _pageErr.message)); } catch (_) {} }
+      }
+    } catch (_e) { try { warnLog('[Mixed-page OCR] setup failed (keeping text-layer): ' + (_e && _e.message)); } catch (_) {} }
+    return out;
   };
 
   // Word-level reconciliation between two OCR outputs. "Perfect accuracy" for scanned PDFs
@@ -3924,10 +3959,7 @@ var createDocPipeline = function(deps) {
     });
   };
 
-  const _base64ToBytes = (base64) => {
-    const raw = base64.includes(',') ? base64.split(',')[1] : base64;
-    return Uint8Array.from(atob(raw), c => c.charCodeAt(0));
-  };
+  const _base64ToBytes = (base64) => _b64ToBytes(base64); // delegate so DOCX/PPTX decode inherits the _MAX_PDF_BYTES cap
 
   // Extract text from a DOCX via mammoth (primary) or jszip+XML (fallback for air-gap)
   // 2026-06-07: section-marker convention for DOCX/PPTX extraction. Every
@@ -5961,6 +5993,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       return result;
     };
 
+    let _quotaStopped = false;
     for (let i = 0; i < queue.length; i++) {
       if (_batchAbortCtrl.signal.aborted) {
         setPdfBatchStep('Stopped by user · ' + i + '/' + queue.length + ' processed');
@@ -5985,6 +6018,18 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         warnLog(`[Batch] ${item.fileName} FAILED:`, err);
         queue[i] = { ...item, status: 'failed', error: err.message };
         setPdfBatchQueue([...queue]);
+        // Quota circuit-breaker: once the daily cap is hit, every remaining file would
+        // re-pay a full primary+fallback backoff only to fail the same way — turning one
+        // quota event into N failures and minutes of grind. Stop now with a resume hint;
+        // the unprocessed files stay queued (Tier-4 done-skip resumes cleanly after reset).
+        const _isQuota = (err && (err.isQuota || /API_QUOTA_EXHAUSTED|RESOURCE_EXHAUSTED|quota|\b429\b/i.test(err.message || ''))) ||
+          (typeof window !== 'undefined' && window.__alloflowQuotaState && window.__alloflowQuotaState.kind === 'quota');
+        if (_isQuota) {
+          _quotaStopped = true;
+          setPdfBatchStep('Daily AI quota reached — stopped at ' + (i + 1) + '/' + queue.length + '. Remaining files stay queued; resume after the quota resets.');
+          warnLog('[Batch] Quota reached — early-stop at ' + (i + 1) + '/' + queue.length + '; ' + (queue.length - i - 1) + ' file(s) left for resume.');
+          break;
+        }
       }
       // Persist after each file so a tab close mid-batch is recoverable.
       _persistBatchStatus();
@@ -5997,7 +6042,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
 
     // ── Retry failed files once ──
     const failedFiles = queue.filter(q => q.status === 'failed');
-    if (!_batchAbortCtrl.signal.aborted && failedFiles.length > 0 && failedFiles.length < queue.length) {
+    if (!_batchAbortCtrl.signal.aborted && !_quotaStopped && failedFiles.length > 0 && failedFiles.length < queue.length) {
       setPdfBatchStep(`Retrying ${failedFiles.length} failed file(s)...`);
       await new Promise(r => setTimeout(r, 5000)); // longer cooldown before retry
       for (const failedItem of failedFiles) {
@@ -9045,7 +9090,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from DOCX (${det.method})`);
             warnLog(`[Det] DOCX → ${det.sourceCharCount} chars via ${det.method}`);
           } else {
-            warnLog('[Det] DOCX extraction sparse, falling through to Vision OCR');
+            // Honest: there is NO OCR rescue for Office files — the Vision/Tesseract path
+            // below is gated to application/pdf, and a .docx/.pptx can't be rasterized
+            // client-side. A sparse extraction means an image-only/scanned or corrupt Office
+            // file. Tell the teacher what actually happened + the actionable fix, instead of
+            // silently dead-ending with empty text behind a misleading "falling through" log.
+            warnLog('[Det] DOCX extraction sparse (' + (det ? det.sourceCharCount : 0) + ' chars) — no extractable text layer; Office files cannot be OCR\'d client-side');
+            if (typeof addToast === 'function') addToast(t('toasts.office_no_text_layer') || 'This Word file has little or no extractable text — it looks image-only (scanned) or corrupt. AlloFlow can OCR scanned PDFs but not scanned Office files; please export it to PDF and upload that instead.', 'error');
           }
         } else if (isPptx) {
           updateProgress(1, 'Extracting PPTX text deterministically...');
@@ -9057,7 +9108,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from ${det.slideCount} slides`);
             warnLog(`[Det] PPTX → ${det.sourceCharCount} chars from ${det.slideCount} slides`);
           } else {
-            warnLog('[Det] PPTX extraction sparse, falling through to Vision OCR');
+            // Same as DOCX above: no client-side OCR rescue exists for Office files. Be honest.
+            warnLog('[Det] PPTX extraction sparse (' + (det ? det.sourceCharCount : 0) + ' chars) — no extractable text layer; Office files cannot be OCR\'d client-side');
+            if (typeof addToast === 'function') addToast(t('toasts.office_no_text_layer') || 'This PowerPoint file has little or no extractable text — it looks image-only (scanned) or corrupt. AlloFlow can OCR scanned PDFs but not scanned Office files; please export it to PDF and upload that instead.', 'error');
           }
         } else if (isPdf) {
           updateProgress(1, 'Extracting PDF text layer deterministically...');
@@ -9086,6 +9139,32 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               if (det.pageCount > 0) effectivePageCount = det.pageCount;
               updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
               warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
+              // ── Mixed scanned+digital rescue ──
+              // isScanned is a whole-document average, so a born-digital PDF with a few
+              // image-only pages (a scanned signature page, an inserted figure-page) passes
+              // as text-layer and those pages contribute '' that is silently dropped. Detect
+              // near-empty pages and OCR JUST those, splicing the recovered text back in page
+              // order. Fail-safe: any failure leaves the text-layer result untouched.
+              try {
+                if (Array.isArray(det.pages) && det.pages.length > 1) {
+                  const _gapPages = det.pages.filter(pg => pg && (pg.text || '').trim().length < 20).map(pg => pg.pageNum);
+                  if (_gapPages.length > 0 && _gapPages.length < det.pages.length) {
+                    updateProgress(1, `${_gapPages.length} image-only page(s) found in a text PDF — OCRing just those...`);
+                    const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
+                    const _rescued = await _ocrSpecificPages(_base64, _gapPages, _toTesseractLang(_ovr));
+                    const _rescuedNums = Object.keys(_rescued);
+                    if (_rescuedNums.length > 0) {
+                      det.pages.forEach(pg => { if (_rescued[pg.pageNum]) pg.text = _rescued[pg.pageNum]; });
+                      const _merged = det.pages.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
+                      extractedText = _merged;
+                      window.__lastGroundTruthCharCount = _merged.length;
+                      window.__lastGroundTruthPageMap = det.pages;
+                      updateProgress(1, `Recovered text from ${_rescuedNums.length} image-only page(s) via OCR`);
+                      warnLog(`[Det] Mixed-page rescue: OCR'd ${_rescuedNums.length}/${_gapPages.length} image-only page(s) → ${_merged.length} total chars`);
+                    }
+                  }
+                }
+              } catch (_mixErr) { warnLog('[Det] Mixed-page OCR rescue failed (keeping text-layer result): ' + (_mixErr && _mixErr.message)); }
             }
           } else if (det) {
             warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
@@ -9401,9 +9480,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   document.head.appendChild(script);
                 });
               }
-              // Convert base64 PDF to Uint8Array
-              const rawBase64 = _base64.includes(',') ? _base64.split(',')[1] : _base64;
-              const pdfBytes = Uint8Array.from(atob(rawBase64), c => c.charCodeAt(0));
+              // Convert base64 PDF to Uint8Array (capped at _MAX_PDF_BYTES — was uncapped atob)
+              const pdfBytes = _b64ToBytes(_base64);
               const pdfDoc = await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;
 
               // Group images by page for efficient rendering
