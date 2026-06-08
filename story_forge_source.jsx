@@ -2424,6 +2424,11 @@ Return ONLY JSON:
   // ═══════════════════════════════════════════════════════════
 
   const exportStorybook = () => {
+    // FERPA reminder: the storybook is de-identified (codename, never a real name), but it
+    // bundles the student's full story and — if they recorded it — their VOICE narration in a
+    // single downloadable file, so a local download is a confirmed, informed action (mirrors
+    // the exportDraftJSON gate below).
+    if (!window.confirm(`Export this storybook as a file?\n\nThe file is de-identified — it uses the codename, not a real name — but it contains the student's complete story and any voice narration they recorded. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Story');
     const author = escapeHtml(authorName || 'A Creative Student');
     const date = new Date().toLocaleDateString();

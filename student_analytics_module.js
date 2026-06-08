@@ -1442,6 +1442,8 @@
     };
     const generateRTICSV = () => {
       if (!importedStudents || importedStudents.length === 0) return;
+      // FERPA gate: this CSV lists students by REAL NAME with tiers/scores — confidential records.
+      if (!window.confirm("Export this RTI report as a CSV?\n\nThe file lists students by REAL NAME with their RTI tiers, scores, and recommendations — confidential student records. Save it only to a school-approved location and handle it per your district's student-records (FERPA) policy.\n\nContinue?")) return;
       const headers = ['Student', 'Date', 'RTI Tier', 'Quiz Avg', 'WS Accuracy', 'WS Words', 'Fluency WCPM', 'Games Played', 'Total Activities', 'Label Challenge Avg', 'Time on Task (min)', 'Recommendations'];
       const rows = importedStudents.map(s => {
         const rti = classifyRTITier(s.stats);
@@ -1454,7 +1456,7 @@
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `RTI_Report_${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `RTI_Report_CONFIDENTIAL_${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1662,6 +1664,8 @@
       }, 'Most Common Area to Watch (' + classData.commonWeaknessCount + ' students)')) : null));
     };
     const exportResearchCSV = () => {
+      // FERPA gate: this CSV carries identifiable student data (real names, probes, interventions).
+      if (!window.confirm("Export the research data CSV?\n\nThe file contains identifiable student data (real names, probes, interventions, progress). It is confidential — de-identify it before any research use, and store it per your district's student-records (FERPA) policy.\n\nContinue?")) return;
       const students = importedStudents.map(s => {
         const insights = generateStudentInsights(s.name);
         const probes = probeHistory?.[s.name] || [];
@@ -1691,7 +1695,7 @@
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Research_Export_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.download = 'AlloFlow_Research_Export_CONFIDENTIAL_' + new Date().toISOString().split('T')[0] + '.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
