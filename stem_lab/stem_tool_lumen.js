@@ -880,7 +880,10 @@
     function sx(x) { return box.padL + (maxX === minX ? 0 : (x - minX) / (maxX - minX)) * innerW; }
     function sy(y) { return box.padT + innerH - (y1 === y0 ? 0 : (y - y0) / (y1 - y0)) * innerH; }
     var points = obs.map(function (o) {
-      return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, sx: round1(sx(o.x)), sy: round1(sy(o.y)) };
+      // per-point provenance origin (mirrors the dot/scatter/slope/multi builders) so the
+      // trend view's MARKS burn their own level — observed ● / synthetic ◇ — never the L1
+      // trend-line glyph. The regression LINE + band stay L1 (they ARE the derived object).
+      return { x: o.x, y: o.y, phase: o.phase == null ? null : o.phase, level: o.synthetic ? 'SYN' : 'L0', sx: round1(sx(o.x)), sy: round1(sy(o.y)) };
     });
     var trendPath = null, bandPath = null;
     if (claim && claim.estimate) {
@@ -1037,7 +1040,7 @@
     var withY = (observations || []).filter(function (o) { return o.y != null; }).slice().sort(function (a, b) { return a.x - b.x; });
     var columns = [claim.variable + ' (y)', (claim.variable2 || 'y2') + ' (y2)', 'Phase', 'Level'];
     var rows = withY.map(function (o) {
-      return { x: o.y, y: (o.y2 == null ? '—' : o.y2), phase: o.phase || '—', level: o.synthetic ? levelWord('SYN') : word };
+      return { x: o.y, y: (o.y2 == null ? '—' : o.y2), phase: o.phase || '—', level: o.synthetic ? levelWord('SYN') : levelWord('L0') }; // each paired ROW is observed (L0), not the L1 association
     });
     return { columns: columns, rows: rows, perSegment: [], summary: chartSummaryText(withY, claim, [], 'scatter'), level: claim.level, kind: 'association' };
   }
@@ -1065,7 +1068,7 @@
       if (i > 0 && obs[i].phase !== obs[i - 1].phase) {
         rows.push({ boundary: true, label: 'phase boundary: ' + (obs[i - 1].phase || 'prior') + ' → ' + (obs[i].phase || 'next') });
       }
-      rows.push({ x: obs[i].x, y: obs[i].y, phase: obs[i].phase || '—', level: obs[i].synthetic ? levelWord('SYN') : word });
+      rows.push({ x: obs[i].x, y: obs[i].y, phase: obs[i].phase || '—', level: obs[i].synthetic ? levelWord('SYN') : levelWord('L0') }); // each ROW is an observed (L0) data point — NOT the L1 trend
     }
     // §16: benchmark rows appended AFTER the student rows, carrying the verify-state in WORDS.
     (sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; }).forEach(function (r) {
@@ -1164,24 +1167,28 @@
   // Audience faces (design Pillar 3 / §15): the SAME claim, re-projected. The
   // FAMILY face must PRESERVE uncertainty (a bare growth arrow is the least
   // honest projection). No tier labels, no percentile, ever.
-  function faceFor(claim, audience) {
+  function faceFor(claim, audience, synthetic) {
     if (!claim) return '';
     if (claim.refused) {
       if (audience === 'family') return 'There are only ' + claim.n + ' check-ins so far — too few to call a direction yet.';
       return claim.text;
     }
+    // The SENTENCE is the most-laundered surface (design Risk #1: people paste the
+    // narrative, and a crop defeats the banner/watermark). So burn the synthetic
+    // caveat LEAD-FIRST into the face string itself. Default falsy => byte-identical.
+    var synPre = synthetic ? 'Practice example — not a real student. ' : '';
     var e = claim.estimate;
     if (audience === 'iep-team') {
-      return claim.text + ' (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)';
+      return synPre + claim.text + ' (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)';
     }
     if (audience === 'family') {
       var dir = e.slope > 0 ? 'went up' : (e.slope < 0 ? 'went down' : 'held steady');
       var xlow = (claim.xLabel || 'Week').toLowerCase();
-      return 'Over ' + e.n + ' check-ins, ' + claim.variable + ' ' + dir + ' — about ' + round1(Math.abs(e.slope)) +
+      return synPre + 'Over ' + e.n + ' check-ins, ' + claim.variable + ' ' + dir + ' — about ' + round1(Math.abs(e.slope)) +
         ' ' + claim.unit + ' a ' + xlow + '. With only ' + e.n + ' points the true rate could be roughly ' +
         round1(e.interval[0]) + ' to ' + round1(e.interval[1]) + ' a ' + xlow + ', so read this as a direction, not an exact number.';
     }
-    return claim.text; // 'working' (default)
+    return synPre + claim.text; // 'working' (default)
   }
 
   // ══════════════════════════════════════════════════════════════════════
@@ -1270,7 +1277,7 @@
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml(synTag + 'Lumen — ' + comp.variable) + '</title></head><body>'
       + synBanner
       + '<h1>' + escHtml(synTag + 'Lumen — ' + comp.variable + ' (' + comp.unit + ')') + '</h1>'
-      + '<p><strong>' + escHtml(faceFor(claim, audience)) + '</strong></p>'
+      + '<p><strong>' + escHtml(faceFor(claim, audience, opts.synthetic)) + '</strong></p>'
       + subset
       + '<p>' + escHtml(chartSummaryText(comp.observations, claim, opts.sourceRefs)) + '</p>'
       + '<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>'
@@ -1291,7 +1298,7 @@
       comp.observations.slice().sort(function (a, b) { return a.x - b.x; }).forEach(function (o) {
         // the per-row origin token is the precise masquerade surface — a synthetic
         // row reads 'Synthetic (practice)', never 'Derived (math)'.
-        lines.push([o.x, o.y, csvSafe(o.phase || ''), (o.synthetic ? 'Synthetic (practice)' : 'Derived (math)')].join(','));
+        lines.push([o.x, o.y, csvSafe(o.phase || ''), (o.synthetic ? 'Synthetic (practice)' : 'Observed')].join(',')); // raw per-row values are observed (L0); the aggregate metric block below stays 'Derived (math)'
       });
     } else {
       lines.push('metric,value');
@@ -2743,7 +2750,8 @@
                 h('span', null, bundle.label)),
               // Scatter shows the association sentence verbatim (it already carries r + interval + n + the
               // not-causation caveat); the trend/other views keep the audience-faced trend wording.
-              h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience))));
+              h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience, compHasSynthetic(comp))),
+              (compHasSynthetic(comp) ? h('p', { key: 'synCard', className: 'mt-1 text-[11px] font-semibold', style: { color: '#6d28d9' } }, '◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.') : null)));
           }
 
           var geo;
@@ -2770,10 +2778,11 @@
             });
             if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2, strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
             if (geo.points) geo.points.forEach(function (p, i) {
+              var pb = encode(p.level || 'L0'); // observed ● / synthetic ◇ — the MARK's own provenance, not the L1 trend line
               sk.push(h('g', { key: 'pt' + i },
-                h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: bundle.ink, fillOpacity: bundle.markOpacity }),
+                h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: pb.ink, fillOpacity: pb.markOpacity }),
                 // the per-mark BURN: each mark carries its own level glyph at full opacity
-                h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: bundle.ink, fillOpacity: 1, 'aria-hidden': 'true' }, bundle.glyph)
+                h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: pb.ink, fillOpacity: 1, 'aria-hidden': 'true' }, pb.glyph)
               ));
             });
             // Bar pathway: each bar is an L0 OBSERVED mark (neutral ink) carrying its level glyph above it.
@@ -2869,7 +2878,7 @@
             });
             kids.push(h('svg', {
               key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
-              role: 'img', 'aria-label': chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
+              role: 'img', 'aria-label': (compHasSynthetic(comp) ? 'Synthetic practice data — not a real student. ' : '') + chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
             }, (compHasSynthetic(comp)
               ? sk.concat([h('text', { key: 'synWm', x: b.w / 2, y: b.h / 2, textAnchor: 'middle', 'aria-hidden': 'true', transform: 'rotate(-18 ' + (b.w / 2) + ' ' + (b.h / 2) + ')', style: { fill: '#6d28d9', opacity: 0.16, fontSize: Math.round(b.h / 7), fontWeight: 'bold', pointerEvents: 'none' } }, 'PRACTICE DATA')])
               : sk)));

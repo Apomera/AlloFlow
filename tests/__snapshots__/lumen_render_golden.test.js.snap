@@ -104,52 +104,52 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <g>
 <circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 </svg>
 <button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
@@ -329,52 +329,52 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <g>
 <circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 </svg>
 <button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
@@ -554,52 +554,52 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <g>
 <circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 </svg>
 <button class="mt-2 text-xs underline text-slate-600">Show data table (the chart as a table)</button>
@@ -807,52 +807,52 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <g>
 <circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="90.7" cy="209.4" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="94.7" y="205.4" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="94.7" y="205.4" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="137.3" cy="215.2" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="141.3" y="211.2" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="141.3" y="211.2" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="184" cy="192" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="188" y="188" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="188" y="188" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="230.7" cy="197.8" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="234.7" y="193.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="234.7" y="193.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="277.3" cy="162.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="281.3" y="158.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="281.3" y="158.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="324" cy="133.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="328" y="129.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="328" y="129.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="370.7" cy="116.5" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="374.7" y="112.5" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="374.7" y="112.5" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="417.3" cy="122.3" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="421.3" y="118.3" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="421.3" y="118.3" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="464" cy="87.4" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="468" y="83.4" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="468" y="83.4" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <line x1="44" y1="35.2" x2="464" y2="35.2" stroke="#0e7490" stroke-width="1.5" stroke-dasharray="2 4">
 </line>
@@ -1417,52 +1417,52 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <g>
 <circle cx="44" cy="226.8" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="48" y="222.8" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="90.7" cy="202.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="94.7" y="198.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="137.3" cy="210.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="141.3" y="206.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="184" cy="178.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="188" y="174.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="230.7" cy="186.9" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="234.7" y="182.9" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="277.3" cy="139" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="281.3" y="135" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="324" cy="99.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="328" y="95.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="370.7" cy="75.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="374.7" y="71.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="417.3" cy="83.1" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="421.3" y="79.1" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 <g>
 <circle cx="464" cy="35.2" r="3.5" fill="#0f172a" fill-opacity="1">
 </circle>
-<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">◈</text>
+<text x="468" y="31.200000000000003" style="font-size:8px" fill="#0f172a" fill-opacity="1" aria-hidden="true">●</text>
 </g>
 </svg>
 <button class="mt-2 text-xs underline text-slate-600">Hide data table</button>
@@ -1480,31 +1480,31 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <td class="border px-2 py-0.5">1</td>
 <td class="border px-2 py-0.5">42</td>
 <td class="border px-2 py-0.5">baseline</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">2</td>
 <td class="border px-2 py-0.5">45</td>
 <td class="border px-2 py-0.5">baseline</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">3</td>
 <td class="border px-2 py-0.5">44</td>
 <td class="border px-2 py-0.5">baseline</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">4</td>
 <td class="border px-2 py-0.5">48</td>
 <td class="border px-2 py-0.5">baseline</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">5</td>
 <td class="border px-2 py-0.5">47</td>
 <td class="border px-2 py-0.5">baseline</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td colSpan="4" class="border px-2 py-0.5 italic text-slate-500">phase boundary: baseline → tier2</td>
@@ -1513,31 +1513,31 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <td class="border px-2 py-0.5">6</td>
 <td class="border px-2 py-0.5">53</td>
 <td class="border px-2 py-0.5">tier2</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">7</td>
 <td class="border px-2 py-0.5">58</td>
 <td class="border px-2 py-0.5">tier2</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">8</td>
 <td class="border px-2 py-0.5">61</td>
 <td class="border px-2 py-0.5">tier2</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">9</td>
 <td class="border px-2 py-0.5">60</td>
 <td class="border px-2 py-0.5">tier2</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 <tr>
 <td class="border px-2 py-0.5">10</td>
 <td class="border px-2 py-0.5">66</td>
 <td class="border px-2 py-0.5">tier2</td>
-<td class="border px-2 py-0.5">Derived (math)</td>
+<td class="border px-2 py-0.5">Observed</td>
 </tr>
 </tbody>
 </table>
@@ -3495,9 +3495,10 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math)</span>
 </div>
-<p class="text-sm text-slate-800 mt-1">Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="text-sm text-slate-800 mt-1">Practice example — not a real student. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10).</p>
+<p class="mt-1 text-[11px] font-semibold" style="color:#6d28d9">◇ Synthetic practice data — this finding includes fabricated points; not a defensible measurement.</p>
 </div>
-<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Bar chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
+<svg viewBox="0 0 480 280" class="w-full mt-3 bg-white rounded-lg border border-slate-200" role="img" aria-label="Synthetic practice data — not a real student. Bar chart. Derived (math): WCPM rose ~2.68 words/min per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.">
 <line x1="44" y1="246" x2="464" y2="246" stroke="#e2e8f0" stroke-width="1">
 </line>
 <text x="40" y="249" text-anchor="end" style="font-size:9px" fill="#64748b">0</text>

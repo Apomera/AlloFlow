@@ -337,7 +337,7 @@ describe('Lumen — export, FERPA gate & L3 sign-off (Phase 1, §7/§8)', () => 
     const pii = L.buildExportCsv(comp, claim, { includePII: true });
     expect(pii.csv).toMatch(/CONFIDENTIAL/);
     expect(pii.filename).toMatch(/CONFIDENTIAL/);
-    expect(pii.csv).toMatch(/^1,42,baseline,Derived \(math\)/m);
+    expect(pii.csv).toMatch(/^1,42,baseline,Observed/m); // raw per-row values are OBSERVED (L0), not the L1 derived trend
   });
 
   it('an AI-inclusive brief carries the level word, the method, and the verify-yourself caveat', () => {

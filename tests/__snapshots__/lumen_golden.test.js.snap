@@ -434,6 +434,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
   ],
   "points": [
     {
+      "level": "L0",
       "phase": "baseline",
       "sx": 44,
       "sy": 226.8,
@@ -441,6 +442,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 42,
     },
     {
+      "level": "L0",
       "phase": "baseline",
       "sx": 90.7,
       "sy": 202.9,
@@ -448,6 +450,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 45,
     },
     {
+      "level": "L0",
       "phase": "baseline",
       "sx": 137.3,
       "sy": 210.9,
@@ -455,6 +458,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 44,
     },
     {
+      "level": "L0",
       "phase": "baseline",
       "sx": 184,
       "sy": 178.9,
@@ -462,6 +466,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 48,
     },
     {
+      "level": "L0",
       "phase": "baseline",
       "sx": 230.7,
       "sy": 186.9,
@@ -469,6 +474,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 47,
     },
     {
+      "level": "L0",
       "phase": "tier2",
       "sx": 277.3,
       "sy": 139,
@@ -476,6 +482,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 53,
     },
     {
+      "level": "L0",
       "phase": "tier2",
       "sx": 324,
       "sy": 99.1,
@@ -483,6 +490,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 58,
     },
     {
+      "level": "L0",
       "phase": "tier2",
       "sx": 370.7,
       "sy": 75.1,
@@ -490,6 +498,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 61,
     },
     {
+      "level": "L0",
       "phase": "tier2",
       "sx": 417.3,
       "sy": 83.1,
@@ -497,6 +506,7 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > plot g
       "y": 60,
     },
     {
+      "level": "L0",
       "phase": "tier2",
       "sx": 464,
       "sy": 35.2,
@@ -597,31 +607,31 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > the SR
   ],
   "rows": [
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "baseline",
       "x": 1,
       "y": 42,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "baseline",
       "x": 2,
       "y": 45,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "baseline",
       "x": 3,
       "y": 44,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "baseline",
       "x": 4,
       "y": 48,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "baseline",
       "x": 5,
       "y": 47,
@@ -631,31 +641,31 @@ exports[`Lumen — chart geometry + data-table peer (Phase 1, §9/§15) > the SR
       "label": "phase boundary: baseline → tier2",
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "tier2",
       "x": 6,
       "y": 53,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "tier2",
       "x": 7,
       "y": 58,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "tier2",
       "x": 8,
       "y": 61,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "tier2",
       "x": 9,
       "y": 60,
     },
     {
-      "level": "Derived (math)",
+      "level": "Observed",
       "phase": "tier2",
       "x": 10,
       "y": 66,

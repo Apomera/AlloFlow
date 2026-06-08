@@ -138,16 +138,17 @@ describe('Lumen practice data — honesty guards', () => {
     expect(realH.filename).not.toMatch(/PRACTICE/);
   });
 
-  it('buildExportCsv marks synthetic rows + filename; real CSV keeps Derived (math)', () => {
+  it('buildExportCsv marks synthetic rows "Synthetic (practice)" + filename; real per-row rows are "Observed"', () => {
     const synC = compFrom(L.generatePracticeData({ scenario: 'improving', n: 10, seed: 'cx' }));
     const realC = compFrom([{ x: 1, y: 42 }, { x: 2, y: 45 }, { x: 3, y: 50 }]);
     const synCsv = L.buildExportCsv(synC, L.deriveTrendClaim(synC, {}), { includePII: true, synthetic: true });
     const realCsv = L.buildExportCsv(realC, L.deriveTrendClaim(realC, {}), { includePII: true });
     expect(synCsv.csv).toMatch(/SYNTHETIC/);
     expect(synCsv.csv).toMatch(/Synthetic \(practice\)/);
-    expect(synCsv.csv).not.toMatch(/Derived \(math\)/);
+    expect(synCsv.csv).not.toMatch(/Derived \(math\)/); // per-row never reads derived-math
     expect(synCsv.filename).toMatch(/SYNTHETIC/);
-    expect(realCsv.csv).toMatch(/Derived \(math\)/);
+    expect(realCsv.csv).toMatch(/,Observed/);            // raw observed rows read 'Observed' (L0), not 'Derived (math)'
+    expect(realCsv.csv).not.toMatch(/Derived \(math\)/);
     expect(realCsv.csv).not.toMatch(/SYNTHETIC/);
   });
 
@@ -169,5 +170,25 @@ describe('Lumen practice data — honesty guards', () => {
     const ctx = L.buildClaimContext(compFrom(syn), synClaim);
     expect(ctx).not.toHaveProperty('synthetic');
     expect(JSON.stringify(ctx)).not.toMatch(/synthetic|practice/i);
+  });
+
+  it('the face SENTENCE leads with the synthetic caveat (the most-laundered surface); real-data face does not', () => {
+    const comp = compFrom(L.generatePracticeData({ scenario: 'improving', n: 10, seed: 'face' }));
+    const claim = L.deriveTrendClaim(comp, {});
+    expect(L.faceFor(claim, 'family', true)).toMatch(/^Practice example — not a real student\./);
+    expect(L.faceFor(claim, 'working', true)).toMatch(/not a real student/);
+    expect(L.faceFor(claim, 'iep-team', true)).toMatch(/not a real student/);
+    // real-data (2-arg + explicit-false) callers are byte-identical — no caveat
+    expect(L.faceFor(claim, 'family')).not.toMatch(/not a real student/);
+    expect(L.faceFor(claim, 'working', false)).not.toMatch(/not a real student/);
+  });
+
+  it('observed trend marks burn L0/Observed; synthetic trend marks burn SYN — NOT the L1 trend-line glyph', () => {
+    const synC = compFrom(L.generatePracticeData({ scenario: 'improving', n: 10, seed: 'tg' }));
+    const realC = compFrom([{ x: 1, y: 42, phase: 'b' }, { x: 2, y: 45, phase: 'b' }, { x: 3, y: 50, phase: 'b' }, { x: 4, y: 55, phase: 't' }]);
+    const synLevels = L.plotGeometry(synC.observations, L.deriveTrendClaim(synC, {})).points.map((p) => p.level);
+    const realLevels = L.plotGeometry(realC.observations, L.deriveTrendClaim(realC, {})).points.map((p) => p.level);
+    expect([...new Set(synLevels)]).toEqual(['SYN']);
+    expect([...new Set(realLevels)]).toEqual(['L0']); // observed points are L0, never the claim's L1
   });
 });
