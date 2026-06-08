@@ -2901,7 +2901,7 @@
           var showTableSection = (chartType === 'multiSeriesLine') ? !!multiClaims : (groupedMulti ? true : (activeClaim && !activeClaim.refused));
           if (showTableSection) {
             var tbl = dataTableModel(obs, tableClaim, sourceRefs);
-            kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', onClick: function () { upd('showTable', !d.showTable); } },
+            kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', 'aria-expanded': d.showTable ? 'true' : 'false', onClick: function () { announce(d.showTable ? 'Data table hidden.' : 'Data table shown.'); upd('showTable', !d.showTable); } },
               d.showTable ? 'Hide data table' : 'Show data table (the chart as a table)'));
             if (d.showTable) {
               kids.push(h('table', { key: 'tbl', className: 'mt-2 text-xs border-collapse' },
@@ -3093,8 +3093,8 @@
             );
           })());
 
-          kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-400' },
-            'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated (identifiable CSV is opt-in) and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.'));
+          kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-700' },
+            'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and IEP-team exports require sign-off on any AI reading. docs/lumen_design.md.'));
 
           return h('div', { className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' }, kids);
         } catch (e) {
