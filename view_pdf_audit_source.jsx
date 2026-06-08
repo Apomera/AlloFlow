@@ -1337,7 +1337,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
                   <h3 className="text-lg font-bold" id="pdf-audit-title">PDF Accessibility Score {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
-                  {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">Triangulated from {pdfAuditResult.auditorCount || pdfAuditResult.scores.length} independent AI audits (scores: {pdfAuditResult.scores.join(', ')}) · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
+                  {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
                   {pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
                     const rc = pdfAuditResult.structTree.roleCounts || {};
                     const top = Object.entries(rc).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([r, n]) => `${r}×${n}`).join(', ');
@@ -1407,7 +1407,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {pdfAuditResult.cronbachAlpha !== null && (
                             <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                               <div className={`text-lg font-black ${pdfAuditResult.cronbachAlpha >= 0.7 ? 'text-green-700' : 'text-amber-700'}`}>{pdfAuditResult.cronbachAlpha}</div>
-                              <div className="text-[11px] text-slate-600 font-bold uppercase">{t('pdf_audit.reliability.cronbach') || "Cronbach's α"}</div>
+                              <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.cronbach_title') || 'CV + pairwise hybrid heuristic across AI passes; not textbook Cronbach’s α'}>{t('pdf_audit.reliability.cronbach') || 'Auditor Consistency (α-like)'}</div>
                             </div>
                           )}
                         </div>
@@ -4133,6 +4133,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 });
                               }
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                              // ── Gate the download on the post-save structural self-check ──
+                              // createTaggedPdf re-parses the SHIPPED bytes; if the tag tree / MarkInfo /
+                              // language didn't survive serialization (roundTrip.ok === false), do NOT
+                              // silently hand over a broken tagged PDF. Previously a passed and a failed
+                              // verification produced the identical download with only an after-the-fact
+                              // toast; now a hard fail requires an explicit "download anyway" opt-in.
+                              if (roundTrip && roundTrip.ok === false) {
+                                const _rtFails = (roundTrip.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule);
+                                const _rtMsg = _rtFails.length ? _rtFails.join('; ') : ((roundTrip.warnings || []).join('; ') || 'structure may not have survived serialization');
+                                addToast('⚠ Post-save structure check FAILED: ' + _rtMsg + '. Do not distribute until verified in PAC 3 or a screen reader.', 'error');
+                                const _proceed = (typeof window !== 'undefined' && typeof window.confirm === 'function')
+                                  ? window.confirm('The tagged PDF FAILED its post-save structure check:\n\n' + _rtMsg + '\n\nThe accessibility structure may not have survived serialization. Download the unverified file anyway?')
+                                  : false;
+                                if (!_proceed) { addToast('Download cancelled — the tagged PDF did not pass verification.', 'info'); return; }
+                              }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
                               safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged.pdf');
                               // ── #1 OCR searchable-layer coverage (honest disclosure) ──
@@ -4142,14 +4157,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (ocrTextLayer && typeof ocrTextLayer.coveragePct === 'number' && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
                                 addToast('⚠ Searchable text layer covers ' + ocrTextLayer.coveragePct + '% of the scanned text — ' + (ocrTextLayer.droppedChars || 0) + ' character(s) in a non-Latin script (e.g. CJK) could not be embedded with the built-in font, so those passages will not be searchable or read aloud. A Unicode-font pass is needed for full coverage.', 'error');
                               }
-                              // ── #3 Round-trip structural self-check (re-parsed the saved PDF) ──
-                              // Surfaces the content-loss-at-save class: if the tag tree, MarkInfo,
-                              // or language didn't survive serialization, warn before distribution.
-                              if (roundTrip && roundTrip.ok === false) {
-                                const _rtFails = (roundTrip.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule);
-                                const _rtMsg = _rtFails.length ? _rtFails.join('; ') : ((roundTrip.warnings || []).join('; ') || 'structure may not have survived serialization');
-                                addToast('⚠ Post-save structure check FAILED: ' + _rtMsg + '. Do not distribute until verified in PAC 3 or a screen reader.', 'error');
-                              } else if (roundTrip && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
+                              // ── #3 Round-trip structural self-check: soft warnings ──
+                              // The HARD fail (roundTrip.ok === false) is gated BEFORE the download above;
+                              // here we only surface non-blocking warnings on an otherwise-passing file.
+                              if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
                                 addToast('Note (structure self-check): ' + roundTrip.warnings.join('; '), 'info');
                               }
                               // Build a concrete proof-of-tagging string. Most PDF
@@ -4831,7 +4842,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               .replace(/<h4[^>]*>/gi, '#### ').replace(/<\/h4>/gi, '\n\n')
                               .replace(/<strong[^>]*>/gi, '**').replace(/<\/strong>/gi, '**')
                               .replace(/<em[^>]*>/gi, '*').replace(/<\/em>/gi, '*')
-                              .replace(/<a[^>]*href="([^"]*)"[^>]*>/gi, '[').replace(/<\/a>/gi, (m, o, s) => { const href = s.substring(0, o).match(/href="([^"]*)"/); return '](' + (href ? href[1] : '') + ')'; })
+                              // Single-pass link rewrite: the old two-step chain rewrote the opening
+                              // <a> to a bare "[" (discarding the href) BEFORE the </a> replacer
+                              // back-scanned for it, so every link came out "[text]()" with an empty URL.
+                              .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
                               .replace(/<li[^>]*>/gi, '- ').replace(/<\/li>/gi, '\n')
                               .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n')
                               .replace(/<img[^>]*alt="([^"]*)"[^>]*>/gi, '![$1](image)')
@@ -5149,6 +5163,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           addToast(t('toasts.generating') + segments.length + ' audio segments...', 'info');
                           const audioBlobs = [];
                           let failed = 0;
+                          let consecutiveNull = 0;   // TTS resolving null WITHOUT throwing (rate-limit cooldown)
+                          let stoppedEarly = false;
                           for (let si = 0; si < segments.length; si++) {
                             if (btn) btn.textContent = '⏳ ' + (si + 1) + '/' + segments.length + '...';
                             try {
@@ -5157,19 +5173,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http')) {
                                   const resp = await fetch(url);
                                   audioBlobs.push(await resp.blob());
+                                  consecutiveNull = 0;
                                 } else {
                                   warnLog('[Audio DL] Unexpected TTS return type:', typeof url);
-                                  failed++;
+                                  failed++; consecutiveNull++;
                                 }
-                              } else { failed++; }
+                              } else { failed++; consecutiveNull++; }
                             } catch(e) {
                               warnLog('[Audio DL] Segment ' + (si+1) + ' failed:', e?.message || e);
-                              failed++;
+                              failed++; consecutiveNull++;
                               if (e?.message?.includes('429') || e?.message?.includes('Rate')) {
-                                addToast(t('toasts.rate_limited_got') + audioBlobs.length + ' of ' + segments.length + ' segments', 'info');
+                                stoppedEarly = true;
                                 break;
                               }
                             }
+                            // callTTS resolving null WITHOUT throwing (e.g. a Gemini 429 sets a 60s
+                            // cooldown and returns null) used to slip past the 429-break above and
+                            // cascade to a near-empty file reported as "success". Stop after a short
+                            // run of consecutive nulls and report honestly below.
+                            if (consecutiveNull >= 3) { stoppedEarly = true; break; }
                           }
                           if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
                           if (audioBlobs.length === 0) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
@@ -5181,7 +5203,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-audio.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
                           document.body.appendChild(a); a.click(); document.body.removeChild(a);
                           URL.revokeObjectURL(dlUrl);
-                          addToast(t('toasts.audio_downloaded') + audioBlobs.length + '/' + segments.length + ' sections' + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
+                          const _incomplete = stoppedEarly || audioBlobs.length < segments.length;
+                          if (_incomplete) {
+                            addToast('⚠ Audio incomplete — only ' + audioBlobs.length + ' of ' + segments.length + ' sections were generated' + (stoppedEarly ? ' before the TTS service rate-limited (retry in ~60s for the rest)' : '') + '. The downloaded file is partial.', 'error');
+                          } else {
+                            addToast(t('toasts.audio_downloaded') + audioBlobs.length + '/' + segments.length + ' sections', 'success');
+                          }
                         }} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors disabled:opacity-50">
                           🎧 Download Audio
                         </button>}
@@ -7720,20 +7747,26 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   if (btn) { btn.textContent = '⏳ 0/' + segments.length; btn.disabled = true; }
                   const blobs = [];
                   let failed = 0;
+                  let consecutiveNull = 0;
+                  let stoppedEarly = false;
                   for (let si = 0; si < segments.length; si++) {
                     if (btn) btn.textContent = '⏳ ' + (si + 1) + '/' + segments.length;
                     try {
                       const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
                       if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
                         const r = await fetch(url); blobs.push(await r.blob());
-                      } else { failed++; }
+                        consecutiveNull = 0;
+                      } else { failed++; consecutiveNull++; }
                     } catch(e) {
                       warnLog('[Audio] Seg ' + si + ' failed:', e?.message);
-                      failed++;
+                      failed++; consecutiveNull++;
                       if (e?.message?.includes('429') || e?.message?.includes('Rate')) {
-                        addToast(t('toasts.rate_limited_got') + blobs.length + '/' + segments.length, 'info'); break;
+                        stoppedEarly = true; break;
                       }
                     }
+                    // null-without-throw (TTS rate-limit cooldown) would otherwise cascade to a
+                    // near-empty file reported as success — stop after a short run, report honestly below.
+                    if (consecutiveNull >= 3) { stoppedEarly = true; break; }
                   }
                   if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
                   if (blobs.length === 0) { addToast(t('toasts.audio_generation_failed_check_tts'), 'error'); return; }
@@ -7744,7 +7777,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   a.href = dlUrl; a.download = 'document-audio.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   URL.revokeObjectURL(dlUrl);
-                  addToast(t('toasts.downloaded') + blobs.length + '/' + segments.length + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
+                  const _incomplete = stoppedEarly || blobs.length < segments.length;
+                  if (_incomplete) {
+                    addToast('⚠ Audio incomplete — only ' + blobs.length + ' of ' + segments.length + ' sections were generated' + (stoppedEarly ? ' before the TTS service rate-limited (retry in ~60s for the rest)' : '') + '. The downloaded file is partial.', 'error');
+                  } else {
+                    addToast(t('toasts.downloaded') + blobs.length + '/' + segments.length, 'success');
+                  }
                 }} className="w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50">
                   🎧 Download Audio
                 </button>

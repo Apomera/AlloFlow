@@ -4394,7 +4394,8 @@
       "std_dev": "Standard Deviation",
       "icc_title": "Custom 1−(SD/50) index; not textbook ICC",
       "icc_label": "Auditor Consistency (ICC-like)",
-      "cronbach": "Cronbach's α"
+      "cronbach": "Auditor Consistency (α-like)",
+      "cronbach_title": "CV + pairwise hybrid heuristic across AI passes; not textbook Cronbach's α"
     },
     "score": {
       "total_checks": "Total checks performed",
