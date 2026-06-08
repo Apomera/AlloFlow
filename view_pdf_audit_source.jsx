@@ -2130,6 +2130,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     {extractionData.metadata.hasTables && <span>📊 Contains tables</span>}
                                     <span>🌐 Language: {extractionData.metadata.language === 'en' ? 'English' : extractionData.metadata.language === 'ar' ? 'Arabic' : extractionData.metadata.language === 'zh' ? 'Chinese' : extractionData.metadata.language === 'ru' ? 'Russian' : extractionData.metadata.language}</span>
                                   </div>
+                                  {/* Per-page extraction errors. 2026-06-08: previously a per-page failure
+                                      silently degraded the doc to "scanned" + threw away all pdf.js text.
+                                      Now per-page guards keep the salvaged pages and surface failures here
+                                      so the user can see "we tried hard and got most of it." */}
+                                  {extractionData.metadata && Array.isArray(extractionData.metadata.pageErrors) && extractionData.metadata.pageErrors.length > 0 && (
+                                    <div className="mt-2 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                                      ⚠️ Stage 1 partial extraction: page{extractionData.metadata.pageErrors.length === 1 ? '' : 's'} {extractionData.metadata.pageErrors.map(e => e.pageNum).join(', ')} failed to parse — other pages were salvaged. Check the fidelity panel for content-coverage impact.
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}

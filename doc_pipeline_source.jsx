@@ -2681,30 +2681,50 @@ var createDocPipeline = function(deps) {
       const bytes = _b64ToBytes(base64);
       const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
       const pages = [];
+      // 2026-06-08: per-page try/catch — a single-page parse error previously
+      // threw all the way out of the loop, the outer catch returned
+      // isScanned:true, and the WHOLE document's pdf.js text was discarded.
+      // Now: log the failed page + push an empty record + keep going. The
+      // denominator below uses non-blank page count so one broken page doesn't
+      // trip the isScanned heuristic on a 20-page document.
+      const pageErrors = [];
       for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
-        const tc = await page.getTextContent();
-        // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
-        // This preserves reading order for single-column layouts and gives a reasonable fallback for multi-column
-        const items = (tc.items || []).slice().sort((a, b) => {
-          const ay = a.transform ? a.transform[5] : 0;
-          const by = b.transform ? b.transform[5] : 0;
-          if (Math.abs(ay - by) > 2) return by - ay; // higher y first
-          const ax = a.transform ? a.transform[4] : 0;
-          const bx = b.transform ? b.transform[4] : 0;
-          return ax - bx;
-        });
-        const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
-        pages.push({ pageNum: p, text: pageText });
+        try {
+          const page = await pdf.getPage(p);
+          const tc = await page.getTextContent();
+          // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
+          // This preserves reading order for single-column layouts and gives a reasonable fallback for multi-column
+          const items = (tc.items || []).slice().sort((a, b) => {
+            const ay = a.transform ? a.transform[5] : 0;
+            const by = b.transform ? b.transform[5] : 0;
+            if (Math.abs(ay - by) > 2) return by - ay; // higher y first
+            const ax = a.transform ? a.transform[4] : 0;
+            const bx = b.transform ? b.transform[4] : 0;
+            return ax - bx;
+          });
+          const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
+          pages.push({ pageNum: p, text: pageText });
+        } catch (pageErr) {
+          const _pmsg = (pageErr && pageErr.message) || String(pageErr);
+          pages.push({ pageNum: p, text: '', error: _pmsg });
+          pageErrors.push({ pageNum: p, error: _pmsg });
+          try { warnLog('[PDF Det] page ' + p + ' failed (' + (pdf.numPages - 1) + ' other pages still attempted): ' + _pmsg); } catch (_) {}
+        }
       }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
-      const avgCharsPerPage = pdf.numPages > 0 ? fullText.length / pdf.numPages : 0;
+      // Denominator fix: average against pages that ACTUALLY produced text. A
+      // 20-page doc where 1 page failed and 19 produced text shouldn't get
+      // an inflated /20 denominator that drops avgCharsPerPage below the
+      // isScanned threshold on perfectly good text-layer documents.
+      const nonBlankPages = pages.filter(p => p.text && p.text.length > 0).length;
+      const avgCharsPerPage = nonBlankPages > 0 ? fullText.length / nonBlankPages : 0;
       return {
         fullText,
         pages,
         pageCount: pdf.numPages,
         sourceCharCount: fullText.length,
         isScanned: avgCharsPerPage < 50,
+        pageErrors,
       };
     } catch (e) {
       const msg = e?.message || '';
@@ -2719,7 +2739,7 @@ var createDocPipeline = function(deps) {
       } else {
         warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg);
       }
-      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt };
+      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt, pageErrors: [] };
     }
   };
 
@@ -3723,36 +3743,48 @@ var createDocPipeline = function(deps) {
       const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
       const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
       const useLang = lang || 'eng';
+      // 2026-06-08: per-page try/catch — a single page's OOM/canvas/recognize
+      // failure previously bubbled to the outer catch and threw away ALL pages'
+      // OCR output. Now: log the failure + push an empty record + keep going.
+      // Downstream reconcileOcrPages already tolerates empty per-page text.
       const pages = [];
+      const pageErrors = [];
       for (let p = 1; p <= pdf.numPages; p++) {
-        if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
-        const page = await pdf.getPage(p);
-        const viewport = page.getViewport({ scale: 2.0 });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
-        // Tesseract.js v5 returns ONLY text by default; opt into the block/word
-        // hierarchy (4th "output" arg) so we can place each word's invisible glyphs
-        // at its real position. Older signatures ignore the extra arg; if the call
-        // shape is rejected we retry the plain form so OCR never breaks.
-        let result;
-        try { result = await window.Tesseract.recognize(canvas, useLang, undefined, { blocks: true }); }
-        catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
-        const data = (result && result.data) || {};
-        const pageText = (data.text || '').trim();
-        const words = _collectOcrWords(data, 2.0); // normalize bboxes to PDF points (render scale 2×)
-        pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: viewport.width / 2.0, pageH: viewport.height / 2.0 });
-        // Free the canvas so a 100-page scan doesn't balloon memory.
-        canvas.width = 0; canvas.height = 0;
+        try {
+          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
+          const page = await pdf.getPage(p);
+          const viewport = page.getViewport({ scale: 2.0 });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
+          // Tesseract.js v5 returns ONLY text by default; opt into the block/word
+          // hierarchy (4th "output" arg) so we can place each word's invisible glyphs
+          // at its real position. Older signatures ignore the extra arg; if the call
+          // shape is rejected we retry the plain form so OCR never breaks.
+          let result;
+          try { result = await window.Tesseract.recognize(canvas, useLang, undefined, { blocks: true }); }
+          catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
+          const data = (result && result.data) || {};
+          const pageText = (data.text || '').trim();
+          const words = _collectOcrWords(data, 2.0); // normalize bboxes to PDF points (render scale 2×)
+          pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: viewport.width / 2.0, pageH: viewport.height / 2.0 });
+          // Free the canvas so a 100-page scan doesn't balloon memory.
+          canvas.width = 0; canvas.height = 0;
+        } catch (pageErr) {
+          const _pmsg = (pageErr && pageErr.message) || String(pageErr);
+          pages.push({ pageNum: p, text: '', words: null, error: _pmsg });
+          pageErrors.push({ pageNum: p, error: _pmsg });
+          try { warnLog('[Tesseract] page ' + p + ' failed (' + (pdf.numPages - 1) + ' other pages still attempted): ' + _pmsg); } catch (_) {}
+        }
       }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
-      return { fullText, pages, pageCount: pdf.numPages, sourceCharCount: fullText.length };
+      return { fullText, pages, pageCount: pdf.numPages, sourceCharCount: fullText.length, pageErrors };
     } catch (e) {
       warnLog('[Tesseract] extractPdfTextTesseract failed:', e && e.message);
-      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message };
+      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message, pageErrors: [] };
     }
   };
 
@@ -11212,13 +11244,26 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // Handle both canonical schema {"type":"p","text":"..."} AND Gemini's alternate
           // schema {"tag":"p","class":"ds6","content":"..."} which leaks when the AI returns
           // a different structure than expected.
-          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:p|paragraph)"[^{}]*?(?:"(?:text|content)"\s*:\s*"([^"]*)")?\s*\}/g, function(m, txt) { return txt ? '<p>' + txt + '</p>' : ''; });
-          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:h[1-6])"[^{}]*?(?:"(?:text|content)"\s*:\s*"([^"]*)")?\s*\}/g, function(m, txt) { return txt ? '<h2>' + txt + '</h2>' : ''; });
+          //
+          // 2026-06-08: the previous regex used [^"]* for the content body, which
+          // TRUNCATED any paragraph containing an internal escaped quote like
+          // {"text":"He said \"hi\" then left."}. Real teacher narratives in
+          // IEPs / progress notes routinely contain quoted speech. Switched to
+          // (?:[^"\\]|\\.)* (the standard JSON-string body pattern that allows
+          // escaped chars) and JSON.unescape the captured group via JSON.parse('"' + raw + '"')
+          // before re-emitting so the literal "\\" "\"" survives as ".
+          const _unescapeJsonStr = (raw) => {
+            if (raw == null) return '';
+            try { return JSON.parse('"' + String(raw) + '"'); }
+            catch (_) { return String(raw); }
+          };
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:p|paragraph)"[^{}]*?(?:"(?:text|content)"\s*:\s*"((?:[^"\\]|\\.)*)")?\s*\}/g, function(m, txt) { return txt ? '<p>' + _unescapeJsonStr(txt) + '</p>' : ''; });
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:h[1-6])"[^{}]*?(?:"(?:text|content)"\s*:\s*"((?:[^"\\]|\\.)*)")?\s*\}/g, function(m, txt) { return txt ? '<h2>' + _unescapeJsonStr(txt) + '</h2>' : ''; });
           accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:ul|ol)"\s*,\s*"items"\s*:\s*\[([^\]]*)\]\s*\}/g, function(m, items) {
             var parsed = items.split(',').map(function(s) { return s.replace(/"/g, '').trim(); }).filter(Boolean);
             return '<ul>' + parsed.map(function(i) { return '<li>' + i + '</li>'; }).join('') + '</ul>';
           });
-          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:blockquote)"[^{}]*?"(?:text|content)"\s*:\s*"([^"]*)"\s*\}/g, '<blockquote>$1</blockquote>');
+          accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"(?:blockquote)"[^{}]*?"(?:text|content)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/g, function(m, txt) { return '<blockquote>' + _unescapeJsonStr(txt) + '</blockquote>'; });
           accessibleHtml = accessibleHtml.replace(/\{"(?:type|tag)"\s*:\s*"hr"\s*\}/g, '<hr>');
           // Catch-all: only match JSON objects that ALSO have a type/tag/element/kind/role sibling —
           // without that sibling, this regex used to match legit inline content like

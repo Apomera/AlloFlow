@@ -42,6 +42,61 @@ function PdfDiffViewer(props) {
         let _ins = 0, _del = 0, _same = 0;
         let _rejCount = 0, _effectiveText = '';
         const _countedPairs = new Set();
+        // 2026-06-08: OCR-disagreement tagging. When both Tesseract and Vision
+        // saw a token but the remediated final dropped it, that's a HIGH-
+        // confidence "likely dropped inadvertently" signal. When only ONE
+        // engine saw it, that's MEDIUM — could be hallucination, worth review.
+        // Signal-only: we don't auto-act, just visually distinguish so the
+        // user can spot real losses without combing the whole diff.
+        const _ocrTess = (typeof window !== 'undefined' && window.__lastOcrTesseractText) || '';
+        const _ocrVis = (typeof window !== 'undefined' && window.__lastOcrVisionText) || '';
+        const _ocrEnabled = !!(_ocrTess && _ocrVis);
+        const _normTok = (tk) => String(tk || '').toLowerCase().replace(/­/g, '').replace(/[^a-z0-9'-]/g, '');
+        const _buildTokenSet = (s) => {
+          const out = new Set();
+          if (!s) return out;
+          const parts = String(s).split(/\s+/);
+          for (const p of parts) {
+            const n = _normTok(p);
+            if (n.length >= 2) out.add(n);
+          }
+          return out;
+        };
+        const _setT = _ocrEnabled ? _buildTokenSet(_ocrTess) : null;
+        const _setV = _ocrEnabled ? _buildTokenSet(_ocrVis) : null;
+        const _ocrTagMap = new Map();
+        if (_ocrEnabled && _chunks) {
+          for (const c of _chunks) {
+            if (c.type !== 'del') continue;
+            const toks = String(c.value || '').split(/\s+/).map(_normTok).filter(tk => tk.length >= 2);
+            if (toks.length === 0) continue;
+            const allT = toks.every(tk => _setT.has(tk));
+            const allV = toks.every(tk => _setV.has(tk));
+            if (allT && allV) _ocrTagMap.set(c.id, { ocrConfidence: 'high' });
+            else if (allT) _ocrTagMap.set(c.id, { ocrConfidence: 'medium', ocrSource: 'tesseract' });
+            else if (allV) _ocrTagMap.set(c.id, { ocrConfidence: 'medium', ocrSource: 'vision' });
+          }
+        }
+        let _ocrHighCount = 0, _ocrMedCount = 0;
+        const _ocrHighList = [];
+        if (_ocrTagMap.size > 0 && _chunks) {
+          for (const c of _chunks) {
+            const tag = _ocrTagMap.get(c.id);
+            if (!tag) continue;
+            if (tag.ocrConfidence === 'high') { _ocrHighCount++; _ocrHighList.push({ id: c.id, value: c.value }); }
+            else if (tag.ocrConfidence === 'medium') _ocrMedCount++;
+          }
+        }
+        const _scrollToChunk = (id) => {
+          try {
+            const el = document.querySelector('[data-chunk-id="' + id + '"]');
+            if (!el) return;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.style.outline = '3px solid #f59e0b';
+            el.style.outlineOffset = '2px';
+            setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 1500);
+          } catch (_) {}
+        };
         if (_chunks) {
           _chunks.forEach(c => {
             if (c.type === 'add') {
@@ -262,6 +317,20 @@ function PdfDiffViewer(props) {
                         <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title={t('diff_view.undo_all_tooltip') || 'Undo every rejection in this view'}>{t('diff_view.undo_all_button') || 'undo all'}</button>
                       </span>
                     )}
+                    {_ocrEnabled && _ocrHighCount > 0 && (
+                      <span className="inline-flex items-center gap-1 ml-1 bg-rose-200 border border-rose-500 px-1.5 py-0.5 rounded font-bold text-rose-900" title="Tokens that both Tesseract and Vision OCR saw in the source but that don't appear in the remediated final — high-confidence accidental drops.">
+                        <span aria-hidden="true">✓✓</span>
+                        <span className="sr-only">Both OCR engines agreed:</span>
+                        <span>{_ocrHighCount.toLocaleString()} likely dropped</span>
+                      </span>
+                    )}
+                    {_ocrEnabled && _ocrMedCount > 0 && (
+                      <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-400 px-1.5 py-0.5 rounded font-bold text-amber-800" title="Tokens that ONE OCR engine saw but the other did not — could be a hallucination by the engine that saw it, or a real miss by the other. Review.">
+                        <span aria-hidden="true">✓?</span>
+                        <span className="sr-only">One OCR engine only:</span>
+                        <span>{_ocrMedCount.toLocaleString()} needs review</span>
+                      </span>
+                    )}
                   </div>
                 )}
                 <div className="ml-auto text-[11px] text-slate-500">
@@ -306,6 +375,31 @@ function PdfDiffViewer(props) {
                     >{t('diff_view.rebuild_button') || 'Rebuild diff'}</button>
                   </div>
                 )}
+                {diffLibReady && _chunks && _ocrEnabled && _ocrHighList.length > 0 && (
+                  <details className="mb-3 bg-rose-50 border border-rose-300 rounded-lg p-3" open>
+                    <summary className="cursor-pointer font-bold text-rose-900 text-sm flex items-center gap-2">
+                      <span aria-hidden="true">✓✓</span>
+                      <span>{_ocrHighList.length} likely-dropped token{_ocrHighList.length === 1 ? '' : 's'} (both Tesseract & Vision OCR saw these)</span>
+                    </summary>
+                    <p className="text-[11px] text-rose-800 mt-2 mb-2 leading-relaxed">
+                      Click any token to jump to it in the diff. Both OCR engines saw these words in the source — they're high-confidence accidental drops, not intentional remediation removals.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {_ocrHighList.slice(0, 100).map(item => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => _scrollToChunk(item.id)}
+                          className="px-2 py-0.5 text-[12px] font-mono bg-white text-rose-900 border border-rose-400 rounded hover:bg-rose-100 hover:ring-1 hover:ring-rose-500"
+                          title="Click to scroll to this token in the diff"
+                        >{String(item.value).trim().slice(0, 40)}{String(item.value).length > 40 ? '…' : ''}</button>
+                      ))}
+                      {_ocrHighList.length > 100 && (
+                        <span className="text-[11px] text-rose-700 self-center ml-1">…and {_ocrHighList.length - 100} more in the diff below</span>
+                      )}
+                    </div>
+                  </details>
+                )}
                 {diffLibReady && _chunks && (
                   <pre
                     className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-800 bg-white rounded-lg p-4 border border-slate-400"
@@ -326,15 +420,30 @@ function PdfDiffViewer(props) {
                         );
                       }
                       if (c.type === 'del') {
+                        // OCR-disagreement tagging: HIGH = both engines saw it (bold red ring),
+                        // MEDIUM = only one engine saw it (amber background). Falls through to
+                        // the existing rose-100 styling for plain "removed during remediation".
+                        const _ocrTag = _ocrTagMap.get(c.id);
+                        const _delCls = !_ocrTag
+                          ? 'bg-rose-100 text-rose-900 hover:ring-2 hover:ring-rose-400'
+                          : _ocrTag.ocrConfidence === 'high'
+                            ? 'bg-rose-200 text-rose-900 ring-2 ring-rose-500 font-bold hover:ring-rose-700'
+                            : 'bg-amber-100 text-amber-900 ring-1 ring-amber-400 hover:ring-2 hover:ring-amber-500';
+                        const _delTitle = !_ocrTag
+                          ? (c.rejected ? 'Restored — click to keep removed' : 'Removed from source — click to restore')
+                          : _ocrTag.ocrConfidence === 'high'
+                            ? (c.rejected ? 'Restored. Both OCR engines saw this — likely dropped inadvertently. Click to keep removed.' : 'Both Tesseract AND Vision saw this in the source — likely dropped inadvertently. Click to restore.')
+                            : (c.rejected ? 'Restored. Only ' + _ocrTag.ocrSource + ' saw this — could be OCR hallucination. Click to keep removed.' : 'Only ' + _ocrTag.ocrSource + ' saw this — could be OCR hallucination, please verify. Click to restore.');
                         return (
                           <del
                             key={c.id}
                             data-chunk-id={c.id}
                             data-pair-id={c.pairId || ''}
+                            data-ocr-confidence={_ocrTag ? _ocrTag.ocrConfidence : ''}
                             onClick={() => toggleDiffChunk(c.id)}
-                            className={`bg-rose-100 text-rose-900 rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-rose-400 ${baseCls}`}
-                            title={c.rejected ? 'Restored — click to keep removed' : 'Removed from source — click to restore'}
-                          >{c.value}</del>
+                            className={`${_delCls} rounded px-0.5 cursor-pointer ${baseCls}`}
+                            title={_delTitle}
+                          >{c.value}{_ocrTag && _ocrTag.ocrConfidence === 'high' && (<sup aria-hidden="true" className="text-[8px] ml-0.5 text-rose-700">✓✓</sup>)}</del>
                         );
                       }
                       return (<span key={c.id} data-chunk-id={c.id}>{c.value}</span>);
