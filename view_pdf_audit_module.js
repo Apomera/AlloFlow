@@ -33,16 +33,23 @@ async function _concatAudioBlobs(blobs) {
     return new Blob(blobs, { type: blobs[0].type || "audio/mpeg" });
   }
   const pcms = [];
+  const rates = [];
   for (let i = 0; i < blobs.length; i++) {
     const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
     if (buf.length <= 44 || buf[0] !== 82 || buf[1] !== 73 || buf[2] !== 70 || buf[3] !== 70) continue;
     let dataStart = 44;
+    let segRate = 0;
     for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
+      if (segRate === 0 && buf[j] === 102 && buf[j + 1] === 109 && buf[j + 2] === 116 && buf[j + 3] === 32) {
+        const o = j + 12;
+        segRate = buf[o] | buf[o + 1] << 8 | buf[o + 2] << 16 | buf[o + 3] << 24;
+      }
       if (buf[j] === 100 && buf[j + 1] === 97 && buf[j + 2] === 116 && buf[j + 3] === 97) {
         dataStart = j + 8;
         break;
       }
     }
+    if (segRate > 0) rates.push(segRate);
     pcms.push(buf.subarray(dataStart));
   }
   if (pcms.length === 0) return null;
@@ -55,7 +62,15 @@ async function _concatAudioBlobs(blobs) {
     pcm.set(pcms[i], off);
     off += pcms[i].length;
   }
-  const sampleRate = 24e3, numCh = 1, bps = 16;
+  const sampleRate = rates[0] || 24e3, numCh = 1, bps = 16;
+  if (rates.length > 1 && rates.some(function(r) {
+    return r !== rates[0];
+  })) {
+    try {
+      (typeof warnLog === "function" ? warnLog : console.warn)("[Audio] mixed WAV sample rates " + JSON.stringify(rates) + " \u2014 using " + sampleRate + "Hz; off-rate segments may play at the wrong speed.");
+    } catch (_) {
+    }
+  }
   const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
   const outBuf = new ArrayBuffer(44 + pcm.length);
   const dv = new DataView(outBuf);

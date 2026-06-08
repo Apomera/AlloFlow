@@ -32,13 +32,20 @@ async function _concatAudioBlobs(blobs) {
   }
   // WAV: strip each file to its PCM data chunk, then write a single canonical header.
   const pcms = [];
+  const rates = [];
   for (let i = 0; i < blobs.length; i++) {
     const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
     if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) continue; // skip non-RIFF
     let dataStart = 44; // canonical header; scan for the 'data' chunk to be safe
+    let segRate = 0;
     for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
+      // 'fmt ' chunk — sampleRate is the little-endian uint32 12 bytes into it
+      if (segRate === 0 && buf[j] === 0x66 && buf[j + 1] === 0x6d && buf[j + 2] === 0x74 && buf[j + 3] === 0x20) {
+        const o = j + 12; segRate = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24);
+      }
       if (buf[j] === 0x64 && buf[j + 1] === 0x61 && buf[j + 2] === 0x74 && buf[j + 3] === 0x61) { dataStart = j + 8; break; } // 'data'
     }
+    if (segRate > 0) rates.push(segRate);
     pcms.push(buf.subarray(dataStart));
   }
   if (pcms.length === 0) return null;
@@ -46,7 +53,14 @@ async function _concatAudioBlobs(blobs) {
   const pcm = new Uint8Array(total);
   let off = 0;
   for (let i = 0; i < pcms.length; i++) { pcm.set(pcms[i], off); off += pcms[i].length; }
-  const sampleRate = 24000, numCh = 1, bps = 16; // matches tts_module pcmToWav
+  // Use the segments' ACTUAL sample rate (was hardcoded 24000 — wrong for the 22.05 kHz Piper
+  // fallback, which then played the whole file ~8.8% fast/pitched-up). Mixed rates across
+  // segments can't share one header correctly, so use the first and warn (rare: one TTS
+  // provider per run). Falls back to 24000 only if no fmt chunk was readable.
+  const sampleRate = rates[0] || 24000, numCh = 1, bps = 16;
+  if (rates.length > 1 && rates.some(function (r) { return r !== rates[0]; })) {
+    try { (typeof warnLog === 'function' ? warnLog : console.warn)('[Audio] mixed WAV sample rates ' + JSON.stringify(rates) + ' — using ' + sampleRate + 'Hz; off-rate segments may play at the wrong speed.'); } catch (_) {}
+  }
   const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
   const outBuf = new ArrayBuffer(44 + pcm.length);
   const dv = new DataView(outBuf);
