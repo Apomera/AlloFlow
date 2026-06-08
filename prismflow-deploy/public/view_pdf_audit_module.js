@@ -2466,6 +2466,7 @@ Return ONLY JSON:
             const pdfUa1Checks = _result && _result.pdfUa1Checks || null;
             const ocrTextLayer = _result && _result.ocrTextLayer || null;
             const roundTrip = _result && _result.roundTrip || null;
+            const postExportValidator = _result && _result.postExportValidator || null;
             if (pdfUa1Checks) {
               setLastTaggedValidation({
                 fileName: pendingPdfFile?.name || "document.pdf",
@@ -2473,6 +2474,7 @@ Return ONLY JSON:
                 pdfUa1Checks,
                 ocrTextLayer,
                 roundTrip,
+                postExportValidator,
                 generatedAt: (/* @__PURE__ */ new Date()).toISOString()
               });
             }
@@ -2591,7 +2593,83 @@ Return ONLY JSON:
         warnLog("[AccessibilityReport] generation failed:", err);
         addToast(t("toasts.report_generation_failed") || "Report generation failed: " + (err?.message || "unknown"), "error");
       }
-    }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors" }, "\u{1F3DB}\uFE0F Adobe-style A11y Report", lastTaggedValidation ? ` (${lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0}% conformance)` : ""), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors" }, "\u{1F3DB}\uFE0F Adobe-style A11y Report", lastTaggedValidation ? ` (${lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0}% conformance)` : ""), (() => {
+      const td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
+      const residual = td && typeof td.residualMissingCount === "number" ? td.residualMissingCount : null;
+      if (!td || !residual || residual <= 0) return null;
+      if (!pdfFixResult || !pdfFixResult.accessibleHtml) return null;
+      const sourceText = pdfFixResult.sourceText || typeof window !== "undefined" && (window.__lastGroundTruthPageMap || []).map((p) => p && p.text).filter(Boolean).join("\n\n") || "";
+      if (!sourceText) return null;
+      return /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        try {
+          setPdfFixStep && setPdfFixStep("Restoring (1/3): word-level splice\u2026");
+          const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/(\p{L})[-­](\p{L})/gu, "$1$2").replace(/­/g, "").replace(/\s+/g, "");
+          const shipNorm = /* @__PURE__ */ new Set();
+          const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, " ").trim();
+          const shipTokens = _normalize(pdfFixResult.finalText || "").split(" ").filter((t2) => t2.length >= 3);
+          for (const t2 of shipTokens) shipNorm.add(_normTokenForDiff(t2));
+          const residualTokens = (td.missingTokens || []).filter((w) => !shipNorm.has(_normTokenForDiff(w)));
+          if (residualTokens.length === 0) {
+            addToast("No residual tokens to restore (all cosmetic). Nothing to do.", "info");
+            setPdfFixStep && setPdfFixStep("");
+            return;
+          }
+          const missingEntries = residualTokens.map((w) => ({ word: w }));
+          let html = pdfFixResult.accessibleHtml;
+          let allRestored = [];
+          let allUnplaceable = missingEntries.slice();
+          try {
+            const r1 = _docPipeline && _docPipeline.applyWordRestoration ? _docPipeline.applyWordRestoration(html, missingEntries, sourceText) : null;
+            if (r1 && r1.html) {
+              html = r1.html;
+              allRestored = r1.restored || [];
+              allUnplaceable = r1.unplaceable || [];
+            }
+          } catch (e1) {
+            warnLog("[TierB] applyWordRestoration failed: " + (e1 && e1.message));
+          }
+          if (allUnplaceable.length > 0 && _docPipeline && _docPipeline.restoreSentencesDeterministic) {
+            setPdfFixStep && setPdfFixStep("Restoring (2/3): sentence-anchor + orphan appendix\u2026");
+            try {
+              const r3 = _docPipeline.restoreSentencesDeterministic(html, allUnplaceable, sourceText);
+              if (r3 && r3.html) {
+                html = r3.html;
+                allRestored = allRestored.concat(r3.restoredViaSentence || []);
+                allUnplaceable = r3.stillMissing || [];
+              }
+            } catch (e3) {
+              warnLog("[TierB] restoreSentencesDeterministic failed: " + (e3 && e3.message));
+            }
+          }
+          setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: html, htmlChars: html.length } : prev);
+          setPdfFixStep && setPdfFixStep("Re-tagging PDF with restored content\u2026");
+          try {
+            const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
+            const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(",") ? pendingPdfBase64.split(",")[1] : pendingPdfBase64), (c) => c.charCodeAt(0)) : null;
+            if (_bytes && createTaggedPdf) {
+              const _re = await createTaggedPdf(_bytes, _freshFixResult, { title: pdfFixResult.title || (pendingPdfFile?.name || "document.pdf"), lang: "en", subject: "Restored via Tier B re-run" });
+              const afterTd = _re && _re.roundTrip && _re.roundTrip.textDiff;
+              const afterResidual = afterTd && typeof afterTd.residualMissingCount === "number" ? afterTd.residualMissingCount : null;
+              setLastTaggedValidation((prev) => prev ? { ...prev, roundTrip: _re.roundTrip || prev.roundTrip, postExportValidator: _re.postExportValidator || prev.postExportValidator, pdfUa1Checks: _re.pdfUa1Checks || prev.pdfUa1Checks, generatedAt: (/* @__PURE__ */ new Date()).toISOString() } : prev);
+              const restoredCount = allRestored.length;
+              const unresolvedCount = allUnplaceable.length;
+              const _msg = `Restored ${restoredCount} inline${unresolvedCount > 0 ? `; ${unresolvedCount} preserved in Content Recovery` : ""}. Residual missing: ${residual} \u2192 ${afterResidual != null ? afterResidual : "?"}.`;
+              addToast(_msg, afterResidual === 0 ? "success" : "info");
+            } else {
+              addToast(`Restored ${allRestored.length} inline; ${allUnplaceable.length} preserved. Re-export to refresh the diff.`, "success");
+            }
+          } catch (eRe) {
+            warnLog("[TierB] re-tag failed: " + (eRe && eRe.message));
+            addToast(`Restored ${allRestored.length} inline; re-tag failed \u2014 try the Tagged PDF button to regenerate.`, "info");
+          }
+          setPdfFixStep && setPdfFixStep("");
+        } catch (e) {
+          warnLog("[TierB] restoration handler threw: " + (e && e.message));
+          addToast("Restoration failed: " + (e && e.message ? e.message : "unknown error"), "error");
+          setPdfFixStep && setPdfFixStep("");
+        }
+      }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-amber-700 hover:bg-amber-50 transition-colors", title: `Splices ${residual} residual missing source word${residual === 1 ? "" : "s"} back into the document via fuzzy context matching, then re-tags the PDF. Words that cannot be placed inline are preserved in a Content Recovery section. NEVER silent: shows residual count BEFORE and AFTER so you can see if it helped.` }, "\u21BB", " Re-run with restoration (", residual, " residual)");
+    })(), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _rptAi = pdfFixResult.afterScore;
       const _rptAxe = pdfFixResult.axeAudit?.score ?? null;
       const _rptBlended = _rptAi !== null && _rptAxe !== null ? Math.round((_rptAxe + _rptAi) / 2) : _rptAxe ?? _rptAi;

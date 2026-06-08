@@ -532,12 +532,21 @@ var createDocPipeline = function(deps) {
     if (opts && opts.mode === 'faithful') {
       try {
         const _fab = detectFabrication(fixed, original, opts);
-        if (_fab && _fab.suspected) return { accepted: true, fabrication: _fab };
+        if (_fab && _fab.suspected) return { accepted: true, fabrication: _fab, sizeRatio, textRatio: (origText > 0 ? fixedText / origText : 1), textLost: Math.max(0, origText - fixedText) };
       } catch (_) {}
     }
-    return { accepted: true };
+    // 2026-06-07: always return ratios in the success branch so the caller can
+    // surface accepted-but-shrunk passes (textRatio in [0.97, 1.0) was previously
+    // silent — the textFloor 0.97 was a hard reject, anything above was invisible).
+    return { accepted: true, sizeRatio, textRatio: (origText > 0 ? fixedText / origText : 1), textLost: Math.max(0, origText - fixedText) };
   };
-  const acceptFixedHtml = (fixed, original, opts) => acceptFixedHtmlDetailed(fixed, original, opts).accepted;
+  const acceptFixedHtml = (fixed, original, opts) => {
+    const r = acceptFixedHtmlDetailed(fixed, original, opts);
+    if (r && r.accepted && typeof r.textRatio === 'number' && r.textRatio < 1.0 && r.textLost > 0) {
+      try { warnLog('[acceptFixedHtml] Accepted with text-shrink: textRatio=' + r.textRatio.toFixed(4) + ' textLost=' + r.textLost + ' (within textFloor — surfaced for audit)'); } catch (_) {}
+    }
+    return r.accepted;
+  };
 
   // sampleHtml: return a stratified sample (start + middle + end) instead of just the first N chars.
   // Gives the AI representative visibility into the full document for diagnosis prompts.
@@ -3425,7 +3434,11 @@ var createDocPipeline = function(deps) {
       } else {
         const role = _stage4_inferRole(item, fontScaleMedian, outlineItems);
         wraps.push({ bdc: '/' + role + ' <</MCID ' + contentMcid + '>> BDC\n', emc: '\nEMC\n' });
-        blockInfo.push({ isArtifact: false, role, text: (item.str || '').substring(0, 400), mcid: contentMcid });
+        // 2026-06-07: removed substring(0, 400) cap. PDF spec §14.9.4 has no length
+        // limit on /ActualText. Long paragraphs / TDs / captions previously had their
+        // tail silently dropped from the semantic tree (visible to pdf.js extractors
+        // but truncated in the tag tree that SR walkers prefer).
+        blockInfo.push({ isArtifact: false, role, text: (item.str || ''), mcid: contentMcid });
         contentMcid++;
       }
     }
@@ -7852,41 +7865,64 @@ Return the fixed section content only — raw HTML, no JSON wrapping.`;
                 }
 
                 // ── Step B: AI content verification (Gemini call #2 — checks verbatim preservation) ──
+                // 2026-06-07: hardened. Previously a malformed-JSON verifier response set
+                // aiVerified=true (silent trust), and the rejection threshold required
+                // confidence>60. Both let silent content loss through. Now: parse failure
+                // triggers ONE retry with a stricter prompt; second failure logs and
+                // refuses to over-claim verification. Confidence threshold lowered to 40
+                // so lower-confidence content-loss reports still block.
                 setPdfFixStep(`Verifying section ${chi + 1}/${bodyChunks.length} content integrity...`);
                 let aiVerified = true;
                 let aiVerifyDetail = '';
-                try {
-                  const verifyResult = await callGemini(`You are a content verification expert. Compare the ORIGINAL and FIXED versions of this HTML section.
+                const _origPlain = extractPlainText(originalChunk).substring(0, 4000);
+                const _fixedPlain = extractPlainText(cleaned).substring(0, 4000);
+                const _buildVerifyPrompt = (strict) => `${strict ? 'CRITICAL: Return ONLY a JSON object on a single line with exactly these keys: {"preserved":boolean,"missingContent":string,"addedContent":string,"confidence":number}. No prose, no code fences, no commentary.\n\n' : ''}You are a content verification expert. Compare the ORIGINAL and FIXED versions of this HTML section.
 
 TASK: Check if the FIXED version preserves ALL text content from the ORIGINAL. The FIXED version may have different HTML tags/attributes (for accessibility), but the actual readable text must be identical.
 
 ORIGINAL SECTION:
 """
-${extractPlainText(originalChunk).substring(0, 4000)}
+${_origPlain}
 """
 
 FIXED SECTION:
 """
-${extractPlainText(cleaned).substring(0, 4000)}
+${_fixedPlain}
 """
 
 Respond with ONLY a JSON object (no markdown, no explanation):
-{"preserved": true/false, "missingContent": "description of any missing text or empty string", "addedContent": "description of any new non-accessibility text or empty string", "confidence": 0-100}`, true);
-
-                  try {
-                    const vJson = JSON.parse(verifyResult.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
-                    if (vJson.preserved === false && vJson.confidence > 60) {
+{"preserved": true/false, "missingContent": "description of any missing text or empty string", "addedContent": "description of any new non-accessibility text or empty string", "confidence": 0-100}`;
+                const _tryParseVerify = (raw) => {
+                  try { return JSON.parse(String(raw || '').replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); }
+                  catch (_) { return null; }
+                };
+                try {
+                  const verifyResult = await callGemini(_buildVerifyPrompt(false), true);
+                  let vJson = _tryParseVerify(verifyResult);
+                  if (!vJson) {
+                    // Retry once with stricter prompt before falling back
+                    warnLog(`[AutoFix] Chunk ${chi + 1} verifier returned malformed JSON — retrying with stricter prompt`);
+                    try {
+                      const retry = await callGemini(_buildVerifyPrompt(true), true);
+                      vJson = _tryParseVerify(retry);
+                    } catch (_re) { /* keep vJson null */ }
+                  }
+                  if (vJson) {
+                    if (vJson.preserved === false && (typeof vJson.confidence === 'number' ? vJson.confidence : 0) > 40) {
                       aiVerified = false;
                       aiVerifyDetail = vJson.missingContent || 'AI detected content loss';
                       warnLog(`[AutoFix] Chunk ${chi + 1} AI verification FAILED: ${aiVerifyDetail}`);
                     }
-                  } catch(jsonErr) {
-                    // If we can't parse the verification response, trust the local check
-                    aiVerified = true;
+                  } else {
+                    // Second parse failure — do NOT claim verification. Surface and fall
+                    // back to the local integrity check (which has already passed at this
+                    // point). The chunk proceeds, but the warn is now visible.
+                    warnLog(`[AutoFix] Chunk ${chi + 1} verifier returned malformed JSON twice — falling back to local check only`);
+                    aiVerified = true; // intentional: local check passed; we won't block on verifier silence
                   }
                 } catch(verifyErr) {
-                  warnLog(`[AutoFix] Chunk ${chi + 1} verification call failed, trusting local check`);
-                  aiVerified = true; // Don't block on verification failure
+                  warnLog(`[AutoFix] Chunk ${chi + 1} verification call threw, falling back to local check: ${verifyErr && verifyErr.message}`);
+                  aiVerified = true;
                 }
 
                 if (!aiVerified) continue; // Retry the fix
@@ -8298,16 +8334,40 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           continue;
         }
 
-        // AI content verification
+        // AI content verification (same hardening as autoFixAxeViolations, 2026-06-07):
+        // parse-failure no longer silently sets aiVerified=true; we retry once with a
+        // stricter prompt, then fall back to the (already-passed) local integrity check.
+        // Rejection threshold lowered to confidence>40.
         setStep(`Verifying chunk ${chunkIndex + 1}/${totalChunks} content...`);
         let aiVerified = true;
+        const _origPlainR = extractPlainText(originalChunk).substring(0, 4000);
+        const _fixedPlainR = extractPlainText(cleaned).substring(0, 4000);
+        const _verifyPromptR = (strict) => `${strict ? 'CRITICAL: Return ONLY a JSON object on a single line: {"preserved":boolean,"missingContent":string,"confidence":number}. No prose, no code fences.\n\n' : ''}Compare ORIGINAL and FIXED HTML. Check all text is preserved (tags may differ).\n\nORIGINAL:\n"""\n${_origPlainR}\n"""\n\nFIXED:\n"""\n${_fixedPlainR}\n"""\n\nRespond ONLY JSON: {"preserved": true/false, "missingContent": "", "confidence": 0-100}`;
+        const _tryParseV = (raw) => {
+          try { return JSON.parse(String(raw || '').replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); }
+          catch (_) { return null; }
+        };
         try {
-          const vr = await callGemini(`Compare ORIGINAL and FIXED HTML. Check all text is preserved (tags may differ).\n\nORIGINAL:\n"""\n${extractPlainText(originalChunk).substring(0, 4000)}\n"""\n\nFIXED:\n"""\n${extractPlainText(cleaned).substring(0, 4000)}\n"""\n\nRespond ONLY JSON: {"preserved": true/false, "missingContent": "", "confidence": 0-100}`, true);
-          try {
-            const vj = JSON.parse(vr.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
-            if (vj.preserved === false && vj.confidence > 60) { aiVerified = false; continue; }
-          } catch(e) { /* trust local check */ }
-        } catch(e) { /* trust local check */ }
+          const vr = await callGemini(_verifyPromptR(false), true);
+          let vj = _tryParseV(vr);
+          if (!vj) {
+            warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} verifier returned malformed JSON — retrying with stricter prompt`);
+            try {
+              const retry = await callGemini(_verifyPromptR(true), true);
+              vj = _tryParseV(retry);
+            } catch (_re) { /* keep null */ }
+          }
+          if (vj) {
+            if (vj.preserved === false && (typeof vj.confidence === 'number' ? vj.confidence : 0) > 40) {
+              aiVerified = false;
+              continue;
+            }
+          } else {
+            warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} verifier returned malformed JSON twice — falling back to local check only`);
+          }
+        } catch (e) {
+          warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} verification call threw — falling back to local check`);
+        }
 
         // AI accessibility score
         setStep(`Scoring chunk ${chunkIndex + 1}/${totalChunks}...`);
@@ -8501,6 +8561,67 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthCharCount = 0;
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
+      // Reset Vision-strip audit trail. Every conservative JSON-strip decision is
+      // recorded here so the fidelity panel can show what was kept vs stripped.
+      window.__lastVisionStripTrail = [];
+      // ── b0d24ae3 root-cause guard: _safeStripJsonWrapper ──
+      // Replaces the previous greedy regex `^\s*\{[\s\S]*?"(?:text|content)":\s*"`
+      // which silently erased real document content whenever it happened to contain
+      // a `{...":"` substring (a code block, an embedded JSON example, or model-
+      // added metadata header). This helper only strips a leading JSON object IF:
+      //   (1) the chunk begins with `{` (after trim)
+      //   (2) we can find the matching `}` via brace-depth scan
+      //   (3) JSON.parse on the slice succeeds
+      //   (4) the parsed object has an own-property 'text' or 'content' that is a string
+      //   (5) the stripped header span is less than 50% of the chunk length
+      // Every decision (strip OR skip) is pushed onto __lastVisionStripTrail with
+      // a first-80-char preview so the user can spot tuning issues during the pilot.
+      const _safeStripJsonWrapper = (chunkStr, chunkIdx) => {
+        if (typeof chunkStr !== 'string') return chunkStr;
+        const trimmed = chunkStr.trimStart();
+        if (trimmed[0] !== '{') return chunkStr;
+        // Brace-depth scan respecting string literals (so `"foo":"bar{ baz}"` doesn't confuse us)
+        let depth = 0, inStr = false, esc = false, end = -1;
+        for (let i = 0; i < trimmed.length; i++) {
+          const c = trimmed[i];
+          if (esc) { esc = false; continue; }
+          if (c === '\\') { esc = true; continue; }
+          if (c === '"' && !esc) { inStr = !inStr; continue; }
+          if (inStr) continue;
+          if (c === '{') depth++;
+          else if (c === '}') { depth--; if (depth === 0) { end = i; break; } }
+        }
+        if (end === -1) {
+          try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'unbalanced-braces', preview: trimmed.slice(0, 80) }); } catch (_) {}
+          return chunkStr;
+        }
+        const headerSpan = trimmed.slice(0, end + 1);
+        let parsed;
+        try { parsed = JSON.parse(headerSpan); }
+        catch (_pe) {
+          try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'parse-failed', preview: headerSpan.slice(0, 80) }); } catch (_) {}
+          return chunkStr;
+        }
+        if (!parsed || typeof parsed !== 'object') {
+          try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'not-object', preview: headerSpan.slice(0, 80) }); } catch (_) {}
+          return chunkStr;
+        }
+        const hasText = Object.prototype.hasOwnProperty.call(parsed, 'text') && typeof parsed.text === 'string';
+        const hasContent = Object.prototype.hasOwnProperty.call(parsed, 'content') && typeof parsed.content === 'string';
+        if (!hasText && !hasContent) {
+          try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'no-text-or-content-key', preview: headerSpan.slice(0, 80) }); } catch (_) {}
+          return chunkStr;
+        }
+        if (headerSpan.length > chunkStr.length * 0.5) {
+          try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'header-span-too-large', length: headerSpan.length, totalLength: chunkStr.length, preview: headerSpan.slice(0, 80) }); } catch (_) {}
+          return chunkStr;
+        }
+        // Conservative success: extract just the text/content value as the chunk body.
+        const body = hasText ? parsed.text : parsed.content;
+        const keyMatched = hasText ? 'text' : 'content';
+        try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: true, reason: 'json-parsed', keyMatched, headerLength: headerSpan.length, preview: headerSpan.slice(0, 80) }); } catch (_) {}
+        return body;
+      };
       // Determine chunk strategy based on page count
       // If audit didn't return pageCount, estimate from base64 size (rough: ~3KB base64 per page)
       let effectivePageCount = pageCount;
@@ -8650,9 +8771,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           }
           const chunks = chunkResults.map((chunk, i) => {
             if (!chunk || !chunk.trim()) return '';
-            return chunk.trim()
-              .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
-              .replace(/^\s*\{[\s\S]*?"(?:text|content)":\s*"/g, '').replace(/"\s*\}\s*$/g, '')
+            const fenced = chunk.trim()
+              .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '');
+            // _safeStripJsonWrapper only mutates when the chunk is a real JSON object
+            // with a text/content key — otherwise leaves the chunk intact (was the
+            // categoHistoryHistory / b0d24ae3 silent-erase pattern before).
+            const unwrapped = _safeStripJsonWrapper(fenced, i);
+            return unwrapped
               .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
           });
           // For reconciliation we want a pseudo per-page split. Vision's chunks cover
@@ -8741,9 +8866,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         updateProgress(1, `Processing ${chunkResults.filter(Boolean).length}/${numChunks} chunks...`);
         const chunks = chunkResults.map((chunk, i) => {
           if (!chunk || !chunk.trim()) return `[Chunk ${i + 1} could not be extracted]`;
-          return chunk.trim()
-            .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
-            .replace(/^\s*\{[\s\S]*?"(?:text|content)":\s*"/g, '').replace(/"\s*\}\s*$/g, '')
+          const fenced = chunk.trim()
+            .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '');
+          const unwrapped = _safeStripJsonWrapper(fenced, i);
+          return unwrapped
             .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
         });
         extractedText = chunks.join('\n\n---\n\n');
@@ -8759,11 +8885,53 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       // ── Clean extracted text: strip JSON wrappers, fix escaped newlines ──
-      // Sometimes the AI returns JSON-wrapped content or literal \n sequences
+      // The previous greedy regex strippers were the b0d24ae3 silent-erase root
+      // cause. Now we only strip if the entire extracted text actually parses as
+      // a JSON array/object whose elements have the documented keys. Otherwise we
+      // skip the strip and just fix escape sequences. Strip decisions are logged
+      // to __lastVisionStripTrail for pilot audit.
+      try {
+        const _trimmed = extractedText.trimStart();
+        if (_trimmed.length > 1 && (_trimmed[0] === '[' || _trimmed[0] === '{')) {
+          let _parsed = null;
+          try { _parsed = JSON.parse(_trimmed); } catch (_) {}
+          if (Array.isArray(_parsed)) {
+            // Array of {html_content|text|content|section: "..."} objects
+            const _parts = [];
+            for (const item of _parsed) {
+              if (item && typeof item === 'object') {
+                const v = (typeof item.html_content === 'string' && item.html_content)
+                  || (typeof item.text === 'string' && item.text)
+                  || (typeof item.content === 'string' && item.content)
+                  || (typeof item.section === 'string' && item.section)
+                  || '';
+                if (v) _parts.push(v);
+              }
+            }
+            if (_parts.length === _parsed.length) {
+              try { window.__lastVisionStripTrail.push({ chunkIdx: 'post-join', stripped: true, reason: 'json-array-parsed', count: _parts.length }); } catch (_) {}
+              extractedText = _parts.join('\n\n');
+            } else {
+              try { window.__lastVisionStripTrail.push({ chunkIdx: 'post-join', stripped: false, reason: 'json-array-partial-keys', count: _parts.length, total: _parsed.length }); } catch (_) {}
+            }
+          } else if (_parsed && typeof _parsed === 'object') {
+            const v = (typeof _parsed.html_content === 'string' && _parsed.html_content)
+              || (typeof _parsed.text === 'string' && _parsed.text)
+              || (typeof _parsed.content === 'string' && _parsed.content)
+              || (typeof _parsed.section === 'string' && _parsed.section)
+              || '';
+            if (v) {
+              try { window.__lastVisionStripTrail.push({ chunkIdx: 'post-join', stripped: true, reason: 'json-object-parsed' }); } catch (_) {}
+              extractedText = v;
+            }
+          } else {
+            try { window.__lastVisionStripTrail.push({ chunkIdx: 'post-join', stripped: false, reason: 'starts-with-bracket-but-not-json', preview: _trimmed.slice(0, 80) }); } catch (_) {}
+          }
+        }
+      } catch (_postStripErr) {
+        try { warnLog('[Vision] post-join JSON strip non-fatal: ' + (_postStripErr && _postStripErr.message)); } catch (_) {}
+      }
       extractedText = extractedText
-        .replace(/^\s*\[\s*\{[^}]*"(?:html_content|text|content|section)":\s*"/gm, '') // strip JSON wrapper starts
-        .replace(/"\s*\}\s*\]\s*$/gm, '') // strip JSON wrapper ends
-        .replace(/"\s*,\s*\{[^}]*"(?:html_content|text|content|section)":\s*"/gm, '\n\n') // strip inter-chunk JSON
         .replace(/\\n\\n/g, '\n\n') // fix double-escaped newlines
         .replace(/\\n/g, '\n') // fix single-escaped newlines
         .replace(/\\"/g, '"') // fix escaped quotes
@@ -11846,13 +12014,18 @@ tr { page-break-inside: avoid; }
     const labelColor = sev === 'fail' ? '#991b1b' : '#92400e';
     const tokenList = (td.missingTokens || []).slice(0, 60).map(t => `<code style="background:#fff;padding:1px 6px;border-radius:3px;font-size:11px;color:#475569;border:1px solid #e2e8f0">${_esc(t)}</code>`).join(' ');
     const moreMsg = td.missingTokenCount > 60 ? `<div style="font-size:11px;color:#64748b;margin-top:8px">… and ${td.missingTokenCount - 60} more.</div>` : '';
+    // 2026-06-07: Surface BOTH the normalization-equivalent (likely-cosmetic) count
+    // AND the residual count without making any classification decision. The live
+    // app shows a [Re-run with restoration] button gated on residual > 0.
+    const normEq = typeof td.normalizationEquivalentCount === 'number' ? td.normalizationEquivalentCount : 0;
+    const residual = typeof td.residualMissingCount === 'number' ? td.residualMissingCount : td.missingTokenCount;
     return `
   <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Text Content Diff (Original PDF vs Exported PDF)</h2>
   <div style="margin:12px 0;padding:14px 18px;background:${bgColor};border:1px solid ${borderColor};border-radius:8px">
     <div style="font-weight:800;color:${labelColor};font-size:14px;margin-bottom:6px">Post-export text verification: ${td.coveragePct}% token coverage</div>
     <p style="font-size:13px;color:${labelColor};margin:0 0 8px;line-height:1.5">
       ${td.missingTokenCount} of ${td.originalTokenCount} tokens (≥3 chars) from the original PDF appear missing from the shipped PDF.
-      Common cause: de-hyphenation or whitespace normalization (likely harmless). Less common: a real content-loss bug at save (the round-trip detector exists to catch these — review the list below to decide).
+      Of those, <strong>${normEq}</strong> differ only in hyphenation/whitespace/case (likely cosmetic) and <strong>${residual}</strong> are residual (review).
       ${sev === 'fail' ? '<strong>Coverage below 95% is rare for legitimate cleanup — investigate before distributing.</strong>' : ''}
     </p>
     <details style="margin-top:8px">
@@ -11861,8 +12034,8 @@ tr { page-break-inside: avoid; }
       ${moreMsg}
     </details>
     <p style="font-size:11px;color:#64748b;margin:10px 0 0">
-      To re-run remediation with word-level restoration enabled (HTML-level, no AI cost): regenerate the tagged PDF from the same audit session.
-      <em>Auto-restore-and-re-export button is intentionally NOT shipped automatically — silent restoration would mask the class of bug this diff is designed to expose.</em>
+      In the live app, the PDF panel offers a <strong>[Re-run with restoration]</strong> button when residual &gt; 0 — it splices recoverable source words back into the document via fuzzy context matching and re-tags. Unplaceable tokens are preserved in a Content Recovery section so the source survives even when in-line restoration fails.
+      <em>Restoration is opt-in (button click); it is never silent because silent restore would re-hide real content-loss bugs.</em>
     </p>
   </div>`;
   })()}
@@ -12277,7 +12450,11 @@ tr { page-break-inside: avoid; }
         if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(tag) && !(el.textContent || '').trim()) continue;
         items.push({
           role: pdfRole,
-          text: (el.textContent || '').trim().substring(0, 400),
+          // 2026-06-07: removed substring(0, 400) cap on outline-walker ActualText.
+          // PDF spec has no /ActualText length limit. Long paragraphs / TDs / captions /
+          // BlockQuotes previously had their tail silently dropped from the semantic
+          // tree — visible to pdf.js extractors but truncated to SR walkers.
+          text: (el.textContent || '').trim(),
           alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
           isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
           level: HEADING_LEVEL[tag] || 0,
@@ -12513,7 +12690,7 @@ tr { page-break-inside: avoid; }
         for (const h of srcSt.headings) {
           if (!h || !h.text) continue;
           const lvl = Math.min(Math.max(h.level || 1, 1), 6);
-          stage4OutlineItems.push({ role: 'H' + lvl, text: String(h.text).trim().substring(0, 400), _source: 'pdfTagTree' });
+          stage4OutlineItems.push({ role: 'H' + lvl, text: String(h.text).trim(), _source: 'pdfTagTree' });
         }
       }
     } catch(_) {}
@@ -12526,7 +12703,7 @@ tr { page-break-inside: avoid; }
         const _role = TAG_TO_PDF_ROLE[_tag];
         if (!_role) continue;
         if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(_tag) && !(_el.textContent || '').trim()) continue;
-        stage4OutlineItems.push({ role: _role, text: (_el.textContent || '').trim().substring(0, 400) });
+        stage4OutlineItems.push({ role: _role, text: (_el.textContent || '').trim() });
       }
     } catch(_) {}
     // ── Stage 2: content-stream MCID wrapping + per-page StructElems ──
@@ -12765,6 +12942,14 @@ tr { page-break-inside: avoid; }
 
     const pageElemRefs = [];
     const parentTreeNums = [];
+    // 2026-06-07: track Stage-4 per-block StructElems so the round-trip ratio at
+    // L13693 can detect their loss too. Previously _builtCount only summed
+    // structElemRefs + pageElemRefs + fieldElemRefs — block-elems (built at L3471)
+    // were invisible to the gate, so a writer that pruned all per-block elems
+    // would still report "structure survived save = pass" because _rtStructCount
+    // happened to >= _builtCount on the surviving Sect parents. Fingerprint of
+    // the 93% retention pattern documented in MEMORY.md for the b0d24ae3 class.
+    let _stage4BlockCount = 0;
     for (let pi = 0; pi < pages.length; pi++) {
       const page = pages[pi];
       // PDF/UA-1 §7.18 — /Tabs=/S forces tab order to follow the structure
@@ -12856,6 +13041,7 @@ tr { page-break-inside: avoid; }
             pageElemRefs.push(s4.pageSectRef);
             parentTreeNums.push(PDFNumber.of(pi));
             parentTreeNums.push(s4.parentArrayRef);
+            if (Array.isArray(s4.blockElemRefs)) _stage4BlockCount += s4.blockElemRefs.length;
             stage4Success = true;
           }
         } catch (s4err) {
@@ -13518,9 +13704,14 @@ tr { page-break-inside: avoid; }
       } catch (_) {}
       // Content-loss guard: compare the StructElem count in the SAVED file to what we
       // built in memory. A large shortfall means a subtree was dropped at serialization.
+      // 2026-06-07: include Stage-4 per-block StructElems in the built count so
+      // the round-trip ratio can detect block-elem prune (the 93%-retention bug
+      // fingerprint). Previously block-elems built at L3471 were tracked only
+      // via Sect.K + parentArrayRef, invisible to this gate.
       const _builtCount = ((typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0)
         + ((typeof pageElemRefs !== 'undefined' && Array.isArray(pageElemRefs)) ? pageElemRefs.length : 0)
-        + ((typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0);
+        + ((typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0)
+        + ((typeof _stage4BlockCount === 'number') ? _stage4BlockCount : 0);
       // Tightened 2026-06-07: previously warned at <90% retention (b0d24ae3
       // content-loss bug was 93% retained, didn't trip). Now warns on ANY
       // delta. A 1-of-15-leaves drop is exactly the kind of silent loss the
@@ -13613,6 +13804,30 @@ tr { page-break-inside: avoid; }
             else _missing.push(t);
           }
           const _coverage = _origTokens.size ? _shared / _origTokens.size : 1;
+          // 2026-06-07: observability-only split of `_missing` into the subset that
+          // becomes equivalent to a shipped token after applying the existing
+          // de-hyphenation + whitespace-collapse + case-fold normalizer (the same
+          // _normIntegrity logic from L11117). We make NO classification decision —
+          // we just surface both numbers so the user can see how much of the diff
+          // is plausibly cosmetic. Tier B's [Re-run with restoration] button gates
+          // on `residualMissingCount`, not the raw `missingTokenCount`.
+          //
+          // Adversarial verification explicitly REFUTED a previous design that would
+          // silently re-classify hyphen-variants like resign / re-sign as "cosmetic"
+          // (they're distinct English words). This change makes ZERO mutation and
+          // ZERO classification — pure count surfacing.
+          const _normTokenForDiff = (t) => String(t || '')
+            .toLowerCase()
+            .replace(/(\p{L})[-­](\p{L})/gu, '$1$2')
+            .replace(/­/g, '')
+            .replace(/\s+/g, '');
+          const _shipNormSet = new Set();
+          for (const t of _shipTokens) _shipNormSet.add(_normTokenForDiff(t));
+          let _normEquivCount = 0;
+          for (const t of _missing) {
+            if (_shipNormSet.has(_normTokenForDiff(t))) _normEquivCount++;
+          }
+          const _residualCount = Math.max(0, _missing.length - _normEquivCount);
           _roundTrip.textDiff = {
             coveragePct: Math.round(_coverage * 1000) / 10,
             missingTokens: _missing.slice(0, 200),
@@ -13620,11 +13835,17 @@ tr { page-break-inside: avoid; }
             originalTokenCount: _origTokens.size,
             shippedTokenCount: _shipTokens.size,
             sampled: _missing.length > 200,
+            // New surface — observability only, no mutation, no classification
+            normalizationEquivalentCount: _normEquivCount,
+            residualMissingCount: _residualCount,
           };
           if (_coverage < 0.99) {
-            const _msg = 'Text-level verification: ' + _missing.length + ' tokens from the original PDF appear missing from the shipped PDF (' + Math.round(_coverage * 100) + '% coverage). Likely cause: legitimate de-hyphenation / whitespace normalization — review the list to confirm.';
+            const _msg = 'Text-level verification: ' + _missing.length + ' tokens missing total (' + Math.round(_coverage * 100) + '% coverage). Of those, ' + _normEquivCount + ' differ only in hyphenation/whitespace/case (likely cosmetic) and ' + _residualCount + ' are residual (review). The [Re-run with restoration] action gates on residual count.';
             (_roundTrip.warnings = _roundTrip.warnings || []).push(_msg);
-            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Text content survived save (token coverage)', status: _coverage < 0.95 ? 'fail' : 'warn', detail: Math.round(_coverage * 100) + '% (' + _shared + '/' + _origTokens.size + ' tokens)' });
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Text content survived save (token coverage)', status: _coverage < 0.95 ? 'fail' : 'warn', detail: Math.round(_coverage * 100) + '% (' + _shared + '/' + _origTokens.size + ' tokens; ' + _residualCount + ' residual)' });
+            if (_normEquivCount > 0) {
+              (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Normalization-equivalent missing tokens (cosmetic)', status: 'info', detail: _normEquivCount + ' tokens differ only in hyphenation/whitespace/case' });
+            }
           } else {
             (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Text content survived save (token coverage)', status: 'pass', detail: Math.round(_coverage * 100) + '% (' + _shared + '/' + _origTokens.size + ' tokens)' });
           }
