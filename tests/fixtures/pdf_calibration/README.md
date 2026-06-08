@@ -31,7 +31,26 @@ results panel shows: the **AI Rubric** score, the **axe-core** score, and the **
 
 ## How to populate
 
-Edit `manifest.json` — add one entry per PDF (drop the PDF itself in this folder):
+**Easiest — use the ingest helper (no hand-editing JSON):**
+
+```bash
+# You read the expert score off PAC 2024 / veraPDF / your own WCAG judgement, and the AI + axe
+# numbers off AlloFlow's results panel. The helper validates + writes the JSON for you:
+node dev-tools/pdf_calibration_ingest.cjs \
+  --id scanned-iep-packet --file scanned-iep-packet.pdf \
+  --expert 62 --source PAC2024 --ai 88 --axe 95 \
+  --notes "AlloFlow over-scored; PAC failed the tag tree"
+
+# Or auto-derive the expert score from a veraPDF JSON report (best-effort):
+verapdf --format json mydoc.pdf > report.json
+node dev-tools/pdf_calibration_ingest.cjs --id mydoc --verapdf report.json --ai 88 --axe 95
+```
+
+It prints how many PDFs are scored and tells you when the harness activates (≥3). `--dry-run`
+previews without writing; `--help` shows all flags. It never invents a score — you always supply
+the real expert/tool number.
+
+**Or by hand —** edit `manifest.json` directly, one entry per PDF (drop the PDF itself in this folder):
 
 ```json
 {
