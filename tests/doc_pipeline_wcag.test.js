@@ -10,6 +10,8 @@
 // structural decoupling. Phase 2 will re-point these at the real exported functions.
 
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // ── Mirror: WCAG relative-luminance contrast (doc_pipeline_source.jsx:6029-6042) ──
 function hexToRgb(hex) {
@@ -541,4 +543,41 @@ describe('fixFigureSemantics (slice-3, WCAG 1.3.1)', () => {
     expect(r.fixCount).toBe(0);
     expect(r.html).toContain('<figcaption id="fc1" class="cap">Caption</figcaption>');
   });
+});
+
+// ── Anti-drift sentinel (2026-06-08, addressing the audit's "5 hand-copied mirror tests" P2) ──
+// The 4 deterministic fixers above are real named arrows in doc_pipeline_source.jsx. Rather than
+// risk a big replace of every mirror in this 28KB file, we EXTRACT each real fixer at runtime and
+// assert it produces byte-identical output to the mirror on representative inputs. If source ever
+// diverges from a mirror, THIS fails — converting the silent false-green risk into a hard gate.
+// (The remaining helpers here — contrast math, fixAriaRoles, the sanitizeStyleForWCAG CSS-injection
+// steps — are inline in source / not cleanly extractable, so they stay plain mirrors for now.)
+const _WCAG_SRC = fs.readFileSync(path.resolve(__dirname, '../doc_pipeline_source.jsx'), 'utf8');
+function _extractArrow(name) {
+  const anchor = 'const ' + name + ' = ';
+  const at = _WCAG_SRC.indexOf(anchor);
+  if (at < 0) throw new Error('not found in source: ' + name);
+  const braceStart = _WCAG_SRC.indexOf('{', _WCAG_SRC.indexOf('=>', at));
+  let i = braceStart, d = 0, end = -1;
+  for (; i < _WCAG_SRC.length; i++) { const c = _WCAG_SRC[i]; if (c === '{') d++; else if (c === '}') { d--; if (d === 0) { end = i; break; } } }
+  const head = _WCAG_SRC.slice(at + anchor.length, _WCAG_SRC.indexOf('=>', at));
+  // eslint-disable-next-line no-eval
+  return eval('(' + head + '=> ' + _WCAG_SRC.slice(braceStart, end + 1) + ')');
+}
+
+describe('anti-drift sentinel: mirrors match shipped source (deterministic fixers)', () => {
+  const cases = [
+    { name: 'fixHeadingHierarchy', mirror: fixHeadingHierarchy, inputs: ['<h1>A</h1><h4>B</h4><h2>C</h2>', '<h2>x</h2><h3>y</h3>', 'no headings here'] },
+    { name: 'fixFormFieldAria', mirror: fixFormFieldAria, inputs: ['<input type="text" required><input type="email" aria-required="true">', '<select required></select>', '<input type="submit" required>'] },
+    { name: 'fixButtonLinkLabels', mirror: fixButtonLinkLabels, inputs: ['<button></button>', '<a href="mailto:x@y.com"></a>', '<button><img alt="Go"></button>', '<a href="tel:+15551234"></a>'] },
+    { name: 'fixFigureSemantics', mirror: fixFigureSemantics, inputs: ['<figure><figcaption>   </figcaption></figure>', '<figure><figcaption>Real caption</figcaption></figure>', '<figure><figcaption>&nbsp;</figcaption></figure>'] },
+  ];
+  for (const c of cases) {
+    it(`${c.name}: extracted source === mirror on representative inputs`, () => {
+      const real = _extractArrow(c.name);
+      for (const input of c.inputs) {
+        expect(JSON.stringify(real(input))).toBe(JSON.stringify(c.mirror(input)));
+      }
+    });
+  }
 });
