@@ -2235,86 +2235,6 @@ function _wordCount(str) {
   if (!trimmed) return 0;
   return trimmed.split(/\s+/).length;
 }
-function _DEAD_LEGACY_DO_NOT_CALL(dashboardData) {
-  const out = {};
-  let cornellCount = 0, cornellWithSummary = 0;
-  let cornellCuesTotal = 0, cornellEntriesForCues = 0;
-  let cerWordsTotal = 0, cerEntriesCounted = 0;
-  let rrCount = 0, rrWithEvidence = 0;
-  let studentsWithRR = 0, studentsWith2PlusConnTypes = 0;
-  let studentsWithNotebook = 0, studentsWithFeedback = 0;
-  (dashboardData || []).forEach((s2) => {
-    const hist = s2.history || [];
-    const notes = hist.filter((h) => h && h.type === "note-taking");
-    if (notes.length === 0) return;
-    studentsWithNotebook++;
-    let studentFeedbackCount = 0;
-    const connTypesSeen = /* @__PURE__ */ new Set();
-    let studentHasRR = false;
-    notes.forEach((e) => {
-      const d = e.data || {};
-      const tt = d.templateType;
-      studentFeedbackCount += d.feedbackCount || 0;
-      if (tt === "cornell-notes") {
-        cornellCount++;
-        if (_wordCount(d.summary) >= 20) cornellWithSummary++;
-        const cueCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
-        if (cueCount > 0) {
-          cornellCuesTotal += cueCount;
-          cornellEntriesForCues++;
-        }
-      } else if (tt === "lab-report") {
-        const cerWords = _wordCount(d.analysis);
-        if (cerWords > 0) {
-          cerWordsTotal += cerWords;
-          cerEntriesCounted++;
-        }
-      } else if (tt === "reading-response") {
-        rrCount++;
-        studentHasRR = true;
-        if ((d.favoriteLine || "").trim()) rrWithEvidence++;
-        const connType = d.connection && d.connection.type;
-        if (connType) connTypesSeen.add(connType);
-      }
-    });
-    if (studentHasRR) {
-      studentsWithRR++;
-      if (connTypesSeen.size >= 2) studentsWith2PlusConnTypes++;
-    }
-    if (studentFeedbackCount > 0) studentsWithFeedback++;
-  });
-  if (cornellCount > 0) {
-    out.summaryFillRate.count = cornellWithSummary;
-    out.summaryFillRate.total = cornellCount;
-    out.summaryFillRate.value = Math.round(cornellWithSummary / cornellCount * 100);
-  }
-  if (cornellEntriesForCues > 0) {
-    out.avgCues.total = cornellCuesTotal;
-    out.avgCues.n = cornellEntriesForCues;
-    out.avgCues.value = (cornellCuesTotal / cornellEntriesForCues).toFixed(1);
-  }
-  if (cerEntriesCounted > 0) {
-    out.avgCerWords.total = cerWordsTotal;
-    out.avgCerWords.n = cerEntriesCounted;
-    out.avgCerWords.value = Math.round(cerWordsTotal / cerEntriesCounted);
-  }
-  if (rrCount > 0) {
-    out.rrEvidenceRate.count = rrWithEvidence;
-    out.rrEvidenceRate.total = rrCount;
-    out.rrEvidenceRate.value = Math.round(rrWithEvidence / rrCount * 100);
-  }
-  if (studentsWithRR > 0) {
-    out.connectionVariety.count = studentsWith2PlusConnTypes;
-    out.connectionVariety.total = studentsWithRR;
-    out.connectionVariety.value = Math.round(studentsWith2PlusConnTypes / studentsWithRR * 100);
-  }
-  if (studentsWithNotebook > 0) {
-    out.selfAssessment.count = studentsWithFeedback;
-    out.selfAssessment.total = studentsWithNotebook;
-    out.selfAssessment.value = Math.round(studentsWithFeedback / studentsWithNotebook * 100);
-  }
-  return out;
-}
 function _computeCrossToolMisconceptions(dashboardData) {
   const out = { noteTaking: [], sentenceFrames: [], conceptSort: [] };
   getTeacherMetricRegistry().forEach((entry) => {
@@ -2331,155 +2251,6 @@ function _computeCrossToolMisconceptions(dashboardData) {
       console.warn("[misconceptions] tool", entry.id, "failed", e);
     }
   });
-  return out;
-}
-function _DEAD_LEGACY_CROSS_TOOL_DO_NOT_CALL(dashboardData) {
-  const out = {
-    noteTaking: [],
-    sentenceFrames: [],
-    conceptSort: []
-  };
-  const csKey = (p) => `${(p.itemText || "").toLowerCase().trim()}|${(p.placedCategoryLabel || "").toLowerCase().trim()}|${(p.correctCategoryLabel || "").toLowerCase().trim()}`;
-  const csAgg = /* @__PURE__ */ new Map();
-  let csTotalAttempts = 0;
-  (dashboardData || []).forEach((s2) => {
-    const gc = s2.gameCompletions || {};
-    const attempts = (gc.conceptSortAttempt || []).concat(gc.conceptSort || []);
-    attempts.forEach((att) => {
-      csTotalAttempts++;
-      const incPlacements = Array.isArray(att.incorrectPlacements) ? att.incorrectPlacements : [];
-      incPlacements.forEach((p) => {
-        if (!p.itemText) return;
-        const key = csKey(p);
-        if (!csAgg.has(key)) {
-          csAgg.set(key, { itemText: p.itemText, placedLabel: p.placedCategoryLabel, correctLabel: p.correctCategoryLabel, count: 0 });
-        }
-        csAgg.get(key).count++;
-      });
-    });
-  });
-  out.conceptSort = Array.from(csAgg.values()).filter((p) => p.count >= 3 && csTotalAttempts > 0 && p.count / csTotalAttempts >= 0.2).sort((a, b) => b.count - a.count).map((p) => ({ ...p, totalAttempts: csTotalAttempts, missPct: Math.round(p.count / csTotalAttempts * 100) }));
-  const ntStats = {
-    "cornell-notes": { fields: ["summary", "cuesFilled", "notesFilled"], counts: {}, total: 0 },
-    "lab-report": { fields: ["hypothesis", "analysis", "conclusion", "procedureFilled"], counts: {}, total: 0 },
-    "reading-response": { fields: ["favoriteLine", "thinkings", "connection", "question"], counts: {}, total: 0 }
-  };
-  Object.keys(ntStats).forEach((tt) => ntStats[tt].fields.forEach((f) => ntStats[tt].counts[f] = 0));
-  (dashboardData || []).forEach((s2) => {
-    const hist = s2.history || [];
-    const notes = hist.filter((h) => h && h.type === "note-taking");
-    notes.forEach((e) => {
-      const d = e.data || {};
-      const tt = d.templateType;
-      if (!ntStats[tt]) return;
-      ntStats[tt].total++;
-      if (tt === "cornell-notes") {
-        if (!(d.summary || "").trim()) ntStats[tt].counts.summary++;
-        const cuesCount = (Array.isArray(d.cues) ? d.cues : []).filter((c) => c && (c.text || "").trim()).length;
-        if (cuesCount === 0) ntStats[tt].counts.cuesFilled++;
-        const notesCount = (Array.isArray(d.notes) ? d.notes : []).filter((n) => n && (n.text || "").trim()).length;
-        if (notesCount === 0) ntStats[tt].counts.notesFilled++;
-      } else if (tt === "lab-report") {
-        if (!(d.hypothesis || "").trim()) ntStats[tt].counts.hypothesis++;
-        if (!(d.analysis || "").trim()) ntStats[tt].counts.analysis++;
-        if (!(d.conclusion || "").trim()) ntStats[tt].counts.conclusion++;
-        const procCount = (Array.isArray(d.procedure) ? d.procedure : []).filter((p) => p && (p.text || "").trim()).length;
-        if (procCount === 0) ntStats[tt].counts.procedureFilled++;
-      } else if (tt === "reading-response") {
-        if (!(d.favoriteLine || "").trim()) ntStats[tt].counts.favoriteLine++;
-        if (!(d.thinkings || "").trim()) ntStats[tt].counts.thinkings++;
-        if (!(d.connection && d.connection.text || "").trim()) ntStats[tt].counts.connection++;
-        if (!(d.question || "").trim()) ntStats[tt].counts.question++;
-      }
-    });
-  });
-  const fieldLabels = {
-    "cornell-notes": {
-      summary: "Summary box (Pauk: where retention consolidation happens)",
-      cuesFilled: "Cue column (the metacognitive lever \u2014 drives retrieval practice)",
-      notesFilled: "Notes column (the lesson content itself)"
-    },
-    "lab-report": {
-      hypothesis: "Hypothesis (testable prediction with reasoning)",
-      analysis: "Analysis / CER (claim-evidence-reasoning \u2014 the science thinking)",
-      conclusion: "Conclusion (what was learned + sources of error)",
-      procedureFilled: "Procedure (reproducibility \u2014 could another student follow it?)"
-    },
-    "reading-response": {
-      favoriteLine: "Favorite line (close-reading anchor \u2014 direct quote from text)",
-      thinkings: "What this made me think about (substantive reflection)",
-      connection: "Connection (text-to-self / text / world \u2014 Keene & Zimmermann)",
-      question: "Open question (genuine inquiry \u2014 metacognitive engagement)"
-    }
-  };
-  const templateNames = {
-    "cornell-notes": "Cornell Notes",
-    "lab-report": "Lab Report",
-    "reading-response": "Reading Response"
-  };
-  Object.keys(ntStats).forEach((tt) => {
-    const stats = ntStats[tt];
-    if (stats.total === 0) return;
-    stats.fields.forEach((field) => {
-      const missing = stats.counts[field];
-      const pct = Math.round(missing / stats.total * 100);
-      if (pct >= 40 && missing >= 2) {
-        out.noteTaking.push({
-          template: templateNames[tt],
-          field,
-          fieldLabel: fieldLabels[tt][field],
-          missingCount: missing,
-          totalCount: stats.total,
-          missingPct: pct
-        });
-      }
-    });
-  });
-  out.noteTaking.sort((a, b) => b.missingPct - a.missingPct);
-  const sfMap = /* @__PURE__ */ new Map();
-  const sfTitles = /* @__PURE__ */ new Map();
-  const sfFrameCounts = /* @__PURE__ */ new Map();
-  (dashboardData || []).forEach((s2) => {
-    const hist = s2.history || [];
-    const sfItems = hist.filter((h) => h && h.type === "sentence-frames");
-    sfItems.forEach((item) => {
-      sfTitles.set(item.id, item.title || "Sentence Frames");
-      const studentResps = s2.responses && s2.responses[item.id] || {};
-      const items = item.data && Array.isArray(item.data.items) ? item.data.items : [];
-      items.forEach((_, idx) => {
-        const responseVal = studentResps[idx];
-        const filled = responseVal !== void 0 && responseVal !== null && String(responseVal).trim().length > 0;
-        sfMap.set(`${s2.id}:${item.id}:${idx}`, filled);
-        sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
-      });
-    });
-  });
-  for (const [genId, frameCount] of sfFrameCounts.entries()) {
-    if (frameCount === 0) continue;
-    let totalStudentFrames = 0;
-    let filledFrames = 0;
-    let studentsAttempted = /* @__PURE__ */ new Set();
-    for (const [key, filled] of sfMap.entries()) {
-      const [studentId, gid] = key.split(":");
-      if (gid !== genId) continue;
-      totalStudentFrames++;
-      if (filled) {
-        filledFrames++;
-        studentsAttempted.add(studentId);
-      }
-    }
-    if (totalStudentFrames === 0 || studentsAttempted.size < 2) continue;
-    const missingPct = Math.round((totalStudentFrames - filledFrames) / totalStudentFrames * 100);
-    if (missingPct >= 30) {
-      out.sentenceFrames.push({
-        generationTitle: sfTitles.get(genId) || "Sentence Frames",
-        frameCount,
-        studentsAttempted: studentsAttempted.size,
-        missingPct
-      });
-    }
-  }
-  out.sentenceFrames.sort((a, b) => b.missingPct - a.missingPct);
   return out;
 }
 function _signalTone(signalKey, value) {
@@ -4296,5 +4067,12 @@ window.AlloModules.LongitudinalProgressChart = LongitudinalProgressChart;
 window.AlloModules.LearnerProgressView = LearnerProgressView;
 window.AlloModules.TeacherDashboard = TeacherDashboard;
 window.AlloModules.TeacherModule = true;
+// Test seam (read-only): expose the pure teacher-analytics functions for
+// characterization tests (tests/teacher_analytics.test.js). Zero behavior change.
+window.AlloModules.TeacherAnalyticsInternals = {
+  calculateAnalyticsMetrics: calculateAnalyticsMetrics,
+  computeNotebookQualitySignals: _computeNotebookQualitySignals,
+  computeCrossToolMisconceptions: _computeCrossToolMisconceptions,
+};
   console.log('[TeacherModule] 11 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","EscapeRoomTeacherControls","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);
 })();
