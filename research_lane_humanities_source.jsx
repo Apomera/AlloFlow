@@ -1067,11 +1067,12 @@
   }
 
   function StageChipStrip(props) {
+    var t = props.t || function (k) { return k; };
     var activeStage = props.activeStage, onJump = props.onJump;
     var journalStageNotes = props.journalStageNotes || {};
     var sourceCount = props.sourceCount || 0;
     return (
-      <div role="tablist" aria-label="Stage navigation"
+      <div role="tablist" aria-label={t('humanities.aria_stage_nav') || "Stage navigation"}
         style={{ display: 'flex', flexWrap: 'wrap', gap: '6px',
           padding: '6px 0', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
         {STAGES.map(function (s, idx) {
@@ -1713,7 +1714,7 @@
           )}
           {props.onRemove && (
             <button type="button" onClick={props.onRemove}
-              aria-label="Remove source"
+              aria-label={t('humanities.aria_remove_source') || "Remove source"}
               style={{ background: 'transparent', border: 'none',
                 color: '#64748b', cursor: 'pointer', fontSize: '14px' }}>{'\u{2715}'}</button>
           )}
@@ -2019,7 +2020,7 @@
                 </div>
                 {onRemove && (
                   <button type="button" onClick={function () { onRemove(v.id); }}
-                    aria-label="Remove absent voice"
+                    aria-label={t('humanities.aria_remove_absent') || "Remove absent voice"}
                     style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}>{'\u{2715}'}</button>
                 )}
               </li>
@@ -2344,12 +2345,12 @@
           <button type="button" onClick={props.onCancel}
             style={{ padding: '4px 10px', borderRadius: '999px',
               background: 'transparent', color: '#475569', border: '1px solid #cbd5e1',
-              fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
+              fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}>{t('common.cancel') || 'Cancel'}</button>
           <button type="button" disabled={!canSave}
             onClick={function () { if (canSave) props.onSave(draft); }}
             style={{ padding: '4px 12px', borderRadius: '999px',
               background: canSave ? '#be185d' : '#cbd5e1', color: '#fff', border: 'none',
-              fontWeight: 700, fontSize: '10px', cursor: canSave ? 'pointer' : 'not-allowed' }}>Add</button>
+              fontWeight: 700, fontSize: '10px', cursor: canSave ? 'pointer' : 'not-allowed' }}>{t('common.add') || 'Add'}</button>
         </div>
       </div>
     );
@@ -2370,12 +2371,12 @@
           <button type="button" onClick={props.onCancel}
             style={{ padding: '4px 10px', borderRadius: '999px',
               background: 'transparent', color: '#475569', border: '1px solid #cbd5e1',
-              fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
+              fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}>{t('common.cancel') || 'Cancel'}</button>
           <button type="button" disabled={!canSave}
             onClick={function () { if (canSave) props.onSave(text); }}
             style={{ padding: '4px 12px', borderRadius: '999px',
               background: canSave ? '#be185d' : '#cbd5e1', color: '#fff', border: 'none',
-              fontWeight: 700, fontSize: '10px', cursor: canSave ? 'pointer' : 'not-allowed' }}>Add</button>
+              fontWeight: 700, fontSize: '10px', cursor: canSave ? 'pointer' : 'not-allowed' }}>{t('common.add') || 'Add'}</button>
         </div>
       </div>
     );
@@ -2526,7 +2527,7 @@
               <button type="button" onClick={function () { setAdding(false); }}
                 style={{ padding: '6px 12px', borderRadius: '999px',
                   background: '#f1f5f9', color: '#475569', border: 'none',
-                  fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
+                  fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>{t('common.cancel') || 'Cancel'}</button>
               <button type="button" disabled={!newSrc.citation.trim()} onClick={addSource}
                 style={{ padding: '6px 14px', borderRadius: '999px',
                   background: newSrc.citation.trim() ? '#be185d' : '#cbd5e1',
@@ -2761,7 +2762,7 @@
                 <button type="button" onClick={function () { setAdding(false); }}
                   style={{ padding: '6px 12px', borderRadius: '999px',
                     background: '#f1f5f9', color: '#475569', border: 'none',
-                    fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
+                    fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>{t('common.cancel') || 'Cancel'}</button>
                 <button type="button" disabled={!canSave} onClick={addFraming}
                   style={{ padding: '6px 14px', borderRadius: '999px',
                     background: canSave ? '#be185d' : '#cbd5e1', color: '#fff', border: 'none',
@@ -3390,19 +3391,19 @@
               : 'Each text field ≥100 chars. Visibility and Obscuring must be substantively distinct. New snapshot must add ≥2 new substrate-linked tokens vs the prior.'}
           </p>
           <TextareaCard t={t}
-            label="Material relationship to the question"
+            label={t('humanities.pr_material_label') || "Material relationship to the question"}
             value={draft.materialRelationshipText}
             onChange={function (v) { setDraft(Object.assign({}, draft, { materialRelationshipText: v })); }}
             rows={3} max={1500} />
           <TextareaCard t={t}
-            label="What does your standpoint let you SEE? (visibility)"
-            help="≥100 chars. Must use 'see/notice/foreground/visible'-class tokens. 'I see everything' is refused."
+            label={t('humanities.pr_visibility_label') || "What does your standpoint let you SEE? (visibility)"}
+            help={t('humanities.pr_visibility_help') || "≥100 chars. Must use 'see/notice/foreground/visible'-class tokens. 'I see everything' is refused."}
             value={draft.visibilityField}
             onChange={function (v) { setDraft(Object.assign({}, draft, { visibilityField: v })); }}
             rows={3} max={1500} />
           <TextareaCard t={t}
-            label="What does your standpoint OBSCURE? (obscuring)"
-            help="≥100 chars. Must use 'obscure/miss/blind/limit'-class tokens. 'I have no blind spots' is refused."
+            label={t('humanities.pr_obscuring_label') || "What does your standpoint OBSCURE? (obscuring)"}
+            help={t('humanities.pr_obscuring_help') || "≥100 chars. Must use 'obscure/miss/blind/limit'-class tokens. 'I have no blind spots' is refused."}
             value={draft.obscuringField}
             onChange={function (v) { setDraft(Object.assign({}, draft, { obscuringField: v })); }}
             rows={3} max={1500} />
@@ -3417,12 +3418,12 @@
             </p>
           )}
           <TextareaCard t={t}
-            label="Whose standpoint is structurally absent from your inquiry?"
+            label={t('humanities.pr_absent_label') || "Whose standpoint is structurally absent from your inquiry?"}
             value={draft.whoseStandpointIsStructurallyAbsentText}
             onChange={function (v) { setDraft(Object.assign({}, draft, { whoseStandpointIsStructurallyAbsentText: v })); }}
             rows={2} max={1000} />
           <TextareaCard t={t}
-            label="Partial-incorporation commitments — what did you do to bring an absent voice in?"
+            label={t('humanities.pr_partial_label') || "Partial-incorporation commitments — what did you do to bring an absent voice in?"}
             value={draft.partialIncorporationCommitmentsText}
             onChange={function (v) { setDraft(Object.assign({}, draft, { partialIncorporationCommitmentsText: v })); }}
             rows={2} max={1000} />
@@ -3702,14 +3703,14 @@
 
         {gc && gc.genre && (
           <TextareaCard t={t}
-            label="Public accountability target"
-            help="Who specifically will see this? (e.g. the school board; the principal Ms. Patel)"
+            label={t('humanities.acc_target_label') || "Public accountability target"}
+            help={t('humanities.acc_target_help') || "Who specifically will see this? (e.g. the school board; the principal Ms. Patel)"}
             value={accTarget} onChange={setAccTarget} rows={2} max={300} />
         )}
         {gc && gc.genre && (
           <TextareaCard t={t}
-            label="Public accountability note"
-            help="What does shipping this commit you to? (e.g. attending the next school board meeting)"
+            label={t('humanities.acc_note_label') || "Public accountability note"}
+            help={t('humanities.acc_note_help') || "What does shipping this commit you to? (e.g. attending the next school board meeting)"}
             value={accNote} onChange={setAccNote} rows={2} max={500} />
         )}
 
@@ -3892,7 +3893,7 @@
           </div>
         </div>
 
-        <StageChipStrip activeStage={activeStage} onJump={jumpStage}
+        <StageChipStrip t={t} activeStage={activeStage} onJump={jumpStage}
           journalStageNotes={journal.stageNotes || {}}
           sourceCount={(journal.sources || []).length} />
 

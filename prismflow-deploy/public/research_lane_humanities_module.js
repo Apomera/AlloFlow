@@ -1314,6 +1314,9 @@
     );
   }
   function StageChipStrip(props) {
+    var t = props.t || function(k) {
+      return k;
+    };
     var activeStage = props.activeStage, onJump = props.onJump;
     var journalStageNotes = props.journalStageNotes || {};
     var sourceCount = props.sourceCount || 0;
@@ -1321,7 +1324,7 @@
       "div",
       {
         role: "tablist",
-        "aria-label": "Stage navigation",
+        "aria-label": t("humanities.aria_stage_nav") || "Stage navigation",
         style: {
           display: "flex",
           flexWrap: "wrap",
@@ -2076,7 +2079,7 @@
       {
         type: "button",
         onClick: props.onRemove,
-        "aria-label": "Remove source",
+        "aria-label": t("humanities.aria_remove_source") || "Remove source",
         style: {
           background: "transparent",
           border: "none",
@@ -2488,7 +2491,7 @@
           onClick: function() {
             onRemove(v.id);
           },
-          "aria-label": "Remove absent voice",
+          "aria-label": t("humanities.aria_remove_absent") || "Remove absent voice",
           style: { background: "transparent", border: "none", color: "#64748b", cursor: "pointer" }
         },
         "\u2715"
@@ -3008,7 +3011,7 @@
           cursor: "pointer"
         }
       },
-      "Cancel"
+      t("common.cancel") || "Cancel"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -3028,7 +3031,7 @@
           cursor: canSave ? "pointer" : "not-allowed"
         }
       },
-      "Add"
+      t("common.add") || "Add"
     )));
   }
   function PlausibleAnswerEditor(props) {
@@ -3076,7 +3079,7 @@
           cursor: "pointer"
         }
       },
-      "Cancel"
+      t("common.cancel") || "Cancel"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -3096,7 +3099,7 @@
           cursor: canSave ? "pointer" : "not-allowed"
         }
       },
-      "Add"
+      t("common.add") || "Add"
     )));
   }
   function SiftTriageStage(props) {
@@ -3321,7 +3324,7 @@
           cursor: "pointer"
         }
       },
-      "Cancel"
+      t("common.cancel") || "Cancel"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -3632,7 +3635,7 @@
           cursor: "pointer"
         }
       },
-      "Cancel"
+      t("common.cancel") || "Cancel"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -4442,7 +4445,7 @@
       TextareaCard,
       {
         t,
-        label: "Material relationship to the question",
+        label: t("humanities.pr_material_label") || "Material relationship to the question",
         value: draft.materialRelationshipText,
         onChange: function(v) {
           setDraft(Object.assign({}, draft, { materialRelationshipText: v }));
@@ -4454,8 +4457,8 @@
       TextareaCard,
       {
         t,
-        label: "What does your standpoint let you SEE? (visibility)",
-        help: "\u2265100 chars. Must use 'see/notice/foreground/visible'-class tokens. 'I see everything' is refused.",
+        label: t("humanities.pr_visibility_label") || "What does your standpoint let you SEE? (visibility)",
+        help: t("humanities.pr_visibility_help") || "\u2265100 chars. Must use 'see/notice/foreground/visible'-class tokens. 'I see everything' is refused.",
         value: draft.visibilityField,
         onChange: function(v) {
           setDraft(Object.assign({}, draft, { visibilityField: v }));
@@ -4467,8 +4470,8 @@
       TextareaCard,
       {
         t,
-        label: "What does your standpoint OBSCURE? (obscuring)",
-        help: "\u2265100 chars. Must use 'obscure/miss/blind/limit'-class tokens. 'I have no blind spots' is refused.",
+        label: t("humanities.pr_obscuring_label") || "What does your standpoint OBSCURE? (obscuring)",
+        help: t("humanities.pr_obscuring_help") || "\u2265100 chars. Must use 'obscure/miss/blind/limit'-class tokens. 'I have no blind spots' is refused.",
         value: draft.obscuringField,
         onChange: function(v) {
           setDraft(Object.assign({}, draft, { obscuringField: v }));
@@ -4480,7 +4483,7 @@
       TextareaCard,
       {
         t,
-        label: "Whose standpoint is structurally absent from your inquiry?",
+        label: t("humanities.pr_absent_label") || "Whose standpoint is structurally absent from your inquiry?",
         value: draft.whoseStandpointIsStructurallyAbsentText,
         onChange: function(v) {
           setDraft(Object.assign({}, draft, { whoseStandpointIsStructurallyAbsentText: v }));
@@ -4492,7 +4495,7 @@
       TextareaCard,
       {
         t,
-        label: "Partial-incorporation commitments \u2014 what did you do to bring an absent voice in?",
+        label: t("humanities.pr_partial_label") || "Partial-incorporation commitments \u2014 what did you do to bring an absent voice in?",
         value: draft.partialIncorporationCommitmentsText,
         onChange: function(v) {
           setDraft(Object.assign({}, draft, { partialIncorporationCommitmentsText: v }));
@@ -4817,8 +4820,8 @@
       TextareaCard,
       {
         t,
-        label: "Public accountability target",
-        help: "Who specifically will see this? (e.g. the school board; the principal Ms. Patel)",
+        label: t("humanities.acc_target_label") || "Public accountability target",
+        help: t("humanities.acc_target_help") || "Who specifically will see this? (e.g. the school board; the principal Ms. Patel)",
         value: accTarget,
         onChange: setAccTarget,
         rows: 2,
@@ -4828,8 +4831,8 @@
       TextareaCard,
       {
         t,
-        label: "Public accountability note",
-        help: "What does shipping this commit you to? (e.g. attending the next school board meeting)",
+        label: t("humanities.acc_note_label") || "Public accountability note",
+        help: t("humanities.acc_note_help") || "What does shipping this commit you to? (e.g. attending the next school board meeting)",
         value: accNote,
         onChange: setAccNote,
         rows: 2,
@@ -5037,6 +5040,7 @@
     ), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "17px", fontWeight: 800, color: "#1e293b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, STAGE_BY_KEY[activeStage].icon + " "), STAGE_BY_KEY[activeStage].label), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0", fontSize: "12px", color: "#64748b", lineHeight: 1.5 } }, t("humanities.stage_intro_" + activeStage) || ""))), /* @__PURE__ */ React.createElement(
       StageChipStrip,
       {
+        t,
         activeStage,
         onJump: jumpStage,
         journalStageNotes: journal.stageNotes || {},
