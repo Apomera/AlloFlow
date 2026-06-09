@@ -927,6 +927,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng.renderer.setSize(container.clientWidth, container.clientHeight);
           eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
+          // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+          // Dark cave scene: low threshold so the sonar-pulse highlights glow. Plain
+          // render until the r128 addons load; any failure falls back to eng.renderer.render.
+          eng.renderer._alloComposer = null;
+          (function(){
+            if (window.AlloPostFXEnabled === false) return;
+            var _ens = function(cb){
+              if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+              var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+            };
+            _ens(function(){
+              try {
+                var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+                var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+                var cc=new T.EffectComposer(eng.renderer);
+                cc.addPass(new T.RenderPass(eng.scene, eng.camera));
+                cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((container.clientWidth)*rs)),Math.max(1,Math.round((container.clientHeight)*rs))), lp?0.60:0.85, 0.4, 0.8));
+                eng.renderer._alloComposer=cc;
+              } catch(e){ try{ eng.renderer._alloComposer=null; }catch(_){} }
+            });
+          })();
+
           // Ambient light (very dim — cave is dark)
           eng.ambient = new THREE.AmbientLight(0x111122, 0.15);
           eng.scene.add(eng.ambient);
@@ -1529,7 +1553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               eng.scene.fog.color.setRGB(0.008, 0.008, 0.03);
             }
 
-            eng.renderer.render(eng.scene, eng.camera);
+            var _ac=eng.renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ eng.renderer._alloComposer=null; eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
           }
           animate();
 

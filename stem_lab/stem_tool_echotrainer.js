@@ -1010,6 +1010,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var container = mountRef.current;
         var rw = container.clientWidth || 700; var rh = container.clientHeight || 450;
         renderer.setSize(rw, rh);
+        // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+        renderer._alloComposer = null;
+        (function(){
+          if (window.AlloPostFXEnabled === false) return;
+          var _ens = function(cb){
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+            var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+          };
+          _ens(function(){
+            try {
+              var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+              var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+              var cc=new T.EffectComposer(renderer);
+              cc.addPass(new T.RenderPass(sd.scene, camera));
+              cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((rw)*rs)),Math.max(1,Math.round((rh)*rs))), lp?0.63:0.9, 0.4, 0.78));
+              renderer._alloComposer=cc;
+            } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+          });
+        })();
         camera.aspect = rw / rh; camera.updateProjectionMatrix();
         renderer.domElement.style.display = 'block'; renderer.domElement.style.borderRadius = '12px'; renderer.domElement.style.outline = 'none';
         container.appendChild(renderer.domElement);
@@ -1398,13 +1419,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           var cw = container.clientWidth || 700; var ch = container.clientHeight || 450;
           if (renderer.domElement.width !== cw || renderer.domElement.height !== ch) { renderer.setSize(cw, ch); camera.aspect = cw / ch; camera.updateProjectionMatrix(); }
-          renderer.render(sd.scene, camera);
+          var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(sd.scene, camera); } } else { renderer.render(sd.scene, camera); }
         }
         animRef.current = requestAnimationFrame(loop);
         return function() {
           running = false; if (animRef.current) cancelAnimationFrame(animRef.current);
           for (var osi = 0; osi < agentSounds.length; osi++) { try { agentSounds[osi].osc.stop(); } catch(e) {} } agentOscRef.current = [];
           for (var amsi = 0; amsi < ambientNodes.length; amsi++) { try { ambientNodes[amsi].osc.stop(); } catch(e) {} } ambientSoundsRef.current = [];
+          try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
           if (renderer) { try { renderer.dispose(); } catch(e) {} if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); } }
           rendererRef.current = null; sceneDataRef.current = null;
           if (document.pointerLockElement) { try { document.exitPointerLock(); } catch(e) {} }

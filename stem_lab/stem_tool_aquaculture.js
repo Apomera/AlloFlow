@@ -7132,6 +7132,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H, false);
+    // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+    renderer._alloComposer = null;
+    (function(){
+      if (window.AlloPostFXEnabled === false) return;
+      var _ens = function(cb){
+        if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+        var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+        var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+      };
+      _ens(function(){
+        try {
+          var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+          var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+          var cc=new T.EffectComposer(renderer);
+          cc.addPass(new T.RenderPass(scene, camera));
+          cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((W)*rs)),Math.max(1,Math.round((H)*rs))), lp?0.42:0.6, 0.35, 0.88));
+          renderer._alloComposer=cc;
+        } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+      });
+    })();
 
     // Lights
     var ambient = new THREE.AmbientLight(0xe6eef2, 0.7);
@@ -7471,7 +7492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         elapsed: elapsed
       });
 
-      renderer.render(scene, camera);
+      var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
       raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
@@ -7480,6 +7501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var nw = canvas.clientWidth || 720;
       var nh = canvas.clientHeight || 420;
       renderer.setSize(nw, nh, false);
+      try{ if(renderer && renderer._alloComposer){ var _s=new window.THREE.Vector2(); renderer.getSize(_s); renderer._alloComposer.setSize(_s.x,_s.y); } }catch(e){}
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
     }
@@ -7492,6 +7514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
         window.removeEventListener('resize', onResize);
+        try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
         try { renderer.dispose(); } catch (_) {}
       }
     };

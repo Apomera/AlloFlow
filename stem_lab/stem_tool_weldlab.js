@@ -1620,6 +1620,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             scene.background = new THREE.Color(0x0f172a);
 
             var camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
+
+            // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+            // The hot welding ARC + weld pool + sparks glow against the dark bench. Lower
+            // threshold + punchier strength sell the molten glow. Stored on the renderer
+            // object (= s.renderer at render time); any failure falls back to plain render.
+            renderer._alloComposer = null;
+            (function(){
+              if (window.AlloPostFXEnabled === false) return;
+              var _ens = function(cb){
+                if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+                var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+                var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+              };
+              _ens(function(){
+                try {
+                  var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+                  var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                  var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+                  var cc=new T.EffectComposer(renderer);
+                  cc.addPass(new T.RenderPass(scene, camera));
+                  cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((W)*rs)),Math.max(1,Math.round((H)*rs))), lp?0.77:1.1, 0.4, 0.8));
+                  renderer._alloComposer=cc;
+                } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+              });
+            })();
             // Spherical camera coords. az = horizontal angle, el = elevation
             // angle (0 = horizon, π/2 = top), r = radius from origin.
             var camAngle = { az: -0.7, el: 0.55, r: 3.2 };
@@ -2475,7 +2500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 }
               }
 
-              s.renderer.render(s.scene, s.camera);
+              var _ac=s.renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ s.renderer._alloComposer=null; s.renderer.render(s.scene, s.camera); } } else { s.renderer.render(s.scene, s.camera); }
               rafRef.current = requestAnimationFrame(loop);
             }
             rafRef.current = requestAnimationFrame(loop);
@@ -2529,6 +2554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               if (cancelled) return;
               var w = canvas.clientWidth || 600;
               renderer.setSize(w, H, false);
+              try{ if(renderer && renderer._alloComposer){ var _s=new window.THREE.Vector2(); renderer.getSize(_s); renderer._alloComposer.setSize(_s.x,_s.y); } }catch(e){}
               camera.aspect = w / H;
               camera.updateProjectionMatrix();
             }
@@ -2566,6 +2592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 defectMatBlack.dispose(); defectMatLOF.dispose();
                 defectMatUndercut.dispose(); defectMatOverlap.dispose();
                 defectMatSpatter.dispose(); defectMatPorosity.dispose();
+                try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
                 renderer.dispose();
                 renderer.forceContextLoss();
               } catch (e) { /* best-effort cleanup */ }
@@ -4547,7 +4574,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           if (next[id]) delete next[id];
           else next[id] = true;
           setGeared(next);
-          announce((next[id] ? 'Gear added: ' : 'Gear removed: ') + PPE_GEAR.find(function(g) { return g.id === id; }).name);
+          var ppeRec = window.StemLab && window.StemLab.findById ? window.StemLab.findById(PPE_GEAR, id) : null;
+          announce((next[id] ? 'Gear added: ' : 'Gear removed: ') + (ppeRec ? ppeRec.name : id));
         }
         var mustItems = PPE_GEAR.filter(function(g) { return g.must; });
         var gearedMustCount = mustItems.filter(function(g) { return geared[g.id]; }).length;
@@ -8395,7 +8423,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           announce('Audit reset');
         }
         function categoryScore(catId) {
-          var items = auditCategories.find(function(c) { return c.id === catId; }).items;
+          var catRec = window.StemLab && window.StemLab.findById ? window.StemLab.findById(auditCategories, catId) : null;
+          var items = catRec ? catRec.items : [];
           var yes = 0, considered = 0;
           items.forEach(function(it) {
             var a = shAudit[it.id];
