@@ -626,8 +626,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 hwResult: parsed,
                 hwLoading: false
               });
-              if (addToast) addToast('✍️ Handwriting converted! ' + (parsed.penmanship ? 'Penmanship: ' + parsed.penmanship.score + '/100' : 'You can edit before submitting.'), 'success');
-              if (announceToSR) announceToSR('Handwriting converted to text.' + (parsed.penmanship ? ' Penmanship score: ' + parsed.penmanship.score + ' out of 100.' : ' You may edit the text before submitting.'));
+              if (addToast) addToast('✍️ Handwriting converted! ' + (parsed.penmanship ? 'Penmanship tips ready.' : 'You can edit before submitting.'), 'success');
+              if (announceToSR) announceToSR('Handwriting converted to text.' + (parsed.penmanship ? ' Penmanship tips ready below.' : ' You may edit the text before submitting.'));
             } catch(err) {
               // Fallback: treat entire result as plain text
               updMulti({ actionText: result.trim(), hwResult: { text: result.trim() }, hwLoading: false });
@@ -1601,19 +1601,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
             // ── Penmanship Feedback Card ──
             hwResult && hwResult.penmanship && h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 border border-violet-200 rounded-xl p-3 mt-2', role: 'region', 'aria-label': 'Penmanship feedback' },
-              h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', { className: 'flex items-center justify-between mb-1' },
                 h('div', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-widest' }, '✏️ Penmanship Feedback'),
-                h('div', { className: 'text-lg font-black', style: { color: getQualityTier(hwResult.penmanship.score).color } },
-                  hwResult.penmanship.score, h('span', { className: 'text-xs opacity-60' }, '/100')
+                h('div', { className: 'text-sm font-black text-violet-600' },
+                  (hwResult.penmanship.score >= 80 ? 'Very legible' : hwResult.penmanship.score >= 60 ? 'Legible' : hwResult.penmanship.score >= 40 ? 'Developing' : 'Keep practicing')
                 )
               ),
-              // Category breakdown
+              // AI-estimate disclaimer — handwriting can't be reliably graded from a
+              // photo, so this is qualitative feedback, not an assessment or grade.
+              h('p', { className: 'text-[10px] text-violet-500 italic mb-2' }, 'An AI estimate to spark practice — not a handwriting assessment or grade.'),
+              // Per-dimension feedback as coarse bands (no false-precise /25 number)
               h('div', { className: 'flex gap-2 mb-2' },
                 [['letterFormation', 'Letters'], ['spacing', 'Spacing'], ['alignment', 'Alignment'], ['neatness', 'Neatness']].map(function(pair) {
                   var val = hwResult.penmanship[pair[0]] || 0;
+                  var band = val >= 18 ? 'Strong' : val >= 12 ? 'Solid' : 'Growing';
                   return h('div', { key: pair[0], className: 'flex-1 text-center' },
-                    h('div', { className: 'text-sm font-black ' + (val >= 18 ? 'text-green-600' : val >= 12 ? 'text-amber-600' : 'text-slate-200') }, val, h('span', { className: 'text-[11px] opacity-60' }, '/25')),
-                    h('div', { className: 'text-[11px] text-slate-200 font-bold uppercase' }, pair[1])
+                    h('div', { className: 'text-xs font-black ' + (val >= 18 ? 'text-green-600' : val >= 12 ? 'text-amber-600' : 'text-slate-500') }, band),
+                    h('div', { className: 'text-[11px] text-slate-500 font-bold uppercase' }, pair[1])
                   );
                 })
               ),

@@ -759,7 +759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               questions: [
                 'Hardy-Weinberg requires five conditions for equilibrium. Which one is hardest to meet in real populations? Why?',
                 'If a population is in HW equilibrium, is it evolving? Why or why not?',
-                'A class of 24 students has 6 with attached earlobes (recessive). What\'s the allele frequency? Use the calculator to check.',
+                'A class of 24 students has 6 non-tasters of PTC paper (the non-taster allele is recessive). What\'s the allele frequency? Use the calculator to check.',
                 'How would you tell, just by sampling a population, whether it\'s under selection vs in equilibrium?'
               ],
               misconceptions: [

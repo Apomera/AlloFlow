@@ -378,12 +378,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     {
       id: 'grayWolf', name: 'Gray Wolf', icon: '🐺', color: 'var(--allo-stem-text-soft, #64748b)',
       role: 'Apex predator (extirpated)',
-      desc: 'Locally extirpated in Maine for over a century. Reintroduction is the most dramatic conservation move possible: documented in Yellowstone to trigger a full trophic cascade by suppressing deer browse, letting forest understory recover and even reshaping stream channels.',
+      desc: 'Locally extirpated in Maine for over a century. Reintroduction is the most dramatic conservation move possible: documented in Yellowstone to trigger a trophic cascade by reducing elk browse, letting streamside willows and aspen recover. (Whether wolves also reshaped stream channels themselves is still debated among scientists.)',
       defaultState: { pop: 0, habitat: 60, support: 35 },
       targets: { pop: 50, habitat: 70, support: 60 },
       deepDive: {
         knowledge: 'Wolves were extirpated from Maine by the 1890s through bounties and habitat loss. They have no surviving relict population in the Northeast. The closest wild population is in the western Great Lakes. Eastern timber wolves (Canis lycaon) and gray wolves (Canis lupus) overlap genetically and ecologically in the region.',
-        casework: 'The Yellowstone reintroduction (1995-1996) is the most studied case of trophic cascade in North American ecology. Wolf return reduced overpopulated elk herds, allowed willows and aspens to regrow along streams, recovered beaver populations, and even shifted river channel morphology. Eastern reintroduction faces different conditions: more roads, more livestock, more fragmented habitat, and a public that has not lived alongside wolves for 5+ generations.',
+        casework: 'The Yellowstone reintroduction (1995-1996) is the most studied case of trophic cascade in North American ecology. Wolf return reduced overpopulated elk herds, allowed willows and aspens to regrow along streams, and helped recover beaver populations. (The popular further claim that wolves "reshaped the rivers" by changing channel morphology is contested — later studies argue the evidence is weaker than the famous videos suggest.) Eastern reintroduction faces different conditions: more roads, more livestock, more fragmented habitat, and a public that has not lived alongside wolves for 5+ generations.',
         modernContext: 'Maine has no active state reintroduction plan. The US Fish and Wildlife Service classifies the gray wolf as endangered in the Lower 48 outside the western Great Lakes. Public opinion in northern Maine is divided: many hunters and livestock owners are opposed; many conservation organizations support recovery. Wabanaki nations have varied positions; some see wolf return as cultural and ecological restoration.'
       }
     },
@@ -3744,7 +3744,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Instructions text ──
-          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-600 space-y-1' },
+          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-300 space-y-1' },
             h('p', { className: 'font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCA1 Sandbox Instructions'),
             h('p', null, 'Select a tool above, then click on the canvas to interact:'),
             h('ul', { className: 'list-disc pl-4 space-y-0.5' },
@@ -3752,7 +3752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('li', null, 'Erase: Click near an entity to remove it'),
               h('li', null, 'Move: Click and drag an entity to reposition it')
             ),
-            h('p', { className: 'text-[11px] italic text-slate-600' }, 'Tip: Pause the simulation first for precise placement!')
+            h('p', { className: 'text-[11px] italic text-slate-600 dark:text-slate-400' }, 'Tip: Pause the simulation first for precise placement!')
           ),
 
           // ── Sandbox experiment suggestions ──
