@@ -61,6 +61,19 @@ Lumen is `_pluginOnlyTools` + `ready:false` (out of the STEM Lab grid), so the
 ## 10. Benchmark workspace (ships empty by design)
 - [ ] **▣ Open benchmark setup** → the curated-norm picker **refuses** honestly ("no verified … cell") because the norm spine ships empty (release blocker = human byte-transcription per `docs/lumen_norm_spine_worksheet.md`). No fabricated benchmark line ever draws.
 
+## 11. Present mode + presentation export (the share layer — live-only behaviours)
+The SSR golden pins the overlay's structure; these need the real surface
+(DOM serialization, the Fullscreen API, the reveal animation, the download).
+- [ ] In a trend/bar/dot/box/histogram/slope view with ≥3 points, the export row reads **"Present / export this view:"** with a **▶ Present** amber pill (it is **absent** in scatter / multi-series / grouped-bar, like the other exports).
+- [ ] Click **▶ Present** → a clean **full-screen overlay** opens over the tool: 💡 Lumen wordmark, the measure, the **finding (large)**, the **◈ Derived (math)** provenance pill, and the chart — which **fades + rises in once** (band, line and points **together**, never the line first).
+- [ ] With OS "reduce motion" on, the reveal **does not animate** (it just appears) — honesty + a11y.
+- [ ] The overlay chart still carries the **uncertainty band** and the per-point provenance marks (and, on synthetic data, the violet **practice banner** + in-SVG **PRACTICE DATA** watermark).
+- [ ] **⤢ Fullscreen** → the overlay goes true-fullscreen (projector-ready); Esc / browser-exit returns to the overlay.
+- [ ] **✕ Exit** → returns to the **calm analysis view underneath**, unchanged (the overlay was additive).
+- [ ] **⤓ Export presentation (HTML)** → downloads `lumen-presentation-<measure>-<audience>-summary.html`. Open it: a **full-page, presentation-styled** doc with the **finding**, the **inlined live chart** (band + provenance glyphs intact — it is the *exact* chart you saw, serialized), Methods, and a **max-epistemic-level footer**. **Print-to-PDF** looks clean (the `@media print` rules drop chrome).
+- [ ] Tick **Include identifiable data (FERPA)** → Export presentation → a **confirm** dialog, then the file embeds the per-point table and the filename/footer say **CONFIDENTIAL**. Off → finding-only, **no per-row table**.
+- [ ] **Synthetic/sample data** → Export presentation is **watermarked** (title/banner/footer say SYNTHETIC, `-PRACTICE-` in the filename); a **Formal** audience still **blocks** the export (sign-off cannot clear it).
+
 ---
 
 ### Result
