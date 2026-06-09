@@ -8125,6 +8125,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(W, H);
+
+        // ── Bloom: glow on the sun + bright sky highlights (guarded) ──
+        // Same graceful, fully-guarded pattern as solarsystem — plain render until the r128
+        // post-processing addons load, then a bloom composer; any failure falls back to
+        // renderer.render. Kill-switch + low-power/reduced-motion tier.
+        var composer = null;
+        (function setupBloom() {
+          if (window.AlloPostFXEnabled === false) return;
+          var ensure = function (cb) {
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var urls = [
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+            ];
+            var i = 0;
+            (function nextScript() {
+              if (i >= urls.length) { cb(); return; }
+              var s = document.createElement('script');
+              s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+              document.head.appendChild(s);
+            })();
+          };
+          ensure(function () {
+            try {
+              var T = window.THREE;
+              if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+              var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              var lowPower = reduce || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+              var res = lowPower ? 0.5 : 1;
+              var c = new T.EffectComposer(renderer);
+              c.addPass(new T.RenderPass(scene, camera));
+              c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))), lowPower ? 0.6 : 0.9, 0.35, 0.85));
+              composer = c;
+            } catch (e) { composer = null; }
+          });
+        })();
         // sRGB output + cinematic tonemap. Without this, MeshStandardMaterial
         // colors render in linear space + look washed out; ACES tonemap brings
         // back the rich highlights/shadows raptor-vision biomes need.
@@ -10080,7 +10120,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ? '<div style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(16,185,129,0.4)">NEAREST &nbsp;<span style="color:' + nearestColor + ';font-size:14px;font-weight:bold">' + arrowChar + ' ' + nearestDist.toFixed(0) + 'm</span></div>'
               : '');
 
-          renderer.render(scene, camera);
+          if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
+          else { renderer.render(scene, camera); }
         }
         loop();
 
@@ -10108,13 +10149,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               else obj.material.dispose();
             }
           });
+          if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
           renderer.dispose();
         };
 
         // Handle resize
         var onResize = function() {
           var nw = canvasEl.clientWidth, nh = canvasEl.clientHeight;
-          if (nw && nh) { renderer.setSize(nw, nh, false); camera.aspect = nw / nh; camera.updateProjectionMatrix(); }
+          if (nw && nh) { renderer.setSize(nw, nh, false); camera.aspect = nw / nh; camera.updateProjectionMatrix(); if (composer) { try { composer.setSize(nw, nh); } catch (e) {} } }
         };
         window.addEventListener('resize', onResize);
       }
