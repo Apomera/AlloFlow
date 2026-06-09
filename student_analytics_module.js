@@ -358,6 +358,12 @@
     const [importedStudents, setImportedStudents] = React.useState([]);
     const [selectedStudent, setSelectedStudent] = React.useState(null);
     const [isProcessing, setIsProcessing] = React.useState(false);
+    // RTI decision-rule picker state (was read at 5 sites but never declared -> ReferenceError when
+    // that panel rendered). NOTE: this picker is a DISPLAY REFERENCE only — calculateAimline uses a
+    // FIXED consecutive-below-aimline rule (4 warn / 6 change); wiring the picker into the alert logic
+    // would change WHEN warning/critical fires and is a separate, reviewed RTI-fidelity change.
+    const [rtiDecisionRuleMethod, setRtiDecisionRuleMethod] = React.useState('four_point');
+    const [rtiDecisionRuleThreshold, setRtiDecisionRuleThreshold] = React.useState(4);
     const [isMinimized, setIsMinimized] = React.useState(false);
     const [assessmentCenterTab, setAssessmentCenterTab] = React.useState("assessments");
     const [researchStudent, setResearchStudent] = React.useState(null);
@@ -1168,10 +1174,10 @@
       var benchmark = norms[grade][season]; if (benchmark === undefined || benchmark === null) return { tier: 0, status: 'No norms for this season', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
       var pct = benchmark > 0 ? Math.round((score / benchmark) * 100) : (score > 0 ? 200 : 0);
       var tier, status, statusColor, interpretation, recommendations;
-      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Continue current instruction.', 'Consider enrichment or increased challenge.', 'Re-assess at next screening window.']; }
-      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Monitor informally.', 'Provide additional practice within Tier 1.']; }
-      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '. Strategic intervention recommended.'; recommendations = ['Begin Tier 2 intervention.', 'Monitor progress bi-weekly.', 'Aim for 8+ data points before evaluating effectiveness.']; }
-      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '. Intensive intervention needed.'; recommendations = ['Begin Tier 3 intensive intervention immediately.', 'Monitor progress weekly.', 'Consider referral for comprehensive evaluation if insufficient growth after 6-8 weeks.']; }
+      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Continue current instruction.', 'Consider enrichment or increased challenge.', 'Re-assess at next screening window.']; }
+      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Monitor informally.', 'Provide additional practice within Tier 1.']; }
+      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '. Strategic intervention recommended.'; recommendations = ['Begin Tier 2 intervention.', 'Monitor progress bi-weekly.', 'Aim for 8+ data points before evaluating effectiveness.']; }
+      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '. Intensive intervention needed.'; recommendations = ['Begin Tier 3 intensive intervention immediately.', 'Monitor progress weekly.', 'Consider referral for comprehensive evaluation if insufficient growth after 6-8 weeks.']; }
       if (probeType === 'orf' && tier >= 2) { recommendations.push('Implement repeated reading with corrective feedback.'); if (tier === 3) recommendations.push('Check decoding with NWF — if < 90% accuracy, fluency deficit may be driven by decoding problem.'); }
       if (probeType === 'nwf_cls' && tier >= 2) { recommendations.push('Focus on phonics: CVC blending, vowel sounds, sound-symbol correspondence.'); if (tier === 3) recommendations.push('Assess letter-sound knowledge with LNF.'); }
       if (probeType === 'lnf' && tier >= 2) { recommendations.push('Increase letter exposure through multisensory activities.'); if (tier === 3) recommendations.push('Prioritize high-frequency letters. Consider vision screening.'); }
@@ -3498,10 +3504,15 @@
           }
         }
         if (latest?.wcpm) {
+          var _probeDate; try { var _d = latest.date || latest.timestamp || latest.ts || latest.completedAt; var _dd = _d ? new Date(_d) : null; _probeDate = (_dd && !isNaN(_dd.getTime())) ? ('as of ' + _dd.toLocaleDateString()) : '(probe date not recorded)'; } catch (e) { _probeDate = '(probe date not recorded)'; }
           runningRecordHtml += `
-                    <div style="margin-top: 8px; padding: 10px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 13px; color: #166534; font-weight: 600;">Latest Fluency:</span>
-                        <span style="font-size: 18px; font-weight: 800; color: #16a34a;">${latest.wcpm} WCPM</span>
+                    <div style="margin-top: 8px; padding: 10px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                          <span style="font-size: 13px; color: #166534; font-weight: 600;">Most recent oral reading probe:</span>
+                          <span style="font-size: 18px; font-weight: 800; color: #16a34a;">${latest.wcpm} WCPM</span>
+                          <span style="font-size: 11px; color: #166534;">${_probeDate}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #475569; margin-top: 4px;">Single timed reading — a one-passage WCPM can vary by several words day to day. For decisions, use the median of 3 passages and read it alongside the progress trend.</div>
                     </div>`;
         }
       }
@@ -3546,7 +3557,7 @@
                 <span style="font-size: 28px;">${rti.emoji}</span>
                 <div>
                     <div style="font-size: 16px; font-weight: 800; color: ${tc.color};">Tier ${rti.tier} — ${tc.label}</div>
-                    <div style="font-size: 11px; color: #64748b;">RTI Classification</div>
+                    <div style="font-size: 11px; color: #64748b;">Suggested tier from in-app activity — confirm with screening data; final placement is a team decision.</div>
                 </div>
             </div>
             <div class="section-title">📊 Performance Summary</div>
@@ -6826,7 +6837,7 @@
             borderRadius: '6px',
             border: '1px solid #fca5a5'
           }
-        }, "\uD83D\uDD34 6+ data points below aimline \u2014 Tier change recommended"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
+        }, "\uD83D\uDD34 6 consecutive points below the aimline (of the last 6) \u2014 Tier change recommended"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
           style: {
             fontSize: '11px',
             fontWeight: 700,
@@ -6836,7 +6847,7 @@
             borderRadius: '6px',
             border: '1px solid #fcd34d'
           }
-        }, "\uD83D\uDFE1 4+ data points below aimline \u2014 Consider adjusting intervention"), aimline.alert === 'ok' && studentGoal && /*#__PURE__*/React.createElement("div", {
+        }, "\uD83D\uDFE1 4+ consecutive points below the aimline (within the last 6) \u2014 Consider adjusting intervention"), aimline.alert === 'ok' && studentGoal && /*#__PURE__*/React.createElement("div", {
           style: {
             fontSize: '11px',
             fontWeight: 700,
@@ -6860,6 +6871,8 @@
           gap: "4px"
         }
       }, "\u2699\uFE0F Decision Rule Settings"), /*#__PURE__*/React.createElement("div", {
+        style: { fontSize: "10px", color: "#64748b", marginBottom: "6px", fontStyle: "italic" }
+      }, "Display reference. The progress-monitoring alert uses a fixed rule \u2014 4 consecutive points below the aimline (adjust intervention) / 6 (tier change) \u2014 and does not change with this selection."), /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
           gap: "8px",
