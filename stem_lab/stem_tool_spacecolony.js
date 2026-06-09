@@ -82,6 +82,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var callGemini = ctx.callGemini;
+      // AI gate (default OFF). The turn-advance "planet event" game-master call
+      // fired on EVERY turn with no consent/teacher gate — the largest unmetered
+      // AI surface in STEM Lab. Gate it: when off, the turn still advances and the
+      // local (non-AI) dawnData.discovery still shows. Player-initiated AI (build
+      // gates, expeditions, anomalies) is left as-is — those are explicit actions.
+      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);
       var setStemLabTool = ctx.setStemLabTool;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var t = ctx.t;
@@ -1635,7 +1641,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     upd('dawnData', { turn: nt, income: _incomeDeltas, weather: wx ? wx.name : null, discovery: _discovery, isFirst: false });
                     upd('turnPhase', 'dawn'); upd('actionPoints', maxAP); upd('builtThisTurn', false);
                     upd('fateRoll', null); upd('fateAnimating', false);
-                    upd('colonyRes', nr2); upd('colonyTurn', nt); upd('colonyEventLoading', true);
+                    upd('colonyRes', nr2); upd('colonyTurn', nt);
+                    if (aiHintsEnabled && callGemini) {
+                    upd('colonyEventLoading', true);
                     var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
                     callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Colony values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '/100. Sometimes let colony values influence event themes (high ecology = nature events, high tradition = cultural discovery events, low equity = social tension events). ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function (result) {
                       try {
@@ -1645,6 +1653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         var nl2 = gameLog.slice(); nl2.push('Turn ' + nt + ': ' + (parsed.emoji || '') + ' ' + parsed.title); upd('colonyLog', nl2);
                       } catch (err) { upd('colonyEventLoading', false); if (addToast) addToast('Event failed to generate', 'error'); }
                     }).catch(function () { upd('colonyEventLoading', false); });
+                    }
                     var ns5 = Object.assign({}, stats); ns5.turnsPlayed++; upd('colonyStats', ns5);
                     if (typeof addXP === 'function') addXP(5, 'Kepler Colony: Turn ' + nt);
                     // Rover per-turn processing
@@ -1736,7 +1745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }
 
                     // Colony Charter (generated once at turn 20 from colony values)
-                    if (nt === 20 && !d.colonyCharter) {
+                    if (aiHintsEnabled && callGemini && nt === 20 && !d.colonyCharter) {
                       callGemini('Generate a founding charter for a space colony on planet Kepler-442b. The colony has these values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '. They have adopted these cultural traditions: ' + (traditions.length > 0 ? traditions.join(', ') : 'none yet') + '. Write a brief founding charter (4-5 sentences) that reflects these values. It should feel like a real historical document — inspirational, specific, and grounded in the colony\u2019s unique blend of cultures and science. Do NOT use bullet points. Write it as flowing prose.', true).then(function (charter) {
                         upd('colonyCharter', charter);
                         if (d.colonyTTS) colonySpeak('The colony charter has been drafted. A founding document for a new civilization.', 'narrator');
@@ -1756,7 +1765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }
 
                     // Governance Dilemma (NationStates-style — every 5 turns)
-                    if (nt > 2 && nt % 5 === 0 && !d.activeDilemma) {
+                    if (aiHintsEnabled && callGemini && nt > 2 && nt % 5 === 0 && !d.activeDilemma) {
                       var valStr = Object.keys(colonyValues).map(function (k2) { return k2 + ':' + colonyValues[k2]; }).join(', ');
                       upd('dilemmaLoading', true);
                       callGemini('You are creating a governance dilemma for a space colony on alien planet Kepler-442b. Colony values: ' + valStr + '. Equity: ' + equity + '/100. Population: ' + settlers.length + '. This colony values diverse knowledge traditions. Create a nuanced moral/political/cultural dilemma with NO clear right answer (like NationStates). The dilemma should involve balancing competing goods (e.g. innovation vs tradition, individual freedom vs collective welfare, rapid growth vs sustainability, scientific progress vs cultural preservation). Sometimes draw on wisdom from real-world cultural traditions (African, Indigenous, Asian, etc.) as viable solutions. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"emoji":"<emoji>","title":"<dilemma>","description":"<3-4 sentence scenario>","choices":[{"text":"<choice A>","values":{"collectivism":<-10 to 10>,"innovation":<-10 to 10>,"ecology":<-10 to 10>,"tradition":<-10 to 10>,"openness":<-10 to 10>},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<1-2 sentence result>"},{"text":"<choice B>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"},{"text":"<choice C>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"}],"lesson":"<real social science or cultural insight, 2-3 sentences>"}', true).then(function (result) {
@@ -1773,7 +1782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }
 
                     // Major disaster (rare — every ~20 turns)
-                    if (nt > 1 && nt % 20 === 0 && Math.random() < 0.5) {
+                    if (aiHintsEnabled && callGemini && nt > 1 && nt % 20 === 0 && Math.random() < 0.5) {
                       upd('disasterLoading', true);
                       callGemini('Generate a MAJOR disaster event for a space colony on alien planet Kepler-442b. Turn ' + nt + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. The disaster should be science-based (asteroid impact, volcanic eruption, alien plague, equipment catastrophe, radiation storm). Return ONLY valid JSON: {"emoji":"<emoji>","title":"<disaster name>","description":"<dramatic 3-4 sentences>","lesson":"<real science about this type of disaster, 2-3 sentences>","question":"<science question to mitigate damage>","options":["<correct mitigation>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"fullDamage":{"food":<-5 to -15>,"energy":<-5 to -15>,"water":<-5 to -15>,"materials":<-5 to -15>,"morale":<-10 to -20>},"mitigatedDamage":{"food":<0 to -5>,"energy":<0 to -5>,"water":<0 to -5>,"materials":<0 to -5>,"morale":<-3 to -8>}}. Shuffle correct answer (0-5).', true).then(function (result) {
                         try {
@@ -1831,7 +1840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     upd('colonyStats', ns9);
 
                     // Colony Radio — AI broadcast every 8 turns
-                    if (nt > 3 && nt % 8 === 0) {
+                    if (aiHintsEnabled && callGemini && nt > 3 && nt % 8 === 0) {
                       callGemini('You are the radio host for a space colony called "' + colonyName + '" on planet Kepler-442b. Give a brief radio news broadcast (3-4 sentences) reporting on recent colony events. Turn: ' + nt + '. Population: ' + settlers.length + '. Buildings: ' + buildings.length + '. Terraform: ' + terraform + '%. Era: ' + era + '. Season: ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm') + '. Recent events from log: ' + gameLog.slice(-5).join('; ') + '. Make it feel like a real news broadcast — upbeat, informative, with a sign-off. Grade level: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (broadcast) {
                         upd('colonyRadio', broadcast);
                         if (d.colonyTTS) colonySpeak(broadcast, 'narrator');
@@ -2382,6 +2391,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         '\u2705 ' + (buildingEff[bd.id] !== undefined ? buildingEff[bd.id] : 100) + '%')),
                       canAff && React.createElement('button', {
                         onClick: function () {
+                          // In-flight guard: scienceGate shared with research / wonders.
+                          if (d.scienceGateLoading || d.scienceGate) return;
                           if ((d.colonyMode || 'mcq') === 'mcq') {
                             // Generate AI MCQ for the gate
                             upd('scienceGateLoading', true);
@@ -2587,6 +2598,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('div', null, React.createElement('span', { style: { color: st.health > 50 ? '#22d3ee' : '#ef4444' } }, '\u2695 ' + st.health), React.createElement('div', { className: 'w-full rounded-full h-1.5 mt-0.5', style: { background: '#1e293b' } }, React.createElement('div', { className: 'h-1.5 rounded-full transition-all', style: { width: st.health + '%', background: st.health > 50 ? 'linear-gradient(90deg, #06b6d4, #22d3ee)' : 'linear-gradient(90deg, #ef4444, #f87171)', animation: 'kp-barFill 1s ease-out' } }))),
                       React.createElement('button', {
                         onClick: function () {
+                          // In-flight guard: prevents double-click from issuing a second
+                          // callGemini before the first resolves (would orphan tokens and
+                          // race on settlerChat).
+                          if (d.settlerChatLoading) return;
                           upd('talkSettler', si2);
                           upd('settlerChatLoading', true);
                           callGemini('You are ' + st.name + ', a ' + st.role + ' (specialty: ' + st.specialty + ') on the Kepler-442b space colony. Morale: ' + st.morale + '%, Health: ' + st.health + '%. Colony has ' + buildings.length + ' buildings, turn ' + turn + '. Resources: food=' + resources.food + ' energy=' + resources.energy + '. Give a brief in-character update (2-3 sentences) about your work, mood, and a science fact related to your specialty. Be personable and educational.', true).then(function (result) {
@@ -2756,6 +2771,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       ),
                       !isResearched && eraReady && React.createElement('button', {
                         onClick: function () {
+                          // In-flight guard: scienceGate is shared with wonders / building MCQ.
+                          // A second click while one is loading would clobber scienceGate.
+                          if (d.scienceGateLoading || d.scienceGate) return;
                           if (resources.science >= rd2.cost) {
                             // Science challenge gate for research
                             upd('scienceGateLoading', true);
@@ -2797,6 +2815,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('div', { className: 'text-[11px] text-slate-200 mt-1 italic' }, gs4.fact),
                       React.createElement('button', {
                         onClick: function () {
+                          // In-flight guard: avoid stacking mentor calls.
+                          if (d.mentorChatLoading) return;
                           upd('mentorChatLoading', gs4.name);
                           callGemini('You are an AI reconstruction of ' + gs4.name + ', a famous scientist, running on the quantum computers of a space colony on planet Kepler-442b in the far future. A colonist is consulting you for advice. Stay in character as ' + gs4.name + '. Respond warmly but share real scientific knowledge from your field (' + gs4.specialty + '). Reference your real historical achievements. Give practical advice that would help the colony. Keep response to 3-4 sentences. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Current colony situation: Turn ' + turn + ', ' + settlers.length + ' settlers, ' + buildings.length + ' buildings, ' + terraform + '% terraformed.', true).then(function (mentorResult) {
                             upd('mentorChat', { name: gs4.name, icon: gs4.icon, text: mentorResult }); upd('mentorChatLoading', null);
@@ -2945,6 +2965,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         isComplete ? React.createElement('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full', style: { background: '#f59e0b30', color: '#fbbf24', border: '1px solid #f59e0b' } }, '\u2728 COMPLETE') :
                         canAfford ? React.createElement('button', {
                           onClick: function() {
+                            // In-flight guard: scienceGate shared with research / building MCQ.
+                            if (d.scienceGateLoading || d.scienceGate) return;
                             upd('scienceGateLoading', true);
                             var modeW = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<2-3 sentences>"}. 6 options, shuffle correct (0-5).' : 'Return ONLY valid JSON: {"question":"<question>","answer":"<1-3 words>","explanation":"<2-3 sentences>"}';
                             callGemini('Generate a challenging ' + wd.domain + ' science question about building a ' + wd.name + ' (' + wd.desc + ') in a space colony. Challenge ' + (progress + 1) + ' of ' + wd.challenges + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeW, true).then(function(result) {
