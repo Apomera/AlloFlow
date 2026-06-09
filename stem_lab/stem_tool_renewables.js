@@ -3274,7 +3274,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           st.phase = 'year';
           st.leads = generateLeads(st);
           upd('installerCo', st);
-          rnAnnounce('Started Solar Installer Co. in ' + (INSTALLER_AREAS.find(function(a){return a.id===areaId;}).name));
+          var instArea = window.StemLab && window.StemLab.findById ? window.StemLab.findById(INSTALLER_AREAS, areaId) : null;
+          rnAnnounce('Started Solar Installer Co. in ' + (instArea ? instArea.name : 'the selected area'));
         }
 
         function resetInstaller() {

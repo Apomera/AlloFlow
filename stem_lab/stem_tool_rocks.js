@@ -4674,8 +4674,10 @@ const d = labToolData.rockCycle || {};
                               sfxRockCorrect();
                               if (typeof addToast === 'function') {
                                 newlyCompleted.forEach(function(finishedId) {
-                                  var name = ROCKS_CHALLENGES.find(function(c) { return c.id === finishedId; }).name;
-                                  addToast({ type: 'success', title: 'Challenge Complete!', message: 'Unlocked: ' + name + ' (+' + ROCKS_CHALLENGES.find(function(c) { return c.id === finishedId; }).rp + ' RP)' });
+                                  var fchRec = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS_CHALLENGES, finishedId) : null;
+                                  var name = fchRec ? fchRec.name : 'a challenge';
+                                  var rp = fchRec ? fchRec.rp : 0;
+                                  addToast({ type: 'success', title: 'Challenge Complete!', message: 'Unlocked: ' + name + ' (+' + rp + ' RP)' });
                                 });
                               }
                             }

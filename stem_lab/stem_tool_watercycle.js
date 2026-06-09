@@ -281,11 +281,13 @@
   // the way real watersheds work: buffers feed headwaters, beavers create
   // floodplain function, low ag runoff cleans up the mainstem, removed
   // barriers + good buffers bring fish runs back.
+  // Helper: null-safe id lookup. Falls back to inline find if window.StemLab isn't loaded.
+  var _wcById = function(arr, id) { return window.StemLab && window.StemLab.findById ? window.StemLab.findById(arr, id) : null; };
   var STEWARD_FEEDBACK_RULES = [
-    { id: 'bufferFeedsHeadwaters', when: function(s) { return s.find(function(c) { return c.id === 'forestBuffer'; }).quality > 70; }, apply: function(s) { var h = s.find(function(c) { return c.id === 'headwaterStreams'; }); h.quality = Math.min(100, h.quality + 4); }, msg: 'Healthy forest buffers cooled and cleaned headwater streams.' },
-    { id: 'beaverHelpsFloodplain', when: function(s) { return s.find(function(c) { return c.id === 'floodplainWetlands'; }).quality > 60; }, apply: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); m.quality = Math.min(100, m.quality + 3); m.connectivity = Math.min(100, m.connectivity + 2); }, msg: 'Beaver-built wetlands attenuated flood pulses and improved mainstem water quality.' },
-    { id: 'agCleansUp', when: function(s) { return s.find(function(c) { return c.id === 'agriculturalWatershed'; }).quality > 60; }, apply: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); m.quality = Math.min(100, m.quality + 4); }, msg: 'Lower agricultural runoff cleaned up the river mainstem.' },
-    { id: 'runRestoration', when: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); var b = s.find(function(c) { return c.id === 'forestBuffer'; }); return m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
+    { id: 'bufferFeedsHeadwaters', when: function(s) { var c = _wcById(s, 'forestBuffer'); return !!c && c.quality > 70; }, apply: function(s) { var h = _wcById(s, 'headwaterStreams'); if (h) h.quality = Math.min(100, h.quality + 4); }, msg: 'Healthy forest buffers cooled and cleaned headwater streams.' },
+    { id: 'beaverHelpsFloodplain', when: function(s) { var c = _wcById(s, 'floodplainWetlands'); return !!c && c.quality > 60; }, apply: function(s) { var m = _wcById(s, 'riverMainstem'); if (m) { m.quality = Math.min(100, m.quality + 3); m.connectivity = Math.min(100, m.connectivity + 2); } }, msg: 'Beaver-built wetlands attenuated flood pulses and improved mainstem water quality.' },
+    { id: 'agCleansUp', when: function(s) { var c = _wcById(s, 'agriculturalWatershed'); return !!c && c.quality > 60; }, apply: function(s) { var m = _wcById(s, 'riverMainstem'); if (m) m.quality = Math.min(100, m.quality + 4); }, msg: 'Lower agricultural runoff cleaned up the river mainstem.' },
+    { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
   ];
 
   var STEWARD_DIFFICULTIES = {

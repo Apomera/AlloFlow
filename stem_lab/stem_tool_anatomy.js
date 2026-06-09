@@ -316,7 +316,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             if (typeof addToast === 'function') {
               for (var j = 0; j < newlyCompleted.length; j++) {
                 var finishedId = newlyCompleted[j];
-                var name = ANAT_CHALLENGES.find(function(c) { return c.id === finishedId; }).name;
+                // findById is null-safe (window.StemLab.findById); falls back to
+                // a placeholder so a renamed/missing challenge id can't crash the toast.
+                var anatCh = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ANAT_CHALLENGES, finishedId) : null;
+                var name = anatCh ? anatCh.name : 'a challenge';
                 addToast({
                   type: 'success',
                   title: 'Challenge Complete!',

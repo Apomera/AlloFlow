@@ -32,8 +32,9 @@
 // OR:
 //   var name = window.StemLab.findById(ARR, id)?.name ?? 'Unknown';
 //
-// Status: INFORMATIONAL (does not block deploy). Promote to blocking after
-// the named tools are converted.
+// Status: BLOCKING as of 2026-06-07 (verify_all passes --blocking). All 11
+// audit-named tools have been converted to window.StemLab.findById or
+// extract-and-null-guard. New findings will fail the gate.
 //
 // Usage:
 //   node dev-tools/check_find_deref.cjs                  (all stem_lab files)

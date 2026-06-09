@@ -10934,6 +10934,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               'The Soviet samizdat era (~1956-1986) produced one of the most extraordinary clandestine literary movements in history. Banned works — Solzhenitsyn, Brodsky, Bulgakov, foreign authors like Orwell + Pasternak — were typed by hand on typewriters, often 5+ carbon copies per typing session. A reader received the book, was given a deadline (often 24-48 hours), then passed it on. A single original book might pass through hundreds of readers over months. Tamizdat (printed abroad and smuggled in) was the parallel pipeline. The accumulated samizdat literature kept entire bodies of work alive that the Soviet state had committed to erasing. After the Soviet fall, samizdat editions became collectors\' items + primary historical sources.')
           );
         } else if (cSect === 'scenario') {
+          // Null-safe choice lookup (window.StemLab.findById guards against renamed/missing ids).
+          var pickedScCh = cScChoice && window.StemLab && window.StemLab.findById ? window.StemLab.findById(curScenario.choices, cScChoice) : null;
           content = h('div', null,
             dropCapPara('You are a master printer. A manuscript arrives. The author is controversial; the contents are dangerous. Do you take the commission? Five real historical scenarios. Pick your decision and see what happened (in history + in your fictional shop).'),
             sectionHeader('⚖️', 'Scenario ' + (cScenario + 1) + ' of ' + printerScenarios.length),
@@ -10973,9 +10975,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             // Outcome
             cScChoice && h('div', null,
               h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 10, padding: 14, marginBottom: 10 } },
-                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'You chose: ' + curScenario.choices.find(function(c) { return c.id === cScChoice; }).label),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'You chose: ' + (pickedScCh ? pickedScCh.label : '')),
                 h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.7 } },
-                  curScenario.choices.find(function(c) { return c.id === cScChoice; }).outcome)),
+                  pickedScCh ? pickedScCh.outcome : '')),
               h('div', { style: { background: 'rgba(127,176,105,0.08)', border: '1px solid ' + T.ok, borderRadius: 10, padding: 12, marginBottom: 14 } },
                 h('div', { style: { fontSize: 11, color: T.ok, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '📖 What actually happened in history'),
                 h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.65 } }, curScenario.historical)),
@@ -11335,6 +11337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             )
           );
         } else if (fnSect === 'editor') {
+          // Null-safe editor-choice lookup (window.StemLab.findById guards against renamed/missing ids).
+          var pickedEdCh = fnEditorChoice && window.StemLab && window.StemLab.findById ? window.StemLab.findById(es.choices, fnEditorChoice) : null;
           content = h('div', null,
             dropCapPara('Editorial judgment is the heart of journalism. The editor decides what runs, how prominently, with what headline. These decisions shape what readers know — and how. Here are 5 historical scenarios from across the news era. You make the call. See what history did.'),
             // Editor scenario picker
@@ -11375,7 +11379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   fnEditorChoice === es.best ? '✓ Defensible' : '◐ Consider this'),
                 h('div', { style: { fontSize: 13, color: T.text, marginBottom: 8 } },
                   h('strong', null, 'You chose: '),
-                  es.choices.find(function(c) { return c.id === fnEditorChoice; }).label)),
+                  pickedEdCh ? pickedEdCh.label : '')),
               h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, marginBottom: 14 } },
                 h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '📜 What history actually did'),
                 h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, es.explain)),

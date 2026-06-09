@@ -653,7 +653,12 @@ if (!safetyChecked) {
   var chemsComplete = presChems.length > 0 && presChems.every(function(c) { return chemsReviewed[c]; });
 
   var drillForPreset = { 'sa_sb':0, 'wa_sb':2, 'sa_wb':3, 'wa_wb':4, 'poly_h3po4':0, 'redox_kmno4':1, 'back_antacid':2 };
-  var drillIdx = drillForPreset[presetId] != null ? drillForPreset[presetId] : 0;
+  // Clamp drillIdx to a valid range — guards against incidentScenarios shrinking
+  // in a future edit, or drillForPreset holding a stale index for a preset.
+  var rawDrillIdx = drillForPreset[presetId] != null ? drillForPreset[presetId] : 0;
+  var drillIdx = (incidentScenarios.length > 0)
+    ? Math.max(0, Math.min(rawDrillIdx, incidentScenarios.length - 1))
+    : 0;
   var drillScenario = incidentScenarios[drillIdx];
   var drillComplete = drillResult !== null;
 
@@ -1365,7 +1370,11 @@ if (!safetyChecked) {
 
           // Result feedback
           drillResult && (function() {
-            var selected = drillScenario.options.find(function(o) { return o.id === drillAnswer; });
+            var dsOpts = (drillScenario && drillScenario.options) || [];
+            var selected = dsOpts.find(function(o) { return o.id === drillAnswer; });
+            // Predicate-based lookup (not findById) — guarded so a scenario with no
+            // correct-flagged option won't crash the render.
+            var correctOpt = dsOpts.find(function(o) { return o.correct; });
             var isTimeout = drillResult === 'timeout';
             var isCorrect = drillResult === 'correct';
             return React.createElement("div", {
@@ -1383,15 +1392,15 @@ if (!safetyChecked) {
               ),
               !isTimeout && selected && React.createElement("p", { style: { fontSize:'11px', color:'rgba(255,255,255,0.6)', lineHeight:'1.5' } }, selected.feedback),
               isTimeout && React.createElement("p", { style: { fontSize:'11px', color:'rgba(255,255,255,0.6)', lineHeight:'1.5' } },
-                "The correct response was: " + drillScenario.options.find(function(o) { return o.correct; }).label),
-              !isCorrect && React.createElement("div", {
+                "The correct response was: " + (correctOpt ? correctOpt.label : '(no correct option defined)')),
+              !isCorrect && correctOpt && React.createElement("div", {
                 style: { marginTop:'8px', padding:'8px', borderRadius:'8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)' }
               },
                 React.createElement("div", { style: { fontSize:'10px', fontWeight:800, color:'#34d399', marginBottom:'4px' } }, "\u2705 Correct response:"),
                 React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)' } },
-                  drillScenario.options.find(function(o) { return o.correct; }).label),
+                  correctOpt.label),
                 React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.5)', marginTop:'4px' } },
-                  drillScenario.options.find(function(o) { return o.correct; }).feedback)
+                  correctOpt.feedback)
               )
             );
           })()

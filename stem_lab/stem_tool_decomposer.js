@@ -2217,7 +2217,9 @@
                           }
                           var nextState = Object.assign({}, d, updates);
                           updMulti(updates);
-                          if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + MATERIALS.find(function(m) { return m.name === obj.material; }).formula, 'success');
+                          var matRec = MATERIALS.find(function(m) { return m.name === obj.material; });
+                          var matFormula = matRec ? matRec.formula : '?';
+                          if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + matFormula, 'success');
                           if (awardStemXP) awardStemXP(5);
                           setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                         } else {
