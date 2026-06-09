@@ -189,7 +189,7 @@ dataRef.current = d;
 
               termDef: 'Fixed Ratio (FR): A schedule where reinforcement is delivered after a fixed number of responses.',
 
-              funFact: '🎰 Slot machines use Variable Ratio (VR) schedules — the most resistant to extinction — which is why they\'re so addictive!',
+              funFact: '🎰 Slot machines use Variable Ratio (VR) schedules — the most resistant to extinction — one reason they can be so habit-forming (along with other psychological, social, and neurological factors).',
 
               vocab: ['Fixed Ratio (FR)', 'Continuous Reinforcement (CRF)', 'Intermittent Reinforcement'],
 

@@ -176,11 +176,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
   ];
 
   // Inter-sector feedback rules (the cascade equivalent).
+  // Helper: null-safe id lookup. Falls back to inline find if window.StemLab isn't loaded.
+  var _ceById = function(arr, id) { return window.StemLab && window.StemLab.findById ? window.StemLab.findById(arr, id) : null; };
   var PATHWAY_FEEDBACK_RULES = [
-    { id: 'cleanGridUnlocks', when: function(s) { return s.find(function(x) { return x.id === 'energyGrid'; }).decarb > 70; }, apply: function(s) { var t = s.find(function(x) { return x.id === 'transportation'; }); t.decarb = Math.min(100, t.decarb + 5); var b = s.find(function(x) { return x.id === 'buildings'; }); b.decarb = Math.min(100, b.decarb + 5); }, msg: 'Clean grid unlocked accelerated decarbonization in transportation and buildings.' },
-    { id: 'lowJusticeDrags', when: function(s) { return s.find(function(x) { return x.id === 'climateJustice'; }).support < 40; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 4); }); }, msg: 'Low climate-justice progress dragged public support down across all sectors.' },
-    { id: 'forestsBoostAdaptation', when: function(s) { return s.find(function(x) { return x.id === 'workingLands'; }).resilience > 70; }, apply: function(s) { var a = s.find(function(x) { return x.id === 'adaptation'; }); a.resilience = Math.min(100, a.resilience + 5); }, msg: 'Healthy working forests provided flood and heat resilience downstream.' },
-    { id: 'adaptDeficitErodes', when: function(s) { return s.find(function(x) { return x.id === 'adaptation'; }).resilience < 35; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 5); }); }, msg: 'Low adaptation capacity meant disasters eroded public trust in climate policy generally.' }
+    { id: 'cleanGridUnlocks', when: function(s) { var x = _ceById(s, 'energyGrid'); return !!x && x.decarb > 70; }, apply: function(s) { var t = _ceById(s, 'transportation'); if (t) t.decarb = Math.min(100, t.decarb + 5); var b = _ceById(s, 'buildings'); if (b) b.decarb = Math.min(100, b.decarb + 5); }, msg: 'Clean grid unlocked accelerated decarbonization in transportation and buildings.' },
+    { id: 'lowJusticeDrags', when: function(s) { var x = _ceById(s, 'climateJustice'); return !!x && x.support < 40; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 4); }); }, msg: 'Low climate-justice progress dragged public support down across all sectors.' },
+    { id: 'forestsBoostAdaptation', when: function(s) { var x = _ceById(s, 'workingLands'); return !!x && x.resilience > 70; }, apply: function(s) { var a = _ceById(s, 'adaptation'); if (a) a.resilience = Math.min(100, a.resilience + 5); }, msg: 'Healthy working forests provided flood and heat resilience downstream.' },
+    { id: 'adaptDeficitErodes', when: function(s) { var x = _ceById(s, 'adaptation'); return !!x && x.resilience < 35; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 5); }); }, msg: 'Low adaptation capacity meant disasters eroded public trust in climate policy generally.' }
   ];
 
   var PATHWAY_DIFFICULTIES = {
@@ -3981,7 +3983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             else if (Math.abs(forcingWm2) < 0.5) state = 'stable';
             else state = 'paradox';
             var sm = {
-              runaway: { label: '🔥 Runaway warming', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Positive feedback dominates. Energy in >> energy out.' },
+              runaway: { label: '🔥 Strong warming', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Positive feedback dominates; Earth warms toward a hotter equilibrium. (A true "runaway" greenhouse — oceans boiling away — is a Venus scenario, not Earth at these forcings.)' },
               cooling: { label: '🧊 Rapid cooling',   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'High albedo + negative feedback. Ice-age trajectory.' },
               stable:  { label: '🟢 Stable climate',  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Net forcing ≈ 0 W/m². Earth equilibrium.' },
               paradox: { label: '⚖️ Albedo paradox',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Forcings partially offset. Climate slowly drifts.' }
