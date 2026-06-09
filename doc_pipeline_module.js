@@ -12854,17 +12854,9 @@ tr { page-break-inside: avoid; }
     // chain), but a silent no-op previously shipped PDFs that kept the SOURCE
     // Producer and carried no PDF/UA-1 marker while the UI implied otherwise.
     let _producerStamped = false, _xmpStamped = false;
-    // Declare PDF/UA-1 (pdfuaid:part=1) ONLY when the build will produce zero
-    // orphaned semantic leaves — i.e. when the scanned-path unify pass runs and
-    // links every leaf via /K→MCR. On the text-layer path, Stage 4b (per-leaf
-    // re-pointing) now links leaves whose text 1:1-matches a Stage-4 block, but
-    // unmatched leaves (figures, table cells, AI-rewritten text) can remain
-    // ActualText-only — and this stamp runs BEFORE the tree is built, so it
-    // can't know the actual outcome. Stays conservatively scanned-gated until
-    // the stamp moves post-build to decide on the REAL orphan count (watch
-    // summary.perLeafLinked for real-world match rates first).
-    // KEEP IN SYNC with the isScanned unify gate (same /tesseract|vision|ocr/ regex).
-    const _uaDeclared = /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''));
+    // Decided POST-build on the ACTUAL orphaned-leaf count — see the
+    // "Evidence-based PDF/UA-1 declaration" block just before the self-check.
+    let _uaDeclared = false;
     try { doc.setProducer('AlloFlow Accessibility Pipeline'); _producerStamped = true; }
     catch(prodErr) { try { warnLog('[createTaggedPdf] WARNING: could not stamp Producer metadata — output keeps the source Producer and is not marked as AlloFlow-processed: ' + (prodErr && prodErr.message)); } catch(_) {} }
     try { doc.setModificationDate(new Date()); } catch(_) {}
@@ -12885,61 +12877,10 @@ tr { page-break-inside: avoid; }
     // that we don't have any "suspect" (incomplete) marked content.
     const markInfo = context.obj({ Marked: true, Suspects: false });
     catalog.set(PDFName.of('MarkInfo'), markInfo);
-    // ── PDF/UA-1 conformance declaration via XMP metadata ──
-    // PDF/UA-1 (ISO 14289-1) requires the doc to identify itself as
-    // PDF/UA-1 conformant. Without the pdfuaid:part="1" entry, validators
-    // (Adobe Acrobat Pro Accessibility Checker, PAC 3, axe DevTools PDF)
-    // see a tagged PDF but won't say "this declares PDF/UA-1 conformance"
-    // — they'll show "tagged PDF" but flag missing conformance metadata.
-    // We embed an XMP packet covering the standard Dublin Core, PDF, and
-    // pdfuaid namespaces so the doc reads as a properly declared
-    // PDF/UA-1 file in any spec-compliant validator.
-    try {
-      const pdfTitle = (meta.title || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      const pdfSubject = (meta.subject || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      const pdfLang = lang.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      const _now = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
-      const xmp = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
-<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="AlloFlow PDF/UA-1 Pipeline">
-  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <rdf:Description rdf:about=""
-        xmlns:dc="http://purl.org/dc/elements/1.1/"
-        xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
-        xmlns:xmp="http://ns.adobe.com/xap/1.0/"
-        xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">
-      <dc:format>application/pdf</dc:format>
-      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${pdfTitle}</rdf:li></rdf:Alt></dc:title>
-      <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${pdfSubject}</rdf:li></rdf:Alt></dc:description>
-      <dc:language><rdf:Bag><rdf:li>${pdfLang}</rdf:li></rdf:Bag></dc:language>
-      <pdf:Producer>AlloFlow Accessibility Pipeline</pdf:Producer>
-      <xmp:CreatorTool>AlloFlow Accessibility Pipeline</xmp:CreatorTool>
-      <xmp:ModifyDate>${_now}</xmp:ModifyDate>
-${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:part withheld: text-layer semantic tree is ActualText-only (not fully content-linked); AlloFlow declares PDF/UA-1 only when its own checks can stand behind it -->'}
-    </rdf:Description>
-  </rdf:RDF>
-</x:xmpmeta>
-<?xpacket end="w"?>`;
-      // Build a metadata stream and attach to Catalog. pdf-lib doesn't
-      // expose a high-level API for raw metadata streams, so we construct
-      // it via the low-level context: a stream with /Type Metadata,
-      // /Subtype XML, raw bytes are the XMP packet.
-      const PDFRawStream = window.PDFLib.PDFRawStream;
-      const PDFDict = window.PDFLib.PDFDict;
-      if (PDFRawStream && PDFDict) {
-        const metaDict = PDFDict.fromMapWithContext(new Map([
-          [PDFName.of('Type'), PDFName.of('Metadata')],
-          [PDFName.of('Subtype'), PDFName.of('XML')],
-        ]), context);
-        const metaStream = PDFRawStream.of(metaDict, new TextEncoder().encode(xmp));
-        const metaRef = context.register(metaStream);
-        catalog.set(PDFName.of('Metadata'), metaRef);
-        _xmpStamped = true;
-      } else {
-        try { warnLog('[createTaggedPdf] WARNING: PDFRawStream/PDFDict unavailable — PDF/UA-1 XMP conformance marker NOT embedded; the document is tagged but validators will report it as not PDF/UA-1 declared.'); } catch(_) {}
-      }
-    } catch (xmpErr) {
-      try { warnLog('[createTaggedPdf] WARNING: PDF/UA-1 XMP conformance marker failed — the document is tagged but will NOT validate as PDF/UA-1 declared: ' + (xmpErr && xmpErr.message)); } catch(_) {}
-    }
+    // (The PDF/UA-1 XMP stamping moved AFTER the structure build so the
+    // pdfuaid:part claim is decided on the ACTUAL orphaned-leaf count rather
+    // than predicted from the input path — see "Evidence-based PDF/UA-1
+    // declaration" just before the self-check.)
     // ── Build the StructTreeRoot from fixResult.accessibleHtml ──
     // Parse the remediated HTML to get the semantic outline (headings,
     // images with alt, tables, lists), then map those to PDF StructElems.
@@ -13921,63 +13862,85 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     if (!isScanned && _stage4PageResults.length > 0 && _unifiableLeafRefs.length > 0) {
       try {
         const _norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-        // Text-bearing roles only; require ≥8 normalized chars and a UNIQUE match
-        // on both sides — ambiguity means leave it alone (still ActualText-valid).
+        // Join Stage-4 line fragments: a block ending in '-' is a hyphenated
+        // line break — join without the hyphen; otherwise join with a space.
+        const _joinFrag = (a, b) => !a ? b : (a.endsWith('-') ? a.slice(0, -1) + b : a + ' ' + b);
         const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1 };
-        const leafByText = new Map();
-        for (const lf of _unifiableLeafRefs) {
-          if (!LINKABLE[lf.role]) continue;
-          const k = _norm(lf.text);
-          if (k.length < 8) continue;
-          leafByText.set(k, leafByText.has(k) ? null : lf); // null = ambiguous, never match
-        }
+        // Flatten all Stage-4 blocks into ONE ordered stream (pages in order,
+        // MCID order within a page) — a paragraph may span a page boundary, and
+        // /K happily holds MCRs from different pages.
+        const blockStream = [];
         for (const pr of _stage4PageResults) {
-          let parentArr = null, sectDict = null;
+          let parentArr = null;
           try { parentArr = context.lookup(pr.parentArrayRef); } catch (_) {}
-          try { sectDict = context.lookup(pr.pageSectRef); } catch (_) {}
-          const keptBlockRefs = [];
-          let sectChanged = false;
           for (const bRef of pr.blockElemRefs) {
-            let matched = null, mcidNum = null;
             try {
               const bDict = context.lookup(bRef);
-              if (bDict && typeof bDict.get === 'function') {
-                const at = bDict.get(PDFName.of('ActualText'));
-                const k = _norm(at && (typeof at.decodeText === 'function' ? at.decodeText() : String(at)));
-                const cand = k.length >= 8 ? leafByText.get(k) : undefined;
-                if (cand) {
-                  const kArr = context.lookup(bDict.get(PDFName.of('K')));
-                  let mcr0 = (kArr && typeof kArr.get === 'function') ? kArr.get(0) : null;
-                  try { mcr0 = context.lookup(mcr0) || mcr0; } catch (_) {}
-                  const mv = mcr0 && mcr0.get ? mcr0.get(PDFName.of('MCID')) : null;
-                  if (mv != null) {
-                    const n = Number(String(mv).replace(/[^0-9.-]/g, ''));
-                    if (Number.isFinite(n)) { mcidNum = n; matched = cand; }
-                  }
-                }
-              }
-            } catch (_) { matched = null; }
-            if (matched && mcidNum != null) {
-              try {
-                const leafDict = context.lookup(matched.ref);
-                const mcr = context.obj({ Type: PDFName.of('MCR'), Pg: pr.pageRef, MCID: PDFNumber.of(mcidNum) });
-                leafDict.set(PDFName.of('K'), context.obj([mcr]));
-                leafDict.set(PDFName.of('Pg'), pr.pageRef);
-                if (parentArr && typeof parentArr.set === 'function') parentArr.set(mcidNum, matched.ref);
-                leafByText.set(_norm(matched.text), null); // consume — a leaf links at most once
-                _perLeafLinked++;
-                sectChanged = true;
-                continue; // the flat block elem is now redundant — drop from the Sect
-              } catch (_) { keptBlockRefs.push(bRef); }
-            } else {
-              keptBlockRefs.push(bRef);
-            }
-          }
-          if (sectChanged && sectDict && typeof sectDict.set === 'function') {
-            try { sectDict.set(PDFName.of('K'), context.obj(keptBlockRefs)); } catch (_) {}
+              if (!bDict || typeof bDict.get !== 'function') continue;
+              const at = bDict.get(PDFName.of('ActualText'));
+              const ntext = _norm(at && (typeof at.decodeText === 'function' ? at.decodeText() : String(at)));
+              const kArr = context.lookup(bDict.get(PDFName.of('K')));
+              let mcr0 = (kArr && typeof kArr.get === 'function') ? kArr.get(0) : null;
+              try { mcr0 = context.lookup(mcr0) || mcr0; } catch (_) {}
+              const mv = mcr0 && mcr0.get ? mcr0.get(PDFName.of('MCID')) : null;
+              const mcid = mv != null ? Number(String(mv).replace(/[^0-9.-]/g, '')) : NaN;
+              if (!ntext || !Number.isFinite(mcid)) continue;
+              blockStream.push({ bRef, mcid, ntext, pageRef: pr.pageRef, parentArr, pr });
+            } catch (_) {}
           }
         }
-        if (_perLeafLinked) { try { warnLog('[Stage4b-PerLeaf] re-pointed ' + _perLeafLinked + ' Stage-4 marked-content reference(s) onto matching semantic leaves (born-digital per-leaf unification)'); } catch (_) {} }
+        // Sequential alignment: leaves and blocks are BOTH in document order
+        // (the HTML is generated from the PDF text), so for each linkable leaf
+        // scan forward for a CONSECUTIVE run of blocks whose concatenation
+        // equals the leaf text. Handles the production norm — Stage 4 segments
+        // per LINE, so one paragraph = N blocks → the leaf's /K gets N MCRs.
+        // Order-constrained matching replaces the v1 uniqueness guard; a leaf
+        // that never matches stays ActualText-only (no risk taken).
+        const leafSeq = _unifiableLeafRefs.filter((lf) => LINKABLE[lf.role] && _norm(lf.text).length >= 8);
+        const consumed = new Set();
+        let cursor = 0;
+        for (const lf of leafSeq) {
+          const target = _norm(lf.text);
+          let found = null;
+          const scanLimit = Math.min(blockStream.length, cursor + 500);
+          for (let start = cursor; start < scanLimit && !found; start++) {
+            let concat = '';
+            for (let end = start; end < blockStream.length && end - start < 120; end++) {
+              concat = _joinFrag(concat, blockStream[end].ntext);
+              if (concat.length > target.length + 2) break; // overshoot — no run from this start
+              if (concat === target) { found = { start, end }; break; }
+            }
+          }
+          if (!found) continue;
+          try {
+            const run = blockStream.slice(found.start, found.end + 1);
+            const leafDict = context.lookup(lf.ref);
+            const mcrs = run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }));
+            leafDict.set(PDFName.of('K'), context.obj(mcrs));
+            leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+            for (const b of run) {
+              if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+              consumed.add(String(b.bRef));
+            }
+            _perLeafLinked++;
+            cursor = found.end + 1;
+          } catch (_) { /* leave this leaf ActualText-only */ }
+        }
+        // Drop consumed flat block elems from their page Sects (they're now
+        // redundant; the objects stay registered, so the enumerate-based
+        // round-trip tally is unaffected).
+        if (consumed.size > 0) {
+          for (const pr of _stage4PageResults) {
+            try {
+              const kept = pr.blockElemRefs.filter((r) => !consumed.has(String(r)));
+              if (kept.length !== pr.blockElemRefs.length) {
+                const sectDict = context.lookup(pr.pageSectRef);
+                if (sectDict && typeof sectDict.set === 'function') sectDict.set(PDFName.of('K'), context.obj(kept));
+              }
+            } catch (_) {}
+          }
+        }
+        if (_perLeafLinked) { try { warnLog('[Stage4b-PerLeaf] linked ' + _perLeafLinked + ' semantic leaves to ' + consumed.size + ' Stage-4 block(s) via run-concatenation re-pointing'); } catch (_) {} }
       } catch (plErr) { try { warnLog('[createTaggedPdf] Stage 4b per-leaf unification failed (non-fatal): ' + (plErr && plErr.message)); } catch (_) {} }
     }
     // ── Stage 3: AcroForm field tagging ──
@@ -14440,6 +14403,111 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // and to catch our own bugs (missing MarkInfo, broken ParentTree, etc.)
     // before they ship. Rules are organized by Adobe Accessibility Checker
     // category for familiarity.
+    // ── Evidence-based PDF/UA-1 declaration (XMP) ──
+    // Runs AFTER the full structure build (scanned unify + Stage 4b re-pointing),
+    // so the pdfuaid:part=1 claim is decided on the ACTUAL outcome. The count
+    // walks the ASSEMBLED tree from StructTreeRoot — NOT the _unifiableLeafRefs
+    // build ledger, which can contain registered-but-unreachable leaves from a
+    // nested-build attempt that fell back to flat (those don't ship in the tree
+    // and must not veto the claim; this exactly matches what the post-export
+    // validator measures on the saved bytes). Zero reachable orphans → declare;
+    // any orphan → ship the XMP (title/lang/producer) WITHOUT the conformance
+    // marker. No-leaves edge (thin docs): fall back to the scanned gate.
+    let _orphanedLeafCountAtStamp = 0;
+    let _reachableLeafCountAtStamp = 0;
+    const _orphanRolesAtStamp = [];
+    try {
+      // Reachability by REF IDENTITY over KNOWN shapes only: every elem the
+      // builder ships is a registered PDFRef (objectNumber present), and every
+      // /K is either a context.obj([...]) array (size()/get(i)) or a single
+      // entry — no generic dict-vs-array heuristics needed.
+      const _reachable = new Set();
+      const _refKey = (r) => r.objectNumber + '_' + (r.generationNumber || 0);
+      const _stackR = [];
+      if (typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) for (const r of structElemRefs) _stackR.push(r);
+      let _g = 0;
+      while (_stackR.length && _g++ < 50000) {
+        const ref = _stackR.pop();
+        if (!ref || typeof ref.objectNumber !== 'number') continue;
+        const key = _refKey(ref);
+        if (_reachable.has(key)) continue;
+        _reachable.add(key);
+        let d0 = null;
+        try { d0 = context.lookup(ref); } catch (_) { continue; }
+        if (!d0 || typeof d0.get !== 'function') continue;
+        const kv = d0.get(PDFName.of('K'));
+        if (kv == null) continue;
+        const arr = (kv && typeof kv.size === 'function' && typeof kv.get === 'function')
+          ? Array.from({ length: kv.size() }, (_, i) => kv.get(i)) : [kv];
+        for (const it of arr) { if (it && typeof it.objectNumber === 'number') _stackR.push(it); }
+      }
+      // Content-leaf roles only (same set the post-export validator counts):
+      // containers like Sect/Part legitimately carry no MCR and must not veto.
+      const _COUNTABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Figure: 1, Caption: 1, BlockQuote: 1, Lbl: 1, LBody: 1, TH: 1, TD: 1, Span: 1, Link: 1 };
+      for (const lf of _unifiableLeafRefs) {
+        if (!lf || !lf.ref || typeof lf.ref.objectNumber !== 'number') continue;
+        if (!_COUNTABLE[lf.role]) continue;
+        if (!_reachable.has(_refKey(lf.ref))) continue; // stray from a fallback build attempt — not shipped
+        _reachableLeafCountAtStamp++;
+        try {
+          const d = context.lookup(lf.ref);
+          if (!d || typeof d.get !== 'function' || d.get(PDFName.of('K')) == null) {
+            _orphanedLeafCountAtStamp++;
+            if (_orphanRolesAtStamp.length < 12) _orphanRolesAtStamp.push(lf.role);
+          }
+        } catch (_) { _orphanedLeafCountAtStamp++; }
+      }
+    } catch (_) {}
+    _uaDeclared = _reachableLeafCountAtStamp > 0
+      ? _orphanedLeafCountAtStamp === 0
+      : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''));
+    try {
+      const pdfTitle = (meta.title || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const pdfSubject = (meta.subject || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const pdfLang = lang.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const _now = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      const xmp = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="AlloFlow PDF/UA-1 Pipeline">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about=""
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
+        xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+        xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">
+      <dc:format>application/pdf</dc:format>
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${pdfTitle}</rdf:li></rdf:Alt></dc:title>
+      <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${pdfSubject}</rdf:li></rdf:Alt></dc:description>
+      <dc:language><rdf:Bag><rdf:li>${pdfLang}</rdf:li></rdf:Bag></dc:language>
+      <pdf:Producer>AlloFlow Accessibility Pipeline</pdf:Producer>
+      <xmp:CreatorTool>AlloFlow Accessibility Pipeline</xmp:CreatorTool>
+      <xmp:ModifyDate>${_now}</xmp:ModifyDate>
+${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:part withheld: ' + _orphanedLeafCountAtStamp + ' semantic leaf(s) remain without content linkage; AlloFlow declares PDF/UA-1 only when its own checks can stand behind it -->'}
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+      // Build a metadata stream and attach to Catalog. pdf-lib doesn't
+      // expose a high-level API for raw metadata streams, so we construct
+      // it via the low-level context: a stream with /Type Metadata,
+      // /Subtype XML, raw bytes are the XMP packet.
+      const PDFRawStream = window.PDFLib.PDFRawStream;
+      const PDFDict = window.PDFLib.PDFDict;
+      if (PDFRawStream && PDFDict) {
+        const metaDict = PDFDict.fromMapWithContext(new Map([
+          [PDFName.of('Type'), PDFName.of('Metadata')],
+          [PDFName.of('Subtype'), PDFName.of('XML')],
+        ]), context);
+        const metaStream = PDFRawStream.of(metaDict, new TextEncoder().encode(xmp));
+        const metaRef = context.register(metaStream);
+        catalog.set(PDFName.of('Metadata'), metaRef);
+        _xmpStamped = true;
+      } else {
+        try { warnLog('[createTaggedPdf] WARNING: PDFRawStream/PDFDict unavailable — PDF/UA-1 XMP conformance marker NOT embedded; the document is tagged but validators will report it as not PDF/UA-1 declared.'); } catch(_) {}
+      }
+    } catch (xmpErr) {
+      try { warnLog('[createTaggedPdf] WARNING: PDF/UA-1 XMP conformance marker failed — the document is tagged but will NOT validate as PDF/UA-1 declared: ' + (xmpErr && xmpErr.message)); } catch(_) {}
+    }
+
     const _pdfUa1Checks = (() => {
       const checks = [];
       const _addCheck = (category, rule, status, message) => {
@@ -14497,8 +14565,8 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           _xmpStamped ? (_uaDeclared ? 'pass' : 'warn') : 'fail',
           _xmpStamped
             ? (_uaDeclared
-                ? 'XMP metadata stream attached with pdfuaid:part 1'
-                : 'XMP attached WITHOUT the pdfuaid:part marker — declaration deliberately withheld: the text-layer semantic tree is ActualText-only (not fully content-linked), so a PDF/UA-1 claim would be refuted by validators. Tags, language, title, and metadata still ship.')
+                ? 'XMP metadata stream attached with pdfuaid:part 1 (evidence-based: 0 semantic leaves without content linkage after unify/re-pointing)'
+                : 'XMP attached WITHOUT the pdfuaid:part marker — declaration deliberately withheld: ' + _orphanedLeafCountAtStamp + ' of ' + _reachableLeafCountAtStamp + ' semantic leaf(s) remain without content linkage (' + (_orphanRolesAtStamp.join(', ') || 'roles n/a') + '), so a PDF/UA-1 claim would be refuted by validators. Tags, language, title, and metadata still ship.')
             : (meta ? 'A /Metadata stream exists but the PDF/UA-1 marker was NOT written this run — validators will not see pdfuaid:part 1'
                     : 'No XMP metadata stream — PDF/UA conformance not declared'));
       } catch (_) { _addCheck('Document', 'PDF/UA-1 declared (XMP)', 'fail', 'Could not read /Metadata'); }

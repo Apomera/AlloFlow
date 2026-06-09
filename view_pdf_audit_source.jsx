@@ -4249,23 +4249,23 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             try { _b64 = await ensurePdfBase64(); } catch (_) {}
                           }
                           if (!_b64) { addToast(t('toasts.need_both_original_pdf_remediated'), 'info'); return; }
-                          // Build a blob: URL in the OPENER so the popup's <embed>/<iframe> doesn't
-                          // hit Chrome's silent-blank ceiling on large data: URLs (~2MB), which is
-                          // what blanks the Before pane for any normal-sized PDF. Sanity-check the
-                          // %PDF- magic bytes so we don't ship a malformed payload to a renderer
-                          // that hides the failure. Fall back to data URL only if blob path errors.
+                          // Why pdf.js canvases instead of an <iframe blob:> / <embed data:>:
+                          // in Gemini Canvas (the primary surface) the app runs in an OPAQUE-ORIGIN
+                          // sandboxed iframe. A popup gets a DIFFERENT opaque origin, and blob: URLs
+                          // are origin-partitioned — an opener-created blob silently fails to load in
+                          // the popup = the exact "blank Before pane" failure. Chrome's built-in PDF
+                          // viewer also doesn't render inside sandboxed frames, and data: URLs blank
+                          // out past ~2MB. So the popup renders the original ITSELF with pdf.js
+                          // canvases — the same self-contained strategy the After pane already uses
+                          // for its HTML, which is why that side never broke.
                           const _rawB64 = _b64.includes(',') ? _b64.split(',')[1] : _b64;
-                          let _pdfBlobUrl = '';
+                          let _isPdfMagic = false;
                           try {
-                            const _bin = atob(_rawB64);
-                            const _len = _bin.length;
-                            const _u8 = new Uint8Array(_len);
-                            for (let i = 0; i < _len; i++) _u8[i] = _bin.charCodeAt(i);
-                            const _isPdf = _len >= 5 && _u8[0] === 0x25 && _u8[1] === 0x50 && _u8[2] === 0x44 && _u8[3] === 0x46 && _u8[4] === 0x2D;
-                            if (_isPdf) _pdfBlobUrl = URL.createObjectURL(new Blob([_u8], { type: 'application/pdf' }));
+                            const _head = atob(_rawB64.slice(0, 8));
+                            _isPdfMagic = _head.charCodeAt(0) === 0x25 && _head.charCodeAt(1) === 0x50 && _head.charCodeAt(2) === 0x44 && _head.charCodeAt(3) === 0x46;
                           } catch (_) {}
                           const win = window.open('', '_blank');
-                          if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); if (_pdfBlobUrl) try { URL.revokeObjectURL(_pdfBlobUrl); } catch (_) {} return; }
+                          if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); return; }
                           const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? '?';
                           const afterAi = pdfFixResult.afterScore;
                           const afterAxe = pdfFixResult.axeAudit?.score ?? null;
@@ -4301,7 +4301,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div class="compare">
                             <div class="pane pane-left">
                               <div class="pane-header">Original PDF (Before)</div>
-                              ${_pdfBlobUrl ? `<iframe src="${_pdfBlobUrl}" title="Original PDF" style="flex:1;width:100%;border:none;background:white"></iframe>` : `<embed src="data:application/pdf;base64,${_rawB64}" type="application/pdf" />`}
+                              <div id="before-pane" style="flex:1;overflow:auto;background:#525659;min-height:0">
+                                <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? 'Rendering original PDF…' : 'The original file is not a PDF (Word/PowerPoint input) — the Before preview applies to PDF originals. The After pane on the right is your remediated document.'}</div>
+                              </div>
                             </div>
                             <div class="divider"></div>
                             <div class="pane pane-right">
@@ -4322,6 +4324,70 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           </div>
                           <script>
+                            // ── Before pane: self-contained pdf.js canvas rendering ──
+                            // The PDF bytes are embedded below (base64 is JS-string-safe), the blob
+                            // is built IN THIS WINDOW (same-origin by construction), and pdf.js
+                            // paints canvases — no native viewer, no cross-window blob fetch.
+                            var _pdfRawB64 = ${_isPdfMagic ? JSON.stringify(_rawB64) : 'null'};
+                            (function renderBefore() {
+                              if (!_pdfRawB64) return;
+                              var status = document.getElementById('before-status');
+                              var host = document.getElementById('before-pane');
+                              function b64ToBytes() { var bin = atob(_pdfRawB64); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+                              function fail(msg) {
+                                if (!status) return;
+                                status.innerHTML = '⚠ Could not render the original PDF here (' + msg + '). ';
+                                try {
+                                  var u = URL.createObjectURL(new Blob([b64ToBytes()], { type: 'application/pdf' }));
+                                  var a = document.createElement('a');
+                                  a.href = u; a.target = '_blank'; a.style.color = '#93c5fd';
+                                  a.textContent = 'Open the original PDF in its own tab instead';
+                                  status.appendChild(a);
+                                } catch (_) {}
+                              }
+                              var hosts = [
+                                'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/',
+                                'https://unpkg.com/pdfjs-dist@3.11.174/build/',
+                                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/'
+                              ];
+                              function tryLoad(i) {
+                                if (i >= hosts.length) { fail('PDF renderer unavailable — all CDN mirrors failed'); return; }
+                                var s = document.createElement('script');
+                                s.src = hosts[i] + 'pdf.min.js';
+                                s.onload = function () { start(hosts[i] + 'pdf.worker.min.js'); };
+                                s.onerror = function () { try { s.remove(); } catch (_) {} tryLoad(i + 1); };
+                                document.head.appendChild(s);
+                              }
+                              function start(workerUrl) {
+                                try {
+                                  var pdfjs = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+                                  if (!pdfjs) { fail('renderer global missing'); return; }
+                                  try { pdfjs.GlobalWorkerOptions.workerSrc = workerUrl; } catch (_) {}
+                                  pdfjs.getDocument({ data: b64ToBytes() }).promise.then(function (doc) {
+                                    if (status) { try { status.remove(); } catch (_) {} status = null; }
+                                    var renderPage = function (n) {
+                                      if (n > doc.numPages) return;
+                                      doc.getPage(n).then(function (page) {
+                                        var vp = page.getViewport({ scale: 1.25 });
+                                        var c = document.createElement('canvas');
+                                        c.width = vp.width; c.height = vp.height;
+                                        c.style.cssText = 'display:block;margin:10px auto;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:96%;height:auto;background:white';
+                                        c.setAttribute('role', 'img');
+                                        c.setAttribute('aria-label', 'Original PDF, page ' + n + ' of ' + doc.numPages);
+                                        host.appendChild(c);
+                                        page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(
+                                          function () { renderPage(n + 1); },
+                                          function () { renderPage(n + 1); }
+                                        );
+                                      }, function () { renderPage(n + 1); });
+                                    };
+                                    renderPage(1);
+                                  }, function (e) { fail(e && e.message ? e.message : 'could not parse the PDF'); });
+                                } catch (e) { fail(e && e.message ? e.message : 'renderer init failed'); }
+                              }
+                              tryLoad(0);
+                            })();
+
                             var _b64 = "${(() => {
                               try {
                                 return btoa(unescape(encodeURIComponent(pdfFixResult.accessibleHtml || '')));

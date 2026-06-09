@@ -694,12 +694,17 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
       const { PDFDocument, StandardFonts, PDFName, PDFArray, PDFDict, PDFRef, PDFNumber } = PDFLib;
       try {
         const HEAD = 'Per Leaf Heading Example';
-        const BODY = 'This body paragraph matches the accessible html exactly for re-pointing.';
+        // The paragraph is drawn as TWO separate text objects — the production
+        // norm (Stage 4 segments per BT/ET, i.e. per line). The semantic leaf
+        // must link BOTH blocks via run-concatenation (K = [MCR, MCR]).
+        const BODY1 = 'This body paragraph matches the accessible html exactly';
+        const BODY2 = 'and continues onto a second drawn line for the run test.';
         const inDoc = await PDFDocument.create();
         const pg = inDoc.addPage([612, 792]);
         const font = await inDoc.embedFont(StandardFonts.Helvetica);
         pg.drawText(HEAD, { x: 50, y: 740, size: 22, font });
-        pg.drawText(BODY, { x: 50, y: 700, size: 12, font });
+        pg.drawText(BODY1, { x: 50, y: 700, size: 12, font });
+        pg.drawText(BODY2, { x: 50, y: 684, size: 12, font });
         const inputBytes = await inDoc.save();
 
         const pipeline = (window as any).AlloModules.createDocPipeline({
@@ -708,7 +713,7 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           getDefaultTitle: () => 'Document', state: {},
         });
         const html = '<!DOCTYPE html><html lang="en"><head><title>Per Leaf Fixture</title></head><body><main>'
-          + '<h1>' + HEAD + '</h1><p>' + BODY + '</p></main></body></html>';
+          + '<h1>' + HEAD + '</h1><p>' + BODY1 + ' ' + BODY2 + '</p></main></body></html>';
         const result = await pipeline.createTaggedPdf(inputBytes, { accessibleHtml: html }, { title: 'Per Leaf Test', lang: 'en' });
         if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
 
@@ -728,7 +733,7 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           const role = String(S).replace(/^\//, '');
           const K = obj.get(nm('K'));
           let hasContent = false;
-          let mcid: number | null = null;
+          let mcrCount = 0;
           if (K != null) {
             const kr = resolve(K);
             const items = (kr instanceof PDFArray) ? Array.from({ length: kr.size() }, (_, i) => resolve(kr.get(i))) : [kr];
@@ -736,16 +741,12 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
               if (it instanceof PDFNumber) hasContent = true;
               else if (it instanceof PDFDict) {
                 const ts = String(it.get(nm('Type')) || '');
-                if (ts === '/MCR' || ts === '/OBJR') {
-                  hasContent = true;
-                  const mv = it.get(nm('MCID'));
-                  if (mv != null) mcid = Number(String(mv));
-                }
+                if (ts === '/MCR' || ts === '/OBJR') { hasContent = true; if (ts === '/MCR') mcrCount++; }
               }
             }
           }
           const at = obj.get(nm('ActualText'));
-          elems.push({ role, hasContent, mcid, actualText: at ? String(at) : '' });
+          elems.push({ role, hasContent, mcrCount, actualText: at ? String(at) : '' });
           if (K != null) walk(K, depth + 1);
         };
         const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
@@ -755,6 +756,14 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
         const orphaned = leaves.filter((e) => !e.hasContent);
         const h1 = elems.find((e) => e.role === 'H1');
         const p = elems.find((e) => e.role === 'P' && e.actualText.indexOf('matches the accessible') !== -1);
+        // Evidence-based declaration: the XMP claim must appear on a FULLY
+        // linked born-digital file (this fixture) — read it from the bytes.
+        let xmp = '';
+        try {
+          const metaS: any = resolve(outDoc.catalog.get(nm('Metadata')));
+          const contents = metaS && (metaS.contents || (metaS.getContents && metaS.getContents()));
+          if (contents) xmp = new TextDecoder('utf-8').decode(contents);
+        } catch (e) {}
         return {
           perLeafLinked: (result.summary || {}).perLeafLinked ?? null,
           leafCount: leaves.length,
@@ -762,6 +771,10 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           orphanedRoles: orphaned.map((e) => e.role),
           h1Linked: !!(h1 && h1.hasContent),
           pLinked: !!(p && p.hasContent),
+          pMcrCount: p ? p.mcrCount : 0,
+          hasUaClaim: xmp.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1,
+          uaRule: ((((result.pdfUa1Checks || {}).checks) || []).filter((c: any) => c.rule === 'PDF/UA-1 declared (XMP)').map((c: any) => c.status + ': ' + (c.message || c.detail)).join(' | ')) || '(rule missing)',
+          xmpComment: (xmp.match(/<!--[^>]*-->/) || [''])[0],
           roundTripOk: result.roundTrip ? result.roundTrip.ok !== false : null,
           divergences: (result.roundTrip && result.roundTrip.divergences) || [],
           structLossCheck: ((result.roundTrip && result.roundTrip.checks) || []).filter((c: any) => c.rule === 'No structure lost at save').map((c: any) => c.status),
@@ -779,6 +792,14 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
 
   test('born-digital orphaned-leaf count drops to 0 on a fully-matching fixture', () => {
     expect(perLeafSummary.orphanedLeafCount, 'orphaned roles: ' + JSON.stringify(perLeafSummary.orphanedRoles)).toBe(0);
+  });
+
+  test('run-concatenation: the two-line paragraph leaf carries BOTH MCRs', () => {
+    expect(perLeafSummary.pMcrCount, 'P leaf /K must hold one MCR per drawn line').toBe(2);
+  });
+
+  test('evidence-based PDF/UA-1: claim DECLARED on a fully-linked born-digital file', () => {
+    expect(perLeafSummary.hasUaClaim, 'self-check rule: ' + perLeafSummary.uaRule + ' || xmp comment: ' + perLeafSummary.xmpComment).toBe(true);
   });
 
   test('no content loss: round-trip clean, no divergences, structure-loss check passes', () => {
