@@ -12852,6 +12852,15 @@ tr { page-break-inside: avoid; }
     // chain), but a silent no-op previously shipped PDFs that kept the SOURCE
     // Producer and carried no PDF/UA-1 marker while the UI implied otherwise.
     let _producerStamped = false, _xmpStamped = false;
+    // Declare PDF/UA-1 (pdfuaid:part=1) ONLY when the build will produce zero
+    // orphaned semantic leaves — i.e. when the scanned-path unify pass runs and
+    // links every leaf via /K→MCR. On the text-layer path the semantic tree is
+    // ActualText-only (per-leaf MCID linkage still blocked, see
+    // docs/tag_tree_unification_design.md), so stamping part=1 there writes a
+    // conformance claim our own self-check + post-export validator immediately
+    // refute. Title/lang/producer XMP still ships for every file.
+    // KEEP IN SYNC with the isScanned unify gate (~L13520, same regex).
+    const _uaDeclared = /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''));
     try { doc.setProducer('AlloFlow Accessibility Pipeline'); _producerStamped = true; }
     catch(prodErr) { try { warnLog('[createTaggedPdf] WARNING: could not stamp Producer metadata — output keeps the source Producer and is not marked as AlloFlow-processed: ' + (prodErr && prodErr.message)); } catch(_) {} }
     try { doc.setModificationDate(new Date()); } catch(_) {}
@@ -12901,7 +12910,7 @@ tr { page-break-inside: avoid; }
       <pdf:Producer>AlloFlow Accessibility Pipeline</pdf:Producer>
       <xmp:CreatorTool>AlloFlow Accessibility Pipeline</xmp:CreatorTool>
       <xmp:ModifyDate>${_now}</xmp:ModifyDate>
-      <pdfuaid:part>1</pdfuaid:part>
+${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:part withheld: text-layer semantic tree is ActualText-only (not fully content-linked); AlloFlow declares PDF/UA-1 only when its own checks can stand behind it -->'}
     </rdf:Description>
   </rdf:RDF>
 </x:xmpmeta>
@@ -13896,30 +13905,31 @@ tr { page-break-inside: avoid; }
     // to tag tree. No-op when the PDF has no form (the common case).
     const fieldElemRefs = [];
     let nextStructParentKey = pages.length;
+    // Digital-signature presence — shared by Stage 3 (forms) and Stage 3b (link
+    // annots). 2026-06-07 rationale: adding /StructParent to annotation dicts
+    // modifies the byte tree, which breaks the /Sig ByteRange hash and
+    // invalidates the signature in Acrobat. For parent-signed IEPs this is a
+    // real legal/trust issue, so the conservative default is skip + visible toast.
+    let _pdfHasSignature = false;
     try {
-      // 2026-06-07: skip Stage-3 form tagging entirely when the PDF carries an
-      // existing digital signature (/AcroForm /SigFlags bit 1 = "SignaturesExist").
-      // Adding /StructParent to widget dicts + registering new StructElems modifies
-      // the byte tree, which breaks the /Sig ByteRange hash and invalidates the
-      // signature in Acrobat. For parent-signed IEPs this is a real legal/trust
-      // issue, so the conservative default is skip + visible toast.
-      let _signedFormSkip = false;
-      try {
-        const _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
-        if (_acroSig && _acroSig.get) {
-          const _sigFlags = _acroSig.get(PDFName.of('SigFlags'));
-          if (_sigFlags) {
-            const _sv = (typeof _sigFlags.numberValue === 'number') ? _sigFlags.numberValue
-              : (typeof _sigFlags.value === 'number') ? _sigFlags.value
-              : Number(String(_sigFlags));
-            if ((_sv | 0) & 1) {
-              _signedFormSkip = true;
-              try { warnLog('[Stage3-AcroForm] /SigFlags SignaturesExist set — skipping form tagging to preserve existing digital signatures (re-sign after remediation if signatures must be retained)'); } catch (_) {}
-              try { if (typeof addToast === 'function') addToast('PDF contains digital signatures — form-field tagging skipped to preserve signature validity.', 'info'); } catch (_) {}
-            }
-          }
+      const _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
+      if (_acroSig && _acroSig.get) {
+        const _sigFlags = _acroSig.get(PDFName.of('SigFlags'));
+        if (_sigFlags) {
+          const _sv = (typeof _sigFlags.numberValue === 'number') ? _sigFlags.numberValue
+            : (typeof _sigFlags.value === 'number') ? _sigFlags.value
+            : Number(String(_sigFlags));
+          if ((_sv | 0) & 1) _pdfHasSignature = true;
         }
-      } catch (_) {}
+      }
+    } catch (_) {}
+    try {
+      let _signedFormSkip = false;
+      if (_pdfHasSignature) {
+        _signedFormSkip = true;
+        try { warnLog('[Stage3-AcroForm] /SigFlags SignaturesExist set — skipping form tagging to preserve existing digital signatures (re-sign after remediation if signatures must be retained)'); } catch (_) {}
+        try { if (typeof addToast === 'function') addToast('PDF contains digital signatures — form-field tagging skipped to preserve signature validity.', 'info'); } catch (_) {}
+      }
       let form = null;
       if (!_signedFormSkip) { try { form = doc.getForm(); } catch(_) { form = null; } }
       let fields = [];
@@ -13990,16 +14000,73 @@ tr { page-break-inside: avoid; }
         }
       }
     } catch(formErr) { try { warnLog('[createTaggedPdf] AcroForm tagging failed: ' + (formErr && formErr.message)); } catch(_) {} }
+    // ── Stage 3b: Link annotation tagging ──
+    // PDF/UA-1 §7.18 requires every annotation to be reachable from the
+    // structure tree (or be marked as an artifact). The source PDF's Link
+    // annotations (clickable hyperlinks) previously stayed un-referenced, so
+    // tagging a link-bearing PDF INTRODUCED an "untagged annotation" failure
+    // in PAC/Acrobat. Mirrors the Stage-3 AcroForm pattern: one /Link
+    // StructElem per Link annot with an OBJR child + /StructParent back-pointer;
+    // /Alt carries the destination so screen readers announce where it goes.
+    const linkAnnotElemRefs = [];
+    let _linkAnnotsTagged = 0;
+    try {
+      if (_pdfHasSignature) {
+        try { warnLog('[Stage3b-LinkAnnots] signed PDF — skipping link-annotation tagging to preserve signature validity'); } catch (_) {}
+      } else {
+        for (let pi = 0; pi < pages.length; pi++) {
+          const page = pages[pi];
+          const annots = page.node.get(PDFName.of('Annots'));
+          if (!annots || typeof annots.size !== 'function') continue;
+          for (let a = 0; a < annots.size(); a++) {
+            const annotRef = annots.get(a);
+            let annotDict;
+            try { annotDict = context.lookup(annotRef); } catch (_) { continue; }
+            if (!annotDict || typeof annotDict.get !== 'function') continue;
+            const subtype = annotDict.get(PDFName.of('Subtype'));
+            if (!subtype || String(subtype) !== '/Link') continue;
+            // Respect a source PDF that already tagged this annotation.
+            if (annotDict.get(PDFName.of('StructParent'))) continue;
+            // Destination for /Alt: action /URI, else /Contents, else generic.
+            let dest = '';
+            try {
+              let action = annotDict.get(PDFName.of('A'));
+              if (action) { try { action = context.lookup(action) || action; } catch (_) {} }
+              const uri = action && action.get ? action.get(PDFName.of('URI')) : null;
+              if (uri) dest = (typeof uri.decodeText === 'function') ? uri.decodeText() : String(uri).replace(/^\(|\)$/g, '');
+            } catch (_) {}
+            if (!dest) { try { const c = annotDict.get(PDFName.of('Contents')); if (c) dest = (typeof c.decodeText === 'function') ? c.decodeText() : String(c); } catch (_) {} }
+            const key = nextStructParentKey++;
+            const objrDict = context.obj({ Type: PDFName.of('OBJR'), Pg: page.ref, Obj: annotRef });
+            const linkElemDict = context.obj({
+              Type: PDFName.of('StructElem'),
+              S: PDFName.of('Link'),
+              P: structRootRef,
+              Pg: page.ref,
+              Alt: PDFString.of(dest ? ('Link to ' + String(dest).slice(0, 200)) : 'Link'),
+              K: context.obj([objrDict]),
+            });
+            const linkElemRef = context.register(linkElemDict);
+            linkAnnotElemRefs.push(linkElemRef);
+            try { annotDict.set(PDFName.of('StructParent'), PDFNumber.of(key)); } catch (_) {}
+            parentTreeNums.push(PDFNumber.of(key));
+            parentTreeNums.push(linkElemRef);
+            _linkAnnotsTagged++;
+          }
+        }
+        if (_linkAnnotsTagged) { try { warnLog('[Stage3b-LinkAnnots] tagged ' + _linkAnnotsTagged + ' link annotation(s) into the structure tree'); } catch (_) {} }
+      }
+    } catch (linkErr) { try { warnLog('[createTaggedPdf] Link-annotation tagging failed (non-fatal): ' + (linkErr && linkErr.message)); } catch (_) {} }
     // ParentTree — number tree mapping StructParents key → StructElem ref.
     // Stage 1 left this empty; validators need it populated for MCID linkage.
     const parentTreeDict = context.obj({ Nums: context.obj(parentTreeNums) });
     const parentTreeRef = context.register(parentTreeDict);
     // StructTreeRoot.K holds outline elems first (heading navigation),
     // per-page elems next (content-stream linkage), then form-field elems
-    // last (AcroForm widgets). Order matters: outline first gives SR
-    // readers the semantic reading order when they traverse the tag tree
-    // depth-first.
-    const combinedK = structElemRefs.concat(pageElemRefs).concat(fieldElemRefs);
+    // (AcroForm widgets) and link-annotation elems last. Order matters:
+    // outline first gives SR readers the semantic reading order when they
+    // traverse the tag tree depth-first.
+    const combinedK = structElemRefs.concat(pageElemRefs).concat(fieldElemRefs).concat(linkAnnotElemRefs);
     // Stage 5b lite: /IDTree name tree. Required by readers that resolve TD
     // /Headers [(id)] back to the referenced TH StructElem. Name tree keys
     // must be sorted lexicographically (PDF spec §7.9.6).
@@ -14259,6 +14326,7 @@ tr { page-break-inside: avoid; }
             // True when /Outlines was successfully built — UI can announce
             // "bookmarks generated from N headings" in the toast.
             bookmarks: outlineRootRef ? headings : 0,
+            linkAnnotsTagged: _linkAnnotsTagged,
             // How many of those bookmarks actually point to a specific page
             // (rather than falling back to page 1). Lets the toast show a
             // concrete "8 mapped to specific pages, 0 fell back" line so
@@ -14341,8 +14409,12 @@ tr { page-break-inside: avoid; }
         // /Metadata stream existing is NOT proof of PDF/UA conformance (e.g. a
         // PoDoFo/scanner source carries its own XMP with no pdfuaid).
         const meta = catalog.get(PDFName.of('Metadata'));
-        _addCheck('Document', 'PDF/UA-1 declared (XMP)', _xmpStamped ? 'pass' : 'fail',
-          _xmpStamped ? 'XMP metadata stream attached with pdfuaid:part 1'
+        _addCheck('Document', 'PDF/UA-1 declared (XMP)',
+          _xmpStamped ? (_uaDeclared ? 'pass' : 'warn') : 'fail',
+          _xmpStamped
+            ? (_uaDeclared
+                ? 'XMP metadata stream attached with pdfuaid:part 1'
+                : 'XMP attached WITHOUT the pdfuaid:part marker — declaration deliberately withheld: the text-layer semantic tree is ActualText-only (not fully content-linked), so a PDF/UA-1 claim would be refuted by validators. Tags, language, title, and metadata still ship.')
             : (meta ? 'A /Metadata stream exists but the PDF/UA-1 marker was NOT written this run — validators will not see pdfuaid:part 1'
                     : 'No XMP metadata stream — PDF/UA conformance not declared'));
       } catch (_) { _addCheck('Document', 'PDF/UA-1 declared (XMP)', 'fail', 'Could not read /Metadata'); }
@@ -14382,6 +14454,11 @@ tr { page-break-inside: avoid; }
       }
       _addCheck('Alternate Text', 'Hides annotation', 'manual',
         'Manual review: any alt-text-only annotations should hide underlying decorative content');
+      // ANNOTATIONS (PDF/UA-1 §7.18 — annotations must be reachable from the tree)
+      _addCheck('Annotations', 'Link annotations tagged', _linkAnnotsTagged > 0 ? 'pass' : 'na',
+        _linkAnnotsTagged > 0
+          ? _linkAnnotsTagged + ' link annotation(s) wrapped in /Link StructElems with OBJR + /StructParent'
+          : 'No untagged link annotations found (none present, already tagged by the source, or signed-PDF skip)');
       // TABLES
       const _tableTotal = (_summary && _summary.tables) || 0;
       const _thNoScope = (_summary && _summary.thWithoutScope) || 0;

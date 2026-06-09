@@ -547,3 +547,128 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
     expect(byRule['Primary language']).toBe('pass');
   });
 });
+
+// ── Stage 3b + UA-claim gate (2026-06-09) ──
+// (a) Link annotations in the SOURCE PDF must be wrapped into the structure
+//     tree (Link StructElem + OBJR + /StructParent) — previously they stayed
+//     un-referenced, so tagging a link-bearing PDF INTRODUCED an "untagged
+//     annotation" PDF/UA failure class in PAC/Acrobat.
+// (b) The pdfuaid:part=1 XMP claim is now WITHHELD on the text-layer path
+//     (the ActualText-only semantic tree would refute it) and still DECLARED
+//     on the scanned/unify path where every leaf gets /K→MCR linkage.
+let linkGateSummary: any = null;
+test.describe('createTaggedPdf — link-annot tagging + UA-claim gate', () => {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: MODULE_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
+
+    linkGateSummary = await page.evaluate(async () => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument, StandardFonts, PDFName, PDFArray, PDFDict, PDFRef, PDFString } = PDFLib;
+      try {
+        // Fixture: one page with a text layer AND one real Link annotation.
+        const inDoc = await PDFDocument.create();
+        const pg = inDoc.addPage([612, 792]);
+        const font = await inDoc.embedFont(StandardFonts.Helvetica);
+        pg.drawText('A page with a hyperlink', { x: 50, y: 740, size: 14, font });
+        const ictx = inDoc.context;
+        const action = ictx.obj({ Type: PDFName.of('Action'), S: PDFName.of('URI'), URI: PDFString.of('https://example.com/x') });
+        const annot = ictx.obj({
+          Type: PDFName.of('Annot'), Subtype: PDFName.of('Link'),
+          Rect: ictx.obj([50, 735, 250, 755]), Border: ictx.obj([0, 0, 0]),
+          A: action,
+        });
+        const annotRef = ictx.register(annot);
+        pg.node.set(PDFName.of('Annots'), ictx.obj([annotRef]));
+        const inputBytes = await inDoc.save();
+
+        const mkPipeline = () => (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {},
+          getDefaultTitle: () => 'Document', state: {},
+        });
+        const html = '<!DOCTYPE html><html lang="en"><head><title>Link Fixture</title></head><body><main><h1>Doc</h1><p>Visit <a href="https://example.com/x">x</a>.</p></main></body></html>';
+
+        const inspect = async (bytes: any) => {
+          const outDoc = await PDFDocument.load(bytes);
+          const ctx = outDoc.context;
+          const resolve = (o: any) => (o instanceof PDFRef ? ctx.lookup(o) : o);
+          const nm = (n: string) => PDFName.of(n);
+          const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
+          let linkObjrCount = 0;
+          let annotStructParent: number | null = null;
+          const walk = (objIn: any, depth: number) => {
+            const obj = resolve(objIn);
+            if (depth > 60 || obj == null) return;
+            if (obj instanceof PDFArray) { for (let i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1); return; }
+            if (!(obj instanceof PDFDict)) return;
+            const S = obj.get(nm('S'));
+            if (S && String(S) === '/Link') {
+              const K = resolve(obj.get(nm('K')));
+              const items = (K instanceof PDFArray) ? Array.from({ length: K.size() }, (_, i) => resolve(K.get(i))) : [K];
+              for (const it of items) {
+                if (it instanceof PDFDict && String(it.get(nm('Type')) || '') === '/OBJR') linkObjrCount++;
+              }
+            }
+            const K2 = obj.get(nm('K'));
+            if (K2 != null) walk(K2, depth + 1);
+          };
+          const rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
+          if (rootK != null) walk(rootK, 0);
+          const pgOut = outDoc.getPages()[0];
+          const annots: any = pgOut.node.get(nm('Annots'));
+          if (annots && typeof annots.size === 'function') {
+            for (let i = 0; i < annots.size(); i++) {
+              const ad = resolve(annots.get(i));
+              if (ad && String(ad.get(nm('Subtype')) || '') === '/Link') {
+                const sp = ad.get(nm('StructParent'));
+                if (sp != null) annotStructParent = Number(String(sp));
+              }
+            }
+          }
+          let xmp = '';
+          try {
+            const metaS: any = resolve(outDoc.catalog.get(nm('Metadata')));
+            const contents = metaS && (metaS.contents || (metaS.getContents && metaS.getContents()));
+            if (contents) xmp = new TextDecoder('utf-8').decode(contents);
+          } catch (e) {}
+          return { linkObjrCount, annotStructParent, hasUaClaim: xmp.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1, xmpLen: xmp.length };
+        };
+
+        // Run 1: TEXT path (no groundTruthMethod) → links tagged, UA claim withheld.
+        const r1 = await mkPipeline().createTaggedPdf(inputBytes, { accessibleHtml: html }, { title: 'Link Gate Test', lang: 'en' });
+        if (!r1 || !r1.bytes) return { error: 'run1 returned no bytes' };
+        const text = await inspect(r1.bytes);
+        const s1 = r1.summary || {};
+
+        // Run 2: SCANNED path (groundTruthMethod tesseract) → UA claim declared.
+        const r2 = await mkPipeline().createTaggedPdf(inputBytes, { accessibleHtml: html, groundTruthMethod: 'tesseract' }, { title: 'Link Gate Test', lang: 'en' });
+        if (!r2 || !r2.bytes) return { error: 'run2 returned no bytes' };
+        const scanned = await inspect(r2.bytes);
+
+        return { text, scanned, summaryLinkAnnotsTagged: (s1 as any).linkAnnotsTagged ?? null, roundTripOk: r1.roundTrip ? r1.roundTrip.ok !== false : null };
+      } catch (err: any) { return { error: String((err && err.stack) || err) }; }
+    });
+  });
+
+  test('link annotation is wrapped: Link StructElem + OBJR + /StructParent', () => {
+    expect(linkGateSummary && !linkGateSummary.error, 'evaluate error: ' + (linkGateSummary && linkGateSummary.error)).toBeTruthy();
+    expect(linkGateSummary.text.linkObjrCount).toBeGreaterThanOrEqual(1);
+    expect(linkGateSummary.text.annotStructParent).not.toBeNull();
+    expect(linkGateSummary.summaryLinkAnnotsTagged).toBe(1);
+  });
+
+  test('round-trip still passes with Stage 3b additions', () => {
+    expect(linkGateSummary.roundTripOk).not.toBe(false);
+  });
+
+  test('pdfuaid:part=1 withheld on the text path, declared on the scanned path', () => {
+    expect(linkGateSummary.text.xmpLen).toBeGreaterThan(0);
+    expect(linkGateSummary.text.hasUaClaim).toBe(false);
+    expect(linkGateSummary.scanned.hasUaClaim).toBe(true);
+  });
+});
