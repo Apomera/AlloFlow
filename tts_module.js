@@ -288,12 +288,12 @@ const createTTS = deps => {
             if (msg.includes('429') || msg.includes('Rate Limited')) {
               state.rateLimitedUntil = Date.now() + 60000;
               window.__ttsGeminiQuotaFailed = true;
-              console.warn('[Canvas TTS] ⚠️ Rate limited, falling back to local:', msg);
+              console.error('[Canvas TTS] ❌ Rate limited, falling back to local:', msg);
               break;
             }
             if (msg.includes('Missing API Key')) {
               window.__ttsGeminiAuthFailed = true;
-              console.warn('[Canvas TTS] ⚠️ Missing API key, falling back to local:', msg);
+              console.error('[Canvas TTS] ❌ Missing API key, falling back to local:', msg);
               break;
             }
             const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503') || msg.includes('model refused') || msg.includes('Transient Error') || msg.includes('empty result');
@@ -303,7 +303,7 @@ const createTTS = deps => {
               await new Promise(r => setTimeout(r, backoffMs));
               continue;
             }
-            console.warn('[Canvas TTS] ⚠️ Gemini TTS failed after retries, falling back to local:', msg);
+            console.error('[Canvas TTS] ❌ Gemini TTS failed after retries, falling back to local:', msg);
             if (msg.includes('401') || msg.includes('403') || msg.includes('API key')) {
               window.__ttsGeminiAuthFailed = true;
             }
