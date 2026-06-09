@@ -18,10 +18,29 @@
 // What this does: parse each *_module.js, run scope analysis (eslint-scope),
 // and find unresolved references sitting in positions evaluated DURING render:
 //   • hook DEPENDENCY ARRAYS  (useMemo/useCallback/useEffect 2nd arg)  → ERROR (gate)
+//   • IIFE BODIES             (run when invoked — common in render trees) → WARN (advisory)
 //   • useMemo FACTORY BODIES  (run on render)                          → WARN (advisory)
 // Dep-array free vars are near-zero-false-positive (deps are props/state/vars,
-// never icons), so they gate the deploy. useMemo-body free vars are advisory
-// (those positions also reference host-provided lucide icons).
+// never icons), so they gate the deploy. IIFE-body + useMemo-body free vars are
+// advisory because cross-IIFE scope analysis surfaces too many true-but-latent
+// false negatives (functions defined inside IIFEs but called from outer scopes;
+// 676 across the tree at gate-introduction time, 2026-06-08).
+//
+// IIFE coverage was added 2026-06-08 after stem_tool_numberline.js shipped a
+// `d.magHunt` crash inside a `tab === 'magCompare' && (function(){...})()`
+// IIFE-in-render-tree expression — outside dep arrays + useMemo bodies, so the
+// original gate missed it. The component had `_n` as its state container; the
+// IIFE author typed `d` by mistake. eslint-scope correctly flagged `d` as
+// unresolved at module scope; the gate just wasn't checking IIFE bodies.
+//
+// IIFE findings are advisory not blocking because at introduction time a
+// repo-wide sweep produced 676 candidates including several latent
+// (real-but-never-triggered) bugs like angles.js setLabToolData and
+// sel_tool_journal.js `m.label`. Promoting to blocking before those are
+// triaged would block every deploy. Real BLOCKING coverage for the
+// IIFE-in-render-tree crash class comes from check_stem_render.cjs which
+// (post-2026-06-08) renders every tool through every tab/sub-state value
+// found in the source, exercising the actual render path.
 //
 // Usage:
 //   node dev-tools/check_render_refs.cjs                 (all root *_module.js)
@@ -106,6 +125,17 @@ function scanFile(file) {
           found.filter(f => /^[a-z_$]/.test(f.name)).forEach(f => warns.push({ ...f, where: 'useMemo body' }));
         }
       }
+      // IIFE: `(function(){...})()` or `(()=>{...})()`. Common pattern in
+      // render trees: `tab === 'X' && (function(){ ... })()`. Body runs when
+      // invoked — at render time if the IIFE is inline in JSX/createElement
+      // args. eslint-scope correctly flags unresolved free vars in the body.
+      // Advisory not blocking — see header comment for rationale (676 candidates
+      // at gate-introduction time, real BLOCKING coverage via check_stem_render
+      // multi-tab smoke). Filter to lowercase (same rationale as useMemo body).
+      if ((n.callee.type === 'FunctionExpression' || n.callee.type === 'ArrowFunctionExpression') && n.callee.body) {
+        const found = []; collectIds(n.callee.body, unresolved, found);
+        found.filter(f => /^[a-z_$]/.test(f.name)).forEach(f => warns.push({ ...f, where: 'IIFE body' }));
+      }
     }
     for (const k in n) {
       if (k === 'loc' || k === 'range' || k === 'start' || k === 'end') continue;
@@ -142,8 +172,8 @@ for (const file of targets) {
     for (const e of r.errors) console.log(`     line ${e.line}: ${e.name}   [${e.where}] — undeclared at module scope, crashes on render`);
   }
   if (VERBOSE && r.warns.length) {
-    console.log(`   ⚠ ${rel} (advisory, useMemo-body free vars):`);
-    for (const w of r.warns) console.log(`       line ${w.line}: ${w.name}`);
+    console.log(`   ⚠ ${rel} (advisory free vars):`);
+    for (const w of r.warns) console.log(`       line ${w.line}: ${w.name}   [${w.where}]`);
   }
 }
 
@@ -153,5 +183,5 @@ if (totalErrors > 0 || parseErrors > 0) {
   console.log('check_render_refs: fix before deploy (bypass: SKIP_RENDER_CHECK=1).');
   process.exit(1);
 }
-console.log(`✓ check_render_refs: ${targets.length} module(s) parse + no dep-array free vars` + (totalWarns ? ` (${totalWarns} useMemo-body advisories — run --verbose)` : '') + '.');
+console.log(`✓ check_render_refs: ${targets.length} module(s) parse + no dep-array free vars` + (totalWarns ? ` (${totalWarns} useMemo-body + IIFE-body advisories — run --verbose)` : '') + '.');
 process.exit(0);
