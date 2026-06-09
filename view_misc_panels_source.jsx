@@ -15,6 +15,27 @@
 //             (preserves the original IIFE wrapping inside the createPortal call)
 
 
+// Rebuild the diff's effective text with the selected chunk range [firstId, lastId] replaced by
+// `replacement` (an AI-rewritten passage). Mirrors the live effective-text build (add-not-rejected
+// + del-rejected + same), but emits `replacement` ONCE in place of the selected chunks. Pure +
+// unit-tested; the result is then spliced into the HTML by _applyTextSurgery (coverage-guarded),
+// so a bad rewrite can't silently corrupt the document.
+function _spliceSelectedText(chunks, firstId, lastId, replacement) {
+  if (!Array.isArray(chunks)) return replacement || '';
+  let out = '', inserted = false;
+  for (const c of chunks) {
+    if (c.id >= firstId && c.id <= lastId) {
+      if (!inserted) { out += (replacement || ''); inserted = true; }
+      continue; // drop the original selected chunks' text
+    }
+    if (c.type === 'add') { if (!c.rejected) out += c.value; }
+    else if (c.type === 'del') { if (c.rejected) out += c.value; }
+    else { out += c.value; }
+  }
+  if (!inserted) out += (replacement || ''); // selection matched no chunk (shouldn't happen)
+  return out;
+}
+
 // ── PdfDiffViewer: PORTAL from AlloFlowANTI.txt L22149-L22512 ──
 function PdfDiffViewer(props) {
   // `t` is the host's i18n translator. It was missing from this destructure
@@ -274,6 +295,58 @@ function PdfDiffViewer(props) {
           addToast('Reverted to the state before your last Apply.', 'info');
         };
         const _canRevert = !!(pdfFixResult && pdfFixResult._preApplyHtml);
+        // ── Region-targeted AI refine ── Rewrite ONLY the drag-selected passage. Fixes the Expert
+        // Workbench's ordinal-index guessing: the teacher selects the exact text, the AI rewrites
+        // just that span, and it's committed through the SAME coverage-guarded path as Apply
+        // (surgery -> Gemini re-markup fallback) — precise, reviewable, and revertible (_preApplyHtml).
+        const _refineSelection = async () => {
+          if (!diffSelection || applyingRemarkup) return;
+          const effVal = (c) => (c.type === 'add' ? (c.rejected ? '' : c.value) : c.type === 'del' ? (c.rejected ? c.value : '') : c.value);
+          const selText = (_chunks || []).filter(c => c.id >= diffSelection.firstId && c.id <= diffSelection.lastId).map(effVal).join('').trim();
+          if (!selText) { addToast(t('diff_view.refine_empty') || 'Nothing to refine in that selection.', 'info'); setDiffSelection(null); return; }
+          const instruction = (typeof window !== 'undefined' && window.prompt) ? window.prompt((t('diff_view.refine_prompt') || 'Refine the selected passage with AI — describe the change (e.g. "simplify to a grade-5 reading level", "fix the awkward phrasing"):'), '') : null;
+          if (!instruction || !instruction.trim()) return;
+          setApplyingRemarkup(true);
+          try {
+            const _prevHtml = pdfFixResult?.accessibleHtml || '';
+            const _prevFinal = pdfFixResult?.finalText || '';
+            let rewritten = '';
+            try {
+              const raw = await callGemini('You are a careful text editor. Rewrite ONLY the passage below per the instruction. Preserve meaning and any factual content (numbers, names, dates) unless the instruction explicitly says otherwise. Return ONLY the rewritten passage as plain text — no commentary, no quotes, no markdown.\n\nINSTRUCTION: ' + instruction.trim() + '\n\nPASSAGE:\n' + selText);
+              rewritten = (raw || '').replace(/^```\w*\s*/i, '').replace(/\s*```\s*$/, '').trim();
+            } catch (e) { warnLog('[Diff] refine callGemini failed: ' + (e && e.message || e)); }
+            if (!rewritten) { addToast(t('diff_view.refine_empty_ai') || 'AI returned nothing — selection unchanged.', 'warning'); return; }
+            const newEffective = _spliceSelectedText(_chunks, diffSelection.firstId, diffSelection.lastId, rewritten);
+            let newHtml = null, usedFallback = false, failReason = '';
+            try {
+              const surg = _applyTextSurgery(_prevHtml, newEffective);
+              if (surg && surg.html && surg.coverage >= 0.95) newHtml = surg.html;
+              else failReason = 'coverage-' + Math.round(((surg && surg.coverage) || 0) * 100);
+            } catch (e) { failReason = 'surgery-error'; warnLog('[Diff] refine surgery threw: ' + (e && e.message || e)); }
+            if (!newHtml) {
+              usedFallback = true;
+              try {
+                const raw = await callGemini('You are a WCAG 2.1 AA accessibility remediator. Produce a new HTML identical in STRUCTURE to CURRENT_HTML (same <img>/<table>/<figure>/<figcaption>/landmarks/ids/alt/classes/DOM layout) but whose TEXT matches APPROVED_TEXT. Do NOT add, remove, paraphrase, or reorder words beyond APPROVED_TEXT. Return ONLY the HTML — no commentary, no code fences.\n\nCURRENT_HTML:\n' + _prevHtml + '\n\nAPPROVED_TEXT:\n' + newEffective);
+                const cand = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+                if (cand) {
+                  const _strip = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+                  const newText = _strip(cand);
+                  const toks = newEffective.split(/\s+/).filter(x => x.length > 2);
+                  let found = 0; for (const tk of toks) if (newText.includes(tk.toLowerCase())) found++;
+                  if ((toks.length ? found / toks.length : 1) >= 0.9) newHtml = cand; else failReason = 'gemini-coverage-low';
+                }
+              } catch (e) { failReason = 'gemini-error'; warnLog('[Diff] refine gemini fallback failed: ' + (e && e.message || e)); }
+            }
+            if (newHtml) {
+              setPdfFixResult(prev => prev ? ({ ...prev, accessibleHtml: newHtml, finalText: newEffective, _userEditedAt: new Date().toISOString(), _preApplyHtml: _prevHtml, _preApplyFinalText: _prevFinal, _lastApplyPath: usedFallback ? 'ai-refine-gemini' : 'ai-refine-surgery', _applyVerificationFailed: null }) : prev);
+              setDiffChunks(null);
+              setDiffSelection(null);
+              addToast((t('diff_view.refine_applied') || 'AI refine applied to the selection') + ' (' + (usedFallback ? 'via Gemini' : 'via text surgery') + '). Use "Revert last apply" to undo.', 'success');
+            } else {
+              addToast((t('diff_view.refine_failed') || '⚠ AI refine not applied — the rewrite could not be spliced cleanly') + ' (' + failReason + '). Selection unchanged.', 'warning');
+            }
+          } finally { setApplyingRemarkup(false); }
+        };
         return (
           <div
             role="dialog"
@@ -467,6 +540,12 @@ function PdfDiffViewer(props) {
                       onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false)}
                       className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
                     >{t('diff_view.keep_selection') || 'Keep selection'}</button>
+                    <button
+                      onClick={_refineSelection}
+                      disabled={applyingRemarkup}
+                      className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 font-bold disabled:opacity-50"
+                      title={t('diff_view.refine_title') || 'Rewrite ONLY this selection with AI — precise, reviewable, revertible'}
+                    >{applyingRemarkup ? '…' : (t('diff_view.refine_selection') || '✨ Refine with AI')}</button>
                     <button
                       onClick={() => setDiffSelection(null)}
                       className="px-1.5 py-1 rounded hover:bg-slate-700"

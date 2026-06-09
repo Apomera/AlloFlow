@@ -43,6 +43,28 @@ var StopCircle = _lazyIcon('StopCircle');
 var UserCheck = _lazyIcon('UserCheck');
 var Users = _lazyIcon('Users');
 var X = _lazyIcon('X');
+function _spliceSelectedText(chunks, firstId, lastId, replacement) {
+  if (!Array.isArray(chunks)) return replacement || "";
+  let out = "", inserted = false;
+  for (const c of chunks) {
+    if (c.id >= firstId && c.id <= lastId) {
+      if (!inserted) {
+        out += replacement || "";
+        inserted = true;
+      }
+      continue;
+    }
+    if (c.type === "add") {
+      if (!c.rejected) out += c.value;
+    } else if (c.type === "del") {
+      if (c.rejected) out += c.value;
+    } else {
+      out += c.value;
+    }
+  }
+  if (!inserted) out += replacement || "";
+  return out;
+}
 function PdfDiffViewer(props) {
   let { t } = props;
   if (typeof t !== "function") t = (key) => key;
@@ -337,6 +359,73 @@ ${_effectiveText}`;
       addToast("Reverted to the state before your last Apply.", "info");
     };
     const _canRevert = !!(pdfFixResult && pdfFixResult._preApplyHtml);
+    const _refineSelection = async () => {
+      if (!diffSelection || applyingRemarkup) return;
+      const effVal = (c) => c.type === "add" ? c.rejected ? "" : c.value : c.type === "del" ? c.rejected ? c.value : "" : c.value;
+      const selText = (_chunks || []).filter((c) => c.id >= diffSelection.firstId && c.id <= diffSelection.lastId).map(effVal).join("").trim();
+      if (!selText) {
+        addToast(t("diff_view.refine_empty") || "Nothing to refine in that selection.", "info");
+        setDiffSelection(null);
+        return;
+      }
+      const instruction = typeof window !== "undefined" && window.prompt ? window.prompt(t("diff_view.refine_prompt") || 'Refine the selected passage with AI \u2014 describe the change (e.g. "simplify to a grade-5 reading level", "fix the awkward phrasing"):', "") : null;
+      if (!instruction || !instruction.trim()) return;
+      setApplyingRemarkup(true);
+      try {
+        const _prevHtml = pdfFixResult?.accessibleHtml || "";
+        const _prevFinal = pdfFixResult?.finalText || "";
+        let rewritten = "";
+        try {
+          const raw = await callGemini("You are a careful text editor. Rewrite ONLY the passage below per the instruction. Preserve meaning and any factual content (numbers, names, dates) unless the instruction explicitly says otherwise. Return ONLY the rewritten passage as plain text \u2014 no commentary, no quotes, no markdown.\n\nINSTRUCTION: " + instruction.trim() + "\n\nPASSAGE:\n" + selText);
+          rewritten = (raw || "").replace(/^```\w*\s*/i, "").replace(/\s*```\s*$/, "").trim();
+        } catch (e) {
+          warnLog("[Diff] refine callGemini failed: " + (e && e.message || e));
+        }
+        if (!rewritten) {
+          addToast(t("diff_view.refine_empty_ai") || "AI returned nothing \u2014 selection unchanged.", "warning");
+          return;
+        }
+        const newEffective = _spliceSelectedText(_chunks, diffSelection.firstId, diffSelection.lastId, rewritten);
+        let newHtml = null, usedFallback = false, failReason = "";
+        try {
+          const surg = _applyTextSurgery(_prevHtml, newEffective);
+          if (surg && surg.html && surg.coverage >= 0.95) newHtml = surg.html;
+          else failReason = "coverage-" + Math.round((surg && surg.coverage || 0) * 100);
+        } catch (e) {
+          failReason = "surgery-error";
+          warnLog("[Diff] refine surgery threw: " + (e && e.message || e));
+        }
+        if (!newHtml) {
+          usedFallback = true;
+          try {
+            const raw = await callGemini("You are a WCAG 2.1 AA accessibility remediator. Produce a new HTML identical in STRUCTURE to CURRENT_HTML (same <img>/<table>/<figure>/<figcaption>/landmarks/ids/alt/classes/DOM layout) but whose TEXT matches APPROVED_TEXT. Do NOT add, remove, paraphrase, or reorder words beyond APPROVED_TEXT. Return ONLY the HTML \u2014 no commentary, no code fences.\n\nCURRENT_HTML:\n" + _prevHtml + "\n\nAPPROVED_TEXT:\n" + newEffective);
+            const cand = (raw || "").replace(/^```(?:html)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+            if (cand) {
+              const _strip = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+              const newText = _strip(cand);
+              const toks = newEffective.split(/\s+/).filter((x) => x.length > 2);
+              let found = 0;
+              for (const tk of toks) if (newText.includes(tk.toLowerCase())) found++;
+              if ((toks.length ? found / toks.length : 1) >= 0.9) newHtml = cand;
+              else failReason = "gemini-coverage-low";
+            }
+          } catch (e) {
+            failReason = "gemini-error";
+            warnLog("[Diff] refine gemini fallback failed: " + (e && e.message || e));
+          }
+        }
+        if (newHtml) {
+          setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, finalText: newEffective, _userEditedAt: (/* @__PURE__ */ new Date()).toISOString(), _preApplyHtml: _prevHtml, _preApplyFinalText: _prevFinal, _lastApplyPath: usedFallback ? "ai-refine-gemini" : "ai-refine-surgery", _applyVerificationFailed: null } : prev);
+          setDiffChunks(null);
+          setDiffSelection(null);
+          addToast((t("diff_view.refine_applied") || "AI refine applied to the selection") + " (" + (usedFallback ? "via Gemini" : "via text surgery") + '). Use "Revert last apply" to undo.', "success");
+        } else {
+          addToast((t("diff_view.refine_failed") || "\u26A0 AI refine not applied \u2014 the rewrite could not be spliced cleanly") + " (" + failReason + "). Selection unchanged.", "warning");
+        }
+      } finally {
+        setApplyingRemarkup(false);
+      }
+    };
     return /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -468,6 +557,16 @@ ${_effectiveText}`;
               className: "px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
             },
             t("diff_view.keep_selection") || "Keep selection"
+          ),
+          /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              onClick: _refineSelection,
+              disabled: applyingRemarkup,
+              className: "px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 font-bold disabled:opacity-50",
+              title: t("diff_view.refine_title") || "Rewrite ONLY this selection with AI \u2014 precise, reviewable, revertible"
+            },
+            applyingRemarkup ? "\u2026" : t("diff_view.refine_selection") || "\u2728 Refine with AI"
           ),
           /* @__PURE__ */ React.createElement(
             "button",
