@@ -161,6 +161,24 @@ function _buildTagOutline(html) {
   return out;
 }
 
+// Lists AI-reconstructed-from-image tables (data-allo-reconstructed) in the remediated HTML, for the
+// human accept/reject gate. Pure + jsdom-testable. The reconstruction (doc_pipeline) is additive —
+// the original image is kept beside each table — so rejecting one just removes the table.
+function _listReconstructedTables(html) {
+  const out = [];
+  try {
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
+    doc.querySelectorAll('table[data-allo-reconstructed]').forEach((t) => {
+      const cap = t.querySelector('caption');
+      out.push({
+        caption: cap ? cap.textContent.replace(/\s+/g, ' ').trim().slice(0, 100) : '',
+        rows: t.querySelectorAll('tbody tr').length,
+      });
+    });
+  } catch (_) {}
+  return out;
+}
+
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
@@ -4203,6 +4221,37 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           title={t('pdf_audit.pdf_from_html.title') || 'Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents.'}>
                           📥 PDF (from HTML)
                         </button>
+                        {/* ── AI-reconstructed-structure review gate ──
+                            When doc_pipeline rebuilt an infographic into a semantic table, the human
+                            confirms (default = keep) or rejects it here; the original image is kept
+                            beside each, so rejecting just removes the table. (Avoids a fragment-IIFE;
+                            _listReconstructedTables is cheap + only called when the marker is present.) */}
+                        {pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf('data-allo-reconstructed') >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml).length > 0 && (
+                          <div className="w-full mt-1 bg-purple-50 border border-purple-300 rounded-xl px-3 py-2 text-xs">
+                            <div className="font-bold text-purple-800">✨ AI-reconstructed structure — please verify</div>
+                            <div className="text-[11px] text-purple-700 mt-0.5">{_listReconstructedTables(pdfFixResult.accessibleHtml).length} table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each — check each matches its image, and reject any that's wrong (the image stays).</div>
+                            <ul className="mt-1 space-y-1" role="list">
+                              {_listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => (
+                                <li key={i} className="flex items-center gap-2">
+                                  <span className="flex-1 min-w-0 truncate text-slate-700">{r.caption || ('Reconstructed table ' + (i + 1))} <span className="text-slate-500">({r.rows} row{r.rows === 1 ? '' : 's'})</span></span>
+                                  <button onClick={() => {
+                                    try {
+                                      const _doc = new DOMParser().parseFromString(pdfFixResult.accessibleHtml || '', 'text/html');
+                                      const _ts = _doc.querySelectorAll('table[data-allo-reconstructed]');
+                                      if (_ts[i]) {
+                                        _ts[i].remove();
+                                        const _nh = '<!DOCTYPE html>\n' + _doc.documentElement.outerHTML;
+                                        setPdfFixResult(p => p ? ({ ...p, accessibleHtml: _nh }) : p);
+                                        if (typeof updatePdfPreview === 'function') updatePdfPreview();
+                                        if (typeof addToast === 'function') addToast(t('pdf_audit.recon.rejected') || 'Removed the AI-reconstructed table — the original image is kept.', 'info');
+                                      }
+                                    } catch (_) {}
+                                  }} className="shrink-0 px-2 py-0.5 bg-white border border-rose-300 text-rose-700 rounded text-[10px] font-bold hover:bg-rose-50">✗ Reject (keep image)</button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                         {/* ── Editable tagged-PDF metadata (Title / Language / Author) ──
                             Prefilled from the SAME derivation the export uses, so what's shown is
                             what ships. Lets the user fix filename-as-title (#1 PDF/UA checker fail)
