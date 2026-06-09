@@ -177,6 +177,12 @@ const checks = [
     informational: true,
   },
   {
+    name: 'veraPDF source→tagged clause diff',
+    cmd: ['node', 'dev-tools/verapdf_diff.cjs', '--quiet', '--gate'],
+    description: 'ISO 14289-1 ground truth on golden artifacts: tagging must FIX rules, never INTRODUCE failures (--gate exits 1 on regressions). Skips cleanly when veraPDF/Java or artifacts are absent — docs/verapdf_install.md.',
+    informational: true,
+  },
+  {
     name: 'Firebase functions surface',
     cmd: ['node', 'dev-tools/check_firebase_functions.cjs', '--quiet'],
     description: '12 expected Firebase function exports present + well-shaped',

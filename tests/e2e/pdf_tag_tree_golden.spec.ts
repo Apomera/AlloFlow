@@ -650,9 +650,27 @@ test.describe('createTaggedPdf — link-annot tagging + UA-claim gate', () => {
         if (!r2 || !r2.bytes) return { error: 'run2 returned no bytes' };
         const scanned = await inspect(r2.bytes);
 
-        return { text, scanned, summaryLinkAnnotsTagged: (s1 as any).linkAnnotsTagged ?? null, roundTripOk: r1.roundTrip ? r1.roundTrip.ok !== false : null };
+        const _b64 = (u8: Uint8Array) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, Array.from(u8.subarray(i, i + 0x8000))); return btoa(s); };
+        return {
+          text, scanned, summaryLinkAnnotsTagged: (s1 as any).linkAnnotsTagged ?? null, roundTripOk: r1.roundTrip ? r1.roundTrip.ok !== false : null,
+          artifactSourceB64: _b64(new Uint8Array(inputBytes)),
+          artifactTaggedTextB64: _b64(new Uint8Array(r1.bytes)),
+          artifactTaggedScannedB64: _b64(new Uint8Array(r2.bytes)),
+        };
       } catch (err: any) { return { error: String((err && err.stack) || err) }; }
     });
+
+    // Persist pairs for dev-tools/verapdf_diff.cjs (text path + scanned/unify path).
+    try {
+      if (linkGateSummary && linkGateSummary.artifactSourceB64) {
+        const artDir = path.resolve(__dirname, 'artifacts');
+        fs.mkdirSync(artDir, { recursive: true });
+        fs.writeFileSync(path.join(artDir, 'linkannot-text.source.pdf'), Buffer.from(linkGateSummary.artifactSourceB64, 'base64'));
+        fs.writeFileSync(path.join(artDir, 'linkannot-text.tagged.pdf'), Buffer.from(linkGateSummary.artifactTaggedTextB64, 'base64'));
+        fs.writeFileSync(path.join(artDir, 'linkannot-scanned.source.pdf'), Buffer.from(linkGateSummary.artifactSourceB64, 'base64'));
+        fs.writeFileSync(path.join(artDir, 'linkannot-scanned.tagged.pdf'), Buffer.from(linkGateSummary.artifactTaggedScannedB64, 'base64'));
+      }
+    } catch (e) { console.warn('[tag-tree golden] artifact write failed (non-fatal):', e); }
   });
 
   test('link annotation is wrapped: Link StructElem + OBJR + /StructParent', () => {
@@ -771,7 +789,12 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           const contents = metaS && (metaS.contents || (metaS.getContents && metaS.getContents()));
           if (contents) xmp = new TextDecoder('utf-8').decode(contents);
         } catch (e) {}
+        // Export the real bytes so dev-tools/verapdf_diff.cjs can run ISO-grade
+        // PDF/UA validation on them (source vs tagged clause diff).
+        const _b64 = (u8: Uint8Array) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, Array.from(u8.subarray(i, i + 0x8000))); return btoa(s); };
         return {
+          artifactSourceB64: _b64(new Uint8Array(inputBytes)),
+          artifactTaggedB64: _b64(new Uint8Array(result.bytes)),
           perLeafLinked: (result.summary || {}).perLeafLinked ?? null,
           leafCount: leaves.length,
           orphanedLeafCount: orphaned.length,
@@ -789,6 +812,18 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
         };
       } catch (err: any) { return { error: String((err && err.stack) || err) }; }
     });
+
+    // Persist source+tagged pairs for the veraPDF clause-diff harness
+    // (dev-tools/verapdf_diff.cjs). Best-effort: artifact write failures must
+    // never fail the golden assertions themselves.
+    try {
+      if (perLeafSummary && perLeafSummary.artifactSourceB64) {
+        const artDir = path.resolve(__dirname, 'artifacts');
+        fs.mkdirSync(artDir, { recursive: true });
+        fs.writeFileSync(path.join(artDir, 'perleaf-borndigital.source.pdf'), Buffer.from(perLeafSummary.artifactSourceB64, 'base64'));
+        fs.writeFileSync(path.join(artDir, 'perleaf-borndigital.tagged.pdf'), Buffer.from(perLeafSummary.artifactTaggedB64, 'base64'));
+      }
+    } catch (e) { console.warn('[tag-tree golden] artifact write failed (non-fatal):', e); }
   });
 
   test('Stage 4b re-points MCIDs onto matching semantic leaves', () => {

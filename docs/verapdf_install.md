@@ -139,3 +139,45 @@ If both pass, the export is in good shape. If only one fails, the difference poi
 **"Failed to parse veraPDF JSON output"** → likely a veraPDF version mismatch (the wrapper expects JSON MRR format, which veraPDF 1.20+ produces by default). Run `verapdf --version` and confirm 1.20 or later.
 
 **Wrapper returns "no jobs in output"** → the PDF couldn't be loaded by veraPDF at all. Inspect the file with Acrobat first; if it opens there but veraPDF can't load it, the file may be encrypted or malformed.
+
+---
+
+## Fast path (2026-06-09): downloads already staged + automated diff harness
+
+A portable Temurin 21 JRE zip and the veraPDF installer zip are already
+downloaded at `C:\Users\cabba\.alloflow-tools\`. To finish (no admin needed):
+
+```powershell
+cd $env:USERPROFILE\.alloflow-tools
+Expand-Archive jre21.zip -DestinationPath . -Force          # → jdk-21.x.x-jre\
+Expand-Archive verapdf-installer.zip -DestinationPath . -Force
+# Run the installer with the portable Java (GUI appears; install to $env:USERPROFILE\veraPDF):
+& (Get-ChildItem jdk-21*\bin\java.exe).FullName -jar (Get-ChildItem verapdf-greenfield*\verapdf-izpack*.jar).FullName
+```
+
+`$env:USERPROFILE\veraPDF\verapdf.bat` is auto-detected by the tooling
+(no PATH edit needed). veraPDF needs Java on PATH at RUN time, so either add
+the portable JRE's `bin` to PATH, or set it per-session:
+`$env:PATH = "$env:USERPROFILE\.alloflow-tools\jdk-21.0.9+10-jre\bin;$env:PATH"`
+(adjust the version folder name).
+
+### What you get once it's installed
+
+The tag-tree golden master now **saves its real source+tagged PDF pairs** to
+`tests/e2e/artifacts/` on every run, and `dev-tools/verapdf_diff.cjs` runs
+ISO-grade PDF/UA-1 validation on both sides of each pair and reports, per
+ISO 14289-1 rule:
+
+- **fixed by tagging** — failing in the source, passing in our output
+- **INTRODUCED by tagging** — the regression class (`--gate` exits 1)
+- **inherited from source** — fails in both (e.g. source font embedding —
+  honest scope: tagging can't fix these)
+
+```bash
+npx playwright test tests/e2e/pdf_tag_tree_golden.spec.ts   # regenerate artifacts
+node dev-tools/verapdf_diff.cjs                              # human clause diff
+node dev-tools/verapdf_diff.cjs --json                       # machine-readable
+```
+
+It is also wired into `verify_all` (informational; skips cleanly when
+veraPDF or artifacts are absent).

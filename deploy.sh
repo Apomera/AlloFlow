@@ -187,6 +187,10 @@ echo "  ✓ Firebase deploy complete."
 echo ""
 echo "=== Step 6: Post-deploy commit (CDN hash refs) ==="
 git add AlloFlowANTI.txt prismflow-deploy/src/AlloFlowANTI.txt prismflow-deploy/src/App.jsx 2>/dev/null || true
+# Self-cleaning deploys: build.js auto-copies committed roots over the public
+# mirrors during Step 3; without this line those deterministic copies linger
+# as a dirty tree after every deploy.
+git add prismflow-deploy/public/ 2>/dev/null || true
 POST_COMMITTED=0
 if git diff --cached --quiet; then
   echo "  No post-deploy changes. (Hash refs were already current.)"

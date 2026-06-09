@@ -224,4 +224,6 @@ function main() {
   process.exit(anyFail ? 1 : 0);
 }
 
-main();
+if (require.main === module) main();
+// Reused by dev-tools/verapdf_diff.cjs (source-vs-tagged clause diff).
+module.exports = { findVeraPdf, runVeraPdf, summarize, renderReport, printInstallInstructions };
