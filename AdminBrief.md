@@ -92,9 +92,9 @@ Built by a school psychologist, for educators. The catch? There isn't one.
 
 | Concern | Answer |
 |---|---|
-| **Where does student data go?** | Nowhere. All data stays on-device in the browser's local storage. |
+| **Where does student data go?** | Rosters, settings, and student work stay on-device in the browser's local storage — AlloFlow operates no servers. One exception to plan for: AI features (including the PDF audit/remediation pipeline) send the content being processed to Google's Gemini API for analysis. Inside Gemini Canvas that processing runs under your district's existing Workspace agreement; the School Box air-gap path (below) keeps it fully on-prem. |
 | **Do students need accounts?** | No. Join via 4-character session codes. No PII ever required. |
-| **Is it FERPA-compatible?** | Yes. No PII collection, no external databases, no third-party data brokers. |
+| **Is it FERPA-compatible?** | Designed for it: no PII collection, no AlloFlow-operated databases, no third-party data brokers. Note that documents a teacher runs through the AI pipeline are processed by Google Gemini (see above) — so route documents containing student records through your district's Google Workspace channel, or use the air-gap deployment. |
 | **Google Workspace for Education integration?** | Runs inside Gemini Canvas with your district's existing Workspace DPA covering it. No new data-processor relationship. |
 | **Can we self-host?** | Yes — three deployment paths (see below). |
 | **What AI model powers it?** | Google Gemini via your district's Workspace account. District controls the key; no shared API billing. |
