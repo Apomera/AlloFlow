@@ -4376,7 +4376,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'cb3be55e';
+    var pluginCdnVersion = '4309bc8b';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10003,14 +10003,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         setTimeout(() => { clearInterval(t); resolve(!!(window.PDFLib && window.PDFLib.PDFDocument)); }, 10000);
       });
     }
+    // Mirror chain (each HTTP-200-verified): locked-down school networks often
+    // block a single CDN host — one blocked mirror must not kill tagged-PDF export.
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
+    ];
     return new Promise((resolve) => {
-      const s = document.createElement('script');
-      s.id = 'pdflib-cdn';
-      s.src = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
-      s.async = true;
-      s.onload = () => resolve(!!(window.PDFLib && window.PDFLib.PDFDocument));
-      s.onerror = () => resolve(false);
-      document.head.appendChild(s);
+      const tryAt = (i) => {
+        if (i >= urls.length) { try { console.warn('[pdf-lib] all ' + urls.length + ' CDN mirrors failed — tagged-PDF export unavailable on this network'); } catch (_) {} resolve(false); return; }
+        const s = document.createElement('script');
+        s.id = 'pdflib-cdn';
+        s.src = urls[i];
+        s.async = true;
+        s.onload = () => resolve(!!(window.PDFLib && window.PDFLib.PDFDocument));
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
     });
   }, []);
   const _ensureDiffLib = React.useCallback(() => {
@@ -10025,14 +10036,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       });
     }
     setDiffLibLoading(true);
+    // Mirror chain (each HTTP-200-verified) — same rationale as _ensurePdfLib.
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js',
+      'https://unpkg.com/diff@5.2.0/dist/diff.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.2.0/diff.min.js',
+    ];
     return new Promise((resolve) => {
-      const s = document.createElement('script');
-      s.id = 'jsdiff-cdn';
-      s.src = 'https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js';
-      s.async = true;
-      s.onload = () => { setDiffLibReady(!!window.Diff); setDiffLibLoading(false); if (window.Diff) setDiffRebuildNonce(n => n + 1); resolve(!!window.Diff); };
-      s.onerror = () => { setDiffLibLoading(false); setDiffLibReady(false); resolve(false); };
-      document.head.appendChild(s);
+      const tryAt = (i) => {
+        if (i >= urls.length) { try { console.warn('[jsdiff] all ' + urls.length + ' CDN mirrors failed — word-level diff view unavailable on this network'); } catch (_) {} setDiffLibLoading(false); setDiffLibReady(false); resolve(false); return; }
+        const s = document.createElement('script');
+        s.id = 'jsdiff-cdn';
+        s.src = urls[i];
+        s.async = true;
+        s.onload = () => { setDiffLibReady(!!window.Diff); setDiffLibLoading(false); if (window.Diff) setDiffRebuildNonce(n => n + 1); resolve(!!window.Diff); };
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
     });
   }, []);
   const [pdfPageRange, setPdfPageRange] = useState(null);
@@ -10189,7 +10210,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const PDF_REGRESSION_TOLERANCE = 5;
   const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
-    if (aiScore == null) return null;
+    // AI unavailable → fall back to the deterministic axe-core score rather
+    // than discarding the fix (an axe-only measurement beats losing the work).
+    if (aiScore == null) return (typeof axeScore === 'number') ? axeScore : null;
     if (typeof axeScore !== 'number') return aiScore;
     return Math.round((aiScore + axeScore) / 2);
   };
@@ -10197,17 +10220,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const newAi = candidate.ai?.score ?? null;
     const newAxe = candidate.axe?.score ?? null;
     const newBlended = candidate.perfect ? 100 : blendAiAxe(newAi, newAxe);
-    const prevScore = prev.afterScore;
+    const axeOnly = !candidate.perfect && newAi == null && typeof newAxe === 'number';
+    // Regression baseline: an axe-only candidate must be compared against the
+    // previous AXE score — a blend and an axe-only number aren't the same scale.
+    const prevAxe = prev.axeAudit?.score ?? null;
+    const prevScore = (axeOnly && prevAxe != null) ? prevAxe : prev.afterScore;
     const regressed = prevScore != null && newBlended != null && newBlended < prevScore - PDF_REGRESSION_TOLERANCE;
     if (regressed || newBlended == null) {
       setPdfFixResult(p => ({ ...p, ...(extras?.preserveOnRevert || {}) }));
       addToast(
         newBlended == null
           ? `${label}: audit failed — kept previous version.`
-          : `${label}: score would have dropped (${prevScore} → ${newBlended}). Kept previous version.`,
+          : `${label}: score would have dropped (${prevScore} → ${newBlended}${axeOnly ? ', axe-only comparison' : ''}). Kept previous version.`,
         'warning'
       );
       return false;
+    }
+    if (axeOnly) {
+      addToast(`${label}: AI verification unavailable — committed with the deterministic axe-core score only.`, 'info');
     }
     setPdfFixResult(p => ({
       ...p,
@@ -10215,6 +10245,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       verificationAudit: candidate.ai,
       axeAudit: candidate.axe,
       afterScore: newBlended,
+      afterScoreProvenance: axeOnly ? 'axe-only' : (typeof newAxe === 'number' && newAi != null ? 'blended' : 'ai-only'),
       htmlChars: candidate.chars,
       ...(extras?.commit || {}),
     }));
