@@ -1865,7 +1865,7 @@ window.StemLab = window.StemLab || {
 
             // Active tab
             tab === 'magCompare' && (function() {
-              var iq = d.magHunt || { numA: 1, denA: 2, numB: 1, denB: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var iq = _n.magHunt || { numA: 1, denA: 2, numB: 1, denB: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd({ magHunt: Object.assign({}, iq, patch) }); }
               var fracA = iq.numA / iq.denA;
               var fracB = iq.numB / iq.denB;
