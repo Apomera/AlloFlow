@@ -2328,9 +2328,11 @@
             upd('pasteText', ''); upd('showPaste', false);
           }
 
-          kids.push(h('div', { key: 'hdr', className: 'flex items-center gap-2 flex-wrap' },
-            h('span', { className: 'font-bold text-amber-800' }, '💡 Lumen'),
-            h('span', { className: 'text-[11px] text-slate-500' }, comp.variable + ' (' + comp.unit + ')')
+          kids.push(h('div', { key: 'hdr', className: 'flex items-center gap-2 flex-wrap pb-2 mb-1', style: { borderBottom: '1px solid #f1f5f9' } },
+            h('span', { className: 'text-lg leading-none', 'aria-hidden': 'true' }, '💡'),
+            h('span', { className: 'font-extrabold text-base tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, 'Lumen'),
+            h('span', { className: 'text-[11px] text-slate-400 italic' }, 'honest data, made to share'),
+            h('span', { className: 'text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto', style: { background: '#fffbeb', border: '1px solid #fde68a' } }, comp.variable + (comp.unit ? ' · ' + comp.unit : ''))
           ));
           // Persistent, non-dismissible synthetic-data banner — fires whenever ANY
           // row is synthetic (generated OR a loaded example). Drives home that this
@@ -2381,18 +2383,23 @@
           // Shows only on the empty first run (no data, no staged import, paste
           // box closed); it vanishes the moment data or an import is present.
           if (!obs.length && !d.importPreview && !d.showPaste) {
-            kids.push(h('div', { key: 'onboard', className: 'mt-3 p-4 rounded-xl border border-amber-300 bg-amber-50/70' },
-              h('div', { className: 'text-sm font-semibold text-amber-900' }, 'Turn any dataset into an honest, defensible finding you can hand to a person.'),
+            var obStep = function (n, bold, rest) {
+              return h('li', { key: 's' + n, className: 'flex items-start gap-2 text-xs text-slate-700' },
+                h('span', { 'aria-hidden': 'true', className: 'flex items-center justify-center font-bold text-white rounded-full', style: { width: '18px', height: '18px', fontSize: '11px', background: '#d97706', flexShrink: 0 } }, String(n)),
+                h('span', null, h('b', null, bold), rest));
+            };
+            kids.push(h('div', { key: 'onboard', className: 'mt-3 p-5 rounded-2xl border border-amber-200', style: { background: 'linear-gradient(135deg,#fffbeb 0%,#ffffff 72%)', boxShadow: '0 1px 4px rgba(180,83,9,0.08)' } },
+              h('div', { className: 'text-sm font-bold text-amber-900 flex items-center gap-2' }, h('span', { 'aria-hidden': 'true' }, '✨'), h('span', null, 'Turn any dataset into an honest, defensible finding you can hand to a person.')),
               h('p', { className: 'mt-1 text-xs text-slate-600' }, 'Lumen charts YOUR data and writes a plain-language finding from the numbers only — it never invents certainty or a score.'),
-              h('ol', { className: 'mt-2 text-xs text-slate-700 list-decimal ml-5 space-y-1' },
-                h('li', { key: 's1' }, h('b', null, 'Name your measure'), ' in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).'),
-                h('li', { key: 's2' }, h('b', null, 'Add data'), ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
-                h('li', { key: 's3' }, h('b', null, 'Read the finding'), ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.')),
+              h('ol', { className: 'mt-3 space-y-2', style: { listStyle: 'none', paddingLeft: 0, margin: 0 } },
+                obStep(1, 'Name your measure', ' in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).'),
+                obStep(2, 'Add data', ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
+                obStep(3, 'Read the finding', ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.')),
               h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
-                h('button', { key: 'obSample', className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); } }, 'Try a sample'),
-                h('button', { key: 'obPaste', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, '⎘ Paste data'),
-                h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100 cursor-pointer' }, '⇪ Import file')),
-              h('p', { className: 'mt-2 text-[11px] text-slate-500' }, 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.')));
+                h('button', { key: 'obSample', className: 'px-3 py-1.5 text-sm font-semibold rounded-lg text-white hover:opacity-90', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 3px rgba(234,88,12,0.3)' }, onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); } }, 'Try a sample'),
+                h('button', { key: 'obPaste', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, '⎘ Paste data'),
+                h('label', { key: 'obImport', htmlFor: 'lumen-file-input', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100 cursor-pointer' }, '⇪ Import file')),
+              h('p', { className: 'mt-3 text-[11px] text-slate-500' }, 'Honest by design: fewer than 3 points yields a "not enough data" card, never a fake line. AI stays OFF until you raise the AI ceiling.')));
           }
 
           // Measure setup — name your own x/y variables. comp is rebuilt from

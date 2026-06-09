@@ -2,9 +2,11 @@
 
 exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded, uncertainty preserved 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -179,9 +181,11 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 
 exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working face) — the default opening state 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -356,9 +360,11 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 
 exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypothesis set + IEP-team sign-off 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -561,9 +567,11 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 
 exports[`Lumen — render golden master (SSR, §15) > a verified benchmark renders the teal reference line + citation chip 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -748,9 +756,11 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 
 exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect bars + axes + phase line, no trend line 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -901,9 +911,11 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 
 exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase five-number boxes 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1027,9 +1039,11 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 
 exports[`Lumen — render golden master (SSR, §15) > data table shown — the screen-reader peer 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1279,9 +1293,11 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 
 exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — points only (no line, no bars) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1422,9 +1438,11 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 
 exports[`Lumen — render golden master (SSR, §15) > empty state — no observations (entry + sample, no chart) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1450,23 +1468,35 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Multi-line</button>
 <button aria-pressed="false" class="bg-white text-slate-700 border-slate-300 px-2 py-1 text-xs rounded border">Grouped bar</button>
 </div>
-<div class="mt-3 p-4 rounded-xl border border-amber-300 bg-amber-50/70">
-<div class="text-sm font-semibold text-amber-900">Turn any dataset into an honest, defensible finding you can hand to a person.</div>
+<div class="mt-3 p-5 rounded-2xl border border-amber-200" style="background:linear-gradient(135deg,#fffbeb 0%,#ffffff 72%);box-shadow:0 1px 4px rgba(180,83,9,0.08)">
+<div class="text-sm font-bold text-amber-900 flex items-center gap-2">
+<span aria-hidden="true">✨</span>
+<span>Turn any dataset into an honest, defensible finding you can hand to a person.</span>
+</div>
 <p class="mt-1 text-xs text-slate-600">Lumen charts YOUR data and writes a plain-language finding from the numbers only — it never invents certainty or a score.</p>
-<ol class="mt-2 text-xs text-slate-700 list-decimal ml-5 space-y-1">
-<li>
-<b>Name your measure</b> in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).</li>
-<li>
-<b>Add data</b> — type points, paste a table, or import a CSV / Excel / JSON file.</li>
-<li>
-<b>Read the finding</b> — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.</li>
+<ol class="mt-3 space-y-2" style="list-style:none;padding-left:0;margin:0">
+<li class="flex items-start gap-2 text-xs text-slate-700">
+<span aria-hidden="true" class="flex items-center justify-center font-bold text-white rounded-full" style="width:18px;height:18px;font-size:11px;background:#d97706;flex-shrink:0">1</span>
+<span>
+<b>Name your measure</b> in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).</span>
+</li>
+<li class="flex items-start gap-2 text-xs text-slate-700">
+<span aria-hidden="true" class="flex items-center justify-center font-bold text-white rounded-full" style="width:18px;height:18px;font-size:11px;background:#d97706;flex-shrink:0">2</span>
+<span>
+<b>Add data</b> — type points, paste a table, or import a CSV / Excel / JSON file.</span>
+</li>
+<li class="flex items-start gap-2 text-xs text-slate-700">
+<span aria-hidden="true" class="flex items-center justify-center font-bold text-white rounded-full" style="width:18px;height:18px;font-size:11px;background:#d97706;flex-shrink:0">3</span>
+<span>
+<b>Read the finding</b> — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.</span>
+</li>
 </ol>
 <div class="mt-3 flex gap-2 flex-wrap">
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">Try a sample</button>
-<button class="px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100">⎘ Paste data</button>
-<label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-amber-400 text-amber-800 hover:bg-amber-100 cursor-pointer">⇪ Import file</label>
+<button class="px-3 py-1.5 text-sm font-semibold rounded-lg text-white hover:opacity-90" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 3px rgba(234,88,12,0.3)">Try a sample</button>
+<button class="px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100">⎘ Paste data</button>
+<label for="lumen-file-input" class="px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100 cursor-pointer">⇪ Import file</label>
 </div>
-<p class="mt-2 text-[11px] text-slate-500">Honest by design: fewer than 3 points yields a &quot;not enough data&quot; card, never a fake line. AI stays OFF until you raise the AI ceiling.</p>
+<p class="mt-3 text-[11px] text-slate-500">Honest by design: fewer than 3 points yields a &quot;not enough data&quot; card, never a fake line. AI stays OFF until you raise the AI ceiling.</p>
 </div>
 <div class="mt-3 flex items-end gap-2 flex-wrap" role="group" aria-label="Measure setup">
 <span class="text-xs text-slate-500 mr-1 self-center">Setup:</span>
@@ -1505,9 +1535,11 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 
 exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — bars per phase × series mean, legend, raw-data table 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1759,9 +1791,11 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 
 exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark renders the VERTICAL teal reference line at the benchmark value 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -1896,9 +1930,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 
 exports[`Lumen — render golden master (SSR, §15) > histogram pathway — value-range count bars (distribution, not time-series) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2023,9 +2059,11 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 
 exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a coloured line + points per series, one sentence each 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2184,9 +2222,11 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 
 exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few points draws no line, shows a refusal sentence 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2266,9 +2306,11 @@ exports[`Lumen — render golden master (SSR, §15) > registration metadata 1`] 
 
 exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 paired points (primary y vs y2) + L1 fit line, association sentence 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2387,9 +2429,11 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 
 exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs refuses (no chart), naming the paired n 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2462,9 +2506,11 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 
 exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phase fitted segments + observed dots 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
@@ -2611,9 +2657,11 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 
 exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic practice data — persistent banner + in-SVG watermark + SYN marks (snapshot) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div role="note" class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold flex flex-wrap items-center gap-2" style="background:#6d28d9;color:#ffffff">
 <span>⚗ Synthetic practice data — NOT a real student.</span>
@@ -2771,9 +2819,11 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 
 exports[`Lumen — render invariants (no snapshot, just contracts) > the import-mapper preview is structurally byte-stable (snapshot) 1`] = `
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-bold text-amber-800">💡 Lumen</span>
-<span class="text-[11px] text-slate-500">Measure (units)</span>
+<div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
+<span class="text-lg leading-none" aria-hidden="true">💡</span>
+<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="text-[11px] text-slate-400 italic">honest data, made to share</span>
+<span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
 <div class="mt-2 flex items-center gap-1 flex-wrap" role="group" aria-label="AI involvement ceiling">
 <span class="text-xs text-slate-500 mr-1">AI ceiling:</span>
