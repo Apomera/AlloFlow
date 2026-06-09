@@ -69,12 +69,14 @@ const createGeminiAPI = (deps) => {
         if (lower.includes('quota') || lower.includes('rate')) {
           return { kind: 'quota', userMessage: 'Gemini API rate or quota limit hit — try again in a minute first; if it persists, you may have hit the daily quota.', model: null };
         }
-        // 401 is normally a bad/expired/missing key. The rare case: Google can
-        // suspend a key for sustained heavy usage and then it starts returning
-        // 401 even though the root cause is rate-related. Surface that
-        // possibility honestly so a key that was working an hour ago doesn't
-        // get prematurely regenerated.
-        return { kind: 'auth', userMessage: 'Gemini API key is invalid, expired, or missing. (Rare: if the key was working recently, sustained heavy usage can trigger a temporary 401 — try waiting 5-10 minutes before regenerating.)', model: null };
+        // 401 handling, in plain language. In Canvas the app auto-injects the key each session —
+        // the user never manages one — so a 401 there is almost always a brief rate-limit / hiccup,
+        // NOT a bad key, and "regenerate your key" advice is wrong + confusing. Word it accordingly.
+        // (Outside Canvas a 401 usually IS a key problem, but heavy usage can cause a temporary one.)
+        const _authMsg = _isCanvasEnv
+          ? 'The AI service didn’t accept that request. This is almost always a brief rate-limit or hiccup — not a real key problem (this app manages the AI key for you). It usually clears on its own — wait a moment and try again.'
+          : 'The Gemini API key looks invalid, expired, or missing. If it was working recently, heavy usage can cause a temporary 401 — wait a few minutes before regenerating it.';
+        return { kind: 'auth', userMessage: _authMsg, model: null };
       }
       // Config: model not found / unsupported / 404 / INVALID_ARGUMENT.
       if (
@@ -102,6 +104,16 @@ const createGeminiAPI = (deps) => {
       return { kind: 'other', userMessage: msg || 'Unknown Gemini API error.', model: null };
     };
 
+    // ── Auth-failure debounce ─────────────────────────────────────────────
+    // A SINGLE 401 is usually transient — a brief per-minute rate-limit or a momentary hiccup,
+    // especially in Canvas where the key is auto-injected and can't actually be "wrong". Showing
+    // an alarming "Auth error / regenerate your key" banner on the first one is misleading and the
+    // pipeline often keeps working. So we only surface the auth banner after several CONSECUTIVE
+    // auth failures with no success in between; _noteApiSuccess() resets the streak (and clears the
+    // banner + shows a recovery note) the moment any AI call succeeds again.
+    let _authFailStreak = 0;
+    const _AUTH_BANNER_THRESHOLD = 3;
+
     // ── Persistent quota banner ───────────────────────────────────────────
     // When a genuine quota error fires, surface a sticky banner at the top
     // of the viewport so the user can SEE that the pipeline isn't broken,
@@ -109,6 +121,15 @@ const createGeminiAPI = (deps) => {
     // event so the React app (or any host) can hook in too.
     const _showQuotaBanner = (classification) => {
       if (typeof window === 'undefined' || typeof document === 'undefined') return;
+      // Auth debounce: count consecutive auth failures; stay quiet (no banner) until we've seen
+      // several. quota/config fire immediately (those are real, actionable signals).
+      if (classification.kind === 'auth') {
+        _authFailStreak++;
+        if (_authFailStreak < _AUTH_BANNER_THRESHOLD) {
+          try { if (typeof warnLog === 'function') warnLog('[GeminiAPI] transient auth failure ' + _authFailStreak + '/' + _AUTH_BANNER_THRESHOLD + ' — likely a brief rate-limit; not alarming the user yet.'); } catch (_) {}
+          return;
+        }
+      }
       try {
         window.__alloflowQuotaState = {
           active: true,
@@ -163,7 +184,9 @@ const createGeminiAPI = (deps) => {
           const trailing = classification.kind === 'quota'
             ? ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail meanwhile. Deterministic fixes still run — try again in about a minute. If the message recurs immediately, you have likely hit the daily quota and will need to wait until midnight Pacific or upgrade the Gemini tier.'
             : classification.kind === 'auth'
-              ? ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail until the key is fixed. Deterministic fixes still run. (If the key was working recently, this may be a temporary 401 from sustained heavy usage — wait 5-10 minutes before regenerating the key.)'
+              ? (_isCanvasEnv
+                  ? ' The basic (non-AI) fixes still ran. The AI steps (reading images, rewriting, alt text) keep retrying — if it clears, you’ll see a green “responding again” note. If this banner keeps showing for a few minutes, the AI service is heavily rate-limited; wait and retry.'
+                  : ' AI steps (image reading, rewriting, alt text) will fail until the key is fixed; the basic fixes still ran. (A key that worked recently may just be hitting a temporary 401 from heavy usage — wait a few minutes before regenerating.)')
               : ' AI-dependent steps (Vision OCR, rewrite, alt-text) will fail until this is resolved. Deterministic fixes still run.';
           msgEl.textContent = prefix + classification.userMessage + trailing;
         }
@@ -174,6 +197,32 @@ const createGeminiAPI = (deps) => {
         // Banner is best-effort — never let DOM failures mask the underlying error.
         if (typeof console !== 'undefined') console.warn('[GeminiAPI] Banner failed:', bannerErr.message);
       }
+    };
+
+    // Called after ANY successful Gemini response. Resets the consecutive-auth-failure streak and,
+    // if an auth/quota banner was showing, clears it + briefly flips it to a green "responding
+    // again" note — so the user sees that a transient 401/429 resolved on its own (rather than
+    // being left staring at a scary error the pipeline already recovered from).
+    const _noteApiSuccess = () => {
+      const hadStreak = _authFailStreak > 0;
+      _authFailStreak = 0;
+      if (typeof window === 'undefined' || typeof document === 'undefined') return;
+      try {
+        const st = window.__alloflowQuotaState;
+        const bannerEl = document.getElementById('alloflow-quota-banner');
+        const wasActive = !!(st && st.active && (st.kind === 'auth' || st.kind === 'quota'));
+        if (!wasActive && !(hadStreak && bannerEl)) return;
+        window.__alloflowQuotaState = { active: false };
+        try { window.dispatchEvent(new CustomEvent('alloflow:quota-recovered', {})); } catch (_) {}
+        // Re-arm the dismissal so a LATER genuine error can show again.
+        try { if (window.sessionStorage) sessionStorage.removeItem('__alloflowQuotaBannerDismissed'); } catch (_) {}
+        if (bannerEl) {
+          bannerEl.style.background = '#166534'; // green
+          const msgEl = document.getElementById('alloflow-quota-banner-msg');
+          if (msgEl) msgEl.textContent = '✓ The AI service is responding again — that was a temporary interruption. You can keep working.';
+          setTimeout(() => { try { const b = document.getElementById('alloflow-quota-banner'); if (b) b.remove(); } catch (_) {} }, 6000);
+        }
+      } catch (_) { /* recovery notice is best-effort */ }
     };
 
     // ── Model usage ledger ────────────────────────────────────────────────
@@ -405,6 +454,7 @@ const createGeminiAPI = (deps) => {
                 debugLog && debugLog("[callGemini] Trimmed " + (before - text.length) + " chars of truncated trailing content (broken citation link or orphan fragment).");
             }
         }
+        _noteApiSuccess(); // a good response clears any transient-401 streak / banner + notifies recovery
         if (useSearch) {
             return {
                 text: text || "",
@@ -467,6 +517,7 @@ const createGeminiAPI = (deps) => {
         const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
         if (!imagePart) throw new Error("No image generated in response");
         const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
+        _noteApiSuccess(); // a good image response clears any transient-401 streak / banner
         return await optimizeImage(rawUrl, width, qual);
       } catch (err) {
         warnLog("Gemini Image Edit Error", err);
@@ -528,6 +579,7 @@ const createGeminiAPI = (deps) => {
           }
           throw new Error("Vision API returned invalid response. The document may be too large — try a shorter PDF.");
         }
+        _noteApiSuccess(); // a valid Vision response clears any transient-401 streak / banner
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) {
           const blockReason = data.candidates?.[0]?.finishReason;
