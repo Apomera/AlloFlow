@@ -122,3 +122,49 @@ describe('STEM invariant · worldbuilder penmanship is not an overclaimed score'
     expect(src).toContain('Penmanship tips ready');
   });
 });
+
+// ── Invariant: the 2026-06-08 AI-gating sweep stays in force ──
+// The dominant refinement finding was ungated/auto-fired callGemini (privacy +
+// cost for the K-12 pilot). These source-content checks ensure a future edit
+// can't silently re-introduce auto-fired AI on a turn loop / timer / render.
+function readTool(name) {
+  return _readFileSync(_resolve(process.cwd(), 'stem_lab/stem_tool_' + name + '.js'), 'utf8');
+}
+describe('STEM invariant · AI-gating sweep stays in force', () => {
+  it('spacecolony captures aiHintsEnabled and gates its auto-fired turn generators', () => {
+    const s = readTool('spacecolony');
+    expect(s).toMatch(/var aiHintsEnabled = !!\(ctx && ctx\.aiHintsEnabled\)/);
+    // the 5 auto-fired generators each require the gate (planet event + the 4 fanout)
+    expect((s.match(/aiHintsEnabled && callGemini/g) || []).length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('roadready gates the Coach-Mode 35s loop and the rideshare AI behind aiHintsEnabled', () => {
+    const s = readTool('roadready');
+    expect(s).toMatch(/var aiHintsEnabled = !!\(ctx && ctx\.aiHintsEnabled\)/);
+    expect(s).toMatch(/d\.coachMode && aiHintsEnabled && callGemini/);
+    expect(s).toMatch(/aiHintsEnabled && typeof callGemini === 'function'/);
+  });
+
+  it('geometryworld NPC translate is gated + explicit (no callGemini auto-fired in render)', () => {
+    const s = readTool('geometryworld');
+    // the translate button is gated by aiHintsEnabled...
+    expect(s).toMatch(/ctx\.aiHintsEnabled && callGemini && el\('button'/);
+    // ...and it is invoked from an onClick (doTranslate), not synchronously in render.
+    expect(s).toContain('var doTranslate = function');
+    expect(s).toMatch(/onClick: doTranslate/);
+  });
+});
+
+// ── Invariant: music keyboard a11y stays in force ──
+describe('STEM invariant · music piano keys remain keyboard-operable', () => {
+  const s = _readFileSync(_resolve(process.cwd(), 'stem_lab/stem_tool_music.js'), 'utf8');
+  it('piano keys are role=button with tabIndex + Enter/Space key handlers', () => {
+    expect(s).toContain("role: 'button', tabIndex: dimmed ? -1 : 0");
+    expect(s).toContain('var onKeyDownKey = function');
+    expect(s).toMatch(/onKeyDown: onKeyDownKey/);
+  });
+  it('the XY pad is keyboard-operable (role + arrow-key handler)', () => {
+    expect(s).toMatch(/role: 'application', tabIndex: 0/);
+    expect(s).toContain("e.key === 'ArrowLeft'");
+  });
+});
