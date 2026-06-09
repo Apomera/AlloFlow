@@ -6435,7 +6435,11 @@
         const w = 100,
           h = 30;
         const points = data.map((v, i) => `${i / (data.length - 1) * w},${h - (v - min) / range * (h - 4) - 2}`).join(' ');
-        const trend = data[data.length - 1] >= data[0] ? '↑' : '↓';
+        const _firstV = data[0], _lastV = data[data.length - 1];
+        // within ~8% of the series range counts as flat/noise — don't imply a confident direction on a small, jumpy series
+        const _trivial = Math.abs(_lastV - _firstV) < (range || 1) * 0.08;
+        const trend = _trivial ? '→' : (_lastV >= _firstV ? '↑' : '↓');
+        const trendLabel = (_trivial ? 'roughly flat' : (trend === '↑' ? 'up' : 'down')) + ' from first to latest (n=' + data.length + ') — direction only, not a fitted trend';
         let aimlineCoords = null;
         if (aimlineData && aimlineData.baseline != null && aimlineData.target != null) {
           const y1 = h - (aimlineData.baseline - min) / range * (h - 4) - 2;
@@ -6481,10 +6485,11 @@
           r: "2.5",
           fill: color
         }))), /*#__PURE__*/React.createElement("span", {
+          role: 'img', 'aria-label': trendLabel, title: trendLabel,
           style: {
             fontSize: '14px',
             fontWeight: 700,
-            color: trend === '↑' ? '#16a34a' : '#dc2626'
+            color: trend === '→' ? '#64748b' : (trend === '↑' ? '#16a34a' : '#dc2626')
           }
         }, trend), aimlineCoords && /*#__PURE__*/React.createElement("span", {
           style: {
