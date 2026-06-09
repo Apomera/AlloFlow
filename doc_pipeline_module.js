@@ -14115,6 +14115,14 @@ tr { page-break-inside: avoid; }
             } catch (_) {}
             if (!dest) { try { const c = annotDict.get(PDFName.of('Contents')); if (c) dest = (typeof c.decodeText === 'function') ? c.decodeText() : String(c); } catch (_) {} }
             const key = nextStructParentKey++;
+            // PDF/UA-1 §7.18.5: the annotation ITSELF must carry an alternate
+            // description via its /Contents key (veraPDF 7.18.5-t2) — /Alt on
+            // the StructElem alone doesn't satisfy it. Only set when absent.
+            try {
+              if (!annotDict.get(PDFName.of('Contents'))) {
+                annotDict.set(PDFName.of('Contents'), PDFString.of(dest ? ('Link to ' + String(dest).slice(0, 200)) : 'Link'));
+              }
+            } catch (_) {}
             const objrDict = context.obj({ Type: PDFName.of('OBJR'), Pg: page.ref, Obj: annotRef });
             const linkElemDict = context.obj({
               Type: PDFName.of('StructElem'),
@@ -14135,6 +14143,157 @@ tr { page-break-inside: avoid; }
         if (_linkAnnotsTagged) { try { warnLog('[Stage3b-LinkAnnots] tagged ' + _linkAnnotsTagged + ' link annotation(s) into the structure tree'); } catch (_) {} }
       }
     } catch (linkErr) { try { warnLog('[createTaggedPdf] Link-annotation tagging failed (non-fatal): ' + (linkErr && linkErr.message)); } catch (_) {} }
+    // ── Stage 7: font-embedding repair (ISO 14289-1 §7.21.4.1) ──
+    // veraPDF ground truth (2026-06-09) showed non-embedded source fonts as
+    // the ONLY inherited failure class on otherwise-clean output. PDF/UA
+    // requires every rendering font embedded. Sources using standard-14
+    // (Helvetica/Times/Courier) or named-but-unembedded Latin fonts get a
+    // metric-compatible substitute program (Liberation Sans / DejaVu Serif /
+    // DejaVu Sans Mono) embedded INTO THE EXISTING font dict: the content
+    // stream's single-byte char codes stay valid because we keep simple-font
+    // semantics — /TrueType + /WinAnsiEncoding + /Widths generated from the
+    // actual substitute glyphs (viewers honor /Widths, so spacing is
+    // self-consistent). Per-font fail-safe: ANY doubt (Type0/Type3, custom
+    // /Differences, MacRoman, symbolic fonts, fetch failure, fontkit parse
+    // failure) → leave that font untouched and report it honestly.
+    let _fontsRepaired = 0;
+    const _fontsUnrepairable = [];
+    try {
+      // WinAnsi code → Unicode for 0x80–0x9F (rest is Latin-1-identical).
+      const _WINANSI_HI = { 0x80: 0x20AC, 0x82: 0x201A, 0x83: 0x0192, 0x84: 0x201E, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021, 0x88: 0x02C6, 0x89: 0x2030, 0x8A: 0x0160, 0x8B: 0x2039, 0x8C: 0x0152, 0x8E: 0x017D, 0x91: 0x2018, 0x92: 0x2019, 0x93: 0x201C, 0x94: 0x201D, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014, 0x98: 0x02DC, 0x99: 0x2122, 0x9A: 0x0161, 0x9B: 0x203A, 0x9C: 0x0153, 0x9E: 0x017E, 0x9F: 0x0178 };
+      const _winAnsiToUni = (c) => (c < 0x80 || c > 0x9F) ? c : (_WINANSI_HI[c] || 0);
+      const _FONT_SOURCES = {
+        sans: {
+          base: 'LiberationSans', urls: (style) => {
+            const f = 'LiberationSans-' + (style === 'reg' ? 'Regular' : style === 'bold' ? 'Bold' : style === 'italic' ? 'Italic' : 'BoldItalic') + '.ttf';
+            return ['https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/' + f, 'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/' + f];
+          },
+        },
+        serif: {
+          base: 'DejaVuSerif', urls: (style) => {
+            const f = 'DejaVuSerif' + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Italic' : '-BoldItalic') + '.ttf';
+            return ['https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + f, 'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + f];
+          },
+        },
+        mono: {
+          base: 'DejaVuSansMono', urls: (style) => {
+            // DejaVu names mono slants "Oblique", not "Italic".
+            const f = 'DejaVuSansMono' + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Oblique' : '-BoldOblique') + '.ttf';
+            return ['https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + f, 'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + f];
+          },
+        },
+      };
+      const _fetchFontBytes = async (family, style) => {
+        for (const u of _FONT_SOURCES[family].urls(style)) {
+          try {
+            const r = await fetch(u);
+            if (r.ok) return new Uint8Array(await r.arrayBuffer());
+          } catch (_) {}
+        }
+        return null;
+      };
+      // Collect candidate font dicts across all pages (dedup by ref/object id).
+      const _seenFonts = new Set();
+      const _candidates = [];
+      for (const page of pages) {
+        let res = page.node.get(PDFName.of('Resources'));
+        try { res = context.lookup(res) || res; } catch (_) {}
+        if (!res || typeof res.get !== 'function') continue;
+        let fonts = res.get(PDFName.of('Font'));
+        try { fonts = context.lookup(fonts) || fonts; } catch (_) {}
+        if (!fonts || typeof fonts.entries !== 'function') continue;
+        for (const [, fRefOrDict] of fonts.entries()) {
+          const fKey = (fRefOrDict && typeof fRefOrDict.objectNumber === 'number') ? ('r' + fRefOrDict.objectNumber) : ('d' + String(fRefOrDict).slice(0, 60));
+          if (_seenFonts.has(fKey)) continue;
+          _seenFonts.add(fKey);
+          let fDict = fRefOrDict;
+          try { fDict = context.lookup(fRefOrDict) || fRefOrDict; } catch (_) {}
+          if (fDict && typeof fDict.get === 'function') _candidates.push(fDict);
+        }
+      }
+      const _byteCache = {};
+      for (const fDict of _candidates) {
+        try {
+          const subtype = String(fDict.get(PDFName.of('Subtype')) || '');
+          const baseRaw = String(fDict.get(PDFName.of('BaseFont')) || '').replace(/^\//, '');
+          const baseName = baseRaw.replace(/^[A-Z]{6}\+/, '');
+          const lower = baseName.toLowerCase();
+          // Already embedded? (FontDescriptor with any FontFile*)
+          let fd = fDict.get(PDFName.of('FontDescriptor'));
+          try { fd = context.lookup(fd) || fd; } catch (_) {}
+          if (fd && typeof fd.get === 'function' && (fd.get(PDFName.of('FontFile')) || fd.get(PDFName.of('FontFile2')) || fd.get(PDFName.of('FontFile3')))) continue;
+          // Conservative skips — report, don't touch.
+          if (subtype === '/Type0' || subtype === '/Type3' || fDict.get(PDFName.of('DescendantFonts'))) { _fontsUnrepairable.push(baseName + ' (composite/' + subtype.replace('/', '') + ')'); continue; }
+          if (/symbol|zapf|dingbat|wingding|webding/i.test(lower)) { _fontsUnrepairable.push(baseName + ' (symbolic)'); continue; }
+          let enc = fDict.get(PDFName.of('Encoding'));
+          if (enc) {
+            const encStr = String(enc);
+            if (encStr === '/MacRomanEncoding' || encStr === '/MacExpertEncoding') { _fontsUnrepairable.push(baseName + ' (' + encStr.replace('/', '') + ')'); continue; }
+            if (encStr !== '/WinAnsiEncoding' && encStr !== '/StandardEncoding') {
+              let encDict = enc;
+              try { encDict = context.lookup(enc) || enc; } catch (_) {}
+              if (encDict && typeof encDict.get === 'function' && encDict.get(PDFName.of('Differences'))) { _fontsUnrepairable.push(baseName + ' (custom /Differences)'); continue; }
+            }
+          }
+          const family = /helvetic|arial|liberation ?sans|calibri|verdana|tahoma|segoe|helv\b|sans/i.test(lower) ? 'sans'
+            : /times|georgia|garamond|cambria|bookman|book antiqua|palatino|serif/i.test(lower) ? 'serif'
+            : /courier|consolas|menlo|monaco|mono/i.test(lower) ? 'mono' : null;
+          if (!family) { _fontsUnrepairable.push(baseName + ' (unmapped family)'); continue; }
+          const bold = /bold|black|heavy|semibold|demi/i.test(lower);
+          const italic = /italic|oblique/i.test(lower);
+          const style = bold && italic ? 'bolditalic' : bold ? 'bold' : italic ? 'italic' : 'reg';
+          const cacheKey = family + ':' + style;
+          if (!(cacheKey in _byteCache)) _byteCache[cacheKey] = await _fetchFontBytes(family, style);
+          const ttf = _byteCache[cacheKey];
+          if (!ttf) { _fontsUnrepairable.push(baseName + ' (substitute fetch failed)'); continue; }
+          if (!(await _ensureFontkit()) || !window.fontkit) { _fontsUnrepairable.push(baseName + ' (fontkit unavailable)'); continue; }
+          const fkFont = window.fontkit.create(ttf);
+          const scale = 1000 / (fkFont.unitsPerEm || 1000);
+          const widths = [];
+          for (let c = 32; c <= 255; c++) {
+            const u = _winAnsiToUni(c);
+            let w = 0;
+            if (u) { try { const g = fkFont.glyphForCodePoint(u); if (g && g.id !== 0) w = Math.round(g.advanceWidth * scale); } catch (_) {} }
+            widths.push(PDFNumber.of(w));
+          }
+          // Font program stream (FlateDecode when pako is available).
+          const _hasPako = typeof window !== 'undefined' && window.pako && typeof window.pako.deflate === 'function';
+          const ffData = _hasPako ? window.pako.deflate(ttf) : ttf;
+          const ffDictProps = { Length1: PDFNumber.of(ttf.length) };
+          if (_hasPako) ffDictProps.Filter = PDFName.of('FlateDecode');
+          const ffRef = context.register(context.stream(ffData, ffDictProps));
+          const subName = _FONT_SOURCES[family].base + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Italic' : '-BoldItalic');
+          const flags = 32 /* Nonsymbolic */ | (family === 'serif' ? 2 : 0) | (family === 'mono' ? 1 : 0) | (italic ? 64 : 0);
+          const bbox = fkFont.bbox || { minX: -200, minY: -300, maxX: 1200, maxY: 1000 };
+          const newFdRef = context.register(context.obj({
+            Type: PDFName.of('FontDescriptor'),
+            FontName: PDFName.of(subName),
+            Flags: PDFNumber.of(flags),
+            FontBBox: context.obj([Math.round(bbox.minX * scale), Math.round(bbox.minY * scale), Math.round(bbox.maxX * scale), Math.round(bbox.maxY * scale)]),
+            ItalicAngle: PDFNumber.of(Math.round(fkFont.italicAngle || 0)),
+            Ascent: PDFNumber.of(Math.round((fkFont.ascent || 800) * scale)),
+            Descent: PDFNumber.of(Math.round((fkFont.descent || -200) * scale)),
+            CapHeight: PDFNumber.of(Math.round((fkFont.capHeight || fkFont.ascent || 700) * scale)),
+            StemV: PDFNumber.of(bold ? 140 : 80),
+            FontFile2: ffRef,
+          }));
+          // Rewrite the EXISTING dict in place so every content-stream
+          // reference picks up the embedded program.
+          fDict.set(PDFName.of('Subtype'), PDFName.of('TrueType'));
+          fDict.set(PDFName.of('BaseFont'), PDFName.of(subName));
+          fDict.set(PDFName.of('Encoding'), PDFName.of('WinAnsiEncoding'));
+          fDict.set(PDFName.of('FirstChar'), PDFNumber.of(32));
+          fDict.set(PDFName.of('LastChar'), PDFNumber.of(255));
+          fDict.set(PDFName.of('Widths'), context.obj(widths));
+          fDict.set(PDFName.of('FontDescriptor'), newFdRef);
+          _fontsRepaired++;
+          try { warnLog('[Stage7-Fonts] embedded ' + subName + ' as substitute for non-embedded "' + baseName + '"'); } catch (_) {}
+        } catch (fontErr) {
+          try { _fontsUnrepairable.push(String(fDict.get(PDFName.of('BaseFont')) || 'unknown').replace(/^\//, '') + ' (repair threw: ' + (fontErr && fontErr.message) + ')'); } catch (_) {}
+        }
+      }
+      if (_fontsUnrepairable.length) { try { warnLog('[Stage7-Fonts] left untouched (honest scope): ' + _fontsUnrepairable.join('; ')); } catch (_) {} }
+    } catch (s7err) { try { warnLog('[createTaggedPdf] Stage 7 font repair failed (non-fatal): ' + (s7err && s7err.message)); } catch (_) {} }
     // ParentTree — number tree mapping StructParents key → StructElem ref.
     // Stage 1 left this empty; validators need it populated for MCID linkage.
     const parentTreeDict = context.obj({ Nums: context.obj(parentTreeNums) });
@@ -14501,6 +14660,8 @@ tr { page-break-inside: avoid; }
         _summary.reachableLeaves = _reachableLeafCountAtStamp;
         _summary.orphanedLeaves = _orphanedLeafCountAtStamp;
         _summary.uaDeclared = _uaDeclared;
+        _summary.fontsRepaired = _fontsRepaired;
+        _summary.fontsUnrepairable = _fontsUnrepairable.slice(0, 12);
       }
     } catch (_) {}
     try {
@@ -14653,6 +14814,12 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         _linkAnnotsTagged > 0
           ? _linkAnnotsTagged + ' link annotation(s) wrapped in /Link StructElems with OBJR + /StructParent'
           : 'No untagged link annotations found (none present, already tagged by the source, or signed-PDF skip)');
+      // FONTS (PDF/UA-1 §7.21.4.1 — rendering fonts shall be embedded)
+      _addCheck('Fonts', 'Embedding repair',
+        _fontsUnrepairable.length > 0 ? 'warn' : (_fontsRepaired > 0 ? 'pass' : 'na'),
+        _fontsRepaired > 0 || _fontsUnrepairable.length > 0
+          ? _fontsRepaired + ' non-embedded font(s) repaired with metric-compatible substitutes (Liberation/DejaVu)' + (_fontsUnrepairable.length ? '; left untouched (honest scope): ' + _fontsUnrepairable.slice(0, 6).join('; ') : '')
+          : 'All source fonts already embedded');
       // TABLES
       const _tableTotal = (_summary && _summary.tables) || 0;
       const _thNoScope = (_summary && _summary.thWithoutScope) || 0;

@@ -796,6 +796,7 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           artifactSourceB64: _b64(new Uint8Array(inputBytes)),
           artifactTaggedB64: _b64(new Uint8Array(result.bytes)),
           perLeafLinked: (result.summary || {}).perLeafLinked ?? null,
+          fontsRepaired: (result.summary || {}).fontsRepaired ?? null,
           leafCount: leaves.length,
           orphanedLeafCount: orphaned.length,
           orphanedRoles: orphaned.map((e) => e.role),
@@ -847,6 +848,10 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
 
   test('evidence-based PDF/UA-1: claim DECLARED on a fully-linked born-digital file', () => {
     expect(perLeafSummary.hasUaClaim, 'self-check rule: ' + perLeafSummary.uaRule + ' || xmp comment: ' + perLeafSummary.xmpComment).toBe(true);
+  });
+
+  test('Stage 7: the non-embedded standard-14 Helvetica gets a substitute embedded', () => {
+    expect(perLeafSummary.fontsRepaired, 'summary.fontsRepaired (fixture uses non-embedded Helvetica)').toBeGreaterThanOrEqual(1);
   });
 
   test('no content loss: round-trip clean, no divergences, structure-loss check passes', () => {
