@@ -1506,6 +1506,7 @@
     "quality_flags": "Quality flags: ",
     "tagged_pdf_downloaded_original_visual": "Tagged PDF downloaded — original visual layer preserved with accessibility tag tree added.",
     "tagged_pdf_failed": "Tagged PDF failed: ",
+    "building_accessible_docx": "Building accessible Word file…",
     "accessible_html_downloaded": "Accessible HTML downloaded",
     "audit_trail_downloaded_open_any": "Audit trail downloaded — open in any browser to verify integrity.",
     "audit_trail_generation_failed": "Audit trail generation failed: ",
@@ -4250,7 +4251,7 @@
       "html_aria": "HTML source code to audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
+      "drop_text": "Drag & drop PDFs, Word, or PowerPoint files here",
       "browse_files": "Browse Files",
       "clear_all": "Clear All",
       "progress_aria": "Batch remediation progress",
@@ -4561,7 +4562,12 @@
       "title": "Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
     },
     "tagged_pdf": {
-      "title": "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."
+      "title": "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters.",
+      "office_note": "Tagged PDF applies to PDF inputs — use Word/HTML",
+      "office_note_title": "Structure tags can only be injected into PDF bytes. For Word/PowerPoint inputs, the accessible Word and HTML downloads carry the remediated structure."
+    },
+    "docx_export": {
+      "title": "Convert the remediated content into a Word document with real heading styles, alt text on images, table header rows, list structure, and working hyperlinks. Verify with Word's built-in Accessibility Checker (Review → Check Accessibility) before distributing."
     },
     "alt_formats": {
       "intro": "Download the remediated document in accessible alternative formats"

@@ -16,6 +16,215 @@
 // no-op fallback keeps the modal working on hosts that predate the hook.
 const _alloUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
 
+// ── Accessible Word (.docx) export ──────────────────────────────────────────
+// _ensureDocxLib: lazy-load the docx UMD build (window.docx). Mirror chain —
+// cdnjs does NOT carry the docx UMD build, so two verified mirrors only.
+function _ensureDocxLib() {
+  if (typeof window === 'undefined') return Promise.resolve(null);
+  if (window.docx && window.docx.Document && window.docx.Packer) return Promise.resolve(window.docx);
+  if (document.getElementById('docxlib-cdn')) {
+    return new Promise((resolve) => {
+      const t0 = Date.now();
+      const t = setInterval(() => {
+        if (window.docx && window.docx.Packer) { clearInterval(t); resolve(window.docx); }
+        else if (Date.now() - t0 > 15000) { clearInterval(t); resolve(window.docx || null); }
+      }, 100);
+    });
+  }
+  const urls = [
+    'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
+    'https://unpkg.com/docx@8.5.0/build/index.umd.js',
+  ];
+  return new Promise((resolve) => {
+    const tryAt = (i) => {
+      if (i >= urls.length) { resolve(null); return; }
+      const s = document.createElement('script');
+      s.id = 'docxlib-cdn';
+      s.src = urls[i];
+      s.async = true;
+      s.onload = () => resolve((window.docx && window.docx.Packer) ? window.docx : null);
+      s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+      document.head.appendChild(s);
+    };
+    tryAt(0);
+  });
+}
+
+// _htmlToDocxSpec: pure HTML → block-spec transformer. Deliberately free of
+// docx-library types so it stays unit-testable headlessly —
+// tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
+// (anti-drift pattern); keep the "// end _htmlToDocxSpec" marker intact.
+function _htmlToDocxSpec(html) {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const title = (((doc.querySelector('title') || {}).textContent) || ((doc.querySelector('h1') || {}).textContent) || 'Accessible document').trim().slice(0, 200) || 'Accessible document';
+  const lang = (doc.documentElement.getAttribute('lang') || 'en').trim() || 'en';
+  const blocks = [];
+  const counts = { headings: 0, paragraphs: 0, images: 0, tables: 0, lists: 0, links: 0 };
+  const SKIP = { SCRIPT: 1, STYLE: 1, BUTTON: 1, SELECT: 1, INPUT: 1, TEXTAREA: 1, AUDIO: 1, VIDEO: 1, TEMPLATE: 1, NOSCRIPT: 1, IFRAME: 1, CANVAS: 1 };
+  const _isControlEl = (el) => {
+    if (SKIP[el.tagName]) return true;
+    // allo-block editor chrome (controls, remove buttons, upload labels) is
+    // interactive scaffolding, not document content.
+    if (el.getAttribute && el.getAttribute('contenteditable') === 'false') return true;
+    const cls = (el.className && String(el.className)) || '';
+    return /allo-block-controls|allo-block-remove|allo-img-controls|allo-file-btn/.test(cls);
+  };
+  const inlineRuns = (el, fmt) => {
+    fmt = fmt || {};
+    let out = [];
+    const kids = el.childNodes || [];
+    for (let i = 0; i < kids.length; i++) {
+      const n = kids[i];
+      if (n.nodeType === 3) {
+        const txt = String(n.textContent || '').replace(/\s+/g, ' ');
+        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null });
+        continue;
+      }
+      if (n.nodeType !== 1 || _isControlEl(n)) continue;
+      const tag = n.tagName;
+      if (tag === 'BR') { out.push({ br: true }); continue; }
+      const isNewLink = tag === 'A' && n.getAttribute('href') && !fmt.link;
+      if (isNewLink) counts.links++;
+      out = out.concat(inlineRuns(n, {
+        bold: fmt.bold || tag === 'B' || tag === 'STRONG',
+        italic: fmt.italic || tag === 'I' || tag === 'EM',
+        underline: fmt.underline || tag === 'U',
+        link: fmt.link || (tag === 'A' && n.getAttribute('href')) || null,
+      }));
+    }
+    return out;
+  };
+  const _runsText = (runs) => runs.map((r) => r.text || '').join('').trim();
+  const pushParagraph = (runs) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs }); counts.paragraphs++; } };
+  const pushImage = (img, fallbackAlt) => {
+    const src = img.getAttribute('src') || '';
+    const alt = (img.getAttribute('alt') || fallbackAlt || '').trim();
+    blocks.push({ type: 'image', src: /^data:image\//.test(src) ? src : null, alt, width: img.getAttribute('width'), height: img.getAttribute('height') });
+    counts.images++;
+  };
+  const listItems = (listEl, level, items) => {
+    const kids = listEl.children || [];
+    for (let i = 0; i < kids.length; i++) {
+      const li = kids[i];
+      if (li.tagName !== 'LI' || _isControlEl(li)) continue;
+      // inline content only — nested lists handled recursively below
+      const liInline = { childNodes: Array.prototype.filter.call(li.childNodes, (c) => !(c.nodeType === 1 && (c.tagName === 'UL' || c.tagName === 'OL'))) };
+      const runs = inlineRuns(liInline, {});
+      if (_runsText(runs)) items.push({ runs, level });
+      for (let j = 0; j < li.children.length; j++) {
+        if (li.children[j].tagName === 'UL' || li.children[j].tagName === 'OL') listItems(li.children[j], level + 1, items);
+      }
+    }
+  };
+  const walk = (el) => {
+    const kids = el.children || [];
+    for (let i = 0; i < kids.length; i++) {
+      const n = kids[i];
+      if (_isControlEl(n)) continue;
+      const tag = n.tagName;
+      const h = /^H([1-6])$/.exec(tag);
+      if (h) { const runs = inlineRuns(n, {}); if (_runsText(runs)) { blocks.push({ type: 'heading', level: parseInt(h[1], 10), runs }); counts.headings++; } continue; }
+      if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'PRE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') { pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {})); continue; }
+      if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
+      if (tag === 'TABLE') {
+        const rows = [];
+        const trs = n.querySelectorAll('tr');
+        for (let r = 0; r < trs.length; r++) {
+          const tr = trs[r];
+          const cells = [];
+          let allTh = tr.children.length > 0;
+          for (let c = 0; c < tr.children.length; c++) {
+            const cell = tr.children[c];
+            if (cell.tagName !== 'TH' && cell.tagName !== 'TD') continue;
+            if (cell.tagName !== 'TH') allTh = false;
+            cells.push({ runs: inlineRuns(cell, {}), header: cell.tagName === 'TH' });
+          }
+          if (cells.length) rows.push({ header: allTh || (tr.parentNode && tr.parentNode.tagName === 'THEAD'), cells });
+        }
+        if (rows.length) { blocks.push({ type: 'table', rows }); counts.tables++; }
+        const cap = n.querySelector('caption');
+        if (cap) pushParagraph(inlineRuns(cap, { italic: true }));
+        continue;
+      }
+      if (tag === 'IMG') { pushImage(n, ''); continue; }
+      if (tag === 'FIGURE') {
+        const img = n.querySelector('img');
+        const cap = n.querySelector('figcaption');
+        if (img) pushImage(img, cap ? String(cap.textContent || '').trim() : '');
+        if (cap) pushParagraph(inlineRuns(cap, { italic: true }));
+        continue;
+      }
+      if (tag === 'HR') continue;
+      if (tag === 'DIV' || tag === 'MAIN' || tag === 'SECTION' || tag === 'ARTICLE' || tag === 'HEADER' || tag === 'FOOTER' || tag === 'NAV' || tag === 'ASIDE' || tag === 'DL' || tag === 'FORM') {
+        if (n.querySelector && n.querySelector('h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,dl,pre,div,section,article')) walk(n);
+        else pushParagraph(inlineRuns(n, {}));
+        continue;
+      }
+      pushParagraph(inlineRuns(n, {}));
+    }
+  };
+  walk(doc.body);
+  return { title, lang, blocks, counts };
+}
+// end _htmlToDocxSpec
+
+// _buildDocxBlobFromSpec: map the pure spec onto the docx UMD library (d).
+// Accessibility mapping: real HeadingN styles, tableHeader rows, real list
+// numbering/bullets, ExternalHyperlink (keeps link semantics), ImageRun with
+// altText; an image that can't embed degrades to its alt text, never silence.
+async function _buildDocxBlobFromSpec(spec, d) {
+  const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
+  const runsTo = (runs) => runs.map((r) => {
+    if (r.br) return new d.TextRun({ break: 1 });
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, style: r.link ? 'Hyperlink' : undefined });
+    return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
+  });
+  const children = [];
+  for (const b of spec.blocks) {
+    if (b.type === 'heading') children.push(new d.Paragraph({ heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) }));
+    else if (b.type === 'paragraph') children.push(new d.Paragraph({ children: runsTo(b.runs) }));
+    else if (b.type === 'list') {
+      for (const it of b.items) {
+        children.push(new d.Paragraph({
+          children: runsTo(it.runs),
+          ...(b.ordered ? { numbering: { reference: 'allo-ol', level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }),
+        }));
+      }
+    } else if (b.type === 'table' && b.rows.length) {
+      children.push(new d.Table({
+        width: { size: 100, type: d.WidthType.PERCENTAGE },
+        rows: b.rows.map((row) => new d.TableRow({
+          tableHeader: !!row.header,
+          children: row.cells.map((c) => new d.TableCell({ children: [new d.Paragraph({ children: runsTo(c.runs) })] })),
+        })),
+      }));
+    } else if (b.type === 'image') {
+      let placed = false;
+      if (b.src) {
+        try {
+          const b64 = b.src.split(',')[1] || '';
+          const bin = atob(b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          const w = Math.min(Math.max(parseInt(b.width, 10) || 480, 40), 600);
+          const hRaw = parseInt(b.height, 10);
+          const h = Math.max(hRaw || Math.round(w * 0.66), 30);
+          children.push(new d.Paragraph({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || 'Image', description: b.alt || 'Image', name: (b.alt || 'image').slice(0, 60) } })] }));
+          placed = true;
+        } catch (_) { /* degrade to the alt-text paragraph below */ }
+      }
+      if (!placed) children.push(new d.Paragraph({ children: [new d.TextRun({ text: '[Image: ' + (b.alt || 'no description available') + ']', italics: true })] }));
+    }
+  }
+  const docFile = new d.Document({
+    title: spec.title,
+    creator: 'AlloFlow',
+    numbering: { config: [{ reference: 'allo-ol', levels: [0, 1, 2, 3, 4].map((l) => ({ level: l, format: d.LevelFormat.DECIMAL, text: '%' + (l + 1) + '.', alignment: d.AlignmentType.START })) }] },
+    sections: [{ children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: ' ' })] })] }],
+  });
+  return d.Packer.toBlob(docFile);
+}
+
 // Merge multiple TTS audio Blobs into ONE downloadable file.
 // callTTS returns a COMPLETE audio file per segment. For WAV (the Gemini TTS path)
 // each blob carries its own 44-byte RIFF header, so naively Blob-concatenating them
@@ -230,6 +439,10 @@ function PdfAuditView(props) {
   // users could tab into the inert page behind it.
   const pdfModalRef = useRef(null);
   _alloUseFocusTrap(pdfModalRef, !!(pdfAuditResult || pdfAuditLoading));
+  // Input kind: tagged-PDF export only applies to PDF bytes — pdf-lib cannot
+  // load Office zip containers, so the tagged buttons are gated on this.
+  // 'JVBER' is base64 of '%PDF'.
+  const _inputIsPdf = !!((pendingPdfFile && (pendingPdfFile.type === 'application/pdf' || /\.pdf$/i.test(pendingPdfFile.name || ''))) || (typeof pendingPdfBase64 === 'string' && pendingPdfBase64.slice(0, 5) === 'JVBER'));
   // Tier 4: surface "resume previous batch" banner when an interrupted batch
   // is found in IndexedDB. Hooks must run unconditionally before any early
   // return — keep this above the !pdfAuditResult guard.
@@ -530,7 +743,7 @@ function PdfAuditView(props) {
                         onDrop={(e) => {
                           e.preventDefault();
                           e.currentTarget.classList.remove('border-indigo-500', 'bg-indigo-50');
-                          const files = [...e.dataTransfer.files].filter(f => f.type === 'application/pdf');
+                          const files = [...e.dataTransfer.files].filter(f => f.type === 'application/pdf' || /\.(docx|pptx)$/i.test(f.name || ''));
                           if (files.length === 0) { addToast(t('toasts.drop_pdf_files_only'), 'error'); return; }
                           files.forEach(file => {
                             const reader = new FileReader();
@@ -542,14 +755,14 @@ function PdfAuditView(props) {
                             reader.onerror = () => addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error');
                             reader.readAsDataURL(file);
                           });
-                          addToast(`Added ${files.length} PDF(s) to batch queue`, 'success');
+                          addToast(`Added ${files.length} file(s) to batch queue`, 'success');
                         }}
                       >
                         <div className="text-4xl mb-2">📥</div>
-                        <p className="text-sm font-bold text-indigo-600">{t('pdf_audit.batch.drop_text') || 'Drag & drop PDFs here'}</p>
+                        <p className="text-sm font-bold text-indigo-600">{t('pdf_audit.batch.drop_text') || 'Drag & drop PDFs, Word, or PowerPoint files here'}</p>
                         <p className="text-xs text-slate-600 mt-1">or click to browse</p>
-                        <input type="file" accept=".pdf" multiple className="hidden" id="batch-pdf-input" onChange={(e) => {
-                          const files = [...(e.target.files || [])].filter(f => f.type === 'application/pdf');
+                        <input type="file" accept=".pdf,.docx,.pptx" multiple className="hidden" id="batch-pdf-input" onChange={(e) => {
+                          const files = [...(e.target.files || [])].filter(f => f.type === 'application/pdf' || /\.(docx|pptx)$/i.test(f.name || ''));
                           files.forEach(file => {
                             const reader = new FileReader();
                             reader.onloadend = () => {
@@ -1249,6 +1462,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           button at line ~35191. The toast surfaces the tag
                           counts so the user can see real proof of tagging,
                           not just a filename change. */}
+                      {_inputIsPdf && (
                       <div className="pt-2 mt-2 border-t border-indigo-200">
                         <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1.5">{t('pdf_audit.quick_downloads.heading') || 'Quick downloads (no remediation needed)'}</div>
                         <button
@@ -1314,6 +1528,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📄 Tagged PDF (baseline)
                         </button>
                       </div>
+                      )}
                     </div>
                   );
                 })()}
@@ -1505,7 +1720,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 {(!pdfFixResult || pdfAuditTab === 'original') && (
                 <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
-                  <h3 className="text-lg font-bold" id="pdf-audit-title">PDF Accessibility Score {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
+                  <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-70">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
                   {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
                   {pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
                     const rc = pdfAuditResult.structTree.roleCounts || {};
@@ -4365,7 +4580,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             branded) where HTML→PDF reflow would break pagination
                             or visual references. Requires pendingPdfBase64 (the
                             original bytes); if missing, prompts re-attach via
-                            ensurePdfBase64. */}
+                            ensurePdfBase64. Office inputs (DOCX/PPTX) have no PDF
+                            bytes to tag — they get the Word/HTML exports instead. */}
+                        {_inputIsPdf ? (
                         <button
                           onClick={async () => {
                             try {
@@ -4536,6 +4753,35 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           title={t('pdf_audit.tagged_pdf.title') || "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."}
                         >
                           📄 Tagged PDF
+                        </button>
+                        ) : (
+                          <span className="px-4 py-2.5 bg-slate-50 text-slate-500 rounded-xl text-[11px] font-medium self-center" title={t('pdf_audit.tagged_pdf.office_note_title') || 'Structure tags can only be injected into PDF bytes. For Word/PowerPoint inputs, the accessible Word and HTML downloads carry the remediated structure.'}>
+                            📄 {t('pdf_audit.tagged_pdf.office_note') || 'Tagged PDF applies to PDF inputs — use Word/HTML'}
+                          </span>
+                        )}
+                        <button onClick={async () => {
+                          try {
+                            addToast(t('toasts.building_accessible_docx') || 'Building accessible Word file…', 'info');
+                            const d = await _ensureDocxLib();
+                            if (!d) { addToast('Could not load the Word export library from any CDN mirror — check the network, or use the HTML download.', 'error'); return; }
+                            const spec = _htmlToDocxSpec(pdfFixResult.accessibleHtml);
+                            const blob = await _buildDocxBlobFromSpec(spec, d);
+                            safeDownloadBlob(blob, `${(pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '')}-accessible.docx`);
+                            const bits = [];
+                            if (spec.counts.headings) bits.push(spec.counts.headings + ' real heading style' + (spec.counts.headings === 1 ? '' : 's'));
+                            if (spec.counts.images) bits.push(spec.counts.images + ' image' + (spec.counts.images === 1 ? '' : 's') + ' with alt text');
+                            if (spec.counts.tables) bits.push(spec.counts.tables + ' table' + (spec.counts.tables === 1 ? '' : 's') + ' with header rows');
+                            if (spec.counts.lists) bits.push(spec.counts.lists + ' real list' + (spec.counts.lists === 1 ? '' : 's'));
+                            if (spec.counts.links) bits.push(spec.counts.links + ' working link' + (spec.counts.links === 1 ? '' : 's'));
+                            addToast('📝 Accessible Word file saved' + (bits.length ? ' — ' + bits.join(', ') : '') + '. Verify in Word: Review → Check Accessibility.', 'success');
+                          } catch (err) {
+                            warnLog('[DocxExport] failed:', err);
+                            addToast('Word export failed: ' + (err?.message || 'unknown error') + '. The accessible HTML download carries the same content.', 'error');
+                          }
+                        }} className="px-4 py-2.5 bg-sky-50 text-sky-700 rounded-xl font-bold text-sm hover:bg-sky-100 transition-colors flex items-center gap-1.5"
+                          title={t('pdf_audit.docx_export.title') || "Convert the remediated content into a Word document with real heading styles, alt text on images, table header rows, list structure, and working hyperlinks. Verify with Word's built-in Accessibility Checker (Review → Check Accessibility) before distributing."}
+                        >
+                          📝 Word (.docx)
                         </button>
                         <button onClick={() => {
                           const blob = new Blob([pdfFixResult.accessibleHtml], { type: 'text/html' });

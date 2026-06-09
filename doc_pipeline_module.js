@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -4461,10 +4461,12 @@ var createDocPipeline = function(deps) {
 
   // ── PDF Accessibility Audit ──
   const runPdfAccessibilityAudit = async (base64Data, options) => {
-    // options: { skipUiUpdates?: boolean, skipCache?: boolean }
+    // options: { skipUiUpdates?: boolean, skipCache?: boolean, fileName?: string }
     //   skipUiUpdates — when true, skips setPdfAuditResult/setPdfAuditLoading/addToast
     //                   so batch mode can audit per-file without clobbering single-file UI.
     //   skipCache     — when true, bypasses the content-hash audit cache (force re-audit).
+    //   fileName      — original file name; batch passes it so DOCX/PPTX inputs route to
+    //                   the deterministic Office audit instead of the PDF Vision fan-out.
     // In either mode, the final audit result object is returned.
     const _skipUi = !!(options && options.skipUiUpdates);
     const _skipCache = !!(options && options.skipCache);
@@ -4485,6 +4487,64 @@ var createDocPipeline = function(deps) {
           setPdfAuditLoading(false);
         }
         return cached;
+      }
+    }
+
+    // ── Office inputs (DOCX/PPTX): deterministic-only audit ──
+    // Gemini Vision takes PDFs/images inline, NOT Office MIME types — firing the
+    // 5-pass visual audit at a .docx wastes quota and fails. Instead: extract the
+    // text deterministically (mammoth / jszip), run the axe-core baseline on a
+    // minimal HTML reconstruction, and return an honest axe-only initial score.
+    // Full AI verification still runs during Fix & Verify (which works on text).
+    // Detection: filename extension first; zip magic ('UEsDB' = base64 'PK..') as
+    // the fallback signal when no name is available.
+    const _optFileName = (options && options.fileName) || (pendingPdfFile && pendingPdfFile.name) || '';
+    const _isZipContainer = typeof base64Data === 'string' && base64Data.slice(0, 5) === 'UEsDB';
+    const _officeKind = /\.docx$/i.test(_optFileName) ? 'docx'
+      : /\.pptx$/i.test(_optFileName) ? 'pptx'
+      : (_isZipContainer && !/\.pdf$/i.test(_optFileName)) ? 'docx' : null;
+    if (_officeKind) {
+      try {
+        let det = _officeKind === 'pptx' ? await extractPptxTextDeterministic(base64Data) : await extractDocxTextDeterministic(base64Data);
+        if ((!det || (det.sourceCharCount || 0) <= 50) && _isZipContainer) {
+          // Extension was missing/misleading — try the other Office extractor.
+          const alt = _officeKind === 'pptx' ? await extractDocxTextDeterministic(base64Data) : await extractPptxTextDeterministic(base64Data);
+          if (alt && (alt.sourceCharCount || 0) > ((det && det.sourceCharCount) || 0)) det = alt;
+        }
+        const _txt = (det && det.fullText) || '';
+        if (_txt.replace(/\s+/g, '').length <= 50) {
+          const sparse = { score: -1, summary: `This ${_officeKind.toUpperCase()} contains almost no extractable text (images-of-text, or empty). Export it to PDF first — scanned PDFs get the full OCR + tagging treatment.`, critical: [], serious: [], moderate: [], minor: [], passes: [], _officeInput: _officeKind };
+          if (!_skipUi) { setPdfAuditResult(sparse); setPdfAuditLoading(false); }
+          return sparse;
+        }
+        const bodyHtml = _txt.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n');
+        const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${bodyHtml}</main></body></html>`;
+        let baselineAxe = null;
+        try { baselineAxe = await runAxeAudit(minimalHtml); } catch (_) { baselineAxe = null; }
+        const result = {
+          score: baselineAxe && typeof baselineAxe.score === 'number' ? baselineAxe.score : -1,
+          summary: `Deterministic audit of the extracted ${_officeKind === 'pptx' ? 'slide' : 'document'} text (axe-core baseline). The AI visual audit applies to PDF inputs; AI verification still runs during Fix & Verify.`,
+          critical: [], serious: [], moderate: [], minor: [], passes: [],
+          hasSearchableText: true,
+          pageCount: (det && (det.pageCount || det.slideCount)) || undefined,
+          _officeInput: _officeKind,
+          _aiOnlyScore: null,
+          _baselineAxeScore: baselineAxe ? baselineAxe.score : undefined,
+          _baselineAxeAudit: baselineAxe || undefined,
+          _scoreIsBlended: false,
+          structTree: { hasTags: false },
+        };
+        if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
+        if (!_skipUi) {
+          setPdfAuditResult(result);
+          setPdfAuditLoading(false);
+          addToast && addToast(`📝 ${_officeKind.toUpperCase()} audited deterministically (axe-core on extracted text) — full AI verification runs during Fix & Verify.`, 'info');
+        }
+        return result;
+      } catch (officeErr) {
+        const failureResult = { score: -1, summary: `Office audit failed: ${officeErr?.message || 'Unknown error'}. You can still proceed to Fix & Verify.`, critical: [], serious: [], moderate: [], minor: [], passes: [], _officeInput: _officeKind };
+        if (!_skipUi) { setPdfAuditResult(failureResult); setPdfAuditLoading(false); }
+        return failureResult;
       }
     }
 
@@ -6082,7 +6142,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
 
       // Step 1: per-file audit (suppresses single-file UI updates)
       progress('Auditing...');
-      const auditResult = await runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true });
+      const auditResult = await runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName });
       if (!auditResult || auditResult.score === -1) {
         throw new Error(auditResult?.summary || 'Audit failed');
       }
@@ -20829,6 +20889,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
