@@ -2810,6 +2810,109 @@ const d = labToolData.physics;
 
             React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
 
+            // === H7b'' inquiry widget: gravity-angle explorer ===
+            (function() {
+              var h = React.createElement;
+              var iq = d.gravityHunt || { gravity: 9.8, angle: 45, velocity: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('gravityHunt', Object.assign({}, iq, patch)); }
+              // Projectile range: R = v\u00B2 sin(2\u03B8) / g
+              var angleRad = iq.angle * Math.PI / 180;
+              var range = (iq.velocity * iq.velocity * Math.sin(2 * angleRad)) / iq.gravity;
+              // Max range at angle = 45\u00B0, R_max = v\u00B2/g
+              var maxRange = (iq.velocity * iq.velocity) / iq.gravity;
+              var efficiency = maxRange > 0 ? (range / maxRange) : 0;
+              var state = efficiency >= 0.95 ? 'optimal' : (efficiency >= 0.75 ? 'good' : 'suboptimal');
+              var stateMeta = {
+                optimal:    { label: '\uD83C\uDFAF Near-optimal range', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+                good:       { label: '\uD83D\uDFE1 Reasonable range',   color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                suboptimal: { label: '\uD83D\uDD34 Far from optimal',   color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+              }[state];
+              function logObs() {
+                var obs = { g: iq.gravity, a: iq.angle, v: iq.velocity, r: parseFloat(range.toFixed(1)), st: state };
+                setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
+              }
+              return h('div', { className: 'mt-4 p-4 rounded-xl bg-white border border-indigo-200 shadow-sm' },
+                h('h3', { className: 'text-sm font-black text-indigo-700 mb-1' }, '\uD83C\uDF0D Gravity-angle discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+                  'Three sliders control gravity (any planet), launch angle, and velocity. The simulator tells you whether your projectile range is near-optimal, reasonable, or far-off \u2014 a discrete 3-state outcome (no numeric score). Sweep the sliders. Log observations. Type what you discover.'),
+                h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                  h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, 'Range ' + range.toFixed(1) + ' m (max possible at this v + g: ' + maxRange.toFixed(1) + ' m)')
+                ),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+                  [
+                    { key: 'gravity',  label: 'Gravity (m/s\u00B2)',  val: iq.gravity,  min: 1,  max: 25, step: 0.1 },
+                    { key: 'angle',    label: 'Launch angle (\u00B0)', val: iq.angle,    min: 5,  max: 85, step: 1   },
+                    { key: 'velocity', label: 'Velocity (m/s)',  val: iq.velocity, min: 5,  max: 50, step: 1   }
+                  ].map(function(s) {
+                    return h('div', { key: s.key },
+                      h('label', { htmlFor: 'gh-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
+                        s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
+                      h('input', { id: 'gh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                        onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.label }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB Log'),
+                  h('button', { onClick: function() { setIQ({ gravity: 9.8, angle: 45, velocity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                ),
+                (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
+                  h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                    h('thead', null, h('tr', { className: 'bg-slate-100' },
+                      ['g', 'angle\u00B0', 'v', 'range m', 'state'].map(function(c, i) {
+                        return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                      }))),
+                    h('tbody', null, iq.log.map(function(o, idx) {
+                      return h('tr', { key: 'lr' + idx },
+                        h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.g),
+                        h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.a),
+                        h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.v),
+                        h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.r),
+                        h('td', { className: 'px-2 py-1 border border-slate-200' }, o.st));
+                    })))
+                ),
+                h('div', { className: 'mb-3' },
+                  h('label', { htmlFor: 'gh-hypo', className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Your hypothesis (free text \u2014 no right answer):'),
+                  h('textarea', { id: 'gh-hypo', value: iq.hypothesis || '',
+                    onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                    placeholder: 'Is the optimal angle the same on every planet? Does doubling velocity double range? Type your own theory.',
+                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 })
+                ),
+                h('div', { className: 'mb-3' },
+                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                    className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300' },
+                    '\uD83E\uDD14 I\'m stuck \u2014 show me questions to think about (no answers)'),
+                  iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                    h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts \u2014 investigate by manipulating:'),
+                    h('ul', { className: 'list-disc pl-5 space-y-1' },
+                      h('li', null, 'Hold two sliders steady. Move the third. Watch what happens.'),
+                      h('li', null, 'Find two different settings that both produce the same state. What do they share?'),
+                      h('li', null, 'Try switching planets via the gravity slider. Does the best angle change?'),
+                      h('li', null, 'Log several "optimal" observations. What angle do they share?'),
+                      h('li', null, 'Real artillery uses tables not formulas. What does that suggest about the relationship between angle and range?')),
+                    h('div', { className: 'text-[10px] italic text-amber-700 mt-2' }, 'No answers. Investigate.'))
+                ),
+                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('input', { type: 'checkbox', id: 'gh-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    h('label', { htmlFor: 'gh-und', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                      'I think I understand the trade-offs \u2014 let me explain them in my own words')),
+                  iq.understood && h('textarea', { value: iq.explanation || '',
+                    onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                    placeholder: 'Explain in your own words: how do gravity, angle, and velocity interact? Why is 45\u00B0 special \u2014 or is it?',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
+                  iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+                    '\u2713 Saved. Notice \u2014 nobody checked your answer.')
+                ),
+                h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
+                  'Design note: no numeric range target, no reveal button. Range quality is shown as a discrete 3-state marker, not a continuous gradient \u2014 by design, to discourage optimization-gaming behavior.')
+              );
+            })(),
+
+
             // ── AI Physics Tutor (reading-level aware) ──
             (function () {
               var aiLevel = d.aiLevel || 'grade5';

@@ -18148,6 +18148,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
         var recorderRef = React.useRef(null);
         var chunksRef = React.useRef([]);
         var canvasRef = React.useRef(null);
+        // Informed-consent gate for voice capture: the recording is saved (base64)
+        // into the project file, so a minor's voice must never be captured silently.
+        var consentState = React.useState(false);
+        var consented = consentState[0]; var setConsented = consentState[1];
+        var consentPromptState = React.useState(false);
+        var showConsent = consentPromptState[0]; var setShowConsent = consentPromptState[1];
 
         function startRec() {
           if (!navigator.mediaDevices || !window.MediaRecorder) {
@@ -18232,9 +18238,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
         return h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,23,42,0.5)', borderRadius: 6, border: '1px dashed #334155' } },
           h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🎤 / ✏️ Alt evidence (optional)'),
 
+          // Privacy disclosure — always visible so a student knows a voice recording is persisted.
+          rec.supported && h('div', { style: { fontSize: 9.5, color: '#fca5a5', marginBottom: 6, lineHeight: 1.4 } }, '🔒 A voice recording is saved inside this project file (your teacher can open it later).'),
+
           // Audio row
           h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 } },
-            !audio && !rec.recording && rec.supported && h('button', { onClick: startRec, 'aria-label': 'Record voice evidence',
+            !audio && !rec.recording && rec.supported && h('button', { onClick: consented ? startRec : function() { setShowConsent(true); }, 'aria-label': 'Record voice evidence',
               style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ec4899', background: 'rgba(236,72,153,0.10)', color: '#fbcfe8', cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
               '🎤 Record voice'),
             !audio && rec.recording && h('button', { onClick: stopRec, 'aria-label': 'Stop recording',
@@ -18244,6 +18253,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
             audio && h('audio', { controls: true, src: audio, style: { maxWidth: 220, height: 32 } }),
             audio && h('button', { onClick: clearAudio, 'aria-label': 'Remove voice note',
               style: { padding: '4px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 10 } }, '× Remove')
+          ),
+
+          // Informed-consent confirmation, shown on the first record attempt this session.
+          showConsent && !consented && !audio && !rec.recording && h('div', { role: 'alertdialog', 'aria-label': 'Voice recording privacy notice',
+            style: { marginBottom: 6, padding: 10, borderRadius: 6, background: 'rgba(127,29,29,0.18)', border: '1px solid #b91c1c' } },
+            h('div', { style: { fontSize: 11, color: '#fecaca', lineHeight: 1.5, marginBottom: 8 } },
+              'Before you record: your voice will be saved inside this project file, which your teacher can open later. Only record if that’s okay with you and your teacher.'),
+            h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              h('button', { onClick: function() { setShowConsent(false); setConsented(true); startRec(); }, 'aria-label': 'I understand, start recording',
+                style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ec4899', background: '#ec4899', color: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'I understand — record'),
+              h('button', { onClick: function() { setShowConsent(false); }, 'aria-label': 'Cancel recording',
+                style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 11 } }, 'Not now')
+            )
           ),
 
           // Sketch row

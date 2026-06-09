@@ -1626,6 +1626,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               })
             )
           ),
+          // ═══ OPS CONTROL inquiry widget (H7b'') ═══
+          (function() {
+            var iq = d.opsControl || { wind: 10, spawn: 5, sep: 8, descent: 1.0, timeout: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('opsControl', Object.assign({}, iq, patch)); }
+            function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+            var loadIdx = (iq.wind / 30) * 0.25 + (1 - (iq.spawn - 1) / 9) * 0.30 + (1 - (iq.sep - 5) / 15) * 0.25 + ((iq.descent - 0.5) / 1.5) * 0.10 + (1 - (iq.timeout - 10) / 50) * 0.10;
+            var state = loadIdx < 0.35 ? 'sandbox' : loadIdx < 0.55 ? 'training' : loadIdx < 0.75 ? 'operational' : loadIdx < 0.9 ? 'stressed' : 'overload';
+            var sm = ({
+              sandbox: { label: 'Sandbox', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Light traffic, generous spacing — good for new controllers.' },
+              training: { label: 'Training', color: '#22d3ee', bg: '#0c2a3a', border: '#0891b2', desc: 'Manageable load — focus on technique without time pressure.' },
+              operational: { label: 'Operational', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Realistic airport — sequencing required, conflicts likely.' },
+              stressed: { label: 'Stressed', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'High load — expect missed approaches, fuel pressure.' },
+              overload: { label: 'Overload', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Saturated — staffing/runway capacity exceeded.' }
+            })[state];
+            var rings = [
+              { label: 'Wind', val: iq.wind / 30, num: iq.wind + 'kt' },
+              { label: 'Spawn', val: 1 - (iq.spawn - 1) / 9, num: iq.spawn + 's' },
+              { label: 'Sep', val: 1 - (iq.sep - 5) / 15, num: iq.sep + 'nm' },
+              { label: 'Desc', val: (iq.descent - 0.5) / 1.5, num: iq.descent.toFixed(1) + 'x' },
+              { label: 'Timeout', val: 1 - (iq.timeout - 10) / 50, num: iq.timeout + 's' }
+            ];
+            var sliders = [
+              { k: 'wind', label: 'Wind speed', min: 0, max: 30, step: 1, unit: 'kt' },
+              { k: 'spawn', label: 'Spawn rate', min: 1, max: 10, step: 1, unit: 's' },
+              { k: 'sep', label: 'Min separation', min: 5, max: 20, step: 1, unit: 'nm' },
+              { k: 'descent', label: 'Descent multiplier', min: 0.5, max: 2.0, step: 0.1, unit: 'x' },
+              { k: 'timeout', label: 'Decision timeout', min: 10, max: 60, step: 5, unit: 's' }
+            ];
+            return h('div', { style: { padding: '14px', margin: '0 24px 12px', borderRadius: '12px', background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+              h('h4', { style: { margin: '0 0 4px', fontSize: '13px', fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: '1px' } }, '🎚️ Ops Control — Inquiry Widget'),
+              h('p', { style: { margin: '0 0 10px', fontSize: '11px', opacity: 0.85, lineHeight: 1.4 } }, 'Move five operational sliders. Predict how each interacts before launching a session. No score, no reveal — you mark your own understanding.'),
+              h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999px', background: sm.color, color: '#000', fontSize: '10px', fontWeight: 800, marginBottom: '6px' } }, 'Predicted load: ' + sm.label),
+              h('p', { style: { margin: '0 0 10px', fontSize: '10px', opacity: 0.8 } }, sm.desc),
+              h('div', { style: { display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', marginBottom: '10px' } },
+                rings.map(function(ring, i) {
+                  var pct = Math.max(0, Math.min(1, ring.val));
+                  var dash = (pct * 138).toFixed(1);
+                  return h('div', { key: i, style: { textAlign: 'center' } },
+                    h('svg', { width: 56, height: 56, viewBox: '0 0 56 56' },
+                      h('circle', { cx: 28, cy: 28, r: 22, fill: 'none', stroke: '#1a3a2a', strokeWidth: 5 }),
+                      h('circle', { cx: 28, cy: 28, r: 22, fill: 'none', stroke: sm.color, strokeWidth: 5, strokeDasharray: dash + ' 138', strokeLinecap: 'round', transform: 'rotate(-90 28 28)' }),
+                      h('text', { x: 28, y: 32, textAnchor: 'middle', fill: sm.color, fontSize: 10, fontWeight: 800 }, ring.num)
+                    ),
+                    h('div', { style: { fontSize: 9, fontWeight: 700, opacity: 0.85, marginTop: 2 } }, ring.label)
+                  );
+                })
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', marginBottom: '10px' } },
+                sliders.map(function(s) {
+                  return h('label', { key: s.k, style: { display: 'block', fontSize: 10 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
+                      h('span', null, s.label),
+                      h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
+                    ),
+                    h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+                  );
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+                h('button', { onClick: function() {
+                  var t = new Date().toISOString().slice(11, 19);
+                  setIQ({ log: iq.log.concat([{ t: t, wind: iq.wind, spawn: iq.spawn, sep: iq.sep, descent: iq.descent, timeout: iq.timeout, state: sm.label }]) });
+                }, style: { flex: 1, padding: '6px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log current setup'),
+                h('button', { onClick: function() { setIQ({ wind: 10, spawn: 5, sep: 8, descent: 1.0, timeout: 30 }); }, style: { padding: '6px 10px', fontSize: 10, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              ),
+              iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a1a0a', border: '1px solid #1a3a2a', marginBottom: 10, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
+                iq.log.slice(-5).map(function(e, i) {
+                  return h('div', { key: i }, e.t + '  ' + e.state + ' · w' + e.wind + ' sp' + e.spawn + ' s' + e.sep + ' d' + e.descent.toFixed(1) + ' t' + e.timeout);
+                })
+              ),
+              h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (what combo do you expect to break ops first?)'),
+              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 10, resize: 'vertical' }, placeholder: 'e.g., low separation + high spawn rate compounds before wind matters...' }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+              iq.stuckRevealed && h('div', { style: { padding: 8, borderRadius: 6, background: '#0a1a0a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 10, lineHeight: 1.5 } },
+                h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
+                h('ul', { style: { margin: 0, paddingLeft: 16 } },
+                  h('li', null, 'Which two sliders are most coupled — do you predict additive or multiplicative load?'),
+                  h('li', null, 'Where on each axis does the "trainable" zone end and "stressful" begin?'),
+                  h('li', null, 'If wind goes to 30kt, what minimum separation keeps the load constant?'),
+                  h('li', null, 'Could a faster decision timeout compensate for tighter separation, or does it make things worse?')
+                )
+              ),
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                h('span', null, 'I can explain — in my own words — why this slider combo gives this load.')
+              ),
+              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+              h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Build your own theory.')
+            );
+          })(),
           // Controls legend
           h('div', { style: { padding: '12px 24px', borderTop: '1px solid #1a3a2a', display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' } },
             [['Click/Tab', 'Select'], ['H', 'Heading'], ['S', 'Speed'], ['R', 'Runway'], ['C', 'Clear ILS'], ['G', 'Go Around'], ['P', 'Hold'], ['D/U', 'Alt'], ['T', 'Tutorial'], ['ESC', 'Exit']].map(function(item) {

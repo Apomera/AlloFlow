@@ -2186,6 +2186,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     renderer.setSize(W, H2);
                     renderer.setClearColor(0x000000);
 
+                    // ── Bloom: glow on the Earth + sun over the lunar surface (guarded) ──
+                    // Same graceful, fully-guarded pattern as solarsystem — plain render until
+                    // the r128 post-processing addons load, then a bloom composer; any failure
+                    // falls back to renderer.render. Kill-switch + low-power/reduced-motion tier.
+                    var composer = null;
+                    (function setupBloom() {
+                      if (window.AlloPostFXEnabled === false) return;
+                      var ensure = function (cb) {
+                        if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+                        var urls = [
+                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+                          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+                        ];
+                        var i = 0;
+                        (function nextScript() {
+                          if (i >= urls.length) { cb(); return; }
+                          var s = document.createElement('script');
+                          s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                          document.head.appendChild(s);
+                        })();
+                      };
+                      ensure(function () {
+                        try {
+                          var T = window.THREE;
+                          if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+                          var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                          var lowPower = reduce || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+                          var res = lowPower ? 0.5 : 1;
+                          var c = new T.EffectComposer(renderer);
+                          c.addPass(new T.RenderPass(scene, camera));
+                          // dark lunar scene → lower threshold so the bright Earth + sun glow.
+                          c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H2 * res))), lowPower ? 0.7 : 1.0, 0.35, 0.82));
+                          composer = c;
+                        } catch (e) { composer = null; }
+                      });
+                    })();
+
                     // ── Lunar sky (black + stars only — Earth is a separate
                     // sprite below to avoid the equirectangular wrap distortion
                     // that turned the marble into a teardrop). Stars are tiny
@@ -2782,7 +2823,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         if (stepsEl) stepsEl.textContent = evaSteps + ' steps';
                       }
 
-                      renderer.render(scene, camera);
+                      if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
+                      else { renderer.render(scene, camera); }
                     }
                     animateEva();
 
@@ -2790,6 +2832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     canvasEl._evaCleanup = function() {
                       document.removeEventListener('mousemove', onMM);
                       if (document.pointerLockElement === canvasEl) document.exitPointerLock();
+                      if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
                       renderer.dispose();
                       if (evaHud.parentElement) evaHud.parentElement.removeChild(evaHud);
                       if (vignetteEl && vignetteEl.parentElement) vignetteEl.parentElement.removeChild(vignetteEl);
@@ -3522,6 +3565,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             }, '\uD83D\uDD04 Fly Another Mission')
           )
         ),
+
+        // === H7b'' inquiry widget: orbital delta-V discovery ===
+        (function() {
+          var iq = d.deltaVHunt || { massRatio: 3, burnDur: 180, isp: 311, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('deltaVHunt', Object.assign({}, iq, patch)); }
+          var g = 9.81;
+          var deltaV = iq.isp * g * Math.log(iq.massRatio);
+          var orbit = deltaV < 7800 ? 'insufficient' : (deltaV < 11200 ? 'leo' : 'escape');
+          var orbitMeta = {
+            insufficient: { label: '🔴 Insufficient — suborbital', color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
+            leo:          { label: '🟢 LEO / Earth orbit',          color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
+            escape:       { label: '🚀 Escape velocity (lunar/beyond)', color: '#0ea5e9', bg: 'rgba(14,165,233,0.10)', border: '#0ea5e9' }
+          }[orbit];
+          function logObs() {
+            setIQ({ log: (iq.log || []).concat([{ mr: iq.massRatio, bd: iq.burnDur, isp: iq.isp, dv: Math.round(deltaV), o: orbit }]).slice(-8) });
+          }
+          return h('div', { className: 'mt-3 p-3 rounded-lg bg-slate-50 border border-indigo-300' },
+            h('div', { className: 'text-sm font-black text-indigo-700 mb-1' }, '🛰️ Orbital delta-V discovery'),
+            h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' },
+              'Tsiolkovsky rocket equation. Adjust mass ratio, burn duration, and specific impulse (Isp). Discrete 3-state outcome shows whether your delta-V is insufficient, achieves LEO, or escapes Earth. No score, no reveal.'),
+            h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: orbitMeta.bg, border: '1px solid ' + orbitMeta.border } },
+              h('div', { className: 'text-sm font-black', style: { color: orbitMeta.color } }, orbitMeta.label),
+              h('div', { className: 'text-[10px] text-slate-700 mt-1' }, 'Δv = ' + Math.round(deltaV) + ' m/s')
+            ),
+            h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+              [
+                { key: 'massRatio', label: 'Mass ratio', val: iq.massRatio, min: 1.2, max: 12, step: 0.1 },
+                { key: 'burnDur',   label: 'Burn dur (s)', val: iq.burnDur,   min: 30, max: 600, step: 10 },
+                { key: 'isp',       label: 'Isp (s)',     val: iq.isp,       min: 100, max: 450, step: 5 }
+              ].map(function(s) {
+                return h('div', { key: s.key },
+                  h('label', { htmlFor: 'dv-' + s.key, className: 'block text-[10px] font-bold text-slate-700 mb-0.5' },
+                    s.label + ': ', h('span', { className: 'font-mono text-indigo-700' }, s.val)),
+                  h('input', { id: 'dv-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                    onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.label }));
+              })
+            ),
+            h('div', { className: 'flex gap-1 items-center mb-2 flex-wrap' },
+              h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded bg-slate-200 hover:bg-slate-300 text-[10px] font-bold text-slate-700' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ massRatio: 3, burnDur: 180, isp: 311, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                className: 'px-2 py-0.5 rounded bg-white hover:bg-slate-100 text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+              (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+            ),
+            (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-2' },
+              h('thead', null, h('tr', { className: 'bg-slate-100' },
+                ['mass ratio', 'burn s', 'Isp s', 'Δv m/s', 'outcome'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+              h('tbody', null, iq.log.map(function(o, idx) {
+                return h('tr', { key: 'lr' + idx },
+                  h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.mr),
+                  h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.bd),
+                  h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.isp),
+                  h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.dv),
+                  h('td', { className: 'px-1 border border-slate-200' }, o.o));
+              }))
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+              placeholder: 'Hypothesis (free text — no right answer): Which lever matters most?',
+              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+              className: 'px-2 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' },
+              '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
+              h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                h('li', null, 'Hold two sliders steady. Move one. Watch.'),
+                h('li', null, 'Find two settings producing the same outcome.'),
+                h('li', null, 'Which slider affects Δv the most? Use the log.'),
+                h('li', null, 'Real spacecraft trade fuel mass against Isp. Investigate why.'))),
+            h('div', { className: 'p-2 rounded bg-emerald-50 border border-emerald-200' },
+              h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+                'I think I understand the trade-offs'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                placeholder: 'Explain in your own words: how do mass ratio, burn duration, and Isp interact?',
+                className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
+            h('div', { className: 'mt-2 text-[9px] italic text-slate-500' },
+              'Design note: discrete 3-state outcome; no score; no reveal — by design.')
+          );
+        })(),
 
         // Mission Log (collapsible)
         missionLog.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 border border-slate-400' },

@@ -349,7 +349,7 @@
                 }
 
                 case 'init_error': {
-                    console.error('[Kokoro TTS] ❌ Worker init failed:', data.error);
+                    console.warn('[Kokoro TTS] ❌ Worker init failed:', data.error);
                     const p = _pendingMessages.get('__init__');
                     if (p) { p.reject(new Error(data.error)); _pendingMessages.delete('__init__'); }
                     break;
@@ -432,7 +432,7 @@
         };
 
         w.onerror = (e) => {
-            console.error('[Kokoro TTS] Worker error:', e.message);
+            console.warn('[Kokoro TTS] Worker error:', e.message);
         };
 
         return w;
@@ -537,7 +537,7 @@
 
             return audioUrl;
         } catch (e) {
-            console.error('[Kokoro TTS] ❌ Generation failed:', e);
+            console.warn('[Kokoro TTS] ❌ Generation failed:', e);
             return null;
         }
     }
@@ -612,7 +612,7 @@
             const firstUrl = await firstChunkPromise;
             return firstUrl;
         } catch (e) {
-            console.error('[Kokoro TTS] ❌ Streaming failed:', e);
+            console.warn('[Kokoro TTS] ❌ Streaming failed:', e);
             _streamActive = false;
             return null;
         }
@@ -660,7 +660,7 @@
             await init(onProgress);
             console.log('[Kokoro TTS] ✅ Quality switched to', mode, '(' + newDtype + ')');
         } catch (e) {
-            console.error('[Kokoro TTS] ❌ Quality switch failed:', e);
+            console.warn('[Kokoro TTS] ❌ Quality switch failed:', e);
         }
 
         return _currentDtype;

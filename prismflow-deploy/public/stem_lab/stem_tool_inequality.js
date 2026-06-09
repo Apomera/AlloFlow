@@ -741,6 +741,56 @@ window.StemLab = window.StemLab || {
           h('button', { 'aria-label': 'Reset range', onClick: function() { upd('range', { min: -10, max: 10 }); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-500 rounded hover:bg-fuchsia-100 transition-all', title: 'Reset range' }, '\u21BA')
         ),
 
+        // === H7b'' inquiry widget: inequality test ===
+        (function() {
+          var iq = d._ineqHunt || { xVal: 0, coef: 1, bound: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('_ineqHunt', Object.assign({}, iq, patch)); }
+          var lhs = iq.coef * iq.xVal;
+          var state;
+          if (Math.abs(lhs - iq.bound) < 0.5) state = 'boundary';
+          else if (lhs < iq.bound) state = 'included';
+          else state = 'excluded';
+          var sm = {
+            included: { label: '✅ x INCLUDED in solution (coef·x < bound)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            excluded: { label: '❌ x EXCLUDED (coef·x > bound)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+            boundary: { label: '⚖️ AT boundary (coef·x ≈ bound)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' }
+          }[state];
+          return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-fuchsia-300 space-y-2' },
+            h('h3', { className: 'text-sm font-black text-fuchsia-700' }, '🎚️ Inequality test discovery'),
+            h('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for x, coefficient, bound. Test whether coef·x < bound. 3 discrete states. No score, no reveal.'),
+            h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+              h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
+              h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, iq.coef + ' × ' + iq.xVal + ' = ' + lhs + '   ?  ' + iq.bound)
+            ),
+            h('div', { className: 'grid grid-cols-3 gap-2' },
+              [{ k: 'xVal', l: 'x' }, { k: 'coef', l: 'coef' }, { k: 'bound', l: 'bound' }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'ih-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-fuchsia-700' }, iq[s.k])),
+                  h('input', { id: 'ih-' + s.k, type: 'range', min: -10, max: 10, step: 1, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ x: iq.xVal, c: iq.coef, b: iq.bound, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ xVal: 0, coef: 1, bound: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does a negative coefficient flip the inequality?',
+              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
+              h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                h('li', null, 'Test x = 5 with coef = -2 and bound = 5. What happens?'),
+                h('li', null, 'Why does multiplying by negative flip < to >?'))),
+            h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+              'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain inequality test logic.',
+              className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+            h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 3-state test marker; no answer reveal — by design.')
+          );
+        })(),
+
         // ── Notation display ──
         ineq && h('div', { className: 'mt-3 grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-fuchsia-50 rounded-lg p-3 border border-fuchsia-200 text-center' },

@@ -358,6 +358,12 @@
     const [importedStudents, setImportedStudents] = React.useState([]);
     const [selectedStudent, setSelectedStudent] = React.useState(null);
     const [isProcessing, setIsProcessing] = React.useState(false);
+    // RTI decision-rule picker state (was read at 5 sites but never declared -> ReferenceError when
+    // that panel rendered). NOTE: this picker is a DISPLAY REFERENCE only — calculateAimline uses a
+    // FIXED consecutive-below-aimline rule (4 warn / 6 change); wiring the picker into the alert logic
+    // would change WHEN warning/critical fires and is a separate, reviewed RTI-fidelity change.
+    const [rtiDecisionRuleMethod, setRtiDecisionRuleMethod] = React.useState('four_point');
+    const [rtiDecisionRuleThreshold, setRtiDecisionRuleThreshold] = React.useState(4);
     const [isMinimized, setIsMinimized] = React.useState(false);
     const [assessmentCenterTab, setAssessmentCenterTab] = React.useState("assessments");
     const [researchStudent, setResearchStudent] = React.useState(null);
@@ -897,8 +903,8 @@
               flags.push({
                 type: 'score_spike',
                 icon: '⚡',
-                label: 'Score spike',
-                detail: `Latest ${latest}% vs avg ${Math.round(mean)}% (z=${zScore.toFixed(1)})`,
+                label: 'Recent score above usual',
+                detail: `Latest ${latest}% is above this student's recent average of ${Math.round(mean)}% (across ${quizScores.length} quizzes — a descriptive flag, not a tested outlier)`,
                 severity: 'info'
               });
             }
@@ -906,8 +912,8 @@
               flags.push({
                 type: 'score_drop',
                 icon: '📉',
-                label: 'Score drop',
-                detail: `Latest ${latest}% vs avg ${Math.round(mean)}% (z=${zScore.toFixed(1)})`,
+                label: 'Recent score below usual',
+                detail: `Latest ${latest}% is below this student's recent average of ${Math.round(mean)}% (across ${quizScores.length} quizzes — a descriptive flag, not a tested outlier)`,
                 severity: 'warning'
               });
             }
@@ -923,13 +929,37 @@
           severity: 'info'
         });
       }
+      // Two-tier paste-event flag (sharpened 2026-06-07):
+      //   WARNING — pastes into writable response fields (TEXTAREA / INPUT /
+      //   contenteditable). The actual cheat signal: a student pasting an
+      //   AI-generated answer into a quiz / adventure / sentence-frames /
+      //   note-taking response. Fires at >=1, severity warning.
+      //
+      //   INFO — total session pastes that did NOT land in a response field
+      //   (search boxes, the help panel, etc.). Background noise. Fires at
+      //   >5 only, severity info. Suppressed when the warning fires (the
+      //   response-field count is the load-bearing signal; piling on two
+      //   flags for the same paste cluster is confusing).
+      //
+      // Live-sync path: both counts come through `student.stats.*`
+      // (populated by calculateStudentStats in the host). Imported-JSON
+      // path: both counts come through `student.*` directly.
       const pasteCount = student.pasteEventCount || student.stats?.pasteEventCount || 0;
-      if (pasteCount > 5) {
+      const pasteResponseCount = student.pasteEventResponseCount || student.stats?.pasteEventResponseCount || 0;
+      if (pasteResponseCount >= 1) {
+        flags.push({
+          type: 'paste_into_answer',
+          icon: '📋',
+          label: pasteResponseCount + ' paste(s) in answers',
+          detail: `${pasteResponseCount} paste event(s) detected in writable response fields this session. Possible AI-assisted answer entry; review with the student.`,
+          severity: 'warning'
+        });
+      } else if (pasteCount > 5) {
         flags.push({
           type: 'paste_activity',
           icon: '📋',
           label: pasteCount + ' pastes',
-          detail: `${pasteCount} paste events detected this session`,
+          detail: `${pasteCount} paste events detected this session (none in answer fields)`,
           severity: 'info'
         });
       }
@@ -1029,31 +1059,11 @@
         recommendations: recs
       };
     };
-    // ── CBM Benchmark Norms (Hasbrouck & Tindal 2017, DIBELS 8th Ed) ──
-    var CBM_NORMS = {
-      orf: { '1': { fall: 0, winter: 23, spring: 53 }, '2': { fall: 51, winter: 72, spring: 89 }, '3': { fall: 71, winter: 92, spring: 107 }, '4': { fall: 94, winter: 112, spring: 123 }, '5': { fall: 110, winter: 127, spring: 139 }, '6': { fall: 127, winter: 140, spring: 150 } },
-      nwf_cls: { 'K': { fall: 0, winter: 17, spring: 35 }, '1': { fall: 35, winter: 55, spring: 65 } },
-      lnf: { 'K': { fall: 7, winter: 30, spring: 47 } },
-      math_dcpm: { '1': { fall: 8, winter: 15, spring: 25 }, '2': { fall: 15, winter: 25, spring: 35 }, '3': { fall: 25, winter: 35, spring: 45 }, '4': { fall: 30, winter: 40, spring: 50 }, '5': { fall: 35, winter: 45, spring: 55 }, '6': { fall: 40, winter: 50, spring: 60 } }
-    };
-    var getSeason = function() { var m = new Date().getMonth(); if (m >= 7 && m <= 10) return 'fall'; if (m >= 11 || m <= 1) return 'winter'; return 'spring'; };
-
-    var interpretProbeResult = function(probeType, score, grade, season) {
-      season = season || getSeason(); grade = String(grade || '1');
-      var norms = CBM_NORMS[probeType]; if (!norms || !norms[grade]) return { tier: 0, status: 'No norms available', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
-      var benchmark = norms[grade][season]; if (benchmark === undefined || benchmark === null) return { tier: 0, status: 'No norms for this season', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
-      var pct = benchmark > 0 ? Math.round((score / benchmark) * 100) : (score > 0 ? 200 : 0);
-      var tier, status, statusColor, interpretation, recs = [];
-      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '.'; recs = ['Continue current instruction.', 'Re-assess at next screening window.']; }
-      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '.'; recs = ['Monitor informally.', 'Additional practice within Tier 1.']; }
-      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '. Strategic intervention recommended.'; recs = ['Begin Tier 2 intervention.', 'Monitor bi-weekly.', 'Aim for 8+ data points.']; }
-      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the 50th percentile (' + benchmark + ') for ' + season + ' grade ' + grade + '. Intensive intervention needed.'; recs = ['Begin Tier 3 intensive intervention.', 'Monitor weekly.', 'Consider referral if insufficient growth after 6-8 weeks.']; }
-      if (probeType === 'orf' && tier >= 2) recs.push('Implement repeated reading with corrective feedback.');
-      if (probeType === 'nwf_cls' && tier >= 2) recs.push('Focus on phonics: CVC blending, sound-symbol correspondence.');
-      if (probeType === 'lnf' && tier >= 2) recs.push('Increase letter exposure through multisensory activities.');
-      if (probeType === 'math_dcpm' && tier >= 2) recs.push('Short daily fact fluency sessions (5-10 min).');
-      return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recs, season: season, grade: grade };
-    };
+    // (A dead duplicate of CBM_NORMS / getSeason / interpretProbeResult was removed
+    //  here 2026-06-07. It was shadowed at runtime by the live copy below via var-hoist
+    //  redeclaration — same function scope, second declaration wins — and had already
+    //  drifted in its narrative/recommendation text. The single live copy is in the
+    //  "Probe Interpretation Engine" section below.)
 
     var renderProbeInterpretation = function(probeType, score, grade, season) {
       var result = interpretProbeResult(probeType, score, grade, season);
@@ -1164,16 +1174,20 @@
       var benchmark = norms[grade][season]; if (benchmark === undefined || benchmark === null) return { tier: 0, status: 'No norms for this season', statusColor: '#64748b', benchmark50: null, pctOfBenchmark: null, interpretation: '', recommendations: [] };
       var pct = benchmark > 0 ? Math.round((score / benchmark) * 100) : (score > 0 ? 200 : 0);
       var tier, status, statusColor, interpretation, recommendations;
-      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Continue current instruction.', 'Consider enrichment or increased challenge.', 'Re-assess at next screening window.']; }
-      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Monitor informally.', 'Provide additional practice within Tier 1.']; }
-      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '. Strategic intervention recommended.'; recommendations = ['Begin Tier 2 intervention.', 'Monitor progress bi-weekly.', 'Aim for 8+ data points before evaluating effectiveness.']; }
-      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the 50th percentile (' + benchmark + ') for ' + season + ' of grade ' + grade + '. Intensive intervention needed.'; recommendations = ['Begin Tier 3 intensive intervention immediately.', 'Monitor progress weekly.', 'Consider referral for comprehensive evaluation if insufficient growth after 6-8 weeks.']; }
+      if (pct >= 100) { tier = 1; status = 'At or Above Benchmark'; statusColor = '#16a34a'; interpretation = score + ' is at or above the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Continue current instruction.', 'Consider enrichment or increased challenge.', 'Re-assess at next screening window.']; }
+      else if (pct >= 75) { tier = 1; status = 'Approaching Benchmark'; statusColor = '#65a30d'; interpretation = score + ' is approaching the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '.'; recommendations = ['Monitor informally.', 'Provide additional practice within Tier 1.']; }
+      else if (pct >= 50) { tier = 2; status = 'Below Benchmark'; statusColor = '#d97706'; interpretation = score + ' is below the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '. Strategic intervention recommended.'; recommendations = ['Begin Tier 2 intervention.', 'Monitor progress bi-weekly.', 'Aim for 8+ data points before evaluating effectiveness.']; }
+      else { tier = 3; status = 'Well Below Benchmark'; statusColor = '#dc2626'; interpretation = score + ' is well below the benchmark (median = ' + benchmark + ') for ' + season + ' of grade ' + grade + '. Intensive intervention needed.'; recommendations = ['Begin Tier 3 intensive intervention immediately.', 'Monitor progress weekly.', 'Consider referral for comprehensive evaluation if insufficient growth after 6-8 weeks.']; }
       if (probeType === 'orf' && tier >= 2) { recommendations.push('Implement repeated reading with corrective feedback.'); if (tier === 3) recommendations.push('Check decoding with NWF — if < 90% accuracy, fluency deficit may be driven by decoding problem.'); }
       if (probeType === 'nwf_cls' && tier >= 2) { recommendations.push('Focus on phonics: CVC blending, vowel sounds, sound-symbol correspondence.'); if (tier === 3) recommendations.push('Assess letter-sound knowledge with LNF.'); }
       if (probeType === 'lnf' && tier >= 2) { recommendations.push('Increase letter exposure through multisensory activities.'); if (tier === 3) recommendations.push('Prioritize high-frequency letters. Consider vision screening.'); }
       if (probeType === 'math_dcpm' && tier >= 2) { recommendations.push('Short daily fact fluency practice (5-10 min) with corrective feedback.'); if (tier === 3) recommendations.push('Check conceptual understanding vs. automaticity.'); }
       return { tier: tier, status: status, statusColor: statusColor, benchmark50: benchmark, pctOfBenchmark: pct, interpretation: interpretation, recommendations: recommendations, season: season, grade: grade };
     };
+    // Test seam (read-only, one-time): the probe interpretation engine + RTI tier
+    // classifier, pinned against real bytes by tests/student_analytics.test.js (the
+    // tests/extracted_logic fork has drifted, so we test the shipped module directly).
+    try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
 
     // ── Render Probe Interpretation UI ──
     var renderProbeInterpretation = function(probeType, score, grade, season) {
@@ -1239,7 +1253,7 @@
         var expectedRate = expectedRates[type] || 1.0;
         var adequacy = weeklyGrowth >= expectedRate * 1.5 ? 'strong' : weeklyGrowth >= expectedRate * 0.75 ? 'adequate' : weeklyGrowth >= 0 ? 'insufficient' : 'declining';
         var growthColor = { strong: '#16a34a', adequate: '#65a30d', insufficient: '#d97706', declining: '#dc2626' };
-        var growthLabel = { strong: 'Strong Growth', adequate: 'Adequate Growth', insufficient: 'Insufficient Growth', declining: 'Declining' };
+        var growthLabel = { strong: 'Above expected', adequate: 'Near expected', insufficient: 'Below expected', declining: 'Declining' }; // vs the expected weekly rate; method named in the caption below — NOT a categorical fact
         sections.push(React.createElement("div", { key: type, className: "bg-white rounded-lg border border-slate-400 p-3" },
           React.createElement("div", { className: "flex items-center justify-between mb-2" },
             React.createElement("h5", { className: "text-xs font-bold text-slate-700" }, typeLabels[type] || type),
@@ -1255,6 +1269,7 @@
             React.createElement("span", null, items.length + " probes over " + Math.round(weeks) + " weeks"),
             React.createElement("span", null, "Expected: +" + expectedRate + "/wk")
           ),
+          React.createElement("div", { className: "mt-1 text-[10px] text-slate-500 italic" }, "Growth is the slope between the first and latest probe (not a modeled trend line); read it with the probe count above."),
           (adequacy === 'insufficient' || adequacy === 'declining') ? React.createElement("div", { className: "mt-2 text-[11px] px-2 py-1 rounded bg-amber-50", style: { borderLeft: '3px solid #d97706', color: '#92400e' } }, adequacy === 'declining' ? 'Performance declining. Consider changing intervention or diagnostic assessment.' : 'Growth rate below expected. Consider increasing intensity or changing approach.') : null
         ));
       });
@@ -1434,6 +1449,8 @@
     };
     const generateRTICSV = () => {
       if (!importedStudents || importedStudents.length === 0) return;
+      // FERPA gate: this CSV lists students by REAL NAME with tiers/scores — confidential records.
+      if (!window.confirm("Export this RTI report as a CSV?\n\nThe file lists students by REAL NAME with their RTI tiers, scores, and recommendations — confidential student records. Save it only to a school-approved location and handle it per your district's student-records (FERPA) policy.\n\nContinue?")) return;
       const headers = ['Student', 'Date', 'RTI Tier', 'Quiz Avg', 'WS Accuracy', 'WS Words', 'Fluency WCPM', 'Games Played', 'Total Activities', 'Label Challenge Avg', 'Time on Task (min)', 'Recommendations'];
       const rows = importedStudents.map(s => {
         const rti = classifyRTITier(s.stats);
@@ -1446,7 +1463,7 @@
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `RTI_Report_${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `RTI_Report_CONFIDENTIAL_${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1566,12 +1583,12 @@
       }, 'Practice ↔ Outcome Correlation'), React.createElement('div', {
         className: 'flex items-center gap-3'
       }, React.createElement('div', {
-        className: 'text-2xl font-black ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || 'text-slate-600')
+        className: 'text-2xl font-black ' + (insights.correlations.practiceToQuiz.provisional ? 'text-slate-600' : (strengthColor[insights.correlations.practiceToQuiz.strength] || 'text-slate-600'))
       }, 'r = ' + insights.correlations.practiceToQuiz.r), React.createElement('div', null, React.createElement('div', {
-        className: 'text-xs font-bold ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || '')
-      }, insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation'), React.createElement('div', {
+        className: 'text-xs font-bold ' + (insights.correlations.practiceToQuiz.provisional ? 'text-slate-500' : (strengthColor[insights.correlations.practiceToQuiz.strength] || ''))
+      }, insights.correlations.practiceToQuiz.provisional ? 'Preliminary trend (small sample)' : (insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation')), React.createElement('div', {
         className: 'text-[11px] text-slate-600'
-      }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)')))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
+      }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)' + (insights.correlations.practiceToQuiz.provisional ? ' — too few points for a reliable correlation; read as a descriptive within-student trend, not a tested result.' : ' — descriptive within-student trend, not a significance-tested correlation.'))))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-2'
@@ -1645,7 +1662,9 @@
         className: 'text-xl font-black text-indigo-600'
       }, 'r = ' + classData.avgCorrelation), React.createElement('div', {
         className: 'text-[11px] text-slate-600'
-      }, 'Avg Practice↔Outcome Correlation')) : null, classData.commonWeakness ? React.createElement('div', {
+      }, 'Avg Practice↔Outcome Correlation'), React.createElement('div', {
+        className: 'text-[10px] text-slate-500 italic mt-1'
+      }, 'Simple average of within-student trends' + (classData.studentCount ? ' across ' + classData.studentCount + ' students' : '') + ' — descriptive, not a pooled or significance-tested correlation.')) : null, classData.commonWeakness ? React.createElement('div', {
         className: 'bg-white rounded-lg p-3 text-center'
       }, React.createElement('div', {
         className: 'text-xl font-black text-amber-600'
@@ -1654,6 +1673,8 @@
       }, 'Most Common Area to Watch (' + classData.commonWeaknessCount + ' students)')) : null));
     };
     const exportResearchCSV = () => {
+      // FERPA gate: this CSV carries identifiable student data (real names, probes, interventions).
+      if (!window.confirm("Export the research data CSV?\n\nThe file contains identifiable student data (real names, probes, interventions, progress). It is confidential — de-identify it before any research use, and store it per your district's student-records (FERPA) policy.\n\nContinue?")) return;
       const students = importedStudents.map(s => {
         const insights = generateStudentInsights(s.name);
         const probes = probeHistory?.[s.name] || [];
@@ -1683,7 +1704,7 @@
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Research_Export_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.download = 'AlloFlow_Research_Export_CONFIDENTIAL_' + new Date().toISOString().split('T')[0] + '.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -3128,7 +3149,10 @@
       return {
         r: rounded,
         n,
-        strength: Math.abs(rounded) >= 0.7 ? 'strong' : Math.abs(rounded) >= 0.4 ? 'moderate' : 'weak'
+        strength: Math.abs(rounded) >= 0.7 ? 'strong' : Math.abs(rounded) >= 0.4 ? 'moderate' : 'weak',
+        // n < 6 can't support a Pearson strength claim — flag so the UI presents a descriptive
+        // within-student trend, not a tested correlation (no significance test is run).
+        provisional: n < 6
       };
     };
     const DOMAIN_LABELS = {
@@ -3483,10 +3507,15 @@
           }
         }
         if (latest?.wcpm) {
+          var _probeDate; try { var _d = latest.date || latest.timestamp || latest.ts || latest.completedAt; var _dd = _d ? new Date(_d) : null; _probeDate = (_dd && !isNaN(_dd.getTime())) ? ('as of ' + _dd.toLocaleDateString()) : '(probe date not recorded)'; } catch (e) { _probeDate = '(probe date not recorded)'; }
           runningRecordHtml += `
-                    <div style="margin-top: 8px; padding: 10px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 13px; color: #166534; font-weight: 600;">Latest Fluency:</span>
-                        <span style="font-size: 18px; font-weight: 800; color: #16a34a;">${latest.wcpm} WCPM</span>
+                    <div style="margin-top: 8px; padding: 10px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                          <span style="font-size: 13px; color: #166534; font-weight: 600;">Most recent oral reading probe:</span>
+                          <span style="font-size: 18px; font-weight: 800; color: #16a34a;">${latest.wcpm} WCPM</span>
+                          <span style="font-size: 11px; color: #166534;">${_probeDate}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #475569; margin-top: 4px;">Single timed reading — a one-passage WCPM can vary by several words day to day. For decisions, use the median of 3 passages and read it alongside the progress trend.</div>
                     </div>`;
         }
       }
@@ -3531,10 +3560,11 @@
                 <span style="font-size: 28px;">${rti.emoji}</span>
                 <div>
                     <div style="font-size: 16px; font-weight: 800; color: ${tc.color};">Tier ${rti.tier} — ${tc.label}</div>
-                    <div style="font-size: 11px; color: #64748b;">RTI Classification</div>
+                    <div style="font-size: 11px; color: #64748b;">Suggested tier from in-app activity — confirm with screening data; final placement is a team decision.</div>
                 </div>
             </div>
             <div class="section-title">📊 Performance Summary</div>
+            <div style="font-size: 11px; color: #64748b; margin: -4px 0 10px 0; font-style: italic;">Each figure is the student's most recent single measure (a screening estimate from in-app activity), not a benchmark percentile; each bar is a relative activity indicator, not a norm.</div>
             ${metricBar('Quiz Average', s.quizAvg, 100, '%', '📝')}
             ${metricBar('Word Sounds Accuracy', s.wsAccuracy, 100, '%', '🔊')}
             ${metricBar('Fluency', s.fluencyWCPM, 150, ' WCPM', '📖')}
@@ -6243,6 +6273,7 @@
     }, (() => {
       const rti = classifyRTITier(student.stats);
       return /*#__PURE__*/React.createElement("span", {
+        'aria-label': rti.label, title: rti.label, // text equivalent of the color+emoji+digit tier (WCAG 1.4.1)
         style: {
           fontSize: '11px',
           fontWeight: 700,
@@ -6252,7 +6283,7 @@
           color: rti.color,
           border: `1px solid ${rti.border}`
         }
-      }, rti.emoji, " ", rti.tier);
+      }, rti.emoji, " T", rti.tier);
     })()), /*#__PURE__*/React.createElement("td", {
       className: "p-2 text-center"
     }, student.stats.quizAvg, "%"), /*#__PURE__*/React.createElement("td", {
@@ -6404,7 +6435,11 @@
         const w = 100,
           h = 30;
         const points = data.map((v, i) => `${i / (data.length - 1) * w},${h - (v - min) / range * (h - 4) - 2}`).join(' ');
-        const trend = data[data.length - 1] >= data[0] ? '↑' : '↓';
+        const _firstV = data[0], _lastV = data[data.length - 1];
+        // within ~8% of the series range counts as flat/noise — don't imply a confident direction on a small, jumpy series
+        const _trivial = Math.abs(_lastV - _firstV) < (range || 1) * 0.08;
+        const trend = _trivial ? '→' : (_lastV >= _firstV ? '↑' : '↓');
+        const trendLabel = (_trivial ? 'roughly flat' : (trend === '↑' ? 'up' : 'down')) + ' from first to latest (n=' + data.length + ') — direction only, not a fitted trend';
         let aimlineCoords = null;
         if (aimlineData && aimlineData.baseline != null && aimlineData.target != null) {
           const y1 = h - (aimlineData.baseline - min) / range * (h - 4) - 2;
@@ -6450,10 +6485,11 @@
           r: "2.5",
           fill: color
         }))), /*#__PURE__*/React.createElement("span", {
+          role: 'img', 'aria-label': trendLabel, title: trendLabel,
           style: {
             fontSize: '14px',
             fontWeight: 700,
-            color: trend === '↑' ? '#16a34a' : '#dc2626'
+            color: trend === '→' ? '#64748b' : (trend === '↑' ? '#16a34a' : '#dc2626')
           }
         }, trend), aimlineCoords && /*#__PURE__*/React.createElement("span", {
           style: {
@@ -6811,7 +6847,7 @@
             borderRadius: '6px',
             border: '1px solid #fca5a5'
           }
-        }, "\uD83D\uDD34 6+ data points below aimline \u2014 Tier change recommended"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
+        }, "\uD83D\uDD34 6 consecutive points below the aimline (of the last 6) \u2014 Tier change recommended"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
           style: {
             fontSize: '11px',
             fontWeight: 700,
@@ -6821,7 +6857,7 @@
             borderRadius: '6px',
             border: '1px solid #fcd34d'
           }
-        }, "\uD83D\uDFE1 4+ data points below aimline \u2014 Consider adjusting intervention"), aimline.alert === 'ok' && studentGoal && /*#__PURE__*/React.createElement("div", {
+        }, "\uD83D\uDFE1 4+ consecutive points below the aimline (within the last 6) \u2014 Consider adjusting intervention"), aimline.alert === 'ok' && studentGoal && /*#__PURE__*/React.createElement("div", {
           style: {
             fontSize: '11px',
             fontWeight: 700,
@@ -6845,6 +6881,8 @@
           gap: "4px"
         }
       }, "\u2699\uFE0F Decision Rule Settings"), /*#__PURE__*/React.createElement("div", {
+        style: { fontSize: "10px", color: "#64748b", marginBottom: "6px", fontStyle: "italic" }
+      }, "Display reference. The progress-monitoring alert uses a fixed rule \u2014 4 consecutive points below the aimline (adjust intervention) / 6 (tier change) \u2014 and does not change with this selection."), /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
           gap: "8px",

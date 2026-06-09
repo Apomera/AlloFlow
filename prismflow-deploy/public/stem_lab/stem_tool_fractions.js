@@ -9931,7 +9931,8 @@ window.StemLab = window.StemLab || {
       { id: 'printAssess',    icon: '\uD83D\uDDA8', label: 'Print & Assess', group: 'teacher' },
       { id: 'pedagogy',       icon: '\uD83E\uDDE0', label: 'Pedagogy',       group: 'teacher' },
       { id: 'myAccount',      icon: '\u2699',       label: 'My Account',     group: 'teacher' },
-      { id: 'ml',             icon: '\uD83C\uDF0D', label: 'Multilingual',   group: 'teacher' }
+      { id: 'ml',             icon: '\uD83C\uDF0D', label: 'Multilingual',   group: 'teacher' },
+      { id: 'sliderMixer',    icon: '\uD83C\uDF9A', label: 'Slider Mixer',   group: 'learn' }
     ];
     // v3.1: original flat list kept commented for reference (in case of rollback).
     var _legacyTabsForReference = [
@@ -10188,6 +10189,53 @@ window.StemLab = window.StemLab || {
       tab === 'estimation' && renderEstimationTab(),
       tab === 'probability' && renderProbabilityTab(),
       tab === 'ml' && renderMultilingualTab(),
+      tab === 'sliderMixer' && (function() {
+        var iq = (typeof _f === 'object' && _f && _f._smix) || { num: 1, den: 4, count: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd({ _smix: Object.assign({}, iq, patch) }); }
+        var total = (iq.num / iq.den) * iq.count;
+        var state = Math.abs(total - 1) < 0.01 ? 'whole' : (total > 1 ? 'over' : 'under');
+        var sm = {
+          whole: { label: '🟢 Equals exactly 1 whole', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+          under: { label: '🟡 Less than 1', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+          over:  { label: '🔴 More than 1 (mixed number)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+        }[state];
+        return h('div', { className: 'p-4 rounded-xl bg-white border border-rose-200' },
+          h('h3', { className: 'text-sm font-black text-rose-700 mb-1' }, '🎚 Slider Mixer discovery'),
+          h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, 'Mix N copies of a fraction. Discover when they sum to a whole. No score, no reveal.'),
+          h('div', { className: 'mb-3 p-3 rounded text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+            h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+            h('div', { className: 'text-[11px] text-slate-700 font-mono mt-1' }, iq.count + ' × ' + iq.num + '/' + iq.den + ' = ' + total.toFixed(2))
+          ),
+          h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+            [{ k: 'num', l: 'numerator', mn: 1, mx: 12 },
+             { k: 'den', l: 'denominator', mn: 2, mx: 12 },
+             { k: 'count', l: 'count', mn: 1, mx: 8 }].map(function(s) {
+              return h('div', { key: s.k },
+                h('label', { htmlFor: 'sm-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-rose-700' }, iq[s.k])),
+                h('input', { id: 'sm-' + s.k, type: 'range', min: s.mn, max: s.mx, step: 1, value: iq[s.k],
+                  onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                  className: 'w-full', 'aria-label': s.l }));
+            })
+          ),
+          h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ n: iq.num, d: iq.den, c: iq.count, t: total.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+            h('button', { onClick: function() { setIQ({ num: 1, den: 4, count: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+          ),
+          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When do N copies of a fraction equal exactly 1?',
+            className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, '🤔 Stuck — show open prompts'),
+          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
+            h('ul', { className: 'list-disc pl-5 space-y-1' },
+              h('li', null, 'What relationship between count and denominator gives exactly 1?'),
+              h('li', null, 'Find two combinations that produce "under". What do they share?'))),
+          h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+            h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+            'I understand — explain in own words'),
+          iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how count × (num/den) determines whether you reach 1.',
+            className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
+          h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state outcome; no exact-match score; no reveal — by design.')
+        );
+      })(),
       tab === 'art' && renderFractionArtTab(),
       tab === 'density' && renderDensityTab(),
       tab === 'iep' && renderIEPGoalsTab(),

@@ -3464,6 +3464,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       if (view === 'helmetFit') return h(HelmetFit);
       if (view === 'winterBike') return h(WinterBike);
       if (view === 'signalDrill') return h(SignalDrill);
+      if (view === 'cadenceHunt') return h(function() {
+        var d = (toolData && toolData.bikeLab) || {};
+        var iq = d.cadenceHunt || { rpm: 80, grade: 5, gear: 2.5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) {
+          setToolData(function(prev) {
+            var prior = (prev && prev.bikeLab) || {};
+            var st = Object.assign({}, prior.cadenceHunt || iq, patch);
+            return Object.assign({}, prev, { bikeLab: Object.assign({}, prior, { cadenceHunt: st }) });
+          });
+        }
+        var speed = iq.rpm * 0.105 * iq.gear * 0.7;
+        var powerNeeded = (iq.grade / 100) * 90 + speed * 0.4;
+        var efficiency = iq.rpm >= 80 && iq.rpm <= 95 ? 'spinning' : (iq.rpm < 60 ? 'mashing' : (iq.rpm > 110 ? 'over' : 'mid'));
+        var efMeta = {
+          spinning: { label: '🟢 Spinning zone (80-95 RPM)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Optimal efficiency band. Sustainable, joint-friendly.' },
+          mashing:  { label: '🔴 Mashing (<60 RPM)',         color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Low cadence, high force per stroke. Hard on knees.' },
+          mid:      { label: '🟡 Mid cadence (60-80 RPM)',   color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Functional but not optimal.' },
+          over:     { label: '🟠 Over-spinning (>110 RPM)',  color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Wasted effort — cardio cost exceeds output.' }
+        }[efficiency];
+        var H = React.createElement;
+        return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+          H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(14,165,233,0.2)', color: '#0ea5e9', border: '1px solid rgba(14,165,233,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Back to menu'),
+          H('div', { style: { padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 10, color: '#e2e8f0' } },
+            H('h3', { style: { fontSize: 16, fontWeight: 800, color: '#67e8f9', margin: '0 0 6px 0' } }, '⚡ Cadence discovery'),
+            H('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } }, 'Adjust pedal RPM, hill grade, and gear ratio. Widget shows one of 4 discrete cadence zones. No score, no reveal.'),
+            H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: efMeta.bg, border: '2px solid ' + efMeta.border, marginBottom: 12 } },
+              H('div', { style: { fontSize: 15, fontWeight: 900, color: efMeta.color } }, efMeta.label),
+              H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, efMeta.desc),
+              H('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontFamily: 'monospace' } }, 'Speed ≈ ' + speed.toFixed(1) + ' kph, Power need ≈ ' + powerNeeded.toFixed(0) + ' W')
+            ),
+            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
+              [{ key: 'rpm', label: 'Pedal RPM', val: iq.rpm, min: 40, max: 140, step: 1 },
+               { key: 'grade', label: 'Grade (%)', val: iq.grade, min: -10, max: 20, step: 1 },
+               { key: 'gear', label: 'Gear ratio', val: iq.gear, min: 1, max: 5, step: 0.1 }].map(function(s) {
+                return H('div', { key: s.key },
+                  H('label', { htmlFor: 'ch-' + s.key, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } },
+                    s.label + ': ', H('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, s.val)),
+                  H('input', { id: 'ch-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                    onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.label }));
+              })
+            ),
+            H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+              H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rpm, g: iq.grade, gr: iq.gear, ef: efficiency }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              H('button', { onClick: function() { setIQ({ rpm: 80, grade: 5, gear: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset'),
+              (iq.log || []).length > 0 && H('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
+            ),
+            H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): How do gear and grade interact to keep cadence in the spinning zone?', style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 10 }, rows: 2 }),
+            !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 10 } }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+              H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                H('li', null, 'Hold RPM steady. Vary grade. What gear keeps you spinning?'),
+                H('li', null, 'On a 10% climb, find two gear ratios that both work.'))),
+            H('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Why does cadence matter? How do gear and grade interact?', style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 })),
+            H('div', { style: { marginTop: 10, padding: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-zone cadence marker; no power score; no reveal — by design.')
+          )
+        );
+      });
       return h(MainMenu);
     }
   });

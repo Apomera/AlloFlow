@@ -1847,7 +1847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
               React.createElement("div", { className: "flex gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
-                [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: t('stem.synth.harmonypad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: t('stem.synth.beatpad') || 'Beat Pad' }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory') }].map(function (tab) {
+                [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: t('stem.synth.harmonypad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: t('stem.synth.beatpad') || 'Beat Pad' }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory') }, { id: 'timbreHunt', icon: '\u2696\uFE0F', label: 'Timbre' }].map(function (tab) {
                   return React.createElement("button", { key: tab.id, role: "tab", "aria-selected": synthTab === tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
                     className: "px-2.5 py-1 rounded-md text-[11px] font-bold transition-all " + (synthTab === tab.id ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
@@ -2000,19 +2000,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     var isScaleNote = isInScale(key.semitone);
                     var isRoot = key.semitone === 0;
                     var dimmed = scaleLock && !isScaleNote;
+                    // Shared press/release so mouse, touch, and KEYBOARD (Enter/Space)
+                    // all play the key — keyboard/switch users were locked out before.
+                    var noteId = key.note + key.octave;
+                    var pressKey = function () {
+                      if (dimmed) return;
+                      if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
+                      else { playNote(key.freq, noteId); }
+                      upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
+                      if (announceToSR) announceToSR(key.note + key.octave);
+                    };
+                    var releaseKey = function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); };
+                    var onKeyDownKey = function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pressKey(); } };
+                    var onKeyUpKey = function (e) { if (e.key === ' ' || e.key === 'Enter') releaseKey(); };
                     if (isBlack) {
                       return React.createElement("div", {
                         key: idx,
-                        onMouseDown: function (e) {
-                          e.preventDefault();
-                          var noteId = key.note + key.octave;
-                          if (dimmed) return;
-                          if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
-                          else { playNote(key.freq, noteId); }
-                          upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
-                        },
-                        onMouseUp: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                        onMouseLeave: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                        role: 'button', tabIndex: dimmed ? -1 : 0,
+                        'aria-label': key.note + key.octave + (dimmed ? ' (out of scale)' : ''),
+                        'aria-pressed': isActive ? 'true' : 'false',
+                        onMouseDown: function (e) { e.preventDefault(); pressKey(); },
+                        onMouseUp: releaseKey,
+                        onMouseLeave: releaseKey,
+                        onKeyDown: onKeyDownKey,
+                        onKeyUp: onKeyUpKey,
                         className: "absolute z-10 rounded-b-md select-none flex flex-col items-center justify-end pb-1 transition-all cursor-pointer " + (isActive ? 'bg-purple-600 shadow-lg shadow-purple-500/50' : dimmed ? 'bg-slate-700 opacity-30' : 'bg-slate-800 hover:bg-slate-700'),
                         style: { width: '5.5%', height: '85px', left: (key.position * (100 / 14) + (100 / 14) * 0.65) + '%', top: 0 }
                       },
@@ -2021,16 +2032,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     }
                     return React.createElement("div", {
                       key: idx,
-                      onMouseDown: function (e) {
-                        e.preventDefault();
-                        var noteId = key.note + key.octave;
-                        if (dimmed) return;
-                        if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
-                        else { playNote(key.freq, noteId); }
-                        upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
-                      },
-                      onMouseUp: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                      onMouseLeave: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                      role: 'button', tabIndex: dimmed ? -1 : 0,
+                      'aria-label': key.note + key.octave + (dimmed ? ' (out of scale)' : ''),
+                      'aria-pressed': isActive ? 'true' : 'false',
+                      onMouseDown: function (e) { e.preventDefault(); pressKey(); },
+                      onMouseUp: releaseKey,
+                      onMouseLeave: releaseKey,
+                      onKeyDown: onKeyDownKey,
+                      onKeyUp: onKeyUpKey,
                       className: "flex-1 rounded-b-lg select-none flex flex-col items-center justify-end pb-2 border transition-all cursor-pointer " + (isActive ? 'bg-purple-100 border-purple-400 shadow-lg shadow-purple-300/50' : dimmed ? 'bg-slate-50 border-slate-200 opacity-30' : 'bg-white border-slate-200 hover:bg-purple-50'),
                       style: { minWidth: '36px' }
                     },
@@ -2539,10 +2548,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", {
                 style: { position: 'relative', width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', cursor: 'crosshair', touchAction: 'none' },
                 className: "border-2 border-indigo-500/40",
+                role: 'application', tabIndex: 0,
+                'aria-label': 'XY performance pad. Left–right is pitch, up–down is filter brightness. Use the arrow keys to move and play a note; press Escape or Space to stop.',
                 onMouseDown: function(e) { upd('xyActive', true); handleXY(e); },
                 onMouseMove: function(e) { if (d.xyActive || e.buttons > 0) handleXY(e); },
                 onMouseUp: function() { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); },
                 onMouseLeave: function() { if (d.xyActive) { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); } },
+                onKeyDown: function(e) {
+                  var step = 8;
+                  var x = (d.xyX == null ? 50 : d.xyX), y = (d.xyY == null ? 50 : d.xyY);
+                  if (e.key === 'ArrowLeft') x = Math.max(0, x - step);
+                  else if (e.key === 'ArrowRight') x = Math.min(100, x + step);
+                  else if (e.key === 'ArrowUp') y = Math.max(0, y - step);
+                  else if (e.key === 'ArrowDown') y = Math.min(100, y + step);
+                  else if (e.key === 'Escape' || e.key === ' ') { e.preventDefault(); upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); return; }
+                  else return;
+                  e.preventDefault(); upd('xyActive', true); processXY(x, y);
+                },
+                onBlur: function() { if (d.xyActive) { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); } },
                 onTouchStart: function(e) { e.preventDefault(); upd('xyActive', true); handleXYTouch(e); },
                 onTouchMove: function(e) { e.preventDefault(); handleXYTouch(e); },
                 onTouchEnd: function() { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); }
@@ -4439,7 +4462,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               )
             ),
 
-
+            // === H7b'' inquiry widget: timbre harmonic balance ===
+            synthTab === 'timbreHunt' && (function() {
+              var h = React.createElement;
+              var iq = d.timbreHunt || { fund: 70, mid: 30, high: 10, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('timbreHunt', Object.assign({}, iq, patch)); }
+              var total = iq.fund + iq.mid + iq.high;
+              var f = iq.fund / total, m = iq.mid / total, hg = iq.high / total;
+              var timbre;
+              if (hg > 0.4) timbre = 'bright';
+              else if (f > 0.5 && hg < 0.15) timbre = 'warm';
+              else if (m > 0.4) timbre = 'hollow';
+              else if (f > 0.7) timbre = 'dark';
+              else timbre = 'balanced';
+              var timbreMeta = {
+                bright:   { label: '✨ Bright',    color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Strong high harmonics — pierces / sparkles.' },
+                warm:     { label: '🌅 Warm',      color: '#f97316', bg: '#fff7ed', border: '#fdba74', desc: 'Fundamental-heavy, gentle highs. Acoustic-like.' },
+                hollow:   { label: '🕳️ Hollow',    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Mid-heavy without fundamental — woody/cuckoo flute.' },
+                dark:     { label: '🌑 Dark',      color: '#1e293b', bg: '#f1f5f9', border: '#475569', desc: 'Almost pure fundamental — muffled / sub-like.' },
+                balanced: { label: '⚖️ Balanced',  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Roughly equal harmonics — full / natural timbre.' }
+              }[timbre];
+              function logObs() {
+                setIQ({ log: (iq.log || []).concat([{ f: iq.fund, m: iq.mid, h: iq.high, t: timbre }]).slice(-8) });
+              }
+              return h('div', { className: 'p-4 rounded-xl bg-slate-50 border border-purple-300' },
+                h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, '⚖️ Harmonic balance discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
+                  'Adjust fundamental, mid, and high harmonic levels. Widget classifies one of five discrete timbres. No score, no reveal — sweep and notice.'),
+                h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: timbreMeta.bg, border: '2px solid ' + timbreMeta.border } },
+                  h('div', { className: 'text-base font-black', style: { color: timbreMeta.color } }, timbreMeta.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, timbreMeta.desc),
+                  h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'F=' + (f*100).toFixed(0) + '%  M=' + (m*100).toFixed(0) + '%  H=' + (hg*100).toFixed(0) + '%')
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+                  [
+                    { key: 'fund', label: 'Fundamental', val: iq.fund },
+                    { key: 'mid',  label: 'Mid',         val: iq.mid },
+                    { key: 'high', label: 'High',        val: iq.high }
+                  ].map(function(s) {
+                    return h('div', { key: s.key },
+                      h('label', { htmlFor: 'th-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
+                        s.label + ': ', h('span', { className: 'font-mono text-purple-700' }, s.val)),
+                      h('input', { id: 'th-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
+                        onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.label }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ fund: 70, mid: 30, high: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                ),
+                (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['F', 'M', 'H', 'timbre'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    return h('tr', { key: 'lr' + idx },
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.f),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.m),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
+                      h('td', { className: 'px-1 border border-slate-200' }, o.t));
+                  }))
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Which harmonic level dictates "bright" vs "warm"?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Hold two sliders steady. Move one. Watch.'),
+                    h('li', null, 'Find two settings producing the same timbre. What proportions do they share?'),
+                    h('li', null, 'Real instruments have characteristic spectra. Investigate why flute sounds different than violin.'))),
+                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                  h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    'I understand — explain in own words'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how harmonic content determines timbre perception.',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                h('div', { className: 'mt-3 text-[10px] italic text-slate-500' }, 'Design note: discrete 5-class timbre marker; no acoustic fidelity score; no reveal — by design.')
+              );
+            })(),
 
             // ── AI Music Theory Tutor (reading-level aware) ──
             (function () {

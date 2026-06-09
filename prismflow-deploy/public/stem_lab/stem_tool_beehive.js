@@ -19201,7 +19201,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('div', { key: sc.title, className: 'rounded-xl border p-3 transition-all hover:shadow-md ' + (dk ? 'bg-slate-800 border-slate-700 hover:border-amber-600/40' : 'bg-white border-slate-200 hover:border-amber-300'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
                 h('h4', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-200' : 'text-slate-800') }, sc.title),
                 h('p', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-600') }, sc.text));
-            }))
+            })),
+          // === H7b'' inquiry widget: hive thermoregulation ===
+          (function() {
+            var iq = d.thermHunt || { outsideC: 20, beesFanning: 30, broodCount: 5000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('thermHunt', Object.assign({}, iq, patch)); }
+            var heatGen = iq.broodCount * 0.0008;
+            var cooling = iq.beesFanning * 0.04;
+            var hiveTempC = iq.outsideC + heatGen - cooling;
+            var deviation = Math.abs(hiveTempC - 35);
+            var state;
+            if (deviation < 1) state = 'optimal';
+            else if (hiveTempC > 36) state = 'overheating';
+            else if (hiveTempC < 32) state = 'chilled';
+            else state = 'compensating';
+            var sm = {
+              optimal:      { label: '🟢 Optimal (35 °C)',  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Brood healthy. Colony thermoregulating.' },
+              overheating:  { label: '🔥 Overheating',       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Brood at risk above 36°C.' },
+              chilled:      { label: '🧊 Chilled brood',     color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Below 32°C development fails.' },
+              compensating: { label: '🟡 Within tolerance',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Maintains range but costs energy.' }
+            }[state];
+            return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
+              h('h3', { className: 'text-sm font-black text-amber-700' }, '🐝 Hive thermoregulation discovery'),
+              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for outside temp, fanning bees, brood count. Discrete 4-state thermal regime. No score, no reveal.'),
+              h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
+                h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Hive ≈ ' + hiveTempC.toFixed(1) + ' °C')
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3' },
+                [{ k: 'outsideC', l: 'Outside °C', mn: -10, mx: 45, st: 1 },
+                 { k: 'beesFanning', l: 'Fanning bees', mn: 0, mx: 500, st: 10 },
+                 { k: 'broodCount', l: 'Brood count', mn: 0, mx: 20000, st: 500 }].map(function(s) {
+                  return h('div', { key: s.k },
+                    h('label', { htmlFor: 'th-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
+                    h('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.l }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.outsideC, f: iq.beesFanning, b: iq.broodCount, t: hiveTempC.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                h('button', { onClick: function() { setIQ({ outsideC: 20, beesFanning: 30, broodCount: 5000, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At 40°C outside, how many fanning bees maintain 35°C brood?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Brood tolerance is 35 ± 0.5°C. Investigate why so tight.'),
+                  h('li', null, 'What is the cost of constant fanning?'))),
+              h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                'I understand — explain in own words'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how the colony as a superorganism thermoregulates.',
+                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state thermal marker; no temperature score; no reveal — by design.')
+            );
+          })()
         );
       })();
     }

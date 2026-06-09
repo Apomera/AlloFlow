@@ -1673,6 +1673,52 @@
         engine.renderer.toneMappingExposure = 1.1;
         engine.renderer.outputColorSpace = THREE.SRGBColorSpace || engine.renderer.outputEncoding;
 
+        // ── Bloom post-processing: glow on the sun + golden-hour / night highlights ──
+        // Same guarded, graceful-upgrade pattern as solarsystem: renders plain until the
+        // Three r128 post-processing addons load, then a bloom composer; any failure falls
+        // back to engine.renderer.render so it can never break the tool. Honors
+        // window.AlloPostFXEnabled + a low-power/reduced-motion tier. Gentle bloom so the
+        // golden-hour scene + geometry stay readable.
+        engine.composer = null;
+        (function setupBloom() {
+          if (window.AlloPostFXEnabled === false) return;
+          var ensure = function (cb) {
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var urls = [
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+            ];
+            var i = 0;
+            (function nextScript() {
+              if (i >= urls.length) { cb(); return; }
+              var s = document.createElement('script');
+              s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+              document.head.appendChild(s);
+            })();
+          };
+          ensure(function () {
+            try {
+              var T = window.THREE;
+              if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+              var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              var lowPower = reduce || isMobile || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+              var res = lowPower ? 0.5 : 1;
+              var cw = container.clientWidth, ch = container.clientHeight;
+              var c = new T.EffectComposer(engine.renderer);
+              c.setSize(cw, ch);
+              c.addPass(new T.RenderPass(engine.scene, engine.camera));
+              // high threshold + gentle strength: only the sun / bright highlights glow,
+              // keeping the geometry legible (it's a math tool).
+              c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(cw * res)), Math.max(1, Math.round(ch * res))), lowPower ? 0.5 : 0.8, 0.4, 0.85));
+              engine.composer = c;
+            } catch (e) { engine.composer = null; }
+          });
+        })();
+
         // Lighting — warm, balanced, voxel-world style
         engine.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
         var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
@@ -3747,7 +3793,8 @@
             engine._sunSprite.position.z = engine.camera.position.z + 40;
           }
 
-          engine.renderer.render(engine.scene, engine.camera);
+          if (engine.composer) { try { engine.composer.render(); } catch (e) { engine.composer = null; engine.renderer.render(engine.scene, engine.camera); } }
+          else { engine.renderer.render(engine.scene, engine.camera); }
         }
         animate();
 
@@ -3757,6 +3804,7 @@
           engine.camera.aspect = container.clientWidth / container.clientHeight;
           engine.camera.updateProjectionMatrix();
           engine.renderer.setSize(container.clientWidth, container.clientHeight);
+          if (engine.composer) { try { engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {} }
         });
         ro.observe(container);
 
@@ -4043,6 +4091,7 @@
           if (engine._cloudPlane) engine.scene.remove(engine._cloudPlane);
           // Dispose material cache
           if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
+          if (engine.composer) { try { (engine.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} engine.composer = null; }
           if (engine.renderer) { engine.renderer.dispose(); }
           delete window[engineKey];
         }
@@ -4639,7 +4688,7 @@
               if (!eng || !eng.renderer || !eng.scene || !eng.camera) return;
               try {
                 // Force fresh render since WebGLRenderer wasn't created with preserveDrawingBuffer
-                eng.renderer.render(eng.scene, eng.camera);
+                if (eng.composer) { try { eng.composer.render(); } catch (e) { eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
                 var dataUrl = eng.renderer.domElement.toDataURL('image/png');
                 // Filename includes the lesson title so students can recognize their work later
                 var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -4651,7 +4700,7 @@
                 if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
                 if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now(), lesson: currentLesson.title });
               } catch(err) {
-                console.error('Screenshot failed:', err);
+                console.warn('Screenshot failed:', err);
                 if (addToast) addToast('Screenshot failed — try again.', 'info');
               }
             },
@@ -5977,7 +6026,14 @@
           // Bilingual: auto-translate NPC dialogue when home language is set
           var transKey = dialogNpcIdx + '_' + homeLang;
           var translation = npcTranslations[transKey] || null;
-          if (homeLang !== 'en' && !translation && callGemini && !npcTranslations[transKey + '_loading']) {
+          // Translation is GATED + EXPLICIT. It previously auto-fired callGemini
+          // DURING RENDER for any non-English home language — sending an ELL/refugee
+          // student's dialogue to the AI with no opt-in, plus a React side-effect in
+          // render. Now it only runs when the teacher has enabled AI hints AND the
+          // student clicks the Translate button below.
+          var npcIsTranslating = !!npcTranslations[transKey + '_loading'];
+          var doTranslate = function() {
+            if (translation || npcIsTranslating || !callGemini) return;
             var newTrans = Object.assign({}, npcTranslations);
             newTrans[transKey + '_loading'] = true;
             upd('npcTranslations', newTrans);
@@ -5999,7 +6055,7 @@
                 delete ut[transKey + '_loading'];
                 upd('npcTranslations', ut);
               });
-          }
+          };
           var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
           return el('div', { style: {
               position: 'absolute',
@@ -6054,7 +6110,12 @@
               title: 'Click to hear translation spoken aloud',
               style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
-            homeLang !== 'en' && !translation && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
+            homeLang !== 'en' && !translation && npcIsTranslating && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
+            homeLang !== 'en' && !translation && !npcIsTranslating && ctx && ctx.aiHintsEnabled && callGemini && el('button', {
+              onClick: doTranslate,
+              title: 'Translate this dialogue with AI (uses an AI request)',
+              style: { fontSize: '11px', color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px', padding: '4px 10px', marginBottom: '10px', cursor: 'pointer', fontWeight: 700 }
+            }, '\uD83C\uDF10 Translate (AI)'),
             data.question && !isAnswered && (function() {
               // Determine current question (base or follow-up)
               var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
@@ -6153,8 +6214,12 @@
                         var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
                         npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
                         var newWrong = npcWrongMap[dialogNpcIdx];
+                        // Remember this NPC's last wrong choice so the gated AI-hint
+                        // button (shown at >=2 wrongs) can pass it to ctx.getHint.
+                        var npcLastWrongMap = Object.assign({}, d.npcLastWrong || {});
+                        npcLastWrongMap[dialogNpcIdx] = choice;
                         var totalConsecutive = consecutiveWrong + 1;
-                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap });
+                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap, npcLastWrong: npcLastWrongMap });
                         checkFrustration(totalConsecutive);
                         setTimeout(runAchievementCheck, 100);
                         var hintText = '\u274C Not quite. ';
@@ -6172,7 +6237,21 @@
                     },
                     style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
                   }, choice);
-                })
+                }),
+                // Gated AI hint (slice-2 pilot). Only shows when the teacher has
+                // enabled AI hints AND the student has missed this NPC >=2 times.
+                // ctx.getHint self-gates (off => zero traffic), enforces the
+                // attempt floor + one-per-question cap + reveal-check.
+                ctx && ctx.aiHintsEnabled && ((d.npcWrongCount || {})[dialogNpcIdx] || 0) >= 2 && el('button', {
+                  key: 'aihint',
+                  'aria-label': 'Ask the AI for a hint',
+                  onClick: function() {
+                    var wc = (d.npcWrongCount || {})[dialogNpcIdx] || 0;
+                    var lw = (d.npcLastWrong || {})[dialogNpcIdx];
+                    ctx.getHint('geometryworld', curQ.text, lw != null ? String(lw) : '', String(curQ.choices[curQ.correct]), wc, function(hint) { if (addToast) addToast(hint, 'info'); });
+                  },
+                  style: { display: 'block', width: '100%', padding: '6px 12px', marginTop: '2px', background: 'rgba(124,58,237,0.15)', border: '1px solid #7c3aed', borderRadius: '7px', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit' }
+                }, '🤖 Ask AI for a hint')
               );
             })(),
             isAnswered && el('div', { style: { borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: '8px', marginTop: '4px' } },
@@ -6293,9 +6372,12 @@
                 if (!eng || !callGemini) return;
                 var wrong = (eng.sessionLog || []).filter(function(e) { return e.type === 'answer_wrong'; });
                 var lastWrong = wrong.length > 0 ? wrong[wrong.length - 1] : null;
+                // Integrity: do NOT send the correct answer to the model (it was
+                // being injected here and could be echoed back, revealing it). The
+                // coach gives GENERAL strategy + encouragement, not the solution.
                 var coachPrompt = 'You are a warm, encouraging growth mindset coach for a student (age 8-12) struggling with a geometry question in a 3D block world. '
-                  + (lastWrong ? 'They just got this wrong: "' + (lastWrong.data.question || '') + '". The correct answer was: "' + (lastWrong.data.correctAnswer || '') + '". ' : '')
-                  + 'In 2-3 sentences: (1) validate their effort, (2) give a concrete strategy for solving volume problems using blocks, (3) end with encouragement. '
+                  + (lastWrong ? 'They just got this geometry question wrong: "' + (lastWrong.data.question || '') + '". ' : '')
+                  + 'In 2-3 sentences: (1) validate their effort, (2) give a concrete GENERAL strategy for solving volume problems using blocks \u2014 do NOT solve this specific problem or state any numeric answer, (3) end with encouragement. '
                   + 'Use language a child would understand. Reference counting blocks, layers, or L\u00d7W\u00d7H.';
                 callGemini(coachPrompt, true).then(function(response) {
                   if (addToast) addToast('\uD83C\uDF31 Coach: ' + response, 'info');
@@ -6511,7 +6593,43 @@
                   fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
                 }
               }, '⛶')
-            )
+            ),
+            // === H7b'' inquiry widget: transformation discovery ===
+            (function() {
+              var iq = d._transformHunt || { rot: 0, scale: 1, shear: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_transformHunt', Object.assign({}, iq, patch)); }
+              var volume = iq.scale * iq.scale * iq.scale;
+              var state;
+              if (volume < 0.05) state = 'degenerate';
+              else if (Math.abs(iq.shear) > 30) state = 'skewed';
+              else if (iq.scale < 0.9 || iq.scale > 1.1) state = 'scaled';
+              else state = 'aligned';
+              var sm = {
+                aligned:    { label: '🟢 Aligned (axes preserved)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+                scaled:     { label: '🔵 Scaled (volume changed)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                skewed:     { label: '🟠 Skewed (shape deformed)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                degenerate: { label: '💀 Degenerate (volume → 0)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+              }[state];
+              return el('div', { style: { position: 'absolute', top: 12, right: 12, zIndex: 30, background: '#0f172a', border: '1px solid #a78bfa', borderRadius: 8, padding: 10, color: '#e2e8f0', maxWidth: 280 } },
+                el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', margin: '0 0 4px 0' } }, '📐 Transform discovery'),
+                el('div', { style: { padding: 6, borderRadius: 4, textAlign: 'center', background: sm.bg, border: '1px solid ' + sm.border, marginBottom: 6 } },
+                  el('div', { style: { fontSize: 11, fontWeight: 900, color: sm.color } }, sm.label)
+                ),
+                ['rot', 'scale', 'shear'].map(function(k) {
+                  var conf = { rot: { l: 'Rot°', mn: 0, mx: 360, st: 5 }, scale: { l: 'Scale', mn: 0.1, mx: 2, st: 0.1 }, shear: { l: 'Shear', mn: -45, mx: 45, st: 5 } }[k];
+                  return el('div', { key: k, style: { marginBottom: 4 } },
+                    el('label', { htmlFor: 'tr-' + k, style: { fontSize: 10, fontWeight: 'bold' } }, conf.l + ': ', el('span', { style: { fontFamily: 'monospace', color: '#a78bfa' } }, iq[k])),
+                    el('input', { id: 'tr-' + k, type: 'range', min: conf.mn, max: conf.mx, step: conf.st, value: iq[k],
+                      onChange: function(e) { var p = {}; p[k] = parseFloat(e.target.value); setIQ(p); },
+                      style: { width: '100%' }, 'aria-label': conf.l }));
+                }),
+                el('div', { style: { display: 'flex', gap: 4, marginTop: 6 } },
+                  el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
+                  el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
+                ),
+                el('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#64748b', marginTop: 4 } }, 'Design: discrete 4-state transform marker; no reveal.')
+              );
+            })()
       );
     }
   });

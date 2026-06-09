@@ -1122,9 +1122,9 @@
       model_surfacer: 3,
       steelman_second_pass: 2,
       honest_uncertainty: 2,
-      // Tier-3 Engineering Design lane (Constraint Forge). Sum = 8 hits the
-      // global session cap exactly, forcing students to choose where to spend
-      // AI critique. tradeoff_inverter is held for V2 — observe baseline.
+      // Tier-3 Engineering Design lane (Constraint Forge). Sum = 9 with the
+      // global 8/session cap binding, forcing students to choose where to spend
+      // AI critique. tradeoff_inverter SHIPPED (cap 1, plan_test antagonist mirror).
       constraint_excavator: 2,
       dominated_solution_finder: 2,
       failure_mode_critic: 2,

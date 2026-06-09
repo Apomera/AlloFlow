@@ -795,7 +795,7 @@ window.StemLab = window.StemLab || {
 
               React.createElement("div", { className: "flex justify-center gap-2 mt-4" },
 
-                [['truth', '\uD83D\uDCCA', 'Truth Tables'], ['proof', '\uD83E\uDDE9', 'Proof Builder'], ['challenges', '\u26A1', 'Challenges'], ['gates', '\u26A1\uFE0F', 'Logic Gates']].map(function(m) {
+                [['truth', '\uD83D\uDCCA', 'Truth Tables'], ['proof', '\uD83E\uDDE9', 'Proof Builder'], ['challenges', '\u26A1', 'Challenges'], ['gates', '\u26A1\uFE0F', 'Logic Gates'], ['simLogic', '\uD83C\uDFB2', 'Probability']].map(function(m) {
 
                   var active = mode === m[0];
 
@@ -2184,6 +2184,59 @@ window.StemLab = window.StemLab || {
                 })()
               )
             ),
+
+            // === H7b'' inquiry widget: probability logic ===
+            mode === 'simLogic' && (function() {
+              var iq = d._simLogic || { pTrue: 70, qTrue: 70, threshold: 80, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_simLogic', Object.assign({}, iq, patch)); }
+              var pAnd = (iq.pTrue * iq.qTrue) / 100;
+              var pOr = iq.pTrue + iq.qTrue - pAnd;
+              var state;
+              if (pAnd > iq.threshold) state = 'bothCertain';
+              else if (iq.pTrue > iq.threshold) state = 'pLikely';
+              else if (pAnd < 5 && pOr < 5) state = 'contradiction';
+              else state = 'inconclusive';
+              var sm = {
+                bothCertain:   { label: '✅ Both certain (P∧Q likely)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+                pLikely:       { label: '🟡 P likely; Q uncertain', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                contradiction: { label: '⚠️ Apparent contradiction', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                inconclusive:  { label: '🤔 Inconclusive', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' }
+              }[state];
+              return React.createElement('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
+                React.createElement('h3', { className: 'text-sm font-black text-violet-700' }, '🎲 Probability logic discovery'),
+                React.createElement('p', { className: 'text-[12px] text-slate-700' }, 'Sliders for P, Q truth probabilities, confidence threshold. Discrete 4-state inference outcome. No score, no reveal.'),
+                React.createElement('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  React.createElement('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'P(P)=' + iq.pTrue + '%, P(Q)=' + iq.qTrue + '%, P(P∧Q)=' + pAnd.toFixed(0) + '%, P(P∨Q)=' + pOr.toFixed(0) + '%')
+                ),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
+                  [{ k: 'pTrue', l: 'P truth %' }, { k: 'qTrue', l: 'Q truth %' }, { k: 'threshold', l: 'Confidence %' }].map(function(s) {
+                    return React.createElement('div', { key: s.k },
+                      React.createElement('label', { htmlFor: 'sl-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
+                      React.createElement('input', { id: 'sl-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pTrue, q: iq.qTrue, t: iq.threshold, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  React.createElement('button', { onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does P(P∧Q) ≈ P(P)·P(Q)?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
+                  React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
+                    React.createElement('li', null, 'Independence vs correlation — when does each apply?'),
+                    React.createElement('li', null, 'How does threshold change inference outcome?'))),
+                React.createElement('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain probability logic.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                React.createElement('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.')
+              );
+            })(),
 
             // ═══ EDUCATIONAL PANEL ═══
 

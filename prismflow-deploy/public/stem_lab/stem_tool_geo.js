@@ -1361,7 +1361,9 @@ var d = labToolData || {};
 
             { id: 'quizBuilder', icon: '\uD83C\uDFC6', label: 'Quiz Builder' },
 
-            { id: 'distance', icon: '\uD83D\uDCCD', label: 'Distance' }
+            { id: 'distance', icon: '\uD83D\uDCCD', label: 'Distance' },
+
+            { id: 'distHunt', icon: '\uD83C\uDF9A\uFE0F', label: 'Distance Slider' }
 
           ];
 
@@ -2581,6 +2583,61 @@ var d = labToolData || {};
                 )
               ) : React.createElement('div', { className: 'text-center py-8 text-slate-600' }, 'Loading...')
             ),
+
+            geoTab === 'distHunt' && (function() {
+              var h2 = React.createElement;
+              var iq = d.distHunt || { distance: 5000, confidence: 70, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('distHunt', Object.assign({}, iq, patch)); }
+              var category;
+              if (iq.distance < 1000) category = 'short';
+              else if (iq.distance < 5000) category = 'medium';
+              else if (iq.distance < 12000) category = 'long';
+              else category = 'antipodal';
+              var cm = {
+                short:     { label: '🟢 Short hop (<1000 km)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Same continent or neighboring countries.' },
+                medium:    { label: '🟡 Medium (1000-5000 km)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Cross-continental, e.g. NY to Moscow.' },
+                long:      { label: '🟠 Long-haul (5000-12000 km)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Trans-oceanic, e.g. SFO to Tokyo.' },
+                antipodal: { label: '🌍 Antipodal (>12000 km)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Half-globe span. Earth circumference is 40,075 km.' }
+              }[category];
+              return h2('div', { className: 'p-5 space-y-4' },
+                h2('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 shadow-sm space-y-3' },
+                  h2('h3', { className: 'text-sm font-black text-cyan-700' }, '🎚️ Distance category discovery'),
+                  h2('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for estimated distance and confidence. Widget classifies distance scale into 4 discrete categories. No score, no reveal.'),
+                  h2('div', { className: 'p-3 rounded-lg text-center', style: { background: cm.bg, border: '2px solid ' + cm.border } },
+                    h2('div', { className: 'text-base font-black', style: { color: cm.color } }, cm.label),
+                    h2('div', { className: 'text-[11px] text-slate-700 mt-1' }, cm.desc),
+                    h2('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, iq.distance + ' km @ ' + iq.confidence + '% confidence')
+                  ),
+                  h2('div', { className: 'grid grid-cols-2 gap-3' },
+                    [{ k: 'distance', l: 'Distance (km)', mn: 100, mx: 20000, st: 100 },
+                     { k: 'confidence', l: 'Confidence (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
+                      return h2('div', { key: s.k },
+                        h2('label', { htmlFor: 'ds-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h2('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                        h2('input', { id: 'ds-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                          onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                          className: 'w-full', 'aria-label': s.l }));
+                    })
+                  ),
+                  h2('div', { className: 'flex gap-2 items-center flex-wrap' },
+                    h2('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.distance, c: iq.confidence, cat: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                    h2('button', { onClick: function() { setIQ({ distance: 5000, confidence: 70, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  ),
+                  h2('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What is the maximum great-circle distance on Earth?',
+                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  !iq.stuckRevealed && h2('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                  iq.stuckRevealed && h2('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                    h2('ul', { className: 'list-disc pl-5 space-y-1' },
+                      h2('li', null, 'Earth circumference = 40,075 km. What is the antipode of London?'),
+                      h2('li', null, 'How is great-circle distance different from rhumb-line?'))),
+                  h2('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    h2('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    'I understand — explain in own words'),
+                  iq.understood && h2('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how distance scales translate to travel time.',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                  h2('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-category distance marker; no accuracy score; no reveal — by design.')
+                )
+              );
+            })(),
 
             // ── Badge shelf ──
             React.createElement('div', { className: 'px-4 py-2 border-t border-slate-100 flex flex-wrap gap-1 items-center' },

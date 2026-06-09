@@ -1371,7 +1371,74 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-[11px] text-slate-600' }, 'to reach ' + fmtMoney(savingsGoal) + ' saving ' + fmtMoney(savingsMonthly) + '/month at ' + savingsRate + '% interest')
             ),
             h('p', { className: 'text-[11px] text-slate-600 mt-1' }, '\uD83D\uDCC8 10-year projection: ' + fmtMoney(savingsResult.balance) + ' (' + fmtMoney(savingsResult.contributed) + ' contributed + ' + fmtMoney(savingsResult.interest) + ' interest)')
-          )
+          ),
+          (function() {
+            var iq = d._budgetHunt || { income: 4000, needsPct: 50, wantsPct: 30, savesPct: 20, monthlySave: 500, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('_budgetHunt', Object.assign({}, iq, patch)); }
+            var total = iq.needsPct + iq.wantsPct + iq.savesPct;
+            var state;
+            if (total > 110) state = 'overspending';
+            else if (total < 90) state = 'underAllocated';
+            else if (iq.savesPct < 10) state = 'noSavings';
+            else if (iq.needsPct > 60) state = 'stretched';
+            else state = 'balanced';
+            var sm = {
+              balanced:       { label: '\uD83D\uDFE2 Balanced budget', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: '50/30/20 sustainable.' },
+              stretched:      { label: '\uD83D\uDFE1 Stretched (needs >60%)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'High fixed costs.' },
+              noSavings:      { label: '\u26A0\uFE0F No savings (<10%)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Paycheck-to-paycheck risk.' },
+              overspending:   { label: '\uD83D\uDEA8 Over-allocated (>110%)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Debt-financed.' },
+              underAllocated: { label: '\uD83E\uDD14 Under-allocated (<90%)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Surplus uncategorized.' }
+            }[state];
+            return h('div', { className: glassCard + ' mt-3 space-y-3' },
+              h('h4', { className: 'text-sm font-bold text-emerald-700' }, '\uD83C\uDFAF Budget allocation discovery'),
+              h('p', { className: 'text-[11px] text-slate-600' }, '5 sliders + SVG stacked bar. 5-state classification. No score, no reveal.'),
+              h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
+                h('div', { className: 'text-[10px] text-slate-600 font-mono mt-1' }, 'Total ' + total + '% allocated')
+              ),
+              h('div', { className: 'p-2 bg-slate-50 rounded border border-slate-200' },
+                h('svg', { viewBox: '0 0 320 60', className: 'w-full h-16' },
+                  h('rect', { x: 10, y: 20, width: 300, height: 25, fill: '#e2e8f0' }),
+                  h('rect', { x: 10, y: 20, width: Math.min(300, iq.needsPct * 3), height: 25, fill: '#dc2626' }),
+                  h('rect', { x: 10 + Math.min(300, iq.needsPct * 3), y: 20, width: Math.max(0, Math.min(300 - iq.needsPct * 3, iq.wantsPct * 3)), height: 25, fill: '#f59e0b' }),
+                  h('rect', { x: 10 + Math.min(300, (iq.needsPct + iq.wantsPct) * 3), y: 20, width: Math.max(0, Math.min(300 - (iq.needsPct + iq.wantsPct) * 3, iq.savesPct * 3)), height: 25, fill: '#059669' }),
+                  h('line', { x1: 160, y1: 15, x2: 160, y2: 50, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+                  h('text', { x: 160, y: 60, fontSize: 9, fill: '#475569', textAnchor: 'middle' }, '50% reference')
+                )
+              ),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+                [{ k: 'income', l: 'Income $', mn: 1000, mx: 15000, st: 100 },
+                 { k: 'needsPct', l: 'Needs %', mn: 0, mx: 100, st: 5 },
+                 { k: 'wantsPct', l: 'Wants %', mn: 0, mx: 100, st: 5 },
+                 { k: 'savesPct', l: 'Saves %', mn: 0, mx: 100, st: 5 },
+                 { k: 'monthlySave', l: 'Auto-save $', mn: 0, mx: 3000, st: 50 }].map(function(s) {
+                  return h('div', { key: s.k },
+                    h('label', { htmlFor: 'bd-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
+                    h('input', { id: 'bd-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.l }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ i: iq.income, n: iq.needsPct, w: iq.wantsPct, s: iq.savesPct, t: total, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB Log'),
+                h('button', { onClick: function() { setIQ({ income: 4000, needsPct: 50, wantsPct: 30, savesPct: 20, monthlySave: 500, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset')
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At what income does 50/30/20 become hard?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Are there other budget heuristics besides 50/30/20?'),
+                  h('li', null, 'What if needs > 70% \u2014 is the 50/30/20 rule applicable?'))),
+              h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                'I understand \u2014 explain'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how income level affects budget feasibility.',
+                className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state budget marker; SVG stacked bar; no allocation score \u2014 by design.')
+            );
+          })()
         ),
 
         // ═══ CREDIT TAB ═══

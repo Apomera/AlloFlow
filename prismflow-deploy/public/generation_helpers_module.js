@@ -26,7 +26,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
       }
       mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
       if (!problemToSolve.trim()) {
-          console.error('[MATH] Empty input — nothing to generate');
+          console.log('[MATH] Empty input — nothing to generate');
           addToast('Please enter a topic or problem first', 'error');
           return;
       }
@@ -172,9 +172,9 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 }
               `;
           }
-          console.error('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
+          console.log('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
           const result = await callGemini(prompt, true);
-          console.error('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
+          console.log('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
           let rawContent;
           let cleaned;
           try {
@@ -244,7 +244,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
             warnLog(`Math verification: ${mismatchCount} answer(s) auto-corrected via expression evaluation`);
           }
           if (verifiedCount > 0) {
-            console.error('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
+            console.log('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
           }
           const newItem = {
               id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -277,7 +277,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
               addToast('📸 Auto-captured ' + newSnaps.length + ' manipulative snapshot(s)', 'info');
             }
           }
-          console.error('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
+          console.log('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
           addToast(t('math.success_toast'), "success");
           flyToElement('tour-tool-math');
       } catch (e) {

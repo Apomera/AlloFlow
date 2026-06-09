@@ -1506,6 +1506,8 @@
     "quality_flags": "Quality flags: ",
     "tagged_pdf_downloaded_original_visual": "Tagged PDF downloaded — original visual layer preserved with accessibility tag tree added.",
     "tagged_pdf_failed": "Tagged PDF failed: ",
+    "building_accessible_docx": "Building accessible Word file…",
+    "building_accessible_pptx": "Building accessible PowerPoint…",
     "accessible_html_downloaded": "Accessible HTML downloaded",
     "audit_trail_downloaded_open_any": "Audit trail downloaded — open in any browser to verify integrity.",
     "audit_trail_generation_failed": "Audit trail generation failed: ",
@@ -1762,6 +1764,8 @@
     "ai_backend_config": "AI Backend Configuration",
     "educator_tools_tooltip": "Educator Tools (Symbol Studio, BehaviorLens, Report Writer)",
     "educator_tools_aria": "Educator Tools",
+    "learning_tools_tooltip": "Learning Tools (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)",
+    "learning_tools_aria": "Learning Tools",
     "documents_menu_aria": "Documents menu",
     "open_doc_builder_pdf_aria": "Open Document Builder for PDF",
     "export_slides_tooltip": "Opens Document Builder in Slides mode"
@@ -4248,7 +4252,7 @@
       "html_aria": "HTML source code to audit"
     },
     "batch": {
-      "drop_text": "Drag & drop PDFs here",
+      "drop_text": "Drag & drop PDFs, Word, or PowerPoint files here",
       "browse_files": "Browse Files",
       "clear_all": "Clear All",
       "progress_aria": "Batch remediation progress",
@@ -4274,7 +4278,15 @@
     },
     "divergence": {
       "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly",
+      "critical_override": "axe-core found {n} critical WCAG violation(s) — review them before trusting the blended score; an average can hide a hard failure"
+    },
+    "tagged": {
+      "born_digital_note": "Heads-up: for text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. The file is substantially more accessible, but verify in PAC 2024 or Acrobat before claiming PDF/UA conformance."
+    },
+    "one_click": {
+      "label": "Make Accessible",
+      "desc": "Recommended one-click path: audits, fixes, re-verifies until the target score, then prepares your accessible downloads — all with the default settings. The panels below are optional fine-tuning."
     },
     "tagtree": {
       "label": "Pre-existing tag structure",
@@ -4392,7 +4404,8 @@
       "std_dev": "Standard Deviation",
       "icc_title": "Custom 1−(SD/50) index; not textbook ICC",
       "icc_label": "Auditor Consistency (ICC-like)",
-      "cronbach": "Cronbach's α"
+      "cronbach": "Auditor Consistency (α-like)",
+      "cronbach_title": "CV + pairwise hybrid heuristic across AI passes; not textbook Cronbach's α"
     },
     "score": {
       "total_checks": "Total checks performed",
@@ -4550,7 +4563,15 @@
       "title": "Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
     },
     "tagged_pdf": {
-      "title": "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."
+      "title": "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters.",
+      "office_note": "Tagged PDF applies to PDF inputs — use Word/HTML",
+      "office_note_title": "Structure tags can only be injected into PDF bytes. For Word/PowerPoint inputs, the accessible Word and HTML downloads carry the remediated structure."
+    },
+    "docx_export": {
+      "title": "Convert the remediated content into a Word document with real heading styles, alt text on images, table header rows, list structure, and working hyperlinks. Verify with Word's built-in Accessibility Checker (Review → Check Accessibility) before distributing."
+    },
+    "pptx_export": {
+      "title": "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout — not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."
     },
     "alt_formats": {
       "intro": "Download the remediated document in accessible alternative formats"
@@ -4578,7 +4599,7 @@
       "modal_aria": "Accessible document preview and editor",
       "close_aria": "Close preview",
       "edit_hint": "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.",
-      "wcag_guaranteed": "WCAG compliance guaranteed — sanitizer runs on every style change.",
+      "wcag_guaranteed": "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only — not a full WCAG audit).",
       "ai_restyle_hint": "One-click AI restyling. These override the theme above.",
       "body_font_aria": "Body font",
       "font_system": "System (Default)",
@@ -6120,7 +6141,61 @@
     "wizard_url_input_title": "URL Input",
     "wizard_search_input": "Describe what you need and let the AI find relevant educational resources. Results include titles, descriptions, and direct links.",
     "wizard_search_input_title": "Search Query",
-    "onboarding_hint": "💡 Click <strong>?</strong> anytime for help!"
+    "onboarding_hint": "💡 Click <strong>?</strong> anytime for help!",
+    "pdf_audit_view_web_url_input": "Paste the address of the web page you want checked (for example https://yourdistrict.org/handbook), then click Fetch to pull its HTML so you can audit and remediate it.",
+    "pdf_audit_view_web_fetch_btn": "Downloads the page at the URL above and drops its HTML into the box below. If the site blocks fetching, paste the page source into the HTML box yourself.",
+    "pdf_audit_view_web_html_textarea": "The actual HTML being audited — either dropped in by Fetch or pasted by you. You can edit it here before running an audit (for example, remove a navigation bar you don't own).",
+    "pdf_audit_view_web_audit_btn": "Scores the page for WCAG 2.1 AA accessibility using both an AI auditor and the axe-core engine (the same engine professional auditors use). Nothing is changed — use this when you just want to know how the page stands today.",
+    "pdf_audit_view_web_remediate_btn": "Scores the page, then rewrites the HTML to fix what it can (contrast, language tag, skip-link, landmarks) and gives you a downloadable accessible copy. Always re-check the output yourself before publishing.",
+    "pdf_audit_view_batch_dropzone": "Drag PDF files from your desktop or downloads folder right onto this box to add them to the batch queue. Non-PDF files are ignored.",
+    "pdf_audit_view_batch_browse_btn": "Opens your file picker to choose one or more PDFs. Use this if dragging files isn't easy (touch device, screen reader, low vision, or a Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Picks up your last batch where it left off — already-finished PDFs are kept and only the ones that didn't finish get re-run. Use this when a batch was cut short (closed tab, refresh, crash).",
+    "pdf_audit_view_batch_discard_btn": "Throws away the saved progress from your last interrupted batch — the banner goes away and cached results are deleted from your browser.",
+    "pdf_audit_view_batch_clear_all_btn": "Removes every PDF from the queue so you can start over. Only available before you press Start Batch.",
+    "pdf_audit_view_batch_row_retry_btn": "Re-runs just this one failed file without touching the rest of the batch. Hover the red X first to read why it failed — if it's structural (corrupted PDF, image-only scan), retrying won't help.",
+    "pdf_audit_view_batch_row_remove_btn": "Removes this one PDF from the queue so the batch will skip it. Only available before the batch is running.",
+    "pdf_audit_view_batch_stop_btn": "Asks the batch to stop after the file it's working on right now finishes. Already-completed PDFs stay done — you won't lose finished work, and you can resume the rest later.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Re-queues every PDF that failed and re-runs them. Already-succeeded files are not touched. Worth one try if failures look like flaky network errors; don't keep retrying truly broken PDFs.",
+    "pdf_audit_view_batch_start_btn": "Starts auditing and fixing every PDF in the queue. A confirmation appears first with an estimate of AI calls (and cost, on the self-hosted plan) so you can decide before kicking it off.",
+    "pdf_audit_view_batch_download_zip_btn": "Downloads every successfully remediated PDF as a single ZIP file. Handy for handing a whole folder back to a teacher or district contact in one go.",
+    "pdf_audit_view_batch_new_batch_btn": "Clears the finished batch so you can drop in a new set of PDFs. Any ZIP you already downloaded stays on your computer — this just resets the screen.",
+    "pdf_audit_view_batch_dashboard_btn": "Opens a printable compliance dashboard in a new tab — average score, how many PDFs hit 90+, the most common WCAG issues. Useful for sharing with an administrator or attaching to a Title II / 504 record.",
+    "pdf_audit_view_settings_panel": "Tuning knobs for the audit and remediation pipeline. Defaults are sensible — only change these if the standard run isn't giving you what you need (more thoroughness, lower cost, different stopping point).",
+    "pdf_audit_view_audit_passes_slider": "How many independent AI auditors look at the PDF — they agree on real problems and disagree on noise, so more auditors mean fewer false alarms. 5 is the sweet spot; raise for high-stakes compliance docs, lower for quick checks.",
+    "pdf_audit_view_target_score_slider": "The score you want the remediated PDF to reach — 90 is a strong WCAG 2.1 AA pass, 95+ is near-perfect, 70 is a useful floor for scanned documents. Pair with Auto-continue to let the pipeline keep working until the score is hit.",
+    "pdf_audit_view_max_fix_passes_slider": "How many automated fix-rounds the pipeline is allowed to run before stopping. 8 is the default; lower this to cap cost on a self-hosted plan, or set to 0 to skip auto-fix entirely (audit-only).",
+    "pdf_audit_view_auto_continue_toggle": "When on, the pipeline keeps doing extra fix rounds (up to 3 more) until the Target Score is hit, then stops on its own. Turn off if you want exactly one pass and a single result to inspect.",
+    "pdf_audit_view_polish_passes_slider": "Extra cleanup rounds after the real accessibility fixes — tightens spacing, headings, visual polish. 0 skips, 2 is standard, 3 is for documents going to print or external audiences.",
+    "pdf_audit_view_branding_panel": "Optional — controls how the remediated PDF looks: brand colors and overall design style. Skip for the default accessible look, or expand if the document needs to match a school or district brand.",
+    "pdf_audit_view_brand_mode_auto_btn": "Pulls brand colors out of the PDF you uploaded so the remediated version looks like the original. Best default — keeps the document recognizable to staff and families.",
+    "pdf_audit_view_brand_mode_upload_input": "Upload a separate brand sheet, logo, or style guide (image or PDF) and the pipeline pulls colors and fonts from it. Useful when the original PDF is plain-looking but needs to match district branding.",
+    "pdf_audit_view_brand_mode_none_btn": "Skip brand colors entirely and use the built-in accessible palette. Pick this for generic worksheets, or when the original colors fail contrast and you don't need to preserve the look.",
+    "pdf_audit_results_tab_remediation_btn": "Show the audit results after AlloFlow remediated the PDF. Use this tab to see the improved score and which issues are now fixed.",
+    "pdf_audit_results_tab_original_btn": "Switch back to the audit of the original PDF before AlloFlow fixed anything. Useful for comparing before-vs-after scores side by side.",
+    "pdf_audit_results_score_badge": "Your PDF's overall accessibility score from 0 to 100. Green (80+) is close to WCAG AA, amber (50-79) needs work, red (<50) has major barriers for students using screen readers or assistive tech.",
+    "pdf_audit_results_reliability_details": "Expand to see how confident the AI auditors were in this score. Multiple AI passes run in parallel — tight agreement means the score is trustworthy, wide spread means review the individual issues yourself.",
+    "pdf_audit_results_score_breakdown_details": "Expand to see exactly how the score was calculated — how many checks ran, what was deducted per issue, and how the AI rubric and axe-core scores were averaged together. This is the transparency layer behind the headline number.",
+    "pdf_audit_results_score_how_ai_details": "Expand to see how harshly the AI grades each problem: bigger deductions for critical issues that block screen-reader users, smaller deductions for minor ones, and points recovered for checks that pass.",
+    "pdf_audit_results_score_how_axe_details": "Expand to see how the axe-core checker (the same engine professional accessibility auditors use) scored your PDF, with the exact WCAG rule IDs that failed.",
+    "pdf_audit_results_issue_explain": "Click to read what this issue actually blocks for students and how the WCAG rule applies. Includes a link to the official WCAG explanation if you want to go deeper.",
+    "pdf_audit_results_image_failures_details": "Expand to see any images that were dropped during remediation. Each row offers a one-click Regenerate button so no figure is silently lost.",
+    "pdf_audit_results_image_regenerate_btn": "Recreates this missing image using AI based on its stored description. The new image lands directly back in the document — no manual upload needed.",
+    "pdf_audit_view_report_menu_btn": "Open the report menu to download an accessibility report in different formats — Adobe-style for compliance officers, formatted PDF for general sharing, JSON for research, or a signed trail for audit records.",
+    "pdf_audit_view_adobe_report_btn": "Download a report formatted like Adobe's Accessibility Checker, scored against PDF/UA-1 (the federal accessibility standard for PDFs). Best for sharing with compliance officers or attaching to a Title II / 504 filing.",
+    "pdf_audit_view_tierb_diff_view_btn": "Review the words that went missing during the last save before deciding whether to run a restoration pass. Read-only — nothing is changed until you choose to restore.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Splice the missing source words back into the document and rebuild the tagged PDF. Words that can't be safely placed end up in a Content Recovery section so nothing is lost — the residual count before and after is always shown so you can see if it helped.",
+    "pdf_audit_view_formatted_report_btn": "Open a printable before/after accessibility report in a new tab — click Save as PDF in the banner to keep a copy for your records or a parent meeting.",
+    "pdf_audit_view_html_report_btn": "Download the before/after report as an HTML file you can host on a website or edit. Content matches the printable PDF version.",
+    "pdf_audit_view_json_data_btn": "Export the raw audit numbers and rule-by-rule data as JSON. Use this when you want to analyze accessibility results in a spreadsheet, research notebook, or another tool.",
+    "pdf_audit_view_audit_trail_signed_btn": "Generate a self-verifying audit trail (an HTML file with a built-in Verify Integrity button that detects tampering). Good for compliance evidence — note it's a browser-side signature, not a legally-binding one.",
+    "pdf_audit_view_save_project_btn": "Saves your remediation work — accessible HTML, scores, settings, page-by-page progress — to a portable file. Re-open with Load Project to keep editing without re-running the AI.",
+    "pdf_audit_view_load_project_btn": "Re-open a project file you saved earlier. Brings back the remediated HTML, scores, and any page ranges already completed — picks up exactly where you left off.",
+    "pdf_audit_view_save_template_btn": "Save the document's accessible structure (heading outline, tables, lists, landmarks) as a reusable template. Use it in Document Builder to start new documents — IEPs, syllabi — already pre-structured for accessibility.",
+    "pdf_audit_alt_formats_summary": "Expand for alternative formats — ePub, electronic Braille, plain text, Markdown — for students who need a different file type than PDF or HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Save the remediated document as an ePub file with table of contents and accessibility metadata. Works on Kindle, Apple Books, and most mobile readers — students can change font size, color, and reading speed.",
+    "pdf_audit_alt_formats_braille_btn": "Save a Grade-1 (uncontracted) Braille file that can be embossed on a Braille printer or sent to a refreshable Braille display. For Grade-2 contractions, hand the file to a TVI (teacher of students with visual impairments) for finishing.",
+    "pdf_audit_alt_formats_text_btn": "Save a plain .txt file with all formatting stripped out — easiest format for screen readers, large-print conversion, or pasting into another tool.",
+    "pdf_audit_alt_formats_markdown_btn": "Save the document as Markdown — drops cleanly into Canvas, Schoology, or D2L pages, Google Docs (via paste), wikis, and GitHub-style notes without losing headings or links."
   },
   "groups": {
     "title": "Differentiation Groups",

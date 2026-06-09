@@ -5149,6 +5149,61 @@ window.StemLab = window.StemLab || {
                   return '↙ Quartering head/left';
                 })())
             ) : null,
+            // === H7b'' inquiry widget: throw angle discovery ===
+            (function() {
+              var iq = d._throwHunt || { angle: 45, velocity: 30, spin: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd({ _throwHunt: Object.assign({}, iq, patch) }); }
+              var range = (iq.velocity * iq.velocity * Math.sin(iq.angle * Math.PI / 90)) / 9.8;
+              var spinEffect = Math.abs(iq.spin) * 0.5;
+              var state;
+              if (Math.abs(iq.angle - 45) < 5 && Math.abs(iq.spin) < 20) state = 'optimal';
+              else if (range > 80) state = 'long';
+              else if (range > 30) state = 'medium';
+              else state = 'short';
+              var sm = {
+                optimal: { label: '🎯 Optimal trajectory', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: '45° near no-spin → max distance.' },
+                long:    { label: '🟡 Long throw', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'High range but off-axis.' },
+                medium:  { label: '🟠 Medium throw', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Acceptable range.' },
+                short:   { label: '🔴 Short throw', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Sub-optimal angle or low velocity.' }
+              }[state];
+              return React.createElement('div', { className: 'mt-3 p-3 rounded-xl bg-slate-800 text-slate-100 border border-cyan-700 space-y-2' },
+                React.createElement('h3', { className: 'text-sm font-black text-cyan-300' }, '🎯 Throw angle discovery'),
+                React.createElement('p', { className: 'text-[11px] text-slate-300' }, 'Sliders for angle, velocity, spin. Discrete 4-state trajectory. No score, no reveal.'),
+                React.createElement('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+                  React.createElement('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
+                  React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1' }, sm.desc),
+                  React.createElement('div', { className: 'text-[10px] text-slate-600 font-mono mt-1' }, 'Range ≈ ' + range.toFixed(1) + ' m')
+                ),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                  [{ k: 'angle', l: 'Angle (°)', mn: 10, mx: 80, st: 1 },
+                   { k: 'velocity', l: 'Velocity (m/s)', mn: 5, mx: 50, st: 1 },
+                   { k: 'spin', l: 'Spin (rpm)', mn: -200, mx: 200, st: 5 }].map(function(s) {
+                    return React.createElement('div', { key: s.k },
+                      React.createElement('label', { htmlFor: 'th-' + s.k, className: 'block text-[10px] font-bold text-slate-200' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-cyan-300' }, iq[s.k])),
+                      React.createElement('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.angle, v: iq.velocity, s: iq.spin, r: range.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-700 text-[10px] font-bold text-slate-200 border border-slate-600' }, '📋 Log'),
+                  React.createElement('button', { onClick: function() { setIQ({ angle: 45, velocity: 30, spin: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-transparent text-[10px] font-semibold text-slate-400 border border-slate-600' }, '↺ Reset')
+                ),
+                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Why is 45° special? What about with spin?',
+                  className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-slate-600 rounded p-1 font-mono', rows: 2 }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-700/30 text-[10px] font-bold text-amber-300 border border-amber-700' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-900/20 border border-amber-700 text-[10px] text-slate-200' },
+                  React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                    React.createElement('li', null, 'Real quarterbacks throw at lower angles. Why?'),
+                    React.createElement('li', null, 'How does spin (Magnus effect) alter trajectory?'))),
+                React.createElement('label', { className: 'flex items-center gap-2 text-[11px] font-bold text-emerald-300 cursor-pointer' },
+                  React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+                  'I understand — explain in own words'),
+                iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain throw trajectory physics.',
+                  className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-emerald-700 rounded p-1 font-mono mt-1', rows: 3 }),
+                React.createElement('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.')
+              );
+            })(),
             // ── Hot Hand + Hype HUD (engagement layer) ──
             // Sits directly above the throw button so the streak status
             // and pre-throw motivator are inline with where the student's

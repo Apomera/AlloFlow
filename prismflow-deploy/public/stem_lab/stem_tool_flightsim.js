@@ -19959,7 +19959,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 { id: 'learn',      icon: '📚', label: 'Learn',       desc: '20 topics: forces, instruments, history, careers...', bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
                 { id: 'quiz',       icon: '🎯', label: 'Quiz',        desc: 'Test your knowledge with scoring + streaks',          bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
                 { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: 'Interactive checklist real pilots use',              bg: 'linear-gradient(135deg, #16a34a, #15803d)' },
-                { id: 'calculator', icon: '🧮', label: 'Lift Calc',   desc: 'Compute lift for any aircraft + speed + altitude',   bg: 'linear-gradient(135deg, #ea580c, #c2410c)' }
+                { id: 'calculator', icon: '🧮', label: 'Lift Calc',   desc: 'Compute lift for any aircraft + speed + altitude',   bg: 'linear-gradient(135deg, #ea580c, #c2410c)' },
+                { id: 'stallHunt',  icon: '⚠️', label: 'Stall Discovery', desc: 'Adjust airspeed, altitude, AoA — discover the stall envelope.', bg: 'linear-gradient(135deg, #be123c, #9f1239)' }
               ].map(function(m) {
                 return h('button', {
                   key: m.id,
@@ -21107,6 +21108,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('li', null, 'Compare the F-22 (small fast wings) vs the 747 (big slower wings) — both fly, but very differently.'),
               h('li', null, 'Lower Cₗ to 0.3 (cruise config) vs raise it to 1.5 (flaps extended for landing).')
             )
+          )
+        );
+      }
+
+      // === H7b'' inquiry widget: stall discovery ===
+      if (view === 'stallHunt') {
+        var iq = d.stallHunt || { airspeed: 130, altitude: 5000, aoa: 8, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('stallHunt', Object.assign({}, iq, patch)); }
+        // Critical AoA ~17° for most general aviation. Stall depends primarily on AoA, not airspeed.
+        // Lift drops off rapidly above critical AoA. We model 3-state:
+        // < 14° = normal flow; 14-17° = boundary separation; > 17° = full stall
+        // Low airspeed compounds: stall AoA gets effectively reached at higher critical-angle margins
+        var effectiveAoA = iq.aoa + (iq.airspeed < 65 ? 2 : 0);
+        var state;
+        if (effectiveAoA < 14) state = 'normal';
+        else if (effectiveAoA < 17) state = 'boundary';
+        else state = 'stall';
+        var stateMeta = {
+          normal:   { label: '🟢 Normal flow',         color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Air remains attached. Lift increases predictably with AoA.' },
+          boundary: { label: '🟡 Boundary separation', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Lift still rising but turbulent flow detaching. Buffet may begin.' },
+          stall:    { label: '🔴 Full stall',          color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Lift collapses. Wing no longer producing required lift — nose drops.' }
+        }[state];
+        function logObs() {
+          setIQ({ log: (iq.log || []).concat([{ s: iq.airspeed, a: iq.altitude, aoa: iq.aoa, st: state }]).slice(-8) });
+        }
+        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', marginBottom: '12px' } }, '← Back to menu'),
+          h('div', { style: { padding: '16px', background: 'rgba(15,23,42,0.6)', borderRadius: '10px', border: '1px solid rgba(190,18,60,0.3)' } },
+            h('h3', { style: { fontSize: '16px', fontWeight: 800, color: '#fb7185', margin: '0 0 6px 0' } }, '⚠️ Stall discovery'),
+            h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '12px' } },
+              'You are flying. Adjust airspeed, altitude, and angle of attack (AoA). The wing shows one of three discrete states (normal flow / boundary separation / full stall). There is no score and no reveal. Sweep the sliders. Log observations. Type what you discover.'),
+            h('div', { style: { marginBottom: '12px', padding: '12px', borderRadius: '8px', textAlign: 'center', background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+              h('div', { style: { fontSize: '15px', fontWeight: 900, color: stateMeta.color } }, stateMeta.label),
+              h('div', { style: { fontSize: '11px', color: '#475569', marginTop: '4px' } }, stateMeta.desc)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' } },
+              [
+                { key: 'airspeed', label: 'Airspeed (kts)', val: iq.airspeed, min: 40, max: 250, step: 5 },
+                { key: 'altitude', label: 'Altitude (ft)',   val: iq.altitude, min: 0,  max: 30000, step: 500 },
+                { key: 'aoa',      label: 'Angle of attack (°)', val: iq.aoa, min: 0, max: 25, step: 0.5 }
+              ].map(function(s) {
+                return h('div', { key: s.key },
+                  h('label', { htmlFor: 'sh-' + s.key, style: { display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '4px' } },
+                    s.label + ': ', h('span', { style: { color: '#fb7185', fontFamily: 'monospace' } }, s.val)),
+                  h('input', { id: 'sh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                    onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                    style: { width: '100%' }, 'aria-label': s.label }));
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
+              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ airspeed: 130, altitude: 5000, aoa: 8, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' } }, '↺ Reset'),
+              (iq.log || []).length > 0 && h('span', { style: { fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
+            ),
+            (iq.log || []).length > 0 && h('table', { style: { fontSize: '10px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '12px' } },
+              h('thead', null, h('tr', { style: { background: '#1e293b' } },
+                ['airspeed kt', 'altitude ft', 'AoA°', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+              h('tbody', null, iq.log.map(function(o, idx) {
+                return h('tr', { key: 'lr' + idx },
+                  h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.s),
+                  h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.a),
+                  h('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.aoa),
+                  h('td', { style: { padding: '4px 6px' } }, o.st));
+              }))
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+              placeholder: 'Hypothesis (free text — no right answer): Which slider matters most for stall? Is airspeed alone sufficient to prevent it?',
+              style: { width: '100%', minHeight: '60px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginBottom: '10px' }, rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+              style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px' } },
+              '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { style: { padding: '10px', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '4px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '10px' } },
+              h('ul', { style: { margin: 0, paddingLeft: '18px' } },
+                h('li', null, 'Hold airspeed steady. Vary AoA. When does the state flip?'),
+                h('li', null, 'At a fixed AoA, vary airspeed. Does the state change?'),
+                h('li', null, 'Find two combinations that produce a stall. What do they share?'),
+                h('li', null, 'Real pilots are taught "angle of attack, not airspeed" causes stall. Investigate why.'))),
+            h('div', { style: { padding: '10px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                'I think I understand — explain in own words'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                placeholder: 'Explain in your own words: what role do airspeed, altitude, and AoA each play?',
+                style: { width: '100%', minHeight: '80px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginTop: '6px' }, rows: 4 })
+            ),
+            h('div', { style: { marginTop: '10px', padding: '8px', background: 'rgba(15,28,47,0.5)', borderRadius: '4px', fontSize: '10px', fontStyle: 'italic', color: '#64748b' } },
+              'Design note: discrete 3-state stall indicator; no continuous score; no reveal — by design to discourage optimization-gaming.')
           )
         );
       }

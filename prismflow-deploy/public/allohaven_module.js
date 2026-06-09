@@ -24533,12 +24533,22 @@
               onClick: function() {
                 try {
                   var raw = JSON.stringify(state, null, 2);
+                  // FERPA voice gate: decoration voice notes embed a student's
+                  // recorded voice (biometric-class data). Warn + mark the file
+                  // CONFIDENTIAL when audio is present (mirrors the project-save
+                  // + Symbol Studio backup pattern); audio-free backups unaffected.
+                  var _hasVoice = raw.indexOf('data:audio') !== -1;
+                  if (_hasVoice && typeof window !== 'undefined' && typeof window.confirm === 'function'
+                      && !window.confirm("This backup includes a voice recording saved on a student's decoration. A recorded voice is identifiable, FERPA-protected student data.\n\nSave the file only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nDownload anyway?")) {
+                    addToast('Backup cancelled.');
+                    return;
+                  }
                   var blob = new Blob([raw], { type: 'application/json' });
                   var url = URL.createObjectURL(blob);
                   var a = document.createElement('a');
                   var stamp = new Date().toISOString().slice(0, 10);
                   a.href = url;
-                  a.download = 'allohaven-backup-' + stamp + '.json';
+                  a.download = (_hasVoice ? 'allohaven_CONFIDENTIAL-backup-' : 'allohaven-backup-') + stamp + '.json';
                   document.body.appendChild(a);
                   a.click();
                   document.body.removeChild(a);
@@ -27629,6 +27639,12 @@
   // ─────────────────────────────────────────────────────────
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AlloHaven = AlloHaven;
+  // Test seam (read-only): expose pure progress / IEP-packet aggregator helpers for
+  // characterization tests (tests/allohaven_golden.test.js). Zero behavior change.
+  window.AlloModules.AlloHavenInternals = {
+    computeTenureStats: computeTenureStats, computeSkillLevel: computeSkillLevel,
+    computeStreak: computeStreak, cardMasteryBucket: cardMasteryBucket, daysUntilDue: daysUntilDue,
+  };
   console.log('[CDN] AlloHaven loaded');
 
 })();

@@ -18219,7 +18219,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
         function pickLab(id) {
           updMulti({ labId: id, labStep: 0, labAnswers: {} });
-          llAnnounce('Starting case: ' + LAB_SCENARIOS.find(function(s) { return s.id === id; }).name);
+          // findById is null-safe (window.StemLab.findById); falls back to
+          // the raw id if the scenario was renamed or stripped, instead of
+          // crashing on `.find(...).name` against undefined.
+          var picked = window.StemLab && window.StemLab.findById ? window.StemLab.findById(LAB_SCENARIOS, id) : null;
+          llAnnounce('Starting case: ' + (picked ? picked.name : id));
         }
         function reset() {
           updMulti({ labId: null, labStep: 0, labAnswers: {} });

@@ -755,7 +755,7 @@
             // Right sidebar
             h('div', { style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' } },
               h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
-                [{ id: 'coach', label: '\uD83D\uDCA1 Coach' }, { id: 'challenge', label: '\uD83C\uDFAF Tasks' }, { id: 'ai', label: '\uD83E\uDD16 AI' }, { id: 'badges', label: '\uD83C\uDFC5' }].map(function(st) {
+                [{ id: 'coach', label: '\uD83D\uDCA1 Coach' }, { id: 'challenge', label: '\uD83C\uDFAF Tasks' }, { id: 'ai', label: '\uD83E\uDD16 AI' }, { id: 'badges', label: '\uD83C\uDFC5' }, { id: 'inquiry', label: '\u2754 Inquiry' }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
                   return h('button', { 'aria-label': 'Read aloud', key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
                 })
@@ -814,7 +814,87 @@
                       earned ? h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: '#a78bfa', fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
                     ));
                 })
-              ) : null
+              ) : null,
+              // === H7b'' inquiry widget: quadratic discovery ===
+              (d._sideTab || 'coach') === 'inquiry' ? (function() {
+                var iq = d.quadHunt || { a: 1, hVertex: 0, kVertex: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                function setIQ(patch) { upd('quadHunt', Object.assign({}, iq, patch)); }
+                var state = Math.abs(iq.a) < 0.1 ? 'degenerate' : (iq.a > 0 ? 'up' : 'down');
+                var stateMeta = {
+                  up:         { label: '🙂 Opens UP (min at vertex)',   color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
+                  down:       { label: '🙁 Opens DOWN (max at vertex)', color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
+                  degenerate: { label: '➖ Nearly a line',               color: '#64748b', bg: 'rgba(100,116,139,0.10)', border: '#94a3b8' }
+                }[state];
+                function logObs() {
+                  setIQ({ log: (iq.log || []).concat([{ a: iq.a, h: iq.hVertex, k: iq.kVertex, st: state }]).slice(-8) });
+                }
+                return h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  h('div', { style: { fontSize: '12px', fontWeight: 'bold', color: '#a5b4fc', marginBottom: '6px' } }, '❔ Quadratic discovery'),
+                  h('p', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: 1.4, marginBottom: '8px' } },
+                    'Sliders for vertex (h, k) and stretch a. Discrete 3-state outcome shows the parabola direction. No score, no reveal — sweep and notice.'),
+                  h('div', { style: { marginBottom: '8px', padding: '8px', borderRadius: '6px', textAlign: 'center', background: stateMeta.bg, border: '1px solid ' + stateMeta.border } },
+                    h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: stateMeta.color } }, stateMeta.label),
+                    h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '3px', fontFamily: 'monospace' } },
+                      'y = ' + iq.a.toFixed(2) + '(x − ' + iq.hVertex + ')² + ' + iq.kVertex)
+                  ),
+                  [
+                    { key: 'a',       label: 'stretch a',  val: iq.a,       min: -3,  max: 3,   step: 0.1 },
+                    { key: 'hVertex', label: 'vertex h',   val: iq.hVertex, min: -10, max: 10,  step: 1 },
+                    { key: 'kVertex', label: 'vertex k',   val: iq.kVertex, min: -10, max: 10,  step: 1 }
+                  ].map(function(s) {
+                    return h('div', { key: s.key, style: { marginBottom: '6px' } },
+                      h('label', { htmlFor: 'qh-' + s.key, style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '2px' } },
+                        s.label + ': ', h('span', { style: { color: '#a5b4fc', fontFamily: 'monospace' } }, s.val)),
+                      h('input', { id: 'qh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
+                        onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
+                        style: { width: '100%' }, 'aria-label': s.label }));
+                  }),
+                  h('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', flexWrap: 'wrap' } },
+                    h('button', { onClick: logObs, style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '4px', cursor: 'pointer' } }, '📋 Log'),
+                    h('button', { onClick: function() { setIQ({ a: 1, hVertex: 0, kVertex: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 600, background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', cursor: 'pointer' } }, '↺ Reset')
+                  ),
+                  (iq.log || []).length > 0 && h('table', { style: { fontSize: '9px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '8px' } },
+                    h('thead', null, h('tr', { style: { background: 'rgba(99,102,241,0.1)' } },
+                      ['a', 'h', 'k', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '3px', borderBottom: '1px solid rgba(99,102,241,0.2)', textAlign: 'left' } }, c); }))),
+                    h('tbody', null, iq.log.map(function(o, idx) {
+                      return h('tr', { key: 'lr' + idx },
+                        h('td', { style: { padding: '3px', fontFamily: 'monospace' } }, o.a.toFixed(2)),
+                        h('td', { style: { padding: '3px', fontFamily: 'monospace' } }, o.h),
+                        h('td', { style: { padding: '3px', fontFamily: 'monospace' } }, o.k),
+                        h('td', { style: { padding: '3px' } }, o.st));
+                    }))
+                  ),
+                  h('div', { style: { marginBottom: '8px' } },
+                    h('label', { htmlFor: 'qh-hypo', style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '2px' } }, 'Hypothesis (free text):'),
+                    h('textarea', { id: 'qh-hypo', value: iq.hypothesis || '',
+                      onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                      placeholder: 'What does a control? What about h and k?',
+                      style: { width: '100%', minHeight: '40px', padding: '4px', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 3 })
+                  ),
+                  h('div', { style: { marginBottom: '8px' } },
+                    !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '4px', cursor: 'pointer' } },
+                      '🤔 Stuck — show open prompts'),
+                    iq.stuckRevealed && h('div', { style: { padding: '6px', fontSize: '10px', color: '#cbd5e1', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '4px' } },
+                      h('ul', { style: { margin: 0, paddingLeft: '14px' } },
+                        h('li', null, 'Hold two sliders steady. Move one. Watch what happens.'),
+                        h('li', null, 'Log observations of each state. What patterns emerge?'),
+                        h('li', null, 'What slider value makes the parabola degenerate?'),
+                        h('li', null, 'Can you get the same shape with two different settings?')))
+                  ),
+                  h('div', { style: { padding: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
+                    h('label', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                      h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                      'I understand — explain in my own words'),
+                    iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                      placeholder: 'Explain in your own words: what does each slider control?',
+                      style: { width: '100%', marginTop: '4px', minHeight: '50px', padding: '4px', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 4 })
+                  ),
+                  h('div', { style: { marginTop: '6px', padding: '6px', fontSize: '9px', fontStyle: 'italic', color: '#64748b', background: 'rgba(15,23,42,0.5)', borderRadius: '4px' } },
+                    'Design note: discrete 3-state marker; no score, no reveal — by design.')
+                );
+              })() : null
             )
           )
         );

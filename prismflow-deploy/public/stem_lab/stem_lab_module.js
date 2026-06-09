@@ -198,8 +198,60 @@
           canvas._dpr = dpr;
           canvas._logicalW = logicalW;
           canvas._logicalH = logicalH;
+        },
+        // ── findById: null-safe lookup over an array of {id, ...} records.
+        // Replaces the corpus-wide `.find(x => x.id === id).field` chain that
+        // crashes the tool when an id is renamed, i18n-filtered, or stale
+        // in persisted state. The recommended replacement pattern is:
+        //
+        //   var rec = window.StemLab.findById(SCENARIOS, id);
+        //   var name = rec ? rec.name : 'Unknown';
+        //   // OR with optional chaining at the call site:
+        //   var name = window.StemLab.findById(SCENARIOS, id)?.name ?? 'Unknown';
+        //
+        // The check_find_deref.cjs gate flags new `.find(...).field` writes;
+        // existing instances are converted opportunistically as authors touch
+        // each tool. STEM Lab audit (2026-06-07) found ~10 tools with this
+        // pattern; autorepair / learning_lab / rocks were the HIGH-severity
+        // first-pass conversions.
+        findById: function(arr, id) {
+          if (!Array.isArray(arr) || id === null || id === undefined) return null;
+          for (var i = 0; i < arr.length; i++) {
+            if (arr[i] && arr[i].id === id) return arr[i];
+          }
+          return null;
         }
       };
+    }
+
+    // ── AI Hint guardrails (pure + testable; the gate lives in getHint below) ──
+    // Socratic, answer-GROUNDED prompt: the correct answer is given to the model
+    // ONLY as grounding (this cuts fact-hallucination of the target), but the hint
+    // must be framed as a guiding question / principle and must NOT restate the
+    // answer. The reveal-check is the STRUCTURAL backstop — the prompt instruction
+    // alone is never trusted to keep the answer hidden.
+    function stemHintBuildPrompt(grade, tool, question, wrongAnswer, correctAnswer) {
+      return 'You are a STEM tutor for a ' + (grade || '5th Grade') + ' student. Tool: ' + (tool || 'a STEM activity') + '.\n' +
+        'Question: ' + question + '\n' +
+        'The student answered: ' + wrongAnswer + '\n' +
+        'For your reference ONLY (never state it): the correct answer is ' + correctAnswer + '.\n' +
+        'Give exactly ONE short hint (max 2 sentences), phrased as a guiding question or a reminder of the relevant principle or the next thing to check. ' +
+        'Do NOT state or restate the answer, do NOT evaluate their specific answer, and do NOT complete the final step for them. Use age-appropriate, encouraging language.';
+    }
+    // Returns true if the hint appears to leak the literal/numeric answer. Used to
+    // SUPPRESS + replace a leaking hint before it is ever shown to a student.
+    function stemHintRevealsAnswer(hint, correctAnswer) {
+      if (!hint || correctAnswer === null || correctAnswer === undefined) return false;
+      var a = String(correctAnswer).trim().toLowerCase();
+      var h = String(hint).toLowerCase();
+      if (!a) return false;
+      if (a.length >= 2 && h.indexOf(a) !== -1) return true; // literal answer verbatim
+      var m = a.match(/-?\d+(?:\.\d+)?/);                    // numeric answer as its own token
+      if (m) {
+        var num = m[0].replace(/\./g, '\\.');
+        if (new RegExp('(^|[^\\w.])' + num + '([^\\w.]|$)').test(h)) return true;
+      }
+      return false;
     }
 
     window.AlloModules = window.AlloModules || {};
@@ -587,31 +639,53 @@
       }
       var totalStemXP = stemXpData._total || 0;
 
-      // ── AI Helper Functions (powered by main app's callGemini/callTTS) ──
+      // ── AI Helper Functions (powered by main app's callGemini) ──
       var _aiPending = {};
       var _stemGrade = gradeLevel || '5th Grade';
 
-      function stemAIHint(tool, question, wrongAnswer, correctAnswer, feedbackSetter) {
-        if (!callGemini || _aiPending[tool + '_hint']) return;
+      // AI Hints: default OFF, teacher-controlled. localStorage mirror so the
+      // header toggle re-renders. When OFF, getHint is a no-op → ZERO LLM traffic.
+      var [_aiHintsOn, _setAiHintsOn] = React.useState(function () {
+        try { return localStorage.getItem('alloflow_stem_ai_hints') === 'on'; } catch (e) { return false; }
+      });
+      // Per-question hint ledger (one AI hint per question, per session).
+      var _hintLedger = React.useRef({});
+
+      // The SINGLE guarded entry point for AI hints. Tools call ctx.getHint(...).
+      // Enforces, in order: feature ON, AI available, >=2 genuine attempts
+      // (productive struggle), 1 hint per question, concurrency, and a reveal-check
+      // that suppresses any hint leaking the answer. The student only ever sees a
+      // labeled "AI may be imperfect" string. No PII is sent (question + answers only).
+      function getHint(tool, question, wrongAnswer, correctAnswer, attemptCount, displayFn) {
+        if (!_aiHintsOn) return;                 // gate OFF → zero LLM traffic
+        if (!callGemini) return;                 // no AI surface available
+        if ((attemptCount || 0) < 2) {           // try-again-before-hint (productive struggle)
+          if (addToast) addToast('Give it another try first — a hint unlocks after a couple of attempts.', 'info');
+          return;
+        }
+        var key = String(tool) + '::' + String(question);
+        if (_hintLedger.current[key]) {          // one AI hint per question
+          if (addToast) addToast('You already used your hint for this one — give it a go!', 'info');
+          return;
+        }
+        if (_aiPending[tool + '_hint']) return;  // concurrency
         _aiPending[tool + '_hint'] = true;
-        var prompt = 'You are a helpful STEM tutor for a ' + _stemGrade + ' student.\n' +
-          'Tool: ' + tool + '\n' +
-          'Question: ' + question + '\n' +
-          'Student answered: ' + wrongAnswer + '\n' +
-          'Correct answer: ' + correctAnswer + '\n' +
-          'Give a SHORT, encouraging hint (1-2 sentences max) that guides them toward the correct answer WITHOUT giving it away. ' +
-          'Use age-appropriate language. Focus only on this specific concept.';
+        var prompt = stemHintBuildPrompt(_stemGrade, tool, question, wrongAnswer, correctAnswer);
         callGemini(prompt).then(function (hint) {
           _aiPending[tool + '_hint'] = false;
-          if (hint && feedbackSetter) feedbackSetter(hint);
-          else if (hint && addToast) addToast('💡 ' + hint, 'info');
+          if (!hint) return;
+          if (stemHintRevealsAnswer(hint, correctAnswer)) {  // reveal-check backstop
+            hint = 'Re-read the question and focus on the key idea it is testing — check each step and your units rather than the final number.';
+          }
+          _hintLedger.current[key] = true;
+          var labeled = '💡 ' + hint + '  — AI hint, may be imperfect; check it against your own reasoning.';
+          if (typeof displayFn === 'function') { try { displayFn(labeled); } catch (e) { if (addToast) addToast(labeled, 'info'); } }
+          else if (addToast) addToast(labeled, 'info');
         }).catch(function () { _aiPending[tool + '_hint'] = false; });
       }
 
 
 
-      var [stemAIResponse, setStemAIResponse] = React.useState(null);
-      var [stemAILoading, setStemAILoading] = React.useState(false);
       var [_stemToolSearch, _setStemToolSearch] = React.useState('');
 
       // ── Keyboard Help State ──
@@ -647,7 +721,7 @@
       // Quest progress persistence
       React.useEffect(function() {
         try { localStorage.setItem('alloflow_quest_progress', JSON.stringify(_questProgress)); }
-        catch(e) { console.error('[QuestSystem] Failed to save quest progress (quota or permission):', e.message || e); }
+        catch(e) { console.warn('[QuestSystem] Quest progress not saved (storage quota or permission) — non-fatal, continuing:', e.message || e); }
       }, [_questProgress]);
 
       // Quest evaluation — watches labToolData for auto-completion
@@ -896,22 +970,8 @@
       };
 
 
-      // ── AI Hint for Challenge Feedback ──
-      function StemAIHintButton(toolName, question, wrongAnswer, correctAnswer) {
-        if (!callGemini || !wrongAnswer) return null;
-        return React.createElement("button", { "aria-label": "Set Stem A I Loading",
-          onClick: function () {
-            setStemAILoading(true);
-            stemAIHint(toolName, question, wrongAnswer, correctAnswer, function (hint) {
-              setStemAILoading(false);
-              setStemAIResponse({ tool: toolName, concept: 'hint', text: hint });
-            });
-          },
-          disabled: stemAILoading,
-          className: "flex items-center gap-1 px-2.5 py-1 mt-1 text-[10px] font-bold rounded-full transition-all " +
-            (stemAILoading ? "bg-slate-100 text-slate-500 cursor-wait" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200")
-        }, stemAILoading ? "⏳" : "💡", " ", t('stem.ai.get_hint') || "Get a Hint");
-      }
+      // (Former orphan StemAIHintButton removed; AI hints now flow through the
+      // single guarded ctx.getHint entry point — see getHint above.)
 
       // ── Theme Detection (prop from parent app, falls back to DOM query) ──
       var _stemTheme = _themeProp || 'light';
@@ -2334,6 +2394,27 @@
           "aria-label": "Toggle canvas narration TTS",
           title: _narrationOn ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
         }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
+        isTeacherMode && /*#__PURE__*/React.createElement("button", {
+          onClick: () => {
+            if (!_aiHintsOn) {
+              var ok = (typeof window !== 'undefined' && typeof window.confirm === 'function')
+                ? window.confirm('Enable AI hints for students?\n\nWhen ON, a stuck student (after a couple of tries) can request a hint. The question, the student\'s answer, and the correct answer are sent to the AI to generate a short guiding hint. No names or IDs are sent.\n\nHints are AI-generated and may be imperfect. Keep this OFF during graded / assessment work.')
+                : true;
+              if (!ok) return;
+              try { localStorage.setItem('alloflow_stem_ai_hints', 'on'); } catch(e) {}
+              _setAiHintsOn(true);
+              if (typeof addToast === 'function') addToast('\uD83D\uDCA1 AI hints ON \u2014 practice only; turn OFF for graded work', 'info');
+            } else {
+              try { localStorage.setItem('alloflow_stem_ai_hints', 'off'); } catch(e) {}
+              _setAiHintsOn(false);
+              if (typeof addToast === 'function') addToast('\uD83D\uDCA1 AI hints OFF', 'info');
+            }
+          },
+          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
+          "aria-pressed": _aiHintsOn,
+          "aria-label": _aiHintsOn ? 'AI hints are ON for students \u2014 click to turn off' : 'AI hints are OFF \u2014 click to enable (teacher control)',
+          title: _aiHintsOn ? 'AI hints ON: a stuck student can request an AI hint (their answer is sent to the AI). Practice only \u2014 turn OFF for graded work.' : 'AI hints OFF. Click to enable AI hints for stuck students (sends their answer to the AI; keep off during graded work).'
+        }, '\uD83D\uDCA1', /*#__PURE__*/React.createElement("span", { className: "text-[10px] font-bold" }, _aiHintsOn ? 'Hints' : 'Hints Off')),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => _setShowKeyHelp(v => !v),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors text-xs font-bold",
@@ -2821,12 +2902,12 @@
                   if (problems.length > 0) {
                     problems.forEach(p => { p._blockType = blockLabel; });
                     allProblems.push(...problems);
-                    console.error('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + '): ' + problems.length + ' problems parsed');
+                    console.log('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + '): ' + problems.length + ' problems parsed');
                   } else {
                     throw new Error('No problems in parsed response');
                   }
                 } catch (e) {
-                  console.error('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + ') failed:', e.message);
+                  console.warn('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + ') failed:', e.message);
                   blockErrors++;
                 }
                 if (bi < nonFluencyBlocks.length - 1) {
@@ -3237,6 +3318,12 @@
                 color: 'cyan', ready: true
               },
               {
+                // @tool lumen
+                id: 'lumen', icon: '💡', label: 'Lumen',
+                desc: 'Reactive research canvas — collect, analyze & present as one honest, provenance-bound object. 9 chart types, correlation-not-causation guards, FERPA-aware exports.',
+                color: 'amber', ready: true
+              },
+              {
                 id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
                 desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
                 color: 'sky', ready: true
@@ -3439,6 +3526,7 @@
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
               { id: 'geometryWorld', icon: '\uD83E\uDDF1', label: 'Geometry World', desc: 'Explore a 3D world where geometry questions unlock new areas. Talk to NPCs and solve shape puzzles!', color: 'purple', ready: true },
               { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
+              { id: 'cellularLab', icon: '\uD83E\uDDEB', label: 'Cellular Automaton Lab', desc: "Watch complexity emerge from simple rules: Conway's Game of Life plus elementary 1-D Wolfram rules 0-255, with a pattern gallery (gliders, pulsars, Gosper gun) and space-time diagrams.", color: 'emerald', ready: true },
 
               { id: '_cat_SoundSpeech', icon: '', label: '\uD83C\uDFA4 Sound, Speech & Music', desc: '', color: 'slate', category: true },
               { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
@@ -4660,7 +4748,9 @@
             migration: true,
             appLab: true,
             bakingScience: true,
-            alloBotSage: true
+            alloBotSage: true,
+            // Jun 2026: Lumen go-live — provenance-bound reactive research canvas.
+            lumen: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
@@ -4777,6 +4867,13 @@
             // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
             celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            // Guarded AI-hint entry point + its enabled flag. getHint self-gates
+            // (off → zero traffic), enforces try-again/cap/reveal-check, and shows
+            // a labeled hint. aiHintsEnabled lets a tool show/hide its hint button.
+            // NOTE: a tool author must route hints through getHint, NOT raw
+            // callGemini, or the guardrails are bypassed.
+            getHint: getHint,
+            aiHintsEnabled: !!_aiHintsOn,
             // Callback-style AI helper. cyberdefense's AI coach was written to a
             // callback API before the host standardized on promise-based callGemini.
             // Adapter keeps both surfaces working.

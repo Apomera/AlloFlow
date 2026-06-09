@@ -6301,7 +6301,7 @@ var d = labToolData.plateTectonics || {};
                 var PT_CATEGORIES = [
                   { id: "sim_quiz", label: "Interactive Sim", icon: "🌍", color: "red",
                     desc: "Run the simulation, lab, timeline, and quiz",
-                    tabs: ["sim", "earthquake", "timeline", "quiz"] },
+                    tabs: ["sim", "earthquake", "timeline", "quiz", "boundaryHunt"] },
                   { id: "world", label: "World Catalogs", icon: "🗺", color: "blue",
                     desc: "Plates, faults, volcanoes, mountains, tsunamis, hotspots",
                     tabs: ["encyclopedia", "faults", "volcanoes", "mountains", "tsunamis", "hotspots"] },
@@ -6316,7 +6316,7 @@ var d = labToolData.plateTectonics || {};
                     tabs: ["glossary", "lessons"] }
                 ];
                 var PT_TAB_LABELS = {
-                  sim: "🌍 Simulation", earthquake: "📈 Earthquake Lab", timeline: "⏳ Timeline", quiz: "❓ Quiz",
+                  sim: "🌍 Simulation", earthquake: "📈 Earthquake Lab", timeline: "⏳ Timeline", quiz: "❓ Quiz", boundaryHunt: "🔐 Boundary Stress",
                   encyclopedia: "🌍 Plate Encyclopedia", faults: "🔍 Faults", volcanoes: "🌋 Volcanoes", mountains: "⛰ Mountains",
                   tsunamis: "🌊 Tsunamis", hotspots: "🔥 Hotspots",
                   rocks: "🪨 Rocks", fossils: "🦴 Fossils",
@@ -21359,6 +21359,66 @@ var d = labToolData.plateTectonics || {};
 
 
             // â•â•â• BACK BUTTON â•â•â•
+
+            // === H7b'' inquiry widget: plate boundary stress ===
+            simTab === 'boundaryHunt' && (function() {
+              var h = React.createElement;
+              var iq = d.boundaryHunt || { btype: 'convergent', force: 50, friction: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('boundaryHunt', Object.assign({}, iq, patch)); }
+              var stress = iq.force * (iq.friction / 100);
+              var failure;
+              if (iq.btype === 'convergent') failure = stress > 50 ? 'thrust' : 'stable';
+              else if (iq.btype === 'divergent') failure = stress > 40 ? 'normal' : 'stable';
+              else failure = stress > 35 ? 'strikeSlip' : 'stable';
+              var fMeta = {
+                thrust:     { label: '🔺 Thrust faulting', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Compression overcomes friction.' },
+                normal:     { label: '⬇️ Normal faulting',  color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Tension cracks crust. Rift valleys.' },
+                strikeSlip: { label: '↔️ Strike-slip',       color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Lateral shear. San-Andreas-style.' },
+                stable:     { label: '🟢 Stable',           color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Stress below failure threshold.' }
+              }[failure];
+              return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3 mb-6' },
+                h('h3', { className: 'text-sm font-black text-amber-700' }, '🔐 Plate boundary stress discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Pick boundary type. Adjust force and friction. Discrete failure mode appears. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: fMeta.bg, border: '2px solid ' + fMeta.border } },
+                  h('div', { className: 'text-base font-black', style: { color: fMeta.color } }, fMeta.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, fMeta.desc)
+                ),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  ['convergent', 'divergent', 'transform'].map(function(bt) {
+                    var active = iq.btype === bt;
+                    return h('button', { key: bt, onClick: function() { setIQ({ btype: bt }); },
+                      className: 'px-2 py-1 rounded text-[11px] font-bold border ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300') }, bt);
+                  })
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-3' },
+                  [{ k: 'force', l: 'Stress (%)' }, { k: 'friction', l: 'Friction (%)' }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'bh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
+                      h('input', { id: 'bh-' + s.k, type: 'range', min: 0, max: 100, step: 1, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ bt: iq.btype, f: iq.force, fr: iq.friction, st: failure }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ btype: 'convergent', force: 50, friction: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When does friction make a fault stable?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'For each boundary type, find the force level that causes failure.'),
+                    h('li', null, 'Friction matters more in transform faults — investigate why.'))),
+                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                  h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    'I understand — explain in own words'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain why each boundary type fails differently.',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state outcome; no Richter score; no reveal — by design.')
+              );
+            })(),
 
             React.createElement("div", { className: "mt-6 text-center" },
 

@@ -539,7 +539,8 @@ window.StemLab = window.StemLab || {
           { id: 'play', icon: '\u25B6\uFE0F', label: 'Play' },
           { id: 'learn', icon: '\uD83C\uDF93', label: 'Learn' },
           { id: 'challenges', icon: '\uD83C\uDFC6', label: 'Challenges' },
-          { id: 'projects', icon: '\uD83D\uDCBE', label: 'Projects' }
+          { id: 'projects', icon: '\uD83D\uDCBE', label: 'Projects' },
+          { id: 'diffHunt', icon: '\uD83D\uDCC8', label: 'Difficulty Tuner' }
         ];
 
         var _bg = 'linear-gradient(135deg, #fff1f2, #ffe4e6, #fce7f3)';
@@ -1778,6 +1779,135 @@ window.StemLab = window.StemLab || {
             )
           ),
 
+          // === H7b'' RICH inquiry widget: difficulty curve tuner ===
+          gsTab === 'diffHunt' && (function() {
+            var iq = d._diffHunt || { enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('_diffHunt', Object.assign({}, iq, patch)); }
+            var diffScore = (iq.enemies / 10) * 2 + (iq.patrolSpeed / 100) * 1.5 + (iq.hazards / 100) * 1.8 - (iq.coins / 100) * 0.8 - (iq.health / 200);
+            var state;
+            if (diffScore < 1) state = 'veryEasy';
+            else if (diffScore < 2.5) state = 'easy';
+            else if (diffScore < 4) state = 'medium';
+            else if (diffScore < 6) state = 'hard';
+            else state = 'expert';
+            var sm = {
+              veryEasy: { label: '🟢 Very Easy', color: '#059669', bg: '#ecfdf5', border: '#86efac', deaths: 0, time: '< 2 min' },
+              easy:     { label: '🟢 Easy', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', deaths: 1, time: '2-5 min' },
+              medium:   { label: '🟡 Medium', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', deaths: 4, time: '5-15 min' },
+              hard:     { label: '🟠 Hard', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', deaths: 12, time: '15-45 min' },
+              expert:   { label: '🔴 Expert', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', deaths: 40, time: '1+ hours' }
+            }[state];
+            // Build SVG difficulty curve from 5 progress points
+            var curvePoints = [];
+            for (var p = 0; p <= 100; p += 10) {
+              var rampedDiff = diffScore * (0.3 + p / 100 * 0.7);
+              curvePoints.push([20 + (p / 100) * 320, 130 - rampedDiff * 14]);
+            }
+            var pathStr = 'M ' + curvePoints.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' L ');
+            return h('div', { className: 'space-y-3' },
+              h('div', { className: 'p-4 rounded-xl bg-white border border-rose-300 shadow-sm space-y-3' },
+                h('h3', { className: 'text-sm font-black text-rose-700' }, '📈 Difficulty curve tuner — discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Five sliders for level parameters. Widget classifies overall difficulty into 5 discrete tiers and renders the difficulty progression curve. No score on your tuning — the inquiry is in finding what shapes the curve.'),
+                // Discrete state marker
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-lg font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, '~' + sm.deaths + ' deaths typical, completion time ' + sm.time),
+                  h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Composite difficulty score = ' + diffScore.toFixed(2))
+                ),
+                // SVG difficulty curve visualization
+                h('div', { className: 'p-2 rounded border border-slate-200 bg-slate-50' },
+                  h('svg', { viewBox: '0 0 360 150', className: 'w-full h-32' },
+                    // Axes
+                    h('line', { x1: 20, y1: 130, x2: 340, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('line', { x1: 20, y1: 20, x2: 20, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
+                    // Tier reference bands (very easy / easy / med / hard / expert)
+                    h('rect', { x: 20, y: 116, width: 320, height: 14, fill: '#ecfdf5', opacity: 0.6 }),
+                    h('rect', { x: 20, y: 95, width: 320, height: 21, fill: '#ecfeff', opacity: 0.6 }),
+                    h('rect', { x: 20, y: 74, width: 320, height: 21, fill: '#fffbeb', opacity: 0.6 }),
+                    h('rect', { x: 20, y: 53, width: 320, height: 21, fill: '#fff7ed', opacity: 0.6 }),
+                    h('rect', { x: 20, y: 20, width: 320, height: 33, fill: '#fef2f2', opacity: 0.6 }),
+                    // Difficulty curve
+                    h('path', { d: pathStr, stroke: sm.color, strokeWidth: 2.5, fill: 'none' }),
+                    // Curve point markers
+                    curvePoints.filter(function(_, i) { return i % 2 === 0; }).map(function(pt, i) {
+                      return h('circle', { key: 'cp' + i, cx: pt[0], cy: pt[1], r: 3, fill: sm.color });
+                    }),
+                    // Labels
+                    h('text', { x: 175, y: 145, textAnchor: 'middle', fontSize: 10, fill: '#475569' }, 'Game progress 0% → 100%'),
+                    h('text', { x: 10, y: 75, textAnchor: 'middle', fontSize: 10, fill: '#475569', transform: 'rotate(-90 10 75)' }, 'Difficulty'),
+                    h('text', { x: 348, y: 25, fontSize: 9, fill: '#b91c1c' }, 'Expert'),
+                    h('text', { x: 348, y: 88, fontSize: 9, fill: '#d97706' }, 'Medium'),
+                    h('text', { x: 348, y: 128, fontSize: 9, fill: '#059669' }, 'Easy')
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-600 text-center italic mt-1' },
+                    'Curve shows difficulty ramping over game progress. Compare different parameter combinations.')
+                ),
+                // Sliders
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+                  [{ k: 'enemies', l: 'Enemies', mn: 0, mx: 20, st: 1 },
+                   { k: 'patrolSpeed', l: 'Patrol speed', mn: 0, mx: 100, st: 5 },
+                   { k: 'hazards', l: 'Hazards', mn: 0, mx: 100, st: 5 },
+                   { k: 'coins', l: 'Coin abundance', mn: 0, mx: 100, st: 5 },
+                   { k: 'health', l: 'Player health', mn: 1, mx: 200, st: 5 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'dt-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-rose-700' }, iq[s.k])),
+                      h('input', { id: 'dt-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                // Log + reset
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ e: iq.enemies, p: iq.patrolSpeed, h: iq.hazards, c: iq.coins, hp: iq.health, d: diffScore.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                ),
+                // Log table
+                (iq.log || []).length > 0 && h('div', { className: 'overflow-x-auto' },
+                  h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                    h('thead', null, h('tr', { className: 'bg-slate-100' },
+                      ['enemies', 'patrol', 'hazards', 'coins', 'health', 'score', 'tier'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                    h('tbody', null, iq.log.map(function(o, idx) {
+                      return h('tr', { key: 'lr' + idx },
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.e),
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.h),
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.c),
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.hp),
+                        h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.d),
+                        h('td', { className: 'px-1 border border-slate-200' }, o.st));
+                    }))
+                  )
+                ),
+                // Hypothesis textarea
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                // Opt-in stuck prompts
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts (no answers)'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('div', { className: 'font-bold text-amber-900 mb-1' }, 'Open prompts — investigate by manipulating:'),
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Hold 4 sliders steady. Move 1. Watch the curve. Repeat with each.'),
+                    h('li', null, 'Find two combinations that yield the same tier. What do they share?'),
+                    h('li', null, 'What player-friendly design choices (lots of coins, lots of health) compensate for high enemy count?'),
+                    h('li', null, 'Real games use "difficulty curves" that ramp slowly then plateau. Investigate why.'),
+                    h('li', null, 'Log 4-5 "medium" observations. Look at composite score — is there a single threshold?'))),
+                // Self-mark
+                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('input', { type: 'checkbox', id: 'dt-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    h('label', { htmlFor: 'dt-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
+                      'I think I understand difficulty tuning now — let me explain it in my own words')),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
+                  iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
+                    '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+                ),
+                h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
+                  'Design note: discrete 5-tier difficulty marker; SVG curve shows shape not score; no "right" tuning revealed — by design.')
+              )
+            );
+          })(),
 
           // ---- BACK BUTTON ----
           h('div', { className: 'mt-6 text-center' },

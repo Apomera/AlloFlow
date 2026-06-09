@@ -1133,7 +1133,8 @@
         { id: 'ferment',    icon: '🥖', label: 'Fermentation' },
         { id: 'cases',      icon: '📚', label: 'Case Studies' },
         { id: 'quiz',       icon: '📝', label: 'Quiz' },
-        { id: 'print',      icon: '🖨', label: 'Print' }
+        { id: 'print',      icon: '🖨', label: 'Print' },
+        { id: 'growthLab',  icon: '📈', label: 'Growth Lab' }
       ];
 
       var tabBar = h('div', {
@@ -4570,6 +4571,62 @@
         case 'cases':      body = renderCases(); break;
         case 'quiz':       body = renderQuiz(); break;
         case 'print':      body = renderPrint(); break;
+        case 'growthLab':  body = (function() {
+          var iq = d.growthLab || { tempC: 30, pH: 7, oxygen: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('growthLab', Object.assign({}, iq, patch)); }
+          var tempScore = (iq.tempC > 15 && iq.tempC < 45) ? 1 - Math.abs(iq.tempC - 37) / 30 : 0;
+          var phScore = (iq.pH > 4 && iq.pH < 9) ? 1 - Math.abs(iq.pH - 7) / 5 : 0;
+          var growth = tempScore * phScore * (iq.oxygen / 100);
+          var state;
+          if (growth < 0.05) state = 'noGrowth';
+          else if (growth < 0.25) state = 'slow';
+          else if (growth < 0.6) state = 'normal';
+          else state = 'optimal';
+          var sm = {
+            noGrowth: { label: '⛔ No growth (death phase)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Conditions outside survival envelope.' },
+            slow:     { label: '🟡 Slow growth (lag phase)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Marginal conditions. Slow doubling.' },
+            normal:   { label: '🟢 Normal growth (log phase)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Healthy growth. Exponential doubling.' },
+            optimal:  { label: '🚀 Optimal growth', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Peak conditions for this organism.' }
+          }[state];
+          var H = React.createElement;
+          return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
+            H('div', { style: { padding: 16, background: '#0f172a', borderRadius: 10, color: '#e2e8f0', border: '1px solid #34d399' } },
+              H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#34d399', margin: '0 0 6px 0' } }, '🧪 Microbial growth discovery'),
+              H('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Sliders for temp, pH, oxygen. Discrete 4-state growth phase. No score, no reveal.'),
+              H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+                H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+              ),
+              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+                [{ k: 'tempC', l: 'Temp (°C)', mn: 0, mx: 60, st: 1 },
+                 { k: 'pH', l: 'pH', mn: 3, mx: 10, st: 0.1 },
+                 { k: 'oxygen', l: 'O₂ (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
+                  return H('div', { key: s.k },
+                    H('label', { htmlFor: 'gl-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#34d399', fontFamily: 'monospace' } }, iq[s.k])),
+                    H('input', { id: 'gl-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                      style: { width: '100%' }, 'aria-label': s.l }));
+                })
+              ),
+              H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
+                H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, p: iq.pH, o: iq.oxygen, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                H('button', { onClick: function() { setIQ({ tempC: 30, pH: 7, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+              ),
+              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: Which condition is most restrictive for growth?',
+                style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+              !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
+                H('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  H('li', null, 'Thermophiles love 70°C. Investigate why.'),
+                  H('li', null, 'Anaerobes need 0% oxygen. What does that imply?'))),
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain microbial growth envelopes.',
+                style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
+              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state growth marker; no CFU score; no reveal — by design.')
+            )
+          );
+        })(); break;
         default:           body = renderHome();
       }
 

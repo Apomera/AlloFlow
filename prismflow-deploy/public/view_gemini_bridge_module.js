@@ -753,7 +753,7 @@ Concept: ${bridgeSendText}`;
                 }
               }
             } catch (err) {
-              console.error("[BRIDGE] Send failed with error:", err?.message, err);
+              console.warn("[BRIDGE] Send failed with error:", err?.message, err);
               warnLog("Bridge send failed", err);
               addToast("Bridge send failed: " + err.message, "error");
             } finally {

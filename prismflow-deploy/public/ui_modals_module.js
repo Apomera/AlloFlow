@@ -1,7 +1,5 @@
 (function() {
 'use strict';
-  // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById("ui-modals-module-a11y")) { var _s = document.createElement("style"); _s.id = "ui-modals-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.UIModalsModule) { console.log('[CDN] UIModalsModule already loaded, skipping'); return; }
 // ui_modals_source.jsx — StudentQuizOverlay, TeacherGate, RoleSelectionModal, StudentEntryModal, StudentWelcomeModal
 // Extracted from AlloFlowANTI.txt for CDN modularization
@@ -124,7 +122,7 @@ const StudentQuizOverlay = React.memo(({
       warnLog("Error submitting quiz response:", e);
       setHasAnswered(false);
       setSelectedOptionIndex(null);
-      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.quiz_submit_failed'), 'error'); else alert(t('errors.quiz_submit_failed'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('errors.quiz_submit_failed'), 'error');else alert(t('errors.quiz_submit_failed'));
     }
   };
   const getModeStyles = () => {
@@ -188,7 +186,7 @@ const StudentQuizOverlay = React.memo(({
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-end"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider"
+    className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider"
   }, t('quiz.question_label')), /*#__PURE__*/React.createElement("span", {
     className: "text-3xl font-mono font-black text-white leading-none"
   }, currentQuestionIndex + 1, " ", /*#__PURE__*/React.createElement("span", {
@@ -228,7 +226,7 @@ const StudentQuizOverlay = React.memo(({
   }) : /*#__PURE__*/React.createElement("div", {
     className: "w-24 h-24 md:w-32 md:h-32 bg-red-900/50 rounded-full border-4 border-red-500/50 flex items-center justify-center text-4xl shadow-xl backdrop-blur-sm"
   }, bossStats.isGenerating ? /*#__PURE__*/React.createElement(RefreshCw, {
-    className: "animate-spin text-red-600"
+    className: "animate-spin text-red-400"
   }) : "👾"), phase === 'revealed' && bossStats.lastDamage > 0 && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 right-[-20px] text-red-500 font-black text-3xl animate-[bounce_0.5s_infinite] z-20 stroke-white drop-shadow-md"
   }, "-", bossStats.lastDamage)), /*#__PURE__*/React.createElement("div", {
@@ -264,14 +262,38 @@ const StudentQuizOverlay = React.memo(({
     "data-help-key": "quiz_student_question"
   }, currentQuestion ? currentQuestion.question : t('quiz.loading_question')), currentQuestion && showTranslated && currentQuestion.question_en && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-base md:text-lg text-white/70 italic"
-  }, currentQuestion.question_en)), /*#__PURE__*/React.createElement("div", {
+  }, currentQuestion.question_en)), currentQuestion?.itemType === 'likert' ? /*#__PURE__*/React.createElement("div", {
+    className: "w-full max-w-3xl mt-8 px-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between text-xs md:text-sm font-bold text-white/80 mb-2 uppercase tracking-wider"
+  }, /*#__PURE__*/React.createElement("span", null, currentQuestion.scale?.lowLabel || t('quiz.likert_strongly_disagree') || 'Strongly disagree'), /*#__PURE__*/React.createElement("span", null, currentQuestion.scale?.highLabel || t('quiz.likert_strongly_agree') || 'Strongly agree')), /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-2",
+    style: {
+      gridTemplateColumns: `repeat(${Math.max(3, Math.min(7, currentQuestion.scale?.steps || currentQuestion.options?.length || 5))}, minmax(0, 1fr))`
+    }
+  }, (currentQuestion.options || []).map((tickLabel, idx) => {
+    const isSelected = selectedOptionIndex === idx;
+    const isDisabled = hasAnswered || phase !== 'answering';
+    let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-purple-300 hover:bg-purple-50';
+    if (isSelected) btnClass = 'bg-purple-500 text-white border-purple-700 scale-[1.05] ring-4 ring-purple-300/40 z-10';else if (isDisabled) btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-60 cursor-not-allowed';
+    return /*#__PURE__*/React.createElement("button", {
+      key: idx,
+      "data-help-key": "quiz_student_likert_tick",
+      onClick: () => submitQuizResponse(idx),
+      disabled: isDisabled,
+      "aria-label": `${tickLabel} of ${currentQuestion.options.length}`,
+      className: `relative p-4 md:p-6 rounded-2xl font-black text-2xl md:text-3xl transition-all transform duration-200 shadow-xl border-b-4 active:border-b-0 active:translate-y-1 ${btnClass}`
+    }, tickLabel);
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mt-4 text-center text-[11px] md:text-xs text-white/60 italic"
+  }, t('quiz.no_right_answer') || 'There are no right or wrong answers here.')) : /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 px-4"
   }, currentQuestion?.options?.map((option, idx) => {
     const isSelected = selectedOptionIndex === idx;
     const letter = String.fromCharCode(65 + idx);
     const isDisabled = hasAnswered || phase !== 'answering';
-    let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50';
-    let letterClass = 'bg-indigo-100 text-indigo-600 border-indigo-200 group-hover:bg-white group-hover:border-indigo-600';
+    let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50';
+    let letterClass = 'bg-indigo-100 text-indigo-600 border-indigo-200 group-hover:bg-white group-hover:border-indigo-300';
     if (isRevealed) {
       if (idx === correctAnswerIndex) {
         btnClass = 'bg-green-700 text-white border-green-800 ring-4 ring-green-700/30 z-10 scale-[1.02] shadow-xl';
@@ -336,12 +358,16 @@ const StudentQuizOverlay = React.memo(({
     className: "relative inline-flex rounded-full h-3 w-3 bg-green-500"
   })), t('quiz.status.answer_sent')) : /*#__PURE__*/React.createElement("div", {
     className: "text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse"
-  }, t('quiz.status.choose_option'))), phase === 'revealed' && /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.status.choose_option'))), phase === 'revealed' && currentQuestion?.itemType === 'likert' && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900"
+  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDDE3\uFE0F"), /*#__PURE__*/React.createElement("span", null, t('quiz.poll_completed') || 'Thanks for sharing your take.'))), phase === 'revealed' && currentQuestion?.itemType !== 'likert' && /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: `
                             w-full px-8 py-6 rounded-3xl font-black text-2xl shadow-2xl flex items-center justify-center gap-6 border-4 transform transition-transform hover:scale-105
-                            ${isCorrect ? 'bg-green-700 border-green-500 text-white ring-4 ring-green-700/30' : 'bg-red-500 border-red-600 text-white ring-4 ring-red-500/30'}
+                            ${isCorrect ? 'bg-green-700 border-green-500 text-white ring-4 ring-green-700/30' : 'bg-red-500 border-red-300 text-white ring-4 ring-red-500/30'}
                         `
   }, isCorrect ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 40,
@@ -406,7 +432,7 @@ const TeacherGate = React.memo(({
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    "aria-label": "Close dialog", className: "absolute top-4 right-4 text-slate-600 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100",
+    className: "absolute top-4 right-4 text-slate-600 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100",
     "aria-label": t('common.cancel')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
@@ -424,6 +450,7 @@ const TeacherGate = React.memo(({
     className: "flex flex-col gap-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
     type: "password",
+    autoComplete: "current-password",
     value: passwordInput,
     onChange: e => {
       setPasswordInput(e.target.value);
@@ -464,7 +491,7 @@ const RoleSelectionModal = React.memo(({
   const handleMicCheck = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('roles.voice_not_supported'), 'error'); else alert(t('roles.voice_not_supported'));
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(t('roles.voice_not_supported'), 'error');else alert(t('roles.voice_not_supported'));
       return;
     }
     setMicStatus('requesting');
@@ -491,6 +518,7 @@ const RoleSelectionModal = React.memo(({
     ref: roleRef,
     role: "dialog",
     "aria-modal": "true",
+    "aria-labelledby": "role-selection-title",
     className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "min-h-full flex items-center justify-center"
@@ -506,13 +534,14 @@ const RoleSelectionModal = React.memo(({
     size: 48,
     className: "text-indigo-600"
   }))), /*#__PURE__*/React.createElement("h2", {
+    id: "role-selection-title",
     className: "text-3xl font-black text-slate-800 mb-2 tracking-tight"
   }, t('roles.title')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-8 font-medium"
   }, t('roles.subtitle')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('student'), 'aria-label': 'Select student mode',
+    onClick: () => handleRoleClick('student'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_student"
   }, /*#__PURE__*/React.createElement("div", {
@@ -522,7 +551,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-teal-700"
   }, t('roles.student'))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('teacher'), 'aria-label': 'Select teacher mode',
+    onClick: () => handleRoleClick('teacher'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_teacher"
   }, /*#__PURE__*/React.createElement("div", {
@@ -533,7 +562,7 @@ const RoleSelectionModal = React.memo(({
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
   }, t('roles.teacher'))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.like'),
-    onClick: () => handleRoleClick('parent'), 'aria-label': 'Select parent mode',
+    onClick: () => handleRoleClick('parent'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
   }, /*#__PURE__*/React.createElement("div", {
@@ -543,7 +572,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-orange-700"
   }, t('roles.parent'))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('independent'), 'aria-label': 'Select independent study mode',
+    onClick: () => handleRoleClick('independent'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_independent"
   }, /*#__PURE__*/React.createElement("div", {
@@ -617,7 +646,7 @@ const StudentEntryModal = React.memo(({
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    "aria-label": "Close dialog", className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
+    className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
@@ -679,7 +708,7 @@ const StudentEntryModal = React.memo(({
     "aria-label": t('common.upload'),
     onClick: () => handleConfirm('load'),
     disabled: !selectedAdj || !selectedAnimal,
-    className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-600 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
+    className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
     "data-help-key": "entry_load_exist"
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 16
@@ -708,7 +737,7 @@ const StudentWelcomeModal = React.memo(({
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
-    "aria-label": "Close dialog", className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
+    className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
     "aria-label": t('welcome.close_aria')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20

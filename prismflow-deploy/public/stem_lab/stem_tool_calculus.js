@@ -2728,6 +2728,62 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             })()
           ),
 
+          // === H7b'' inquiry widget: derivative behavior ===
+          tab === 'derivHunt' && (function() {
+            var iq = d.derivHunt || { a: 1, b: 0, c: 0, xPoint: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd({ derivHunt: Object.assign({}, iq, patch) }); }
+            var derivAtX = 2 * iq.a * iq.xPoint + iq.b;
+            var state;
+            if (Math.abs(derivAtX) < 0.1) state = 'extremum';
+            else if (derivAtX > 0 && iq.a > 0) state = 'increasingUp';
+            else if (derivAtX < 0 && iq.a > 0) state = 'decreasingUp';
+            else if (derivAtX > 0) state = 'increasingDown';
+            else state = 'decreasingDown';
+            var sm = {
+              extremum:        { label: '🎯 At extremum (slope ≈ 0)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+              increasingUp:    { label: '↗️ Increasing on opens-up parabola', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+              decreasingUp:    { label: '↘️ Decreasing on opens-up parabola', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+              increasingDown:  { label: '↗️ Increasing on opens-down', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+              decreasingDown:  { label: '↘️ Decreasing on opens-down', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+            }[state];
+            return h('div', { key: 'derivHunt' },
+              h('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
+                h('h3', { className: 'text-sm font-black text-violet-700' }, '📈 Derivative behavior discovery'),
+                h('p', { className: 'text-[12px] text-slate-700' }, 'Sliders for ax² + bx + c parabola coefficients and x-point. Discrete 5-state derivative behavior. No score, no reveal.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'f(x)=' + iq.a + 'x² + ' + iq.b + 'x + ' + iq.c + ',  f\'(' + iq.xPoint + ')=' + derivAtX.toFixed(2))
+                ),
+                h('div', { className: 'grid grid-cols-4 gap-3' },
+                  [{ k: 'a', l: 'a', mn: -3, mx: 3 }, { k: 'b', l: 'b', mn: -10, mx: 10 }, { k: 'c', l: 'c', mn: -10, mx: 10 }, { k: 'xPoint', l: 'x', mn: -10, mx: 10 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
+                      h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: 1, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.a, b: iq.b, c: iq.c, x: iq.xPoint, d: derivAtX.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ a: 1, b: 0, c: 0, xPoint: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At what x does f\'(x) = 0?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Vertex form: x = -b/(2a). Test at extremum.'),
+                    h('li', null, 'Why does a flip the increasing/decreasing pattern?'))),
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain derivative behavior at extrema.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state derivative marker; no slope score; no reveal — by design.')
+              )
+            );
+          })(),
+
           // ── AI Calculus Tutor (reading-level aware) ──
           (function () {
             var aiLevel = d.aiLevel || 'grade5';

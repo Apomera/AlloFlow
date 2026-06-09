@@ -1306,6 +1306,56 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               );
 
+            })(),
+
+            // === H7b'' inquiry widget: chart visuals ===
+            (function() {
+              var iq = d._chartHunt || { opacity: 80, zoomX: 100, zoomY: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_chartHunt', Object.assign({}, iq, patch)); }
+              var state;
+              if (iq.opacity < 30) state = 'invisible';
+              else if (iq.zoomX > 150 || iq.zoomY > 150) state = 'overzoomed';
+              else if (iq.zoomX < 60 && iq.zoomY < 60) state = 'tooBroad';
+              else state = 'legible';
+              var sm = {
+                invisible:  { label: '\uD83D\uDC7B Nearly invisible (low opacity)', color: '#94a3b8', bg: '#f1f5f9', border: '#cbd5e1' },
+                overzoomed: { label: '\uD83D\uDD0D Over-zoomed (lose context)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                tooBroad:   { label: '\uD83D\uDD2D Too broad (lose detail)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                legible:    { label: '\uD83D\uDFE2 Legible visualization', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+              }[state];
+              return React.createElement('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-cyan-300 space-y-2' },
+                React.createElement('h3', { className: 'text-sm font-black text-cyan-700' }, '\uD83D\uDCCA Chart visuals discovery'),
+                React.createElement('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for opacity, zoom X, zoom Y. Discrete 4-state visual legibility. No score, no reveal.'),
+                React.createElement('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+                  React.createElement('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label)
+                ),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                  [{ k: 'opacity', l: 'Opacity %' }, { k: 'zoomX', l: 'Zoom X %' }, { k: 'zoomY', l: 'Zoom Y %' }].map(function(s) {
+                    return React.createElement('div', { key: s.k },
+                      React.createElement('label', { htmlFor: 'cv-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', React.createElement('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                      React.createElement('input', { id: 'cv-' + s.k, type: 'range', min: 0, max: 200, step: 5, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.opacity, x: iq.zoomX, y: iq.zoomY, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB Log'),
+                  React.createElement('button', { onClick: function() { setIQ({ opacity: 80, zoomX: 100, zoomY: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset')
+                ),
+                React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: When is a chart most legible?',
+                  className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck \u2014 show open prompts'),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
+                  React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                    React.createElement('li', null, 'Tufte rules: maximize data-ink ratio. What does that mean?'),
+                    React.createElement('li', null, 'When does zoom obscure context?'))),
+                React.createElement('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+                  React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+                  'I understand \u2014 explain in own words'),
+                iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain chart visualization principles.',
+                  className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+                React.createElement('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 4-state visual marker; no aesthetic score; no reveal \u2014 by design.')
+              );
             })()
 
           );

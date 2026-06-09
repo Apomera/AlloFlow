@@ -1655,7 +1655,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           { id: 'carbon', icon: '\u2601\uFE0F', label: 'Carbon Calculator' },
           { id: 'beavers', icon: '\uD83E\uDDAB', label: 'Beavers & Fire' },
           { id: 'game', icon: '\uD83C\uDFAE', label: 'Firekeeper Challenge' },
-          { id: 'quiz', icon: '\uD83C\uDFC6', label: 'Quiz' }
+          { id: 'quiz', icon: '\uD83C\uDFC6', label: 'Quiz' },
+          { id: 'regimeHunt', icon: '\uD83D\uDD25', label: 'Fire Regime' }
         ];
 
         function renderTabNav() {
@@ -5266,7 +5267,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           tab === 'beavers' ? renderBeaverTab() :
           tab === 'mosaic' ? renderMosaicTab() :
           tab === 'game' ? renderGameTab() :
-          tab === 'quiz' ? renderQuizTab() : null,
+          tab === 'quiz' ? renderQuizTab() :
+          tab === 'regimeHunt' ? (function() {
+            var iq = d.regimeHunt || { fuel: 8, interval: 30, drought: 4, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd('regimeHunt', Object.assign({}, iq, patch)); }
+            var risk = (iq.fuel * iq.drought) / iq.interval;
+            var state;
+            if (risk > 2.5) state = 'mega';
+            else if (risk > 1.2) state = 'dangerous';
+            else if (iq.interval > 70 && iq.fuel < 3) state = 'typeConv';
+            else state = 'healthy';
+            var sm = {
+              healthy:   { label: '🌲 Healthy ecosystem', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Fuel/fire balance maintained. Cultural-burn equivalent.' },
+              dangerous: { label: '⚠️ Dangerous fuel buildup', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Decades of fire-suppression. Next ignition is bad.' },
+              mega:      { label: '🔥 Megafire risk', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'High fuel + drought + suppression = catastrophic event.' },
+              typeConv:  { label: '🌾 Type conversion (forest → grassland)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Frequent low-fuel burns convert forest permanently.' }
+            }[state];
+            return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 shadow-sm space-y-3' },
+              h('h3', { className: 'text-sm font-black text-orange-700' }, '🔥 Fire regime discovery'),
+              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Sliders for fuel accumulation, fire return interval, drought severity. Discrete 4-state regime. No score, no reveal.'),
+              h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
+                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3' },
+                [{ k: 'fuel', l: 'Fuel (t/ac/yr)', mn: 0, mx: 15, st: 0.5 },
+                 { k: 'interval', l: 'Fire return (yr)', mn: 1, mx: 100, st: 1 },
+                 { k: 'drought', l: 'Drought severity', mn: 0, mx: 10, st: 0.5 }].map(function(s) {
+                  return h('div', { key: s.k },
+                    h('label', { htmlFor: 'rh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-orange-700' }, iq[s.k])),
+                    h('input', { id: 'rh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.l }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ f: iq.fuel, i: iq.interval, d: iq.drought, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does drought magnify fuel-load risk?',
+                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, 'Cultural burns used 5-10 yr intervals. Investigate the science.'),
+                  h('li', null, 'Why does 80-year fire suppression create catastrophic risk?'))),
+              h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how fuel load, fire interval, and drought jointly determine fire regime.',
+                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+              h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state fire regime marker; no acres-burned score; no reveal — by design.')
+            );
+          })() : null,
 
           // Fire Fact banner
           renderFireFact(),
