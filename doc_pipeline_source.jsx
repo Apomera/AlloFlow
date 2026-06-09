@@ -992,6 +992,16 @@ var createDocPipeline = function(deps) {
           || /(?:[\w\- ]+,\s*){3,}/.test(desc);
         if (!enumerated) return 'image-mentions-legend-but-not-enumerated';
       }
+      // Structured category->examples panel (infographic / comparison chart / categorized boxes):
+      // even when the flat description DID enumerate the content as prose, the NAVIGABLE structure
+      // (each category -> its examples) is lost — an SR user hears a blob instead of a list/table.
+      // Reconstruct as a 2-col table ONLY when there's a clear structured cue AND several distinct
+      // "Category: detail" groups. Deliberately conservative: a plain captioned photo (no structured
+      // cue / <3 groups) is left as the honest flat image, and the re-extractor null-escapes anyway
+      // if it turns out not to be structured — so a false flag costs one Vision call, never content.
+      const _structuredCue = /\b(infographic|chart|diagram|comparison|categor|framework|matrix|quadrant|flow\s?chart|each (?:row|category|section|box|column))\b/i.test(desc);
+      const _catGroups = (desc.match(/[A-Z][^:\n.]{1,40}:\s+\S/g) || []).length;
+      if (_structuredCue && _catGroups >= 3) return 'image-structured-panel';
     }
     return null;
   };
@@ -1073,6 +1083,62 @@ var createDocPipeline = function(deps) {
     return parsed;
   };
 
+  // Reconstruct a STRUCTURED category->examples visual (infographic / comparison chart) as a 2-col
+  // [Category | Examples] table. Modeled on _reextractAsLegend and reusing the SAME safety chain:
+  // verbatim/no-invent prompt, explicit null-escape, JSON repair, shape validation. Targets the
+  // existing renderJsonToHtml 'table' case (so it also flows into the tagged PDF via TAG_TO_PDF_ROLE,
+  // unlike a <dl>). Returns null (caller keeps the original image) on any doubt.
+  const _reextractAsStructuredVisual = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
+    if (!callGeminiVisionFn) return null;
+    const pageHint = pageRange && pageRange.length === 2 ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. ' : '';
+    const captionHint = originalBlock.caption ? 'Original figure caption (a hint): "' + String(originalBlock.caption).slice(0, 200) + '". ' : '';
+    const descHint = originalBlock.description ? 'A prior pass described the visual as: "' + String(originalBlock.description).slice(0, 300) + '". ' : '';
+    const prompt =
+      pageHint + captionHint + descHint + '\n\n' +
+      'You are transcribing a STRUCTURED INFORMATION GRAPHIC (an infographic, comparison chart, or a set of categorized boxes) from a document figure. It pairs CATEGORIES (labels, often in colored boxes) with their EXAMPLES or descriptions.\n\n' +
+      'Look at the figure on the specified pages. If — and ONLY if — it is clearly a structured set of CATEGORIES each paired with examples/details, transcribe it VERBATIM into a 2-column table. Do NOT invent categories, rows, or examples. Do NOT summarize, paraphrase, infer, or add anything that is not visibly present. Copy the text exactly as shown.\n\n' +
+      'Output a single JSON object with this exact shape:\n' +
+      '{\n' +
+      '  "type": "table",\n' +
+      '  "caption": "<short caption for the graphic; may be empty>",\n' +
+      '  "headers": ["Category", "Examples"],\n' +
+      '  "rows": [\n' +
+      '    ["<category label, verbatim>", "<its examples/details, verbatim; join multiple bullets with \\" • \\">"]\n' +
+      '  ]\n' +
+      '}\n\n' +
+      'CRITICAL RULES:\n' +
+      '- Transcribe VERBATIM. NEVER invent or infer content that is not visibly in the image — fabricated rows would mislead a screen-reader user who cannot see the picture.\n' +
+      '- Exactly one row per category: column 1 = the category label, column 2 = all of its examples/details.\n' +
+      '- Output ONLY the JSON object. No code fence. No commentary.\n' +
+      '- If the figure is NOT a clear category->examples structure (a photo, a single chart/graph, decorative art, or you are unsure), output exactly: null';
+    let raw;
+    try { raw = await callGeminiVisionFn(prompt, pdfBase64, pdfMimeType); }
+    catch (e) { _legendDiag({ phase: 'struct-reextract-error', error: e && e.message ? e.message : String(e), pageRange }); return null; }
+    if (!raw) { _legendDiag({ phase: 'struct-reextract-empty', pageRange }); return null; }
+    let cleaned = _stripCodeFence(raw).trim();
+    if (!cleaned || cleaned === 'null') { _legendDiag({ phase: 'struct-reextract-said-no', pageRange }); return null; }
+    const fi = cleaned.indexOf('{'); if (fi >= 0) cleaned = cleaned.substring(fi);
+    const li = cleaned.lastIndexOf('}'); if (li > 0) cleaned = cleaned.substring(0, li + 1);
+    let parsed = null;
+    try { parsed = JSON.parse(cleaned); }
+    catch (e) {
+      try { parsed = JSON.parse(cleaned.replace(/,\s*([}\]])/g, '$1').replace(/'([^']*)'/g, '"$1"')); }
+      catch (e2) { _legendDiag({ phase: 'struct-reextract-parse-failed', pageRange, snippet: cleaned.slice(0, 200) }); return null; }
+    }
+    // Shape validation: a table with >=2 non-empty rows, each a [category, examples] pair.
+    if (!parsed || parsed.type !== 'table' || !Array.isArray(parsed.rows)) { _legendDiag({ phase: 'struct-reextract-wrong-shape', pageRange, gotType: parsed && parsed.type }); return null; }
+    const validRows = parsed.rows.filter(r => Array.isArray(r) && r.length >= 2 && String(r[0] || '').trim() && String(r[1] || '').trim());
+    if (validRows.length < 2) { _legendDiag({ phase: 'struct-reextract-too-few-rows', pageRange, rows: validRows.length }); return null; }
+    _legendDiag({ phase: 'struct-reextract-success', pageRange, rows: validRows.length });
+    return {
+      type: 'table',
+      caption: (parsed.caption && String(parsed.caption)) || (originalBlock.caption ? String(originalBlock.caption) : ''),
+      headers: Array.isArray(parsed.headers) && parsed.headers.length >= 2 ? parsed.headers.slice(0, 2) : ['Category', 'Examples'],
+      rows: validRows.map(r => [String(r[0]), String(r[1])]),
+      _reconstructed: true, // flags the renderer (data-allo-reconstructed + verify caption) + the review gate
+    };
+  };
+
   const detectAndRepairLegends = async (blocks, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
     if (!Array.isArray(blocks) || blocks.length === 0) return blocks;
     if (!callGeminiVisionFn || !pdfBase64) return blocks;
@@ -1082,6 +1148,18 @@ var createDocPipeline = function(deps) {
       const reason = _isSuspectExtraction(block);
       if (!reason) { out.push(block); continue; }
       _legendDiag({ phase: 'flagged-suspect', pageRange, reason, originalType: block.type, caption: block.caption || null });
+      if (reason === 'image-structured-panel') {
+        const table = await _reextractAsStructuredVisual(block, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn);
+        if (table) {
+          // Structure is ADDITIVE: emit the reconstructed table, then KEEP the original image as a
+          // sibling so the human-verifiable source is never lost (and the reviewer can check it).
+          out.push(table);
+          out.push(block);
+        } else {
+          out.push(block); // not actually structured / Vision unavailable — keep the honest flat image
+        }
+        continue;
+      }
       const replacement = await _reextractAsLegend(block, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn);
       if (replacement) { out.push(replacement); }
       else {
@@ -9874,7 +9952,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
             case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
             case 'table': {
-              const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+sanitizeField(block.caption)+`</caption>` : '';
+              // Reconstructed-from-image tables carry a verify caption + a data-allo-reconstructed
+              // attribute so the user can spot AI-reconstructed structure and the review gate can
+              // find it (the original image is kept as a sibling for verification).
+              const _recon = !!block._reconstructed;
+              const _reconNote = _recon ? '✨ AI-reconstructed from an image — please verify it matches the image shown below. ' : '';
+              const cap = (block.caption || _recon) ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${_recon ? '#9333ea' : docStyle.headingColor}">`+sanitizeField(_reconNote + (block.caption || ''))+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
               const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+sanitizeField(h)+`</th>`).join('')+`</tr></thead>` : '';
               const rowsArr = Array.isArray(block.rows) ? block.rows : [];
@@ -9882,7 +9965,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+sanitizeField(row)+`</td></tr>`;
                 return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+sanitizeField(cell)+`</td>`).join('')+`</tr>`;
               }).join('');
-              return `<table style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
+              return `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
             case 'definition_list': {
               // Semantic match for legends/keys: each entry pairs a marker description
