@@ -1,0 +1,121 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for aquacultureLab 1`] = `
+{
+  "buttons": 140,
+  "inputs": 0,
+  "lengthBucket": 266,
+  "sha": "fbf55e8d416d13cc",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for aquarium 1`] = `
+{
+  "buttons": 20,
+  "inputs": 0,
+  "lengthBucket": 50,
+  "sha": "7c8dfa7b675f261d",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for behaviorLab 1`] = `
+{
+  "buttons": 24,
+  "inputs": 4,
+  "lengthBucket": 52,
+  "sha": "58da9f91d2cdfaba",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for cellularLab 1`] = `
+{
+  "buttons": 18,
+  "inputs": 1,
+  "lengthBucket": 43,
+  "sha": "d6841d1949de9506",
+  "svgs": 1,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for climateExplorer 1`] = `
+{
+  "buttons": 36,
+  "inputs": 0,
+  "lengthBucket": 146,
+  "sha": "0306be38e49c8e6a",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for ecosystem 1`] = `
+{
+  "buttons": 29,
+  "inputs": 8,
+  "lengthBucket": 94,
+  "sha": "b21ebb5ea323a940",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for evoLab 1`] = `
+{
+  "buttons": 20,
+  "inputs": 0,
+  "lengthBucket": 130,
+  "sha": "c7b633c76f3a91e0",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for geometryWorld 1`] = `
+{
+  "buttons": 0,
+  "inputs": 0,
+  "lengthBucket": 7,
+  "sha": "01bdff13551f4ed3",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for musicSynth 1`] = `
+{
+  "buttons": 114,
+  "inputs": 14,
+  "lengthBucket": 217,
+  "sha": "cb04c66acc568437",
+  "svgs": 1,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for opticsLab 1`] = `
+{
+  "buttons": 0,
+  "inputs": 0,
+  "lengthBucket": 1,
+  "sha": "205b5913e8a456e9",
+  "svgs": 0,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for spaceColony 1`] = `
+{
+  "buttons": 13,
+  "inputs": 6,
+  "lengthBucket": 56,
+  "sha": "9e141d3fce968ef4",
+  "svgs": 1,
+}
+`;
+
+exports[`STEM tool render goldens (default state) > renders + pins a digest for worldBuilder 1`] = `
+{
+  "buttons": 15,
+  "inputs": 7,
+  "lengthBucket": 62,
+  "sha": "785f99df9fff6bdd",
+  "svgs": 1,
+}
+`;
