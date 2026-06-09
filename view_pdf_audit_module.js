@@ -93,6 +93,18 @@ async function _concatAudioBlobs(blobs) {
   new Uint8Array(outBuf, 44).set(pcm);
   return new Blob([outBuf], { type: "audio/wav" });
 }
+function _deriveDocMeta(accessibleHtml, fileName) {
+  let title = "", lang = "";
+  try {
+    const tmp = new DOMParser().parseFromString(accessibleHtml || "", "text/html");
+    title = (tmp.querySelector("title")?.textContent || tmp.querySelector("h1")?.textContent || "").trim().substring(0, 200);
+    const htmlLang = tmp.documentElement?.getAttribute("lang");
+    if (htmlLang) lang = htmlLang.substring(0, 10);
+  } catch (_) {
+  }
+  if (!title) title = (fileName || "document").replace(/\.pdf$/i, "");
+  return { title, lang };
+}
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS,
@@ -248,6 +260,7 @@ function PdfAuditView(props) {
   } = props;
   const [resumableBatch, setResumableBatch] = useState(null);
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   const [tierBStage, setTierBStage] = useState("");
   const classifyPdfError = (err) => {
     const msg = err && (err.message || (typeof err === "string" ? err : "")) || "";
@@ -333,6 +346,9 @@ function PdfAuditView(props) {
     if (n / total < 0.5) return base + (t("pdf_audit.agreement.minority_suffix") || " \u2014 minority opinion, lower confidence");
     return base;
   };
+  useEffect(() => {
+    setPdfMetaOverride(null);
+  }, [pendingPdfFile && pendingPdfFile.name]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -1053,7 +1069,8 @@ Return ONLY JSON:
                 accessibleHtml: '<!DOCTYPE html><html lang="en"><head><title>' + baseTitle.replace(/[<>&]/g, "") + "</title></head><body></body></html>",
                 pageCount: pdfAuditResult.pageCount
               };
-              const _result = await createTaggedPdf(bytes, shim, { title: baseTitle, lang: "en", subject: "Tagged baseline by AlloFlow (pre-remediation)" });
+              const _bm = pdfMetaOverride || {};
+              const _result = await createTaggedPdf(bytes, shim, { title: _bm.title && _bm.title.trim() || baseTitle, lang: _bm.lang && _bm.lang.trim() || "en", author: _bm.author && _bm.author.trim() || void 0, subject: "Tagged baseline by AlloFlow (pre-remediation)" });
               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
               const summary = _result && _result.summary || null;
               if (!taggedBytes) {
@@ -2616,7 +2633,20 @@ Return ONLY JSON:
         title: t("pdf_audit.pdf_from_html.title") || "Regenerate a PDF from the remediated HTML. Layout reflows \u2014 page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
       },
       "\u{1F4E5} PDF (from HTML)"
-    ), /* @__PURE__ */ React.createElement(
+    ), (() => {
+      const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile && pendingPdfFile.name);
+      const cur = pdfMetaOverride || {};
+      const curTitle = cur.title != null ? cur.title : _dm.title;
+      const curLang = cur.lang != null ? cur.lang : _dm.lang || "en";
+      const curAuthor = cur.author != null ? cur.author : "";
+      const setMeta = (patch) => setPdfMetaOverride({ title: curTitle, lang: curLang, author: curAuthor, ...patch });
+      const LANGS = [["en", "English"], ["es", "Spanish"], ["fr", "French"], ["ar", "Arabic"], ["zh", "Chinese"], ["ja", "Japanese"], ["ko", "Korean"], ["ru", "Russian"], ["pt", "Portuguese"], ["de", "German"], ["it", "Italian"], ["vi", "Vietnamese"], ["hi", "Hindi"], ["fa", "Persian/Dari"], ["ur", "Urdu"], ["so", "Somali"], ["am", "Amharic"], ["sw", "Swahili"], ["ps", "Pashto"], ["ht", "Haitian Creole"]];
+      const langKnown = LANGS.some((l) => l[0] === curLang);
+      const titleLooksLikeFilename = curTitle === _dm.title && /\.(pdf|docx?|pptx?)$/i.test(_dm.title || "");
+      return /* @__PURE__ */ React.createElement("details", { className: "w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, "\u{1F4CB} Document metadata ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 Title \xB7 Language \xB7 Author (used for the Tagged PDF)")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Title"), /* @__PURE__ */ React.createElement("input", { type: "text", value: curTitle, onChange: (e) => setMeta({ title: e.target.value }), className: "mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs", placeholder: "Document title", "aria-label": t("pdf_audit.meta.title_aria") || "Document title for the tagged PDF" }), titleLooksLikeFilename && /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-amber-600 mt-0.5" }, "\u26A0 This looks like a filename \u2014 set a real document title (filename-as-title is a common PDF/UA checker failure).")), /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Language"), /* @__PURE__ */ React.createElement("select", { value: langKnown ? curLang : "other", onChange: (e) => {
+        if (e.target.value !== "other") setMeta({ lang: e.target.value });
+      }, className: "mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs", "aria-label": t("pdf_audit.meta.lang_aria") || "Primary document language for the tagged PDF" }, LANGS.map((l) => /* @__PURE__ */ React.createElement("option", { key: l[0], value: l[0] }, l[1], " (", l[0], ")")), !langKnown && /* @__PURE__ */ React.createElement("option", { value: "other" }, "Other: ", curLang)), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500 mt-0.5" }, "Auto-detected: ", _dm.lang || "(none \u2014 defaulting to en)", ". Confirm or correct \u2014 important for bilingual docs.")), /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Author ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-400" }, "(optional)")), /* @__PURE__ */ React.createElement("input", { type: "text", value: curAuthor, onChange: (e) => setMeta({ author: e.target.value }), className: "mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs", placeholder: "e.g. your school or district", "aria-label": t("pdf_audit.meta.author_aria") || "Document author for the tagged PDF (optional)" }))));
+    })(), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: async () => {
@@ -2632,16 +2662,12 @@ Return ONLY JSON:
             const binStr = atob(freshBase64);
             const bytes = new Uint8Array(binStr.length);
             for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-            let title = "", lang = "en";
-            try {
-              const tmp = new DOMParser().parseFromString(pdfFixResult.accessibleHtml || "", "text/html");
-              title = (tmp.querySelector("title")?.textContent || tmp.querySelector("h1")?.textContent || "").trim().substring(0, 200);
-              const htmlLang = tmp.documentElement?.getAttribute("lang");
-              if (htmlLang) lang = htmlLang.substring(0, 10);
-            } catch (_) {
-            }
-            if (!title) title = (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "");
-            const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, subject: "Remediated for accessibility by AlloFlow" });
+            const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name);
+            const _ov = pdfMetaOverride || {};
+            const title = _ov.title && _ov.title.trim() || _dm.title;
+            const lang = _ov.lang && _ov.lang.trim() || _dm.lang || "en";
+            const _author = _ov.author && _ov.author.trim() || void 0;
+            const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow" });
             const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
             const summary = _result && _result.summary || null;
             const pdfUa1Checks = _result && _result.pdfUa1Checks || null;
@@ -2843,7 +2869,8 @@ Return ONLY JSON:
             const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
             const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(",") ? pendingPdfBase64.split(",")[1] : pendingPdfBase64), (c) => c.charCodeAt(0)) : null;
             if (_bytes && createTaggedPdf) {
-              const _re = await createTaggedPdf(_bytes, _freshFixResult, { title: pdfFixResult.title || (pendingPdfFile?.name || "document.pdf"), lang: "en", subject: "Restored via Tier B re-run" });
+              const _tbm = pdfMetaOverride || {};
+              const _re = await createTaggedPdf(_bytes, _freshFixResult, { title: _tbm.title && _tbm.title.trim() || pdfFixResult.title || (pendingPdfFile?.name || "document.pdf"), lang: _tbm.lang && _tbm.lang.trim() || "en", author: _tbm.author && _tbm.author.trim() || void 0, subject: "Restored via Tier B re-run" });
               const afterTd = _re && _re.roundTrip && _re.roundTrip.textDiff;
               const afterResidual = afterTd && typeof afterTd.residualMissingCount === "number" ? afterTd.residualMissingCount : null;
               setLastTaggedValidation((prev) => prev ? { ...prev, roundTrip: _re.roundTrip || prev.roundTrip, postExportValidator: _re.postExportValidator || prev.postExportValidator, pdfUa1Checks: _re.pdfUa1Checks || prev.pdfUa1Checks, generatedAt: (/* @__PURE__ */ new Date()).toISOString() } : prev);

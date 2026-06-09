@@ -74,6 +74,24 @@ async function _concatAudioBlobs(blobs) {
   return new Blob([outBuf], { type: 'audio/wav' });
 }
 
+// Derive the DEFAULT tagged-PDF metadata (title, language) the way createTaggedPdf's callers do:
+// title from the remediated HTML <title>/<h1> (else the source filename), language from <html lang>
+// (else ''). Pure + shared by the editable Document-metadata panel (prefill) and the tagged-PDF
+// export call sites (default) — so what the user sees prefilled is exactly what ships if they don't
+// edit it. Lets the user FIX the #1 PDF/UA checker failure (filename leaking through as the Title)
+// and confirm/correct the auto-detected language before export.
+function _deriveDocMeta(accessibleHtml, fileName) {
+  let title = '', lang = '';
+  try {
+    const tmp = new DOMParser().parseFromString(accessibleHtml || '', 'text/html');
+    title = (tmp.querySelector('title')?.textContent || tmp.querySelector('h1')?.textContent || '').trim().substring(0, 200);
+    const htmlLang = tmp.documentElement?.getAttribute('lang');
+    if (htmlLang) lang = htmlLang.substring(0, 10);
+  } catch (_) {}
+  if (!title) title = (fileName || 'document').replace(/\.pdf$/i, '');
+  return { title, lang };
+}
+
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
@@ -123,6 +141,12 @@ function PdfAuditView(props) {
   // Tagged PDF download flow. Used by the Download Accessibility Report
   // button to assemble an Adobe-style compliance report.
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  // Editable tagged-PDF metadata override (Title / Language / Author). null = "use the values
+  // derived from the remediated HTML" (_deriveDocMeta). When the user edits a field, this holds
+  // the full {title, lang, author} that the three createTaggedPdf call sites prefer over the
+  // derived defaults — so a wrong filename-as-title or auto-detected language can be corrected
+  // before export, and an Author can be supplied (createTaggedPdf already honors meta.author).
+  const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   // Per-stage status for the Tier B restoration handler. Empty when idle;
   // 'word-splice' / 'sentence-anchor' / 're-tag' while running so the button
   // can show honest progress instead of a single "Restoring..." label.
@@ -211,6 +235,9 @@ function PdfAuditView(props) {
     if (n / total < 0.5) return base + (t('pdf_audit.agreement.minority_suffix') || ' — minority opinion, lower confidence');
     return base;
   };
+  // Clear the tagged-PDF metadata override when a different document is loaded, so one doc's
+  // title/language/author can't leak onto the next.
+  useEffect(() => { setPdfMetaOverride(null); }, [pendingPdfFile && pendingPdfFile.name]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -1124,7 +1151,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 accessibleHtml: '<!DOCTYPE html><html lang="en"><head><title>' + baseTitle.replace(/[<>&]/g, '') + '</title></head><body></body></html>',
                                 pageCount: pdfAuditResult.pageCount,
                               };
-                              const _result = await createTaggedPdf(bytes, shim, { title: baseTitle, lang: 'en', subject: 'Tagged baseline by AlloFlow (pre-remediation)' });
+                              const _bm = pdfMetaOverride || {};
+                              const _result = await createTaggedPdf(bytes, shim, { title: (_bm.title && _bm.title.trim()) || baseTitle, lang: (_bm.lang && _bm.lang.trim()) || 'en', author: (_bm.author && _bm.author.trim()) || undefined, subject: 'Tagged baseline by AlloFlow (pre-remediation)' });
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               const summary = (_result && _result.summary) || null;
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
@@ -4104,6 +4132,45 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           title={t('pdf_audit.pdf_from_html.title') || 'Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents.'}>
                           📥 PDF (from HTML)
                         </button>
+                        {/* ── Editable tagged-PDF metadata (Title / Language / Author) ──
+                            Prefilled from the SAME derivation the export uses, so what's shown is
+                            what ships. Lets the user fix filename-as-title (#1 PDF/UA checker fail)
+                            and confirm/correct the auto-detected language before exporting. */}
+                        {(() => {
+                          const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile && pendingPdfFile.name);
+                          const cur = pdfMetaOverride || {};
+                          const curTitle = cur.title != null ? cur.title : _dm.title;
+                          const curLang = cur.lang != null ? cur.lang : (_dm.lang || 'en');
+                          const curAuthor = cur.author != null ? cur.author : '';
+                          const setMeta = (patch) => setPdfMetaOverride({ title: curTitle, lang: curLang, author: curAuthor, ...patch });
+                          const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['ar','Arabic'],['zh','Chinese'],['ja','Japanese'],['ko','Korean'],['ru','Russian'],['pt','Portuguese'],['de','German'],['it','Italian'],['vi','Vietnamese'],['hi','Hindi'],['fa','Persian/Dari'],['ur','Urdu'],['so','Somali'],['am','Amharic'],['sw','Swahili'],['ps','Pashto'],['ht','Haitian Creole']];
+                          const langKnown = LANGS.some(l => l[0] === curLang);
+                          const titleLooksLikeFilename = curTitle === _dm.title && /\.(pdf|docx?|pptx?)$/i.test(_dm.title || '');
+                          return (
+                          <details className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                            <summary className="cursor-pointer font-bold text-slate-700">📋 Document metadata <span className="font-normal text-slate-500">— Title · Language · Author (used for the Tagged PDF)</span></summary>
+                            <div className="mt-2 space-y-2">
+                              <label className="block">
+                                <span className="text-[11px] font-bold text-slate-600">Title</span>
+                                <input type="text" value={curTitle} onChange={e => setMeta({ title: e.target.value })} className="mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs" placeholder="Document title" aria-label={t('pdf_audit.meta.title_aria') || 'Document title for the tagged PDF'} />
+                                {titleLooksLikeFilename && <span className="block text-[10px] text-amber-600 mt-0.5">⚠ This looks like a filename — set a real document title (filename-as-title is a common PDF/UA checker failure).</span>}
+                              </label>
+                              <label className="block">
+                                <span className="text-[11px] font-bold text-slate-600">Language</span>
+                                <select value={langKnown ? curLang : 'other'} onChange={e => { if (e.target.value !== 'other') setMeta({ lang: e.target.value }); }} className="mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs" aria-label={t('pdf_audit.meta.lang_aria') || 'Primary document language for the tagged PDF'}>
+                                  {LANGS.map(l => <option key={l[0]} value={l[0]}>{l[1]} ({l[0]})</option>)}
+                                  {!langKnown && <option value="other">Other: {curLang}</option>}
+                                </select>
+                                <span className="block text-[10px] text-slate-500 mt-0.5">Auto-detected: {_dm.lang || '(none — defaulting to en)'}. Confirm or correct — important for bilingual docs.</span>
+                              </label>
+                              <label className="block">
+                                <span className="text-[11px] font-bold text-slate-600">Author <span className="font-normal text-slate-400">(optional)</span></span>
+                                <input type="text" value={curAuthor} onChange={e => setMeta({ author: e.target.value })} className="mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs" placeholder="e.g. your school or district" aria-label={t('pdf_audit.meta.author_aria') || 'Document author for the tagged PDF (optional)'} />
+                              </label>
+                            </div>
+                          </details>
+                          );
+                        })()}
                         {/* Tagged PDF (original + structure tags). Preserves the
                             source PDF's visual layer byte-identical and injects a
                             StructTreeRoot derived from the accessibleHtml outline.
@@ -4123,15 +4190,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const binStr = atob(freshBase64);
                               const bytes = new Uint8Array(binStr.length);
                               for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-                              let title = '', lang = 'en';
-                              try {
-                                const tmp = new DOMParser().parseFromString(pdfFixResult.accessibleHtml || '', 'text/html');
-                                title = (tmp.querySelector('title')?.textContent || tmp.querySelector('h1')?.textContent || '').trim().substring(0, 200);
-                                const htmlLang = tmp.documentElement?.getAttribute('lang');
-                                if (htmlLang) lang = htmlLang.substring(0, 10);
-                              } catch(_) {}
-                              if (!title) title = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '');
-                              const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, subject: 'Remediated for accessibility by AlloFlow' });
+                              // Title/language come from the editable Document-metadata panel when the
+                              // user set them, else from the remediated HTML (same derivation the panel
+                              // prefills with). Author is passed through when supplied.
+                              const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name);
+                              const _ov = pdfMetaOverride || {};
+                              const title = (_ov.title && _ov.title.trim()) || _dm.title;
+                              const lang = (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en';
+                              const _author = (_ov.author && _ov.author.trim()) || undefined;
+                              const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow' });
                               // createTaggedPdf returns { bytes, summary, pdfUa1Checks }.
                               // Tolerate older shapes for users on stale CDN-cached modules.
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
@@ -4387,7 +4454,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       const _freshFixResult = { ...pdfFixResult, accessibleHtml: html, htmlChars: html.length };
                                       const _bytes = pendingPdfBase64 ? Uint8Array.from(atob(pendingPdfBase64.includes(',') ? pendingPdfBase64.split(',')[1] : pendingPdfBase64), c => c.charCodeAt(0)) : null;
                                       if (_bytes && createTaggedPdf) {
-                                        const _re = await createTaggedPdf(_bytes, _freshFixResult, { title: pdfFixResult.title || (pendingPdfFile?.name || 'document.pdf'), lang: 'en', subject: 'Restored via Tier B re-run' });
+                                        const _tbm = pdfMetaOverride || {};
+                                        const _re = await createTaggedPdf(_bytes, _freshFixResult, { title: (_tbm.title && _tbm.title.trim()) || pdfFixResult.title || (pendingPdfFile?.name || 'document.pdf'), lang: (_tbm.lang && _tbm.lang.trim()) || 'en', author: (_tbm.author && _tbm.author.trim()) || undefined, subject: 'Restored via Tier B re-run' });
                                         const afterTd = _re && _re.roundTrip && _re.roundTrip.textDiff;
                                         const afterResidual = afterTd && typeof afterTd.residualMissingCount === 'number' ? afterTd.residualMissingCount : null;
                                         setLastTaggedValidation(prev => prev ? { ...prev, roundTrip: _re.roundTrip || prev.roundTrip, postExportValidator: _re.postExportValidator || prev.postExportValidator, pdfUa1Checks: _re.pdfUa1Checks || prev.pdfUa1Checks, generatedAt: new Date().toISOString() } : prev);
