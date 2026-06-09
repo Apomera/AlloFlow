@@ -903,8 +903,8 @@
               flags.push({
                 type: 'score_spike',
                 icon: '⚡',
-                label: 'Score spike',
-                detail: `Latest ${latest}% vs avg ${Math.round(mean)}% (z=${zScore.toFixed(1)})`,
+                label: 'Recent score above usual',
+                detail: `Latest ${latest}% is above this student's recent average of ${Math.round(mean)}% (across ${quizScores.length} quizzes — a descriptive flag, not a tested outlier)`,
                 severity: 'info'
               });
             }
@@ -912,8 +912,8 @@
               flags.push({
                 type: 'score_drop',
                 icon: '📉',
-                label: 'Score drop',
-                detail: `Latest ${latest}% vs avg ${Math.round(mean)}% (z=${zScore.toFixed(1)})`,
+                label: 'Recent score below usual',
+                detail: `Latest ${latest}% is below this student's recent average of ${Math.round(mean)}% (across ${quizScores.length} quizzes — a descriptive flag, not a tested outlier)`,
                 severity: 'warning'
               });
             }
@@ -1253,7 +1253,7 @@
         var expectedRate = expectedRates[type] || 1.0;
         var adequacy = weeklyGrowth >= expectedRate * 1.5 ? 'strong' : weeklyGrowth >= expectedRate * 0.75 ? 'adequate' : weeklyGrowth >= 0 ? 'insufficient' : 'declining';
         var growthColor = { strong: '#16a34a', adequate: '#65a30d', insufficient: '#d97706', declining: '#dc2626' };
-        var growthLabel = { strong: 'Strong Growth', adequate: 'Adequate Growth', insufficient: 'Insufficient Growth', declining: 'Declining' };
+        var growthLabel = { strong: 'Above expected', adequate: 'Near expected', insufficient: 'Below expected', declining: 'Declining' }; // vs the expected weekly rate; method named in the caption below — NOT a categorical fact
         sections.push(React.createElement("div", { key: type, className: "bg-white rounded-lg border border-slate-400 p-3" },
           React.createElement("div", { className: "flex items-center justify-between mb-2" },
             React.createElement("h5", { className: "text-xs font-bold text-slate-700" }, typeLabels[type] || type),
@@ -1269,6 +1269,7 @@
             React.createElement("span", null, items.length + " probes over " + Math.round(weeks) + " weeks"),
             React.createElement("span", null, "Expected: +" + expectedRate + "/wk")
           ),
+          React.createElement("div", { className: "mt-1 text-[10px] text-slate-500 italic" }, "Growth is the slope between the first and latest probe (not a modeled trend line); read it with the probe count above."),
           (adequacy === 'insufficient' || adequacy === 'declining') ? React.createElement("div", { className: "mt-2 text-[11px] px-2 py-1 rounded bg-amber-50", style: { borderLeft: '3px solid #d97706', color: '#92400e' } }, adequacy === 'declining' ? 'Performance declining. Consider changing intervention or diagnostic assessment.' : 'Growth rate below expected. Consider increasing intensity or changing approach.') : null
         ));
       });
@@ -1661,7 +1662,9 @@
         className: 'text-xl font-black text-indigo-600'
       }, 'r = ' + classData.avgCorrelation), React.createElement('div', {
         className: 'text-[11px] text-slate-600'
-      }, 'Avg Practice↔Outcome Correlation')) : null, classData.commonWeakness ? React.createElement('div', {
+      }, 'Avg Practice↔Outcome Correlation'), React.createElement('div', {
+        className: 'text-[10px] text-slate-500 italic mt-1'
+      }, 'Simple average of within-student trends' + (classData.studentCount ? ' across ' + classData.studentCount + ' students' : '') + ' — descriptive, not a pooled or significance-tested correlation.')) : null, classData.commonWeakness ? React.createElement('div', {
         className: 'bg-white rounded-lg p-3 text-center'
       }, React.createElement('div', {
         className: 'text-xl font-black text-amber-600'
@@ -6269,6 +6272,7 @@
     }, (() => {
       const rti = classifyRTITier(student.stats);
       return /*#__PURE__*/React.createElement("span", {
+        'aria-label': rti.label, title: rti.label, // text equivalent of the color+emoji+digit tier (WCAG 1.4.1)
         style: {
           fontSize: '11px',
           fontWeight: 700,
@@ -6278,7 +6282,7 @@
           color: rti.color,
           border: `1px solid ${rti.border}`
         }
-      }, rti.emoji, " ", rti.tier);
+      }, rti.emoji, " T", rti.tier);
     })()), /*#__PURE__*/React.createElement("td", {
       className: "p-2 text-center"
     }, student.stats.quizAvg, "%"), /*#__PURE__*/React.createElement("td", {
