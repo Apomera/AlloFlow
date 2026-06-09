@@ -1254,7 +1254,7 @@
       svg += '<style>text{font-family:Arial,Helvetica,sans-serif;}</style>\n';
       svg += '<rect width="' + svgW + '" height="' + svgH + '" fill="#0f172a"/>\n';
       svg += '<text x="' + (svgW / 2) + '" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="bold">' + (styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio') + ' \u2014 Floor Plan</text>\n';
-      svg += '<text x="' + (svgW / 2) + '" y="46" text-anchor="middle" fill="#64748b" font-size="11">' + buildW + '\u00D7' + buildD + '\u00D7' + buildH + ' \u2022 ' + totalBlocks + ' blocks \u2022 Vol: ' + totalVolume + ' u\u00B3</text>\n';
+      svg += '<text x="' + (svgW / 2) + '" y="46" text-anchor="middle" fill="#cbd5e1" font-size="11">' + buildW + '\u00D7' + buildD + '\u00D7' + buildH + ' \u2022 ' + totalBlocks + ' blocks \u2022 Vol: ' + totalVolume + ' u\u00B3</text>\n';
       var gOX = padding, gOY = padding;
       for (var gx = 0; gx <= buildW; gx++) svg += '<line x1="' + (gOX + gx * cellSize) + '" y1="' + gOY + '" x2="' + (gOX + gx * cellSize) + '" y2="' + (gOY + buildD * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
       for (var gz = 0; gz <= buildD; gz++) svg += '<line x1="' + gOX + '" y1="' + (gOY + gz * cellSize) + '" x2="' + (gOX + buildW * cellSize) + '" y2="' + (gOY + gz * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
@@ -1276,7 +1276,7 @@
         svg += '<text x="' + (lx + 16) + '" y="' + (lY + 16) + '" fill="#cbd5e1" font-size="10">' + mid.charAt(0).toUpperCase() + mid.slice(1) + '</text>\n';
         li++;
       });
-      svg += '<text x="' + (svgW - padding) + '" y="' + lY + '" text-anchor="end" fill="#64748b" font-size="10">Stability: ' + analysis.stabilityEmoji + ' ' + analysis.stability + '%</text>\n';
+      svg += '<text x="' + (svgW - padding) + '" y="' + lY + '" text-anchor="end" fill="#cbd5e1" font-size="10">Stability: ' + analysis.stabilityEmoji + ' ' + analysis.stability + '%</text>\n';
       svg += '</svg>';
       var blob = new Blob([svg], { type: 'image/svg+xml' }), url = URL.createObjectURL(blob);
       var a = document.createElement('a'); a.href = url; a.download = 'blueprint_top_' + Date.now() + '.svg'; a.click();
@@ -1303,7 +1303,7 @@
       svg += '<style>text{font-family:Arial,Helvetica,sans-serif;}</style>\n';
       svg += '<rect width="' + svgW + '" height="' + svgH + '" fill="#0f172a"/>\n';
       svg += '<text x="' + (svgW / 2) + '" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="bold">' + (styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio') + ' \u2014 Front Elevation</text>\n';
-      svg += '<text x="' + (svgW / 2) + '" y="46" text-anchor="middle" fill="#64748b" font-size="11">' + buildW + '\u00D7' + buildH + ' \u2022 ' + totalBlocks + ' blocks</text>\n';
+      svg += '<text x="' + (svgW / 2) + '" y="46" text-anchor="middle" fill="#cbd5e1" font-size="11">' + buildW + '\u00D7' + buildH + ' \u2022 ' + totalBlocks + ' blocks</text>\n';
       var gOX = padding, gOY = padding;
       // Grid
       for (var gx = 0; gx <= buildW; gx++) svg += '<line x1="' + (gOX + gx * cellSize) + '" y1="' + gOY + '" x2="' + (gOX + gx * cellSize) + '" y2="' + (gOY + buildH * cellSize) + '" stroke="#334155" stroke-width="0.5"/>\n';
@@ -1323,9 +1323,9 @@
       svg += '<text x="' + (gOX + buildW * cellSize + 15) + '" y="' + (groundLineY + 4) + '" fill="#22c55e" font-size="10">Ground</text>\n';
       // Height labels
       for (var hy = 0; hy < buildH; hy++) {
-        svg += '<text x="' + (gOX - 8) + '" y="' + (gOY + (buildH - 1 - hy) * cellSize + cellSize / 2 + 3) + '" text-anchor="end" fill="#475569" font-size="9">y' + (minY + hy) + '</text>\n';
+        svg += '<text x="' + (gOX - 8) + '" y="' + (gOY + (buildH - 1 - hy) * cellSize + cellSize / 2 + 3) + '" text-anchor="end" fill="#94a3b8" font-size="9">y' + (minY + hy) + '</text>\n';
       }
-      svg += '<text x="' + (svgW - padding) + '" y="' + (gOY + buildH * cellSize + 30) + '" text-anchor="end" fill="#64748b" font-size="10">Stability: ' + analysis.stabilityEmoji + ' ' + analysis.stability + '% \u2022 CoG height: ' + analysis.cogY + '</text>\n';
+      svg += '<text x="' + (svgW - padding) + '" y="' + (gOY + buildH * cellSize + 30) + '" text-anchor="end" fill="#cbd5e1" font-size="10">Stability: ' + analysis.stabilityEmoji + ' ' + analysis.stability + '% \u2022 CoG height: ' + analysis.cogY + '</text>\n';
       svg += '</svg>';
       var blob = new Blob([svg], { type: 'image/svg+xml' }), url = URL.createObjectURL(blob);
       var a = document.createElement('a'); a.href = url; a.download = 'blueprint_side_' + Date.now() + '.svg'; a.click();

@@ -4808,7 +4808,7 @@
                       );
                     }),
                     // Frame counter
-                    h('text', { x: 595, y: 395, fill: '#475569', fontSize: 8, textAnchor: 'end' }, 'frame ' + animFrame)
+                    h('text', { x: 595, y: 395, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, 'frame ' + animFrame)
                   )
                 ),
                 h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } },

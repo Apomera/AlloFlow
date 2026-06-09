@@ -19090,22 +19090,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
 
       // ─────────────────────────────────────────────────────
-      // STUB MODULES (none remaining; ComingSoon retained for safety)
-      // ─────────────────────────────────────────────────────
-      function ComingSoon(props) {
-        return h('div', { className: 'min-h-screen bg-slate-50' },
-          h(BackBar, { icon: props.icon, title: props.title }),
-          h('div', { className: 'p-6 max-w-3xl mx-auto' },
-            h('div', { className: 'bg-white rounded-2xl shadow border-2 border-slate-300 p-8 text-center' },
-              h('div', { className: 'text-6xl mb-4' }, '🌱'),
-              h('h2', { className: 'text-2xl font-black text-slate-800 mb-2' }, 'Coming Soon'),
-              h('p', { className: 'text-slate-700 leading-relaxed' }, props.desc),
-              h('p', { className: 'text-xs text-slate-700 mt-4 italic' }, 'Ships in a future NutritionLab phase.')
-            )
-          )
-        );
-      }
-
       // ─────────────────────────────────────────────────────
       // ─────────────────────────────────────────────────────
       // BUILD A MAINE DAY (net-new mini-game)

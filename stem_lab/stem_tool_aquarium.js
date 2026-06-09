@@ -16505,7 +16505,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     onClick: closeAnatomy,
 
-                    className: "ml-auto px-3 py-1 text-xs font-bold text-slate-600 bg-slate-800/60 hover:bg-slate-700/80 rounded-full transition-all border border-slate-600/30"
+                    className: "ml-auto px-3 py-1 text-xs font-bold text-slate-300 bg-slate-800/60 hover:bg-slate-700/80 rounded-full transition-all border border-slate-600/30"
 
                   }, "\u2715 Close")
 

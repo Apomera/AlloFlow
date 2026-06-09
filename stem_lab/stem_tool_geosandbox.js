@@ -1726,7 +1726,7 @@ window.StemLab = window.StemLab || {
                   style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
                 }),
             // Controls hint overlay
-            h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-600 bg-slate-900/80 px-2 py-1 rounded-md' },
+            h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md' },
               '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
             ),
             // Shape name overlay (single mode) \u2014 or construction summary (stretch mode)
