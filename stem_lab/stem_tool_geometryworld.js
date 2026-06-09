@@ -1673,6 +1673,52 @@
         engine.renderer.toneMappingExposure = 1.1;
         engine.renderer.outputColorSpace = THREE.SRGBColorSpace || engine.renderer.outputEncoding;
 
+        // ── Bloom post-processing: glow on the sun + golden-hour / night highlights ──
+        // Same guarded, graceful-upgrade pattern as solarsystem: renders plain until the
+        // Three r128 post-processing addons load, then a bloom composer; any failure falls
+        // back to engine.renderer.render so it can never break the tool. Honors
+        // window.AlloPostFXEnabled + a low-power/reduced-motion tier. Gentle bloom so the
+        // golden-hour scene + geometry stay readable.
+        engine.composer = null;
+        (function setupBloom() {
+          if (window.AlloPostFXEnabled === false) return;
+          var ensure = function (cb) {
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var urls = [
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+            ];
+            var i = 0;
+            (function nextScript() {
+              if (i >= urls.length) { cb(); return; }
+              var s = document.createElement('script');
+              s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+              document.head.appendChild(s);
+            })();
+          };
+          ensure(function () {
+            try {
+              var T = window.THREE;
+              if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+              var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              var lowPower = reduce || isMobile || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+              var res = lowPower ? 0.5 : 1;
+              var cw = container.clientWidth, ch = container.clientHeight;
+              var c = new T.EffectComposer(engine.renderer);
+              c.setSize(cw, ch);
+              c.addPass(new T.RenderPass(engine.scene, engine.camera));
+              // high threshold + gentle strength: only the sun / bright highlights glow,
+              // keeping the geometry legible (it's a math tool).
+              c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(cw * res)), Math.max(1, Math.round(ch * res))), lowPower ? 0.5 : 0.8, 0.4, 0.85));
+              engine.composer = c;
+            } catch (e) { engine.composer = null; }
+          });
+        })();
+
         // Lighting — warm, balanced, voxel-world style
         engine.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
         var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
@@ -3747,7 +3793,8 @@
             engine._sunSprite.position.z = engine.camera.position.z + 40;
           }
 
-          engine.renderer.render(engine.scene, engine.camera);
+          if (engine.composer) { try { engine.composer.render(); } catch (e) { engine.composer = null; engine.renderer.render(engine.scene, engine.camera); } }
+          else { engine.renderer.render(engine.scene, engine.camera); }
         }
         animate();
 
@@ -3757,6 +3804,7 @@
           engine.camera.aspect = container.clientWidth / container.clientHeight;
           engine.camera.updateProjectionMatrix();
           engine.renderer.setSize(container.clientWidth, container.clientHeight);
+          if (engine.composer) { try { engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {} }
         });
         ro.observe(container);
 
@@ -4043,6 +4091,7 @@
           if (engine._cloudPlane) engine.scene.remove(engine._cloudPlane);
           // Dispose material cache
           if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
+          if (engine.composer) { try { (engine.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} engine.composer = null; }
           if (engine.renderer) { engine.renderer.dispose(); }
           delete window[engineKey];
         }
@@ -4639,7 +4688,7 @@
               if (!eng || !eng.renderer || !eng.scene || !eng.camera) return;
               try {
                 // Force fresh render since WebGLRenderer wasn't created with preserveDrawingBuffer
-                eng.renderer.render(eng.scene, eng.camera);
+                if (eng.composer) { try { eng.composer.render(); } catch (e) { eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
                 var dataUrl = eng.renderer.domElement.toDataURL('image/png');
                 // Filename includes the lesson title so students can recognize their work later
                 var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
