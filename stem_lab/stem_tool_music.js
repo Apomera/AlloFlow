@@ -2000,19 +2000,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     var isScaleNote = isInScale(key.semitone);
                     var isRoot = key.semitone === 0;
                     var dimmed = scaleLock && !isScaleNote;
+                    // Shared press/release so mouse, touch, and KEYBOARD (Enter/Space)
+                    // all play the key — keyboard/switch users were locked out before.
+                    var noteId = key.note + key.octave;
+                    var pressKey = function () {
+                      if (dimmed) return;
+                      if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
+                      else { playNote(key.freq, noteId); }
+                      upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
+                      if (announceToSR) announceToSR(key.note + key.octave);
+                    };
+                    var releaseKey = function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); };
+                    var onKeyDownKey = function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pressKey(); } };
+                    var onKeyUpKey = function (e) { if (e.key === ' ' || e.key === 'Enter') releaseKey(); };
                     if (isBlack) {
                       return React.createElement("div", {
                         key: idx,
-                        onMouseDown: function (e) {
-                          e.preventDefault();
-                          var noteId = key.note + key.octave;
-                          if (dimmed) return;
-                          if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
-                          else { playNote(key.freq, noteId); }
-                          upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
-                        },
-                        onMouseUp: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                        onMouseLeave: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                        role: 'button', tabIndex: dimmed ? -1 : 0,
+                        'aria-label': key.note + key.octave + (dimmed ? ' (out of scale)' : ''),
+                        'aria-pressed': isActive ? 'true' : 'false',
+                        onMouseDown: function (e) { e.preventDefault(); pressKey(); },
+                        onMouseUp: releaseKey,
+                        onMouseLeave: releaseKey,
+                        onKeyDown: onKeyDownKey,
+                        onKeyUp: onKeyUpKey,
                         className: "absolute z-10 rounded-b-md select-none flex flex-col items-center justify-end pb-1 transition-all cursor-pointer " + (isActive ? 'bg-purple-600 shadow-lg shadow-purple-500/50' : dimmed ? 'bg-slate-700 opacity-30' : 'bg-slate-800 hover:bg-slate-700'),
                         style: { width: '5.5%', height: '85px', left: (key.position * (100 / 14) + (100 / 14) * 0.65) + '%', top: 0 }
                       },
@@ -2021,16 +2032,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     }
                     return React.createElement("div", {
                       key: idx,
-                      onMouseDown: function (e) {
-                        e.preventDefault();
-                        var noteId = key.note + key.octave;
-                        if (dimmed) return;
-                        if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
-                        else { playNote(key.freq, noteId); }
-                        upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq); upd('lastNoteColor', key.color || '#a855f7');
-                      },
-                      onMouseUp: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                      onMouseLeave: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                      role: 'button', tabIndex: dimmed ? -1 : 0,
+                      'aria-label': key.note + key.octave + (dimmed ? ' (out of scale)' : ''),
+                      'aria-pressed': isActive ? 'true' : 'false',
+                      onMouseDown: function (e) { e.preventDefault(); pressKey(); },
+                      onMouseUp: releaseKey,
+                      onMouseLeave: releaseKey,
+                      onKeyDown: onKeyDownKey,
+                      onKeyUp: onKeyUpKey,
                       className: "flex-1 rounded-b-lg select-none flex flex-col items-center justify-end pb-2 border transition-all cursor-pointer " + (isActive ? 'bg-purple-100 border-purple-400 shadow-lg shadow-purple-300/50' : dimmed ? 'bg-slate-50 border-slate-200 opacity-30' : 'bg-white border-slate-200 hover:bg-purple-50'),
                       style: { minWidth: '36px' }
                     },
@@ -2539,10 +2548,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", {
                 style: { position: 'relative', width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', cursor: 'crosshair', touchAction: 'none' },
                 className: "border-2 border-indigo-500/40",
+                role: 'application', tabIndex: 0,
+                'aria-label': 'XY performance pad. Left–right is pitch, up–down is filter brightness. Use the arrow keys to move and play a note; press Escape or Space to stop.',
                 onMouseDown: function(e) { upd('xyActive', true); handleXY(e); },
                 onMouseMove: function(e) { if (d.xyActive || e.buttons > 0) handleXY(e); },
                 onMouseUp: function() { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); },
                 onMouseLeave: function() { if (d.xyActive) { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); } },
+                onKeyDown: function(e) {
+                  var step = 8;
+                  var x = (d.xyX == null ? 50 : d.xyX), y = (d.xyY == null ? 50 : d.xyY);
+                  if (e.key === 'ArrowLeft') x = Math.max(0, x - step);
+                  else if (e.key === 'ArrowRight') x = Math.min(100, x + step);
+                  else if (e.key === 'ArrowUp') y = Math.max(0, y - step);
+                  else if (e.key === 'ArrowDown') y = Math.min(100, y + step);
+                  else if (e.key === 'Escape' || e.key === ' ') { e.preventDefault(); upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); return; }
+                  else return;
+                  e.preventDefault(); upd('xyActive', true); processXY(x, y);
+                },
+                onBlur: function() { if (d.xyActive) { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); } },
                 onTouchStart: function(e) { e.preventDefault(); upd('xyActive', true); handleXYTouch(e); },
                 onTouchMove: function(e) { e.preventDefault(); handleXYTouch(e); },
                 onTouchEnd: function() { upd('xyActive', false); stopNote('xy_note'); upd('xyX', null); upd('xyY', null); }
