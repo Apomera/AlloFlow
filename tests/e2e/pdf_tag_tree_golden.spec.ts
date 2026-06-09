@@ -672,3 +672,118 @@ test.describe('createTaggedPdf — link-annot tagging + UA-claim gate', () => {
     expect(linkGateSummary.scanned.hasUaClaim).toBe(true);
   });
 });
+
+// ── Stage 4b: born-digital per-leaf unification via re-pointing (2026-06-09) ──
+// Fixture where the PDF's drawn text EXACTLY matches the accessible HTML (the
+// production situation — the HTML is generated from the PDF text). Stage 4 owns
+// per-block MCIDs; Stage 4b must MOVE them onto the matching semantic leaves:
+// H1 + P become content-linked (orphan count drops to 0 for this fixture), the
+// ParentTree slots point at the leaves, and the round-trip stays clean.
+let perLeafSummary: any = null;
+test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)', () => {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: MODULE_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
+
+    perLeafSummary = await page.evaluate(async () => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument, StandardFonts, PDFName, PDFArray, PDFDict, PDFRef, PDFNumber } = PDFLib;
+      try {
+        const HEAD = 'Per Leaf Heading Example';
+        const BODY = 'This body paragraph matches the accessible html exactly for re-pointing.';
+        const inDoc = await PDFDocument.create();
+        const pg = inDoc.addPage([612, 792]);
+        const font = await inDoc.embedFont(StandardFonts.Helvetica);
+        pg.drawText(HEAD, { x: 50, y: 740, size: 22, font });
+        pg.drawText(BODY, { x: 50, y: 700, size: 12, font });
+        const inputBytes = await inDoc.save();
+
+        const pipeline = (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {},
+          getDefaultTitle: () => 'Document', state: {},
+        });
+        const html = '<!DOCTYPE html><html lang="en"><head><title>Per Leaf Fixture</title></head><body><main>'
+          + '<h1>' + HEAD + '</h1><p>' + BODY + '</p></main></body></html>';
+        const result = await pipeline.createTaggedPdf(inputBytes, { accessibleHtml: html }, { title: 'Per Leaf Test', lang: 'en' });
+        if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
+
+        const outDoc = await PDFDocument.load(result.bytes);
+        const ctx = outDoc.context;
+        const resolve = (o: any) => (o instanceof PDFRef ? ctx.lookup(o) : o);
+        const nm = (n: string) => PDFName.of(n);
+        const LEAF_ROLES = ['H1','H2','H3','H4','H5','H6','P','Figure','Caption','BlockQuote','Lbl','LBody','TH','TD','Span','Link'];
+        const elems: any[] = [];
+        const walk = (objIn: any, depth: number) => {
+          const obj = resolve(objIn);
+          if (depth > 60 || obj == null) return;
+          if (obj instanceof PDFArray) { for (let i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1); return; }
+          if (!(obj instanceof PDFDict)) return;
+          const S = obj.get(nm('S'));
+          if (!S) { const k0 = obj.get(nm('K')); if (k0 != null) walk(k0, depth + 1); return; }
+          const role = String(S).replace(/^\//, '');
+          const K = obj.get(nm('K'));
+          let hasContent = false;
+          let mcid: number | null = null;
+          if (K != null) {
+            const kr = resolve(K);
+            const items = (kr instanceof PDFArray) ? Array.from({ length: kr.size() }, (_, i) => resolve(kr.get(i))) : [kr];
+            for (const it of items) {
+              if (it instanceof PDFNumber) hasContent = true;
+              else if (it instanceof PDFDict) {
+                const ts = String(it.get(nm('Type')) || '');
+                if (ts === '/MCR' || ts === '/OBJR') {
+                  hasContent = true;
+                  const mv = it.get(nm('MCID'));
+                  if (mv != null) mcid = Number(String(mv));
+                }
+              }
+            }
+          }
+          const at = obj.get(nm('ActualText'));
+          elems.push({ role, hasContent, mcid, actualText: at ? String(at) : '' });
+          if (K != null) walk(K, depth + 1);
+        };
+        const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
+        const rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
+        if (rootK != null) walk(rootK, 0);
+        const leaves = elems.filter((e) => LEAF_ROLES.includes(e.role));
+        const orphaned = leaves.filter((e) => !e.hasContent);
+        const h1 = elems.find((e) => e.role === 'H1');
+        const p = elems.find((e) => e.role === 'P' && e.actualText.indexOf('matches the accessible') !== -1);
+        return {
+          perLeafLinked: (result.summary || {}).perLeafLinked ?? null,
+          leafCount: leaves.length,
+          orphanedLeafCount: orphaned.length,
+          orphanedRoles: orphaned.map((e) => e.role),
+          h1Linked: !!(h1 && h1.hasContent),
+          pLinked: !!(p && p.hasContent),
+          roundTripOk: result.roundTrip ? result.roundTrip.ok !== false : null,
+          divergences: (result.roundTrip && result.roundTrip.divergences) || [],
+          structLossCheck: ((result.roundTrip && result.roundTrip.checks) || []).filter((c: any) => c.rule === 'No structure lost at save').map((c: any) => c.status),
+        };
+      } catch (err: any) { return { error: String((err && err.stack) || err) }; }
+    });
+  });
+
+  test('Stage 4b re-points MCIDs onto matching semantic leaves', () => {
+    expect(perLeafSummary && !perLeafSummary.error, 'evaluate error: ' + (perLeafSummary && perLeafSummary.error)).toBeTruthy();
+    expect(perLeafSummary.perLeafLinked, 'summary.perLeafLinked — Stage 4 must have run and both leaves matched').toBeGreaterThanOrEqual(2);
+    expect(perLeafSummary.h1Linked, 'H1 semantic leaf must carry /K→MCR').toBe(true);
+    expect(perLeafSummary.pLinked, 'P semantic leaf must carry /K→MCR').toBe(true);
+  });
+
+  test('born-digital orphaned-leaf count drops to 0 on a fully-matching fixture', () => {
+    expect(perLeafSummary.orphanedLeafCount, 'orphaned roles: ' + JSON.stringify(perLeafSummary.orphanedRoles)).toBe(0);
+  });
+
+  test('no content loss: round-trip clean, no divergences, structure-loss check passes', () => {
+    expect(perLeafSummary.roundTripOk).not.toBe(false);
+    expect(perLeafSummary.divergences).toEqual([]);
+    expect(perLeafSummary.structLossCheck.includes('fail'), 'No structure lost at save must not fail').toBe(false);
+  });
+});

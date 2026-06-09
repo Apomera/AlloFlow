@@ -12854,12 +12854,14 @@ tr { page-break-inside: avoid; }
     let _producerStamped = false, _xmpStamped = false;
     // Declare PDF/UA-1 (pdfuaid:part=1) ONLY when the build will produce zero
     // orphaned semantic leaves — i.e. when the scanned-path unify pass runs and
-    // links every leaf via /K→MCR. On the text-layer path the semantic tree is
-    // ActualText-only (per-leaf MCID linkage still blocked, see
-    // docs/tag_tree_unification_design.md), so stamping part=1 there writes a
-    // conformance claim our own self-check + post-export validator immediately
-    // refute. Title/lang/producer XMP still ships for every file.
-    // KEEP IN SYNC with the isScanned unify gate (~L13520, same regex).
+    // links every leaf via /K→MCR. On the text-layer path, Stage 4b (per-leaf
+    // re-pointing) now links leaves whose text 1:1-matches a Stage-4 block, but
+    // unmatched leaves (figures, table cells, AI-rewritten text) can remain
+    // ActualText-only — and this stamp runs BEFORE the tree is built, so it
+    // can't know the actual outcome. Stays conservatively scanned-gated until
+    // the stamp moves post-build to decide on the REAL orphan count (watch
+    // summary.perLeafLinked for real-world match rates first).
+    // KEEP IN SYNC with the isScanned unify gate (same /tesseract|vision|ocr/ regex).
     const _uaDeclared = /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''));
     try { doc.setProducer('AlloFlow Accessibility Pipeline'); _producerStamped = true; }
     catch(prodErr) { try { warnLog('[createTaggedPdf] WARNING: could not stamp Producer metadata — output keeps the source Producer and is not marked as AlloFlow-processed: ' + (prodErr && prodErr.message)); } catch(_) {} }
@@ -13347,7 +13349,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         // Track every leaf StructElem ref for the post-build unify pass
         // (retro-patches /K → MCR when isScanned + single-page; gated below).
         // Inert when unify doesn't trigger — pushing a ref into a list is free.
-        _unifiableLeafRefs.push({ ref: elemRef, role: item.role });
+        _unifiableLeafRefs.push({ ref: elemRef, role: item.role, text: (item.text || '') });
         // Stage 5b lite: TH /ID is an indirect spec entry (not inside /A).
         // We collect {id, ref} entries for the /IDTree built after the
         // tree is assembled.
@@ -13692,6 +13694,8 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // happened to >= _builtCount on the surviving Sect parents. Fingerprint of
     // the 93% retention pattern documented in MEMORY.md for the b0d24ae3 class.
     let _stage4BlockCount = 0;
+    // Per-page Stage-4 results retained for the Stage-4b per-leaf re-point pass.
+    const _stage4PageResults = [];
     for (let pi = 0; pi < pages.length; pi++) {
       const page = pages[pi];
       // PDF/UA-1 §7.18 — /Tabs=/S forces tab order to follow the structure
@@ -13828,6 +13832,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             parentTreeNums.push(PDFNumber.of(pi));
             parentTreeNums.push(s4.parentArrayRef);
             if (Array.isArray(s4.blockElemRefs)) _stage4BlockCount += s4.blockElemRefs.length;
+            _stage4PageResults.push({ pi, pageRef: page.ref, pageSectRef: s4.pageSectRef, blockElemRefs: s4.blockElemRefs || [], parentArrayRef: s4.parentArrayRef });
             stage4Success = true;
           }
         } catch (s4err) {
@@ -13896,6 +13901,82 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         _ocrLayerNonLatinDropped = true;
         try { warnLog('[createTaggedPdf] WARNING: the scanned-PDF text layer is only ' + _ocrCoveragePct + '% covered — ' + _ocrDroppedChars + ' of ' + _ocrTotalChars + ' OCR characters are outside Latin-1 (non-Latin script: Arabic, CJK, Cyrillic, Devanagari, Ethiopic, etc.) and could not be embedded with the built-in Helvetica font. Screen readers will not read those passages. Embedding a Unicode font is required for full coverage of non-English scanned documents.'); } catch(_) {}
       }
+    }
+    // ── Stage 4b: born-digital per-leaf unification via RE-POINTING (2026-06-09) ──
+    // The b0d24ae3 attempt drew NEW BDC/EMC pairs + new ParentTree wiring and hit
+    // an unexplained content-loss (still unexplained — 9 repro variants all pass).
+    // This pass needs none of that machinery: Stage 4 ALREADY owns working
+    // per-block MCIDs on text-layer pages, so we MOVE each block's marked-content
+    // linkage onto the matching semantic leaf (conservative 1:1 normalized-text
+    // match), swap the ParentTree slot to the leaf, and drop the now-redundant
+    // flat block elem from its page Sect. The single-parent constraint holds (an
+    // MCID moves, never duplicates); content streams are untouched; every
+    // mutation is the lookup().set() retro-patch pattern the shipped scanned
+    // unify proved safe through save(). Dropped flat elems stay registered
+    // (pdf-lib writes all registered objects), so the round-trip's
+    // enumerate-based built-vs-saved tally is unaffected.
+    let _perLeafLinked = 0;
+    if (!isScanned && _stage4PageResults.length > 0 && _unifiableLeafRefs.length > 0) {
+      try {
+        const _norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+        // Text-bearing roles only; require ≥8 normalized chars and a UNIQUE match
+        // on both sides — ambiguity means leave it alone (still ActualText-valid).
+        const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1 };
+        const leafByText = new Map();
+        for (const lf of _unifiableLeafRefs) {
+          if (!LINKABLE[lf.role]) continue;
+          const k = _norm(lf.text);
+          if (k.length < 8) continue;
+          leafByText.set(k, leafByText.has(k) ? null : lf); // null = ambiguous, never match
+        }
+        for (const pr of _stage4PageResults) {
+          let parentArr = null, sectDict = null;
+          try { parentArr = context.lookup(pr.parentArrayRef); } catch (_) {}
+          try { sectDict = context.lookup(pr.pageSectRef); } catch (_) {}
+          const keptBlockRefs = [];
+          let sectChanged = false;
+          for (const bRef of pr.blockElemRefs) {
+            let matched = null, mcidNum = null;
+            try {
+              const bDict = context.lookup(bRef);
+              if (bDict && typeof bDict.get === 'function') {
+                const at = bDict.get(PDFName.of('ActualText'));
+                const k = _norm(at && (typeof at.decodeText === 'function' ? at.decodeText() : String(at)));
+                const cand = k.length >= 8 ? leafByText.get(k) : undefined;
+                if (cand) {
+                  const kArr = context.lookup(bDict.get(PDFName.of('K')));
+                  let mcr0 = (kArr && typeof kArr.get === 'function') ? kArr.get(0) : null;
+                  try { mcr0 = context.lookup(mcr0) || mcr0; } catch (_) {}
+                  const mv = mcr0 && mcr0.get ? mcr0.get(PDFName.of('MCID')) : null;
+                  if (mv != null) {
+                    const n = Number(String(mv).replace(/[^0-9.-]/g, ''));
+                    if (Number.isFinite(n)) { mcidNum = n; matched = cand; }
+                  }
+                }
+              }
+            } catch (_) { matched = null; }
+            if (matched && mcidNum != null) {
+              try {
+                const leafDict = context.lookup(matched.ref);
+                const mcr = context.obj({ Type: PDFName.of('MCR'), Pg: pr.pageRef, MCID: PDFNumber.of(mcidNum) });
+                leafDict.set(PDFName.of('K'), context.obj([mcr]));
+                leafDict.set(PDFName.of('Pg'), pr.pageRef);
+                if (parentArr && typeof parentArr.set === 'function') parentArr.set(mcidNum, matched.ref);
+                leafByText.set(_norm(matched.text), null); // consume — a leaf links at most once
+                _perLeafLinked++;
+                sectChanged = true;
+                continue; // the flat block elem is now redundant — drop from the Sect
+              } catch (_) { keptBlockRefs.push(bRef); }
+            } else {
+              keptBlockRefs.push(bRef);
+            }
+          }
+          if (sectChanged && sectDict && typeof sectDict.set === 'function') {
+            try { sectDict.set(PDFName.of('K'), context.obj(keptBlockRefs)); } catch (_) {}
+          }
+        }
+        if (_perLeafLinked) { try { warnLog('[Stage4b-PerLeaf] re-pointed ' + _perLeafLinked + ' Stage-4 marked-content reference(s) onto matching semantic leaves (born-digital per-leaf unification)'); } catch (_) {} }
+      } catch (plErr) { try { warnLog('[createTaggedPdf] Stage 4b per-leaf unification failed (non-fatal): ' + (plErr && plErr.message)); } catch (_) {} }
     }
     // ── Stage 3: AcroForm field tagging ──
     // Scan each page's Annots for widget annotations (Subtype=/Widget),
@@ -14327,6 +14408,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             // "bookmarks generated from N headings" in the toast.
             bookmarks: outlineRootRef ? headings : 0,
             linkAnnotsTagged: _linkAnnotsTagged,
+            perLeafLinked: _perLeafLinked,
             // How many of those bookmarks actually point to a specific page
             // (rather than falling back to page 1). Lets the toast show a
             // concrete "8 mapped to specific pages, 0 fell back" line so
