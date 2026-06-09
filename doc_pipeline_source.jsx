@@ -3760,7 +3760,11 @@ var createDocPipeline = function(deps) {
       const x = w.x0;
       const y = pageH - w.y1; // baseline ≈ box bottom in PDF (bottom-left origin) space
       if (!isFinite(x) || !isFinite(y) || !isFinite(size)) continue;
-      out.push({ text: text, x: x, y: y, size: size });
+      // Carry the OCR box WIDTH so the consumer can horizontally scale the glyphs (text-matrix
+      // a-component) to span the box — size alone (from height) leaves the invisible run too
+      // narrow/wide vs the scanned word, so Ctrl+F highlight / drag-select drifts intra-word.
+      const boxW = (typeof w.x1 === 'number' && typeof w.x0 === 'number') ? Math.max(0, w.x1 - w.x0) : 0;
+      out.push({ text: text, x: x, y: y, size: size, w: boxW });
     }
     return out;
   };
@@ -13550,11 +13554,55 @@ tr { page-break-inside: avoid; }
           if (_perWord) {
             const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
             let _helvPW = null;
+            // ── Horizontal scaling (text-matrix a-component ≈ the Tz operator) ──
+            // pdf-lib's drawText has no horizontal-scale arg, so for the unicode-font path we emit
+            // each word as a raw INVISIBLE text object (render mode 3) with a text matrix
+            // [a 0 0 1 x y], a = boxWidth / naturalGlyphWidth — making the invisible run span the
+            // OCR box so Ctrl+F highlight / drag-select align horizontally (size alone, from box
+            // height, left them too narrow/wide). FULLY FAIL-SAFE: if the operator helpers or the
+            // font key aren't resolvable, or anything throws, the word falls back to plain
+            // (unscaled) drawText — byte-identical to the prior behavior. (pdf.js still extracts
+            // the scaled text — verified.)
+            const _PL = (typeof window !== 'undefined' && window.PDFLib) ? window.PDFLib : null;
+            let _uniKey = null;
+            if (_uniFont && _PL && typeof _PL.setTextMatrix === 'function' && typeof _PL.showText === 'function' && typeof _PL.beginText === 'function') {
+              try {
+                try { page.drawText(' ', { x: -50, y: -50, size: 1, font: _uniFont, opacity: 0 }); } catch (_) {} // register font into /Resources
+                const _res = page.node.Resources && page.node.Resources();
+                const _fd = _res && _res.lookup ? _res.lookup(_PL.PDFName.of('Font')) : null;
+                const _ref = _uniFont.ref;
+                if (_fd && _fd.entries && _ref) {
+                  for (const _pair of _fd.entries()) {
+                    if (_pair[1] && _pair[1].toString() === _ref.toString()) { _uniKey = _pair[0]; break; }
+                  }
+                }
+              } catch (_) { _uniKey = null; }
+            }
+            const _drawWordScaled = (c) => {
+              const natW = _uniFont.widthOfTextAtSize(c.text, c.size);
+              let a = (c.w > 0 && natW > 0) ? (c.w / natW) : 1;
+              if (!isFinite(a) || a <= 0) a = 1; else if (a < 0.1) a = 0.1; else if (a > 10) a = 10;
+              page.pushOperators(
+                _PL.pushGraphicsState(),
+                _PL.beginText(),
+                _PL.setTextRenderingMode(3), // invisible
+                _PL.setFontAndSize(_uniKey, c.size),
+                _PL.setTextMatrix(a, 0, 0, 1, c.x, c.y),
+                _PL.showText(_uniFont.encodeText(c.text)),
+                _PL.endText(),
+                _PL.popGraphicsState(),
+              );
+            };
             for (let _ci = 0; _ci < _calls.length; _ci++) {
               const _c = _calls[_ci];
               try {
                 if (_uniFont) {
-                  page.drawText(_c.text, { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 });
+                  if (_uniKey) {
+                    try { _drawWordScaled(_c); }
+                    catch (_sErr) { page.drawText(_c.text, { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 }); }
+                  } else {
+                    page.drawText(_c.text, { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 });
+                  }
                 } else {
                   _ocrDroppedChars += _countNonWinAnsi(_c.text);
                   if (!_helvPW) _helvPW = await _getHelv();
