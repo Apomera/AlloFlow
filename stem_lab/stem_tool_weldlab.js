@@ -1121,8 +1121,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
             // Arc tip (only visible while welding — at progress < 1)
             if (t < 1 && !_prefersReducedMotion) {
-              // Pulse arc
-              var pulse = 0.7 + 0.3 * Math.sin(elapsed * 30);
+              // Pulse arc — compound sub-3Hz waveform (2.4 + 0.9 Hz, ±0.18), retuned
+              // from sin(elapsed*30) ≈ 4.77 Hz / ±0.3 (photosensitivity guideline).
+              var pulse = 0.78 + 0.12 * Math.sin(elapsed * 15.1) + 0.06 * Math.sin(elapsed * 5.7);
               ctxC.fillStyle = 'rgba(255, 255, 200, ' + pulse + ')';
               ctxC.beginPath();
               ctxC.arc(arcX, jointY, 8 + 4 * pulse, 0, Math.PI * 2);
@@ -2285,7 +2286,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 s.arcMat.opacity = 0.9;
                 s.arcLight.intensity = 1.5;
               } else {
-                var pulse = 0.7 + 0.3 * Math.sin(elapsed * 30);
+                // Compound sub-3Hz waveform (2.4 Hz + 0.9 Hz, ±0.18 total) — retuned
+                // from the original single sin(elapsed*30) ≈ 4.77 Hz / ±0.3 flicker,
+                // which exceeded the 3-flashes-per-second photosensitivity guideline
+                // (and is now bloom-amplified). Reads more organic, stays arc-alive.
+                var pulse = 0.78 + 0.12 * Math.sin(elapsed * 15.1) + 0.06 * Math.sin(elapsed * 5.7);
                 s.arcMat.opacity = pulse;
                 s.arcLight.intensity = 1.4 + pulse * 0.7;
               }
