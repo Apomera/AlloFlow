@@ -1,0 +1,133 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for appLab 1`] = `
+{
+  "buttons": 26,
+  "inputs": 5,
+  "lengthBucket": 65,
+  "selects": 0,
+  "sha": "0c55c9dd2577ec37",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for assessmentLiteracy 1`] = `
+{
+  "buttons": 10,
+  "inputs": 0,
+  "lengthBucket": 30,
+  "selects": 0,
+  "sha": "cb7f0729251badab",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
+{
+  "buttons": 24,
+  "inputs": 4,
+  "lengthBucket": 73,
+  "selects": 0,
+  "sha": "dc3a4e905133523a",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for birdLab 1`] = `
+{
+  "buttons": 125,
+  "inputs": 0,
+  "lengthBucket": 686,
+  "selects": 0,
+  "sha": "57e3b639cca4d04d",
+  "svgs": 2,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for cephalopodLab 1`] = `
+{
+  "buttons": 87,
+  "inputs": 0,
+  "lengthBucket": 223,
+  "selects": 0,
+  "sha": "c04c3fc04e8d0a69",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for learningLab 1`] = `
+{
+  "buttons": 134,
+  "inputs": 0,
+  "lengthBucket": 405,
+  "selects": 0,
+  "sha": "2c4503971780bf5c",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for nutritionLab 1`] = `
+{
+  "buttons": 15,
+  "inputs": 0,
+  "lengthBucket": 103,
+  "selects": 0,
+  "sha": "6dfd478711625e0b",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for plateTectonics 1`] = `
+{
+  "buttons": 22,
+  "inputs": 5,
+  "lengthBucket": 103,
+  "selects": 0,
+  "sha": "b874768c0980c650",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for printingPress 1`] = `
+{
+  "buttons": 99,
+  "inputs": 0,
+  "lengthBucket": 594,
+  "selects": 0,
+  "sha": "4c6e62be3d03d161",
+  "svgs": 2,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for raptorHunt 1`] = `
+{
+  "buttons": 48,
+  "inputs": 1,
+  "lengthBucket": 103,
+  "selects": 0,
+  "sha": "82ab300a588ae3cd",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for roadReady 1`] = `
+{
+  "buttons": 64,
+  "inputs": 3,
+  "lengthBucket": 202,
+  "selects": 0,
+  "sha": "c514429cd5b9dab8",
+  "svgs": 0,
+}
+`;
+
+exports[`big STEM tool render goldens (default state) > renders + pins a digest for solarSystem 1`] = `
+{
+  "buttons": 13,
+  "inputs": 1,
+  "lengthBucket": 37,
+  "selects": 0,
+  "sha": "0e68576bc1479b34",
+  "svgs": 0,
+}
+`;
