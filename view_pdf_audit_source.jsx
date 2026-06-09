@@ -92,6 +92,75 @@ function _deriveDocMeta(accessibleHtml, fileName) {
   return { title, lang };
 }
 
+// EXACT copy of doc_pipeline_source.jsx TAG_TO_PDF_ROLE (the HTML-tag -> PDF structure-type map
+// createTaggedPdf uses). A drift-sentinel test (tests/view_pdf_audit_tagtree.test.js) asserts this
+// equals the source map, so the inspector below shows the REAL roles the tagged PDF will carry —
+// not a parallel heuristic that could quietly lie.
+const _TAG_TO_PDF_ROLE = {
+  h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6',
+  p: 'P', ul: 'L', ol: 'L', li: 'LI', img: 'Figure', figure: 'Figure',
+  table: 'Table', tr: 'TR', th: 'TH', td: 'TD', caption: 'Caption',
+  thead: 'THead', tbody: 'TBody', tfoot: 'TFoot',
+  blockquote: 'BlockQuote', a: 'Link',
+  header: 'NonStruct', footer: 'NonStruct',
+  section: 'Sect', nav: 'Sect', aside: 'Sect', main: 'Sect',
+};
+
+// Read-only "tag tree" inspector: walks the remediated HTML the way createTaggedPdf does and
+// returns the block-level outline (role + indent + short text) the tagged PDF will carry, plus
+// per-node accessibility WARNINGS (skipped heading level, empty heading, image/figure missing alt,
+// table missing header cells / scope). Pure + DOM-based (jsdom-testable). domIndex = position in
+// this same walk so the UI can scroll the live preview to a clicked node. Containers (table /
+// figure / list) are shown as single summarized nodes; their internals are not surfaced separately.
+function _buildTagOutline(html) {
+  const out = [];
+  let doc;
+  try { doc = new DOMParser().parseFromString(html || '', 'text/html'); } catch (_) { return out; }
+  const body = doc && doc.body;
+  if (!body) return out;
+  const SURFACE = 'h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer';
+  const els = body.querySelectorAll(SURFACE);
+  let prevHeading = 0, curHeading = 0, domIndex = 0;
+  const MAX = 1000; // guard against pathologically large docs hanging the render
+  for (let i = 0; i < els.length && out.length < MAX; i++) {
+    const el = els[i];
+    // Skip elements nested inside a container we summarize as ONE node (img-in-figure, p-in-cell,
+    // li, nested lists) — keeps the outline a clean block structure.
+    if (el.parentElement && el.parentElement.closest('table,figure,ul,ol')) { domIndex++; continue; }
+    const tag = el.tagName.toLowerCase();
+    const role = _TAG_TO_PDF_ROLE[tag] || 'P';
+    const warnings = [];
+    let indent = curHeading;
+    const hm = /^h([1-6])$/.exec(tag);
+    if (hm) {
+      const lvl = parseInt(hm[1], 10);
+      indent = lvl - 1;
+      if (prevHeading > 0 && lvl - prevHeading > 1) warnings.push('Skipped heading level (h' + prevHeading + ' → h' + lvl + ')');
+      if (!(el.textContent || '').trim()) warnings.push('Empty heading');
+      prevHeading = lvl; curHeading = lvl;
+    }
+    if (tag === 'img' || tag === 'figure') {
+      const img = tag === 'img' ? el : el.querySelector('img');
+      const alt = img ? (img.getAttribute('alt') || '') : '';
+      const cap = tag === 'figure' && el.querySelector('figcaption');
+      if (!alt.trim() && !(cap && cap.textContent.trim())) warnings.push('Missing alt text / caption');
+    }
+    if (tag === 'table') {
+      const ths = el.querySelectorAll('th');
+      if (ths.length === 0) warnings.push('No header cells (<th>) — screen readers can\'t associate columns');
+      else { let noScope = 0; ths.forEach(th => { if (!th.getAttribute('scope')) noScope++; }); if (noScope) warnings.push(noScope + ' header cell(s) missing scope'); }
+    }
+    let text;
+    if (tag === 'img') text = (el.getAttribute('alt') || '(no alt)');
+    else if (tag === 'table') text = el.querySelectorAll('tr').length + ' row(s)';
+    else if (tag === 'ul' || tag === 'ol') text = el.querySelectorAll(':scope > li').length + ' item(s)';
+    else text = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    out.push({ role, tag, text, indent: Math.max(0, indent), warnings, domIndex });
+    domIndex++;
+  }
+  return out;
+}
+
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
@@ -147,6 +216,8 @@ function PdfAuditView(props) {
   // derived defaults — so a wrong filename-as-title or auto-detected language can be corrected
   // before export, and an Author can be supplied (createTaggedPdf already honors meta.author).
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
+  // Read-only tag-structure inspector output (null = not built yet; [] = built, empty).
+  const [tagOutline, setTagOutline] = useState(null);
   // Per-stage status for the Tier B restoration handler. Empty when idle;
   // 'word-splice' / 'sentence-anchor' / 're-tag' while running so the button
   // can show honest progress instead of a single "Restoring..." label.
@@ -4171,6 +4242,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </details>
                           );
                         })()}
+                        {/* ── Read-only tag-structure inspector (the "tag tree": what the tagged PDF will contain) ── */}
+                        <details className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs" onToggle={(e) => { if (e.currentTarget.open && tagOutline === null) { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } } }}>
+                          <summary className="cursor-pointer font-bold text-slate-700">🔍 Inspect tag structure <span className="font-normal text-slate-500">— the roles + warnings your tagged PDF will contain</span></summary>
+                          <div className="mt-2">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-[10px] text-slate-500">Derived from the remediated HTML — the same structure createTaggedPdf tags. Click a row to find it in the preview above.</span>
+                              <button onClick={() => { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } }} className="px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold hover:bg-slate-300 shrink-0">↻ Refresh</button>
+                            </div>
+                            {Array.isArray(tagOutline) && tagOutline.length > 0 && (
+                              <div>
+                                <div className={`text-[11px] font-bold mb-1 ${tagOutline.some(x => x.warnings.length) ? 'text-amber-700' : 'text-green-700'}`}>{tagOutline.some(x => x.warnings.length) ? ('⚠ ' + tagOutline.reduce((n, x) => n + x.warnings.length, 0) + ' structure warning(s)') : '✓ No structure warnings'} · {tagOutline.length} tagged blocks</div>
+                                <ul className="space-y-0.5 max-h-64 overflow-auto" role="list">
+                                  {tagOutline.map((n, idx) => (
+                                    <li key={idx} style={{ paddingLeft: (n.indent * 12) + 'px' }} className="flex items-start gap-1.5">
+                                      <button onClick={() => { try { const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; if (d && d.body) { const els = d.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer'); const tgt = els[n.domIndex]; if (tgt && tgt.scrollIntoView) tgt.scrollIntoView({ block: 'center' }); } } catch (_) {} }} className="text-left hover:underline flex-1 min-w-0" title="Scroll the preview to this element">
+                                        <span className="inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold">{n.role}</span>
+                                        <span className="text-slate-600 ml-1">{n.text || '(empty)'}</span>
+                                      </button>
+                                      {n.warnings.length > 0 && <span className="text-amber-600 text-[11px] shrink-0" title={n.warnings.join('; ')}>⚠</span>}
+                                    </li>
+                                  ))}
+                                </ul>
+                                {tagOutline.some(x => x.warnings.length) && <div className="mt-1 text-[10px] text-slate-500">Hover ⚠ for the issue. Fix it in the preview above (relabel headings, add alt text / table headers), then ↻ Refresh. This is structure editing on the HTML that generates the tags — not byte-level PDF tag editing.</div>}
+                              </div>
+                            )}
+                            {Array.isArray(tagOutline) && tagOutline.length === 0 && <div className="text-[11px] text-slate-500">No taggable block structure found in the remediated HTML.</div>}
+                          </div>
+                        </details>
                         {/* Tagged PDF (original + structure tags). Preserves the
                             source PDF's visual layer byte-identical and injects a
                             StructTreeRoot derived from the accessibleHtml outline.

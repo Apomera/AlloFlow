@@ -105,6 +105,96 @@ function _deriveDocMeta(accessibleHtml, fileName) {
   if (!title) title = (fileName || "document").replace(/\.pdf$/i, "");
   return { title, lang };
 }
+const _TAG_TO_PDF_ROLE = {
+  h1: "H1",
+  h2: "H2",
+  h3: "H3",
+  h4: "H4",
+  h5: "H5",
+  h6: "H6",
+  p: "P",
+  ul: "L",
+  ol: "L",
+  li: "LI",
+  img: "Figure",
+  figure: "Figure",
+  table: "Table",
+  tr: "TR",
+  th: "TH",
+  td: "TD",
+  caption: "Caption",
+  thead: "THead",
+  tbody: "TBody",
+  tfoot: "TFoot",
+  blockquote: "BlockQuote",
+  a: "Link",
+  header: "NonStruct",
+  footer: "NonStruct",
+  section: "Sect",
+  nav: "Sect",
+  aside: "Sect",
+  main: "Sect"
+};
+function _buildTagOutline(html) {
+  const out = [];
+  let doc;
+  try {
+    doc = new DOMParser().parseFromString(html || "", "text/html");
+  } catch (_) {
+    return out;
+  }
+  const body = doc && doc.body;
+  if (!body) return out;
+  const SURFACE = "h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer";
+  const els = body.querySelectorAll(SURFACE);
+  let prevHeading = 0, curHeading = 0, domIndex = 0;
+  const MAX = 1e3;
+  for (let i = 0; i < els.length && out.length < MAX; i++) {
+    const el = els[i];
+    if (el.parentElement && el.parentElement.closest("table,figure,ul,ol")) {
+      domIndex++;
+      continue;
+    }
+    const tag = el.tagName.toLowerCase();
+    const role = _TAG_TO_PDF_ROLE[tag] || "P";
+    const warnings = [];
+    let indent = curHeading;
+    const hm = /^h([1-6])$/.exec(tag);
+    if (hm) {
+      const lvl = parseInt(hm[1], 10);
+      indent = lvl - 1;
+      if (prevHeading > 0 && lvl - prevHeading > 1) warnings.push("Skipped heading level (h" + prevHeading + " \u2192 h" + lvl + ")");
+      if (!(el.textContent || "").trim()) warnings.push("Empty heading");
+      prevHeading = lvl;
+      curHeading = lvl;
+    }
+    if (tag === "img" || tag === "figure") {
+      const img = tag === "img" ? el : el.querySelector("img");
+      const alt = img ? img.getAttribute("alt") || "" : "";
+      const cap = tag === "figure" && el.querySelector("figcaption");
+      if (!alt.trim() && !(cap && cap.textContent.trim())) warnings.push("Missing alt text / caption");
+    }
+    if (tag === "table") {
+      const ths = el.querySelectorAll("th");
+      if (ths.length === 0) warnings.push("No header cells (<th>) \u2014 screen readers can't associate columns");
+      else {
+        let noScope = 0;
+        ths.forEach((th) => {
+          if (!th.getAttribute("scope")) noScope++;
+        });
+        if (noScope) warnings.push(noScope + " header cell(s) missing scope");
+      }
+    }
+    let text;
+    if (tag === "img") text = el.getAttribute("alt") || "(no alt)";
+    else if (tag === "table") text = el.querySelectorAll("tr").length + " row(s)";
+    else if (tag === "ul" || tag === "ol") text = el.querySelectorAll(":scope > li").length + " item(s)";
+    else text = (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 80);
+    out.push({ role, tag, text, indent: Math.max(0, indent), warnings, domIndex });
+    domIndex++;
+  }
+  return out;
+}
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS,
@@ -261,6 +351,7 @@ function PdfAuditView(props) {
   const [resumableBatch, setResumableBatch] = useState(null);
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
+  const [tagOutline, setTagOutline] = useState(null);
   const [tierBStage, setTierBStage] = useState("");
   const classifyPdfError = (err) => {
     const msg = err && (err.message || (typeof err === "string" ? err : "")) || "";
@@ -2646,7 +2737,33 @@ Return ONLY JSON:
       return /* @__PURE__ */ React.createElement("details", { className: "w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, "\u{1F4CB} Document metadata ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 Title \xB7 Language \xB7 Author (used for the Tagged PDF)")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Title"), /* @__PURE__ */ React.createElement("input", { type: "text", value: curTitle, onChange: (e) => setMeta({ title: e.target.value }), className: "mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs", placeholder: "Document title", "aria-label": t("pdf_audit.meta.title_aria") || "Document title for the tagged PDF" }), titleLooksLikeFilename && /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-amber-600 mt-0.5" }, "\u26A0 This looks like a filename \u2014 set a real document title (filename-as-title is a common PDF/UA checker failure).")), /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Language"), /* @__PURE__ */ React.createElement("select", { value: langKnown ? curLang : "other", onChange: (e) => {
         if (e.target.value !== "other") setMeta({ lang: e.target.value });
       }, className: "mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs", "aria-label": t("pdf_audit.meta.lang_aria") || "Primary document language for the tagged PDF" }, LANGS.map((l) => /* @__PURE__ */ React.createElement("option", { key: l[0], value: l[0] }, l[1], " (", l[0], ")")), !langKnown && /* @__PURE__ */ React.createElement("option", { value: "other" }, "Other: ", curLang)), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500 mt-0.5" }, "Auto-detected: ", _dm.lang || "(none \u2014 defaulting to en)", ". Confirm or correct \u2014 important for bilingual docs.")), /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Author ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-400" }, "(optional)")), /* @__PURE__ */ React.createElement("input", { type: "text", value: curAuthor, onChange: (e) => setMeta({ author: e.target.value }), className: "mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs", placeholder: "e.g. your school or district", "aria-label": t("pdf_audit.meta.author_aria") || "Document author for the tagged PDF (optional)" }))));
-    })(), /* @__PURE__ */ React.createElement(
+    })(), /* @__PURE__ */ React.createElement("details", { className: "w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs", onToggle: (e) => {
+      if (e.currentTarget.open && tagOutline === null) {
+        try {
+          const _h = typeof getPdfPreviewHtml === "function" && getPdfPreviewHtml() || pdfFixResult && pdfFixResult.accessibleHtml || "";
+          setTagOutline(_buildTagOutline(_h));
+        } catch (_) {
+          setTagOutline([]);
+        }
+      }
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, "\u{1F50D} Inspect tag structure ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 the roles + warnings your tagged PDF will contain")), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, "Derived from the remediated HTML \u2014 the same structure createTaggedPdf tags. Click a row to find it in the preview above."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      try {
+        const _h = typeof getPdfPreviewHtml === "function" && getPdfPreviewHtml() || pdfFixResult && pdfFixResult.accessibleHtml || "";
+        setTagOutline(_buildTagOutline(_h));
+      } catch (_) {
+        setTagOutline([]);
+      }
+    }, className: "px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold hover:bg-slate-300 shrink-0" }, "\u21BB Refresh")), Array.isArray(tagOutline) && tagOutline.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold mb-1 ${tagOutline.some((x) => x.warnings.length) ? "text-amber-700" : "text-green-700"}` }, tagOutline.some((x) => x.warnings.length) ? "\u26A0 " + tagOutline.reduce((n, x) => n + x.warnings.length, 0) + " structure warning(s)" : "\u2713 No structure warnings", " \xB7 ", tagOutline.length, " tagged blocks"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0.5 max-h-64 overflow-auto", role: "list" }, tagOutline.map((n, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, style: { paddingLeft: n.indent * 12 + "px" }, className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      try {
+        const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+        if (d && d.body) {
+          const els = d.body.querySelectorAll("h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer");
+          const tgt = els[n.domIndex];
+          if (tgt && tgt.scrollIntoView) tgt.scrollIntoView({ block: "center" });
+        }
+      } catch (_) {
+      }
+    }, className: "text-left hover:underline flex-1 min-w-0", title: "Scroll the preview to this element" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold" }, n.role), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 ml-1" }, n.text || "(empty)")), n.warnings.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 text-[11px] shrink-0", title: n.warnings.join("; ") }, "\u26A0")))), tagOutline.some((x) => x.warnings.length) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-slate-500" }, "Hover \u26A0 for the issue. Fix it in the preview above (relabel headings, add alt text / table headers), then \u21BB Refresh. This is structure editing on the HTML that generates the tags \u2014 not byte-level PDF tag editing.")), Array.isArray(tagOutline) && tagOutline.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, "No taggable block structure found in the remediated HTML."))), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: async () => {
