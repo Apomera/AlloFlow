@@ -10086,6 +10086,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(W, H);
 
+        // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+        // Dark underwater scene: low threshold so the bright bioluminescent parts
+        // (blue-ring warning rings, photophores, anglerfish lure) glow. Plain render
+        // until the r128 addons load; any failure falls back to renderer.render.
+        renderer._alloComposer = null;
+        (function(){
+          if (window.AlloPostFXEnabled === false) return;
+          var _ens = function(cb){
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+            var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+          };
+          _ens(function(){
+            try {
+              var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+              var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+              var cc=new T.EffectComposer(renderer);
+              cc.addPass(new T.RenderPass(scene, camera));
+              cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((W)*rs)),Math.max(1,Math.round((H)*rs))), lp?0.63:0.9, 0.4, 0.78));
+              renderer._alloComposer=cc;
+            } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+          });
+        })();
+
         // ─── Lighting (downwelling sunlight + cool ambient) ───
         var ambient = new THREE.AmbientLight(0x3a5876, 0.6);
         scene.add(ambient);
@@ -12786,6 +12811,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               warningRings.forEach(function(r) {
                 r.material.opacity = gameState.warningRingOpacity;
               });
+              // ── Signature FX: bioluminescent shimmer on the warning rings ──
+              // Pulses the .color channel only (.opacity is owned above) and ONLY
+              // while the rings are already visible — preserving the aposematic
+              // "flash when threatened" biology this tool teaches. Smooth ~0.4 Hz
+              // (photosensitivity-safe); the brighter cyan crosses the new bloom
+              // threshold so threatened rings genuinely glow. Off under the in-app
+              // reduced-motion toggle; try/caught so it can never break the sim.
+              try {
+                if (gameState.warningRingOpacity > 0.05 && !(gameState.a11y && gameState.a11y.reducedMotion)) {
+                  var _blLift = 0.25 + 0.45 * (0.5 + 0.5 * Math.sin(now * 0.0025));
+                  warningRings.forEach(function(r) {
+                    if (r.material && r.material.color) r.material.color.setRGB(0.13 + _blLift * 0.6, 0.83 + _blLift * 0.15, 0.93 + _blLift * 0.07);
+                  });
+                }
+              } catch (e) {}
               if (threatRef && gameState.venomBiteCooldown <= 0) {
                 // Set the right "give-up" state per predator (their state
                 // machines aren't shared). All respect cooldownUntil.
@@ -13915,7 +13955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             masterGain.gain.value += (targetMaster - masterGain.gain.value) * 0.2;
           }
 
-          renderer.render(scene, camera);
+          var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
           animId = requestAnimationFrame(loop);
         }
         loop();
@@ -13927,6 +13967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           camera.aspect = nW / nH;
           camera.updateProjectionMatrix();
           renderer.setSize(nW, nH);
+          try{ if(renderer._alloComposer){ renderer._alloComposer.setSize(nW, nH); } }catch(e){}
         }
         window.addEventListener('resize', onResize);
 
@@ -13958,6 +13999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               else obj.material.dispose();
             }
           });
+          try{ if(renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
           renderer.dispose();
           canvasEl._clInit = false;
         };

@@ -9309,6 +9309,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // High-contrast colors (all bgs use 0.85+ alpha + explicit text colors with >7:1 ratio against bg).
         // Every numeric value gets aria-live region.
         var hudParent = canvasEl.parentElement;
+
+        // ── Dive-FX vignette (signature FX) ── darkened edges that swell with stoop
+        // intensity, sharpening the sense of speed. pointer-events:none and appended
+        // FIRST so every HUD element paints above it. Fully disabled under
+        // prefers-reduced-motion (_rmFX); opacity driven per frame in the loop from
+        // the same dive-intensity normalization the existing speed-lines use.
+        var _rmFX = (function(){ try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch(e){ return false; } })();
+        var diveVig = document.createElement('div');
+        diveVig.style.cssText = 'position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(6,10,22,0.62) 100%);';
+        hudParent.appendChild(diveVig);
         var hud = document.createElement('div');
         hud.setAttribute('role', 'status');
         hud.setAttribute('aria-label', 'Flight telemetry HUD');
@@ -9675,7 +9685,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           // ── Zoom FOV smoothing (3x zoom simulates eagle ~8x acuity) ──
-          var targetFov = zoomActive ? 25 : 70;
+          // Dive-FX: widen the FOV with stoop intensity (speed-sense punch), folded
+          // INTO targetFov so the existing lerp below stays the single fov writer
+          // (a separate writer would fight the zoom lerp). Same 0..1 normalization
+          // the speed-lines use. Vignette opacity rides the same intensity. Both
+          // disabled under prefers-reduced-motion (_rmFX); zoom always wins.
+          var _diveFrac = 0;
+          try {
+            if (raptor.diving && !zoomActive && !_rmFX) {
+              _diveFrac = (raptor.speed - raptor.maxLevel * 0.8) / (raptor.stoopMax - raptor.maxLevel * 0.8);
+              _diveFrac = Math.max(0, Math.min(1, _diveFrac));
+            }
+            if (diveVig) diveVig.style.opacity = String(_diveFrac * 0.85);
+          } catch (e) { _diveFrac = 0; }
+          var targetFov = zoomActive ? 25 : (70 + _diveFrac * 16);
           if (Math.abs(camera.fov - targetFov) > 0.1) {
             camera.fov += (targetFov - camera.fov) * 0.18;
             camera.updateProjectionMatrix();
@@ -10135,6 +10158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (crossHairDot.parentElement) crossHairDot.parentElement.removeChild(crossHairDot);
           if (status.parentElement) status.parentElement.removeChild(status);
           if (energyPanel.parentElement) energyPanel.parentElement.removeChild(energyPanel);
+          if (diveVig && diveVig.parentElement) diveVig.parentElement.removeChild(diveVig);
           if (eventLogEl.parentElement) eventLogEl.parentElement.removeChild(eventLogEl);
           if (weatherPanel.parentElement) weatherPanel.parentElement.removeChild(weatherPanel);
           if (soundBtn.parentElement) soundBtn.parentElement.removeChild(soundBtn);

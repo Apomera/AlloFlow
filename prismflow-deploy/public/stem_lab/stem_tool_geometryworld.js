@@ -3032,12 +3032,15 @@
         // ── Block placement preview ghost + break highlight + crosshair targeting ──
         engine._ghostMesh = null;
         engine._highlightMesh = null;
+        engine._hoverGlowMesh = null; // signature FX: translucent fill companion to the wireframe highlight
+        engine._rmHover = (function(){ try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch(e){ return false; } })();
         engine._crosshairTarget = 'none'; // 'none' | 'block' | 'npc' | 'npc_question'
         function updateGhostPreview() {
           var THREE = window.THREE;
           if ((!engine.isLocked && !engine._touchActive) || !THREE) {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
+            if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
             engine._crosshairTarget = 'none';
             return;
           }
@@ -3099,8 +3102,28 @@
             // Pulse the highlight opacity
             var pulseT = engine.clock.getElapsedTime();
             engine._highlightMesh.material.opacity = isProtected ? 0.3 : (0.4 + Math.sin(pulseT * 6) * 0.2);
+            // ── Hover-glow fill (signature FX) ── a translucent companion to the
+            // wireframe, in the same visual language as the measurement
+            // _selectionGlows. Separate overlay mesh — block materials are
+            // cached/shared and must never be mutated. Pulse matches the
+            // wireframe's ~0.95 Hz (photosensitivity-safe); steady opacity under
+            // prefers-reduced-motion. try/caught so it can never break picking.
+            try {
+              if (!engine._hoverGlowMesh) {
+                var hgGeo = new THREE.BoxGeometry(1.02, 1.02, 1.02);
+                var hgMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false });
+                engine._hoverGlowMesh = new THREE.Mesh(hgGeo, hgMat);
+                engine._hoverGlowMesh.renderOrder = 997;
+                engine.scene.add(engine._hoverGlowMesh);
+              }
+              engine._hoverGlowMesh.position.set(hp.x + 0.5, hp.y + 0.5, hp.z + 0.5);
+              engine._hoverGlowMesh.visible = true;
+              engine._hoverGlowMesh.material.color.setHex(isProtected ? 0xff4444 : 0xffffff);
+              engine._hoverGlowMesh.material.opacity = engine._rmHover ? 0.1 : (isProtected ? 0.08 : (0.09 + Math.sin(pulseT * 6) * 0.05));
+            } catch (e) {}
           } else {
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
+            if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
           }
 
           // ── Placement ghost — wireframe preview matching selected shape + rotation ──

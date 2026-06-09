@@ -914,7 +914,9 @@ const d = labToolData.solarSystem || {};
                     c.addPass(new T.RenderPass(scene, camera));
                     // UnrealBloomPass(resolution, strength, radius, threshold): high threshold
                     // so only the bright sun + star highlights bloom, not the whole scene.
-                    c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))), lowPower ? 0.7 : 1.1, 0.3, 0.85));
+                    // threshold 0.82: the sun disc is 0xffdd44 (luma ~0.838) — at the
+                    // original 0.85 the sun itself never crossed the bloom threshold.
+                    c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))), lowPower ? 0.7 : 1.1, 0.3, 0.82));
                     composer = c;
                   } catch (e) { composer = null; }
                 });
@@ -1217,6 +1219,12 @@ const d = labToolData.solarSystem || {};
 
               let cameraLerp = 0.06; // smooth interpolation speed
 
+              // Cinematic-camera FX: camPhi eases toward targetPhi (select/reset used
+              // to SNAP the polar angle in one frame); arrival adds a slow orbital
+              // drift. Both honor prefers-reduced-motion via _rmCam.
+              let targetPhi = 1.0;
+              const _rmCam = (function(){ try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch(e){ return false; } })();
+
 
 
               function updateCamera() {
@@ -1254,6 +1262,8 @@ const d = labToolData.solarSystem || {};
                 camTheta -= dx * 0.008;
 
                 camPhi = Math.max(0.15, Math.min(Math.PI - 0.15, camPhi - dy * 0.008));
+
+                targetPhi = camPhi; // user is steering — don't rubber-band back
 
                 lastX = e.clientX; lastY = e.clientY;
 
@@ -1328,9 +1338,10 @@ const d = labToolData.solarSystem || {};
 
                   targetLookAt.copy(hitObj.position);
 
-                  // Adjust camera angle for a nice viewing angle
+                  // Adjust camera angle for a nice viewing angle (eased by the
+                  // per-frame targetPhi lerp — this used to snap in one frame)
 
-                  camPhi = 0.8;
+                  targetPhi = 0.8;
 
                 } else {
 
@@ -1360,7 +1371,7 @@ const d = labToolData.solarSystem || {};
 
                 targetDist = 55;
 
-                camPhi = 1.0;
+                targetPhi = 1.0;
 
               }
 
@@ -1474,7 +1485,7 @@ const d = labToolData.solarSystem || {};
 
                   targetDist = 55;
 
-                  camPhi = 1.0;
+                  targetPhi = 1.0;
 
                   camTheta = 0.5;
 
@@ -1492,6 +1503,11 @@ const d = labToolData.solarSystem || {};
 
                   targetLookAt.copy(fp.position);
 
+                  // Cinematic arrival: slow orbital drift around the focused planet
+                  // (~2 min per revolution). Paused while the user drags; disabled
+                  // under prefers-reduced-motion.
+                  if (!isDragging && !_rmCam) camTheta += 0.0008;
+
                 }
 
                 // Highlight selected planet's orbit ring
@@ -1505,6 +1521,8 @@ const d = labToolData.solarSystem || {};
                 currentLookAt.lerp(targetLookAt, cameraLerp);
 
                 currentDist += (targetDist - currentDist) * cameraLerp;
+
+                camPhi += (targetPhi - camPhi) * cameraLerp; // eased polar angle (no snap)
 
                 updateCamera();
 
