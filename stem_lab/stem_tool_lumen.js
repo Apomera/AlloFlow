@@ -2827,8 +2827,8 @@
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
                 h('span', null, bundle.label + ' · ' + multiClaims.length + ' series (same measure)')),
               h('ul', { className: 'mt-1 text-sm' }, multiClaims.map(function (c, i) {
-                return h('li', { key: 'msc' + i, className: 'flex items-start gap-2' },
-                  h('span', { 'aria-hidden': 'true', style: { color: seriesColor(i), fontSize: '14px', lineHeight: '1' } }, '●'),
+                return h('li', { key: 'msc' + i, className: 'flex items-start gap-2 mb-0.5' },
+                  h('span', { 'aria-hidden': 'true', style: { width: '10px', height: '10px', borderRadius: '9999px', background: seriesColor(i), display: 'inline-block', marginTop: '4px', flexShrink: 0 } }),
                   h('span', null, c.text));
               }))));
           } else if (groupedMulti) {
@@ -2838,9 +2838,9 @@
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
                 h('span', null, bundle.label + ' · ' + comp.variable + ' mean per phase × series')),
-              h('div', { className: 'mt-1 flex items-center gap-3 flex-wrap text-xs text-slate-700' }, seriesKeys(obs).map(function (k, i) {
-                return h('span', { key: 'leg' + i, className: 'flex items-center gap-1' },
-                  h('span', { 'aria-hidden': 'true', style: { color: seriesColor(i), fontSize: '14px', lineHeight: '1' } }, '■'),
+              h('div', { className: 'mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-700' }, seriesKeys(obs).map(function (k, i) {
+                return h('span', { key: 'leg' + i, className: 'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 border', style: { borderColor: seriesColor(i), background: seriesColor(i) + '14' } },
+                  h('span', { 'aria-hidden': 'true', style: { width: '9px', height: '9px', borderRadius: '9999px', background: seriesColor(i), display: 'inline-block' } }),
                   h('span', null, (comp.seriesLabels && comp.seriesLabels[k]) || k));
               })),
               h('p', { className: 'mt-1 text-[11px] text-slate-500' }, 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.')));
@@ -3059,13 +3059,13 @@
           // A benchmark overlay on a scatter is ambiguous (two student measures, not a normed scale), so
           // the chips + picker are hidden in the scatter view — deferred, not faked.
           if (sourceRefs.length && chartType !== 'scatter') {
-            kids.push(h('div', { key: 'refchips', className: 'mt-2 flex flex-col gap-1' },
+            kids.push(h('div', { key: 'refchips', className: 'mt-2 flex flex-wrap gap-1.5' },
               sourceRefs.filter(function (r) { return sourcedRenderable(r).ok; }).map(function (r, i) {
                 var href = /^https?:\/\//i.test(r.locator) ? r.locator : '#';
-                return h('div', { key: 'rc' + i, className: 'text-xs', style: { color: '#0e7490' } },
-                  h('span', { 'aria-hidden': 'true' }, '▣ '),
-                  h('span', null, benchmarkChipText(r) + ' '),
-                  h('a', { href: href, target: '_blank', rel: 'noopener noreferrer', className: 'underline' }, 'source'));
+                return h('div', { key: 'rc' + i, className: 'inline-flex items-center gap-1 text-xs rounded-full px-2.5 py-1 border', style: { color: '#0e7490', background: '#f0fdfa', borderColor: '#99f6e4' } },
+                  h('span', { 'aria-hidden': 'true' }, '▣'),
+                  h('span', null, benchmarkChipText(r)),
+                  h('a', { href: href, target: '_blank', rel: 'noopener noreferrer', className: 'underline font-semibold' }, 'source'));
               })));
           }
           // The add-from-curated-norms picker (the spine ships EMPTY → selectNorm refuses until a human populates+verifies it).
