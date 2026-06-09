@@ -3564,6 +3564,7 @@
                 </div>
             </div>
             <div class="section-title">📊 Performance Summary</div>
+            <div style="font-size: 11px; color: #64748b; margin: -4px 0 10px 0; font-style: italic;">Each figure is the student's most recent single measure (a screening estimate from in-app activity), not a benchmark percentile; each bar is a relative activity indicator, not a norm.</div>
             ${metricBar('Quiz Average', s.quizAvg, 100, '%', '📝')}
             ${metricBar('Word Sounds Accuracy', s.wsAccuracy, 100, '%', '🔊')}
             ${metricBar('Fluency', s.fluencyWCPM, 150, ' WCPM', '📖')}
