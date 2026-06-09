@@ -2866,7 +2866,7 @@
           if (geo) {
             var b = geo.box, sk = [];
             geo.yTicks.forEach(function (t, i) {
-              sk.push(h('line', { key: 'yg' + i, x1: b.padL, y1: t.sy, x2: b.w - b.padR, y2: t.sy, stroke: '#e2e8f0', strokeWidth: 1 }));
+              sk.push(h('line', { key: 'yg' + i, x1: b.padL, y1: t.sy, x2: b.w - b.padR, y2: t.sy, stroke: '#eef2f7', strokeWidth: 1 }));
               sk.push(h('text', { key: 'yl' + i, x: b.padL - 4, y: t.sy + 3, textAnchor: 'end', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.y != null ? t.y : t.count)));
             });
             geo.xTicks.forEach(function (t, i) {
@@ -2877,11 +2877,11 @@
               sk.push(h('line', { key: 'ph' + i, x1: p.sx, y1: b.padT, x2: p.sx, y2: b.h - b.padB, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 3' }));
               sk.push(h('text', { key: 'phl' + i, x: p.sx + 3, y: b.padT + 9, style: { fontSize: '8px' }, fill: '#0f172a' }, 'phase'));
             });
-            if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2, strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
+            if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2.25, strokeLinecap: 'round', strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
             if (geo.points) geo.points.forEach(function (p, i) {
               var pb = encode(p.level || 'L0'); // observed ● / synthetic ◇ — the MARK's own provenance, not the L1 trend line
               sk.push(h('g', { key: 'pt' + i },
-                h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: pb.ink, fillOpacity: pb.markOpacity }),
+                h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: pb.ink, fillOpacity: pb.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }),
                 // the per-mark BURN: each mark carries its own level glyph at full opacity
                 h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: pb.ink, fillOpacity: 1, 'aria-hidden': 'true' }, pb.glyph)
               ));
@@ -2898,7 +2898,7 @@
             if (geo.dots) {
               var l0d = encode('L0');
               geo.dots.forEach(function (p, i) {
-                sk.push(h('circle', { key: 'dot' + i, cx: p.sx, cy: p.sy, r: 4, fill: l0d.ink, fillOpacity: l0d.markOpacity }));
+                sk.push(h('circle', { key: 'dot' + i, cx: p.sx, cy: p.sy, r: 4, fill: l0d.ink, fillOpacity: l0d.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }));
               });
             }
             // Box pathway: a five-number box+whisker per phase (L0 observed spread — q3 on top, q1 on bottom).
@@ -2928,7 +2928,7 @@
               var l0s = encode('L0'), l1s = encode('L1');
               if (geo.fitPath) sk.push(h('path', { key: 'fit', d: geo.fitPath, fill: 'none', stroke: l1s.ink, strokeWidth: 1.5, strokeOpacity: 0.7, strokeDasharray: '4 3' }));
               geo.scatterPoints.forEach(function (p, i) {
-                sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.5, fill: l0s.ink, fillOpacity: l0s.markOpacity }));
+                sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.5, fill: l0s.ink, fillOpacity: l0s.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }));
               });
             }
             // Slope pathway: per-phase fitted trend segments (L1 derived); a refused phase (n<2) draws none.
@@ -2960,9 +2960,9 @@
             if (geo.seriesGeo) {
               geo.seriesGeo.forEach(function (s, si) {
                 var col = seriesColor(s.colorIdx);
-                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeOpacity: 0.9 }));
+                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeOpacity: 0.9 }));
                 s.points.forEach(function (p, pi) {
-                  sk.push(h('circle', { key: 'msc' + si + '_' + pi, cx: p.sx, cy: p.sy, r: 3, fill: col, fillOpacity: 0.95 }));
+                  sk.push(h('circle', { key: 'msc' + si + '_' + pi, cx: p.sx, cy: p.sy, r: 3, fill: col, fillOpacity: 0.95, stroke: '#ffffff', strokeWidth: 1 }));
                 });
               });
             }
