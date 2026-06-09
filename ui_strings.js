@@ -4282,6 +4282,10 @@
     "tagged": {
       "born_digital_note": "Heads-up: for text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. The file is substantially more accessible, but verify in PAC 2024 or Acrobat before claiming PDF/UA conformance."
     },
+    "one_click": {
+      "label": "Make Accessible",
+      "desc": "Recommended one-click path: audits, fixes, re-verifies until the target score, then prepares your accessible downloads — all with the default settings. The panels below are optional fine-tuning."
+    },
     "tagtree": {
       "label": "Pre-existing tag structure",
       "tooltip": "This PDF includes a PDF/UA-style tag tree. Auditors were instructed to credit the existing structure rather than penalize it as missing."

@@ -898,7 +898,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
                 <p className="text-sm text-slate-600 mb-4">{t('pdf_audit.choose_how') || 'Choose how to process this PDF:'}</p>
 
-                <details data-help-key="pdf_audit_view_settings_panel" open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
+                {/* One-button recommended path. The modal offers many dials; a
+                    non-technical teacher needs ONE obvious action. Same flow as
+                    "Audit & Remediate" below, but with the recommended defaults
+                    applied: auto post-fix mode + auto-continue-to-target forced on. */}
+                <div className="mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4">
+                  <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
+                    setPdfFixMode('auto');
+                    setPdfAuditResult(null);
+                    addToast(t('toasts.auditing_remediating_pdf'), 'info');
+                    await runPdfAccessibilityAudit(pendingPdfBase64);
+                    setTimeout(() => {
+                      const r = pdfFixResultRef.current;
+                      const needsLoop = r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore;
+                      if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); }
+                    }, 150);
+                  }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
+                    ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'}
+                  </button>
+                  <p className="text-[11px] text-slate-600 mt-2 text-center">{t('pdf_audit.one_click.desc') || 'Recommended one-click path: audits, fixes, re-verifies until the target score, then prepares your accessible downloads — all with the default settings. The panels below are optional fine-tuning.'}</p>
+                </div>
+
+                <details data-help-key="pdf_audit_view_settings_panel" className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
                   <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
                   <div className="mt-2 space-y-2">
                     <div>
@@ -4415,6 +4436,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
                                 addToast('Note (structure self-check): ' + roundTrip.warnings.join('; '), 'info');
                               }
+                              // ── Byte-level validation verdict (the trustworthy check) ──
+                              // postExportValidator re-parses the SHIPPED bytes and walks 14
+                              // PDF/UA-1-relevant rules. Surface its verdict at the moment of
+                              // download instead of leaving it buried inside the report HTML.
+                              if (postExportValidator && postExportValidator.summary) {
+                                const _pv = postExportValidator.summary;
+                                const _pvTotal = (_pv.pass || 0) + (_pv.fail || 0);
+                                if (_pv.overall === 'PASS') {
+                                  addToast('✓ Byte-level validation of the shipped file: ' + _pv.pass + '/' + _pvTotal + ' rules pass (AlloFlow self-check — confirm in PAC 2024 or veraPDF before claiming compliance).', 'success');
+                                } else {
+                                  const _pvFails = (postExportValidator.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule || c.label).filter(Boolean);
+                                  addToast('⚠ Byte-level validation: ' + _pv.fail + ' rule(s) failed on the shipped file' + (_pvFails.length ? ' — ' + _pvFails.slice(0, 3).join('; ') + (_pvFails.length > 3 ? '…' : '') : '') + '. Still more accessible than untagged, but review before distributing as compliant.', 'warning');
+                                }
+                              } else if (postExportValidator && postExportValidator.error) {
+                                addToast('Byte-level validation could not run on the shipped file (' + postExportValidator.error + ') — rely on the structure self-check above and verify externally in PAC 2024.', 'info');
+                              }
                               // ── Born-digital linkage disclosure (honest scope) ──
                               // For text-layer PDFs the semantic tree (alt text, table headers,
                               // section nesting) is associated via ActualText rather than fully
@@ -4562,7 +4599,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 addToast(t('toasts.report_generation_failed') || 'Report generation failed: ' + (err?.message || 'unknown'), 'error');
                               }
                             }} data-help-key="pdf_audit_view_adobe_report_btn" className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
-                              🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% conformance)` : ''}
+                              🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% self-check)` : ''}
                             </button>
                             {/* Tier B — Re-run with restoration. Appears only when the post-export
                                 text-diff found RESIDUAL missing tokens. Sibling "Open Diff view"
