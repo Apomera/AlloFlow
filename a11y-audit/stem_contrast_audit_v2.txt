@@ -1,0 +1,250 @@
+==============================================================================
+  STEM-TOOL CONTRAST AUDIT v2 — AST-based, alpha-composited, symbol-resolved
+==============================================================================
+
+Files scanned:             104
+Parse failures:            0
+Total pairs analyzed:      20650
+  Severe failures (<3:1):  5446 instances, 1421 unique
+  Near-miss (3:1–4.5:1):   1579 instances, 418 unique
+Tools with ≥1 failure:     41 / 104
+
+METHOD:
+  • @babel/parser AST walk over h(tag, props, ...children) call trees
+  • File-level symbol resolution (const X = "#hex" identifiers resolve)
+  • Ternaries evaluated both branches; reported if either branch fails
+  • Backgrounds composited through the FULL ancestor chain until a solid
+    bg is hit — gives the actual rendered color, not v1's line proximity guess
+  • UNRESOLVED backgrounds (props-driven, _pal.bg, etc.) cause the finding
+    to be SKIPPED rather than guessed — high-precision over high-recall
+  • Two themes evaluated per pair: light (:root/theme-default) and dark
+
+------------------------------------------------------------------------------
+TOP TOOLS BY FAILURE COUNT
+------------------------------------------------------------------------------
+  2273 (2033 severe, 240 near)   stem_tool_optics.js
+  1276 (675 severe, 601 near)   stem_tool_aquaculture.js
+   725 (639 severe,  86 near)   stem_tool_roadready.js
+   490 (274 severe, 216 near)   stem_tool_fisherlab.js
+   330 (298 severe,  32 near)   stem_tool_cephalopodlab.js
+   194 (182 severe,  12 near)   stem_tool_microbiology.js
+   187 (159 severe,  28 near)   stem_tool_statslab.js
+   183 (182 severe,   1 near)   stem_tool_bridgelab.js
+   170 (141 severe,  29 near)   stem_tool_skatelab.js
+   159 (127 severe,  32 near)   stem_tool_fireecology.js
+   153 (137 severe,  16 near)   stem_tool_astronomy.js
+   109 ( 65 severe,  44 near)   stem_tool_schoolbehaviortoolkit.js
+   104 ( 82 severe,  22 near)   stem_tool_kitchenlab.js
+    79 ( 65 severe,  14 near)   stem_tool_stewardship.js
+    60 ( 23 severe,  37 near)   stem_tool_graphcalc.js
+    57 ( 44 severe,  13 near)   stem_tool_watercycle.js
+    54 ( 41 severe,  13 near)   stem_tool_epidemic.js
+    50 ( 38 severe,  12 near)   stem_tool_ecosystem.js
+    50 ( 47 severe,   3 near)   stem_tool_throwlab.js
+    37 ( 26 severe,  11 near)   stem_tool_applab.js
+    35 ( 31 severe,   4 near)   stem_tool_playlab.js
+    34 ( 18 severe,  16 near)   stem_tool_algebraCAS.js
+    30 ( 20 severe,  10 near)   stem_tool_llm_literacy.js
+    27 (  5 severe,  22 near)   stem_tool_flightsim.js
+    23 ( 11 severe,  12 near)   stem_tool_allobotsage.js
+    23 ( 12 severe,  11 near)   stem_tool_echolocation.js
+    19 (  7 severe,  12 near)   stem_tool_birdlab.js
+    17 ( 15 severe,   2 near)   stem_tool_atcTower.js
+    17 (  3 severe,  14 near)   stem_tool_echotrainer.js
+    17 (  9 severe,   8 near)   stem_tool_solarsystem.js
+
+------------------------------------------------------------------------------
+HIGH-CONFIDENCE SEVERE FAILURES — after FP filtering
+------------------------------------------------------------------------------
+Excluded: transparent-bg cases, "undefined"-containing bg strings,
+and `linear-gradient(..., var(--allo-stem-canvas))` header bars.
+Format: ratio [theme] fg → bg  (resolved=after-composite)  ×instances  file:line
+
+      1  [light]  #fee2e2                            → rgba(220,38,38,0.10)          resolved=#f5e5e7    ×2  stem_tool_bridgelab.js:1710
+      1  [light]  #dcfce7                            → rgba(34,197,94,0.08)          resolved=#edf7e6    ×4  stem_tool_bridgelab.js:2741
+      1  [light]  var(--allo-stem-text, #e2e8f0)     → rgba(239,68,68,0.10)          resolved=#21131e    ×2  stem_tool_bridgelab.js:3406
+      1  [light]  var(--allo-stem-text, #e2e8f0)     → #0f172a                       resolved=#0f172a    ×1  stem_tool_bridgelab.js:4068
+      1  [light]  var(--allo-stem-text, #e2e8f0)     → #0f172a                       resolved=#0f172a    ×1  stem_tool_bridgelab.js:4202
+      1  [light]  #fff                               → var(--allo-stem-canvas, #0f172a)  resolved=#ffffff    ×2  stem_tool_fireecology.js:2407
+      1  [light]  #94a3b8                            → rgba(15,23,42,0.4)            resolved=#9fa2aa    ×2  stem_tool_fisherlab.js:10274
+      1  [light]  #fff                               → #fff                          resolved=#ffffff    ×1  stem_tool_llm_literacy.js:2177
+      1  [dark ]  #fff                               → #fff                          resolved=#ffffff    ×1  stem_tool_llm_literacy.js:2177
+      1  [light]  #fff                               → #fff                          resolved=#ffffff    ×1  stem_tool_llm_literacy.js:2436
+      1  [dark ]  #fff                               → #fff                          resolved=#ffffff    ×1  stem_tool_llm_literacy.js:2436
+      1  [light]  var(--allo-stem-text, #e2e8f0)     → #0f172a                       resolved=#0f172a    ×1  stem_tool_microbiology.js:4576
+      1  [light]  transparent                        → #3a2a1a                       resolved=#3a2a1a    ×1  stem_tool_printingpress.js:3277
+      1  [dark ]  transparent                        → #3a2a1a                       resolved=#3a2a1a    ×1  stem_tool_printingpress.js:3277
+      1  [light]  #fff                               → var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))  resolved=#ffffff    ×37  stem_tool_roadready.js:20536
+      1  [light]  #d9f99d                            → linear-gradient(135deg, rgba(132,204,22,0.15), rgba(101,163,13,0.15))  resolved=#e8f1db    ×1  stem_tool_roadready.js:24650
+      1  [light]  #fff                               → var(--allo-stem-canvas, #0f172a)  resolved=#ffffff    ×2  stem_tool_stewardship.js:1635
+      1  [light]  #fff                               → var(--allo-stem-canvas, #0f172a)  resolved=#ffffff    ×2  stem_tool_stewardship.js:2105
+   1.01  [light]  #dcfce7                            → rgba(34,197,94,0.10)          resolved=#e9f9ef    ×1  stem_tool_bridgelab.js:2363
+   1.01  [light]  #c7d2fe                            → rgba(99,102,241,0.3)          resolved=#d0d1fb    ×18  stem_tool_cephalopodlab.js:14887
+   1.01  [light]  #d1fae5                            → rgba(21,128,61,0.10)          resolved=#e8f2ec    ×1  stem_tool_ecosystem.js:4162
+   1.01  [light]  #f3e8ff                            → linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(168,85,247,0.04) 100%)  resolved=#f3e7fe    ×1  stem_tool_ecosystem.js:4645
+   1.01  [light]  #d1fae5                            → linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.04) 100%)  resolved=#def5ed    ×1  stem_tool_fireecology.js:2811
+   1.01  [light]  var(--allo-stem-text, #cbd5e1)     → #0c1929                       resolved=#0c1929    ×1  stem_tool_fireecology.js:4860
+   1.01  [light]  #10b981                            → rgba(15,23,42,0.4)            resolved=#9fa2aa    ×1  stem_tool_fisherlab.js:10282
+   1.01  [light]  var(--allo-stem-text, #f1f5f9)     → rgba(15,23,42,0.7)            resolved=#131622    ×1  stem_tool_kitchenlab.js:3456
+   1.01  [light]  var(--allo-stem-text, var(--allo-stem-text, #cbd5e1)) → linear-gradient(135deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))  resolved=#0e1628    ×1  stem_tool_roadready.js:20689
+   1.01  [light]  var(--allo-stem-text, var(--allo-stem-text, #cbd5e1)) → rgba(100,116,139,0.2)         resolved=#14171c    ×1  stem_tool_roadready.js:20909
+   1.01  [light]  #fed7aa                            → rgba(180,83,9,0.18)           resolved=#ebd9d2    ×4  stem_tool_statslab.js:2263
+   1.02  [light]  #dcfce7                            → rgba(34,197,94,0.08)          resolved=#edfaf2    ×12  stem_tool_astronomy.js:1399
+   1.02  [light]  #dcfce7                            → rgba(34,197,94,0.08)          resolved=#ecf5e4    ×1  stem_tool_astronomy.js:4956
+   1.02  [light]  var(--allo-stem-text, #cbd5e1)     → linear-gradient(135deg, #021a0a, #0a2e1a)  resolved=#021a0a    ×1  stem_tool_atcTower.js:1683
+   1.02  [light]  #fde68a                            → linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)  resolved=#f1e4fe    ×1  stem_tool_ecosystem.js:4536
+   1.02  [light]  #fde68a                            → linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)  resolved=#f1e4fe    ×1  stem_tool_epidemic.js:2887
+   1.02  [light]  #e9d5ff                            → rgba(168,85,247,0.18)         resolved=#e7d3fd    ×1  stem_tool_fireecology.js:4262
+   1.02  [light]  #fde68a                            → rgba(251,146,60,0.25)         resolved=#fee4ce    ×3  stem_tool_kitchenlab.js:2013
+   1.02  [light]  #fde68a                            → rgba(220,38,38,0.15)          resolved=#fadede    ×1  stem_tool_kitchenlab.js:2367
+   1.02  [light]  #64748b                            → rgba(15,23,42,0.6)            resolved=#6f747f    ×1  stem_tool_kitchenlab.js:3312
+   1.02  [light]  var(--allo-stem-text, #f1f5f9)     → linear-gradient(135deg, #1c1410, #2a1d14)  resolved=#1c1410    ×1  stem_tool_kitchenlab.js:3406
+   1.02  [light]  var(--allo-stem-text, #cbd5e1)     → linear-gradient(135deg, #1c1410, #2a1d14)  resolved=#1c1410    ×2  stem_tool_kitchenlab.js:3450
+   1.02  [light]  #dcfce7                            → rgba(34,197,94,0.08)          resolved=#edfaf2    ×2  stem_tool_microbiology.js:3181
+   1.02  [light]  #fef3c7                            → rgba(99,102,241,0.10)         resolved=#eff0fe    ×1  stem_tool_optics.js:3211
+   1.02  [light]  #e0e7ff                            → rgba(99,102,241,0.18)         resolved=#e3e3fc    ×2  stem_tool_statslab.js:1977
+   1.02  [light]  #64748b                            → rgba(15,23,42,0.6)            resolved=#6f747f    ×1  stem_tool_statslab.js:2900
+   1.02  [light]  #fef3c7                            → rgba(99,102,241,0.10)         resolved=#eff0fe    ×1  stem_tool_statslab.js:3739
+   1.02  [light]  #fde68a                            → linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)  resolved=#f1e4fe    ×1  stem_tool_watercycle.js:1672
+   1.03  [light]  #dcfce7                            → rgba(34,197,94,0.10)          resolved=#e3f5ec    ×2  stem_tool_bridgelab.js:1706
+   1.03  [light]  #fecaca                            → linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)  resolved=#e8d6d6    ×1  stem_tool_ecosystem.js:4442
+   1.03  [light]  #fecaca                            → linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)  resolved=#e8d6d6    ×1  stem_tool_epidemic.js:2789
+   1.03  [light]  #fef3c7                            → linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)  resolved=#fef6e0    ×1  stem_tool_fireecology.js:2626
+   1.03  [light]  #fecaca                            → linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)  resolved=#e8d6d6    ×1  stem_tool_fireecology.js:4469
+   1.03  [light]  #fef3c7                            → rgba(56,189,248,0.10)         resolved=#ebf8fe    ×1  stem_tool_optics.js:3048
+   1.03  [light]  #fef3c7                            → rgba(245,158,11,0.10)         resolved=#fef5e7    ×1  stem_tool_optics.js:3098
+   1.03  [light]  #fca5a5                            → rgba(0,0,0,0.25)              resolved=#bfbfbf    ×1  stem_tool_skatelab.js:3118
+   1.03  [light]  #fef3c7                            → rgba(16,185,129,0.08)         resolved=#ecf9f5    ×2  stem_tool_statslab.js:3434
+   1.03  [light]  #fef3c7                            → rgba(245,158,11,0.10)         resolved=#fef5e7    ×1  stem_tool_statslab.js:5403
+   1.03  [light]  #fff                               → linear-gradient(135deg, rgba(134,239,172,0.10) 0%, rgba(56,189,248,0.04) 100%)  resolved=#f7fcff    ×1  stem_tool_stewardship.js:1349
+   1.03  [light]  #fef3c7                            → linear-gradient(110deg, rgba(245,158,11,0.10) 0%, rgba(239,68,68,0.18) 50%, rgba(124,58,237,0.10) 100%)  resolved=#fef5e7    ×1  stem_tool_throwlab.js:4293
+   1.03  [light]  #fecaca                            → linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)  resolved=#e8d6d6    ×1  stem_tool_watercycle.js:1576
+   1.04  [light]  var(--allo-stem-text, #e2e8f0)     → #0f1c2f                       resolved=#0f1c2f    ×1  stem_tool_aquaculture.js:8066
+   1.04  [light]  #e2e8f0                            → rgba(220,38,38,0.06)          resolved=#eaecef    ×1  stem_tool_astronomy.js:5623
+   1.04  [light]  #bbf7d0                            → linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(22,163,74,0.04) 100%)  resolved=#def2e6    ×1  stem_tool_ecosystem.js:3034
+   1.04  [light]  var(--allo-stem-text, #e2e8f0)     → #0f1c2f                       resolved=#0f1c2f    ×1  stem_tool_fisherlab.js:9457
+   1.04  [light]  rgba(255,255,255,.82)              → linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, #312e81 45%, #581c87 100%)  resolved=#f8fafc    ×1  stem_tool_llm_literacy.js:2266
+   1.04  [light]  #fff                               → rgba(255,255,255,.12)         resolved=#f9fbfc    ×3  stem_tool_llm_literacy.js:2272
+   1.04  [light]  rgba(255,255,255,.85)              → rgba(255,255,255,.08)         resolved=#f9fafc    ×1  stem_tool_llm_literacy.js:2313
+   1.04  [light]  rgba(255,255,255,.92)              → linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, #312e81 45%, #581c87 100%)  resolved=#f8fafc    ×1  stem_tool_llm_literacy.js:2339
+   1.04  [light]  #dcfce7                            → rgba(34,197,94,0.08)          resolved=#e9f1f2    ×1  stem_tool_microbiology.js:1964
+   1.04  [light]  var(--allo-stem-text, var(--allo-stem-text, #cbd5e1)) → linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.6))  resolved=#151937    ×1  stem_tool_roadready.js:21935
+   1.04  [light]  #fef3c7                            → rgba(99,102,241,0.05)         resolved=#f7f7fe    ×1  stem_tool_statslab.js:3264
+   1.04  [light]  #fef3c7                            → rgba(251,191,36,0.1)          resolved=#f7f8e9    ×1  stem_tool_statslab.js:5797
+   1.04  [light]  var(--allo-stem-text-soft, #94a3b8) → rgba(15,23,42,0.7)            resolved=#53556a    ×1  stem_tool_stewardship.js:2016
+   1.04  [light]  #86efac                            → rgba(34,197,94,0.20)          resolved=#c8e3dd    ×1  stem_tool_throwlab.js:4303
+   1.04  [light]  #e0f2fe                            → rgba(14,165,233,0.10)         resolved=#e7f6fd    ×1  stem_tool_watercycle.js:1320
+   1.05  [light]  #e2e8f0                            → rgba(99,102,241,0.20)         resolved=#e0e0fc    ×2  stem_tool_astronomy.js:1162
+   1.05  [light]  #fee2e2                            → rgba(220,38,38,0.10)          resolved=#fce9e9    ×1  stem_tool_bridgelab.js:2367
+   1.05  [light]  #fff                               → linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, #312e81 50%, #581c87 100%)  resolved=#f8fafc    ×1  stem_tool_llm_literacy.js:1870
+   1.05  [light]  #fff                               → linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, #312e81 45%, #581c87 100%)  resolved=#f8fafc    ×1  stem_tool_llm_literacy.js:2233
+   1.05  [light]  #fff                               → #f0fdf4                       resolved=#f0fdf4    ×2  stem_tool_llm_literacy.js:4384
+   1.05  [dark ]  #fff                               → #f0fdf4                       resolved=#f0fdf4    ×2  stem_tool_llm_literacy.js:4384
+   1.05  [light]  #fee2e2                            → rgba(220,38,38,0.10)          resolved=#fce9e9    ×1  stem_tool_microbiology.js:1519
+   1.05  [light]  #fff                               → linear-gradient(135deg, #0c4a6e, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×2  stem_tool_roadready.js:19717
+   1.05  [light]  #fff                               → linear-gradient(135deg, #78350f, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×5  stem_tool_roadready.js:19723
+   1.05  [light]  #fff                               → linear-gradient(135deg, #4c1d95, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×3  stem_tool_roadready.js:19729
+   1.05  [light]  #fff                               → linear-gradient(135deg, #14532d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×2  stem_tool_roadready.js:19735
+   1.05  [light]  #fff                               → linear-gradient(135deg, #7f1d1d, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×4  stem_tool_roadready.js:19741
+   1.05  [light]  #fff                               → linear-gradient(135deg, #164e63, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×2  stem_tool_roadready.js:19747
+   1.05  [light]  #fff                               → linear-gradient(135deg, #064e3b, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×3  stem_tool_roadready.js:19753
+   1.05  [light]  #fff                               → linear-gradient(135deg, #831843, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×3  stem_tool_roadready.js:19780
+   1.05  [light]  #fff                               → linear-gradient(135deg, #450a0a, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×2  stem_tool_roadready.js:19828
+   1.05  [light]  #fff                               → linear-gradient(135deg, #7c2d12, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×3  stem_tool_roadready.js:19956
+   1.05  [light]  #fff                               → linear-gradient(135deg, #404040, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×2  stem_tool_roadready.js:19962
+   1.05  [light]  #fff                               → linear-gradient(135deg, #134e4a, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×2  stem_tool_roadready.js:19974
+   1.05  [light]  #fff                               → linear-gradient(135deg, #881337, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×1  stem_tool_roadready.js:19980
+   1.05  [light]  #fff                               → linear-gradient(135deg, #3f6212, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×1  stem_tool_roadready.js:19986
+   1.05  [light]  #fff                               → linear-gradient(135deg, #9f1239, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×1  stem_tool_roadready.js:19992
+   1.05  [light]  #fff                               → linear-gradient(135deg, #701a75, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×1  stem_tool_roadready.js:20022
+   1.05  [light]  #fff                               → linear-gradient(135deg, #312e81, var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))  resolved=#f8fafc    ×1  stem_tool_roadready.js:20088
+   1.05  [light]  #fff                               → var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))  resolved=#f8fafc    ×1  stem_tool_roadready.js:21387
+   1.05  [light]  var(--allo-stem-text, var(--allo-stem-text, #cbd5e1)) → #0b1220                       resolved=#0b1220    ×1  stem_tool_roadready.js:27546
+   1.05  [dark ]  #0b1220                            → var(--allo-stem-canvas, #0f172a)  resolved=#0f172a    ×1  stem_tool_statslab.js:2115
+   1.06  [light]  #fde68a                            → rgba(220,38,38,0.18)          resolved=#f9d8d8    ×1  stem_tool_cephalopodlab.js:14111
+   1.06  [light]  #bbf7d0                            → rgba(21,128,61,0.10)          resolved=#e8f2ec    ×1  stem_tool_ecosystem.js:4163
+   1.06  [light]  #fde68a                            → linear-gradient(135deg, rgba(220,38,38,0.18), rgba(251,146,60,0.18))  resolved=#f9d8d8    ×2  stem_tool_kitchenlab.js:3114
+   1.06  [light]  #86efac                            → linear-gradient(135deg, rgba(220,38,38,0.18), rgba(251,146,60,0.18))  resolved=#f9d8d8    ×1  stem_tool_kitchenlab.js:3134
+   1.06  [light]  #fef3c7                            → rgba(56,189,248,0.06)         resolved=#f3fbff    ×1  stem_tool_optics.js:3015
+   1.06  [light]  #fef3c7                            → rgba(251,191,36,0.10)         resolved=#fff9e9    ×1  stem_tool_optics.js:3884
+   1.06  [dark ]  #0f172a                            → rgba(15,23,42,0.65)           resolved=#141d30    ×1  stem_tool_optics.js:11829
+   1.06  [light]  #fca5a5                            → linear-gradient(135deg, rgba(127,29,29,0.3), rgba(239,68,68,0.1))  resolved=#d9bbbb    ×2  stem_tool_roadready.js:26153
+   1.06  [light]  #fef3c7                            → rgba(167,139,250,0.18)        resolved=#efeafe    ×2  stem_tool_skatelab.js:3052
+   1.06  [light]  #fef3c7                            → rgba(251,191,36,0.10)         resolved=#fff9e9    ×1  stem_tool_skatelab.js:3249
+   1.06  [light]  #fef3c7                            → var(--allo-stem-panel, #1e293b)  resolved=#f8fafc    ×1  stem_tool_skatelab.js:3617
+   1.06  [light]  #fef3c7                            → rgba(254,243,199,0.10)        resolved=#f9f9f7    ×2  stem_tool_skatelab.js:4000
+   1.06  [light]  #fef3c7                            → var(--allo-stem-panel, #1e293b)  resolved=#f8fafc    ×1  stem_tool_skatelab.js:4139
+   1.06  [light]  #fef3c7                            → var(--allo-stem-panel, #1e293b)  resolved=#f8fafc    ×1  stem_tool_stewardship.js:1811
+   1.06  [light]  #e9d5ff                            → rgba(168,85,247,0.18)         resolved=#e9defe    ×1  stem_tool_stewardship.js:2001
+   1.07  [light]  #e2e8f0                            → rgba(59,130,246,0.06)         resolved=#e1f1fd    ×1  stem_tool_astronomy.js:5537
+   1.07  [light]  #e2e8f0                            → rgba(59,130,246,0.06)         resolved=#e0f2fc    ×1  stem_tool_astronomy.js:5619
+   1.07  [light]  #fde68a                            → rgba(34,197,94,0.18)          resolved=#d7f5e2    ×1  stem_tool_cephalopodlab.js:14133
+   1.07  [light]  #86efac                            → rgba(21,128,61,0.20)          resolved=#d0e6d8    ×1  stem_tool_ecosystem.js:4376
+  ... 1165 more high-confidence pairs.
+
+  TOTAL: 1285 high-confidence severe pairs (of 1421 raw)
+
+------------------------------------------------------------------------------
+NEAR-MISS (3:1 ≤ ratio < 4.5:1)
+------------------------------------------------------------------------------
+      3  [light]  #5eead4                            → rgba(20,184,166,0.18)               depth=3  ×1  stem_tool_schoolbehaviortoolkit.js:1876
+   3.01  [light]  var(--allo-stem-text, #ffffff)     → linear-gradient(135deg, #0284c7, #0369a1)  depth=1  ×1  stem_tool_assessmentliteracy.js:18009
+   3.02  [light]  #bae6fd                            → rgba(15,23,42,0.55)                 depth=1  ×107  stem_tool_aquaculture.js:8265
+   3.02  [light]  #bae6fd                            → rgba(15,23,42,0.55)                 depth=1  ×68  stem_tool_fisherlab.js:9465
+   3.02  [light]  #818cf8                            → none                                depth=4  ×1  stem_tool_graphcalc.js:768
+   3.02  [light]  #7dd3fc                            → rgba(56,189,248,0.10)               depth=2  ×2  stem_tool_optics.js:11937
+   3.03  [dark ]  #6b7280                            → transparent                         depth=1  ×1  stem_tool_applab.js:19639
+   3.03  [light]  #dcfce7                            → rgba(34,197,94,0.08)                depth=2  ×1  stem_tool_kitchenlab.js:3962
+   3.03  [light]  #dc2626                            → #1e293b                             depth=1  ×3  stem_tool_optics.js:3356
+   3.03  [dark ]  #dc2626                            → #1e293b                             depth=1  ×3  stem_tool_optics.js:3356
+   3.03  [light]  #d8b4fe                            → rgba(168,85,247,0.20)               depth=2  ×1  stem_tool_optics.js:11415
+   3.04  [light]  #fde047                            → rgba(15,23,42,0.55)                 depth=1  ×5  stem_tool_aquaculture.js:19266
+   3.04  [dark ]  var(--allo-stem-text, #ffffff)     → linear-gradient(135deg, #0d9488 0%, #7c3aed 100%)  depth=1  ×1  stem_tool_birdlab.js:17029
+   3.04  [light]  #fde047                            → rgba(15,23,42,0.55)                 depth=1  ×9  stem_tool_fisherlab.js:10573
+   3.04  [light]  #fdba74                            → rgba(251,146,60,0.10)               depth=2  ×1  stem_tool_optics.js:12091
+   3.05  [light]  #86efac                            → rgba(34,197,94,0.15)                depth=2  ×1  stem_tool_kitchenlab.js:3203
+   3.05  [light]  #ef4444                            → var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))  depth=1  ×8  stem_tool_roadready.js:22557
+   3.06  [light]  #bef264                            → rgba(15,23,42,0.55)                 depth=1  ×3  stem_tool_aquaculture.js:8253
+   3.07  [dark ]  #64748b                            → var(--allo-stem-panel, #1e293b)     depth=3  ×1  stem_tool_stewardship.js:1244
+   3.08  [light]  #38bdf8                            → rgba(15,23,42,0.7)                  depth=1  ×1  stem_tool_ecosystem.js:4155
+   3.08  [light]  #38bdf8                            → rgba(15,23,42,0.7)                  depth=1  ×1  stem_tool_epidemic.js:2300
+   3.08  [light]  #38bdf8                            → rgba(15,23,42,0.7)                  depth=1  ×1  stem_tool_fireecology.js:3994
+   3.08  [light]  #38bdf8                            → rgba(15,23,42,0.7)                  depth=1  ×1  stem_tool_watercycle.js:1312
+   3.09  [light]  #fff                               → linear-gradient(135deg, #65a30d, #3f6212)  depth=1  ×2  stem_tool_roadready.js:24675
+   3.09  [dark ]  #fff                               → linear-gradient(135deg, #65a30d, #3f6212)  depth=1  ×2  stem_tool_roadready.js:24675
+   3.09  [light]  #a855f7                            → linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)  depth=2  ×1  stem_tool_stewardship.js:1945
+    3.1  [dark ]  #a855f7                            → linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)  depth=1  ×1  stem_tool_ecosystem.js:4535
+    3.1  [dark ]  #a855f7                            → transparent                         depth=2  ×1  stem_tool_ecosystem.js:4539
+    3.1  [dark ]  #a855f7                            → linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)  depth=1  ×1  stem_tool_epidemic.js:2886
+    3.1  [dark ]  #a855f7                            → transparent                         depth=2  ×1  stem_tool_epidemic.js:2890
+    3.1  [dark ]  #a855f7                            → linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)  depth=1  ×1  stem_tool_fireecology.js:4677
+    3.1  [dark ]  #a855f7                            → transparent                         depth=2  ×1  stem_tool_fireecology.js:4684
+    3.1  [light]  #d8b4fe                            → rgba(168,85,247,0.10)               depth=2  ×1  stem_tool_optics.js:12139
+    3.1  [dark ]  #a855f7                            → linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)  depth=1  ×1  stem_tool_watercycle.js:1671
+    3.1  [dark ]  #a855f7                            → transparent                         depth=2  ×1  stem_tool_watercycle.js:1675
+   3.12  [light]  #a7f3d0                            → rgba(15,23,42,0.55)                 depth=1  ×11  stem_tool_aquaculture.js:8469
+   3.13  [light]  #dc2626                            → rgba(220,38,38,0.1)                 depth=2  ×1  stem_tool_applab.js:19755
+   3.13  [dark ]  #dc2626                            → rgba(220,38,38,0.1)                 depth=2  ×1  stem_tool_applab.js:19755
+   3.13  [light]  var(--allo-stem-text, #ffffff)     → linear-gradient(135deg, #0d9488 0%, #7c3aed 100%)  depth=1  ×1  stem_tool_birdlab.js:17029
+   3.13  [light]  #3b82f6                            → #1e3a5f                             depth=1  ×1  stem_tool_echotrainer.js:1606
+   3.13  [dark ]  #3b82f6                            → #1e3a5f                             depth=1  ×1  stem_tool_echotrainer.js:1606
+   3.13  [dark ]  #7c3aed                            → var(--allo-stem-canvas, #0f172a)    depth=1  ×1  stem_tool_fireecology.js:2449
+   3.13  [light]  #ec4899                            → rgba(236,72,153,0.10)               depth=1  ×1  stem_tool_microbiology.js:1609
+   3.14  [light]  #c7d2fe                            → rgba(15,23,42,0.6)                  depth=1  ×5  stem_tool_cephalopodlab.js:14085
+   3.15  [light]  #a78bfa                            → rgba(167,139,250,0.08)              depth=3  ×1  stem_tool_graphcalc.js:777
+   3.15  [light]  var(--allo-stem-text, #cbd5e1)     → rgba(15,23,42,0.6)                  depth=2  ×1  stem_tool_kitchenlab.js:3146
+   3.15  [light]  #d8b4fe                            → rgba(15,23,42,0.65)                 depth=1  ×13  stem_tool_optics.js:8614
+   3.15  [light]  #e74c3c                            → linear-gradient(135deg, rgba(231,76,60,0.15), rgba(231,76,60,0.05))  depth=1  ×1  stem_tool_solarsystem.js:5401
+   3.16  [light]  #cbd5e1                            → rgba(15,23,42,0.6)                  depth=1  ×1  stem_tool_optics.js:3525
+   3.16  [light]  #fef3c7                            → rgba(15,23,42,0.50)                 depth=2  ×1  stem_tool_skatelab.js:4826
+   3.16  [light]  #cbd5e1                            → rgba(15,23,42,0.6)                  depth=1  ×1  stem_tool_statslab.js:2900
+   3.16  [light]  #cbd5e1                            → rgba(15,23,42,0.60)                 depth=1  ×1  stem_tool_statslab.js:3151
+   3.18  [dark ]  #a855f7                            → linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(168,85,247,0.04) 100%)  depth=1  ×1  stem_tool_ecosystem.js:4644
+   3.19  [light]  #d97706                            → #ffffff                             depth=2  ×1  stem_tool_birdlab.js:16090
+   3.19  [dark ]  #d97706                            → #ffffff                             depth=2  ×1  stem_tool_birdlab.js:16090
+   3.19  [light]  #fff                               → linear-gradient(135deg,#d97706,#b45309)  depth=1  ×2  stem_tool_skatelab.js:2867
+   3.19  [dark ]  #fff                               → linear-gradient(135deg,#d97706,#b45309)  depth=1  ×2  stem_tool_skatelab.js:2867
+   3.19  [light]  #fff                               → linear-gradient(135deg,#d97706,#b45309)  depth=3  ×1  stem_tool_skatelab.js:2958
+   3.19  [dark ]  #fff                               → linear-gradient(135deg,#d97706,#b45309)  depth=3  ×1  stem_tool_skatelab.js:2958
+   3.19  [light]  #fff                               → #d97706                             depth=2  ×1  stem_tool_skatelab.js:4000
+  ... 358 more.

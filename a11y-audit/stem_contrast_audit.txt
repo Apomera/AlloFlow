@@ -1,0 +1,283 @@
+========================================================================
+  STEM-TOOL CONTRAST AUDIT (WCAG 2.1 AA, normal text 4.5:1)
+========================================================================
+
+Files scanned:           104
+Color/bg pairs analyzed: 13924
+
+SEVERE FAILURES (ratio < 3:1) — split by confidence:
+  DEFINITE       (opaque bg, distinct hues): 569 instances, 295 unique pairs
+  SAME-HUE rgba  (depends on grandparent bg): 434 instances, 218 unique pairs
+  TRANSLUCENT bg (modest false-positive risk): 4398 instances, 1538 unique pairs
+NEAR-MISS (3:1 – 4.5:1): 533 instances, 294 unique pairs
+
+Tools with ≥1 DEFINITE failure: 42 / 104
+
+NOTE: ratios computed against the nearest declared background in the
+same/preceding style block (≤30 lines). Misses ancestor-inherited bg.
+Theme = "light" uses :root/theme-default CSS var values; "dark" uses
+.theme-dark values from AlloFlowANTI.txt.
+
+------------------------------------------------------------------------
+TOP 30 TOOLS BY FAILURE COUNT (severe + near)
+------------------------------------------------------------------------
+   120 (112 severe,   8 near)   stem_tool_nutritionlab.js
+   101 ( 54 severe,  47 near)   stem_tool_optics.js
+    93 ( 45 severe,  48 near)   stem_tool_microbiology.js
+    88 ( 36 severe,  52 near)   stem_tool_statslab.js
+    82 ( 30 severe,  52 near)   stem_tool_bridgelab.js
+    63 ( 53 severe,  10 near)   stem_tool_fireecology.js
+    57 (  7 severe,  50 near)   stem_tool_learning_lab.js
+    54 ( 15 severe,  39 near)   stem_tool_cephalopodlab.js
+    49 ( 15 severe,  34 near)   stem_tool_geometryworld.js
+    38 (  0 severe,  38 near)   stem_tool_astronomy.js
+    32 ( 14 severe,  18 near)   stem_tool_climateExplorer.js
+    26 (  6 severe,  20 near)   stem_tool_roadready.js
+    25 ( 24 severe,   1 near)   stem_tool_stewardship.js
+    23 ( 17 severe,   6 near)   stem_tool_skatelab.js
+    21 (  0 severe,  21 near)   stem_tool_cyberdefense.js
+    18 (  6 severe,  12 near)   stem_tool_graphcalc.js
+    17 ( 14 severe,   3 near)   stem_tool_fisherlab.js
+    16 ( 10 severe,   6 near)   stem_tool_echotrainer.js
+    16 (  3 severe,  13 near)   stem_tool_kitchenlab.js
+    16 ( 14 severe,   2 near)   stem_tool_printingpress.js
+    16 ( 14 severe,   2 near)   stem_tool_swimlab.js
+    15 (  5 severe,  10 near)   stem_tool_schoolbehaviortoolkit.js
+    13 ( 11 severe,   2 near)   stem_tool_atcTower.js
+    12 (  7 severe,   5 near)   stem_tool_aquaculture.js
+    12 (  0 severe,  12 near)   stem_tool_flightsim.js
+    11 (  9 severe,   2 near)   stem_tool_llm_literacy.js
+     9 (  5 severe,   4 near)   stem_tool_ecosystem.js
+     7 (  1 severe,   6 near)   stem_tool_birdlab.js
+     7 (  7 severe,   0 near)   stem_tool_epidemic.js
+     6 (  4 severe,   2 near)   stem_tool_applab.js
+
+------------------------------------------------------------------------
+DEFINITE SEVERE FAILURES — fix these (heuristic high-confidence)
+------------------------------------------------------------------------
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_bridgelab.js:4056
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×2  stem_tool_climateExplorer.js:3768
+  ratio=    1  [light]  fg=#7c3aed                            bg=#7c3aed                            ×1  stem_tool_echotrainer.js:1699
+  ratio=    1  [dark ]  fg=#7c3aed                            bg=#7c3aed                            ×1  stem_tool_echotrainer.js:1699
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×2  stem_tool_ecosystem.js:4389
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×2  stem_tool_epidemic.js:2721
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×2  stem_tool_fireecology.js:2075
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×2  stem_tool_geometryworld.js:5883
+  ratio=    1  [light]  fg=#fff                               bg=#fff                               ×1  stem_tool_llm_literacy.js:2438
+  ratio=    1  [dark ]  fg=#fff                               bg=#fff                               ×1  stem_tool_llm_literacy.js:2438
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_microbiology.js:4424
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_optics.js:3182
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_statslab.js:3710
+  ratio=    1  [light]  fg=#fff                               bg=var(--allo-stem-canvas, #0f172a)   ×2  stem_tool_watercycle.js:1521
+  ratio= 1.01  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=#0c1929                            ×1  stem_tool_fireecology.js:4528
+  ratio= 1.02  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=#1c1410                            ×1  stem_tool_cephalopodlab.js:17494
+  ratio= 1.03  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#14b8a6                            ×1  stem_tool_aquaculture.js:7826
+  ratio= 1.03  [dark ]  fg=var(--allo-stem-text-soft, #64748b) bg=#14b8a6                            ×1  stem_tool_schoolbehaviortoolkit.js:1109
+  ratio= 1.03  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#14b8a6                            ×1  stem_tool_schoolbehaviortoolkit.js:1496
+  ratio= 1.04  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=#0f1c2f                            ×1  stem_tool_aquaculture.js:7769
+  ratio= 1.04  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=#0f1c2f                            ×1  stem_tool_fisherlab.js:9459
+  ratio= 1.05  [light]  fg=#fff                               bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_bridgelab.js:4078
+  ratio= 1.05  [light]  fg=#fff                               bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_fireecology.js:2589
+  ratio= 1.05  [light]  fg=#fff                               bg=var(--allo-stem-panel, #1e293b)    ×2  stem_tool_geometryworld.js:4821
+  ratio= 1.05  [light]  fg=#fff                               bg=#f0fdf4                            ×2  stem_tool_llm_literacy.js:4396
+  ratio= 1.05  [dark ]  fg=#fff                               bg=#f0fdf4                            ×2  stem_tool_llm_literacy.js:4396
+  ratio= 1.05  [light]  fg=#fff                               bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_microbiology.js:4444
+  ratio= 1.05  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=#0b1220                            ×1  stem_tool_optics.js:5384
+  ratio= 1.05  [light]  fg=#fff                               bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_playlab.js:3565
+  ratio= 1.05  [dark ]  fg=#0b1220                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_statslab.js:2115
+  ratio= 1.06  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#a78bfa                            ×1  stem_tool_cephalopodlab.js:17563
+  ratio= 1.06  [light]  fg=#fef3c7                            bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_skatelab.js:3619
+  ratio= 1.06  [light]  fg=#fef3c7                            bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_stewardship.js:1811
+  ratio= 1.08  [light]  fg=rgba(254, 240, 138, 0.5)           bg=#fff                               ×1  stem_tool_allobotsage.js:3049
+  ratio= 1.08  [dark ]  fg=rgba(254, 240, 138, 0.5)           bg=#fff                               ×1  stem_tool_allobotsage.js:3049
+  ratio= 1.08  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=#0a0e1a                            ×2  stem_tool_bridgelab.js:3340
+  ratio= 1.08  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#0ea5e9                            ×1  stem_tool_fisherlab.js:9524
+  ratio= 1.08  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=#0a0e1a                            ×3  stem_tool_microbiology.js:1429
+  ratio= 1.08  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=#0a0e1a                            ×1  stem_tool_microbiology.js:1456
+  ratio= 1.09  [light]  fg=#fff                               bg=#fdf2f8                            ×1  stem_tool_nutritionlab.js:2750
+  ratio= 1.09  [dark ]  fg=#fff                               bg=#fdf2f8                            ×1  stem_tool_nutritionlab.js:2750
+  ratio=  1.1  [light]  fg=#fff                               bg=#f5f3ff                            ×1  stem_tool_llm_literacy.js:2182
+  ratio=  1.1  [dark ]  fg=#fff                               bg=#f5f3ff                            ×1  stem_tool_llm_literacy.js:2182
+  ratio=  1.1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=#0a0a18                            ×6  stem_tool_optics.js:13447
+  ratio= 1.11  [light]  fg=#fef3c7                            bg=var(--allo-stem-canvas, #0f172a)   ×8  stem_tool_optics.js:546
+  ratio= 1.11  [light]  fg=#fef3c7                            bg=var(--allo-stem-canvas, #0f172a)   ×4  stem_tool_skatelab.js:3636
+  ratio= 1.11  [light]  fg=#fef3c7                            bg=var(--allo-stem-canvas, #0f172a)   ×9  stem_tool_statslab.js:2342
+  ratio= 1.12  [light]  fg=#fde68a                            bg=#fef3c7                            ×3  stem_tool_printingpress.js:813
+  ratio= 1.12  [dark ]  fg=#fde68a                            bg=#fef3c7                            ×3  stem_tool_printingpress.js:813
+  ratio= 1.12  [light]  fg=#fde68a                            bg=#fef3c7                            ×3  stem_tool_swimlab.js:605
+  ratio= 1.12  [dark ]  fg=#fde68a                            bg=#fef3c7                            ×3  stem_tool_swimlab.js:605
+  ratio= 1.13  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#22c55e                            ×1  stem_tool_climateExplorer.js:3146
+  ratio= 1.13  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#22c55e                            ×1  stem_tool_optics.js:13200
+  ratio= 1.14  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=#86efac                            ×1  stem_tool_cephalopodlab.js:17631
+  ratio= 1.16  [light]  fg=#fcd34d                            bg=#fbbf24                            ×1  stem_tool_optics.js:6990
+  ratio= 1.16  [dark ]  fg=#fcd34d                            bg=#fbbf24                            ×1  stem_tool_optics.js:6990
+  ratio= 1.18  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=#000                               ×1  stem_tool_atcTower.js:1713
+  ratio= 1.18  [light]  fg=#e2e8f0                            bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_microbiology.js:4411
+  ratio= 1.19  [light]  fg=#fde68a                            bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_epidemic.js:2776
+  ratio= 1.19  [light]  fg=#fde68a                            bg=var(--allo-stem-panel, #1e293b)    ×1  stem_tool_microbiology.js:4179
+  ratio= 1.22  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=#1f2937                            ×1  stem_tool_optics.js:4365
+  ratio= 1.23  [dark ]  fg=var(--allo-stem-text, #ffffff)     bg=#ffffff                            ×1  stem_tool_birdlab.js:14419
+  ratio= 1.23  [light]  fg=#e0e7ff                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_fireecology.js:4912
+  ratio= 1.23  [dark ]  fg=var(--allo-stem-text, #ffffff)     bg=#ffffff                            ×1  stem_tool_llm_literacy.js:2874
+  ratio= 1.23  [light]  fg=#e0e7ff                            bg=var(--allo-stem-canvas, #0f172a)   ×4  stem_tool_optics.js:304
+  ratio= 1.23  [light]  fg=#e0e7ff                            bg=var(--allo-stem-canvas, #0f172a)   ×2  stem_tool_statslab.js:2694
+  ratio= 1.25  [light]  fg=#fde68a                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_archstudio.js:1935
+  ratio= 1.25  [light]  fg=#fde68a                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_climateExplorer.js:3821
+  ratio= 1.25  [light]  fg=#fde68a                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_ecosystem.js:4453
+  ratio= 1.25  [light]  fg=#fde68a                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_epidemic.js:2800
+  ratio= 1.25  [light]  fg=#fde68a                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_fireecology.js:4148
+  ratio= 1.25  [light]  fg=#fde68a                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_microbiology.js:3683
+  ratio= 1.25  [light]  fg=#fde68a                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_watercycle.js:1587
+  ratio= 1.33  [light]  fg=var(--allo-stem-text-soft, #475569) bg=#7c3aed                            ×1  stem_tool_brainatlas.js:3683
+  ratio= 1.33  [light]  fg=#bae6fd                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_climateExplorer.js:3954
+  ratio= 1.33  [light]  fg=#bae6fd                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_epidemic.js:2971
+  ratio= 1.33  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#7c3aed                            ×1  stem_tool_optics.js:3331
+  ratio= 1.33  [light]  fg=#bae6fd                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_watercycle.js:1749
+  ratio= 1.34  [light]  fg=#86efac                            bg=var(--allo-stem-panel, #1e293b)    ×2  stem_tool_skatelab.js:3458
+  ratio= 1.35  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=#fbbf24                            ×1  stem_tool_optics.js:6993
+  ... 215 more definite pairs omitted.
+
+------------------------------------------------------------------------
+TRANSLUCENT-BG SEVERE — likely real but rendered color depends on grandparent
+------------------------------------------------------------------------
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.55)                ×449  stem_tool_aquaculture.js:7803
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.55)                ×97  stem_tool_aquaculture.js:9203
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.7)                 ×1  stem_tool_aquaculture.js:18249
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.7)                 ×1  stem_tool_aquaculture.js:18260
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.6)                 ×1  stem_tool_aquaculture.js:18846
+  ratio=    1  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(71,85,105,.3)                 ×4  stem_tool_archstudio.js:1449
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,.92)                 ×1  stem_tool_archstudio.js:2119
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.6)                 ×1  stem_tool_behaviorlab.js:4874
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.85)                ×2  stem_tool_bikelab.js:1422
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.5)                 ×48  stem_tool_cephalopodlab.js:729
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.5)                 ×24  stem_tool_cephalopodlab.js:734
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.6)                 ×3  stem_tool_cephalopodlab.js:14089
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.6)                 ×6  stem_tool_cephalopodlab.js:15950
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.55)                ×3  stem_tool_cephalopodlab.js:18045
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.55)                ×3  stem_tool_cephalopodlab.js:18775
+  ratio=    1  [light]  fg=var(--allo-stem-text, #f1f5f9)     bg=rgba(15,23,42,0.7)                 ×1  stem_tool_cephalopodlab.js:19788
+  ratio=    1  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(148,163,184,0.06)             ×4  stem_tool_climateExplorer.js:2149
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.5)                 ×1  stem_tool_climateExplorer.js:2245
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.6)                 ×1  stem_tool_climateExplorer.js:3564
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.7)                 ×3  stem_tool_climateExplorer.js:3569
+  ratio=    1  [light]  fg=var(--allo-stem-text, #f1f5f9)     bg=rgba(15,23,42,0.85)                ×1  stem_tool_companionplanting.js:5750
+  ratio=    1  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(148,163,184,0.2)              ×2  stem_tool_cyberdefense.js:3168
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.45)                ×1  stem_tool_cyberdefense.js:3326
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.5)                 ×4  stem_tool_cyberdefense.js:3379
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.8)                 ×1  stem_tool_cyberdefense.js:3937
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.7)                 ×4  stem_tool_cyberdefense.js:4012
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.55)                ×2  stem_tool_cyberdefense.js:4040
+  ratio=    1  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(148,163,184,0.1)              ×2  stem_tool_cyberdefense.js:4134
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.45)                ×1  stem_tool_cyberdefense.js:5125
+  ratio=    1  [dark ]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(148,163,184,0.18)             ×1  stem_tool_cyberdefense.js:5266
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.6)                 ×1  stem_tool_ecosystem.js:4143
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.7)                 ×3  stem_tool_ecosystem.js:4148
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.6)                 ×1  stem_tool_epidemic.js:2288
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.7)                 ×3  stem_tool_epidemic.js:2293
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.6)                 ×2  stem_tool_fireecology.js:3574
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.7)                 ×3  stem_tool_fireecology.js:3655
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.55)                ×217  stem_tool_fisherlab.js:9498
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.55)                ×3  stem_tool_fisherlab.js:10181
+  ratio=    1  [light]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(15,23,42,0.4)                 ×1  stem_tool_fisherlab.js:10275
+  ratio=    1  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(15,23,42,0.7)                 ×1  stem_tool_fisherlab.js:10436
+  ... 1498 more translucent pairs omitted.
+
+------------------------------------------------------------------------
+SAME-HUE rgba SUSPECT — only fails if grandparent bg = same hue (eyeball check)
+------------------------------------------------------------------------
+  ratio=    1  [light]  fg=#818cf8                            bg=rgba(129,140,248,0.1)              ×1  stem_tool_applab.js:19703
+  ratio=    1  [dark ]  fg=#818cf8                            bg=rgba(129,140,248,0.1)              ×1  stem_tool_applab.js:19703
+  ratio=    1  [light]  fg=#fff                               bg=rgba(255,255,255,0.2)              ×1  stem_tool_applab.js:19974
+  ratio=    1  [dark ]  fg=#fff                               bg=rgba(255,255,255,0.2)              ×1  stem_tool_applab.js:19974
+  ratio=    1  [light]  fg=#86efac                            bg=rgba(134,239,172,0.08)             ×1  stem_tool_aquaculture.js:18853
+  ratio=    1  [dark ]  fg=#86efac                            bg=rgba(134,239,172,0.08)             ×1  stem_tool_aquaculture.js:18853
+  ratio=    1  [light]  fg=#fbbf24                            bg=rgba(251,191,36,0.18)              ×1  stem_tool_behaviorlab.js:3190
+  ratio=    1  [dark ]  fg=#fbbf24                            bg=rgba(251,191,36,0.18)              ×1  stem_tool_behaviorlab.js:3190
+  ratio=    1  [light]  fg=#fbbf24                            bg=rgba(251,191,36,0.06)              ×16  stem_tool_bridgelab.js:1782
+  ratio=    1  [dark ]  fg=#fbbf24                            bg=rgba(251,191,36,0.06)              ×16  stem_tool_bridgelab.js:1782
+  ratio=    1  [light]  fg=#a78bfa                            bg=rgba(167,139,250,0.12)             ×1  stem_tool_cephalopodlab.js:586
+  ratio=    1  [dark ]  fg=#a78bfa                            bg=rgba(167,139,250,0.12)             ×1  stem_tool_cephalopodlab.js:586
+  ratio=    1  [light]  fg=#a78bfa                            bg=rgba(167,139,250,0.1)              ×5  stem_tool_cephalopodlab.js:823
+  ratio=    1  [dark ]  fg=#a78bfa                            bg=rgba(167,139,250,0.1)              ×5  stem_tool_cephalopodlab.js:823
+  ratio=    1  [light]  fg=#fb923c                            bg=rgba(251,146,60,0.1)               ×1  stem_tool_cephalopodlab.js:15640
+  ratio=    1  [dark ]  fg=#fb923c                            bg=rgba(251,146,60,0.1)               ×1  stem_tool_cephalopodlab.js:15640
+  ratio=    1  [light]  fg=#fbbf24                            bg=rgba(251,191,36,0.1)               ×1  stem_tool_cephalopodlab.js:16850
+  ratio=    1  [dark ]  fg=#fbbf24                            bg=rgba(251,191,36,0.1)               ×1  stem_tool_cephalopodlab.js:16850
+  ratio=    1  [light]  fg=#fca5a5                            bg=rgba(252,165,165,0.08)             ×1  stem_tool_cephalopodlab.js:16872
+  ratio=    1  [dark ]  fg=#fca5a5                            bg=rgba(252,165,165,0.08)             ×1  stem_tool_cephalopodlab.js:16872
+  ratio=    1  [light]  fg=#86efac                            bg=rgba(134,239,172,0.08)             ×2  stem_tool_cephalopodlab.js:16907
+  ratio=    1  [dark ]  fg=#86efac                            bg=rgba(134,239,172,0.08)             ×2  stem_tool_cephalopodlab.js:16907
+  ratio=    1  [light]  fg=#a78bfa                            bg=rgba(167,139,250,0.18)             ×1  stem_tool_cephalopodlab.js:17435
+  ratio=    1  [dark ]  fg=#a78bfa                            bg=rgba(167,139,250,0.18)             ×1  stem_tool_cephalopodlab.js:17435
+  ratio=    1  [light]  fg=#a78bfa                            bg=rgba(167,139,250,0.08)             ×25  stem_tool_cephalopodlab.js:17649
+  ratio=    1  [dark ]  fg=#a78bfa                            bg=rgba(167,139,250,0.08)             ×25  stem_tool_cephalopodlab.js:17649
+  ratio=    1  [light]  fg=#fbbf24                            bg=rgba(251,191,36,0.12)              ×9  stem_tool_cephalopodlab.js:17685
+  ratio=    1  [dark ]  fg=#fbbf24                            bg=rgba(251,191,36,0.12)              ×9  stem_tool_cephalopodlab.js:17685
+  ratio=    1  [light]  fg=#fbbf24                            bg=rgba(251,191,36,0.08)              ×9  stem_tool_cephalopodlab.js:17733
+  ratio=    1  [dark ]  fg=#fbbf24                            bg=rgba(251,191,36,0.08)              ×9  stem_tool_cephalopodlab.js:17733
+  ... 188 more same-hue pairs omitted.
+
+------------------------------------------------------------------------
+NEAR-MISS FAILURES (3:1 ≤ ratio < 4.5:1) — passes for large/UI, fails normal text
+------------------------------------------------------------------------
+  ratio=    3  [light]  fg=#fca5a5                            bg=#7c3aed                            ×1  stem_tool_fireecology.js:2184
+  ratio=    3  [dark ]  fg=#fca5a5                            bg=#7c3aed                            ×1  stem_tool_fireecology.js:2184
+  ratio= 3.01  [light]  fg=#cbd5e1                            bg=rgba(99,102,241,0.08)              ×1  stem_tool_astronomy.js:4842
+  ratio= 3.01  [dark ]  fg=#cbd5e1                            bg=rgba(99,102,241,0.08)              ×1  stem_tool_astronomy.js:4842
+  ratio= 3.01  [light]  fg=#000                               bg=#7e22ce                            ×2  stem_tool_optics.js:4374
+  ratio= 3.01  [dark ]  fg=#000                               bg=#7e22ce                            ×2  stem_tool_optics.js:4374
+  ratio= 3.04  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#14b8a6                            ×1  stem_tool_aquaculture.js:7826
+  ratio= 3.04  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(20,184,166,0.20)              ×2  stem_tool_behaviorlab.js:4820
+  ratio= 3.04  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(20,184,166,0.10)              ×1  stem_tool_optics.js:12339
+  ratio= 3.04  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(20,184,166,0.18)              ×4  stem_tool_schoolbehaviortoolkit.js:789
+  ratio= 3.04  [light]  fg=var(--allo-stem-text-soft, #64748b) bg=#14b8a6                            ×1  stem_tool_schoolbehaviortoolkit.js:1109
+  ratio= 3.04  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(20,184,166,0.12)              ×1  stem_tool_schoolbehaviortoolkit.js:1436
+  ratio= 3.04  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=#14b8a6                            ×1  stem_tool_schoolbehaviortoolkit.js:1496
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(239,68,68,0.08)               ×13  stem_tool_cephalopodlab.js:18228
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(239,68,68,0.06)               ×4  stem_tool_cephalopodlab.js:18508
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.08)               ×3  stem_tool_climateExplorer.js:2010
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.10)               ×5  stem_tool_learning_lab.js:3101
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.08)               ×4  stem_tool_learning_lab.js:9639
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(239,68,68,0.10)               ×1  stem_tool_microbiology.js:2294
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.08)               ×2  stem_tool_optics.js:7561
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.06)               ×1  stem_tool_optics.js:8961
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.10)               ×1  stem_tool_schoolbehaviortoolkit.js:921
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.06)               ×1  stem_tool_schoolbehaviortoolkit.js:1655
+  ratio= 3.05  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(239,68,68,0.08)               ×1  stem_tool_schoolbehaviortoolkit.js:1673
+  ratio= 3.09  [light]  fg=#c4b5fd                            bg=rgba(124,58,237,0.10)              ×1  stem_tool_microbiology.js:1602
+  ratio= 3.09  [dark ]  fg=#c4b5fd                            bg=rgba(124,58,237,0.10)              ×1  stem_tool_microbiology.js:1602
+  ratio= 3.09  [light]  fg=#c4b5fd                            bg=rgba(124,58,237,0.08)              ×1  stem_tool_skatelab.js:4726
+  ratio= 3.09  [dark ]  fg=#c4b5fd                            bg=rgba(124,58,237,0.08)              ×1  stem_tool_skatelab.js:4726
+  ratio= 3.12  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(6,182,212,0.20)               ×1  stem_tool_learning_lab.js:12937
+  ratio= 3.12  [light]  fg=var(--allo-stem-text-soft, #94a3b8) bg=rgba(6,182,212,0.10)               ×1  stem_tool_learning_lab.js:15256
+  ratio= 3.13  [dark ]  fg=#7c3aed                            bg=var(--allo-stem-canvas, #0f172a)   ×1  stem_tool_fireecology.js:2117
+  ratio= 3.13  [light]  fg=#7c3aed                            bg=rgba(15,23,42,0.95)                ×10  stem_tool_geometryworld.js:5065
+  ratio= 3.13  [dark ]  fg=#7c3aed                            bg=rgba(15,23,42,0.95)                ×10  stem_tool_geometryworld.js:5065
+  ratio= 3.13  [light]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(124,58,237,0.10)              ×1  stem_tool_microbiology.js:1603
+  ratio= 3.18  [light]  fg=#86efac                            bg=rgba(99,102,241,0.05)              ×1  stem_tool_optics.js:5636
+  ratio= 3.18  [dark ]  fg=#86efac                            bg=rgba(99,102,241,0.05)              ×1  stem_tool_optics.js:5636
+  ratio= 3.21  [light]  fg=#e2e8f0                            bg=rgba(168,85,247,0.08)              ×5  stem_tool_astronomy.js:2432
+  ratio= 3.21  [dark ]  fg=#e2e8f0                            bg=rgba(168,85,247,0.08)              ×5  stem_tool_astronomy.js:2432
+  ratio= 3.21  [light]  fg=#e2e8f0                            bg=rgba(168,85,247,0.06)              ×1  stem_tool_astronomy.js:4953
+  ratio= 3.21  [dark ]  fg=#e2e8f0                            bg=rgba(168,85,247,0.06)              ×1  stem_tool_astronomy.js:4953
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.06)              ×2  stem_tool_bridgelab.js:2816
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.08)              ×1  stem_tool_bridgelab.js:3031
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.06)              ×2  stem_tool_climateExplorer.js:2906
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.12)              ×3  stem_tool_cyberdefense.js:3148
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.12)              ×1  stem_tool_cyberdefense.js:3152
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.18)              ×1  stem_tool_fireecology.js:3943
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.08)              ×6  stem_tool_learning_lab.js:7290
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.10)              ×12  stem_tool_learning_lab.js:10062
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.10)              ×1  stem_tool_microbiology.js:1482
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.06)              ×1  stem_tool_microbiology.js:1944
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.08)              ×5  stem_tool_microbiology.js:2346
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.08)              ×1  stem_tool_microbiology.js:4162
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.10)              ×7  stem_tool_optics.js:3160
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.08)              ×3  stem_tool_optics.js:3296
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.08)              ×1  stem_tool_optics.js:3341
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.12)              ×1  stem_tool_optics.js:3389
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.06)              ×1  stem_tool_statslab.js:3212
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #e2e8f0)     bg=rgba(168,85,247,0.06)              ×1  stem_tool_statslab.js:3213
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.08)              ×1  stem_tool_statslab.js:3475
+  ratio= 3.21  [dark ]  fg=var(--allo-stem-text, #cbd5e1)     bg=rgba(168,85,247,0.10)              ×1  stem_tool_statslab.js:3692
+  ... 234 more near-miss pairs omitted.

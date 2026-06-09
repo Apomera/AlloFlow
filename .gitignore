@@ -129,6 +129,11 @@ investigate*.js
 investigation*.txt
 hooks_*.txt
 *.bak
+# Date/phase-suffixed backups (e.g. acholi.js.bak.20260604, ui_strings.js.bak.handpurge-20260604)
+*.bak.*
+*.bak-*
+# PDF-pipeline test artifacts (may contain report content — never commit)
+High Impact Reports*.pdf
 err.log
 err.txt
 error.txt
