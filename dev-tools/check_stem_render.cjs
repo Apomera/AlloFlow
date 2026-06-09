@@ -59,17 +59,11 @@ try {
 // the multi-tab pass, but which already existed BEFORE the multi-tab smoke was
 // added. Listing them here is a triage ledger, not a permanent exemption — fix
 // each then DELETE the entry. New regressions still gate.
-//   - fractions tab='numberline' → calls renderNumberLineTab() which is not
-//     defined anywhere (stem_tool_fractions.js:10120). Likely a removed helper
-//     or an inlined snippet that lost its declaration. User-visible: clicking
-//     the "numberline" tab in the Fractions tool would crash.
-//   - decomposer tab='states'   → references undefined `GEOMETRY` constant at
-//     stem_tool_decomposer.js:2483-2660. Likely a missing module-level data
-//     literal. User-visible: clicking the "states" tab in Decomposer would crash.
-const MULTI_TAB_KNOWN_LATENTS = [
-  { id: 'fractions', tab: 'numberline' },
-  { id: 'decomposer', tab: 'states' },
-];
+//   - (none currently — both 2026-06-08 entries fixed same day:
+//     fractions renderNumberLineTab stub added; decomposer GEOMETRY data
+//     added for 11 substances. If the gate surfaces new entries, document
+//     each here with file:line + a one-liner on what's broken.)
+const MULTI_TAB_KNOWN_LATENTS = [];
 const isKnownLatent = function (id, label) {
   if (!label || !label.startsWith('tab=')) return false;
   const tabVal = (label.match(/tab=([\w-]+)/) || [])[1];

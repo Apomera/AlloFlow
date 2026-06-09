@@ -212,6 +212,32 @@
      Each object links to a MATERIALS compound by name
      x,y are 0-1 normalized coords for canvas placement
      ═══════════════════════════════════════════════════════════ */
+
+  // ═══════════════════════════════════════════════════════════
+  //   GEOMETRY — substance phase-transition data (melting/boiling °C)
+  //   Used by the "States of Matter" tab (states-tab particle simulation).
+  //   2026-06-08: added after multi-tab render-smoke surfaced an undefined
+  //   GEOMETRY reference at :2483-2660 — clicking the states tab crashed
+  //   the whole Decomposer tool. mp = melting point °C, bp = boiling point °C.
+  //   bp = null means the substance decomposes before it boils (i.e. it has
+  //   no liquid→gas transition at atmospheric pressure).
+  //   Values from CRC Handbook of Chemistry & Physics; rounded to integers.
+  //   Sublimating compounds (CO₂) have mp == bp (skips liquid state).
+  // ═══════════════════════════════════════════════════════════
+  var GEOMETRY = {
+    'Water':              { mp: 0,    bp: 100 },
+    'Table Salt':         { mp: 801,  bp: 1413 },
+    'Sugar (Sucrose)':    { mp: 186,  bp: null },   // decomposes (caramelizes)
+    'Baking Soda':        { mp: 50,   bp: null },   // decomposes
+    'Acetic Acid':        { mp: 17,   bp: 118 },
+    'Carbon Dioxide':     { mp: -78,  bp: -78 },    // sublimates (no liquid at 1 atm)
+    'Glucose':            { mp: 146,  bp: null },   // decomposes
+    'Hydrogen Peroxide':  { mp: 0,    bp: 150 },
+    'Ammonia':            { mp: -78,  bp: -33 },
+    'Ethanol':            { mp: -114, bp: 78 },
+    'Calcium Carbonate':  { mp: 825,  bp: null },   // decomposes to CaO + CO₂
+  };
+
   var SCENES = [
     {
       id: 'kitchen', name: 'Kitchen', icon: '\uD83C\uDF73', bgColor: '#fef3c7', accent: '#b45309',

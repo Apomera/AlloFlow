@@ -1524,7 +1524,7 @@ window.SelHub = window.SelHub || {
                 style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
               }, '\u2190'),
               h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, MONTH_NAMES[calMonth] + ' ' + calYear),
-              h('button', { 'aria-label': m.label,
+              h('button', { 'aria-label': 'Next month',
                 onClick: function() {
                   var nm = calMonth + 1;
                   var ny = calYear;

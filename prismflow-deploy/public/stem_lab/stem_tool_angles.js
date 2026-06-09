@@ -1707,7 +1707,7 @@ window.StemLab = window.StemLab || {
       function renderPisaCrossSection() {
         var state = d2.pisaCross || { angleDeg: 4.0, towerHeight: 56, quizMode: false, quizQ: null, quizAns: '', quizRevealed: false };
         function setPC(patch) {
-          setLabToolData(function(prev) {
+          ctx.setToolData(function(prev) {
             var prior = (prev && prev.angles) || {};
             var st = Object.assign({}, prior.pisaCross || state, patch);
             return Object.assign({}, prev, { angles: Object.assign({}, prior, { pisaCross: st }) });

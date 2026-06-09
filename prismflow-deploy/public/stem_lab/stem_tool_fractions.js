@@ -9890,6 +9890,19 @@ window.StemLab = window.StemLab || {
       );
     };
 
+    // Stub for the not-yet-built "Number Line" view in the Models cluster.
+    // Renders a friendly placeholder so clicking the tab does not crash;
+    // 2026-06-08: replaced an undefined `renderNumberLineTab()` call that
+    // multi-tab render-smoke surfaced (was crashing the whole fractions tool
+    // any time a user navigated to the numberline tab).
+    var renderNumberLineTab = function() {
+      return h('div', { className: 'p-6 text-center text-slate-600' },
+        h('div', { className: 'text-3xl mb-2' }, '📏'),
+        h('div', { className: 'text-sm font-bold mb-1' }, 'Number Line view'),
+        h('div', { className: 'text-xs italic' }, 'Coming soon — use the STEM Lab → Number Line tool for now.')
+      );
+    };
+
     // ══════════ MAIN RENDER ══════════
     // v3 navigation: Mode \u2192 Tab two-level structure.
     // v3.1 CONSOLIDATED tab list (was ~70, now ~26).
