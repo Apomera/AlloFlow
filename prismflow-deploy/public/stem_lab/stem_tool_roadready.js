@@ -9337,6 +9337,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // before the screenshot can be read back.
           var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: true, preserveDrawingBuffer: true });
           renderer.setSize(W, H);
+
+          // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+          // Headlights / emergency lights / lightning glow at night; mid threshold keeps
+          // the daytime road + HUD legible. Composer rides renderer (= s3.renderer at
+          // render time). Only the MAIN pass is bloomed; the rear-view scissor pass stays
+          // plain. Any failure falls back to s3.renderer.render — can't break the tool.
+          renderer._alloComposer = null;
+          (function(){
+            if (window.AlloPostFXEnabled === false) return;
+            var _ens = function(cb){
+              if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+              var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+              var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+            };
+            _ens(function(){
+              try {
+                var TT=window.THREE; if(!TT||!TT.EffectComposer||!TT.RenderPass||!TT.UnrealBloomPass) return;
+                var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+                var cc=new TT.EffectComposer(renderer);
+                cc.addPass(new TT.RenderPass(scene, camera));
+                cc.addPass(new TT.UnrealBloomPass(new TT.Vector2(Math.max(1,Math.round((W)*rs)),Math.max(1,Math.round((H)*rs))), lp?0.49:0.7, 0.35, 0.84));
+                renderer._alloComposer=cc;
+              } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+            });
+          })();
           renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
           renderer.shadowMap.enabled = true;
           renderer.shadowMap.type = T.PCFSoftShadowMap;
@@ -17864,8 +17890,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             marker.position.set(target.x - MAP_SIZE / 2, mHt, target.y - MAP_SIZE / 2);
           })();
 
-          // Render
-          s3.renderer.render(s3.scene, s3.camera);
+          // Render (bloom composer when available; the rear-view scissor pass below stays plain)
+          var _ac=s3.renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ s3.renderer._alloComposer=null; s3.renderer.render(s3.scene, s3.camera); } } else { s3.renderer.render(s3.scene, s3.camera); }
 
           // Rear-view mirror — small viewport in cockpit mode showing what's behind.
           // Uses scissor test to render a second pass into a top-center rectangle.
@@ -19423,6 +19449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var h = canvas3dRef.current.clientHeight;
             if (w && h) {
               scn3d.renderer.setSize(w, h);
+              try{ if(scn3d.renderer && scn3d.renderer._alloComposer){ scn3d.renderer._alloComposer.setSize(w, h); } }catch(e){}
               scn3d.camera.aspect = w / h;
               scn3d.camera.updateProjectionMatrix();
             }
@@ -19523,6 +19550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               });
             }
+            try{ if(threeRef.current.renderer && threeRef.current.renderer._alloComposer){ (threeRef.current.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); threeRef.current.renderer._alloComposer=null; } }catch(e){}
             threeRef.current.renderer.dispose();
           }
         };

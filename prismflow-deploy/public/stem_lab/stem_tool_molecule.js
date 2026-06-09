@@ -299,6 +299,31 @@ window.StemLab = window.StemLab || {
               threeSceneRef.current = scene;
 
               var camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 1000);
+
+              // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+              // Gentle bloom on bright atom spheres; high threshold keeps element colors
+              // legible. Composer rides renderer (= threeRendererRef.current); plain render
+              // until the r128 addons load; any failure falls back to the ref render.
+              renderer._alloComposer = null;
+              (function(){
+                if (window.AlloPostFXEnabled === false) return;
+                var _ens = function(cb){
+                  if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+                  var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js','https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+                  var i=0; (function n(){ if(i>=u.length){cb();return;} var s=document.createElement("script"); s.src=u[i]; s.onload=function(){i++;n();}; s.onerror=function(){i++;n();}; document.head.appendChild(s); })();
+                };
+                _ens(function(){
+                  try {
+                    var T=window.THREE; if(!T||!T.EffectComposer||!T.RenderPass||!T.UnrealBloomPass) return;
+                    var rm=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                    var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
+                    var cc=new T.EffectComposer(renderer);
+                    cc.addPass(new T.RenderPass(scene, camera));
+                    cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((W)*rs)),Math.max(1,Math.round((H)*rs))), lp?0.49:0.7, 0.35, 0.85));
+                    renderer._alloComposer=cc;
+                  } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
+                });
+              })();
               camera.position.set(0, 0, 15);
               threeCameraRef.current = camera;
 
@@ -358,11 +383,12 @@ window.StemLab = window.StemLab || {
                   var H = canvas.clientHeight || 300;
                   if (canvas.width !== W || canvas.height !== H) {
                     threeRendererRef.current.setSize(W, H, false);
+                    try{ if(threeRendererRef.current._alloComposer){ threeRendererRef.current._alloComposer.setSize(W, H); } }catch(e){}
                     threeCameraRef.current.aspect = W / H;
                     threeCameraRef.current.updateProjectionMatrix();
                   }
                 }
-                threeRendererRef.current.render(threeSceneRef.current, threeCameraRef.current);
+                var _ac=threeRendererRef.current._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ threeRendererRef.current._alloComposer=null; threeRendererRef.current.render(threeSceneRef.current, threeCameraRef.current); } } else { threeRendererRef.current.render(threeSceneRef.current, threeCameraRef.current); }
               }
             };
             
@@ -562,6 +588,7 @@ window.StemLab = window.StemLab || {
               }
               if (threeRendererRef.current) {
                 var renderer = threeRendererRef.current;
+                try{ if(renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
                 renderer.dispose();
                 threeRendererRef.current = null;
               }
