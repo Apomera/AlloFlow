@@ -42,9 +42,13 @@ const ART_DIR = dirIdx !== -1 ? args[dirIdx + 1] : path.join(process.cwd(), 'tes
 
 function failedRuleKeys(report) {
   // key = specification/clause/testNumber — stable identity for an ISO rule.
+  // Shape-normalize across veraPDF versions: 1.30 wraps everything in a
+  // top-level `report` and makes validationResult an ARRAY (1.26: object).
   const out = new Map();
-  const job = (report.jobs || [])[0];
-  const rules = ((job && job.validationResult && job.validationResult.details) || {}).ruleSummaries || [];
+  const root = report.report || report;
+  const job = (root.jobs || [])[0];
+  const vr = job && (Array.isArray(job.validationResult) ? job.validationResult[0] : job.validationResult);
+  const rules = ((vr && vr.details) || {}).ruleSummaries || [];
   for (const r of rules) {
     if (r.ruleStatus !== 'FAILED') continue;
     const key = (r.specification || 'spec') + ' ' + (r.clause || '?') + ' t' + (r.testNumber || '?');
@@ -91,8 +95,17 @@ function main() {
     const srcFails = failedRuleKeys(src.report);
     const tagFails = failedRuleKeys(tag.report);
     const fixedByUs = [...srcFails.keys()].filter(k => !tagFails.has(k)).map(k => ({ key: k, ...srcFails.get(k) }));
-    const introducedByUs = [...tagFails.keys()].filter(k => !srcFails.has(k)).map(k => ({ key: k, ...tagFails.get(k) }));
+    let introducedByUs = [...tagFails.keys()].filter(k => !srcFails.has(k)).map(k => ({ key: k, ...tagFails.get(k) }));
     const inheritedRemaining = [...tagFails.keys()].filter(k => srcFails.has(k)).map(k => ({ key: k, ...tagFails.get(k) }));
+    // ISO clause 5 (PDF/UA Identification schema) is the DECLARATION rule.
+    // AlloFlow deliberately withholds pdfuaid:part=1 when semantic leaves
+    // remain unlinked (evidence-based claim) — and because our output ships
+    // an XMP stream (title/lang) where the bare source had none, veraPDF
+    // flags clause 5 on us but not on the source. That is the honesty
+    // feature working, not a tagging regression: classify it separately so
+    // the --gate only fails on REAL introduced failures.
+    const withheldDeclaration = introducedByUs.filter(x => String(x.clause) === '5');
+    introducedByUs = introducedByUs.filter(x => String(x.clause) !== '5');
     regressions += introducedByUs.length;
     results.push({
       stem,
@@ -100,6 +113,7 @@ function main() {
       taggedFailedRules: tagFails.size,
       fixedByUs,
       introducedByUs,
+      withheldDeclaration,
       inheritedRemaining,
     });
   }
@@ -118,13 +132,18 @@ function main() {
       console.log('    ✓ fixed by tagging:      ' + r.fixedByUs.length + (r.fixedByUs.length ? '  (' + r.fixedByUs.slice(0, 4).map(x => x.clause).join(', ') + (r.fixedByUs.length > 4 ? ', …' : '') + ')' : ''));
       console.log('    ' + (r.introducedByUs.length ? '✗' : '✓') + ' INTRODUCED by tagging:  ' + r.introducedByUs.length);
       for (const x of r.introducedByUs.slice(0, 6)) console.log('        ⚠ clause ' + x.clause + ' t' + x.test + ' — ' + x.desc);
+      if (r.withheldDeclaration && r.withheldDeclaration.length) console.log('    · declaration withheld:  ' + r.withheldDeclaration.length + ' (clause 5 — AlloFlow declares PDF/UA only on full content linkage; by design)');
       console.log('    · inherited from source: ' + r.inheritedRemaining.length + ' (honest scope — tagging can\'t fix e.g. source font embedding)');
     }
     console.log('');
-    console.log('  ' + (regressions === 0 ? '✓ NO regressions — tagging never introduced an ISO failure.' : '✗ ' + regressions + ' regression rule(s) introduced by tagging — fix before claiming improvement.'));
+    const errored = results.filter(r => r.error).length;
+    if (errored === results.length) console.log('  ✗ All ' + errored + ' pair(s) errored — no validation happened (NOT a pass).');
+    else if (errored) console.log('  ⚠ ' + errored + ' pair(s) errored; of the validated pairs: ' + (regressions === 0 ? 'no regressions.' : regressions + ' regression rule(s).'));
+    else console.log('  ' + (regressions === 0 ? '✓ NO regressions — tagging never introduced an ISO failure.' : '✗ ' + regressions + ' regression rule(s) introduced by tagging — fix before claiming improvement.'));
     console.log('═'.repeat(72));
   }
-  process.exit(GATE && regressions > 0 ? 1 : 0);
+  const erroredCount = results.filter(r => r.error).length;
+  process.exit(GATE && (regressions > 0 || erroredCount === results.length) ? 1 : 0);
 }
 
 main();

@@ -88,7 +88,12 @@ function runVeraPdf(binary, pdfPath, flavour) {
   // -f ua1            → validate against PDF/UA-1 (ISO 14289-1)
   // --maxfailures 0   → report all failures (default may cap at 100)
   const args = ['--format', 'json', '-f', flavour || 'ua1', '--maxfailures', '0', pdfPath];
-  const res = spawnSync(binary, args, { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
+  // Node 20+ refuses to spawn .bat/.cmd without a shell (CVE-2024-27980
+  // mitigation) — EINVAL otherwise. Quote args defensively under the shell.
+  const needsShell = process.platform === 'win32' && /\.(bat|cmd)$/i.test(binary);
+  const res = needsShell
+    ? spawnSync('"' + binary + '"', args.map(a => (/\s/.test(a) ? '"' + a + '"' : a)), { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024, shell: true })
+    : spawnSync(binary, args, { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
   // veraPDF returns non-zero exit codes for validation failures — that's not
   // an error from our perspective, it's a report. Distinguish "couldn't run
   // veraPDF" from "veraPDF ran and reported failures."
@@ -108,15 +113,17 @@ function runVeraPdf(binary, pdfPath, flavour) {
 
 // ── Summarize the veraPDF JSON MRR into a compact, human-friendly report ──
 function summarize(report) {
-  // veraPDF JSON output structure (as of veraPDF 1.26):
-  //   { jobs: [ { itemDetails: {name}, validationResult: { details: { passedRules, failedRules,
-  //     ruleSummaries: [ { ruleStatus, specification, clause, testNumber, description, checks: [...] } ] },
-  //     profileName, compliant } } ] }
-  if (!report.jobs || !report.jobs.length) {
+  // veraPDF JSON output structure:
+  //   1.26: { jobs: [ { itemDetails, validationResult: { details: {...} } } ] }
+  //   1.30: { report: { jobs: [ { itemDetails, validationResult: [ { details: {...} } ] } ] } }
+  // Normalize both: unwrap the optional top-level `report`, and accept
+  // validationResult as object OR single-element array.
+  const root = report.report || report;
+  if (!root.jobs || !root.jobs.length) {
     return { error: 'No job results in veraPDF output' };
   }
-  const job = report.jobs[0];
-  const vr = job.validationResult;
+  const job = root.jobs[0];
+  const vr = Array.isArray(job.validationResult) ? job.validationResult[0] : job.validationResult;
   if (!vr) {
     return { error: 'No validationResult in veraPDF output' };
   }
