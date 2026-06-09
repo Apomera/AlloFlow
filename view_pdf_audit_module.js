@@ -3471,7 +3471,9 @@ Return ONLY JSON:
           }
         });
         if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
-          setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html }));
+          const _stripT = (h) => String(h || "").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
+          const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
+          setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff }));
           if (result.score !== void 0) {
             setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           }
@@ -3507,7 +3509,23 @@ Return ONLY JSON:
         className: "px-3 py-1.5 bg-purple-600 text-white text-[11px] font-bold rounded hover:bg-purple-700 disabled:opacity-30 transition-colors"
       },
       isAgentRunning ? "\u23F3" : "\u25B6"
-    )), agentActivityLog.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: (agentLogFullView ? "max-h-64" : "max-h-20") + " overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono", "aria-live": "polite", "aria-atomic": "true", "aria-label": t("pdf_audit.expert.log_aria") || "Agent activity log" }, (agentLogFullView ? agentActivityLog : agentActivityLog.slice(-6)).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1 " + (entry.type === "error" ? "text-red-400" : entry.type === "score" ? "text-cyan-300" : entry.type === "success" || entry.type === "complete" ? "text-green-400" : entry.type === "tool" ? "text-amber-300" : entry.type === "command" ? "text-purple-300" : "text-slate-400") }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 shrink-0" }, entry.time), /* @__PURE__ */ React.createElement("span", null, entry.text)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAgentLogFullView((v) => !v), className: "text-[10px] text-purple-300 hover:text-purple-200 underline" }, agentLogFullView ? "Show recent only" : `Show full log (${agentActivityLog.length})`), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    )), pdfFixResult._lastCmdDiff && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: async () => {
+          setPdfFixResult((p) => p ? { ...p, _diffOverride: p._lastCmdDiff } : p);
+          setDiffViewOpen(true);
+          try {
+            await _ensureDiffLib();
+          } catch (_) {
+          }
+        },
+        className: "mt-1 w-full px-2 py-1 bg-slate-700 text-purple-200 text-[11px] font-bold rounded border border-purple-700/50 hover:bg-slate-600 transition-colors",
+        title: t("pdf_audit.expert.see_changes_title") || "Open a word-level diff of exactly what your last command changed \u2014 reject any part to undo it"
+      },
+      "\u{1F4DD} See what the last command changed"
+    ), agentActivityLog.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: (agentLogFullView ? "max-h-64" : "max-h-20") + " overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono", "aria-live": "polite", "aria-atomic": "true", "aria-label": t("pdf_audit.expert.log_aria") || "Agent activity log" }, (agentLogFullView ? agentActivityLog : agentActivityLog.slice(-6)).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1 " + (entry.type === "error" ? "text-red-400" : entry.type === "score" ? "text-cyan-300" : entry.type === "success" || entry.type === "complete" ? "text-green-400" : entry.type === "tool" ? "text-amber-300" : entry.type === "command" ? "text-purple-300" : "text-slate-400") }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 shrink-0" }, entry.time), /* @__PURE__ */ React.createElement("span", null, entry.text)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAgentLogFullView((v) => !v), className: "text-[10px] text-purple-300 hover:text-purple-200 underline" }, agentLogFullView ? "Show recent only" : `Show full log (${agentActivityLog.length})`), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setAgentActivityLog([]);
       console.info("[ExpertWorkbench] log cleared");
     }, className: "text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto" }, "Clear"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-400" }, "Commands: ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "audit"), " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "auto"), " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "contrast"), " \xB7 or describe what to fix in plain language"))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-600 rounded-xl p-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-violet-600 uppercase tracking-widest" }, "\u{1F4DA} Differentiate This Document"), /* @__PURE__ */ React.createElement("button", { onClick: () => {

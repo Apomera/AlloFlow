@@ -5075,7 +5075,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }
                             });
                             if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
-                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html }));
+                              // Snapshot the command's before/after TEXT so "See what changed" can
+                              // open a word-level diff of just this command (not the whole remediation).
+                              const _stripT = (h) => String(h || '').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+                              const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
+                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff }));
                               if (result.score !== undefined) {
                                 setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                               }
@@ -5106,6 +5110,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             className="px-3 py-1.5 bg-purple-600 text-white text-[11px] font-bold rounded hover:bg-purple-700 disabled:opacity-30 transition-colors"
                           >{isAgentRunning ? '⏳' : '▶'}</button>
                         </form>
+                        {pdfFixResult._lastCmdDiff && (
+                          <button type="button" onClick={async () => { setPdfFixResult(p => p ? ({ ...p, _diffOverride: p._lastCmdDiff }) : p); setDiffViewOpen(true); try { await _ensureDiffLib(); } catch (_) {} }}
+                            className="mt-1 w-full px-2 py-1 bg-slate-700 text-purple-200 text-[11px] font-bold rounded border border-purple-700/50 hover:bg-slate-600 transition-colors"
+                            title={t('pdf_audit.expert.see_changes_title') || 'Open a word-level diff of exactly what your last command changed — reject any part to undo it'}
+                          >📝 See what the last command changed</button>
+                        )}
                         {agentActivityLog.length > 0 && (
                           <div>
                             <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-atomic="true" aria-label={t('pdf_audit.expert.log_aria') || 'Agent activity log'}>

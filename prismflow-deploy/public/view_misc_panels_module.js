@@ -93,8 +93,9 @@ function PdfDiffViewer(props) {
   } = props;
   if (!(diffViewOpen && pdfFixResult)) return null;
   return ReactDOM.createPortal((() => {
-    const _src = pdfFixResult.sourceText || "";
-    const _fin = pdfFixResult.finalText || "";
+    const _ov = pdfFixResult._diffOverride && typeof pdfFixResult._diffOverride.before === "string" ? pdfFixResult._diffOverride : null;
+    const _src = _ov ? _ov.before : pdfFixResult.sourceText || "";
+    const _fin = _ov ? _ov.after : pdfFixResult.finalText || "";
     const _chunks = diffChunks;
     let _ins = 0, _del = 0, _same = 0;
     let _rejCount = 0, _effectiveText = "";
@@ -426,6 +427,15 @@ ${_effectiveText}`;
         setApplyingRemarkup(false);
       }
     };
+    const _closeDiff = () => {
+      if (pdfFixResult && pdfFixResult._diffOverride) {
+        try {
+          setPdfFixResult((p) => p ? { ...p, _diffOverride: null } : p);
+        } catch (_) {
+        }
+      }
+      setDiffViewOpen(false);
+    };
     return /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -434,13 +444,13 @@ ${_effectiveText}`;
         "aria-labelledby": "allo-diff-title",
         className: "fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4",
         onClick: (e) => {
-          if (e.target === e.currentTarget) setDiffViewOpen(false);
+          if (e.target === e.currentTarget) _closeDiff();
         }
       },
-      /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-diff-title", className: "text-sm font-black text-slate-800 truncate" }, t("diff_view.title") || "Source PDF \u2194 Remediated HTML \xB7 Diff"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("diff_view.subtitle") || "Click any colored span to reject the change. Drag-select across spans to batch-reject. Del\u2192Add paraphrase pairs toggle together.")), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, _ov ? "\u{1F916}" : "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "allo-diff-title", className: "text-sm font-black text-slate-800 truncate" }, _ov ? (t("diff_view.cmd_title") || "What your last command changed") + (_ov.label ? " \xB7 \u201C" + _ov.label + "\u201D" : "") : t("diff_view.title") || "Source PDF \u2194 Remediated HTML \xB7 Diff"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, _ov ? t("diff_view.cmd_subtitle") || "Before \u2192 after for your last Expert Workbench command. Reject a span to undo just that part, then Apply." : t("diff_view.subtitle") || "Click any colored span to reject the change. Drag-select across spans to batch-reject. Del\u2192Add paraphrase pairs toggle together.")), /* @__PURE__ */ React.createElement(
         "button",
         {
-          onClick: () => setDiffViewOpen(false),
+          onClick: _closeDiff,
           className: "shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center",
           "aria-label": t("diff_view.close_aria") || "Close diff view"
         },
