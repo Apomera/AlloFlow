@@ -148,6 +148,16 @@ ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:ale
   var gg = L.plotGeometry(gap.observations, null, undefined, [], 'groupedBar');
   var aGrp = gg.groups.filter(function (x) { return x.phase === 'a'; })[0];
   ok(aGrp && aGrp.bars.some(function (b) { return b.empty === true; }), 'an empty (phase × series) cell must be flagged empty — no fabricated bar');
+
+  // color-blind-safe categorical channel (WCAG 1.4.1): series are ALSO keyed by dash +
+  // shape + texture, so hue is never the only cue. Series 0 is the unchanged solid/circle/solid.
+  ok(L.seriesDash(0) === 'none' && L.seriesShape(0) === 'circle' && L.seriesTexture(0) === 'solid', 'series 0 stays solid/circle/solid (single-series chart unchanged)');
+  ok(L.seriesDash(1) !== 'none' && L.seriesShape(1) !== 'circle' && L.seriesTexture(1) !== 'solid', 'series 1 differs from series 0 in ALL THREE non-colour channels');
+  var dashes = [0, 1, 2, 3, 4, 5].map(L.seriesDash), shapes = [0, 1, 2, 3].map(L.seriesShape), texs = [0, 1, 2, 3, 4, 5].map(L.seriesTexture);
+  ok(new Set(dashes).size === dashes.length, 'the 6 series dashes are mutually distinct');
+  ok(new Set(shapes).size === shapes.length, 'the 4 series shapes are mutually distinct');
+  ok(new Set(texs).size === texs.length, 'the 6 series textures are mutually distinct');
+  ok(L.seriesDash(6) === L.seriesDash(0) && L.seriesShape(4) === L.seriesShape(0), 'series channels cycle (never throw / run off the end)');
 })();
 
 // 11. INGEST (design §5 Pillar 1) — pure-parser invariants. Imports MUST

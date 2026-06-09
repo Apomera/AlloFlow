@@ -188,8 +188,20 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).toMatch(/Practiced/);
     expect(html).toMatch(/#1d4ed8/);                                     // series colour 0
     expect(html).toMatch(/#be123c/);                                     // series colour 1 (distinct from amber/teal)
-    expect((html.match(/<circle/g) || []).length).toBe(MULTI.length);    // one observed point per row
+    // every observed point still rendered, but the MARKER varies by series (not colour-only)
+    const markers = (html.match(/<circle|<rect|<polygon/g) || []).length;
+    expect(markers).toBeGreaterThanOrEqual(MULTI.length);
     expect(html).not.toMatch(/Generate AI|Export this view/);            // no single pooled claim -> no AI/export
+  });
+
+  it('multi-series is color-blind-safe: series 0 = solid line + circles, series 1 = dashed line + squares', () => {
+    const html = renderState({ observations: MULTI, chartType: 'multiSeriesLine', seriesLabels: MULTI_LABELS });
+    expect(html).toMatch(/stroke-dasharray="7 4"/);                      // series 1's line is dashed (non-colour cue)
+    expect((html.match(/<circle/g) || []).length).toBeGreaterThanOrEqual(8); // series-0 circle markers
+    expect((html.match(/<rect/g) || []).length).toBeGreaterThanOrEqual(8);   // series-1 square markers (8 points)
+    // series 0 stays solid (no dash on its line) — single-series charts look unchanged
+    const t = renderState({ observations: REYNA.map((r, i) => ({ ...r, series: 'only' })), chartType: 'multiSeriesLine' });
+    expect(t).not.toMatch(/stroke-dasharray="7 4"/);
   });
 
   it('the grouped-bar pathway draws mean bars + a legend, names every cell, raw points in the table', () => {
@@ -202,6 +214,14 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).toMatch(/<th[^>]*>Series<\/th>/);                       // the raw-data peer carries a Series column
     expect((html.match(/<tbody>[\s\S]*<tr/g) || []).length).toBeGreaterThan(0);
     expect(html).not.toMatch(/Generate AI|Export this view/);            // comparison view, no single pooled claim
+  });
+
+  it('grouped-bar is color-blind-safe: bars filled by a per-series TEXTURE pattern, not colour alone', () => {
+    const html = renderState({ observations: MULTI, chartType: 'groupedBar', seriesLabels: MULTI_LABELS });
+    expect(html).toMatch(/<pattern[^>]*id="lumenSeriesPat0"/);           // texture defs exist
+    expect(html).toMatch(/<pattern[^>]*id="lumenSeriesPat1"/);
+    expect(html).toMatch(/fill="url\(#lumenSeriesPat[01]\)"/);           // bars use the texture, not a flat colour
+    expect(html).toMatch(/#1d4ed8/);                                     // hue still present (stroke + legend) — redundant channel
   });
 
   it('the histogram pathway renders count bars + its own SR label, with no trend line or data circles', () => {

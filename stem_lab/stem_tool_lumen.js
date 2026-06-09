@@ -122,6 +122,16 @@
   // the LEGEND label + the SR table are the non-color channel (so it survives colour-blindness).
   var SERIES_PALETTE = ['#1d4ed8', '#be123c', '#7c3aed', '#15803d', '#db2777', '#4338ca'];
   function seriesColor(idx) { return SERIES_PALETTE[((idx % SERIES_PALETTE.length) + SERIES_PALETTE.length) % SERIES_PALETTE.length]; }
+  // Color-blind-safe categorical channel (WCAG 1.4.1): a series is ALSO distinguished
+  // by line DASH + point SHAPE (multi-line) and bar TEXTURE (grouped-bar), so hue is
+  // never the only cue. Indices cycle in lockstep with SERIES_PALETTE; series 0 is
+  // solid / circle / solid so a single-series chart looks unchanged.
+  var SERIES_DASH = ['none', '7 4', '1 5', '11 4 2 4', '5 4', '9 3 1 3'];
+  function seriesDash(idx) { var n = SERIES_DASH.length; return SERIES_DASH[((idx % n) + n) % n]; }
+  var SERIES_SHAPE = ['circle', 'square', 'triangle', 'diamond'];
+  function seriesShape(idx) { var n = SERIES_SHAPE.length; return SERIES_SHAPE[((idx % n) + n) % n]; }
+  var SERIES_TEXTURE = ['solid', 'diagonal', 'dots', 'crosshatch', 'vertical', 'horizontal'];
+  function seriesTexture(idx) { var n = SERIES_TEXTURE.length; return SERIES_TEXTURE[((idx % n) + n) % n]; }
   // Guard (mirrors referenceContrastOK): no series colour may equal the caution/reference/neutral ink,
   // and all series colours must be mutually distinct — so a series line can never read as the L3 signal.
   function seriesColorOK(palette) {
@@ -2159,6 +2169,7 @@
     quantiles: quantiles, dotGeometry: dotGeometry, boxGeometry: boxGeometry, histogramBins: histogramBins, histogramGeometry: histogramGeometry,
     scatterGeometry: scatterGeometry, slopeGeometry: slopeGeometry, multiSeriesGeometry: multiSeriesGeometry, groupedBarGeometry: groupedBarGeometry,
     SERIES_PALETTE: SERIES_PALETTE, seriesColor: seriesColor, seriesColorOK: seriesColorOK,
+    SERIES_DASH: SERIES_DASH, seriesDash: seriesDash, SERIES_SHAPE: SERIES_SHAPE, seriesShape: seriesShape, SERIES_TEXTURE: SERIES_TEXTURE, seriesTexture: seriesTexture,
     perSegmentSlopes: perSegmentSlopes, chartSummaryText: chartSummaryText, dataTableModel: dataTableModel, associationTableModel: associationTableModel, multiSeriesTableModel: multiSeriesTableModel,
     // AI-involvement layer (Phase 1) — pure guards + audience faces
     AI_CAVEAT: AI_CAVEAT, HYP_CAVEAT: HYP_CAVEAT, AI_N_FLOOR: AI_N_FLOOR, levelIndex: levelIndex,
@@ -2287,6 +2298,39 @@
           var groupedMulti = (chartType === 'groupedBar' && obs.length) ? (seriesKeys(obs).length > 1) : false;
           var gbLabels = groupedMulti ? seriesKeys(obs).map(function (k) { return { seriesKey: k, seriesLabel: (comp.seriesLabels && comp.seriesLabels[k]) || k, variable: comp.variable }; }) : null;
           var bundle = encode('L1');
+          // Color-blind-safe series vnode builders (need `h`): a marker SHAPE per series,
+          // an SVG <pattern> TEXTURE per series for grouped bars, and legend glyphs that
+          // show the SAME non-colour channel the chart uses (dash+shape / texture).
+          var seriesPatternId = function (idx) { var n = 6; return 'lumenSeriesPat' + (((idx % n) + n) % n); };
+          var buildSeriesPattern = function (id, idx) {
+            var col = seriesColor(idx), tex = seriesTexture(idx);
+            var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: 6, height: 6, fill: col, fillOpacity: 0.92 })];
+            if (tex === 'diagonal') kids.push(h('path', { key: 'd', d: 'M0,6 L6,0', stroke: '#ffffff', strokeWidth: 1.1, strokeOpacity: 0.85, fill: 'none' }));
+            else if (tex === 'crosshatch') { kids.push(h('path', { key: 'c1', d: 'M0,6 L6,0', stroke: '#ffffff', strokeWidth: 1, strokeOpacity: 0.8, fill: 'none' })); kids.push(h('path', { key: 'c2', d: 'M0,0 L6,6', stroke: '#ffffff', strokeWidth: 1, strokeOpacity: 0.8, fill: 'none' })); }
+            else if (tex === 'vertical') kids.push(h('line', { key: 'v', x1: 3, y1: 0, x2: 3, y2: 6, stroke: '#ffffff', strokeWidth: 1.2, strokeOpacity: 0.85 }));
+            else if (tex === 'horizontal') kids.push(h('line', { key: 'hz', x1: 0, y1: 3, x2: 6, y2: 3, stroke: '#ffffff', strokeWidth: 1.2, strokeOpacity: 0.85 }));
+            else if (tex === 'dots') kids.push(h('circle', { key: 'dt', cx: 3, cy: 3, r: 1.2, fill: '#ffffff', fillOpacity: 0.95 }));
+            // 'solid' (series 0) => colour only — its bar is unchanged from before
+            return h('pattern', { key: id, id: id, patternUnits: 'userSpaceOnUse', width: 6, height: 6 }, kids);
+          };
+          var seriesMarkerEl = function (shape, cx, cy, r, fill, key) {
+            var base = { key: key, fill: fill, fillOpacity: 0.95, stroke: '#ffffff', strokeWidth: 1 };
+            if (shape === 'square') return h('rect', Object.assign({}, base, { x: cx - r, y: cy - r, width: 2 * r, height: 2 * r }));
+            if (shape === 'triangle') return h('polygon', Object.assign({}, base, { points: cx + ',' + (cy - r * 1.2) + ' ' + (cx + r * 1.1) + ',' + (cy + r * 0.9) + ' ' + (cx - r * 1.1) + ',' + (cy + r * 0.9) }));
+            if (shape === 'diamond') return h('polygon', Object.assign({}, base, { points: cx + ',' + (cy - r * 1.3) + ' ' + (cx + r * 1.3) + ',' + cy + ' ' + cx + ',' + (cy + r * 1.3) + ' ' + (cx - r * 1.3) + ',' + cy }));
+            return h('circle', Object.assign({}, base, { cx: cx, cy: cy, r: r }));
+          };
+          var seriesLegendLine = function (idx) {
+            var col = seriesColor(idx), dash = seriesDash(idx);
+            return h('svg', { width: 24, height: 12, viewBox: '0 0 24 12', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('line', { x1: 1, y1: 6, x2: 23, y2: 6, stroke: col, strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: dash === 'none' ? undefined : dash }),
+              seriesMarkerEl(seriesShape(idx), 12, 6, 3, col, 'm'));
+          };
+          var seriesLegendSwatch = function (idx) {
+            return h('svg', { width: 13, height: 13, viewBox: '0 0 13 13', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('defs', { key: 'd' }, buildSeriesPattern('lumenLegPat' + idx, idx)),
+              h('rect', { x: 0, y: 0, width: 13, height: 13, rx: 2, fill: 'url(#lumenLegPat' + idx + ')' }));
+          };
           // The AI fires ONLY on demand, ONLY over the PII-free context, and its
           // output is gated by the tested guards before it is ever shown (§6.1/§6.3).
           var fireAI = function () {
@@ -2945,7 +2989,7 @@
                 h('span', null, bundle.label + ' · ' + multiClaims.length + ' series (same measure)')),
               h('ul', { className: 'mt-1 text-sm' }, multiClaims.map(function (c, i) {
                 return h('li', { key: 'msc' + i, className: 'flex items-start gap-2 mb-0.5' },
-                  h('span', { 'aria-hidden': 'true', style: { width: '10px', height: '10px', borderRadius: '9999px', background: seriesColor(i), display: 'inline-block', marginTop: '4px', flexShrink: 0 } }),
+                  h('span', { 'aria-hidden': 'true', style: { marginTop: '3px', flexShrink: 0, display: 'inline-flex' } }, seriesLegendLine(i)),
                   h('span', null, c.text));
               }))));
           } else if (groupedMulti) {
@@ -2957,7 +3001,7 @@
                 h('span', null, bundle.label + ' · ' + comp.variable + ' mean per phase × series')),
               h('div', { className: 'mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-700' }, seriesKeys(obs).map(function (k, i) {
                 return h('span', { key: 'leg' + i, className: 'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 border', style: { borderColor: seriesColor(i), background: seriesColor(i) + '14' } },
-                  h('span', { 'aria-hidden': 'true', style: { width: '9px', height: '9px', borderRadius: '9999px', background: seriesColor(i), display: 'inline-block' } }),
+                  seriesLegendSwatch(i),
                   h('span', null, (comp.seriesLabels && comp.seriesLabels[k]) || k));
               })),
               h('p', { className: 'mt-1 text-[11px] text-slate-500' }, 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.')));
@@ -3063,11 +3107,16 @@
             // cell (n<3) is faded + dashed + labelled n (provisional, not a confident bar); empty cells
             // draw nothing. The claim-card swatches are the legend.
             if (geo.groups) {
+              // one TEXTURE pattern per series so bars differ by texture + colour, not colour
+              // alone (WCAG 1.4.1); the solid colour stays the bar's stroke (edge keeps the hue).
+              var nGbSeries = (geo.keys ? geo.keys.length : 0), gbDefs = [];
+              for (var gpi = 0; gpi < nGbSeries; gpi++) gbDefs.push(buildSeriesPattern(seriesPatternId(gpi), gpi));
+              if (gbDefs.length) sk.push(h('defs', { key: 'gbdefs' }, gbDefs));
               geo.groups.forEach(function (grp, gi) {
                 grp.bars.forEach(function (bar, bi) {
                   if (bar.empty) return; // no fabricated bar for a missing cell
                   var gcol = seriesColor(bar.colorIdx);
-                  sk.push(h('rect', { key: 'gb' + gi + '_' + bi, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: gcol, fillOpacity: bar.small ? 0.4 : 0.88, stroke: gcol, strokeWidth: bar.small ? 1 : 0, strokeDasharray: bar.small ? '2 2' : undefined }));
+                  sk.push(h('rect', { key: 'gb' + gi + '_' + bi, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: 'url(#' + seriesPatternId(bar.colorIdx) + ')', fillOpacity: bar.small ? 0.5 : 1, stroke: gcol, strokeWidth: bar.small ? 1 : 0.5, strokeDasharray: bar.small ? '2 2' : undefined }));
                   if (bar.small) sk.push(h('text', { key: 'gbf' + gi + '_' + bi, x: bar.bx + bar.bw / 2, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '7px' }, fill: gcol, 'aria-hidden': 'true' }, 'n=' + bar.n));
                 });
               });
@@ -3077,10 +3126,10 @@
             // the per-series slope is reported in words in the claim list.
             if (geo.seriesGeo) {
               geo.seriesGeo.forEach(function (s, si) {
-                var col = seriesColor(s.colorIdx);
-                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeOpacity: 0.9 }));
+                var col = seriesColor(s.colorIdx), dash = seriesDash(s.colorIdx), shape = seriesShape(s.colorIdx);
+                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeOpacity: 0.9, strokeDasharray: dash === 'none' ? undefined : dash }));
                 s.points.forEach(function (p, pi) {
-                  sk.push(h('circle', { key: 'msc' + si + '_' + pi, cx: p.sx, cy: p.sy, r: 3, fill: col, fillOpacity: 0.95, stroke: '#ffffff', strokeWidth: 1 }));
+                  sk.push(seriesMarkerEl(shape, p.sx, p.sy, 3, col, 'msc' + si + '_' + pi)); // shape per series, not colour alone
                 });
               });
             }

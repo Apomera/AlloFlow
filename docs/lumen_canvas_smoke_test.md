@@ -33,6 +33,7 @@ Lumen is `_pluginOnlyTools` + `ready:false` (out of the STEM Lab grid), so the
 ## 3. The 9 chart types
 - [ ] Cycle the **Chart:** switcher — trend, bar, dot, box, histogram, scatter, slope, multi-line, grouped-bar all render without error.
 - [ ] Trend (default): per-point marks burn **● "Observed"** (not the L1 ◈); the trend *line* + uncertainty band are the L1 object.
+- [ ] **Color-blind-safe series (multi-line / grouped-bar):** series are distinguished by **shape + dash + texture**, not hue alone — series 1's line is **dashed** with **square** points; grouped bars carry a **texture** (diagonal/dots/…); the legend shows the same shape/dash/texture. Squint or imagine greyscale: the series are still tellable apart.
 
 ## 4. Audience faces (now domain-general)
 - [ ] **Audience:** shows **Working / Formal / Plain language** (hover tooltips name the general use: a decision/IEP/grant reviewer; a parent/student/public).
