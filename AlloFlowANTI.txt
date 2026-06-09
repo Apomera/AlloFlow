@@ -10003,14 +10003,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         setTimeout(() => { clearInterval(t); resolve(!!(window.PDFLib && window.PDFLib.PDFDocument)); }, 10000);
       });
     }
+    // Mirror chain (each HTTP-200-verified): locked-down school networks often
+    // block a single CDN host — one blocked mirror must not kill tagged-PDF export.
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
+    ];
     return new Promise((resolve) => {
-      const s = document.createElement('script');
-      s.id = 'pdflib-cdn';
-      s.src = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
-      s.async = true;
-      s.onload = () => resolve(!!(window.PDFLib && window.PDFLib.PDFDocument));
-      s.onerror = () => resolve(false);
-      document.head.appendChild(s);
+      const tryAt = (i) => {
+        if (i >= urls.length) { try { console.warn('[pdf-lib] all ' + urls.length + ' CDN mirrors failed — tagged-PDF export unavailable on this network'); } catch (_) {} resolve(false); return; }
+        const s = document.createElement('script');
+        s.id = 'pdflib-cdn';
+        s.src = urls[i];
+        s.async = true;
+        s.onload = () => resolve(!!(window.PDFLib && window.PDFLib.PDFDocument));
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
     });
   }, []);
   const _ensureDiffLib = React.useCallback(() => {
@@ -10025,14 +10036,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       });
     }
     setDiffLibLoading(true);
+    // Mirror chain (each HTTP-200-verified) — same rationale as _ensurePdfLib.
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js',
+      'https://unpkg.com/diff@5.2.0/dist/diff.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.2.0/diff.min.js',
+    ];
     return new Promise((resolve) => {
-      const s = document.createElement('script');
-      s.id = 'jsdiff-cdn';
-      s.src = 'https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js';
-      s.async = true;
-      s.onload = () => { setDiffLibReady(!!window.Diff); setDiffLibLoading(false); if (window.Diff) setDiffRebuildNonce(n => n + 1); resolve(!!window.Diff); };
-      s.onerror = () => { setDiffLibLoading(false); setDiffLibReady(false); resolve(false); };
-      document.head.appendChild(s);
+      const tryAt = (i) => {
+        if (i >= urls.length) { try { console.warn('[jsdiff] all ' + urls.length + ' CDN mirrors failed — word-level diff view unavailable on this network'); } catch (_) {} setDiffLibLoading(false); setDiffLibReady(false); resolve(false); return; }
+        const s = document.createElement('script');
+        s.id = 'jsdiff-cdn';
+        s.src = urls[i];
+        s.async = true;
+        s.onload = () => { setDiffLibReady(!!window.Diff); setDiffLibLoading(false); if (window.Diff) setDiffRebuildNonce(n => n + 1); resolve(!!window.Diff); };
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
     });
   }, []);
   const [pdfPageRange, setPdfPageRange] = useState(null);

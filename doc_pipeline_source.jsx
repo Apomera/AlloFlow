@@ -2195,11 +2195,15 @@ var createDocPipeline = function(deps) {
       await new Promise(r => setTimeout(r, 150));
       // Inject axe into iframe
       await new Promise((resolve, reject) => {
-        const s = idoc.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
-        s.onload = () => resolve();
-        s.onerror = () => reject(new Error('axe inject failed'));
-        idoc.head.appendChild(s);
+        const tryAt = (i) => {
+          if (i >= _AXE_CDN_URLS.length) { reject(new Error('axe inject failed (all ' + _AXE_CDN_URLS.length + ' CDN mirrors)')); return; }
+          const s = idoc.createElement('script');
+          s.src = _AXE_CDN_URLS[i];
+          s.onload = () => resolve();
+          s.onerror = () => tryAt(i + 1);
+          idoc.head.appendChild(s);
+        };
+        tryAt(0);
       });
       await new Promise(r => setTimeout(r, 100));
       const iframeAxe = iframe.contentWindow.axe;
@@ -6682,7 +6686,14 @@ HTML section ${chunkNum}/${chunks.length}:
   // Cache axe source text so each iframe audit injects it inline (no second CDN round-trip).
   var _axeSourceCache = null;
   var _axeSourcePromise = null;
-  const _AXE_CDN_URL = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
+  // Mirror chain (each HTTP-200-verified): one blocked CDN host must not kill the
+  // axe baseline — locked-down school networks routinely block a single CDN.
+  const _AXE_CDN_URLS = [
+    'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js',
+    'https://unpkg.com/axe-core@4.10.3/axe.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.3/axe.min.js',
+  ];
+  const _AXE_CDN_URL = _AXE_CDN_URLS[0];
   const runAxeAudit = async (htmlContent) => {
     try {
       // Lazy-load axe-core from CDN if not already loaded. Error messages include
@@ -6696,29 +6707,36 @@ HTML section ${chunkNum}/${chunks.length}:
             setTimeout(() => { clearInterval(wait); reject(new Error('axe-core load timeout after 10s from ' + _AXE_CDN_URL + ' (previous script tag exists but window.axe never appeared — CDN may have returned corrupted JS)')); }, 10000);
             return;
           }
-          const script = document.createElement('script');
-          script.src = _AXE_CDN_URL;
-          script.setAttribute('data-axe-core', 'true');
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error('Failed to load axe-core from ' + _AXE_CDN_URL + ' (check network, corporate proxy, or adblock — jsdelivr may be blocked)'));
-          document.head.appendChild(script);
+          const tryAt = (i) => {
+            if (i >= _AXE_CDN_URLS.length) { reject(new Error('Failed to load axe-core from all ' + _AXE_CDN_URLS.length + ' CDN mirrors — check network, corporate proxy, or adblock')); return; }
+            const script = document.createElement('script');
+            script.src = _AXE_CDN_URLS[i];
+            script.setAttribute('data-axe-core', 'true');
+            script.onload = () => resolve();
+            script.onerror = () => { try { script.remove(); } catch (_) {} tryAt(i + 1); };
+            document.head.appendChild(script);
+          };
+          tryAt(0);
         });
       }
 
       // Fetch + cache axe source text once so subsequent iframe audits can inject inline.
       // De-duplicated via _axeSourcePromise so concurrent audits share a single fetch.
       if (!_axeSourceCache && !_axeSourcePromise) {
-        _axeSourcePromise = fetch(_AXE_CDN_URL)
-          .then(r => {
-            if (!r.ok) {
-              warnLog('[axe-core] CDN returned HTTP ' + r.status + ' ' + r.statusText + ' for ' + _AXE_CDN_URL + ' — inline injection disabled, falling back to script tag per iframe');
-              return null;
+        _axeSourcePromise = (async () => {
+          for (const u of _AXE_CDN_URLS) {
+            try {
+              const r = await fetch(u);
+              if (!r.ok) { warnLog('[axe-core] CDN returned HTTP ' + r.status + ' ' + r.statusText + ' for ' + u + ' — trying next mirror'); continue; }
+              const txt = await r.text();
+              if (txt) { _axeSourceCache = txt; return txt; }
+            } catch (err) {
+              warnLog('[axe-core] CDN fetch threw: ' + (err?.message || err) + ' (URL: ' + u + ') — trying next mirror');
             }
-            return r.text();
-          })
-          .then(txt => { if (txt) _axeSourceCache = txt; return txt; })
-          .catch(err => { warnLog('[axe-core] CDN fetch threw: ' + (err?.message || err) + ' (URL: ' + _AXE_CDN_URL + ')'); return null; })
-          .finally(() => { _axeSourcePromise = null; });
+          }
+          warnLog('[axe-core] all ' + _AXE_CDN_URLS.length + ' CDN mirrors failed to serve source text — inline injection disabled, falling back to script tag per iframe');
+          return null;
+        })().finally(() => { _axeSourcePromise = null; });
       }
       if (_axeSourcePromise) { try { await _axeSourcePromise; } catch(e) {} }
 
@@ -6751,10 +6769,15 @@ HTML section ${chunkNum}/${chunks.length}:
           iframeDoc.head.appendChild(axeScript);
           resolve(); // inline scripts execute synchronously on append
         } else {
-          axeScript.src = _AXE_CDN_URL;
-          axeScript.onload = () => resolve();
-          axeScript.onerror = () => reject(new Error('Failed to inject axe-core into iframe from ' + _AXE_CDN_URL + ' (inline cache empty AND iframe script load failed — check CORS / CSP / proxy)'));
-          iframeDoc.head.appendChild(axeScript);
+          const tryAt = (i) => {
+            if (i >= _AXE_CDN_URLS.length) { reject(new Error('Failed to inject axe-core into iframe from all ' + _AXE_CDN_URLS.length + ' CDN mirrors (inline cache empty AND iframe script loads failed — check CORS / CSP / proxy)')); return; }
+            const s = iframeDoc.createElement('script');
+            s.src = _AXE_CDN_URLS[i];
+            s.onload = () => resolve();
+            s.onerror = () => tryAt(i + 1);
+            iframeDoc.head.appendChild(s);
+          };
+          tryAt(0);
         }
       });
       // Shorter settle delay when inlined — no network wait needed.
