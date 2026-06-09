@@ -875,6 +875,51 @@ const d = labToolData.solarSystem || {};
 
               renderer.setSize(W, H);
 
+              // ── Bloom post-processing: selective glow on the sun + bright bodies ──
+              // Graceful + fully guarded: renders plain until the Three r128 post-processing
+              // addons load, then upgrades to a bloom composer. If the addons fail to load,
+              // the composer can't build, or any composer op throws, we fall back to
+              // renderer.render — so bloom can NEVER break the tool. Honors a global
+              // kill-switch (window.AlloPostFXEnabled === false) + a low-power / reduced-motion
+              // tier (half-res, gentler bloom). Addons load once and are shared across tools.
+              let composer = null;
+              (function setupBloom() {
+                if (window.AlloPostFXEnabled === false) return;
+                var ensure = function (cb) {
+                  if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+                  var urls = [
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+                  ];
+                  var i = 0;
+                  (function nextScript() {
+                    if (i >= urls.length) { cb(); return; }
+                    var s = document.createElement('script');
+                    s.src = urls[i]; s.onload = function () { i++; nextScript(); }; s.onerror = function () { i++; nextScript(); };
+                    document.head.appendChild(s);
+                  })();
+                };
+                ensure(function () {
+                  try {
+                    var T = window.THREE;
+                    if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+                    var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                    var lowPower = reduce || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+                    var res = lowPower ? 0.5 : 1;
+                    var c = new T.EffectComposer(renderer);
+                    c.addPass(new T.RenderPass(scene, camera));
+                    // UnrealBloomPass(resolution, strength, radius, threshold): high threshold
+                    // so only the bright sun + star highlights bloom, not the whole scene.
+                    c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))), lowPower ? 0.7 : 1.1, 0.3, 0.85));
+                    composer = c;
+                  } catch (e) { composer = null; }
+                });
+              })();
+
 
 
               // â"€â"€ Starfield â"€â"€
@@ -1554,7 +1599,8 @@ const d = labToolData.solarSystem || {};
                   telemetryEl.innerHTML = html;
                 }
 
-                renderer.render(scene, camera);
+                if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
+                else { renderer.render(scene, camera); }
 
               }
 
@@ -1568,7 +1614,7 @@ const d = labToolData.solarSystem || {};
 
                 const w = canvas.clientWidth; const h = canvas.clientHeight;
 
-                if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
+                if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); if (composer) { try { composer.setSize(w, h); } catch (e) {} } }
 
               });
 
@@ -1596,6 +1642,7 @@ const d = labToolData.solarSystem || {};
 
                 resizeObserver.disconnect();
 
+                if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
                 renderer.dispose();
 
                 scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
