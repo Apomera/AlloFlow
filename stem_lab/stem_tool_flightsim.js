@@ -9027,8 +9027,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           var skyGeo = new THREE.SphereGeometry(250000, 16, 16);
           var skyMat = new THREE.MeshBasicMaterial({ color: 0x5078a0, side: THREE.BackSide, flatShading: true });
+          skyMat.fog = false; // the sky dome itself must never fog out (r128 fogs MeshBasic by default)
           var skyMesh = new THREE.Mesh(skyGeo, skyMat);
           scene.add(skyMesh);
+
+          // ── Atmosphere fog (signature FX) ── created at init so every material
+          // compiles with fog support; the render loop drives color (matches the
+          // per-frame sky color for a seamless horizon) + density (denser toward
+          // dusk/night). Runway lights/markings are fog-exempt at creation.
+          scene.fog = new THREE.Fog(0x5078a0, 60000, 240000);
 
           threeResourcesRef.current = {
             skyMesh: skyMesh,
@@ -9711,6 +9718,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
         }
 
+        // ── Dusk/night atmosphere (signature FX) ── render-pure, keyed off the
+        // EXISTING automatic dayNight cycle: (1) fog tracks the per-frame sky
+        // color (seamless horizon) and densifies toward dusk/night; (2) at night
+        // the bloom threshold eases down so the white runway threshold lines +
+        // PAPI genuinely glow (red PAPI luma ~0.4 can never cross the daytime
+        // 0.86). Guarded; physics/scoring read state/ctrl only — untouched.
+        try {
+          if (scene.fog) {
+            scene.fog.color.copy(skyColor);
+            var _visF = 0.35 + 0.65 * brightness; // night ~14nm → day ~40nm visibility
+            scene.fog.far = 240000 * _visF;
+            scene.fog.near = scene.fog.far * 0.25;
+          }
+          var _bp = renderer._alloComposer && renderer._alloComposer.passes && renderer._alloComposer.passes[1];
+          if (_bp && typeof _bp.threshold === 'number') _bp.threshold = dayNight.isNight ? 0.55 : (dayNight.isDusk ? 0.7 : 0.86);
+        } catch (e) {}
+
         if (!terrainCenterRef.current) {
           updateTerrainMesh(state.lat, state.lon);
         } else {
@@ -9753,6 +9777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             for (var m = 0; m < 20; m++) {
               var markGeo = new THREE.BoxGeometry(4, 2.2, 200);
               var markMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+              markMat.fog = false; // centerline marks pierce the haze like real fixtures
               var mark = new THREE.Mesh(markGeo, markMat);
               mark.position.set(0, 0.05, -3800 + m * 400);
               rwGroup.add(mark);
@@ -9762,6 +9787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               for (var t = 0; t < 4; t++) {
                 var lineGeo = new THREE.BoxGeometry(15, 2.2, 50);
                 var lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                lineMat.fog = false; // threshold lines stay visible through haze
                 var line = new THREE.Mesh(lineGeo, lineMat);
                 line.position.set(-60 + t * 40, 0.05, side * 3950);
                 rwGroup.add(line);
@@ -9781,6 +9807,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             for (var p = 0; p < 4; p++) {
               var pGeo = new THREE.SphereGeometry(3, 8, 8);
               var pMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+              pMat.fog = false; // PAPI lights pierce the haze (the whole point of PAPI)
               var pLight = new THREE.Mesh(pGeo, pMat);
               var localOffset = new THREE.Vector3(-120, 4, -3000 + p * 20);
               localOffset.applyEuler(new THREE.Euler(0, -hdg * Math.PI / 180, 0));
