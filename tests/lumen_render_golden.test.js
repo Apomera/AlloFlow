@@ -356,6 +356,22 @@ describe('Lumen — present mode + presentation export', () => {
     expect(html).toMatch(/Derived \(math\)/);                    // the provenance pill in the slide
   });
 
+  it('present mode is keyboard-operable: focus lands inside (autofocus), a trigger to return to, and a Tab trap', () => {
+    const html = renderState({ observations: REYNA, presentMode: true });
+    // focus moves INTO the overlay on open
+    expect(html).toMatch(/<button[^>]*id="lumen-present-first"[^>]*autofocus/i);
+    // the first/last controls the focus trap pivots on
+    expect(html).toMatch(/id="lumen-present-first"/);
+    expect(html).toMatch(/id="lumen-present-last"/);
+    // two hidden focusable sentinels wrap Tab / Shift+Tab inside the dialog
+    expect((html.match(/tabindex="0"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*tabindex="0"/gi) || []).length).toBe(2);
+  });
+
+  it('the ▶ Present trigger carries the id that focus returns to on Exit/Esc', () => {
+    const html = renderState({ observations: REYNA });
+    expect(html).toMatch(/<button[^>]*id="lumen-present-trigger"[^>]*>▶ Present/);
+  });
+
   it('the reveal is honest: one keyframe, whole-chart, motion-opt-out (no per-element dramatize)', () => {
     const html = renderState({ observations: REYNA, presentMode: true });
     expect(html).toMatch(/@keyframes lumenReveal/);

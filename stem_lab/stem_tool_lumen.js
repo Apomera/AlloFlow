@@ -3237,7 +3237,7 @@
               // Present mode = a clean, full-screen, project-ready layer (the calm
               // analysis view stays the default front door); it is also what the
               // presentation export captures. Amber to read as the share action.
-              h('button', { className: 'px-2.5 py-1 text-xs font-semibold rounded-full text-white', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' }, onClick: function () { upd('presentMode', true); announce('Present mode opened.'); } }, '▶ Present'),
+              h('button', { id: 'lumen-present-trigger', className: 'px-2.5 py-1 text-xs font-semibold rounded-full text-white', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' }, onClick: function () { upd('presentMode', true); announce('Present mode opened.'); } }, '▶ Present'),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, 'Brief (HTML)'),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportCsv }, 'Data (CSV)'),
               h('label', { className: 'text-xs text-slate-600 flex items-center gap-1' },
@@ -3336,29 +3336,45 @@
           if (d.presentMode) {
             var presentMax = (levelIndex(ceiling) >= 3 && Array.isArray(d.aiHyps) && d.aiHyps.length) ? 'L3'
               : (levelIndex(ceiling) >= 2 && d.aiText ? 'L2' : 'L1');
-            var presentBtn = function (label, onClick, primary) {
+            var presentBtn = function (label, onClick, primary, opts) {
+              opts = opts || {};
               return h('button', {
-                onClick: onClick,
+                id: opts.id, autoFocus: opts.autoFocus || undefined, onClick: onClick,
                 className: 'px-3 py-1.5 text-sm rounded-lg ' + (primary ? 'text-white font-semibold' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'),
                 style: primary ? { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' } : null
               }, label);
             };
+            var focusId = function (id) { try { var el = document.getElementById(id); if (el && el.focus) el.focus(); } catch (eF2) { } };
+            // Close + RETURN focus to the ▶ Present trigger (hook-less: defer one tick
+            // so the re-render that unmounts the overlay has happened first).
+            var closePresent = function () {
+              upd('presentMode', false); announce('Present mode closed.');
+              try { setTimeout(function () { focusId('lumen-present-trigger'); }, 0); } catch (eR) { }
+            };
             var goFullscreen = function () {
               try { var el = document.getElementById('lumen-present-overlay'); if (el && el.requestFullscreen) el.requestFullscreen(); } catch (eF) { }
             };
+            // A focusable sentinel — onFocus bounces to the opposite end so Tab/Shift+Tab
+            // WRAP inside the overlay (a focus trap without useEffect/useRef, which this
+            // ctx-render model doesn't expose). Visually hidden, aria-hidden.
+            var trapSentinel = function (key, toId) {
+              return h('div', { key: key, tabIndex: 0, 'aria-hidden': 'true', onFocus: function () { focusId(toId); }, style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', opacity: 0 } });
+            };
             kids.push(h('div', {
               key: 'present', id: 'lumen-present-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Lumen present mode',
+              onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); } }, // Esc closes; stopPropagation so the host STEM Lab modal does not also close
               style: { position: 'fixed', inset: 0, zIndex: 50, background: 'linear-gradient(180deg,#ffffff 0%,#fffdf7 100%)', overflow: 'auto', padding: '28px 24px' }
             },
               h('style', { key: 'pkf' }, '@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}'),
+              trapSentinel('psA', 'lumen-present-last'), // Shift+Tab from the first control wraps to the last
               h('div', { key: 'pbar', className: 'flex items-center gap-2 flex-wrap', style: { maxWidth: '960px', margin: '0 auto 18px' } },
                 h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '💡'),
                 h('span', { className: 'font-extrabold text-lg tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, 'Lumen'),
                 h('span', { className: 'text-xs text-slate-400 italic' }, 'present mode'),
                 h('div', { className: 'ml-auto flex items-center gap-2 flex-wrap' },
-                  presentBtn('⤓ Export presentation (HTML)', exportPresentation, true),
+                  presentBtn('⤓ Export presentation (HTML)', exportPresentation, true, { id: 'lumen-present-first', autoFocus: true }),
                   presentBtn('⤢ Fullscreen', goFullscreen, false),
-                  presentBtn('✕ Exit', function () { upd('presentMode', false); announce('Present mode closed.'); }, false))),
+                  presentBtn('✕ Exit', closePresent, false, { id: 'lumen-present-last' }))),
               h('div', { key: 'pslide', className: 'lumen-reveal', style: { maxWidth: '960px', margin: '0 auto' } },
                 (compHasSynthetic(comp) ? h('div', { key: 'psyn', className: 'mb-3 px-3 py-2 rounded-lg text-sm font-bold text-white', style: { background: '#6d28d9' } }, '⚗ Synthetic practice data — not a real student. For demonstration only; not a defensible record.') : null),
                 h('div', { key: 'pmeasure', className: 'text-sm font-semibold text-slate-500 mb-1' }, comp.variable + (comp.unit ? ' · ' + comp.unit : '')),
@@ -3369,8 +3385,9 @@
                   ? h('div', { key: 'pchart', className: 'mt-3', style: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' } }, mkChartSvgRef('lumen-chart-present', 'presvg'))
                   : h('p', { key: 'pnochart', className: 'mt-3 text-sm text-slate-500' }, 'Add at least 3 observations to show a chart.')),
                 h('p', { key: 'psummary', className: 'mt-3 text-sm text-slate-600' }, chartSummaryText(obs, activeClaim, sourceRefs, chartType)),
-                h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-400' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Exit to return.')
-              )
+                h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-400' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.')
+              ),
+              trapSentinel('psZ', 'lumen-present-first') // Tab from the last control wraps to the first
             ));
           }
 

@@ -169,7 +169,7 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -179,14 +179,16 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 <div id="lumen-present-overlay" role="dialog" aria-modal="true" aria-label="Lumen present mode" style="position:fixed;inset:0;z-index:50;background:linear-gradient(180deg,#ffffff 0%,#fffdf7 100%);overflow:auto;padding:28px 24px">
 <style>@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}</style>
+<div tabindex="0" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0">
+</div>
 <div class="flex items-center gap-2 flex-wrap" style="max-width:960px;margin:0 auto 18px">
 <span class="text-xl" aria-hidden="true">💡</span>
 <span class="font-extrabold text-lg tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-xs text-slate-400 italic">present mode</span>
 <div class="ml-auto flex items-center gap-2 flex-wrap">
-<button class="px-3 py-1.5 text-sm rounded-lg text-white font-semibold" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">⤓ Export presentation (HTML)</button>
+<button id="lumen-present-first" autofocus="" class="px-3 py-1.5 text-sm rounded-lg text-white font-semibold" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">⤓ Export presentation (HTML)</button>
 <button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">⤢ Fullscreen</button>
-<button class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">✕ Exit</button>
+<button id="lumen-present-last" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">✕ Exit</button>
 </div>
 </div>
 <div class="lumen-reveal" style="max-width:960px;margin:0 auto">
@@ -283,7 +285,9 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 </svg>
 </div>
 <p class="mt-3 text-sm text-slate-600">Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.</p>
-<p class="mt-4 text-[11px] text-slate-400">Present mode · max epistemic level L1. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Exit to return.</p>
+<p class="mt-4 text-[11px] text-slate-400">Present mode · max epistemic level L1. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.</p>
+</div>
+<div tabindex="0" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0">
 </div>
 </div>
 </div>"
@@ -458,7 +462,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -638,7 +642,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -846,7 +850,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -1036,7 +1040,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -1192,7 +1196,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -1321,7 +1325,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -1576,7 +1580,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -1722,7 +1726,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -2215,7 +2219,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -2345,7 +2349,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -2944,7 +2948,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">
@@ -3107,7 +3111,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 </div>
 <div class="mt-3 flex items-center gap-2 flex-wrap">
 <span class="text-xs text-slate-500">Present / export this view:</span>
-<button class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
+<button id="lumen-present-trigger" class="px-2.5 py-1 text-xs font-semibold rounded-full text-white" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">▶ Present</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Brief (HTML)</button>
 <button class="px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Data (CSV)</button>
 <label class="text-xs text-slate-600 flex items-center gap-1">

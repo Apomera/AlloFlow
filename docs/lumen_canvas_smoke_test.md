@@ -69,6 +69,7 @@ The SSR golden pins the overlay's structure; these need the real surface
 - [ ] With OS "reduce motion" on, the reveal **does not animate** (it just appears) — honesty + a11y.
 - [ ] The overlay chart still carries the **uncertainty band** and the per-point provenance marks (and, on synthetic data, the violet **practice banner** + in-SVG **PRACTICE DATA** watermark).
 - [ ] **⤢ Fullscreen** → the overlay goes true-fullscreen (projector-ready); Esc / browser-exit returns to the overlay.
+- [ ] **Keyboard:** opening Present moves focus **into** the overlay (the Export button); **Tab / Shift+Tab stay trapped** among Export → Fullscreen → Exit (they don't fall back into the view behind); **Esc** closes it; on close, focus **returns to the ▶ Present** button. A screen reader announces it as a dialog and ignores the content behind.
 - [ ] **✕ Exit** → returns to the **calm analysis view underneath**, unchanged (the overlay was additive).
 - [ ] **⤓ Export presentation (HTML)** → downloads `lumen-presentation-<measure>-<audience>-summary.html`. Open it: a **full-page, presentation-styled** doc with the **finding**, the **inlined live chart** (band + provenance glyphs intact — it is the *exact* chart you saw, serialized), Methods, and a **max-epistemic-level footer**. **Print-to-PDF** looks clean (the `@media print` rules drop chrome).
 - [ ] Tick **Include identifiable data (FERPA)** → Export presentation → a **confirm** dialog, then the file embeds the per-point table and the filename/footer say **CONFIDENTIAL**. Off → finding-only, **no per-row table**.
