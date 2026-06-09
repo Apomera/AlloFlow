@@ -263,6 +263,157 @@ async function _buildDocxBlobFromSpec(spec, d) {
   });
   return d.Packer.toBlob(docFile);
 }
+function _ensurePptxLib() {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  if (window.PptxGenJS) return Promise.resolve(window.PptxGenJS);
+  if (document.getElementById("pptxlib-cdn")) {
+    return new Promise((resolve) => {
+      const t0 = Date.now();
+      const t = setInterval(() => {
+        if (window.PptxGenJS) {
+          clearInterval(t);
+          resolve(window.PptxGenJS);
+        } else if (Date.now() - t0 > 15e3) {
+          clearInterval(t);
+          resolve(window.PptxGenJS || null);
+        }
+      }, 100);
+    });
+  }
+  const urls = [
+    "https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js",
+    "https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"
+  ];
+  return new Promise((resolve) => {
+    const tryAt = (i) => {
+      if (i >= urls.length) {
+        resolve(null);
+        return;
+      }
+      const s = document.createElement("script");
+      s.id = "pptxlib-cdn";
+      s.src = urls[i];
+      s.async = true;
+      s.onload = () => resolve(window.PptxGenJS || null);
+      s.onerror = () => {
+        try {
+          s.remove();
+        } catch (_) {
+        }
+        tryAt(i + 1);
+      };
+      document.head.appendChild(s);
+    };
+    tryAt(0);
+  });
+}
+function _docxSpecToSlides(spec) {
+  const slides = [];
+  let cur = null;
+  const newSlide = (title) => {
+    cur = { title: (title || "").trim().slice(0, 120) || null, items: [], lineEst: 0 };
+    slides.push(cur);
+  };
+  const runsText = (runs) => (runs || []).map((r) => r.br ? " " : r.text || "").join("").replace(/\s+/g, " ").trim();
+  const pushItem = (item, lines) => {
+    if (!cur) newSlide(spec.title || "Document");
+    if (cur.lineEst + lines > 14 && cur.items.length) {
+      const t = cur.title;
+      newSlide(t ? t.replace(/ \(cont\.\)$/, "") + " (cont.)" : null);
+    }
+    cur.items.push(item);
+    cur.lineEst += lines;
+  };
+  for (const b of spec.blocks || []) {
+    if (b.type === "heading") {
+      const t = runsText(b.runs);
+      if (!t) continue;
+      if (b.level <= 2) newSlide(t);
+      else pushItem({ kind: "subhead", text: t }, 2);
+    } else if (b.type === "paragraph") {
+      const t = runsText(b.runs);
+      if (t) pushItem({ kind: "text", text: t }, Math.max(1, Math.ceil(t.length / 90)));
+    } else if (b.type === "list") {
+      for (const it of b.items || []) {
+        const t = runsText(it.runs);
+        if (t) pushItem({ kind: "bullet", text: t, level: Math.min(it.level || 0, 4) }, 1);
+      }
+    } else if (b.type === "table") {
+      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => runsText(c.runs)) }));
+      if (rows.length) pushItem({ kind: "table", rows }, rows.length + 1);
+    } else if (b.type === "image") {
+      pushItem({ kind: "image", src: b.src || null, alt: b.alt || "", width: b.width, height: b.height }, 8);
+    }
+  }
+  const counts = { slides: slides.length, images: 0, tables: 0, bullets: 0, titled: 0 };
+  for (const s of slides) {
+    if (s.title) counts.titled++;
+    for (const it of s.items) {
+      if (it.kind === "image") counts.images++;
+      else if (it.kind === "table") counts.tables++;
+      else if (it.kind === "bullet") counts.bullets++;
+    }
+  }
+  return { title: spec.title, lang: spec.lang, slides, counts };
+}
+async function _buildPptxBlobFromSlides(deck, P) {
+  const p = new P();
+  try {
+    p.title = deck.title || "Accessible deck";
+  } catch (_) {
+  }
+  try {
+    p.layout = "LAYOUT_16x9";
+  } catch (_) {
+  }
+  for (const s of deck.slides) {
+    const slide = p.addSlide();
+    let y = 0.35;
+    if (s.title) {
+      slide.addText(s.title, { x: 0.5, y, w: 9, h: 0.8, fontSize: 28, bold: true, color: "1F2937" });
+      y = 1.3;
+    }
+    let runs = [];
+    const flushText = () => {
+      if (!runs.length) return;
+      const h = Math.min(0.3 * runs.length + 0.2, Math.max(5.2 - y, 0.5));
+      slide.addText(
+        runs.map((r) => ({ text: r.text, options: { bullet: r.kind === "bullet" ? true : void 0, indentLevel: r.kind === "bullet" ? r.level || 0 : void 0, bold: r.kind === "subhead", fontSize: r.kind === "subhead" ? 20 : 16, breakLine: true } })),
+        { x: 0.5, y, w: 9, h, valign: "top", color: "111827" }
+      );
+      y += h + 0.1;
+      runs = [];
+    };
+    for (const it of s.items) {
+      if (it.kind === "text" || it.kind === "bullet" || it.kind === "subhead") {
+        runs.push(it);
+        continue;
+      }
+      flushText();
+      if (it.kind === "table" && it.rows.length) {
+        const tableRows = it.rows.map((r) => r.cells.map((c) => ({ text: c, options: r.header ? { bold: true, fill: "E5E7EB" } : {} })));
+        slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: "solid", color: "CBD5E1", pt: 0.5 }, color: "111827" });
+        y += 0.35 * it.rows.length + 0.25;
+      } else if (it.kind === "image") {
+        let placed = false;
+        if (it.src && /^data:image\//.test(it.src)) {
+          try {
+            slide.addImage({ data: it.src.replace(/^data:/, ""), x: 0.5, y, w: 3.2, h: 2.4, altText: it.alt || "Image" });
+            y += 2.55;
+            placed = true;
+          } catch (_) {
+          }
+        }
+        if (!placed) {
+          slide.addText("[Image: " + (it.alt || "no description available") + "]", { x: 0.5, y, w: 9, h: 0.4, italic: true, fontSize: 14, color: "334155" });
+          y += 0.5;
+        }
+      }
+    }
+    flushText();
+  }
+  return p.write({ outputType: "blob" });
+}
 async function _concatAudioBlobs(blobs) {
   if (!blobs || blobs.length === 0) return null;
   if (blobs.length === 1) return blobs[0];
@@ -3181,7 +3332,13 @@ Return ONLY JSON:
             } else if (postExportValidator && postExportValidator.error) {
               addToast("Byte-level validation could not run on the shipped file (" + postExportValidator.error + ") \u2014 rely on the structure self-check above and verify externally in PAC 2024.", "info");
             }
-            if (pdfAuditResult?.hasSearchableText === true) {
+            if (summary && typeof summary.reachableLeaves === "number" && summary.reachableLeaves > 0) {
+              const _linked = summary.reachableLeaves - (summary.orphanedLeaves || 0);
+              addToast(
+                summary.uaDeclared ? "\u2713 Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked to page content \u2014 PDF/UA-1 declared. Confirm in PAC 2024 or veraPDF before claiming compliance." : "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked to page content \u2014 PDF/UA-1 declaration withheld until full linkage. The file is substantially more accessible than untagged; verify in PAC 2024 before claiming conformance.",
+                summary.uaDeclared ? "success" : "info"
+              );
+            } else if (pdfAuditResult?.hasSearchableText === true) {
               addToast(t("pdf_audit.tagged.born_digital_note") || "Heads-up: for text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. The file is substantially more accessible, but verify in PAC 2024 or Acrobat before claiming PDF/UA conformance.", "info");
             }
             if (summary) {
@@ -3267,6 +3424,34 @@ Return ONLY JSON:
         title: t("pdf_audit.docx_export.title") || "Convert the remediated content into a Word document with real heading styles, alt text on images, table header rows, list structure, and working hyperlinks. Verify with Word's built-in Accessibility Checker (Review \u2192 Check Accessibility) before distributing."
       },
       "\u{1F4DD} Word (.docx)"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: async () => {
+          try {
+            addToast(t("toasts.building_accessible_pptx") || "Building accessible PowerPoint\u2026", "info");
+            const P = await _ensurePptxLib();
+            if (!P) {
+              addToast("Could not load the PowerPoint export library from any CDN mirror \u2014 check the network, or use the HTML/Word downloads.", "error");
+              return;
+            }
+            const deck = _docxSpecToSlides(_htmlToDocxSpec(pdfFixResult.accessibleHtml));
+            const blob = await _buildPptxBlobFromSlides(deck, P);
+            safeDownloadBlob(blob, `${(pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "")}-accessible.pptx`);
+            const bits = [deck.counts.slides + " slide" + (deck.counts.slides === 1 ? "" : "s") + " (" + deck.counts.titled + " titled)"];
+            if (deck.counts.images) bits.push(deck.counts.images + " image" + (deck.counts.images === 1 ? "" : "s") + " with alt text");
+            if (deck.counts.tables) bits.push(deck.counts.tables + " table" + (deck.counts.tables === 1 ? "" : "s") + " with header rows");
+            if (deck.counts.bullets) bits.push("real bullet lists");
+            addToast("\u{1F4FD} Accessible PowerPoint saved \u2014 " + bits.join(", ") + ". Verify in PowerPoint: Review \u2192 Check Accessibility.", "success");
+          } catch (err) {
+            warnLog("[PptxExport] failed:", err);
+            addToast("PowerPoint export failed: " + (err?.message || "unknown error") + ". The accessible HTML and Word downloads carry the same content.", "error");
+          }
+        },
+        className: "px-4 py-2.5 bg-orange-50 text-orange-700 rounded-xl font-bold text-sm hover:bg-orange-100 transition-colors flex items-center gap-1.5",
+        title: t("pdf_audit.pptx_export.title") || "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout \u2014 not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."
+      },
+      "\u{1F4FD} PowerPoint (.pptx)"
     ), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const blob = new Blob([pdfFixResult.accessibleHtml], { type: "text/html" });
       const url = URL.createObjectURL(blob);

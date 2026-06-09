@@ -699,12 +699,18 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
         // must link BOTH blocks via run-concatenation (K = [MCR, MCR]).
         const BODY1 = 'This body paragraph matches the accessible html exactly';
         const BODY2 = 'and continues onto a second drawn line for the run test.';
+        // Typographic-drift case: the PDF has straight ASCII quotes + spaced
+        // hyphen; the HTML uses curly quotes + an em dash (what the AI rewrite
+        // typically produces). The tolerant fold must still link it.
+        const BODY3 = 'She said "hello" - twice as planned today.';
+        const BODY3_HTML = 'She said “hello” — twice as planned today.';
         const inDoc = await PDFDocument.create();
         const pg = inDoc.addPage([612, 792]);
         const font = await inDoc.embedFont(StandardFonts.Helvetica);
         pg.drawText(HEAD, { x: 50, y: 740, size: 22, font });
         pg.drawText(BODY1, { x: 50, y: 700, size: 12, font });
         pg.drawText(BODY2, { x: 50, y: 684, size: 12, font });
+        pg.drawText(BODY3, { x: 50, y: 660, size: 12, font });
         const inputBytes = await inDoc.save();
 
         const pipeline = (window as any).AlloModules.createDocPipeline({
@@ -713,7 +719,7 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           getDefaultTitle: () => 'Document', state: {},
         });
         const html = '<!DOCTYPE html><html lang="en"><head><title>Per Leaf Fixture</title></head><body><main>'
-          + '<h1>' + HEAD + '</h1><p>' + BODY1 + ' ' + BODY2 + '</p></main></body></html>';
+          + '<h1>' + HEAD + '</h1><p>' + BODY1 + ' ' + BODY2 + '</p><p>' + BODY3_HTML + '</p></main></body></html>';
         const result = await pipeline.createTaggedPdf(inputBytes, { accessibleHtml: html }, { title: 'Per Leaf Test', lang: 'en' });
         if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
 
@@ -756,6 +762,7 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
         const orphaned = leaves.filter((e) => !e.hasContent);
         const h1 = elems.find((e) => e.role === 'H1');
         const p = elems.find((e) => e.role === 'P' && e.actualText.indexOf('matches the accessible') !== -1);
+        const p2 = elems.find((e) => e.role === 'P' && e.actualText.indexOf('twice as planned') !== -1);
         // Evidence-based declaration: the XMP claim must appear on a FULLY
         // linked born-digital file (this fixture) — read it from the bytes.
         let xmp = '';
@@ -772,6 +779,7 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           h1Linked: !!(h1 && h1.hasContent),
           pLinked: !!(p && p.hasContent),
           pMcrCount: p ? p.mcrCount : 0,
+          typographicDriftLinked: !!(p2 && p2.hasContent),
           hasUaClaim: xmp.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1,
           uaRule: ((((result.pdfUa1Checks || {}).checks) || []).filter((c: any) => c.rule === 'PDF/UA-1 declared (XMP)').map((c: any) => c.status + ': ' + (c.message || c.detail)).join(' | ')) || '(rule missing)',
           xmpComment: (xmp.match(/<!--[^>]*-->/) || [''])[0],
@@ -785,9 +793,13 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
 
   test('Stage 4b re-points MCIDs onto matching semantic leaves', () => {
     expect(perLeafSummary && !perLeafSummary.error, 'evaluate error: ' + (perLeafSummary && perLeafSummary.error)).toBeTruthy();
-    expect(perLeafSummary.perLeafLinked, 'summary.perLeafLinked — Stage 4 must have run and both leaves matched').toBeGreaterThanOrEqual(2);
+    expect(perLeafSummary.perLeafLinked, 'summary.perLeafLinked — Stage 4 must have run and all three leaves matched').toBeGreaterThanOrEqual(3);
     expect(perLeafSummary.h1Linked, 'H1 semantic leaf must carry /K→MCR').toBe(true);
     expect(perLeafSummary.pLinked, 'P semantic leaf must carry /K→MCR').toBe(true);
+  });
+
+  test('typographic drift (curly quotes + em dash in HTML vs ASCII in PDF) still links', () => {
+    expect(perLeafSummary.typographicDriftLinked).toBe(true);
   });
 
   test('born-digital orphaned-leaf count drops to 0 on a fully-matching fixture', () => {

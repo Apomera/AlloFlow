@@ -4237,10 +4237,26 @@ var createDocPipeline = function(deps) {
         const num = parseInt(sf.match(/slide(\d+)\.xml/)[1], 10);
         const slideText = await _ooxmlExtractPart(zip.file(sf), 'p', 't', _A_NS);
         const notesText = notesByNum.get(num) || '';
+        // Existing alt text (p:cNvPr descr="…"): authored accessibility data
+        // that was previously DROPPED at extraction. Surface as [Image: …]
+        // markers so remediation preserves the author's descriptions instead
+        // of losing them (and the AI doesn't have to re-invent them).
+        const altMarkers = [];
+        try {
+          const slideXml = await zip.file(sf).async('string');
+          const _xmlDecode = (s) => s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'");
+          const _descrRe = /\bdescr="([^"]+)"/g;
+          let _dm;
+          while ((_dm = _descrRe.exec(slideXml)) !== null && altMarkers.length < 20) {
+            const d = _xmlDecode(_dm[1]).trim();
+            if (d && d.length > 1 && !/^picture \d+$/i.test(d)) altMarkers.push('[Image: ' + d + ']');
+          }
+        } catch (_) {}
         // Per-slide block packs body + notes into ONE marker so AI keeps them together.
         const blockParts = [];
         blockParts.push(_ALLO_SECTION_OPEN('SLIDE', num));
         if (slideText && slideText.trim()) blockParts.push(slideText);
+        if (altMarkers.length) blockParts.push(altMarkers.join('\n'));
         if (notesText && notesText.trim()) {
           blockParts.push('[Teacher speaker notes for slide ' + num + ' — instructional context, not student-facing copy]');
           blockParts.push(notesText);
@@ -13859,10 +13875,26 @@ tr { page-break-inside: avoid; }
     let _perLeafLinked = 0;
     if (!isScanned && _stage4PageResults.length > 0 && _unifiableLeafRefs.length > 0) {
       try {
-        const _norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-        // Join Stage-4 line fragments: a block ending in '-' is a hyphenated
-        // line break — join without the hyphen; otherwise join with a space.
-        const _joinFrag = (a, b) => !a ? b : (a.endsWith('-') ? a.slice(0, -1) + b : a + ' ' + b);
+        // Tolerant fold: the accessibleHtml side passes through the AI rewrite,
+        // whose dominant text drift is typographic, not semantic — curly vs
+        // straight quotes, en/em dashes, HTML entities, NBSP, ellipsis. Fold
+        // both sides to a common form before comparing; matching stays
+        // order-constrained and exact-after-folding (no similarity guessing).
+        const _norm = (s) => String(s || '')
+          .toLowerCase()
+          .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&nbsp;/g, ' ')
+          .replace(/[‘’‚′]/g, "'")
+          .replace(/[“”„″]/g, '"')
+          .replace(/[‐-―−]/g, '-')
+          .replace(/…/g, '...')
+          .replace(/[  -​]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        // Join Stage-4 line fragments: a block ending in a WORD-BREAK hyphen
+        // (letter immediately before the '-') joins without the hyphen; a
+        // dash with a space before it (em/en dash folded to '-') is real
+        // punctuation and keeps a spaced join.
+        const _joinFrag = (a, b) => !a ? b : ((a.endsWith('-') && !a.endsWith(' -')) ? a.slice(0, -1) + b : a + ' ' + b);
         const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1 };
         // Flatten all Stage-4 blocks into ONE ordered stream (pages in order,
         // MCID order within a page) — a paragraph may span a page boundary, and
@@ -14459,6 +14491,16 @@ tr { page-break-inside: avoid; }
     _uaDeclared = _reachableLeafCountAtStamp > 0
       ? _orphanedLeafCountAtStamp === 0
       : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''));
+    // Observability: surface the linkage outcome in the summary so the
+    // download toast and reports can show real-world per-leaf match rates
+    // (the open question for born-digital docs whose HTML the AI rewrote).
+    try {
+      if (_summary && typeof _summary === 'object') {
+        _summary.reachableLeaves = _reachableLeafCountAtStamp;
+        _summary.orphanedLeaves = _orphanedLeafCountAtStamp;
+        _summary.uaDeclared = _uaDeclared;
+      }
+    } catch (_) {}
     try {
       const pdfTitle = (meta.title || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
       const pdfSubject = (meta.subject || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));

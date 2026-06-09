@@ -1507,6 +1507,7 @@
     "tagged_pdf_downloaded_original_visual": "Tagged PDF downloaded — original visual layer preserved with accessibility tag tree added.",
     "tagged_pdf_failed": "Tagged PDF failed: ",
     "building_accessible_docx": "Building accessible Word file…",
+    "building_accessible_pptx": "Building accessible PowerPoint…",
     "accessible_html_downloaded": "Accessible HTML downloaded",
     "audit_trail_downloaded_open_any": "Audit trail downloaded — open in any browser to verify integrity.",
     "audit_trail_generation_failed": "Audit trail generation failed: ",
@@ -4568,6 +4569,9 @@
     },
     "docx_export": {
       "title": "Convert the remediated content into a Word document with real heading styles, alt text on images, table header rows, list structure, and working hyperlinks. Verify with Word's built-in Accessibility Checker (Review → Check Accessibility) before distributing."
+    },
+    "pptx_export": {
+      "title": "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout — not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."
     },
     "alt_formats": {
       "intro": "Download the remediated document in accessible alternative formats"
