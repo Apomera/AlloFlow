@@ -3343,6 +3343,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }, []);
       var callTTS = ctx.callTTS || null;
       var callGemini = ctx.callGemini || null;
+      // AI gate (default OFF). Coach Mode (a 35s loop that ships driving telemetry
+      // to the AI) and the rideshare passenger-line rewrite only run when a teacher
+      // has enabled AI hints. Captured next to callGemini so it shares its freshness.
+      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);
       // Voice instructor: speaks coaching tips and scenario intros aloud.
       // Previously a flat 5-second global throttle silently killed every speak()
       // call within 5s of any prior call — multiple narration sources (intro
@@ -5145,7 +5149,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         }
                         // Async personalization via callGemini — fire-and-forget; the
                         // canned line stays visible if the call fails or is slow.
-                        if (typeof callGemini === 'function') {
+                        if (aiHintsEnabled && typeof callGemini === 'function') {
                           try {
                             var rsPrompt = 'You are ' + rsArr.passenger + ', a passenger in a rideshare in rural Maine. '
                               + 'The driver just picked you up and is taking you to the ' + rsArr.dropoff.name + '. '
@@ -5560,7 +5564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               speak('Parent ride check complete. Tap End Drive to see the report.');
             }
             // ── Coach Mode: periodic AI driving advice (any scenario) ──
-            if (d.coachMode && callGemini && !coachRef.current.inFlight) {
+            if (d.coachMode && aiHintsEnabled && callGemini && !coachRef.current.inFlight) {
               var nowMsCo = Date.now();
               if (nowMsCo - coachRef.current.lastCallAt > 35000) {
                 coachRef.current.lastCallAt = nowMsCo;
@@ -20223,7 +20227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', null, '🎧 Ride-Along mode'),
               h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '10px' } }, '— the car drives itself and narrates aloud (for blind/low-vision and keyboard-only learners)')
             ),
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', cursor: 'pointer', marginTop: '8px' } },
+            aiHintsEnabled && h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', cursor: 'pointer', marginTop: '8px' } },
               h('input', { type: 'checkbox', checked: !!d.coachMode,
                 onChange: function(e) { upd('coachMode', e.target.checked); }
               }),

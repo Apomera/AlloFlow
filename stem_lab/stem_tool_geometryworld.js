@@ -5977,7 +5977,14 @@
           // Bilingual: auto-translate NPC dialogue when home language is set
           var transKey = dialogNpcIdx + '_' + homeLang;
           var translation = npcTranslations[transKey] || null;
-          if (homeLang !== 'en' && !translation && callGemini && !npcTranslations[transKey + '_loading']) {
+          // Translation is GATED + EXPLICIT. It previously auto-fired callGemini
+          // DURING RENDER for any non-English home language — sending an ELL/refugee
+          // student's dialogue to the AI with no opt-in, plus a React side-effect in
+          // render. Now it only runs when the teacher has enabled AI hints AND the
+          // student clicks the Translate button below.
+          var npcIsTranslating = !!npcTranslations[transKey + '_loading'];
+          var doTranslate = function() {
+            if (translation || npcIsTranslating || !callGemini) return;
             var newTrans = Object.assign({}, npcTranslations);
             newTrans[transKey + '_loading'] = true;
             upd('npcTranslations', newTrans);
@@ -5999,7 +6006,7 @@
                 delete ut[transKey + '_loading'];
                 upd('npcTranslations', ut);
               });
-          }
+          };
           var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
           return el('div', { style: {
               position: 'absolute',
@@ -6054,7 +6061,12 @@
               title: 'Click to hear translation spoken aloud',
               style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
-            homeLang !== 'en' && !translation && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
+            homeLang !== 'en' && !translation && npcIsTranslating && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
+            homeLang !== 'en' && !translation && !npcIsTranslating && ctx && ctx.aiHintsEnabled && callGemini && el('button', {
+              onClick: doTranslate,
+              title: 'Translate this dialogue with AI (uses an AI request)',
+              style: { fontSize: '11px', color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px', padding: '4px 10px', marginBottom: '10px', cursor: 'pointer', fontWeight: 700 }
+            }, '\uD83C\uDF10 Translate (AI)'),
             data.question && !isAnswered && (function() {
               // Determine current question (base or follow-up)
               var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
