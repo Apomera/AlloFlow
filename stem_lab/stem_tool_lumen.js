@@ -1319,6 +1319,94 @@
     return { html: html, filename: 'lumen-' + (synth ? 'PRACTICE-' : '') + slug(comp.variable) + '-' + audience + (includePII ? '-CONFIDENTIAL' : '-summary') + '.html', maxLevel: maxLevel };
   }
 
+  // The PRESENTATION export (design: the in-app Present mode IS what exports).
+  // Same honesty contract as buildExportHtml — synthetic watermark in title/h2/
+  // banner/footer, FERPA opt-in for the per-row table, max-epistemic-level footer
+  // — but full-page + presentation-styled, and it INLINES the live chart SVG
+  // (passed in from the rendered DOM via XMLSerializer), so the uncertainty band,
+  // provenance glyphs, and PRACTICE watermark are byte-faithful, never redrawn.
+  // The reveal animation lives ONLY in the in-app overlay; the exported file is
+  // static (the user chose a static presentation HTML), which keeps the artifact's
+  // honesty simple — nothing in the file moves, so nothing can dramatize.
+  function buildPresentationHtml(comp, claim, opts) {
+    opts = opts || {};
+    var audience = opts.audience || 'working';
+    var includedAI = !!opts.includeAI && audience !== 'family' && !!((opts.aiHyps && opts.aiHyps.length) || opts.aiText);
+    var maxLevel = includedAI ? ((opts.aiHyps && opts.aiHyps.length) ? 'L3' : 'L2') : 'L1';
+    var synth = !!opts.synthetic;
+    var includePII = !!opts.includePII;
+    var face = faceFor(claim, audience, opts.synthetic);
+    var summary = chartSummaryText(comp.observations, claim, opts.sourceRefs, opts.chartType);
+    // The chart is OUR serialized markup (no user HTML), but defense-in-depth we
+    // strip any <script>, on*-handler, or javascript: href before inlining.
+    var rawSvg = (typeof opts.chartSvg === 'string' && /<svg[\s>]/i.test(opts.chartSvg)) ? opts.chartSvg : '';
+    var safeSvg = rawSvg
+      .replace(/<script[\s\S]*?<\/script\s*>/gi, '')
+      .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/(href|xlink:href)\s*=\s*("javascript:[^"]*"|'javascript:[^']*')/gi, '');
+    var chartBlock = safeSvg
+      ? '<figure class="chart">' + safeSvg + '</figure>'
+      : '<p class="muted"><em>Chart not embedded. Open Present mode in the app and use “Export presentation” to capture the live chart.</em></p>';
+    var methods = '<h3>Methods</h3><p>' + escHtml(claim.estimate
+      ? 'Ordinary least-squares trend over ' + claim.n + ' observations; the interval is a 95% t-interval on the slope; the band is the plausible-slope range. Descriptive only — not a percentile, score, prediction, or diagnosis.'
+      : 'Too few observations to estimate a trend.') + '</p>';
+    var refs = (opts.sourceRefs || []).filter(function (r) { return sourcedRenderable(r).ok; });
+    var references = refs.length ? ('<h3>External references</h3><ul>' + refs.map(function (r) {
+      var href = /^https?:\/\//i.test(r.locator) ? r.locator : '#';
+      return '<li><strong>' + escHtml(benchmarkChipText(r)) + '</strong><br>' + escHtml(r.citation) + ' — <a href="' + escHtml(href) + '">source</a>' + (r.verified ? ' [verified]' : ' [UNVERIFIED — check the source]') + '</li>';
+    }).join('') + '</ul><p class="muted"><em>External benchmarks are general references, not this student\'s measured data or individualized goals.</em></p>') : '';
+    var ai = '';
+    if (includedAI && opts.aiHyps && opts.aiHyps.length) {
+      ai = '<h3>AI reading (L3) — ' + escHtml(AI_CAVEAT) + '</h3><ul>' + opts.aiHyps.map(function (hp) {
+        return '<li><strong>' + escHtml(hp.band) + ':</strong> ' + escHtml(hp.text) + (hp.kind !== 'effect' ? ' (' + escHtml(hp.kind) + ')' : '') + '</li>';
+      }).join('') + '</ul><p class="muted"><em>' + escHtml(HYP_CAVEAT) + '. Regenerates each run.</em></p>';
+    } else if (includedAI && opts.aiText) {
+      ai = '<h3>AI-organized (L2) — ' + escHtml(AI_CAVEAT) + '</h3><p>' + escHtml(opts.aiText) + '</p>';
+    }
+    var tbl = dataTableModel(comp.observations, claim);
+    var rows = tbl.rows.map(function (r) {
+      if (r.boundary) return '<tr><td colspan="4"><em>' + escHtml(r.label) + '</em></td></tr>';
+      return '<tr><td>' + escHtml(r.x) + '</td><td>' + escHtml(r.y) + '</td><td>' + escHtml(r.phase) + '</td><td>' + escHtml(r.level) + '</td></tr>';
+    }).join('');
+    var tableBlock = includePII
+      ? ('<h3>Per-point data <span class="muted">(identifiable)</span></h3><table><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
+      : '<p class="muted"><em>Per-student data points are omitted from this finding-only presentation (FERPA). Re-export with “Include identifiable data” to embed the full table.</em></p>';
+    var subset = (claim.shownOf && claim.shownOf.shown < claim.shownOf.total)
+      ? '<p><strong>Showing ' + claim.shownOf.shown + ' of ' + claim.shownOf.total + ' observations.</strong></p>' : '';
+    var synTag = synth ? 'SYNTHETIC — NOT A REAL STUDENT · ' : '';
+    var synBanner = synth ? '<div class="syn">⚗ SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. For demonstration/training only; not a defensible record.</div>' : '';
+    var css = 'body{margin:0;font:16px/1.55 -apple-system,Segoe UI,Roboto,system-ui,sans-serif;color:#0f172a;background:#f8fafc}'
+      + '.wrap{max-width:880px;margin:0 auto;padding:40px 24px}'
+      + '.top{display:flex;align-items:center;gap:8px;margin-bottom:18px}'
+      + '.brand{font-weight:800;letter-spacing:-.01em;font-size:18px;background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent}'
+      + '.measure{margin-left:auto;font-size:13px;font-weight:600;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:999px;padding:2px 10px}'
+      + 'h2.measure-h{font-size:14px;color:#64748b;font-weight:600;margin:0 0 4px}'
+      + '.finding{font-size:1.6rem;line-height:1.25;font-weight:700;margin:0 0 8px}'
+      + '.prov{font-size:12px;color:#64748b;margin:0 0 18px}'
+      + '.chart{margin:0 0 16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px}'
+      + '.chart svg{width:100%;height:auto;display:block}.summary{color:#334155}'
+      + 'h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;margin:22px 0 6px}'
+      + 'table{border-collapse:collapse;font-size:13px}th,td{border:1px solid #cbd5e1;padding:3px 8px;text-align:left}'
+      + '.muted{color:#64748b}.syn{background:#6d28d9;color:#fff;padding:10px 14px;border-radius:8px;font-weight:700;margin-bottom:16px}'
+      + 'footer{margin-top:28px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b}'
+      + 'a{color:#0e7490}@media print{body{background:#fff}.wrap{padding:0}.chart{border:none;padding:0}}';
+    var html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'
+      + escHtml(synTag + 'Lumen — ' + comp.variable) + '</title><style>' + css + '</style></head><body><div class="wrap">'
+      + synBanner
+      + '<div class="top"><span aria-hidden="true" style="font-size:20px">💡</span><span class="brand">Lumen</span>'
+      + '<span class="measure">' + escHtml(comp.variable + (comp.unit ? ' · ' + comp.unit : '')) + '</span></div>'
+      + '<h2 class="measure-h">' + escHtml(synTag + comp.variable + (comp.unit ? ' (' + comp.unit + ')' : '')) + '</h2>'
+      + '<p class="finding">' + escHtml(face) + '</p>'
+      + '<p class="prov">Provenance: the finding is Derived (math, L1); each chart mark carries its own level (Observed ● / Synthetic ◇); the band is the plausible-slope range. Max epistemic level in this document: ' + escHtml(maxLevel) + '.</p>'
+      + subset
+      + chartBlock
+      + '<p class="summary">' + escHtml(summary) + '</p>'
+      + ai + methods + references + tableBlock
+      + '<footer>' + escHtml(synth ? 'SYNTHETIC PRACTICE DATA — NOT A REAL STUDENT. ' : '') + 'Lumen presentation · max epistemic level ' + escHtml(maxLevel) + ' · audience: ' + escHtml(audience) + (includePII ? ' · CONFIDENTIAL (identifiable)' : ' · finding-only (no identifiable rows)') + '. Levels: Observed / Derived (math) / AI-organized / AI reading. The chart above is the live chart; the uncertainty band and provenance marks are not decorative.</footer>'
+      + '</div></body></html>';
+    return { html: html, filename: 'lumen-presentation-' + (synth ? 'PRACTICE-' : '') + slug(comp.variable) + '-' + audience + (includePII ? '-CONFIDENTIAL' : '-summary') + '.html', maxLevel: maxLevel };
+  }
+
   function buildExportCsv(comp, claim, opts) {
     opts = opts || {};
     var synth = !!opts.synthetic;
@@ -2078,7 +2166,7 @@
     lintL2: lintL2, rankBand: rankBand, validateHypotheses: validateHypotheses, faceFor: faceFor,
     // export + FERPA/sign-off gates (Phase 1)
     escHtml: escHtml, csvSafe: csvSafe, slug: slug, signoffHash: signoffHash, assertDefensible: assertDefensible,
-    buildExportHtml: buildExportHtml, buildExportCsv: buildExportCsv,
+    buildExportHtml: buildExportHtml, buildExportCsv: buildExportCsv, buildPresentationHtml: buildPresentationHtml,
     // Sourced provenance (Phase 1.x, §16) — engine + curated spine + gates
     NORM_SPINE: NORM_SPINE, DIBELS8_ORF: DIBELS8_ORF, selectNorm: selectNorm, validateNormSpine: validateNormSpine,
     makeSourceRef: makeSourceRef, addSourceRef: addSourceRef, sourcedRenderable: sourcedRenderable,
@@ -2261,6 +2349,28 @@
             var out = buildExportCsv(comp, claim, { includePII: !!d.includePII, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp) });
             download(out.filename, out.csv, 'text/csv');
             upd('exportMsg', 'Exported ' + out.filename + '.');
+          };
+          // The presentation export embeds the LIVE chart SVG (serialized from the
+          // rendered DOM — byte-faithful band/glyphs/watermark, no re-draw). Same
+          // export gate + FERPA opt-in as the brief. Falls back to an honest "open
+          // Present mode to capture the chart" note if no SVG node is reachable.
+          var exportPresentation = function () {
+            if (!claim || claim.refused) return;
+            var includeAI = levelIndex(ceiling) >= 2;
+            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
+            if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
+            if (d.includePII && typeof window !== 'undefined' && window.confirm &&
+              !window.confirm('This presentation will embed the full identifiable per-student data table. Export it?')) return;
+            var svgStr = '';
+            try {
+              var node = (typeof document !== 'undefined' && document.getElementById)
+                ? (document.getElementById('lumen-chart-present') || document.getElementById('lumen-chart-main')) : null;
+              if (node && typeof XMLSerializer !== 'undefined') svgStr = new XMLSerializer().serializeToString(node);
+            } catch (eS) { svgStr = ''; }
+            var out = buildPresentationHtml(comp, claim, { audience: audience, aiText: d.aiText, aiHyps: d.aiHyps, includeAI: includeAI, sourceRefs: sourceRefs, synthetic: compHasSynthetic(comp), includePII: !!d.includePII, chartSvg: svgStr, chartType: chartType });
+            download(out.filename, out.html, 'text/html');
+            upd('exportMsg', 'Exported ' + out.filename + ' (max level ' + out.maxLevel + ').');
+            announce('Exported presentation ' + out.filename + '.');
           };
           var kids = [];
           // Load a curated EXAMPLE dataset — stamped synthetic so it self-declares +
@@ -2863,6 +2973,7 @@
           }
 
           var geo;
+          var mkChartSvgRef = null; // set inside the if(geo) chart block; used by the present-mode overlay at the root return
           if (chartType === 'multiSeriesLine') {
             // Renders even if SOME series refuse — multiSeriesGeometry shows each series' observed points,
             // and a refused series declares itself in the claim list + SR table.
@@ -2984,12 +3095,19 @@
                 sk.push(h('text', { key: 'rlg' + i, x: b.padL + 2, y: rl.sy - 3, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
               }
             });
-            kids.push(h('svg', {
-              key: 'svg', viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
-              role: 'img', 'aria-label': (compHasSynthetic(comp) ? 'Synthetic practice data — not a real student. ' : '') + chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
-            }, (compHasSynthetic(comp)
-              ? sk.concat([h('text', { key: 'synWm', x: b.w / 2, y: b.h / 2, textAnchor: 'middle', 'aria-hidden': 'true', transform: 'rotate(-18 ' + (b.w / 2) + ' ' + (b.h / 2) + ')', style: { fill: '#6d28d9', opacity: 0.16, fontSize: Math.round(b.h / 7), fontWeight: 'bold', pointerEvents: 'none' } }, 'PRACTICE DATA')])
-              : sk)));
+            // The chart is built once as a reusable maker so the in-app Present
+            // overlay can re-render the IDENTICAL responsive svg (viewBox scales it
+            // to any width) — no geometry duplication, every honesty mark shared.
+            var mkChartSvg = function (idStr, keyStr) {
+              return h('svg', {
+                key: keyStr, id: idStr, viewBox: '0 0 ' + b.w + ' ' + b.h, className: 'w-full mt-3 bg-white rounded-lg border border-slate-200',
+                role: 'img', 'aria-label': (compHasSynthetic(comp) ? 'Synthetic practice data — not a real student. ' : '') + chartSummaryText(obs, (chartType === 'multiSeriesLine' ? multiClaims : activeClaim), sourceRefs, chartType)
+              }, (compHasSynthetic(comp)
+                ? sk.concat([h('text', { key: 'synWm', x: b.w / 2, y: b.h / 2, textAnchor: 'middle', 'aria-hidden': 'true', transform: 'rotate(-18 ' + (b.w / 2) + ' ' + (b.h / 2) + ')', style: { fill: '#6d28d9', opacity: 0.16, fontSize: Math.round(b.h / 7), fontWeight: 'bold', pointerEvents: 'none' } }, 'PRACTICE DATA')])
+                : sk));
+            };
+            mkChartSvgRef = mkChartSvg; // hoist the maker for the present-mode overlay (root scope)
+            kids.push(mkChartSvg('lumen-chart-main', 'svg'));
           }
 
           // Grouped bar (>1 series) shows the RAW data peer (every point, with its series) so the mean
@@ -3115,7 +3233,11 @@
           // Multi-series + grouped-bar are also hidden: the export brief is a single trend (it would pool the series).
           if (claim && !claim.refused && chartType !== 'scatter' && chartType !== 'multiSeriesLine' && chartType !== 'groupedBar') {
             kids.push(h('div', { key: 'exp', className: 'mt-3 flex items-center gap-2 flex-wrap' },
-              h('span', { className: 'text-xs text-slate-500' }, 'Export this view:'),
+              h('span', { className: 'text-xs text-slate-500' }, 'Present / export this view:'),
+              // Present mode = a clean, full-screen, project-ready layer (the calm
+              // analysis view stays the default front door); it is also what the
+              // presentation export captures. Amber to read as the share action.
+              h('button', { className: 'px-2.5 py-1 text-xs font-semibold rounded-full text-white', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' }, onClick: function () { upd('presentMode', true); announce('Present mode opened.'); } }, '▶ Present'),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportHtml }, 'Brief (HTML)'),
               h('button', { className: 'px-2 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: exportCsv }, 'Data (CSV)'),
               h('label', { className: 'text-xs text-slate-600 flex items-center gap-1' },
@@ -3202,6 +3324,55 @@
 
           kids.push(h('p', { key: 'foot', className: 'mt-3 text-[10px] text-slate-700' },
             'Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.'));
+
+          // ── PRESENT MODE (additive overlay) ──────────────────────────────
+          // An extra, opt-in layer — never the default. When d.presentMode is
+          // falsy (the default) NOTHING is appended, so the calm analysis view and
+          // every golden snapshot stay byte-identical. The overlay re-renders the
+          // IDENTICAL chart (mkChartSvgRef) large, with one honest reveal — the
+          // whole chart fades+rises in together (band, line and points at once,
+          // never the confident line first), and respects prefers-reduced-motion.
+          // It is also what the presentation export captures.
+          if (d.presentMode) {
+            var presentMax = (levelIndex(ceiling) >= 3 && Array.isArray(d.aiHyps) && d.aiHyps.length) ? 'L3'
+              : (levelIndex(ceiling) >= 2 && d.aiText ? 'L2' : 'L1');
+            var presentBtn = function (label, onClick, primary) {
+              return h('button', {
+                onClick: onClick,
+                className: 'px-3 py-1.5 text-sm rounded-lg ' + (primary ? 'text-white font-semibold' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'),
+                style: primary ? { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 2px rgba(234,88,12,0.3)' } : null
+              }, label);
+            };
+            var goFullscreen = function () {
+              try { var el = document.getElementById('lumen-present-overlay'); if (el && el.requestFullscreen) el.requestFullscreen(); } catch (eF) { }
+            };
+            kids.push(h('div', {
+              key: 'present', id: 'lumen-present-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Lumen present mode',
+              style: { position: 'fixed', inset: 0, zIndex: 50, background: 'linear-gradient(180deg,#ffffff 0%,#fffdf7 100%)', overflow: 'auto', padding: '28px 24px' }
+            },
+              h('style', { key: 'pkf' }, '@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}'),
+              h('div', { key: 'pbar', className: 'flex items-center gap-2 flex-wrap', style: { maxWidth: '960px', margin: '0 auto 18px' } },
+                h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '💡'),
+                h('span', { className: 'font-extrabold text-lg tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, 'Lumen'),
+                h('span', { className: 'text-xs text-slate-400 italic' }, 'present mode'),
+                h('div', { className: 'ml-auto flex items-center gap-2 flex-wrap' },
+                  presentBtn('⤓ Export presentation (HTML)', exportPresentation, true),
+                  presentBtn('⤢ Fullscreen', goFullscreen, false),
+                  presentBtn('✕ Exit', function () { upd('presentMode', false); announce('Present mode closed.'); }, false))),
+              h('div', { key: 'pslide', className: 'lumen-reveal', style: { maxWidth: '960px', margin: '0 auto' } },
+                (compHasSynthetic(comp) ? h('div', { key: 'psyn', className: 'mb-3 px-3 py-2 rounded-lg text-sm font-bold text-white', style: { background: '#6d28d9' } }, '⚗ Synthetic practice data — not a real student. For demonstration only; not a defensible record.') : null),
+                h('div', { key: 'pmeasure', className: 'text-sm font-semibold text-slate-500 mb-1' }, comp.variable + (comp.unit ? ' · ' + comp.unit : '')),
+                h('p', { key: 'pface', className: 'font-bold text-slate-900', style: { fontSize: '1.7rem', lineHeight: 1.25 } }, faceFor(claim, audience, compHasSynthetic(comp))),
+                h('div', { key: 'pprov', className: 'inline-flex items-center gap-1 text-xs font-bold rounded-full px-2 py-0.5 mt-2', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
+                  h('span', { 'aria-hidden': 'true' }, bundle.glyph), h('span', null, bundle.label)),
+                (mkChartSvgRef
+                  ? h('div', { key: 'pchart', className: 'mt-3', style: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' } }, mkChartSvgRef('lumen-chart-present', 'presvg'))
+                  : h('p', { key: 'pnochart', className: 'mt-3 text-sm text-slate-500' }, 'Add at least 3 observations to show a chart.')),
+                h('p', { key: 'psummary', className: 'mt-3 text-sm text-slate-600' }, chartSummaryText(obs, activeClaim, sourceRefs, chartType)),
+                h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-400' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Exit to return.')
+              )
+            ));
+          }
 
           return h('div', { className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' }, kids);
         } catch (e) {

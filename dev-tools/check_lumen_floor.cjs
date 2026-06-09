@@ -318,10 +318,42 @@ ok(L.sourcedRenderable({ verified: true, citation: 'c', locator: 'javascript:ale
   ok(Object.keys(compFrom([{ x: 1, y: 2, phase: 'a' }]).observations[0]).join(',') === 'id,x,y,phase', 'SYN: a real row has no phantom synthetic key (byte-identity)');
 })();
 
+// 14. PRESENTATION export (design: the in-app Present mode IS what exports). Same
+//     honesty contract as the brief — synthetic watermark, FERPA opt-in for the
+//     per-row table, max-epistemic-level footer, hostile-name escaping — and the
+//     inlined LIVE svg is sanitized (no <script>/on*-handler) while the chart survives.
+(function () {
+  function cf(rs) { var c = L.makeCompendium('WCPM', 'words/min'); rs.forEach(function (r) { L.addObservation(c, r); }); return c; }
+  var realC = cf([{ x: 1, y: 42, phase: 'b' }, { x: 2, y: 45, phase: 'b' }, { x: 3, y: 50, phase: 't' }, { x: 4, y: 55, phase: 't' }]);
+  var realClaim = L.deriveTrendClaim(realC, {});
+
+  var pres = L.buildPresentationHtml(realC, realClaim, { audience: 'working' });
+  ok(/max epistemic level L1/.test(pres.html), 'PRES: real presentation footer prints the max epistemic level');
+  ok(!/SYNTHETIC/.test(pres.html), 'PRES: a real presentation carries no SYNTHETIC marker');
+  ok(/finding-only \(no identifiable rows\)/.test(pres.html) && /omitted from this finding-only presentation/.test(pres.html), 'PRES: default presentation is FERPA finding-only (no per-row table)');
+  ok(/-summary\.html$/.test(pres.filename), 'PRES: finding-only filename ends -summary.html');
+
+  var presPII = L.buildPresentationHtml(realC, realClaim, { audience: 'working', includePII: true });
+  ok(/<table>/.test(presPII.html) && /CONFIDENTIAL \(identifiable\)/.test(presPII.html) && /-CONFIDENTIAL\.html$/.test(presPII.filename), 'PRES: opt-in PII embeds the table + CONFIDENTIAL footer + filename');
+
+  var synRows = L.generatePracticeData({ scenario: 'improving', n: 8, seed: 'pres' });
+  var synC = cf(synRows);
+  var synPres = L.buildPresentationHtml(synC, L.deriveTrendClaim(synC, {}), { audience: 'working', synthetic: true });
+  ok(/SYNTHETIC/.test(synPres.html) && /PRACTICE/.test(synPres.filename), 'PRES: a synthetic presentation carries the watermark + PRACTICE filename');
+
+  var evil = cf([{ x: 1, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 4 }]);
+  evil.variable = '<img src=x onerror=alert(1)>';
+  ok(L.buildPresentationHtml(evil, L.deriveTrendClaim(evil, {}), {}).html.indexOf('<img src=x onerror') === -1, 'PRES: a hostile variable name is escaped');
+
+  var hostileSvg = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect onload="alert(2)" x="0" y="0"/><text>ok</text></svg>';
+  var presSvg = L.buildPresentationHtml(realC, realClaim, { audience: 'working', chartSvg: hostileSvg });
+  ok(presSvg.html.indexOf('<script>') === -1 && presSvg.html.indexOf('onload') === -1 && /<figure class="chart">/.test(presSvg.html) && /<text>ok<\/text>/.test(presSvg.html), 'PRES: the inlined live SVG is sanitized (no <script>/on*-handler) but the chart survives');
+})();
+
 if (fails.length) {
   console.error('check_lumen_floor: ' + fails.length + ' FAILED');
   fails.forEach(function (f) { console.error('  x ' + f); });
   process.exit(1);
 }
-if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (13 groups, incl. §16 Phase 2A workspace + synthetic practice-data guard).');
+if (!QUIET) console.log('check_lumen_floor: OK — Lumen honesty-floor invariants hold (14 groups, incl. §16 Phase 2A workspace + synthetic practice-data guard + presentation export).');
 process.exit(0);

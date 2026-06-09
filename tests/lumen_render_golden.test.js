@@ -328,3 +328,87 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).not.toMatch(/PRACTICE DATA/); // uppercase watermark absent (the lowercase button label is fine)
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// PRESENT MODE + PRESENTATION EXPORT (the share layer). An EXTRA, opt-in
+// layer — never the default. The calm analysis view stays the front door;
+// the overlay is additive (off => byte-identical), re-renders the IDENTICAL
+// chart large with one honest reveal, and is what the presentation export
+// (buildPresentationHtml, live-SVG-inlining) captures.
+// ─────────────────────────────────────────────────────────────────────
+describe('Lumen — present mode + presentation export', () => {
+  it('the analysis view exposes a ▶ Present button but NO overlay by default (additive)', () => {
+    const html = renderState({ observations: REYNA });
+    expect(html).toMatch(/▶ Present/);
+    expect(html).not.toMatch(/id="lumen-present-overlay"/);
+    expect(html).not.toMatch(/lumen-reveal/);
+  });
+
+  it('present mode renders a full-screen overlay: live chart, finding, provenance, export/fullscreen/exit', () => {
+    const html = renderState({ observations: REYNA, presentMode: true });
+    expect(html).toMatch(/id="lumen-present-overlay"/);
+    expect(html).toMatch(/role="dialog"/);
+    expect(html).toMatch(/aria-modal="true"/);
+    expect(html).toMatch(/id="lumen-chart-present"/);            // the reused responsive chart
+    expect(html).toMatch(/Export presentation \(HTML\)/);
+    expect(html).toMatch(/Fullscreen/);
+    expect(html).toMatch(/Exit/);
+    expect(html).toMatch(/Derived \(math\)/);                    // the provenance pill in the slide
+  });
+
+  it('the reveal is honest: one keyframe, whole-chart, motion-opt-out (no per-element dramatize)', () => {
+    const html = renderState({ observations: REYNA, presentMode: true });
+    expect(html).toMatch(/@keyframes lumenReveal/);
+    expect(html).toMatch(/prefers-reduced-motion/);              // a11y motion opt-out
+    // the reveal is on the SLIDE container, not on the band/line individually
+    expect((html.match(/lumen-reveal/g) || []).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('present mode preserves the honesty marks — the band + a second copy of the live chart, never an area fill', () => {
+    const html = renderState({ observations: REYNA, presentMode: true });
+    expect(html).toMatch(/fill-opacity="0.1"/);                  // the uncertainty band
+    expect((html.match(/id="lumen-chart-(main|present)"/g) || []).length).toBe(2); // main behind + present
+  });
+
+  it('synthetic data in present mode keeps the violet practice banner + the in-SVG watermark', () => {
+    const synth = REYNA.map((r) => ({ ...r, synthetic: true }));
+    const html = renderState({ observations: synth, presentMode: true });
+    expect(html).toMatch(/Synthetic practice data — not a real student/i);
+    expect(html).toMatch(/PRACTICE DATA/);                       // watermark survives into the present chart
+  });
+
+  it('present-mode overlay is structurally byte-stable (snapshot)', () => {
+    expect(renderState({ observations: REYNA, presentMode: true })).toMatchSnapshot();
+  });
+
+  // buildPresentationHtml pure-function honesty (check_lumen_floor §14 pins more;
+  // these are the CI-visible essentials co-located with the render contracts).
+  function compReyna() { const c = L.makeCompendium('WCPM', 'words/min'); REYNA.forEach((r) => L.addObservation(c, r)); return c; }
+
+  it('buildPresentationHtml: real export = max-level footer, no SYNTHETIC, FERPA finding-only', () => {
+    const comp = compReyna();
+    const out = L.buildPresentationHtml(comp, L.deriveTrendClaim(comp, {}), { audience: 'working' });
+    expect(out.html).toMatch(/max epistemic level L1/);
+    expect(out.html).not.toMatch(/SYNTHETIC/);
+    expect(out.html).toMatch(/finding-only \(no identifiable rows\)/);
+    expect(out.filename).toMatch(/-summary\.html$/);
+  });
+
+  it('buildPresentationHtml: opt-in PII embeds the table + CONFIDENTIAL footer + filename', () => {
+    const comp = compReyna();
+    const out = L.buildPresentationHtml(comp, L.deriveTrendClaim(comp, {}), { audience: 'working', includePII: true });
+    expect(out.html).toMatch(/<table>/);
+    expect(out.html).toMatch(/CONFIDENTIAL \(identifiable\)/);
+    expect(out.filename).toMatch(/-CONFIDENTIAL\.html$/);
+  });
+
+  it('buildPresentationHtml: the inlined live SVG is sanitized but the chart survives', () => {
+    const comp = compReyna();
+    const hostile = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect onload="alert(2)" x="0"/><text>ok</text></svg>';
+    const out = L.buildPresentationHtml(comp, L.deriveTrendClaim(comp, {}), { chartSvg: hostile });
+    expect(out.html).not.toMatch(/<script>/);
+    expect(out.html).not.toMatch(/onload/);
+    expect(out.html).toMatch(/<figure class="chart">/);
+    expect(out.html).toMatch(/<text>ok<\/text>/);
+  });
+});
