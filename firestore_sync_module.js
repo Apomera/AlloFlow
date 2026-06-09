@@ -87,6 +87,14 @@
              });
              return { ...item, data: cleanData };
         }
+        if (item.type === 'fluency-record' && item.data && item.data.audioRecording) {
+             // Strip the raw read-aloud voice clip before it reaches Firestore.
+             // A child's recorded voice is biometric-class data and must never
+             // auto-sync to the cloud; the scored result (metrics/wordData/
+             // feedback) is kept so reload-from-cloud still shows the record.
+             const { audioRecording, mimeType, ...rest } = item.data;
+             return { ...item, data: rest };
+        }
         return item;
     });
   }
