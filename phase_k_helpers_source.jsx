@@ -987,16 +987,36 @@ const executeSaveFile = (deps) => {
               addToast(t('student.adventure_saved'), "info");
           }
       }
+      // ── FERPA voice-export gate ──
+      // A saved project can carry a child's recorded voice: Oral Fluency
+      // read-aloud clips (history fluency-record .audioRecording) and SEL/HOWL
+      // voice check-ins (selToolData). A recorded voice is identifiable,
+      // biometric-class FERPA data, so warn + mark the file CONFIDENTIAL before
+      // it leaves the device (mirrors the Symbol Studio backup pattern; auto
+      // cloud-sync already strips fluency audio via sanitizeHistoryForCloud).
+      // Fires ONLY when audio is actually present — normal saves are unaffected.
+      let outName = filename;
+      const _hasVoice = dataStr.indexOf('data:audio') !== -1 || /"audioRecording"\s*:\s*"/.test(dataStr);
+      if (_hasVoice) {
+          const _ok = (typeof window !== 'undefined' && typeof window.confirm === 'function')
+              ? window.confirm("This project file contains a student's voice recording (an Oral Fluency read-aloud and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?")
+              : true;
+          if (!_ok) { try { addToast(t('toasts.save_cancelled') || 'Save cancelled.', 'info'); } catch (_) {} return; }
+          if (!/CONFIDENTIAL/i.test(outName)) {
+              const _dot = outName.lastIndexOf('.');
+              outName = _dot > 0 ? outName.slice(0, _dot) + '_CONFIDENTIAL' + outName.slice(_dot) : outName + '_CONFIDENTIAL';
+          }
+      }
       const blob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = filename;
+      link.download = outName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      addToast(`Project saved as ${filename}`, "success");
+      addToast(`Project saved as ${outName}`, "success");
       setLastJsonFileSave(Date.now());
       setIsSaveActionPulsing(false);
       setShowSaveModal(false);
