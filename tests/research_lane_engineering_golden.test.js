@@ -146,4 +146,54 @@ describe('Engineering · stakeholderTranslatorGate safety override', () => {
     expect(res.ok).toBe(false);
     expect(res.bypass_signals).not.toContain('safety_override_meets_label');
   });
+
+  // Contract: pin what the gate ACTUALLY enforces, so the header docblock and
+  // the code can't silently diverge again (the header was reconciled 2026-06-07
+  // to drop the unbuilt "triple-anchor" enforcement claim).
+  it('requires a sufficiently long design rationale', () => {
+    const res = E().stakeholderTranslatorGate(baseJournal({
+      stageNotes: { communicate: { designRationale: 'too short', stakeholderAccountabilityStatement: ACCOUNTABILITY } },
+    }));
+    expect(res.ok).toBe(false);
+    expect(res.bypass_signals.join(' ')).toMatch(/^rationale_/);
+  });
+
+  it('requires at least two design claims', () => {
+    const res = E().stakeholderTranslatorGate(baseJournal({
+      designClaims: [{ id: 'dc1', text: CLAIM, label: 'partial' }],
+    }));
+    expect(res.ok).toBe(false);
+    expect(res.bypass_signals).toContain('too_few_design_claims');
+  });
+
+  it('requires every design claim to carry a label', () => {
+    const res = E().stakeholderTranslatorGate(baseJournal({
+      designClaims: [
+        { id: 'dc1', text: CLAIM, label: 'partial' },
+        { id: 'dc2', text: CLAIM + ' It was also affordable.', label: '' },
+      ],
+    }));
+    expect(res.ok).toBe(false);
+    expect(res.bypass_signals.join(' ')).toMatch(/designClaim_1_unlabeled/);
+  });
+
+  it('does NOT enforce triple-anchoring (aspirational, not built) — a claim that names no criterion/run/stakeholder still passes the claim checks', () => {
+    // With valid prose + 2 labeled claims + 2 builds + exemplar viewed and no
+    // safety issue, the gate passes even though the claims reference nothing.
+    const j = baseJournal({
+      designClaims: [
+        { id: 'dc1', text: 'A wholly generic statement of adequacy with no anchors at all here.', label: 'partial' },
+        { id: 'dc2', text: 'Another equally generic statement of adequacy with no anchors here.', label: 'not_yet' },
+      ],
+      buildLog: [{ v: 1 }, { v: 2 }],
+      stageNotes: {
+        communicate: { designRationale: RATIONALE, stakeholderAccountabilityStatement: ACCOUNTABILITY, exemplarViewed: true },
+      },
+    });
+    const res = E().stakeholderTranslatorGate(j);
+    // It is NOT rejected for any anchoring reason (proves triple-anchor is unenforced).
+    if (res.bypass_signals) {
+      expect(res.bypass_signals.join(' ')).not.toMatch(/anchor|criterion_ref|run_ref|stakeholder_ref/);
+    }
+  });
 });
