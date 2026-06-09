@@ -11,6 +11,11 @@
 // Run `node _verify_view_props.cjs AlloFlowANTI.txt PdfAuditView` after any
 // edit to confirm the host still supplies every prop.
 
+// Host-provided focus-trap hook (window.__alloHooks, AlloFlowANTI.txt ~L1920).
+// Resolved once at module load so the per-render hook order stays stable;
+// no-op fallback keeps the modal working on hosts that predate the hook.
+const _alloUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
+
 // Merge multiple TTS audio Blobs into ONE downloadable file.
 // callTTS returns a COMPLETE audio file per segment. For WAV (the Gemini TTS path)
 // each blob carries its own 44-byte RIFF header, so naively Blob-concatenating them
@@ -220,6 +225,11 @@ function PdfAuditView(props) {
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit
   } = props;
 
+  // WCAG 2.1.2 / 2.4.3: keep Tab inside the audit dialog while it is open.
+  // The dialog previously had aria-modal + Escape but no Tab trap, so keyboard
+  // users could tab into the inert page behind it.
+  const pdfModalRef = useRef(null);
+  _alloUseFocusTrap(pdfModalRef, !!(pdfAuditResult || pdfAuditLoading));
   // Tier 4: surface "resume previous batch" banner when an interrupted batch
   // is found in IndexedDB. Hooks must run unconditionally before any early
   // return — keep this above the !pdfAuditResult guard.
@@ -359,7 +369,7 @@ function PdfAuditView(props) {
               safeCloseAudit();
             }
           }}
-          ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
+          ref={(el) => { pdfModalRef.current = el; if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
         >
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
             {/* Persistent close button — sticky so it stays visible when the modal content scrolls.
@@ -864,7 +874,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's require' : ' requires') + ' significant remediation or expert review to meet compliance standards.' : ''}
     </p>
     <p style="font-size:11px;color:#64748b;margin-top:12px">Standards: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
-    <p style="font-size:11px;color:#64748b">Methodology: AI multi-auditor triangulation + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
+    <p style="font-size:11px;color:#64748b">Methodology: AI multi-pass review (one model, varied prompts) + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
   </div>
 </div>
 
@@ -990,7 +1000,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     {/* Style Seeds — unified pre-remediation style selection */}
                     <div>
                       <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">{t('pdf_audit.style.heading') || 'Style Seed'}</div>
-                      <p className="text-[11px] text-slate-600 mb-1.5">{t('pdf_audit.style.subtext') || 'What design style should the AI apply? WCAG compliance guaranteed by deterministic sanitizer.'}</p>
+                      <p className="text-[11px] text-slate-600 mb-1.5">{t('pdf_audit.style.subtext') || 'What design style should the AI apply? A deterministic sanitizer re-checks text contrast (WCAG AA) for every style.'}</p>
                       <div className="flex flex-wrap gap-1">
                         {[
                           { id: 'professional', label: '💼 Professional', desc: 'Clean, corporate' },
@@ -1340,11 +1350,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
               <div className="p-12 text-center" role="status" aria-live="polite">
                 <div className="text-5xl mb-4 animate-pulse" aria-hidden="true">♿</div>
                 <h3 className="text-lg font-black text-slate-800 mb-2">{t('pdf_audit.loading.title') || 'Auditing PDF Accessibility...'}</h3>
-                <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle') || 'Running 5 parallel WCAG 2.1 AA audits with triangulation. This may take 15-30 seconds.'}</p>
-                <div className="mt-4 w-56 h-2.5 bg-slate-200 rounded-full mx-auto overflow-hidden" role="progressbar" aria-label={t('pdf_audit.loading.progress_aria') || 'Audit in progress'} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 rounded-full" style={{animation: 'auditProgress 25s ease-out forwards'}}></div>
+                <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle') || 'Running 5 parallel WCAG 2.1 AA audit passes (one AI model, varied prompts) + an axe-core baseline. This may take 15-30 seconds.'}</p>
+                {/* Indeterminate by design: the audit exposes no per-step progress signal,
+                    so a width-fill animation faking a percentage would be dishonest.
+                    Sweep + no aria-valuenow = ARIA indeterminate progressbar. */}
+                <div className="mt-4 w-56 h-2.5 bg-slate-200 rounded-full mx-auto overflow-hidden relative" role="progressbar" aria-label={t('pdf_audit.loading.progress_aria') || 'Audit in progress'}>
+                  <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 rounded-full" style={{animation: 'auditSweep 1.4s ease-in-out infinite'}}></div>
                 </div>
-                <style>{`@keyframes auditProgress { 0% { width: 5%; } 20% { width: 30%; } 50% { width: 55%; } 75% { width: 75%; } 90% { width: 85%; } 100% { width: 92%; } } @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+                <style>{`@keyframes auditSweep { 0% { left: -34%; } 100% { left: 100%; } } @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
                 {/* ── Knowbility Partner Introduction — shown during audit wait ── */}
                 <div className="mt-6 text-left bg-gradient-to-br from-white via-indigo-50/50 to-violet-50/40 border border-indigo-200/70 rounded-2xl p-5 space-y-3 mx-auto max-w-lg" style={{ animation: 'fadeInUp 0.9s ease-out 3s both' }}>
@@ -1490,14 +1503,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const axe = pdfAuditResult._baselineAxeScore;
                         if (ai == null || axe == null) return null;
                         const spread = Math.abs(ai - axe);
-                        if (spread < 15) return null;
+                        // A critical axe violation is surfaced REGARDLESS of spread — a
+                        // passing blended average must not mask a hard WCAG failure.
+                        const axeCrit = ((pdfAuditResult._baselineAxeAudit || {}).critical || []).length;
+                        if (spread < 15 && !axeCrit) return null;
                         // AI lower than axe → semantic issues (alt text, heading meaning) that axe can't see
                         // axe lower than AI → code-level WCAG failures that the rubric didn't weight enough
                         const aiWeaker = ai < axe;
-                        const msg = aiWeaker
+                        const msg = axeCrit
+                          ? (t('pdf_audit.divergence.critical_override') || 'axe-core found {n} critical WCAG violation(s) — review them before trusting the blended score; an average can hide a hard failure').replace('{n}', String(axeCrit))
+                          : aiWeaker
                           ? (t('pdf_audit.divergence.semantic') || 'Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can\'t detect')
                           : (t('pdf_audit.divergence.structural') || 'Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly');
-                        return <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title={`Spread: ${spread} points`}>{'⚠️'} {msg}</p>;
+                        return <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title={axeCrit ? `Critical violations: ${axeCrit}` : `Spread: ${spread} points`}>{'⚠️'} {msg}</p>;
                       })()}
                     </>
                   ) : (
@@ -1523,7 +1541,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {pdfAuditResult.scores?.length > 1 && (
                     <details data-help-key="pdf_audit_results_reliability_details" className="bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden">
                       <summary className="px-3 py-2 text-[11px] font-bold text-indigo-700 uppercase tracking-widest cursor-pointer hover:bg-indigo-100 transition-colors">
-                        📊 Reliability Metrics ({pdfAuditResult.reliability || 'N/A'} agreement)
+                        📊 Auditor Consistency ({pdfAuditResult.reliability || 'N/A'} agreement)
                       </summary>
                       <div className="px-3 pb-3 space-y-2">
                         <div className="grid grid-cols-2 gap-2 mt-1">
@@ -4397,6 +4415,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (roundTrip && roundTrip.ok !== false && Array.isArray(roundTrip.warnings) && roundTrip.warnings.length) {
                                 addToast('Note (structure self-check): ' + roundTrip.warnings.join('; '), 'info');
                               }
+                              // ── Born-digital linkage disclosure (honest scope) ──
+                              // For text-layer PDFs the semantic tree (alt text, table headers,
+                              // section nesting) is associated via ActualText rather than fully
+                              // MCID-linked to page content — the per-leaf unify pass currently
+                              // runs only for scanned PDFs. Say so instead of implying full
+                              // PDF/UA linkage, and point at a real validator for the compliance call.
+                              if (pdfAuditResult?.hasSearchableText === true) {
+                                addToast(t('pdf_audit.tagged.born_digital_note') || 'Heads-up: for text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. The file is substantially more accessible, but verify in PAC 2024 or Acrobat before claiming PDF/UA conformance.', 'info');
+                              }
                               // Build a concrete proof-of-tagging string. Most PDF
                               // readers don't surface tag info, so the toast is the
                               // user's main signal that real tagging happened —
@@ -4665,7 +4692,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </button>
                             <button onClick={() => {
                               const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi !== null && _jsonAxe !== null) ? Math.round((_jsonAxe + _jsonAi) / 2) : (_jsonAxe ?? _jsonAi);
-                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini 5-auditor triangulation)', 'axe-core (Deque WCAG 2.1 AA)'] };
+                              const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'] };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = `a11y-before-after-${new Date().toISOString().split('T')[0]}.json`;
@@ -4721,7 +4748,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   },
                                   remediation: {
                                     standard: 'WCAG 2.1 AA',
-                                    engines: ['AI (Gemini 5-auditor triangulation)', 'axe-core (Deque WCAG 2.1 AA)'],
+                                    engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'],
                                     beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore,
                                     afterScore: blended,
                                     aiAudit: pdfFixResult.verificationAudit || null,
@@ -5646,7 +5673,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {/* Style Seed picker — WCAG-validated styling */}
               <div>
                 <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1">Style</div>
-                <p className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.preview.wcag_guaranteed') || 'WCAG compliance guaranteed — sanitizer runs on every style change.'}</p>
+                <p className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.preview.wcag_guaranteed') || 'Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only — not a full WCAG audit).'}</p>
                 <div className="grid grid-cols-2 gap-1">
                   {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === 'Match Original').map(([key, s]) => (
                     <button key={key} onClick={() => { setPdfPreviewTheme(key); setTimeout(() => updatePdfPreview(key), 50); }}

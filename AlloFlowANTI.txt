@@ -10189,7 +10189,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const PDF_REGRESSION_TOLERANCE = 5;
   const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
-    if (aiScore == null) return null;
+    // AI unavailable → fall back to the deterministic axe-core score rather
+    // than discarding the fix (an axe-only measurement beats losing the work).
+    if (aiScore == null) return (typeof axeScore === 'number') ? axeScore : null;
     if (typeof axeScore !== 'number') return aiScore;
     return Math.round((aiScore + axeScore) / 2);
   };
@@ -10197,17 +10199,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const newAi = candidate.ai?.score ?? null;
     const newAxe = candidate.axe?.score ?? null;
     const newBlended = candidate.perfect ? 100 : blendAiAxe(newAi, newAxe);
-    const prevScore = prev.afterScore;
+    const axeOnly = !candidate.perfect && newAi == null && typeof newAxe === 'number';
+    // Regression baseline: an axe-only candidate must be compared against the
+    // previous AXE score — a blend and an axe-only number aren't the same scale.
+    const prevAxe = prev.axeAudit?.score ?? null;
+    const prevScore = (axeOnly && prevAxe != null) ? prevAxe : prev.afterScore;
     const regressed = prevScore != null && newBlended != null && newBlended < prevScore - PDF_REGRESSION_TOLERANCE;
     if (regressed || newBlended == null) {
       setPdfFixResult(p => ({ ...p, ...(extras?.preserveOnRevert || {}) }));
       addToast(
         newBlended == null
           ? `${label}: audit failed — kept previous version.`
-          : `${label}: score would have dropped (${prevScore} → ${newBlended}). Kept previous version.`,
+          : `${label}: score would have dropped (${prevScore} → ${newBlended}${axeOnly ? ', axe-only comparison' : ''}). Kept previous version.`,
         'warning'
       );
       return false;
+    }
+    if (axeOnly) {
+      addToast(`${label}: AI verification unavailable — committed with the deterministic axe-core score only.`, 'info');
     }
     setPdfFixResult(p => ({
       ...p,
@@ -10215,6 +10224,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       verificationAudit: candidate.ai,
       axeAudit: candidate.axe,
       afterScore: newBlended,
+      afterScoreProvenance: axeOnly ? 'axe-only' : (typeof newAxe === 'number' && newAi != null ? 'blended' : 'ai-only'),
       htmlChars: candidate.chars,
       ...(extras?.commit || {}),
     }));

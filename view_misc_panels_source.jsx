@@ -563,9 +563,9 @@ function PdfDiffViewer(props) {
                   </div>
                 )}
               </div>
-              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-300 flex items-center gap-3 flex-wrap">
+              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
                 <span>📚 jsdiff@5.2.0</span>
-                <span className="text-slate-400">·</span>
+                <span className="text-slate-500">·</span>
                 <span>{t('diff_view.footer_help') || 'Click spans or drag-select to edit. Pairs toggle together.'}</span>
                 {/* Revert button — only rendered when there's a snapshot
                     to restore (i.e., the user has previously clicked Apply
@@ -575,7 +575,7 @@ function PdfDiffViewer(props) {
                   <button
                     onClick={_revertLastApply}
                     disabled={applyingRemarkup}
-                    className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-300 rounded-md font-bold inline-flex items-center gap-1.5"
+                    className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
                     title={t('diff_view.revert_tooltip') || 'Restore the accessible HTML to the state before your last Apply & Export'}
                   >
                     ↶ Revert last Apply

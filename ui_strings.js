@@ -4276,7 +4276,11 @@
     },
     "divergence": {
       "semantic": "Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can't detect",
-      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly"
+      "structural": "Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly",
+      "critical_override": "axe-core found {n} critical WCAG violation(s) — review them before trusting the blended score; an average can hide a hard failure"
+    },
+    "tagged": {
+      "born_digital_note": "Heads-up: for text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. The file is substantially more accessible, but verify in PAC 2024 or Acrobat before claiming PDF/UA conformance."
     },
     "tagtree": {
       "label": "Pre-existing tag structure",
@@ -4581,7 +4585,7 @@
       "modal_aria": "Accessible document preview and editor",
       "close_aria": "Close preview",
       "edit_hint": "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.",
-      "wcag_guaranteed": "WCAG compliance guaranteed — sanitizer runs on every style change.",
+      "wcag_guaranteed": "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only — not a full WCAG audit).",
       "ai_restyle_hint": "One-click AI restyling. These override the theme above.",
       "body_font_aria": "Body font",
       "font_system": "System (Default)",
