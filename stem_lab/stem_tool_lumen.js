@@ -2829,7 +2829,7 @@
           // Multi-series: ONE provenance-bound sentence PER series (refused ones included — anti-cherry-pick).
           // The colour dot beside each is the legend (maps the line colour to its series label).
           if (chartType === 'multiSeriesLine' && multiClaims) {
-            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
                 h('span', null, bundle.label + ' · ' + multiClaims.length + ' series (same measure)')),
@@ -2841,7 +2841,7 @@
           } else if (groupedMulti) {
             // Grouped bar: a colour legend (swatch + label per series) + a descriptive note. The per-cell
             // means + n are in the SR summary; every raw point is in the data table (bars never hide spread).
-            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
                 h('span', null, bundle.label + ' · ' + comp.variable + ' mean per phase × series')),
@@ -2852,9 +2852,9 @@
               })),
               h('p', { className: 'mt-1 text-[11px] text-slate-500' }, 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.')));
           } else if (activeClaim) {
-            kids.push(h('div', { key: 'claim', className: 'mt-3 p-2 rounded bg-white border border-slate-200' },
-              h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
-                h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
+            kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
+              h('div', { className: 'inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', lineHeight: '1' } }, bundle.glyph),
                 h('span', null, bundle.label)),
               // Scatter shows the association sentence verbatim (it already carries r + interval + n + the
               // not-causation caveat); the trend/other views keep the audience-faced trend wording.

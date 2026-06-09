@@ -63,9 +63,9 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Over 10 check-ins, Measure went up — about 2.7 units a week. With only 10 points the true rate could be roughly 2.1 to 3.2 a week, so read this as a direction, not an exact number.</p>
@@ -242,9 +242,9 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -421,9 +421,9 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). (Ordinary least-squares trend; the interval is a 95% t-interval on the slope. Descriptive — not a percentile, score, or prediction.)</p>
@@ -628,9 +628,9 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -817,9 +817,9 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -972,9 +972,9 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -1100,9 +1100,9 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -1354,9 +1354,9 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -1596,7 +1596,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math) · Measure mean per phase × series</span>
@@ -1852,9 +1852,9 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -1991,9 +1991,9 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -2123,7 +2123,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
 <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
 <span aria-hidden="true" style="font-size:14px">◈</span>
 <span>Derived (math) · 2 series (same measure)</span>
@@ -2283,9 +2283,9 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): n=1 — too few points to estimate a trend; no line drawn (need at least 3).</p>
@@ -2370,9 +2370,9 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure and Comprehension move together (Pearson r=+1; 95% interval +0.99 to +1; n=10). This is association, not causation; an unmeasured third factor may drive both.</p>
@@ -2493,9 +2493,9 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): n=2 paired points — too few to estimate an association; no correlation reported (need at least 3).</p>
@@ -2567,9 +2567,9 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
@@ -2723,9 +2723,9 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 <div class="mt-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">▣ Open benchmark workspace (§16 SOURCED)</button>
 </div>
-<div class="mt-3 p-2 rounded bg-white border border-slate-200">
-<div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
-<span aria-hidden="true" style="font-size:14px">◈</span>
+<div class="mt-3 p-3 rounded-xl bg-white" style="border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(15,23,42,0.06)">
+<div class="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5" style="color:#0f172a;background:#0f172a12;border:1px solid #0f172a33">
+<span aria-hidden="true" style="font-size:13px;line-height:1">◈</span>
 <span>Derived (math)</span>
 </div>
 <p class="text-sm text-slate-800 mt-1">Practice example — not a real student. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10).</p>
