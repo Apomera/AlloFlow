@@ -7,6 +7,32 @@
 // drop closure refs shadowed by inner-scope param names (see PdfAuditView's
 // missed `t` prop incident, May 2026).
 
+// ── Writing check (Harper) ──
+// Open-source grammar checking that runs ENTIRELY in the browser (Rust→WASM,
+// Apache-2.0, by Automattic). Chosen over LanguageTool's public API because
+// no document text ever leaves the device (FERPA posture), and over
+// write-good/retext because Harper does real grammar (subject–verb
+// agreement, homophones, repeated words) rather than style lint. English-
+// only; the first run downloads the ~10 MB WASM (browser-cached after) —
+// both disclosed in the UI. Spelling itself stays with the browser's native
+// checker (spellcheck=true is already on in the editor). Function-wrapped
+// dynamic import so esbuild doesn't try to resolve the remote URL at build.
+let _harperPromise = null;
+function _ensureHarper() {
+  if (_harperPromise) return _harperPromise;
+  _harperPromise = (async () => {
+    const _imp = new Function('u', 'return import(u)');
+    const mod = await _imp('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/+esm');
+    const binary = await mod.createBinaryModuleFromUrl('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm');
+    const linter = new mod.LocalLinter({ binary });
+    if (linter.setup) await linter.setup();
+    return linter;
+  })();
+  _harperPromise.catch(() => { _harperPromise = null; }); // failed load → allow retry
+  return _harperPromise;
+}
+// end _ensureHarper
+
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS, FONT_OPTIONS, STYLE_SEEDS, _ensureDiffLib,
@@ -29,6 +55,9 @@ function ExportPreviewView(props) {
   // Read the user's saved brand profiles so they can be picked as export themes
   // alongside the built-in STYLE_SEEDS, and surface a "Manage" button + first-
   // time banner so brand setup happens in the context where brands get used.
+  // Writing-check panel state: null | {status:'loading'} | {status:'error',error}
+  // | {status:'done', items:[{blockIndex,message,start,end,bad,snippet,suggestions}], capped}
+  const [writingCheck, setWritingCheck] = React.useState(null);
   const brandProfiles = React.useMemo(() => {
     try {
       const bp = window.AlloModules && window.AlloModules.BrandProfile;
@@ -696,6 +725,110 @@ function ExportPreviewView(props) {
                     <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
+
+                {/* ── Writing check (Harper — local, suggestions-only) ── */}
+                {(() => {
+                  const wc = writingCheck;
+                  const _leafBlocks = () => {
+                    const doc = exportPreviewRef.current && exportPreviewRef.current.contentDocument;
+                    if (!doc || !doc.body) return null;
+                    return Array.from(doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote'))
+                      .filter((el) => !el.closest('section[data-content-recovery="true"]'))
+                      .filter((el) => !el.querySelector('p,li,td,th,blockquote'))
+                      .filter((el) => (el.textContent || '').trim().length >= 3);
+                  };
+                  const runWritingCheck = async () => {
+                    setWritingCheck({ status: 'loading' });
+                    try {
+                      const linter = await _ensureHarper();
+                      const blocks = _leafBlocks();
+                      if (!blocks) { setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready — wait for it to render.' }); return; }
+                      const items = [];
+                      let capped = false;
+                      for (let bi = 0; bi < blocks.length; bi++) {
+                        if (items.length >= 150) { capped = true; break; }
+                        const text = blocks[bi].textContent || '';
+                        let lints = [];
+                        try { lints = await linter.lint(text); } catch (_) { continue; }
+                        for (const l of lints) {
+                          try {
+                            const span = l.span();
+                            const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s.get_replacement_text ? s.get_replacement_text() : '')).filter(Boolean).slice(0, 3);
+                            items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? '…' : '') + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? '…' : ''), suggestions: sugg });
+                          } catch (_) {}
+                          if (items.length >= 150) { capped = true; break; }
+                        }
+                      }
+                      setWritingCheck({ status: 'done', items, capped });
+                    } catch (e) { setWritingCheck({ status: 'error', error: ((e && e.message) || 'The checker failed to load — check the network and try again.').slice(0, 180) }); }
+                  };
+                  const _locate = (item, outline) => {
+                    const blocks = _leafBlocks();
+                    const el = blocks && blocks[item.blockIndex];
+                    if (!el) return null;
+                    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
+                    return el;
+                  };
+                  const _apply = (item, replacement) => {
+                    try {
+                      const el = _locate(item, false);
+                      const doc = exportPreviewRef.current && exportPreviewRef.current.contentDocument;
+                      if (!el || !doc) { addToast(t('toasts.writing_block_gone') || 'That block is no longer in the preview — re-run the check.', 'info'); return; }
+                      // Verify the text hasn't shifted since the check ran.
+                      const cur = el.textContent || '';
+                      if (cur.slice(item.start, item.end) !== item.bad) { addToast(t('toasts.writing_text_shifted') || 'The text changed since this check ran — re-run the check to apply safely.', 'info'); return; }
+                      // Apply only when the span sits inside ONE text node, so
+                      // inline markup (links, bold) can never be destroyed.
+                      const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+                      let node, off = 0, hit = null;
+                      while ((node = walker.nextNode())) {
+                        const len = node.textContent.length;
+                        if (item.start >= off && item.end <= off + len) { hit = { node, local: item.start - off }; break; }
+                        off += len;
+                      }
+                      if (!hit) { _locate(item, true); addToast(t('toasts.writing_spans_markup') || 'This suggestion spans formatting (a link or bold text) — fix it by hand at the highlighted spot.', 'info'); return; }
+                      const raw = hit.node.textContent;
+                      hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + (item.end - item.start));
+                      try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+                      setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
+                      addToast('✓ "' + item.bad + '" → "' + replacement + '"', 'success');
+                    } catch (e) { addToast('Apply failed: ' + ((e && e.message) || 'error'), 'error'); }
+                  };
+                  return (
+                <div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
+                  <button onClick={runWritingCheck} disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                    {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check grammar (English)')}
+                  </button>
+                  <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; first run downloads ~10 MB (then it’s instant). Spelling is underlined by your browser as you type.'}</p>
+                  {exportPreviewSource === 'remediation' && wc && (
+                    <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This is a remediated document — its wording comes from the source PDF. Apply grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
+                  )}
+                  {wc && wc.status === 'error' && <div className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
+                  {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
+                  {wc && wc.status === 'done' && wc.items.length > 0 && (
+                    <div className="mt-1.5 space-y-1.5 max-h-64 overflow-y-auto">
+                      <div className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
+                      {wc.items.map((item, ii) => (
+                        <div key={ii} className="bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]">
+                          <button onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
+                            <span className="text-slate-700">{item.message}</span>
+                            <span className="block text-slate-500 italic mt-0.5">{item.snippet}</span>
+                          </button>
+                          {item.suggestions.length > 0 && (
+                            <div className="flex gap-1 mt-1 flex-wrap">
+                              {item.suggestions.map((s, si) => (
+                                <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                  );
+                })()}
 
                 {/* ── Accessibility Audit ── */}
                 <div>
