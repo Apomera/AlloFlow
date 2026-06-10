@@ -47,6 +47,173 @@ function EducatorHubModal(props) {
     setStemLabTool = (() => {
     })
   } = props;
+  const [platProbe, setPlatProbe] = React.useState(null);
+  const _runPlatformProbe = async () => {
+    const rows = [];
+    const add = (name, status, detail) => rows.push({ name, status, detail: String(detail || "") });
+    try {
+      let origin = "unknown";
+      try {
+        origin = window.location.origin;
+      } catch (_) {
+      }
+      let inFrame = "unknown";
+      try {
+        inFrame = window.top === window ? "no (top window)" : "yes";
+      } catch (_) {
+        inFrame = "yes (cross-origin parent)";
+      }
+      add("Context", "info", "origin: " + origin + " \xB7 in iframe: " + inFrame + " \xB7 secure: " + (typeof isSecureContext !== "undefined" ? isSecureContext : "?"));
+    } catch (e) {
+      add("Context", "info", "unreadable: " + e.message);
+    }
+    try {
+      const w = window.open("", "_blank", "width=80,height=60");
+      if (w) {
+        try {
+          w.close();
+        } catch (_) {
+        }
+        add("Pop-up windows", "pass", "window.open works \u2014 compare view + Save-as-PDF can open");
+      } else add("Pop-up windows", "fail", "window.open returned null \u2014 the compare view and the print flow CANNOT open here");
+    } catch (e) {
+      add("Pop-up windows", "fail", "window.open threw: " + e.message);
+    }
+    try {
+      new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
+      add("WebAssembly", "pass", "compiles \u2014 Writing Check + OCR can run");
+    } catch (e) {
+      add("WebAssembly", "fail", "cannot compile: " + e.message);
+    }
+    try {
+      const prior = localStorage.getItem("allo_platform_probe_marker");
+      localStorage.setItem("allo_platform_probe_marker", (/* @__PURE__ */ new Date()).toISOString());
+      if (localStorage.getItem("allo_platform_probe_marker")) {
+        add("localStorage (this session)", "pass", "write + read OK");
+        add("localStorage (across sessions)", prior ? "pass" : "warn", prior ? "marker from a previous run found (" + prior.slice(0, 19) + ") \u2014 storage persisted" : "no marker from a previous run \u2014 first probe here, or storage was wiped between sessions. Run again in a NEW session to confirm.");
+      } else add("localStorage (this session)", "fail", "wrote but could not read back");
+    } catch (e) {
+      add("localStorage (this session)", "fail", e.message);
+    }
+    try {
+      const idb = await new Promise((resolve) => {
+        const to = setTimeout(() => resolve({ status: "fail", detail: "open timed out (3s)" }), 3e3);
+        try {
+          const req = indexedDB.open("allo_platform_probe", 1);
+          req.onupgradeneeded = () => {
+            try {
+              req.result.createObjectStore("kv");
+            } catch (_) {
+            }
+          };
+          req.onerror = () => {
+            clearTimeout(to);
+            resolve({ status: "fail", detail: "open error: " + (req.error && req.error.message) });
+          };
+          req.onsuccess = () => {
+            try {
+              const db = req.result;
+              const tx = db.transaction("kv", "readwrite");
+              const st = tx.objectStore("kv");
+              const get = st.get("marker");
+              get.onsuccess = () => {
+                const prior = get.result;
+                st.put((/* @__PURE__ */ new Date()).toISOString(), "marker");
+                tx.oncomplete = () => {
+                  clearTimeout(to);
+                  try {
+                    db.close();
+                  } catch (_) {
+                  }
+                  resolve({ status: "pass", detail: prior ? "works; marker from a previous run found (" + String(prior).slice(0, 19) + ") \u2014 persisted" : "works this session; no prior marker \u2014 first probe here, or wiped between sessions. Re-run in a NEW session to confirm." });
+                };
+              };
+              get.onerror = () => {
+                clearTimeout(to);
+                resolve({ status: "fail", detail: "read failed" });
+              };
+            } catch (e) {
+              clearTimeout(to);
+              resolve({ status: "fail", detail: e.message });
+            }
+          };
+        } catch (e) {
+          clearTimeout(to);
+          resolve({ status: "fail", detail: e.message });
+        }
+      });
+      add("IndexedDB", idb.status, idb.detail);
+    } catch (e) {
+      add("IndexedDB", "fail", e.message);
+    }
+    try {
+      const u = URL.createObjectURL(new Blob(["probe"], { type: "text/plain" }));
+      const r = await fetch(u);
+      const txt = await r.text();
+      URL.revokeObjectURL(u);
+      add("Blob URLs (same window)", txt === "probe" ? "pass" : "warn", txt === "probe" ? "create + fetch back OK" : "fetched but content mismatched");
+    } catch (e) {
+      add("Blob URLs (same window)", "fail", e.message);
+    }
+    try {
+      const u = URL.createObjectURL(new Blob(["AlloFlow probe OK"], { type: "text/plain" }));
+      const a = document.createElement("a");
+      a.href = u;
+      a.download = "alloflow-platform-probe.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(u), 4e3);
+      add("File downloads", "info", "a tiny test file was triggered \u2014 if alloflow-platform-probe.txt appears in your Downloads, downloads work end-to-end");
+    } catch (e) {
+      add("File downloads", "fail", e.message);
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText("AlloFlow platform probe");
+        add("Clipboard", "pass", "writeText OK (this probe just copied a test string)");
+      } else add("Clipboard", "warn", "navigator.clipboard unavailable \u2014 copy buttons fall back to manual selection");
+    } catch (e) {
+      add("Clipboard", "warn", "writeText rejected: " + e.message + " \u2014 likely needs a direct user gesture or permission");
+    }
+    add("Dialogs (confirm/prompt)", "info", "typeof confirm = " + typeof window.confirm + ' \u2014 use the "Test dialog" button for the real answer (a sandbox can define it but silently return false)');
+    const cdns = [
+      ["jsDelivr", "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json"],
+      ["unpkg", "https://unpkg.com/pdf-lib@1.17.1/package.json"],
+      ["cdnjs", "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"],
+      ["Google Fonts", "https://fonts.googleapis.com/css2?family=Lexend&display=swap"]
+    ];
+    for (const pair of cdns) {
+      try {
+        const t0 = Date.now();
+        const ac = typeof AbortController === "function" ? new AbortController() : null;
+        const tid = ac ? setTimeout(() => {
+          try {
+            ac.abort();
+          } catch (_) {
+          }
+        }, 6e3) : null;
+        const r = await fetch(pair[1], ac ? { signal: ac.signal } : void 0);
+        if (tid) clearTimeout(tid);
+        add("CDN: " + pair[0], r.ok ? "pass" : "warn", "HTTP " + r.status + " in " + (Date.now() - t0) + "ms");
+      } catch (e) {
+        add("CDN: " + pair[0], "fail", "unreachable: " + (e && e.message));
+      }
+    }
+    try {
+      const t0 = Date.now();
+      const r = await fetch("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm", { cache: "force-cache" });
+      if (r.ok) {
+        await r.arrayBuffer();
+        const total = Date.now() - t0;
+        add("Writing-Check cache (10 MB WASM)", "info", "fetched in " + total + "ms \u2014 under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching");
+      } else add("Writing-Check cache (10 MB WASM)", "warn", "HTTP " + r.status);
+    } catch (e) {
+      add("Writing-Check cache (10 MB WASM)", "warn", e.message);
+    }
+    setPlatProbe({ when: (/* @__PURE__ */ new Date()).toLocaleString(), rows });
+  };
+  const _probeReportText = () => !platProbe ? "" : "AlloFlow Platform Check \u2014 " + platProbe.when + "\n" + (typeof navigator !== "undefined" ? navigator.userAgent : "") + "\n\n" + platProbe.rows.map((r) => "[" + r.status.toUpperCase() + "] " + r.name + " \u2014 " + r.detail).join("\n");
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4", onClick: () => setShowEducatorHub(false), role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") setShowEducatorHub(false);
   } }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "educator_hub_modal_panel", className: "bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8", role: "dialog", "aria-modal": "true", "aria-label": t("educator_hub.dialog_aria") || "Educator Tools", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowEducatorHub(false), className: "text-slate-600 hover:text-slate-600 text-xl", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_behavior_lens_card", onClick: () => {
@@ -124,7 +291,30 @@ function EducatorHubModal(props) {
   ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_community_catalog_card", onClick: () => {
     setShowEducatorHub(false);
     setIsCommunityCatalogOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", role: "img", "aria-label": t("educator_hub.books_emoji_aria") || "books" }, "\u{1F4DA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.community_catalog_title") || "Community Catalog"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1" }, t("educator_hub.community_catalog_desc") || "Browse open-licensed lessons from the AlloFlow community, or submit your own for review"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_accessibility_lab_card", onClick: () => {
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", role: "img", "aria-label": t("educator_hub.books_emoji_aria") || "books" }, "\u{1F4DA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.community_catalog_title") || "Community Catalog"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1" }, t("educator_hub.community_catalog_desc") || "Browse open-licensed lessons from the AlloFlow community, or submit your own for review"))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "educator_hub_platform_check_card", className: "flex flex-col gap-2 p-4 bg-gradient-to-br from-slate-50 to-zinc-50 border border-slate-400 rounded-xl col-span-full" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", role: "img", "aria-label": t("educator_hub.microscope_emoji_aria") || "microscope" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-slate-800" }, t("educator_hub.platform_check_title") || "Platform Check"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("educator_hub.platform_check_desc") || "One click tests what THIS environment can do \u2014 pop-ups, downloads, storage persistence, WebAssembly, clipboard, CDN reach. Especially useful inside Gemini Canvas, where capabilities differ from a normal browser. Copy the report and share it when something seems broken.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1.5 shrink-0" }, /* @__PURE__ */ React.createElement("button", { onClick: _runPlatformProbe, className: "px-3 py-1.5 bg-slate-700 text-white rounded-lg text-xs font-bold hover:bg-slate-800" }, "\u25B6 ", t("educator_hub.platform_check_run") || "Run checks"), /* @__PURE__ */ React.createElement("button", { "data-help-ignore": "true", onClick: () => {
+    let v = null;
+    try {
+      v = window.confirm(t("educator_hub.dialog_probe_q") || "Dialog test: click OK.");
+    } catch (e) {
+      v = "threw: " + e.message;
+    }
+    setPlatProbe((p) => ({ when: p && p.when || (/* @__PURE__ */ new Date()).toLocaleString(), rows: [...(p && p.rows || []).filter((r) => r.name !== "Dialogs (live test)"), { name: "Dialogs (live test)", status: v === true ? "pass" : v === false ? "warn" : "fail", detail: v === true ? "confirm() returned true after OK \u2014 dialogs work" : v === false ? "confirm() returned FALSE \u2014 either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)" : String(v) }] }));
+  }, className: "px-3 py-1.5 bg-white border border-slate-400 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100" }, "\u{1F9EA} ", t("educator_hub.platform_check_dialog") || "Test dialog"))), platProbe && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-lg p-2 text-[11px]", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("educator_hub.platform_check_results") || "Results", " \u2014 ", platProbe.when), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+    const txt = _probeReportText();
+    try {
+      await navigator.clipboard.writeText(txt);
+    } catch (_) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch (_2) {
+      }
+    }
+  }, className: "px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200" }, "\u{1F4CB} ", t("educator_hub.platform_check_copy") || "Copy report")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0.5" }, platProbe.rows.map((r, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold " + (r.status === "pass" ? "text-green-700" : r.status === "fail" ? "text-red-700" : r.status === "warn" ? "text-amber-700" : "text-slate-500") }, r.status === "pass" ? "\u2713" : r.status === "fail" ? "\u2717" : r.status === "warn" ? "\u26A0" : "\u2139"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, r.name, ":"), " ", r.detail)))))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_accessibility_lab_card", onClick: () => {
     setShowEducatorHub(false);
     setIsAccessibilityLabOpen(true);
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", role: "img", "aria-label": t("educator_hub.magnifying_glass_emoji_aria") || "magnifying glass" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-rose-800" }, t("educator_hub.accessibility_lab_title") || "Accessibility Lab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-rose-700 mt-1" }, t("educator_hub.accessibility_lab_desc") || "Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay)."))))));

@@ -28,6 +28,109 @@ function EducatorHubModal(props) {
     setStemLabTool = (() => {}),
   } = props;
 
+  // ── Platform Check (2026-06-12) ──
+  // The app's primary surface is the Gemini Canvas sandboxed iframe, where
+  // platform capabilities differ from a normal browser in ways our test
+  // gates can't see (IndexedDB/localStorage don't persist across sessions —
+  // maintainer-verified; popups, WASM, dialogs, downloads are all sandbox-
+  // sensitive). This one-click probe turns those unknowns into a copyable
+  // PASS/FAIL report, so feature decisions rest on platform FACTS.
+  const [platProbe, setPlatProbe] = React.useState(null);
+  const _runPlatformProbe = async () => {
+    const rows = [];
+    const add = (name, status, detail) => rows.push({ name, status, detail: String(detail || '') });
+    try {
+      let origin = 'unknown'; try { origin = window.location.origin; } catch (_) {}
+      let inFrame = 'unknown'; try { inFrame = window.top === window ? 'no (top window)' : 'yes'; } catch (_) { inFrame = 'yes (cross-origin parent)'; }
+      add('Context', 'info', 'origin: ' + origin + ' · in iframe: ' + inFrame + ' · secure: ' + (typeof isSecureContext !== 'undefined' ? isSecureContext : '?'));
+    } catch (e) { add('Context', 'info', 'unreadable: ' + e.message); }
+    try {
+      const w = window.open('', '_blank', 'width=80,height=60');
+      if (w) { try { w.close(); } catch (_) {} add('Pop-up windows', 'pass', 'window.open works — compare view + Save-as-PDF can open'); }
+      else add('Pop-up windows', 'fail', 'window.open returned null — the compare view and the print flow CANNOT open here');
+    } catch (e) { add('Pop-up windows', 'fail', 'window.open threw: ' + e.message); }
+    try {
+      new WebAssembly.Module(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]));
+      add('WebAssembly', 'pass', 'compiles — Writing Check + OCR can run');
+    } catch (e) { add('WebAssembly', 'fail', 'cannot compile: ' + e.message); }
+    // Marker trick: each run looks for the PREVIOUS run's marker, which
+    // empirically answers cross-session persistence over time.
+    try {
+      const prior = localStorage.getItem('allo_platform_probe_marker');
+      localStorage.setItem('allo_platform_probe_marker', new Date().toISOString());
+      if (localStorage.getItem('allo_platform_probe_marker')) {
+        add('localStorage (this session)', 'pass', 'write + read OK');
+        add('localStorage (across sessions)', prior ? 'pass' : 'warn', prior ? ('marker from a previous run found (' + prior.slice(0, 19) + ') — storage persisted') : 'no marker from a previous run — first probe here, or storage was wiped between sessions. Run again in a NEW session to confirm.');
+      } else add('localStorage (this session)', 'fail', 'wrote but could not read back');
+    } catch (e) { add('localStorage (this session)', 'fail', e.message); }
+    try {
+      const idb = await new Promise((resolve) => {
+        const to = setTimeout(() => resolve({ status: 'fail', detail: 'open timed out (3s)' }), 3000);
+        try {
+          const req = indexedDB.open('allo_platform_probe', 1);
+          req.onupgradeneeded = () => { try { req.result.createObjectStore('kv'); } catch (_) {} };
+          req.onerror = () => { clearTimeout(to); resolve({ status: 'fail', detail: 'open error: ' + (req.error && req.error.message) }); };
+          req.onsuccess = () => {
+            try {
+              const db = req.result;
+              const tx = db.transaction('kv', 'readwrite');
+              const st = tx.objectStore('kv');
+              const get = st.get('marker');
+              get.onsuccess = () => {
+                const prior = get.result;
+                st.put(new Date().toISOString(), 'marker');
+                tx.oncomplete = () => { clearTimeout(to); try { db.close(); } catch (_) {} resolve({ status: 'pass', detail: prior ? ('works; marker from a previous run found (' + String(prior).slice(0, 19) + ') — persisted') : 'works this session; no prior marker — first probe here, or wiped between sessions. Re-run in a NEW session to confirm.' }); };
+              };
+              get.onerror = () => { clearTimeout(to); resolve({ status: 'fail', detail: 'read failed' }); };
+            } catch (e) { clearTimeout(to); resolve({ status: 'fail', detail: e.message }); }
+          };
+        } catch (e) { clearTimeout(to); resolve({ status: 'fail', detail: e.message }); }
+      });
+      add('IndexedDB', idb.status, idb.detail);
+    } catch (e) { add('IndexedDB', 'fail', e.message); }
+    try {
+      const u = URL.createObjectURL(new Blob(['probe'], { type: 'text/plain' }));
+      const r = await fetch(u); const txt = await r.text(); URL.revokeObjectURL(u);
+      add('Blob URLs (same window)', txt === 'probe' ? 'pass' : 'warn', txt === 'probe' ? 'create + fetch back OK' : 'fetched but content mismatched');
+    } catch (e) { add('Blob URLs (same window)', 'fail', e.message); }
+    try {
+      const u = URL.createObjectURL(new Blob(['AlloFlow probe OK'], { type: 'text/plain' }));
+      const a = document.createElement('a'); a.href = u; a.download = 'alloflow-platform-probe.txt';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(u), 4000);
+      add('File downloads', 'info', 'a tiny test file was triggered — if alloflow-platform-probe.txt appears in your Downloads, downloads work end-to-end');
+    } catch (e) { add('File downloads', 'fail', e.message); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText('AlloFlow platform probe'); add('Clipboard', 'pass', 'writeText OK (this probe just copied a test string)'); }
+      else add('Clipboard', 'warn', 'navigator.clipboard unavailable — copy buttons fall back to manual selection');
+    } catch (e) { add('Clipboard', 'warn', 'writeText rejected: ' + e.message + ' — likely needs a direct user gesture or permission'); }
+    add('Dialogs (confirm/prompt)', 'info', 'typeof confirm = ' + (typeof window.confirm) + ' — use the "Test dialog" button for the real answer (a sandbox can define it but silently return false)');
+    const cdns = [
+      ['jsDelivr', 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json'],
+      ['unpkg', 'https://unpkg.com/pdf-lib@1.17.1/package.json'],
+      ['cdnjs', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'],
+      ['Google Fonts', 'https://fonts.googleapis.com/css2?family=Lexend&display=swap'],
+    ];
+    for (const pair of cdns) {
+      try {
+        const t0 = Date.now();
+        const ac = typeof AbortController === 'function' ? new AbortController() : null;
+        const tid = ac ? setTimeout(() => { try { ac.abort(); } catch (_) {} }, 6000) : null;
+        const r = await fetch(pair[1], ac ? { signal: ac.signal } : undefined);
+        if (tid) clearTimeout(tid);
+        add('CDN: ' + pair[0], r.ok ? 'pass' : 'warn', 'HTTP ' + r.status + ' in ' + (Date.now() - t0) + 'ms');
+      } catch (e) { add('CDN: ' + pair[0], 'fail', 'unreachable: ' + (e && e.message)); }
+    }
+    try {
+      const t0 = Date.now();
+      const r = await fetch('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm', { cache: 'force-cache' });
+      if (r.ok) { await r.arrayBuffer(); const total = Date.now() - t0; add('Writing-Check cache (10 MB WASM)', 'info', 'fetched in ' + total + 'ms — under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching'); }
+      else add('Writing-Check cache (10 MB WASM)', 'warn', 'HTTP ' + r.status);
+    } catch (e) { add('Writing-Check cache (10 MB WASM)', 'warn', e.message); }
+    setPlatProbe({ when: new Date().toLocaleString(), rows });
+  };
+  const _probeReportText = () => !platProbe ? '' : ('AlloFlow Platform Check — ' + platProbe.when + '\n' + (typeof navigator !== 'undefined' ? navigator.userAgent : '') + '\n\n' + platProbe.rows.map((r) => '[' + r.status.toUpperCase() + '] ' + r.name + ' — ' + r.detail).join('\n'));
+
   return (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
           <div data-help-key="educator_hub_modal_panel" className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
@@ -152,6 +255,36 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons from the AlloFlow community, or submit your own for review'}</p>
                 </div>
               </button>
+              <div data-help-key="educator_hub_platform_check_card" className="flex flex-col gap-2 p-4 bg-gradient-to-br from-slate-50 to-zinc-50 border border-slate-400 rounded-xl col-span-full">
+                <div className="flex items-start gap-3">
+                  <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.microscope_emoji_aria') || 'microscope'}>🔬</span>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-slate-800">{t('educator_hub.platform_check_title') || 'Platform Check'}</h3>
+                    <p className="text-xs text-slate-600 mt-1">{t('educator_hub.platform_check_desc') || 'One click tests what THIS environment can do — pop-ups, downloads, storage persistence, WebAssembly, clipboard, CDN reach. Especially useful inside Gemini Canvas, where capabilities differ from a normal browser. Copy the report and share it when something seems broken.'}</p>
+                  </div>
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    <button onClick={_runPlatformProbe} className="px-3 py-1.5 bg-slate-700 text-white rounded-lg text-xs font-bold hover:bg-slate-800">▶ {t('educator_hub.platform_check_run') || 'Run checks'}</button>
+                    <button data-help-ignore="true" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
+                      setPlatProbe((p) => ({ when: (p && p.when) || new Date().toLocaleString(), rows: [...((p && p.rows) || []).filter((r) => r.name !== 'Dialogs (live test)'), { name: 'Dialogs (live test)', status: v === true ? 'pass' : (v === false ? 'warn' : 'fail'), detail: v === true ? 'confirm() returned true after OK — dialogs work' : (v === false ? 'confirm() returned FALSE — either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)' : String(v)) }] })); }} className="px-3 py-1.5 bg-white border border-slate-400 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100">🧪 {t('educator_hub.platform_check_dialog') || 'Test dialog'}</button>
+                  </div>
+                </div>
+                {platProbe && (
+                  <div className="bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="status">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-700">{t('educator_hub.platform_check_results') || 'Results'} — {platProbe.when}</span>
+                      <button onClick={async () => { const txt = _probeReportText(); try { await navigator.clipboard.writeText(txt); } catch (_) { try { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); } catch (_) {} } }} className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200">📋 {t('educator_hub.platform_check_copy') || 'Copy report'}</button>
+                    </div>
+                    <ul className="space-y-0.5">
+                      {platProbe.rows.map((r, i) => (
+                        <li key={i} className="flex gap-1.5">
+                          <span className={'shrink-0 font-bold ' + (r.status === 'pass' ? 'text-green-700' : r.status === 'fail' ? 'text-red-700' : r.status === 'warn' ? 'text-amber-700' : 'text-slate-500')}>{r.status === 'pass' ? '✓' : r.status === 'fail' ? '✗' : r.status === 'warn' ? '⚠' : 'ℹ'}</span>
+                          <span className="min-w-0"><span className="font-bold">{r.name}:</span> {r.detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
               <button data-help-key="educator_hub_accessibility_lab_card" onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.magnifying_glass_emoji_aria') || 'magnifying glass'}>🔍</span>
                 <div>
