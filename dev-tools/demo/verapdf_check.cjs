@@ -33,6 +33,27 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const os = require('os');
 
+// ── Locate a JDK for the .bat launcher (2026-06-10) ──
+// verapdf.bat needs JAVA_HOME. The repo's standard local install drops a JRE
+// under ~/.alloflow-tools/jdk-* (docs/verapdf_install.md), which is NOT on
+// PATH — without this discovery, the harness "errors" on machines where it
+// actually works (exactly the false negative a strategic-audit investigator
+// hit on 2026-06-10).
+function findJavaHome() {
+  if (process.env.JAVA_HOME && fs.existsSync(path.join(process.env.JAVA_HOME, 'bin'))) return process.env.JAVA_HOME;
+  const whichRes = spawnSync(process.platform === 'win32' ? 'where' : 'which', ['java'], { encoding: 'utf8' });
+  if (whichRes.status === 0 && whichRes.stdout.trim()) return null; // java already on PATH — no injection needed
+  try {
+    const toolsDir = path.join(os.homedir(), '.alloflow-tools');
+    const jdks = fs.readdirSync(toolsDir).filter((d) => /^jdk-/i.test(d)).sort().reverse();
+    for (const d of jdks) {
+      const home = path.join(toolsDir, d);
+      if (fs.existsSync(path.join(home, 'bin', process.platform === 'win32' ? 'java.exe' : 'java'))) return home;
+    }
+  } catch (_) {}
+  return null;
+}
+
 // ── Locate the veraPDF binary ──
 function findVeraPdf() {
   if (process.env.VERAPDF_PATH && fs.existsSync(process.env.VERAPDF_PATH)) {
@@ -91,9 +112,15 @@ function runVeraPdf(binary, pdfPath, flavour) {
   // Node 20+ refuses to spawn .bat/.cmd without a shell (CVE-2024-27980
   // mitigation) — EINVAL otherwise. Quote args defensively under the shell.
   const needsShell = process.platform === 'win32' && /\.(bat|cmd)$/i.test(binary);
+  // Inject the auto-discovered JDK so the harness works without manual
+  // JAVA_HOME setup (the local-install JRE lives off PATH).
+  const _javaHome = findJavaHome();
+  const _env = _javaHome
+    ? { ...process.env, JAVA_HOME: _javaHome, PATH: path.join(_javaHome, 'bin') + path.delimiter + (process.env.PATH || '') }
+    : process.env;
   const res = needsShell
-    ? spawnSync('"' + binary + '"', args.map(a => (/\s/.test(a) ? '"' + a + '"' : a)), { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024, shell: true })
-    : spawnSync(binary, args, { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
+    ? spawnSync('"' + binary + '"', args.map(a => (/\s/.test(a) ? '"' + a + '"' : a)), { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024, shell: true, env: _env })
+    : spawnSync(binary, args, { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024, env: _env });
   // veraPDF returns non-zero exit codes for validation failures — that's not
   // an error from our perspective, it's a report. Distinguish "couldn't run
   // veraPDF" from "veraPDF ran and reported failures."

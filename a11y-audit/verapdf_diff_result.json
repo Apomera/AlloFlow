@@ -1,0 +1,67 @@
+{
+  "ranAt": "2026-06-10T22:36:09.657Z",
+  "veraPdf": "1.30.2 (greenfield)",
+  "flavour": "ua1 (ISO 14289-1)",
+  "pairs": [
+    {
+      "stem": "linkannot-scanned",
+      "sourceFailedRules": 11,
+      "taggedFailedRules": 1,
+      "fixedByUs": [
+        "7.1",
+        "7.18.3",
+        "7.18.1",
+        "7.2",
+        "7.1",
+        "7.21.4.1",
+        "7.18.5",
+        "6.2",
+        "7.18.5",
+        "7.1"
+      ],
+      "introducedByUs": [],
+      "inheritedRemaining": 1,
+      "withheldDeclaration": 0
+    },
+    {
+      "stem": "linkannot-text",
+      "sourceFailedRules": 11,
+      "taggedFailedRules": 1,
+      "fixedByUs": [
+        "7.1",
+        "7.1",
+        "7.18.3",
+        "7.18.1",
+        "7.2",
+        "7.1",
+        "7.21.4.1",
+        "7.18.5",
+        "6.2",
+        "7.18.5",
+        "7.1"
+      ],
+      "introducedByUs": [],
+      "inheritedRemaining": 0,
+      "withheldDeclaration": 1
+    },
+    {
+      "stem": "perleaf-borndigital",
+      "sourceFailedRules": 7,
+      "taggedFailedRules": 0,
+      "fixedByUs": [
+        "7.1",
+        "7.21.4.1",
+        "7.1",
+        "7.1",
+        "7.1",
+        "7.2",
+        "6.2"
+      ],
+      "introducedByUs": [],
+      "inheritedRemaining": 0,
+      "withheldDeclaration": 0
+    }
+  ],
+  "regressions": 0,
+  "verdict": "no-regressions"
+}

@@ -143,6 +143,33 @@ function main() {
     console.log('═'.repeat(72));
   }
   const erroredCount = results.filter(r => r.error).length;
+  // Recorded result (2026-06-10): successful runs were happening but only as
+  // ephemeral terminal output — a strategic audit concluded "no recorded
+  // successful run exists anywhere in the repo." Persist the evidence.
+  if (erroredCount < results.length) {
+    try {
+      const fsP = require('fs');
+      const rec = {
+        ranAt: new Date().toISOString(),
+        veraPdf: '1.30.2 (greenfield)',
+        flavour: 'ua1 (ISO 14289-1)',
+        pairs: results.map((r) => r.error ? { stem: r.stem, error: r.error } : {
+          stem: r.stem,
+          sourceFailedRules: r.sourceFailedRules,
+          taggedFailedRules: r.taggedFailedRules,
+          fixedByUs: r.fixedByUs.map((x) => x.clause),
+          introducedByUs: r.introducedByUs.map((x) => x.clause + ' t' + x.test),
+          inheritedRemaining: r.inheritedRemaining.length,
+          withheldDeclaration: (r.withheldDeclaration || []).length,
+        }),
+        regressions,
+        verdict: erroredCount ? 'partial' : (regressions === 0 ? 'no-regressions' : 'REGRESSIONS'),
+      };
+      const outPath = require('path').join(__dirname, '..', 'a11y-audit', 'verapdf_diff_result.json');
+      fsP.writeFileSync(outPath, JSON.stringify(rec, null, 2));
+      if (!JSON_OUT && !QUIET) console.log('  · recorded: a11y-audit/verapdf_diff_result.json');
+    } catch (_) { /* recording is best-effort */ }
+  }
   process.exit(GATE && (regressions > 0 || erroredCount === results.length) ? 1 : 0);
 }
 
