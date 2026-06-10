@@ -143,6 +143,15 @@ const createGeminiAPI = (deps) => {
           model: classification.model,
           hitAt: window.__alloflowQuotaState?.hitAt || (typeof Date !== 'undefined' ? Date.now() : 0)
         };
+        // Per-model quota-hit history for the usage meter in Model
+        // Diagnostics (2026-06-12): Google exposes no remaining-quota API to
+        // callers, so an actual 429 is the ONLY definitive quota signal —
+        // keep each one with its timestamp.
+        if (classification.kind === 'quota') {
+          window.__alloGeminiQuotaHits = window.__alloGeminiQuotaHits || [];
+          window.__alloGeminiQuotaHits.push({ at: (typeof Date !== 'undefined' ? Date.now() : 0), model: classification.model || '(unknown)', message: String(classification.userMessage || '').slice(0, 160) });
+          if (window.__alloGeminiQuotaHits.length > 20) window.__alloGeminiQuotaHits.shift();
+        }
         // Honor a per-session dismissal so refreshing the banner doesn't get spammy.
         try {
           if (window.sessionStorage && sessionStorage.getItem('__alloflowQuotaBannerDismissed') === '1') return;
@@ -180,9 +189,11 @@ const createGeminiAPI = (deps) => {
         }
         const msgEl = document.getElementById('alloflow-quota-banner-msg');
         if (msgEl) {
-          const prefix = classification.kind === 'auth' ? '🔑 Auth error: '
+          // 401 vs 429 named explicitly (2026-06-12, maintainer ask): auth
+          // errors were historically mistaken for quota — say which is which.
+          const prefix = classification.kind === 'auth' ? '🔑 Auth error (HTTP 401 — a key/sign-in problem, NOT your quota): '
                        : classification.kind === 'config' ? '⚙ Configuration error: '
-                       : '🛑 Quota reached: ';
+                       : '🛑 Gemini quota limit (HTTP 429): ';
           // Per-kind trailing advice. Was hardcoded "until this is resolved"
           // for all kinds, which under-described the quota case (user couldn't
           // tell if a wait would help or if they needed to fix something).

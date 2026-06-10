@@ -317,6 +317,19 @@ function ModelDiagnosticsSection(props) {
 
   const usage = (typeof window !== 'undefined' && window.__alloGeminiModelUsage) || {};
   const usageEntries = Object.values(usage).sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+  // ── Session usage meter (2026-06-12, maintainer ask) ──
+  // Google exposes NO remaining-quota API to key-based callers (and Canvas's
+  // injected key is even more opaque), so the honest meter is: (a) count the
+  // app's OWN calls per served model this session, (b) treat an actual 429 as
+  // the definitive signal and show it with the reset convention. No invented
+  // cap numbers — limits vary by account/plan and would be fabrication risk.
+  const _sessionTotals = (() => {
+    const by = {};
+    for (const e of usageEntries) { const m = e.served || e.requested || '(unknown)'; by[m] = (by[m] || 0) + (e.count || 0); }
+    return Object.entries(by).sort((a, b) => b[1] - a[1]);
+  })();
+  const _sessionCallTotal = _sessionTotals.reduce((s, pair) => s + pair[1], 0);
+  const _quotaHits = (typeof window !== 'undefined' && window.__alloGeminiQuotaHits) || [];
 
   // Slots that map to the GEMINI_MODELS map. Listed in the order users care
   // about most. 'safety' is a dedicated low-cost model used for content
@@ -393,6 +406,25 @@ function ModelDiagnosticsSection(props) {
       <div className="flex items-center gap-2 mb-3">
         <div className="bg-indigo-100 p-1.5 rounded-lg"><Cpu size={14} className="text-indigo-600"/></div>
         <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('model_diag.header') || 'AI Model Diagnostics'}</h4>
+      </div>
+
+      {/* ── 0. Session usage meter + quota status ── */}
+      <div className="mb-3 bg-violet-50/60 border border-violet-200 rounded-lg p-2.5">
+        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">⛽ {t('model_diag.usage_header') || 'Your Gemini usage (this session)'}</p>
+        {_sessionCallTotal === 0 ? (
+          <p className="text-[11px] text-slate-600">{t('model_diag.usage_none') || 'No AI calls yet this session.'}</p>
+        ) : (
+          <p className="text-[11px] text-slate-700">
+            <span className="font-bold">{_sessionCallTotal}</span> {t('model_diag.usage_calls') || 'AI call(s):'}{' '}
+            {_sessionTotals.map((pair, i) => <span key={i} className="font-mono">{pair[0]} ×{pair[1]}{i < _sessionTotals.length - 1 ? ' · ' : ''}</span>)}
+          </p>
+        )}
+        {_quotaHits.length > 0 ? (
+          <p className="text-[11px] text-red-700 font-bold mt-1">🛑 {t('model_diag.quota_hit') || 'Quota limit (HTTP 429) hit this session'} — {new Date(_quotaHits[_quotaHits.length - 1].at).toLocaleTimeString()} ({_quotaHits[_quotaHits.length - 1].model}). {t('model_diag.quota_hit_advice') || 'If retries keep failing, the daily quota is spent — free-tier quotas reset around midnight Pacific.'}</p>
+        ) : (
+          <p className="text-[11px] text-green-700 mt-1">✓ {t('model_diag.quota_ok') || 'No quota errors this session.'}</p>
+        )}
+        <p className="text-[10px] text-slate-500 mt-1">{t('model_diag.usage_caveat') || 'Honest limits of this meter: Google does not let apps see your remaining balance, so this counts AlloFlow’s own calls and resets when the page reloads. A 429 error is the only definitive “quota reached” signal — when one happens, a red banner appears at the top of the app (dismissable) and it’s recorded here.'}</p>
       </div>
 
       {/* ── 1. Requested → Served ledger ── */}
