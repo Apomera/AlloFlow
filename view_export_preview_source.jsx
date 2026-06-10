@@ -22,7 +22,8 @@ function ExportPreviewView(props) {
     setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt,
     setExportTheme, setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview, showExportPreview,
     t,
-    toggleA11yInspect, updateExportPreview
+    toggleA11yInspect, updateExportPreview,
+    exportPreviewSource,
   } = props;
   // BrandProfile inline integration — replaces the standalone Educator Hub tool.
   // Read the user's saved brand profiles so they can be picked as export themes
@@ -76,6 +77,12 @@ function ExportPreviewView(props) {
                     <button onClick={() => setShowExportPreview(false)} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors" aria-label={t("a11y.close_doc_builder")}><X size={16} /></button>
                   </div>
                 </div>
+                {exportPreviewSource === 'remediation' && (
+                  <div className="bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800" role="status">
+                    <span className="font-bold">♿ {t('export_preview.remediation_banner_title') || 'Editing the remediated document.'}</span>{' '}
+                    {t('export_preview.remediation_banner_body') || 'Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them.'}
+                  </div>
+                )}
 
                 {/* ── SECTION: Quick Start ── */}
                 <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></div>

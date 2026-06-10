@@ -15246,11 +15246,20 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       th { background: ${cssVars.cardBg}; }
       ${cssVars.extraCSS || ''}
     `;
+    // De-stack: strip any previously injected seed CSS before injecting the
+    // new block. Without this, every theme toggle / preview refresh / builder
+    // write-back round-trip APPENDED another theme block — accumulating
+    // forever and baking duplicate CSS into the canonical accessibleHtml.
+    const _SEED_OPEN = '/*__ALLO_STYLE_SEED__*/';
+    const _SEED_CLOSE = '/*__ALLO_STYLE_SEED_END__*/';
+    let _base = html;
+    try { _base = _base.split(_SEED_OPEN).map((seg, i) => i === 0 ? seg : seg.slice(seg.indexOf(_SEED_CLOSE) === -1 ? 0 : seg.indexOf(_SEED_CLOSE) + _SEED_CLOSE.length)).join(''); } catch (_) { _base = html; }
+    const _wrappedCSS = _SEED_OPEN + themeCSS + _SEED_CLOSE;
     let themed;
-    if (html.includes('</style>')) {
-      themed = html.replace('</style>', themeCSS + '\n</style>');
+    if (_base.includes('</style>')) {
+      themed = _base.replace('</style>', _wrappedCSS + '\n</style>');
     } else {
-      themed = html.replace('</head>', '<style>' + themeCSS + '</style>\n</head>');
+      themed = _base.replace('</head>', '<style>' + _wrappedCSS + '</style>\n</head>');
     }
     // Run WCAG sanitizer — High Contrast uses AAA (7:1), all others use AA (4.5:1).
     // For matchOriginal, colors come from the uploaded PDF and may have AA-failing
