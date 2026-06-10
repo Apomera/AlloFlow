@@ -3736,6 +3736,43 @@ var createDocPipeline = function(deps) {
       }
     }
     let newBytes = _stage4_rewriteStream(bytes, segments, wraps);
+    // ── Stage 4c: image marking (2026-06-10) ──
+    // Stage 4 wraps only TEXT, so figures had no marked content at all —
+    // every Figure leaf was a permanent orphan and any document containing
+    // an image could never earn the PDF/UA declaration. Wrap each image-
+    // XObject draw (`/ImN Do`) in /Figure BDC/EMC with an MCID continuing
+    // the page's sequence. This is a SECOND rewrite pass after the text
+    // splice (image draws live outside BT/ET, so segment offsets are
+    // untouched). Inline images (BI..EI) and images inside Form XObjects
+    // are out of v1 scope — they simply stay unmarked (same as before).
+    const imageBlockInfo = [];
+    try {
+      let resDict = page.node.get(PDFName.of('Resources'));
+      try { resDict = context.lookup(resDict) || resDict; } catch (_) {}
+      let xo = (resDict && typeof resDict.get === 'function') ? resDict.get(PDFName.of('XObject')) : null;
+      try { xo = context.lookup(xo) || xo; } catch (_) {}
+      const imgNames = [];
+      if (xo && typeof xo.entries === 'function') {
+        for (const [xn, xref] of xo.entries()) {
+          try {
+            const xobj = context.lookup(xref);
+            const sub = xobj && (xobj.dict && typeof xobj.dict.get === 'function' ? xobj.dict.get(PDFName.of('Subtype')) : (typeof xobj.get === 'function' ? xobj.get(PDFName.of('Subtype')) : null));
+            if (String(sub) === '/Image') imgNames.push(String(xn).replace(/^\//, ''));
+          } catch (_) {}
+        }
+      }
+      if (imgNames.length > 0) {
+        const s0 = new TextDecoder('latin1').decode(newBytes);
+        const escaped = imgNames.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const re = new RegExp('/(' + escaped.join('|') + ')\\s+Do(?![0-9A-Za-z])', 'g');
+        let imgMcid = contentMcid;
+        const s1 = s0.replace(re, (m) => {
+          imageBlockInfo.push({ mcid: imgMcid });
+          return '/Figure <</MCID ' + (imgMcid++) + '>> BDC\n' + m + '\nEMC';
+        });
+        if (imageBlockInfo.length > 0) newBytes = Uint8Array.from(s1, (c) => c.charCodeAt(0) & 0xff);
+      }
+    } catch (imgErr) { imageBlockInfo.length = 0; /* image marking is additive — never fail the page over it */ }
     if (streamInfo.filter === 'FlateDecode') {
       newBytes = window.pako.deflate(newBytes);
     }
@@ -3763,6 +3800,26 @@ var createDocPipeline = function(deps) {
       if (info.text) d.ActualText = PDFString.of(info.text);
       blockElemRefs.push(context.register(context.obj(d)));
     }
+    // Stage 4c flat Figure elems — appended AFTER the text elems so the
+    // ParentTree array index keeps equaling the MCID (text 0..n-1, images
+    // n..). Placeholder Alt satisfies PDF/UA 7.3 if a figure stays
+    // unmatched; matched ones are dropped from the Sect when Stage 4b
+    // re-points their MCID onto the semantic Figure leaf (which carries
+    // the real alt text).
+    const imageBlocks = [];
+    for (const info of imageBlockInfo) {
+      const mcr = context.obj({ Type: PDFName.of('MCR'), Pg: page.ref, MCID: PDFNumber.of(info.mcid) });
+      const ref = context.register(context.obj({
+        Type: PDFName.of('StructElem'),
+        S: PDFName.of('Figure'),
+        P: pageSectRef,
+        Pg: page.ref,
+        Alt: PDFString.of('Image (description unavailable)'),
+        K: context.obj([mcr]),
+      }));
+      blockElemRefs.push(ref);
+      imageBlocks.push({ ref, mcid: info.mcid });
+    }
     context.assign(pageSectRef, context.obj({
       Type: PDFName.of('StructElem'),
       S: PDFName.of('Sect'),
@@ -3771,7 +3828,7 @@ var createDocPipeline = function(deps) {
       K: context.obj(blockElemRefs),
     }));
     const parentArrayRef = context.register(context.obj(blockElemRefs.slice()));
-    return { pageSectRef, blockElemRefs, parentArrayRef, mcidCount: contentMcid };
+    return { pageSectRef, blockElemRefs, parentArrayRef, mcidCount: contentMcid + imageBlocks.length, imageBlocks };
   };
 
   // Lazy-load Tesseract.js from CDN. Zero cost until first call (scanned-PDF path only).
@@ -13167,6 +13224,11 @@ tr { page-break-inside: avoid; }
         const pdfRole = TAG_TO_PDF_ROLE[tag];
         if (!pdfRole) continue;
         if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot') continue;
+        // <figure> wrapping an <img> would produce TWO Figure leaves for one
+        // image (both tags map to Figure) — skip the wrapper; the img itself
+        // (and its alt) is the leaf. A <figure> WITHOUT an img (e.g. a styled
+        // text callout) still becomes its own Figure.
+        if (tag === 'figure' && el.querySelector('img')) continue;
         if (tag === 'table' || tag === 'tr' || tag === 'ul' || tag === 'ol') {
           const key = ++_containerSeq;
           const parentKey = _nearestContainerKey(el);
@@ -13841,7 +13903,7 @@ tr { page-break-inside: avoid; }
             parentTreeNums.push(PDFNumber.of(pi));
             parentTreeNums.push(s4.parentArrayRef);
             if (Array.isArray(s4.blockElemRefs)) _stage4BlockCount += s4.blockElemRefs.length;
-            _stage4PageResults.push({ pi, pageRef: page.ref, pageSectRef: s4.pageSectRef, blockElemRefs: s4.blockElemRefs || [], parentArrayRef: s4.parentArrayRef });
+            _stage4PageResults.push({ pi, pageRef: page.ref, pageSectRef: s4.pageSectRef, blockElemRefs: s4.blockElemRefs || [], parentArrayRef: s4.parentArrayRef, imageBlocks: s4.imageBlocks || [] });
             stage4Success = true;
           }
         } catch (s4err) {
@@ -14049,6 +14111,39 @@ tr { page-break-inside: avoid; }
             cursor = found.end + 1;
           } catch (_) { /* leave this leaf ActualText-only */ }
         }
+        // ── Figure linkage (Stage 4c match): order-based, gated on EXACT
+        // count equality. Figures have no text to match against, so the only
+        // honest signal is order — and order is only trustworthy when the
+        // HTML's figure count equals the number of marked image draws. A
+        // mismatch (recurring letterhead drawn on every page, dropped/added
+        // images) stays unlinked: a WRONG alt-text attribution is worse than
+        // a withheld declaration.
+        try {
+          const figureLeaves = _unifiableLeafRefs.filter((lf) => lf.role === 'Figure');
+          const imageStream = [];
+          for (const pr of _stage4PageResults) {
+            let pArr = null;
+            try { pArr = context.lookup(pr.parentArrayRef); } catch (_) {}
+            for (const ib of (pr.imageBlocks || [])) imageStream.push({ ref: ib.ref, mcid: ib.mcid, pageRef: pr.pageRef, parentArr: pArr });
+          }
+          if (figureLeaves.length > 0 && figureLeaves.length === imageStream.length) {
+            for (let fi = 0; fi < figureLeaves.length; fi++) {
+              try {
+                const lf = figureLeaves[fi];
+                const b = imageStream[fi];
+                const leafDict = context.lookup(lf.ref);
+                leafDict.set(PDFName.of('K'), context.obj([context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) })]));
+                leafDict.set(PDFName.of('Pg'), b.pageRef);
+                if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+                consumed.add(String(b.ref));
+                _perLeafLinked++;
+              } catch (_) { /* this figure stays Alt-only */ }
+            }
+            try { warnLog('[Stage4c-Figures] linked ' + figureLeaves.length + ' figure(s) to marked image draws (count-exact order match)'); } catch (_) {}
+          } else if (figureLeaves.length > 0 && imageStream.length > 0) {
+            try { warnLog('[Stage4c-Figures] count mismatch (HTML figures: ' + figureLeaves.length + ', marked image draws: ' + imageStream.length + ') — figures stay Alt-only and the PDF/UA declaration may be withheld (honest fallback; order matching would risk wrong alt attribution).'); } catch (_) {}
+          }
+        } catch (figErr) { try { warnLog('[Stage4c-Figures] non-fatal: ' + (figErr && figErr.message)); } catch (_) {} }
         // Drop consumed flat block elems from their page Sects (they're now
         // redundant; the objects stay registered, so the enumerate-based
         // round-trip tally is unaffected).
