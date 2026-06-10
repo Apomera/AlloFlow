@@ -4587,6 +4587,21 @@
     "pptx_export": {
       "title": "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout — not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."
     },
+    "dashboard": {
+      "aria": "Remediation results overview and section navigation",
+      "score_title": "Accessibility score: before → after",
+      "zero_issues": "0 issues",
+      "issues_left": "issues left",
+      "verify": "Verification",
+      "recovery": "Recovery",
+      "axe": "Issues (axe)",
+      "downloads": "Downloads",
+      "tags": "Tag inspector",
+      "workbench": "Workbench",
+      "changed": "What changed"
+    },
+    "tag_to_workbench_title": "Send this block to the Expert Workbench: prefills a targeted command (including any warnings) so you can fix it with one instruction",
+    "tag_to_workbench_aria": "Send to Expert Workbench",
     "pptx_theme_aria": "PowerPoint export theme",
     "pptx_theme_title": "Slide theme for the PowerPoint export. All presets are contrast-checked (WCAG AA); the AI option matches your topic, with legibility enforced locally either way.",
     "alt_formats": {

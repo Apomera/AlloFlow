@@ -3276,7 +3276,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _totalMissing = _integ && typeof _integ.totalMissing === 'number' ? _integ.totalMissing : null;
                                   const _method = pdfFixResult.groundTruthMethod || 'unknown';
                                   return (
-                                    <details open className="mb-2 bg-slate-50 border border-slate-400 rounded-xl text-[11px]">
+                                    <details id="allo-sec-verify" className="mb-2 bg-slate-50 border border-slate-400 rounded-xl text-[11px]">
                                       <summary className="cursor-pointer font-bold text-slate-700 select-none px-3 py-1.5 hover:bg-slate-100 rounded-xl inline-flex items-center gap-2">
                                         <span>📋</span>
                                         <span>{t('pdf_audit.verification.details_heading') || 'Verification details'}</span>
@@ -3403,7 +3403,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 )}
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                   <span className="text-lg">🔍</span>
-                                  <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.fidelity.heading') || 'Verify Text Fidelity'}</h4>
+                                  <h4 id="allo-sec-recovery" className="text-sm font-bold text-slate-800">{t('pdf_audit.fidelity.heading') || 'Verify Text Fidelity'}</h4>
                                   <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase">
                                     via {String(method).replace('+', ' + ')}
                                   </span>
@@ -3889,6 +3889,36 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
                     <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
+                      {/* ── Results dashboard bar: pinned overview + jump-links. ──
+                          NAVIGATION-ONLY by design: it moves no existing element
+                          (the 308-element inventory is the completeness contract —
+                          additions only, zero relocations). Chips scroll to section
+                          anchors; details targets auto-open on jump. */}
+                      {(() => {
+                        const _jump = (id) => { try { const el = document.getElementById(id); if (!el) return; if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} };
+                        const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
+                        const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
+                        return (
+                          <div className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
+                            <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Accessibility score: before → after'}>
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span>
+                            </span>
+                            {_vio !== null && (
+                              <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (_vio === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
+                                {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'issues left')}
+                              </span>
+                            )}
+                            <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
+                            <button className={_chip} onClick={() => _jump('allo-sec-verify')}>✅ {t('pdf_audit.dashboard.verify') || 'Verification'}</button>
+                            <button className={_chip} onClick={() => _jump('allo-sec-recovery')}>🩹 {t('pdf_audit.dashboard.recovery') || 'Recovery'}</button>
+                            <button className={_chip} onClick={() => _jump('allo-sec-axe')}>🪓 {t('pdf_audit.dashboard.axe') || 'Issues (axe)'}</button>
+                            <button className={_chip} onClick={() => _jump('allo-sec-downloads')}>📥 {t('pdf_audit.dashboard.downloads') || 'Downloads'}</button>
+                            <button className={_chip} onClick={() => _jump('allo-sec-taginspect')}>🔍 {t('pdf_audit.dashboard.tags') || 'Tag inspector'}</button>
+                            <button className={_chip} onClick={() => _jump('allo-sec-workbench')}>🛠 {t('pdf_audit.dashboard.workbench') || 'Workbench'}</button>
+                            <button className={_chip} onClick={() => _jump('allo-sec-changed')}>📋 {t('pdf_audit.dashboard.changed') || 'What changed'}</button>
+                          </div>
+                        );
+                      })()}
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">♿ Remediation Complete</h4>
                         <button
@@ -4053,7 +4083,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                       {/* axe-core Automated Results */}
                       {pdfFixResult.axeAudit && (
-                        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border-2 border-indigo-200 p-3 space-y-2">
+                        <div id="allo-sec-axe" className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border-2 border-indigo-200 p-3 space-y-2">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-lg">🔬</span>
@@ -4926,7 +4956,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           );
                         })()}
                         {/* ── Read-only tag-structure inspector (the "tag tree": what the tagged PDF will contain) ── */}
-                        <details className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs" onToggle={(e) => { if (e.currentTarget.open && tagOutline === null) { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } } }}>
+                        <details id="allo-sec-taginspect" className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs" onToggle={(e) => { if (e.currentTarget.open && tagOutline === null) { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } } }}>
                           <summary className="cursor-pointer font-bold text-slate-700">🔍 Inspect tag structure <span className="font-normal text-slate-500">— the roles + warnings your tagged PDF will contain</span></summary>
                           <div className="mt-2">
                             <div className="flex items-center justify-between gap-2 mb-1">
@@ -4937,15 +4967,40 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div>
                                 <div className={`text-[11px] font-bold mb-1 ${tagOutline.some(x => x.warnings.length) ? 'text-amber-700' : 'text-green-700'}`}>{tagOutline.some(x => x.warnings.length) ? ('⚠ ' + tagOutline.reduce((n, x) => n + x.warnings.length, 0) + ' structure warning(s)') : '✓ No structure warnings'} · {tagOutline.length} tagged blocks</div>
                                 <ul className="space-y-0.5 max-h-64 overflow-auto" role="list">
-                                  {tagOutline.map((n, idx) => (
-                                    <li key={idx} style={{ paddingLeft: (n.indent * 12) + 'px' }} className="flex items-start gap-1.5">
-                                      <button onClick={() => { try { const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; if (d && d.body) { const els = d.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer'); const tgt = els[n.domIndex]; if (tgt && tgt.scrollIntoView) tgt.scrollIntoView({ block: 'center' }); } } catch (_) {} }} className="text-left hover:underline flex-1 min-w-0" title="Scroll the preview to this element">
+                                  {tagOutline.map((n, idx) => {
+                                    // Find this row's element in the preview iframe (same
+                                    // selector set _buildTagOutline indexed against).
+                                    const _findEl = () => { try { const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; if (!d || !d.body) return null; return d.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer')[n.domIndex] || null; } catch (_) { return null; } };
+                                    // Hover highlight: outline the live element so "which
+                                    // block is this row?" is answerable without clicking.
+                                    const _hl = (on) => { const el = _findEl(); if (!el) return; try { el.style.outline = on ? '3px solid #6366f1' : ''; el.style.outlineOffset = on ? '2px' : ''; } catch (_) {} };
+                                    return (
+                                    <li key={idx} style={{ paddingLeft: (n.indent * 12) + 'px' }} className="flex items-start gap-1.5" onMouseEnter={() => _hl(true)} onMouseLeave={() => _hl(false)}>
+                                      <button onClick={() => { const el = _findEl(); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center' }); }} onFocus={() => _hl(true)} onBlur={() => _hl(false)} className="text-left hover:underline flex-1 min-w-0" title="Scroll the preview to this element">
                                         <span className="inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold">{n.role}</span>
                                         <span className="text-slate-600 ml-1">{n.text || '(empty)'}</span>
                                       </button>
                                       {n.warnings.length > 0 && <span className="text-amber-600 text-[11px] shrink-0" title={n.warnings.join('; ')}>⚠</span>}
+                                      <button
+                                        onClick={() => {
+                                          // Bridge to the Expert Workbench: prefill a targeted
+                                          // command for THIS block (warnings included so the
+                                          // command states what to fix), open + scroll to it.
+                                          try {
+                                            const _quote = (n.text || '').slice(0, 60);
+                                            const _what = n.warnings.length ? n.warnings.join(' and ') : 'improve clarity and accessibility';
+                                            setExpertCommandInput('In the ' + n.role + ' block "' + _quote + '": ' + _what);
+                                            const wb = document.getElementById('allo-sec-workbench');
+                                            if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+                                          } catch (_) {}
+                                        }}
+                                        className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors"
+                                        title={t('pdf_audit.tag_to_workbench_title') || 'Send this block to the Expert Workbench: prefills a targeted command (including any warnings) so you can fix it with one instruction'}
+                                        aria-label={(t('pdf_audit.tag_to_workbench_aria') || 'Send to Expert Workbench') + ': ' + n.role + ' ' + (n.text || '')}
+                                      >🛠</button>
                                     </li>
-                                  ))}
+                                    );
+                                  })}
                                 </ul>
                                 {tagOutline.some(x => x.warnings.length) && <div className="mt-1 text-[10px] text-slate-500">Hover ⚠ for the issue. Fix it in the preview above (relabel headings, add alt text / table headers), then ↻ Refresh. This is structure editing on the HTML that generates the tags — not byte-level PDF tag editing.</div>}
                               </div>
@@ -5671,7 +5726,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           📑 Alternative Formats <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1.5">
-                          <p className="text-[11px] text-slate-600">{t('pdf_audit.alt_formats.intro') || 'Download the remediated document in accessible alternative formats'}</p>
+                          <p id="allo-sec-downloads" className="text-[11px] text-slate-600">{t('pdf_audit.alt_formats.intro') || 'Download the remediated document in accessible alternative formats'}</p>
 
                           {/* ePub */}
                           <button onClick={() => {
@@ -5820,7 +5875,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </details>
 
                       {/* Expert Workbench — Advanced Remediation Command Bar (collapsible) */}
-                      <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group">
+                      <details id="allo-sec-workbench" className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group">
                         <summary className="cursor-pointer p-3 text-[11px] font-bold text-purple-700 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl">
                           <span className="inline-block transition-transform group-open:rotate-90 text-slate-600">▸</span>
                           🤖 Expert Workbench
@@ -6182,7 +6237,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
 
                       {/* ── Remediation Changelog ── */}
-                      <details className="group">
+                      <details id="allo-sec-changed" className="group">
                         <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
                           📋 What Changed <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
