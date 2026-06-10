@@ -1198,8 +1198,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 style: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, marginBottom: 14, minHeight: 16 }
               },
                 Array.from({ length: 16 }, function(_, i) {
-                  // The freshest dot is the rightmost; index 0 is oldest.
-                  var age = 15 - i; // 0 = newest
+                  // Trail fades behind the current beat: the dot that just
+                  // pulsed is brightest; older beats dim with distance.
+                  var age = ((beat % 16) - i + 16) % 16; // 0 = just pulsed
                   var isCurrent = (beat % 16) === i;
                   var opacity = isCurrent ? 1 : Math.max(0.15, 0.95 - age * 0.06);
                   var size = isCurrent ? 14 : 8;
@@ -1302,7 +1303,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     background: practiceRunning ? T.accent : T.cardAlt,
                     color: '#fff', fontSize: 18, fontWeight: 800, cursor: practiceRunning ? 'pointer' : 'not-allowed',
                     opacity: practiceRunning ? 1 : 0.5,
-                    boxShadow: practiceRunning ? '0 0 24px rgba(220,38,38,0.45)' : 'none'
+                    transform: practiceRunning && taps.length % 2 === 1 ? 'scale(0.93)' : 'scale(1)',
+                    transition: 'transform 90ms ease-out, box-shadow 90ms ease-out',
+                    boxShadow: practiceRunning ? (taps.length % 2 === 1 ? '0 0 34px rgba(220,38,38,0.6)' : '0 0 24px rgba(220,38,38,0.45)') : 'none'
                   }
                 }, practiceRunning ? 'TAP' : '— off —')
               ),
@@ -3072,7 +3075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           role: 'status', 'aria-live': 'assertive',
           style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
                    zIndex: 9999, pointerEvents: 'none',
-                   animation: 'firstresponse-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+                   animation: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'none' : 'firstresponse-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
         },
           h('div', { style: { background: 'linear-gradient(135deg, #dc2626 0%, #f59e0b 50%, #16a34a 100%)',
                               color: '#fff', padding: '14px 22px', borderRadius: 16,
@@ -3126,7 +3129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
             H('div', { style: { padding: 16, background: T.card, borderRadius: 10, color: T.text, border: '1px solid ' + T.border } },
               H('h3', { style: { fontSize: 14, fontWeight: 800, color: T.accent, margin: '0 0 6px 0' } }, '🧭 Decision-calibration discovery'),
-              H('p', { style: { fontSize: 12, color: T.textMuted, marginBottom: 12 } }, 'Four sliders self-rate response capabilities. Discrete 4-state readiness + SVG capability heatmap. No score, no reveal.'),
+              H('p', { style: { fontSize: 12, color: T.muted, marginBottom: 12 } }, 'Four sliders self-rate response capabilities. Discrete 4-state readiness + SVG capability heatmap. No score, no reveal.'),
               H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                 H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
                 H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
@@ -3152,7 +3155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                  { k: 'consistency', l: 'Scenario consistency (%)' },
                  { k: 'recall', l: 'Critical-action recall (%)' }].map(function(s) {
                   return H('div', { key: s.k },
-                    H('label', { htmlFor: 'dc-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: T.textMuted, marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: T.accent, fontFamily: 'monospace' } }, iq[s.k])),
+                    H('label', { htmlFor: 'dc-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: T.muted, marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: T.accent, fontFamily: 'monospace' } }, iq[s.k])),
                     H('input', { id: 'dc-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                       style: { width: '100%' }, 'aria-label': s.l }));
@@ -3160,7 +3163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               ),
               H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
                 H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ sp: iq.speed, a: iq.accuracy, c: iq.consistency, r: iq.recall, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: T.bg2 || '#1e293b', color: T.text, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-                H('button', { onClick: function() { setIQ({ speed: 50, accuracy: 50, consistency: 50, recall: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: T.textMuted, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+                H('button', { onClick: function() { setIQ({ speed: 50, accuracy: 50, consistency: 50, recall: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: T.muted, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
               ),
               H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: which capability matters most for first-aid response?',
                 style: { width: '100%', minHeight: 50, padding: 6, background: T.bg2 || '#1e293b', color: T.text, border: '1px solid ' + T.border, borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
@@ -3173,7 +3176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain'),
               iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain readiness composition.',
                 style: { width: '100%', minHeight: 60, padding: 6, background: T.bg2 || '#1e293b', color: T.text, border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: T.textMuted } }, 'Design note: discrete 4-state readiness marker; SVG capability map; no certification score — by design.')
+              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: T.muted } }, 'Design note: discrete 4-state readiness marker; SVG capability map; no certification score — by design.')
             )
           );
         })(); break;

@@ -1401,7 +1401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             // Controls
             h('div', { className: 'flex flex-wrap gap-3 justify-center' },
               h('button', {
-                onClick: stepGeneration,
+                onClick: function() { stepGeneration(); },
                 disabled: autoRun,
                 className: 'px-5 py-3 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white shadow-lg transition-colors'
               }, '⏭ Step 1 Generation'),

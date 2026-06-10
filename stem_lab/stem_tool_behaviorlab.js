@@ -3091,13 +3091,16 @@ dataRef.current = d;
           if (!window._blKeyHandler) {
             window._blKeyHandler = function (e) {
               if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                if (typeof window._blReinforceFn !== 'function') return; // lab not running — never hijack Space app-wide
+                if (!document.getElementById('bl-chamber-canvas')) return; // lab not on screen
                 e.preventDefault();
-                if (typeof window._blReinforceFn === 'function') window._blReinforceFn();
+                window._blReinforceFn();
               }
             };
             document.addEventListener('keydown', window._blKeyHandler);
           }
           window._blReinforceFn = (blLastAction && blPhase === 'running' && blLevel !== 8 && blLevel !== 9) ? reinforceAction : null;
+          window._blAdvanceTickFn = advanceTick; // live rebind — the tick interval must never call a stale closure (same fix class as dataRef above)
 
           // ── Render cumulative record canvas (not rAF — only needs tick-rate updates) ──
           setTimeout(function () {
@@ -3113,7 +3116,7 @@ dataRef.current = d;
             }
             var tickDelay = (d.blSpeed || 1) === 3 ? 2000 : (d.blSpeed || 1) === 2 ? 3500 : 5000;
             if (_blTickTimer.current) clearInterval(_blTickTimer.current);
-            _blTickTimer.current = setInterval(function() { advanceTick(); }, tickDelay);
+            _blTickTimer.current = setInterval(function() { (window._blAdvanceTickFn || advanceTick)(); }, tickDelay);
             return function() { if (_blTickTimer.current) { clearInterval(_blTickTimer.current); _blTickTimer.current = null; } };
           }, [blPhase, blPaused, d.blSpeed]);
 

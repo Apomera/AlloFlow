@@ -256,10 +256,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     if (lastPitch > 0) {
       var dotY = H - ((Math.min(Math.max(lastPitch, minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
       var dotZone = pitchZone(lastPitch);
+      ctx2d.save();
+      ctx2d.shadowColor = dotZone.color;
+      ctx2d.shadowBlur = 10;
       ctx2d.beginPath();
       ctx2d.arc(W - 4, dotY, 5, 0, 2 * Math.PI);
       ctx2d.fillStyle = dotZone.color;
       ctx2d.fill();
+      ctx2d.restore();
       ctx2d.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
       ctx2d.textAlign = 'left';
       ctx2d.font = 'bold 11px sans-serif';
@@ -419,7 +423,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     if (pct >= quietEnd && pct <= goodEnd) fillColor = '#22c55e';
     else if (pct > goodEnd) fillColor = '#ef4444';
     ctx2d.fillStyle = fillColor;
+    ctx2d.shadowColor = fillColor;
+    ctx2d.shadowBlur = 8;
     ctx2d.fillRect(barX, barY, barW * pct, barH);
+    ctx2d.shadowBlur = 0;
 
     // Zone labels
     ctx2d.font = '8px sans-serif';
@@ -3910,7 +3917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
                   (isActive
                     ? (isDark ? 'bg-violet-600 text-white shadow-sm' : 'bg-white text-violet-700 shadow-sm')
-                    : (isDark ? 'text-slate-200 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
+                    : (isDark ? 'text-slate-200 hover:bg-slate-700 hover:text-white' : 'text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });
@@ -3934,7 +3941,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               visualizer:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎤', title: 'Live visualizer — record + read your delivery', hint: 'Real-time pitch trace + volume meter + filler-word counter. Trained speakers vary pitch ~30% across a sentence; flat delivery loses listener attention within ~20 seconds.' },
               practice:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📝', title: 'Practice — work through a delivery',          hint: 'Pacing target ~150 wpm. Pauses between ideas (1–2 seconds) carry as much weight as the words. Read your own writing aloud first; awkward sentences reveal themselves immediately.' },
               multilingual: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🌐', title: 'Multilingual — same speech, multiple languages', hint: 'Speech rate varies dramatically by language: Spanish + Japanese ~7 syllables/sec; English ~6; Mandarin ~5. Information rate is roughly constant — denser languages talk slower.' },
-              report:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '📋', title: 'Report — your delivery analytics',           hint: 'Pace, pitch range, filler-word density, pause timing — each scored against research-backed targets. Click any dimension for a citation + a coaching tip.' }
+              report:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '📋', title: 'Report — your delivery analytics',           hint: 'Pace, pitch range, filler-word density, pause timing — each scored against research-backed targets. Click any dimension for a citation + a coaching tip.' },
+              prosodyHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '⚙️', title: 'Prosody — discover how delivery shapes meaning', hint: 'Adjust pitch offset, pace, and volume gain, then log what you notice. No score, no reveal — form your own hypothesis about why most TED talks sit near 150 wpm.' }
             };
             var meta = TAB_META[activeTab] || TAB_META.visualizer;
             return h('div', {

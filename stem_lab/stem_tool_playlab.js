@@ -2915,6 +2915,11 @@ window.StemLab = window.StemLab || {
         return best;
       }
       function handleMouseDown(evt) {
+        // Drag editing is football-only: soccer formations are preset
+        // (formationDef.build() ignores customPositions) and ids collide
+        // across sports ('RB' = Running Back AND Right Back), so a soccer
+        // drag would silently corrupt the football formation.
+        if (isSoccer) return;
         var c = canvasYardCoords(evt); if (!c) return;
         var p = nearestPlayer(c.yardX, c.yardY, formation);
         if (!p) return;
@@ -3319,9 +3324,14 @@ window.StemLab = window.StemLab || {
             var by = fromP.y + (toP.y - fromP.y) * sFrac;
             var bpx = fx(bx);
             var bpy = fy(by);
-            // Soccer ball — white circle with black hex outline
+            // Soccer ball — white circle with black hex outline (soft white
+            // glow so the moving ball reads against the pitch green)
+            gfx.save();
+            gfx.shadowColor = 'rgba(250,250,250,0.9)';
+            gfx.shadowBlur = 9;
             gfx.fillStyle = '#fafafa';
             gfx.beginPath(); gfx.arc(bpx, bpy, 5, 0, Math.PI * 2); gfx.fill();
+            gfx.restore();
             gfx.strokeStyle = '#1a1a1a';
             gfx.lineWidth = 1;
             gfx.stroke();
@@ -3394,11 +3404,16 @@ window.StemLab = window.StemLab || {
             var current = _ballAt(throwT);
             var bpx = current.px;
             var bpy = current.py;
-            // Draw the football — small brown ellipse
+            // Draw the football — small brown ellipse (warm glow matching
+            // the amber arc guide so the leading edge pops over the trail)
+            gfx.save();
+            gfx.shadowColor = 'rgba(251,191,36,0.85)';
+            gfx.shadowBlur = 10;
             gfx.fillStyle = '#7c2d12';
             gfx.beginPath();
             gfx.ellipse(bpx, bpy, 5, 3, 0, 0, Math.PI * 2);
             gfx.fill();
+            gfx.restore();
             gfx.strokeStyle = '#fafafa';
             gfx.lineWidth = 1;
             gfx.beginPath(); gfx.moveTo(bpx - 3, bpy); gfx.lineTo(bpx + 3, bpy); gfx.stroke();
@@ -4305,9 +4320,11 @@ window.StemLab = window.StemLab || {
               // before the effect fires (prevents 1-frame layout jump).
               width: 720, height: 360,
               role: 'img', tabIndex: 0, 'data-pl-focusable': 'true',
-              'aria-label': 'Football field, ' + play.label + ' against ' + coverage.label
-                + (openReceiverId ? '. Most open receiver: ' + openReceiverId : '')
-                + '. Click and drag a player to reposition them.',
+              'aria-label': isSoccer
+                ? ('Soccer pitch, ' + formationDef.label + ' against ' + soccerShape.label + ' defensive shape.')
+                : ('Football field, ' + play.label + ' against ' + coverage.label
+                  + (openReceiverId ? '. Most open receiver: ' + openReceiverId : '')
+                  + '. Click and drag a player to reposition them.'),
               onMouseDown: handleMouseDown,
               onMouseMove: handleMouseMove,
               onMouseUp: handleMouseUp,

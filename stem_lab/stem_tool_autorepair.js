@@ -3723,7 +3723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             'aria-label': 'View badge gallery — ' + badgeCount + ' badges earned',
             onClick: function() { setView('badges'); },
             style: { width: '100%', marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, cursor: 'pointer', textAlign: 'left' } },
-            h('span', { 'aria-hidden': 'true' }, '🏅 '),
+            h('span', { 'aria-hidden': 'true', className: 'ar-pulse-ring' }, '🏅 '),
             h('strong', { style: { color: T.accentHi } }, 'Badges earned: '), String(badgeCount), ' — tap to view gallery →'
           ),
           h('div', { id: 'ar-menu-categories', tabIndex: -1 }),
@@ -4342,7 +4342,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var order = answers[orderKey];
           if (!order) {
             order = allOptions.slice().sort(function() { return Math.random() - 0.5; });
+            answers = Object.assign({}, answers);
             answers[orderKey] = order;
+            upd('toolGameAnswers', answers);
           }
           var submitted = !!answers[question.id + '_submitted'];
 

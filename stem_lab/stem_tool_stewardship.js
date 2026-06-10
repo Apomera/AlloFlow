@@ -1742,7 +1742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             // Outcome tier
             h('div', {
-              style: { padding: 18, borderRadius: 12, marginBottom: 16, background: (outcome.color || '#86efac') + '18', border: '2px solid ' + (outcome.color || '#86efac') + '88', borderLeft: '4px solid ' + (outcome.color || '#86efac') }
+              style: { padding: 18, borderRadius: 12, marginBottom: 16, background: (outcome.color || '#86efac') + '18', border: '2px solid ' + (outcome.color || '#86efac') + '88', borderLeft: '4px solid ' + (outcome.color || '#86efac'), boxShadow: '0 0 24px ' + (outcome.color || '#86efac') + '33' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 36 } }, outcome.icon || '🏆'),

@@ -169,7 +169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       var ctxGradeLevel = ctx.gradeLevel;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
-      var awardStemXP = ctx.awardXP;
+      var awardStemXP = ctx.awardXP ? function(points, reason) { ctx.awardXP('worldBuilder', points, reason || 'WriteCraft writing'); } : null;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
 
@@ -631,7 +631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             } catch(err) {
               // Fallback: treat entire result as plain text
               updMulti({ actionText: result.trim(), hwResult: { text: result.trim() }, hwLoading: false });
-              if (addToast) addToast('��️ Handwriting converted to text!', 'success');
+              if (addToast) addToast('✍️ Handwriting converted to text!', 'success');
             }
           }).catch(function() {
             upd('hwLoading', false);
@@ -751,7 +751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
         var encounter = worldEncounters[Math.floor(Math.random() * worldEncounters.length)];
         updMulti({ activeBattle: { ...encounter, currentHp: encounter.hp, playerHits: 0, rounds: 0 }, actionMode: 'battle' });
         if (announceToSR) announceToSR('Battle started! ' + encounter.name + ' appears! ' + encounter.desc);
-        if (stemBeep) stemBeep(440, 150, 0.3);
+        if (stemBeep) stemBeep(440, 0.15, 0.3);
         if (addToast) addToast(encounter.emoji + ' ' + encounter.name + ' appears!', 'info');
       };
 
@@ -955,7 +955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
             if (awardStemXP) awardStemXP(action.xpEarned || 10);
             if (action.qualityScore >= 75 && stemCelebrate) stemCelebrate();
-            if (action.qualityScore >= 75 && stemBeep) stemBeep(880, 200, 0.3);
+            if (action.qualityScore >= 75 && stemBeep) stemBeep(880, 0.2, 0.3);
             if (announceToSR) announceToSR('Action scored ' + action.qualityScore + ' out of 100. ' + tier.label + ' quality. ' + (action.narrative || ''));
           } catch (e) {
             updMulti({ actionResult: { qualityScore: 0, narrative: 'The world shimmers but nothing happens. Try writing with more detail and creativity!', feedback: 'Try adding sensory details — what do you see, hear, feel?', breakdown: {} }, actionLoading: false });
@@ -1005,11 +1005,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           writingPower > 0 && h('div', { className: 'flex items-center gap-2' },
             h('div', { className: 'text-center' },
               h('div', { className: 'text-lg font-black', style: { color: getQualityTier(writingPower).color } }, writingPower),
-              h('div', { className: 'text-[11px] text-slate-200 font-bold' }, 'POWER')
+              h('div', { className: 'text-[11px] text-slate-500 font-bold' }, 'POWER')
             ),
             h('div', { className: 'text-center' },
               h('div', { className: 'text-lg font-black text-amber-600' }, totalXP),
-              h('div', { className: 'text-[11px] text-slate-200 font-bold' }, 'XP')
+              h('div', { className: 'text-[11px] text-slate-500 font-bold' }, 'XP')
             ),
             h('div', { className: 'text-center' },
               h('select', {
@@ -1022,7 +1022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   return h('option', { key: g, value: g }, g);
                 })
               ),
-              h('div', { className: 'text-[11px] text-slate-200 font-bold' }, 'GRADE')
+              h('div', { className: 'text-[11px] text-slate-500 font-bold' }, 'GRADE')
             )
           )
         ),
@@ -1298,7 +1298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-widest mb-2' }, '👥 People Here'),
             h('div', { className: 'flex flex-wrap gap-2' },
               gmCharacters.filter(function(npc) { return !npc.roomId || npc.roomId === currentRoom; }).map(function(npc, i) {
-                return h('button', { 'aria-label': 'Interact With N P C', key: i, onClick: function() { interactWithNPC(npc); },
+                return h('button', { 'aria-label': 'Talk with ' + npc.name + ', ' + npc.role, key: i, onClick: function() { interactWithNPC(npc); },
                   className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-cyan-200 text-xs hover:border-cyan-400 hover:shadow-md transition-all'
                 },
                   h('span', { className: 'text-lg' }, npc.emoji),
@@ -1311,7 +1311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       h('div', { className: 'w-full h-1 bg-slate-200 rounded-full overflow-hidden' },
                         h('div', { className: 'h-full rounded-full transition-all ' + (npcRapport[npc.name] >= 70 ? 'bg-green-400' : npcRapport[npc.name] >= 40 ? 'bg-amber-400' : 'bg-blue-400'), style: { width: npcRapport[npc.name] + '%' } })
                       ),
-                      h('div', { className: 'text-[11px] text-slate-200 mt-0.5' }, '💛 ' + npcRapport[npc.name] + '%')
+                      h('div', { className: 'text-[11px] text-slate-500 mt-0.5' }, '💛 ' + npcRapport[npc.name] + '%')
                     )
                   )
                 );
@@ -1349,7 +1349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     style: { width: rapport + '%' }
                   })
                 ),
-                h('div', { className: 'text-[11px] text-slate-200 mt-0.5' },
+                h('div', { className: 'text-[11px] text-slate-500 mt-0.5' },
                   rapport < 20 ? '🔒 Guarded — build trust through empathy' :
                   rapport < 40 ? '🌱 Opening up — keep showing understanding' :
                   rapport < 70 ? '💬 Trusting — deeper conversations unlocked' :
@@ -1488,7 +1488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       ),
                       h('p', { className: 'text-[11px] text-emerald-600 italic leading-relaxed' }, s.desc),
                       s.bonus && h('div', { className: 'text-[11px] text-violet-600 font-medium mt-0.5' }, '✨ ' + s.bonus),
-                      h('div', { className: 'text-[11px] text-slate-200 mt-0.5' }, 'Built by ' + s.builtBy)
+                      h('div', { className: 'text-[11px] text-slate-500 mt-0.5' }, 'Built by ' + s.builtBy)
                     )
                   );
                 })
@@ -1836,7 +1836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               }),
               h('button', { onClick: function() { if ((d.gmCharacterPrompt || '').trim()) { createGMCharacter(d.gmCharacterPrompt); upd('gmCharacterPrompt', ''); } },
                 disabled: !(d.gmCharacterPrompt || '').trim() || actionLoading,
-                className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
+                className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 disabled:opacity-40 transition-colors'
               }, actionLoading ? 'Creating...' : '✨ Create Character'),
               gmCharacters.length > 0 && h('div', { className: 'space-y-2 mt-2' },
                 h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest' }, 'Characters in World (' + gmCharacters.length + ')'),
@@ -1855,7 +1855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             )
           ),
 
-          h('button', { 'aria-label': 'Start a New World', onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null, hwResult: null, hwLoading: false }); }, className: 'text-[11px] text-slate-200 hover:text-slate-600 font-bold' }, '🔄 Start a New World')
+          h('button', { 'aria-label': 'Start a New World', onClick: function() { updMulti({ selectedWorld: null, currentRoom: null, writingPower: 0, totalXP: 0, actionLog: [], actionResult: null, sceneImage: null, roomsVisited: [], battlesWon: 0, legendaryActions: 0, vocabTermsUsed: [], gmCharacters: [], activeNPC: null, npcHistory: [], conflictsResolved: 0, selSkillsUsed: [], activeBattle: null, battleLog: [], playerBase: null, characterPortrait: null, characterPortraitLoading: false, characterAppearance: '', inventory: [], craftedThisTurn: false, activeItem: null, npcRapport: {}, npcQuests: {}, harmonyScore: 0, completedQuests: 0, battleImage: null, structures: [], structureCooldown: 0, craftSubMode: 'item', playerGradeLevel: null, hwResult: null, hwLoading: false }); }, className: 'text-[11px] text-slate-500 hover:text-slate-700 font-bold' }, '🔄 Start a New World')
         )
       );
     }

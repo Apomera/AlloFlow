@@ -645,7 +645,7 @@ var d = labToolData || {};
 
               ctx.beginPath(); ctx.arc(eqPx, eqPy, 8, 0, Math.PI * 2);
 
-              ctx.fillStyle = '#fbbf24'; ctx.fill();
+              ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 14; ctx.fillStyle = '#fbbf24'; ctx.fill(); ctx.shadowBlur = 0;
 
               ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
 
@@ -995,7 +995,7 @@ var d = labToolData || {};
 
                 ctx.beginPath(); ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
 
-                ctx.fillStyle = co.color; ctx.fill();
+                ctx.shadowColor = co.color; ctx.shadowBlur = 12; ctx.fillStyle = co.color; ctx.fill(); ctx.shadowBlur = 0;
 
                 // Price labels
 

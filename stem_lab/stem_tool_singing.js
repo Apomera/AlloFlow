@@ -2381,7 +2381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               upd('achievedHealthyVibrato', true);
               if (addToast) addToast('Healthy vibrato achieved!', 'success');
               if (stemCelebrate) stemCelebrate();
-              if (awardStemXP) awardStemXP(15, 'Singing: healthy vibrato');
+              if (awardStemXP) awardStemXP('singing_vibrato', 15, 'Singing: healthy vibrato');
             }
           }
         }, [vibratoHistory, isDark]);
@@ -2519,15 +2519,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 setSrCurrentIdx(nextIdx);
                 setSrMode('done');
                 stopRefTone();
-                if (stemBeep) stemBeep('coin');
+                if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
                 if (stemCelebrate) stemCelebrate();
-                if (awardStemXP) awardStemXP(15, 'Singing: sight reading complete');
+                if (awardStemXP) awardStemXP('singing_sightread', 15, 'Singing: sight reading complete');
               } else {
                 setSrCurrentIdx(nextIdx);
                 srLockedRef.current = 0;
                 srAttemptsRef.current = 0;
                 srCentsAccRef.current = 0;
-                if (stemBeep) stemBeep('coin');
+                if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
               }
             }
           } else {
@@ -2563,8 +2563,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               stopRefTone();
               if (addToast) addToast('Pitch matched! Score: ' + score, 'success');
               if (stemCelebrate) stemCelebrate();
-              if (awardStemXP) awardStemXP(5, 'Singing: pitch match');
-              if (stemBeep) stemBeep('coin');
+              if (awardStemXP) awardStemXP('singing_pitch_match', 5, 'Singing: pitch match');
+              if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
             }
           } else {
             pitchMatchLockedRef.current = Math.max(0, pitchMatchLockedRef.current - 2);
@@ -2598,7 +2598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               rangeStableCountRef.current = 0;
               rangeLastMidiRef.current = 0;
               if (addToast) addToast('Lowest note captured: ' + midiToNoteName(roundedMidi).str, 'success');
-              if (stemBeep) stemBeep('coin');
+              if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
             } else if (rangeStep === 2) {
               setRangeHighTemp(roundedMidi);
               setRangeStep(3);
@@ -2620,7 +2620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               });
               if (addToast) addToast('Vocal range found! ' + midiToNoteName(low).str + ' to ' + midiToNoteName(high).str, 'success');
               if (stemCelebrate) stemCelebrate();
-              if (awardStemXP) awardStemXP(20, 'Singing: vocal range discovered');
+              if (awardStemXP) awardStemXP('singing_range', 20, 'Singing: vocal range discovered');
             }
           }
         }, [currentNote, rangeStep]);
@@ -2660,13 +2660,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 bestStreak: Math.max(bestStreak, newStreak)
               });
 
-              if (stemBeep) stemBeep('coin');
+              if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
               if (newCorrect >= 5 && newCorrect - 1 < 5) {
                 if (stemCelebrate) stemCelebrate();
                 if (addToast) addToast('Quest complete: 5 intervals!', 'success');
-                if (awardStemXP) awardStemXP(25, 'Singing: 5 intervals correct');
+                if (awardStemXP) awardStemXP('singing_intervals', 25, 'Singing: 5 intervals correct');
               } else {
-                if (awardStemXP) awardStemXP(5, 'Singing: correct interval');
+                if (awardStemXP) awardStemXP('singing_intervals', 5, 'Singing: correct interval');
               }
             }
           } else {
@@ -3472,8 +3472,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             setWarmupTimer(0);
 
             if (addToast) addToast('Warm-up complete!', 'success');
-            if (stemBeep) stemBeep('coin');
-            if (awardStemXP) awardStemXP(5, 'Singing: warm-up completed');
+            if (stemBeep) { stemBeep(988, 0.06, 0.10); setTimeout(function() { stemBeep(1319, 0.16, 0.10); }, 70); }
+            if (awardStemXP) awardStemXP('singing_warmup', 5, 'Singing: warm-up completed');
           }
 
           function cancelWarmup() {
@@ -4474,7 +4474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 className: 'flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-400 ' +
                   (isActive
                     ? (isDark ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-rose-700 shadow-sm')
-                    : (isDark ? 'text-slate-200 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
+                    : (isDark ? 'text-slate-200 hover:bg-slate-700 hover:text-white' : 'text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });
@@ -4500,7 +4500,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: 'Vibrato Lab',                hint: 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.' },
               intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: 'Interval Singer — ear training', hint: 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.' },
               warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: 'Warm-ups',                  hint: 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.' },
-              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: 'Sight reading',              hint: 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.' }
+              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: 'Sight reading',              hint: 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.' },
+              resoHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '🎙️', title: 'Resonance Lab — discover your vocal tone', hint: 'Two sliders — throat openness and soft palate lift — combine into four tone qualities (rich, bright, warm, nasal). No score, no reveal: experiment, log, and explain what you find.' }
             };
             var meta = TAB_META[activeTab] || TAB_META.pitch;
             return h('div', {
