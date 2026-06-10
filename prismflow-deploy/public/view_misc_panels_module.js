@@ -327,6 +327,10 @@ ${_effectiveText}`;
           setDiffChunks(null);
           const pathLabel = usedFallback ? "via Gemini fallback" : "via text surgery";
           addToast("Edits applied " + pathLabel + ". Accessible HTML updated.", "success");
+          try {
+            window.dispatchEvent(new CustomEvent("alloflow:fidelity-stale"));
+          } catch (_) {
+          }
         } else {
           warnLog("[Diff] Apply failed \u2014 both surgery and Gemini paths could not produce acceptable output. surgeryReason:", surgeryFailReason);
           setPdfFixResult((prev) => prev ? {
@@ -358,6 +362,10 @@ ${_effectiveText}`;
       } : p);
       setDiffChunks(null);
       addToast("Reverted to the state before your last Apply.", "info");
+      try {
+        window.dispatchEvent(new CustomEvent("alloflow:fidelity-stale"));
+      } catch (_) {
+      }
     };
     const _canRevert = !!(pdfFixResult && pdfFixResult._preApplyHtml);
     const _refineSelection = async () => {
@@ -420,6 +428,10 @@ ${_effectiveText}`;
           setDiffChunks(null);
           setDiffSelection(null);
           addToast((t("diff_view.refine_applied") || "AI refine applied to the selection") + " (" + (usedFallback ? "via Gemini" : "via text surgery") + '). Use "Revert last apply" to undo.', "success");
+          try {
+            window.dispatchEvent(new CustomEvent("alloflow:fidelity-stale"));
+          } catch (_) {
+          }
         } else {
           addToast((t("diff_view.refine_failed") || "\u26A0 AI refine not applied \u2014 the rewrite could not be spliced cleanly") + " (" + failReason + "). Selection unchanged.", "warning");
         }

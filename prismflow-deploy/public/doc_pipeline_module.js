@@ -14660,6 +14660,11 @@ tr { page-break-inside: avoid; }
         _summary.reachableLeaves = _reachableLeafCountAtStamp;
         _summary.orphanedLeaves = _orphanedLeafCountAtStamp;
         _summary.uaDeclared = _uaDeclared;
+        // CORRECTNESS OVERWRITE: the summary literal sets pdfUaDeclared from
+        // "any /Metadata stream exists" — true even when the evidence-based
+        // gate WITHHELD the pdfuaid:part claim. The baseline download toast
+        // reads this field, so a stale true = a false conformance claim.
+        _summary.pdfUaDeclared = _uaDeclared;
         _summary.fontsRepaired = _fontsRepaired;
         _summary.fontsUnrepairable = _fontsUnrepairable.slice(0, 12);
       }
@@ -15184,9 +15189,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       <button onclick="document.getElementById('print-banner').remove()" aria-label="Dismiss this banner" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px"><span aria-hidden="true">✕</span></button>
     </div>`;
     printWindow.document.body.insertBefore(printBanner, printWindow.document.body.firstChild);
-    // Add print CSS to hide banner
+    // Add print CSS: hide the banner + LOGICAL TEXT DISTRIBUTION across pages
+    // (user request 2026-06-10). Headings never strand at a page bottom,
+    // figures/tables/list items never split mid-element, and orphan/widow
+    // control keeps at least 3 lines of a paragraph together at page breaks.
     const printStyle = printWindow.document.createElement('style');
-    printStyle.textContent = '@media print { #print-banner { display: none !important; } }';
+    printStyle.textContent = '@media print {'
+      + ' #print-banner { display: none !important; }'
+      + ' h1, h2, h3, h4, h5, h6 { break-after: avoid-page; page-break-after: avoid; break-inside: avoid; page-break-inside: avoid; }'
+      + ' figure, table, img, blockquote, li, tr { break-inside: avoid-page; page-break-inside: avoid; }'
+      + ' p { orphans: 3; widows: 3; }'
+      + ' h1 { break-before: auto; }'
+      + '}';
     printWindow.document.head.appendChild(printStyle);
   };
 
@@ -19053,8 +19067,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
       const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
       const appFontEntry = _fontOptions.find(f => f.id === selectedFont);
-      const exportFontFamily = cfg.useAppFont && appFontEntry ? `'${appFontEntry.label}', ${theme.bodyFont}` : theme.bodyFont;
-      const exportFontImport = cfg.useAppFont && appFontEntry?.googleFont ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');` : '';
+      // Use the entry's REAL CSS family (entry.family carries its own generic
+      // fallback chain). The old `'${label}'` form silently broke every font
+      // whose label isn't its family — 'Gentium Plus' (real family: Gentium
+      // Book Plus), 'Andika (SIL)', 'Default (System)' — and OpenDyslexic
+      // never got an @font-face at all, so the flagship dyslexia font fell
+      // back to the theme font in every export. Label form kept only as a
+      // fallback for stale cached font-library modules without .family.
+      const _appFamily = (cfg.useAppFont && appFontEntry && appFontEntry.id !== 'default')
+        ? (appFontEntry.family || `'${appFontEntry.label}', ${theme.bodyFont}`)
+        : '';
+      const exportFontFamily = _appFamily || theme.bodyFont;
+      // Italic/bold-italic variants (Andika Italic etc.) carry their style in
+      // the entry id — surface it on the export body like the in-app classes do.
+      const exportFontStyleExtras = (cfg.useAppFont && appFontEntry && /italic/.test(appFontEntry.id))
+        ? ' font-style: italic;' + (/bold/.test(appFontEntry.id) ? ' font-weight: 700;' : '')
+        : '';
+      const _odFontFace = "@font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff'); font-weight: normal; } @font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff'); font-weight: bold; }";
+      const exportFontImport = cfg.useAppFont && appFontEntry?.googleFont
+        ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');`
+        : (cfg.useAppFont && appFontEntry && appFontEntry.id === 'opendyslexic' ? _odFontFace : '');
       const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
       const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
       const lessonTopic = topic || t('export.default_lesson_title');
@@ -19216,7 +19248,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
           ${exportFontImport}
-          body { font-family: ${exportFontFamily}; font-size: ${exportFontSize}; line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: #334155; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
+          body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: #334155; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
           .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
