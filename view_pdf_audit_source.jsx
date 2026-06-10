@@ -2209,8 +2209,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </details>
                           {/* Engine consensus (2026-06-10): a second independent
                               rule engine agreeing is stronger evidence than one
-                              engine blended more cleverly. */}
-                          {pdfFixResult.secondEngineAudit ? (
+                              engine blended more cleverly. GUARDED on pdfFixResult:
+                              this breakdown ALSO renders on the audit-only screen
+                              where pdfFixResult is null — an unguarded read here
+                              crashed the whole app on Canvas (error report
+                              2026-06-10, caught by ErrorBoundary). EA runs at
+                              final remediation only, so pre-fix there is nothing
+                              to show. */}
+                          {!pdfFixResult ? null : pdfFixResult.secondEngineAudit ? (
                             <div className="mt-1.5 text-[11px]">
                               {pdfFixResult.secondEngineAudit.failViolations === 0 && axeAudit.totalViolations === 0 ? (
                                 <span className="text-green-700 font-bold">✓✓ {t('pdf_audit.score.engines_agree') || 'Two independent engines agree: 0 confirmed violations (axe-core + IBM Equal Access)'}</span>
