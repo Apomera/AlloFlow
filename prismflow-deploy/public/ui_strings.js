@@ -1508,6 +1508,7 @@
     "tagged_pdf_failed": "Tagged PDF failed: ",
     "building_accessible_docx": "Building accessible Word file…",
     "building_accessible_pptx": "Building accessible PowerPoint…",
+    "builder_edits_preserved": "✋ Kept your manual edits — the preview was not re-rendered. Export or close the builder to save them, then change settings.",
     "builder_edits_synced": "✏️ Builder edits saved into the remediated document — the Tagged PDF / Word / PowerPoint exports now include them.",
     "pptx_ai_theme": "🎨 Asking AI for a topic-matched palette (legibility enforced locally)…",
     "make_accessible_fixing": "✨ Audit done — remediating automatically (no clicks needed)…",
@@ -4231,6 +4232,7 @@
     "image_size_tooltip": "Adjust the size of timeline images"
   },
   "export_preview": {
+    "rerender_confirm": "Re-rendering the preview will replace your manual edits with freshly generated content. Continue and discard the edits? (Cancel keeps them — export or close the builder to save first.)",
     "remediation_banner_title": "Editing the remediated document.",
     "remediation_banner_body": "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."
   },

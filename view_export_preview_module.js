@@ -112,11 +112,11 @@ function ExportPreviewView(props) {
       },
       ref: (el) => {
         if (!el) return;
-        const focusables = el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const focusables = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
         if (focusables.length > 0 && !el.contains(document.activeElement)) focusables[0].focus();
         el.__focusTrap = el.__focusTrap || ((ev) => {
           if (ev.key !== "Tab") return;
-          const fl = el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          const fl = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
           if (fl.length === 0) return;
           const first = fl[0], last = fl[fl.length - 1];
           if (ev.shiftKey) {

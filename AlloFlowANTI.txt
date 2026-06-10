@@ -10095,6 +10095,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // Render the REMEDIATED document in the builder (the old updatePdfPreview
       // call here targeted the audit-preview iframe, which isn't even mounted —
       // the builder showed generated-content history instead).
+      try { _builderOpenerElRef.current = document.activeElement; } catch (_) {}
       setExportPreviewSource('remediation');
       setShowExportPreview(true);
       if (typeof addToast === 'function') addToast(t('toasts.expert_mode_document_builder_opened'), 'info');
@@ -16313,7 +16314,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
     if (_m && typeof _m.handleCopyToClipboard === 'function') return _m.handleCopyToClipboard({ generatedContent, sourceTopic, gradeLevel, addToast, t, warnLog });
   };
-    const openExportPreview = (mode = 'print') => {
+    const _builderOpenerElRef = React.useRef(null);
+  const openExportPreview = (mode = 'print') => {
+    try { _builderOpenerElRef.current = document.activeElement; } catch (_) {}
     setExportPreviewSource('history');
     setExportPreviewMode(mode);
     setShowExportPreview(true);
@@ -16350,6 +16353,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     if (v === false) {
       _syncBuilderEditsToRemediation();
       setExportPreviewSource('history');
+      // Focus restore (WCAG 2.4.3): return focus to whatever opened the
+      // builder — previously focus dropped to <body> on close.
+      setTimeout(() => { try { const el = _builderOpenerElRef.current; if (el && el.focus && document.contains(el)) el.focus(); } catch (_) {} }, 60);
     }
     setShowExportPreview(v);
   };
@@ -16419,6 +16425,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
       html = `<!DOCTYPE html><html><body style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
     }
+    // ── Edit-loss guard (2026-06-11) ── doc.write() below replaces the whole
+    // iframe DOM. If the teacher hand-edited the preview (designMode), a mere
+    // settings change silently wiped their work — the builder's #1 trust
+    // trap. Ask first; if dialogs are unavailable (Canvas sandbox) or the
+    // teacher declines, PRESERVE the edits and explain. (The dirty flag is
+    // set by the 'input' listener installed in the edit-mode init below.)
+    try {
+      if (doc.body && doc.body.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1') {
+        const _canAsk = typeof window !== 'undefined' && typeof window.confirm === 'function';
+        const _proceed = _canAsk
+          ? window.confirm(t('export_preview.rerender_confirm') || 'Re-rendering the preview will replace your manual edits with freshly generated content.\n\nContinue and discard the edits? (Cancel keeps them — export or close the builder to save first.)')
+          : false;
+        if (!_proceed) {
+          addToast && addToast(t('toasts.builder_edits_preserved') || '✋ Kept your manual edits — the preview was not re-rendered. Export or close the builder to save them, then change settings.', 'info');
+          return;
+        }
+      }
+    } catch (_) {}
     doc.open();
     doc.write(html);
     doc.close();
@@ -16427,7 +16451,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       doc.designMode = 'on';
       if (doc.body) doc.body.spellcheck = true;
+      // Dirty flag for the edit-loss guard above: any user edit marks the
+      // body so settings-driven re-renders can't silently wipe hand edits.
+      try { doc.addEventListener('input', function () { try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {} }); } catch (_) {}
       const editStyle = doc.createElement('style');
+      // The id lets export paths strip this editor-only CSS so it never
+      // ships inside a student-facing document.
+      editStyle.id = 'allo-builder-edit-css';
       editStyle.textContent = `
         [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
         img { cursor: move; transition: outline 0.2s; }
@@ -16436,6 +16466,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       `;
       doc.head.appendChild(editStyle);
       doc.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          // WCAG 2.1.2 escape hatch: Escape was dead inside the editing
+          // iframe — a keyboard trap. Move focus back to the builder chrome.
+          try { e.preventDefault(); const _cb = document.querySelector('[aria-label="' + (t('a11y.close_doc_builder') || 'Close document builder') + '"]'); if (_cb && _cb.focus) _cb.focus(); } catch (_) {}
+          return;
+        }
         if (e.ctrlKey || e.metaKey) {
           if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
           else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }

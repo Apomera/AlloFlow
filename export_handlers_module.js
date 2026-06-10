@@ -94,8 +94,30 @@
     })();
     if (iframeDoc && iframeDoc.documentElement && iframeHasRealContent) {
       iframeDoc.designMode = 'off';
-      htmlContent = '<!DOCTYPE html>\n<html' + iframeDoc.documentElement.outerHTML.substring(5);
-      console.log('[Export] ✅ Using edited iframe content (' + htmlContent.length + ' chars)');
+      // Serialize a CLONE with builder/inspector chrome stripped — A11y
+      // Inspector badges, inspector + editor CSS, contenteditable attrs and
+      // the edit-loss dirty flag previously shipped INSIDE student-facing
+      // exports (2026-06-11; the live preview keeps its badges untouched).
+      var _exClone = iframeDoc.documentElement.cloneNode(true);
+      try {
+        var _exKill = _exClone.querySelectorAll('#a11y-inspect-css, #allo-builder-edit-css, .a11y-inspect-badge');
+        for (var _ki = 0; _ki < _exKill.length; _ki++) _exKill[_ki].remove();
+        var _exEd = _exClone.querySelectorAll('[contenteditable]');
+        for (var _ei = 0; _ei < _exEd.length; _ei++) _exEd[_ei].removeAttribute('contenteditable');
+        var _exAll = _exClone.querySelectorAll('*');
+        for (var _ai = 0; _ai < _exAll.length; _ai++) {
+          var _cl = _exAll[_ai].classList;
+          if (!_cl) continue;
+          for (var _ci = _cl.length - 1; _ci >= 0; _ci--) {
+            var _cn = _cl[_ci];
+            if (_cn.indexOf('a11y-inspect') === 0 || _cn.indexOf('a11y-outline') === 0) _cl.remove(_cn);
+          }
+        }
+        var _exBody = _exClone.querySelector('body');
+        if (_exBody) _exBody.removeAttribute('data-allo-user-edited');
+      } catch (_exStripErr) { /* strip is best-effort — never block an export */ }
+      htmlContent = '<!DOCTYPE html>\n<html' + _exClone.outerHTML.substring(5);
+      console.log('[Export] ✅ Using edited iframe content, chrome stripped (' + htmlContent.length + ' chars)');
     } else {
       console.warn('[Export] ⚠️ Iframe empty or missing — falling back to generateFullPackHTML(history)');
       htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
