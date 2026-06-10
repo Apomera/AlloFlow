@@ -64,7 +64,29 @@
     try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(prefs)); } catch (e) {}
   }
 
+  // Patterns the reporter should NOT capture — browser warnings that fire
+  // through the same channels as real errors but aren't actionable. Most
+  // notable: "ResizeObserver loop completed with undelivered notifications"
+  // fires whenever a resize callback synchronously triggers another resize;
+  // the browser aborts after one frame and the warning bubbles up as an
+  // 'error' event. Real apps see it routinely (the StudentAnalytics charts
+  // dispatch one on first paint, for example). Excluding it keeps the user-
+  // facing "⚠ N errors" badge meaningful instead of trivially-true.
+  var IGNORE_MESSAGE_PATTERNS = [
+    /ResizeObserver loop /,    // ResizeObserver loop completed / limit exceeded
+  ];
+
+  function shouldIgnore(message) {
+    if (!message) return false;
+    var s = String(message);
+    for (var i = 0; i < IGNORE_MESSAGE_PATTERNS.length; i++) {
+      if (IGNORE_MESSAGE_PATTERNS[i].test(s)) return true;
+    }
+    return false;
+  }
+
   function record(level, message, stack, source, line, column) {
+    if (shouldIgnore(message)) return;
     var entry = {
       ts: new Date().toISOString(),
       level: level,                                    // 'error' | 'warn'

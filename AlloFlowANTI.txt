@@ -4438,6 +4438,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       console.log('[CDN] Attempting to load ' + name + ' from: ' + url);
       const prevOnError = window.onerror;
       window.onerror = function(msg, src, line, col, err) {
+        // Skip known-benign browser warnings that fire through window.onerror.
+        // ResizeObserver loop messages are NOT real errors — the browser fires
+        // them when a resize callback schedules another resize, then aborts the
+        // loop after one frame. Modern apps see this whenever a dynamic panel
+        // resizes; it's not actionable and pollutes the [CDN-ERROR] log + the
+        // user-facing bug-report card. Pass-through to prevOnError unchanged.
+        if (typeof msg === 'string' && /ResizeObserver loop /.test(msg)) {
+          return prevOnError ? prevOnError(msg, src, line, col, err) : false;
+        }
         console.error('[CDN-ERROR] ' + name + ': ' + msg);
         console.error('[CDN-ERROR] Source: ' + src + ' Line: ' + line + ' Col: ' + col);
         if (err && err.stack) console.error('[CDN-STACK] ' + err.stack);
