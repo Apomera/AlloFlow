@@ -14658,6 +14658,11 @@ tr { page-break-inside: avoid; }
         _summary.reachableLeaves = _reachableLeafCountAtStamp;
         _summary.orphanedLeaves = _orphanedLeafCountAtStamp;
         _summary.uaDeclared = _uaDeclared;
+        // CORRECTNESS OVERWRITE: the summary literal sets pdfUaDeclared from
+        // "any /Metadata stream exists" — true even when the evidence-based
+        // gate WITHHELD the pdfuaid:part claim. The baseline download toast
+        // reads this field, so a stale true = a false conformance claim.
+        _summary.pdfUaDeclared = _uaDeclared;
         _summary.fontsRepaired = _fontsRepaired;
         _summary.fontsUnrepairable = _fontsUnrepairable.slice(0, 12);
       }

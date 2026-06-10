@@ -1598,6 +1598,17 @@ Return ONLY JSON:
                 addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
                 return;
               }
+              const _blRoundTrip = _result && _result.roundTrip || null;
+              if (_blRoundTrip && _blRoundTrip.ok === false) {
+                const _blFails = (_blRoundTrip.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule);
+                const _blMsg = _blFails.length ? _blFails.join("; ") : (_blRoundTrip.warnings || []).join("; ") || "structure may not have survived serialization";
+                addToast("\u26A0 Baseline post-save structure check FAILED: " + _blMsg + ".", "error");
+                const _blProceed = typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm("The baseline tagged PDF FAILED its post-save structure check:\n\n" + _blMsg + "\n\nDownload the unverified file anyway?") : false;
+                if (!_blProceed) {
+                  addToast("Download cancelled \u2014 the baseline tagged PDF did not pass verification.", "info");
+                  return;
+                }
+              }
               const blob = new Blob([taggedBytes], { type: "application/pdf" });
               safeDownloadBlob(blob, baseTitle + "-tagged-baseline.pdf");
               if (summary) {
