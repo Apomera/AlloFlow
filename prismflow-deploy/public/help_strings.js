@@ -965,5 +965,7 @@
     'doc_builder_font_size_slider': "Base text size for the document and its exports (12-24px). Larger sizes help younger students and low-vision readers; the layout reflows to fit.",
     'doc_builder_wcag_audit_btn': "Checks this document against accessibility guidelines (WCAG 2.1 AA) using an AI review plus the axe-core rule engine. The result is an honest estimate with named issues, not an official certification.",
     'doc_builder_writing_check_btn': "Grammar check that runs entirely on your device — no text leaves the browser. English only; the first run downloads the checker (about 10 MB, one time). Suggestions only: nothing changes unless you Apply it. Spelling is already underlined as you type by your browser.",
-    'doc_builder_close_btn': "Closes the Document Builder. If you opened it from a remediated document (Expert mode), your edits are saved back into that document automatically on close."
+    'doc_builder_close_btn': "Closes the Document Builder. If you opened it from a remediated document (Expert mode), your edits are saved back into that document automatically on close.",
+    'pdf_audit_results_whatnow': "Your first-action guide after remediation: grab the recommended download for your file type, optionally open Compare to see before/after, and treat everything else on the screen as optional polish. The button jumps you straight to Downloads.",
+    'pdf_audit_dashboard_bar': "The results navigation bar — it stays pinned while you scroll. Shows your before/after score and how many issues remain; the chips jump to each section (Verification, Recovery, Downloads, the tag inspector, and more)."
 }

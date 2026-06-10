@@ -3,9 +3,9 @@
 ====================================================
 
 Files scanned: 360
-Defined help keys (help_strings.js): 860
-Referenced help keys (data-help-key attrs): 838
-  - With definition: 838
+Defined help keys (help_strings.js): 862
+Referenced help keys (data-help-key attrs): 840
+  - With definition: 840
   - MISSING definition: 0
 Dead entries (defined but never referenced): 22
 

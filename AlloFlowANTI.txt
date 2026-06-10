@@ -6971,6 +6971,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [runTour, setRunTour] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [tourRect, setTourRect] = useState(null);
+  // Custom tour support (2026-06-12): the pipeline/builder tours reuse the
+  // SAME TourOverlay engine with their own step lists. null = the main app
+  // tour. Steps may target by `id` (getElementById, classic) or by
+  // `helpKey` (data-help-key attribute — the pipeline modal has 62), and may
+  // carry an `onEnter` callback for per-step UI side effects.
+  const [customTourSteps, setCustomTourSteps] = useState(null);
+  useEffect(() => { if (!runTour) setCustomTourSteps(null); }, [runTour]);
+  const _resolveTourEl = (step) => {
+    if (!step) return null;
+    if (step.id) { const el = document.getElementById(step.id); if (el) return el; }
+    if (step.helpKey) { try { return document.querySelector('[data-help-key="' + step.helpKey + '"]'); } catch (_) {} }
+    return null;
+  };
+  // The pipeline guided tours (2026-06-12). Two short tours because the two
+  // screens can't coexist: 'triage' walks the choices before remediation,
+  // 'results' walks what came back. Steps target the modal's existing
+  // data-help-key anchors; missing anchors auto-skip (resolver returns null).
+  const startPipelineTour = (kind) => {
+    const _steps = kind === 'results' ? [
+      { helpKey: 'pdf_audit_results_whatnow', title: t('ptour.whatnow_title') || 'Start here', text: t('ptour.whatnow_text') || 'This strip is your map: grab the recommended download, optionally compare before/after, and treat everything else on this screen as optional polish.' },
+      { helpKey: 'pdf_audit_dashboard_bar', title: t('ptour.dashboard_title') || 'Your navigation bar', text: t('ptour.dashboard_text') || 'This bar sticks to the top while you scroll. The score shows before → after; the chips jump straight to any section — Downloads is the one you\'ll use most.' },
+      { helpKey: 'pdf_audit_results_score_badge', title: t('ptour.score_title') || 'The score, honestly', text: t('ptour.score_text') || 'AlloFlow\'s own estimate from several AI reviews plus an automated rule scan. It\'s honest but it\'s not a certification — the report tells you how to verify externally.' },
+      { helpKey: 'pdf_audit_results_tab_original_btn', title: t('ptour.tabs_title') || 'Before and after', text: t('ptour.tabs_text') || 'Flip to the Original tab anytime to see what the document looked like before the fixes — useful when someone asks what actually changed.' },
+      { helpKey: 'pdf_audit_view_report_menu_btn', title: t('ptour.report_title') || 'Reports for grown-ups', text: t('ptour.report_text') || 'Printable accessibility reports — for your records, an IEP file, or your district accessibility coordinator. There\'s also a tamper-evident signed version.' },
+      { helpKey: 'pdf_audit_alt_formats_summary', title: t('ptour.altformats_title') || 'More ways to share', text: t('ptour.altformats_text') || 'The same accessible content as braille-ready text, ePub for e-readers, plain text, and Markdown. That\'s the tour — the ? button gives per-button help anywhere.' },
+    ] : [
+      { helpKey: 'pdf_audit_view_make_accessible_btn', title: t('ptour.hero_title') || 'The one-click path', text: t('ptour.hero_text') || 'Make Accessible runs everything automatically: audit → fix → re-check until it hits the target → downloads ready. For most documents, this is all you need.' },
+      { helpKey: 'pdf_audit_view_start_btn', title: t('ptour.audit_title') || 'The careful path', text: t('ptour.audit_text') || 'Prefer to look before fixing? Run Audit scores the document and shows every issue first — you choose Fix & Verify when you\'re ready.' },
+      { helpKey: 'pdf_audit_view_settings_panel', title: t('ptour.settings_title') || 'Settings (optional)', text: t('ptour.settings_text') || 'The defaults are sensible. If you ever need to: more audit passes = steadier score, the target score decides when the automatic loop stops.' },
+      { helpKey: 'pdf_audit_view_branding_panel', title: t('ptour.branding_title') || 'Make it look right', text: t('ptour.branding_text') || 'The accessible copy can match your original\'s colors, use a clean preset, or pick up your school\'s branding from a letterhead — every option is contrast-checked for readability.' },
+      { helpKey: 'pdf_audit_view_save_project_btn', title: t('ptour.save_title') || 'You can always come back', text: t('ptour.save_text') || 'Save Project keeps the whole session as one file — reload it later and everything returns. A backup also saves automatically after each remediation. That\'s the tour — hit Make Accessible when ready!' },
+    ];
+    setCustomTourSteps(_steps);
+    setTourStep(0);
+    setRunTour(true);
+  };
   const [isSpotlightMode, setIsSpotlightMode] = useState(false);
   const [spotlightMessage, setSpotlightMessage] = useState(null);
   const [botSpotlightPos, setBotSpotlightPos] = useState(null);
@@ -7008,10 +7044,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { id: 'tour-history-panel', text: t('tour.history_text'), title: t('tour.history_title') },
   ];
   useEffect(() => {
-    if (runTour && tourSteps[tourStep]) {
+    const _steps = customTourSteps || tourSteps;
+    if (runTour && _steps[tourStep]) {
         const _tourScrollTimer = setTimeout(() => {
-            const stepId = tourSteps[tourStep].id;
-            const el = document.getElementById(stepId);
+            const stepId = _steps[tourStep].id;
+            const el = _resolveTourEl(_steps[tourStep]);
             if (el) {
                 if (stepId === 'ui-tool-simplified') {
                      window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -7022,7 +7059,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }, 300);
         return () => clearTimeout(_tourScrollTimer);
     }
-  }, [runTour, tourStep]);
+  }, [runTour, tourStep, customTourSteps]);
   useEffect(() => {
     if (!isHelpMode) return;
     const handleHelpClick = (e) => {
@@ -7251,9 +7288,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const updateTourMetrics = useCallback(() => {
       if (!runTour) return;
       if (spotlightMessage) return;
-      const step = tourSteps[tourStep];
+      const step = (customTourSteps || tourSteps)[tourStep];
+      if (!step) return;
+      try { if (step.onEnter) step.onEnter(); } catch (_) {}
       setTimeout(() => {
-          const el = document.getElementById(step.id);
+          const el = _resolveTourEl(step);
           if (el) {
               const tallPanels = ['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary', 'tour-tool-wordsounds'];
               const scrollBlock = tallPanels.includes(step.id) ? 'start' : 'center';
@@ -7291,7 +7330,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               }
           }
       }, 600);
-  }, [runTour, tourStep, spotlightMessage]);
+  }, [runTour, tourStep, spotlightMessage, customTourSteps]);
   const ensureToolVisible = (toolId) => {
       if (!expandedTools.includes(toolId)) {
           setExpandedTools(prev => [...prev, toolId]);
@@ -7425,7 +7464,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
   }, [isSpotlightMode, runTour]);
   const handleNextTourStep = () => {
-      if (tourStep < tourSteps.length - 1) {
+      if (tourStep < (customTourSteps || tourSteps).length - 1) {
           setTourStep(prev => prev + 1);
       } else {
           setRunTour(false);
@@ -7465,19 +7504,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       if (!isSpotlightMode) spotlightOpenTimeRef.current = Date.now();
       setIsSpotlightMode(true);
-      const step = tourSteps[tourStep];
-      if (step.id === 'tour-history-panel') {
-          if (isTeacherMode) setActiveSidebarTab('history');
-      } else {
-          if (isTeacherMode) setActiveSidebarTab('create');
-      }
-      if (DOM_TO_TOOL_ID_MAP[step.id]) {
-          setExpandedTools([DOM_TO_TOOL_ID_MAP[step.id]]);
+      const step = (customTourSteps || tourSteps)[tourStep];
+      if (!step) return;
+      // The sidebar/expand side effects belong to the MAIN app tour only —
+      // a custom (pipeline/builder) tour runs inside a modal where they'd
+      // fight the layout. Custom steps use their own onEnter instead.
+      if (!customTourSteps) {
+        if (step.id === 'tour-history-panel') {
+            if (isTeacherMode) setActiveSidebarTab('history');
+        } else {
+            if (isTeacherMode) setActiveSidebarTab('create');
+        }
+        if (DOM_TO_TOOL_ID_MAP[step.id]) {
+            setExpandedTools([DOM_TO_TOOL_ID_MAP[step.id]]);
+        }
       }
       setTimeout(() => {
           updateTourMetrics();
       }, 100);
-  }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage]);
+  }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage, customTourSteps]);
   const addToast = (message, type = 'info') => {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev, { id, message, type }]);
@@ -26032,7 +26077,7 @@ ${_toolList}
       {(runTour && tourRect) && window.AlloModules && window.AlloModules.TourOverlay && React.createElement(window.AlloModules.TourOverlay, {
           botSpotlightPos, handleNextTourStep, handlePrevTourStep, handleSetRunTourToFalse, isSpotlightMode,
           runTour, setIsSpotlightMode, setRunTour, setSpotlightMessage, spotlightMessage,
-          t, tourRect, tourStep, tourSteps
+          t, tourRect, tourStep, tourSteps: customTourSteps || tourSteps
       })}
       {isSyntaxGame && generatedContent && (
         <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
@@ -26603,7 +26648,7 @@ ${_toolList}
           setPdfFixLoading, setPdfFixMode, setPdfFixResult, setPdfFixStep, setPdfMultiSession,
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
           setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64, setPendingPdfFile,
-          setShowCloseConfirm, showCloseConfirm, startNewPdfAudit
+          setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour
       })}
       <ErrorBoundary fallbackMessage="File transcription encountered an error. Please try again.">
       <LargeFileTranscriptionModal

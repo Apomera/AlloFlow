@@ -613,7 +613,7 @@ function PdfAuditView(props) {
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
     setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64,
-    setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit
+    setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour
   } = props;
 
   // WCAG 2.1.2 / 2.4.3: keep Tab inside the audit dialog while it is open.
@@ -1364,7 +1364,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
                   </button>
-                  <p className="text-[11px] text-slate-600 mt-2 text-center">{t('pdf_audit.one_click.desc') || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.'}</p>
+                  <p className="text-[11px] text-slate-600 mt-2 text-center">{t('pdf_audit.one_click.desc') || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.'}
+                    {typeof startPipelineTour === 'function' && (
+                      <button onClick={() => startPipelineTour('triage')} className="ml-2 text-indigo-600 underline font-bold hover:text-indigo-800" data-help-ignore="true">✨ {t('pdf_audit.tour.triage_cta') || '60-second tour'}</button>
+                    )}
+                  </p>
                 </div>
 
                 <details data-help-key="pdf_audit_view_settings_panel" className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
@@ -4055,7 +4059,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
                         const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
                         return (
-                          <div className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
+                          <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
                             <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Accessibility score: before → after'}>
                               {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span>
                             </span>
@@ -4072,6 +4076,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <button className={_chip} onClick={() => _jump('allo-sec-taginspect')}>🔍 {t('pdf_audit.dashboard.tags') || 'Tag inspector'}</button>
                             <button className={_chip} onClick={() => _jump('allo-sec-workbench')}>🛠 {t('pdf_audit.dashboard.workbench') || 'Workbench'}</button>
                             <button className={_chip} onClick={() => _jump('allo-sec-changed')}>📋 {t('pdf_audit.dashboard.changed') || 'What changed'}</button>
+                            {typeof startPipelineTour === 'function' && (
+                              <button className={_chip} onClick={() => startPipelineTour('results')} data-help-ignore="true" title={t('pdf_audit.tour.results_title') || 'A 60-second guided walk through this screen — what to download, what the score means, where the reports live.'}>✨ {t('pdf_audit.tour.results_cta') || 'Tour'}</button>
+                            )}
                           </div>
                         );
                       })()}
@@ -4091,7 +4098,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       {/* "What now?" strip (2026-06-12): 308 elements below — give
                           the first action explicitly. Additions-only. */}
-                      <div className="bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap" role="note">
+                      <div data-help-key="pdf_audit_results_whatnow" className="bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap" role="note">
                         <span className="font-black text-emerald-800">{t('pdf_audit.whatnow.lead') || 'What now?'}</span>
                         <span>{_inputIsPdf
                           ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
