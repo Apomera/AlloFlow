@@ -1268,7 +1268,8 @@ function TourOverlay(props) {
     t,
     tourRect,
     tourStep,
-    tourSteps
+    tourSteps,
+    compactTour = false
   } = props;
   if (!(runTour && tourRect)) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && botSpotlightPos && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
@@ -1325,7 +1326,14 @@ function TourOverlay(props) {
   } }), /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
+      className: compactTour ? (
+        // Compact placement for modal-context tours (2026-06-10,
+        // maintainer feedback): the full-height 500px drawer covered
+        // the pipeline modal it was narrating. A centered horizontal
+        // strip docks on whichever edge the TARGET is NOT — target in
+        // the lower half → card on top, and vice versa.
+        `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 z-[11000] border-4 border-amber-300 rounded-3xl ${tourRect && tourRect.top + tourRect.height / 2 > window.innerHeight / 2 ? "top-3 slide-in-from-top" : "bottom-3 slide-in-from-bottom"}`
+      ) : `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
     },
     spotlightMessage ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-yellow-500 fill-current" }), " ", spotlightMessage.title || t("tour.spotlight_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 mt-2" }, (spotlightMessage.text || spotlightMessage || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();

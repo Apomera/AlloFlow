@@ -1631,12 +1631,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   const seriousCount = ((pdfAuditResult.serious || pdfAuditResult.major || []).length);
                   const minorCount = ((pdfAuditResult.minor || []).length);
                   const moderateCount = ((pdfAuditResult.moderate || []).length);
-                  const baseSec = 30;
-                  const perPage = isScanned ? 28 : 12;
-                  const imgAdd = hasImg ? 15 : 0;
-                  const tblAdd = hasTbl ? 10 : 0;
-                  const estLow = Math.round((baseSec + pc * perPage + imgAdd + tblAdd) * 0.7);
-                  const estHigh = Math.round((baseSec + pc * perPage + imgAdd + tblAdd) * 1.3);
+                  // Recalibrated 2026-06-10 from maintainer's real-world runs:
+                  // the old formula (30 + 12s/page) underestimated by ~10× —
+                  // multi-pass AI remediation + retries + quota throttling
+                  // dominate, not extraction. Wide honest band over a false
+                  // precise one.
+                  const baseSec = 120;
+                  const perPage = isScanned ? 220 : 100;
+                  const imgAdd = hasImg ? 90 : 0;
+                  const tblAdd = hasTbl ? 60 : 0;
+                  const estLow = Math.round((baseSec + pc * perPage + imgAdd + tblAdd) * 0.6);
+                  const estHigh = Math.round((baseSec + pc * perPage + imgAdd + tblAdd) * 1.6);
                   const fmt = (sec) => sec < 90 ? `${sec}s` : `${Math.round(sec / 60 * 10) / 10} min`;
                   return (
                     <div className="mt-2 bg-gradient-to-br from-slate-50 to-indigo-50 border border-indigo-200 rounded-xl p-3 text-xs">
@@ -1674,6 +1679,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="flex items-center gap-2 flex-wrap text-[11px] mb-2.5">
                         <span className="text-slate-600 font-bold">{t('pdf_audit.triage.estimated_time') || 'Estimated remediation time:'}</span>
                         <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded font-black">{fmt(estLow)}–{fmt(estHigh)}</span>
+                        <span className="text-slate-500 text-[10px]">{t('pdf_audit.triage.estimate_caveat') || '(hands-free, multi-pass — varies with AI service load; safe to leave running)'}</span>
                         {isScanned && <span className="text-amber-700 text-[10px]">↑ scanned PDFs take longer (OCR required)</span>}
                       </div>
                       <div className="pt-2 border-t border-indigo-200">
@@ -1782,10 +1788,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             }
                           }}
                           className="px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-[11px] font-bold hover:bg-slate-100 hover:border-slate-400 transition-colors flex items-center gap-1.5"
-                          title={t('pdf_audit.quick_downloads.tagged_pdf_title') || 'Download a Tagged PDF based on the original. For richer tagging — extracted headings, properly scoped tables, alt text — run Fix & Verify first and download the tagged version after.'}
+                          title={t('pdf_audit.quick_downloads.tagged_pdf_title') || 'Genuinely tagged (real structure tree, verified after saving) — but built from the document’s own text layer with no AI cleanup: headings are guessed from font sizes, images get no descriptions, and reading order follows the original. Run Make Accessible for the full treatment.'}
                         >
-                          📄 Tagged PDF (baseline)
+                          📄 {t('pdf_audit.quick_downloads.tagged_pdf_label') || 'Tagged PDF (quick — structure only, no AI cleanup)'}
                         </button>
+                        {/* Honest caption (2026-06-10, maintainer concern: "is the
+                            baseline truly tagged?"). It IS — real StructTreeRoot,
+                            round-trip-verified, declaration evidence-gated — but a
+                            teacher can't know what "baseline" means. Say it. */}
+                        <p className="text-[10px] text-slate-500 mt-1">{t('pdf_audit.quick_downloads.tagged_pdf_caption') || 'Real tags from the original text layer — screen-reader navigable, but headings are font-size guesses and images get no descriptions. The full treatment (AI cleanup + image descriptions + verified structure) comes from Make Accessible above.'}</p>
                       </div>
                       )}
                     </div>

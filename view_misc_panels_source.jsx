@@ -1595,7 +1595,8 @@ function TourOverlay(props) {
     botSpotlightPos, handleNextTourStep, handlePrevTourStep, handleSetRunTourToFalse,
     isSpotlightMode, runTour, setIsSpotlightMode, setRunTour,
     setSpotlightMessage, spotlightMessage, t, tourRect,
-    tourStep, tourSteps
+    tourStep, tourSteps,
+    compactTour = false
   } = props;
   if (!(runTour && tourRect)) return null;
   return (
@@ -1669,11 +1670,24 @@ function TourOverlay(props) {
                 }}></div>
             )}
             <div
-                className={`fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${
-                    (tourRect && tourRect.left > window.innerWidth / 2)
-                        ? 'left-0 border-r-4 rounded-r-3xl slide-in-from-left'
-                        : 'right-0 border-l-4 rounded-l-3xl slide-in-from-right'
-                }`}
+                className={compactTour ? (
+                    // Compact placement for modal-context tours (2026-06-10,
+                    // maintainer feedback): the full-height 500px drawer covered
+                    // the pipeline modal it was narrating. A centered horizontal
+                    // strip docks on whichever edge the TARGET is NOT — target in
+                    // the lower half → card on top, and vice versa.
+                    `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 z-[11000] border-4 border-amber-300 rounded-3xl ${
+                        (tourRect && (tourRect.top + tourRect.height / 2) > window.innerHeight / 2)
+                            ? 'top-3 slide-in-from-top'
+                            : 'bottom-3 slide-in-from-bottom'
+                    }`
+                ) : (
+                    `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${
+                        (tourRect && tourRect.left > window.innerWidth / 2)
+                            ? 'left-0 border-r-4 rounded-r-3xl slide-in-from-left'
+                            : 'right-0 border-l-4 rounded-l-3xl slide-in-from-right'
+                    }`
+                )}
             >
                 {spotlightMessage ? (
                     <div>
