@@ -879,7 +879,8 @@ const d = labToolData.rocks || {};
 
               const lavaGrad = ctx.createLinearGradient(W * 0.17, H * 0.1, W * 0.17, H * 0.42);
 
-              lavaGrad.addColorStop(0, '#fbbf24');
+              lavaGrad.addColorStop(0, '#fef3c7');
+              lavaGrad.addColorStop(0.15, '#fbbf24');
 
               lavaGrad.addColorStop(0.5, '#f97316');
 
@@ -1465,7 +1466,8 @@ const d = labToolData.rocks || {};
 
               const grad = ctx.createRadialGradient(W * 0.4, H * 0.4, 0, W * 0.5, H * 0.5, W * 0.6);
 
-              grad.addColorStop(0, '#1a1a2e');
+              grad.addColorStop(0, '#2b2b52');
+              grad.addColorStop(0.3, '#1a1a2e');
 
               grad.addColorStop(1, '#0a0a0a');
 
@@ -4013,7 +4015,7 @@ const d = labToolData.rockCycle || {};
 
               var craterGlow = ctx.createRadialGradient(volX, volTopY + 2 * dpr, 2 * dpr, volX, volTopY + 2 * dpr, 10 * dpr);
 
-              craterGlow.addColorStop(0, 'rgba(255,100,0,0.6)'); craterGlow.addColorStop(1, 'rgba(255,50,0,0)');
+              craterGlow.addColorStop(0, 'rgba(255,100,0,' + (0.5 + Math.sin(tick * 0.04) * 0.15).toFixed(3) + ')'); craterGlow.addColorStop(1, 'rgba(255,50,0,0)');
 
               ctx.fillStyle = craterGlow;
 

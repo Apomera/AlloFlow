@@ -3525,7 +3525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             // Pot SVG
             h('svg', { width: 110, height: 110, viewBox: '0 0 110 110', 'aria-hidden': 'true', style: { flexShrink: 0 } },
               // Steam (when boiling+)
-              phase === 'boiling' || phase === 'pasta-in' || phase === 'pasta-done' ? h('g', null,
+              phase === 'boiling' || phase === 'pasta-in' || phase === 'pasta-done' ? h('g', { style: { filter: 'blur(0.7px)' } },
                 h('path', { d: 'M 35 30 Q 32 18 42 8', stroke: 'rgba(220,220,230,0.7)', strokeWidth: 2, fill: 'none' }),
                 h('path', { d: 'M 55 28 Q 60 15 50 5', stroke: 'rgba(220,220,230,0.7)', strokeWidth: 2, fill: 'none' }),
                 h('path', { d: 'M 75 30 Q 72 18 82 8', stroke: 'rgba(220,220,230,0.7)', strokeWidth: 2, fill: 'none' })
@@ -3552,7 +3552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('rect', { x: 16, y: 50, width: 10, height: 4, fill: '#1c1410', rx: 1 }),
               h('rect', { x: 84, y: 50, width: 10, height: 4, fill: '#1c1410', rx: 1 }),
               // Heat indicator under pot
-              phase !== 'cold' && phase !== 'drained' ? h('circle', { cx: 55, cy: 100, r: 25, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.5, strokeDasharray: '3 4' }) : null
+              phase !== 'cold' && phase !== 'drained' ? h('circle', { cx: 55, cy: 100, r: 25, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.5, strokeDasharray: '3 4', style: { filter: 'drop-shadow(0 0 3px rgba(220,38,38,0.7))' } }) : null
             ),
             // Info + controls
             h('div', { style: { flex: 1, minWidth: 220 } },
@@ -3641,7 +3641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('ellipse', { cx: 175, cy: 96, rx: 11, ry: 4, fill: eggsColor, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 })
               ) : null,
               // Steam wisps if very hot
-              panTemp > 320 && activeTime > 15 ? h('g', null,
+              panTemp > 320 && activeTime > 15 ? h('g', { style: { filter: 'blur(0.7px)' } },
                 h('path', { d: 'M 110 78 Q 113 70 110 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
                 h('path', { d: 'M 140 75 Q 145 65 138 55', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
                 h('path', { d: 'M 170 78 Q 173 70 170 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' })
@@ -3656,7 +3656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             // Pan handle
             h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
             // Burner under pan
-            h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+            h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6', style: panTemp >= 220 ? { filter: 'drop-shadow(0 0 3px #fb923c)' } : undefined })
           ));
       }
 
@@ -3692,7 +3692,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 32 }) },
             h('div', { style: { fontSize: 14, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
               compResult ? 'Final competition score' : 'Your score'),
-            h('div', { style: { fontSize: 96, fontWeight: 900, color: gradeColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, displayScore),
+            h('div', { style: { fontSize: 96, fontWeight: 900, color: gradeColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, textShadow: '0 0 28px ' + gradeColor + '66' } }, displayScore),
             compResult ? h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, fontFamily: 'ui-monospace, Menlo, monospace' } },
               'base ' + compResult.baseScore + (compResult.bonusTotal > 0 ? ' + ' + compResult.bonusTotal + ' bonus' : '') +
               (compResult.penaltyTotal < 0 ? ' ' + compResult.penaltyTotal + ' penalty' : '')) : null,

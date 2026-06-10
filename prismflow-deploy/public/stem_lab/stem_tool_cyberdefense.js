@@ -2490,7 +2490,7 @@
               el('button', { onClick: function() { ctx.setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
               el('div', { style: { fontSize: 28, filter: 'drop-shadow(0 0 8px rgba(244,63,94,0.6))' } }, '\uD83D\uDEE1\uFE0F'),
               el('div', null,
-                el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Cyber Defense Lab'),
+                el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 8px rgba(168,85,247,0.35))' } }, 'Cyber Defense Lab'),
                 el('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Digital Citizenship \u2022 Cybersecurity Fundamentals')
               ),
               el('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 } },
@@ -2499,7 +2499,7 @@
                   return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null }); },
                     style: { padding: '4px 10px', borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
                 }),
-                el('div', { style: { marginLeft: 12, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
+                el('div', { style: { marginLeft: 12, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b', boxShadow: '0 0 14px rgba(245,158,11,0.4)' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
               )
             ),
 
@@ -2558,7 +2558,7 @@
                   ),
                   phishMode === 'triage' && !phishAnswer && triageActive && el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                     el('div', { style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
-                      el('div', { style: { width: (triageTimeLeft / 15 * 100) + '%', height: '100%', borderRadius: 3, background: triageTimeLeft > 10 ? '#22c55e' : triageTimeLeft > 5 ? '#f59e0b' : '#ef4444', transition: 'width 1s linear, background 0.5s' } })
+                      el('div', { style: { width: (triageTimeLeft / 15 * 100) + '%', height: '100%', borderRadius: 3, background: triageTimeLeft > 10 ? '#22c55e' : triageTimeLeft > 5 ? '#f59e0b' : '#ef4444', boxShadow: '0 0 10px ' + (triageTimeLeft > 10 ? 'rgba(34,197,94,0.5)' : triageTimeLeft > 5 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.6)'), transition: 'width 1s linear, background 0.5s, box-shadow 0.5s' } })
                     ),
                     el('span', { style: { color: triageTimeLeft > 5 ? '#94a3b8' : '#ef4444', fontSize: 12, fontWeight: 900, fontFamily: 'monospace', minWidth: 24, textAlign: 'right' } }, triageTimeLeft + 's')
                   )

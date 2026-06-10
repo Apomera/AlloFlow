@@ -1832,7 +1832,8 @@ return React.createElement("div", {
           // Meniscus line
           React.createElement("div", {
             style: { position: 'absolute', top: liquidH + 'px', left: '2px', right: '2px', height: '3px',
-              background: 'rgba(56,189,248,0.8)', borderRadius: '0 0 50% 50%', transition: 'top 0.3s ease' }
+              background: 'rgba(56,189,248,0.8)', borderRadius: '0 0 50% 50%', transition: 'top 0.3s ease',
+              boxShadow: '0 0 4px rgba(56,189,248,0.6)' }
           }),
           // Glass shine
           React.createElement("div", {
@@ -1893,8 +1894,8 @@ return React.createElement("div", {
           // Flask liquid fill with gradient
           React.createElement("defs", null,
             React.createElement("linearGradient", { id: "flaskLiquid", x1: "0", y1: "0", x2: "0", y2: "1" },
-              React.createElement("stop", { offset: "0%", stopColor: currentColor, stopOpacity: "0.5" }),
-              React.createElement("stop", { offset: "100%", stopColor: currentColor, stopOpacity: "0.85" })
+              React.createElement("stop", { offset: "0%", stopColor: currentColor, stopOpacity: "0.5", style: { transition: 'stop-color 0.5s ease' } }),
+              React.createElement("stop", { offset: "100%", stopColor: currentColor, stopOpacity: "0.85", style: { transition: 'stop-color 0.5s ease' } })
             )
           ),
           React.createElement("path", {

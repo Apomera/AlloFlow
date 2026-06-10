@@ -777,7 +777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         // Water surface
         children.push(h('path', { key: 'wave',
           d: 'M0,' + (H * 0.55) + ' Q' + (W * 0.25) + ',' + (H * 0.5) + ' ' + (W * 0.5) + ',' + (H * 0.55) + ' T' + W + ',' + (H * 0.55),
-          stroke: '#0284c7', strokeWidth: 1, fill: 'none', opacity: 0.6 }));
+          stroke: '#0284c7', strokeWidth: 1, fill: 'none', opacity: 0.6, style: { filter: 'drop-shadow(0 0 2px rgba(56,189,248,0.9))' } }));
         children.push(h('rect', { key: 'water', x: 0, y: H * 0.55, width: W, height: H * 0.45, fill: '#0c4a6e', opacity: 0.18 }));
         // Body parts
         (opts.body || []).forEach(function(b, bi) {
@@ -792,7 +792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           if (a.label) children.push(h('text', { key: 'al' + ai, x: (a.x1 + a.x2) / 2 + (a.labelDx || 4), y: (a.y1 + a.y2) / 2 + (a.labelDy || -3), fontSize: 7, fill: a.color || '#fbbf24', fontFamily: 'system-ui, sans-serif' }, a.label));
         });
         return h('div', { style: { textAlign: 'center' } },
-          h('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, style: { background: '#0a1d2e', borderRadius: 6, border: '1px solid ' + T.border } },
+          h('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, style: { background: 'linear-gradient(180deg, #10283c 0%, #0a1d2e 55%, #06141f 100%)', borderRadius: 6, border: '1px solid ' + T.border } },
             h('defs', null,
               h('marker', { id: 'wsArrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' },
                 h('path', { d: 'M0,0 L0,6 L6,3 z', fill: '#fbbf24' }))

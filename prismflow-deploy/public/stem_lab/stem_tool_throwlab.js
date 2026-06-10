@@ -3740,15 +3740,21 @@ window.StemLab = window.StemLab || {
             var pj = worldToCanvas(sj.z, sampleB(sj));
             if (j === 0) gfx.moveTo(pj[0], pj[1]); else gfx.lineTo(pj[0], pj[1]);
           }
+          gfx.shadowColor = trajColor;
+          gfx.shadowBlur = 6;
           gfx.stroke();
+          gfx.shadowBlur = 0;
           // Ball at the leading edge of the trajectory
           if (renderUpTo > 0) {
             var ballSample = lr.samples[Math.min(renderUpTo - 1, lr.samples.length - 1)];
             var bp = worldToCanvas(ballSample.z, sampleB(ballSample));
+            gfx.shadowColor = trajColor;
+            gfx.shadowBlur = 10;
             gfx.fillStyle = '#fafafa';
             gfx.beginPath();
             gfx.arc(bp[0], bp[1], 5, 0, Math.PI * 2);
             gfx.fill();
+            gfx.shadowBlur = 0;
             gfx.strokeStyle = '#dc2626';
             gfx.lineWidth = 1;
             gfx.stroke();

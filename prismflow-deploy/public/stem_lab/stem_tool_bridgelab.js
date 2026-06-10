@@ -723,7 +723,8 @@
             var ariaLabel = forceKn != null ? (forceKn > 0 ? 'Tension ' : 'Compression ') + Math.abs(forceKn).toFixed(0) + ' kN' : '';
             return h('line', { key: kindForStress + '_' + idx,
               x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y),
-              stroke: stroke, strokeWidth: sw, strokeLinecap: 'round'
+              stroke: stroke, strokeWidth: sw, strokeLinecap: 'round',
+              style: useExact && ratio >= 0.999 ? { filter: 'drop-shadow(0 0 4px ' + stroke + ')' } : undefined
             },
               ariaLabel ? h('title', null, ariaLabel) : null
             );
@@ -1457,7 +1458,7 @@
                   // Original beam (light gray ghost)
                   h('rect', { x: tx(0), y: baseY - 4, width: plotW, height: 8, fill: 'none', stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '2 2' }),
                   // Deflected beam
-                  h('polyline', { points: deflPts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 5, strokeLinecap: 'round' }),
+                  h('polyline', { points: deflPts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 5, strokeLinecap: 'round', style: { filter: 'drop-shadow(0 0 5px rgba(251,191,36,0.45))' } }),
                   // Load arrow at load point
                   (function() {
                     var lx = tx(p * L);
@@ -2538,7 +2539,7 @@
                   h('line', { x1: padL, y1: yOf(enduranceLimit), x2: padL + plotW, y2: yOf(enduranceLimit), stroke: '#86efac', strokeWidth: 1, strokeDasharray: '3 3' }),
                   h('text', { x: padL + plotW - 8, y: yOf(enduranceLimit) - 3, textAnchor: 'end', fill: '#86efac', fontSize: 10 }, 'endurance limit (~' + enduranceLimit + ' MPa)'),
                   // Operating point
-                  h('circle', { cx: opX, cy: opY, r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 1.5 }),
+                  h('circle', { cx: opX, cy: opY, r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 1.5, style: { filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.7))' } }),
                   h('text', { x: opX + 10, y: opY + 4, fill: '#fca5a5', fontSize: 11, fontWeight: 700 }, 'operating'),
                   // Axis labels
                   h('text', { x: padL + plotW / 2, y: svgH - 8, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, 'Cycles to failure (log scale)'),

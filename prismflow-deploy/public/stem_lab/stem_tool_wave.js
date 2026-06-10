@@ -942,6 +942,10 @@ const d = labToolData.wave;
 
                   ctx.strokeStyle = '#a78bfa';
 
+                  ctx.shadowColor = '#a78bfa';
+
+                  ctx.shadowBlur = 6;
+
                   ctx.setLineDash([6, 4]);
 
                   ctx.beginPath();
@@ -970,7 +974,7 @@ const d = labToolData.wave;
 
                   ctx.stroke();
 
-                  ctx.setLineDash([]);
+                  ctx.setLineDash([]); ctx.shadowBlur = 0;
 
                   // Interference type label
 
@@ -1193,6 +1197,8 @@ const d = labToolData.wave;
                 // Time-domain waveform (top half)
                 ctx.strokeStyle = '#60a5fa';
                 ctx.lineWidth = 2 * dpr;
+                ctx.shadowColor = '#60a5fa';
+                ctx.shadowBlur = 8;
                 ctx.setLineDash([]);
                 ctx.beginPath();
                 for (var sx = 0; sx < cW; sx += 2) {
@@ -1202,6 +1208,7 @@ const d = labToolData.wave;
                   if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
                 }
                 ctx.stroke();
+                ctx.shadowBlur = 0;
 
                 // Divider line
                 ctx.strokeStyle = 'rgba(255,255,255,0.15)';

@@ -883,8 +883,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         colGlow.addColorStop(0, 'rgba(99,102,241,' + (0.15 + 0.05 * Math.sin(animPhase * 2)) + ')');
                         colGlow.addColorStop(0.5, 'rgba(99,102,241,0.05)');
                         colGlow.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.save(); ctx.globalCompositeOperation = 'lighter';
                         ctx.fillStyle = colGlow;
                         ctx.fillRect(cgx - tileSize*3, cgy - tileSize*3, tileSize*6, tileSize*6);
+                        ctx.restore();
                       }
 
             // Selected rover move range overlay

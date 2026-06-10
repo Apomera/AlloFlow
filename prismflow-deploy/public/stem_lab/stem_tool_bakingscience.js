@@ -622,7 +622,7 @@
                   height: size + 'px',
                   borderRadius: '50%',
                   background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.35) 40%, rgba(253,224,71,0.45) 70%, rgba(245,158,11,0.2))',
-                  boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.1)',
+                  boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.1), 0 0 8px rgba(253,224,71,0.4)',
                   animation: 'bakingBubbleRise ' + duration + 's ease-out ' + delay + 's forwards'
                 }
               }));
@@ -1170,7 +1170,7 @@
             // Oven scene + slider
             h('div', { className: 'rounded-2xl bg-gradient-to-b from-slate-900 to-slate-800 border-2 border-rose-300 p-6 mb-4' },
               h('div', { className: 'flex items-center justify-center mb-4' },
-                h('div', { className: 'relative w-48 h-32 rounded-xl border-4 border-slate-700 bg-slate-900 flex items-center justify-center overflow-hidden', style: { boxShadow: 'inset 0 0 30px rgba(' + (temp > 300 ? '234, 88, 12' : '0,0,0') + ',' + Math.min(0.8, temp / 500) + ')' } },
+                h('div', { className: 'relative w-48 h-32 rounded-xl border-4 border-slate-700 bg-slate-900 flex items-center justify-center overflow-hidden', style: { boxShadow: 'inset 0 0 30px rgba(' + (temp > 300 ? '234, 88, 12' : '0,0,0') + ',' + Math.min(0.8, temp / 500) + ')', transition: 'box-shadow 0.6s ease' } },
                   h('div', { className: 'w-20 h-12 rounded-lg shadow-inner transition-all', style: { background: foodColor, boxShadow: '0 0 ' + (temp > 300 ? 20 : 5) + 'px ' + foodColor } })
                 )
               ),
@@ -1944,7 +1944,7 @@
                     className: 'w-24 h-24 rounded-full shadow-inner flex items-center justify-center text-4xl transition-all',
                     style: {
                       background: foodColor,
-                      boxShadow: isBurnt ? '0 0 20px rgba(60,20,8,0.5)' : (totalBrown > 0.5 ? '0 0 15px rgba(180,100,20,0.3)' : '')
+                      boxShadow: isBurnt ? '0 0 20px rgba(60,20,8,0.5)' : (totalBrown > 0.5 ? '0 0 16px ' + foodColor.replace('rgb(', 'rgba(').replace(')', ',0.45)') : '')
                     },
                     'aria-label': food.label + ', ' + Math.round(colorProgress * 100) + ' percent browned'
                   },

@@ -3657,7 +3657,7 @@ var d = labToolData.dissection || {};
 
                 ctx.beginPath(); ctx.arc(cx + W * 0.10, cy, W * 0.08, -0.5, 0.5);
 
-                ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 8; ctx.stroke();
+                ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 8; ctx.shadowColor = 'rgba(34,211,238,0.6)'; ctx.shadowBlur = 10; ctx.stroke(); ctx.shadowBlur = 0;
 
                 // Animated light refraction ray
 

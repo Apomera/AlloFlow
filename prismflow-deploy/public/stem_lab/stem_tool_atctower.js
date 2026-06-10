@@ -567,7 +567,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             sweepGrad.addColorStop(0, colors.radar + '0.12)');
             sweepGrad.addColorStop(0.02, colors.radar + '0.08)');
             sweepGrad.addColorStop(0.06, colors.radar + '0.03)');
-            sweepGrad.addColorStop(0.15, colors.radar + '0)');
+            sweepGrad.addColorStop(0.15, colors.radar + '0.015)');
+            sweepGrad.addColorStop(0.35, colors.radar + '0)');
             sweepGrad.addColorStop(1, 'rgba(34,197,94,0)');
             gfx.fillStyle = sweepGrad;
             gfx.fillRect(0, 0, W, H);
@@ -736,7 +737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             // Approach lights (series of dots along centerline)
             for (var al = 1; al <= 5; al++) {
               var alY = al * 12 * scale;
-              var alAlpha = 0.4 - al * 0.06;
+              var alAlpha = (0.4 - al * 0.06) * (reducedMotion.current ? 1 : 0.65 + 0.35 * Math.max(0, Math.sin(game.time * 2.5 + al * 1.1)));
               gfx.fillStyle = 'rgba(255,200,50,' + alAlpha + ')';
               gfx.beginPath(); gfx.arc(0, alY, 1.5, 0, Math.PI * 2); gfx.fill();
               // Side lights
@@ -832,8 +833,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.lineTo(sz * 0.1, -sz * 0.15); gfx.closePath(); gfx.fill();
             }
             // Anti-collision strobe (white flash at wing tips)
-            if (!reducedMotion.current && Math.floor(game.time * 1.5) % 2 === 0) {
-              gfx.fillStyle = 'rgba(255,255,255,0.7)';
+            if (!reducedMotion.current) {
+              var strobeA = Math.max(0, Math.sin(game.time * 4.71)) * 0.7;
+              gfx.fillStyle = 'rgba(255,255,255,' + strobeA.toFixed(3) + ')';
               var wingW = (ac.type.cat === 'Heavy' || ac.type.cat === 'Super') ? sz * 0.6 : ac.type.cat === 'Light' ? sz * 0.4 : sz * 0.5;
               gfx.beginPath(); gfx.arc(-wingW, 0, 1.2, 0, Math.PI * 2); gfx.fill();
               gfx.beginPath(); gfx.arc(wingW, 0, 1.2, 0, Math.PI * 2); gfx.fill();

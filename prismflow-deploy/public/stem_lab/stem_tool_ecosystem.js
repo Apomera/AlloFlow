@@ -1875,7 +1875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ctxC.globalAlpha = twinkle;
               ctxC.fillStyle = '#fff';
               ctxC.beginPath();
-              ctxC.arc(star.x, star.y, 1 + Math.random() * 0.5, 0, Math.PI * 2);
+              ctxC.arc(star.x, star.y, 1 + (star.twinkle % 1) * 0.5, 0, Math.PI * 2);
               ctxC.fill();
             }
             ctxC.globalAlpha = 1;
@@ -1887,7 +1887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var sunY = 30 + (1 - dayPhaseR) * 20;
             ctxC.save();
             ctxC.shadowColor = '#fbbf24';
-            ctxC.shadowBlur = 30;
+            ctxC.shadowBlur = 28 + Math.sin(tick * 0.02) * 6;
             ctxC.fillStyle = '#fbbf24';
             ctxC.beginPath();
             ctxC.arc(sunX, sunY, 18, 0, Math.PI * 2);
@@ -2272,7 +2272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ctxC.globalAlpha = part2.life;
             ctxC.fillStyle = part2.color;
             ctxC.beginPath();
-            ctxC.arc(part2.x, part2.y, 2, 0, Math.PI * 2);
+            ctxC.arc(part2.x, part2.y, 1 + part2.life * 2, 0, Math.PI * 2);
             ctxC.fill();
           }
           ctxC.globalAlpha = 1;

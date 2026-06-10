@@ -4376,7 +4376,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'f914433c';
+    var pluginCdnVersion = 'a6e0fb2b';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10092,8 +10092,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       setDiffViewOpen(true);
       if (typeof addToast === 'function') addToast(t('toasts.review_mode_diff_view_opened'), 'info');
     } else if (pdfFixMode === 'expert') {
+      // Render the REMEDIATED document in the builder (the old updatePdfPreview
+      // call here targeted the audit-preview iframe, which isn't even mounted —
+      // the builder showed generated-content history instead).
+      setExportPreviewSource('remediation');
       setShowExportPreview(true);
-      setTimeout(() => { try { updatePdfPreview(); } catch (e) {} }, 200);
       if (typeof addToast === 'function') addToast(t('toasts.expert_mode_document_builder_opened'), 'info');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -10410,6 +10413,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [exportStylePrompt, setExportStylePrompt] = useState('');
   const [isGeneratingStyle, setIsGeneratingStyle] = useState(false);
   const [showExportPreview, setShowExportPreview] = useState(false);
+  // What the Document Builder renders: 'history' (generated content — the
+  // normal Document Hub path) or 'remediation' (pdfFixResult.accessibleHtml —
+  // the Expert post-fix path). Before this flag, Expert mode opened the
+  // builder on the WRONG document (history, or "no content" in a
+  // remediation-only session).
+  const [exportPreviewSource, setExportPreviewSource] = useState('history');
   const [exportPreviewMode, setExportPreviewMode] = useState('print'); // 'print' | 'worksheet' | 'html'
   // Document Builder Tier 1.3 — single source of truth for default export
   // config. Used both as the initial React state AND as the merge target when
@@ -16305,9 +16314,44 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     if (_m && typeof _m.handleCopyToClipboard === 'function') return _m.handleCopyToClipboard({ generatedContent, sourceTopic, gradeLevel, addToast, t, warnLog });
   };
     const openExportPreview = (mode = 'print') => {
+    setExportPreviewSource('history');
     setExportPreviewMode(mode);
     setShowExportPreview(true);
     setShowExportMenu(false);
+  };
+  // ── Builder→pipeline write-back (the seam) ──
+  // When the builder was opened on the REMEDIATED document (Expert mode),
+  // closing it commits the live iframe DOM — the teacher's WYSIWYG edits —
+  // back into pdfFixResult.accessibleHtml, so the tagged-PDF/Word/PPTX
+  // exporters see them. Builder/inspector chrome is stripped first so it
+  // can never contaminate the canonical artifact.
+  const _syncBuilderEditsToRemediation = () => {
+    try {
+      if (exportPreviewSource !== 'remediation') return;
+      const iframe = exportPreviewRef.current;
+      const doc = iframe && (iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
+      if (!doc || !doc.body || !doc.documentElement) return;
+      // Never wipe accessibleHtml with an empty/failed render.
+      if ((doc.body.textContent || '').trim().length < 50) return;
+      const clone = doc.documentElement.cloneNode(true);
+      try {
+        clone.querySelectorAll('#a11y-inspect-css, .a11y-inspect-badge, #print-banner').forEach((n) => n.remove());
+        clone.querySelectorAll('[contenteditable]').forEach((n) => n.removeAttribute('contenteditable'));
+        clone.querySelectorAll('*').forEach((n) => { if (n.classList) Array.from(n.classList).forEach((c) => { if (c.indexOf('a11y-inspect') === 0 || c.indexOf('a11y-outline') === 0) n.classList.remove(c); }); });
+      } catch (_) {}
+      const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+      setPdfFixResult((prev) => (prev && prev.accessibleHtml) ? { ...prev, accessibleHtml: html, _userEditedAt: Date.now() } : prev);
+      addToast(t('toasts.builder_edits_synced') || '✏️ Builder edits saved into the remediated document — the Tagged PDF / Word / PowerPoint exports now include them.', 'success');
+    } catch (_) {}
+  };
+  // All builder close paths go through this wrapped setter (it is what the
+  // ExportPreviewView receives as setShowExportPreview).
+  const setShowExportPreviewWrapped = (v) => {
+    if (v === false) {
+      _syncBuilderEditsToRemediation();
+      setExportPreviewSource('history');
+    }
+    setShowExportPreview(v);
   };
   const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
   const getExportableHistory = () => history.filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
@@ -16317,6 +16361,21 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
 
   const getExportPreviewHTML = () => {
+    // Remediation pathway (Expert mode): render the REMEDIATED document, not
+    // the generated-content history — that is the entire point of "Open
+    // Document Builder after fix — edit markup directly". Themed through the
+    // pipeline's style seeds (builder themes ARE style seeds), which de-stack
+    // their own CSS on repeated application. Slides mode stays history-based
+    // (no remediation slide deck exists; the audit modal's accessible-PPTX
+    // export covers decks).
+    if (exportPreviewSource === 'remediation' && pdfFixResult?.accessibleHtml && exportPreviewMode !== 'slides') {
+      try {
+        if (_docPipeline && typeof _docPipeline.applyStyleSeedToHtml === 'function') {
+          return _docPipeline.applyStyleSeedToHtml(pdfFixResult.accessibleHtml, exportTheme, exportConfig.fontSize || 16);
+        }
+      } catch (err) { warnLog('[Export preview] remediation theming failed — serving unthemed remediated HTML:', err); }
+      return pdfFixResult.accessibleHtml;
+    }
     if (exportPreviewMode === 'slides') {
       return getSlidesPreviewHTML();
     }
@@ -16408,7 +16467,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         warnLog('[Export preview] applyA11yInspector failed:', _inspErr);
       }
     }
-  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, history, studentResponses, selectedFont, a11yInspectMode]);
+  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode]);
 
   React.useEffect(() => {
     if (!showExportPreview) {
@@ -16429,7 +16488,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     };
     tryRender();
     return () => { cancelled = true; };
-  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, studentResponses, selectedFont, updateExportPreview]);
+  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, studentResponses, selectedFont, updateExportPreview]);
 
   const setExportConfigAndRefresh = (updater) => {
     setExportConfig(updater);
@@ -26878,7 +26937,8 @@ ${_toolList}
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
-          setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview, showExportPreview, t, toggleA11yInspect, updateExportPreview
+          setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview: setShowExportPreviewWrapped, showExportPreview, t, toggleA11yInspect, updateExportPreview,
+          exportPreviewSource
         })}
         <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>
             {(StemLab) => React.createElement(StemLab, {

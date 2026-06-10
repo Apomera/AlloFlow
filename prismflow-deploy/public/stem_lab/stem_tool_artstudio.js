@@ -182,7 +182,11 @@ const d = labToolData.artStudio || {};
 
               ctx.beginPath(); ctx.arc(sx, sy, 8 + Math.sin(tick * 0.06) * 2, 0, Math.PI * 2);
 
+              ctx.shadowBlur = 14; ctx.shadowColor = 'hsl(' + hue + ',' + sat + '%,' + lit + '%)';
+
               ctx.fillStyle = '#fff'; ctx.fill();
+
+              ctx.shadowBlur = 0;
 
               ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
 
@@ -2073,6 +2077,8 @@ const d = labToolData.artStudio || {};
 
                     ctx.lineCap = 'round';
 
+                    ctx.globalCompositeOperation = 'lighter';
+
                     function drawStep() {
 
                       if (t >= maxT) return;
@@ -2271,6 +2277,8 @@ const d = labToolData.artStudio || {};
 
                     ctx.fillRect(0, 0, W, H);
 
+                    ctx.globalCompositeOperation = 'lighter';
+
                     for (var i = particles.length - 1; i >= 0; i--) {
 
                       var p = particles[i];
@@ -2342,6 +2350,8 @@ const d = labToolData.artStudio || {};
                       }
 
                     }
+
+                    ctx.globalCompositeOperation = 'source-over';
 
                     // Replenish particles
 
@@ -2831,6 +2841,8 @@ const d = labToolData.artStudio || {};
                     ctx.lineWidth = 1;
 
                     ctx.lineCap = 'round';
+
+                    ctx.globalCompositeOperation = 'lighter';
 
                     function drawStep() {
 

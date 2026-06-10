@@ -1300,7 +1300,7 @@ window.StemLab = window.StemLab || {
                       background: tId === 'empty' ? '#0f172a' : tInfo.color,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: Math.min(20, Math.floor(500 / gridW)) + 'px',
-                      minWidth: '10px', minHeight: '10px', transition: 'background 0.15s'
+                      minWidth: '10px', minHeight: '10px', transition: 'background 0.15s', boxShadow: tId === 'player' ? '0 0 10px rgba(139,92,246,0.85)' : undefined
                     }
                   }, tInfo.emoji || '');
                 })

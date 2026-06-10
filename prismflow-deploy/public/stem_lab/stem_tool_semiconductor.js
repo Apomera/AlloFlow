@@ -555,9 +555,12 @@ window.StemLab = window.StemLab || {
             cx.fillText('h\u03BD \u2265 ' + Eg.toFixed(2) + ' eV', px, valenceTop + 45);
             // Excited electron
             cx.fillStyle = '#F59E0B';
+            cx.shadowColor = '#F59E0B';
+            cx.shadowBlur = 10;
             cx.beginPath();
             cx.arc(px, conductionBot - 15 + Math.sin(Date.now() / 300) * 4, 5, 0, Math.PI * 2);
             cx.fill();
+            cx.shadowBlur = 0;
             // Hole
             cx.strokeStyle = '#F87171';
             cx.lineWidth = 1.5;
