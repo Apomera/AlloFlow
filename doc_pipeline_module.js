@@ -6367,14 +6367,47 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const results = pdfBatchQueue.filter(f => f.status === 'done');
 
     results.forEach(f => {
-      const safeName = f.fileName.replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
       zip.file(`${safeName}_accessible.html`, f.result.accessibleHtml);
     });
 
-    const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,Time (s),Expert Review,Status'];
+    // ── Tagged PDFs (2026-06-11) ── Batch previously shipped only the
+    // accessible HTML + reports — the tagged-PDF generation the single-file
+    // flow offers never ran here, so a teacher with a folder of files got no
+    // tagged artifacts at all. Per file: PDF inputs only (Office entries have
+    // no PDF bytes to tag), VERIFICATION-GATED (batch is unattended, so the
+    // main flow's "download anyway?" confirm becomes a hard exclude + note),
+    // and fail-soft (one bad file never blocks the ZIP). Scanned files re-run
+    // OCR inside createTaggedPdf, so this step can take a while — disclosed.
+    const _taggedNotes = new Map();
+    let _taggedCount = 0;
+    addToast(t('toasts.batch_tagging') || '📄 Generating tagged PDFs for the ZIP — scanned files take longer (OCR runs per file)…', 'info');
+    for (const f of results) {
+      const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      try {
+        if (!f.base64 || f.base64.slice(0, 5) !== 'JVBER') { _taggedNotes.set(f.id, 'n/a (not a PDF input)'); continue; }
+        if (!f.result || !f.result.accessibleHtml) { _taggedNotes.set(f.id, 'skipped (no remediated HTML)'); continue; }
+        try { setPdfBatchStep('Tagging ' + f.fileName + '…'); } catch (_) {}
+        const binStr = atob(f.base64);
+        const bytes = new Uint8Array(binStr.length);
+        for (let bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
+        const tagged = await createTaggedPdf(bytes, f.result, { title: f.fileName.replace(/\.pdf$/i, ''), lang: 'en', subject: 'Remediated for accessibility by AlloFlow (batch)' });
+        const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
+        const rt = tagged && tagged.roundTrip;
+        if (!tBytes) { _taggedNotes.set(f.id, 'failed (no bytes returned)'); continue; }
+        if (rt && rt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (failed post-save structure verification)'); continue; }
+        zip.file(`${safeName}_tagged.pdf`, tBytes);
+        _taggedCount++;
+        const s = tagged && tagged.summary;
+        _taggedNotes.set(f.id, s && s.uaDeclared ? 'yes (PDF/UA-1 declared)' : 'yes (declaration withheld — partial linkage)');
+      } catch (te) { _taggedNotes.set(f.id, 'failed (' + (((te && te.message) || 'error')).slice(0, 80) + ')'); }
+    }
+    try { setPdfBatchStep(''); } catch (_) {}
+
+    const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,Time (s),Expert Review,Tagged PDF,Status'];
     pdfBatchQueue.forEach(f => {
       const r = f.result;
-      csvRows.push(`"${f.fileName}",${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},${f.status}`);
+      csvRows.push(`"${f.fileName}",${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},"${_taggedNotes.get(f.id) || ''}",${f.status}`);
     });
     zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
 
@@ -6386,13 +6419,14 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       summary: pdfBatchSummary,
       files: pdfBatchQueue.map(f => ({
         fileName: f.fileName, fileSize: f.fileSize, status: f.status, error: f.error || null,
+        taggedPdf: _taggedNotes.get(f.id) || null,
         result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
       })),
     };
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
 
     const done = pdfBatchQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';return '<tr><td>'+(i+1)+'</td><td>'+f.fileName+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>+'+(r?(r.afterScore-r.beforeScore):'\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td>'+(f.status==='done'?'\u2705':'\u274c '+(f.error||''))+'</td></tr>';}).join('')}</tbody></table></body></html>`;
+    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+f.fileName+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>+'+(r?(r.afterScore-r.beforeScore):'\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+tg+'</td><td>'+(f.status==='done'?'\u2705':'\u274c '+(f.error||''))+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -6402,7 +6436,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     a.download = `alloflow_batch_remediation_${new Date().toISOString().slice(0,10)}.zip`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    addToast(`\ud83d\udce6 Downloaded ZIP with ${results.length} remediated files + report`, 'success');
+    addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} remediated file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
   };
 
 

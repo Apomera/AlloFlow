@@ -1508,6 +1508,7 @@
     "tagged_pdf_failed": "Tagged PDF failed: ",
     "building_accessible_docx": "Building accessible Word file…",
     "building_accessible_pptx": "Building accessible PowerPoint…",
+    "batch_tagging": "📄 Generating tagged PDFs for the ZIP — scanned files take longer (OCR runs per file)…",
     "builder_edits_preserved": "✋ Kept your manual edits — the preview was not re-rendered. Export or close the builder to save them, then change settings.",
     "builder_edits_synced": "✏️ Builder edits saved into the remediated document — the Tagged PDF / Word / PowerPoint exports now include them.",
     "pptx_ai_theme": "🎨 Asking AI for a topic-matched palette (legibility enforced locally)…",
