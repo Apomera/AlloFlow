@@ -4389,7 +4389,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'c0a48029';
+    var pluginCdnVersion = '404ea539';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15701,6 +15701,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       beforeScore: cur.beforeScore,
       afterScore: cur.afterScore,
       axeAudit: cur.axeAudit,
+      secondEngineAudit: cur.secondEngineAudit || null,
       verificationAudit: cur.verificationAudit,
       docStyle: cur.docStyle,
       pageCount: cur.pageCount,
