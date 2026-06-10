@@ -15701,6 +15701,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       beforeScore: cur.beforeScore,
       afterScore: cur.afterScore,
       axeAudit: cur.axeAudit,
+      secondEngineAudit: cur.secondEngineAudit || null,
       verificationAudit: cur.verificationAudit,
       docStyle: cur.docStyle,
       pageCount: cur.pageCount,

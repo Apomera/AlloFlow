@@ -1813,6 +1813,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             beforeScore: project.beforeScore,
                             afterScore: project.afterScore,
                             axeAudit: project.axeAudit || null,
+                            secondEngineAudit: project.secondEngineAudit || null,
                             verificationAudit: project.verificationAudit || null,
                             docStyle: project.docStyle || null,
                             pageCount: project.pageCount,
@@ -2195,6 +2196,23 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {axeAudit.totalViolations === 0 && <div className="text-green-700 font-bold">{t('pdf_audit.score.no_violations') || 'No violations detected'}</div>}
                             </div>
                           </details>
+                          {/* Engine consensus (2026-06-10): a second independent
+                              rule engine agreeing is stronger evidence than one
+                              engine blended more cleverly. */}
+                          {pdfFixResult.secondEngineAudit ? (
+                            <div className="mt-1.5 text-[11px]">
+                              {pdfFixResult.secondEngineAudit.failViolations === 0 && axeAudit.totalViolations === 0 ? (
+                                <span className="text-green-700 font-bold">✓✓ {t('pdf_audit.score.engines_agree') || 'Two independent engines agree: 0 confirmed violations (axe-core + IBM Equal Access)'}</span>
+                              ) : (
+                                <span className="text-blue-700">
+                                  <span className="font-bold">{t('pdf_audit.score.second_engine') || 'Second engine (IBM Equal Access):'}</span>{' '}
+                                  {pdfFixResult.secondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'}{pdfFixResult.secondEngineAudit.potentialViolations > 0 ? (', ' + pdfFixResult.secondEngineAudit.potentialViolations + ' ' + (t('pdf_audit.score.needs_review') || 'needing human review')) : ''} → {t('pdf_audit.score.score_label') || 'score'} {pdfFixResult.secondEngineAudit.score}. {t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.'}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="mt-1.5 text-[11px] text-slate-500">{t('pdf_audit.score.ea_unavailable') || 'Second engine (IBM Equal Access) unavailable this run — score uses axe-core alone.'}</div>
+                          )}
                         </div>
                         )}
                       </div>
@@ -5906,6 +5924,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   beforeScore: project.beforeScore,
                                   afterScore: project.afterScore,
                                   axeAudit: project.axeAudit || null,
+                            secondEngineAudit: project.secondEngineAudit || null,
                                   verificationAudit: project.verificationAudit || null,
                                   docStyle: project.docStyle || null,
                                   pageCount: project.pageCount,

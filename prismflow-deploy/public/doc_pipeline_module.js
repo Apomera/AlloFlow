@@ -7127,6 +7127,83 @@ HTML section ${chunkNum}/${chunks.length}:
     }
   };
 
+  // ── IBM Equal Access — the SECOND deterministic engine (2026-06-10) ──
+  // Engine consensus: two independent rule engines agreeing is more
+  // persuasive evidence than one engine blended more cleverly (strategic-
+  // audit follow-up). ace.js (accessibility-checker-engine, Apache-2.0,
+  // actively maintained by IBM) runs fully client-side like axe. It loads
+  // ONCE into the host window and checks the iframe's Document directly —
+  // no per-iframe source injection needed. Fail-soft: any failure returns
+  // null and the pipeline behaves exactly as before (axe-only, disclosed).
+  const _ACE_CDN_URLS = [
+    'https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3/ace.js',
+    'https://unpkg.com/accessibility-checker-engine@3/ace.js',
+  ];
+  var _acePromise = null;
+  const _ensureAce = () => {
+    if (window.ace && window.ace.Checker) return Promise.resolve();
+    if (_acePromise) return _acePromise;
+    _acePromise = new Promise((resolve, reject) => {
+      const tryAt = (i) => {
+        if (i >= _ACE_CDN_URLS.length) { _acePromise = null; reject(new Error('Failed to load IBM Equal Access from ' + _ACE_CDN_URLS.length + ' CDN mirrors')); return; }
+        const s = document.createElement('script');
+        s.src = _ACE_CDN_URLS[i];
+        s.setAttribute('data-ibm-ace', 'true');
+        s.onload = () => { if (window.ace && window.ace.Checker) resolve(); else { _acePromise = null; reject(new Error('ace.js loaded but window.ace.Checker missing')); } };
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
+    });
+    return _acePromise;
+  };
+  const runEqualAccessAudit = async (htmlContent) => {
+    let iframe = null;
+    try {
+      await _withTimeout(_ensureAce(), 15000, 'IBM Equal Access load');
+      iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:absolute;left:-9999px;width:1024px;height:768px;';
+      document.body.appendChild(iframe);
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open(); doc.write(htmlContent); doc.close();
+      await new Promise((r) => setTimeout(r, 150));
+      const checker = new window.ace.Checker();
+      const report = await _withTimeout(checker.check(doc, ['WCAG_2_1']), 30000, 'IBM Equal Access audit');
+      const results = (report && report.results) || [];
+      // value = [toolLevel, outcome]: VIOLATION/RECOMMENDATION × FAIL/POTENTIAL/MANUAL/PASS.
+      // Aggregate per RULE (axe's violation list is rule-level too — keeps scales comparable).
+      const byRule = (filterFn) => {
+        const m = new Map();
+        for (const r of results) {
+          if (!r || !Array.isArray(r.value) || !filterFn(r.value)) continue;
+          const e = m.get(r.ruleId) || { id: r.ruleId, nodes: 0, description: r.message || r.ruleId };
+          e.nodes++;
+          m.set(r.ruleId, e);
+        }
+        return Array.from(m.values());
+      };
+      const fails = byRule((v) => v[0] === 'VIOLATION' && v[1] === 'FAIL');
+      const potentials = byRule((v) => v[0] === 'VIOLATION' && v[1] === 'POTENTIAL');
+      return {
+        engine: 'IBM Equal Access',
+        version: (window.ace && (window.ace.version || (window.ace.Checker && window.ace.Checker.version))) || '3.x',
+        failViolations: fails.length,
+        potentialViolations: potentials.length,
+        fails: fails.slice(0, 30),
+        // Comparable-scale score, DISCLOSED in the UI: rule-level like axe's
+        // (15/10/5/2 by impact). EA has no impact tiers — confirmed FAILs
+        // weigh like axe 'serious' (10), POTENTIALs (needs human review)
+        // weigh 2. A judgment call, kept conservative and visible.
+        score: Math.max(0, Math.round(100 - fails.length * 10 - potentials.length * 2)),
+      };
+    } catch (err) {
+      warnLog('[IBM Equal Access] Audit failed (fail-soft — axe-only path continues):', err && err.message);
+      return null;
+    } finally {
+      try { if (iframe) document.body.removeChild(iframe); } catch (_) {}
+    }
+  };
+
   // ── Deterministic color-contrast fixer (comprehensive) ──
   const fixContrastViolations = (htmlContent) => {
     const hexToRgb = (hex) => {
@@ -12024,13 +12101,27 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         if (safetyAxe) axeResults = safetyAxe;
       }
 
-      // Blend final score with axe-core (same 50/50 method as initial audit for consistent comparison)
+      // ── Engine consensus (2026-06-10): run the SECOND deterministic engine
+      // (IBM Equal Access) on the final HTML. When both engines ran, the
+      // deterministic half of the blend becomes the MORE CONSERVATIVE of the
+      // two scores — two independent rule engines agreeing is stronger
+      // evidence than one engine alone, and disagreement should pull the
+      // number DOWN, not average away. Fail-soft: EA unavailable → axe-only,
+      // exactly the prior behavior, with the consensus fields saying so.
+      let eaResults = null;
+      try { eaResults = await runEqualAccessAudit(accessibleHtml); } catch (_) { eaResults = null; }
+
+      // Blend final score with the deterministic engines (same 50/50 AI+deterministic method as initial audit)
       let finalAfterScore = verification ? verification.score : afterScore;
       const axeScoreAvailable = axeResults && typeof axeResults.score === 'number';
+      const eaScoreAvailable = eaResults && typeof eaResults.score === 'number';
+      const deterministicScore = axeScoreAvailable
+        ? (eaScoreAvailable ? Math.min(axeResults.score, eaResults.score) : axeResults.score)
+        : null;
       let axeCoreFailed = false;
       if (finalAfterScore !== null && axeScoreAvailable) {
-        const blendedFinal = Math.round((finalAfterScore + axeResults.score) / 2);
-        warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + axe ${axeResults.score} = ${blendedFinal}`);
+        const blendedFinal = Math.round((finalAfterScore + deterministicScore) / 2);
+        warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + deterministic ${deterministicScore} (axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}) = ${blendedFinal}`);
         finalAfterScore = blendedFinal;
       } else if (!axeScoreAvailable) {
         // Dual-engine guarantee is broken — surface this to the UI so the banner can warn users.
@@ -12271,6 +12362,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         groundTruthMethod: window.__lastGroundTruthMethod || null,
         verificationAudit: verification,
         axeAudit: axeResults,
+        secondEngineAudit: eaResults,
         beforeScore,
         beforeAxeScore,
         afterScore: finalAfterScore,
