@@ -481,8 +481,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   function build3DScene(THREE, map, agents) {
     var SCALE = 0.05;
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.Fog(0x000000, 8, 40);
+    scene.background = new THREE.Color(0x020308); // barely-there deep blue (matches echolocation) so pings bloom against atmosphere, not dead pixels
+    scene.fog = new THREE.Fog(0x020308, 8, 40);
     var ambient = new THREE.AmbientLight(0xffffff, 0.02);
     scene.add(ambient);
     var floorGeo = new THREE.PlaneGeometry(50, 50);

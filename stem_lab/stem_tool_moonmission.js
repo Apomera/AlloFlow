@@ -2484,7 +2484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var oy = _terrainHeightAt(ox, oz) + 0.4;
                       var orbGroup = new THREE.Group();
                       var orbGeo = new THREE.DodecahedronGeometry(0.3, 0);
-                      var orbMat = new THREE.MeshStandardMaterial({ color: 0xccccaa, emissive: 0xfbbf24, emissiveIntensity: 0.3, transparent: true, opacity: 0.8 });
+                      var orbMat = new THREE.MeshStandardMaterial({ color: 0xccccaa, emissive: 0xfbbf24, emissiveIntensity: 1.0, transparent: true, opacity: 0.8 }); // sample orbs bloom as findable beacons
                       orbGroup.add(new THREE.Mesh(orbGeo, orbMat));
                       var ringG = new THREE.Mesh(
                         new THREE.RingGeometry(0.45, 0.55, 12),

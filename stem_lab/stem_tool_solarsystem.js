@@ -934,7 +934,7 @@ const d = labToolData.solarSystem || {};
 
               starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 
-              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.8 })));
+              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.18, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false }))); // full-white + additive: stars now clear the bloom threshold and glitter
 
 
 
@@ -948,7 +948,7 @@ const d = labToolData.solarSystem || {};
 
               const sunGeo = new THREE.SphereGeometry(5.5, 32, 32);
 
-              const sunMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
+              const sunMat = new THREE.MeshBasicMaterial({ color: 0xffe680 }); // brightened over the 0.82 bloom threshold (was luma .838 vs .82 — barely bloomed)
 
               const sun = new THREE.Mesh(sunGeo, sunMat);
 
@@ -1046,7 +1046,7 @@ const d = labToolData.solarSystem || {};
 
                 const tex = makePlanetTex(p.rgb, 1.0 + idx * 0.3);
 
-                const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.1 });
+                const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: p.terrainType === 'earthlike' ? 0.45 : 0.8, metalness: 0.1 }); // ocean sun-glint on Earth
 
                 const mesh = new THREE.Mesh(geo, mat);
 
@@ -1094,7 +1094,7 @@ const d = labToolData.solarSystem || {};
                 if (p.name === t('stem.solar_sys.mars')) {
                   mesh._moons = [];
                   for(let m=0; m<2; m++) {
-                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({color: 0x888888}));
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshStandardMaterial({color: 0x999999, roughness: 0.9})); // Phobos/Deimos now sunlit like every other moon
                     jm._dist = p.size + 0.3 + m * 0.2; jm._orbitAngle = Math.random() * Math.PI * 2; jm._speed = 4 - m;
                     mesh.add(jm); mesh._moons.push(jm);
                   }
@@ -1138,7 +1138,7 @@ const d = labToolData.solarSystem || {};
 
                   const ringTex = new THREE.CanvasTexture(ringCanvas);
 
-                  const ringMat = new THREE.MeshBasicMaterial({ map: ringTex, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+                  const ringMat = new THREE.MeshBasicMaterial({ map: ringTex, side: THREE.DoubleSide, transparent: true, opacity: 0.8, depthWrite: false }); // ring no longer punch-clips the atmosphere halo
 
                   const ringMesh = new THREE.Mesh(ringGeo, ringMat);
 
@@ -1191,7 +1191,7 @@ const d = labToolData.solarSystem || {};
               const tailGeo = new THREE.BufferGeometry();
               const tailPos = new Float32Array(50 * 3);
               tailGeo.setAttribute('position', new THREE.BufferAttribute(tailPos, 3));
-              const tailPoints = new THREE.Points(tailGeo, new THREE.PointsMaterial({ color: 0x88ffff, size: 0.1, transparent: true, opacity: 0.4 }));
+              const tailPoints = new THREE.Points(tailGeo, new THREE.PointsMaterial({ color: 0x88ffff, size: 0.1, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); // glowing ion tail
               scene.add(tailPoints);
               cometMesh._tail = tailPoints;
               
@@ -1531,7 +1531,7 @@ const d = labToolData.solarSystem || {};
 
                 // Highlight selected planet's orbit ring
                 orbitLines.forEach(function(ol, oi) {
-                  var targetOp = (oi === focusedPlanetIdx) ? 0.5 : 0.18;
+                  var targetOp = (oi === focusedPlanetIdx) ? 0.65 : 0.18;
                   ol.material.opacity += (targetOp - ol.material.opacity) * 0.1;
                 });
 
@@ -1579,7 +1579,7 @@ const d = labToolData.solarSystem || {};
 
                 sun.scale.set(pulse, pulse, pulse);
 
-                glowSprite.scale.set(12 * pulse, 12 * pulse, 1);
+                glowSprite.scale.set(14 * pulse, 14 * pulse, 1); // fuller corona (init scale was 18; loop had shrunk it to 12)
 
 
 
@@ -1607,7 +1607,7 @@ const d = labToolData.solarSystem || {};
 
                       const label = document.createElement('div');
 
-                      label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:9px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);color:' + (isSelected ? '#fbbf24' : '#94a3b8') + ';white-space:nowrap;transition:color 0.2s;';
+                      label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:10px;font-weight:700;letter-spacing:0.05em;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.9),0 0 6px rgba(0,0,0,0.8);color:' + (isSelected ? '#fbbf24' : '#94a3b8') + ';white-space:nowrap;transition:color 0.2s;';
 
                       label.textContent = mesh.userData.name;
 
@@ -9128,7 +9128,7 @@ const d = labToolData.solarSystem || {};
                             emberPos[ep * 3 + 2] = (Math.random() - 0.5) * 60;
                           }
                           emberParts.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
-                          var emberMesh = new THREE.Points(emberParts, new THREE.PointsMaterial({ color: 0xff4400, size: 0.1, transparent: true, opacity: 0.3 }));
+                          var emberMesh = new THREE.Points(emberParts, new THREE.PointsMaterial({ color: 0xff4400, size: 0.1, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false })); // embers glow additively
                           scene.add(emberMesh);
 
                           // ── Probe heat shield glow (visible in 3rd person at depth) ──
@@ -9670,7 +9670,7 @@ const d = labToolData.solarSystem || {};
 
                           drGeo.setAttribute('position', new THREE.BufferAttribute(drPos, 3));
 
-                          var diamonds = new THREE.Points(drGeo, new THREE.PointsMaterial({ color: 0xccddff, size: 0.08, transparent: true, opacity: 0.6 }));
+                          var diamonds = new THREE.Points(drGeo, new THREE.PointsMaterial({ color: 0xccddff, size: 0.08, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); // diamond rain sparkles
 
                           scene.add(diamonds);
 

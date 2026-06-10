@@ -8271,7 +8271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             starTwinkle.push({ phase: Math.random() * Math.PI * 2, freq: 0.5 + Math.random() * 2.5 });
           }
           starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-          var starMat = new THREE.PointsMaterial({ color: 0xfefce8, size: 1.5, transparent: true, opacity: 0.9, depthWrite: false, sizeAttenuation: true, fog: false });
+          var starMat = new THREE.PointsMaterial({ color: 0xfefce8, size: 1.5, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true, fog: false });
           var stars = new THREE.Points(starGeo, starMat);
           scene.add(stars);
           starsList = { points: stars, twinkle: starTwinkle, count: starCount };
@@ -8773,7 +8773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             });
           }
           fxGeo.setAttribute('position', new THREE.BufferAttribute(fxPos, 3));
-          var fxMat = new THREE.PointsMaterial({ color: preyColor || 0xfde047, size: 1.6, transparent: true, opacity: 1.0, depthWrite: false, sizeAttenuation: true });
+          var fxMat = new THREE.PointsMaterial({ color: preyColor || 0xfde047, size: 1.6, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true }); // catch burst now glows golden
           var fxPoints = new THREE.Points(fxGeo, fxMat);
           scene.add(fxPoints);
           // Plus a brief golden flash sphere

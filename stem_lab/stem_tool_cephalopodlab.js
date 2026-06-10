@@ -10188,7 +10188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           var coralHex = coralColors[Math.floor(Math.random() * coralColors.length)];
           var coralGeo = new THREE.CylinderGeometry(0.15, 0.32, ch, 8);
           var coral = new THREE.Mesh(coralGeo,
-            new THREE.MeshStandardMaterial({ color: coralHex, roughness: 0.7 }));
+            new THREE.MeshStandardMaterial({ color: coralHex, emissive: coralHex, emissiveIntensity: 0.22, roughness: 0.7 })); // soft coral fluorescence through the blue gloom (same hex)
           coral.position.set(cx, ch / 2, cz);
           coral.rotation.y = Math.random() * Math.PI;
           coral.rotation.z = (Math.random() - 0.5) * 0.3;
@@ -10264,7 +10264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // Cache the resting vertex positions so the papillae animation
         // (substrate-texture matching) has a base to displace from.
         var mantleBasePositions = new Float32Array(mantleGeo.attributes.position.array);
-        var mantleMat = new THREE.MeshStandardMaterial({ color: species.bodyColor, roughness: 0.5, metalness: 0.05 });
+        var mantleMat = new THREE.MeshStandardMaterial({ color: species.bodyColor, roughness: 0.3, metalness: 0.08 }); // wet-skin glisten (camo lerps color only — roughness is camo-safe)
         var mantle = new THREE.Mesh(mantleGeo, mantleMat);
         mantle.position.y = 0.2;
         octopus.add(mantle);
@@ -10304,7 +10304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         for (var ai = 0; ai < 8; ai++) {
           var armAngle = (ai / 8) * Math.PI * 2;
           var armGeo = new THREE.CylinderGeometry(0.09 * bodyScale, 0.04 * bodyScale, 1.0 * bodyScale, 6);
-          var armMat = new THREE.MeshStandardMaterial({ color: species.armColor, roughness: 0.55 });
+          var armMat = new THREE.MeshStandardMaterial({ color: species.armColor, roughness: 0.35 });
           var arm = new THREE.Mesh(armGeo, armMat);
           arm.position.set(Math.cos(armAngle) * 0.42, -0.15, Math.sin(armAngle) * 0.42);
           arm.rotation.z = Math.cos(armAngle) * 0.4;
@@ -11160,7 +11160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           g.add(luseStalk);
           var lure = new THREE.Mesh(
             new THREE.SphereGeometry(0.08, 8, 6),
-            new THREE.MeshBasicMaterial({ color: 0xc9f8ff, transparent: true, opacity: 0.85 })
+            new THREE.MeshBasicMaterial({ color: 0xc9f8ff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending }) // the esca finally glows like its sibling photophores
           );
           lure.position.set(0.4, 1.25, 0);
           g.add(lure);
@@ -11706,7 +11706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         bubbleGeo.setAttribute('position', new THREE.BufferAttribute(bubblePositions, 3));
         var bubbleMat = new THREE.PointsMaterial({
-          color: 0xddeefa, size: 0.18, transparent: true, opacity: 0.65,
+          color: 0xddeefa, size: 0.18, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false,
           sizeAttenuation: true,
         });
         var bubbles = new THREE.Points(bubbleGeo, bubbleMat);
@@ -11730,7 +11730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         planktonGeo.setAttribute('position', new THREE.BufferAttribute(planktonPositions, 3));
         var planktonMat = new THREE.PointsMaterial({
-          color: 0xe6f3ff, size: 0.08, transparent: true, opacity: 0.55,
+          color: 0xe6f3ff, size: 0.08, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false,
           sizeAttenuation: true,
         });
         var plankton = new THREE.Points(planktonGeo, planktonMat);
@@ -12753,7 +12753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               var nightStrength = 1 - dayMix;
               gameState.counterIlluminationActive = nightStrength;
               if (bobtailGlow) {
-                bobtailGlow.material.opacity = 0.15 + nightStrength * 0.5;
+                bobtailGlow.material.opacity = 0.15 + nightStrength * 0.7; // full-night counter-illumination now crosses the bloom threshold
               }
               if (nightStrength > 0.5) unlockAchievement('counterIllumination');
             }
@@ -13044,7 +13044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             sandTex.offset.y = -octopus.position.z * 0.07;
             caustics.position.x = octopus.position.x + Math.sin(now * 0.0003) * 4;
             caustics.position.z = octopus.position.z + Math.cos(now * 0.00025) * 4;
-            caustics.material.opacity = (0.4 + Math.sin(now * 0.001) * 0.15) * dayMix;
+            caustics.material.opacity = (0.55 + Math.sin(now * 0.001) * 0.18) * dayMix;
 
             // ─── Endless-ocean object recycling ──────────────────
             // Throttled to every 400ms (cheap enough on a per-frame budget

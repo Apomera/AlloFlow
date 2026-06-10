@@ -408,6 +408,7 @@
           if (grid[r][c]) {
             rects.push(h('rect', {
               key: 'l' + r + '_' + c, x: c * PX + 1, y: r * PX + 1, width: PX - 2, height: PX - 2, rx: 2,
+              className: 'born',
               fill: C.live
             }));
           }
@@ -417,7 +418,7 @@
       rects.push(h('rect', {
         key: 'cursor', x: cursor[1] * PX, y: cursor[0] * PX, width: PX, height: PX,
         fill: 'none', stroke: C.cursor, strokeWidth: 2, rx: 2,
-        style: { pointerEvents: 'none' }
+        style: { pointerEvents: 'none', filter: 'drop-shadow(0 0 3px ' + C.cursor + ')' }
       }));
       return h('svg', {
         ref: gridSvgRef, className: 'cellularlab-svg',

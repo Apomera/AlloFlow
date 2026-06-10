@@ -145,7 +145,7 @@
       var sv = [];
       for (var si = 0; si < 400; si++) sv.push((Math.random() - 0.5) * 200, 25 + Math.random() * 55, (Math.random() - 0.5) * 200);
       sg.setAttribute('position', new THREE.Float32BufferAttribute(sv, 3));
-      engine._manualStars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0 }));
+      engine._manualStars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
       engine.scene.add(engine._manualStars);
       engine._manualStarsTarget = 0.8;
     } else if (!isNightime && engine._manualStars) {
@@ -3666,7 +3666,7 @@
                 starVerts.push((Math.random() - 0.5) * 200, 30 + Math.random() * 50, (Math.random() - 0.5) * 200);
               }
               starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
-              var starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, transparent: true, opacity: 0 });
+              var starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
               engine.stars = new THREE.Points(starGeo, starMat);
               engine.scene.add(engine.stars);
             }
