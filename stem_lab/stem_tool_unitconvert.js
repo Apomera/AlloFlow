@@ -321,7 +321,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             e.preventDefault();
             var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
             upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-            stemBeep && stemBeep('click');
+            stemBeep && stemBeep(600, 0.06);
           }
           if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askTutor(); }
           if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
@@ -440,7 +440,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               convert:     { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83D\uDD04', title: 'Convert \u2014 the math behind units',  hint: 'Conversion factor = ratio equal to 1 (e.g., 1 ft = 12 in \u2192 12 in / 1 ft). Multiplying by it changes the unit without changing the value. SI prefixes (kilo, milli) are powers of 10 \u2014 just shift the decimal.' },
               table:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: 'All units \u2014 reference table',     hint: 'Length, mass, volume, temperature, time, energy, pressure. The single rule that matters: track units through every step. If your final answer is in m\u00b2 when you wanted seconds, you made an error somewhere upstream.' },
               quiz:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: 'Quiz \u2014 conversion practice',      hint: 'Daily-life conversions (\u00b0F\u2194\u00b0C, mph\u2194km/h, lb\u2194kg) plus AP / SAT / lab measurements. Each question shows the conversion factor after answering so you build the muscle memory.' },
-              wordproblem: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCDD', title: 'Word problem \u2014 apply in context',  hint: 'Real-world unit-conversion scenarios: gas mileage, recipe scaling, dosage calculations, travel-distance estimates. Word problems are 80% reading comprehension + 20% conversion math.' }
+              wordproblem: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCDD', title: 'Word problem \u2014 apply in context',  hint: 'Real-world unit-conversion scenarios: gas mileage, recipe scaling, dosage calculations, travel-distance estimates. Word problems are 80% reading comprehension + 20% conversion math.' },
+              magHunt:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u2699\uFE0F', title: 'Magnitude \u2014 orders of magnitude discovery', hint: 'Every SI prefix is a power of 10. Slide the source and target exponents to feel how far apart scales really are \u2014 the core skill behind scientific notation and Fermi estimates.' }
             };
             var meta = TAB_META[tab] || TAB_META.convert;
             return h('div', {
@@ -496,7 +497,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
                 h('button', { 'aria-label': 'Swap units',
                   onClick: function() {
-                    stemBeep && stemBeep('click');
+                    stemBeep && stemBeep(600, 0.06);
                     setLabToolData(function(prev) {
                       return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { fromUnit: d.toUnit, toUnit: d.fromUnit }) });
                     });
@@ -507,6 +508,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
                 h('div', { className: 'text-center' },
                   h('p', {
+                    key: fmtResult,
                     className: 'text-2xl font-black text-cyan-700 py-1',
                     style: { animation: 'ucResultPop 0.3s ease-out' }
                   }, fmtResult),
@@ -581,7 +583,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     setLabToolData(function(prev) {
                       return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { history: [entry].concat((prev.unitConvert.history || []).slice(0, 9)), historySaveCount: newSaveCount }) });
                     });
-                    stemBeep && stemBeep('success');
+                    stemBeep && stemBeep(784, 0.15);
                     addToast('\u2705 Saved to history', 'success');
                     if (newSaveCount >= 10) checkBadges({ historian: true });
                   },
@@ -806,7 +808,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 onClick: function() {
                   var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                   upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-                  stemBeep && stemBeep('click');
+                  stemBeep && stemBeep(600, 0.06);
                 },
                 className: 'px-3 py-1.5 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all',
                 title: 'Next question (N)'
@@ -841,12 +843,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         var newBest = Math.max(d.bestStreak || 0, newStreak);
                         var newQTotal = quizTotal + 1;
                         if (correct) {
-                          stemBeep && stemBeep('success');
+                          stemBeep && stemBeep(784, 0.15);
                           if (newStreak >= 5) { stemCelebrate && stemCelebrate(); }
-                          awardStemXP && awardStemXP(xp);
+                          awardStemXP && awardStemXP('unitConvert', xp, 'quiz correct');
                           addToast(xp === 3 ? '\u26A1 Lightning fast! +3 XP' : xp === 2 ? '\uD83D\uDE80 Quick! +2 XP' : '\u2705 Correct! +1 XP', 'success');
                         } else {
-                          stemBeep && stemBeep('error');
+                          stemBeep && stemBeep(220, 0.2);
                           addToast('\u274C Answer: ' + d.quiz.a + ' ' + d.quiz.unit, 'error');
                         }
                         setLabToolData(function(prev) {
@@ -886,7 +888,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         onClick: function() {
                           var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                           upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-                          stemBeep && stemBeep('click');
+                          stemBeep && stemBeep(600, 0.06);
                         },
                         className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
                       }, '\uD83D\uDD04 Next Question'),
@@ -919,7 +921,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   callGemini(prompt, { temperature: 0.8, maxTokens: 300 }).then(function(resp) {
                     upd('wordProblem', resp);
                     upd('loadingWP', false);
-                    awardStemXP && awardStemXP(2);
+                    awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
                     checkBadges({ wordProblem: true });
                   }).catch(function() {
                     upd('loadingWP', false);
@@ -962,7 +964,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     callGemini(prompt, { temperature: 0.8, maxTokens: 300 }).then(function(resp) {
                       upd('wordProblem', resp);
                       upd('loadingWP', false);
-                      awardStemXP && awardStemXP(2);
+                      awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
                     }).catch(function() {
                       upd('loadingWP', false);
                       addToast('Could not generate. Try again.', 'error');

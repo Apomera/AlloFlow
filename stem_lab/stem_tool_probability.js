@@ -375,7 +375,7 @@ var d = (labToolData.probability) || {};
 
                 if (stemCelebrate) stemCelebrate();
 
-                if (stemBeep) stemBeep(_streak >= 10 ? 880 : 660, 150);
+                if (stemBeep) stemBeep(_streak >= 10 ? 880 : 660, 0.15);
 
                 if (addToast) addToast('🔥 ' + _streak + ' in a row!', 'success');
 
@@ -386,7 +386,7 @@ var d = (labToolData.probability) || {};
 
                 var _noteMap = { 'H': 523, 'T': 392, 1: 261, 2: 294, 3: 330, 4: 349, 5: 392, 6: 440, 'Red': 523, 'Blue': 587, 'Green': 659, 'Yellow': 698, 'inside': 784, 'outside': 330 };
 
-                stemBeep(_noteMap[_lastR] || 440, 80);
+                stemBeep(_noteMap[_lastR] || 440, 0.08);
 
               }
 
@@ -2384,7 +2384,7 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("div", { style: { width: (count / maxCount * 100) + '%', backgroundColor: barColors[k] || '#6366f1', height: '100%', borderRadius: '9999px', transition: 'width 0.3s' } }),
 
-                      React.createElement("div", { style: { position: 'absolute', left: Math.min(expPct / (expected[k] > 0 ? expected[k] : 0.01) / Object.keys(expected).length, 100) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: 'var(--allo-stem-panel, #1e293b)80' }, title: 'Expected: ' + expPct.toFixed(1) + '%' })
+                      React.createElement("div", { style: { position: 'absolute', left: Math.min(expected[k] * d.trials / maxCount * 100, 100) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: 'rgba(30,41,59,0.5)' }, title: 'Expected: ' + expPct.toFixed(1) + '%' })
 
                     ),
 
@@ -2406,7 +2406,7 @@ var d = (labToolData.probability) || {};
 
               React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } },
 
-                "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=16.7%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : (d.mode === 'custom' || d.mode === 'marbleBag') && customOutcomes[0] ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
+                "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=' + (100 / (d.diceSides || 6)).toFixed(1) + '%' : d.mode === 'dice2' ? 'P(2)=' + (100 / ((d.diceSides || 6) * (d.diceSides || 6))).toFixed(1) + '%' : d.mode === 'pi' ? 'P(inside)=78.5%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : (d.mode === 'custom' || d.mode === 'marbleBag') && customOutcomes[0] ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
 
               ),
 
@@ -2418,7 +2418,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("polyline", {
 
-                  fill: "none", stroke: "#8b5cf6", strokeWidth: 2,
+                  fill: "none", stroke: "#8b5cf6", strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px rgba(139,92,246,0.55))' },
 
                   points: convHist.map(function (h, i) {
 
@@ -2737,18 +2737,18 @@ var d = (labToolData.probability) || {};
                         sfxProbClick();
                         var dropped = 0;
                         _piAnim.interval = setInterval(function() {
-                          // Re-read current toolData so we accumulate cleanly even
-                          // if user clicks +N during animation.
-                          var freshPts = (labToolData && labToolData.probability && labToolData.probability._piPoints) || [];
-                          var x = Math.random(), y = Math.random();
-                          var inside = (x * x + y * y) <= 1;
-                          var nextPts = freshPts.concat([{ x: x, y: y, inside: inside }]);
-                          if (nextPts.length > 1000) nextPts = nextPts.slice(-1000);
-                          upd('_piPoints', nextPts);
-                          // Also bump the standard trial counter so the existing
-                          // estimate / error / convergence panels stay in sync.
-                          upd('trials', (labToolData.probability.trials || 0) + 1);
-                          upd('results', ((labToolData.probability.results || []).concat([inside ? 'inside' : 'outside'])));
+                          // Functional update: the labToolData closure captured at click
+                          // time goes stale after the first tick — read fresh state
+                          // inside setLabToolData (same pattern as runTrialAuto).
+                          setLabToolData(function(prev) {
+                            var _pp = prev.probability || {};
+                            var x = Math.random(), y = Math.random();
+                            var inside = (x * x + y * y) <= 1;
+                            var nextPts = (_pp._piPoints || []).concat([{ x: x, y: y, inside: inside }]);
+                            if (nextPts.length > 1000) nextPts = nextPts.slice(-1000);
+                            var nextRes = (_pp.results || []).concat([inside ? 'inside' : 'outside']);
+                            return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, results: nextRes, trials: nextRes.length }) });
+                          });
                           dropped++;
                           if (dropped >= 100) {
                             clearInterval(_piAnim.interval); _piAnim.interval = null;

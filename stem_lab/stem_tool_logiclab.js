@@ -823,7 +823,8 @@ window.StemLab = window.StemLab || {
                 truth:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: 'Truth Tables \u2014 every input combination, every output', hint: 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.' },
                 proof:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: 'Proof Builder \u2014 derive conclusions step by step',     hint: 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.' },
                 challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: 'Challenges \u2014 graded tautology + contradiction puzzles', hint: 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.' },
-                gates:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: 'Logic Gates \u2014 transistors all the way down',         hint: 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.' }
+                gates:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: 'Logic Gates \u2014 transistors all the way down',         hint: 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.' },
+                simLogic:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFB2', title: 'Probability Logic \u2014 inference under uncertainty', hint: 'P and Q each carry a probability instead of a hard true/false. For independent events, P(P\u2227Q) = P(P) \u00D7 P(Q). Watch how a confidence threshold turns soft probabilities into discrete inferences.' }
               };
               var meta = MODE_META[mode] || MODE_META.truth;
               return React.createElement('div', {
@@ -2096,7 +2097,7 @@ window.StemLab = window.StemLab || {
                 // Gate selector
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   GATE_TYPES.map(function(gt) {
-                    return React.createElement("button", { "aria-label": "Select logic gate: " + gt, key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,50);},
+                    return React.createElement("button", { "aria-label": "Select logic gate: " + gt, key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,0.05);},
                       className: "px-4 py-2 rounded-xl text-sm font-black transition-all",
                       style: { background: gateType===gt?'linear-gradient(135deg,#7c3aed,#a78bfa)':'#f5f3ff', color: gateType===gt?'white':'#7c3aed', boxShadow: gateType===gt?'0 4px 12px rgba(124,58,237,0.3)':'none' }
                     }, gt);
@@ -2114,7 +2115,7 @@ window.StemLab = window.StemLab || {
                           onClick: function() {
                             var ni = Object.assign({}, gateInputs); ni[inp] = !ni[inp];
                             upd({ gateInputs: ni });
-                            if (stemBeep) stemBeep(val?330:523, 60);
+                            if (stemBeep) stemBeep(val?330:523, 0.06);
                           },
                           className: "w-20 h-10 rounded-xl font-black text-sm text-white shadow-md transition-all hover:scale-105",
                           style: { background: val?'linear-gradient(135deg,#059669,#10b981)':'linear-gradient(135deg,#dc2626,#ef4444)', boxShadow: val?'0 4px 12px rgba(16,185,129,0.4)':'0 4px 12px rgba(239,68,68,0.3)' }
@@ -2128,8 +2129,8 @@ window.StemLab = window.StemLab || {
                     !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?"#059669":"#dc2626",strokeWidth:"3" }),
                     React.createElement("rect", { x:"35",y:"15",width:"55",height:"50",rx:"8",fill:"#7c3aed",stroke:"#5b21b6",strokeWidth:"2" }),
                     React.createElement("text", { x:"62",y:"46",textAnchor:"middle",fill:"white",fontWeight:"900",fontSize:"12" }, gateType),
-                    React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?"#059669":"#dc2626",strokeWidth:"3" }),
-                    React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?"#059669":"#dc2626" })
+                    React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?"#059669":"#dc2626",strokeWidth:"3", style:{ filter: gateOutput ? 'drop-shadow(0 0 3px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } }),
+                    React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?"#059669":"#dc2626", style:{ filter: gateOutput ? 'drop-shadow(0 0 4px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } })
                   ),
                   // Output
                   React.createElement("div", { className: "flex flex-col items-center gap-1" },
@@ -2188,7 +2189,7 @@ window.StemLab = window.StemLab || {
             // === H7b'' inquiry widget: probability logic ===
             mode === 'simLogic' && (function() {
               var iq = d._simLogic || { pTrue: 70, qTrue: 70, threshold: 80, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd('_simLogic', Object.assign({}, iq, patch)); }
+              function setIQ(patch) { upd({ _simLogic: Object.assign({}, iq, patch) }); }
               var pAnd = (iq.pTrue * iq.qTrue) / 100;
               var pOr = iq.pTrue + iq.qTrue - pAnd;
               var state;

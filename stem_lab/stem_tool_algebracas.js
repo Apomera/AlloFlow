@@ -183,7 +183,7 @@
             if (earned.indexOf(b.id) === -1 && b.check(data)) {
               earned.push(b.id);
               newBadge = b;
-              if (awardStemXP) awardStemXP(b.xp);
+              if (awardStemXP) awardStemXP('algebraCAS', b.xp, 'Badge: ' + b.label);
             }
           });
           if (newBadge) {
@@ -301,7 +301,7 @@
               var fc = (d._factorCount || 0) + (mode === 'factor' ? 1 : 0);
               var mu = Object.assign({}, d._modesUsed || {}); mu[mode] = true;
               updMulti({ isLoading: false, result: res, history: newH, _solveCount: sc, _factorCount: fc, _modesUsed: mu });
-              if (awardStemXP) awardStemXP(5);
+              if (awardStemXP) awardStemXP('algebraCAS', 5, 'CAS solve');
               checkBadges(Object.assign({}, d, { _solveCount: sc, _factorCount: fc, _modesUsed: mu, history: newH }));
             } else { upd('isLoading', false); }
           }).catch(function(e) {
@@ -341,8 +341,9 @@
               var isRight = /CORRECT:\s*yes/i.test(res);
               var newStreak = isRight ? practiceStreak + 1 : 0;
               var maxSt = Math.max(d._maxStreak || 0, newStreak);
-              if (isRight) { SOUNDS.correct(); if (awardStemXP) awardStemXP(10); }
+              if (isRight) { SOUNDS.correct(); if (awardStemXP) awardStemXP('algebraCAS', 10, 'Practice correct'); }
               else { SOUNDS.wrong(); }
+              if (isRight && stemCelebrate && newStreak % 3 === 0) stemCelebrate();
               updMulti({ practiceFeedback: { correct: isRight, text: res }, practiceScore: practiceScore + (isRight ? 1 : 0), practiceStreak: newStreak, _maxStreak: maxSt, showSolution: !isRight });
               checkBadges(Object.assign({}, d, { _maxStreak: maxSt }));
             }
@@ -391,7 +392,7 @@
               if (solved) {
                 sc = sc + 1;
                 SOUNDS.scaleBalance();
-                if (awardStemXP) awardStemXP(15);
+                if (awardStemXP) awardStemXP('algebraCAS', 15, 'Balance scale solved');
                 if (stemCelebrate) stemCelebrate();
               }
               updMulti({ scaleEq: newEq, scaleSteps: steps, scaleSolved: solved, _scaleSolves: sc });
@@ -423,14 +424,20 @@
 
         /* ============ RENDER HELPERS ============ */
         var renderSteps = function(text) {
+          if (!document.getElementById('allo-cas-step-css')) {
+            var stepCss = document.createElement('style');
+            stepCss.id = 'allo-cas-step-css';
+            stepCss.textContent = '@keyframes casStepIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}';
+            document.head.appendChild(stepCss);
+          }
           return text.split('\n').map(function(line, i) {
             var trimmed = line.trim();
             if (!trimmed) return null;
             var isStep = /^STEP\s+\d+/i.test(trimmed);
             var isAns = /^ANSWER:/i.test(trimmed);
             var ruleM = line.match(/\[([^\]]+)\]/);
-            if (isAns) return h('div', { key: i, style: { marginTop: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', fontWeight: '700' } }, '\u2705 ' + trimmed);
-            if (isStep) return h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '4px 0' } },
+            if (isAns) return h('div', { key: i, style: { marginTop: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', fontWeight: '700', animation: 'casStepIn 300ms ease-out both', animationDelay: Math.min(i * 40, 320) + 'ms' } }, '\u2705 ' + trimmed);
+            if (isStep) return h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '4px 0', animation: 'casStepIn 240ms ease-out both', animationDelay: Math.min(i * 40, 280) + 'ms' } },
               h('span', { style: { flex: '1' } }, ruleM ? line.replace(ruleM[0], '').trim() : trimmed),
               ruleM ? h('span', { style: { padding: '2px 6px', borderRadius: '99px', fontSize: '10px', fontWeight: '700', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', whiteSpace: 'nowrap' } }, ruleM[1]) : null
             );
@@ -574,14 +581,14 @@
             h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Tile Palette'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px' } },
               BUILDER_PALETTE.map(function(tile, i) {
-                return h('button', { 'aria-label': 'Your Equation (click tile to remove)', key: i, onClick: function() { addTile(tile); }, style: tileBtnStyle(tile.cat) }, tile.v);
+                return h('button', { 'aria-label': 'Add tile ' + tile.v, key: i, onClick: function() { addTile(tile); }, style: tileBtnStyle(tile.cat) }, tile.v);
               })
             ),
             h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '6px' } }, 'Your Equation (click tile to remove)'),
             h('div', { style: { minHeight: '48px', padding: '10px', borderRadius: '12px', background: CARD, border: '2px dashed ' + BORDER, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', marginBottom: '10px' } },
               builderTiles.length === 0 ? h('span', { style: { color: MUTED, fontSize: '12px' } }, 'Click tiles above to build an equation...') :
               builderTiles.map(function(tile, i) {
-                return h('button', { 'aria-label': 'Solve It', key: i, onClick: function() { removeTile(i); },
+                return h('button', { 'aria-label': 'Remove tile ' + tile.v, key: i, onClick: function() { removeTile(i); },
                   style: { padding: '6px 10px', borderRadius: '6px', fontSize: '14px', fontWeight: '700', background: TILE_COLORS[tile.cat] || '#6366f1', color: '#fff', cursor: 'pointer', border: 'none' } }, tile.v);
               })
             ),

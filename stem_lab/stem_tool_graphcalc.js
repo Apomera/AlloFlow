@@ -373,7 +373,7 @@
                 if (d.sliderB != null) _tScope.b = d.sliderB;
                 if (d.sliderC != null) _tScope.c = d.sliderC;
                 var ty = tCompiled.evaluate(_tScope);
-                tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' });
+                tableRows.push({ x: Number(tx.toFixed(4)), y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' });
               } catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
             }
           } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
@@ -392,7 +392,7 @@
             newBadges.forEach(function(b) {
               ids.push(b.id);
               if (addToast) addToast(b.icon + ' Badge: ' + b.label + ' (+' + b.xp + ' XP)', 'success');
-              if (awardStemXP) awardStemXP(b.xp);
+              if (awardStemXP) awardStemXP('graphCalc', b.xp, 'Badge: ' + b.label);
             });
             SOUNDS.badge();
             if (stemCelebrate) stemCelebrate();
@@ -502,11 +502,11 @@
           c.strokeStyle = 'rgba(99,102,241,0.08)'; c.lineWidth = 1;
           for (var gx = Math.ceil(win.xmin / xStep) * xStep; gx <= win.xmax; gx += xStep) {
             var gpx = toPixelX(gx); c.beginPath(); c.moveTo(gpx, 0); c.lineTo(gpx, H); c.stroke();
-            if (Math.abs(gx) > xStep * 0.01) { c.fillStyle = '#475569'; c.font = '9px system-ui'; c.textAlign = 'center'; c.fillText(Number(gx.toPrecision(6)), gpx, toPixelY(0) + 12); }
+            if (Math.abs(gx) > xStep * 0.01) { c.fillStyle = '#94a3b8'; c.font = '9px system-ui'; c.textAlign = 'center'; c.fillText(Number(gx.toPrecision(6)), gpx, Math.min(Math.max(toPixelY(0) + 12, 10), H - 4)); }
           }
           for (var gy = Math.ceil(win.ymin / yStep) * yStep; gy <= win.ymax; gy += yStep) {
             var gpy = toPixelY(gy); c.beginPath(); c.moveTo(0, gpy); c.lineTo(W, gpy); c.stroke();
-            if (Math.abs(gy) > yStep * 0.01) { c.fillStyle = '#475569'; c.font = '9px system-ui'; c.textAlign = 'right'; c.fillText(Number(gy.toPrecision(6)), toPixelX(0) - 4, gpy + 3); }
+            if (Math.abs(gy) > yStep * 0.01) { c.fillStyle = '#94a3b8'; c.font = '9px system-ui'; c.textAlign = 'right'; c.fillText(Number(gy.toPrecision(6)), Math.min(Math.max(toPixelX(0) - 4, 30), W - 4), gpy + 3); }
           }
 
           // Axes
@@ -525,7 +525,7 @@
               expr = expr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
               if (/sin|cos|tan/.test(expr)) usedTrig = true;
               var compiled = math.compile(expr);
-              c.strokeStyle = fn.color; c.lineWidth = 2.5; c.beginPath();
+              c.strokeStyle = fn.color; c.lineWidth = 2.5; if (fi === 0) { c.shadowColor = fn.color; c.shadowBlur = 9; } c.beginPath();
               var started = false; var plotStep = xRange / W;
               for (var mx = win.xmin; mx <= win.xmax; mx += plotStep) {
                 try {
@@ -536,7 +536,7 @@
                   } else started = false;
                 } catch (e) { started = false; }
               }
-              c.stroke(); graphCount++;
+              c.stroke(); c.shadowBlur = 0; graphCount++;
               c.fillStyle = fn.color; c.font = 'bold 11px system-ui'; c.textAlign = 'left';
               c.fillText('y' + (fi + 1) + ' = ' + fn.expr, 8, 16 + fi * 16);
             } catch (e) { /* invalid */ }
@@ -757,7 +757,7 @@
               h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
                 [{ id: 'coach', label: '\uD83D\uDCA1 Coach' }, { id: 'challenge', label: '\uD83C\uDFAF Tasks' }, { id: 'ai', label: '\uD83E\uDD16 AI' }, { id: 'badges', label: '\uD83C\uDFC5' }, { id: 'inquiry', label: '\u2754 Inquiry' }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
-                  return h('button', { 'aria-label': 'Read aloud', key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
+                  return h('button', { 'aria-label': st.label, key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
                 })
               ),
               // Coach
@@ -779,7 +779,7 @@
                     h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
                       h('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
-                      h('button', { 'aria-label': 'Complete', onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP(5); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Complete')
+                      h('button', { 'aria-label': 'Complete', onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP('graphCalc', 5, 'Graphing challenge'); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Complete')
                     ) : null
                   );
                 })
