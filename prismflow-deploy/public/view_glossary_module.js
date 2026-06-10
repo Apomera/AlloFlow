@@ -2154,8 +2154,15 @@ function GlossaryView(props) {
     })()))));
   }), generatedContent?.data.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: 3 + selectedLanguages.length,
-    className: "p-8 text-center text-slate-600 italic"
-  }, t('glossary.no_terms'))))))),
+    className: "p-10 text-center text-slate-600"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-4xl allo-empty-float select-none",
+    "aria-hidden": "true"
+  }, "📖"), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-medium text-slate-700"
+  }, t('glossary.no_terms'))))))))),
   // ── Phonics popup (sibling) ──
   // Mirrors the simplified-view popup at view_simplified_module.js:784–865.
   // Renders only when the host has set phonicsData (via handlePhonicsClick),
