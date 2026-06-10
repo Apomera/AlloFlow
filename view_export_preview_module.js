@@ -212,7 +212,21 @@ function ExportPreviewView(props) {
       },
       "\u{1F3F7}\uFE0F ",
       p.name || "Brand"
-    )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.useAppFont, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, useAppFont: e.target.checked })), className: "rounded" }), "Use app font (", FONT_OPTIONS.find((f) => f.id === selectedFont)?.label || "Default", ")"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Size:"), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font:"), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: exportConfig.fontId || (exportConfig.useAppFont ? "app" : "theme"),
+        onChange: (e) => {
+          const v = e.target.value;
+          setExportConfigAndRefresh((p) => ({ ...p, fontId: v, useAppFont: v === "app" }));
+        },
+        className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white",
+        "aria-label": t("a11y.export_font") || "Export font family"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "theme" }, "Theme font (default)"),
+      /* @__PURE__ */ React.createElement("option", { value: "app" }, "My app font (", FONT_OPTIONS.find((f) => f.id === selectedFont)?.label || "Default", ")"),
+      FONT_OPTIONS.filter((f) => f.id !== "default").map((f) => /* @__PURE__ */ React.createElement("option", { key: f.id, value: f.id }, f.label, f.category === "accessibility" ? " \u267F" : ""))
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Size:"), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "range",

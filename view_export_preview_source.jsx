@@ -176,9 +176,27 @@ function ExportPreviewView(props) {
                 {/* Font */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Typography</div>
-                  <label className="flex items-center gap-2 text-xs text-slate-700 mb-2 cursor-pointer">
-                    <input type="checkbox" checked={exportConfig.useAppFont} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, useAppFont: e.target.checked }))} className="rounded" />
-                    Use app font ({FONT_OPTIONS.find(f => f.id === selectedFont)?.label || 'Default'})
+                  {/* Font dropdown (2026-06-11): the builder previously had NO
+                      font picker — only the use-app-font checkbox. Values:
+                      'theme' = the theme's own font, 'app' = follow the app
+                      reading-support font, or an explicit FONT_OPTIONS id
+                      (incl. OpenDyslexic/Lexend/Atkinson — the @font-face
+                      plumbing ships with the export). Rides exportConfig so
+                      presets save/restore it. */}
+                  <label className="flex items-center gap-2 text-xs text-slate-700 mb-2">
+                    <span className="text-[11px] text-slate-600 shrink-0">Font:</span>
+                    <select
+                      value={exportConfig.fontId || (exportConfig.useAppFont ? 'app' : 'theme')}
+                      onChange={(e) => { const v = e.target.value; setExportConfigAndRefresh(p => ({ ...p, fontId: v, useAppFont: v === 'app' })); }}
+                      className="flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
+                      aria-label={t('a11y.export_font') || 'Export font family'}
+                    >
+                      <option value="theme">Theme font (default)</option>
+                      <option value="app">My app font ({FONT_OPTIONS.find(f => f.id === selectedFont)?.label || 'Default'})</option>
+                      {FONT_OPTIONS.filter(f => f.id !== 'default').map(f => (
+                        <option key={f.id} value={f.id}>{f.label}{f.category === 'accessibility' ? ' ♿' : ''}</option>
+                      ))}
+                    </select>
                   </label>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>

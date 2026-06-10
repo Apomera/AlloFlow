@@ -19300,10 +19300,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           '}'
         ].join('\n');
       })() : '';
-      // Font: honor user's app font if toggled, otherwise use theme font
+      // Font: explicit builder dropdown choice (cfg.fontId, 2026-06-11) wins;
+      // 'app' (or the legacy useAppFont checkbox with no fontId) follows the
+      // app reading-support font; 'theme'/absent falls back to the theme font.
       // Read FONT_OPTIONS from window (defined in monolith) with safe fallback
       const _fontOptions = (typeof window !== 'undefined' && window.FONT_OPTIONS) || [];
-      const appFontEntry = _fontOptions.find(f => f.id === selectedFont);
+      const _fid = cfg.fontId;
+      const appFontEntry = (_fid === 'app' || (_fid == null && cfg.useAppFont))
+        ? _fontOptions.find(f => f.id === selectedFont)
+        : (_fid && _fid !== 'theme' ? _fontOptions.find(f => f.id === _fid) : null);
+      const _useExportFont = !!appFontEntry && appFontEntry.id !== 'default';
       // Use the entry's REAL CSS family (entry.family carries its own generic
       // fallback chain). The old `'${label}'` form silently broke every font
       // whose label isn't its family — 'Gentium Plus' (real family: Gentium
@@ -19311,19 +19317,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // never got an @font-face at all, so the flagship dyslexia font fell
       // back to the theme font in every export. Label form kept only as a
       // fallback for stale cached font-library modules without .family.
-      const _appFamily = (cfg.useAppFont && appFontEntry && appFontEntry.id !== 'default')
+      const _appFamily = _useExportFont
         ? (appFontEntry.family || `'${appFontEntry.label}', ${theme.bodyFont}`)
         : '';
       const exportFontFamily = _appFamily || theme.bodyFont;
       // Italic/bold-italic variants (Andika Italic etc.) carry their style in
       // the entry id — surface it on the export body like the in-app classes do.
-      const exportFontStyleExtras = (cfg.useAppFont && appFontEntry && /italic/.test(appFontEntry.id))
+      const exportFontStyleExtras = (_useExportFont && /italic/.test(appFontEntry.id))
         ? ' font-style: italic;' + (/bold/.test(appFontEntry.id) ? ' font-weight: 700;' : '')
         : '';
       const _odFontFace = "@font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff'); font-weight: normal; } @font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff'); font-weight: bold; }";
-      const exportFontImport = cfg.useAppFont && appFontEntry?.googleFont
+      const exportFontImport = _useExportFont && appFontEntry.googleFont
         ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');`
-        : (cfg.useAppFont && appFontEntry && appFontEntry.id === 'opendyslexic' ? _odFontFace : '');
+        : (_useExportFont && appFontEntry.id === 'opendyslexic' ? _odFontFace : '');
       const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
       const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
       const lessonTopic = topic || t('export.default_lesson_title');
