@@ -27,32 +27,32 @@
   }
 
 const FONT_OPTIONS = [
-    { id: 'default', label: 'Default (System)', cssClass: '', category: 'default' },
-    { id: 'opendyslexic', label: 'OpenDyslexic', cssClass: 'font-opendyslexic', googleFont: null, category: 'accessibility' },
-    { id: 'lexend', label: 'Lexend', cssClass: 'font-lexend', googleFont: 'Lexend:wght@400;500;700', category: 'accessibility' },
-    { id: 'atkinson', label: 'Atkinson Hyperlegible', cssClass: 'font-atkinson', googleFont: 'Atkinson+Hyperlegible:wght@400;700', category: 'accessibility' },
+    { id: 'default', label: 'Default (System)', family: "", cssClass: '', category: 'default' },
+    { id: 'opendyslexic', label: 'OpenDyslexic', family: "'OpenDyslexic', sans-serif", cssClass: 'font-opendyslexic', googleFont: null, category: 'accessibility' },
+    { id: 'lexend', label: 'Lexend', family: "'Lexend', sans-serif", cssClass: 'font-lexend', googleFont: 'Lexend:wght@400;500;700', category: 'accessibility' },
+    { id: 'atkinson', label: 'Atkinson Hyperlegible', family: "'Atkinson Hyperlegible', sans-serif", cssClass: 'font-atkinson', googleFont: 'Atkinson+Hyperlegible:wght@400;700', category: 'accessibility' },
     // Andika (SIL): regular + bold + italic + bold-italic loaded in one Google Fonts call.
     // Italic and Bold Italic are surfaced as their own selectable font options (per teacher
     // request 2026-06-01) so they can be picked from the font dropdown alongside upright
     // Andika; CSS classes below set font-style/font-weight on top of the shared family.
-    { id: 'andika', label: 'Andika (SIL)', cssClass: 'font-andika', googleFont: 'Andika:ital,wght@0,400;0,700;1,400;1,700', category: 'accessibility' },
-    { id: 'andika-italic', label: 'Andika Italic (SIL)', cssClass: 'font-andika-italic', googleFont: null, category: 'accessibility' },
-    { id: 'andika-bold-italic', label: 'Andika Bold Italic (SIL)', cssClass: 'font-andika-bold-italic', googleFont: null, category: 'accessibility' },
-    { id: 'inter', label: 'Inter', cssClass: 'font-inter', googleFont: 'Inter:wght@400;500;600;700', category: 'sans-serif' },
-    { id: 'roboto', label: 'Roboto', cssClass: 'font-roboto', googleFont: 'Roboto:wght@400;500;700', category: 'sans-serif' },
-    { id: 'opensans', label: 'Open Sans', cssClass: 'font-opensans', googleFont: 'Open+Sans:wght@400;600;700', category: 'sans-serif' },
-    { id: 'lato', label: 'Lato', cssClass: 'font-lato', googleFont: 'Lato:wght@400;700', category: 'sans-serif' },
-    { id: 'nunito', label: 'Nunito', cssClass: 'font-nunito', googleFont: 'Nunito:wght@400;600;700', category: 'sans-serif' },
-    { id: 'sourcesans', label: 'Source Sans 3', cssClass: 'font-sourcesans', googleFont: 'Source+Sans+3:wght@400;600;700', category: 'sans-serif' },
-    { id: 'poppins', label: 'Poppins', cssClass: 'font-poppins', googleFont: 'Poppins:wght@400;500;600;700', category: 'modern' },
-    { id: 'montserrat', label: 'Montserrat', cssClass: 'font-montserrat', googleFont: 'Montserrat:wght@400;500;600;700', category: 'modern' },
-    { id: 'raleway', label: 'Raleway', cssClass: 'font-raleway', googleFont: 'Raleway:wght@400;500;600;700', category: 'modern' },
-    { id: 'quicksand', label: 'Quicksand', cssClass: 'font-quicksand', googleFont: 'Quicksand:wght@400;500;700', category: 'modern' },
-    { id: 'comic', label: 'Comic Neue', cssClass: 'font-comic', googleFont: 'Comic+Neue:wght@400;700', category: 'modern' },
-    { id: 'merriweather', label: 'Merriweather', cssClass: 'font-merriweather', googleFont: 'Merriweather:wght@400;700', category: 'serif' },
-    { id: 'gentium', label: 'Gentium Plus', cssClass: 'font-gentium', googleFont: 'Gentium+Book+Plus:wght@400;700', category: 'serif' },
-    { id: 'lora', label: 'Lora', cssClass: 'font-lora', googleFont: 'Lora:wght@400;500;700', category: 'serif' },
-    { id: 'playfair', label: 'Playfair Display', cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' }
+    { id: 'andika', label: 'Andika (SIL)', family: "'Andika', sans-serif", cssClass: 'font-andika', googleFont: 'Andika:ital,wght@0,400;0,700;1,400;1,700', category: 'accessibility' },
+    { id: 'andika-italic', label: 'Andika Italic (SIL)', family: "'Andika', sans-serif", cssClass: 'font-andika-italic', googleFont: null, category: 'accessibility' },
+    { id: 'andika-bold-italic', label: 'Andika Bold Italic (SIL)', family: "'Andika', sans-serif", cssClass: 'font-andika-bold-italic', googleFont: null, category: 'accessibility' },
+    { id: 'inter', label: 'Inter', family: "'Inter', sans-serif", cssClass: 'font-inter', googleFont: 'Inter:wght@400;500;600;700', category: 'sans-serif' },
+    { id: 'roboto', label: 'Roboto', family: "'Roboto', sans-serif", cssClass: 'font-roboto', googleFont: 'Roboto:wght@400;500;700', category: 'sans-serif' },
+    { id: 'opensans', label: 'Open Sans', family: "'Open Sans', sans-serif", cssClass: 'font-opensans', googleFont: 'Open+Sans:wght@400;600;700', category: 'sans-serif' },
+    { id: 'lato', label: 'Lato', family: "'Lato', sans-serif", cssClass: 'font-lato', googleFont: 'Lato:wght@400;700', category: 'sans-serif' },
+    { id: 'nunito', label: 'Nunito', family: "'Nunito', sans-serif", cssClass: 'font-nunito', googleFont: 'Nunito:wght@400;600;700', category: 'sans-serif' },
+    { id: 'sourcesans', label: 'Source Sans 3', family: "'Source Sans 3', sans-serif", cssClass: 'font-sourcesans', googleFont: 'Source+Sans+3:wght@400;600;700', category: 'sans-serif' },
+    { id: 'poppins', label: 'Poppins', family: "'Poppins', sans-serif", cssClass: 'font-poppins', googleFont: 'Poppins:wght@400;500;600;700', category: 'modern' },
+    { id: 'montserrat', label: 'Montserrat', family: "'Montserrat', sans-serif", cssClass: 'font-montserrat', googleFont: 'Montserrat:wght@400;500;600;700', category: 'modern' },
+    { id: 'raleway', label: 'Raleway', family: "'Raleway', sans-serif", cssClass: 'font-raleway', googleFont: 'Raleway:wght@400;500;600;700', category: 'modern' },
+    { id: 'quicksand', label: 'Quicksand', family: "'Quicksand', sans-serif", cssClass: 'font-quicksand', googleFont: 'Quicksand:wght@400;500;700', category: 'modern' },
+    { id: 'comic', label: 'Comic Neue', family: "'Comic Neue', cursive, sans-serif", cssClass: 'font-comic', googleFont: 'Comic+Neue:wght@400;700', category: 'modern' },
+    { id: 'merriweather', label: 'Merriweather', family: "'Merriweather', serif", cssClass: 'font-merriweather', googleFont: 'Merriweather:wght@400;700', category: 'serif' },
+    { id: 'gentium', label: 'Gentium Plus', family: "'Gentium Book Plus', serif", cssClass: 'font-gentium', googleFont: 'Gentium+Book+Plus:wght@400;700', category: 'serif' },
+    { id: 'lora', label: 'Lora', family: "'Lora', serif", cssClass: 'font-lora', googleFont: 'Lora:wght@400;500;700', category: 'serif' },
+    { id: 'playfair', label: 'Playfair Display', family: "'Playfair Display', serif", cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' }
 ];
 if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
 (function injectFontStyles() {

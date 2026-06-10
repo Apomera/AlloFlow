@@ -6470,7 +6470,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
   const [fontTheme, setFontTheme] = useState('Default');
-  const [selectedFont, setSelectedFont] = useState('default');
+  // Persisted (was session-only — the one reading-support preference that
+  // reset on every reload while readingTheme/colorOverlay survived).
+  const [selectedFont, _setSelectedFont] = useState(() => { try { return safeGetItem('allo_selected_font') || 'default'; } catch { return 'default'; } });
+  const setSelectedFont = (v) => { try { safeSetItem('allo_selected_font', v); } catch {} _setSelectedFont(v); };
   const [focusMode, setFocusMode] = useState(false);
   const [isLineFocusMode, setIsLineFocusMode] = useState(false);
   const [focusedParagraphIndex, setFocusedParagraphIndex] = useState(null);
