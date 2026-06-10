@@ -106,7 +106,7 @@ function ExportPreviewView(props) {
                   <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <button onClick={() => setShowExportPreview(false)} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors" aria-label={t("a11y.close_doc_builder")}><X size={16} /></button>
+                    <button onClick={() => setShowExportPreview(false)} className="p-1 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors" data-help-key="doc_builder_close_btn" aria-label={t("a11y.close_doc_builder")}><X size={16} /></button>
                   </div>
                 </div>
                 {exportPreviewSource === 'remediation' && (
@@ -218,7 +218,7 @@ function ExportPreviewView(props) {
                       value={exportConfig.fontId || (exportConfig.useAppFont ? 'app' : 'theme')}
                       onChange={(e) => { const v = e.target.value; setExportConfigAndRefresh(p => ({ ...p, fontId: v, useAppFont: v === 'app' })); }}
                       className="flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
-                      aria-label={t('a11y.export_font') || 'Export font family'}
+                      data-help-key="doc_builder_font_select" aria-label={t('a11y.export_font') || 'Export font family'}
                     >
                       <option value="theme">Theme font (default)</option>
                       <option value="app">My app font ({FONT_OPTIONS.find(f => f.id === selectedFont)?.label || 'Default'})</option>
@@ -230,7 +230,7 @@ function ExportPreviewView(props) {
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
-                      className="flex-1 accent-indigo-600" aria-label={t("a11y.font_size")} />
+                      className="flex-1 accent-indigo-600" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
@@ -797,7 +797,7 @@ function ExportPreviewView(props) {
                   return (
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
-                  <button onClick={runWritingCheck} disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                  <button onClick={runWritingCheck} data-help-key="doc_builder_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
                     {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check grammar (English)')}
                   </button>
                   <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; first run downloads ~10 MB (then it’s instant). Spelling is underlined by your browser as you type.'}</p>
@@ -856,6 +856,7 @@ function ExportPreviewView(props) {
                       setExportAuditLoading(false);
                     }}
                     disabled={exportAuditLoading}
+                    data-help-key="doc_builder_wcag_audit_btn"
                     aria-busy={exportAuditLoading}
                     className="w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
                   >

@@ -12103,8 +12103,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // banner copy can be reason-specific: an accessibility concern is an a11y-expertise
       // problem (Knowbility referral), a content-fidelity concern is a "verify the text
       // carried over" problem (review the Diff) — they are not the same ask.
+      // Severity-gated (2026-06-12): score<70 alone no longer triggers the
+      // expert/vendor referral — a 65 with zero CRITICAL violations is a
+      // decent document with moderate polish left, not an expert case. The
+      // card now means it: criticals present, axe couldn't verify at all, or
+      // the score is genuinely rough (<50).
       const _accessibilityConcern = axeFailed || // axe-core failed entirely — can't verify
-        (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 70) || axeCritical > 0));
+        (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
       const _contentFidelityConcern = !!integrityWarning;
       const needsExpertReview = _accessibilityConcern || _contentFidelityConcern;
       const expertReviewReason = (_accessibilityConcern && _contentFidelityConcern) ? 'both'

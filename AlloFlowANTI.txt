@@ -15641,8 +15641,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json');
       if (isAuto) lastAutoSaveHashRef.current = hashKey;
       const rangeCount = project.multiSession ? project.multiSession.ranges.length : 0;
+      // Reframed (2026-06-12): the auto-save toast read like an action item —
+      // teachers wondered what they were supposed to DO with the .json that
+      // just appeared in Downloads. It's a backup; say so.
       const msg = isAuto
-        ? ('💾 Auto-saved project' + (cur.afterScore ? ' (score ' + cur.afterScore + ')' : ''))
+        ? ('💾 A backup of this session was saved to your Downloads (a project file). Nothing to do with it now — if you ever need to come back, "Load Project" brings everything back.' + (cur.afterScore ? ' (score ' + cur.afterScore + ')' : ''))
         : (project.multiSession
             ? '💾 Project saved (' + rangeCount + ' range' + (rangeCount === 1 ? '' : 's') + ') — load it later to continue'
             : '💾 Project saved — load it later to continue editing');

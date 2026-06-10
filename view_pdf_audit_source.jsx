@@ -652,6 +652,10 @@ function PdfAuditView(props) {
   // autoRestoreSummary.unplaceable (null = closed) + per-word outcomes.
   const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
+  // Failed-verification tagged download: bytes wait here while the teacher
+  // decides via the inline panel (replaces a blocking window.confirm).
+  const [taggedGateIssue, setTaggedGateIssue] = useState(null);
+  const _taggedGateBytesRef = useRef(null);
   // Live elapsed counter for the audit wait (honest-wait copy, 2026-06-12).
   const [auditElapsedSec, setAuditElapsedSec] = useState(0);
   useEffect(() => {
@@ -4085,6 +4089,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           🗑️ {t('pdf_audit.start_new_audit') || 'Start New Audit'}
                         </button>
                       </div>
+                      {/* "What now?" strip (2026-06-12): 308 elements below — give
+                          the first action explicitly. Additions-only. */}
+                      <div className="bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap" role="note">
+                        <span className="font-black text-emerald-800">{t('pdf_audit.whatnow.lead') || 'What now?'}</span>
+                        <span>{_inputIsPdf
+                          ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
+                          : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')}</span>
+                        <button onClick={() => { try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0">📥 {t('pdf_audit.whatnow.go') || 'Take me to Downloads'}</button>
+                      </div>
                       {pdfFixResult.pageCount && (
                         <div className="flex gap-2 flex-wrap">
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📄 {pdfFixResult.pageCount} pages processed</span>
@@ -5218,6 +5231,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {Array.isArray(tagOutline) && tagOutline.length === 0 && <div className="text-[11px] text-slate-500">No taggable block structure found in the remediated HTML.</div>}
                           </div>
                         </details>
+                        {/* Failed-verification decision panel (2026-06-12): replaces
+                            the blocking window.confirm. Honest options, no dead end. */}
+                        {taggedGateIssue && (
+                          <div className="w-full mt-2 bg-amber-50 border-2 border-amber-400 rounded-xl p-3 text-xs text-amber-900" role="alert">
+                            <div className="font-black mb-1">⚠ {t('pdf_audit.gate.heading') || 'This tagged PDF did not pass its own structure check'}</div>
+                            <p className="mb-2">{t('pdf_audit.gate.body') || 'The accessibility structure may not have survived saving:'} <span className="font-mono text-[11px]">{taggedGateIssue}</span></p>
+                            <div className="flex gap-2 flex-wrap">
+                              <button onClick={() => { try { const g = _taggedGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); addToast(t('toasts.unverified_downloaded') || '⚠ Unverified tagged PDF downloaded (filename marked) — verify in PAC 2024 or a screen reader before distributing.', 'warning'); } } catch (_) {} setTaggedGateIssue(null); }} className="px-3 py-1.5 bg-white border border-amber-500 text-amber-800 rounded-lg font-bold hover:bg-amber-100">⬇ {t('pdf_audit.gate.anyway') || 'Download anyway (marked unverified)'}</button>
+                              <button onClick={() => { setTaggedGateIssue(null); try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700">📝 {t('pdf_audit.gate.word_instead') || 'Use the Word or HTML download instead'}</button>
+                              <button onClick={() => setTaggedGateIssue(null)} className="px-3 py-1.5 text-amber-700 font-bold hover:text-red-600">✕ {t('pdf_audit.gate.dismiss') || 'Dismiss'}</button>
+                            </div>
+                          </div>
+                        )}
                         {/* Pinned tagged-PDF report — stays until dismissed so the
                             teacher can actually read what happened (replaces the
                             unreadable toast cascade). */}
@@ -5302,11 +5328,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (roundTrip && roundTrip.ok === false) {
                                 const _rtFails = (roundTrip.checks || []).filter(c => c && c.status === 'fail').map(c => c.rule);
                                 const _rtMsg = _rtFails.length ? _rtFails.join('; ') : ((roundTrip.warnings || []).join('; ') || 'structure may not have survived serialization');
-                                addToast('⚠ Post-save structure check FAILED: ' + _rtMsg + '. Do not distribute until verified in PAC 3 or a screen reader.', 'error');
-                                const _proceed = (typeof window !== 'undefined' && typeof window.confirm === 'function')
-                                  ? window.confirm('The tagged PDF FAILED its post-save structure check:\n\n' + _rtMsg + '\n\nThe accessibility structure may not have survived serialization. Download the unverified file anyway?')
-                                  : false;
-                                if (!_proceed) { addToast('Download cancelled — the tagged PDF did not pass verification.', 'info'); return; }
+                                // Inline decision panel instead of a blocking window.confirm
+                                // (2026-06-12): confirm() is unreliable in the Canvas sandbox
+                                // and a modal dead-end was the worst ending the hands-free
+                                // flow could have. The bytes wait in a ref; the teacher
+                                // chooses calmly from the pinned panel.
+                                _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-UNVERIFIED.pdf' };
+                                setTaggedGateIssue(_rtMsg);
+                                addToast(t('toasts.tagged_gate_pinned') || '⚠ The tagged PDF failed its post-save structure check — your options are pinned above the download buttons.', 'warning');
+                                return;
                               }
                               const blob = new Blob([taggedBytes], { type: 'application/pdf' });
                               safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged.pdf');
