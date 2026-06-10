@@ -183,6 +183,11 @@ const checks = [
     informational: true,
   },
   {
+    name: 'Help-mode coverage (data-help-key ↔ help_strings)',
+    cmd: ['node', '_audit_help_keys.cjs'],
+    description: 'Every data-help-key anchor must have a help_strings.js entry — a missing one means help-mode clicks silently do nothing. Backfilled to 0 missing 2026-06-12; BLOCKING so the invariant holds (the audit went stale once and hid a 73-key deficit).',
+  },
+  {
     name: 'Firebase functions surface',
     cmd: ['node', 'dev-tools/check_firebase_functions.cjs', '--quiet'],
     description: '12 expected Firebase function exports present + well-shaped',

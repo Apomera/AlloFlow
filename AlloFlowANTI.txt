@@ -1259,6 +1259,19 @@ window._upgradeUIFontLibrary = function () {
 if (window.AlloModules && window.AlloModules.UIFontLibrary) window._upgradeUIFontLibrary();
 let UI_STRINGS = {};
 let HELP_STRINGS = {};
+// Prefix fallback (2026-06-12): dynamic anchors like 'engineering_cycle_<stage>'
+// can't have exhaustive per-suffix entries — when the exact key misses, walk
+// back to the longest defined PREFIX entry ending in '_'.
+const _helpLookup = (key) => {
+  if (!key) return '';
+  if (HELP_STRINGS[key]) return HELP_STRINGS[key];
+  let k = String(key);
+  while (k.indexOf('_') !== -1) {
+    k = k.slice(0, k.lastIndexOf('_'));
+    if (HELP_STRINGS[k + '_']) return HELP_STRINGS[k + '_'];
+  }
+  return '';
+};
 (async () => {
     try {
         const cached = localStorage.getItem("alloflow_ui_strings_cache");
@@ -6964,6 +6977,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const DOM_TO_TOOL_ID_MAP = (window.AlloModules && window.AlloModules.TextPipelineHelpers && window.AlloModules.TextPipelineHelpers.DOM_TO_TOOL_ID_MAP) || {};
     const tourSteps = [
       { id: 'tour-input-panel', text: t('tour.input_panel_text'), title: t('tour.input_panel_title') },
+      // Discovery step for the remediation pipeline (2026-06-12): the most
+      // consequential feature was invisible in the tour.
+      { id: 'tour-upload-source', text: t('tour.upload_accessibility_text') || 'Make any document accessible: upload a PDF, Word, or PowerPoint file here and AlloFlow audits it for accessibility barriers, fixes what it can, and hands back ready-to-share copies — including a screen-reader-ready Tagged PDF that looks identical to the original. One click ("Make Accessible") runs the whole pipeline; you can also batch a folder of files at once from the Educator Hub.', title: t('tour.upload_accessibility_title') || 'Turn any document accessible' },
       { id: 'tour-tool-analysis', text: t('tour.analysis_text'), title: t('tour.analysis_title') },
       { id: 'ui-tool-glossary', text: t('tour.glossary_text'), title: t('tour.glossary_title') },
       { id: 'ui-tool-simplified', text: t('tour.simplified_text'), title: t('tour.simplified_title') },
@@ -7036,7 +7052,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         const key = explicitHelp.getAttribute('data-help-key');
         const _rawHelp = t('help_mode.' + key, { defaultValue: '' });
         const localizedHelp = (_rawHelp && _rawHelp !== 'help_mode.' + key) ? _rawHelp : '';
-        const helpText = localizedHelp || HELP_STRINGS[key];
+        const helpText = localizedHelp || _helpLookup(key);
         if (helpText) {
             const deriveTitle = (k) => {
                 const _rawTitle = t('help_mode.' + k + '_title', { defaultValue: '' });
@@ -10677,7 +10693,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               const title = el.getAttribute('title') || '';
               const helpKey = el.closest?.('[data-help-key]')?.getAttribute('data-help-key');
               const _rawHelp = helpKey ? t('help_mode.' + helpKey, { defaultValue: '' }) : '';
-              const helpText = helpKey ? ((_rawHelp && _rawHelp !== 'help_mode.' + helpKey) ? _rawHelp : (HELP_STRINGS[helpKey] || '')) : '';
+              const helpText = helpKey ? ((_rawHelp && _rawHelp !== 'help_mode.' + helpKey) ? _rawHelp : _helpLookup(helpKey)) : '';
               let typePrefix = '';
               if (tag === 'button' || role === 'button') typePrefix = 'Button: ';
               else if (tag === 'a') typePrefix = 'Link: ';
@@ -24080,6 +24096,7 @@ ${_toolList}
                         accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.csv,.json,.html,.xml,video/*,audio/*"
                      />
                      <button
+                         id="tour-upload-source"
                          aria-label={t('common.refresh')}
                         onClick={() => fileInputRef.current.click()}
                         disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
@@ -26094,7 +26111,10 @@ ${_toolList}
         />
       )}
       {!isZenMode && !showUDLGuide && (<>
-      {(isHelpMode || showWizard || isWordSoundsMode || isSyntaxGame || isMemoryGame || isCrosswordGame || isMatchingGame || isTimelineGame || isConceptSortGame || isReviewGame || escapeRoomState.isActive || isProjectSettingsOpen) && (
+      {/* 2026-06-12: pipeline + builder states added — the header help toggle
+          is occluded by their z-[200] backdrops, so without these the "?" was
+          unreachable exactly where 62 help anchors live. */}
+      {(isHelpMode || showWizard || isWordSoundsMode || isSyntaxGame || isMemoryGame || isCrosswordGame || isMatchingGame || isTimelineGame || isConceptSortGame || isReviewGame || escapeRoomState.isActive || isProjectSettingsOpen || !!pdfAuditResult || pdfAuditLoading || showExportPreview) && (
       <button
         data-help-ignore="true"
         onClick={handleToggleIsHelpMode}

@@ -2,20 +2,14 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 309
-Defined help keys (help_strings.js): 782
-Referenced help keys (data-help-key attrs): 763
-  - With definition: 761
-  - MISSING definition: 2
-Dead entries (defined but never referenced): 21
+Files scanned: 360
+Defined help keys (help_strings.js): 855
+Referenced help keys (data-help-key attrs): 833
+  - With definition: 833
+  - MISSING definition: 0
+Dead entries (defined but never referenced): 22
 
 --- MISSING help strings (referenced, no definition) ---
-  anchor_chart_interactive_mode_toggle  [2x in 2 file(s)]
-     - anchor_charts_module.js
-     - anchor_charts_source.jsx
-  educator_hub_dynamic_assessment_card  [2x in 2 file(s)]
-     - view_educator_hub_modal_module.js
-     - view_educator_hub_modal_source.jsx
 
 --- DEAD entries (defined but never used) ---
   alignment_generate_button
@@ -26,6 +20,7 @@ Dead entries (defined but never referenced): 21
   concept_sort_input
   header_actions
   header_settings
+  header_support
   header_tools
   header_utils
   header_view_student
@@ -41,5 +36,3 @@ Dead entries (defined but never referenced): 21
   wizard_close_btn
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
-     1  anchor
-     1  educator

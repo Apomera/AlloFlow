@@ -652,6 +652,36 @@ function PdfAuditView(props) {
   // autoRestoreSummary.unplaceable (null = closed) + per-word outcomes.
   const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
+  // Live elapsed counter for the audit wait (honest-wait copy, 2026-06-12).
+  const [auditElapsedSec, setAuditElapsedSec] = useState(0);
+  useEffect(() => {
+    if (!pdfAuditLoading) { setAuditElapsedSec(0); return; }
+    const iv = setInterval(() => setAuditElapsedSec((s) => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, [pdfAuditLoading]);
+  // Pre-flight pageCount (2026-06-12): every triage opener writes only
+  // {_choosing, fileName, fileSize}, but the ENTIRE pre-flight panel —
+  // time estimate, scanned-PDF warning, the Auto/Review/Expert mode picker —
+  // gated on pageCount > 0, so it was unreachable on every fresh upload
+  // (confirmed: all 4 setter sites). Compute it here via pdf-lib and merge.
+  useEffect(() => {
+    if (!pdfAuditResult || !pdfAuditResult._choosing || pdfAuditResult.pageCount > 0) return;
+    if (!pendingPdfBase64 || pendingPdfBase64.slice(0, 5) !== 'JVBER') return; // PDFs only
+    let cancelled = false;
+    (async () => {
+      try {
+        const ok = await _ensurePdfLib();
+        if (!ok || cancelled || !window.PDFLib) return;
+        const binStr = atob(pendingPdfBase64);
+        const bytes = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+        const d = await window.PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true });
+        const n = d.getPageCount();
+        if (!cancelled && n > 0) setPdfAuditResult((prev) => (prev && prev._choosing && !(prev.pageCount > 0)) ? { ...prev, pageCount: n } : prev);
+      } catch (_) { /* panel simply stays hidden, as before */ }
+    })();
+    return () => { cancelled = true; };
+  }, [pdfAuditResult && pdfAuditResult._choosing, pendingPdfBase64]);
   // Per-stage status for the Tier B restoration handler. Empty when idle;
   // 'word-splice' / 'sentence-anchor' / 're-tag' while running so the button
   // can show honest progress instead of a single "Restoring..." label.
@@ -1798,8 +1828,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
             ) : pdfAuditLoading ? (
               <div className="p-12 text-center" role="status" aria-live="polite">
                 <div className="text-5xl mb-4 animate-pulse" aria-hidden="true">♿</div>
-                <h3 className="text-lg font-black text-slate-800 mb-2">{t('pdf_audit.loading.title') || 'Auditing PDF Accessibility...'}</h3>
-                <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle') || 'Running 5 parallel WCAG 2.1 AA audit passes (one AI model, varied prompts) + an axe-core baseline. This may take 15-30 seconds.'}</p>
+                <h3 className="text-lg font-black text-slate-800 mb-2">{t('pdf_audit.loading.title') || 'Checking your document…'}</h3>
+                {/* Honest wait copy (2026-06-12): the old subtitle hard-coded
+                    '15-30 seconds' while the engine's own estimate runs to
+                    '5-10 minutes' on large files — the #1 give-up risk in the
+                    first-run audit. Mirror the engine's size-based estimate
+                    (doc_pipeline estTime formula) + live elapsed counter. */}
+                {(() => {
+                  const _kb = pendingPdfFile && pendingPdfFile.size ? Math.round(pendingPdfFile.size / 1024) : (pendingPdfBase64 ? Math.round(pendingPdfBase64.length * 0.75 / 1024) : 0);
+                  const _est = _kb < 200 ? (t('pdf_audit.loading.est_fast') || 'usually 15–30 seconds') : _kb < 1000 ? (t('pdf_audit.loading.est_med') || 'usually 30–90 seconds') : _kb < 5000 ? (t('pdf_audit.loading.est_slow') || 'usually 2–5 minutes') : (t('pdf_audit.loading.est_vslow') || 'usually 5–10 minutes — this is a big file');
+                  const _mm = Math.floor(auditElapsedSec / 60), _ss = auditElapsedSec % 60;
+                  return (
+                    <div>
+                      <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle2') || 'Several accessibility checks are reading every page (5 AI review passes + an automated rule scan).'}</p>
+                      <p className="text-sm font-bold text-slate-700 mt-1">{(t('pdf_audit.loading.for_size') || 'For a file this size:')} {_est}</p>
+                      <p className="text-xs text-slate-500 mt-1" aria-hidden="true">{_mm > 0 ? _mm + 'm ' : ''}{_ss}s {t('pdf_audit.loading.elapsed') || 'elapsed'} — {t('pdf_audit.loading.safe_to_wait') || 'it’s safe to keep waiting; nothing is stuck.'}</p>
+                    </div>
+                  );
+                })()}
                 {/* Indeterminate by design: the audit exposes no per-step progress signal,
                     so a width-fill animation faking a percentage would be dishonest.
                     Sweep + no aria-valuenow = ARIA indeterminate progressbar. */}
@@ -4026,7 +4072,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         );
                       })()}
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">♿ Remediation Complete</h4>
+                        <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">✅ {t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready'}</h4>
                         <button
                           onClick={() => {
                             if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
@@ -5190,6 +5236,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <p className="mt-2 text-[10px] text-slate-500">{t('pdf_audit.tagged_report.note') || 'This panel stays until you dismiss it. The same details ship inside the Adobe-style A11y Report download.'}</p>
                           </div>
                         )}
+                        {/* Which-format legend (2026-06-12): the cluster offers 6+
+                            formats with tooltip-only guidance — format paralysis was
+                            a ranked first-run friction. One visible line. */}
+                        <p className="w-full text-[11px] text-slate-600 mt-1">
+                          <span className="font-bold">{t('pdf_audit.format_legend.lead') || 'Which file?'}</span>{' '}
+                          {t('pdf_audit.format_legend.body') || '📄 Tagged PDF — give this to students (looks identical to the original, works with screen readers). 📝 Word — keep editing it. 📽 PowerPoint — present it. 📄 HTML — opens anywhere, no software needed.'}
+                        </p>
                         {/* Tagged PDF (original + structure tags). Preserves the
                             source PDF's visual layer byte-identical and injects a
                             StructTreeRoot derived from the accessibleHtml outline.
@@ -5319,7 +5372,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   if (summary.linksGenericText > 0) _qualityIssues.push(summary.linksGenericText + ' link' + (summary.linksGenericText === 1 ? '' : 's') + ' with generic text');
                                   if (_qualityIssues.length > 0) _rpt.push({ tone: 'warn', text: 'Worth fixing in the preview, then re-export: ' + _qualityIssues.join(', ') + '.' });
                               }
-                              _rpt.push({ tone: 'info', text: 'Final compliance call: open the file in PAC 2024 or test with a screen reader.' });
+                              _rpt.push({ tone: 'info', text: 'For an official compliance verdict: open the file in PAC 2024 (free checker), test it with a screen reader, or send this report to your district accessibility coordinator.' });
                               setLastTaggedReport({
                                 file: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged.pdf',
                                 when: new Date().toLocaleTimeString(),
