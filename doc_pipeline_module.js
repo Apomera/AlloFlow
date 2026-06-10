@@ -4127,6 +4127,57 @@ var createDocPipeline = function(deps) {
   const _ALLO_SECTION_CLOSE = '<<<ALLO_SECTION:END>>>';
   const _ALLO_MARKER_RE = /<<<ALLO_SECTION:[^>]+>>>\n?/g;
 
+  // ── Office media extraction (2026-06-11) ──
+  // Embedded images in DOCX/PPTX were silently DROPPED at extraction — only
+  // their descr alt text survived (as [Image: …] markers). This collects the
+  // actual bytes as data URLs so images ride the remediation (aiFixChunked
+  // already strips/restores data-URL srcs via __IMG_DATA_N__ placeholders)
+  // and land in every export. Honesty rules: EMF/WMF (browsers can't render
+  // them) and oversize images degrade to alt-only entries WITH the reason;
+  // caps: 2.5 MB per image, 10 MB total per document.
+  const _OFFICE_IMG_MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp', webp: 'image/webp', svg: 'image/svg+xml' };
+  const _officeMediaFromPart = async (zip, relsPath, partXml, resolveTarget, slideNum, budget) => {
+    const out = [];
+    try {
+      const relsFile = zip.file(relsPath);
+      if (!relsFile) return out;
+      const relsXml = await relsFile.async('string');
+      const relMap = {};
+      const _relRe = /<Relationship\b[^>]*\bId="([^"]+)"[^>]*\bTarget="([^"]+)"[^>]*\/?>/g;
+      let rm;
+      while ((rm = _relRe.exec(relsXml)) !== null) relMap[rm[1]] = rm[2];
+      const _blipRe = /r:embed="([^"]+)"/g;
+      const hits = [];
+      let bm;
+      while ((bm = _blipRe.exec(partXml)) !== null && hits.length < 60) hits.push({ rid: bm[1], idx: bm.index });
+      const _xmlDecode = (s) => String(s).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'");
+      for (const hit of hits) {
+        const target = relMap[hit.rid];
+        if (!target || !/media\//i.test(target)) continue;
+        // Alt: the nearest descr= BEFORE the blip (docPr/cNvPr precede it in
+        // both OOXML formats). 'Picture N' auto-names don't count as alt.
+        const before = partXml.slice(Math.max(0, hit.idx - 1200), hit.idx);
+        const descrs = before.match(/\bdescr="([^"]*)"/g);
+        let alt = '';
+        if (descrs && descrs.length) { const last = descrs[descrs.length - 1].match(/\bdescr="([^"]*)"/); alt = last ? _xmlDecode(last[1]).trim() : ''; }
+        if (/^picture \d+$/i.test(alt)) alt = '';
+        const path = resolveTarget(target);
+        const f = path && zip.file(path);
+        if (!f) continue;
+        const ext = (path.split('.').pop() || '').toLowerCase();
+        const mime = _OFFICE_IMG_MIME[ext];
+        if (!mime) { out.push({ alt, slideNum, skipped: true, reason: ext.toUpperCase() + ' format (not web-renderable)' }); continue; }
+        const b64img = await f.async('base64');
+        const rawLen = Math.floor(b64img.length * 3 / 4);
+        if (rawLen > 2.5 * 1024 * 1024) { out.push({ alt, slideNum, skipped: true, reason: 'too large (' + (rawLen / 1048576).toFixed(1) + ' MB)' }); continue; }
+        if (budget.used + rawLen > 10 * 1024 * 1024) { out.push({ alt, slideNum, skipped: true, reason: 'document image budget (10 MB) reached' }); continue; }
+        budget.used += rawLen;
+        out.push({ alt, slideNum, src: 'data:' + mime + ';base64,' + b64img });
+      }
+    } catch (_) { /* media collection is additive — never fail extraction over it */ }
+    return out;
+  };
+
   // DOM-walker for OOXML paragraph/text content. Falls back to regex on parse
   // error (failure_mode #1 — never lose the whole file because of XML issues).
   const _ooxmlExtractPart = async (zipFile, paragraphTag, textTag, namespaceURI) => {
@@ -4249,8 +4300,24 @@ var createDocPipeline = function(deps) {
       if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_appears_password_protected_using'), 'info');
       else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_may_corrupted_attempting_vision'), 'info');
     }
+    // Embedded images (word/media/* via document.xml.rels) — bytes + alt.
+    let mediaImages = [];
+    try {
+      if (window.JSZip) {
+        const _mzip = await window.JSZip.loadAsync(_base64ToBytes(base64));
+        const _docXmlF = _mzip.file('word/document.xml');
+        if (_docXmlF) {
+          const _docXmlRaw = await _docXmlF.async('string');
+          mediaImages = await _officeMediaFromPart(
+            _mzip, 'word/_rels/document.xml.rels', _docXmlRaw,
+            (tgt) => tgt.charAt(0) === '/' ? tgt.slice(1) : 'word/' + tgt.replace(/^\.\.\//, '../').replace(/^word\//, ''),
+            null, { used: 0 }
+          );
+        }
+      }
+    } catch (_) {}
     if (!bodyText && augmentedParts.length === 0) {
-      return { fullText: '', sourceCharCount: 0, method: 'failed', error: 'no readable content' };
+      return { fullText: '', sourceCharCount: 0, method: 'failed', error: 'no readable content', mediaImages };
     }
     // Body first (so AI sees primary content order), then aux parts.
     const fullText = [bodyText, ...augmentedParts].filter(Boolean).join('\n\n');
@@ -4259,6 +4326,7 @@ var createDocPipeline = function(deps) {
       sourceCharCount: fullText.length,
       method: method || 'jszip-dom',
       augmentedParts: augmentedParts.length,
+      mediaImages,
     };
   };
 
@@ -4292,6 +4360,8 @@ var createDocPipeline = function(deps) {
         if (notesText && notesText.trim()) notesByNum.set(num, notesText);
       }
       const slides = [];
+      const mediaImages = [];
+      const _mediaBudget = { used: 0 };
       for (const sf of slideFiles) {
         const num = parseInt(sf.match(/slide(\d+)\.xml/)[1], 10);
         const slideText = await _ooxmlExtractPart(zip.file(sf), 'p', 't', _A_NS);
@@ -4300,15 +4370,29 @@ var createDocPipeline = function(deps) {
         // that was previously DROPPED at extraction. Surface as [Image: …]
         // markers so remediation preserves the author's descriptions instead
         // of losing them (and the AI doesn't have to re-invent them).
+        // 2026-06-11: the image BYTES are now also collected (per-slide rels →
+        // ppt/media → data URLs); descr markers are kept only for alts that
+        // did NOT attach to a collected image (non-blip shapes, skipped media)
+        // so figure captions aren't duplicated as text.
         const altMarkers = [];
+        let slideImgs = [];
         try {
           const slideXml = await zip.file(sf).async('string');
+          try {
+            slideImgs = await _officeMediaFromPart(
+              zip, 'ppt/slides/_rels/' + sf.split('/').pop() + '.rels', slideXml,
+              (tgt) => tgt.charAt(0) === '/' ? tgt.slice(1) : ('ppt/slides/' + tgt).replace(/ppt\/slides\/\.\.\//, 'ppt/'),
+              num, _mediaBudget
+            );
+            for (const im of slideImgs) mediaImages.push(im);
+          } catch (_) {}
+          const _collectedAlts = new Set(slideImgs.map((i) => i.alt).filter(Boolean));
           const _xmlDecode = (s) => s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'");
           const _descrRe = /\bdescr="([^"]+)"/g;
           let _dm;
           while ((_dm = _descrRe.exec(slideXml)) !== null && altMarkers.length < 20) {
             const d = _xmlDecode(_dm[1]).trim();
-            if (d && d.length > 1 && !/^picture \d+$/i.test(d)) altMarkers.push('[Image: ' + d + ']');
+            if (d && d.length > 1 && !/^picture \d+$/i.test(d) && !_collectedAlts.has(d)) altMarkers.push('[Image: ' + d + ']');
           }
         } catch (_) {}
         // Per-slide block packs body + notes into ONE marker so AI keeps them together.
@@ -4359,6 +4443,7 @@ var createDocPipeline = function(deps) {
       return {
         fullText,
         slides,
+        mediaImages,
         slideCount: slideFiles.length,
         notesCount,
         layoutCount: layoutFiles.length,
@@ -4590,7 +4675,39 @@ var createDocPipeline = function(deps) {
           if (!_skipUi) { setPdfAuditResult(sparse); setPdfAuditLoading(false); }
           return sparse;
         }
-        const bodyHtml = _txt.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n');
+        // Embedded images (2026-06-11): PPTX figures inject right after their
+        // own slide's paragraph block (attribution is exact); DOCX figures go
+        // in a labeled section (the text extractor can't guarantee inline
+        // positions — said honestly rather than guessed). Skipped media keeps
+        // its alt + the reason. From here the images ride the normal flow:
+        // aiFixChunked placeholder-protects data URLs, and every export
+        // (HTML/Word/PPTX/print) already handles data-URL <img>.
+        const _escTxt = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        const _escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        const _figFor = (im) => im.skipped
+          ? '<p><em>[Image from the source could not be embedded — ' + _escTxt(im.reason || 'unknown') + (im.alt ? '. Its description: ' + _escTxt(im.alt) : '') + ']</em></p>'
+          : '<figure><img src="' + im.src + '" alt="' + _escAttr(im.alt || '') + '">' + (im.alt ? '<figcaption>' + _escTxt(im.alt) + '</figcaption>' : '') + '</figure>';
+        const _mediaAll = (det && det.mediaImages) || [];
+        const _paras = _txt.split('\n\n').filter(p => p.trim());
+        const _htmlParts = _paras.map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>');
+        const _bySlide = new Map();
+        const _unanchored = [];
+        for (const im of _mediaAll) {
+          if (im.slideNum != null) { if (!_bySlide.has(im.slideNum)) _bySlide.set(im.slideNum, []); _bySlide.get(im.slideNum).push(im); }
+          else _unanchored.push(im);
+        }
+        if (_bySlide.size > 0) {
+          for (let _pi = 0; _pi < _paras.length; _pi++) {
+            const _sm = _paras[_pi].match(/<<<ALLO_SECTION:SLIDE:(\d+)>>>/);
+            if (_sm) { const _ims = _bySlide.get(parseInt(_sm[1], 10)); if (_ims) _htmlParts[_pi] += '\n' + _ims.map(_figFor).join('\n'); }
+          }
+        }
+        if (_unanchored.length > 0) {
+          _htmlParts.push('<h2>Images from the source document</h2>');
+          _htmlParts.push('<p><em>These images appeared inline in the original file; the text extractor cannot preserve their exact positions, so they are gathered here with their descriptions.</em></p>');
+          for (const im of _unanchored) _htmlParts.push(_figFor(im));
+        }
+        const bodyHtml = _htmlParts.join('\n');
         const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${bodyHtml}</main></body></html>`;
         let baselineAxe = null;
         try { baselineAxe = await runAxeAudit(minimalHtml); } catch (_) { baselineAxe = null; }
@@ -4611,7 +4728,7 @@ var createDocPipeline = function(deps) {
         if (!_skipUi) {
           setPdfAuditResult(result);
           setPdfAuditLoading(false);
-          addToast && addToast(`📝 ${_officeKind.toUpperCase()} audited deterministically (axe-core on extracted text) — full AI verification runs during Fix & Verify.`, 'info');
+          addToast && addToast(`📝 ${_officeKind.toUpperCase()} audited deterministically (axe-core on extracted text)${_mediaAll.length ? ` — ${_mediaAll.filter(m => !m.skipped).length} embedded image(s) preserved${_mediaAll.some(m => m.skipped) ? ` (${_mediaAll.filter(m => m.skipped).length} kept as descriptions only)` : ''}` : ''} — full AI verification runs during Fix & Verify.`, 'info');
         }
         return result;
       } catch (officeErr) {
@@ -12942,6 +13059,14 @@ tr { page-break-inside: avoid; }
   // bytes sees no text — they get Stage 3 + invisible OCR text layer.
   //
   // Returns: Uint8Array of the tagged PDF bytes, or throws.
+  // Stage 7 substitute-font bytes, cached across createTaggedPdf CALLS (batch
+  // mode tags N files in one session — refetching Liberation/DejaVu per file
+  // wasted bandwidth). True TTF subsetting deliberately deferred: our simple-
+  // TrueType dicts need a hand-rolled cmap, and the failure mode is silently
+  // INVISIBLE text in student documents (veraPDF validates structure, not
+  // rendering) — not worth ~200-400 KB/file until a render-verification
+  // harness exists.
+  const _stage7FontByteCache = {};
   const createTaggedPdf = async (originalPdfBytes, fixResult, meta) => {
     meta = meta || {};
     if (!window.PDFLib || !window.PDFLib.PDFDocument) {
@@ -14406,7 +14531,12 @@ tr { page-break-inside: avoid; }
       const _fetchFontBytes = async (family, style) => {
         for (const u of _FONT_SOURCES[family].urls(style)) {
           try {
-            const r = await fetch(u);
+            // 12s timeout per mirror: an unresponsive CDN was the only
+            // hang-forever path in Stage 7 (fetch has no default timeout).
+            const _ac = typeof AbortController === 'function' ? new AbortController() : null;
+            const _tid = _ac ? setTimeout(() => { try { _ac.abort(); } catch (_) {} }, 12000) : null;
+            const r = await fetch(u, _ac ? { signal: _ac.signal } : undefined);
+            if (_tid) clearTimeout(_tid);
             if (r.ok) return new Uint8Array(await r.arrayBuffer());
           } catch (_) {}
         }
@@ -14431,7 +14561,7 @@ tr { page-break-inside: avoid; }
           if (fDict && typeof fDict.get === 'function') _candidates.push(fDict);
         }
       }
-      const _byteCache = {};
+      const _byteCache = _stage7FontByteCache; // cross-call cache (batch tags N files per session)
       for (const fDict of _candidates) {
         try {
           const subtype = String(fDict.get(PDFName.of('Subtype')) || '');
@@ -21558,6 +21688,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
     createTaggedPdf: _wrapAsync(createTaggedPdf),
+    // Office extractors exposed for the e2e media-preservation sentinel
+    // (and any future caller needing deterministic Office text+media).
+    extractDocxTextDeterministic: _wrapAsync(extractDocxTextDeterministic),
+    extractPptxTextDeterministic: _wrapAsync(extractPptxTextDeterministic),
     getPdfPreviewHtml: _wrap(getPdfPreviewHtml),
     updatePdfPreview: _wrap(updatePdfPreview),
     applyWordRestoration: applyWordRestoration, // pure helper (no state binding needed)

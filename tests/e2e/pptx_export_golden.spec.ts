@@ -2,6 +2,9 @@
 //
 // Runs the REAL shipped helpers (_htmlToDocxSpec → _docxSpecToSlides →
 // _buildPptxBlobFromSlides, runtime-extracted from view_pdf_audit_source.jsx)
+// Also: the office media-preservation sentinel — a real PPTX built with an
+// embedded image + alt round-trips through extractPptxTextDeterministic and
+// comes back with the image bytes (data URL) and the authored alt attached.
 // against the real pptxgenjs bundle in Chromium, then unzips the produced
 // .pptx and asserts the accessibility properties actually land in the OOXML:
 // slide titles, image alt text (descr), table markup, real bullet lists.
@@ -86,5 +89,44 @@ test.describe('accessible PowerPoint export — golden', () => {
     expect(deckSummary.tableInXml, 'table must be a real <a:tbl>, not text').toBe(true);
     expect(deckSummary.bulletInXml, 'bullets must be real list formatting').toBe(true);
     expect(deckSummary.bodyText).toBe(true);
+  });
+
+  test('media preservation: a PPTX with an embedded image round-trips through the deterministic extractor with bytes + alt', async ({ page }) => {
+    test.setTimeout(120000);
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js' });
+    await page.addScriptTag({ path: path.resolve(__dirname, '../../doc_pipeline_module.js') });
+    const out = await page.evaluate(async () => {
+      try {
+        const P = (window as any).PptxGenJS;
+        const p = new P();
+        const s = p.addSlide();
+        s.addText('Slide with an embedded image', { x: 0.5, y: 0.4, w: 9, h: 0.8, fontSize: 24 });
+        const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+        s.addImage({ data: 'image/png;base64,' + PNG, x: 0.5, y: 1.5, w: 2, h: 2, altText: 'A red square used to test media preservation' });
+        const blob: Blob = await p.write({ outputType: 'blob' });
+        const buf = new Uint8Array(await blob.arrayBuffer());
+        let bs = '';
+        for (let i = 0; i < buf.length; i += 0x8000) bs += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + 0x8000)));
+        const b64 = btoa(bs);
+        const pipeline = (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {},
+          getDefaultTitle: () => 'Document', state: {},
+        });
+        const det = await pipeline.extractPptxTextDeterministic(b64);
+        const media = (det && det.mediaImages) || [];
+        return {
+          ok: true,
+          count: media.length,
+          first: media[0] ? { hasDataUrl: !!(media[0].src && media[0].src.indexOf('data:image/') === 0), alt: media[0].alt || '', slideNum: media[0].slideNum } : null,
+        };
+      } catch (e: any) { return { ok: false, msg: String(e && (e.message || e)).slice(0, 300) }; }
+    });
+    expect(out.ok, 'evaluate error: ' + (out as any).msg).toBe(true);
+    expect(out.count, 'extractor must collect the embedded image').toBeGreaterThanOrEqual(1);
+    expect(out.first!.hasDataUrl, 'image must come back as a data URL').toBe(true);
+    expect(out.first!.alt).toContain('red square');
+    expect(out.first!.slideNum, 'image must attribute to its slide').toBe(1);
   });
 });
