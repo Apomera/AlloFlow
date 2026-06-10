@@ -91,20 +91,22 @@ The Hub has a **safety layer** that watches for language suggesting a student ma
 - The student can dismiss the modal and return to the activity, or close the Hub entirely.
 
 **What you, the teacher, can and cannot do:**
-- You **cannot** retrieve a transcript of what triggered the modal. Nothing is logged. Nothing is sent to you, to administrators, or to the vendor.
-- You **cannot** get a list of which students saw the modal.
-- This is by design — students need to be able to express distress in a practice space without a paper trail following them.
+- You **cannot** retrieve a transcript of the conversation. No transcript is retained anywhere — the crisis modal holds the flagged text only while it is open.
+- **In a live web session** (students joined with your session code, not the Canvas build): your dashboard shows a **count-based safety alert** per student — a flag total and a "critical" indicator, **never the student's words**. Treat a critical indicator as a prompt to check in personally.
+- **In solo mode or the Canvas build**: nothing reaches you, administrators, or the vendor — no alert, no list of which students saw the modal. The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.
+- For the record: each flag does write a small entry (category plus a ~100-character excerpt) to the **browser's local storage on the student's device**. It is not transmitted anywhere, but on a shared device it is not invisible either — "no paper trail" is approximately true, not literally true. (Reducing this footprint further is on the roadmap.)
+- The in-app consent screen tells students the same story for their mode — in solo/Canvas it explicitly says **no adult is automatically notified** and urges them to tell a trusted adult directly.
 
 **What you should do:**
 - If a student tells you the modal appeared, treat that as a disclosure and follow your building's standard crisis-response protocol — typically: stay with the student, contact the counselor or designated mental health staff, do not leave them alone, document per your district's reporting requirements.
-- Do **not** rely on the Hub to surface at-risk students for you. It won't. Your eyes, your relationship with the student, and your colleagues' observations are still the actual safety net.
+- Do **not** rely on the Hub to surface at-risk students for you. Even the live-session alert is a blunt count that depends on the AI being reachable; in solo/Canvas there is no alert at all. Your eyes, your relationship with the student, and your colleagues' observations are still the actual safety net.
 - Before launching the Hub with a class, confirm you know who to call when a student is in crisis and how fast they can respond.
 
 ---
 
 ## 5. Parent notification
 
-Even though the Hub stores no persistent student data, parents deserve to know their child is using it. Norms vary by district — here is a starting template.
+The Hub keeps student work in the browser's local storage on the device — though AI-coach messages are sent to the AI service to generate replies, and live sessions sync progress summaries to the teacher dashboard — and parents deserve to know their child is using it. Norms vary by district — here is a starting template.
 
 **Sample parent letter (copy and adapt):**
 

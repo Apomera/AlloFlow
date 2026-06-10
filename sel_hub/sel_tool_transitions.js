@@ -575,7 +575,7 @@ window.SelHub = window.SelHub || {
           coachContent = window.SelHub.renderConsentScreen(h, band, function() {
             window.SelHub.giveCoachConsent();
             upd('_consentRefresh', Date.now());
-          });
+          }, ctx.activeSessionCode);
         } else {
         var changeContext = selectedChange ? CHANGE_TYPES.find(function(ct) { return ct.id === selectedChange; }) : null;
         var phaseContext = myPhase != null ? (CHANGE_CURVE[band] || CHANGE_CURVE.elementary)[myPhase] : null;
