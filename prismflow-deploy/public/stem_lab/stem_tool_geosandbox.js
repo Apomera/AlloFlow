@@ -137,8 +137,8 @@ window.StemLab = window.StemLab || {
     })();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    var dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+    var dir = new THREE.DirectionalLight(0xfff1dd, 0.85); // warm key vs the existing cool fill — solids read 3D
     dir.position.set(5, 10, 7.5);
     scene.add(dir);
     var fill = new THREE.DirectionalLight(0xc7d2fe, 0.3);
@@ -196,7 +196,7 @@ window.StemLab = window.StemLab || {
       wireframe: wireframe,
       transparent: opacity < 1,
       opacity: opacity,
-      shininess: 60,
+      shininess: 90,
       flatShading: false
     });
     var mesh = new THREE.Mesh(geometry, material);

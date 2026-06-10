@@ -918,7 +918,7 @@
             // Dark moon backdrop
             h('circle', { cx: 0, cy: 0, r: R, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
             // Lit half via overlay
-            isNew ? null : isFull ? h('circle', { cx: 0, cy: 0, r: R, fill: '#fef3c7' }) :
+            isNew ? null : isFull ? h('circle', { cx: 0, cy: 0, r: R, fill: '#fef3c7', style: { filter: 'drop-shadow(0 0 10px rgba(254,243,199,0.45))' } }) :
               // Compute path for phase using two ellipses
               (function() {
                 // We draw a clipping shape: full circle minus a vertical ellipse on one side
@@ -1570,7 +1570,7 @@
                       h('stop', { offset: '100%', stopColor: '#f59e0b' })
                     )
                   ),
-                  h('circle', { cx: cx, cy: cy, r: Rstar_px, fill: 'url(#starG)' }),
+                  h('circle', { cx: cx, cy: cy, r: Rstar_px, fill: 'url(#starG)', style: { filter: 'drop-shadow(0 0 8px rgba(253,230,138,0.5))' } }),
                   // Planet silhouette
                   h('circle', { cx: planetX, cy: planetY, r: Rplanet_px, fill: '#0a0e1a', stroke: '#1e293b', strokeWidth: 1 }),
                   // Brightness meter below
@@ -4396,6 +4396,7 @@
                 h('radialGradient', { id: 'sun-grad', cx: '40%', cy: '40%' },
                   h('stop', { offset: '0%', stopColor: '#fff' }),
                   h('stop', { offset: '50%', stopColor: '#fde047' }),
+                  h('stop', { offset: '80%', stopColor: '#f97316' }),
                   h('stop', { offset: '100%', stopColor: '#dc2626' })
                 )
               ),
@@ -4450,7 +4451,7 @@
                   h('stop', { offset: '100%', stopColor: moonInUmbra ? '#450a0a' : '#888888' })
                 )
               ),
-              h('circle', { cx: moonX, cy: cy, r: 30, fill: 'url(#lunar-moon-grad)' }),
+              h('circle', { cx: moonX, cy: cy, r: 30, fill: 'url(#lunar-moon-grad)', style: { filter: moonInUmbra ? 'drop-shadow(0 0 12px rgba(153,27,27,0.6))' : 'none' } }),
               // Trajectory line
               h('line', { x1: 50, y1: cy, x2: 550, y2: cy, stroke: '#475569', strokeWidth: 0.5, strokeDasharray: '4 8', opacity: 0.4 }),
               // Labels
@@ -4804,7 +4805,7 @@
                           stroke: '#fef3c7', strokeWidth: 1.5, strokeLinecap: 'round',
                           opacity: m.brightness
                         }),
-                        h('circle', { cx: m.x2, cy: m.y2, r: 1.5, fill: '#fff', opacity: m.brightness * 1.2 })
+                        h('circle', { cx: m.x2, cy: m.y2, r: 1.5 + m.brightness, fill: '#fff', opacity: m.brightness * 1.2 })
                       );
                     }),
                     // Frame counter
@@ -6213,7 +6214,7 @@
               // Crescent Venus
               return h('g', null,
                 h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: '#1e293b' }),
-                h('path', { d: 'M ' + (cx - targetPxRadius) + ' ' + cy + ' A ' + targetPxRadius + ' ' + targetPxRadius + ' 0 0 1 ' + (cx + targetPxRadius) + ' ' + cy + ' A ' + (targetPxRadius * 0.3) + ' ' + targetPxRadius + ' 0 0 0 ' + (cx - targetPxRadius) + ' ' + cy + ' Z', fill: '#fef9c3' })
+                h('path', { d: 'M ' + (cx - targetPxRadius) + ' ' + cy + ' A ' + targetPxRadius + ' ' + targetPxRadius + ' 0 0 1 ' + (cx + targetPxRadius) + ' ' + cy + ' A ' + (targetPxRadius * 0.3) + ' ' + targetPxRadius + ' 0 0 0 ' + (cx - targetPxRadius) + ' ' + cy + ' Z', fill: '#fef9c3', style: { filter: 'drop-shadow(0 0 5px rgba(254,249,195,0.7))' } })
               );
             }
             if (selectedTarget.spec === 'planet' && selectedTargetId === 'mars') {
@@ -6261,7 +6262,7 @@
                   )
                 ),
                 h('ellipse', { cx: cx, cy: cy, rx: targetPxRadius * 1.4, ry: targetPxRadius * 0.5, fill: 'url(#gal-grad)' }),
-                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.15, fill: '#fff' })
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.15, fill: '#fff', style: { filter: 'drop-shadow(0 0 6px rgba(253,230,138,0.8))' } })
               );
             }
             if (selectedTarget.spec === 'cluster') {
@@ -6279,7 +6280,7 @@
             if (selectedTarget.spec === 'planetary') {
               // Ring nebula
               return h('g', null,
-                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: 'none', stroke: '#fbcfe8', strokeWidth: targetPxRadius * 0.3, opacity: 0.75 }),
+                h('circle', { cx: cx, cy: cy, r: targetPxRadius, fill: 'none', stroke: '#fbcfe8', strokeWidth: targetPxRadius * 0.3, opacity: 0.75, style: { filter: 'blur(2px)' } }),
                 h('circle', { cx: cx, cy: cy, r: targetPxRadius * 0.5, fill: '#1e293b', opacity: 0.8 })
               );
             }

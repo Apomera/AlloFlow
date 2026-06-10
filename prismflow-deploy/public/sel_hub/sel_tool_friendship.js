@@ -489,7 +489,7 @@ window.SelHub = window.SelHub || {
           coachContent = window.SelHub.renderConsentScreen(h, band, function() {
             window.SelHub.giveCoachConsent();
             upd('_consentRefresh', Date.now());
-          });
+          }, ctx.activeSessionCode);
         } else {
         coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },

@@ -327,10 +327,10 @@ window.StemLab = window.StemLab || {
               camera.position.set(0, 0, 15);
               threeCameraRef.current = camera;
 
-              var ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+              var ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // deeper sphere shading (CPK hues untouched — intensity only)
               scene.add(ambientLight);
 
-              var dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+              var dirLight = new THREE.DirectionalLight(0xffffff, 1.05);
               dirLight.position.set(5, 10, 7);
               scene.add(dirLight);
               

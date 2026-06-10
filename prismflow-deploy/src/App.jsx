@@ -4376,7 +4376,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '346017b8';
+    var pluginCdnVersion = 'f914433c';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -6470,7 +6470,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [readingRuler, setReadingRuler] = useState(false);
   const [rulerY, setRulerY] = useState(0);
   const [fontTheme, setFontTheme] = useState('Default');
-  const [selectedFont, setSelectedFont] = useState('default');
+  // Persisted (was session-only — the one reading-support preference that
+  // reset on every reload while readingTheme/colorOverlay survived).
+  const [selectedFont, _setSelectedFont] = useState(() => { try { return safeGetItem('allo_selected_font') || 'default'; } catch { return 'default'; } });
+  const setSelectedFont = (v) => { try { safeSetItem('allo_selected_font', v); } catch {} _setSelectedFont(v); };
   const [focusMode, setFocusMode] = useState(false);
   const [isLineFocusMode, setIsLineFocusMode] = useState(false);
   const [focusedParagraphIndex, setFocusedParagraphIndex] = useState(null);
@@ -10278,6 +10281,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const onResumeAvailable = (e) => { setChunkResumePrompt(e.detail); };
     const onBoringPalette = () => { setBoringPalettePrompt(true); };
     const onExtractionComplete = (e) => { setExtractionData(e.detail); setFidelityResult(null); setImageReinsertionReport(null); setAutoRestoreSummary(null); };
+    // Diff-viewer applies/reverts change the HTML the fidelity list was
+    // computed against — clear it so a stale missing-words list isn't shown
+    // (the fidelity panel's check button recomputes on demand).
+    const onFidelityStale = () => { setFidelityResult(null); setAutoRestoreSummary(null); };
     const onFixIssuesDetected = (e) => { setFixIssuesList(e.detail); };
     const onImageReinsertionReport = (e) => { setImageReinsertionReport(e.detail); };
     const onChunkStart = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
@@ -10294,6 +10301,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
     window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
     window.addEventListener('alloflow:image-reinsertion-report', onImageReinsertionReport);
+    window.addEventListener('alloflow:fidelity-stale', onFidelityStale);
     return () => {
       window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
       window.removeEventListener('alloflow:chunk-start', onChunkStart);
@@ -10305,6 +10313,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
       window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
       window.removeEventListener('alloflow:image-reinsertion-report', onImageReinsertionReport);
+      window.removeEventListener('alloflow:fidelity-stale', onFidelityStale);
     };
   }, []);
 

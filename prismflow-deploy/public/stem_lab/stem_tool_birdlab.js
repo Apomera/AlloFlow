@@ -9042,7 +9042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('rect', { x: 0, y: 0, width: 800, height: 240, fill: 'url(#bl-hero-sky)' }),
               // Sun
               h('circle', { cx: 660, cy: 95, r: 72, fill: 'url(#bl-hero-sun)' }),
-              h('circle', { cx: 660, cy: 95, r: 26, fill: '#fff5c2', opacity: 0.95 }),
+              h('circle', { cx: 660, cy: 95, r: 26, fill: '#fff5c2', opacity: 0.95, style: { filter: 'drop-shadow(0 0 14px rgba(253,230,138,0.85))' } }),
               // Distant ridge
               h('path', { d: 'M 0 180 L 80 160 L 160 175 L 240 150 L 340 170 L 420 145 L 520 170 L 620 155 L 720 175 L 800 160 L 800 200 L 0 200 Z',
                 fill: '#516e7d', opacity: 0.55 }),
@@ -10182,7 +10182,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       // Outer pulsing ring (animates outward + fades)
                       h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 12,
                         fill: 'none', stroke: '#f59e0b', strokeWidth: 3,
-                        className: 'birdlab-hint-ring' }),
+                        className: 'birdlab-hint-ring', style: { filter: 'drop-shadow(0 0 5px rgba(245,158,11,0.85))' } }),
                       // Static inner dot so the location is always pinned
                       h('circle', { cx: hintedBird.x, cy: hintedBird.y, r: 6,
                         fill: '#f59e0b', opacity: 0.85,

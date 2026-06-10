@@ -9714,7 +9714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             resources.dirLight.color.setHex(0xf97316);
           } else {
             resources.dirLight.intensity = 0.8 * brightness;
-            resources.dirLight.color.setHex(0xffffff);
+            resources.dirLight.color.setHex(0xfff2dc); // warm midday sun — continuous into the golden-hour orange
           }
         }
 

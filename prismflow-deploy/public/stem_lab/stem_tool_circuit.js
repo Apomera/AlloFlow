@@ -913,7 +913,7 @@ window.StemLab = window.StemLab || {
 
                 // Current direction arrow
                 !isShort && current > 0.01 && h('g', null,
-                  h('polygon', { points: '210,12 220,8 220,16', fill: '#06b6d4' }),
+                  h('polygon', { points: '210,12 220,8 220,16', fill: '#06b6d4', filter: 'drop-shadow(0 0 2px #06b6d4)' }),
                   h('text', { x: 225, y: 15, fill: '#06b6d4', style: { fontSize: '8px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'I = ' + current.toFixed(2) + 'A')
                 ),
 
@@ -956,7 +956,7 @@ window.StemLab = window.StemLab || {
                           ? h('g', { onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED ' + comp.id + ' (color ' + (comp.ledColor || '#ef4444') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
                               // Glow light cone
                               ledGlow > 0.1 && h('polygon', { points: (cx - 14) + ',78 ' + (cx + 14) + ',78 ' + cx + ',115', fill: 'url(#led-grad-' + comp.id + ')', pointerEvents: 'none' }),
-                              ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 14 + ledGlow * 6, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.35).toFixed(2)) }),
+                              ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 14 + ledGlow * 6, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.35).toFixed(2)), filter: 'blur(2px)' }),
                               h('polygon', { points: (cx - 10) + ',65 ' + (cx + 10) + ',65 ' + cx + ',85', fill: ledGlow > 0.2 ? (comp.ledColor || '#ef4444') : '#475569', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 }),
                               h('line', { x1: cx - 10, y1: 85, x2: cx + 10, y2: 85, stroke: comp.ledColor || '#ef4444', strokeWidth: 2 })
                             )
@@ -1056,7 +1056,7 @@ window.StemLab = window.StemLab || {
 
                           : comp.type === 'led'
                           ? h('g', { onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED ' + comp.id + ' (color ' + (comp.ledColor || '#ef4444') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
-                              ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 12 + ledGlow2 * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.35).toFixed(2)) }),
+                              ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 12 + ledGlow2 * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.35).toFixed(2)), filter: 'blur(2px)' }),
                               h('polygon', { points: '212,' + (cy - 5) + ' 228,' + (cy - 5) + ' 220,' + (cy + 7), fill: ledGlow2 > 0.2 ? (comp.ledColor || '#ef4444') : '#475569', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.2 }),
                               h('line', { x1: 212, y1: cy + 7, x2: 228, y2: cy + 7, stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 })
                             )
@@ -1082,7 +1082,7 @@ window.StemLab = window.StemLab || {
 
                           // bulb
                           : h('g', null,
-                              bulbBright2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 12 + bulbBright2 * 5, fill: 'rgba(251,191,36,' + (bulbBright2 * 0.25).toFixed(2) + ')' }),
+                              bulbBright2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 12 + bulbBright2 * 5, fill: 'rgba(251,191,36,' + (bulbBright2 * 0.25).toFixed(2) + ')', filter: 'blur(3px)' }),
                               h('circle', { cx: 220, cy: cy, r: 10, fill: bulbBright2 > 0.2 ? 'rgba(253,224,71,' + (0.3 + bulbBright2 * 0.7).toFixed(2) + ')' : '#334155', stroke: '#eab308', strokeWidth: 1.2 })
                             ),
 
@@ -1174,7 +1174,7 @@ window.StemLab = window.StemLab || {
                         ctx2d.beginPath();
                         ctx2d.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
                         ctx2d.fill();
-                        ctx2d.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+                        ctx2d.strokeStyle = 'rgba(239, 68, 68, ' + (pt.life / pt.maxLife * 0.4).toFixed(2) + ')';
                         ctx2d.lineWidth = 1;
                         ctx2d.stroke();
                       } else {

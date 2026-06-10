@@ -17533,7 +17533,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("div", {
 
-                    style: { position: 'absolute', top: '6px', left: '12%', width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 50%, transparent 75%)', zIndex: 6, animation: 'aquaSpecular 5s ease-in-out infinite', pointerEvents: 'none' }
+                    style: { position: 'absolute', top: '6px', left: '12%', width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0.05) 60%, transparent 80%)', zIndex: 6, animation: 'aquaSpecular 5s ease-in-out infinite', pointerEvents: 'none' }
 
                   }),
 
@@ -17579,7 +17579,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         width: widths[i] + 'px', height: '100%',
 
-                        background: 'linear-gradient(180deg, rgba(255,255,255,' + opacities[i] + ') 0%, rgba(255,255,255,' + (opacities[i] * 0.3) + ') 50%, transparent 80%)',
+                        background: 'linear-gradient(180deg, rgba(255,255,255,' + opacities[i] + ') 0%, rgba(255,255,255,' + (opacities[i] * 0.3) + ') 58%, transparent 94%)',
 
                         transform: 'skewX(' + skews[i] + 'deg)', zIndex: 1,
 
@@ -17977,7 +17977,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         width: sizes[i] + 'px', height: sizes[i] + 'px',
 
-                        background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.7), rgba(255,255,255,0.2))',
+                        background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.12) 100%)',
 
                         borderRadius: '50%', zIndex: 5,
 

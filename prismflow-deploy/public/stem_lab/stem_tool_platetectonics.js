@@ -811,8 +811,12 @@
           magma.addColorStop(0, '#fef3c7');
           magma.addColorStop(0.5, '#f97316');
           magma.addColorStop(1, '#7c2d12');
+          ctx.save();
+          ctx.shadowColor = '#f97316';
+          ctx.shadowBlur = 16;
           ctx.fillStyle = magma;
           ctx.fillRect(bx - gapW / 2, plateY, gapW, plateH);
+          ctx.restore();
           // Magma fountains
           for (var f = 0; f < 5; f++) {
             ctx.fillStyle = 'rgba(252,165,165,' + (0.4 + 0.3 * Math.sin(cur.years * 0.02 + f * 0.7)) + ')';
@@ -875,10 +879,14 @@
         ctx.arc(W - 58, 30, 18, 0, Math.PI * 2);
         ctx.fill();
       } else {
+        ctx.save();
+        ctx.shadowColor = 'rgba(253,224,71,0.85)';
+        ctx.shadowBlur = 18;
         ctx.fillStyle = '#fde047';
         ctx.beginPath();
         ctx.arc(W - 50, 35, 18, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       }
 
       ctx.restore();

@@ -3682,7 +3682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.restore();
                 cCtx.save();
                 var sGlow = cCtx.createRadialGradient(px, py, r * 0.3, px, py, r + 4);
-                sGlow.addColorStop(0, sys.accent + '50');
+                sGlow.addColorStop(0, sys.accent + '70');
                 sGlow.addColorStop(1, sys.accent + '00');
                 cCtx.beginPath(); cCtx.arc(px, py, r + 4, 0, Math.PI * 2);
                 cCtx.fillStyle = sGlow; cCtx.fill();
@@ -3881,7 +3881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   // Green checkmark with burst
                   var burstR = 15 + Math.min(8, (anatTick % 120) * 0.3);
                   var burstGlow = cCtx.createRadialGradient(qfx, qfy, 2, qfx, qfy, burstR);
-                  burstGlow.addColorStop(0, '#22c55e40'); burstGlow.addColorStop(1, '#22c55e00');
+                  burstGlow.addColorStop(0, '#22c55e66'); burstGlow.addColorStop(1, '#22c55e00');
                   cCtx.beginPath(); cCtx.arc(qfx, qfy, burstR, 0, Math.PI * 2);
                   cCtx.fillStyle = burstGlow; cCtx.fill();
                   // Checkmark

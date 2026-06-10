@@ -770,7 +770,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
 
-            bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 })));
+            bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }))); // bulge stars sum to a radiant core (dust lanes untouched — absorption physics)
 
             // Bulge glow sprite
 

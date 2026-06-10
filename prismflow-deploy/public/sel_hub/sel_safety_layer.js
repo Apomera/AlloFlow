@@ -140,13 +140,22 @@
   // ── Triangulated Safety Assessment ──
   // ══════════════════════════════════════════════════════════════
 
+  // The protocol asks for the verdict token ALONE on line 1 ("Respond ONLY:
+  // TIER_X\nThen one sentence rationale"). Loose words (CRITICAL/CONCERN/
+  // MONITOR) are trusted only there — rationales legitimately contain them
+  // ("not critical", "no concern"), and whole-response substring matching
+  // flipped benign rationales into false Tier 2/3 crisis modals. Off-protocol
+  // shapes fall back to the explicit TIER_n token anywhere, never loose words.
   function parseTier(response) {
     if (!response) return 0;
-    var upper = response.toUpperCase();
-    if (/TIER_3|CRITICAL/.test(upper)) return 3;
-    if (/TIER_2|CONCERN/.test(upper)) return 2;
-    if (/TIER_1|MONITOR/.test(upper)) return 1;
-    return 0;
+    var text = String(response).toUpperCase();
+    var firstLine = text.trim().split('\n')[0];
+    if (/TIER_3|\bCRITICAL\b/.test(firstLine)) return 3;
+    if (/TIER_2|\bCONCERN\b/.test(firstLine)) return 2;
+    if (/TIER_1|\bMONITOR\b/.test(firstLine)) return 1;
+    if (/TIER_0|\bSAFE\b|FALSE_ALARM/.test(firstLine)) return 0;
+    var m = text.match(/\bTIER_([0-3])\b/);
+    return m ? parseInt(m[1], 10) : 0;
   }
 
   /**
@@ -176,10 +185,18 @@
       + 'Standard: would a reasonable school counselor feel obligated to act?\n\n'
       + 'Respond ONLY: SAFE, MONITOR, CONCERN, or CRITICAL\nThen one sentence rationale.';
 
+    // Outage honesty: a failed assessor returns null (NOT a fake TIER_0/SAFE
+    // verdict). When BOTH primaries are unreachable the result is marked
+    // unassessed:true so callers can say "couldn't check" + surface resources
+    // instead of silently reporting "checked: safe". (The old catch fallbacks
+    // scored an AI outage as no-concern — fail-open exactly when the AI is down.)
     return Promise.all([
-      callGemini(prompt1, true).catch(function() { return 'TIER_0\nUnavailable'; }),
-      callGemini(prompt2, true).catch(function() { return 'SAFE\nUnavailable'; })
+      callGemini(prompt1, true).catch(function() { return null; }),
+      callGemini(prompt2, true).catch(function() { return null; })
     ]).then(function(results) {
+      if (results[0] == null && results[1] == null) {
+        return { tier: 0, unassessed: true, rationale: 'Safety assessment unavailable (AI unreachable)', category: 'none' };
+      }
       var tier1 = parseTier(results[0]);
       var tier2 = parseTier(results[1]);
       var r1 = (results[0] || '').split('\n').slice(1).join(' ').trim();
@@ -197,7 +214,15 @@
         + 'Respond ONLY: YES_TIER_3, YES_TIER_2, or FALSE_ALARM\nThen one sentence rationale.';
 
       return callGemini(prompt3, true).catch(function() { return 'YES_TIER_2\nMaintaining flag for safety'; }).then(function(conf) {
-        var cu = (conf || '').toUpperCase();
+        // Same first-line discipline as parseTier: the confirmation verdict is
+        // trusted only on line 1 — a rationale like "not a false alarm" must
+        // never clear a flag (whole-text matching did exactly that). Off-
+        // protocol fallback checks escalation tokens BEFORE the clearing token.
+        var cu = String(conf || '').trim().split('\n')[0].toUpperCase();
+        if (!/FALSE_ALARM|YES_TIER_3|YES_TIER_2/.test(cu)) {
+          var full = (conf || '').toUpperCase();
+          cu = /\bYES_TIER_3\b/.test(full) ? 'YES_TIER_3' : /\bYES_TIER_2\b/.test(full) ? 'YES_TIER_2' : /\bFALSE_ALARM\b/.test(full) ? 'FALSE_ALARM' : '';
+        }
         var cr = (conf || '').split('\n').slice(1).join(' ').trim();
 
         var category = 'none';
@@ -264,17 +289,40 @@
     var codename = opts.codename || 'student';
     var history = opts.conversationHistory || [];
 
-    if (!callGemini || !msg) {
+    if (!msg) {
       return Promise.resolve({ response: 'Unable to connect right now.', tier: 0, showCrisis: false });
     }
 
-    // Also run regex-based check via SafetyContentChecker (if available)
-    var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || null;
+    // The regex-based check (SafetyContentChecker) is LOCAL — it must run
+    // whether or not the AI is reachable. It used to sit below an early
+    // !callGemini return, so with the AI off a crisis message got no safety
+    // channel at all.
+    var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+    var regexFlags = [];
     if (checker && checker.check) {
-      var regexFlags = checker.check(msg);
+      try { regexFlags = checker.check(msg) || []; } catch (_) { regexFlags = []; }
       regexFlags.forEach(function(f) {
         if (onSafetyFlag) onSafetyFlag(Object.assign({}, f, { source: 'sel_' + toolId, timestamp: new Date().toISOString() }));
       });
+    }
+    var regexCritical = regexFlags.some(function(f) { return f.severity === 'critical'; });
+    var crisisText = function() {
+      return '\n\n⚠️ I want to make sure you’re safe. '
+        + (band === 'elementary'
+          ? 'Please talk to a trusted adult — a teacher, school counselor, parent, or any grown-up you trust. If you’re in danger right now, tell an adult immediately.'
+          : 'If you’re in crisis: 988 Suicide & Crisis Lifeline (call or text 988), Crisis Text Line (text HOME to 741741), or talk to a trusted adult at your school.')
+        + ' You don’t have to handle this alone.';
+    };
+
+    if (!callGemini) {
+      // No AI at all: the local regex check is the only signal. A critical hit
+      // still gets the full crisis response — never a cheery dead-end.
+      if (regexCritical) {
+        _flagLog.push({ time: new Date().toISOString(), tool: toolId, tier: 3, category: 'regex_critical' });
+        try { window.SelHub.showCrisisModal({ toolName: toolId, contentSnippet: msg }); } catch (_) { /* modal best-effort */ }
+        return Promise.resolve({ response: 'Unable to connect right now.' + crisisText(), tier: 3, showCrisis: true });
+      }
+      return Promise.resolve({ response: 'Unable to connect right now.', tier: 0, showCrisis: false });
     }
 
     // Run coach + safety assessment in parallel
@@ -287,6 +335,20 @@
 
       if (!response) {
         response = 'I\u2019m having trouble connecting right now. But I\u2019m glad you\u2019re here.';
+      }
+
+      // Outage honesty: "couldn't check" is not "checked: safe". If the AI
+      // triage was unreachable, the local regex check still stands - a
+      // critical regex hit escalates to the full Tier-3 crisis response; and
+      // either way the student is told the check-in didn't run (with
+      // resources) instead of silently nothing.
+      if (safety.unassessed) {
+        if (regexCritical) {
+          safety = { tier: 3, unassessed: true, rationale: 'Crisis keywords detected while the AI safety assessment was unavailable', category: 'self_harm' };
+        } else {
+          response += '\n\n(My safety check-in could not run just now. If anything feels unsafe or too big, please tell a trusted adult'
+            + (band === 'elementary' ? '.' : ' - or call or text 988.') + ')';
+        }
       }
 
       // Tier 2+: create flag (no transcript retention — modal owns snippet)
@@ -410,19 +472,22 @@
   };
 
   // Conditional, honest disclosure about what actually happens with the
-  // conversation. The old "this space is monitored for your safety" copy
-  // (formerly hardcoded in 5 tools) was misleading in solo mode: no adult
-  // sees the chat, conversation only lives in localStorage. This helper
-  // tells the truth in both modes.
-  //   Solo mode (no activeSessionCode): conversation is local, safety
-  //     keyword-check still runs, real concerns go to a trusted adult.
-  //   Live session (activeSessionCode set): teacher can see submitted work,
-  //     safety keyword-check still runs, real concerns go to a trusted adult.
+  // conversation. Two past versions of this copy were each misleading:
+  // "this space is monitored for your safety" over-promised in solo mode,
+  // and "this conversation stays on your device" under-disclosed — the
+  // student's words are sent to the AI service to generate replies, and the
+  // chat is saved with the project. This version states both, in both modes.
+  //   Solo/Canvas: words go to the AI for replies; saved with your project on
+  //     this device; NO adult is notified automatically; crisis words surface
+  //     help resources.
+  //   Live session (non-Canvas): same, plus saved/submitted work is teacher-
+  //     visible and serious safety flags raise a count-alert on the teacher
+  //     dashboard.
   window.SelHub.renderSafetyDisclosure = function(h, band, activeSessionCode) {
-    var live = !!(activeSessionCode && String(activeSessionCode).trim());
+    var live = _liveFlagsReachTeacher(activeSessionCode);
     var body = live
-      ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them. We also run safety checks for crisis words and show resources if something serious comes up. For real safety concerns, please talk to a trusted adult.'
-      : 'This conversation stays on your device. We run safety checks for crisis words and show resources if something serious comes up. For real safety concerns, please talk to a trusted adult.';
+      ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them, and serious safety concerns raise an alert on their dashboard (an alert, not your words). Your words are sent to the AI service to write its replies. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.'
+      : 'Your words are sent to the AI service to write its replies, and your conversation is saved with your project on this device. No adult is notified automatically. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.';
     return h('p', {
       style: { fontSize: '11px', color: '#64748b', margin: '4px 0 0', lineHeight: 1.5 }
     }, body);

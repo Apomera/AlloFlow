@@ -9251,7 +9251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               starGeo.setAttribute('position', new T.BufferAttribute(starPos, 3));
               starGeo.setAttribute('color', new T.BufferAttribute(starCol, 3));
-              var starMat = new T.PointsMaterial({ size: isDawn ? 0.6 : 0.9, vertexColors: true, fog: false, transparent: true, opacity: isDawn ? 0.4 : 1 });
+              var starMat = new T.PointsMaterial({ size: isDawn ? 0.6 : 0.9, vertexColors: true, fog: false, transparent: true, opacity: isDawn ? 0.4 : 1, blending: T.AdditiveBlending, depthWrite: false });
               var stars = new T.Points(starGeo, starMat);
               stars.name = 'starfield';
               scene.add(stars);
@@ -10489,7 +10489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               exSizes[exi] = 0.08 + Math.random() * 0.08;
             }
             exGeo.setAttribute('position', new T.BufferAttribute(exPositions, 3));
-            var exMat = new T.PointsMaterial({ color: 0x888888, size: 0.12, transparent: true, opacity: 0.3 });
+            var exMat = new T.PointsMaterial({ color: 0x888888, size: 0.12, transparent: true, opacity: 0.3, depthWrite: false }); // smoke keeps NORMAL blending (must occlude, not glow)
             exhaustParticles = new T.Points(exGeo, exMat);
             scene.add(exhaustParticles);
           }
@@ -10516,7 +10516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               starPos[sti * 3 + 2] = Math.sin(theta) * Math.sin(phi) * radius;
             }
             starGeo.setAttribute('position', new T.BufferAttribute(starPos, 3));
-            var starMat = new T.PointsMaterial({ color: 0xffffff, size: 0.4, transparent: true, opacity: 0.8 });
+            var starMat = new T.PointsMaterial({ color: 0xffffff, size: 0.4, transparent: true, opacity: 0.8, blending: T.AdditiveBlending, depthWrite: false });
             var stars = new T.Points(starGeo, starMat);
             scene.add(stars);
             // Moon

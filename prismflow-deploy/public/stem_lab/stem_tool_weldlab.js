@@ -1670,7 +1670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
             // ── Bench ──
             var benchGeom = new THREE.BoxGeometry(3.5, 0.06, 1.8);
-            var benchMat = new THREE.MeshStandardMaterial({ color: 0x1c2532, roughness: 0.92 });
+            var benchMat = new THREE.MeshStandardMaterial({ color: 0x1c2532, roughness: 0.7, metalness: 0.5 }); // steel bench catches the arc glow
             var bench = new THREE.Mesh(benchGeom, benchMat);
             bench.position.y = -0.08;
             scene.add(bench);
@@ -2152,7 +2152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             var sparks = [];
             var sparkMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.9 });
             for (var si = 0; si < sparkCount; si++) {
-              var sp = new THREE.Mesh(new THREE.SphereGeometry(0.012, 5, 4), sparkMat.clone());
+              var sp = new THREE.Mesh(new THREE.SphereGeometry(0.015, 5, 4), sparkMat.clone());
               jointGroup.add(sp);
               sparks.push(sp);
             }

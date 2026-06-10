@@ -1884,7 +1884,7 @@ window.StemLab = window.StemLab || {
               h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: '#16a34a', fontSize: 8, textAnchor: 'end' }, 'power = 80%'),
               [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
               [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: '#64748b', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
-              h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2 }),
+              h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px ' + sm.color + ')' } }),
               h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
               h('text', { x: 160, y: 156, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at d=' + iq.effect.toFixed(2) + ', α=' + iq.alpha)
             ),
@@ -1950,7 +1950,7 @@ window.StemLab = window.StemLab || {
               color: '#fff',
               padding: '14px 22px',
               borderRadius: 16,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.35), 0 0 28px rgba(168,85,247,0.45)',
               border: '4px solid #fff',
               display: 'flex', alignItems: 'center', gap: 12
             }
@@ -3734,7 +3734,7 @@ window.StemLab = window.StemLab || {
                 h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
                   h('svg', { viewBox: '0 0 100 100', width: 84, height: 84, 'aria-label': 'Score: ' + d.quizCorrect + ' out of ' + d.quizQuestions.length },
                     h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
-                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)', style: { filter: 'drop-shadow(0 0 4px ' + tierColor + ')' } })
                   ),
                   h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                     h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),

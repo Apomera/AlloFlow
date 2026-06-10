@@ -489,7 +489,7 @@ window.StemLab = window.StemLab || {
 
           // Draw template strand backbone
           ctx2d.strokeStyle = '#94a3b8'; ctx2d.lineWidth = 2.5;
-          ctx2d.shadowColor = 'rgba(148, 163, 184, 0.3)'; ctx2d.shadowBlur = 4;
+          ctx2d.shadowColor = 'rgba(148, 163, 184, 0.45)'; ctx2d.shadowBlur = 6;
           ctx2d.beginPath();
           for (var i = 0; i < dnaSeq.length; i++) {
             var x = startX + i * baseW + baseW / 2;
@@ -577,7 +577,9 @@ window.StemLab = window.StemLab || {
               ctx2d.fillStyle = 'rgba(168, 85, 247, 0.15)';
               ctx2d.strokeStyle = 'rgba(168, 85, 247, 0.4)';
               ctx2d.lineWidth = 1.5;
+              ctx2d.shadowColor = 'rgba(168, 85, 247, 0.5)'; ctx2d.shadowBlur = 12;
               ctx2d.beginPath(); ctx2d.arc(x, midY, baseW * 1.6, 0, Math.PI * 2); ctx2d.fill(); ctx2d.stroke();
+              ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
               ctx2d.fillStyle = '#a855f7'; ctx2d.font = 'bold 9px sans-serif';
               ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
               ctx2d.fillText('RNA Pol', x, midY - baseW * 1.9);

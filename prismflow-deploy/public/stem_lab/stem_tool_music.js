@@ -1259,14 +1259,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   if (i === 0) ctx.moveTo(0, y); else ctx.lineTo(i * sliceWidth, y);
                 }
                 ctx.stroke();
-                // Bright center line glow
+                // Bright center line glow — true neon via shadowBlur (matches lissajous mode)
+                ctx.save();
+                ctx.shadowColor = '#a855f7'; ctx.shadowBlur = 12;
                 ctx.strokeStyle = 'rgba(168,85,247,0.4)'; ctx.lineWidth = 4;
                 ctx.stroke();
+                ctx.restore();
               }
 
               // Particles
               if (window._alloParticles && window._alloParticles.length > 0) {
                 var particles = window._alloParticles;
+                ctx.globalCompositeOperation = 'lighter'; // note bursts sum additively on the dark bg
                 for (var pi = particles.length - 1; pi >= 0; pi--) {
                   var p = particles[pi];
                   p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life -= p.decay;
@@ -1275,6 +1279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   ctx.beginPath(); ctx.arc(p.x * 2, p.y * 2, p.size * 2, 0, Math.PI * 2); ctx.fill();
                 }
                 ctx.globalAlpha = 1;
+                ctx.globalCompositeOperation = 'source-over';
               }
             }
             canvasEl._synthVizAnim = requestAnimationFrame(draw);

@@ -7705,7 +7705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // Water plane
     var waterGeo = new THREE.PlaneGeometry(1400, 1400, 80, 80);
-    var waterMat = new THREE.MeshLambertMaterial({ color: waterColorHex, transparent: true, opacity: 0.95 });
+    var waterMat = new THREE.MeshPhongMaterial({ color: waterColorHex, transparent: true, opacity: 0.95, shininess: 50, specular: 0x3a5a78 }); // sun-glint on the wave-animated water
     var water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0;
@@ -8531,7 +8531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
       stbdGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
       sternGlow.intensity = dark ? (tod === 'night' ? 1.5 : 1.0) : 0.0;
-      beam.visible = dark;
+      beam.userData.tgt = dark ? 0.35 : 0; // beam now FADES via the loop (was a hard visible snap)
     }
 
     // ─── Keyboard state
@@ -8628,7 +8628,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boat.position.y = 0;
       }
 
-      // Rotate lighthouse beam
+      // Rotate lighthouse beam (opacity eases toward its day/night target —
+      // it used to snap on/off with time-of-day changes)
+      var _bt = beam.userData.tgt !== undefined ? beam.userData.tgt : (beam.visible ? 0.35 : 0);
+      beamMat.opacity += (_bt - beamMat.opacity) * Math.min(1, dt * 1.5);
+      beam.visible = beamMat.opacity > 0.01;
       if (beam.visible) {
         beam.rotation.y += dt * 0.4;
       }

@@ -19082,7 +19082,7 @@ test('no a11y violations', async () => {
       // ── Styles ──
       var PURPLE = '#7c3aed';
       var btn = function(bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '12px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
-      var card = { background: '#fff', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' };
+      var card = { background: '#fff', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
 
       // ── Tab system state ──
       var _activeTab = useState(function() {
@@ -19367,7 +19367,8 @@ test('no a11y violations', async () => {
               background: flashFlipped ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'linear-gradient(135deg, #ede9fe, #ddd6fe)',
               border: '2px solid ' + (flashFlipped ? '#fbbf24' : '#a78bfa'),
               borderRadius: '20px', padding: '32px', cursor: 'pointer', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', textAlign: 'center', transition: 'all 0.2s' } },
+              alignItems: 'center', justifyContent: 'center', textAlign: 'center', transition: 'all 0.2s',
+              boxShadow: flashFlipped ? '0 10px 28px rgba(251,191,36,0.28)' : '0 10px 28px rgba(167,139,250,0.30)' } },
             h('div', { style: { fontSize: '10px', textTransform: 'uppercase', letterSpacing: '2px', color: flashFlipped ? '#92400e' : '#5b21b6', fontWeight: 700, marginBottom: '12px' } },
               flashFlipped ? 'Definition' : 'Term'),
             h('div', { style: { fontSize: flashFlipped ? '15px' : '24px', fontWeight: 800, color: flashFlipped ? '#78350f' : '#4c1d95', lineHeight: 1.4 } },
@@ -19641,7 +19642,8 @@ test('no a11y violations', async () => {
             onClick: function() { goToTab(t.id); },
             style: { padding: '8px 14px', border: 'none', background: isActive ? PURPLE : 'transparent',
               color: isActive ? '#fff' : '#6b7280', borderRadius: '10px', fontSize: '12px', fontWeight: isActive ? 800 : 600,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, transition: 'all 0.1s' } },
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, transition: 'all 0.1s',
+              boxShadow: isActive ? '0 2px 10px rgba(124,58,237,0.35)' : 'none' } },
             h('span', { style: { fontSize: '14px' } }, t.icon),
             h('span', null, t.label)
           );
@@ -19733,7 +19735,7 @@ test('no a11y violations', async () => {
                       border: '2px solid ' + (isLive ? '#818cf8' : isOn ? agent.color + '60' : '#334155'),
                       borderRadius: '10px', padding: '8px', textAlign: 'center', minWidth: '80px', flexShrink: 0,
                       opacity: isOn ? 1 : 0.4, transition: 'all 0.2s', position: 'relative',
-                      boxShadow: isLive ? '0 0 12px ' + agent.color + '40' : 'none'
+                      boxShadow: isLive ? '0 0 14px ' + agent.color + '66, 0 0 34px ' + agent.color + '22' : 'none'
                     } },
                       // Live indicator
                       isLive && h('div', { style: { position: 'absolute', top: -3, right: -3, width: 8, height: 8, background: '#22c55e', borderRadius: '50%', border: '2px solid #0f172a' } }),
@@ -19952,7 +19954,7 @@ test('no a11y violations', async () => {
               sandbox: 'allow-scripts',
               title: 'AppLab preview',
               'aria-label': 'Interactive app preview: ' + (prompt || 'generated app'),
-              style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%' },
+              style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.15)' },
               onLoad: function() {
                 // Inject error listener into iframe to capture runtime errors
                 setIframeErrors([]);

@@ -17580,7 +17580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = qg;
             c.beginPath(); c.arc(qx, qy, auraR, 0, 6.28); c.fill();
             // Queen body
-            c.shadowColor = '#f59e0b'; c.shadowBlur = 8;
+            c.shadowColor = '#f59e0b'; c.shadowBlur = 18; // the queen reads as the radiant center of the scene
             c.font = '28px system-ui'; c.textAlign = 'center';
             c.fillText('👑', qx, qy + 10);
             c.restore();

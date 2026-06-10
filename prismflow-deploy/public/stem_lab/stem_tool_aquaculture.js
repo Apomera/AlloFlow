@@ -7122,7 +7122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     var scene = new THREE.Scene();
     scene.background = new THREE.Color(0xc4d8e3); // overcast Maine sky
-    scene.fog = new THREE.Fog(0xb0c8d8, 60, 380);
+    scene.fog = new THREE.Fog(0xc4d8e3, 60, 380); // fog synced to the overcast-sky bg — seamless horizon
 
     var camera = new THREE.PerspectiveCamera(65, W / H, 0.5, 1000);
     camera.position.set(0, 4, 12);
