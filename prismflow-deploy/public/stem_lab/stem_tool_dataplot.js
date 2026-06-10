@@ -872,7 +872,8 @@ window.StemLab = window.StemLab || {
             chart: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDCCA', title: 'Chart \u2014 pick the right visualization', hint: 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.' },
             stats: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Statistics \u2014 center, spread, shape',  hint: 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).' },
             quiz:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAF', title: 'Quiz \u2014 practice + apply',           hint: 'AP Stats / data-literacy items. Each question links back to the active dataset so you can verify visually before answering.' },
-            tools: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: 'Tools \u2014 load + clean + export',  hint: 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).' }
+            tools: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: 'Tools \u2014 load + clean + export',  hint: 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).' },
+            inquiry: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD2C', title: 'Inquiry \u2014 when samples mislead', hint: 'Set a true population r, then watch how sample size, noise, and outliers distort the observed r. No score, no reveal \u2014 form a hypothesis and explore.' }
           };
           var meta = TAB_META[activeTab] || TAB_META.chart;
           return h('div', {
@@ -1219,7 +1220,7 @@ window.StemLab = window.StemLab || {
                   );
                 }))
           ),
-          h('button', { 'aria-label': 'Add data points to see statistics', onClick: function() { upd('showGallery', !showGallery); }, className: 'text-[11px] font-bold text-slate-600 hover:text-teal-600' }, showGallery ? '\u25B2 Hide Gallery' : '\u25BC Show Gallery (' + galleryItems.length + ')')
+          h('button', { 'aria-label': showGallery ? 'Hide saved charts gallery' : 'Show saved charts gallery', onClick: function() { upd('showGallery', !showGallery); }, className: 'text-[11px] font-bold text-slate-600 hover:text-teal-600' }, showGallery ? '\u25B2 Hide Gallery' : '\u25BC Show Gallery (' + galleryItems.length + ')')
         ),
 
         // ══════════════════════════════════════════════════════════
