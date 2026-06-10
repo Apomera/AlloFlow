@@ -648,6 +648,10 @@ function PdfAuditView(props) {
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   // Read-only tag-structure inspector output (null = not built yet; [] = built, empty).
   const [tagOutline, setTagOutline] = useState(null);
+  // Spell-check-style walkthrough for Content-Recovery words: index into
+  // autoRestoreSummary.unplaceable (null = closed) + per-word outcomes.
+  const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
+  const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   // Per-stage status for the Tier B restoration handler. Empty when idle;
   // 'word-splice' / 'sentence-anchor' / 're-tag' while running so the button
   // can show honest progress instead of a single "Restoring..." label.
@@ -3396,11 +3400,113 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <div className="mb-2 bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-1.5 text-[11px] text-emerald-900 flex items-center gap-2 flex-wrap">
                                     <span className="font-bold">✨ Restore applied:</span>
                                     <span>{autoRestoreSummary.restored.length} word{autoRestoreSummary.restored.length === 1 ? '' : 's'} spliced back{autoRestoreSummary.unplaceable.length > 0 ? ` · ${autoRestoreSummary.unplaceable.length} in Content Recovery appendix` : ''}</span>
+                                    {autoRestoreSummary.unplaceable.length > 0 && recoveryReviewIdx === null && (
+                                      <button onClick={() => { setRecoveryReviewIdx(0); setRecoveryReviewOutcomes({}); }} className="px-2 py-0.5 bg-amber-600 text-white rounded-full text-[10px] font-bold hover:bg-amber-700" title={t('pdf_audit.recovery_review.start_title') || 'Step through each word the automatic restore could not confidently place — see its original context and decide where it belongs, one at a time (like a spell checker).'}>
+                                        🔍 {t('pdf_audit.recovery_review.start') || 'Review one by one'}
+                                      </button>
+                                    )}
                                     {autoRestoreSummary.beforeFidelity != null && fidelityResult && (
                                       <span className="text-[10px] text-emerald-700 ml-auto">{autoRestoreSummary.beforeFidelity}% → {fidelityResult.fidelity}%</span>
                                     )}
                                   </div>
                                 )}
+                                {/* ── Spell-check-style walkthrough: human judgment on exactly
+                                    the words the fuzzy auto-restore gave up on. Insert uses the
+                                    word's SOURCE context as the anchor; on success the word also
+                                    leaves the appendix. Skips stay in the appendix — nothing is
+                                    ever lost either way. ── */}
+                                {autoRestoreSummary && recoveryReviewIdx !== null && (() => {
+                                  const _items = autoRestoreSummary.unplaceable || [];
+                                  if (recoveryReviewIdx >= _items.length) {
+                                    const _ins = Object.values(recoveryReviewOutcomes).filter((o) => o === 'inserted').length;
+                                    return (
+                                      <div className="mb-2 bg-emerald-50 border-2 border-emerald-300 rounded-xl p-2.5 text-[11px] text-emerald-900 flex items-center gap-2" role="status">
+                                        <span className="font-bold">✅ {t('pdf_audit.recovery_review.done') || 'Review complete:'}</span>
+                                        <span>{_ins} {t('pdf_audit.recovery_review.inserted') || 'inserted in context'} · {_items.length - _ins} {t('pdf_audit.recovery_review.kept') || 'kept in the appendix'}.</span>
+                                        <button onClick={() => setRecoveryReviewIdx(null)} className="ml-auto px-2 py-0.5 bg-emerald-600 text-white rounded text-[10px] font-bold">{t('pdf_audit.recovery_review.close') || 'Close'}</button>
+                                      </div>
+                                    );
+                                  }
+                                  const it = _items[recoveryReviewIdx];
+                                  const _norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+                                  // Anchor = up to 4 words immediately BEFORE the target inside
+                                  // its source-context snippet (or after, when it leads).
+                                  const _ctx = String(it.context || '');
+                                  const _wRe = new RegExp('\\b' + String(it.word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                                  const _wm = _ctx.match(_wRe);
+                                  const _beforeWords = _wm ? _norm(_ctx.slice(0, _wm.index)).split(' ').filter(Boolean).slice(-4) : [];
+                                  const _afterWords = _wm ? _norm(_ctx.slice(_wm.index + it.word.length)).split(' ').filter(Boolean).slice(0, 4) : [];
+                                  const _findAnchor = () => {
+                                    try {
+                                      const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+                                      if (!d || !d.body) return null;
+                                      const useBefore = _beforeWords.length >= 2;
+                                      const anchor = (useBefore ? _beforeWords : _afterWords).join(' ');
+                                      if (!anchor || anchor.length < 6) return null;
+                                      const walker = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null);
+                                      let node;
+                                      while ((node = walker.nextNode())) {
+                                        if (node.parentElement && node.parentElement.closest('section[data-content-recovery="true"]')) continue;
+                                        const ni = _norm(node.textContent).indexOf(anchor);
+                                        if (ni !== -1) return { node, anchor, useBefore };
+                                      }
+                                      return null;
+                                    } catch (_) { return null; }
+                                  };
+                                  const _anchorHit = _findAnchor();
+                                  const _advance = (outcome) => {
+                                    setRecoveryReviewOutcomes((p) => ({ ...p, [recoveryReviewIdx]: outcome }));
+                                    setRecoveryReviewIdx(recoveryReviewIdx + 1);
+                                  };
+                                  const _doInsert = () => {
+                                    try {
+                                      const hit = _findAnchor();
+                                      if (!hit) { addToast(t('toasts.recovery_anchor_gone') || 'The context anchor is no longer in the document — the word stays in the appendix.', 'info'); _advance('kept'); return; }
+                                      const d = pdfPreviewRef.current.contentDocument;
+                                      // Insert the word right after (or before) its anchor inside
+                                      // the matching text node, preserving original casing.
+                                      const raw = hit.node.textContent;
+                                      const nIdx = _norm(raw).indexOf(hit.anchor);
+                                      // Map normalized index back: walk raw counting normalized chars.
+                                      let rawPos = 0, normCount = 0;
+                                      const target = hit.useBefore ? nIdx + hit.anchor.length : nIdx;
+                                      while (rawPos < raw.length && normCount < target) {
+                                        if (/\s/.test(raw[rawPos])) { while (rawPos < raw.length && /\s/.test(raw[rawPos])) rawPos++; normCount++; }
+                                        else { rawPos++; normCount++; }
+                                      }
+                                      hit.node.textContent = raw.slice(0, rawPos) + (hit.useBefore ? ' ' + it.word : it.word + ' ') + raw.slice(rawPos);
+                                      // Remove this word's entry from the appendix (it's placed now).
+                                      try {
+                                        const lis = d.querySelectorAll('section[data-content-recovery="true"] li');
+                                        for (const li of lis) { const st = li.querySelector('strong'); if (st && st.textContent === it.word) { li.remove(); break; } }
+                                        const ul = d.querySelector('section[data-content-recovery="true"] ul');
+                                        if (ul && ul.children.length === 0) { const sec = d.querySelector('section[data-content-recovery="true"]'); if (sec) sec.remove(); }
+                                      } catch (_) {}
+                                      // Persist: snapshot the edited iframe into accessibleHtml.
+                                      const h = getPdfPreviewHtml();
+                                      if (h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: h, _userEditedAt: Date.now() } : prev);
+                                      try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
+                                      addToast((t('toasts.recovery_word_inserted') || '📍 Inserted') + ' "' + it.word + '"', 'success');
+                                      _advance('inserted');
+                                    } catch (e) { addToast('Insert failed: ' + ((e && e.message) || 'error') + ' — the word stays in the appendix.', 'error'); _advance('kept'); }
+                                  };
+                                  return (
+                                    <div className="mb-2 bg-amber-50 border-2 border-amber-300 rounded-xl p-3 text-xs text-amber-900" role="group" aria-label={t('pdf_audit.recovery_review.aria') || 'Content recovery word review'}>
+                                      <div className="flex items-center justify-between mb-1.5">
+                                        <span className="font-black">🔍 {t('pdf_audit.recovery_review.heading') || 'Word'} {recoveryReviewIdx + 1}/{_items.length}: <span className="bg-amber-200 px-1.5 rounded">{it.word}</span>{it.missingCount > 1 ? ' (×' + it.missingCount + ')' : ''}</span>
+                                        <button onClick={() => setRecoveryReviewIdx(null)} className="text-amber-700 hover:text-red-600 font-bold" aria-label={t('pdf_audit.recovery_review.close_aria') || 'Close review'}>✕</button>
+                                      </div>
+                                      <p className="mb-2 text-[11px]"><span className="font-bold">{t('pdf_audit.recovery_review.source_ctx') || 'In the original document:'}</span> <span className="italic">…{_ctx}…</span></p>
+                                      <p className="mb-2 text-[11px] text-amber-800">{_anchorHit
+                                        ? (t('pdf_audit.recovery_review.anchor_found') || 'Found the matching spot in the remediated document — insert the word there?')
+                                        : (t('pdf_audit.recovery_review.anchor_missing') || 'No confident match in the remediated document (the surrounding text was rewritten). The word stays safely in the Content Recovery appendix.')}</p>
+                                      <div className="flex gap-2">
+                                        <button onClick={_doInsert} disabled={!_anchorHit} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed">📍 {t('pdf_audit.recovery_review.insert') || 'Insert at match'}</button>
+                                        <button onClick={() => _advance('kept')} className="px-3 py-1.5 bg-white border border-amber-400 text-amber-800 rounded-lg text-[11px] font-bold hover:bg-amber-100">⏭ {t('pdf_audit.recovery_review.skip') || 'Keep in appendix'}</button>
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                   <span className="text-lg">🔍</span>
                                   <h4 id="allo-sec-recovery" className="text-sm font-bold text-slate-800">{t('pdf_audit.fidelity.heading') || 'Verify Text Fidelity'}</h4>

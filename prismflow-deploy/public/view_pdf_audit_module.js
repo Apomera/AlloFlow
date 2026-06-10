@@ -809,6 +809,8 @@ function PdfAuditView(props) {
   });
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   const [tagOutline, setTagOutline] = useState(null);
+  const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
+  const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   const [tierBStage, setTierBStage] = useState("");
   const classifyPdfError = (err) => {
     const msg = err && (err.message || (typeof err === "string" ? err : "")) || "";
@@ -2595,7 +2597,100 @@ Return ONLY JSON:
           },
           "\u{1FA84} Regenerate"
         ));
-      }), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-2" }, t("pdf_audit.images.regen_hint") || "Click Regenerate to recreate an image via AI using its stored description, or use Upload/Replace inside the figure in the preview."))), autoRestoreSummary && /* @__PURE__ */ React.createElement("div", { className: "mb-2 bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-1.5 text-[11px] text-emerald-900 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u2728 Restore applied:"), /* @__PURE__ */ React.createElement("span", null, autoRestoreSummary.restored.length, " word", autoRestoreSummary.restored.length === 1 ? "" : "s", " spliced back", autoRestoreSummary.unplaceable.length > 0 ? ` \xB7 ${autoRestoreSummary.unplaceable.length} in Content Recovery appendix` : ""), autoRestoreSummary.beforeFidelity != null && fidelityResult && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-emerald-700 ml-auto" }, autoRestoreSummary.beforeFidelity, "% \u2192 ", fidelityResult.fidelity, "%")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("h4", { id: "allo-sec-recovery", className: "text-sm font-bold text-slate-800" }, t("pdf_audit.fidelity.heading") || "Verify Text Fidelity"), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase" }, "via ", String(method).replace("+", " + ")), /* @__PURE__ */ React.createElement(
+      }), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-2" }, t("pdf_audit.images.regen_hint") || "Click Regenerate to recreate an image via AI using its stored description, or use Upload/Replace inside the figure in the preview."))), autoRestoreSummary && /* @__PURE__ */ React.createElement("div", { className: "mb-2 bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-1.5 text-[11px] text-emerald-900 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u2728 Restore applied:"), /* @__PURE__ */ React.createElement("span", null, autoRestoreSummary.restored.length, " word", autoRestoreSummary.restored.length === 1 ? "" : "s", " spliced back", autoRestoreSummary.unplaceable.length > 0 ? ` \xB7 ${autoRestoreSummary.unplaceable.length} in Content Recovery appendix` : ""), autoRestoreSummary.unplaceable.length > 0 && recoveryReviewIdx === null && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        setRecoveryReviewIdx(0);
+        setRecoveryReviewOutcomes({});
+      }, className: "px-2 py-0.5 bg-amber-600 text-white rounded-full text-[10px] font-bold hover:bg-amber-700", title: t("pdf_audit.recovery_review.start_title") || "Step through each word the automatic restore could not confidently place \u2014 see its original context and decide where it belongs, one at a time (like a spell checker)." }, "\u{1F50D} ", t("pdf_audit.recovery_review.start") || "Review one by one"), autoRestoreSummary.beforeFidelity != null && fidelityResult && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-emerald-700 ml-auto" }, autoRestoreSummary.beforeFidelity, "% \u2192 ", fidelityResult.fidelity, "%")), autoRestoreSummary && recoveryReviewIdx !== null && (() => {
+        const _items = autoRestoreSummary.unplaceable || [];
+        if (recoveryReviewIdx >= _items.length) {
+          const _ins = Object.values(recoveryReviewOutcomes).filter((o) => o === "inserted").length;
+          return /* @__PURE__ */ React.createElement("div", { className: "mb-2 bg-emerald-50 border-2 border-emerald-300 rounded-xl p-2.5 text-[11px] text-emerald-900 flex items-center gap-2", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u2705 ", t("pdf_audit.recovery_review.done") || "Review complete:"), /* @__PURE__ */ React.createElement("span", null, _ins, " ", t("pdf_audit.recovery_review.inserted") || "inserted in context", " \xB7 ", _items.length - _ins, " ", t("pdf_audit.recovery_review.kept") || "kept in the appendix", "."), /* @__PURE__ */ React.createElement("button", { onClick: () => setRecoveryReviewIdx(null), className: "ml-auto px-2 py-0.5 bg-emerald-600 text-white rounded text-[10px] font-bold" }, t("pdf_audit.recovery_review.close") || "Close"));
+        }
+        const it = _items[recoveryReviewIdx];
+        const _norm = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
+        const _ctx = String(it.context || "");
+        const _wRe = new RegExp("\\b" + String(it.word).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+        const _wm = _ctx.match(_wRe);
+        const _beforeWords = _wm ? _norm(_ctx.slice(0, _wm.index)).split(" ").filter(Boolean).slice(-4) : [];
+        const _afterWords = _wm ? _norm(_ctx.slice(_wm.index + it.word.length)).split(" ").filter(Boolean).slice(0, 4) : [];
+        const _findAnchor = () => {
+          try {
+            const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+            if (!d || !d.body) return null;
+            const useBefore = _beforeWords.length >= 2;
+            const anchor = (useBefore ? _beforeWords : _afterWords).join(" ");
+            if (!anchor || anchor.length < 6) return null;
+            const walker = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null);
+            let node;
+            while (node = walker.nextNode()) {
+              if (node.parentElement && node.parentElement.closest('section[data-content-recovery="true"]')) continue;
+              const ni = _norm(node.textContent).indexOf(anchor);
+              if (ni !== -1) return { node, anchor, useBefore };
+            }
+            return null;
+          } catch (_) {
+            return null;
+          }
+        };
+        const _anchorHit = _findAnchor();
+        const _advance = (outcome) => {
+          setRecoveryReviewOutcomes((p) => ({ ...p, [recoveryReviewIdx]: outcome }));
+          setRecoveryReviewIdx(recoveryReviewIdx + 1);
+        };
+        const _doInsert = () => {
+          try {
+            const hit = _findAnchor();
+            if (!hit) {
+              addToast(t("toasts.recovery_anchor_gone") || "The context anchor is no longer in the document \u2014 the word stays in the appendix.", "info");
+              _advance("kept");
+              return;
+            }
+            const d = pdfPreviewRef.current.contentDocument;
+            const raw = hit.node.textContent;
+            const nIdx = _norm(raw).indexOf(hit.anchor);
+            let rawPos = 0, normCount = 0;
+            const target = hit.useBefore ? nIdx + hit.anchor.length : nIdx;
+            while (rawPos < raw.length && normCount < target) {
+              if (/\s/.test(raw[rawPos])) {
+                while (rawPos < raw.length && /\s/.test(raw[rawPos])) rawPos++;
+                normCount++;
+              } else {
+                rawPos++;
+                normCount++;
+              }
+            }
+            hit.node.textContent = raw.slice(0, rawPos) + (hit.useBefore ? " " + it.word : it.word + " ") + raw.slice(rawPos);
+            try {
+              const lis = d.querySelectorAll('section[data-content-recovery="true"] li');
+              for (const li of lis) {
+                const st = li.querySelector("strong");
+                if (st && st.textContent === it.word) {
+                  li.remove();
+                  break;
+                }
+              }
+              const ul = d.querySelector('section[data-content-recovery="true"] ul');
+              if (ul && ul.children.length === 0) {
+                const sec = d.querySelector('section[data-content-recovery="true"]');
+                if (sec) sec.remove();
+              }
+            } catch (_) {
+            }
+            const h = getPdfPreviewHtml();
+            if (h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: h, _userEditedAt: Date.now() } : prev);
+            try {
+              window.dispatchEvent(new CustomEvent("alloflow:fidelity-stale"));
+            } catch (_) {
+            }
+            addToast((t("toasts.recovery_word_inserted") || "\u{1F4CD} Inserted") + ' "' + it.word + '"', "success");
+            _advance("inserted");
+          } catch (e) {
+            addToast("Insert failed: " + (e && e.message || "error") + " \u2014 the word stays in the appendix.", "error");
+            _advance("kept");
+          }
+        };
+        return /* @__PURE__ */ React.createElement("div", { className: "mb-2 bg-amber-50 border-2 border-amber-300 rounded-xl p-3 text-xs text-amber-900", role: "group", "aria-label": t("pdf_audit.recovery_review.aria") || "Content recovery word review" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-black" }, "\u{1F50D} ", t("pdf_audit.recovery_review.heading") || "Word", " ", recoveryReviewIdx + 1, "/", _items.length, ": ", /* @__PURE__ */ React.createElement("span", { className: "bg-amber-200 px-1.5 rounded" }, it.word), it.missingCount > 1 ? " (\xD7" + it.missingCount + ")" : ""), /* @__PURE__ */ React.createElement("button", { onClick: () => setRecoveryReviewIdx(null), className: "text-amber-700 hover:text-red-600 font-bold", "aria-label": t("pdf_audit.recovery_review.close_aria") || "Close review" }, "\u2715")), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.recovery_review.source_ctx") || "In the original document:"), " ", /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2026", _ctx, "\u2026")), /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-[11px] text-amber-800" }, _anchorHit ? t("pdf_audit.recovery_review.anchor_found") || "Found the matching spot in the remediated document \u2014 insert the word there?" : t("pdf_audit.recovery_review.anchor_missing") || "No confident match in the remediated document (the surrounding text was rewritten). The word stays safely in the Content Recovery appendix."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: _doInsert, disabled: !_anchorHit, className: "px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed" }, "\u{1F4CD} ", t("pdf_audit.recovery_review.insert") || "Insert at match"), /* @__PURE__ */ React.createElement("button", { onClick: () => _advance("kept"), className: "px-3 py-1.5 bg-white border border-amber-400 text-amber-800 rounded-lg text-[11px] font-bold hover:bg-amber-100" }, "\u23ED ", t("pdf_audit.recovery_review.skip") || "Keep in appendix")));
+      })(), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("h4", { id: "allo-sec-recovery", className: "text-sm font-bold text-slate-800" }, t("pdf_audit.fidelity.heading") || "Verify Text Fidelity"), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase" }, "via ", String(method).replace("+", " + ")), /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: _runCheck,
