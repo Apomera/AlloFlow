@@ -933,7 +933,7 @@
                           }
                           return null;
                         })()}</div></td>)}</tr>;
-                })}{generatedContent?.data.length === 0 && <tr><td colSpan={3 + selectedLanguages.length} className="p-8 text-center text-slate-600 italic">{t('glossary.no_terms')}</td></tr>}</tbody></table></div></div>}{
+                })}{generatedContent?.data.length === 0 && <tr><td colSpan={3 + selectedLanguages.length} className="p-10 text-center text-slate-600"><div className="flex flex-col items-center gap-2"><span className="text-4xl allo-empty-float select-none" aria-hidden="true">📖</span><span className="text-sm font-medium text-slate-700">{t('glossary.no_terms')}</span></div></td></tr>}</tbody></table></div></div>}{
         // ── Phonics popup (sibling) ──
         // Mirrors the simplified-view popup at view_simplified_module.js:784–865.
         // Renders only when the host has set phonicsData (via handlePhonicsClick),
