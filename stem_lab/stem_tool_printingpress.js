@@ -1839,7 +1839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   h('linearGradient', { id: 'pp-screw-metal', x1: 0, y1: 0, x2: 1, y2: 0 },
                     h('stop', { offset: '0%',  stopColor: '#2a2a2a' }),
                     h('stop', { offset: '20%', stopColor: '#5a5a5a' }),
-                    h('stop', { offset: '50%', stopColor: '#8a8a8a' }),
+                    h('stop', { offset: '50%', stopColor: '#b0b0b0' }),
                     h('stop', { offset: '80%', stopColor: '#5a5a5a' }),
                     h('stop', { offset: '100%', stopColor: '#2a2a2a' })
                   ),
@@ -1891,7 +1891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   // as morning sun coming through a high window onto the
                   // press. Low opacity so it suggests light, doesn't shout.
                   h('linearGradient', { id: 'pp-window-beam', x1: 0, y1: 0, x2: 1, y2: 1 },
-                    h('stop', { offset: '0%',   stopColor: '#fbbf24', stopOpacity: 0.18 }),
+                    h('stop', { offset: '0%',   stopColor: '#fde68a', stopOpacity: 0.24 }),
                     h('stop', { offset: '40%',  stopColor: '#fbbf24', stopOpacity: 0.06 }),
                     h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
                   ),
@@ -1951,7 +1951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 // Smooth height transition gives the descending screw shaft
                 // a real "lowering" feel. Horizontal metal gradient reads as
                 // a 3D cylinder rather than a flat rectangle.
-                h('rect', { x: 220, y: 50, width: 40, height: screwY - 50, fill: 'url(#pp-screw-metal)', stroke: '#2a2a2a', strokeWidth: 1, style: { transition: 'height 0.7s ease-in-out' } }),
+                h('rect', { x: 220, y: 50, width: 40, height: screwY - 50, fill: 'url(#pp-screw-metal)', stroke: '#2a2a2a', strokeWidth: 1, style: { transition: 'height 0.7s cubic-bezier(0.65, 0, 0.35, 1)' } }),
                 // Screw threads (decorative)
                 (function() {
                   var threads = [];
@@ -1969,15 +1969,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 // gives the boss a polished, slightly raised appearance. The
                 // inner darker disk is the bar socket where the wooden lever
                 // inserts.
-                h('circle', { cx: 240, cy: screwY, r: 26, fill: 'url(#pp-nut-brass)', stroke: '#7c4f1f', strokeWidth: 2, style: { transition: 'cy 0.7s ease-in-out' } }),
-                h('circle', { cx: 240, cy: screwY, r: 18, fill: '#5a4036', stroke: '#3d2914', strokeWidth: 1, style: { transition: 'cy 0.7s ease-in-out' } }),
+                h('circle', { cx: 240, cy: screwY, r: 26, fill: 'url(#pp-nut-brass)', stroke: '#7c4f1f', strokeWidth: 2, style: { transition: 'cy 0.7s cubic-bezier(0.65, 0, 0.35, 1)' } }),
+                h('circle', { cx: 240, cy: screwY, r: 18, fill: '#5a4036', stroke: '#3d2914', strokeWidth: 1, style: { transition: 'cy 0.7s cubic-bezier(0.65, 0, 0.35, 1)' } }),
 
                 // ── The bar (handle to turn the screw) — animated rotation.
                 // Ball caps use a polished-wood radial gradient so they
                 // read as turned wooden knobs (lit from upper-left) rather
                 // than flat black circles.
                 h('g', { transform: 'translate(240, ' + screwY + ') rotate(' + screwRot + ')',
-                  style: { transition: 'transform 0.7s ease-in-out', transformOrigin: '240px ' + screwY + 'px' } },
+                  style: { transition: 'transform 0.7s cubic-bezier(0.65, 0, 0.35, 1)', transformOrigin: '240px ' + screwY + 'px' } },
                   h('rect', { x: -80, y: -6, width: 160, height: 12, rx: 6, fill: T.wood, stroke: '#3d2914', strokeWidth: 1.5 }),
                   h('circle', { cx: -75, cy: 0, r: 9, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 0.8 }),
                   h('circle', { cx: 75, cy: 0, r: 9, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 0.8 })
@@ -1987,11 +1987,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 // Wood-grain pattern matches the rest of the timber on the press.
                 h('rect', { x: 130, y: platenY, width: 220, height: platenH,
                   fill: 'url(#pp-woodgrain-platen)', stroke: '#3d2914', strokeWidth: 2,
-                  style: { transition: 'y 0.7s ease-in-out' } }),
+                  style: { transition: 'y 0.7s cubic-bezier(0.65, 0, 0.35, 1)' } }),
                 // Platen "boss" attaches to screw
                 h('rect', { x: 220, y: platenY - 8, width: 40, height: 10,
                   fill: '#4a4a4a', stroke: '#2a2a2a', strokeWidth: 1,
-                  style: { transition: 'y 0.7s ease-in-out' } }),
+                  style: { transition: 'y 0.7s cubic-bezier(0.65, 0, 0.35, 1)' } }),
 
                 // ── The bed (where the type forme sits) ──
                 h('rect', { x: 110, y: 245, width: 260, height: 35, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 2 }),
@@ -2123,10 +2123,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 (pressState === 'clean' || pressState === 'revealed') && h('g', { 'aria-hidden': 'true' },
                   // Resting against left frame
                   h('line', { x1: 95, y1: 290, x2: 88, y2: 245, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
-                  h('circle', { cx: 88, cy: 245, r: 12, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 }),
+                  h('circle', { cx: 88, cy: 245, r: 12, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 }),
                   // Resting against right frame
                   h('line', { x1: 385, y1: 290, x2: 392, y2: 245, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
-                  h('circle', { cx: 392, cy: 245, r: 12, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 })
+                  h('circle', { cx: 392, cy: 245, r: 12, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 })
                 ),
                 // ── Ink balls — active inking (dab and lift) + floating ink droplets ──
                 pressState === 'inking' && (function() {
@@ -2155,10 +2155,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     // Floating ink droplets behind ink balls
                     h('g', { 'aria-hidden': 'true' }, droplets),
                     // Left ink ball
-                    h('circle', { cx: leftX, cy: ballY, r: 14, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 }),
+                    h('circle', { cx: leftX, cy: ballY, r: 14, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 }),
                     h('line', { x1: leftX, y1: ballY, x2: leftX - 12, y2: ballY - 28, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
                     // Right ink ball
-                    h('circle', { cx: rightX, cy: ballY, r: 14, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 }),
+                    h('circle', { cx: rightX, cy: ballY, r: 14, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 }),
                     h('line', { x1: rightX, y1: ballY, x2: rightX + 12, y2: ballY - 28, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' })
                   );
                 })(),
@@ -2216,7 +2216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   h('ellipse', { cx: 0, cy: -1, rx: 1.2, ry: 2.8, fill: '#fef3c7',
                     style: { animation: 'printingpress-candle-flicker 1.4s ease-in-out infinite reverse', transformOrigin: '0 2px' } }),
                   // Soft glow halo around the flame
-                  h('circle', { cx: 0, cy: -2, r: 12, fill: 'url(#pp-candle-glow)', opacity: 0.5 })
+                  h('circle', { cx: 0, cy: -2, r: 22, fill: 'url(#pp-candle-glow)', opacity: 0.55 })
                 ),
                 // ── State label ──
                 h('text', { x: W / 2, y: 22, fill: T.accentHi, fontSize: 13, fontWeight: 700, textAnchor: 'middle', fontFamily: 'Georgia, serif' },
@@ -7757,7 +7757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   h('span', { style: {
                     display: 'inline-block',
                     fontSize: Math.round(titleSize * 1.15),
-                    background: 'linear-gradient(180deg, #d4914f 0%, #7c4f1f 100%)',
+                    background: 'linear-gradient(180deg, #f5d77e 0%, #d4914f 35%, #7c4f1f 100%)',
                     color: '#fef3c7',
                     padding: '2px 10px 0',
                     border: '2px solid #7c4f1f',

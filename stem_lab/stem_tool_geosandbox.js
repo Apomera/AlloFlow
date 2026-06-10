@@ -196,7 +196,7 @@ window.StemLab = window.StemLab || {
       wireframe: wireframe,
       transparent: opacity < 1,
       opacity: opacity,
-      shininess: 60,
+      shininess: 90,
       flatShading: false
     });
     var mesh = new THREE.Mesh(geometry, material);

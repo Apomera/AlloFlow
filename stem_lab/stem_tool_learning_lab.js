@@ -2534,7 +2534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('path', { d: pathFromPoints(cramPts, W, H, mx, my), fill: 'none', stroke: '#ef4444', strokeWidth: 0.7, strokeDasharray: '1.5,1' }),
           // Spaced curve (purple)
           hh('path', { d: fillFromPoints(spacedPts, W, H, mx, my), fill: 'rgba(147,51,234,0.18)', stroke: 'none' }),
-          hh('path', { d: pathFromPoints(spacedPts, W, H, mx, my), fill: 'none', stroke: '#c084fc', strokeWidth: 1 }),
+          hh('path', { d: pathFromPoints(spacedPts, W, H, mx, my), fill: 'none', stroke: '#c084fc', strokeWidth: 1, style: { filter: 'drop-shadow(0 0 1px rgba(192,132,252,0.9))' } }),
           // Review markers (vertical lines + chips)
           reviews.map(function(d, i) {
             var x = mx + (d / totalDays) * (W - mx * 2);
@@ -3717,7 +3717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             return lines;
           })(),
           // The hypnogram trace
-          hh('path', { d: pathFromSamples(), stroke: '#c084fc', strokeWidth: 1.2, fill: 'none', strokeLinejoin: 'round' })
+          hh('path', { d: pathFromSamples(), stroke: '#c084fc', strokeWidth: 1.2, fill: 'none', strokeLinejoin: 'round', style: { filter: 'drop-shadow(0 0 1.5px rgba(192,132,252,0.8))' } })
         )
       ),
 
@@ -4048,7 +4048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               p.id !== 'room' && faceUp ? hh('circle', { cx: phoneX + phoneW / 2, cy: phoneY + phoneH - 2.5, r: 0.8, fill: '#94a3b8' }) : null,
               p.id !== 'room' ? hh('text', { x: phoneX + phoneW / 2, y: phoneY - 2, fontSize: 5, fill: p.color, textAnchor: 'middle', fontWeight: 700 }, label) : null,
               // Cognitive aura — radius proportional to cost
-              p.id !== 'room' ? hh('circle', { cx: phoneX + phoneW / 2, cy: phoneY + phoneH / 2, r: 6 + (100 - p.wm), fill: p.color, opacity: 0.10 }) : null
+              p.id !== 'room' ? hh('circle', { cx: phoneX + phoneW / 2, cy: phoneY + phoneH / 2, r: 6 + (100 - p.wm), fill: p.color, opacity: 0.10, style: { transition: 'cx 450ms ease, cy 450ms ease, r 450ms ease' } }) : null
             );
           })()
         )
@@ -4867,7 +4867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   strokeWidth: 8, strokeLinecap: 'round',
                   strokeDasharray: cC, strokeDashoffset: dashOffset,
                   transform: 'rotate(-90 100 100)',
-                  style: { transition: 'stroke-dashoffset 900ms linear' }
+                  style: { transition: 'stroke-dashoffset 900ms linear', filter: 'drop-shadow(0 0 4px ' + (phase === 'work' ? 'rgba(239,68,68,0.45)' : 'rgba(16,185,129,0.45)') + ')' }
                 })
               ),
               hh('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
@@ -13329,7 +13329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('line', { key: 'ax-' + i, x1: cx, y1: cy, x2: ex, y2: ey, stroke: 'rgba(100,116,139,0.25)', strokeWidth: 0.5 });
         }),
         // value polygon
-        hh('polygon', { points: polyPts, fill: 'rgba(168,85,247,0.20)', stroke: '#a855f7', strokeWidth: 1.5, strokeLinejoin: 'round' }),
+        hh('polygon', { points: polyPts, fill: 'rgba(168,85,247,0.20)', stroke: '#a855f7', strokeWidth: 1.5, strokeLinejoin: 'round', style: { filter: 'drop-shadow(0 0 3px rgba(168,85,247,0.45))' } }),
         // dots + labels
         pts.map(function(p, i) {
           var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
@@ -16929,7 +16929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   },
                     h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
                     h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
-                      strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                      strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)', style: { filter: 'drop-shadow(0 0 3px ' + tierColor + '55)' } })
                   ),
                   h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                     h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),

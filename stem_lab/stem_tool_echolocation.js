@@ -945,7 +945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
                 var cc=new T.EffectComposer(eng.renderer);
                 cc.addPass(new T.RenderPass(eng.scene, eng.camera));
-                cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((container.clientWidth)*rs)),Math.max(1,Math.round((container.clientHeight)*rs))), lp?0.60:0.85, 0.4, 0.8));
+                cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1,Math.round((container.clientWidth)*rs)),Math.max(1,Math.round((container.clientHeight)*rs))), lp?0.60:0.85, 0.4, 0.62)); // lower threshold: sonar-impact lights now genuinely bloom in the dark cave
                 eng.renderer._alloComposer=cc;
               } catch(e){ try{ eng.renderer._alloComposer=null; }catch(_){} }
             });
@@ -1011,7 +1011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng.scene.add(chFloor);
           // Glowing crystal (landmark in chamber)
           var crystalGeo = new THREE.ConeGeometry(0.3, 1.5, 5);
-          var crystalMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x4c1d95, emissiveIntensity: 0.3, roughness: 0.2, metalness: 0.5 });
+          var crystalMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x4c1d95, emissiveIntensity: 0.7, roughness: 0.2, metalness: 0.5 }); // the "glowing crystal" now glows
           var crystal = new THREE.Mesh(crystalGeo, crystalMat);
           crystal.position.set(14, 0.75, 2); eng.scene.add(crystal);
           // Crystal point light (very dim — just enough to hint)

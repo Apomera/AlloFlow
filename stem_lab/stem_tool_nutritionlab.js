@@ -16159,7 +16159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
           h('div', { className: 'flex flex-col md:flex-row items-center gap-5' },
             h('svg', {
-              width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
+              width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, style: { filter: 'drop-shadow(0 2px 3px rgba(15,23,42,0.15))' },
               role: 'img',
               'aria-label': 'Energy split for this meal: carbs ' + c_kcal.toFixed(0) + ' kcal, protein ' + p_kcal.toFixed(0) + ' kcal, fat ' + f_kcal.toFixed(0) + ' kcal. Total ' + total.toFixed(0) + ' kcal.'
             },

@@ -293,7 +293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
     // Terminator shadow (day/night)
     var tg = ctx.createLinearGradient(cx + r * 0.3, cy, cx + r, cy);
-    tg.addColorStop(0, 'transparent'); tg.addColorStop(1, 'rgba(0,0,0,0.35)');
+    tg.addColorStop(0, 'transparent'); tg.addColorStop(1, 'rgba(0,0,0,0.55)'); // deeper terminator — lunar night is near-black
     ctx.fillStyle = tg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
     ctx.restore();
   }
@@ -308,7 +308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var sy = rng.next() * H;
       var sr = 0.3 + rng.next() * 1.5;
       var sc = colors[Math.floor(rng.next() * colors.length)];
-      var twinkle = 0.4 + 0.6 * Math.abs(Math.sin((tick || 0) * 0.002 + si * 1.7));
+      var twinkle = 0.7 + 0.3 * Math.sin((tick || 0) * 0.004 + si * 1.7); // smooth breath (the abs() cusp made stars snap at their dimmest)
       ctx.globalAlpha = twinkle;
       ctx.fillStyle = sc;
       ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
@@ -1224,12 +1224,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fill();
                       // Mach diamonds (bright spots in the exhaust at high velocity)
                       if (velocity > 5) {
+                        ctx.shadowColor = 'rgba(255,240,180,0.9)'; ctx.shadowBlur = 8;
                         ctx.fillStyle = 'rgba(255,255,200,0.6)';
                         for (var md = 0; md < 3; md++) {
                           var mdy = rBase + flameLen * (0.15 + md * 0.18);
                           var mdSize = 2 - md * 0.4;
                           ctx.beginPath(); ctx.arc(rocketX, mdy, mdSize, 0, Math.PI * 2); ctx.fill();
                         }
+                        ctx.shadowBlur = 0;
                       }
                       // Exhaust particles (scattered sparks)
                       ctx.globalAlpha = 0.6;
@@ -1440,7 +1442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillStyle = '#38bdf8'; ctx.fillRect(-2, -0.8, 1.5, 1.5);
                     // Engine glow if in TLI window
                     if (inWindow) {
-                      var glowR = 3 + Math.sin(tick * 0.25) * 1.5;
+                      var glowR = 3 + Math.sin(tick * 0.12) * 1.5; // ~1.15 Hz engine breath (was ~2.4 Hz, close to the photosensitivity line)
                       var glowGrad = ctx.createRadialGradient(-12, 0, 0, -12, 0, glowR + 2);
                       glowGrad.addColorStop(0, 'rgba(56,189,248,0.9)');
                       glowGrad.addColorStop(1, 'rgba(56,189,248,0)');
@@ -1690,8 +1692,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Landing site marker (over the detailed moon)
                     ctx.save(); ctx.beginPath(); ctx.arc(moonCx, moonCy, moonR, 0, Math.PI * 2); ctx.clip();
                     var lsX = moonCx + moonR * 0.15, lsY = moonCy - moonR * 0.05;
+                    ctx.shadowColor = 'rgba(74,222,128,0.9)'; ctx.shadowBlur = 9;
                     ctx.fillStyle = 'rgba(34,197,94,' + (0.4 + Math.sin(tick * 0.06) * 0.3) + ')';
                     ctx.beginPath(); ctx.arc(lsX, lsY, 3, 0, Math.PI * 2); ctx.fill();
+                    ctx.shadowBlur = 0;
                     ctx.font = '7px system-ui'; ctx.fillStyle = '#4ade80'; ctx.textAlign = 'left';
                     ctx.fillText('Tranquility Base', lsX + 6, lsY + 3);
                     ctx.restore();
@@ -2255,11 +2259,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var earthCv = document.createElement('canvas'); earthCv.width = 256; earthCv.height = 256;
                     var eCtx = earthCv.getContext('2d');
                     eCtx.clearRect(0, 0, 256, 256);
-                    drawDetailedEarth(eCtx, 128, 128, 100, 500);
+                    drawDetailedEarth(eCtx, 128, 128, 86, 500); // r86: halo (r*1.45=125) now fits the 256px texture instead of square-clipping
                     var earthTex = new THREE.CanvasTexture(earthCv);
                     var earthSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: earthTex, transparent: true, depthWrite: false }));
                     earthSprite.position.set(-60, 70, -120);
-                    earthSprite.scale.set(20, 20, 1);
+                    earthSprite.scale.set(23, 23, 1); // compensates r 100->86 so the visible disc size is unchanged
                     scene.add(earthSprite);
 
                     // ── Lunar terrain (grey regolith with craters) ──
@@ -3356,8 +3360,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Heat shield (bottom, glows during re-entry)
                     if (reentryPhase <= 1) {
                       var shieldGlow = Math.min(1, tick / 120);
+                      ctx.shadowColor = 'rgba(255,140,0,0.85)'; ctx.shadowBlur = 12 * shieldGlow;
                       ctx.fillStyle = 'rgb(' + Math.round(150 + shieldGlow * 105) + ',' + Math.round(50 + shieldGlow * 50) + ',0)';
                       ctx.fillRect(capX - 14, capsuleY + 10, 28, 4);
+                      ctx.shadowBlur = 0;
                     }
                     // Parachutes
                     if (reentryPhase >= 2) {

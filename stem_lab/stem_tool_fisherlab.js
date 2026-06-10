@@ -7705,7 +7705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // Water plane
     var waterGeo = new THREE.PlaneGeometry(1400, 1400, 80, 80);
-    var waterMat = new THREE.MeshLambertMaterial({ color: waterColorHex, transparent: true, opacity: 0.95 });
+    var waterMat = new THREE.MeshPhongMaterial({ color: waterColorHex, transparent: true, opacity: 0.95, shininess: 50, specular: 0x3a5a78 }); // sun-glint on the wave-animated water
     var water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0;

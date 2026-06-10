@@ -1456,7 +1456,7 @@
         h('text', { x: pad.l + 4, y: midY - 4, fill: color, fontSize: 10, fontWeight: 700 }, '◦ source'),
         h('rect', { x: pad.l, y: midY - 8, width: 12, height: 16, fill: color, opacity: 0.85, rx: 4 }),
         // Coherent light path from source toward barrier
-        h('line', { x1: pad.l + 12, y1: midY, x2: barX, y2: midY, stroke: color, strokeWidth: 2, opacity: 0.55 }),
+        h('line', { x1: pad.l + 12, y1: midY, x2: barX, y2: midY, stroke: color, strokeWidth: 2, opacity: 0.55, style: { filter: 'drop-shadow(0 0 4px ' + color + ')' } }),
         // Barrier — opaque with two slits
         h('rect', { x: barX, y: pad.t, width: 6, height: H - pad.b - pad.t, fill: '#475569' }),
         h('rect', { x: barX, y: slitTopY - 1, width: 6, height: 3, fill: '#000' }),
