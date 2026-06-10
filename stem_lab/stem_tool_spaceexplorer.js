@@ -551,6 +551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     // Atmosphere glow
     ctx.save();
     ctx.globalAlpha = 0.2;
+    ctx.globalCompositeOperation = 'lighter';
     var ag = ctx.createRadialGradient(cx, cy, r, cx, cy, r * 1.2);
     ag.addColorStop(0, dest.color); ag.addColorStop(1, 'transparent');
     ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(cx, cy, r * 1.2, 0, Math.PI * 2); ctx.fill();

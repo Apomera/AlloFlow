@@ -18761,7 +18761,7 @@
             // Balance Scale SVG
             h('svg', { viewBox: '0 0 400 100', className: 'w-full mb-3', style: { maxHeight: '100px' } },
               h('polygon', { points: '200,95 190,75 210,75', fill: '#94a3b8' }),
-              h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 3, strokeLinecap: 'round', style: { transition: 'all 0.3s' } }),
+              h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 3, strokeLinecap: 'round', style: { transition: 'all 0.3s', filter: isBalanced ? 'drop-shadow(0 0 3px rgba(34,197,94,0.7))' : 'none' } }),
               h('ellipse', { cx: 100, cy: 80 + tilt * 8, rx: 50, ry: 8, fill: isBalanced ? '#dcfce7' : '#f1f5f9', stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 1.5, style: { transition: 'all 0.3s' } }),
               h('ellipse', { cx: 300, cy: 80 - tilt * 8, rx: 50, ry: 8, fill: isBalanced ? '#dcfce7' : '#f1f5f9', stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 1.5, style: { transition: 'all 0.3s' } }),
               Object.keys(leftAtoms).map(function(atom, idx) {

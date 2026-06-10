@@ -1365,6 +1365,8 @@ const d = labToolData.physics;
 
                   // Bright spark with tail
 
+                  ctx.globalCompositeOperation = 'lighter';
+
                   ctx.globalAlpha = ip.life;
 
                   ctx.strokeStyle = 'hsla(' + Math.round(30 + ip.life * 30) + ',100%,70%,' + ip.life + ')';
@@ -1597,9 +1599,9 @@ const d = labToolData.physics;
 
               var sparkX = (cxC - 6) * dpr, sparkY = (cyC - 14) * dpr;
 
-              ctx.fillStyle = 'rgba(251,191,36,' + (0.5 + 0.5 * Math.sin(tick * 0.3)) + ')';
+              ctx.fillStyle = 'rgba(251,191,36,' + (0.5 + 0.5 * Math.sin(tick * 0.15)) + ')';
 
-              ctx.beginPath(); ctx.arc(sparkX, sparkY, (2 + Math.sin(tick * 0.4)) * dpr, 0, Math.PI * 2); ctx.fill();
+              ctx.beginPath(); ctx.arc(sparkX, sparkY, (2 + Math.sin(tick * 0.2)) * dpr, 0, Math.PI * 2); ctx.fill();
 
               ctx.restore();
 

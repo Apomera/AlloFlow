@@ -18769,7 +18769,7 @@ var d = labToolData.cell || {};
 
               vigGrad.addColorStop(0.85, 'rgba(0,0,0,0.08)');
 
-              vigGrad.addColorStop(1, 'rgba(0,0,0,0.2)');
+              vigGrad.addColorStop(1, 'rgba(0,0,0,0.28)');
 
               cctx.fillStyle = vigGrad; cctx.fillRect(0, 0, W, HH);
 

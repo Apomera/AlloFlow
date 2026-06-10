@@ -2904,7 +2904,7 @@ window.StemLab = window.StemLab || {
                   return h('g', { key: 'n' + node.id, onClick: canClick && isConnected ? function() { traceNode(node.id); } : undefined, style: { cursor: canClick && isConnected ? 'pointer' : 'default' } },
                     h('circle', {
                       cx: node.x, cy: node.y, r: node.isPatientZero ? 18 : 14,
-                      fill: fill, stroke: isConnected && !revealed ? '#6366f1' : '#94a3b8',
+                      fill: fill, stroke: isConnected && !revealed ? '#6366f1' : '#94a3b8', filter: node.isPatientZero ? 'drop-shadow(0 0 5px ' + fill + ')' : undefined,
                       strokeWidth: isConnected && !revealed ? 3 : 1.5,
                       opacity: canClick && isConnected ? 1 : (revealed ? 1 : 0.5)
                     }),

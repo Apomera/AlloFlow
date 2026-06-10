@@ -1881,7 +1881,7 @@ window.StemLab = window.StemLab || {
                         var pc = phenoColor(p);
                         var cellLabel = isSexLinked ? (g.indexOf('Y') !== -1 ? '\u2642 Male' : '\u2640 Female') : (p === 'Blended' ? 'Blended' : p === 'Codominant' ? 'Both' : (g[0] === g[1] ? (p === 'Dominant' ? 'Homo D' : 'Homo R') : 'Hetero'));
                         var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
-                        return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-400 relative ' + pc.bg },
+                        return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-400 relative transition-colors duration-300 ' + pc.bg },
                           h('span', { className: 'text-lg font-bold ' + pc.text }, g),
                           h('span', { className: 'block text-[11px] ' + pc.sub }, cellLabel),
                           cellEmoji && h('span', { className: 'text-[11px] absolute top-0.5 right-0.5' }, cellEmoji)

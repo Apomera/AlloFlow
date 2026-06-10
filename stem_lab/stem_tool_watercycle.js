@@ -2466,6 +2466,7 @@ const d = labToolData.waterCycle || {};
                 
                 var moonGlow = ctx.createRadialGradient(moonX, moonY, 4 * dpr, moonX, moonY, 45 * dpr);
                 moonGlow.addColorStop(0, 'rgba(125,211,252,0.25)');
+                moonGlow.addColorStop(0.4, 'rgba(125,211,252,0.09)');
                 moonGlow.addColorStop(1, 'rgba(125,211,252,0)');
                 ctx.fillStyle = moonGlow;
                 ctx.beginPath();
@@ -2488,6 +2489,7 @@ const d = labToolData.waterCycle || {};
 
                 var sunGlow = ctx.createRadialGradient(sunX, sunY, 8 * dpr, sunX, sunY, 50 * dpr);
                 sunGlow.addColorStop(0, 'rgba(251,191,36,0.4)');
+                sunGlow.addColorStop(0.35, 'rgba(253,224,71,0.16)');
                 sunGlow.addColorStop(1, 'rgba(251,191,36,0)');
                 ctx.fillStyle = sunGlow;
                 ctx.fillRect(sunX - 50 * dpr, sunY - 50 * dpr, 100 * dpr, 100 * dpr);

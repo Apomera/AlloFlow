@@ -1180,7 +1180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         c.lineWidth = 2.5; c.stroke();
         // Endpoint dot
         c.beginPath(); c.arc(x(tl.length - 1), y(endGt), 4, 0, Math.PI * 2);
-        c.fillStyle = c.strokeStyle; c.fill();
+        c.shadowColor = c.strokeStyle; c.shadowBlur = 9; c.fillStyle = c.strokeStyle; c.fill(); c.shadowBlur = 0;
         // Y-axis labels
         c.fillStyle = '#94a3b8'; c.font = '600 8px system-ui'; c.textAlign = 'right';
         for (var yl = 0; yl <= maxGt; yl += 10) c.fillText(yl + ' Gt', pad.l - 4, y(yl) + 3);
@@ -1942,7 +1942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 c.fillStyle = '#4ade80'; c.font = 'bold 10px system-ui'; c.textAlign = 'left';
                 c.fillText('Pre-industrial 280 ppm', padL + 4, piY + 12);
                 // The Keeling data line (CO₂)
-                c.strokeStyle = '#60a5fa'; c.lineWidth = 2.5;
+                c.strokeStyle = '#60a5fa'; c.lineWidth = 2.5; c.shadowColor = 'rgba(96,165,250,0.45)'; c.shadowBlur = 5;
                 c.beginPath();
                 KEELING_DATA.forEach(function(pt, i) {
                   var px = x2px(pt.y), py = y2py(pt.ppm);
@@ -1952,7 +1952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 // Data points
                 KEELING_DATA.forEach(function(pt) {
                   var px = x2px(pt.y), py = y2py(pt.ppm);
-                  c.fillStyle = '#3b82f6';
+                  c.shadowBlur = 0; c.fillStyle = '#3b82f6';
                   c.beginPath(); c.arc(px, py, 3, 0, 6.28); c.fill();
                 });
                 // ── Global temperature anomaly (secondary Y-axis, red line) ──

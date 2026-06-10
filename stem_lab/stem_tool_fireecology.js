@@ -3070,7 +3070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (burning) {
               // Base fire glow at ground level
               var fireGlow = cx.createRadialGradient(w * 0.5, groundY, 0, w * 0.5, groundY, w * 0.6);
-              fireGlow.addColorStop(0, 'rgba(251,146,60,0.25)');
+              fireGlow.addColorStop(0, 'rgba(251,146,60,' + (0.22 + Math.sin(tick * 0.05) * 0.06).toFixed(3) + ')');
               fireGlow.addColorStop(0.5, 'rgba(239,68,68,0.12)');
               fireGlow.addColorStop(1, 'rgba(0,0,0,0)');
               cx.fillStyle = fireGlow;
@@ -3141,7 +3141,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (!burning) {
               var sunX = w * 0.82, sunY = 22;
               var sunGrad = cx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 15);
-              sunGrad.addColorStop(0, 'rgba(251,191,36,0.9)');
+              sunGrad.addColorStop(0, 'rgba(255,251,235,0.95)');
+              sunGrad.addColorStop(0.2, 'rgba(251,191,36,0.75)');
               sunGrad.addColorStop(0.5, 'rgba(251,191,36,0.3)');
               sunGrad.addColorStop(1, 'rgba(251,191,36,0)');
               cx.fillStyle = sunGrad;

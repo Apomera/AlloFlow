@@ -704,7 +704,10 @@ window.StemLab = window.StemLab || {
     ctx.lineTo(leftLipX - radius * 0.45, lipY);
     ctx.moveTo(rightLipX + radius * 0.45, lipY);
     ctx.lineTo(rightLipX + radius * 0.6, lipY);
+    ctx.shadowColor = 'rgba(251,191,36,0.85)';
+    ctx.shadowBlur = 8;
     ctx.stroke();
+    ctx.shadowBlur = 0;
     // ── Ghost trajectory (best run) ───────────────────────────
     // Faded arc + skater silhouette at the peak. Same parametric
     // arc the live animator uses (h = hAir * 4 * p * (1-p)) so the
@@ -750,7 +753,7 @@ window.StemLab = window.StemLab || {
                      : '251,191,36';
       for (var hti = 0; hti < state.trail.length; hti++) {
         var htp = state.trail[hti];
-        var htAlpha = (1 - htp.age) * 0.45;
+        var htAlpha = (1 - htp.age) * (1 - htp.age) * 0.6;
         var htRad = 2 + (1 - htp.age) * 4;
         ctx.fillStyle = 'rgba(' + hpTrailRGB + ',' + htAlpha.toFixed(2) + ')';
         ctx.beginPath();
@@ -783,6 +786,7 @@ window.StemLab = window.StemLab || {
     ctx.translate(sx, sy);
     ctx.rotate(rot * Math.PI / 180);
     // Board with grip-tape texture
+    if (state.inFlight) { ctx.shadowColor = skColors.body; ctx.shadowBlur = 14; }
     ctx.fillStyle = '#fbbf24';
     ctx.fillRect(-18, 6, 36, 5);
     ctx.fillStyle = 'rgba(15,23,42,0.4)';
@@ -1103,7 +1107,7 @@ window.StemLab = window.StemLab || {
                    : '251,191,36';
       for (var ti = 0; ti < state.trail.length; ti++) {
         var tp = state.trail[ti];
-        var tAlpha = (1 - tp.age) * 0.45;
+        var tAlpha = (1 - tp.age) * (1 - tp.age) * 0.6;
         var tRad = 2 + (1 - tp.age) * 4;
         ctx.fillStyle = 'rgba(' + trailRGB + ',' + tAlpha.toFixed(2) + ')';
         ctx.beginPath();
@@ -1139,6 +1143,7 @@ window.StemLab = window.StemLab || {
     ctx.translate(sx, sy);
     ctx.rotate(rot * Math.PI / 180);
     // Board with grip-tape detail (subtle dotted texture)
+    if (state.inFlight) { ctx.shadowColor = skColorsG.body; ctx.shadowBlur = 14; }
     ctx.fillStyle = '#fbbf24';
     ctx.fillRect(-14, 4, 28, 4);
     ctx.fillStyle = 'rgba(15,23,42,0.4)';

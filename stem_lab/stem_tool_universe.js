@@ -1501,7 +1501,7 @@ var d = labToolData.universe || {};
 
                   ctx.beginPath(); ctx.arc(0, 0, 12 * dpr, 0, Math.PI * 2);
 
-                  ctx.fillStyle = psGrad; ctx.fill();
+                  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = psGrad; ctx.fill(); ctx.restore();
 
                   // Planetesimal dots orbiting
 
@@ -2417,10 +2417,13 @@ var d = labToolData.universe || {};
                       phGrad.addColorStop(0, 'rgba(168,85,247,0)');
                       phGrad.addColorStop(0.5, 'rgba(168,85,247,0.15)');
                       phGrad.addColorStop(1, 'rgba(168,85,247,0)');
+                      bctx.save();
+                      bctx.globalCompositeOperation = 'lighter';
                       bctx.fillStyle = phGrad;
                       bctx.beginPath();
                       bctx.arc(cx2, cy2, 22, 0, Math.PI * 2);
                       bctx.fill();
+                      bctx.restore();
                       // Event horizon (black circle)
                       bctx.fillStyle = '#000';
                       bctx.beginPath();
@@ -2872,8 +2875,10 @@ var d = labToolData.universe || {};
                       ringGrad.addColorStop(0.5, 'rgba(120,200,255,0.4)');
                       ringGrad.addColorStop(0.7, 'rgba(100,180,255,0.25)');
                       ringGrad.addColorStop(1, 'rgba(100,150,255,0)');
+                      lctx.save(); lctx.globalCompositeOperation = 'lighter';
                       lctx.fillStyle = ringGrad;
                       lctx.beginPath(); lctx.arc(lcx, lcy, ringR + 4, 0, Math.PI * 2); lctx.fill();
+                      lctx.restore();
                       // Four arc images (simulating strong lensing arcs)
                       for (var ai = 0; ai < 4; ai++) {
                         var arcAngle = ai * Math.PI / 2 + ltick * 0.003;

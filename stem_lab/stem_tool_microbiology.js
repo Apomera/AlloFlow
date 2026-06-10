@@ -960,7 +960,7 @@
           );
         })
       ),
-      hh('div', { style: { background: '#0a0e1a', borderRadius: '50%', width: '100%', maxWidth: 320, height: 280, margin: '0 auto 12px', position: 'relative', overflow: 'hidden', border: '4px solid #1f2937', boxShadow: 'inset 0 0 40px rgba(16,185,129,0.10), 0 0 30px rgba(0,0,0,0.5)' } },
+      hh('div', { style: { background: '#0a0e1a', borderRadius: '50%', width: '100%', maxWidth: 320, height: 280, margin: '0 auto 12px', position: 'relative', overflow: 'hidden', border: '4px solid #1f2937', boxShadow: 'inset 0 0 55px rgba(0,0,0,0.45), inset 0 0 40px rgba(16,185,129,0.10), 0 0 30px rgba(0,0,0,0.5)' } },
         hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Microscope view of ' + sel.name + ' at ' + mag + 'x', style: { width: '100%', height: '100%', display: 'block' } },
           hh('defs', null, hh('pattern', { id: 'mscope-grid', x: 0, y: 0, width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, hh('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: '#1e293b', strokeWidth: 0.3 }))),
           hh('rect', { x: 0, y: 0, width: 200, height: 200, fill: 'url(#mscope-grid)' }),
