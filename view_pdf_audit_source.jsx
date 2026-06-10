@@ -613,7 +613,8 @@ function PdfAuditView(props) {
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
     setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64,
-    setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour
+    setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
+    pdfRunHistory, setPdfRunHistory
   } = props;
 
   // WCAG 2.1.2 / 2.4.3: keep Tab inside the audit dialog while it is open.
@@ -1786,8 +1787,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </>
                 )}
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-                  <label className="flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200">
-                    📂 Load Previous Project
+                  <label className="flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200" title={t('pdf_audit.load_project_tooltip') || 'Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) — your document, scores, history, and settings all come back.'}>
+                    📂 {t('pdf_audit.continue_session') || 'Continue a previous session'}
                     <input type="file" accept=".json" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0]; if (!file) return;
                       const reader = new FileReader();
@@ -1823,6 +1824,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             autoFixPasses: project.autoFixPasses || 0,
                           });
                           setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
+                          // Restore the cross-session memory the project file carries
+                          // (2026-06-10): run history + pipeline prefs. Canvas wipes
+                          // origin storage between sessions — the file is the memory.
+                          try {
+                            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === 'function') setPdfRunHistory(project.runHistory.slice(-200));
+                            const _pp = project.prefs || {};
+                            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+                            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+                            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+                            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+                            if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
+                          } catch (_) {}
                           addToast(t('toasts.loaded_2') + (project.fileName || 'project') + ' — continue editing!', 'success');
                         } catch(err) { addToast(t('toasts.failed_load') + err.message, 'error'); }
                       };
@@ -1832,6 +1845,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </label>
                   <button onClick={() => { _closePdfAuditModal(); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
                 </div>
+                {/* Remediation history (2026-06-10): rides the project file —
+                    Canvas has no cross-session storage, so this shows whatever
+                    accumulated this session or came back with a loaded project. */}
+                {Array.isArray(pdfRunHistory) && pdfRunHistory.length > 0 && (() => {
+                  const _hist = pdfRunHistory;
+                  const _gains = _hist.filter((r) => r.beforeScore != null && r.afterScore != null);
+                  const _avgGain = _gains.length ? Math.round(_gains.reduce((s, r) => s + (r.afterScore - r.beforeScore), 0) / _gains.length) : null;
+                  const _last = _hist[_hist.length - 1];
+                  return (
+                    <div className="mt-2 bg-indigo-50/60 border border-indigo-200 rounded-xl px-3 py-2 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap" data-help-key="pdf_audit_run_history_panel">
+                      <span className="font-bold text-indigo-800">📈 {t('pdf_audit.history.lead') || 'Remediation history'}:</span>
+                      <span>{_hist.length} {t('pdf_audit.history.runs') || 'document(s)'}{_avgGain != null ? (' · ' + (t('pdf_audit.history.avg') || 'average gain') + ' +' + _avgGain) : ''}{_last ? (' · ' + (t('pdf_audit.history.last') || 'last') + ': ' + _last.fileName + (_last.beforeScore != null ? (' (' + _last.beforeScore + '→' + _last.afterScore + ')') : '')) : ''}</span>
+                      <button onClick={() => {
+                        const head = 'date,file,before,after,gain,passes,axe_violations,pages';
+                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), '"' + String(r.fileName || '').replace(/"/g, '""') + '"', r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes || 0, r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : ''].join(','));
+                        safeDownloadBlob(new Blob([head + '\n' + lines.join('\n')], { type: 'text/csv' }), 'alloflow-remediation-history.csv');
+                      }} className="ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0">⬇ CSV</button>
+                    </div>
+                  );
+                })()}
               </div>
             ) : pdfAuditLoading ? (
               <div className="p-12 text-center" role="status" aria-live="polite">
@@ -5884,6 +5917,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   autoFixPasses: project.autoFixPasses || 0,
                                 });
                                 setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: project.multiSession?.fileSize || 0 });
+                                // Restore run history + pipeline prefs (see the other
+                                // Load Project site for rationale).
+                                try {
+                                  if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === 'function') setPdfRunHistory(project.runHistory.slice(-200));
+                                  const _pp = project.prefs || {};
+                                  if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+                                  if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+                                  if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+                                  if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+                                  if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
+                                } catch (_) {}
                                 if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
                                   setPdfMultiSession(project.multiSession);
                                   const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));

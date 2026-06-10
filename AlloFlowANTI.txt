@@ -10406,6 +10406,36 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
   const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
   const [pdfTargetScore, setPdfTargetScore] = useState(90);
+  // Run history (2026-06-10): one summary row per completed remediation.
+  // Canvas has NO cross-session storage (maintainer-verified), so this rides
+  // INSIDE the .alloflow.json project file — saved with every project,
+  // restored on load. That makes the project file the teacher's
+  // score-over-time record across sessions. Ref mirror so saveProjectToFile
+  // reads fresh history without growing its dep list.
+  const [pdfRunHistory, setPdfRunHistory] = useState([]);
+  const pdfRunHistoryRef = React.useRef([]);
+  useEffect(() => { pdfRunHistoryRef.current = pdfRunHistory; }, [pdfRunHistory]);
+  useEffect(() => {
+    const cur = pdfFixResult;
+    if (!cur || !cur.accessibleHtml || cur.afterScore == null) return;
+    // Key dedupes re-renders AND the loaded-project case (the loaded run's
+    // row is already inside the restored history).
+    const key = (pendingPdfFile?.name || '?') + ':' + (cur.afterScore || 0) + ':' + (cur.accessibleHtml.length || 0);
+    setPdfRunHistory((prev) => {
+      if (prev.some((r) => r._k === key)) return prev;
+      const row = {
+        _k: key, at: new Date().toISOString(),
+        fileName: pendingPdfFile?.name || 'document',
+        beforeScore: cur.beforeScore != null ? cur.beforeScore : null,
+        afterScore: cur.afterScore != null ? cur.afterScore : null,
+        passes: cur.autoFixPasses || 0,
+        axeViolations: (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null,
+        pages: cur.pageCount || null,
+      };
+      const next = [...prev, row];
+      return next.length > 200 ? next.slice(-200) : next;
+    });
+  }, [pdfFixResult, pendingPdfFile]);
   const [pdfAutoContinue, setPdfAutoContinue] = useState(() => {
     try { const v = localStorage.getItem('alloflow_pdf_auto_continue'); return v === null ? true : v === 'true'; } catch (e) { return true; }
   });
@@ -15690,6 +15720,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       issuesFixed: cur.issuesFixed,
       remainingIssues: cur.remainingIssues,
       autoFixPasses: cur.autoFixPasses,
+      // Cross-session memory (2026-06-10): Canvas wipes all origin storage
+      // between sessions, so the project FILE carries the teacher's run
+      // history and pipeline preferences. Restored by the Load Project path.
+      runHistory: pdfRunHistoryRef.current,
+      prefs: {
+        auditors: pdfAuditorCount,
+        polishPasses: pdfPolishPasses,
+        maxFixPasses: pdfAutoFixPasses,
+        targetScore: pdfTargetScore,
+        builderFont: (() => { try { return localStorage.getItem('allo_selected_font') || null; } catch (_) { return null; } })(),
+      },
     };
     if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
       project.multiSession = {
@@ -15717,7 +15758,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       addToast(msg, 'success');
       return true;
     } catch (e) { return false; }
-  }, [pendingPdfFile, pdfMultiSession, addToast]);
+  }, [pendingPdfFile, pdfMultiSession, addToast, pdfAuditorCount, pdfPolishPasses, pdfAutoFixPasses, pdfTargetScore]);
   const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
@@ -26702,7 +26743,8 @@ ${_toolList}
           setPdfFixLoading, setPdfFixMode, setPdfFixResult, setPdfFixStep, setPdfMultiSession,
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
           setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64, setPendingPdfFile,
-          setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour
+          setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
+          pdfRunHistory, setPdfRunHistory
       })}
       <ErrorBoundary fallbackMessage="File transcription encountered an error. Please try again.">
       <LargeFileTranscriptionModal

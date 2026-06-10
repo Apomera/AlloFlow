@@ -793,7 +793,9 @@ function PdfAuditView(props) {
     setShowCloseConfirm,
     showCloseConfirm,
     startNewPdfAudit,
-    startPipelineTour
+    startPipelineTour,
+    pdfRunHistory,
+    setPdfRunHistory
   } = props;
   const pdfModalRef = useRef(null);
   _alloUseFocusTrap(pdfModalRef, !!(pdfAuditResult || pdfAuditLoading));
@@ -1726,7 +1728,7 @@ Return ONLY JSON:
         },
         "\u{1F4C4} Tagged PDF (baseline)"
       )));
-    })()), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200" }, "\u{1F4C2} Load Previous Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
+    })()), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200", title: t("pdf_audit.load_project_tooltip") || "Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) \u2014 your document, scores, history, and settings all come back." }, "\u{1F4C2} ", t("pdf_audit.continue_session") || "Continue a previous session", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       const reader = new FileReader();
@@ -1773,6 +1775,21 @@ Return ONLY JSON:
             autoFixPasses: project.autoFixPasses || 0
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf" });
+          try {
+            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
+            const _pp = project.prefs || {};
+            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+            if (_pp.builderFont) {
+              try {
+                localStorage.setItem("allo_selected_font", _pp.builderFont);
+              } catch (_) {
+              }
+            }
+          } catch (_) {
+          }
           addToast(t("toasts.loaded_2") + (project.fileName || "project") + " \u2014 continue editing!", "success");
         } catch (err) {
           addToast(t("toasts.failed_load") + err.message, "error");
@@ -1782,7 +1799,17 @@ Return ONLY JSON:
       e.target.value = "";
     } })), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       _closePdfAuditModal();
-    }, className: "text-xs text-slate-600 hover:text-slate-600 font-bold" }, "Cancel"))) : pdfAuditLoading ? /* @__PURE__ */ React.createElement("div", { className: "p-12 text-center", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4 animate-pulse", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, t("pdf_audit.loading.title") || "Checking your document\u2026"), (() => {
+    }, className: "text-xs text-slate-600 hover:text-slate-600 font-bold" }, "Cancel")), Array.isArray(pdfRunHistory) && pdfRunHistory.length > 0 && (() => {
+      const _hist = pdfRunHistory;
+      const _gains = _hist.filter((r) => r.beforeScore != null && r.afterScore != null);
+      const _avgGain = _gains.length ? Math.round(_gains.reduce((s, r) => s + (r.afterScore - r.beforeScore), 0) / _gains.length) : null;
+      const _last = _hist[_hist.length - 1];
+      return /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-indigo-50/60 border border-indigo-200 rounded-xl px-3 py-2 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap", "data-help-key": "pdf_audit_run_history_panel" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-800" }, "\u{1F4C8} ", t("pdf_audit.history.lead") || "Remediation history", ":"), /* @__PURE__ */ React.createElement("span", null, _hist.length, " ", t("pdf_audit.history.runs") || "document(s)", _avgGain != null ? " \xB7 " + (t("pdf_audit.history.avg") || "average gain") + " +" + _avgGain : "", _last ? " \xB7 " + (t("pdf_audit.history.last") || "last") + ": " + _last.fileName + (_last.beforeScore != null ? " (" + _last.beforeScore + "\u2192" + _last.afterScore + ")" : "") : ""), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const head = "date,file,before,after,gain,passes,axe_violations,pages";
+        const lines = _hist.map((r) => [String(r.at || "").slice(0, 10), '"' + String(r.fileName || "").replace(/"/g, '""') + '"', r.beforeScore != null ? r.beforeScore : "", r.afterScore != null ? r.afterScore : "", r.beforeScore != null && r.afterScore != null ? r.afterScore - r.beforeScore : "", r.passes || 0, r.axeViolations != null ? r.axeViolations : "", r.pages != null ? r.pages : ""].join(","));
+        safeDownloadBlob(new Blob([head + "\n" + lines.join("\n")], { type: "text/csv" }), "alloflow-remediation-history.csv");
+      }, className: "ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0" }, "\u2B07 CSV"));
+    })()) : pdfAuditLoading ? /* @__PURE__ */ React.createElement("div", { className: "p-12 text-center", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4 animate-pulse", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, t("pdf_audit.loading.title") || "Checking your document\u2026"), (() => {
       const _kb = pendingPdfFile && pendingPdfFile.size ? Math.round(pendingPdfFile.size / 1024) : pendingPdfBase64 ? Math.round(pendingPdfBase64.length * 0.75 / 1024) : 0;
       const _est = _kb < 200 ? t("pdf_audit.loading.est_fast") || "usually 15\u201330 seconds" : _kb < 1e3 ? t("pdf_audit.loading.est_med") || "usually 30\u201390 seconds" : _kb < 5e3 ? t("pdf_audit.loading.est_slow") || "usually 2\u20135 minutes" : t("pdf_audit.loading.est_vslow") || "usually 5\u201310 minutes \u2014 this is a big file";
       const _mm = Math.floor(auditElapsedSec / 60), _ss = auditElapsedSec % 60;
@@ -4269,6 +4296,21 @@ Return ONLY JSON:
             autoFixPasses: project.autoFixPasses || 0
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf", size: project.multiSession?.fileSize || 0 });
+          try {
+            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
+            const _pp = project.prefs || {};
+            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+            if (_pp.builderFont) {
+              try {
+                localStorage.setItem("allo_selected_font", _pp.builderFont);
+              } catch (_) {
+              }
+            }
+          } catch (_) {
+          }
           if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
             setPdfMultiSession(project.multiSession);
             const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
