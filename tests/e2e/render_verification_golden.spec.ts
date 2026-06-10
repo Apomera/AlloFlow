@@ -51,6 +51,8 @@ test.describe('tagged-PDF render verification (ink coverage)', () => {
         const result = await pipeline.createTaggedPdf(inputBytes, { accessibleHtml: html }, { title: 'RV', lang: 'en' });
         if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
         const fontsRepaired = (result.summary || {}).fontsRepaired ?? 0;
+        const fontsSubset = (result.summary || {}).fontsSubset ?? 0;
+        const taggedByteLength = result.bytes.length;
 
         const pdfjs = (window as any).pdfjsLib || (window as any)['pdfjs-dist/build/pdf'];
         try { pdfjs.GlobalWorkerOptions.workerSrc = workerUrl; } catch (_) {}
@@ -74,12 +76,17 @@ test.describe('tagged-PDF render verification (ink coverage)', () => {
         };
         const sourceInk = await inkOf(inputBytes);
         const taggedInk = await inkOf(result.bytes);
-        return { ok: true, sourceInk, taggedInk, fontsRepaired, ratio: sourceInk > 0 ? taggedInk / sourceInk : 0 };
+        return { ok: true, sourceInk, taggedInk, fontsRepaired, fontsSubset, taggedByteLength, ratio: sourceInk > 0 ? taggedInk / sourceInk : 0 };
       } catch (e: any) { return { error: String((e && e.stack) || e) }; }
     }, PDFJS_WORKER);
 
     expect((out as any).error, 'evaluate error').toBeUndefined();
     expect(out.fontsRepaired, 'Stage 7 must have run (the fixture uses non-embedded Helvetica)').toBeGreaterThanOrEqual(1);
+    // Subsetting must have actually RUN — a silent per-font fallback to the
+    // full TTF would make every other assertion pass while shipping 5× the
+    // bytes. (Full Liberation Sans ≈ 350 KB; the WinAnsi subset ≈ 40-90 KB.)
+    expect(out.fontsSubset, 'the WinAnsi subset path must be taken, not the full-font fallback').toBeGreaterThanOrEqual(1);
+    expect(out.taggedByteLength, 'subset output should stay well under a full-font embed (bytes: ' + out.taggedByteLength + ')').toBeLessThan(220000);
     expect(out.sourceInk, 'source page must render visible text (harness sanity)').toBeGreaterThan(2000);
     // The catastrophe bound: invisible text / blank page would crater this.
     expect(out.taggedInk, 'tagged page must not lose its ink (invisible-text class) — ratio: ' + out.ratio.toFixed(3)).toBeGreaterThan(out.sourceInk * 0.6);

@@ -13067,6 +13067,237 @@ tr { page-break-inside: avoid; }
   // rendering) — not worth ~200-400 KB/file until a render-verification
   // harness exists.
   const _stage7FontByteCache = {};
+  // ── Stage 7 font SUBSETTING (2026-06-12) ──
+  // Full substitute TTFs cost ~150–700 KB per style, but only the WinAnsi
+  // range is addressable through a simple /TrueType + /WinAnsiEncoding dict.
+  // fontkit's TTFSubset reorders glyph ids and (in the @pdf-lib build) emits
+  // no cmap — and a simple TrueType font is RENDERED through its cmap (3,1) —
+  // so a hand-built format-4 cmap mapping each unicode to its NEW gid is
+  // appended and the sfnt directory + head.checkSumAdjustment rebuilt.
+  // SAFETY: every failure path returns null and the caller embeds the FULL
+  // font (yesterday's behavior); verification is three independent layers —
+  // the ink-coverage render golden (a broken cmap renders as invisible
+  // text), veraPDF's font-program validation (/Widths↔hmtx consistency),
+  // and the tag-tree goldens. /Widths stay derived from the ORIGINAL font;
+  // subsetting copies hmtx advances unchanged, so consistency holds.
+  const _sfntChecksum = (u8) => {
+    let sum = 0;
+    for (let i = 0; i < u8.length; i += 4) {
+      sum = (sum + (((u8[i] || 0) << 24) | ((u8[i + 1] || 0) << 16) | ((u8[i + 2] || 0) << 8) | (u8[i + 3] || 0))) >>> 0;
+    }
+    return sum >>> 0;
+  };
+  const _buildWinAnsiCmap = (pairs) => {
+    // pairs: sorted [unicode, newGid][]; general idRangeOffset/glyphIdArray
+    // form for EVERY segment — correct even when shared glyphs (space/nbsp)
+    // break gid contiguity.
+    const segs = [];
+    let s0 = 0;
+    for (let i = 1; i <= pairs.length; i++) {
+      if (i === pairs.length || pairs[i][0] !== pairs[i - 1][0] + 1) { segs.push([s0, i - 1]); s0 = i; }
+    }
+    const segCount = segs.length + 1; // + 0xFFFF terminator
+    const glyphIdArr = [];
+    const endCodes = [], startCodes = [], idDeltas = [], idRangeOffsets = [];
+    for (let i = 0; i < segs.length; i++) {
+      const a = segs[i][0], b = segs[i][1];
+      startCodes.push(pairs[a][0]); endCodes.push(pairs[b][0]); idDeltas.push(0);
+      idRangeOffsets.push(2 * (segCount - i + glyphIdArr.length));
+      for (let j = a; j <= b; j++) glyphIdArr.push(pairs[j][1]);
+    }
+    startCodes.push(0xFFFF); endCodes.push(0xFFFF); idDeltas.push(1); idRangeOffsets.push(0);
+    const subtableLen = 16 + segCount * 8 + glyphIdArr.length * 2;
+    const cmapLen = 12 + subtableLen;
+    const buf = new ArrayBuffer((cmapLen + 3) & ~3);
+    const cm = new DataView(buf);
+    cm.setUint16(0, 0); cm.setUint16(2, 1);
+    cm.setUint16(4, 3); cm.setUint16(6, 1); cm.setUint32(8, 12);
+    let o = 12;
+    const floorLog = Math.floor(Math.log(segCount) / Math.LN2);
+    const searchRange = 2 * Math.pow(2, floorLog);
+    cm.setUint16(o, 4); cm.setUint16(o + 2, subtableLen); cm.setUint16(o + 4, 0);
+    cm.setUint16(o + 6, segCount * 2); cm.setUint16(o + 8, searchRange); cm.setUint16(o + 10, floorLog); cm.setUint16(o + 12, segCount * 2 - searchRange);
+    o += 14;
+    for (let i = 0; i < segCount; i++) { cm.setUint16(o, endCodes[i]); o += 2; }
+    cm.setUint16(o, 0); o += 2;
+    for (let i = 0; i < segCount; i++) { cm.setUint16(o, startCodes[i]); o += 2; }
+    for (let i = 0; i < segCount; i++) { cm.setUint16(o, idDeltas[i] & 0xFFFF); o += 2; }
+    for (let i = 0; i < segCount; i++) { cm.setUint16(o, idRangeOffsets[i]); o += 2; }
+    for (let i = 0; i < glyphIdArr.length; i++) { cm.setUint16(o, glyphIdArr[i]); o += 2; }
+    return new Uint8Array(buf, 0, cmapLen);
+  };
+  // Assemble an sfnt from {tag, data} tables: sorted directory, 4-byte-padded
+  // data blocks, per-table checksums, and head.checkSumAdjustment per spec
+  // (computed with the field zeroed, then 0xB1B0AFBA − whole-font sum).
+  const _sfntAssemble = (scalerType, tablesIn) => {
+    const tables = tablesIn.slice().sort((a, b) => (a.tag < b.tag ? -1 : 1));
+    const n = tables.length;
+    const headerLen = 12 + n * 16;
+    let total = headerLen;
+    for (const t of tables) total += (t.data.length + 3) & ~3;
+    const out = new Uint8Array(total);
+    const od = new DataView(out.buffer);
+    out.set(scalerType, 0);
+    od.setUint16(4, n);
+    const fl = Math.floor(Math.log(n) / Math.LN2);
+    const sr = 16 * Math.pow(2, fl);
+    od.setUint16(6, sr); od.setUint16(8, fl); od.setUint16(10, n * 16 - sr);
+    let pos = headerLen;
+    let headOff = -1, headLen = 0, headRec = -1;
+    for (let i = 0; i < n; i++) {
+      const t = tables[i];
+      out.set(t.data, pos);
+      const rec = 12 + i * 16;
+      for (let c = 0; c < 4; c++) out[rec + c] = t.tag.charCodeAt(c);
+      od.setUint32(rec + 4, _sfntChecksum(t.data)); od.setUint32(rec + 8, pos); od.setUint32(rec + 12, t.data.length);
+      if (t.tag === 'head') { headOff = pos; headLen = t.data.length; headRec = rec; }
+      pos += (t.data.length + 3) & ~3;
+    }
+    if (headOff >= 0) {
+      od.setUint32(headOff + 8, 0);
+      od.setUint32(headRec + 4, _sfntChecksum(out.subarray(headOff, headOff + headLen)));
+      const whole = _sfntChecksum(out);
+      od.setUint32(headOff + 8, (0xB1B0AFBA - whole) >>> 0);
+    }
+    return out;
+  };
+  // Hand-rolled TTF subsetter: @pdf-lib/fontkit's TTFSubset.encode requires a
+  // restructure EncodeStream the UMD build doesn't export (probed 2026-06-12),
+  // so the glyf/loca/hmtx rebuild is done directly. fontkit is used only for
+  // the unicode→glyph mapping. Composite glyphs (all accented Latin chars)
+  // get TRANSITIVE closure — their component glyphs are included and the
+  // component gid fields rewritten to the new ids in the copied glyph data.
+  const _subsetTtfForWinAnsi = (fkFont, ttf, unicodes) => {
+    try {
+      const dv = new DataView(ttf.buffer, ttf.byteOffset, ttf.byteLength);
+      const numTables = dv.getUint16(4);
+      const tbl = {};
+      for (let i = 0; i < numTables; i++) {
+        const off = 12 + i * 16;
+        const tag = String.fromCharCode(ttf[off], ttf[off + 1], ttf[off + 2], ttf[off + 3]);
+        tbl[tag] = { offset: dv.getUint32(off + 8), length: dv.getUint32(off + 12) };
+      }
+      for (const req of ['head', 'hhea', 'maxp', 'hmtx', 'loca', 'glyf']) if (!tbl[req]) return null;
+      const headO = tbl.head.offset;
+      const indexToLocFormat = dv.getUint16(headO + 50);
+      const numGlyphsOrig = dv.getUint16(tbl.maxp.offset + 4);
+      const numHMetrics = dv.getUint16(tbl.hhea.offset + 34);
+      const locaO = tbl.loca.offset;
+      const glyphSpan = (gid) => {
+        if (gid < 0 || gid >= numGlyphsOrig) return null;
+        let a, b;
+        if (indexToLocFormat === 0) { a = dv.getUint16(locaO + gid * 2) * 2; b = dv.getUint16(locaO + gid * 2 + 2) * 2; }
+        else { a = dv.getUint32(locaO + gid * 4); b = dv.getUint32(locaO + gid * 4 + 4); }
+        return [tbl.glyf.offset + a, b - a];
+      };
+      // Walk a glyph's composite components: cb(absolute byte pos of the
+      // component glyphIndex u16, component gid). Returns false on parse doubt.
+      const walkComponents = (absOff, len, cb) => {
+        if (len < 10) return true; // empty glyph
+        const contours = dv.getInt16(absOff);
+        if (contours >= 0) return true; // simple glyph
+        let p = absOff + 10;
+        for (let guard = 0; guard < 64; guard++) {
+          if (p + 4 > absOff + len) return false;
+          const flags = dv.getUint16(p);
+          cb(p + 2, dv.getUint16(p + 2));
+          p += 4;
+          p += (flags & 0x0001) ? 4 : 2;              // ARG_1_AND_2_ARE_WORDS
+          if (flags & 0x0008) p += 2;                  // WE_HAVE_A_SCALE
+          else if (flags & 0x0040) p += 4;             // X_AND_Y_SCALE
+          else if (flags & 0x0080) p += 8;             // TWO_BY_TWO
+          if (!(flags & 0x0020)) return true;          // !MORE_COMPONENTS
+        }
+        return false;
+      };
+      // Unicode → old gid (via fontkit), then transitive composite closure.
+      const uniToOldGid = new Map();
+      for (const u of new Set(unicodes)) {
+        if (!u || u > 0xFFFF) continue;
+        try { const g = fkFont.glyphForCodePoint(u); if (g && g.id > 0 && g.id < numGlyphsOrig) uniToOldGid.set(u, g.id); } catch (_) {}
+      }
+      if (uniToOldGid.size < 8) return null;
+      const include = new Set([0]);
+      const queue = Array.from(new Set(uniToOldGid.values()));
+      while (queue.length) {
+        const gid = queue.pop();
+        if (include.has(gid)) continue;
+        include.add(gid);
+        const span = glyphSpan(gid);
+        if (!span) return null;
+        let ok = true;
+        if (span[1] > 0) ok = walkComponents(span[0], span[1], (_pos, comp) => { if (!include.has(comp)) queue.push(comp); });
+        if (!ok) return null; // composite parse doubt → full font
+      }
+      const oldGids = Array.from(include).sort((a, b) => a - b);
+      const oldToNew = new Map();
+      for (let i = 0; i < oldGids.length; i++) oldToNew.set(oldGids[i], i);
+      // glyf + loca (long format), with component gids rewritten.
+      let glyfLen = 0;
+      const spans = oldGids.map((gid) => { const s = glyphSpan(gid); glyfLen += (s[1] + 3) & ~3; return s; });
+      const glyf = new Uint8Array(glyfLen);
+      const gdv = new DataView(glyf.buffer);
+      const loca = new Uint8Array((oldGids.length + 1) * 4);
+      const ldv = new DataView(loca.buffer);
+      let gpos = 0;
+      for (let i = 0; i < oldGids.length; i++) {
+        ldv.setUint32(i * 4, gpos);
+        const s = spans[i];
+        if (s[1] > 0) {
+          glyf.set(ttf.subarray(s[0], s[0] + s[1]), gpos);
+          const base = gpos;
+          const okRemap = walkComponents(s[0], s[1], (absPos, comp) => {
+            const ng = oldToNew.get(comp);
+            gdv.setUint16(base + (absPos - s[0]), ng != null ? ng : 0);
+          });
+          if (!okRemap) return null;
+          gpos += (s[1] + 3) & ~3;
+        }
+        // zero-length (space) glyphs: loca[i] === loca[i+1]
+      }
+      ldv.setUint32(oldGids.length * 4, gpos);
+      // hmtx: full advance+lsb per new glyph; hhea.numberOfHMetrics = count.
+      const hmtxO = tbl.hmtx.offset;
+      const hmtx = new Uint8Array(oldGids.length * 4);
+      const hdv = new DataView(hmtx.buffer);
+      const lastAdv = numHMetrics > 0 ? dv.getUint16(hmtxO + (numHMetrics - 1) * 4) : 0;
+      for (let i = 0; i < oldGids.length; i++) {
+        const gid = oldGids[i];
+        let adv, lsb;
+        if (gid < numHMetrics) { adv = dv.getUint16(hmtxO + gid * 4); lsb = dv.getInt16(hmtxO + gid * 4 + 2); }
+        else { adv = lastAdv; const lsbOff = hmtxO + numHMetrics * 4 + (gid - numHMetrics) * 2; lsb = lsbOff + 2 <= hmtxO + tbl.hmtx.length ? dv.getInt16(lsbOff) : 0; }
+        hdv.setUint16(i * 4, adv); hdv.setInt16(i * 4 + 2, lsb);
+      }
+      const headCopy = ttf.slice(headO, headO + tbl.head.length);
+      new DataView(headCopy.buffer).setUint16(50, 1); // long loca
+      const hheaCopy = ttf.slice(tbl.hhea.offset, tbl.hhea.offset + tbl.hhea.length);
+      new DataView(hheaCopy.buffer).setUint16(34, oldGids.length);
+      const maxpCopy = ttf.slice(tbl.maxp.offset, tbl.maxp.offset + tbl.maxp.length);
+      new DataView(maxpCopy.buffer).setUint16(4, oldGids.length);
+      // post v3 (no glyph names — the original's v2 name table indexes OLD gids).
+      const post = new Uint8Array(32);
+      const pdvNew = new DataView(post.buffer);
+      pdvNew.setUint32(0, 0x00030000);
+      if (tbl.post && tbl.post.length >= 32) post.set(ttf.subarray(tbl.post.offset + 4, tbl.post.offset + 32), 4);
+      const pairs = [];
+      for (const [u, og] of uniToOldGid) { const ng = oldToNew.get(og); if (ng != null) pairs.push([u, ng]); }
+      pairs.sort((a, b) => a[0] - b[0]);
+      if (!pairs.length) return null;
+      const tables = [
+        { tag: 'cmap', data: _buildWinAnsiCmap(pairs) },
+        { tag: 'glyf', data: glyf }, { tag: 'head', data: headCopy },
+        { tag: 'hhea', data: hheaCopy }, { tag: 'hmtx', data: hmtx },
+        { tag: 'loca', data: loca }, { tag: 'maxp', data: maxpCopy },
+        { tag: 'post', data: post },
+      ];
+      for (const t of ['cvt ', 'fpgm', 'prep']) {
+        if (tbl[t]) tables.push({ tag: t, data: ttf.slice(tbl[t].offset, tbl[t].offset + tbl[t].length) });
+      }
+      const out = _sfntAssemble(ttf.subarray(0, 4), tables);
+      if (!out || out.length >= ttf.length) return null;
+      return out;
+    } catch (_) { return null; }
+  };
   const createTaggedPdf = async (originalPdfBytes, fixResult, meta) => {
     meta = meta || {};
     if (!window.PDFLib || !window.PDFLib.PDFDocument) {
@@ -14511,6 +14742,7 @@ tr { page-break-inside: avoid; }
     // /Differences, MacRoman, symbolic fonts, fetch failure, fontkit parse
     // failure) → leave that font untouched and report it honestly.
     let _fontsRepaired = 0;
+    let _fontsSubset = 0;
     const _fontsUnrepairable = [];
     try {
       // WinAnsi code → Unicode for 0x80–0x9F (rest is Latin-1-identical).
@@ -14609,19 +14841,29 @@ tr { page-break-inside: avoid; }
           const fkFont = window.fontkit.create(ttf);
           const scale = 1000 / (fkFont.unitsPerEm || 1000);
           const widths = [];
+          const _wantedUnis = [];
           for (let c = 32; c <= 255; c++) {
             const u = _winAnsiToUni(c);
             let w = 0;
-            if (u) { try { const g = fkFont.glyphForCodePoint(u); if (g && g.id !== 0) w = Math.round(g.advanceWidth * scale); } catch (_) {} }
+            if (u) { _wantedUnis.push(u); try { const g = fkFont.glyphForCodePoint(u); if (g && g.id !== 0) w = Math.round(g.advanceWidth * scale); } catch (_) {} }
             widths.push(PDFNumber.of(w));
           }
+          // Subset to the WinAnsi glyphs (cached per family:style across
+          // calls); null → embed the FULL font, exactly yesterday's behavior.
+          const _subsetKey = cacheKey + ':subset';
+          if (!(_subsetKey in _byteCache)) _byteCache[_subsetKey] = _subsetTtfForWinAnsi(fkFont, ttf, _wantedUnis);
+          const _subsetTtf = _byteCache[_subsetKey];
+          const _embedTtf = _subsetTtf || ttf;
           // Font program stream (FlateDecode when pako is available).
           const _hasPako = typeof window !== 'undefined' && window.pako && typeof window.pako.deflate === 'function';
-          const ffData = _hasPako ? window.pako.deflate(ttf) : ttf;
-          const ffDictProps = { Length1: PDFNumber.of(ttf.length) };
+          const ffData = _hasPako ? window.pako.deflate(_embedTtf) : _embedTtf;
+          const ffDictProps = { Length1: PDFNumber.of(_embedTtf.length) };
           if (_hasPako) ffDictProps.Filter = PDFName.of('FlateDecode');
           const ffRef = context.register(context.stream(ffData, ffDictProps));
-          const subName = _FONT_SOURCES[family].base + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Italic' : '-BoldItalic');
+          // Subset convention (ISO 32000 §9.6.4): 6-letter tag prefix on both
+          // BaseFont and FontDescriptor /FontName when the program is a subset.
+          const subName = (_subsetTtf ? 'ALLOAA+' : '') + _FONT_SOURCES[family].base + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Italic' : '-BoldItalic');
+          if (_subsetTtf) _fontsSubset++;
           const flags = 32 /* Nonsymbolic */ | (family === 'serif' ? 2 : 0) | (family === 'mono' ? 1 : 0) | (italic ? 64 : 0);
           const bbox = fkFont.bbox || { minX: -200, minY: -300, maxX: 1200, maxY: 1000 };
           const newFdRef = context.register(context.obj({
@@ -15033,6 +15275,7 @@ tr { page-break-inside: avoid; }
         // reads this field, so a stale true = a false conformance claim.
         _summary.pdfUaDeclared = _uaDeclared;
         _summary.fontsRepaired = _fontsRepaired;
+        _summary.fontsSubset = _fontsSubset;
         _summary.fontsUnrepairable = _fontsUnrepairable.slice(0, 12);
       }
     } catch (_) {}
