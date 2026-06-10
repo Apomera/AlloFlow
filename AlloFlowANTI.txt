@@ -10278,6 +10278,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const onResumeAvailable = (e) => { setChunkResumePrompt(e.detail); };
     const onBoringPalette = () => { setBoringPalettePrompt(true); };
     const onExtractionComplete = (e) => { setExtractionData(e.detail); setFidelityResult(null); setImageReinsertionReport(null); setAutoRestoreSummary(null); };
+    // Diff-viewer applies/reverts change the HTML the fidelity list was
+    // computed against — clear it so a stale missing-words list isn't shown
+    // (the fidelity panel's check button recomputes on demand).
+    const onFidelityStale = () => { setFidelityResult(null); setAutoRestoreSummary(null); };
     const onFixIssuesDetected = (e) => { setFixIssuesList(e.detail); };
     const onImageReinsertionReport = (e) => { setImageReinsertionReport(e.detail); };
     const onChunkStart = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
@@ -10294,6 +10298,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
     window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
     window.addEventListener('alloflow:image-reinsertion-report', onImageReinsertionReport);
+    window.addEventListener('alloflow:fidelity-stale', onFidelityStale);
     return () => {
       window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
       window.removeEventListener('alloflow:chunk-start', onChunkStart);
@@ -10305,6 +10310,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       window.removeEventListener('alloflow:extraction-complete', onExtractionComplete);
       window.removeEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
       window.removeEventListener('alloflow:image-reinsertion-report', onImageReinsertionReport);
+      window.removeEventListener('alloflow:fidelity-stale', onFidelityStale);
     };
   }, []);
 

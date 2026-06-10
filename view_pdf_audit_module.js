@@ -2930,6 +2930,25 @@ Return ONLY JSON:
         _isPdfMagic = _head.charCodeAt(0) === 37 && _head.charCodeAt(1) === 80 && _head.charCodeAt(2) === 68 && _head.charCodeAt(3) === 70;
       } catch (_) {
       }
+      try {
+        window.__alloflowCompareCropInsert = (payload) => {
+          try {
+            const _src = payload && payload.dataUrl;
+            const _alt = (payload && payload.alt || "").trim() || "Region cropped from the original document";
+            if (!_src || !/^data:image\//.test(_src)) return;
+            setPdfFixResult((prev) => {
+              if (!prev || !prev.accessibleHtml) return prev;
+              const _esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+              const fig = '<figure><img src="' + _src + '" alt="' + _esc(_alt) + '" style="max-width:100%"><figcaption>' + _esc(_alt) + "</figcaption></figure>";
+              const html = prev.accessibleHtml.includes("</main>") ? prev.accessibleHtml.replace("</main>", fig + "</main>") : prev.accessibleHtml.replace(/<\/body>/i, fig + "</body>");
+              return { ...prev, accessibleHtml: html };
+            });
+            addToast("\u2702 Cropped region added to the remediated document with alt text \u2014 re-export (PDF/Word/HTML) to include it.", "success");
+          } catch (_) {
+          }
+        };
+      } catch (_) {
+      }
       const win = window.open("", "_blank");
       if (!win) {
         addToast(t("toasts.pop_up_blocked"), "error");
@@ -2969,8 +2988,11 @@ Return ONLY JSON:
                           </div>
                           <div class="compare">
                             <div class="pane pane-left">
-                              <div class="pane-header">Original PDF (Before)</div>
-                              <div id="before-pane" style="flex:1;overflow:auto;background:#525659;min-height:0">
+                              <div class="pane-header" style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px">
+                                <span>Original PDF (Before)</span>
+                                ${_isPdfMagic ? '<button id="btn-crop" onclick="toggleCrop()" style="padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#fca5a5;font-size:10px;font-weight:700;cursor:pointer" title="Drag a rectangle on a page to clip that region into the remediated document (with alt text)">\u2702 Crop</button>' : ""}
+                              </div>
+                              <div id="before-pane" style="flex:1;overflow:auto;background:#525659;min-height:0;position:relative">
                                 <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? "Rendering original PDF\u2026" : "The original file is not a PDF (Word/PowerPoint input) \u2014 the Before preview applies to PDF originals. The After pane on the right is your remediated document."}</div>
                               </div>
                             </div>
@@ -3055,6 +3077,86 @@ Return ONLY JSON:
                                 } catch (e) { fail(e && e.message ? e.message : 'renderer init failed'); }
                               }
                               tryLoad(0);
+                            })();
+
+                            // \u2500\u2500 Crop tool: drag a rectangle on a rendered page to clip
+                            // that region into the remediated document (alt text required).
+                            var _cropArmed = false, _cropDrag = null;
+                            function _cropCleanup() { ['crop-sel','crop-bar'].forEach(function(id){ var n = document.getElementById(id); if (n) n.remove(); }); _cropDrag = null; }
+                            function toggleCrop() {
+                              _cropArmed = !_cropArmed;
+                              var b = document.getElementById('btn-crop');
+                              if (b) { b.style.background = _cropArmed ? '#fca5a5' : 'transparent'; b.style.color = _cropArmed ? '#7f1d1d' : '#fca5a5'; }
+                              var host = document.getElementById('before-pane');
+                              if (host) host.style.cursor = _cropArmed ? 'crosshair' : '';
+                              if (!_cropArmed) _cropCleanup();
+                            }
+                            (function initCrop() {
+                              var host = document.getElementById('before-pane');
+                              if (!host) return;
+                              host.addEventListener('pointerdown', function (ev) {
+                                if (!_cropArmed || !ev.target || ev.target.tagName !== 'CANVAS') return;
+                                ev.preventDefault();
+                                _cropCleanup();
+                                var hr = host.getBoundingClientRect();
+                                _cropDrag = { canvas: ev.target, x0: ev.clientX, y0: ev.clientY, hl: hr.left, ht: hr.top };
+                                var sel = document.createElement('div');
+                                sel.id = 'crop-sel';
+                                sel.style.cssText = 'position:absolute;border:2px dashed #ef4444;background:rgba(239,68,68,0.15);pointer-events:none;z-index:50';
+                                host.appendChild(sel);
+                              });
+                              host.addEventListener('pointermove', function (ev) {
+                                if (!_cropDrag) return;
+                                var sel = document.getElementById('crop-sel'); if (!sel) return;
+                                var x = Math.min(ev.clientX, _cropDrag.x0), y = Math.min(ev.clientY, _cropDrag.y0);
+                                sel.style.left = (x - _cropDrag.hl + host.scrollLeft) + 'px';
+                                sel.style.top = (y - _cropDrag.ht + host.scrollTop) + 'px';
+                                sel.style.width = Math.abs(ev.clientX - _cropDrag.x0) + 'px';
+                                sel.style.height = Math.abs(ev.clientY - _cropDrag.y0) + 'px';
+                              });
+                              host.addEventListener('pointerup', function (ev) {
+                                if (!_cropDrag) return;
+                                var d = _cropDrag; _cropDrag = null;
+                                var c = d.canvas, r = c.getBoundingClientRect();
+                                var x1 = Math.max(Math.min(ev.clientX, d.x0), r.left), y1 = Math.max(Math.min(ev.clientY, d.y0), r.top);
+                                var x2 = Math.min(Math.max(ev.clientX, d.x0), r.right), y2 = Math.min(Math.max(ev.clientY, d.y0), r.bottom);
+                                if (x2 - x1 < 12 || y2 - y1 < 12) { _cropCleanup(); return; }
+                                var sX = c.width / r.width, sY = c.height / r.height;
+                                var out = document.createElement('canvas');
+                                out.width = Math.round((x2 - x1) * sX); out.height = Math.round((y2 - y1) * sY);
+                                out.getContext('2d').drawImage(c, (x1 - r.left) * sX, (y1 - r.top) * sY, (x2 - x1) * sX, (y2 - y1) * sY, 0, 0, out.width, out.height);
+                                var dataUrl = '';
+                                try { dataUrl = out.toDataURL('image/png'); } catch (e) { _cropCleanup(); return; }
+                                var bar = document.createElement('div');
+                                bar.id = 'crop-bar';
+                                bar.style.cssText = 'position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #475569;border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:center;z-index:100;box-shadow:0 6px 24px rgba(0,0,0,.5)';
+                                bar.innerHTML = '<img src="' + dataUrl + '" alt="" style="height:44px;border-radius:6px;border:1px solid #475569;background:#fff">'
+                                  + '<input id="crop-alt" type="text" placeholder="Describe this image (alt text \u2014 required)" aria-label="Alt text for the cropped image" style="width:280px;padding:7px 9px;border-radius:7px;border:1px solid #64748b;background:#0f172a;color:#e2e8f0;font-size:12px">'
+                                  + '<button id="crop-add" style="padding:7px 12px;border-radius:7px;border:none;background:#16a34a;color:#fff;font-weight:700;font-size:12px;cursor:pointer">Add to document</button>'
+                                  + '<button onclick="_cropCleanup()" style="padding:7px 10px;border-radius:7px;border:1px solid #64748b;background:transparent;color:#cbd5e1;font-size:12px;cursor:pointer">Cancel</button>';
+                                document.body.appendChild(bar);
+                                document.getElementById('crop-add').onclick = function () {
+                                  var altEl = document.getElementById('crop-alt');
+                                  var alt = (altEl.value || '').trim();
+                                  if (!alt) { altEl.style.borderColor = '#ef4444'; altEl.focus(); return; }
+                                  try {
+                                    var idoc = document.getElementById('after-frame').contentDocument;
+                                    var fig = idoc.createElement('figure');
+                                    var im = idoc.createElement('img');
+                                    im.src = dataUrl; im.alt = alt; im.style.maxWidth = '100%';
+                                    var cap = idoc.createElement('figcaption');
+                                    cap.textContent = alt;
+                                    fig.appendChild(im); fig.appendChild(cap);
+                                    (idoc.querySelector('main') || idoc.body).appendChild(fig);
+                                    fig.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                  } catch (e) {}
+                                  var persisted = false;
+                                  try { if (window.opener && window.opener.__alloflowCompareCropInsert) { window.opener.__alloflowCompareCropInsert({ dataUrl: dataUrl, alt: alt }); persisted = true; } } catch (e) {}
+                                  var sel0 = document.getElementById('crop-sel'); if (sel0) sel0.remove();
+                                  bar.innerHTML = '<span style="color:#86efac;font-size:12px;font-weight:700">\u2713 Added' + (persisted ? ' \u2014 saved into the remediated document. Re-export to include it.' : ' to this view only \u2014 the app window could not be reached; add it again from the editor to persist.') + '</span><button onclick="_cropCleanup()" style="margin-left:8px;padding:6px 10px;border-radius:7px;border:1px solid #64748b;background:transparent;color:#cbd5e1;font-size:12px;cursor:pointer">Close</button>';
+                                };
+                                document.getElementById('crop-alt').focus();
+                              });
                             })();
 
                             var _b64 = "${(() => {

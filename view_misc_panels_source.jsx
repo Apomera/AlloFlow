@@ -265,6 +265,10 @@ function PdfDiffViewer(props) {
               setDiffChunks(null);
               const pathLabel = usedFallback ? 'via Gemini fallback' : 'via text surgery';
               addToast('Edits applied ' + pathLabel + '. Accessible HTML updated.', 'success');
+              // The fidelity/Content-Recovery list is computed against the HTML
+              // this apply just changed — tell the host to clear it so a stale
+              // missing-words list isn't shown (it re-computes on next check).
+              try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
             } else {
               warnLog('[Diff] Apply failed — both surgery and Gemini paths could not produce acceptable output. surgeryReason:', surgeryFailReason);
               setPdfFixResult(prev => prev ? ({
@@ -296,6 +300,7 @@ function PdfDiffViewer(props) {
           }) : p);
           setDiffChunks(null);
           addToast('Reverted to the state before your last Apply.', 'info');
+          try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
         };
         const _canRevert = !!(pdfFixResult && pdfFixResult._preApplyHtml);
         // ── Region-targeted AI refine ── Rewrite ONLY the drag-selected passage. Fixes the Expert
@@ -345,6 +350,7 @@ function PdfDiffViewer(props) {
               setDiffChunks(null);
               setDiffSelection(null);
               addToast((t('diff_view.refine_applied') || 'AI refine applied to the selection') + ' (' + (usedFallback ? 'via Gemini' : 'via text surgery') + '). Use "Revert last apply" to undo.', 'success');
+              try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
             } else {
               addToast((t('diff_view.refine_failed') || '⚠ AI refine not applied — the rewrite could not be spliced cleanly') + ' (' + failReason + '). Selection unchanged.', 'warning');
             }

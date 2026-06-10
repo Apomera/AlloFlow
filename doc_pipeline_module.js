@@ -15184,9 +15184,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       <button onclick="document.getElementById('print-banner').remove()" aria-label="Dismiss this banner" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px"><span aria-hidden="true">✕</span></button>
     </div>`;
     printWindow.document.body.insertBefore(printBanner, printWindow.document.body.firstChild);
-    // Add print CSS to hide banner
+    // Add print CSS: hide the banner + LOGICAL TEXT DISTRIBUTION across pages
+    // (user request 2026-06-10). Headings never strand at a page bottom,
+    // figures/tables/list items never split mid-element, and orphan/widow
+    // control keeps at least 3 lines of a paragraph together at page breaks.
     const printStyle = printWindow.document.createElement('style');
-    printStyle.textContent = '@media print { #print-banner { display: none !important; } }';
+    printStyle.textContent = '@media print {'
+      + ' #print-banner { display: none !important; }'
+      + ' h1, h2, h3, h4, h5, h6 { break-after: avoid-page; page-break-after: avoid; break-inside: avoid; page-break-inside: avoid; }'
+      + ' figure, table, img, blockquote, li, tr { break-inside: avoid-page; page-break-inside: avoid; }'
+      + ' p { orphans: 3; widows: 3; }'
+      + ' h1 { break-before: auto; }'
+      + '}';
     printWindow.document.head.appendChild(printStyle);
   };
 
