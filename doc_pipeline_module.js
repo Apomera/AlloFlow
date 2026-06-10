@@ -13388,6 +13388,15 @@ tr { page-break-inside: avoid; }
         // (and its alt) is the leaf. A <figure> WITHOUT an img (e.g. a styled
         // text callout) still becomes its own Figure.
         if (tag === 'figure' && el.querySelector('img')) continue;
+        // Inline <a> (2026-06-12): a flat Link leaf duplicates its parent
+        // paragraph's text and can NEVER be content-linked (one MCID maps to
+        // one StructElem; the anchor text lives inside the paragraph's line)
+        // — so any document with a hyperlink had its PDF/UA declaration
+        // withheld over a phantom orphan. The link's real accessibility is
+        // carried by Stage 3b's annotation /Link StructElems (OBJR +
+        // /StructParent + /Contents); the flat text-leaf added nothing a
+        // screen reader uses. Skip it.
+        if (tag === 'a') continue;
         if (tag === 'table' || tag === 'tr' || tag === 'ul' || tag === 'ol') {
           const key = ++_containerSeq;
           const parentKey = _nearestContainerKey(el);

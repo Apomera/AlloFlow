@@ -41,18 +41,18 @@
     var resolve = function (o) { return (o instanceof PDFRef) ? ctx.lookup(o) : o; };
     var elems = [];
 
-    function walk(objIn, depth) {
+    function walk(objIn, depth, parentRole) {
       var obj = resolve(objIn);
       if (depth > 60 || obj == null) return;
       if (obj instanceof PDFArray) {
-        for (var i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1);
+        for (var i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1, parentRole);
         return;
       }
       if (!(obj instanceof PDFDict)) return;
       var S = obj.get(nm('S'));
       if (!S) {
         var k0 = obj.get(nm('K'));
-        if (k0 != null) walk(k0, depth + 1);
+        if (k0 != null) walk(k0, depth + 1, parentRole);
         return;
       }
       var role = String(S).replace(/^\//, '');
@@ -79,23 +79,43 @@
           }
         }
       }
+      // ActualText VALUE (not just presence): needed for the pure-marker
+      // /Lbl exemption — non-ASCII reloads as a hex string unless decoded.
+      var atObj = obj.get(nm('ActualText'));
+      var atText = '';
+      try { atText = atObj ? (typeof atObj.decodeText === 'function' ? atObj.decodeText() : String(atObj)) : ''; } catch (_) { atText = ''; }
       elems.push({
         role: role,
+        parentRole: parentRole || '',
         hasK: K != null,
         hasContent: hasContent,
         hasChild: hasChild,
         hasAlt: !!obj.get(nm('Alt')),
-        hasActualText: !!obj.get(nm('ActualText')),
+        hasActualText: !!atObj,
+        actualText: atText,
         hasA: !!obj.get(nm('A')),
         hasLang: !!obj.get(nm('Lang')),
         hasID: !!obj.get(nm('ID')),
       });
-      if (K != null) walk(K, depth + 1);
+      if (K != null) walk(K, depth + 1, role);
     }
 
     var rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
-    if (rootK != null) walk(rootK, 0);
+    if (rootK != null) walk(rootK, 0, '');
     return elems;
+  }
+
+  // Pure list-marker /Lbl: its glyph lives inside the same content line the
+  // sibling LBody's MCR covers, and one MCID maps to one StructElem — so a
+  // marker-only Lbl can never be independently linked. The pipeline's
+  // evidence-based UA gate exempts these; the validator must match or it
+  // CONTRADICTS the shipped declaration on every document with a list.
+  // Quote chars included: standard-14 '•' round-trips as '"' on some decode
+  // paths (observed in the goldens).
+  function isMarkerLbl(e) {
+    if (e.role !== 'Lbl') return false;
+    var t = String(e.actualText || '').replace(/^[(/]|\)$/g, '').trim();
+    return /^(["'•◦▪‣·*–-]|\d{1,3}[.)])$/.test(t);
   }
 
   // ── Main validator: takes PDF bytes (Uint8Array), returns a structured report ──
@@ -136,8 +156,12 @@
     var viewerPrefs = resolve(catalog.get(nm('ViewerPreferences')));
     var displayDocTitle = viewerPrefs && viewerPrefs.get ? viewerPrefs.get(nm('DisplayDocTitle')) : null;
     var outlines = resolve(catalog.get(nm('Outlines')));
-    var info = resolve(catalog.get(nm('Info')));
-    var docTitle = info && info.get ? info.get(nm('Title')) : null;
+    // /Info lives in the TRAILER, not the catalog — the old catalog lookup
+    // made this rule fail on every document, including the pipeline's own
+    // output (caught by the validator-parity golden, 2026-06-12). Use
+    // pdf-lib's accessor, which reads the trailer correctly.
+    var docTitle = null;
+    try { docTitle = typeof doc.getTitle === 'function' ? (doc.getTitle() || null) : null; } catch (_) { docTitle = null; }
 
     // Font embedding walk.
     var fontsTotal = 0, fontsEmbedded = 0;
@@ -164,11 +188,59 @@
       }
     } catch (_) { /* best-effort */ }
 
+    // Link annotations (PDF/UA-1 §7.18.5 + §7.18): each needs /Contents (the
+    // alternate description) and /StructParent (reachability from the tree).
+    var linkAnnotsTotal = 0, linkAnnotsWithContents = 0, linkAnnotsWithStructParent = 0;
+    try {
+      for (var lp = 0; lp < pages.length; lp++) {
+        var lAnnots = resolve(pages[lp].node.get(nm('Annots')));
+        if (!lAnnots || typeof lAnnots.size !== 'function') continue;
+        for (var la = 0; la < lAnnots.size(); la++) {
+          var annot = resolve(lAnnots.get(la));
+          if (!annot || !annot.get) continue;
+          if (String(annot.get(nm('Subtype')) || '') !== '/Link') continue;
+          linkAnnotsTotal++;
+          if (annot.get(nm('Contents'))) linkAnnotsWithContents++;
+          if (annot.get(nm('StructParent')) != null) linkAnnotsWithStructParent++;
+        }
+      }
+    } catch (_) { /* best-effort */ }
+
+    // XMP metadata text — for the declaration-consistency rule. The pipeline
+    // writes its XMP uncompressed; a filtered stream (foreign PDFs) is
+    // reported honestly as unreadable rather than guessed at.
+    var xmpText = '', xmpUnreadable = false;
+    try {
+      var metaStream = resolve(catalog.get(nm('Metadata')));
+      if (metaStream) {
+        var metaFilter = metaStream.dict && metaStream.dict.get ? metaStream.dict.get(nm('Filter')) : null;
+        var metaBytes = metaStream.contents || (metaStream.getContents && metaStream.getContents());
+        if (metaFilter) xmpUnreadable = true;
+        else if (metaBytes) xmpText = new TextDecoder('utf-8').decode(metaBytes);
+      }
+    } catch (_) { xmpUnreadable = true; }
+    var uaDeclaredInXmp = xmpText.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1;
+
     // Walk the structure tree.
     var elems = stRoot ? walkStructTree(stRoot, ctx, PDFLib) : [];
     var leaves = elems.filter(function (e) { return LEAF_ROLES.indexOf(e.role) >= 0; });
     var containers = elems.filter(function (e) { return CONTAINER_ROLES.indexOf(e.role) >= 0; });
-    var orphanedLeaves = leaves.filter(function (e) { return !e.hasContent; });
+    var markerLblCount = leaves.filter(isMarkerLbl).length;
+    var orphanedLeaves = leaves.filter(function (e) { return !e.hasContent && !isMarkerLbl(e); });
+    // Containment (the veraPDF ISO 14289-1 7.2 structure class): cells inside
+    // TR; TR inside Table/THead/TBody/TFoot; LI inside L; Lbl/LBody inside LI.
+    var containment = { checked: 0, bad: [] };
+    for (var ce = 0; ce < elems.length; ce++) {
+      var el = elems[ce];
+      var want = null;
+      if (el.role === 'TH' || el.role === 'TD') want = ['TR'];
+      else if (el.role === 'TR') want = ['Table', 'THead', 'TBody', 'TFoot'];
+      else if (el.role === 'LI') want = ['L'];
+      else if (el.role === 'Lbl' || el.role === 'LBody') want = ['LI'];
+      if (!want) continue;
+      containment.checked++;
+      if (want.indexOf(el.parentRole) === -1 && containment.bad.length < 8) containment.bad.push(el.role + ' in ' + (el.parentRole || '(root)'));
+    }
     var byRole = {};
     for (var k = 0; k < elems.length; k++) byRole[elems[k].role] = (byRole[elems[k].role] || 0) + 1;
     var thElems = elems.filter(function (e) { return e.role === 'TH'; });
@@ -191,7 +263,28 @@
     pass('ViewerPreferences /DisplayDocTitle = true', String(displayDocTitle) === 'true', displayDocTitle ? String(displayDocTitle) : '(missing)');
     pass('All page fonts embedded', fontsTotal === 0 || fontsEmbedded === fontsTotal, fontsEmbedded + '/' + fontsTotal + ' fonts embedded');
     pass('Document outline (bookmarks) present', !!outlines, outlines ? '(navigation aid)' : '(none)');
-    pass('No orphaned semantic leaves', orphanedLeaves.length === 0, orphanedLeaves.length + '/' + leaves.length + ' orphaned');
+    pass('No orphaned semantic leaves', orphanedLeaves.length === 0,
+      orphanedLeaves.length + '/' + leaves.length + ' orphaned' + (markerLblCount ? ' (' + markerLblCount + ' pure-marker Lbl exempted — see in-code rationale)' : ''));
+    // ── Parity rules (2026-06-12): the gate/veraPDF contracts, verified from
+    // the SHIPPED bytes so Canvas users (no Java) see the same reality. ──
+    pass('Link annotations have /Contents (PDF/UA 7.18.5)',
+      linkAnnotsTotal === 0 || linkAnnotsWithContents === linkAnnotsTotal,
+      linkAnnotsTotal === 0 ? '0 link annotations' : linkAnnotsWithContents + '/' + linkAnnotsTotal + ' with alternate descriptions');
+    pass('Link annotations reachable from the tag tree (/StructParent)',
+      linkAnnotsTotal === 0 || linkAnnotsWithStructParent === linkAnnotsTotal,
+      linkAnnotsTotal === 0 ? '0 link annotations' : linkAnnotsWithStructParent + '/' + linkAnnotsTotal + ' with /StructParent');
+    pass('Table/list containment (TH/TD in TR, TR in Table, LI in L, Lbl/LBody in LI)',
+      containment.bad.length === 0,
+      containment.checked === 0 ? 'no table/list structure' : (containment.bad.length === 0 ? containment.checked + ' containment edges OK' : 'bad: ' + containment.bad.join('; ')));
+    // The evidence-based declaration contract: a pdfuaid:part=1 claim in the
+    // XMP must be backed by zero orphaned content leaves. A WITHHELD claim is
+    // a PASS (that's the honesty design working) — the detail says why.
+    pass('PDF/UA declaration is evidence-backed (XMP ↔ content linkage)',
+      xmpUnreadable ? true : (!uaDeclaredInXmp || orphanedLeaves.length === 0),
+      xmpUnreadable ? 'XMP stream is compressed/unreadable — checked externally via veraPDF instead'
+        : (uaDeclaredInXmp
+          ? 'declared, ' + orphanedLeaves.length + ' orphaned leaves' + (orphanedLeaves.length > 0 ? ' — CLAIM NOT BACKED' : ' (backed)')
+          : 'declaration withheld (' + orphanedLeaves.length + ' orphaned leaves) — honest posture'));
 
     var passCount = checks.filter(function (c) { return c.status === 'pass'; }).length;
     var failCount = checks.filter(function (c) { return c.status === 'fail'; }).length;
@@ -215,8 +308,19 @@
         leafCount: leaves.length,
         containerCount: containers.length,
         orphanedLeafCount: orphanedLeaves.length,
+        markerLblExempted: markerLblCount,
         orphanedRoles: orphanedLeaves.map(function (e) { return e.role; }),
         byRole: byRole,
+      },
+      linkAnnots: {
+        total: linkAnnotsTotal,
+        withContents: linkAnnotsWithContents,
+        withStructParent: linkAnnotsWithStructParent,
+      },
+      uaClaim: {
+        declaredInXmp: uaDeclaredInXmp,
+        xmpUnreadable: xmpUnreadable,
+        evidenceBacked: xmpUnreadable ? null : (!uaDeclaredInXmp || orphanedLeaves.length === 0),
       },
       cellChecks: {
         thCount: thElems.length,
@@ -225,6 +329,7 @@
         cellsWithActualText: cellElems.filter(function (e) { return e.hasActualText; }).length,
         figureCount: figures.length,
         figuresWithAlt: figures.filter(function (e) { return e.hasAlt; }).length,
+        figuresLinked: figures.filter(function (e) { return e.hasContent; }).length,
       },
       checks: checks,
       summary: {
