@@ -4524,6 +4524,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 addToast('✂ Cropped region added to the remediated document with alt text — re-export (PDF/Word/HTML) to include it.', 'success');
                               } catch (_) {}
                             };
+                            // On-demand tagged bytes for the popup's '⚖ Verify tagged'
+                            // toggle — same createTaggedPdf path as the download button.
+                            window.__alloflowCompareGetTagged = async () => {
+                              try {
+                                const freshBase64 = await ensurePdfBase64();
+                                if (!freshBase64) return { error: 'original PDF bytes unavailable — re-attach the file in the app' };
+                                const okLib = await _ensurePdfLib();
+                                if (!okLib) return { error: 'PDF tagging library failed to load' };
+                                const binStr = atob(freshBase64);
+                                const bytes = new Uint8Array(binStr.length);
+                                for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+                                const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name);
+                                const _ov = pdfMetaOverride || {};
+                                const _result = await createTaggedPdf(bytes, pdfFixResult, { title: (_ov.title && _ov.title.trim()) || _dm.title, lang: (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en', subject: 'Remediated for accessibility by AlloFlow' });
+                                const tBytes = _result && _result.bytes ? _result.bytes : _result;
+                                if (!tBytes) return { error: 'tagged PDF generation returned no bytes' };
+                                const u8 = new Uint8Array(tBytes);
+                                let s = '';
+                                for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, Array.from(u8.subarray(i, i + 0x8000)));
+                                return { b64: btoa(s), uaDeclared: !!((_result && _result.summary) || {}).uaDeclared };
+                              } catch (e) { return { error: (e && e.message) || 'generation failed' }; }
+                            };
                           } catch (_) {}
                           const win = window.open('', '_blank');
                           if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); return; }
@@ -4561,9 +4583,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                           <div class="compare">
                             <div class="pane pane-left">
-                              <div class="pane-header" style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px">
-                                <span>Original PDF (Before)</span>
+                              <div class="pane-header" style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;gap:6px">
+                                <span id="before-label" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Original PDF (Before)</span>
+                                <span style="display:flex;gap:6px;flex-shrink:0">
+                                ${_isPdfMagic ? '<button id="btn-vtag" onclick="toggleTaggedView()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Swap this pane to the freshly generated TAGGED PDF — it should look identical to the original (tagging never changes the visual layer); this is how you verify nothing moved or vanished">⚖ Verify tagged</button>' : ''}
                                 ${_isPdfMagic ? '<button id="btn-crop" onclick="toggleCrop()" style="padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#fca5a5;font-size:10px;font-weight:700;cursor:pointer" title="Drag a rectangle on a page to clip that region into the remediated document (with alt text)">✂ Crop</button>' : ''}
+                                </span>
                               </div>
                               <div id="before-pane" style="flex:1;overflow:auto;background:#525659;min-height:0;position:relative">
                                 <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? 'Rendering original PDF…' : 'The original file is not a PDF (Word/PowerPoint input) — the Before preview applies to PDF originals. The After pane on the right is your remediated document.'}</div>
@@ -4593,64 +4618,97 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             // is built IN THIS WINDOW (same-origin by construction), and pdf.js
                             // paints canvases — no native viewer, no cross-window blob fetch.
                             var _pdfRawB64 = ${_isPdfMagic ? JSON.stringify(_rawB64) : 'null'};
-                            (function renderBefore() {
-                              if (!_pdfRawB64) return;
-                              var status = document.getElementById('before-status');
-                              var host = document.getElementById('before-pane');
-                              function b64ToBytes() { var bin = atob(_pdfRawB64); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
-                              function fail(msg) {
-                                if (!status) return;
-                                status.innerHTML = '⚠ Could not render the original PDF here (' + msg + '). ';
-                                try {
-                                  var u = URL.createObjectURL(new Blob([b64ToBytes()], { type: 'application/pdf' }));
-                                  var a = document.createElement('a');
-                                  a.href = u; a.target = '_blank'; a.style.color = '#93c5fd';
-                                  a.textContent = 'Open the original PDF in its own tab instead';
-                                  status.appendChild(a);
-                                } catch (_) {}
+                            // Parameterized renderer (2026-06-11): the left pane can now show
+                            // either the ORIGINAL or the freshly generated TAGGED PDF (the
+                            // '⚖ Verify tagged' toggle). They should look IDENTICAL — tagging
+                            // never touches the visual layer; this view exists to SEE that.
+                            var _taggedResult = null, _viewingTagged = false, _pdfjsLibReady = null;
+                            function _b64ToBytes(b64) { var bin = atob(b64); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+                            function _ensurePdfjs() {
+                              if (_pdfjsLibReady) return _pdfjsLibReady;
+                              _pdfjsLibReady = new Promise(function (resolve, reject) {
+                                var hosts = [
+                                  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/',
+                                  'https://unpkg.com/pdfjs-dist@3.11.174/build/',
+                                  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/'
+                                ];
+                                (function tryLoad(i) {
+                                  if (i >= hosts.length) { reject(new Error('PDF renderer unavailable — all CDN mirrors failed')); return; }
+                                  var s = document.createElement('script');
+                                  s.src = hosts[i] + 'pdf.min.js';
+                                  s.onload = function () {
+                                    var pdfjs = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+                                    if (!pdfjs) { reject(new Error('renderer global missing')); return; }
+                                    try { pdfjs.GlobalWorkerOptions.workerSrc = hosts[i] + 'pdf.worker.min.js'; } catch (_) {}
+                                    resolve(pdfjs);
+                                  };
+                                  s.onerror = function () { try { s.remove(); } catch (_) {} tryLoad(i + 1); };
+                                  document.head.appendChild(s);
+                                })(0);
+                              });
+                              return _pdfjsLibReady;
+                            }
+                            function _paneStatus(msg) { var host = document.getElementById('before-pane'); if (!host) return null; var d = document.createElement('div'); d.style.cssText = 'color:#e2e8f0;padding:20px;font-size:12px'; d.textContent = msg; host.appendChild(d); return d; }
+                            function _renderFail(label, b64, msg) {
+                              var host = document.getElementById('before-pane'); if (!host) return;
+                              host.innerHTML = '';
+                              var st = _paneStatus('⚠ Could not render the ' + label + ' here (' + msg + '). ');
+                              try { var u = URL.createObjectURL(new Blob([_b64ToBytes(b64)], { type: 'application/pdf' })); var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.style.color = '#93c5fd'; a.textContent = 'Open it in its own tab instead'; st.appendChild(a); } catch (_) {}
+                            }
+                            function _renderPdfInto(b64, label) {
+                              var host = document.getElementById('before-pane'); if (!host) return;
+                              try { _cropCleanup(); } catch (_) {}
+                              host.innerHTML = '';
+                              var st = _paneStatus('Rendering ' + label + '…');
+                              _ensurePdfjs().then(function (pdfjs) {
+                                pdfjs.getDocument({ data: _b64ToBytes(b64) }).promise.then(function (doc) {
+                                  if (st) { try { st.remove(); } catch (_) {} }
+                                  (function renderPage(n) {
+                                    if (n > doc.numPages) return;
+                                    doc.getPage(n).then(function (page) {
+                                      var vp = page.getViewport({ scale: 1.25 });
+                                      var c = document.createElement('canvas');
+                                      c.width = vp.width; c.height = vp.height;
+                                      c.style.cssText = 'display:block;margin:10px auto;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:96%;height:auto;background:white';
+                                      c.setAttribute('role', 'img');
+                                      c.setAttribute('aria-label', label + ', page ' + n + ' of ' + doc.numPages);
+                                      host.appendChild(c);
+                                      page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(
+                                        function () { renderPage(n + 1); },
+                                        function () { renderPage(n + 1); }
+                                      );
+                                    }, function () { renderPage(n + 1); });
+                                  })(1);
+                                }, function (e) { _renderFail(label, b64, e && e.message ? e.message : 'could not parse the PDF'); });
+                              }, function (e) { _renderFail(label, b64, e && e.message ? e.message : 'renderer unavailable'); });
+                            }
+                            if (_pdfRawB64) { var _is = document.getElementById('before-status'); if (_is) { try { _is.remove(); } catch (_) {} } _renderPdfInto(_pdfRawB64, 'Original PDF'); }
+                            function toggleTaggedView() {
+                              var btn = document.getElementById('btn-vtag');
+                              var lbl = document.getElementById('before-label');
+                              if (_viewingTagged) {
+                                _viewingTagged = false;
+                                if (btn) { btn.style.background = 'transparent'; btn.style.color = '#86efac'; btn.textContent = '⚖ Verify tagged'; }
+                                if (lbl) lbl.textContent = 'Original PDF (Before)';
+                                if (_pdfRawB64) _renderPdfInto(_pdfRawB64, 'Original PDF');
+                                return;
                               }
-                              var hosts = [
-                                'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/',
-                                'https://unpkg.com/pdfjs-dist@3.11.174/build/',
-                                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/'
-                              ];
-                              function tryLoad(i) {
-                                if (i >= hosts.length) { fail('PDF renderer unavailable — all CDN mirrors failed'); return; }
-                                var s = document.createElement('script');
-                                s.src = hosts[i] + 'pdf.min.js';
-                                s.onload = function () { start(hosts[i] + 'pdf.worker.min.js'); };
-                                s.onerror = function () { try { s.remove(); } catch (_) {} tryLoad(i + 1); };
-                                document.head.appendChild(s);
-                              }
-                              function start(workerUrl) {
-                                try {
-                                  var pdfjs = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-                                  if (!pdfjs) { fail('renderer global missing'); return; }
-                                  try { pdfjs.GlobalWorkerOptions.workerSrc = workerUrl; } catch (_) {}
-                                  pdfjs.getDocument({ data: b64ToBytes() }).promise.then(function (doc) {
-                                    if (status) { try { status.remove(); } catch (_) {} status = null; }
-                                    var renderPage = function (n) {
-                                      if (n > doc.numPages) return;
-                                      doc.getPage(n).then(function (page) {
-                                        var vp = page.getViewport({ scale: 1.25 });
-                                        var c = document.createElement('canvas');
-                                        c.width = vp.width; c.height = vp.height;
-                                        c.style.cssText = 'display:block;margin:10px auto;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:96%;height:auto;background:white';
-                                        c.setAttribute('role', 'img');
-                                        c.setAttribute('aria-label', 'Original PDF, page ' + n + ' of ' + doc.numPages);
-                                        host.appendChild(c);
-                                        page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(
-                                          function () { renderPage(n + 1); },
-                                          function () { renderPage(n + 1); }
-                                        );
-                                      }, function () { renderPage(n + 1); });
-                                    };
-                                    renderPage(1);
-                                  }, function (e) { fail(e && e.message ? e.message : 'could not parse the PDF'); });
-                                } catch (e) { fail(e && e.message ? e.message : 'renderer init failed'); }
-                              }
-                              tryLoad(0);
-                            })();
+                              var go = function (r) {
+                                _viewingTagged = true;
+                                if (btn) { btn.style.background = '#86efac'; btn.style.color = '#14532d'; btn.textContent = '⚖ Showing tagged — click for original'; }
+                                if (lbl) lbl.textContent = 'Tagged PDF — should look IDENTICAL to the original' + (r.uaDeclared ? ' · PDF/UA-1 declared' : '');
+                                _renderPdfInto(r.b64, 'Tagged PDF');
+                              };
+                              if (_taggedResult) { go(_taggedResult); return; }
+                              if (!(window.opener && window.opener.__alloflowCompareGetTagged)) { _paneStatus('⚠ Could not reach the app window to generate the tagged PDF — generate and download it from the app instead.'); return; }
+                              if (btn) { btn.disabled = true; btn.textContent = '⚖ Generating tagged PDF…'; }
+                              window.opener.__alloflowCompareGetTagged().then(function (r) {
+                                if (btn) btn.disabled = false;
+                                if (!r || r.error || !r.b64) { if (btn) btn.textContent = '⚖ Verify tagged'; _paneStatus('⚠ Tagged PDF generation failed: ' + ((r && r.error) || 'unknown error')); return; }
+                                _taggedResult = r;
+                                go(r);
+                              }, function (e) { if (btn) { btn.disabled = false; btn.textContent = '⚖ Verify tagged'; } _paneStatus('⚠ Tagged PDF generation failed: ' + ((e && e.message) || 'error')); });
+                            }
 
                             // ── Crop tool: drag a rectangle on a rendered page to clip
                             // that region into the remediated document (alt text required).
