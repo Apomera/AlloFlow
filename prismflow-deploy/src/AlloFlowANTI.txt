@@ -1259,6 +1259,19 @@ window._upgradeUIFontLibrary = function () {
 if (window.AlloModules && window.AlloModules.UIFontLibrary) window._upgradeUIFontLibrary();
 let UI_STRINGS = {};
 let HELP_STRINGS = {};
+// Prefix fallback (2026-06-12): dynamic anchors like 'engineering_cycle_<stage>'
+// can't have exhaustive per-suffix entries — when the exact key misses, walk
+// back to the longest defined PREFIX entry ending in '_'.
+const _helpLookup = (key) => {
+  if (!key) return '';
+  if (HELP_STRINGS[key]) return HELP_STRINGS[key];
+  let k = String(key);
+  while (k.indexOf('_') !== -1) {
+    k = k.slice(0, k.lastIndexOf('_'));
+    if (HELP_STRINGS[k + '_']) return HELP_STRINGS[k + '_'];
+  }
+  return '';
+};
 (async () => {
     try {
         const cached = localStorage.getItem("alloflow_ui_strings_cache");
@@ -4376,7 +4389,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '603bf44f';
+    var pluginCdnVersion = 'cfad819c';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -6958,12 +6971,51 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [runTour, setRunTour] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [tourRect, setTourRect] = useState(null);
+  // Custom tour support (2026-06-12): the pipeline/builder tours reuse the
+  // SAME TourOverlay engine with their own step lists. null = the main app
+  // tour. Steps may target by `id` (getElementById, classic) or by
+  // `helpKey` (data-help-key attribute — the pipeline modal has 62), and may
+  // carry an `onEnter` callback for per-step UI side effects.
+  const [customTourSteps, setCustomTourSteps] = useState(null);
+  useEffect(() => { if (!runTour) setCustomTourSteps(null); }, [runTour]);
+  const _resolveTourEl = (step) => {
+    if (!step) return null;
+    if (step.id) { const el = document.getElementById(step.id); if (el) return el; }
+    if (step.helpKey) { try { return document.querySelector('[data-help-key="' + step.helpKey + '"]'); } catch (_) {} }
+    return null;
+  };
+  // The pipeline guided tours (2026-06-12). Two short tours because the two
+  // screens can't coexist: 'triage' walks the choices before remediation,
+  // 'results' walks what came back. Steps target the modal's existing
+  // data-help-key anchors; missing anchors auto-skip (resolver returns null).
+  const startPipelineTour = (kind) => {
+    const _steps = kind === 'results' ? [
+      { helpKey: 'pdf_audit_results_whatnow', title: t('ptour.whatnow_title') || 'Start here', text: t('ptour.whatnow_text') || 'This strip is your map: grab the recommended download, optionally compare before/after, and treat everything else on this screen as optional polish.' },
+      { helpKey: 'pdf_audit_dashboard_bar', title: t('ptour.dashboard_title') || 'Your navigation bar', text: t('ptour.dashboard_text') || 'This bar sticks to the top while you scroll. The score shows before → after; the chips jump straight to any section — Downloads is the one you\'ll use most.' },
+      { helpKey: 'pdf_audit_results_score_badge', title: t('ptour.score_title') || 'The score, honestly', text: t('ptour.score_text') || 'AlloFlow\'s own estimate from several AI reviews plus an automated rule scan. It\'s honest but it\'s not a certification — the report tells you how to verify externally.' },
+      { helpKey: 'pdf_audit_results_tab_original_btn', title: t('ptour.tabs_title') || 'Before and after', text: t('ptour.tabs_text') || 'Flip to the Original tab anytime to see what the document looked like before the fixes — useful when someone asks what actually changed.' },
+      { helpKey: 'pdf_audit_view_report_menu_btn', title: t('ptour.report_title') || 'Reports for grown-ups', text: t('ptour.report_text') || 'Printable accessibility reports — for your records, an IEP file, or your district accessibility coordinator. There\'s also a tamper-evident signed version.' },
+      { helpKey: 'pdf_audit_alt_formats_summary', title: t('ptour.altformats_title') || 'More ways to share', text: t('ptour.altformats_text') || 'The same accessible content as braille-ready text, ePub for e-readers, plain text, and Markdown. That\'s the tour — the ? button gives per-button help anywhere.' },
+    ] : [
+      { helpKey: 'pdf_audit_view_make_accessible_btn', title: t('ptour.hero_title') || 'The one-click path', text: t('ptour.hero_text') || 'Make Accessible runs everything automatically: audit → fix → re-check until it hits the target → downloads ready. For most documents, this is all you need.' },
+      { helpKey: 'pdf_audit_view_start_btn', title: t('ptour.audit_title') || 'The careful path', text: t('ptour.audit_text') || 'Prefer to look before fixing? Run Audit scores the document and shows every issue first — you choose Fix & Verify when you\'re ready.' },
+      { helpKey: 'pdf_audit_view_settings_panel', title: t('ptour.settings_title') || 'Settings (optional)', text: t('ptour.settings_text') || 'The defaults are sensible. If you ever need to: more audit passes = steadier score, the target score decides when the automatic loop stops.' },
+      { helpKey: 'pdf_audit_view_branding_panel', title: t('ptour.branding_title') || 'Make it look right', text: t('ptour.branding_text') || 'The accessible copy can match your original\'s colors, use a clean preset, or pick up your school\'s branding from a letterhead — every option is contrast-checked for readability.' },
+      { helpKey: 'pdf_audit_view_save_project_btn', title: t('ptour.save_title') || 'You can always come back', text: t('ptour.save_text') || 'Save Project keeps the whole session as one file — reload it later and everything returns. A backup also saves automatically after each remediation. That\'s the tour — hit Make Accessible when ready!' },
+    ];
+    setCustomTourSteps(_steps);
+    setTourStep(0);
+    setRunTour(true);
+  };
   const [isSpotlightMode, setIsSpotlightMode] = useState(false);
   const [spotlightMessage, setSpotlightMessage] = useState(null);
   const [botSpotlightPos, setBotSpotlightPos] = useState(null);
   const DOM_TO_TOOL_ID_MAP = (window.AlloModules && window.AlloModules.TextPipelineHelpers && window.AlloModules.TextPipelineHelpers.DOM_TO_TOOL_ID_MAP) || {};
     const tourSteps = [
       { id: 'tour-input-panel', text: t('tour.input_panel_text'), title: t('tour.input_panel_title') },
+      // Discovery step for the remediation pipeline (2026-06-12): the most
+      // consequential feature was invisible in the tour.
+      { id: 'tour-upload-source', text: t('tour.upload_accessibility_text') || 'Make any document accessible: upload a PDF, Word, or PowerPoint file here and AlloFlow audits it for accessibility barriers, fixes what it can, and hands back ready-to-share copies — including a screen-reader-ready Tagged PDF that looks identical to the original. One click ("Make Accessible") runs the whole pipeline; you can also batch a folder of files at once from the Educator Hub.', title: t('tour.upload_accessibility_title') || 'Turn any document accessible' },
       { id: 'tour-tool-analysis', text: t('tour.analysis_text'), title: t('tour.analysis_title') },
       { id: 'ui-tool-glossary', text: t('tour.glossary_text'), title: t('tour.glossary_title') },
       { id: 'ui-tool-simplified', text: t('tour.simplified_text'), title: t('tour.simplified_title') },
@@ -6992,10 +7044,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { id: 'tour-history-panel', text: t('tour.history_text'), title: t('tour.history_title') },
   ];
   useEffect(() => {
-    if (runTour && tourSteps[tourStep]) {
+    const _steps = customTourSteps || tourSteps;
+    if (runTour && _steps[tourStep]) {
         const _tourScrollTimer = setTimeout(() => {
-            const stepId = tourSteps[tourStep].id;
-            const el = document.getElementById(stepId);
+            const stepId = _steps[tourStep].id;
+            const el = _resolveTourEl(_steps[tourStep]);
             if (el) {
                 if (stepId === 'ui-tool-simplified') {
                      window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -7006,7 +7059,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }, 300);
         return () => clearTimeout(_tourScrollTimer);
     }
-  }, [runTour, tourStep]);
+  }, [runTour, tourStep, customTourSteps]);
   useEffect(() => {
     if (!isHelpMode) return;
     const handleHelpClick = (e) => {
@@ -7036,7 +7089,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         const key = explicitHelp.getAttribute('data-help-key');
         const _rawHelp = t('help_mode.' + key, { defaultValue: '' });
         const localizedHelp = (_rawHelp && _rawHelp !== 'help_mode.' + key) ? _rawHelp : '';
-        const helpText = localizedHelp || HELP_STRINGS[key];
+        const helpText = localizedHelp || _helpLookup(key);
         if (helpText) {
             const deriveTitle = (k) => {
                 const _rawTitle = t('help_mode.' + k + '_title', { defaultValue: '' });
@@ -7235,9 +7288,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const updateTourMetrics = useCallback(() => {
       if (!runTour) return;
       if (spotlightMessage) return;
-      const step = tourSteps[tourStep];
+      const step = (customTourSteps || tourSteps)[tourStep];
+      if (!step) return;
+      try { if (step.onEnter) step.onEnter(); } catch (_) {}
       setTimeout(() => {
-          const el = document.getElementById(step.id);
+          const el = _resolveTourEl(step);
           if (el) {
               const tallPanels = ['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary', 'tour-tool-wordsounds'];
               const scrollBlock = tallPanels.includes(step.id) ? 'start' : 'center';
@@ -7275,7 +7330,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               }
           }
       }, 600);
-  }, [runTour, tourStep, spotlightMessage]);
+  }, [runTour, tourStep, spotlightMessage, customTourSteps]);
   const ensureToolVisible = (toolId) => {
       if (!expandedTools.includes(toolId)) {
           setExpandedTools(prev => [...prev, toolId]);
@@ -7409,7 +7464,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
   }, [isSpotlightMode, runTour]);
   const handleNextTourStep = () => {
-      if (tourStep < tourSteps.length - 1) {
+      if (tourStep < (customTourSteps || tourSteps).length - 1) {
           setTourStep(prev => prev + 1);
       } else {
           setRunTour(false);
@@ -7449,19 +7504,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       if (!isSpotlightMode) spotlightOpenTimeRef.current = Date.now();
       setIsSpotlightMode(true);
-      const step = tourSteps[tourStep];
-      if (step.id === 'tour-history-panel') {
-          if (isTeacherMode) setActiveSidebarTab('history');
-      } else {
-          if (isTeacherMode) setActiveSidebarTab('create');
-      }
-      if (DOM_TO_TOOL_ID_MAP[step.id]) {
-          setExpandedTools([DOM_TO_TOOL_ID_MAP[step.id]]);
+      const step = (customTourSteps || tourSteps)[tourStep];
+      if (!step) return;
+      // The sidebar/expand side effects belong to the MAIN app tour only —
+      // a custom (pipeline/builder) tour runs inside a modal where they'd
+      // fight the layout. Custom steps use their own onEnter instead.
+      if (!customTourSteps) {
+        if (step.id === 'tour-history-panel') {
+            if (isTeacherMode) setActiveSidebarTab('history');
+        } else {
+            if (isTeacherMode) setActiveSidebarTab('create');
+        }
+        if (DOM_TO_TOOL_ID_MAP[step.id]) {
+            setExpandedTools([DOM_TO_TOOL_ID_MAP[step.id]]);
+        }
       }
       setTimeout(() => {
           updateTourMetrics();
       }, 100);
-  }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage]);
+  }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage, customTourSteps]);
   const addToast = (message, type = 'info') => {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev, { id, message, type }]);
@@ -10677,7 +10738,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               const title = el.getAttribute('title') || '';
               const helpKey = el.closest?.('[data-help-key]')?.getAttribute('data-help-key');
               const _rawHelp = helpKey ? t('help_mode.' + helpKey, { defaultValue: '' }) : '';
-              const helpText = helpKey ? ((_rawHelp && _rawHelp !== 'help_mode.' + helpKey) ? _rawHelp : (HELP_STRINGS[helpKey] || '')) : '';
+              const helpText = helpKey ? ((_rawHelp && _rawHelp !== 'help_mode.' + helpKey) ? _rawHelp : _helpLookup(helpKey)) : '';
               let typePrefix = '';
               if (tag === 'button' || role === 'button') typePrefix = 'Button: ';
               else if (tag === 'a') typePrefix = 'Link: ';
@@ -15625,8 +15686,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json');
       if (isAuto) lastAutoSaveHashRef.current = hashKey;
       const rangeCount = project.multiSession ? project.multiSession.ranges.length : 0;
+      // Reframed (2026-06-12): the auto-save toast read like an action item —
+      // teachers wondered what they were supposed to DO with the .json that
+      // just appeared in Downloads. It's a backup; say so.
       const msg = isAuto
-        ? ('💾 Auto-saved project' + (cur.afterScore ? ' (score ' + cur.afterScore + ')' : ''))
+        ? ('💾 A backup of this session was saved to your Downloads (a project file). Nothing to do with it now — if you ever need to come back, "Load Project" brings everything back.' + (cur.afterScore ? ' (score ' + cur.afterScore + ')' : ''))
         : (project.multiSession
             ? '💾 Project saved (' + rangeCount + ' range' + (rangeCount === 1 ? '' : 's') + ') — load it later to continue'
             : '💾 Project saved — load it later to continue editing');
@@ -23236,6 +23300,40 @@ ${_toolList}
         @media (prefers-reduced-motion: reduce) {
           .alloflow-skeleton { animation: none; }
         }
+        /* ── UI polish primitives (2026-06-10) — reusable juice classes for
+         *    quiz feedback, reader transitions, empty states. All gated by
+         *    prefers-reduced-motion so they degrade to instant changes for
+         *    users who've requested calmer motion (vestibular-disorder safe).
+         *    Subtle by design — pedagogy first, polish second. */
+        @keyframes allo-correct-pulse {
+          0%   { transform: scale(1);   box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+          40%  { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+          100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+        }
+        .allo-correct-pulse { animation: allo-correct-pulse 480ms ease-out 1; }
+        @keyframes allo-wrong-nudge {
+          0%, 100% { transform: translateX(0); }
+          25%      { transform: translateX(-3px); }
+          50%      { transform: translateX(3px); }
+          75%      { transform: translateX(-2px); }
+        }
+        .allo-wrong-nudge { animation: allo-wrong-nudge 360ms ease-in-out 1; }
+        @keyframes allo-section-enter {
+          0%   { opacity: 0; transform: translateY(6px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .allo-section-enter { animation: allo-section-enter 220ms ease-out 1; }
+        @keyframes allo-empty-float {
+          0%, 100% { transform: translateY(0); }
+          50%      { transform: translateY(-4px); }
+        }
+        .allo-empty-float { animation: allo-empty-float 3200ms ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .allo-correct-pulse,
+          .allo-wrong-nudge,
+          .allo-section-enter,
+          .allo-empty-float { animation: none; }
+        }
         @media print {
           .no-print { display: none !important; }
           .print-only { display: block !important; }
@@ -24080,6 +24178,7 @@ ${_toolList}
                         accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.csv,.json,.html,.xml,video/*,audio/*"
                      />
                      <button
+                         id="tour-upload-source"
                          aria-label={t('common.refresh')}
                         onClick={() => fileInputRef.current.click()}
                         disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
@@ -26012,7 +26111,7 @@ ${_toolList}
       {(runTour && tourRect) && window.AlloModules && window.AlloModules.TourOverlay && React.createElement(window.AlloModules.TourOverlay, {
           botSpotlightPos, handleNextTourStep, handlePrevTourStep, handleSetRunTourToFalse, isSpotlightMode,
           runTour, setIsSpotlightMode, setRunTour, setSpotlightMessage, spotlightMessage,
-          t, tourRect, tourStep, tourSteps
+          t, tourRect, tourStep, tourSteps: customTourSteps || tourSteps
       })}
       {isSyntaxGame && generatedContent && (
         <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
@@ -26094,7 +26193,10 @@ ${_toolList}
         />
       )}
       {!isZenMode && !showUDLGuide && (<>
-      {(isHelpMode || showWizard || isWordSoundsMode || isSyntaxGame || isMemoryGame || isCrosswordGame || isMatchingGame || isTimelineGame || isConceptSortGame || isReviewGame || escapeRoomState.isActive || isProjectSettingsOpen) && (
+      {/* 2026-06-12: pipeline + builder states added — the header help toggle
+          is occluded by their z-[200] backdrops, so without these the "?" was
+          unreachable exactly where 62 help anchors live. */}
+      {(isHelpMode || showWizard || isWordSoundsMode || isSyntaxGame || isMemoryGame || isCrosswordGame || isMatchingGame || isTimelineGame || isConceptSortGame || isReviewGame || escapeRoomState.isActive || isProjectSettingsOpen || !!pdfAuditResult || pdfAuditLoading || showExportPreview) && (
       <button
         data-help-ignore="true"
         onClick={handleToggleIsHelpMode}
@@ -26580,7 +26682,7 @@ ${_toolList}
           setPdfFixLoading, setPdfFixMode, setPdfFixResult, setPdfFixStep, setPdfMultiSession,
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
           setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64, setPendingPdfFile,
-          setShowCloseConfirm, showCloseConfirm, startNewPdfAudit
+          setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour
       })}
       <ErrorBoundary fallbackMessage="File transcription encountered an error. Please try again.">
       <LargeFileTranscriptionModal

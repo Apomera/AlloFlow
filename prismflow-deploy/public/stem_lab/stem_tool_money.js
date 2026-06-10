@@ -663,11 +663,14 @@ window.StemLab = window.StemLab || {
             // Draw the entire cashier scene onto a canvas. Called once per React render.
             var drawCashierScene = function (canvas) {
               if (!canvas) return;
-              var W = canvas.width = canvas.offsetWidth || 600;
-              var H = canvas.height = 280;
+              var W = canvas.offsetWidth || 600;
+              var H = 280;
+              canvas.width = W * 2;
+              canvas.height = H * 2;
               var c = canvas.getContext('2d');
               if (!c) return;
-              c.clearRect(0, 0, W, H);
+              c.scale(2, 2);
+              c.clearRect(0, 0, W, H); // 2x backing store — the scene was rendering blurry at 1x
 
               // Power-outage backdrop — dark blue-gray with vignette
               var bgGrad = c.createLinearGradient(0, 0, 0, H);
@@ -1475,7 +1478,7 @@ window.StemLab = window.StemLab || {
                       },
                         React.createElement("div", { style: {
                           width: coin.size + 'px', height: coin.size + 'px', borderRadius: '50%',
-                          background: 'radial-gradient(circle at 35% 35%, ' + coin.color + ', ' + coin.color + 'cc)',
+                          background: 'radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 36%), radial-gradient(circle at 35% 35%, ' + coin.color + ', ' + coin.color + 'cc)',
                           border: '2px solid rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: Math.max(9, coin.size / 3.5) + 'px', fontWeight: 'bold', color: '#333',
                           boxShadow: '0 2px 6px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4)',
@@ -1525,16 +1528,16 @@ window.StemLab = window.StemLab || {
                       )
                     : React.createElement("div", { className: "flex flex-wrap gap-1.5 min-h-[100px]" },
                         placed.map(function (p, pi) {
-                          var isBill = p.value >= (isJPY ? 1000 : 1) && !p.name.toLowerCase().includes('coin') && !p.name.toLowerCase().includes('penny') && !p.name.toLowerCase().includes('cent') && !p.name.toLowerCase().includes('dime') && !p.name.toLowerCase().includes('nickel') && !p.name.toLowerCase().includes('quarter') && !p.name.toLowerCase().includes('loonie') && !p.name.toLowerCase().includes('toonie');
+                          var isBill = p.id != null ? String(p.id).indexOf('-b') >= 0 : (p.value >= (isJPY ? 1000 : 1) && !p.name.toLowerCase().includes('coin') && !p.name.toLowerCase().includes('penny') && !p.name.toLowerCase().includes('cent') && !p.name.toLowerCase().includes('dime') && !p.name.toLowerCase().includes('nickel') && !p.name.toLowerCase().includes('quarter') && !p.name.toLowerCase().includes('loonie') && !p.name.toLowerCase().includes('toonie'));
                           return React.createElement("button", { "aria-label": "Remove " + p.name, key: p.id || pi, onClick: function () {
                               upd('placed', placed.filter(function (_, idx) { return idx !== pi; }));
                               upd('coinGuess', null); upd('coinGuessFb', null);
                             }, title: 'Remove ' + p.name,
-                            className: "transition-all hover:scale-110 hover:opacity-70 cursor-pointer"
+                            className: "transition-all hover:scale-110 hover:opacity-70 cursor-pointer animate-in zoom-in fade-in duration-300"
                           },
                             isBill
-                              ? React.createElement("div", { style: { width: '56px', height: '24px', borderRadius: '3px', background: '#85bb65', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff' } }, challengeMode ? p.name : fmt(p.value))
-                              : React.createElement("div", { style: { width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #C0C0C0, #999)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold', color: '#333' } }, challengeMode ? p.name.substring(0, 3) : fmt(p.value))
+                              ? (function () { var bd = cur.bills.find(function (k) { return k.name === p.name; }) || { color: '#85bb65' }; return React.createElement("div", { style: { width: '56px', height: '24px', borderRadius: '3px', background: 'linear-gradient(135deg, ' + bd.color + ', ' + bd.color + 'aa)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, challengeMode ? p.name : fmt(p.value)); })()
+                              : (function () { var cd = cur.coins.find(function (k) { return k.name === p.name; }) || { color: '#C0C0C0', size: 28 }; return React.createElement("div", { style: { width: cd.size + 'px', height: cd.size + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, ' + cd.color + ', ' + cd.color + 'cc)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold', color: '#333' } }, challengeMode ? p.name.substring(0, 3) : fmt(p.value)); })()
                           );
                         })
                       ),

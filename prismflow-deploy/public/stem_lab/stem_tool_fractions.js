@@ -1802,7 +1802,7 @@ window.StemLab = window.StemLab || {
       var radius = size / 2 - 2;
       for (var i = 0; i < den; i++) {
         var startAngle = (i / den) * 2 * Math.PI - Math.PI / 2;
-        var endAngle = ((i + 1) / den) * 2 * Math.PI - Math.PI / 2;
+        var endAngle = ((i + 1) / den) * 2 * Math.PI - Math.PI / 2 - (den === 1 ? 0.0001 : 0); // a full 2-pi arc has coincident endpoints and renders NOTHING
         var x1 = (size / 2) + radius * Math.cos(startAngle);
         var y1 = (size / 2) + radius * Math.sin(startAngle);
         var x2 = (size / 2) + radius * Math.cos(endAngle);
@@ -1814,7 +1814,7 @@ window.StemLab = window.StemLab || {
           d: 'M ' + (size / 2) + ' ' + (size / 2) + ' L ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
           fill: filled ? (color || 'hsl(' + (340 + i * 8) + ', 70%, ' + (60 + i * 2) + '%)') : '#fecdd3',
           stroke: '#e11d48', strokeWidth: 1.5,
-          className: 'cursor-pointer hover:opacity-80 transition-opacity'
+          className: 'cursor-pointer hover:opacity-80', style: { transition: 'fill 0.3s ease, opacity 0.15s ease' }
         }));
         // Slice number — only when the slice is large enough to fit a digit
         if (filled && den <= 16 && size >= 60) {
@@ -3211,7 +3211,7 @@ window.StemLab = window.StemLab || {
                     rx: 3,
                     className: 'cursor-pointer',
                     style: { opacity: hl ? 1 : 0.75, transition: 'all 0.2s' },
-                    onClick: function() { handleWallClick(num, den); }
+                    onClick: (function(n, d) { return function() { handleWallClick(n, d); }; })(num, den) // var-closure bug: every piece clicked as the LAST of its row
                   }),
                   segW > 25 && h('text', {
                     x: 30 + i * segW + segW / 2, y: 5 + rowIdx * (stripH + 2) + stripH / 2 + 4,

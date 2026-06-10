@@ -376,16 +376,16 @@ window.StemLab = window.StemLab || {
               'aria-hidden': 'false',
               style: { fontVariantNumeric: 'tabular-nums' }
             },
-              h('div', { className: 'text-[10px] font-bold text-amber-700 text-right pr-1 mb-0.5' }, 'total'),
+              h('div', { className: 'text-[11px] font-bold text-amber-700 text-right pr-1 py-0.5' }, 'total'),
               Array.from({ length: rows }, function(_, ri) {
                 var runningTotal = (ri + 1) * cols;
                 var stepLabel = '+' + cols;
                 var isInHL = ri < highlight.rows;
                 return h('div', {
                   key: 'rt-' + ri,
-                  className: 'aspect-square rounded text-xs font-bold flex flex-col items-center justify-center px-2 ' +
+                  className: 'rounded text-xs font-bold flex flex-col items-center justify-center px-2 ' +
                     (isInHL ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-amber-50 text-amber-700 border border-amber-100'),
-                  style: { minWidth: 48 }
+                  style: { minWidth: 48, height: ((cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) - (cols - 1) * 4) / cols }
                 },
                   h('span', { className: 'text-[10px] text-amber-500 leading-none' }, ri === 0 ? cols : stepLabel),
                   h('span', { className: 'text-base leading-tight' }, runningTotal)
@@ -394,14 +394,14 @@ window.StemLab = window.StemLab || {
             ),
             // Row labels (1..rows) — paired with grid rows
             h('div', { className: 'flex flex-col gap-1 self-stretch', 'aria-hidden': 'true' },
-              h('div', { className: 'text-[10px] font-bold text-amber-600 mb-0.5 text-center', style: { width: 18 } }, 'r'),
+              h('div', { className: 'text-[11px] font-bold text-amber-600 py-0.5 text-center', style: { width: 18 } }, 'r'),
               Array.from({ length: rows }, function(_, ri) {
                 var isInHL = ri < highlight.rows;
                 return h('div', {
                   key: 'rl-' + ri,
-                  className: 'aspect-square rounded flex items-center justify-center text-xs font-bold ' +
+                  className: 'rounded flex items-center justify-center text-xs font-bold ' +
                     (isInHL ? 'bg-amber-200 text-amber-900' : 'bg-amber-50 text-amber-500'),
-                  style: { width: 18 }
+                  style: { width: 18, height: ((cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) - (cols - 1) * 4) / cols }
                 }, ri + 1);
               })
             ),
@@ -480,7 +480,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
             h('div', { className: 'flex gap-2 sm:gap-4 justify-center items-start w-full max-w-full mx-auto' },
-              h('div', { className: 'text-center', style: { flex: leftCols, minWidth: 0 } },
+              h('div', { className: 'text-center', style: { flex: leftCols, minWidth: 0, transition: 'flex-grow 0.3s ease' } },
                 h('div', { className: 'text-xs font-bold text-blue-700 mb-1' }, rows + ' \u00d7 ' + leftCols),
                 h('div', { className: 'grid gap-1 sm:gap-2', style: { gridTemplateColumns: 'repeat(' + leftCols + ', minmax(0, 1fr))' } }, leftCells),
                 h('div', { className: 'text-sm font-bold text-blue-600 mt-1' }, '= ' + leftProduct)
@@ -490,7 +490,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-violet-500 font-bold text-lg py-1' }, '+'),
                 h('div', { className: 'w-px flex-1 bg-violet-300' })
               ),
-              rightCols > 0 && h('div', { className: 'text-center', style: { flex: rightCols, minWidth: 0 } },
+              rightCols > 0 && h('div', { className: 'text-center', style: { flex: rightCols, minWidth: 0, transition: 'flex-grow 0.3s ease' } },
                 h('div', { className: 'text-xs font-bold text-emerald-700 mb-1' }, rows + ' \u00d7 ' + rightCols),
                 h('div', { className: 'grid gap-1 sm:gap-2', style: { gridTemplateColumns: 'repeat(' + rightCols + ', minmax(0, 1fr))' } }, rightCells),
                 h('div', { className: 'text-sm font-bold text-emerald-600 mt-1' }, '= ' + rightProduct)
