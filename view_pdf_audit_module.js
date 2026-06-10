@@ -356,7 +356,43 @@ function _docxSpecToSlides(spec) {
   }
   return { title: spec.title, lang: spec.lang, slides, counts };
 }
-async function _buildPptxBlobFromSlides(deck, P) {
+const _PPTX_THEMES = {
+  classic: { label: "Classic Light", bg: "FFFFFF", title: "1F2937", body: "111827", tableHeadFill: "E5E7EB", tableBorder: "CBD5E1", font: "Arial" },
+  midnight: { label: "Midnight", bg: "0F172A", title: "C7D2FE", body: "E2E8F0", tableHeadFill: "1E293B", tableBorder: "64748B", font: "Arial" },
+  sunrise: { label: "Sunrise", bg: "FFF7ED", title: "7C2D12", body: "431407", tableHeadFill: "FFEDD5", tableBorder: "FDBA74", font: "Georgia" },
+  forest: { label: "Forest", bg: "F0FDF4", title: "14532D", body: "052E16", tableHeadFill: "DCFCE7", tableBorder: "4ADE80", font: "Arial" },
+  highcontrast: { label: "High Contrast", bg: "FFFFFF", title: "000000", body: "000000", tableHeadFill: "D4D4D4", tableBorder: "000000", font: "Arial" }
+};
+function _pptxHexLum(hex) {
+  const h = String(hex || "").replace("#", "");
+  if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+  const f = (i) => {
+    const c = parseInt(h.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * f(0) + 0.7152 * f(2) + 0.0722 * f(4);
+}
+function _pptxContrast(a, b) {
+  const la = _pptxHexLum(a), lb = _pptxHexLum(b);
+  if (la == null || lb == null) return 0;
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+function _sanitizePptxTheme(raw) {
+  const base = _PPTX_THEMES.classic;
+  const t = { ...base, ...raw || {} };
+  for (const k of ["bg", "title", "body", "tableHeadFill", "tableBorder"]) {
+    t[k] = String(t[k] || base[k]).replace("#", "").toUpperCase();
+    if (!/^[0-9A-F]{6}$/.test(t[k])) t[k] = base[k];
+  }
+  const snapTo = (c, against) => _pptxContrast(c, against) >= 4.5 ? c : _pptxContrast("000000", against) >= _pptxContrast("FFFFFF", against) ? "000000" : "FFFFFF";
+  t.title = snapTo(t.title, t.bg);
+  t.body = snapTo(t.body, t.bg);
+  t.tableHeadText = snapTo(t.body, t.tableHeadFill);
+  t.font = typeof t.font === "string" && t.font.trim() ? t.font.trim().slice(0, 40) : "Arial";
+  return t;
+}
+async function _buildPptxBlobFromSlides(deck, P, theme) {
+  const th = _sanitizePptxTheme(theme);
   const p = new P();
   try {
     p.title = deck.title || "Accessible deck";
@@ -368,9 +404,13 @@ async function _buildPptxBlobFromSlides(deck, P) {
   }
   for (const s of deck.slides) {
     const slide = p.addSlide();
+    try {
+      slide.background = { color: th.bg };
+    } catch (_) {
+    }
     let y = 0.35;
     if (s.title) {
-      slide.addText(s.title, { x: 0.5, y, w: 9, h: 0.8, fontSize: 28, bold: true, color: "1F2937" });
+      slide.addText(s.title, { x: 0.5, y, w: 9, h: 0.8, fontSize: 28, bold: true, color: th.title, fontFace: th.font });
       y = 1.3;
     }
     let runs = [];
@@ -379,7 +419,7 @@ async function _buildPptxBlobFromSlides(deck, P) {
       const h = Math.min(0.3 * runs.length + 0.2, Math.max(5.2 - y, 0.5));
       slide.addText(
         runs.map((r) => ({ text: r.text, options: { bullet: r.kind === "bullet" ? true : void 0, indentLevel: r.kind === "bullet" ? r.level || 0 : void 0, bold: r.kind === "subhead", fontSize: r.kind === "subhead" ? 20 : 16, breakLine: true } })),
-        { x: 0.5, y, w: 9, h, valign: "top", color: "111827" }
+        { x: 0.5, y, w: 9, h, valign: "top", color: th.body, fontFace: th.font }
       );
       y += h + 0.1;
       runs = [];
@@ -391,8 +431,8 @@ async function _buildPptxBlobFromSlides(deck, P) {
       }
       flushText();
       if (it.kind === "table" && it.rows.length) {
-        const tableRows = it.rows.map((r) => r.cells.map((c) => ({ text: c, options: r.header ? { bold: true, fill: "E5E7EB" } : {} })));
-        slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: "solid", color: "CBD5E1", pt: 0.5 }, color: "111827" });
+        const tableRows = it.rows.map((r) => r.cells.map((c) => ({ text: c, options: r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {} })));
+        slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: "solid", color: th.tableBorder, pt: 0.5 }, color: th.body, fontFace: th.font });
         y += 0.35 * it.rows.length + 0.25;
       } else if (it.kind === "image") {
         let placed = false;
@@ -405,7 +445,7 @@ async function _buildPptxBlobFromSlides(deck, P) {
           }
         }
         if (!placed) {
-          slide.addText("[Image: " + (it.alt || "no description available") + "]", { x: 0.5, y, w: 9, h: 0.4, italic: true, fontSize: 14, color: "334155" });
+          slide.addText("[Image: " + (it.alt || "no description available") + "]", { x: 0.5, y, w: 9, h: 0.4, italic: true, fontSize: 14, color: th.body });
           y += 0.5;
         }
       }
@@ -760,6 +800,13 @@ function PdfAuditView(props) {
   const [resumableBatch, setResumableBatch] = useState(null);
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
   const [lastTaggedReport, setLastTaggedReport] = useState(null);
+  const [pptxThemeId, setPptxThemeId] = useState(() => {
+    try {
+      return localStorage.getItem("allo_pptx_theme") || "classic";
+    } catch (_) {
+      return "classic";
+    }
+  });
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   const [tagOutline, setTagOutline] = useState(null);
   const [tierBStage, setTierBStage] = useState("");
@@ -3547,9 +3594,26 @@ Return ONLY JSON:
               return;
             }
             const deck = _docxSpecToSlides(_htmlToDocxSpec(pdfFixResult.accessibleHtml));
-            const blob = await _buildPptxBlobFromSlides(deck, P);
+            let _theme = _PPTX_THEMES[pptxThemeId] || _PPTX_THEMES.classic;
+            let _themeLabel = _theme.label;
+            if (pptxThemeId === "ai" && typeof callGemini === "function") {
+              try {
+                addToast(t("toasts.pptx_ai_theme") || "\u{1F3A8} Asking AI for a topic-matched palette (legibility enforced locally)\u2026", "info");
+                const _titles = [deck.title].concat(deck.slides.map((s) => s.title).filter(Boolean)).slice(0, 12).join(" | ");
+                const _raw = await callGemini('Suggest a presentation color palette matching this content: "' + _titles + '". Reply ONLY with JSON: {"bg":"RRGGBB","title":"RRGGBB","body":"RRGGBB","tableHeadFill":"RRGGBB","tableBorder":"RRGGBB","font":"a common PowerPoint font name"}. Calm, classroom-appropriate colors.', true);
+                _theme = JSON.parse(typeof _raw === "string" ? _raw : "{}");
+                _themeLabel = "AI-matched";
+              } catch (_aiErr) {
+                _theme = _PPTX_THEMES.classic;
+                _themeLabel = "Classic Light (AI palette unavailable)";
+              }
+            } else if (pptxThemeId === "ai") {
+              _theme = _PPTX_THEMES.classic;
+              _themeLabel = "Classic Light (AI unavailable)";
+            }
+            const blob = await _buildPptxBlobFromSlides(deck, P, _theme);
             safeDownloadBlob(blob, `${(pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "")}-accessible.pptx`);
-            const bits = [deck.counts.slides + " slide" + (deck.counts.slides === 1 ? "" : "s") + " (" + deck.counts.titled + " titled)"];
+            const bits = [deck.counts.slides + " slide" + (deck.counts.slides === 1 ? "" : "s") + " (" + deck.counts.titled + " titled)", _themeLabel + " theme"];
             if (deck.counts.images) bits.push(deck.counts.images + " image" + (deck.counts.images === 1 ? "" : "s") + " with alt text");
             if (deck.counts.tables) bits.push(deck.counts.tables + " table" + (deck.counts.tables === 1 ? "" : "s") + " with header rows");
             if (deck.counts.bullets) bits.push("real bullet lists");
@@ -3563,6 +3627,28 @@ Return ONLY JSON:
         title: t("pdf_audit.pptx_export.title") || "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout \u2014 not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."
       },
       "\u{1F4FD} PowerPoint (.pptx)"
+    ), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: pptxThemeId,
+        onChange: (e) => {
+          const v = e.target.value;
+          setPptxThemeId(v);
+          try {
+            localStorage.setItem("allo_pptx_theme", v);
+          } catch (_) {
+          }
+        },
+        "aria-label": t("pdf_audit.pptx_theme_aria") || "PowerPoint export theme",
+        title: t("pdf_audit.pptx_theme_title") || "Slide theme for the PowerPoint export. All presets are contrast-checked (WCAG AA); the AI option matches your topic, with legibility enforced locally either way.",
+        className: "px-2 py-2.5 bg-orange-50 text-orange-700 rounded-xl text-[11px] font-bold border border-orange-200 hover:bg-orange-100 transition-colors"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "classic" }, "\u{1F3A8} Classic Light"),
+      /* @__PURE__ */ React.createElement("option", { value: "midnight" }, "\u{1F319} Midnight"),
+      /* @__PURE__ */ React.createElement("option", { value: "sunrise" }, "\u{1F305} Sunrise"),
+      /* @__PURE__ */ React.createElement("option", { value: "forest" }, "\u{1F332} Forest"),
+      /* @__PURE__ */ React.createElement("option", { value: "highcontrast" }, "\u25D0 High Contrast"),
+      /* @__PURE__ */ React.createElement("option", { value: "ai" }, "\u2728 AI: match my topic")
     ), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const blob = new Blob([pdfFixResult.accessibleHtml], { type: "text/html" });
       const url = URL.createObjectURL(blob);

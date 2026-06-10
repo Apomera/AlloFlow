@@ -1508,6 +1508,12 @@
     "tagged_pdf_failed": "Tagged PDF failed: ",
     "building_accessible_docx": "Building accessible Word file…",
     "building_accessible_pptx": "Building accessible PowerPoint…",
+    "pptx_ai_theme": "🎨 Asking AI for a topic-matched palette (legibility enforced locally)…",
+    "make_accessible_fixing": "✨ Audit done — remediating automatically (no clicks needed)…",
+    "tagged_pdf_saved_see_report": "📄 Tagged PDF saved — the full report is pinned above the download buttons (✕ to dismiss).",
+    "preview_not_ready": "Preview not ready yet — wait for it to render, then try again.",
+    "no_open_image_slot": "No open image slot left in the preview — drag the thumbnail onto a specific image to replace it instead.",
+    "extracted_image_inserted": "🖼 Inserted into the first open image slot — drag a thumbnail instead if you want a different spot.",
     "accessible_html_downloaded": "Accessible HTML downloaded",
     "audit_trail_downloaded_open_any": "Audit trail downloaded — open in any browser to verify integrity.",
     "audit_trail_generation_failed": "Audit trail generation failed: ",
@@ -4286,7 +4292,15 @@
     },
     "one_click": {
       "label": "Make Accessible",
-      "desc": "Recommended one-click path: audits, fixes, re-verifies until the target score, then prepares your accessible downloads — all with the default settings. The panels below are optional fine-tuning."
+      "badge": "fully automatic — audit, fix, verify, repeat to target",
+      "desc": "One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use \"Run Audit\" below, review the results, then click Fix & Verify yourself."
+    },
+    "run_audit_label": "Run Audit (step 1 of 2)",
+    "manual_path_explainer": "\"Run Audit\" scores the document and shows what needs fixing — you then review and click Fix & Verify yourself (step 2). \"Make Accessible\" above does both steps plus re-checking, automatically. \"Text Extraction\" just pulls the raw text for content generation.",
+    "tagged_report": {
+      "heading": "Tagged PDF report",
+      "close_aria": "Dismiss tagged-PDF report",
+      "note": "This panel stays until you dismiss it. The same details ship inside the Adobe-style A11y Report download."
     },
     "tagtree": {
       "label": "Pre-existing tag structure",
@@ -4573,6 +4587,8 @@
     "pptx_export": {
       "title": "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout — not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."
     },
+    "pptx_theme_aria": "PowerPoint export theme",
+    "pptx_theme_title": "Slide theme for the PowerPoint export. All presets are contrast-checked (WCAG AA); the AI option matches your topic, with legibility enforced locally either way.",
     "alt_formats": {
       "intro": "Download the remediated document in accessible alternative formats"
     },
@@ -4642,7 +4658,9 @@
       "heading": "Version Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Drag a thumbnail onto any image placeholder in the preview to insert it, or click \"📷 Upload\" inside a placeholder and choose \"Use extracted image\"."
+      "drag_hint": "Drag a thumbnail onto any image placeholder in the preview to insert it, or click \"📷 Upload\" inside a placeholder and choose \"Use extracted image\".",
+      "drag_hint2": "Click a thumbnail to insert it into the first open image slot, or drag it onto any specific placeholder or image in the preview. ×N = the same image appeared on N pages (usually a letterhead or logo).",
+      "insert_aria": "Insert extracted image into the first open slot"
     },
     "toolbar": {
       "aria": "Text formatting",

@@ -19,7 +19,9 @@ const cut = (startMarker: string, endMarker: string) => {
 const HELPERS =
   cut('function _htmlToDocxSpec(html) {', '// end _htmlToDocxSpec') + '\n' +
   cut('function _docxSpecToSlides(spec) {', '// end _docxSpecToSlides') + '\n' +
-  cut('async function _buildPptxBlobFromSlides(deck, P) {', '\n// Merge multiple TTS audio Blobs');
+  // Start at the theme block so _PPTX_THEMES/_sanitizePptxTheme/_pptxContrast
+  // come along with the builder (its signature now takes an optional theme).
+  cut('// ── Accessible PPTX themes ──', '\n// Merge multiple TTS audio Blobs');
 
 const FIXTURE_HTML = `<!DOCTYPE html><html lang="en"><head><title>Deck Fixture</title></head><body><main>
 <h1>Photosynthesis Basics</h1>

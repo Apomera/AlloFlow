@@ -1508,6 +1508,7 @@
     "tagged_pdf_failed": "Tagged PDF failed: ",
     "building_accessible_docx": "Building accessible Word file…",
     "building_accessible_pptx": "Building accessible PowerPoint…",
+    "pptx_ai_theme": "🎨 Asking AI for a topic-matched palette (legibility enforced locally)…",
     "make_accessible_fixing": "✨ Audit done — remediating automatically (no clicks needed)…",
     "tagged_pdf_saved_see_report": "📄 Tagged PDF saved — the full report is pinned above the download buttons (✕ to dismiss).",
     "preview_not_ready": "Preview not ready yet — wait for it to render, then try again.",
@@ -4586,6 +4587,8 @@
     "pptx_export": {
       "title": "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout — not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."
     },
+    "pptx_theme_aria": "PowerPoint export theme",
+    "pptx_theme_title": "Slide theme for the PowerPoint export. All presets are contrast-checked (WCAG AA); the AI option matches your topic, with legibility enforced locally either way.",
     "alt_formats": {
       "intro": "Download the remediated document in accessible alternative formats"
     },
