@@ -88,13 +88,20 @@ const createGeminiAPI = (deps) => {
         const modelMatch = msg.match(/models\/([a-z0-9.\-]+)/i);
         return { kind: 'config', userMessage: 'Gemini model name is not recognized by the API (deploy-side configuration error).', model: modelMatch ? modelMatch[1] : null };
       }
-      // Transient: 5xx / network / abort-ish.
+      // Transient: 5xx / network / abort-ish / truncated-or-empty body.
+      // 'Unexpected end of input' is JSON.parse on an empty/cut-off response —
+      // the retry layers recover it, so it must classify as transient (it was
+      // landing in user error reports 15x per remediation while the pipeline
+      // succeeded; user-testing finding 2026-06-10).
       if (
         msg.match(/HTTP 5\d\d/) ||
         lower.includes('failed to fetch') ||
         lower.includes('networkerror') ||
         lower.includes('timed out') ||
         lower.includes('etimedout') ||
+        lower.includes('unexpected end of input') ||
+        lower.includes('empty response body') ||
+        lower.includes('truncated/invalid json response body') ||
         msg.includes('408')
       ) {
         return { kind: 'transient', userMessage: 'Gemini API temporarily unavailable.', model: null };
@@ -395,7 +402,17 @@ const createGeminiAPI = (deps) => {
           }
         }
 
-        const data = await response.json();
+        // Read the body as text first: response.json() on an empty/cut-off body
+        // throws a bare 'Unexpected end of input' SyntaxError that classified as
+        // 'other' and spammed error reports. Name the condition so the
+        // classifier routes it to 'transient' and the retry layers handle it.
+        const _rawBody = await response.text();
+        if (!_rawBody || !_rawBody.trim()) {
+          throw new Error('Empty response body from Gemini (transient; the retry layer handles this)');
+        }
+        let data;
+        try { data = JSON.parse(_rawBody); }
+        catch (e) { throw new Error('Truncated/invalid JSON response body from Gemini (transient; the retry layer handles this): ' + (e && e.message)); }
         // Record requested→served for the Model Diagnostics UI. data.modelVersion
         // is Google's report of what model fulfilled this request — it can
         // differ from _modelUsed if the API silently routed an alias.
@@ -465,7 +482,15 @@ const createGeminiAPI = (deps) => {
       } catch (err) {
         if (err && err.name === 'AbortError') throw err;
         const cls = _classifyGeminiError(err);
-        console.error(`[callGemini] Error caught (${cls.kind}):`, err.message);
+        // Transient/other errors are usually recovered by the retry layers —
+        // log as warnings so they don't flood the user-facing error report
+        // while the pipeline is succeeding. Real classes (quota/auth/config/
+        // refusal) stay console.error and keep their banners.
+        if (cls.kind === 'transient' || cls.kind === 'other') {
+          console.warn(`[callGemini] ${cls.kind} error (retry layers usually recover this — not an app failure by itself):`, err.message);
+        } else {
+          console.error(`[callGemini] Error caught (${cls.kind}):`, err.message);
+        }
         // Refusals are surfaced gracefully — the caller asked for content the
         // model declined to produce. Return a placeholder so the pipeline
         // keeps moving instead of crashing the whole audit.
