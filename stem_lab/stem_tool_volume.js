@@ -598,7 +598,7 @@ window.StemLab = window.StemLab || {
               }, h('div', { style: {
                 position: 'absolute', width: '100%', height: cubeUnit+'px',
                 transform: 'rotateX(90deg) translateZ('+cubeUnit/2+'px)',
-                background: 'transparent', border: 'none', boxSizing: 'border-box'
+                background: 'hsla(220,15%,60%,0.10)', border: '1px dashed hsla(220,20%,60%,0.22)', boxSizing: 'border-box'
               }})));
             })(p[0], p[1], p[2]+1);
           }
@@ -977,7 +977,7 @@ window.StemLab = window.StemLab || {
         var u = Math.min(50, 280 / maxDim);
         // Container size
         var contW = (2 * (l + w)) * u + 60;
-        var contH = (2 * w + hh) * u + 60;
+        var contH = (2 * (w + hh)) * u + 60; // flat net spans Top(w)+Front(h)+Bottom(w)+Back(h) — Back face was overflowing the panel
         var t = netFold; // 0 (flat) to 1 (folded)
         // Each face has an unfolded position and a rotation that morphs toward folded
         // We render six faces as positioned divs and rotate each by t * 90deg around
@@ -1334,7 +1334,8 @@ window.StemLab = window.StemLab || {
                 challenge: null, answer: '', feedback: null, showLayers: null,
                 builderChallenge: null, builderFeedback: null,
                 paintSurfaceArea: false,
-                wpAnswer: '', wpFeedback: null, wpCtxIdx: 0
+                wpAnswer: '', wpFeedback: null, wpCtxIdx: 0,
+                shape: 'prism', showCrossSection: false, showNet: false, showCompare: false, netFold: 0
               });
               announceToSR('Volume explorer reset');
             },

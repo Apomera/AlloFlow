@@ -625,8 +625,8 @@ window.StemLab = window.StemLab || {
         var px = cx + (rayLen * 0.7) * Math.cos(-pr);
         var py = cy + (rayLen * 0.7) * Math.sin(-pr);
         return h('g', { key: 'pin' + i },
-          h('circle', { cx: px, cy: py, r: 6, fill: '#fbbf24', fillOpacity: 0.7, stroke: '#f59e0b', strokeWidth: 1.5 }),
-          h('text', { x: px, y: py + 3, textAnchor: 'middle', className: 'text-[11px] fill-amber-900 font-bold select-none' }, pin.deg + '\u00B0')
+          h('circle', { cx: px, cy: py, r: 10, fill: '#fbbf24', fillOpacity: 0.7, stroke: '#f59e0b', strokeWidth: 1.5 }),
+          h('text', { x: px, y: py + 3, textAnchor: 'middle', className: 'text-[8px] fill-amber-900 font-bold select-none' }, pin.deg + '\u00B0')
         );
       });
 
@@ -769,13 +769,13 @@ window.StemLab = window.StemLab || {
                 fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5
               }),
               // Right angle marker
-              angleValue === 90 && h('rect', { x: cx + 14, y: cy - 14, width: 12, height: 12, fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
+              angleValue === 90 && h('rect', { x: cx, y: cy - 14, width: 14, height: 14, fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
               // Angle label in center
               h('text', { x: cx + arcR * 0.5 * Math.cos(-rad / 2), y: cy + arcR * 0.5 * Math.sin(-rad / 2) + 4, textAnchor: 'middle', className: 'text-sm fill-purple-700 font-bold select-none' },
                 estimateActive ? '?' : convertedAngle
               ),
               // Draggable handle
-              h('circle', { cx: rayEndX, cy: rayEndY, r: 14, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag }),
+              h('circle', { cx: rayEndX, cy: rayEndY, r: 14, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag }),
               // Center dot
               h('circle', { cx: cx, cy: cy, r: 4, fill: '#334155' }),
               // Vertex label
@@ -789,7 +789,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-4 gap-2' },
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
               h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Angle'),
-              h('div', { className: 'text-xl font-bold text-purple-800' }, convertedAngle)
+              h('div', { className: 'text-xl font-bold text-purple-800' }, estimateActive ? '?' : convertedAngle)
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
               h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Type'),
@@ -797,7 +797,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
               h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Explement'),
-              h('div', { className: 'text-base font-bold text-slate-700' }, explementary + '\u00B0')
+              h('div', { className: 'text-base font-bold text-slate-700' }, estimateActive ? '?' : explementary + '\u00B0')
             ),
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center col-span-1' },
               h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, 'Unit'),
@@ -1753,8 +1753,8 @@ window.StemLab = window.StemLab || {
             h('line', { x1: cx, y1: topCy, x2: topCx, y2: topCy, stroke: '#dc2626', strokeWidth: 2 }),
             h('text', { x: (cx + topCx)/2, y: topCy - 5, textAnchor: 'middle', fontSize: 9, fill: '#dc2626', fontWeight: 'bold' }, 'opp ≈ ' + opp.toFixed(2) + ' m'),
             // Angle arc at base
-            h('path', { d: 'M ' + (cx + 12) + ',' + baseY + ' A 12,12 0 0,0 ' + (cx + 12 * Math.cos(Math.PI/2 - thetaRad)) + ',' + (baseY - 12 * Math.sin(Math.PI/2 - thetaRad)), fill: 'none', stroke: '#7c3aed', strokeWidth: 2 }),
-            h('text', { x: cx + 20, y: baseY - 5, fontSize: 10, fill: '#7c3aed', fontWeight: 'bold' }, 'θ = ' + theta.toFixed(1) + '°'),
+            h('path', { d: 'M ' + cx + ',' + (baseY - 26) + ' A 26,26 0 0,1 ' + (cx + 26 * Math.sin(thetaRad)).toFixed(1) + ',' + (baseY - 26 * Math.cos(thetaRad)).toFixed(1), fill: 'none', stroke: '#7c3aed', strokeWidth: 2 }),
+            h('text', { x: cx + 14, y: baseY - 30, fontSize: 10, fill: '#7c3aed', fontWeight: 'bold' }, 'θ = ' + theta.toFixed(1) + '°'),
             // Caption
             h('text', { x: 130, y: 215, textAnchor: 'middle', fontSize: 9, fill: '#475569' }, 'Tower of Pisa — actual lean ≈ 4°')
           );

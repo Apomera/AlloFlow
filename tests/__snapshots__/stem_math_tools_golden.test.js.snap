@@ -1,0 +1,121 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for areamodel 1`] = `
+{
+  "buttons": 20,
+  "circles": 0,
+  "inputs": 6,
+  "lengthBucket": 75,
+  "rects": 0,
+  "sha": "c0d96be2f0cf50ff",
+  "svgs": 0,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for base10 1`] = `
+{
+  "buttons": 51,
+  "circles": 0,
+  "inputs": 1,
+  "lengthBucket": 73,
+  "rects": 0,
+  "sha": "a81d6323efeca067",
+  "svgs": 0,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for coordinate 1`] = `
+{
+  "buttons": 14,
+  "circles": 0,
+  "inputs": 1,
+  "lengthBucket": 49,
+  "rects": 0,
+  "sha": "f26bd4e54e5d53c4",
+  "svgs": 1,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for fractionViz 1`] = `
+{
+  "buttons": 33,
+  "circles": 1,
+  "inputs": 2,
+  "lengthBucket": 66,
+  "rects": 0,
+  "sha": "bad7ae6fcaf62cc7",
+  "svgs": 1,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for fractions 1`] = `
+{
+  "buttons": 33,
+  "circles": 1,
+  "inputs": 2,
+  "lengthBucket": 66,
+  "rects": 0,
+  "sha": "bad7ae6fcaf62cc7",
+  "svgs": 1,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for moneyMath 1`] = `
+{
+  "buttons": 23,
+  "circles": 0,
+  "inputs": 0,
+  "lengthBucket": 65,
+  "rects": 0,
+  "sha": "1d0daa12bf3e2cbb",
+  "svgs": 0,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for multtable 1`] = `
+{
+  "buttons": 22,
+  "circles": 0,
+  "inputs": 4,
+  "lengthBucket": 144,
+  "rects": 0,
+  "sha": "c21e0073a0465848",
+  "svgs": 0,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for numberline 1`] = `
+{
+  "buttons": 15,
+  "circles": 0,
+  "inputs": 5,
+  "lengthBucket": 53,
+  "rects": 0,
+  "sha": "7d2652a8106da290",
+  "svgs": 1,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for protractor 1`] = `
+{
+  "buttons": 69,
+  "circles": 3,
+  "inputs": 4,
+  "lengthBucket": 135,
+  "rects": 0,
+  "sha": "031d0f6d40f7daad",
+  "svgs": 1,
+}
+`;
+
+exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for volume 1`] = `
+{
+  "buttons": 26,
+  "circles": 0,
+  "inputs": 9,
+  "lengthBucket": 155,
+  "rects": 0,
+  "sha": "e09ff7cd68f8d8b5",
+  "svgs": 0,
+}
+`;

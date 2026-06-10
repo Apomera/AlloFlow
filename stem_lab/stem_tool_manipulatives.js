@@ -1390,7 +1390,7 @@ window.StemLab = window.StemLab || {
               (filled ? 'border-orange-600' : 'border-orange-300 bg-white hover:bg-orange-50'),
             style: filled ? { background: palette.tenFrame } : {}
           },
-            filled && h('span', { className: 'text-2xl' }, '●')
+            filled && h('span', { className: 'text-2xl', style: { color: '#fff', textShadow: '0 2px 3px rgba(0,0,0,0.4)' } }, '●')
           ));
         }
         return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
@@ -1531,6 +1531,7 @@ window.StemLab = window.StemLab || {
               style: {
                 width: 36, height: 36, borderRadius: '50%',
                 background: color, border: '2px solid #0f172a', cursor: 'grab',
+                boxShadow: 'inset 0 4px 5px rgba(255,255,255,0.35), inset 0 -4px 5px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.3)',
                 transition: 'transform 0.1s ease',
                 opacity: _m.ctDrag === kind ? 0.5 : 1
               }
@@ -1708,6 +1709,7 @@ window.StemLab = window.StemLab || {
             disks.push(h('div', { key: 'd-' + place + '-' + di, style: {
               width: 38, height: 38, borderRadius: '50%',
               background: color, border: '2px solid #0f172a',
+              boxShadow: 'inset 0 2px 3px rgba(255,255,255,0.4), inset 0 -3px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.35)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontWeight: 'bold', fontSize: 10,
               marginTop: -8
@@ -2098,7 +2100,7 @@ window.StemLab = window.StemLab || {
             ),
             patternBlocks.length === 0
               ? h('p', { className: 'text-[11px] italic text-slate-500 text-center py-4' }, 'Empty workspace. Click a shape above to add it. Click a workspace shape to remove it.')
-              : h('div', { className: 'flex flex-wrap gap-1 justify-center' },
+              : h('div', { className: 'flex flex-wrap gap-1 justify-center', style: { filter: 'drop-shadow(0 2px 2px rgba(15,23,42,0.25))' } },
                   patternBlocks.map(function(b, i) {
                     var shape = PB_SHAPES.find(function(s) { return s.id === b.type; });
                     if (!shape) return null;
@@ -5533,8 +5535,8 @@ window.StemLab = window.StemLab || {
                 border: kind.indexOf('Neg') >= 0 ? '2.5px dashed #0f172a' : '2px solid #0f172a',
                 borderRadius: 3, margin: 2, padding: 0, cursor: 'pointer',
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 900, fontSize: kind === 'unit' || kind === 'unitNeg' ? 9 : 11,
-                textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                color: color === '#fef2f2' ? '#0f172a' : '#fff', fontWeight: 900, fontSize: kind === 'unit' || kind === 'unitNeg' ? 9 : 11,
+                textShadow: color === '#fef2f2' ? 'none' : '0 1px 2px rgba(0,0,0,0.5)' // negative tiles are near-white — white labels were invisible
               }
             }, kind === 'unit' || kind === 'unitNeg' ? (kind === 'unit' ? '1' : '−1') :
                kind === 'x' || kind === 'xNeg' ? (kind === 'x' ? 'x' : '−x') :

@@ -1072,7 +1072,8 @@ window.StemLab = window.StemLab || {
               for (var i = 0; i <= fdDen; i++) {
                 var tickFrac = fdMin + i * fdLen / fdDen;
                 var x = PAD + (i / fdDen) * (W - 2 * PAD);
-                var fracLabel = (i === 0) ? '0' : (i === fdDen && fdMax === 1 ? '1' : (i + '/' + fdDen));
+                var tickNum = Math.round(tickFrac * fdDen);
+                var fracLabel = (tickNum % fdDen === 0) ? ('' + (tickNum / fdDen)) : (tickNum + '/' + fdDen); // label from tick VALUE, not index — was wrong off the 0..1 range
                 var decLabel = '' + (Math.round(tickFrac * 1000) / 1000);
                 var fracTextProps = {
                   x: x, y: rotate ? 56 : 60, textAnchor: rotate ? 'end' : 'middle',
@@ -1841,7 +1842,8 @@ window.StemLab = window.StemLab || {
                 explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: 'Explore \u2014 the visual home for number sense',  hint: 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.' },
                 challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: 'Challenges \u2014 estimate, locate, compare',          hint: 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Studies (Siegler 2009) show number-line precision predicts later math success better than rote facts.' },
                 skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: 'Skip Count \u2014 the bridge to multiplication',     hint: '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.' },
-                fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\u00BD', title: 'Fractions \u2194 Decimals, same point, two names', hint: 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000\u2026 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.' }
+                fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\u00BD', title: 'Fractions \u2194 Decimals, same point, two names', hint: 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000\u2026 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.' },
+                magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: 'Compare — magnitude discovery', hint: 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.' }
               };
               var meta = TAB_META[tab] || TAB_META.explore;
               return h('div', {
@@ -2009,9 +2011,12 @@ window.StemLab = window.StemLab || {
                       c2.fillStyle = '#fbbf24'; c2.font = 'bold 10px sans-serif'; c2.textAlign = 'center';
                       c2.fillText('|' + current + '| = ' + Math.abs(current), (W / 2 + cpx) / 2, midY - 20);
                       c2.fillStyle = '#dc2626';
+                      c2.shadowColor = 'rgba(239,68,68,0.8)';
+                      c2.shadowBlur = 10;
                       c2.beginPath();
                       c2.arc(cpx, midY, 6, 0, Math.PI * 2);
                       c2.fill();
+                      c2.shadowBlur = 0;
                       c2.fillStyle = 'rgba(0,0,0,0.85)';
                       c2.fillRect(8, H - 14, W - 16, 12);
                       c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';

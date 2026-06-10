@@ -560,7 +560,7 @@ window.StemLab = window.StemLab || {
           ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: riseMidY + 3, className: 'text-[11px] fill-red-500 font-bold' }, '\u0394y=' + ln.slope.rise),
           h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.from.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.6 }),
           ln.slope.run !== 0 && h('text', { x: runMidX, y: runY - 6, textAnchor: 'middle', className: 'text-[11px] fill-blue-500 font-bold' }, '\u0394x=' + ln.slope.run),
-          h('rect', { x: midX - 24, y: midY - 10, width: 48, height: 18, rx: 5, fill: '#6366f1', opacity: 0.9 }),
+          h('rect', { x: midX - Math.max(48, ('m=' + ln.slope.display).length * 7 + 10) / 2, y: midY - 10, width: Math.max(48, ('m=' + ln.slope.display).length * 7 + 10), height: 18, rx: 5, fill: '#6366f1', opacity: 0.9 }),
           h('text', { x: midX, y: midY + 3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '11px', fontWeight: 'bold' } }, 'm=' + ln.slope.display),
           h('text', { x: midX, y: midY + 16, textAnchor: 'middle', className: 'text-[11px] fill-indigo-400 font-mono' }, eq)
         );
@@ -693,7 +693,7 @@ window.StemLab = window.StemLab || {
 
       // Plotted points
       var pointElements = gridPoints.map(function(p, i) {
-        return h('circle', { key: 'pt' + i, cx: toSvg(p.x, 'x'), cy: toSvg(p.y, 'y'), r: 5, fill: connectFirst === i ? '#6366f1' : '#0891b2', stroke: '#fff', strokeWidth: 2, className: 'cursor-pointer' });
+        return h('circle', { key: 'pt' + p.x + '_' + p.y, cx: toSvg(p.x, 'x'), cy: toSvg(p.y, 'y'), r: 5, fill: connectFirst === i ? '#6366f1' : '#0891b2', stroke: '#fff', strokeWidth: 2, className: 'cursor-pointer allo-cg-pop' });
       });
       var labelElements = gridPoints.map(function(p, i) {
         return h('text', { key: 'lb' + i, x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') - 8, className: 'text-[11px] fill-cyan-700 font-bold' }, '(' + p.x + ',' + p.y + ')');
@@ -2138,7 +2138,7 @@ window.StemLab = window.StemLab || {
 
         // === H7b'' inquiry widget: quadrant discovery ===
         cgTab === 'quadHunt' && (function() {
-          var iq = d._quadHunt || { x: 3, y: 4, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var iq = _cg._quadHunt || { x: 3, y: 4, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }; // `d` was undeclared here — Quadrant Hunt tab crashed on render
           function setIQ(patch) { updCG({ _quadHunt: Object.assign({}, iq, patch) }); }
           var quadrant;
           if (iq.x === 0 && iq.y === 0) quadrant = 'origin';

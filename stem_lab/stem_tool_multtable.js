@@ -1054,7 +1054,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
             h('button', { onClick: function() { extUpd({ showBadges: false }); },
-              className: 'text-xs text-slate-600 hover:text-slate-600'
+              className: 'text-xs text-slate-600 hover:text-slate-800'
             }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
@@ -1078,7 +1078,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
             h('button', { onClick: function() { extUpd({ showAI: false }); },
-              className: 'text-xs text-slate-600 hover:text-slate-600'
+              className: 'text-xs text-slate-600 hover:text-slate-800'
             }, '\u2715')
           ),
           _ext.aiLoading
@@ -1327,7 +1327,7 @@ window.StemLab = window.StemLab || {
         // ── 12×12 Grid ──
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto' },
           h('table', { className: 'border-collapse w-full text-center' },
-            h('caption', { className: 'sr-only' }, 'Try Again'), h('thead', null,
+            h('caption', { className: 'sr-only' }, '12 by 12 multiplication table'), h('thead', null,
               h('tr', null,
                 h('th', { scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-pink-400' }, '\u00D7'),
                 Array.from({ length: maxNum }).map(function(_, c) {
@@ -1500,7 +1500,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'text-[11px] text-slate-600 text-center' },
           h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), ' Perfect squares',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), ' Hover cross',
-          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1' }), ' Selected',
+          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-700 rounded mr-1' }), ' Selected',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-amber-400 border border-amber-500 rounded mr-1' }), ' Correct answer'
         ),
         // === H7b'' inquiry widget: fact mastery ===
