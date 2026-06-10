@@ -1370,6 +1370,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button onClick={() => startPipelineTour('triage')} className="ml-2 text-indigo-600 underline font-bold hover:text-indigo-800" data-help-ignore="true">✨ {t('pdf_audit.tour.triage_cta') || '60-second tour'}</button>
                     )}
                   </p>
+                  {/* ADA Title II context (2026-06-10): factual, dated, cited —
+                      and the DOJ rationale IS AlloFlow's design stance, so the
+                      positioning writes itself without overclaiming. */}
+                  <details className="text-left mt-2 text-[11px] text-slate-500">
+                    <summary className="cursor-pointer text-center hover:text-slate-700">ℹ️ {t('pdf_audit.title2.summary') || 'Why schools are required to do this (ADA Title II)'}</summary>
+                    <p className="mt-1.5 px-2">{t('pdf_audit.title2.body') || 'The US Department of Justice’s ADA Title II rule requires WCAG 2.1 AA digital accessibility from state and local government entities — including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence — every document you fix now is one fewer at the deadline. (Informational, not legal advice.)'}</p>
+                  </details>
                 </div>
 
                 <details data-help-key="pdf_audit_view_settings_panel" className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">

@@ -13066,11 +13066,12 @@ tr { page-break-inside: avoid; }
   // Returns: Uint8Array of the tagged PDF bytes, or throws.
   // Stage 7 substitute-font bytes, cached across createTaggedPdf CALLS (batch
   // mode tags N files in one session — refetching Liberation/DejaVu per file
-  // wasted bandwidth). True TTF subsetting deliberately deferred: our simple-
-  // TrueType dicts need a hand-rolled cmap, and the failure mode is silently
-  // INVISIBLE text in student documents (veraPDF validates structure, not
-  // rendering) — not worth ~200-400 KB/file until a render-verification
-  // harness exists.
+  // wasted bandwidth). NOTE: true TTF subsetting was deferred until a
+  // render-verification harness existed, BECAUSE its failure mode is silently
+  // invisible text. Both now exist: the harness
+  // (tests/e2e/render_verification_golden.spec.ts, ink-coverage bounds) and
+  // the subsetter (the Stage 7 SUBSETTING block below, with a fontsSubset>=1
+  // canary so a silent full-font fallback can't masquerade as success).
   const _stage7FontByteCache = {};
   // ── Stage 7 font SUBSETTING (2026-06-12) ──
   // Full substitute TTFs cost ~150–700 KB per style, but only the WinAnsi
@@ -15212,6 +15213,7 @@ tr { page-break-inside: avoid; }
     // marker. No-leaves edge (thin docs): fall back to the scanned gate.
     let _orphanedLeafCountAtStamp = 0;
     let _reachableLeafCountAtStamp = 0;
+    let _orphanWalkCrashed = false; // fail-CLOSED: a crashed walk must never declare
     const _orphanRolesAtStamp = [];
     try {
       // Reachability by REF IDENTITY over KNOWN shapes only: every elem the
@@ -15262,10 +15264,14 @@ tr { page-break-inside: avoid; }
           }
         } catch (_) { _orphanedLeafCountAtStamp++; }
       }
-    } catch (_) {}
-    _uaDeclared = _reachableLeafCountAtStamp > 0
+    } catch (_) { _orphanWalkCrashed = true; }
+    // The audit (2026-06-10) flagged the corner this closes: a crashed walk
+    // used to leave reachable==0, which routed an OCR'd document into the
+    // groundTruthMethod fallback and could DECLARE without evidence. The
+    // declaration is an evidence claim — no completed walk, no claim.
+    _uaDeclared = !_orphanWalkCrashed && (_reachableLeafCountAtStamp > 0
       ? _orphanedLeafCountAtStamp === 0
-      : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''));
+      : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || '')));
     // Observability: surface the linkage outcome in the summary so the
     // download toast and reports can show real-world per-leaf match rates
     // (the open question for born-digital docs whose HTML the AI rewrote).
