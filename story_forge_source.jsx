@@ -3383,7 +3383,7 @@ show();
                           }`}
                           onClick={async () => {
                             if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually — clipboard unavailable`, 'error'); return; }
-                            try { await navigator.clipboard.writeText(v.term); if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }
+                            try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied — paste into your story!`, 'success'); }
                             catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy — please copy "${v.term}" manually`, 'error'); }
                           }}
                         >
@@ -3738,7 +3738,7 @@ show();
                             <button
                               onClick={async () => {
                                 if (!navigator.clipboard?.writeText) { if (addToast) addToast(`Copy "${v.term}" manually — clipboard unavailable`, 'error'); return; }
-                                try { await navigator.clipboard.writeText(v.term); if (addToast) addToast(`"${v.term}" copied!`, 'success'); }
+                                try { const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false; if (!ok) throw new Error('copy unavailable'); if (addToast) addToast(`"${v.term}" copied!`, 'success'); }
                                 catch (err) { console.warn('Clipboard write failed:', err); if (addToast) addToast(`Couldn't copy — please copy "${v.term}" manually`, 'error'); }
                               }}
                               className={`font-bold underline decoration-dotted cursor-pointer ${layoutMode === 'dark' ? 'text-cyan-500 hover:text-cyan-300' : 'text-rose-600 hover:text-rose-800'}`}

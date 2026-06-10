@@ -2288,11 +2288,11 @@ Return ONLY JSON:
     return null;
   };
   const exportStorybook = () => {
-    // FERPA reminder: the storybook is de-identified (codename, never a real name), but it
-    // bundles the student's full story and — if they recorded it — their VOICE narration in a
-    // single downloadable file, so a local download is a confirmed, informed action (mirrors
-    // the exportDraftJSON gate below).
-    if (!window.confirm(`Export this storybook as a file?\n\nThe file is de-identified — it uses the codename, not a real name — but it contains the student's complete story and any voice narration they recorded. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
+    if (!window.confirm(`Export this storybook as a file?
+
+The file is de-identified \u2014 it uses the codename, not a real name \u2014 but it contains the student's complete story and any voice narration they recorded. Save it to a school-approved location and handle it per your district's student-records policy.
+
+Continue?`)) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || "My Story");
     const author = escapeHtml(authorName || "A Creative Student");
     const date = (/* @__PURE__ */ new Date()).toLocaleDateString();
@@ -2988,7 +2988,8 @@ Continue?`)) return;
             return;
           }
           try {
-            await navigator.clipboard.writeText(v.term);
+            const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false;
+            if (!ok) throw new Error("copy unavailable");
             if (addToast) addToast(`"${v.term}" copied \u2014 paste into your story!`, "success");
           } catch (err) {
             console.warn("Clipboard write failed:", err);
@@ -3189,7 +3190,8 @@ Continue?`)) return;
             return;
           }
           try {
-            await navigator.clipboard.writeText(v.term);
+            const ok = window.alloCopyText ? await window.alloCopyText(v.term) : false;
+            if (!ok) throw new Error("copy unavailable");
             if (addToast) addToast(`"${v.term}" copied!`, "success");
           } catch (err) {
             console.warn("Clipboard write failed:", err);

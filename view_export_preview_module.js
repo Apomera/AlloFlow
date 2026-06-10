@@ -924,10 +924,7 @@ function ExportPreviewView(props) {
         const md = out.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
         let copied = false;
         try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(md);
-            copied = true;
-          }
+          copied = window.alloCopyText ? await window.alloCopyText(md) : false;
         } catch (_) {
         }
         const blob = new Blob([md], { type: "text/markdown" });

@@ -171,10 +171,23 @@ function EducatorHubModal(props) {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText("AlloFlow platform probe");
-        add("Clipboard", "pass", "writeText OK (this probe just copied a test string)");
-      } else add("Clipboard", "warn", "navigator.clipboard unavailable \u2014 copy buttons fall back to manual selection");
+        add("Clipboard (API)", "pass", "writeText OK");
+      } else add("Clipboard (API)", "warn", "navigator.clipboard unavailable");
     } catch (e) {
-      add("Clipboard", "warn", "writeText rejected: " + e.message + " \u2014 likely needs a direct user gesture or permission");
+      add("Clipboard (API)", "warn", "writeText rejected: " + String(e && e.message).slice(0, 120));
+    }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = "AlloFlow probe";
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;left:-9999px;top:0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      add("Clipboard (fallback)", ok ? "pass" : "warn", ok ? "execCommand copy works \u2014 copy buttons function even where the API is blocked" : "execCommand returned false");
+    } catch (e) {
+      add("Clipboard (fallback)", "fail", String(e && e.message).slice(0, 120));
     }
     add("Dialogs (confirm/prompt)", "info", "typeof confirm = " + typeof window.confirm + ' \u2014 use the "Test dialog" button for the real answer (a sandbox can define it but silently return false)');
     const cdns = [
@@ -291,7 +304,7 @@ function EducatorHubModal(props) {
   ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_community_catalog_card", onClick: () => {
     setShowEducatorHub(false);
     setIsCommunityCatalogOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", role: "img", "aria-label": t("educator_hub.books_emoji_aria") || "books" }, "\u{1F4DA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.community_catalog_title") || "Community Catalog"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1" }, t("educator_hub.community_catalog_desc") || "Browse open-licensed lessons from the AlloFlow community, or submit your own for review"))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "educator_hub_platform_check_card", className: "flex flex-col gap-2 p-4 bg-gradient-to-br from-slate-50 to-zinc-50 border border-slate-400 rounded-xl col-span-full" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", role: "img", "aria-label": t("educator_hub.microscope_emoji_aria") || "microscope" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-slate-800" }, t("educator_hub.platform_check_title") || "Platform Check"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("educator_hub.platform_check_desc") || "One click tests what THIS environment can do \u2014 pop-ups, downloads, storage persistence, WebAssembly, clipboard, CDN reach. Especially useful inside Gemini Canvas, where capabilities differ from a normal browser. Copy the report and share it when something seems broken.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1.5 shrink-0" }, /* @__PURE__ */ React.createElement("button", { onClick: _runPlatformProbe, className: "px-3 py-1.5 bg-slate-700 text-white rounded-lg text-xs font-bold hover:bg-slate-800" }, "\u25B6 ", t("educator_hub.platform_check_run") || "Run checks"), /* @__PURE__ */ React.createElement("button", { "data-help-ignore": "true", onClick: () => {
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", role: "img", "aria-label": t("educator_hub.books_emoji_aria") || "books" }, "\u{1F4DA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-amber-800" }, t("educator_hub.community_catalog_title") || "Community Catalog"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1" }, t("educator_hub.community_catalog_desc") || "Browse open-licensed lessons from the AlloFlow community, or submit your own for review"))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "educator_hub_platform_check_card", className: "col-span-full flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 justify-end" }, /* @__PURE__ */ React.createElement("button", { onClick: _runPlatformProbe, className: "text-[11px] text-slate-500 hover:text-slate-700 underline decoration-dotted", title: t("educator_hub.platform_check_desc") || "Tests what this environment can do \u2014 pop-ups, downloads, storage, WebAssembly, clipboard, CDN reach. For troubleshooting; copy the report when something seems broken." }, "\u{1F52C} ", t("educator_hub.platform_check_title") || "Platform check (diagnostics)"), /* @__PURE__ */ React.createElement("button", { "data-help-ignore": "true", onClick: () => {
     let v = null;
     try {
       v = window.confirm(t("educator_hub.dialog_probe_q") || "Dialog test: click OK.");
@@ -299,7 +312,7 @@ function EducatorHubModal(props) {
       v = "threw: " + e.message;
     }
     setPlatProbe((p) => ({ when: p && p.when || (/* @__PURE__ */ new Date()).toLocaleString(), rows: [...(p && p.rows || []).filter((r) => r.name !== "Dialogs (live test)"), { name: "Dialogs (live test)", status: v === true ? "pass" : v === false ? "warn" : "fail", detail: v === true ? "confirm() returned true after OK \u2014 dialogs work" : v === false ? "confirm() returned FALSE \u2014 either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)" : String(v) }] }));
-  }, className: "px-3 py-1.5 bg-white border border-slate-400 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100" }, "\u{1F9EA} ", t("educator_hub.platform_check_dialog") || "Test dialog"))), platProbe && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-lg p-2 text-[11px]", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("educator_hub.platform_check_results") || "Results", " \u2014 ", platProbe.when), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+  }, className: "text-[11px] text-slate-500 hover:text-slate-700 underline decoration-dotted" }, "\u{1F9EA} ", t("educator_hub.platform_check_dialog") || "dialog test")), platProbe && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-lg p-2 text-[11px]", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("educator_hub.platform_check_results") || "Results", " \u2014 ", platProbe.when), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
     const txt = _probeReportText();
     try {
       await navigator.clipboard.writeText(txt);

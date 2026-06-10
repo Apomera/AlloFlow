@@ -1059,7 +1059,7 @@ function ExportPreviewView(props) {
                             } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
                             const md = out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
                             let copied = false;
-                            try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(md); copied = true; } } catch (_) {}
+                            try { copied = window.alloCopyText ? await window.alloCopyText(md) : false; } catch (_) {}
                             const blob = new Blob([md], { type: 'text/markdown' });
                             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
                             const safe = esc(title).replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').substring(0, 40) || 'lesson';

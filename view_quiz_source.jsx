@@ -796,7 +796,7 @@ var _lazyIcon = function (name) {
     function copyExplainer() {
       if (!explainerModal.text) return;
       try {
-        navigator.clipboard.writeText(explainerModal.text);
+        if (window.alloCopyText) { window.alloCopyText(explainerModal.text); } else { navigator.clipboard.writeText(explainerModal.text); }
       } catch (e) {}
     }
     function playExplainer() {

@@ -101,9 +101,19 @@ function EducatorHubModal(props) {
       add('File downloads', 'info', 'a tiny test file was triggered — if alloflow-platform-probe.txt appears in your Downloads, downloads work end-to-end');
     } catch (e) { add('File downloads', 'fail', e.message); }
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText('AlloFlow platform probe'); add('Clipboard', 'pass', 'writeText OK (this probe just copied a test string)'); }
-      else add('Clipboard', 'warn', 'navigator.clipboard unavailable — copy buttons fall back to manual selection');
-    } catch (e) { add('Clipboard', 'warn', 'writeText rejected: ' + e.message + ' — likely needs a direct user gesture or permission'); }
+      if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText('AlloFlow platform probe'); add('Clipboard (API)', 'pass', 'writeText OK'); }
+      else add('Clipboard (API)', 'warn', 'navigator.clipboard unavailable');
+    } catch (e) { add('Clipboard (API)', 'warn', 'writeText rejected: ' + String(e && e.message).slice(0, 120)); }
+    // The execCommand fallback — what every copy button actually uses when
+    // the API is policy-blocked (the Canvas case, probe-verified 2026-06-10).
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = 'AlloFlow probe'; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      add('Clipboard (fallback)', ok ? 'pass' : 'warn', ok ? 'execCommand copy works — copy buttons function even where the API is blocked' : 'execCommand returned false');
+    } catch (e) { add('Clipboard (fallback)', 'fail', String(e && e.message).slice(0, 120)); }
     add('Dialogs (confirm/prompt)', 'info', 'typeof confirm = ' + (typeof window.confirm) + ' — use the "Test dialog" button for the real answer (a sandbox can define it but silently return false)');
     const cdns = [
       ['jsDelivr', 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json'],
@@ -255,18 +265,13 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons from the AlloFlow community, or submit your own for review'}</p>
                 </div>
               </button>
-              <div data-help-key="educator_hub_platform_check_card" className="flex flex-col gap-2 p-4 bg-gradient-to-br from-slate-50 to-zinc-50 border border-slate-400 rounded-xl col-span-full">
-                <div className="flex items-start gap-3">
-                  <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.microscope_emoji_aria') || 'microscope'}>🔬</span>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-slate-800">{t('educator_hub.platform_check_title') || 'Platform Check'}</h3>
-                    <p className="text-xs text-slate-600 mt-1">{t('educator_hub.platform_check_desc') || 'One click tests what THIS environment can do — pop-ups, downloads, storage persistence, WebAssembly, clipboard, CDN reach. Especially useful inside Gemini Canvas, where capabilities differ from a normal browser. Copy the report and share it when something seems broken.'}</p>
-                  </div>
-                  <div className="flex flex-col gap-1.5 shrink-0">
-                    <button onClick={_runPlatformProbe} className="px-3 py-1.5 bg-slate-700 text-white rounded-lg text-xs font-bold hover:bg-slate-800">▶ {t('educator_hub.platform_check_run') || 'Run checks'}</button>
-                    <button data-help-ignore="true" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
-                      setPlatProbe((p) => ({ when: (p && p.when) || new Date().toLocaleString(), rows: [...((p && p.rows) || []).filter((r) => r.name !== 'Dialogs (live test)'), { name: 'Dialogs (live test)', status: v === true ? 'pass' : (v === false ? 'warn' : 'fail'), detail: v === true ? 'confirm() returned true after OK — dialogs work' : (v === false ? 'confirm() returned FALSE — either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)' : String(v)) }] })); }} className="px-3 py-1.5 bg-white border border-slate-400 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100">🧪 {t('educator_hub.platform_check_dialog') || 'Test dialog'}</button>
-                  </div>
+              {/* Demoted to a quiet footer row (maintainer feedback 2026-06-10:
+                  it's developer-focused — keep it findable, not billboard-sized). */}
+              <div data-help-key="educator_hub_platform_check_card" className="col-span-full flex flex-col gap-2">
+                <div className="flex items-center gap-2 justify-end">
+                  <button onClick={_runPlatformProbe} className="text-[11px] text-slate-500 hover:text-slate-700 underline decoration-dotted" title={t('educator_hub.platform_check_desc') || 'Tests what this environment can do — pop-ups, downloads, storage, WebAssembly, clipboard, CDN reach. For troubleshooting; copy the report when something seems broken.'}>🔬 {t('educator_hub.platform_check_title') || 'Platform check (diagnostics)'}</button>
+                  <button data-help-ignore="true" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
+                    setPlatProbe((p) => ({ when: (p && p.when) || new Date().toLocaleString(), rows: [...((p && p.rows) || []).filter((r) => r.name !== 'Dialogs (live test)'), { name: 'Dialogs (live test)', status: v === true ? 'pass' : (v === false ? 'warn' : 'fail'), detail: v === true ? 'confirm() returned true after OK — dialogs work' : (v === false ? 'confirm() returned FALSE — either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)' : String(v)) }] })); }} className="text-[11px] text-slate-500 hover:text-slate-700 underline decoration-dotted">🧪 {t('educator_hub.platform_check_dialog') || 'dialog test'}</button>
                 </div>
                 {platProbe && (
                   <div className="bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="status">

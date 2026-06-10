@@ -753,7 +753,7 @@ Concept: ${bridgeSendText}`;
                 }
               }
             } catch (err) {
-              console.warn("[BRIDGE] Send failed with error:", err?.message, err);
+              console.error("[BRIDGE] Send failed with error:", err?.message, err);
               warnLog("Bridge send failed", err);
               addToast("Bridge send failed: " + err.message, "error");
             } finally {
@@ -1571,7 +1571,7 @@ function BridgeMessageModal(props) {
               "",
               bridgeMessage.terms?.length ? "\u{1F4D6} Key Terms: " + bridgeMessage.terms.map((t2) => typeof t2 === "object" ? t2.word + (t2.definition ? " - " + t2.definition : "") : t2).join(", ") : ""
             ].filter(Boolean).join("\n");
-            navigator.clipboard.writeText(text).then(() => addToast("Copied to clipboard!", "success")).catch(() => addToast("Copy failed", "error"));
+            (window.alloCopyText ? window.alloCopyText(text) : navigator.clipboard.writeText(text).then(() => true)).then((ok) => addToast(ok !== false ? "Copied to clipboard!" : "Copy failed \u2014 select the text manually", ok !== false ? "success" : "error")).catch(() => addToast("Copy failed \u2014 select the text manually", "error"));
           },
           style: { background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.25)", color: "#a5b4fc", padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
         },
