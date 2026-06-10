@@ -722,6 +722,12 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
         // typically produces). The tolerant fold must still link it.
         const BODY3 = 'She said "hello" - twice as planned today.';
         const BODY3_HTML = 'She said “hello” — twice as planned today.';
+        // Table cells (short-leaf tight-window path) + list items (marker-strip
+        // path: the PDF line carries the bullet, the LBody leaf text doesn't).
+        // Draw order mirrors the HTML's DOM order — the matcher is sequential.
+        const CELLS = ['Name', 'Age', 'Ada', '36'];
+        const LIST_SHORT = 'Apples';
+        const LIST_LONG = 'Bananas grow fast in tropical heat.';
         const inDoc = await PDFDocument.create();
         const pg = inDoc.addPage([612, 792]);
         const font = await inDoc.embedFont(StandardFonts.Helvetica);
@@ -729,6 +735,10 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
         pg.drawText(BODY1, { x: 50, y: 700, size: 12, font });
         pg.drawText(BODY2, { x: 50, y: 684, size: 12, font });
         pg.drawText(BODY3, { x: 50, y: 660, size: 12, font });
+        let cy = 630;
+        for (const c of CELLS) { pg.drawText(c, { x: 50, y: cy, size: 12, font }); cy -= 16; }
+        pg.drawText('• ' + LIST_SHORT, { x: 50, y: cy, size: 12, font }); cy -= 16;
+        pg.drawText('• ' + LIST_LONG, { x: 50, y: cy, size: 12, font });
         const inputBytes = await inDoc.save();
 
         const pipeline = (window as any).AlloModules.createDocPipeline({
@@ -737,7 +747,10 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           getDefaultTitle: () => 'Document', state: {},
         });
         const html = '<!DOCTYPE html><html lang="en"><head><title>Per Leaf Fixture</title></head><body><main>'
-          + '<h1>' + HEAD + '</h1><p>' + BODY1 + ' ' + BODY2 + '</p><p>' + BODY3_HTML + '</p></main></body></html>';
+          + '<h1>' + HEAD + '</h1><p>' + BODY1 + ' ' + BODY2 + '</p><p>' + BODY3_HTML + '</p>'
+          + '<table><tr><th scope="col">Name</th><th scope="col">Age</th></tr><tr><td>Ada</td><td>36</td></tr></table>'
+          + '<ul><li>' + LIST_SHORT + '</li><li>' + LIST_LONG + '</li></ul>'
+          + '</main></body></html>';
         const result = await pipeline.createTaggedPdf(inputBytes, { accessibleHtml: html }, { title: 'Per Leaf Test', lang: 'en' });
         if (!result || !result.bytes) return { error: 'createTaggedPdf returned no bytes' };
 
@@ -770,14 +783,23 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
             }
           }
           const at = obj.get(nm('ActualText'));
-          elems.push({ role, hasContent, mcrCount, actualText: at ? String(at) : '' });
+          // decodeText: non-ASCII ActualText (e.g. the '•' Lbl marker) reloads
+          // as PDFHexString — String() would yield raw hex, defeating the
+          // marker-exemption regex below.
+          elems.push({ role, hasContent, mcrCount, actualText: at ? (typeof (at as any).decodeText === 'function' ? (at as any).decodeText() : String(at)) : '' });
           if (K != null) walk(K, depth + 1);
         };
         const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
         const rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
         if (rootK != null) walk(rootK, 0);
         const leaves = elems.filter((e) => LEAF_ROLES.includes(e.role));
-        const orphaned = leaves.filter((e) => !e.hasContent);
+        // Mirror the gate's pure-marker /Lbl exemption: the bullet glyph lives
+        // in the same line-block the sibling LBody's MCR covers; one MCID maps
+        // to one StructElem, so a marker-only Lbl can never independently link.
+        // Quote chars included: standard-14 '•' round-trips as '"' through the
+        // PDFString write→reload decode (same quirk the matcher's marker set
+        // handles) — and this filter only applies to /Lbl roles.
+        const orphaned = leaves.filter((e) => !e.hasContent && !(e.role === 'Lbl' && /^(["'•◦▪‣·*–-]|\d{1,3}[.)])$/.test((e.actualText || '').replace(/^[(/]|\)$/g, '').trim())));
         const h1 = elems.find((e) => e.role === 'H1');
         const p = elems.find((e) => e.role === 'P' && e.actualText.indexOf('matches the accessible') !== -1);
         const p2 = elems.find((e) => e.role === 'P' && e.actualText.indexOf('twice as planned') !== -1);
@@ -799,10 +821,13 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
           fontsRepaired: (result.summary || {}).fontsRepaired ?? null,
           leafCount: leaves.length,
           orphanedLeafCount: orphaned.length,
-          orphanedRoles: orphaned.map((e) => e.role),
+          orphanedRoles: orphaned.map((e) => e.role + ':' + JSON.stringify(e.actualText)),
           h1Linked: !!(h1 && h1.hasContent),
           pLinked: !!(p && p.hasContent),
           pMcrCount: p ? p.mcrCount : 0,
+          thLinked: elems.filter((e) => e.role === 'TH' && e.hasContent).length,
+          tdLinked: elems.filter((e) => e.role === 'TD' && e.hasContent).length,
+          lbodyLinked: elems.filter((e) => e.role === 'LBody' && e.hasContent).length,
           typographicDriftLinked: !!(p2 && p2.hasContent),
           hasUaClaim: xmp.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1,
           uaRule: ((((result.pdfUa1Checks || {}).checks) || []).filter((c: any) => c.rule === 'PDF/UA-1 declared (XMP)').map((c: any) => c.status + ': ' + (c.message || c.detail)).join(' | ')) || '(rule missing)',
@@ -844,6 +869,15 @@ test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)'
 
   test('run-concatenation: the two-line paragraph leaf carries BOTH MCRs', () => {
     expect(perLeafSummary.pMcrCount, 'P leaf /K must hold one MCR per drawn line').toBe(2);
+  });
+
+  test('table cells link via the short-leaf tight-window path (TH×2 + TD×2)', () => {
+    expect(perLeafSummary.thLinked, 'TH leaves carrying /K→MCR').toBe(2);
+    expect(perLeafSummary.tdLinked, 'TD leaves carrying /K→MCR (Ada, 36)').toBe(2);
+  });
+
+  test('list bodies link with the leading marker stripped (short + long item)', () => {
+    expect(perLeafSummary.lbodyLinked, 'LBody leaves carrying /K→MCR').toBe(2);
   });
 
   test('evidence-based PDF/UA-1: claim DECLARED on a fully-linked born-digital file', () => {

@@ -13148,14 +13148,35 @@ tr { page-break-inside: avoid; }
       const body = htmlDoc.body || htmlDoc.documentElement;
       // Walk once collecting ordered {role, text, alt, isDecorative, level}.
       const items = _outlineItems;
+      // ── Container nesting (2026-06-10) ──
+      // Tables and lists previously flattened: Table/TR/L emitted as text-
+      // duplicating LEAVES and TH/TD/LI as their SIBLINGS — veraPDF failed
+      // five ISO 14289-1 7.2 structure rules the first time a fixture
+      // contained a table ("TH should be contained in TR", "LI in L", …).
+      // Containers now carry a key; their cells/items reference it via
+      // parentKey and the assembly nests them properly. THead/TBody/TFoot
+      // are skipped — TR directly under Table is spec-valid (ISO 32000
+      // §14.8.4.3.4) and one less layer to get wrong.
+      let _containerSeq = 0;
+      const _containerKeyByEl = new WeakMap();
+      const _nearestContainerKey = (el) => { let p = el.parentNode; while (p && p !== body) { const k = _containerKeyByEl.get(p); if (k) return k; p = p.parentNode; } return 0; };
       const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
       while (walker.nextNode()) {
         const el = walker.currentNode;
         const tag = (el.tagName || '').toLowerCase();
         const pdfRole = TAG_TO_PDF_ROLE[tag];
         if (!pdfRole) continue;
+        if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot') continue;
+        if (tag === 'table' || tag === 'tr' || tag === 'ul' || tag === 'ol') {
+          const key = ++_containerSeq;
+          const parentKey = _nearestContainerKey(el);
+          _containerKeyByEl.set(el, key);
+          items.push({ role: pdfRole, container: true, key, parentKey, text: '', level: 0 });
+          continue;
+        }
         if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(tag) && !(el.textContent || '').trim()) continue;
         items.push({
+          parentKey: (tag === 'th' || tag === 'td' || tag === 'li' || tag === 'caption') ? _nearestContainerKey(el) : 0,
           role: pdfRole,
           // 2026-06-07: removed substring(0, 400) cap on outline-walker ActualText.
           // PDF spec has no /ActualText length limit. Long paragraphs / TDs / captions /
@@ -13227,6 +13248,14 @@ tr { page-break-inside: avoid; }
           const lblRef = context.register(context.obj(lblD));
           const lBodyRef = context.register(context.obj(lBodyD));
           context.assign(liRef, context.obj({ Type: PDFName.of('StructElem'), S: PDFName.of('LI'), P: parentRef, K: context.obj([lblRef, lBodyRef]) }));
+          // Track list leaves in the unify/gate ledger like every other leaf.
+          // Before this push, lists were INVISIBLE to the evidence-based UA
+          // gate (LBody/Lbl never counted) — a blind spot, not a feature:
+          // list content could ship ActualText-only while the gate declared
+          // full linkage. Now LBody participates in Stage 4b matching and
+          // the gate; pure-marker Lbl is exempted there (see _COUNTABLE loop).
+          _unifiableLeafRefs.push({ ref: lblRef, role: 'Lbl', text: lblText });
+          _unifiableLeafRefs.push({ ref: lBodyRef, role: 'LBody', text: (item.text || '') });
           return liRef;
         }
         const d = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: parentRef };
@@ -13332,6 +13361,10 @@ tr { page-break-inside: avoid; }
       const tryNested = () => {
         const rootKids = [];
         const sectStack = [];
+        // Open table/list containers by key — cells/items reference their
+        // container via parentKey and nest INSIDE it (Table > TR > TH/TD,
+        // L > LI). Finalized after the item loop.
+        const containers = new Map();
         const pushChild = (ref) => {
           if (sectStack.length > 0) sectStack[sectStack.length - 1].kids.push(ref);
           else rootKids.push(ref);
@@ -13355,21 +13388,38 @@ tr { page-break-inside: avoid; }
           return s;
         };
         for (const it of items) {
+          if (it.container) {
+            const ref = context.nextRef();
+            const enclosing = it.parentKey ? containers.get(it.parentKey) : null;
+            const pRef = enclosing ? enclosing.ref : (sectStack.length > 0 ? sectStack[sectStack.length - 1].ref : structRootRef);
+            containers.set(it.key, { ref, kids: [], role: it.role, pRef });
+            if (enclosing) enclosing.kids.push(ref); else pushChild(ref);
+            continue;
+          }
           if (it.level > 0) {
             closeTo(it.level);
             const s = openSect(it.level);
             s.kids.push(buildLeaf(it, s.ref));
           } else {
-            const parentRef = sectStack.length > 0 ? sectStack[sectStack.length - 1].ref : structRootRef;
-            pushChild(buildLeaf(it, parentRef));
+            const enclosing = it.parentKey ? containers.get(it.parentKey) : null;
+            if (enclosing) {
+              enclosing.kids.push(buildLeaf(it, enclosing.ref));
+            } else {
+              const parentRef = sectStack.length > 0 ? sectStack[sectStack.length - 1].ref : structRootRef;
+              pushChild(buildLeaf(it, parentRef));
+            }
           }
+        }
+        // Finalize containers (assign by ref — order-independent).
+        for (const c of containers.values()) {
+          context.assign(c.ref, context.obj({ Type: PDFName.of('StructElem'), S: PDFName.of(c.role), P: c.pRef, K: context.obj(c.kids) }));
         }
         closeTo(0);
         return rootKids;
       };
       // Flat fallback — identical to Stage 1 behavior. Used only when
       // tryNested throws (edge-case HTML we didn't anticipate).
-      const tryFlat = () => items.map(it => buildLeaf(it, structRootRef));
+      const tryFlat = () => items.filter(it => !it.container).map(it => buildLeaf(it, structRootRef));
       try {
         const nested = tryNested();
         if (nested.length === 0 && items.length > 0) return tryFlat();
@@ -13897,7 +13947,23 @@ tr { page-break-inside: avoid; }
         // dash with a space before it (em/en dash folded to '-') is real
         // punctuation and keeps a spaced join.
         const _joinFrag = (a, b) => !a ? b : ((a.endsWith('-') && !a.endsWith(' -')) ? a.slice(0, -1) + b : a + ' ' + b);
-        const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1 };
+        // Extended 2026-06-10 to table cells + list bodies — previously any
+        // document with a table could never reach orphans=0 (TH/TD counted in
+        // the gate but were unmatchable), i.e. the K-12 worksheet norm could
+        // never earn the PDF/UA declaration. Lbl stays unlinkable by design:
+        // the marker glyph lives inside the same content line the LBody's MCR
+        // covers, and one MCID can map to only one StructElem in the
+        // ParentTree — the gate exempts pure-marker Lbls instead.
+        const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1, TH: 1, TD: 1, LBody: 1 };
+        // Leading list-marker fold: the PDF line is '• Apples' / '1. Apples'
+        // while the LBody leaf text is 'Apples' (the builder moves the marker
+        // into /Lbl). Compared only for LBody leaves, and only as a FALLBACK
+        // after the plain comparison fails — so including quote chars is safe
+        // (a legitimately quote-leading line matches plain first). Quotes are
+        // in the set because extraction of standard-14 bullet glyphs (WinAnsi
+        // 0x95) round-trips as a quote character on some decode paths —
+        // observed in the e2e fixture, where '•' surfaced as '"'.
+        const _MARKER_RE = /^(["'•◦▪‣·*–-]|\d{1,3}[.)])\s+/;
         // Flatten all Stage-4 blocks into ONE ordered stream (pages in order,
         // MCID order within a page) — a paragraph may span a page boundary, and
         // /K happily holds MCRs from different pages.
@@ -13917,7 +13983,7 @@ tr { page-break-inside: avoid; }
               const mv = mcr0 && mcr0.get ? mcr0.get(PDFName.of('MCID')) : null;
               const mcid = mv != null ? Number(String(mv).replace(/[^0-9.-]/g, '')) : NaN;
               if (!ntext || !Number.isFinite(mcid)) continue;
-              blockStream.push({ bRef, mcid, ntext, pageRef: pr.pageRef, parentArr, pr });
+              blockStream.push({ bRef, mcid, ntext, ntextNoMarker: ntext.replace(_MARKER_RE, ''), pageRef: pr.pageRef, parentArr, pr });
             } catch (_) {}
           }
         }
@@ -13928,19 +13994,44 @@ tr { page-break-inside: avoid; }
         // per LINE, so one paragraph = N blocks → the leaf's /K gets N MCRs.
         // Order-constrained matching replaces the v1 uniqueness guard; a leaf
         // that never matches stays ActualText-only (no risk taken).
-        const leafSeq = _unifiableLeafRefs.filter((lf) => LINKABLE[lf.role] && _norm(lf.text).length >= 8);
+        const leafSeq = _unifiableLeafRefs.filter((lf) => LINKABLE[lf.role] && _norm(lf.text).length >= 1);
         const consumed = new Set();
         let cursor = 0;
         for (const lf of leafSeq) {
           const target = _norm(lf.text);
+          if (!target) continue;
+          const allowMarkerStrip = lf.role === 'LBody';
           let found = null;
-          const scanLimit = Math.min(blockStream.length, cursor + 500);
-          for (let start = cursor; start < scanLimit && !found; start++) {
-            let concat = '';
-            for (let end = start; end < blockStream.length && end - start < 120; end++) {
-              concat = _joinFrag(concat, blockStream[end].ntext);
-              if (concat.length > target.length + 2) break; // overshoot — no run from this start
-              if (concat === target) { found = { start, end }; break; }
+          if (target.length >= 8) {
+            // Long leaf: run-concatenation scan (a paragraph may span N drawn
+            // lines). For LBody, a second pass retries with the leading list
+            // marker stripped from the run's FIRST fragment.
+            const scanLimit = Math.min(blockStream.length, cursor + 500);
+            const tryScan = (stripFirst) => {
+              for (let start = cursor; start < scanLimit; start++) {
+                let concat = '';
+                for (let end = start; end < blockStream.length && end - start < 120; end++) {
+                  const frag = (stripFirst && end === start) ? blockStream[end].ntextNoMarker : blockStream[end].ntext;
+                  concat = _joinFrag(concat, frag);
+                  if (concat.length > target.length + 2) break; // overshoot — no run from this start
+                  if (concat === target) return { start, end };
+                }
+              }
+              return null;
+            };
+            found = tryScan(false) || (allowMarkerStrip ? tryScan(true) : null);
+          } else {
+            // SHORT leaf (table cells like 'Ada'/'36', short list items):
+            // exact SINGLE-block equality within a tight window right after
+            // the cursor — cells are drawn in document order immediately
+            // after the previously matched content, so a tiny window keeps
+            // short strings from cross-matching distant lines. No
+            // concatenation, no similarity guessing; a miss stays
+            // ActualText-only (no risk taken).
+            const wEnd = Math.min(blockStream.length, cursor + 4);
+            for (let i = cursor; i < wEnd; i++) {
+              const b = blockStream[i];
+              if (b.ntext === target || (allowMarkerStrip && b.ntextNoMarker === target)) { found = { start: i, end: i }; break; }
             }
           }
           if (!found) continue;
@@ -14638,6 +14729,14 @@ tr { page-break-inside: avoid; }
       for (const lf of _unifiableLeafRefs) {
         if (!lf || !lf.ref || typeof lf.ref.objectNumber !== 'number') continue;
         if (!_COUNTABLE[lf.role]) continue;
+        // Pure-marker /Lbl exemption: the bullet/number glyph lives inside the
+        // SAME content line the sibling LBody's MCR now covers, and one MCID
+        // can map to only one StructElem in the ParentTree — so a marker-only
+        // Lbl can never be independently linked. Its ActualText still tells a
+        // screen reader the list position; treating it as an "orphaned content
+        // leaf" would block the UA declaration over decoration-grade text.
+        // Lbls with REAL text (definition lists, custom markers) still count.
+        if (lf.role === 'Lbl' && /^([•◦▪‣·*–-]|\d{1,3}[.)])$/.test(String(lf.text || '').trim())) continue;
         if (!_reachable.has(_refKey(lf.ref))) continue; // stray from a fallback build attempt — not shipped
         _reachableLeafCountAtStamp++;
         try {
