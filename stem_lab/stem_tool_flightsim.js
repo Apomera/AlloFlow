@@ -9728,6 +9728,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (scene.fog) {
             scene.fog.color.copy(skyColor);
             var _visF = 0.35 + 0.65 * brightness; // night ~14nm → day ~40nm visibility
+            // Weather coupling: the HUD weather system's visibility (storm 0.4 →
+            // clear 1.0) now also drives 3D fog density, so chosen weather is
+            // finally FELT in the world (it was previously 2D/HUD-only).
+            var _wv = (weatherRef && weatherRef.current && typeof weatherRef.current.visibility === 'number') ? weatherRef.current.visibility : 1;
+            _visF *= Math.max(0.25, _wv);
             scene.fog.far = 240000 * _visF;
             scene.fog.near = scene.fog.far * 0.25;
           }
