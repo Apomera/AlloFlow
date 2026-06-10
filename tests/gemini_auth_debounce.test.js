@@ -25,7 +25,12 @@ function makeApi(isCanvas, fetchRef) {
   });
 }
 const auth401 = () => { const e = new Error('401 Unauthorized: API authentication failed.'); e.isFatal = true; e.isAuth = true; throw e; };
-const okResp = () => ({ ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: 'hello world' }] } }] }) });
+// callGemini reads the body as TEXT first (empty/truncated-body hardening,
+// 2026-06-10) — real fetch Responses always have .text(); the mock must too.
+const okResp = () => {
+  const payload = { candidates: [{ content: { parts: [{ text: 'hello world' }] } }] };
+  return { ok: true, json: async () => payload, text: async () => JSON.stringify(payload) };
+};
 const banner = () => document.getElementById('alloflow-quota-banner');
 async function failOnce(api) { try { await api.callGemini('x'); } catch (_) { /* expected reject */ } }
 
