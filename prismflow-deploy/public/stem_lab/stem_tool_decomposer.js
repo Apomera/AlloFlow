@@ -806,7 +806,7 @@
             newBadges.forEach(function(b) {
               ids.push(b.id);
               addToast(b.icon + ' Badge: ' + b.label, 'success');
-              if (awardStemXP) awardStemXP(b.xp);
+              if (awardStemXP) awardStemXP('decomposer', b.xp, 'Badge: ' + b.label);
             });
             SOUNDS.badge();
             if (stemCelebrate) stemCelebrate();
@@ -2246,7 +2246,7 @@
                           var matRec = MATERIALS.find(function(m) { return m.name === obj.material; });
                           var matFormula = matRec ? matRec.formula : '?';
                           if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + matFormula, 'success');
-                          if (awardStemXP) awardStemXP(5);
+                          if (awardStemXP) awardStemXP('decomposer', 5, 'Compound identified: ' + obj.name);
                           setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                         } else {
                           SOUNDS.quizWrong();
@@ -2441,7 +2441,7 @@
                       var nextState = Object.assign({}, d, { activeReaction: reaction, reactionsDiscovered: disc });
                       updMulti({ activeReaction: reaction, reactionsDiscovered: disc });
                       if (addToast) addToast(reaction.emoji + ' ' + reaction.name + '!', 'success');
-                      if (awardStemXP) awardStemXP(10);
+                      if (awardStemXP) awardStemXP('decomposer', 10, 'Reaction: ' + reaction.name);
                       setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                     } else {
                       upd('activeReaction', { name: 'No Known Reaction', emoji: '\uD83E\uDD37', desc: 'These two materials don\u2019t have a notable reaction in our database. Try a different combination!', equation: reactantA + ' + ' + reactantB + ' \u2192 ?', type: 'Unknown', observable: 'No visible change' });
@@ -2868,7 +2868,7 @@
                       if (correct) {
                         SOUNDS.quizCorrect();
                         addToast('Correct!', 'success');
-                        if (awardStemXP) awardStemXP(5);
+                        if (awardStemXP) awardStemXP('decomposer', 5, 'Quiz answered correctly');
                       } else {
                         SOUNDS.quizWrong();
                         addToast('The answer is: ' + quizQ.answer, 'error');
@@ -2957,7 +2957,7 @@
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
               },
-              className: 'text-xs text-slate-600 hover:text-slate-600 font-bold'
+              className: 'text-xs text-slate-600 hover:text-slate-800 font-bold'
             }, '\uD83D\uDD04 Reset Quiz')
           ),
 

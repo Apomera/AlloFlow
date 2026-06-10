@@ -1888,7 +1888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('path', { d: pathD + ' L ' + xAt(24).toFixed(1) + ' ' + (padT + plotH).toFixed(1) + ' L ' + xAt(0).toFixed(1) + ' ' + (padT + plotH).toFixed(1) + ' Z',
             fill: '#facc15', opacity: 0.18 }),
           // Curve line
-          h('path', { d: pathD, fill: 'none', stroke: '#facc15', strokeWidth: 2.5 }),
+          h('path', { d: pathD, fill: 'none', stroke: '#facc15', strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 4px rgba(250,204,21,0.55))' } }),
           // Title
           h('text', { x: padL, y: 16, fill: '#cbe8e0', fontSize: 11 }, 'Power output (W) by hour of day'),
           h('text', { x: padL + plotW, y: 16, fill: '#cbe8e0', fontSize: 10, textAnchor: 'end' }, '☀️ noon →')

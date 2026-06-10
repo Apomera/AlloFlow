@@ -2856,12 +2856,12 @@ var d = (labToolData.companionPlanting) || {};
             var newGrid = cgGrid.slice();
             newGrid[idx] = { plantId: cgSelectedPlant, growthDay: 0, health: 100, watered: false, pests: 0 };
             cgUpd({ grid: newGrid, budget: Math.round((cgBudget - seedCost) * 100) / 100, expenses: cgExpenses + seedCost });
-            if (awardStemXP) awardStemXP(5);
+            if (awardStemXP) awardStemXP('companion_garden_plant', 5, 'Planted ' + cgSelectedPlant);
             // Visible success feedback (UDL: confirm the action across modalities)
             var plantEmoji = plant.emoji || '\uD83C\uDF31';
             var plantName = plant.label || plant.name || cgSelectedPlant;
             if (addToast) addToast(plantEmoji + ' Planted ' + plantName + '! \u2212$' + seedCost.toFixed(2) + ' \u00B7 +5 XP', 'success');
-            if (stemBeep) { try { stemBeep('plant'); } catch (e) {} }
+            if (stemBeep) { try { stemBeep(523, 0.1, 0.1); } catch (e) {} }
             return true;
           }
 
@@ -2885,9 +2885,9 @@ var d = (labToolData.companionPlanting) || {};
           // ── CG: water action ──
           function cgWater() {
             cgUpd({ moisture: Math.min(100, cgMoisture + 25) });
-            if (awardStemXP) awardStemXP(3);
+            if (awardStemXP) awardStemXP('companion_garden_water', 3, 'Watered garden');
             cgFireActionBurst("water");
-            if (stemBeep) { try { stemBeep("water"); } catch (e) {} }
+            if (stemBeep) { try { stemBeep(659, 0.1, 0.1); } catch (e) {} }
             if (addToast) addToast("💧 Watered the garden! +25% moisture · +3 XP", "success");
           }
 
@@ -2898,9 +2898,9 @@ var d = (labToolData.companionPlanting) || {};
               return Object.assign({}, cell, { pests: Math.max(0, cell.pests - 20) });
             });
             cgUpd({ grid: newGrid });
-            if (awardStemXP) awardStemXP(3);
+            if (awardStemXP) awardStemXP('companion_garden_weed', 3, 'Weeded garden');
             cgFireActionBurst("weed");
-            if (stemBeep) { try { stemBeep("weed"); } catch (e) {} }
+            if (stemBeep) { try { stemBeep(587, 0.1, 0.1); } catch (e) {} }
             if (addToast) addToast("🌿 Weeded! Pests reduced on all plants · +3 XP", "success");
           }
 
@@ -2912,9 +2912,9 @@ var d = (labToolData.companionPlanting) || {};
               potassium: Math.min(100, cgPotassium + 5),
               organicMatter: Math.min(10, cgOrganicMatter + 0.3)
             });
-            if (awardStemXP) awardStemXP(3);
+            if (awardStemXP) awardStemXP('companion_garden_compost', 3, 'Added compost');
             cgFireActionBurst("compost");
-            if (stemBeep) { try { stemBeep("compost"); } catch (e) {} }
+            if (stemBeep) { try { stemBeep(440, 0.1, 0.1); } catch (e) {} }
             if (addToast) addToast('\u267B\uFE0F Compost added: +15N +8P +5K +0.3% OM', 'success');
           }
 
@@ -2966,7 +2966,7 @@ var d = (labToolData.companionPlanting) || {};
               expenses: cgExpenses + cost
             });
             if (addToast) addToast(msg, 'success');
-            if (awardStemXP) awardStemXP(5);
+            if (awardStemXP) awardStemXP('companion_garden_ipm', 5, 'Pest management action');
           }
 
           // ── AI Garden Advisor (Gemini) ──
@@ -3055,13 +3055,13 @@ var d = (labToolData.companionPlanting) || {};
             newSeen[cgActiveReflection] = true;
             cgUpd({ journal: newJournal, activeReflection: null, reflectionResponse: '', seenReflections: newSeen });
             if (addToast) addToast('📝 Reflection saved to your Garden Journal!', 'success');
-            if (awardStemXP) awardStemXP(15); // XP for reflecting
+            if (awardStemXP) awardStemXP('companion_garden_reflect', 15, 'Saved garden reflection'); // XP for reflecting
           }
 
           function cgDismissEvent() {
             var managed = cgAchievements.indexOf('defender') === -1 && cgActiveEvent ? 1 : 0;
             cgUpd({ activeEvent: null });
-            if (managed && awardStemXP) awardStemXP(10);
+            if (managed && awardStemXP) awardStemXP('companion_garden_event', 10, 'Managed garden event');
             // Trigger SEL reflection for invasive events
             if (cgActiveEvent && !cgActiveEvent.isGood) {
               if (managed) cgTriggerReflection('invasive_managed');
@@ -3143,7 +3143,7 @@ var d = (labToolData.companionPlanting) || {};
               // SEL: biodiversity check
               var harvestFams = {}; cgGrid.forEach(function(c2) { if (c2.plantId) { var p2 = CG_PLANTS[c2.plantId]; if (p2) harvestFams[p2.family] = true; } });
               if (Object.keys(harvestFams).length >= 5) setTimeout(function() { cgTriggerReflection('biodiversity_win'); }, 1500);
-              if (awardStemXP) awardStemXP(harvested * 8);
+              if (awardStemXP) awardStemXP('companion_garden_harvest', harvested * 8, 'Harvested ' + harvested + ' crops');
             }
           }
 
@@ -3152,7 +3152,7 @@ var d = (labToolData.companionPlanting) || {};
             var hasPlants = cgGrid.some(function(c) { return c.plantId; });
             if (!hasPlants) { if (addToast) addToast('Plant something first!', 'info'); return; }
             cgUpd({ phase: 'grow' });
-            if (awardStemXP) awardStemXP(10);
+            if (awardStemXP) awardStemXP('companion_garden_grow', 10, 'Started growing season');
           }
 
           // ── CG: compute stats for achievements ──
@@ -3716,7 +3716,7 @@ var d = (labToolData.companionPlanting) || {};
                 var titleClass = isGood ? 'font-bold text-emerald-800' : 'font-bold text-red-800';
                 var descClass = isGood ? 'text-sm text-emerald-600' : 'text-sm text-red-600';
                 var borderClass = isGood ? 'border-emerald-200' : 'border-red-200';
-                var btnClass = isGood ? 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-700' : 'px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700';
+                var btnClass = isGood ? 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-600' : 'px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700';
                 var btnText = isGood ? '🌱 Great!' : '⚔️ Manage & Dismiss';
                 return h('div', { className: bgClass + ' rounded-xl p-4 space-y-2 animate-in slide-in-from-top' },
                   h('div', { className: 'flex items-center gap-2' },
@@ -5861,7 +5861,7 @@ var d = (labToolData.companionPlanting) || {};
                   setTimeout(function() {
                     cgUpd({ completedChallenges: newCompleted, activeChallenge: null });
                     if (addToast) addToast('🏆 Challenge complete: ' + ch.title + '!', 'success');
-                    if (awardStemXP) awardStemXP(25);
+                    if (awardStemXP) awardStemXP('companion_garden_challenge', 25, 'Completed challenge: ' + ch.title);
                   }, 100);
                 }
                 return h('div', { className: 'bg-indigo-50 rounded-xl border-2 ' + (isComplete ? 'border-emerald-400' : 'border-indigo-300') + ' p-3' },

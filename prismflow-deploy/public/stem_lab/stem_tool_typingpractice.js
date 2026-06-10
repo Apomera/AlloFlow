@@ -13675,7 +13675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 fontSize: '13px',
                 fontWeight: isNext ? 800 : 500,
                 textTransform: 'uppercase',
-                boxShadow: isNext ? '0 0 0 2px ' + fingerColor + '66' : 'none',
+                boxShadow: isNext ? '0 0 0 2px ' + fingerColor + '66, 0 0 12px ' + fingerColor + '99' : 'none',
                 // Left border slim color-band shows finger color even when not next
                 borderLeft: '3px solid ' + fingerColor,
                 opacity: dimOpacity,

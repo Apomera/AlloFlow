@@ -1188,7 +1188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       var useMemo = React.useMemo;
       var callGemini = ctx.callGemini;
       var addToast = ctx.addToast || function(){};
-      var awardXP = ctx.awardXP || function(){};
+      var awardXP = function(points, reason) { if (ctx.awardXP) ctx.awardXP('llmLiteracy', points, reason); };
       var announceToSR = ctx.announceToSR || function(){};
       var gradeLevel = ctx.gradeLevel || '7th Grade';
 
@@ -3107,6 +3107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               h('button', {
                 onClick: runLiveTemp,
                 disabled: tempBusy || !hasLiveAI,
+                className: tempBusy ? 'llm-lit-pulse' : '',
                 style: btn(COLORS.warn, '#fff', tempBusy || !hasLiveAI)
               }, tempBusy ? '\u23F3 Running live...' : (hasLiveAI ? (showingLive ? '\u26A1 Re-run live' : '\u26A1 Run live with Gemini') : '\uD83D\uDCC0 Live unavailable')),
               showingLive && h('button', {
@@ -3179,7 +3180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               playOut.map(function(run, i) {
                 // Safety entry: render as warm amber alert with embedded crisis-resources block.
                 if (run._safety) {
-                  return h('div', { key: i, role: 'alert', 'aria-live': 'assertive', className: i === 0 ? 'llm-lit-fade-in' : '', style: {
+                  return h('div', { key: run.t, role: 'alert', 'aria-live': 'assertive', className: i === 0 ? 'llm-lit-fade-in' : '', style: {
                     background: '#fef3c7', borderTop: '1px solid #fcd34d', borderRight: '1px solid #fcd34d', borderBottom: '1px solid #fcd34d', borderLeft: '4px solid #d97706', borderRadius: 8, padding: '12px 14px'
                   } },
                     h('div', { style: { fontSize: 11, fontWeight: 800, color: '#92400e', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪶 Coach (paused before AI)'),
@@ -3187,7 +3188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   );
                 }
                 var color = tempToColor(run.temp);
-                return h('div', { key: i, className: i === 0 ? 'llm-lit-fade-in' : '', style: {
+                return h('div', { key: run.t, className: i === 0 ? 'llm-lit-fade-in' : '', style: {
                   background: '#fff',
                   border: '1px solid ' + hexToRGBA(color, 0.3),
                   borderLeft: '4px solid ' + color,

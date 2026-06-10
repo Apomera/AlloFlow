@@ -1518,10 +1518,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var cogCount = bike.cassetteT.length;
         var crossChainScore = 0;
         if (chainringCount > 1) {
-          if (ringIdx === 0 && cogIdx >= cogCount - 2) crossChainScore = 2;
-          else if (ringIdx === 0 && cogIdx >= cogCount - 4) crossChainScore = 1;
-          else if (ringIdx === chainringCount - 1 && cogIdx <= 1) crossChainScore = 2;
-          else if (ringIdx === chainringCount - 1 && cogIdx <= 3) crossChainScore = 1;
+          if (ringIdx === 0 && cogIdx <= 1) crossChainScore = 2;
+          else if (ringIdx === 0 && cogIdx <= 3) crossChainScore = 1;
+          else if (ringIdx === chainringCount - 1 && cogIdx >= cogCount - 2) crossChainScore = 2;
+          else if (ringIdx === chainringCount - 1 && cogIdx >= cogCount - 4) crossChainScore = 1;
         }
 
         // Climb simulator: constant 6% grade, 200W rider. Predict speed from v = P/(F_gravity + F_rolling + F_drag(v)).
@@ -1650,7 +1650,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   var pct = pt.v / (cadenceCurve[cadenceCurve.length - 1].v + 1);
                   var isCurrent = Math.abs(pt.c - cadence) < 5;
                   return h('div', { key: i, className: 'flex-1 flex flex-col items-center justify-end' },
-                    h('div', { className: 'w-full rounded-t ' + (isCurrent ? 'bg-violet-500' : 'bg-violet-200'),
+                    h('div', { className: 'w-full rounded-t transition-all duration-300 ' + (isCurrent ? 'bg-violet-500' : 'bg-violet-200'),
                       style: { height: Math.round(pct * 100) + '%' } },
                       isCurrent && h('div', { className: 'text-[10px] font-bold text-white text-center pt-1' }, pt.v.toFixed(0))
                     ),
@@ -1721,7 +1721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             updated[job.id] = true;
             setCompleted(updated); upd('repairCompleted', updated);
             addToast('✓ ' + job.name + ' complete! +5 XP', 'success');
-            if (ctx.awardXP) ctx.awardXP(5);
+            if (ctx.awardXP) ctx.awardXP('bikeLab', 5, job.name + ' repair');
             exitJob();
           } else {
             setStep(step + 1); setPlacedTools([]);

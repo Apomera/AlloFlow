@@ -672,7 +672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               _vfPerfectRef.current = true;
               upd('perfectVFormed', true);
               if (celebrate) celebrate();
-              if (awardXP) awardXP(20);
+              if (awardXP) awardXP('migration', 20, 'Perfect V-formation');
               if (addToast) addToast('Perfect V-formation achieved! +20 XP', 'success');
               if (announceToSR) announceToSR('Perfect V formation achieved. 20 experience points awarded.');
             }
@@ -810,7 +810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               'aria-label': 'Auto-form V formation',
               onClick: function() {
                 birdsRef.current = makeVFormation(birdCount);
-                if (beep) beep('confirm');
+                if (beep) beep(659, 0.12, 0.12);
                 if (announceToSR) announceToSR('V formation formed automatically');
               }
             }, '\uD83E\uDEBF Auto-Form V'),
@@ -819,7 +819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               'aria-label': 'Scatter birds randomly',
               onClick: function() {
                 birdsRef.current = makeFlock(birdCount);
-                if (beep) beep('click');
+                if (beep) beep(880, 0.06, 0.08);
                 if (announceToSR) announceToSR('Birds scattered randomly');
               }
             }, '\uD83C\uDF2A\uFE0F Scatter'),
@@ -1305,7 +1305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   if (Math.sqrt(tdx * tdx + tdy * tdy) < 40 && wb.vy < -0.5 && !d.thermalRidden) {
                     upd('thermalRidden', true);
                     if (celebrate) celebrate();
-                    if (awardXP) awardXP(15);
+                    if (awardXP) awardXP('migration', 15, 'Rode a thermal updraft');
                     if (addToast) addToast('Thermal updraft ridden! +15 XP', 'success');
                     if (announceToSR) announceToSR('Bird rode a thermal updraft. 15 experience points awarded.');
                   }
@@ -1360,7 +1360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             objectsRef.current = newObjs;
             upd('windObjects', newObjs);
             upd('placingObj', null);
-            if (beep) beep('confirm');
+            if (beep) beep(659, 0.12, 0.12);
             if (announceToSR) announceToSR(placingObj + ' placed on wind field');
           }
 
@@ -1421,7 +1421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 var wb = windBirdsRef.current || [];
                 wb.push({ x: 50, y: 100 + Math.random() * 150, vx: 0, vy: 0, phase: Math.random() * 6 });
                 windBirdsRef.current = wb;
-                if (beep) beep('click');
+                if (beep) beep(880, 0.06, 0.08);
                 if (announceToSR) announceToSR('Bird added to wind field');
               }
             }, '\uD83D\uDC26 Add Bird'),
@@ -1433,7 +1433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 objectsRef.current = [];
                 windBirdsRef.current = [];
                 upd('windObjects', []);
-                if (beep) beep('click');
+                if (beep) beep(880, 0.06, 0.08);
                 if (announceToSR) announceToSR('All objects and birds cleared');
               }
             }, '\uD83D\uDDD1\uFE0F Clear All'),
@@ -1948,7 +1948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 'aria-pressed': active ? 'true' : 'false',
                 onClick: function() {
                   updMulti({ selectedSpecies: sp.id, routeAnimProgress: 0, aiExplorerText: '', routesPlanned: (d.routesPlanned || 0) + (active ? 0 : 1) });
-                  if (beep) beep('click');
+                  if (beep) beep(880, 0.06, 0.08);
                   if (announceToSR) announceToSR('Selected ' + sp.name + '. ' + sp.flyway + ' flyway.');
                 }
               },
@@ -2983,7 +2983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               challengeLog: newLog
             });
             if (celebrate) celebrate();
-            if (awardXP) awardXP(25);
+            if (awardXP) awardXP('migration', 25, 'Migration complete');
             if (addToast) addToast('Migration complete! Your flock arrived safely. +25 XP', 'success');
             return;
           }
