@@ -1475,6 +1475,25 @@ const d = labToolData.solarSystem || {};
 
                 // â"€â"€ Handle camera reset signal from Reset View button â"€â"€
 
+                // ── Fly-to signal from the planet buttons row (a11y parity:
+                // keyboard / screen-reader users who select via the buttons get
+                // the same cinematic fly-to as canvas clicks) ──
+                if (canvas.dataset.flyTo) {
+                  var _ftName = canvas.dataset.flyTo;
+                  canvas.dataset.flyTo = '';
+                  for (var _fi = 0; _fi < planetMeshes.length; _fi++) {
+                    var _fm = planetMeshes[_fi];
+                    if (_fm && _fm.userData && _fm.userData.name === _ftName) {
+                      focusedPlanetIdx = (_fm.userData.idx != null) ? _fm.userData.idx : _fi;
+                      var _fr = (_fm.geometry && _fm.geometry.parameters && _fm.geometry.parameters.radius) || 1;
+                      targetDist = Math.max(3, Math.min(18, _fr * 5));
+                      targetLookAt.copy(_fm.position);
+                      targetPhi = 0.8;
+                      break;
+                    }
+                  }
+                }
+
                 if (canvas.dataset.resetCamera === 'true') {
 
                   canvas.dataset.resetCamera = '';
@@ -5490,7 +5509,7 @@ const d = labToolData.solarSystem || {};
 
                 key: p.name,
 
-                onClick: () => { upd('selectedPlanet', p.name); playPlanetSelect(p.dist || 1); startPlanetAmbience(p.name); if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
+                onClick: () => { upd('selectedPlanet', p.name); playPlanetSelect(p.dist || 1); startPlanetAmbience(p.name); const _c3 = document.querySelector('.solar3d-canvas'); if (_c3) { _c3.dataset.flyTo = p.name; } if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
 
                 className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-lg ring-2 ring-white/30' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm')),
 

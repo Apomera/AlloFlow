@@ -5,13 +5,18 @@
 // Uses in-memory storage + integrates with the existing safety pipeline:
 //   - SafetyContentChecker (regex-based immediate checking)
 //   - handleAiSafetyFlag callback (feeds aiSafetyFlags state)
-//   - syncProgressToFirestore (60s pipeline to teacher dashboard)
+//   - syncProgressToFirestore (60s count-summary pipeline to the teacher
+//     dashboard — LIVE WEB SESSIONS ONLY; the sync is disabled on Canvas
+//     hosts and in solo mode, where flags reach no adult automatically)
 //
 // Architecture:
 //   - Consent: in-memory per session (re-shown each Canvas session = more protective)
-//   - Assessment: triangulated AI evaluation (2 primary + 1 confirmation)
+//   - Assessment: triangulated AI evaluation (2 primary + 1 confirmation);
+//     when the AI is unreachable the result is marked unassessed:true —
+//     "couldn't check" is never reported as "checked: safe"
 //   - Flags: pushed through ctx.onSafetyFlag callback (same path as persona/adventure)
-//   - Transcripts: in-memory Map, accessible via ctx for teacher dashboard
+//   - Transcripts: NOT retained. The crisis modal holds the flagged snippet
+//     transiently; storeTranscript/getTranscript are intentional no-ops.
 //   - Crisis resources: shown immediately in-chat for Tier 3
 //
 // This module MUST load before any sel_tool_*.js files.
@@ -32,6 +37,28 @@
   // ══════════════════════════════════════════════════════════════
 
   var _consentGiven = false;
+
+  // Mirrors the app shell's Canvas detection (AlloFlowANTI isCanvas useMemo):
+  // on Canvas hosts the 60s teacher sync is hard-disabled, so even WITH a
+  // session code no flag ever reaches a teacher there. Pure location check.
+  function _isCanvasHost() {
+    try {
+      if (typeof window === 'undefined' || !window.location) return false;
+      var host = window.location.hostname || '';
+      var href = window.location.href || '';
+      if (href.indexOf('blob:') === 0) return true;
+      return host.indexOf('googleusercontent') !== -1 || host.indexOf('scf.usercontent') !== -1 ||
+        host.indexOf('code-server') !== -1 || host.indexOf('idx.google') !== -1 || host.indexOf('run.app') !== -1;
+    } catch (_) { return false; }
+  }
+
+  // TRUE only when a safety flag can actually reach a teacher: a live session
+  // code is set AND we are not on a Canvas host (where the sync is disabled).
+  // Every promise-making surface below branches on this, so the copy can
+  // never promise adult notification a code path cannot deliver.
+  function _liveFlagsReachTeacher(activeSessionCode) {
+    return !!(activeSessionCode && String(activeSessionCode).trim()) && !_isCanvasHost();
+  }
   // Transient snapshot of the most recent flagged snippet. Single string,
   // overwritten each call, never persisted. The crisis modal owns this data;
   // nothing else stores it. Replaces the prior _transcriptStore Map, which
@@ -48,34 +75,56 @@
   window.SelHub.giveCoachConsent = function() { _consentGiven = true; };
 
   /**
-   * Render informed consent screen.
+   * Render informed consent screen \u2014 HONEST per mode.
+   *
+   * The old copy promised unconditionally that "a caring adult at your school
+   * will be told" and "may see what you wrote." Neither is deliverable in
+   * solo/Canvas mode (no sync, save files exclude flags, no scanner reads SEL
+   * chats), and even in live sessions the teacher receives an alert COUNT,
+   * never the words. A student deciding what to disclose must not be told an
+   * adult is coming when none is. The copy now states only what each mode
+   * actually does, and in every mode tells the student the one thing that is
+   * always true: an adult can only help if a person tells them.
+   *
    * @param {function} h - React.createElement
    * @param {string} band - elementary/middle/high
    * @param {function} onConsent - callback
+   * @param {string} [activeSessionCode] - live-session code if hosted (ctx.activeSessionCode);
+   *   omitted/falsy or on a Canvas host = solo truth (the safer default).
    */
-  window.SelHub.renderConsentScreen = function(h, band, onConsent) {
+  window.SelHub.renderConsentScreen = function(h, band, onConsent, activeSessionCode) {
     var isYoung = band === 'elementary';
+    var live = _liveFlagsReachTeacher(activeSessionCode);
+    var intro = live
+      ? (isYoung
+        ? 'You\u2019re in a class session with your teacher. Work you save or turn in can be seen by them.'
+        : 'You\u2019re in a live class session. Anything you save or submit here can be seen by your teacher.')
+      : (isYoung
+        ? 'This is a private space to think about how you feel. What you write here is not sent to your teacher or any adult.'
+        : 'This is a private space. What you write here is not sent to your teacher or school \u2014 no adult is automatically notified.');
+    var safetyBox = live
+      ? (isYoung
+        ? 'If what you write sounds like you might be in danger, this app shows your teacher an alert so they can check on you \u2014 they see the alert, not your words. And if you are in danger, don\u2019t wait: tell a trusted adult right away.'
+        : 'If what you write suggests serious danger \u2014 to you or someone else \u2014 the app raises an alert on your teacher\u2019s dashboard. The alert is a flag, not your words. If you\u2019re in danger right now, don\u2019t wait for software: tell a trusted adult, or call or text 988.')
+      : (isYoung
+        ? 'This app cannot tell an adult for you. If you are in danger, or someone is hurting you or someone else, tell a trusted adult right away \u2014 a parent, a teacher, or a counselor. If what you write sounds serious, this app will show you ways to get help.'
+        : 'This app cannot notify an adult on its own. If what you write suggests danger, it will show you crisis resources right away \u2014 but reaching an adult is up to you. If you\u2019re dealing with harm, abuse, or thoughts of hurting yourself, please tell a trusted adult directly, or call or text 988.');
+    var closing = live
+      ? (isYoung
+        ? 'Asking for help is always okay. A grown-up would rather know.'
+        : 'We tell you this up front so you can make an informed choice about what to share.')
+      : (isYoung
+        ? 'A grown-up can only help if a person tells them. You can always ask a trusted adult for help \u2014 about anything.'
+        : 'We tell you this up front so you can make an informed choice about what to share \u2014 and so you never assume an adult has been told when they haven\u2019t.');
     return h('div', { style: { padding: '24px', maxWidth: '520px', margin: '0 auto', textAlign: 'center' } },
       h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83D\uDD12'),
       h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b', margin: '0 0 12px' } }, 'Before We Start'),
       h('div', { style: { background: '#f0f9ff', borderRadius: '14px', padding: '18px', border: '1px solid #bae6fd', textAlign: 'left', marginBottom: '16px' } },
-        h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: '#1e293b', margin: '0 0 10px' } },
-          isYoung
-            ? 'This is a safe space to talk about how you feel. What you write here is private \u2014 but there is one important exception.'
-            : 'What you share here is yours. We take your privacy seriously. However, there is one important exception.'
-        ),
+        h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: '#1e293b', margin: '0 0 10px' } }, intro),
         h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '12px', borderLeft: '4px solid #f59e0b', marginBottom: '10px' } },
-          h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#78350f', margin: 0 } },
-            isYoung
-              ? 'If what you share tells us you might be in danger, or someone is seriously hurting you or someone else, a caring adult at your school will be told so they can help. They may see what you wrote so they understand how to help you best.'
-              : 'If what you share indicates serious danger \u2014 to yourself or others \u2014 a trusted adult at your school will be notified and may access what you wrote. This applies to situations involving physical harm, weapons, self-harm, or abuse.'
-          )
+          h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#78350f', margin: 0 } }, safetyBox)
         ),
-        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#475569', margin: 0 } },
-          isYoung
-            ? 'This is the same rule school counselors follow. It exists because your safety matters more than anything else.'
-            : 'This follows the same confidentiality standard as school counseling. We tell you now so you can make an informed choice about what to share.'
-        )
+        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#475569', margin: 0 } }, closing)
       ),
       h('button', {
         onClick: onConsent,
