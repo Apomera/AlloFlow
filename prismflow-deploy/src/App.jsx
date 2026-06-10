@@ -4389,7 +4389,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '30fb1a62';
+    var pluginCdnVersion = '668455f1';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -6739,6 +6739,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   React.useEffect(() => {
     if (typeof window !== 'undefined') window.alloAnnounce = alloAnnounce;
   }, [alloAnnounce]);
+  // Clipboard with Canvas fallback (2026-06-12): the Clipboard API is
+  // HARD-BLOCKED by permissions policy in the Gemini Canvas iframe
+  // (probe-verified, crbug 414348233) — execCommand('copy') still works
+  // there (the Platform Check report was copied with it). Returns true on
+  // success via either path; ALL copy buttons should route through this.
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.alloCopyText = async (text) => {
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); return true; } } catch (_) {}
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+        document.body.appendChild(ta); ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return !!ok;
+      } catch (_) { return false; }
+    };
+  }, []);
 
   // Announce activeView changes for screen-reader users. Skip the initial
   // 'input' announcement on mount — only fire on real navigation.

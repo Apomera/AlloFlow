@@ -490,7 +490,7 @@ window.StemLab = window.StemLab || {
 
               // Main curve
 
-              pts.length > 1 && React.createElement("polyline", { points: pts.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5 }),
+              pts.length > 1 && React.createElement("polyline", { points: pts.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(79,70,229,0.45))' } }),
 
               // Comparison curve (orange)
               d.compare && comparePts.length > 1 && React.createElement("polyline", { points: comparePts.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }),
@@ -1112,7 +1112,7 @@ window.StemLab = window.StemLab || {
 
                         }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
 
-                      }, challengeMode === 'name' ? opt : 'x = ' + opt);
+                      }, challengeMode === 'name' ? opt : (challengeMode === 'yint' ? 'y = ' + opt : 'x = ' + opt));
 
                     })
 
@@ -1190,7 +1190,7 @@ window.StemLab = window.StemLab || {
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
               );
             })(),
 
@@ -1252,12 +1252,12 @@ window.StemLab = window.StemLab || {
                         c2.font = 'bold 9px sans-serif'; c2.fillStyle = fn.color; c2.textAlign = 'center';
                         c2.fillText(fn.name, ox, oy + cellH * 0.45);
                       });
-                      cvEl._fzAnim = requestAnimationFrame(drawFz);
                     }
+                    cvEl._fzAnim = 1;
                     drawFz();
                     var ro = new ResizeObserver(function() {
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2); drawFz();
                     });
                     ro.observe(cvEl);
                   },

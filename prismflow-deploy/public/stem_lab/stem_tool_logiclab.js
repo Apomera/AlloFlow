@@ -2096,7 +2096,7 @@ window.StemLab = window.StemLab || {
                 // Gate selector
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   GATE_TYPES.map(function(gt) {
-                    return React.createElement("button", { "aria-label": "Select logic gate: " + gt, key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,50);},
+                    return React.createElement("button", { "aria-label": "Select logic gate: " + gt, key: gt, onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,0.05);},
                       className: "px-4 py-2 rounded-xl text-sm font-black transition-all",
                       style: { background: gateType===gt?'linear-gradient(135deg,#7c3aed,#a78bfa)':'#f5f3ff', color: gateType===gt?'white':'#7c3aed', boxShadow: gateType===gt?'0 4px 12px rgba(124,58,237,0.3)':'none' }
                     }, gt);
@@ -2114,7 +2114,7 @@ window.StemLab = window.StemLab || {
                           onClick: function() {
                             var ni = Object.assign({}, gateInputs); ni[inp] = !ni[inp];
                             upd({ gateInputs: ni });
-                            if (stemBeep) stemBeep(val?330:523, 60);
+                            if (stemBeep) stemBeep(val?330:523, 0.06);
                           },
                           className: "w-20 h-10 rounded-xl font-black text-sm text-white shadow-md transition-all hover:scale-105",
                           style: { background: val?'linear-gradient(135deg,#059669,#10b981)':'linear-gradient(135deg,#dc2626,#ef4444)', boxShadow: val?'0 4px 12px rgba(16,185,129,0.4)':'0 4px 12px rgba(239,68,68,0.3)' }
@@ -2128,8 +2128,8 @@ window.StemLab = window.StemLab || {
                     !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?"#059669":"#dc2626",strokeWidth:"3" }),
                     React.createElement("rect", { x:"35",y:"15",width:"55",height:"50",rx:"8",fill:"#7c3aed",stroke:"#5b21b6",strokeWidth:"2" }),
                     React.createElement("text", { x:"62",y:"46",textAnchor:"middle",fill:"white",fontWeight:"900",fontSize:"12" }, gateType),
-                    React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?"#059669":"#dc2626",strokeWidth:"3" }),
-                    React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?"#059669":"#dc2626" })
+                    React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?"#059669":"#dc2626",strokeWidth:"3", style:{ filter: gateOutput ? 'drop-shadow(0 0 3px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } }),
+                    React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?"#059669":"#dc2626", style:{ filter: gateOutput ? 'drop-shadow(0 0 4px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } })
                   ),
                   // Output
                   React.createElement("div", { className: "flex flex-col items-center gap-1" },
@@ -2188,7 +2188,7 @@ window.StemLab = window.StemLab || {
             // === H7b'' inquiry widget: probability logic ===
             mode === 'simLogic' && (function() {
               var iq = d._simLogic || { pTrue: 70, qTrue: 70, threshold: 80, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd('_simLogic', Object.assign({}, iq, patch)); }
+              function setIQ(patch) { upd({ _simLogic: Object.assign({}, iq, patch) }); }
               var pAnd = (iq.pTrue * iq.qTrue) / 100;
               var pOr = iq.pTrue + iq.qTrue - pAnd;
               var state;

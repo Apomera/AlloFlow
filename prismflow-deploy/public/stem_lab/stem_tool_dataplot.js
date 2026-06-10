@@ -620,8 +620,11 @@ window.StemLab = window.StemLab || {
         if (stepMode) return;
         var svg = e.currentTarget;
         var rect = svg.getBoundingClientRect();
-        var sx = (e.clientX - rect.left) / rect.width * W;
-        var sy = (e.clientY - rect.top) / rect.height * H;
+        var scale = Math.min(rect.width / W, rect.height / H) || 1;
+        var offX = (rect.width - W * scale) / 2;
+        var offY = (rect.height - H * scale) / 2;
+        var sx = (e.clientX - rect.left - offX) / scale;
+        var sy = (e.clientY - rect.top - offY) / scale;
         var x = Math.round((xMin + (sx - pad) / (W - 2 * pad) * (xMax - xMin)) * 10) / 10;
         var y = Math.round((yMin + ((H - pad - sy) / (H - 2 * pad)) * (yMax - yMin)) * 10) / 10;
         addPoint(x, y);
@@ -765,7 +768,7 @@ window.StemLab = window.StemLab || {
       var regPath = function() {
         if (n < 2) return null;
         if (regressionType === 'linear') {
-          return h('line', { x1: toSX(xMin), y1: toSY(slope*xMin+intercept), x2: toSX(xMax), y2: toSY(slope*xMax+intercept), stroke: pal.line, strokeWidth: 2, strokeDasharray: '6 3' });
+          return h('line', { x1: toSX(xMin), y1: toSY(slope*xMin+intercept), x2: toSX(xMax), y2: toSY(slope*xMax+intercept), stroke: pal.line, strokeWidth: 2, strokeDasharray: '6 3', style: { filter: 'drop-shadow(0 0 3px ' + pal.line + ')' } });
         }
         var cpts = [];
         for (var si = 0; si <= 50; si++) {
@@ -773,7 +776,7 @@ window.StemLab = window.StemLab || {
           var cy_ = predictY(cx_);
           cpts.push((si === 0 ? 'M' : 'L') + toSX(cx_).toFixed(1) + ',' + toSY(cy_).toFixed(1));
         }
-        return h('path', { d: cpts.join(' '), fill: 'none', stroke: pal.line, strokeWidth: 2, strokeDasharray: '6 3' });
+        return h('path', { d: cpts.join(' '), fill: 'none', stroke: pal.line, strokeWidth: 2, strokeDasharray: '6 3', style: { filter: 'drop-shadow(0 0 3px ' + pal.line + ')' } });
       };
 
       // Confidence interval band
@@ -1167,7 +1170,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 items-end mb-2' },
               h('div', null, h('label', { htmlFor: 'dp-x-input', className: 'text-[11px] font-bold text-slate-600 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', 'aria-label': 'X coordinate for new data point', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
               h('div', null, h('label', { htmlFor: 'dp-y-input', className: 'text-[11px] font-bold text-slate-600 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', 'aria-label': 'Y coordinate for new data point', className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-700' }, '+ Add')
+              h('button', { 'aria-label': '+ Add', onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-800' }, '+ Add')
             ),
             n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-600' },
               visiblePoints.map(function(p, i) { return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Remove point (' + p.x + ', ' + p.y + ')', className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); removePoint(i); } } }, '(' + p.x + ',' + p.y + ')'); })
@@ -1503,7 +1506,7 @@ window.StemLab = window.StemLab || {
                 { r: -0.70, label: 'r\u2248-0.70', color: 'orange' },
                 { r: -0.95, label: 'r\u2248-0.95', color: 'red' }
               ].map(function(g) {
-                return h('button', { 'aria-label': 'Step-Through Mode', key: g.r, onClick: function() { generateRandom(g.r); },
+                return h('button', { 'aria-label': 'Generate 20 points with ' + g.label, key: g.r, onClick: function() { generateRandom(g.r); },
                   className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100 transition-all'
                 }, '\uD83C\uDFB2 ' + g.label);
               })
@@ -1544,7 +1547,7 @@ window.StemLab = window.StemLab || {
               } else {
                 if (addToast) addToast('\u26A0\uFE0F No valid data found. Format: x,y per line', 'error');
               }
-            }, className: 'mt-2 px-4 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-700' }, '\u21E9 Import')
+            }, className: 'mt-2 px-4 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-800' }, '\u21E9 Import')
           )
         ),
 

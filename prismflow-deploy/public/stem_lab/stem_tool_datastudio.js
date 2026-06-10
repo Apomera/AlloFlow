@@ -676,7 +676,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("path", { d: areaD, fill: _accent, opacity: 0.08 }),
 
-                    React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round" }),
+                    React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round", style: { filter: 'drop-shadow(0 0 4px ' + _accent + ')' } }),
 
                     trendEls,
 
@@ -1311,7 +1311,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
             // === H7b'' inquiry widget: chart visuals ===
             (function() {
               var iq = d._chartHunt || { opacity: 80, zoomX: 100, zoomY: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd('_chartHunt', Object.assign({}, iq, patch)); }
+              function setIQ(patch) { updDS('_chartHunt', Object.assign({}, iq, patch)); }
               var state;
               if (iq.opacity < 30) state = 'invisible';
               else if (iq.zoomX > 150 || iq.zoomY > 150) state = 'overzoomed';

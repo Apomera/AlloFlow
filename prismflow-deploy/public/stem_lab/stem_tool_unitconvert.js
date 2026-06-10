@@ -321,7 +321,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             e.preventDefault();
             var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
             upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-            stemBeep && stemBeep('click');
+            stemBeep && stemBeep(600, 0.06);
           }
           if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askTutor(); }
           if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
@@ -496,7 +496,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
                 h('button', { 'aria-label': 'Swap units',
                   onClick: function() {
-                    stemBeep && stemBeep('click');
+                    stemBeep && stemBeep(600, 0.06);
                     setLabToolData(function(prev) {
                       return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { fromUnit: d.toUnit, toUnit: d.fromUnit }) });
                     });
@@ -507,6 +507,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
                 h('div', { className: 'text-center' },
                   h('p', {
+                    key: fmtResult,
                     className: 'text-2xl font-black text-cyan-700 py-1',
                     style: { animation: 'ucResultPop 0.3s ease-out' }
                   }, fmtResult),
@@ -581,7 +582,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     setLabToolData(function(prev) {
                       return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { history: [entry].concat((prev.unitConvert.history || []).slice(0, 9)), historySaveCount: newSaveCount }) });
                     });
-                    stemBeep && stemBeep('success');
+                    stemBeep && stemBeep(784, 0.15);
                     addToast('\u2705 Saved to history', 'success');
                     if (newSaveCount >= 10) checkBadges({ historian: true });
                   },
@@ -806,7 +807,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 onClick: function() {
                   var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                   upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-                  stemBeep && stemBeep('click');
+                  stemBeep && stemBeep(600, 0.06);
                 },
                 className: 'px-3 py-1.5 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all',
                 title: 'Next question (N)'
@@ -841,12 +842,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         var newBest = Math.max(d.bestStreak || 0, newStreak);
                         var newQTotal = quizTotal + 1;
                         if (correct) {
-                          stemBeep && stemBeep('success');
+                          stemBeep && stemBeep(784, 0.15);
                           if (newStreak >= 5) { stemCelebrate && stemCelebrate(); }
-                          awardStemXP && awardStemXP(xp);
+                          awardStemXP && awardStemXP('unitConvert', xp, 'quiz correct');
                           addToast(xp === 3 ? '\u26A1 Lightning fast! +3 XP' : xp === 2 ? '\uD83D\uDE80 Quick! +2 XP' : '\u2705 Correct! +1 XP', 'success');
                         } else {
-                          stemBeep && stemBeep('error');
+                          stemBeep && stemBeep(220, 0.2);
                           addToast('\u274C Answer: ' + d.quiz.a + ' ' + d.quiz.unit, 'error');
                         }
                         setLabToolData(function(prev) {
@@ -886,7 +887,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         onClick: function() {
                           var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                           upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-                          stemBeep && stemBeep('click');
+                          stemBeep && stemBeep(600, 0.06);
                         },
                         className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all'
                       }, '\uD83D\uDD04 Next Question'),
@@ -919,7 +920,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   callGemini(prompt, { temperature: 0.8, maxTokens: 300 }).then(function(resp) {
                     upd('wordProblem', resp);
                     upd('loadingWP', false);
-                    awardStemXP && awardStemXP(2);
+                    awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
                     checkBadges({ wordProblem: true });
                   }).catch(function() {
                     upd('loadingWP', false);
@@ -962,7 +963,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     callGemini(prompt, { temperature: 0.8, maxTokens: 300 }).then(function(resp) {
                       upd('wordProblem', resp);
                       upd('loadingWP', false);
-                      awardStemXP && awardStemXP(2);
+                      awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
                     }).catch(function() {
                       upd('loadingWP', false);
                       addToast('Could not generate. Try again.', 'error');
