@@ -5986,10 +5986,14 @@ var d = labToolData.dissection || {};
                     upd('quizTotal', 0);
                     upd('quizFeedback', null);
                     upd('practicalTimer', 120);
+                    // Count down from a LOCAL counter \u2014 reading d.practicalTimer here
+                    // reads the click-time closure snapshot (always 120), so ct stuck
+                    // at 119 and the time-up branch never fired. Local var decrements live.
+                    var remaining = 120;
                     var tmr2 = setInterval(function () {
-                      var ct = (d.practicalTimer || 120) - 1;
-                      if (ct <= 0) { clearInterval(tmr2); upd('practicalMode', false); upd('labelMode', 'show'); if (addToast) addToast('\u23F0 Time up! Score: ' + (d.quizScore || 0), 'info'); }
-                      upd('practicalTimer', ct);
+                      remaining -= 1;
+                      if (remaining <= 0) { clearInterval(tmr2); upd('practicalMode', false); upd('labelMode', 'show'); if (addToast) addToast('\u23F0 Time up! Score: ' + (d.quizScore || 0), 'info'); }
+                      upd('practicalTimer', remaining);
                     }, 1000);
                     upd('_practicalInterval', tmr2);
                   } else {
