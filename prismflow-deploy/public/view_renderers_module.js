@@ -1397,6 +1397,8 @@ const renderInteractiveMap = (deps) => {
       }
       const isFlowChart = fromNode.type && fromNode.type.startsWith("flow-");
       const pathD = isFlowChart ? getElbowPath(fromNode, toNode) : null;
+      const _emidX = (fromNode.x + toNode.x) / 2;
+      const curvePathD = `M ${fromNode.x} ${fromNode.y} C ${_emidX} ${fromNode.y}, ${_emidX} ${toNode.y}, ${toNode.x} ${toNode.y}`;
       return /* @__PURE__ */ React.createElement(
         "g",
         {
@@ -1416,38 +1418,24 @@ const renderInteractiveMap = (deps) => {
             strokeDasharray: edge.status === "incorrect" || edge.style === "dashed" ? "5,5" : "none",
             markerEnd: "url(#arrowhead)"
           }
-        )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-          "line",
+        )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", { d: curvePathD, stroke: "transparent", strokeWidth: "20", fill: "none" }), edge.color && !edge.status && /* @__PURE__ */ React.createElement(
+          "path",
           {
-            x1: fromNode.x,
-            y1: fromNode.y,
-            x2: toNode.x,
-            y2: toNode.y,
-            stroke: "transparent",
-            strokeWidth: "20"
-          }
-        ), edge.color && !edge.status && /* @__PURE__ */ React.createElement(
-          "line",
-          {
-            x1: fromNode.x,
-            y1: fromNode.y,
-            x2: toNode.x,
-            y2: toNode.y,
+            d: curvePathD,
             stroke: edge.color,
             strokeWidth: "6",
+            fill: "none",
             strokeOpacity: "0.18",
             strokeLinecap: "round",
             filter: "url(#vo-edge-glow)"
           }
         ), /* @__PURE__ */ React.createElement(
-          "line",
+          "path",
           {
-            x1: fromNode.x,
-            y1: fromNode.y,
-            x2: toNode.x,
-            y2: toNode.y,
+            d: curvePathD,
             stroke: edge.style === "dashed" ? "#94a3b8" : edge.status ? strokeColor : edge.color || strokeColor,
             strokeWidth,
+            fill: "none",
             strokeOpacity: edge.status ? "1" : "0.6",
             strokeLinecap: "round",
             strokeDasharray: edge.status === "incorrect" || edge.style === "dashed" ? "5,5" : "none",
@@ -1465,12 +1453,18 @@ const renderInteractiveMap = (deps) => {
           left: node.x,
           top: node.y,
           transform: "translate(-50%, -50%)",
-          transition: draggedNodeId === node.id ? "none" : "left 0.3s ease-out, top 0.3s ease-out, transform 0.2s ease-out"
+          transition: draggedNodeId === node.id ? "none" : "left 0.3s ease-out, top 0.3s ease-out, transform 0.2s ease-out",
+          // The concept-map centre node gets the static KeyConceptMapView bubble's
+          // radial gradient + glow, so the two renderings of the hub read the same.
+          ...node.type === "main" ? {
+            background: "radial-gradient(circle at 30% 30%, #818cf8 0%, #6366f1 45%, #4338ca 100%)",
+            boxShadow: "0 0 45px rgba(99,102,241,0.4), 0 8px 24px rgba(67,56,202,0.22), inset 0 -8px 24px rgba(30,27,75,0.22)"
+          } : {}
         },
         className: `
                               absolute z-10 flex items-center justify-center text-center font-bold shadow-md group
                               ${!isMapLocked ? "cursor-grab active:cursor-grabbing" : "cursor-default"}
-                              ${node.type === "main" ? "bg-indigo-600 text-white w-40 h-40 rounded-full border-4 border-indigo-200 text-sm shadow-indigo-200 transition-all hover:shadow-xl" : node.type === "branch" ? `bg-white text-${node.colorVariant || "indigo"}-900 w-32 h-32 rounded-full border-2 border-${node.colorVariant || "indigo"}-300 text-xs shadow-sm transition-all hover:shadow-md` : node.type === "venn-token" ? `bg-${node.colorVariant || "slate"}-50 text-slate-800 px-4 py-2 rounded-xl border-b-4 border-${node.colorVariant || "slate"}-200 text-xs hover:border-${node.colorVariant || "slate"}-400 shadow-sm min-w-[80px] max-w-[150px] hover:scale-105 hover:shadow-lg hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all` : node.type === "flow-start" || node.type === "flow-end" ? "bg-slate-800 text-white px-6 py-3 rounded-full border-2 border-slate-600 text-xs uppercase tracking-wider" : node.type === "flow-process" ? "bg-white text-indigo-900 w-48 h-20 rounded-lg border-2 border-indigo-200 text-xs shadow-sm flex items-center justify-center px-4" : node.type === "flow-decision" ? "bg-yellow-50 text-yellow-900 w-32 h-32 rotate-45 border-2 border-yellow-400 text-xs shadow-sm flex items-center justify-center" : node.type === "flow-note" ? "bg-yellow-100 text-yellow-800 px-3 py-2 text-[11px] border border-yellow-200 shadow-sm max-w-[150px] rounded-bl-none" : node.type === "outline-main" ? "bg-slate-900 text-white w-60 py-4 px-6 rounded-xl border-2 border-slate-700 shadow-xl text-sm z-20" : node.type === "outline-branch" ? "bg-white text-indigo-900 w-48 py-3 px-4 rounded-lg border-l-8 border-l-indigo-600 border-y border-r border-slate-200 text-xs shadow-md z-10" : node.type === "outline-item" ? "bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-400 text-[11px] shadow-sm hover:bg-white z-0" : node.type === "ce-main" ? "bg-slate-800 text-white w-56 py-4 px-6 rounded-xl border-2 border-slate-600 shadow-xl text-sm z-20" : node.type === "cause-node" ? "bg-orange-50 text-orange-900 w-48 py-3 px-4 rounded-xl border-l-[6px] border-l-orange-400 border-y border-r border-orange-200 text-xs shadow-md hover:shadow-lg hover:border-orange-300 transition-all" : node.type === "effect-node" ? "bg-teal-50 text-teal-900 w-48 py-3 px-4 rounded-xl border-r-[6px] border-r-teal-400 border-y border-l border-teal-200 text-xs shadow-md hover:shadow-lg hover:border-teal-300 transition-all" : node.type === "chain-node" ? "bg-purple-50 text-purple-900 w-44 py-3 px-4 rounded-lg border-2 border-purple-300 text-xs shadow-md hover:shadow-lg transition-all" : node.type === "ps-problem" ? "bg-red-600 text-white w-64 py-5 px-6 rounded-2xl border-4 border-red-300 text-sm shadow-xl shadow-red-200 z-20" : node.type === "ps-solution" ? "bg-white text-green-900 w-48 py-3 px-4 rounded-xl border-t-[6px] border-t-green-500 border-x border-b border-green-200 text-xs shadow-lg hover:shadow-xl hover:scale-105 transition-all" : node.type === "ps-solution-item" ? "bg-green-50 text-green-800 w-40 py-2 px-3 rounded-lg border border-green-300 text-[11px] shadow-sm hover:bg-green-100 transition-colors" : node.type === "ps-outcome" ? "bg-blue-600 text-white w-56 py-4 px-5 rounded-2xl border-4 border-blue-300 text-sm shadow-xl shadow-blue-200 z-20" : node.type === "ps-outcome-item" ? "bg-blue-50 text-blue-800 w-40 py-2 px-3 rounded-lg border border-blue-300 text-[11px] shadow-sm hover:bg-blue-100 transition-colors" : node.type === "item" ? `bg-${node.colorVariant || "slate"}-50 text-${node.colorVariant || "slate"}-900 w-28 h-28 rounded-full border border-${node.colorVariant || "slate"}-300 text-[11px] shadow-sm hover:bg-white hover:shadow-md transition-all` : "bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-[11px] hover:bg-white"}
+                              ${node.type === "main" ? "text-white w-40 h-40 rounded-full border-4 border-white text-sm transition-all" : node.type === "branch" ? `bg-white text-${node.colorVariant || "indigo"}-900 w-32 h-32 rounded-full border-2 border-${node.colorVariant || "indigo"}-300 text-xs shadow-sm transition-all hover:shadow-md` : node.type === "venn-token" ? `bg-${node.colorVariant || "slate"}-50 text-slate-800 px-4 py-2 rounded-xl border-b-4 border-${node.colorVariant || "slate"}-200 text-xs hover:border-${node.colorVariant || "slate"}-400 shadow-sm min-w-[80px] max-w-[150px] hover:scale-105 hover:shadow-lg hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all` : node.type === "flow-start" || node.type === "flow-end" ? "bg-slate-800 text-white px-6 py-3 rounded-full border-2 border-slate-600 text-xs uppercase tracking-wider" : node.type === "flow-process" ? "bg-white text-indigo-900 w-48 h-20 rounded-lg border-2 border-indigo-200 text-xs shadow-sm flex items-center justify-center px-4" : node.type === "flow-decision" ? "bg-yellow-50 text-yellow-900 w-32 h-32 rotate-45 border-2 border-yellow-400 text-xs shadow-sm flex items-center justify-center" : node.type === "flow-note" ? "bg-yellow-100 text-yellow-800 px-3 py-2 text-[11px] border border-yellow-200 shadow-sm max-w-[150px] rounded-bl-none" : node.type === "outline-main" ? "bg-slate-900 text-white w-60 py-4 px-6 rounded-xl border-2 border-slate-700 shadow-xl text-sm z-20" : node.type === "outline-branch" ? "bg-white text-indigo-900 w-48 py-3 px-4 rounded-lg border-l-8 border-l-indigo-600 border-y border-r border-slate-200 text-xs shadow-md z-10" : node.type === "outline-item" ? "bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-400 text-[11px] shadow-sm hover:bg-white z-0" : node.type === "ce-main" ? "bg-slate-800 text-white w-56 py-4 px-6 rounded-xl border-2 border-slate-600 shadow-xl text-sm z-20" : node.type === "cause-node" ? "bg-orange-50 text-orange-900 w-48 py-3 px-4 rounded-xl border-l-[6px] border-l-orange-400 border-y border-r border-orange-200 text-xs shadow-md hover:shadow-lg hover:border-orange-300 transition-all" : node.type === "effect-node" ? "bg-teal-50 text-teal-900 w-48 py-3 px-4 rounded-xl border-r-[6px] border-r-teal-400 border-y border-l border-teal-200 text-xs shadow-md hover:shadow-lg hover:border-teal-300 transition-all" : node.type === "chain-node" ? "bg-purple-50 text-purple-900 w-44 py-3 px-4 rounded-lg border-2 border-purple-300 text-xs shadow-md hover:shadow-lg transition-all" : node.type === "ps-problem" ? "bg-red-600 text-white w-64 py-5 px-6 rounded-2xl border-4 border-red-300 text-sm shadow-xl shadow-red-200 z-20" : node.type === "ps-solution" ? "bg-white text-green-900 w-48 py-3 px-4 rounded-xl border-t-[6px] border-t-green-500 border-x border-b border-green-200 text-xs shadow-lg hover:shadow-xl hover:scale-105 transition-all" : node.type === "ps-solution-item" ? "bg-green-50 text-green-800 w-40 py-2 px-3 rounded-lg border border-green-300 text-[11px] shadow-sm hover:bg-green-100 transition-colors" : node.type === "ps-outcome" ? "bg-blue-600 text-white w-56 py-4 px-5 rounded-2xl border-4 border-blue-300 text-sm shadow-xl shadow-blue-200 z-20" : node.type === "ps-outcome-item" ? "bg-blue-50 text-blue-800 w-40 py-2 px-3 rounded-lg border border-blue-300 text-[11px] shadow-sm hover:bg-blue-100 transition-colors" : node.type === "item" ? `bg-${node.colorVariant || "slate"}-50 text-${node.colorVariant || "slate"}-900 w-28 h-28 rounded-full border border-${node.colorVariant || "slate"}-300 text-[11px] shadow-sm hover:bg-white hover:shadow-md transition-all` : "bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-[11px] hover:bg-white"}
                               ${connectingSourceId === node.id ? "ring-4 ring-yellow-400 ring-offset-2 scale-105" : ""}
                           `,
         onMouseDown: (e) => !isMapLocked && handleNodeMouseDown(e, node.id),

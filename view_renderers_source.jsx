@@ -2128,6 +2128,13 @@ const renderInteractiveMap = (deps) => {
                               }
                               const isFlowChart = fromNode.type && fromNode.type.startsWith('flow-');
                               const pathD = isFlowChart ? getElbowPath(fromNode, toNode) : null;
+                              // Non-flow edges curve like the static KeyConceptMapView (horizontal-pull
+                              // cubic Bézier): control points pull to the midpoint x, so edges that spread
+                              // across (root→branches) read as graceful S-curves, while near-vertical edges
+                              // (branch→item) stay almost straight. Anchored at node centres (same points
+                              // the old straight lines used). Flow charts keep their right-angle elbows.
+                              const _emidX = (fromNode.x + toNode.x) / 2;
+                              const curvePathD = `M ${fromNode.x} ${fromNode.y} C ${_emidX} ${fromNode.y}, ${_emidX} ${toNode.y}, ${toNode.x} ${toNode.y}`;
                               return (
                                   <g
                                     key={edge.id}
@@ -2150,31 +2157,26 @@ const renderInteractiveMap = (deps) => {
                                           </>
                                       ) : (
                                           <>
-                                            <line
-                                                x1={fromNode.x} y1={fromNode.y}
-                                                x2={toNode.x} y2={toNode.y}
-                                                stroke="transparent"
-                                                strokeWidth="20"
-                                            />
+                                            <path d={curvePathD} stroke="transparent" strokeWidth="20" fill="none" />
                                             {/* Soft colour halo beneath accent-coded concept-map edges — echoes the
                                                 static KeyConceptMapView's glowing curves. Scoped to edges that carry an
                                                 accent (concept maps) with no status, so flow / feedback edges stay crisp. */}
                                             {edge.color && !edge.status && (
-                                                <line
-                                                    x1={fromNode.x} y1={fromNode.y}
-                                                    x2={toNode.x} y2={toNode.y}
+                                                <path
+                                                    d={curvePathD}
                                                     stroke={edge.color}
                                                     strokeWidth="6"
+                                                    fill="none"
                                                     strokeOpacity="0.18"
                                                     strokeLinecap="round"
                                                     filter="url(#vo-edge-glow)"
                                                 />
                                             )}
-                                            <line
-                                                x1={fromNode.x} y1={fromNode.y}
-                                                x2={toNode.x} y2={toNode.y}
+                                            <path
+                                                d={curvePathD}
                                                 stroke={edge.style === 'dashed' ? '#94a3b8' : (edge.status ? strokeColor : (edge.color || strokeColor))}
                                                 strokeWidth={strokeWidth}
+                                                fill="none"
                                                 strokeOpacity={edge.status ? "1" : "0.6"}
                                                 strokeLinecap="round"
                                                 strokeDasharray={edge.status === 'incorrect' || edge.style === 'dashed' ? "5,5" : "none"}
@@ -2217,12 +2219,18 @@ const renderInteractiveMap = (deps) => {
                               left: node.x,
                               top: node.y,
                               transform: 'translate(-50%, -50%)',
-                              transition: draggedNodeId === node.id ? 'none' : 'left 0.3s ease-out, top 0.3s ease-out, transform 0.2s ease-out'
+                              transition: draggedNodeId === node.id ? 'none' : 'left 0.3s ease-out, top 0.3s ease-out, transform 0.2s ease-out',
+                              // The concept-map centre node gets the static KeyConceptMapView bubble's
+                              // radial gradient + glow, so the two renderings of the hub read the same.
+                              ...(node.type === 'main' ? {
+                                  background: 'radial-gradient(circle at 30% 30%, #818cf8 0%, #6366f1 45%, #4338ca 100%)',
+                                  boxShadow: '0 0 45px rgba(99,102,241,0.4), 0 8px 24px rgba(67,56,202,0.22), inset 0 -8px 24px rgba(30,27,75,0.22)'
+                              } : {})
                           }}
                           className={`
                               absolute z-10 flex items-center justify-center text-center font-bold shadow-md group
                               ${!isMapLocked ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
-                              ${node.type === 'main' ? 'bg-indigo-600 text-white w-40 h-40 rounded-full border-4 border-indigo-200 text-sm shadow-indigo-200 transition-all hover:shadow-xl' :
+                              ${node.type === 'main' ? 'text-white w-40 h-40 rounded-full border-4 border-white text-sm transition-all' :
                                 node.type === 'branch' ? `bg-white text-${node.colorVariant || 'indigo'}-900 w-32 h-32 rounded-full border-2 border-${node.colorVariant || 'indigo'}-300 text-xs shadow-sm transition-all hover:shadow-md` :
                                 node.type === 'venn-token' ? `bg-${node.colorVariant || 'slate'}-50 text-slate-800 px-4 py-2 rounded-xl border-b-4 border-${node.colorVariant || 'slate'}-200 text-xs hover:border-${node.colorVariant || 'slate'}-400 shadow-sm min-w-[80px] max-w-[150px] hover:scale-105 hover:shadow-lg hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all` :
                                 node.type === 'flow-start' || node.type === 'flow-end' ? 'bg-slate-800 text-white px-6 py-3 rounded-full border-2 border-slate-600 text-xs uppercase tracking-wider' :

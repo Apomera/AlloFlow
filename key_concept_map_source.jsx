@@ -128,6 +128,20 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) =
                 }}
             />
 
+            {/* Mobile connector spine — on phones/tablets the radial SVG below is hidden and the
+                branch cards stack vertically, which used to drop every connecting line. This soft
+                vertical trunk threads behind the stack (visible in the gaps between cards and behind
+                the hub bubble) so the branches stay visibly tied to the central concept. Desktop keeps
+                the full Bézier SVG. */}
+            <div
+                className="md:hidden absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] rounded-full pointer-events-none"
+                aria-hidden="true"
+                style={{
+                    zIndex: 2,
+                    background: 'linear-gradient(to bottom, transparent 0%, rgba(129,140,248,0.55) 10%, rgba(129,140,248,0.55) 90%, transparent 100%)',
+                }}
+            />
+
             {/* SVG overlay — pointer-events-none so cards remain interactive */}
             <svg
                 className="hidden md:block absolute inset-0 pointer-events-none"
