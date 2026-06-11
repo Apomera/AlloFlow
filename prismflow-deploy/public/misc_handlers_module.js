@@ -41,6 +41,53 @@ const handleFileUpload = async (e, deps) => {
         'text/plain', 'text/markdown', 'text/csv', 'text/html', 'application/json',
         'application/xml', 'text/javascript', 'text/css'
     ];
+    // ── Markdown / CSV → the pipeline (2026-06-10) ──
+    // .md (incl. NotebookLM exports — completing the round trip with our own
+    // NotebookLM export) and .csv/.tsv route to the PIPELINE triage as the
+    // transcript format: markdown headings + pipe-tables survive as real
+    // structure (CSV becomes a scoped table → full /Headers + /IDTree in the
+    // tagged PDF). 'Skip to Text Extraction' keeps the old source-box path.
+    // .txt stays on the content path — it is the content tools' workhorse.
+    if (/\.(md|markdown|csv|tsv)$/i.test(file.name)) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            let text = String(event.target.result || '');
+            if (/\.(csv|tsv)$/i.test(file.name)) {
+                // Minimal CSV/TSV → markdown pipe-table (quoted commas honored).
+                const delim = /\.tsv$/i.test(file.name) ? '\t' : ',';
+                const rows = text.split(/\r?\n/).filter((l) => l.trim()).map((line) => {
+                    const cells = []; let cur = ''; let q = false;
+                    for (let i = 0; i < line.length; i++) {
+                        const ch = line[i];
+                        if (q) { if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') q = false; else cur += ch; }
+                        else if (ch === '"') q = true;
+                        else if (ch === delim) { cells.push(cur); cur = ''; }
+                        else cur += ch;
+                    }
+                    cells.push(cur);
+                    return cells;
+                });
+                if (rows.length) {
+                    text = '# ' + file.name.replace(/\.(csv|tsv)$/i, '') + '\n\n'
+                        + rows.map((r, i) => '| ' + r.map((c) => c.replace(/\|/g, '/')).join(' | ') + ' |' + (i === 0 ? ('\n|' + r.map(() => ' --- ').join('|') + '|') : '')).join('\n');
+                }
+            }
+            if (text.trim().length < 5) { setError(t('toasts.file_process_error')); setIsExtracting(false); return; }
+            const MAGIC = 'ALLOTRANSCRIPT:v1\n';
+            const bytes = new TextEncoder().encode(MAGIC + text.trim());
+            let bin = '';
+            for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+            setPendingPdfBase64(btoa(bin));
+            setPendingPdfFile(file);
+            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _transcriptSource: true });
+            setIsExtracting(false);
+            addToast(t('toasts.textdoc_pipeline_ready') || '📄 Loaded into the accessibility pipeline — Make Accessible for the full treatment, or Skip to Text Extraction to use as source material.', 'success');
+        };
+        reader.onerror = () => { setError(t('quick_start.error_read_file')); setIsExtracting(false); };
+        setIsExtracting(true);
+        reader.readAsText(file);
+        return;
+    }
     const isTextFile = textMimeTypes.includes(file.type) ||
                        /\.(txt|md|csv|json|html|xml|js|css|py)$/i.test(file.name);
     if (isTextFile) {

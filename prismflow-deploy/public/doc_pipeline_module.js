@@ -4751,6 +4751,19 @@ var createDocPipeline = function(deps) {
         const _paraHtml = (p) => {
           const h = p.match(/^(#{1,3})\s+(.+)$/);
           if (h) { const lv = h[1].length; return '<h' + lv + '>' + h[2].replace(/</g, '&lt;') + '</h' + lv + '>'; }
+          // Markdown pipe-tables (2026-06-10): CSV/markdown inputs arrive as
+          // | cell | cell | blocks — build a REAL scoped table so Stage 5b
+          // upgrades it to full /Headers + /IDTree in the tagged output.
+          const lines = p.split('\n');
+          if (lines.length >= 2 && lines.filter((l) => l.trim().startsWith('|')).length >= Math.max(2, lines.length - 1)) {
+            const rows = lines.map((l) => l.trim()).filter((l) => l.startsWith('|') && !/^\|[\s:|-]+\|$/.test(l))
+              .map((l) => l.replace(/^\||\|$/g, '').split('|').map((c) => c.trim()));
+            if (rows.length >= 2) {
+              const esc3 = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+              return '<table><thead><tr>' + rows[0].map((c) => '<th scope="col">' + esc3(c) + '</th>').join('') + '</tr></thead><tbody>'
+                + rows.slice(1).map((r) => '<tr>' + r.map((c) => '<td>' + esc3(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+            }
+          }
           return '<p>' + p.replace(/</g, '&lt;') + '</p>';
         };
         const _tHtml = '<!DOCTYPE html><html lang="en"><head><title></title></head><body><main>'

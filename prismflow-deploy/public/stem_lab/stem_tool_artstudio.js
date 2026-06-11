@@ -148,6 +148,19 @@ const d = labToolData.artStudio || {};
 
             var hue = d.hue || 0, sat = d.sat !== undefined ? d.sat : 100, lit = d.lit !== undefined ? d.lit : 50;
 
+            // Pre-render the static 360-segment hue ring ONCE. sat/lit are frozen for
+            // this loop instance (wheelRef re-runs with fresh values on slider change),
+            // so the ring was rebuilt + 360 hsl-strings allocated EVERY frame purely to
+            // pulse the 2px selector dot. Cache it; redraw only the dot/markers live.
+            var _wheelBmp = document.createElement('canvas');
+            _wheelBmp.width = W; _wheelBmp.height = H;
+            var _wctx = _wheelBmp.getContext('2d');
+            for (var wa = 0; wa < 360; wa++) {
+              var wr1 = (wa - 90) * Math.PI / 180, wr2 = (wa - 89) * Math.PI / 180;
+              _wctx.beginPath(); _wctx.moveTo(cx, cy); _wctx.arc(cx, cy, R, wr1, wr2); _wctx.closePath();
+              _wctx.fillStyle = 'hsl(' + wa + ',' + sat + '%,' + lit + '%)'; _wctx.fill();
+            }
+
 
 
             function drawWheel() {
@@ -156,17 +169,7 @@ const d = labToolData.artStudio || {};
 
               ctx.clearRect(0, 0, W, H);
 
-              for (var a = 0; a < 360; a++) {
-
-                var rad1 = (a - 90) * Math.PI / 180;
-
-                var rad2 = (a - 89) * Math.PI / 180;
-
-                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, rad1, rad2); ctx.closePath();
-
-                ctx.fillStyle = 'hsl(' + a + ',' + sat + '%,' + lit + '%)'; ctx.fill();
-
-              }
+              ctx.drawImage(_wheelBmp, 0, 0); // cached static hue ring (was a 360-arc rebuild every frame)
 
               ctx.beginPath(); ctx.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
 
