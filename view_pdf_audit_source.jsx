@@ -705,7 +705,7 @@ function PdfAuditView(props) {
     addToast, agentActivityLog, agentLogFullView, applyWordRestorationInPlace,
     auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-    applyFormBlanks, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
+    applyFormBlanks, callTTS, detectPdfBlankFields, overlayPdfFormFields, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
@@ -950,6 +950,9 @@ function PdfAuditView(props) {
   const [showPlainCompare, setShowPlainCompare] = useState(false);
   const [fillableCandidates, setFillableCandidates] = useState(null); // null = panel closed
   const [fillableAccepted, setFillableAccepted] = useState({});
+  const [pdfFieldCandidates, setPdfFieldCandidates] = useState(null);
+  const [pdfFieldAccepted, setPdfFieldAccepted] = useState({});
+  const [pdfFieldBusy, setPdfFieldBusy] = useState(false);
   // S3 (agent): the translate_document command pre-fills the language
   // here via event — the RUN click stays the teacher's (quota guardrail).
   useEffect(() => {
@@ -7482,6 +7485,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         }} className="px-4 py-2 bg-fuchsia-50 text-fuchsia-700 rounded-xl font-bold text-xs hover:bg-fuchsia-100 transition-colors" title={t('pdf_audit.fillable.btn_title') || 'Finds the fill-in blanks (underscore runs, dotted lines, checkbox marks) and — after you review the list — converts them into real form fields. The HTML export becomes fillable in any browser immediately; the Word export keeps visible blanks; fillable tagged-PDF fields are the next stage. Nothing converts without your review.'}>
                           📝 {t('pdf_audit.fillable.btn') || 'Make fillable'}
                         </button>}
+                        {/* ── Fillable S2 (2026-06-12) ── widgets on the ORIGINAL layout:
+                            pdf.js locates every blank's page coordinates; widgets go exactly
+                            there; the tagger's Stage 3 tags them. Born-digital only (scans:
+                            OCR → typeset → S1 is the honest path). */}
+                        {typeof detectPdfBlankFields === 'function' && _inputIsPdf && <button data-help-key="pdf_audit_fillable_original_btn" disabled={pdfFieldBusy} onClick={async () => {
+                          setPdfFieldBusy(true);
+                          try {
+                            const b64 = await ensurePdfBase64();
+                            if (!b64) { addToast(t('toasts.fillable_pdf_no_bytes') || 'Original PDF bytes unavailable — re-attach the file.', 'error'); setPdfFieldBusy(false); return; }
+                            const cands = await detectPdfBlankFields(b64);
+                            if (!cands.length) { addToast(t('toasts.fillable_pdf_none') || 'No blanks found in the original layout — this looks for underscore runs, dotted lines, and checkbox marks in the PDF text. Scanned pages have no text layer; use Make fillable + the typeset PDF for those.', 'info'); setPdfFieldBusy(false); return; }
+                            const acc = {};
+                            cands.forEach((c) => { acc[c.id] = { label: c.label }; });
+                            setPdfFieldAccepted(acc);
+                            setPdfFieldCandidates(cands);
+                          } catch (e) { addToast((t('toasts.fillable_pdf_failed') || 'Blank detection failed: ') + ((e && e.message) || 'unknown'), 'error'); }
+                          setPdfFieldBusy(false);
+                        }} className="px-4 py-2 bg-fuchsia-50 text-fuchsia-700 rounded-xl font-bold text-xs hover:bg-fuchsia-100 transition-colors disabled:opacity-50" title={t('pdf_audit.fillable.original_btn_title') || 'Places real form fields directly on the ORIGINAL page layout — the document looks exactly like the original, but students and parents can type into it. Finds blanks by their printed coordinates (underscore runs, dotted lines, checkbox marks), shows you the list for review (position-estimated ones are flagged), then tags every field for screen readers. Born-digital PDFs only — scanned pages have no text layer.'}>
+                          {pdfFieldBusy ? '⏳' : '📝'} {t('pdf_audit.fillable.original_btn') || 'Fillable PDF (original layout)'}
+                        </button>}
+
 
                         {/* Cross-session resume (2026-06-11): the saved project
                             carries the job POSITION; segments rebuild
@@ -10332,6 +10356,60 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   aria-expanded={smartTableOpen}
                   aria-label={t('pdf_audit.toolbar.smart_table_aria') || 'Smart table: paste data, get an accessible table'} title={t('pdf_audit.toolbar.smart_table_title') || 'Smart table — paste ANY data (rows from email, notes, CSV) and get a clean accessible table. Delimited data parses instantly with no AI; messy data is organized by AI using only your values.'}>📊✨</button>
               </div>
+              {/* Fillable S2 review panel: same review-first contract,
+                  plus a confidence chip — 'approx' rects are estimated from
+                  character widths and worth a glance in the result. */}
+              {pdfFieldCandidates && (
+                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setPdfFieldCandidates(null)}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.pdf_panel_aria') || 'Review detected PDF form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <div className="px-4 py-3 border-b border-slate-200">
+                      <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.pdf_panel_heading') || 'Blanks found on the original pages — review before placing fields')}</div>
+                      <div className="text-[11px] text-slate-600 mt-0.5">{pdfFieldCandidates.length} {t('pdf_audit.fillable.pdf_found') || 'blanks across'} {new Set(pdfFieldCandidates.map((c) => c.page)).size} {t('pdf_audit.fillable.pdf_pages') || 'page(s)'} — {t('pdf_audit.fillable.pdf_note') || 'fields go exactly where the blanks print. ~ marks position-estimated ones.'}</div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+                      {pdfFieldCandidates.map((c) => (
+                        <div key={c.id} className={`flex items-center gap-2 p-2 rounded-lg border ${pdfFieldAccepted[c.id] ? 'border-fuchsia-200 bg-fuchsia-50/50' : 'border-slate-200 bg-slate-50 opacity-60'}`}>
+                          <input type="checkbox" checked={!!pdfFieldAccepted[c.id]} onChange={(e) => setPdfFieldAccepted((prev) => { const nx = { ...prev }; if (e.target.checked) nx[c.id] = { label: c.label }; else delete nx[c.id]; return nx; })} aria-label={(t('pdf_audit.fillable.include_aria') || 'Include field: ') + (c.label || c.context)} className="shrink-0" />
+                          <span className="text-base shrink-0" aria-hidden="true">{c.kind === 'checkbox' ? '☑️' : '✍️'}</span>
+                          <input value={(pdfFieldAccepted[c.id] && pdfFieldAccepted[c.id].label != null) ? pdfFieldAccepted[c.id].label : c.label} onChange={(e) => setPdfFieldAccepted((prev) => prev[c.id] ? { ...prev, [c.id]: { label: e.target.value } } : prev)} disabled={!pdfFieldAccepted[c.id]} placeholder={t('pdf_audit.fillable.label_ph') || 'Field label (needed for screen readers)'} className={`w-40 text-xs border rounded px-2 py-1 ${(!c.label && !(pdfFieldAccepted[c.id] && pdfFieldAccepted[c.id].label)) ? 'border-amber-400 bg-amber-50' : 'border-slate-300 bg-white'}`} />
+                          {c.confidence === 'approx' && <span className="shrink-0 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-1.5" title={t('pdf_audit.fillable.approx_title') || 'Position estimated from character widths — check this one in the result.'}>~</span>}
+                          <span className="flex-1 min-w-0 text-[11px] text-slate-600 truncate font-mono" title={c.context}>{c.context}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-4 py-3 border-t border-slate-200 flex items-center gap-2">
+                      <button onClick={async () => {
+                        setPdfFieldBusy(true);
+                        try {
+                          const b64 = await ensurePdfBase64();
+                          const fielded = await overlayPdfFormFields(b64, pdfFieldCandidates, pdfFieldAccepted);
+                          addToast('📝 ' + fielded.created + ' ' + (t('toasts.fillable_pdf_placed') || 'fields placed on the original layout — tagging for screen readers…'), 'info');
+                          const _dm = { title: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, ''), lang: 'en' };
+                          let outBytes = fielded.bytes, tagNote = '';
+                          try {
+                            const tagged = await createTaggedPdf(fielded.bytes, pdfFixResult, _dm);
+                            const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
+                            const rt = tagged && tagged.roundTrip;
+                            if (tBytes && !(rt && rt.ok === false)) {
+                              outBytes = tBytes;
+                              const _s = (tagged && tagged.summary) || {};
+                              tagNote = _s.uaDeclared ? (t('toasts.fillable_pdf_ua') || ' Tagged — PDF/UA declared.') : (t('toasts.fillable_pdf_tagged') || ' Tagged (declaration withheld — see verification).');
+                            } else { tagNote = t('toasts.fillable_pdf_untagged') || ' ⚠ Tagged version failed verification — this copy is fillable but NOT tagged.'; }
+                          } catch (te) { tagNote = (t('toasts.fillable_pdf_tag_err') || ' ⚠ Tagging failed (') + ((te && te.message) || 'unknown') + ') — this copy is fillable but NOT tagged.'; }
+                          safeDownloadBlob(new Blob([outBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-fillable.pdf');
+                          setPdfFieldCandidates(null);
+                          addToast('📝 ' + (t('toasts.fillable_pdf_done') || 'Fillable PDF downloaded — original layout, ') + fielded.created + (t('toasts.fillable_pdf_done2') || ' typed-into fields.') + tagNote, 'success');
+                        } catch (e) { addToast((t('toasts.fillable_pdf_apply_failed') || 'Field placement failed: ') + ((e && e.message) || 'unknown'), 'error'); }
+                        setPdfFieldBusy(false);
+                      }} disabled={pdfFieldBusy || Object.keys(pdfFieldAccepted).length === 0} className="px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50">
+                        {pdfFieldBusy ? '⏳' : '✅'} {(t('pdf_audit.fillable.pdf_apply') || 'Place')} {Object.keys(pdfFieldAccepted).length} {(t('pdf_audit.fillable.pdf_apply2') || 'fields + download')}
+                      </button>
+                      <button onClick={() => setPdfFieldCandidates(null)} className="px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">{t('pdf_audit.fillable.cancel') || 'Cancel'}</button>
+                      <span className="text-[10px] text-slate-500 ml-auto">{t('pdf_audit.fillable.pdf_footer') || 'The original visual layout is preserved exactly.'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Fillable S0 review panel (2026-06-12): review-first, never
                   silent — every detected blank listed, labels editable,
                   each rejectable. */}

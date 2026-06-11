@@ -776,12 +776,28 @@ var createDocPipeline = function(deps) {
           const w = wholeItem ? it.width : m[0].length * charW;
           // Label: nearest item on the same line, ending before this run.
           let label = '', best = -Infinity;
+          // pdf.js emits synthetic whitespace items between words — skip
+          // them or the nearest 'neighbor' is a space and the label is ''.
           items.forEach((o) => {
-            if (o === it) return;
+            if (o === it || !String(o.str || '').trim()) return;
             if (Math.abs(o.transform[5] - it.transform[5]) > 3) return;
             const oEnd = o.transform[4] + o.width;
             if (oEnd <= x + 1 && oEnd > best) { best = oEnd; label = String(o.str).trim(); }
           });
+          // Checkboxes read their label from the FOLLOWING text: same-item
+          // first ('[ ] Attending…'), else the nearest same-line item after.
+          if (isCheck) {
+            const post = str.slice(m.index + m[0].length).trim();
+            if (post) label = post;
+            else {
+              let bestX = Infinity;
+              items.forEach((o) => {
+                if (o === it || !String(o.str || '').trim()) return;
+                if (Math.abs(o.transform[5] - it.transform[5]) > 3) return;
+                if (o.transform[4] >= x + w - 1 && o.transform[4] < bestX) { bestX = o.transform[4]; label = String(o.str).trim(); }
+              });
+            }
+          }
           if (!label && !wholeItem) {
             const pre = str.slice(0, m.index).trim();
             if (pre) label = pre;

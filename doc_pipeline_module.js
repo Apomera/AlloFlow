@@ -738,6 +738,127 @@ var createDocPipeline = function(deps) {
     return { html: result, lang: targetLang, langCode: _langCode, rtl: _rtl, chunksTotal: chunks.length, chunksFailed: failed };
   };
 
+  // ── Fillable S2 (2026-06-12, design doc §3) ── fields on the ORIGINAL
+  // layout. pdf.js text items carry page coordinates for every underscore
+  // run; widgets go exactly there on the original bytes (visual fidelity
+  // preserved — the IEP-form case). Two confidence tiers: 'exact' when the
+  // blank is its own text item (rect is measured, not estimated) and
+  // 'approx' when it's a substring (prefix width estimated proportionally
+  // — flagged in the review panel). Labels come from the nearest text on
+  // the same line. Born-digital only by design: scans have no text items
+  // (the honest path for them is OCR → typeset → S1).
+  const detectPdfBlankFields = async (pdfBytesOrBase64) => {
+    await ensurePdfJsLoaded();
+    if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
+    let bytes = pdfBytesOrBase64;
+    if (typeof bytes === 'string') {
+      const bin = atob(bytes);
+      bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    }
+    const pdoc = await window.pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+    const out = [];
+    let idx = 0;
+    for (let pi = 1; pi <= pdoc.numPages; pi++) {
+      const page = await pdoc.getPage(pi);
+      const tc = await page.getTextContent();
+      const items = tc.items.filter((it) => it.str != null);
+      items.forEach((it) => {
+        const str = String(it.str);
+        const re = /(_{3,}|\.{6,}|\u2610|\u25A1|\[\s?_?\s?\])/g;
+        let m;
+        while ((m = re.exec(str))) {
+          const isCheck = !/^[_.]/.test(m[0]);
+          const fontH = Math.abs(it.transform[0]) || Math.abs(it.transform[3]) || 10;
+          const wholeItem = m[0].length >= str.trim().length - 1;
+          const charW = it.width / Math.max(1, str.length);
+          const x = it.transform[4] + (wholeItem ? 0 : m.index * charW);
+          const w = wholeItem ? it.width : m[0].length * charW;
+          // Label: nearest item on the same line, ending before this run.
+          let label = '', best = -Infinity;
+          // pdf.js emits synthetic whitespace items between words — skip
+          // them or the nearest 'neighbor' is a space and the label is ''.
+          items.forEach((o) => {
+            if (o === it || !String(o.str || '').trim()) return;
+            if (Math.abs(o.transform[5] - it.transform[5]) > 3) return;
+            const oEnd = o.transform[4] + o.width;
+            if (oEnd <= x + 1 && oEnd > best) { best = oEnd; label = String(o.str).trim(); }
+          });
+          // Checkboxes read their label from the FOLLOWING text: same-item
+          // first ('[ ] Attending…'), else the nearest same-line item after.
+          if (isCheck) {
+            const post = str.slice(m.index + m[0].length).trim();
+            if (post) label = post;
+            else {
+              let bestX = Infinity;
+              items.forEach((o) => {
+                if (o === it || !String(o.str || '').trim()) return;
+                if (Math.abs(o.transform[5] - it.transform[5]) > 3) return;
+                if (o.transform[4] >= x + w - 1 && o.transform[4] < bestX) { bestX = o.transform[4]; label = String(o.str).trim(); }
+              });
+            }
+          }
+          if (!label && !wholeItem) {
+            const pre = str.slice(0, m.index).trim();
+            if (pre) label = pre;
+          }
+          label = label.replace(/[:\-–]\s*$/, '').trim().slice(0, 60);
+          out.push({
+            id: 'pf' + (idx++),
+            kind: isCheck ? 'checkbox' : 'text',
+            page: pi,
+            x, y: it.transform[5], w: Math.max(isCheck ? fontH : 24, w), h: Math.max(10, fontH * 1.25),
+            label, labelMissing: !label,
+            confidence: wholeItem ? 'exact' : 'approx',
+            context: (label ? label + ' ' : '') + '⟦' + (isCheck ? '☐' : '____') + '⟧ (p.' + pi + ')',
+          });
+        }
+      });
+    }
+    try { pdoc.destroy(); } catch (_) {}
+    return out;
+  };
+  const overlayPdfFormFields = async (pdfBytesOrBase64, candidates, accepted) => {
+    const PDFLibNS = (typeof window !== 'undefined' && window.PDFLib) || null;
+    if (!PDFLibNS) throw new Error('pdf-lib unavailable');
+    let bytes = pdfBytesOrBase64;
+    if (typeof bytes === 'string') {
+      const bin = atob(bytes);
+      bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    }
+    const doc = await PDFLibNS.PDFDocument.load(bytes);
+    const form = doc.getForm();
+    const pages = doc.getPages();
+    const used = {};
+    let created = 0;
+    // Reading order: top-to-bottom, left-to-right per page.
+    const chosen = candidates
+      .filter((c) => accepted && Object.prototype.hasOwnProperty.call(accepted, c.id))
+      .sort((a, b) => a.page - b.page || b.y - a.y || a.x - b.x);
+    for (const c of chosen) {
+      const pg = pages[c.page - 1];
+      if (!pg) continue;
+      const ov = accepted[c.id] || {};
+      const label = String(ov.label != null ? ov.label : c.label || '').trim();
+      const base = (label || 'field').toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'field';
+      used[base] = (used[base] || 0) + 1;
+      const name = 'allo.' + (used[base] > 1 ? (base + '_' + used[base]) : base);
+      try {
+        if (c.kind === 'checkbox') {
+          const cb = form.createCheckBox(name);
+          cb.addToPage(pg, { x: c.x, y: c.y - 2, width: c.h, height: c.h, borderWidth: 1 });
+        } else {
+          const tf = form.createTextField(name);
+          tf.addToPage(pg, { x: c.x, y: c.y - 3, width: c.w, height: c.h, borderWidth: 0.75 });
+        }
+        created++;
+      } catch (fe) { try { warnLog('[FillableS2] widget failed (' + ((fe && fe.message) || '?') + ') — blank left as-is'); } catch (_) {} }
+    }
+    const outBytes = await doc.save();
+    return { bytes: outBytes, created };
+  };
+
   // ── Fillable worksheet S0 (2026-06-12, design doc §3) ──
   // Deterministic blank detection + review-first conversion to semantic
   // HTML fields. One shared walker visits text nodes in document order so
@@ -23126,6 +23247,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     translateAccessibleHtml: _wrapAsync(translateAccessibleHtml),
     simplifyAccessibleHtml: _wrapAsync(simplifyAccessibleHtml),
     detectFormBlanks: _wrap(detectFormBlanks),
+    detectPdfBlankFields: _wrapAsync(detectPdfBlankFields),
+    overlayPdfFormFields: _wrapAsync(overlayPdfFormFields),
     applyFormBlanks: _wrap(applyFormBlanks),
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
