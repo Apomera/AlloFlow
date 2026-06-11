@@ -4193,6 +4193,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
   const setShowLitLab = React.useCallback((v) => { if (v && window.__alloLazyLitLab) { try { window.__alloLazyLitLab(); } catch(_) {} } _setShowLitLabRaw(v); }, []);
+  const [showMindMap, _setShowMindMapRaw] = useState(false);
+  const setShowMindMap = React.useCallback((v) => { if (v && window.__alloLazyMindMap) { try { window.__alloLazyMindMap(); } catch(_) {} } _setShowMindMapRaw(v); }, []);
   const [showPoetTree, _setShowPoetTreeRaw] = useState(false);
   const setShowPoetTree = React.useCallback((v) => { if (v && window.__alloLazyPoetTree) { try { window.__alloLazyPoetTree(); } catch(_) {} } _setShowPoetTreeRaw(v); }, []);
   const [showResearchHub, _setShowResearchHubRaw] = useState(false);
@@ -4389,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '71d20e5f';
+    var pluginCdnVersion = '79439339';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4584,6 +4586,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js');
     window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js'); }; })();
     window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js'); }; })();
     window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
     loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js');
@@ -14127,6 +14130,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (_m && typeof _m.handleFileUpload === "function") return _m.handleFileUpload(e, {
         LargeFileHandler,
         callGeminiVision,
+        convertXlsxToMarkdownTables: (_docPipeline && _docPipeline.convertXlsxToMarkdownTables) || null,
         addToast,
         t,
         warnLog,
@@ -27186,7 +27190,7 @@ ${_toolList}
             })}
         </CDNModuleGate>
         {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} showEducatorHub={showEducatorHub} t={t} />}
-        {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
+        {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
@@ -27796,6 +27800,15 @@ ${_toolList}
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'litlab-submission', title: '🎭 ' + (submission.storyTitle || 'My Performance'), data: submission, timestamp: new Date(), meta: `${submission.characterCount || 0} characters · ${submission.lineCount || 0} lines` };
                         setHistory(prev => [...prev, item]);
                     },
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => setShowMindMap(false)} icon="🧩" displayName="Mind Map" t={t}>
+            {(MindMap) => React.createElement(MindMap, {
+                isOpen: true,
+                onClose: () => setShowMindMap(false),
+                addToast,
+                studentNickname,
+                t,
             })}
         </CDNModuleGate>
         <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
