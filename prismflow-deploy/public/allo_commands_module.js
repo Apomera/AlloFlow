@@ -154,6 +154,24 @@ function buildAlloCommands(ctx) {
       c.startPipelineTour("results");
       return t("cmd.pipeline_tour_done", "Starting the results tour.");
     } },
+    // ── Parameter-carrying commands (S3) ──
+    { id: "create_lesson", icon: "\u{1F9D1}\u200D\u{1F3EB}", roles: "teacher", when: (c) => !!c.startLessonFlow, label: t("cmd.create_lesson", "Create a lesson (tell me the topic)"), aliases: ["create a lesson", "make a lesson", "new lesson about", "plan a lesson", "lesson about"], hint: t("cmd.create_lesson_hint", "Starts the guided flow \u2014 say a topic and grade"), run: (c, p) => {
+      c.startLessonFlow(p || {});
+      return p && p.topic ? t("cmd.create_lesson_done", "Starting a lesson flow about \u201C") + p.topic + "\u201D" + (p.grade ? t("cmd.create_lesson_done2", " for grade ") + p.grade : "") + t("cmd.create_lesson_done3", " \u2014 AlloBot will guide the next steps.") : t("cmd.create_lesson_done_blank", "Starting the guided lesson flow \u2014 AlloBot will ask for your topic.");
+    } },
+    { id: "set_font_size", icon: "\u{1F520}", roles: "all", when: (c) => !!c.setFontSizeTo, label: t("cmd.set_font_size", "Set the text size (say a number)"), aliases: ["set text size", "text size to", "font size to"], hint: t("cmd.set_font_size_hint", "e.g. \u201Cset text size to 20\u201D (10\u201332)"), run: (c, p) => {
+      const v = c.setFontSizeTo(p && p.size);
+      return t("cmd.set_font_size_done", "Text size set to ") + v + ".";
+    } },
+    { id: "translate_document", icon: "\u{1F310}", roles: "teacher", when: (c) => !!c.pipelineOpen && !!c.prefillTranslateLang, label: t("cmd.translate_document", "Translate this document (say a language)"), aliases: ["translate this document", "translate document to", "translate to", "translate it into"], hint: t("cmd.translate_document_hint", "Pre-fills the language and points at the button"), run: (c, p) => {
+      const lang = p && p.language ? String(p.language).trim() : "";
+      if (lang) c.prefillTranslateLang(lang);
+      try {
+        if (c.whereIs) c.whereIs("translate document");
+      } catch (_) {
+      }
+      return lang ? t("cmd.translate_document_done", "Set the translation language to ") + lang + t("cmd.translate_document_done2", " and spotlighted the button \u2014 press Translate to run it. (Translations use AI quota, so the click stays yours.)") : t("cmd.translate_document_pick", "Spotlighted the translation controls \u2014 pick a language and press Translate.");
+    } },
     // ── Voice control (S2) ──
     { id: "voice_start", icon: "\u{1F399}\uFE0F", roles: "all", when: (c) => !c.voiceActive && c.voiceAvailable, label: t("cmd.voice_start", "Start voice control"), aliases: ["voice control", "listen", "voice mode", "hands free"], hint: t("cmd.voice_start_hint", "AlloBot listens for commands until you stop it"), run: (c) => {
       c.startVoiceLoop();
@@ -182,7 +200,19 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     const narration = ctx.whereIs(_whereM[1].trim());
     if (narration) return { handled: true, narration, commandId: "where_is", via: "where-is" };
   }
+  const _grammars = [
+    { id: "create_lesson", re: /^(?:create|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
+    { id: "set_font_size", re: /^(?:set\s+)?(?:the\s+)?(?:text|font)\s*(?:size)?\s*(?:to)?\s*(\d{1,2})\s*\.?$/i, params: (m) => ({ size: m[1] }) },
+    { id: "translate_document", re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) }
+  ];
   const commands = buildAlloCommands(ctx);
+  for (const g of _grammars) {
+    const m = text.match(g.re);
+    if (m) {
+      const cmd = commands.find((c) => c.id === g.id);
+      if (cmd) return _runCmd(cmd, "grammar", g.params(m));
+    }
+  }
   let best = null, bestScore = 0;
   for (const c of commands) {
     const s = scoreCommand(c, text);
@@ -191,27 +221,27 @@ async function routeUtterance(ctx, rawText, opts = {}) {
       best = c;
     }
   }
-  const run = (cmd, via) => {
+  const _runCmd = (cmd, via, params) => {
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
     let msg = null;
     try {
-      msg = cmd.run(ctx);
+      msg = cmd.run(ctx, params || {});
     } catch (e) {
       return { handled: true, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via };
     }
     return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via };
   };
-  if (bestScore >= 60) return run(best, "deterministic");
+  if (bestScore >= 60) return _runCmd(best, "deterministic");
   if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
   if (text.split(/\s+/).length > 14) return null;
   try {
     const menu = commands.map((c) => c.id + ": " + c.label + (c.aliases && c.aliases.length ? " (" + c.aliases.slice(0, 3).join(", ") + ")" : "")).join("\n");
-    const out = await ctx.callGemini("A user typed a request to an education app's assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n" + menu + '\n\nUser: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"commandId": string | null, "confidence": number between 0 and 1}. Use null unless you are confident they want the APP ACTION (not a content question).');
+    const out = await ctx.callGemini("A user typed a request to an education app's assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n" + menu + '\n\nUser: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"commandId": string | null, "params": object, "confidence": number between 0 and 1}. params carries values the user stated (e.g. {"topic": "photosynthesis", "grade": "5"} or {"size": "20"} or {"language": "Vietnamese"}) \u2014 empty object if none. Use null commandId unless you are confident they want the APP ACTION (not a content question).');
     const m = String(out || "").match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (j && j.commandId && typeof j.confidence === "number" && j.confidence >= 0.7) {
       const cmd = commands.find((c) => c.id === j.commandId);
-      if (cmd) return run(cmd, "ai");
+      if (cmd) return _runCmd(cmd, "ai", j.params || {});
     }
   } catch (_) {
   }
