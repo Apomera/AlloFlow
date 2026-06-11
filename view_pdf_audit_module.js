@@ -783,6 +783,7 @@ function PdfAuditView(props) {
     chunkResumePrompt,
     chunkSaveFlash,
     commitOrRevertPdfFix,
+    convertXlsxToMarkdownTables,
     t,
     updatePdfPreview,
     createTaggedPdf,
@@ -1431,16 +1432,41 @@ function PdfAuditView(props) {
         onDrop: (e) => {
           e.preventDefault();
           e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-50");
-          const files = [...e.dataTransfer.files].filter((f) => f.type === "application/pdf" || /\.(docx|pptx)$/i.test(f.name || ""));
+          const files = [...e.dataTransfer.files].filter((f) => f.type === "application/pdf" || /\.(docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(f.name || ""));
           if (files.length === 0) {
             addToast(t("toasts.drop_pdf_files_only"), "error");
             return;
           }
           files.forEach((file) => {
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onloadend = async () => {
               if (reader.error || !reader.result) return;
-              const base64 = reader.result.split(",")[1];
+              let base64 = reader.result.split(",")[1];
+              try {
+                const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || "");
+                const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || "");
+                if (_isText || _isSheet) {
+                  let _text;
+                  if (_isSheet) {
+                    if (typeof convertXlsxToMarkdownTables !== "function") {
+                      addToast('"' + file.name + '" \u2014 spreadsheet support is still loading; try again in a moment. Skipped.', "error");
+                      return;
+                    }
+                    _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                  } else {
+                    _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
+                  }
+                  if (!_text || !_text.trim()) {
+                    addToast('"' + file.name + '" looks empty \u2014 skipped.', "error");
+                    return;
+                  }
+                  const _r = await transcribeMediaToPayload(null, "text/plain", { preText: _text, file });
+                  base64 = _r && _r.payload || base64;
+                }
+              } catch (_convErr) {
+                addToast('Could not convert "' + file.name + '": ' + (_convErr && _convErr.message || "unknown") + " \u2014 skipped.", "error");
+                return;
+              }
               setPdfBatchQueue((prev) => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: "pending", result: null }]);
             };
             reader.onerror = () => addToast('Could not read "' + file.name + '" \u2014 it may be corrupt or locked; skipped.', "error");
@@ -1450,15 +1476,40 @@ function PdfAuditView(props) {
         }
       },
       /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u{1F4E5}"),
-      /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-indigo-600" }, t("pdf_audit.batch.drop_text") || "Drag & drop PDFs, Word, or PowerPoint files here"),
+      /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-indigo-600" }, t("pdf_audit.batch.drop_text") || "Drag & drop PDFs, Word, PowerPoint, Markdown, CSV, or Excel files here"),
       /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "or click to browse"),
-      /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.docx,.pptx", multiple: true, className: "hidden", id: "batch-pdf-input", onChange: (e) => {
-        const files = [...e.target.files || []].filter((f) => f.type === "application/pdf" || /\.(docx|pptx)$/i.test(f.name || ""));
+      /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods", multiple: true, className: "hidden", id: "batch-pdf-input", onChange: (e) => {
+        const files = [...e.target.files || []].filter((f) => f.type === "application/pdf" || /\.(docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(f.name || ""));
         files.forEach((file) => {
           const reader = new FileReader();
-          reader.onloadend = () => {
+          reader.onloadend = async () => {
             if (reader.error || !reader.result) return;
-            const base64 = reader.result.split(",")[1];
+            let base64 = reader.result.split(",")[1];
+            try {
+              const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || "");
+              const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || "");
+              if (_isText || _isSheet) {
+                let _text;
+                if (_isSheet) {
+                  if (typeof convertXlsxToMarkdownTables !== "function") {
+                    addToast('"' + file.name + '" \u2014 spreadsheet support is still loading; try again in a moment. Skipped.', "error");
+                    return;
+                  }
+                  _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                } else {
+                  _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
+                }
+                if (!_text || !_text.trim()) {
+                  addToast('"' + file.name + '" looks empty \u2014 skipped.', "error");
+                  return;
+                }
+                const _r = await transcribeMediaToPayload(null, "text/plain", { preText: _text, file });
+                base64 = _r && _r.payload || base64;
+              }
+            } catch (_convErr) {
+              addToast('Could not convert "' + file.name + '": ' + (_convErr && _convErr.message || "unknown") + " \u2014 skipped.", "error");
+              return;
+            }
             setPdfBatchQueue((prev) => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: "pending", result: null }]);
           };
           reader.onerror = () => addToast('Could not read "' + file.name + '" \u2014 it may be corrupt or locked; skipped.', "error");

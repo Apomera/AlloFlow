@@ -6716,8 +6716,27 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     for (const f of results) {
       const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
       try {
-        if (!f.base64 || f.base64.slice(0, 5) !== 'JVBER') { _taggedNotes.set(f.id, 'n/a (not a PDF input)'); continue; }
         if (!f.result || !f.result.accessibleHtml) { _taggedNotes.set(f.id, 'skipped (no remediated HTML)'); continue; }
+        // Transcript entries have no PDF bytes to tag — typeset instead
+        // (sweep 2026-06-11 LOW[7]): clean generated layout through the
+        // same tagger + gates, exactly like the single-file button.
+        if (!f.base64 || f.base64.slice(0, 5) !== 'JVBER') {
+          if (f.base64 && f.base64.slice(0, 20) === 'QUxMT1RSQU5TQ1JJUFQ6') {
+            try { setPdfBatchStep('Typesetting ' + f.fileName + '…'); } catch (_) {}
+            const _ts = await createTypesetTaggedPdf(f.result, { title: f.fileName.replace(/\.(md|markdown|csv|tsv|xlsx|xls|xlsb|ods|txt)$/i, ''), lang: 'en', subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+            const _tsBytes = _ts && _ts.bytes ? _ts.bytes : _ts;
+            const _tsRt = _ts && _ts.roundTrip;
+            if (!_tsBytes) { _taggedNotes.set(f.id, 'typeset failed (no bytes returned)'); continue; }
+            if (_tsRt && _tsRt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (typeset failed post-save verification)'); continue; }
+            zip.file(`${safeName}_typeset_tagged.pdf`, _tsBytes);
+            _taggedCount++;
+            const _tsS = _ts && _ts.summary;
+            _taggedNotes.set(f.id, (_tsS && _tsS.uaDeclared ? 'yes (typeset, PDF/UA-1 declared)' : 'yes (typeset, declaration withheld)') + (_tsS && _tsS.unicodeTypesetWarning ? ' — some text needs the HTML export (' + _tsS.unicodeTypesetWarning.script + ')' : ''));
+            continue;
+          }
+          _taggedNotes.set(f.id, 'n/a (no PDF bytes — Office input; use the Word/HTML artifacts)');
+          continue;
+        }
         try { setPdfBatchStep('Tagging ' + f.fileName + '…'); } catch (_) {}
         const binStr = atob(f.base64);
         const bytes = new Uint8Array(binStr.length);
