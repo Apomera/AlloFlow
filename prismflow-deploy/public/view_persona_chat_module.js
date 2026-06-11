@@ -346,7 +346,7 @@
   }, personaDefinitionData.word), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.close_definition'),
     onClick: handleSetPersonaDefinitionDataToNull,
-    className: "text-slate-600 hover:text-slate-600 p-1"
+    className: "text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors"
   }, /*#__PURE__*/React.createElement(X, {
     size: 16
   }))), isPersonaDefining ? /*#__PURE__*/React.createElement("div", {

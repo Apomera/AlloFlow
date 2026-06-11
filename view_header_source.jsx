@@ -245,7 +245,7 @@ function HeaderBar(props) {
                                                     <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{baseFontSize}px</span>
                                                 </div>
                                             <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
-                                                    <button onClick={() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); setSliderFontSize(Math.max(12, baseFontSize - 1)); }} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700"><Minimize size={14}/></button>
+                                                    <button aria-label={t('common.minimize')} onClick={() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); setSliderFontSize(Math.max(12, baseFontSize - 1)); }} className={`p-2.5 rounded-lg transition-colors ${theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-slate-700'}`}><Minimize size={16}/></button>
                                                     <input aria-label={t('common.adjust_slider_font_size')}
                                                         type="range" min="12" max="24" step="1"
                                                         value={sliderFontSize}
@@ -254,7 +254,7 @@ function HeaderBar(props) {
                                                         onTouchEnd={() => setBaseFontSize(sliderFontSize)}
                                                         className="flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                                     />
-                                                    <button aria-label={t('common.maximize')} onClick={() => { setBaseFontSize(Math.min(24, baseFontSize + 1)); setSliderFontSize(Math.min(24, baseFontSize + 1)); }} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700"><Maximize size={14}/></button>
+                                                    <button aria-label={t('common.maximize')} onClick={() => { setBaseFontSize(Math.min(24, baseFontSize + 1)); setSliderFontSize(Math.min(24, baseFontSize + 1)); }} className={`p-2.5 rounded-lg transition-colors ${theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-slate-700'}`}><Maximize size={16}/></button>
                                                 </div>
                                             </div>
                                             <div className="border-t border-slate-100 dark:border-slate-700 pt-3 mt-3">

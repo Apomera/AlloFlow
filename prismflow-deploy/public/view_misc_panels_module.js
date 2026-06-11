@@ -799,7 +799,7 @@ function GroupSessionModal(props) {
                                                 `,
         title: res.title || "Untitled"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "absolute top-1 right-1 text-slate-600 hover:text-slate-600" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14 })),
+      /* @__PURE__ */ React.createElement("div", { className: "absolute top-1 right-1 text-slate-600 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14 })),
       /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -left-2 bg-slate-600 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow" }, index + 1),
       /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, icon), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-semibold text-slate-700 truncate" }, res.title || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 capitalize" }, res.type?.replace("-", " ")))),
       description && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-purple-500 bg-purple-50 px-2 py-1 rounded-md mb-1", style: { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } }, description),
@@ -1111,7 +1111,7 @@ function SourceGenPanel(props) {
     "button",
     {
       onClick: handleSetStandardModeToAi,
-      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
+      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-900"}`
     },
     t("standards.ai_match")
   ), /* @__PURE__ */ React.createElement(

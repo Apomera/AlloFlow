@@ -1106,6 +1106,17 @@ function PdfAuditView(props) {
   const [plainLangBusy, setPlainLangBusy] = useState(false);
   const [plainLangProgress, setPlainLangProgress] = useState("");
   const [showPlainCompare, setShowPlainCompare] = useState(false);
+  useEffect(() => {
+    const onLang = (e) => {
+      try {
+        const l = e && e.detail && e.detail.lang;
+        if (l) setPdfTranslateLang(String(l).slice(0, 40));
+      } catch (_) {
+      }
+    };
+    window.addEventListener("alloflow:agent-set-translate-lang", onLang);
+    return () => window.removeEventListener("alloflow:agent-set-translate-lang", onLang);
+  }, []);
   const _smartTableParseDelimited = (raw) => {
     const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (lines.length < 2) return null;
@@ -2275,7 +2286,7 @@ Return ONLY JSON:
       e.target.value = "";
     } })), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       _closePdfAuditModal();
-    }, className: "text-xs text-slate-600 hover:text-slate-600 font-bold" }, "Cancel")), Array.isArray(pdfRunHistory) && pdfRunHistory.length > 0 && (() => {
+    }, className: "text-xs text-slate-600 hover:text-slate-900 font-bold" }, "Cancel")), Array.isArray(pdfRunHistory) && pdfRunHistory.length > 0 && (() => {
       const _hist = pdfRunHistory;
       const _gains = _hist.filter((r) => r.beforeScore != null && r.afterScore != null);
       const _avgGain = _gains.length ? Math.round(_gains.reduce((s, r) => s + (r.afterScore - r.beforeScore), 0) / _gains.length) : null;
@@ -8717,7 +8728,7 @@ Return ONLY JSON:
       addToast(t("toasts.saved_edited_html"), "success");
     }, className: "w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2" }, "\u{1F4C4} Save as HTML"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setPdfPreviewOpen(false);
-    }, className: "w-full text-[11px] text-slate-600 hover:text-slate-600 font-bold text-center py-1" }, "Close Preview"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-600 overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[11px] text-slate-600 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("pdf_audit.preview.live_preview") || "Live Preview"), /* @__PURE__ */ React.createElement("span", null, "\u2014 select text, then use the toolbar to format"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-mono" }, pendingPdfFile?.name || "document.pdf")), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1.5 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": t("pdf_audit.toolbar.aria") || "Text formatting" }, [
+    }, className: "w-full text-[11px] text-slate-600 hover:text-slate-900 font-bold text-center py-1" }, "Close Preview"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-600 overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[11px] text-slate-600 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("pdf_audit.preview.live_preview") || "Live Preview"), /* @__PURE__ */ React.createElement("span", null, "\u2014 select text, then use the toolbar to format"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-mono" }, pendingPdfFile?.name || "document.pdf")), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1.5 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": t("pdf_audit.toolbar.aria") || "Text formatting" }, [
       { cmd: "bold", icon: "B", label: "Bold", style: "font-bold" },
       { cmd: "italic", icon: "I", label: "Italic", style: "italic" },
       { cmd: "underline", icon: "U", label: "Underline", style: "underline" },

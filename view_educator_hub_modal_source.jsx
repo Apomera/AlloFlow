@@ -149,7 +149,7 @@ function EducatorHubModal(props) {
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
                 <p className="text-sm text-slate-600 mt-1">{t('educator_hub.subtitle') || 'Professional tools for educators and clinicians'}</p>
               </div>
-              <button onClick={() => setShowEducatorHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
+              <button onClick={() => setShowEducatorHub(false)} className="p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">

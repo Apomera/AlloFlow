@@ -169,7 +169,7 @@ function FabStack(props) {
           )}
           <button
             onClick={handleToggleIsFabExpanded}
-            className="w-12 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
+            className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-full shadow-lg shadow-indigo-600/30 flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
             aria-label={isFabExpanded ? t('toolbar.student_tools_close') : t('toolbar.student_tools_open')}
             data-help-key="fab_toggle"
           >

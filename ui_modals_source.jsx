@@ -424,7 +424,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95">
         <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-600 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100"
+            className="absolute top-4 right-4 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100"
             aria-label={t('common.cancel')}
         >
             <X size={20} />
@@ -642,7 +642,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
         <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             aria-label={t('common.close')}
         >
             <X size={20} />
@@ -712,7 +712,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 <Upload size={16} /> {t('entry.load')}
             </button>
         </div>
-        <button onClick={onClose} className="mt-4 text-sm text-slate-600 hover:text-slate-600 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('common.cancel')}</button>
+        <button onClick={onClose} className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('common.cancel')}</button>
       </div>
     </div>
   );
@@ -733,7 +733,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
         <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             aria-label={t('welcome.close_aria')}
         >
             <X size={20} />
@@ -752,7 +752,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
                     onUpload();
                     onClose();
                 }}
-                className="w-full flex items-center justify-center gap-3 p-4 rounded-xl bg-teal-700 text-white font-bold hover:bg-teal-700 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                className="w-full flex items-center justify-center gap-3 p-4 rounded-xl bg-teal-700 text-white font-bold hover:bg-teal-800 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                 data-help-key="welcome_load_btn"
             >
                 <Upload size={20} /> {t('welcome.load')}

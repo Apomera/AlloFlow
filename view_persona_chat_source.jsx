@@ -313,7 +313,7 @@ function PersonaChatView(props) {
                                                 <button
                                                     aria-label={t('common.close_definition')}
                                                     onClick={handleSetPersonaDefinitionDataToNull}
-                                                    className="text-slate-600 hover:text-slate-600 p-1"
+                                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors"
                                                 >
                                                     <X size={16}/>
                                                 </button>

@@ -941,6 +941,13 @@ function PdfAuditView(props) {
   const [plainLangBusy, setPlainLangBusy] = useState(false);
   const [plainLangProgress, setPlainLangProgress] = useState('');
   const [showPlainCompare, setShowPlainCompare] = useState(false);
+  // S3 (agent): the translate_document command pre-fills the language
+  // here via event — the RUN click stays the teacher's (quota guardrail).
+  useEffect(() => {
+    const onLang = (e) => { try { const l = e && e.detail && e.detail.lang; if (l) setPdfTranslateLang(String(l).slice(0, 40)); } catch (_) {} };
+    window.addEventListener('alloflow:agent-set-translate-lang', onLang);
+    return () => window.removeEventListener('alloflow:agent-set-translate-lang', onLang);
+  }, []);
   const _smartTableParseDelimited = (raw) => {
     const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (lines.length < 2) return null;
@@ -2322,7 +2329,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       e.target.value = '';
                     }} />
                   </label>
-                  <button onClick={() => { _closePdfAuditModal(); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
+                  <button onClick={() => { _closePdfAuditModal(); }} className="text-xs text-slate-600 hover:text-slate-900 font-bold">Cancel</button>
                 </div>
                 {/* Remediation history (2026-06-10): rides the project file —
                     Canvas has no cross-session storage, so this shows whatever
@@ -10194,7 +10201,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 }} className="w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2">
                   📄 Save as HTML
                 </button>
-                <button onClick={() => { setPdfPreviewOpen(false); }} className="w-full text-[11px] text-slate-600 hover:text-slate-600 font-bold text-center py-1">
+                <button onClick={() => { setPdfPreviewOpen(false); }} className="w-full text-[11px] text-slate-600 hover:text-slate-900 font-bold text-center py-1">
                   Close Preview
                 </button>
               </div>

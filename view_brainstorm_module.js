@@ -123,7 +123,7 @@
     "aria-label": t('brainstorm.edit_guide') || 'Edit teacher guide',
     value: idea.guide,
     onChange: e => handleBrainstormChange(idx, 'guide', e.target.value),
-    className: "w-full bg-white border border-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed",
+    className: "w-full bg-white border border-slate-400 hover:border-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed",
     rows: Math.max(8, getRows(idea.guide)),
     placeholder: t('brainstorm.placeholder_guide') || 'Step-by-step teacher guide (markdown supported)…',
     readOnly: !isTeacherMode
@@ -180,7 +180,7 @@
     "aria-label": t('brainstorm.edit_worksheet') || 'Edit student worksheet',
     value: idea.worksheet,
     onChange: e => handleBrainstormChange(idx, 'worksheet', e.target.value),
-    className: "w-full bg-white border border-slate-400 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed",
+    className: "w-full bg-white border border-slate-400 hover:border-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed",
     rows: Math.max(10, getRows(idea.worksheet)),
     placeholder: t('brainstorm.placeholder_worksheet') || 'Student worksheet (markdown)…',
     readOnly: !isTeacherMode

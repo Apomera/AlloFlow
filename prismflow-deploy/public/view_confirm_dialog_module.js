@@ -20,8 +20,8 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
   const tone = confirmDialog.tone || "warning";
   const iconMap = { danger: AlertTriangle, warning: AlertCircle, info: Info };
   const colorMap = {
-    danger: { iconBg: "bg-red-100", iconText: "text-red-600", btn: "bg-red-500 hover:bg-red-600 shadow-red-500/25" },
-    warning: { iconBg: "bg-amber-100", iconText: "text-amber-600", btn: "bg-red-500 hover:bg-red-600 shadow-red-500/25" },
+    danger: { iconBg: "bg-red-100", iconText: "text-red-600", btn: "bg-red-600 hover:bg-red-700 shadow-red-500/25" },
+    warning: { iconBg: "bg-amber-100", iconText: "text-amber-600", btn: "bg-red-600 hover:bg-red-700 shadow-red-500/25" },
     info: { iconBg: "bg-indigo-100", iconText: "text-indigo-600", btn: "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/25" }
   };
   const Icon = iconMap[tone] || AlertCircle;

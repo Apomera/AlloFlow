@@ -220,7 +220,7 @@
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSetShowLedgerToFalse,
-    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors",
+    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 16
@@ -1372,7 +1372,7 @@
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSetSelectedInventoryItemToNull,
-    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors",
+    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 16

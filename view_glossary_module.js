@@ -404,17 +404,17 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     "data-help-key": "glossary_filter_all",
     onClick: handleSetGlossaryFilterToAll,
-    className: `px-3 py-0.5 rounded-full text-[11px] font-bold transition-all ${glossaryFilter === 'all' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-600'}`
+    className: `px-3 py-0.5 rounded-full text-[11px] font-bold transition-all ${glossaryFilter === 'all' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`
   }, t('glossary.filter_all')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.close'),
     "data-help-key": "glossary_filter_tier2",
     onClick: handleSetGlossaryFilterToAcademic,
-    className: `px-3 py-0.5 rounded-full text-[11px] font-bold transition-all ${glossaryFilter === 'academic' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-600'}`
+    className: `px-3 py-0.5 rounded-full text-[11px] font-bold transition-all ${glossaryFilter === 'academic' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`
   }, t('glossary.filter_tier2')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.close'),
     "data-help-key": "glossary_filter_tier3",
     onClick: handleSetGlossaryFilterToDomain,
-    className: `px-3 py-0.5 rounded-full text-[11px] font-bold transition-all ${glossaryFilter === 'domain' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-600'}`
+    className: `px-3 py-0.5 rounded-full text-[11px] font-bold transition-all ${glossaryFilter === 'domain' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`
   }, t('glossary.filter_tier3'))), /*#__PURE__*/React.createElement("div", {
     "data-help-key": "glossary_search",
     className: "relative w-full sm:w-auto"
@@ -430,7 +430,7 @@ function GlossaryView(props) {
     className: "pl-8 pr-3 py-1.5 text-sm border border-blue-600 rounded focus:outline-none focus:ring-2 focus:ring-indigo-200 w-full"
   }), glossarySearchTerm && /*#__PURE__*/React.createElement("button", {
     onClick: handleSetGlossarySearchTermConst,
-    className: "absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-700 hover:text-blue-600",
+    className: "absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-700 hover:text-blue-900",
     "aria-label": t('common.clear')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
@@ -1027,7 +1027,7 @@ function GlossaryView(props) {
     size: 14
   }), " ", t('glossary.print_puzzle')), /*#__PURE__*/React.createElement("button", {
     onClick: handleSetGameModeToNull,
-    className: "text-slate-600 hover:text-slate-600 p-1",
+    className: "text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 18
@@ -1156,7 +1156,7 @@ function GlossaryView(props) {
       setGlossaryHealthCheck(null);
       setShowHealthCheckPanel(false);
     },
-    className: "text-xs text-amber-700 hover:text-amber-700 p-0.5 rounded-full hover:bg-amber-200/50 transition-colors",
+    className: "text-xs text-amber-700 hover:text-amber-900 p-0.5 rounded-full hover:bg-amber-200/50 transition-colors",
     title: t('common.dismiss_analysis')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
