@@ -174,7 +174,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          )}
                      </div>
                      <div className="w-full">
-                         <div className="flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
+                         <div className="flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">
                              <span>{bossStats.name || "Boss"} HP</span>
                              <span>{Math.round(bossStats.currentHP)} / {bossStats.maxHP}</span>
                          </div>
@@ -186,7 +186,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          </div>
                      </div>
                      <div className="w-full mt-3">
-                         <div className="flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
+                         <div className="flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">
                              <span>{t('quiz.boss.class_hp')}</span>
                              <span>{Math.round(bossStats.classHP ?? 100)} / {bossStats.classMaxHP || 100}</span>
                          </div>
@@ -700,7 +700,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-help-key="entry_start_new"
             >
-                <Sparkles size={18} className="text-yellow-700 fill-current" /> {t('entry.start')}
+                <Sparkles size={18} className="text-yellow-400 fill-current" /> {t('entry.start')}
             </button>
             <button
                 aria-label={t('common.upload')}

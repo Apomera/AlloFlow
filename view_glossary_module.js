@@ -323,7 +323,7 @@ function GlossaryView(props) {
     "aria-label": t('common.start_game'),
     "data-help-key": "glossary_word_search",
     onClick: () => generateWordSearch(wordSearchLang),
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${selectedLanguages.length > 0 ? 'rounded-l-none pl-2' : ''} bg-teal-700 text-white hover:bg-teal-700 shadow-sm`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${selectedLanguages.length > 0 ? 'rounded-l-none pl-2' : ''} bg-teal-700 text-white hover:bg-teal-800 shadow-sm`,
     title: t('glossary.tooltips.generate_word_search')
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
@@ -338,14 +338,14 @@ function GlossaryView(props) {
     "aria-label": t('common.start_game'),
     "data-help-key": "glossary_crossword",
     onClick: handleSetIsCrosswordGameToTrue,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all shadow-sm whitespace-nowrap",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all shadow-sm whitespace-nowrap",
     title: t('glossary.tooltips.generate_crossword')
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
   }), " ", t('glossary.crossword')), /*#__PURE__*/React.createElement("button", {
     "data-help-key": "glossary_matching",
     onClick: handleSetIsMatchingGameToTrue,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-700 text-white hover:bg-orange-600 transition-all shadow-sm whitespace-nowrap",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-orange-700 text-white hover:bg-orange-800 transition-all shadow-sm whitespace-nowrap",
     title: t('glossary.tooltips.generate_matching')
   }, /*#__PURE__*/React.createElement(GitMerge, {
     size: 14
@@ -353,7 +353,7 @@ function GlossaryView(props) {
     "aria-label": t('common.start_game'),
     "data-help-key": "glossary_bingo",
     onClick: handleSetIsBingoGameToTrue,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-700 text-white hover:bg-rose-600 transition-all shadow-sm whitespace-nowrap",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-700 text-white hover:bg-rose-800 transition-all shadow-sm whitespace-nowrap",
     title: t('glossary.tooltips.generate_bingo')
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
@@ -361,14 +361,14 @@ function GlossaryView(props) {
     "aria-label": t('common.start_game'),
     "data-help-key": "glossary_play_bingo",
     onClick: handleSetIsStudentBingoGameToTrue,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-pink-700 text-white hover:bg-pink-600 transition-all shadow-sm whitespace-nowrap",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-pink-700 text-white hover:bg-pink-800 transition-all shadow-sm whitespace-nowrap",
     title: t('glossary.tooltips.launch_bingo')
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
   }), " ", t('glossary.play_bingo')), /*#__PURE__*/React.createElement("button", {
     "data-help-key": "glossary_scramble",
     onClick: handleSetIsWordScrambleGameToTrue,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-700 transition-all shadow-sm whitespace-nowrap",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-800 transition-all shadow-sm whitespace-nowrap",
     title: t('glossary.tooltips.launch_scramble')
   }, /*#__PURE__*/React.createElement(Shuffle, {
     size: 14
@@ -463,7 +463,7 @@ function GlossaryView(props) {
     className: "absolute top-6 left-6 z-50 hidden sm:flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleToggleShowFlashcardImages,
-    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-600 border-slate-700 hover:text-white'}`,
+    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
     title: t('flashcards.tooltip_toggle_images'),
     "aria-label": showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')
   }, /*#__PURE__*/React.createElement(ImageIcon, {
@@ -477,7 +477,7 @@ function GlossaryView(props) {
       setFlashcardOptions([]);
       setFlashcardFeedback(null);
     },
-    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-600 border-slate-700 hover:text-white'}`,
+    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
     title: t('flashcards.tooltip_toggle_quiz'),
     "aria-label": isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode"
   }, isFlashcardQuizMode ? /*#__PURE__*/React.createElement(CheckCircle2, {

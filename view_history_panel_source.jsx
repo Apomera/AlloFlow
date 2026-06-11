@@ -68,7 +68,7 @@ function HistoryPanel(props) {
                             </h3>
                         <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium opacity-80">
                             {isStorageDisabled ? (
-                                <span className="text-red-600 flex items-center gap-1">
+                                <span className="text-red-200 flex items-center gap-1">
                                     <AlertCircle size={10} /> {t('status.storage_disabled')}
                                 </span>
                             ) : isCloudSyncEnabled ? (
@@ -79,23 +79,23 @@ function HistoryPanel(props) {
                                             </span>
                                         )}
                                         {cloudSyncStatus === 'error' && (
-                                            <span className="text-red-600 flex items-center gap-1">
+                                            <span className="text-red-200 flex items-center gap-1">
                                                 <AlertCircle size={10} /> {t('status.sync_error')}
                                             </span>
                                         )}
                                         {(cloudSyncStatus === 'saved' || cloudSyncStatus === 'idle') && (
-                                            <span className="text-green-700 flex items-center gap-1">
+                                            <span className="text-green-300 flex items-center gap-1">
                                                 <Cloud size={10} /> {t('status.cloud_saved')}
                                             </span>
                                         )}
                                     </>
                                 ) : (
                                     pendingSync ? (
-                                        <span className="text-orange-700 flex items-center gap-1">
+                                        <span className="text-orange-300 flex items-center gap-1">
                                             <CloudOff size={10} /> {t('status.unsaved')}
                                         </span>
                                     ) : lastSaved ? (
-                                        <span className="text-green-700 flex items-center gap-1">
+                                        <span className="text-green-300 flex items-center gap-1">
                                             <Cloud size={10} /> {t('status.autosaved', { time: lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) })}
                                         </span>
                                     ) : (
@@ -180,7 +180,7 @@ function HistoryPanel(props) {
                     </div>
                     {isTeacherMode && !isIndependentMode && (
                         <div className="bg-indigo-950/50 p-2 rounded-lg border border-indigo-700/50 flex items-center gap-2">
-                            <FolderOpen size={14} className="text-indigo-600 shrink-0" />
+                            <FolderOpen size={14} className="text-indigo-300 shrink-0" />
                             <select
                                 value={activeUnitId}
                                 data-help-key="history_filter_unit_select"
@@ -245,7 +245,7 @@ function HistoryPanel(props) {
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
                                     📌 STEM Stations
-                                    <span className="bg-emerald-500/30 text-emerald-700 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
+                                    <span className="bg-emerald-500/30 text-emerald-200 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
                                 </h4>
                             </div>
                             <div className="space-y-1.5">
@@ -264,7 +264,7 @@ function HistoryPanel(props) {
                                         </div>
                                         <div className="min-w-0 flex-grow">
                                             <div className="text-xs font-bold text-emerald-100 truncate">{st.name}</div>
-                                            <div className="text-[11px] text-emerald-700">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</div>
+                                            <div className="text-[11px] text-emerald-300">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</div>
                                         </div>
                                         <button
                                             onClick={(e) => {
@@ -313,7 +313,7 @@ function HistoryPanel(props) {
                                         </div>
                                         <div className="min-w-0 flex-grow">
                                             <div className="text-xs font-bold text-pink-100 truncate">{st.name}</div>
-                                            <div className="text-[11px] text-pink-700">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
+                                            <div className="text-[11px] text-pink-300">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
                                         </div>
                                         <button
                                             onClick={(e) => {
@@ -337,7 +337,7 @@ function HistoryPanel(props) {
 
                 <div className="space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-10">
                     {getFilteredHistory().length === 0 && (
-                        <div className="text-center p-4 text-indigo-600 text-xs italic">
+                        <div className="text-center p-4 text-indigo-200 text-xs italic">
                             {history.length === 0 ? t('history.empty_general') : t('history.empty_unit')}
                         </div>
                     )}
@@ -524,7 +524,7 @@ function HistoryPanel(props) {
                                             URL.revokeObjectURL(url);
                                             addToast && addToast('CSV downloaded for RTI progress monitoring', 'success');
                                         }}
-                                        className="p-1 text-emerald-700 hover:text-emerald-300 hover:bg-emerald-900/30 rounded transition-colors flex items-center gap-1 text-[11px]"
+                                        className={`p-1 ${generatedContent && generatedContent.id === item.id ? 'text-emerald-700' : 'text-emerald-300'} hover:text-emerald-300 hover:bg-emerald-900/30 rounded transition-colors flex items-center gap-1 text-[11px]`}
                                         title={t('common.export_csv_for_rti')}
                                     >
                                         <Download size={12} /> CSV
