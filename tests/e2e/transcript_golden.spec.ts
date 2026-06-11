@@ -43,8 +43,15 @@ test.describe('ALLOTRANSCRIPT format — audio/video as first-class pipeline inp
           + '<p>Plants convert light into chemical energy through a process occurring in the chloroplasts of every green cell.</p>'
           + '<p>Today we will cover the light-dependent reactions and the Calvin cycle.</p>'
           + '</main></body></html>';
+        // Markdown table support: CSV-derived pipe-tables must become REAL
+        // scoped tables in the audit html (Stage 5b then adds Headers/IDTree).
+        const tablePayload = pipeline.encodeTranscriptPayload('# Grades\n\n| Student | Score |\n| --- | --- |\n| Ada | 95 |\n| Grace | 88 |');
+        const tableAudit = await pipeline.runPdfAccessibilityAudit(tablePayload, { skipUiUpdates: true, skipCache: true });
+        const tableHtmlCheck = await pipeline.extractPdfTextDeterministic(tablePayload);
         const tagged = await pipeline.createTypesetTaggedPdf({ accessibleHtml: structuredHtml }, { title: 'Photosynthesis Lecture', lang: 'en' });
         return {
+          tableAudit: tableAudit ? { isTranscript: !!tableAudit._transcriptInput, ok: tableAudit.score !== undefined } : null,
+          tableText: tableHtmlCheck ? tableHtmlCheck.fullText.includes('| Ada | 95 |') : false,
           roundTrip: decoded === TRANSCRIPT,
           notTranscript,
           det: det ? { method: det.method, chars: det.sourceCharCount, pages: det.pageCount } : null,
@@ -72,6 +79,11 @@ test.describe('ALLOTRANSCRIPT format — audio/video as first-class pipeline inp
     expect(r.audit.isTranscript).toBeTruthy();
     expect(r.audit.summaryHasHonesty, 'summary must tell the teacher to review for transcription errors').toBeTruthy();
     expect(r.audit.pageCount).toBeGreaterThanOrEqual(1);
+  });
+
+  test('markdown pipe-tables ride the transcript format', () => {
+    expect(r.tableAudit.isTranscript).toBeTruthy();
+    expect(r.tableText, 'table text survives the chokepoint').toBeTruthy();
   });
 
   test('lecture → typeset tagged PDF earns the declaration', () => {
