@@ -1090,6 +1090,86 @@ function PdfAuditView(props) {
     } catch (_) {
     }
   };
+  const [smartTableOpen, setSmartTableOpen] = useState(false);
+  const [smartTableData, setSmartTableData] = useState("");
+  const [smartTableSpec, setSmartTableSpec] = useState("");
+  const [smartTableBusy, setSmartTableBusy] = useState(false);
+  const _smartTableParseDelimited = (raw) => {
+    const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (lines.length < 2) return null;
+    for (const sep of ["	", "|", ","]) {
+      const counts = lines.map((l) => l.split(sep).length);
+      const width = counts[0];
+      if (width >= 2 && counts.filter((c) => c === width).length >= Math.ceil(lines.length * 0.7)) {
+        const rows = lines.map((l) => l.split(sep).map((c) => c.trim().replace(/^"|"$/g, "")).slice(0, 12));
+        const maxW = Math.min(12, Math.max(...rows.map((r) => r.length)));
+        return { caption: "", headers: rows[0].concat(Array(Math.max(0, maxW - rows[0].length)).fill("")).slice(0, maxW), rows: rows.slice(1, 41).map((r) => r.concat(Array(Math.max(0, maxW - r.length)).fill("")).slice(0, maxW)), headerColumn: false };
+      }
+    }
+    return null;
+  };
+  const _smartTableRenderHtml = (tbl) => {
+    const esc = (x) => String(x == null ? "" : x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const cellS = "border:1px solid #cbd5e1;padding:8px";
+    const thS = cellS + ";background:#f1f5f9;text-align:left;font-weight:bold";
+    const head = "<thead><tr>" + tbl.headers.map((h) => '<th scope="col" style="' + thS + '">' + (esc(h) || "&nbsp;") + "</th>").join("") + "</tr></thead>";
+    const body = "<tbody>" + tbl.rows.map((r) => "<tr>" + r.map((c, ci) => ci === 0 && tbl.headerColumn ? '<th scope="row" style="' + thS + '">' + (esc(c) || "&nbsp;") + "</th>" : '<td style="' + cellS + '">' + (esc(c) || "&nbsp;") + "</td>").join("") + "</tr>").join("") + "</tbody>";
+    return '<div class="allo-block allo-block-table" data-allo-block="table" data-header-style="default" data-zebra="on" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove table" title="Remove">\xD7</button><figure><table aria-label="Data table" style="width:100%;border-collapse:collapse;margin:12px 0"><caption style="font-weight:bold;margin-bottom:4px">' + (esc(tbl.caption) || "Table Title \u2014 Edit Me") + "</caption>" + head + body + '</table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Row</button><button type="button" data-action="remove-row">\u2212 Row</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Col</button><button type="button" data-action="remove-col">\u2212 Col</button></div></div><p>&nbsp;</p>';
+  };
+  const _buildSmartTable = async () => {
+    const raw = (smartTableData || "").trim().slice(0, 8e3);
+    if (!raw) {
+      addToast(t("toasts.smart_table_no_data") || "Paste some data first \u2014 rows from email, notes, CSV, anything.", "info");
+      return;
+    }
+    const doc = pdfPreviewRef.current?.contentDocument;
+    if (!doc) {
+      addToast(t("toasts.smart_table_no_preview") || "Open the document preview first (the table inserts at your cursor).", "info");
+      return;
+    }
+    let tbl = null, via = "deterministic";
+    if (!(smartTableSpec || "").trim()) tbl = _smartTableParseDelimited(raw);
+    if (!tbl) {
+      via = "ai";
+      if (typeof callGemini !== "function") {
+        addToast(t("toasts.smart_table_no_ai") || "AI is unavailable and the data is not cleanly delimited \u2014 try tab/comma-separated rows.", "error");
+        return;
+      }
+      setSmartTableBusy(true);
+      try {
+        const prompt2 = `You organize a teacher's raw data into a table. Return ONLY a JSON object, no markdown: {"caption": string, "headers": string[], "rows": string[][], "headerColumn": boolean}. HARD RULES: every cell value must come from the DATA below (verbatim where possible); NEVER invent, estimate, or complete missing values \u2014 use "" for unknown cells; max 12 columns, 40 rows; headerColumn=true ONLY if the first column contains row labels.` + ((smartTableSpec || "").trim() ? " The teacher wants: " + smartTableSpec.trim().slice(0, 300) : "") + "\n\nDATA:\n" + raw;
+        const out = await callGemini(prompt2);
+        const m = String(out || "").match(/\{[\s\S]*\}/);
+        const j = JSON.parse(m ? m[0] : String(out));
+        if (!Array.isArray(j.headers) || !Array.isArray(j.rows) || !j.headers.length) throw new Error("bad shape");
+        const w = Math.min(12, j.headers.length);
+        tbl = {
+          caption: typeof j.caption === "string" ? j.caption.slice(0, 200) : "",
+          headers: j.headers.slice(0, w).map((h) => String(h == null ? "" : h)),
+          rows: j.rows.slice(0, 40).map((r) => (Array.isArray(r) ? r : [String(r)]).slice(0, w).map((c) => String(c == null ? "" : c)).concat(Array(Math.max(0, w - (Array.isArray(r) ? r.length : 1))).fill(""))),
+          headerColumn: !!j.headerColumn
+        };
+      } catch (e) {
+        addToast((t("toasts.smart_table_failed") || "Could not structure that data: ") + (e && e.message || "unknown") + (t("toasts.smart_table_failed2") || " \u2014 try adding a hint like \u201Ccolumns: name, date, score\u201D."), "error");
+        setSmartTableBusy(false);
+        return;
+      }
+      setSmartTableBusy(false);
+    }
+    try {
+      doc.execCommand("insertHTML", false, _smartTableRenderHtml(tbl));
+      try {
+        if (window.__alloflowOnPdfPreviewMutated) window.__alloflowOnPdfPreviewMutated();
+      } catch (_) {
+      }
+      setSmartTableOpen(false);
+      setSmartTableData("");
+      setSmartTableSpec("");
+      addToast(via === "ai" ? "\u2728 " + (t("toasts.smart_table_ai_done") || "AI organized your data into ") + tbl.rows.length + "\xD7" + tbl.headers.length + (t("toasts.smart_table_ai_done2") || " \u2014 every value came from your text (empty cells were left empty). Review, then edit any cell directly.") : "\u{1F4CA} " + (t("toasts.smart_table_det_done") || "Parsed your delimited data directly \u2014 no AI needed. ") + tbl.rows.length + "\xD7" + tbl.headers.length + ".", "success");
+    } catch (e) {
+      addToast((t("toasts.smart_table_insert_failed") || "Insert failed: ") + (e && e.message || "unknown"), "error");
+    }
+  };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
   const _taggedGateBytesRef = useRef(null);
@@ -8604,7 +8684,43 @@ Return ONLY JSON:
         title: t("pdf_audit.toolbar.insert_table_title") || "Insert accessible table"
       },
       "\u{1F4CA}"
-    )), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "data-help-key": "pdf_audit_smart_table_btn",
+        onClick: () => setSmartTableOpen((v) => !v),
+        className: `px-1.5 h-7 rounded text-[11px] transition-colors border ${smartTableOpen ? "bg-violet-100 text-violet-700 border-violet-400" : "text-slate-600 border-transparent hover:bg-violet-100 hover:border-violet-600"}`,
+        "aria-expanded": smartTableOpen,
+        "aria-label": t("pdf_audit.toolbar.smart_table_aria") || "Smart table: paste data, get an accessible table",
+        title: t("pdf_audit.toolbar.smart_table_title") || "Smart table \u2014 paste ANY data (rows from email, notes, CSV) and get a clean accessible table. Delimited data parses instantly with no AI; messy data is organized by AI using only your values."
+      },
+      "\u{1F4CA}\u2728"
+    )), smartTableOpen && /* @__PURE__ */ React.createElement("div", { className: "border-b border-violet-300 bg-violet-50 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.smart_table.region") || "Smart table builder" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-violet-800" }, "\u{1F4CA}\u2728 ", t("pdf_audit.smart_table.heading") || "Smart table \u2014 paste data, get an accessible table"), /* @__PURE__ */ React.createElement("button", { onClick: () => setSmartTableOpen(false), className: "text-violet-600 hover:text-violet-900 font-bold px-1", "aria-label": t("pdf_audit.smart_table.close") || "Close smart table builder" }, "\u2715")), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        value: smartTableData,
+        onChange: (e) => setSmartTableData(e.target.value),
+        rows: 4,
+        placeholder: t("pdf_audit.smart_table.data_ph") || "Paste your data \u2014 anything works: rows copied from email, lesson notes, CSV, a messy list\u2026",
+        className: "w-full text-xs border border-violet-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: smartTableSpec,
+        onChange: (e) => setSmartTableSpec(e.target.value),
+        placeholder: t("pdf_audit.smart_table.spec_ph") || "Optional: what should it look like? e.g. \u201Ccolumns: word, definition, example \u2014 one row per word\u201D",
+        className: "w-full text-xs border border-violet-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: _buildSmartTable,
+        disabled: smartTableBusy,
+        className: "px-4 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-colors"
+      },
+      smartTableBusy ? "\u23F3 " + (t("pdf_audit.smart_table.busy") || "Structuring\u2026") : "\u{1F4CA} " + (t("pdf_audit.smart_table.build") || "Build table at cursor")
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-violet-700" }, t("pdf_audit.smart_table.honesty") || "Clean rows parse instantly with no AI. Messy data goes to AI with one hard rule: only YOUR values, never invented \u2014 blanks stay blank. Review the result; every cell stays editable."))), /* @__PURE__ */ React.createElement(
       "iframe",
       {
         ref: pdfPreviewRef,
