@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '871f3c3b';
+    var pluginCdnVersion = 'e5c99bec';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15829,6 +15829,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // themselves are far too big for the project file).
       _audioJobMeta: cur._audioJobMeta || null,
       _translation: cur._translation || null,
+      _plainLanguage: cur._plainLanguage || null,
       runHistory: pdfRunHistoryRef.current,
       prefs: {
         auditors: pdfAuditorCount,
@@ -15872,6 +15873,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const createTypesetTaggedPdf = _docPipeline ? _docPipeline.createTypesetTaggedPdf : async () => null;
   const transcribeMediaToPayload = _docPipeline ? _docPipeline.transcribeMediaToPayload : null;
   const translateAccessibleHtml = _docPipeline ? _docPipeline.translateAccessibleHtml : null;
+  const simplifyAccessibleHtml = _docPipeline ? _docPipeline.simplifyAccessibleHtml : null;
   const convertXlsxToMarkdownTables = _docPipeline ? _docPipeline.convertXlsxToMarkdownTables : null;
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
@@ -26919,7 +26921,7 @@ ${_toolList}
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, translateAccessibleHtml, t, updatePdfPreview,
+          languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
           fixContrastViolations, fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
