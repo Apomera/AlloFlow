@@ -476,6 +476,61 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
 // mirroring the working leveled-text path (audio_helpers pcmToWav). MP3 fallback blobs
 // (frame-based) concatenate cleanly, so those are left untouched. Self-contained: no
 // new props (callTTS already supplies the per-segment WAV); avoids a host prop change.
+// _srStyleTextFromHtml (2026-06-11, maintainer ask): serialize the document
+// the way a SCREEN READER would announce it — heading levels, list/item
+// counts, table dimensions and row-by-row cells, image alts. Lets anyone
+// hear the structural experience through plain TTS: sighted teachers
+// previewing the SR experience, low-vision users who want structure cues
+// without running a screen reader.
+function _srStyleTextFromHtml(html) {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const out = [];
+  const walk = (el) => {
+    for (const node of Array.from(el.children)) {
+      const tag = node.tagName.toLowerCase();
+      const txt = (node.textContent || '').trim();
+      if (/^h[1-6]$/.test(tag)) { if (txt) out.push('Heading level ' + tag[1] + '. ' + txt + '.'); continue; }
+      if (tag === 'p' || tag === 'blockquote' || tag === 'figcaption') { if (txt && !node.closest('table')) out.push(txt); continue; }
+      if (tag === 'ul' || tag === 'ol') {
+        const items = Array.from(node.children).filter((c) => c.tagName && c.tagName.toLowerCase() === 'li');
+        out.push((tag === 'ul' ? 'List, ' : 'Numbered list, ') + items.length + ' item' + (items.length === 1 ? '' : 's') + '.');
+        items.forEach((li, i) => {
+          const lt = (li.textContent || '').trim();
+          if (lt) out.push((tag === 'ul' ? 'Bullet. ' : ('Item ' + (i + 1) + '. ')) + lt + '.');
+        });
+        out.push('List end.');
+        continue;
+      }
+      if (tag === 'table') {
+        const rows = Array.from(node.querySelectorAll('tr'));
+        const cols = rows.length ? Math.max.apply(null, rows.map((r) => r.children.length)) : 0;
+        const cap = node.querySelector('caption');
+        out.push('Table' + (cap && cap.textContent.trim() ? (', ' + cap.textContent.trim()) : '') + ', ' + rows.length + ' row' + (rows.length === 1 ? '' : 's') + ', ' + cols + ' column' + (cols === 1 ? '' : 's') + '.');
+        rows.forEach((r, ri) => {
+          const cells = Array.from(r.children).map((c) => (c.textContent || '').trim()).filter(Boolean);
+          if (cells.length) out.push('Row ' + (ri + 1) + '. ' + cells.join('. ') + '.');
+        });
+        out.push('Table end.');
+        continue;
+      }
+      if (tag === 'img') {
+        const alt = (node.getAttribute('alt') || '').trim();
+        if (node.getAttribute('role') !== 'presentation' && alt) out.push('Image. ' + alt + '.');
+        continue;
+      }
+      if (tag === 'details') {
+        const sum = node.querySelector('summary');
+        if (sum && sum.textContent.trim()) out.push('Disclosure section, ' + sum.textContent.trim() + '.');
+        walk(node);
+        continue;
+      }
+      walk(node);
+    }
+  };
+  walk(doc.body || doc.documentElement);
+  return out.join('\n\n');
+}
+
 async function _concatAudioBlobs(blobs) {
   if (!blobs || blobs.length === 0) return null;
   if (blobs.length === 1) return blobs[0];
@@ -743,7 +798,7 @@ function PdfAuditView(props) {
     const a = document.createElement('a');
     a.href = dlUrl;
     const _partial = j.blobs.length < j.segments.length;
-    a.download = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-audio' + (_partial ? ('-part1-' + j.blobs.length + 'of' + j.segments.length) : '') + '.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
+    a.download = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-audio' + (j.srMode ? '-sr-style' : '') + (_partial ? ('-part1-' + j.blobs.length + 'of' + j.segments.length) : '') + '.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(dlUrl);
     if (_partial) addToast('🎧 ' + (t('toasts.audio_partial_dl') || 'Partial audio downloaded') + ' (' + j.blobs.length + '/' + j.segments.length + ' sections — the filename says which part). ' + (t('toasts.audio_partial_resume') || 'Resume to finish the rest.'), auto ? 'error' : 'info');
@@ -5064,7 +5119,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   return { ...prev, accessibleHtml: html };
                                 });
                                 addToast('✂ Cropped region added to the remediated document with alt text — re-export (PDF/Word/HTML) to include it.', 'success');
+                                // Crops join the extracted-image pool (2026-06-11,
+                                // maintainer ask) — pickable/draggable everywhere
+                                // the pool is offered.
+                                try {
+                                  window.__alloflowExtractedImages = window.__alloflowExtractedImages || [];
+                                  window.__alloflowExtractedImages.push({ src: _src, description: _alt });
+                                } catch (_) {}
                               } catch (_) {}
+                            };
+                            // AI alt for crops (2026-06-11): blank → auto-describe;
+                            // text + ✨ → faithful enhancement of the teacher's draft.
+                            window.__alloflowCropDescribe = async (dataUrl, userText) => {
+                              try {
+                                if (typeof callGeminiVision !== 'function') return null;
+                                const m = String(dataUrl || '').match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
+                                if (!m) return null;
+                                const prompt = userText && userText.trim()
+                                  ? 'A teacher cropped this region from a document and drafted this description: "' + userText.trim().slice(0, 300) + '". Improve it into ONE clear, complete alt-text sentence — keep everything factual the teacher wrote, fix omissions you can SEE in the image, never invent. Return ONLY the sentence.'
+                                  : 'Describe this cropped region from an educational document as ONE clear alt-text sentence for a screen reader user. Be factual; if it is a chart or diagram, say what it shows. Return ONLY the sentence.';
+                                const out = await callGeminiVision(prompt, m[2], m[1]);
+                                const s = String(out || '').trim().replace(/^"|"$/g, '');
+                                return s.length > 3 ? s.slice(0, 500) : null;
+                              } catch (_) { return null; }
                             };
                             // On-demand tagged bytes for the popup's '⚖ Verify tagged'
                             // toggle — same createTaggedPdf path as the download button.
@@ -5129,6 +5206,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <span id="before-label" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Original PDF (Before)</span>
                                 <span style="display:flex;gap:6px;flex-shrink:0">
                                 ${_isPdfMagic ? '<button id="btn-vtag" onclick="toggleTaggedView()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Swap this pane to the freshly generated TAGGED PDF — it should look identical to the original (tagging never changes the visual layer); this is how you verify nothing moved or vanished">⚖ Verify tagged</button>' : ''}
+                                <span style="padding:3px 8px;border-radius:6px;border:1px dashed #a78bfa;color:#c4b5fd;font-size:10px;font-weight:700" title="Click and drag a box over any region of the original page — the crop becomes an image you can describe (or let AI describe) and add to the remediated document. Great for rescuing diagrams, signatures, and anything extraction missed.">✂ Drag on the page to crop any region</span>
                                 ${_isPdfMagic ? '<button id="btn-crop" onclick="toggleCrop()" style="padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#fca5a5;font-size:10px;font-weight:700;cursor:pointer" title="Drag a rectangle on a page to clip that region into the remediated document (with alt text)">✂ Crop</button>' : ''}
                                 </span>
                               </div>
@@ -5305,13 +5383,31 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 bar.style.cssText = 'position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #475569;border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:center;z-index:100;box-shadow:0 6px 24px rgba(0,0,0,.5)';
                                 bar.innerHTML = '<img src="' + dataUrl + '" alt="" style="height:44px;border-radius:6px;border:1px solid #475569;background:#fff">'
                                   + '<input id="crop-alt" type="text" placeholder="Describe this image (alt text — required)" aria-label="Alt text for the cropped image" style="width:280px;padding:7px 9px;border-radius:7px;border:1px solid #64748b;background:#0f172a;color:#e2e8f0;font-size:12px">'
+                                  + '<button id="crop-ai" title="Blank box: AI describes the image. With your draft: AI completes/improves it faithfully — review before adding." style="padding:7px 10px;border-radius:7px;border:1px solid #8b5cf6;background:#7c3aed;color:#fff;font-weight:700;font-size:12px;cursor:pointer">✨ AI describe</button>'
                                   + '<button id="crop-add" style="padding:7px 12px;border-radius:7px;border:none;background:#16a34a;color:#fff;font-weight:700;font-size:12px;cursor:pointer">Add to document</button>'
                                   + '<button onclick="_cropCleanup()" style="padding:7px 10px;border-radius:7px;border:1px solid #64748b;background:transparent;color:#cbd5e1;font-size:12px;cursor:pointer">Cancel</button>';
                                 document.body.appendChild(bar);
+                                var _aiDescribe = function (done) {
+                                  var altEl = document.getElementById('crop-alt');
+                                  var aiBtn = document.getElementById('crop-ai');
+                                  if (aiBtn) { aiBtn.textContent = '⏳ describing…'; aiBtn.disabled = true; }
+                                  var p = null;
+                                  try { p = window.opener && window.opener.__alloflowCropDescribe && window.opener.__alloflowCropDescribe(dataUrl, altEl.value || ''); } catch (e) {}
+                                  if (!p) { if (aiBtn) { aiBtn.textContent = '✨ AI describe'; aiBtn.disabled = false; } if (done) done(false); return; }
+                                  p.then(function (s) {
+                                    if (s) { altEl.value = s; altEl.style.borderColor = '#8b5cf6'; }
+                                    if (aiBtn) { aiBtn.textContent = '✨ AI describe'; aiBtn.disabled = false; }
+                                    if (done) done(!!s);
+                                  }).catch(function () { if (aiBtn) { aiBtn.textContent = '✨ AI describe'; aiBtn.disabled = false; } if (done) done(false); });
+                                };
+                                document.getElementById('crop-ai').onclick = function () { _aiDescribe(null); };
                                 document.getElementById('crop-add').onclick = function () {
                                   var altEl = document.getElementById('crop-alt');
                                   var alt = (altEl.value || '').trim();
-                                  if (!alt) { altEl.style.borderColor = '#ef4444'; altEl.focus(); return; }
+                                  // Blank alt → auto-describe and FILL for review (the
+                                  // teacher clicks Add again after a glance) instead of
+                                  // a bare red border.
+                                  if (!alt) { altEl.style.borderColor = '#ef4444'; altEl.focus(); _aiDescribe(function (ok) { if (!ok) altEl.placeholder = 'AI could not describe it — please type a description'; }); return; }
                                   try {
                                     var idoc = document.getElementById('after-frame').contentDocument;
                                     var fig = idoc.createElement('figure');
@@ -6862,6 +6958,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           _runAudioJob();
                         }} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors">
                           🎧 {t('pdf_audit.audio.btn') || 'Download Audio'}
+                        </button>}
+                        {/* SR-style audio (2026-06-11, maintainer ask): the same
+                            voice, but announcing structure the way a screen
+                            reader would — heading levels, list counts, table
+                            rows, image alts. */}
+                        {callTTS && !audioJob && <button data-help-key="pdf_audit_audio_sr_btn" onClick={() => {
+                          const srText = _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim();
+                          if (!srText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
+                          const segments = [];
+                          let remaining = srText;
+                          while (remaining.length > 0) {
+                            if (remaining.length <= 600) { segments.push(remaining); break; }
+                            let splitAt = remaining.lastIndexOf('. ', 600);
+                            if (splitAt < 200) splitAt = remaining.indexOf('. ', 400);
+                            if (splitAt < 0 || splitAt > 800) splitAt = 500; else splitAt += 2;
+                            segments.push(remaining.substring(0, splitAt));
+                            remaining = remaining.substring(splitAt).trim();
+                          }
+                          audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: true };
+                          addToast((t('toasts.generating_sr') || 'Generating screen-reader-style audio — structure announced (headings, lists, tables): ') + segments.length + ' sections…', 'info');
+                          _runAudioJob();
+                        }} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors" title={t('pdf_audit.audio.sr_title') || 'Same voice, but announcing the structure the way a screen reader would: "Heading level 2…", "List, 5 items…", "Table, 3 rows…", image descriptions. Hear the structural experience without running a screen reader.'}>
+                          🦻 {t('pdf_audit.audio.sr_btn') || 'Audio (screen-reader style)'}
                         </button>}
                         {callTTS && audioJob && (
                           <div className="w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900" data-help-key="pdf_audit_audio_download_btn">

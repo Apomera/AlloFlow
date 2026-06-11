@@ -516,6 +516,60 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
   }
   return p.write({ outputType: "blob" });
 }
+function _srStyleTextFromHtml(html) {
+  const doc = new DOMParser().parseFromString(html || "", "text/html");
+  const out = [];
+  const walk = (el) => {
+    for (const node of Array.from(el.children)) {
+      const tag = node.tagName.toLowerCase();
+      const txt = (node.textContent || "").trim();
+      if (/^h[1-6]$/.test(tag)) {
+        if (txt) out.push("Heading level " + tag[1] + ". " + txt + ".");
+        continue;
+      }
+      if (tag === "p" || tag === "blockquote" || tag === "figcaption") {
+        if (txt && !node.closest("table")) out.push(txt);
+        continue;
+      }
+      if (tag === "ul" || tag === "ol") {
+        const items = Array.from(node.children).filter((c) => c.tagName && c.tagName.toLowerCase() === "li");
+        out.push((tag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s") + ".");
+        items.forEach((li, i) => {
+          const lt = (li.textContent || "").trim();
+          if (lt) out.push((tag === "ul" ? "Bullet. " : "Item " + (i + 1) + ". ") + lt + ".");
+        });
+        out.push("List end.");
+        continue;
+      }
+      if (tag === "table") {
+        const rows = Array.from(node.querySelectorAll("tr"));
+        const cols = rows.length ? Math.max.apply(null, rows.map((r) => r.children.length)) : 0;
+        const cap = node.querySelector("caption");
+        out.push("Table" + (cap && cap.textContent.trim() ? ", " + cap.textContent.trim() : "") + ", " + rows.length + " row" + (rows.length === 1 ? "" : "s") + ", " + cols + " column" + (cols === 1 ? "" : "s") + ".");
+        rows.forEach((r, ri) => {
+          const cells = Array.from(r.children).map((c) => (c.textContent || "").trim()).filter(Boolean);
+          if (cells.length) out.push("Row " + (ri + 1) + ". " + cells.join(". ") + ".");
+        });
+        out.push("Table end.");
+        continue;
+      }
+      if (tag === "img") {
+        const alt = (node.getAttribute("alt") || "").trim();
+        if (node.getAttribute("role") !== "presentation" && alt) out.push("Image. " + alt + ".");
+        continue;
+      }
+      if (tag === "details") {
+        const sum = node.querySelector("summary");
+        if (sum && sum.textContent.trim()) out.push("Disclosure section, " + sum.textContent.trim() + ".");
+        walk(node);
+        continue;
+      }
+      walk(node);
+    }
+  };
+  walk(doc.body || doc.documentElement);
+  return out.join("\n\n");
+}
 async function _concatAudioBlobs(blobs) {
   if (!blobs || blobs.length === 0) return null;
   if (blobs.length === 1) return blobs[0];
@@ -901,7 +955,7 @@ function PdfAuditView(props) {
     const a = document.createElement("a");
     a.href = dlUrl;
     const _partial = j.blobs.length < j.segments.length;
-    a.download = (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + "-audio" + (_partial ? "-part1-" + j.blobs.length + "of" + j.segments.length : "") + "." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
+    a.download = (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + "-audio" + (j.srMode ? "-sr-style" : "") + (_partial ? "-part1-" + j.blobs.length + "of" + j.segments.length : "") + "." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -3451,7 +3505,25 @@ Return ONLY JSON:
               return { ...prev, accessibleHtml: html };
             });
             addToast("\u2702 Cropped region added to the remediated document with alt text \u2014 re-export (PDF/Word/HTML) to include it.", "success");
+            try {
+              window.__alloflowExtractedImages = window.__alloflowExtractedImages || [];
+              window.__alloflowExtractedImages.push({ src: _src, description: _alt });
+            } catch (_) {
+            }
           } catch (_) {
+          }
+        };
+        window.__alloflowCropDescribe = async (dataUrl, userText) => {
+          try {
+            if (typeof callGeminiVision !== "function") return null;
+            const m = String(dataUrl || "").match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
+            if (!m) return null;
+            const prompt2 = userText && userText.trim() ? 'A teacher cropped this region from a document and drafted this description: "' + userText.trim().slice(0, 300) + '". Improve it into ONE clear, complete alt-text sentence \u2014 keep everything factual the teacher wrote, fix omissions you can SEE in the image, never invent. Return ONLY the sentence.' : "Describe this cropped region from an educational document as ONE clear alt-text sentence for a screen reader user. Be factual; if it is a chart or diagram, say what it shows. Return ONLY the sentence.";
+            const out = await callGeminiVision(prompt2, m[2], m[1]);
+            const s = String(out || "").trim().replace(/^"|"$/g, "");
+            return s.length > 3 ? s.slice(0, 500) : null;
+          } catch (_) {
+            return null;
           }
         };
         window.__alloflowCompareGetTagged = async () => {
@@ -3521,6 +3593,7 @@ Return ONLY JSON:
                                 <span id="before-label" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Original PDF (Before)</span>
                                 <span style="display:flex;gap:6px;flex-shrink:0">
                                 ${_isPdfMagic ? '<button id="btn-vtag" onclick="toggleTaggedView()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Swap this pane to the freshly generated TAGGED PDF \u2014 it should look identical to the original (tagging never changes the visual layer); this is how you verify nothing moved or vanished">\u2696 Verify tagged</button>' : ""}
+                                <span style="padding:3px 8px;border-radius:6px;border:1px dashed #a78bfa;color:#c4b5fd;font-size:10px;font-weight:700" title="Click and drag a box over any region of the original page \u2014 the crop becomes an image you can describe (or let AI describe) and add to the remediated document. Great for rescuing diagrams, signatures, and anything extraction missed.">\u2702 Drag on the page to crop any region</span>
                                 ${_isPdfMagic ? '<button id="btn-crop" onclick="toggleCrop()" style="padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:transparent;color:#fca5a5;font-size:10px;font-weight:700;cursor:pointer" title="Drag a rectangle on a page to clip that region into the remediated document (with alt text)">\u2702 Crop</button>' : ""}
                                 </span>
                               </div>
@@ -3697,13 +3770,31 @@ Return ONLY JSON:
                                 bar.style.cssText = 'position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #475569;border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:center;z-index:100;box-shadow:0 6px 24px rgba(0,0,0,.5)';
                                 bar.innerHTML = '<img src="' + dataUrl + '" alt="" style="height:44px;border-radius:6px;border:1px solid #475569;background:#fff">'
                                   + '<input id="crop-alt" type="text" placeholder="Describe this image (alt text \u2014 required)" aria-label="Alt text for the cropped image" style="width:280px;padding:7px 9px;border-radius:7px;border:1px solid #64748b;background:#0f172a;color:#e2e8f0;font-size:12px">'
+                                  + '<button id="crop-ai" title="Blank box: AI describes the image. With your draft: AI completes/improves it faithfully \u2014 review before adding." style="padding:7px 10px;border-radius:7px;border:1px solid #8b5cf6;background:#7c3aed;color:#fff;font-weight:700;font-size:12px;cursor:pointer">\u2728 AI describe</button>'
                                   + '<button id="crop-add" style="padding:7px 12px;border-radius:7px;border:none;background:#16a34a;color:#fff;font-weight:700;font-size:12px;cursor:pointer">Add to document</button>'
                                   + '<button onclick="_cropCleanup()" style="padding:7px 10px;border-radius:7px;border:1px solid #64748b;background:transparent;color:#cbd5e1;font-size:12px;cursor:pointer">Cancel</button>';
                                 document.body.appendChild(bar);
+                                var _aiDescribe = function (done) {
+                                  var altEl = document.getElementById('crop-alt');
+                                  var aiBtn = document.getElementById('crop-ai');
+                                  if (aiBtn) { aiBtn.textContent = '\u23F3 describing\u2026'; aiBtn.disabled = true; }
+                                  var p = null;
+                                  try { p = window.opener && window.opener.__alloflowCropDescribe && window.opener.__alloflowCropDescribe(dataUrl, altEl.value || ''); } catch (e) {}
+                                  if (!p) { if (aiBtn) { aiBtn.textContent = '\u2728 AI describe'; aiBtn.disabled = false; } if (done) done(false); return; }
+                                  p.then(function (s) {
+                                    if (s) { altEl.value = s; altEl.style.borderColor = '#8b5cf6'; }
+                                    if (aiBtn) { aiBtn.textContent = '\u2728 AI describe'; aiBtn.disabled = false; }
+                                    if (done) done(!!s);
+                                  }).catch(function () { if (aiBtn) { aiBtn.textContent = '\u2728 AI describe'; aiBtn.disabled = false; } if (done) done(false); });
+                                };
+                                document.getElementById('crop-ai').onclick = function () { _aiDescribe(null); };
                                 document.getElementById('crop-add').onclick = function () {
                                   var altEl = document.getElementById('crop-alt');
                                   var alt = (altEl.value || '').trim();
-                                  if (!alt) { altEl.style.borderColor = '#ef4444'; altEl.focus(); return; }
+                                  // Blank alt \u2192 auto-describe and FILL for review (the
+                                  // teacher clicks Add again after a glance) instead of
+                                  // a bare red border.
+                                  if (!alt) { altEl.style.borderColor = '#ef4444'; altEl.focus(); _aiDescribe(function (ok) { if (!ok) altEl.placeholder = 'AI could not describe it \u2014 please type a description'; }); return; }
                                   try {
                                     var idoc = document.getElementById('after-frame').contentDocument;
                                     var fig = idoc.createElement('figure');
@@ -5123,7 +5214,30 @@ Return simplified text with # for headings, - for lists.`, false);
       audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false };
       addToast((t("toasts.generating") || "Generating ") + segments.length + " audio sections\u2026 " + (segments.length > 20 ? t("toasts.audio_big_doc") || "Big document \u2014 you can pause anytime and resume later; finished sections are kept." : ""), "info");
       _runAudioJob();
-    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors" }, "\u{1F3A7} ", t("pdf_audit.audio.btn") || "Download Audio"), callTTS && audioJob && /* @__PURE__ */ React.createElement("div", { className: "w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900", "data-help-key": "pdf_audit_audio_download_btn" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F3A7} ", t("pdf_audit.audio.job") || "Audio", ": ", audioJob.done, "/", audioJob.total, " ", t("pdf_audit.audio.sections") || "sections", audioJob.failed > 0 ? " \xB7 " + audioJob.failed + " " + (t("pdf_audit.audio.failed") || "failed") : ""), /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded font-bold text-[10px] uppercase " + (audioJob.status === "running" ? "bg-blue-100 text-blue-700" : audioJob.status === "complete" ? "bg-green-100 text-green-700" : "bg-amber-200 text-amber-800") }, audioJob.status === "stalled" ? t("pdf_audit.audio.stalled") || "rate-limited \u2014 resume in ~1 min" : audioJob.status), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 ml-auto" }, audioJob.status === "running" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors" }, "\u{1F3A7} ", t("pdf_audit.audio.btn") || "Download Audio"), callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_audio_sr_btn", onClick: () => {
+      const srText = _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim();
+      if (!srText) {
+        addToast(t("toasts.text_content_convert"), "error");
+        return;
+      }
+      const segments = [];
+      let remaining = srText;
+      while (remaining.length > 0) {
+        if (remaining.length <= 600) {
+          segments.push(remaining);
+          break;
+        }
+        let splitAt = remaining.lastIndexOf(". ", 600);
+        if (splitAt < 200) splitAt = remaining.indexOf(". ", 400);
+        if (splitAt < 0 || splitAt > 800) splitAt = 500;
+        else splitAt += 2;
+        segments.push(remaining.substring(0, splitAt));
+        remaining = remaining.substring(splitAt).trim();
+      }
+      audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: true };
+      addToast((t("toasts.generating_sr") || "Generating screen-reader-style audio \u2014 structure announced (headings, lists, tables): ") + segments.length + " sections\u2026", "info");
+      _runAudioJob();
+    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors", title: t("pdf_audit.audio.sr_title") || 'Same voice, but announcing the structure the way a screen reader would: "Heading level 2\u2026", "List, 5 items\u2026", "Table, 3 rows\u2026", image descriptions. Hear the structural experience without running a screen reader.' }, "\u{1F9BB} ", t("pdf_audit.audio.sr_btn") || "Audio (screen-reader style)"), callTTS && audioJob && /* @__PURE__ */ React.createElement("div", { className: "w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900", "data-help-key": "pdf_audit_audio_download_btn" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F3A7} ", t("pdf_audit.audio.job") || "Audio", ": ", audioJob.done, "/", audioJob.total, " ", t("pdf_audit.audio.sections") || "sections", audioJob.failed > 0 ? " \xB7 " + audioJob.failed + " " + (t("pdf_audit.audio.failed") || "failed") : ""), /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded font-bold text-[10px] uppercase " + (audioJob.status === "running" ? "bg-blue-100 text-blue-700" : audioJob.status === "complete" ? "bg-green-100 text-green-700" : "bg-amber-200 text-amber-800") }, audioJob.status === "stalled" ? t("pdf_audit.audio.stalled") || "rate-limited \u2014 resume in ~1 min" : audioJob.status), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 ml-auto" }, audioJob.status === "running" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (audioJobRef.current) audioJobRef.current.pauseRequested = true;
     }, className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" }, "\u23F8 ", t("pdf_audit.audio.pause") || "Pause"), (audioJob.status === "paused" || audioJob.status === "stalled") && /* @__PURE__ */ React.createElement("button", { onClick: _runAudioJob, className: "px-2 py-1 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700" }, "\u25B6 ", t("pdf_audit.audio.resume") || "Resume"), audioJob.done > 0 && audioJob.status !== "complete" && /* @__PURE__ */ React.createElement("button", { onClick: () => _stitchAudioJob(false), className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100", title: t("pdf_audit.audio.partial_title") || "Stitch the finished sections into one playable file now \u2014 you can keep generating afterwards." }, "\u2B07 ", t("pdf_audit.audio.partial") || "Download what\u2019s ready"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (audioJobRef.current) audioJobRef.current.pauseRequested = true;
