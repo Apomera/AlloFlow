@@ -733,6 +733,7 @@ function PdfAuditView(props) {
     updatePdfPreview,
     createTaggedPdf,
     createTypesetTaggedPdf,
+    transcribeMediaToPayload,
     diffLibReady,
     downloadAccessiblePdf,
     downloadBatchResults,
@@ -879,6 +880,9 @@ function PdfAuditView(props) {
   const [imgReviewIdx, setImgReviewIdx] = useState(null);
   const [imgReviewItems, setImgReviewItems] = useState([]);
   const [imgReviewDraft, setImgReviewDraft] = useState("");
+  const [mediaMode, setMediaMode] = useState(null);
+  const [mediaInstructions, setMediaInstructions] = useState("");
+  const [mediaDigesting, setMediaDigesting] = useState(false);
   const [audioJob, setAudioJob] = useState(null);
   const audioJobRef = useRef(null);
   const _stitchAudioJob = async (auto) => {
@@ -1592,7 +1596,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </body></html>`);
       win.document.close();
       addToast(t("toasts.dashboard_opened"), "success");
-    }, "data-help-key": "pdf_audit_view_batch_dashboard_btn", className: "px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2" }, "\u{1F4CA} Dashboard")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, "PDF Uploaded: ", pdfAuditResult.fileName), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-1" }, (pdfAuditResult.fileSize / (1024 * 1024)).toFixed(1), " MB"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, t("pdf_audit.choose_how") || "Choose how to process this PDF:"), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", onClick: async () => {
+    }, "data-help-key": "pdf_audit_view_batch_dashboard_btn", className: "px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2" }, "\u{1F4CA} Dashboard")))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, "PDF Uploaded: ", pdfAuditResult.fileName), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-1" }, (pdfAuditResult.fileSize / (1024 * 1024)).toFixed(1), " MB"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, t("pdf_audit.choose_how") || "Choose how to process this PDF:"), pdfAuditResult._mediaPending && (() => {
+      const mp = pdfAuditResult._mediaPending;
+      const effMode = mediaMode || (mp.isVideo ? "dual" : "speech");
+      const MODES = mp.isVideo ? [["speech", "\u{1F399} Speech only"], ["visual", "\u{1F3AC} Visuals only"], ["dual", "\u{1F39E} Dual-track (spoken + shown + divergences)"], ["synthesis", "\u{1F4D6} Synthesized narrative"]] : [["speech", "\u{1F399} Speech transcript"], ["synthesis", "\u{1F4D6} Cleaned narrative"]];
+      return /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-cyan-50 to-sky-50 border-2 border-cyan-300 rounded-2xl p-4 text-left", "data-help-key": "pdf_audit_media_digestion_card" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-cyan-900 text-sm mb-1" }, "\u{1F399} ", t("pdf_audit.media.heading") || "Step 0: how should AlloFlow digest this recording?"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, mp.isVideo ? t("pdf_audit.media.video_note") || "Video carries two tracks \u2014 what is said and what is shown \u2014 and they can diverge. Dual-track keeps them separate (with a divergence check); Synthesized weaves them into one narrative." : t("pdf_audit.media.audio_note") || "The recording will be transcribed by AI \u2014 review the result for transcription errors before distributing."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1 mb-2" }, MODES.map(([k, label]) => /* @__PURE__ */ React.createElement("label", { key: k, className: "flex items-center gap-2 text-xs cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "allo-media-mode", checked: effMode === k, onChange: () => setMediaMode(k) }), /* @__PURE__ */ React.createElement("span", { className: effMode === k ? "font-bold text-cyan-900" : "text-slate-700" }, label)))), /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, t("pdf_audit.media.instructions_label") || "Custom instructions (optional)"), /* @__PURE__ */ React.createElement("textarea", { value: mediaInstructions, onChange: (e) => setMediaInstructions(e.target.value), rows: 2, placeholder: t("pdf_audit.media.instructions_ph") || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"', className: "w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" }), /* @__PURE__ */ React.createElement("button", { disabled: mediaDigesting || typeof transcribeMediaToPayload !== "function", onClick: async () => {
+        setMediaDigesting(true);
+        try {
+          const r = await transcribeMediaToPayload(pendingPdfBase64, mp.mime, { mode: effMode, instructions: mediaInstructions });
+          setPendingPdfBase64(r.payload);
+          setPdfAuditResult((prev) => prev ? { ...prev, _mediaPending: null, _transcriptSource: true } : prev);
+          addToast("\u2705 " + (t("toasts.digest_ready") || "Digest ready") + " (" + r.words.toLocaleString() + " " + (t("pdf_audit.media.words") || "words") + ") \u2014 " + (t("toasts.digest_next") || "now run Make Accessible for the full treatment. Review for transcription errors before distributing."), "success");
+        } catch (e) {
+          addToast((t("toasts.digestion_failed") || "Digestion failed: ") + (e?.message || "unknown"), "error");
+        }
+        setMediaDigesting(false);
+      }, className: "px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50" }, mediaDigesting ? "\u23F3 " + (t("pdf_audit.media.digesting") || "Digesting\u2026 (large recordings take a while)") : "\u25B6 " + (t("pdf_audit.media.go") || "Digest recording")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-2" }, t("pdf_audit.media.unlock_note") || "The buttons below unlock once the digest is ready."));
+    })(), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", onClick: async () => {
+      if (pdfAuditResult?._mediaPending) {
+        addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
+        return;
+      }
       setPdfFixMode("auto");
       setPdfAuditResult(null);
       addToast(t("toasts.auditing_remediating_pdf"), "info");
@@ -1773,6 +1797,10 @@ Return ONLY JSON:
         addToast && addToast(t("toasts.custom_style_2") + name + '" saved & applied!', "success");
       }, className: "w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors" }, "Save & Apply Style"))));
     })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", onClick: async () => {
+      if (pdfAuditResult?._mediaPending) {
+        addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
+        return;
+      }
       setPdfAuditResult(null);
       addToast(t("toasts.auditing_remediating_pdf"), "info");
       await runPdfAccessibilityAudit(pendingPdfBase64);
@@ -1786,6 +1814,10 @@ Return ONLY JSON:
         }
       }, 150);
     }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2" }, "\u267F ", t("pdf_audit.run_audit_label") || "Run Audit (step 1 of 2)"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_skip_to_extract_btn", onClick: () => {
+      if (pdfAuditResult?._mediaPending) {
+        addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
+        return;
+      }
       setPdfAuditResult(null);
       proceedWithPdfTransform();
     }, className: "px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " Skip to Text Extraction")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 text-center mt-2" }, t("pdf_audit.manual_path_explainer") || '"Run Audit" scores the document and shows what needs fixing \u2014 you then review and click Fix & Verify yourself (step 2). "Make Accessible" above does both steps plus re-checking, automatically. "Text Extraction" just pulls the raw text for content generation.'), pdfAuditResult?.pageCount > 0 && !pdfFixResult && (() => {

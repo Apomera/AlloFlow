@@ -74,41 +74,20 @@ const handleFileUpload = async (e, deps) => {
     // Files needing chunking (>15MB) keep the existing chunked-transcription
     // modal (content path) — they never reach this branch.
     if ((file.type.startsWith('audio/') || file.type.startsWith('video/')) && !LargeFileHandler.needsChunking(file)) {
-        try {
-            setIsExtracting(true);
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                try {
-                    const base64String = reader.result.split(',')[1];
-                    addToast(t('toasts.transcribing_for_pipeline') || '🎙 Transcribing the recording… it will open in the accessibility pipeline when ready.', 'info');
-                    const transcript = await callGeminiVision(
-                        'You are an expert educational transcriber. Listen to this recording and provide a comprehensive, accurate transcript of the spoken content. Use blank lines between natural topic shifts/paragraphs. Return ONLY the transcript text.',
-                        base64String, file.type || 'audio/mpeg'
-                    );
-                    if (!transcript || transcript.trim().length < 20) throw new Error('transcription returned no usable text');
-                    // Inline ALLOTRANSCRIPT encoder (canonical copy lives in
-                    // doc_pipeline_source.jsx — keep the MAGIC in sync).
-                    const MAGIC = 'ALLOTRANSCRIPT:v1\n';
-                    const bytes = new TextEncoder().encode(MAGIC + transcript.trim());
-                    let bin = '';
-                    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-                    setPendingPdfBase64(btoa(bin));
-                    setPendingPdfFile(file);
-                    setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _transcriptSource: true });
-                    setIsExtracting(false);
-                    addToast(t('toasts.transcript_ready_pipeline') || '✅ Transcript ready — choose Make Accessible for the full treatment, or Skip to Text Extraction to use it as source material. Review for transcription errors before distributing.', 'success');
-                } catch (trErr) {
-                    warnLog('[Media→Pipeline] transcription failed:', trErr?.message || trErr);
-                    setError((t('toasts.transcription_failed') || 'Transcription failed: ') + (trErr?.message || 'unknown error'));
-                    setIsExtracting(false);
-                }
-            };
-            reader.readAsDataURL(file);
-        } catch (err) {
-            warnLog('[Media→Pipeline] unhandled:', err);
-            setError(t('toasts.file_process_error'));
-            setIsExtracting(false);
-        }
+        // Stash the RAW media and open the triage with a digestion card —
+        // the teacher chooses HOW to digest (speech-only / visuals-only /
+        // dual-track / synthesized narrative + custom instructions) BEFORE
+        // any transcription runs. The view calls transcribeMediaToPayload
+        // and swaps in the ALLOTRANSCRIPT payload.
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result.split(',')[1];
+            setPendingPdfBase64(base64String);
+            setPendingPdfFile(file);
+            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _mediaPending: { mime: file.type || 'audio/mpeg', isVideo: file.type.startsWith('video/') } });
+            addToast(t('toasts.media_choose_digestion') || '🎙 Recording loaded — choose how to digest it (speech, visuals, both) before remediation.', 'info');
+        };
+        reader.readAsDataURL(file);
         return;
     }
     if (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')) {

@@ -2836,6 +2836,28 @@ var createDocPipeline = function(deps) {
     } catch (_) { return null; }
   };
 
+  // Media digestion (2026-06-10, maintainer design): audio and VIDEO carry
+  // two information tracks that can diverge — what is SAID vs what is SHOWN.
+  // The teacher chooses how to digest at submission; custom instructions ride
+  // the prompt. Returns the ALLOTRANSCRIPT payload ready for the pipeline.
+  const transcribeMediaToPayload = async (base64Data, mimeType, opts = {}) => {
+    const mode = opts.mode || 'speech';
+    const isVideo = /^video\//i.test(mimeType || '');
+    const MODE_PROMPTS = {
+      speech: 'Provide a comprehensive, accurate transcript of the SPOKEN content only. Use blank lines between natural topic shifts.',
+      visual: 'Describe the VISUAL content only: each scene, slide, diagram, demonstration, or on-screen text, in order. One paragraph per distinct visual. Do not transcribe speech.',
+      dual: 'Produce THREE clearly separated sections, exactly these headings:\n## Spoken content\n(a comprehensive, accurate transcript of everything said)\n## What was shown\n(each scene, slide, diagram, demonstration, or on-screen text, in order)\n## Where they diverge\n(anything shown but never said, said but never shown, or contradictory — if none, write "The audio and visuals align.")',
+      synthesis: 'Synthesize the spoken content AND the visual content into ONE cohesive narrative a reader can follow without the recording — weave what was shown into where it was said. Where audio and visuals diverge, note it inline in [brackets].',
+    };
+    const prompt = 'You are an expert educational transcriber analyzing a ' + (isVideo ? 'video' : 'audio') + ' recording.\n'
+      + (MODE_PROMPTS[mode] || MODE_PROMPTS.speech)
+      + (opts.instructions ? ('\n\nADDITIONAL INSTRUCTIONS from the teacher (follow them within the rules above):\n' + String(opts.instructions).slice(0, 1500)) : '')
+      + '\n\nReturn ONLY the text. Never invent content you did not hear or see.';
+    const text = await callGeminiVision(prompt, base64Data, mimeType || 'audio/mpeg');
+    if (!text || text.trim().length < 20) throw new Error('digestion returned no usable text');
+    return { payload: encodeTranscriptPayload(text.trim()), words: text.trim().split(/\s+/).length, mode };
+  };
+
   const extractPdfTextDeterministic = async (base64) => {
     // Transcript chokepoint: EVERY caller (skip-to-extraction, the audit
     // baseline, the fix flow's Step 0) inherits transcript awareness here.
@@ -4699,8 +4721,15 @@ var createDocPipeline = function(deps) {
     if (_transcriptText !== null) {
       try {
         const _paras = _transcriptText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+        // Dual-track digests carry '## ' section headings — honor them so the
+        // Spoken/Shown/Diverge structure survives into the audit and the fix.
+        const _paraHtml = (p) => {
+          const h = p.match(/^(#{1,3})\s+(.+)$/);
+          if (h) { const lv = h[1].length; return '<h' + lv + '>' + h[2].replace(/</g, '&lt;') + '</h' + lv + '>'; }
+          return '<p>' + p.replace(/</g, '&lt;') + '</p>';
+        };
         const _tHtml = '<!DOCTYPE html><html lang="en"><head><title></title></head><body><main>'
-          + (_paras.length ? _paras : [_transcriptText]).map((p) => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n')
+          + (_paras.length ? _paras : [_transcriptText]).map(_paraHtml).join('\n')
           + '</main></body></html>';
         const _tAxe = await runAxeAudit(_tHtml);
         const _words = _transcriptText.split(/\s+/).filter(Boolean).length;
@@ -22411,6 +22440,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),
     encodeTranscriptPayload,
     decodeTranscriptPayload,
+    transcribeMediaToPayload: _wrapAsync(transcribeMediaToPayload),
     extractPdfTextDeterministic: _wrapAsync(extractPdfTextDeterministic),
     fixContrastViolations: _wrap(fixContrastViolations),
     fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),

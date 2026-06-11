@@ -644,7 +644,7 @@ function PdfAuditView(props) {
     auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
     callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, t, updatePdfPreview,
-    createTaggedPdf, createTypesetTaggedPdf, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
+    createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
     fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
@@ -721,6 +721,10 @@ function PdfAuditView(props) {
   const [imgReviewIdx, setImgReviewIdx] = useState(null);
   const [imgReviewItems, setImgReviewItems] = useState([]);
   const [imgReviewDraft, setImgReviewDraft] = useState('');
+  // Media digestion card state (audio/video pipeline intake).
+  const [mediaMode, setMediaMode] = useState(null);
+  const [mediaInstructions, setMediaInstructions] = useState('');
+  const [mediaDigesting, setMediaDigesting] = useState(false);
   // Resumable audio job (2026-06-10, maintainer ask): big documents hit TTS
   // rate limits mid-run — the old handler died and discarded position. The
   // job now generates in chunks (it always did), PAUSES on demand, STALLS
@@ -1494,12 +1498,56 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
                 <p className="text-sm text-slate-600 mb-4">{t('pdf_audit.choose_how') || 'Choose how to process this PDF:'}</p>
 
+                {/* ── Media digestion card (2026-06-10): audio/video carry TWO
+                    information tracks that can diverge — what is SAID vs what
+                    is SHOWN. The teacher chooses the digestion mode + custom
+                    instructions BEFORE any transcription runs; the result
+                    becomes the ALLOTRANSCRIPT payload and the normal buttons
+                    unlock. ── */}
+                {pdfAuditResult._mediaPending && (() => {
+                  const mp = pdfAuditResult._mediaPending;
+                  const effMode = mediaMode || (mp.isVideo ? 'dual' : 'speech');
+                  const MODES = mp.isVideo
+                    ? [['speech', '🎙 Speech only'], ['visual', '🎬 Visuals only'], ['dual', '🎞 Dual-track (spoken + shown + divergences)'], ['synthesis', '📖 Synthesized narrative']]
+                    : [['speech', '🎙 Speech transcript'], ['synthesis', '📖 Cleaned narrative']];
+                  return (
+                    <div className="mb-4 bg-gradient-to-br from-cyan-50 to-sky-50 border-2 border-cyan-300 rounded-2xl p-4 text-left" data-help-key="pdf_audit_media_digestion_card">
+                      <h4 className="font-black text-cyan-900 text-sm mb-1">🎙 {t('pdf_audit.media.heading') || 'Step 0: how should AlloFlow digest this recording?'}</h4>
+                      <p className="text-[11px] text-slate-600 mb-2">{mp.isVideo ? (t('pdf_audit.media.video_note') || 'Video carries two tracks — what is said and what is shown — and they can diverge. Dual-track keeps them separate (with a divergence check); Synthesized weaves them into one narrative.') : (t('pdf_audit.media.audio_note') || 'The recording will be transcribed by AI — review the result for transcription errors before distributing.')}</p>
+                      <div className="flex flex-col gap-1 mb-2">
+                        {MODES.map(([k, label]) => (
+                          <label key={k} className="flex items-center gap-2 text-xs cursor-pointer">
+                            <input type="radio" name="allo-media-mode" checked={effMode === k} onChange={() => setMediaMode(k)} />
+                            <span className={effMode === k ? 'font-bold text-cyan-900' : 'text-slate-700'}>{label}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.media.instructions_label') || 'Custom instructions (optional)'}</label>
+                      <textarea value={mediaInstructions} onChange={(e) => setMediaInstructions(e.target.value)} rows={2} placeholder={t('pdf_audit.media.instructions_ph') || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"'} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" />
+                      <button disabled={mediaDigesting || typeof transcribeMediaToPayload !== 'function'} onClick={async () => {
+                        setMediaDigesting(true);
+                        try {
+                          const r = await transcribeMediaToPayload(pendingPdfBase64, mp.mime, { mode: effMode, instructions: mediaInstructions });
+                          setPendingPdfBase64(r.payload);
+                          setPdfAuditResult((prev) => prev ? { ...prev, _mediaPending: null, _transcriptSource: true } : prev);
+                          addToast('✅ ' + (t('toasts.digest_ready') || 'Digest ready') + ' (' + r.words.toLocaleString() + ' ' + (t('pdf_audit.media.words') || 'words') + ') — ' + (t('toasts.digest_next') || 'now run Make Accessible for the full treatment. Review for transcription errors before distributing.'), 'success');
+                        } catch (e) { addToast((t('toasts.digestion_failed') || 'Digestion failed: ') + (e?.message || 'unknown'), 'error'); }
+                        setMediaDigesting(false);
+                      }} className="px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50">
+                        {mediaDigesting ? '⏳ ' + (t('pdf_audit.media.digesting') || 'Digesting… (large recordings take a while)') : '▶ ' + (t('pdf_audit.media.go') || 'Digest recording')}
+                      </button>
+                      <span className="text-[10px] text-slate-500 ml-2">{t('pdf_audit.media.unlock_note') || 'The buttons below unlock once the digest is ready.'}</span>
+                    </div>
+                  );
+                })()}
+
                 {/* One-button recommended path. The modal offers many dials; a
                     non-technical teacher needs ONE obvious action. Same flow as
                     "Audit & Remediate" below, but with the recommended defaults
                     applied: auto post-fix mode + auto-continue-to-target forced on. */}
                 <div className="mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4">
                   <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
+                    if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } 
                     // TRUE hands-free chain (2026-06-10 fix — user testing showed the
                     // previous handler stopped after the audit, identical to the manual
                     // path): audit → Fix & Verify → auto-continue to target → autosave.
@@ -1761,10 +1809,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
-                  <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
+                  <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
                     <Sparkles size={16} /> Skip to Text Extraction
                   </button>
                 </div>
