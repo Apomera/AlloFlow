@@ -38,7 +38,7 @@ const GameThemeToggle = () => {
     <button
       onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
       className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1 text-white"
-      aria-label={t("a11y.toggle_theme_full")}
+      aria-label={(typeof window !== 'undefined' && window.__alloT) ? window.__alloT("a11y.toggle_theme_full") : "Toggle theme"}
       title={isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'}
       type="button"
     >
