@@ -16917,6 +16917,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           figcaption { background: #cffafe !important; }
           main { outline: 2px solid #16a34a !important; outline-offset: 4px; }
           main::before { content: 'MAIN'; position: absolute; top: -10px; left: 0; background: #16a34a; color: white; font-size: 9px; font-weight: bold; padding: 1px 4px; border-radius: 3px; font-family: monospace; }
+          /* Reading-order overlay (2026-06-12): numbered badges in the order
+             a screen reader walks the blocks (DOM order). Verifies tables,
+             figures, and multi-section layouts at a glance. */
+          body { counter-reset: allo-rorder; }
+          main h1, main h2, main h3, main h4, main h5, main h6, main p, main li, main table, main figure, main blockquote { counter-increment: allo-rorder; }
+          main p, main li, main blockquote, main table, main figure { position: relative; }
+          main p::before, main li::before, main blockquote::before, main table::before, main figure::before { content: counter(allo-rorder); position: absolute; top: -7px; left: -10px; background: #0f172a; color: #fff; font-size: 8px; font-weight: bold; font-family: monospace; padding: 1px 4px; border-radius: 8px; line-height: 1.4; z-index: 5; opacity: 0.85; }
+          main h1::after, main h2::after, main h3::after, main h4::after, main h5::after, main h6::after { content: '#' counter(allo-rorder); position: absolute; top: -8px; left: -10px; background: #0f172a; color: #fff; font-size: 8px; font-weight: bold; font-family: monospace; padding: 1px 4px; border-radius: 8px; z-index: 5; opacity: 0.85; }
           [aria-label]::after { content: '🏷️ ' attr(aria-label); display: block; font-size: 8px; color: #6b7280; background: #f3f4f6; padding: 1px 4px; border-radius: 2px; margin-top: 2px; max-width: 300px; overflow: hidden; }
         `;
         doc.head.appendChild(inspectCSS);

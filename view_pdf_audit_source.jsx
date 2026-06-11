@@ -8000,6 +8000,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div><span className="inline-block w-3 h-2 bg-cyan-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.figures') || 'Figures + captions'}</div>
                   <div><span className="inline-block w-3 h-2 bg-green-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.main_landmark') || 'Main landmark'}</div>
                   <div><span className="inline-block w-3 h-2 bg-orange-600 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.aria_roles') || 'ARIA roles'}</div>
+                  <div><span className="inline-block w-3 h-2 bg-slate-900 rounded mr-1"></span> {t('pdf_audit.a11y_inspect.reading_order') || 'Reading order (#1, #2 … — the order a screen reader walks the blocks)'}</div>
                 </div>
               )}
 
