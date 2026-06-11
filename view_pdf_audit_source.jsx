@@ -2622,6 +2622,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const axeAudit = pdfAuditResult._baselineAxeAudit;
                     const isBlended = pdfAuditResult._scoreIsBlended && axeScore !== undefined;
                     const displayedScore = pdfAuditResult.score;
+                    // The blend's deterministic operand is min(axe, EqualAccess)
+                    // when both ran — the equation must show THE NUMBER USED
+                    // (user report 2026-06-12: it printed axe 80 while the total
+                    // came from EA's 74, making the shown arithmetic false).
+                    const _eaBase = pdfAuditResult._baselineSecondEngineAudit;
+                    const deterministicShown = (_eaBase && typeof _eaBase.score === 'number' && typeof axeScore === 'number')
+                      ? Math.min(axeScore, _eaBase.score) : axeScore;
+                    const _eaIsLower = deterministicShown !== axeScore;
                     const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
                     const scoreWithoutPasses = Math.max(0, 100 - rawDed);
                     const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
@@ -2754,7 +2762,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-slate-600">(</span>
                             <span className="text-purple-800 font-black">{aiScore}</span>
                             <span className="text-slate-600 mx-1">+</span>
-                            <span className="text-blue-800 font-black">{axeScore}</span>
+                            <span className="text-blue-800 font-black">{deterministicShown}</span>
                             <span className="text-slate-600">)</span>
                             <span className="text-slate-600 mx-1">/</span>
                             <span className="text-slate-600 font-bold">2</span>
@@ -2762,7 +2770,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
                             <span className="text-slate-600 text-xs">/100</span>
                           </div>
-                          <div className="text-[11px] text-slate-600 mt-0.5">{t('pdf_audit.score.average_both') || 'Average of both engines (equal weight)'}</div>
+                          <div className="text-[11px] text-slate-600 mt-0.5">{_eaIsLower ? ((t('pdf_audit.score.average_conservative') || 'AI averaged with the more conservative deterministic engine — Equal Access ') + deterministicShown + (t('pdf_audit.score.average_conservative2') || ' was lower than axe ') + axeScore + '.') : (t('pdf_audit.score.average_both') || 'Average of both engines (equal weight)')}</div>
                         </div>
                       )}
                     </div>
@@ -3571,7 +3579,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <span className="text-[10px] text-slate-500 ml-auto">{t('pdf_audit.images.edit_alt_hint') || 'Edit alt text below — changes apply to the final document'}</span>
                                 </div>
                                 <div className="space-y-3">
-                                  {extractionData.images.map((img, imgIdx) => (
+                                  {(() => {
+                                    // Group byte-identical copies (user report
+                                    // 2026-06-12: a repeated logo produced N
+                                    // identical review cards). One card per
+                                    // unique src; edits fan out to every copy.
+                                    const _seen = new Map();
+                                    extractionData.images.forEach((im, i) => {
+                                      const k = im && im.src ? im.src : ('__nosrc_' + i);
+                                      if (!_seen.has(k)) _seen.set(k, { img: im, idxs: [i] });
+                                      else _seen.get(k).idxs.push(i);
+                                    });
+                                    return Array.from(_seen.values());
+                                  })().map(({ img, idxs }) => { const imgIdx = idxs[0]; return (
                                     <div key={imgIdx} className="flex gap-3 bg-white rounded-xl border border-slate-400 p-3">
                                       {img.src && (
                                         <div className="shrink-0 flex flex-col items-center gap-1">
@@ -3590,16 +3610,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <div className="flex-1 space-y-1.5">
                                         <div className="flex items-center gap-2">
                                           <span className="text-[10px] font-bold text-slate-500 uppercase">Image {imgIdx + 1}</span>
+                                          {idxs.length > 1 && <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold" title={(t('pdf_audit.images.dup_title') || 'This exact image appears ') + idxs.length + (t('pdf_audit.images.dup_title2') || ' times in the document — one description covers every copy.')}>×{idxs.length} {t('pdf_audit.images.dup_badge') || 'copies'}</span>}
                                           {img.isRegenerated && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">{t('pdf_audit.images.ai_generated_badge') || 'AI Generated'}</span>}
                                           {img.type === 'decorative' && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">Decorative</span>}
                                         </div>
                                         <textarea
                                           defaultValue={img.description || ''}
                                           onChange={(e) => {
-                                            window.dispatchEvent(new CustomEvent('alloflow:alt-text-edited', { detail: { index: imgIdx, altText: e.target.value } }));
+                                            idxs.forEach((di) => window.dispatchEvent(new CustomEvent('alloflow:alt-text-edited', { detail: { index: di, altText: e.target.value } })));
                                             setExtractionData(prev => {
                                               if (!prev) return prev;
-                                              const updated = { ...prev, images: prev.images.map((im, i) => i === imgIdx ? { ...im, description: e.target.value } : im) };
+                                              const updated = { ...prev, images: prev.images.map((im, i) => idxs.includes(i) ? { ...im, description: e.target.value } : im) };
                                               return updated;
                                             });
                                           }}
@@ -3613,7 +3634,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         )}
                                       </div>
                                     </div>
-                                  ))}
+                                  ); })}
                                 </div>
                               </div>
                               );
