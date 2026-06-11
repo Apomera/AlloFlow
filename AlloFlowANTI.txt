@@ -26508,7 +26508,7 @@ ${_toolList}
       {(isHelpMode || showWizard || isWordSoundsMode || isSyntaxGame || isMemoryGame || isCrosswordGame || isMatchingGame || isTimelineGame || isConceptSortGame || isReviewGame || escapeRoomState.isActive || isProjectSettingsOpen || !!pdfAuditResult || pdfAuditLoading || showExportPreview) && (
       <button
         data-help-ignore="true"
-        onClick={handleToggleIsHelpMode}
+        onClick={(e) => { try { e.preventDefault(); e.stopPropagation(); } catch (_) {} handleToggleIsHelpMode(); }}
         aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
         title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
         className={`fixed right-3 top-1/2 -translate-y-1/2 z-[10999] w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 transition-all duration-300 no-print ${

@@ -3467,7 +3467,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.ada.heading') || 'ADA Title II & WCAG 2.1 AA'}</h4>
-                                <span className="text-[11px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">{t('pdf_audit.ada.deadline_badge') || 'Deadline: April 24, 2026'}</span>
+                                <span className="text-[11px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">{t('pdf_audit.ada.deadline_badge') || 'Deadline: April 2027 (extended)'}</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
                                 The U.S. Department of Justice finalized a rule under <strong className="text-slate-700">{t('pdf_audit.ada.title_strong') || 'Title II of the Americans with Disabilities Act (ADA)'}</strong> requiring
@@ -3482,8 +3482,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
                               <div className="text-[11px] font-black text-amber-700 uppercase tracking-wider mb-0.5">📅 Compliance Deadlines</div>
                               <div className="text-[11px] text-slate-600 leading-snug">
-                                <strong className="text-rose-700">{t('pdf_audit.ada.deadline_50k') || 'April 24, 2026'}</strong> — entities serving 50,000+ people<br/>
-                                <strong className="text-amber-700">{t('pdf_audit.ada.deadline_small') || 'April 26, 2027'}</strong> — entities serving fewer than 50,000 and special districts
+                                <strong className="text-rose-700">{t('pdf_audit.ada.deadline_50k') || 'April 2027'}</strong> — entities serving 50,000+ people <span className="text-[10px] text-slate-500">(extended from 2026)</span><br/>
+                                <strong className="text-amber-700">{t('pdf_audit.ada.deadline_small') || 'April 2028'}</strong> — entities serving fewer than 50,000 and special districts <span className="text-[10px] text-slate-500">(extended from 2027)</span><br/><span className="text-[10px] text-slate-600 italic">{t('pdf_audit.ada.extension_note') || 'DOJ extended these deadlines in 2026, citing the unreliability of automated remediation tools — verified accessibility is exactly the gap this pipeline exists to close. HHS Section 504 deadlines were similarly extended to May 2027/2028.'}</span>
                               </div>
                             </div>
                             <div className="bg-white/80 rounded-lg border border-amber-100 p-2.5">
