@@ -6192,6 +6192,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (_s.typesetFont) {
                                 addToast('🈳 ' + (t('toasts.typeset_unicode_font') || 'Non-Latin text detected — embedded ') + _s.typesetFont.family + (t('toasts.typeset_unicode_font2') || ' so the PDF keeps the real characters (script: ') + _s.typesetFont.script + ').', 'info');
                               }
+                              if (_s.fieldsCreated > 0) {
+                                addToast('📝 ' + _s.fieldsCreated + ' ' + (t('toasts.typeset_fields') || 'fillable form fields embedded and tagged — students can type into the PDF.'), 'success');
+                              }
                               if (_s.unicodeTypesetWarning) {
                                 addToast('⚠ ' + (t('toasts.typeset_unicode_warning') || 'Some text could not be typeset honestly: ') + _s.unicodeTypesetWarning.advice, 'warning');
                               }

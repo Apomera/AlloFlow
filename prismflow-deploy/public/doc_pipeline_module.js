@@ -7732,6 +7732,88 @@ HTML section ${chunkNum}/${chunks.length}:
     };
     const dom = new DOMParser().parseFromString(html, 'text/html');
     const H_SIZE = { h1: 20, h2: 17, h3: 15, h4: 13, h5: 12, h6: 11 };
+    // ── Fillable S1 (2026-06-12, design doc §3) ── blocks carrying
+    // data-allo-field inputs get an inline cursor layout: text segments
+    // wrap word-by-word; each field becomes a REAL AcroForm widget created
+    // at the live cursor (creation order = walk order = reading order, so
+    // tab order is right by construction). Stage 3 of the tagger then tags
+    // every widget (/Form StructElem + OBJR) with ZERO new tagging code —
+    // that machinery has existed since 2026-06-07.
+    let _acroForm = null;
+    const _fieldNames = {};
+    const _getFormLazy = () => { if (!_acroForm) _acroForm = doc.getForm(); return _acroForm; };
+    const _uniqueFieldName = (base) => {
+      const b = (base || 'field').toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'field';
+      _fieldNames[b] = (_fieldNames[b] || 0) + 1;
+      return _fieldNames[b] > 1 ? (b + '_' + _fieldNames[b]) : b;
+    };
+    let _fieldsCreated = 0;
+    const drawFieldBlock = (el, o = {}) => {
+      const size = o.size || 11, f = o.f || font, indent = o.indent || 0;
+      const lineH = size * 1.35;
+      const maxX = PAGE_W - M;
+      // Tokenize: text runs + field descriptors, in document order.
+      const segs = [];
+      const tw = dom.createTreeWalker(el, 5 /* SHOW_ELEMENT | SHOW_TEXT */);
+      let node;
+      while ((node = tw.nextNode())) {
+        if (node.nodeType === 3) { const txt = node.nodeValue || ''; if (txt.trim()) segs.push({ t: 'text', str: txt }); continue; }
+        if (node.tagName === 'INPUT' && node.getAttribute('data-allo-field')) {
+          const wm = (node.getAttribute('style') || '').match(/width:\s*(\d+)ch/);
+          segs.push({
+            t: 'field',
+            kind: node.getAttribute('type') === 'checkbox' ? 'checkbox' : 'text',
+            name: node.getAttribute('name') || '',
+            label: node.getAttribute('aria-label') || '',
+            widthCh: Math.max(6, Math.min(40, parseInt((wm && wm[1]) || '12', 10))),
+          });
+        }
+      }
+      y -= (o.before != null ? o.before : 6);
+      newPageIfNeeded(lineH);
+      y -= lineH;
+      let cx = M + indent;
+      const newLine = () => { newPageIfNeeded(lineH); y -= lineH; cx = M + indent; };
+      for (const seg of segs) {
+        if (seg.t === 'text') {
+          const words = winAnsi(seg.str).split(/\s+/).filter(Boolean);
+          for (const w of words) {
+            let ww = 0;
+            try { ww = f.widthOfTextAtSize(w + ' ', size); } catch (_) { ww = (w.length + 1) * size * 0.55; }
+            if (cx + ww > maxX && cx > M + indent) newLine();
+            try { page.drawText(w, { x: cx, y, size, font: f }); } catch (_) {}
+            cx += ww;
+          }
+          continue;
+        }
+        // Field segment.
+        try {
+          const form = _getFormLazy();
+          const name = _uniqueFieldName(seg.name || seg.label);
+          if (seg.kind === 'checkbox') {
+            const box = size + 2;
+            if (cx + box > maxX && cx > M + indent) newLine();
+            const cb = form.createCheckBox('allo.' + name);
+            cb.addToPage(page, { x: cx, y: y - 2, width: box, height: box, borderWidth: 1 });
+            cx += box + 5;
+          } else {
+            let fw = Math.min(seg.widthCh * size * 0.55, maxX - M - indent);
+            if (cx + fw > maxX && cx > M + indent) newLine();
+            fw = Math.min(fw, maxX - cx);
+            const tf = form.createTextField('allo.' + name);
+            tf.addToPage(page, { x: cx, y: y - 3, width: fw, height: lineH, borderWidth: 0.75 });
+            cx += fw + 5;
+          }
+          _fieldsCreated++;
+        } catch (fe) {
+          // A failed widget must not lose the blank — draw underscores.
+          try { page.drawText('________', { x: cx, y, size, font: f }); } catch (_) {}
+          cx += size * 4;
+          try { warnLog('[TypesetTagged] field creation failed (' + ((fe && fe.message) || '?') + ') — drew a visible blank instead'); } catch (_) {}
+        }
+      }
+      y -= (o.after != null ? o.after : 4);
+    };
     const els = Array.from((dom.body || dom).querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,th,td,caption,blockquote,figcaption,img'));
     for (const el of els) {
       const tag = el.tagName.toLowerCase();
@@ -7739,6 +7821,12 @@ HTML section ${chunkNum}/${chunks.length}:
       // individually (one cell per line — the same shape the tagger's
       // fixtures use, so table linking behaves identically).
       if (tag === 'p' && el.closest('li')) continue;
+      // Fillable blocks take the inline field layout; nested-list li text
+      // exclusion doesn't apply (fields live in leaf blocks).
+      if (tag !== 'img' && el.querySelector && el.querySelector('input[data-allo-field]') && !(tag === 'li' && el.querySelector('ul,ol'))) {
+        drawFieldBlock(el, { size: 11, indent: tag === 'li' ? 14 : 0, before: tag === 'li' ? 3 : 6, after: tag === 'li' ? 2 : 4 });
+        continue;
+      }
       if (tag === 'img') {
         const src = el.getAttribute('src') || '';
         const m = src.match(/^data:image\/(png|jpe?g);base64,(.+)$/i);
@@ -7775,6 +7863,7 @@ HTML section ${chunkNum}/${chunks.length}:
     if (_tagged && _tagged.summary) {
       if (_typesetFontInfo) _tagged.summary.typesetFont = _typesetFontInfo;
       if (_unicodeTypesetWarning) _tagged.summary.unicodeTypesetWarning = _unicodeTypesetWarning;
+      if (_fieldsCreated > 0) _tagged.summary.fieldsCreated = _fieldsCreated;
     }
     return _tagged;
   };
