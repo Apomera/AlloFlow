@@ -26,7 +26,12 @@ module.exports = {
     safelist: [
         // AlloFlow uses dynamic indigo/emerald/amber/red/slate color families for
         // state indicators (success/warning/error) — hedge against tree-shake misses.
-        { pattern: /^(bg|text|border|ring)-(indigo|emerald|amber|red|slate|purple|blue|cyan|teal)-(50|100|200|300|400|500|600|700|800|900)$/ },
+        // rose/violet/sky added 2026-06-11: the shared visual-organizer accent
+        // palette (_CONCEPT_ACCENTS in key_concept_map_source.jsx + the Venn tokens
+        // in concept_map_handlers) applies them via dynamic bg-/border-/ring-${accent}
+        // classes the purge can't statically see. Without these, the prismflow build
+        // silently dropped those families (latent missing-style bug).
+        { pattern: /^(bg|text|border|ring)-(indigo|emerald|amber|red|slate|purple|blue|cyan|teal|rose|violet|sky)-(50|100|200|300|400|500|600|700|800|900)$/ },
     ],
     theme: {
         extend: {},

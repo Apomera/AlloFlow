@@ -10,7 +10,15 @@ const handleInitializeMap = async (deps) => {
           const { main, branches, structureType } = generatedContent?.data;
           if (structureType === 'Venn Diagram') {
               const newNodes = [];
-              const colors = ['yellow', 'green', 'blue', 'orange', 'purple', 'pink', 'teal', 'rose'];
+              // Shared visual-organizer accent palette — keep in sync with
+              // _CONCEPT_ACCENTS in key_concept_map_source.jsx (indigo/teal/rose/
+              // amber/violet/sky). Cycling (not random) so the token tray reads as
+              // one designed palette that matches the concept map, and stays stable
+              // across re-renders. Colour is decorative variety ONLY — deliberately
+              // not keyed to the source set, so it never reveals which circle a
+              // token belongs in. (Families safelisted in prismflow tailwind.config.js.)
+              const colors = ['indigo', 'teal', 'rose', 'amber', 'violet', 'sky'];
+              let _tokenIdx = 0;
               if (Array.isArray(branches)) {
                   branches.forEach((branch, bIdx) => {
                       if (Array.isArray(branch.items)) {
@@ -22,7 +30,7 @@ const handleInitializeMap = async (deps) => {
                                   y: 520 + Math.random() * 60,
                                   text: item,
                                   type: 'venn-token',
-                                  colorVariant: colors[Math.floor(Math.random() * colors.length)]
+                                  colorVariant: colors[_tokenIdx++ % colors.length]
                               });
                           });
                       }

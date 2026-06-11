@@ -1386,7 +1386,7 @@ const renderInteractiveMap = (deps) => {
       const fromNode = conceptMapNodes.find((n) => n.id === edge.fromId);
       const toNode = conceptMapNodes.find((n) => n.id === edge.toId);
       if (!fromNode || !toNode) return null;
-      let strokeColor = "#94a3b8";
+      let strokeColor = "#818cf8";
       let strokeWidth = "2";
       if (edge.status === "correct") {
         strokeColor = "#22c55e";
@@ -1442,7 +1442,7 @@ const renderInteractiveMap = (deps) => {
         )),
         !isChallengeActive && !isMapLocked && /* @__PURE__ */ React.createElement("g", { className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" }, /* @__PURE__ */ React.createElement("circle", { cx: (fromNode.x + toNode.x) / 2, cy: (fromNode.y + toNode.y) / 2, r: "8", fill: "#ef4444" }), /* @__PURE__ */ React.createElement("text", { x: (fromNode.x + toNode.x) / 2, y: (fromNode.y + toNode.y) / 2, dy: "3", textAnchor: "middle", fill: "white", fontSize: "10", fontWeight: "bold" }, "\xD7"))
       );
-    }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("marker", { id: "arrowhead", markerWidth: "10", markerHeight: "7", refX: "9", refY: "3.5", orient: "auto" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#94a3b8" }))), !isVenn && (conceptMapNodes || []).filter((node) => node.type && node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(React.Fragment, { key: node.id }, renderFlowShape(node, connectingSourceId === node.id))), !isVenn && connectingSourceId && /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "rgba(99, 102, 241, 0.05)", className: "pointer-events-none animate-pulse" })),
+    }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("marker", { id: "arrowhead", markerWidth: "10", markerHeight: "7", refX: "9", refY: "3.5", orient: "auto" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#818cf8" }))), !isVenn && (conceptMapNodes || []).filter((node) => node.type && node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(React.Fragment, { key: node.id }, renderFlowShape(node, connectingSourceId === node.id))), !isVenn && connectingSourceId && /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "rgba(99, 102, 241, 0.05)", className: "pointer-events-none animate-pulse" })),
     (conceptMapNodes || []).filter((node) => !node.type || !node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(
       "div",
       {

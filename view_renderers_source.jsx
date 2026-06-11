@@ -2112,7 +2112,12 @@ const renderInteractiveMap = (deps) => {
                               const fromNode = conceptMapNodes.find(n => n.id === edge.fromId);
                               const toNode = conceptMapNodes.find(n => n.id === edge.toId);
                               if (!fromNode || !toNode) return null;
-                              let strokeColor = "#94a3b8";
+                              // Neutral structural connectors use a soft indigo tuned to the
+                              // concept map's connector colour (key_concept_map_source.jsx) so
+                              // the interactive canvas and the static map read as one system.
+                              // Semantic status (correct=green / incorrect=red) and dashed-
+                              // tentative (slate) intentionally override this just below.
+                              let strokeColor = "#818cf8";
                               let strokeWidth = "2";
                               if (edge.status === 'correct') {
                                   strokeColor = "#22c55e";
@@ -2174,7 +2179,7 @@ const renderInteractiveMap = (deps) => {
                       )}
                       <defs>
                           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                              <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                              <polygon points="0 0, 10 3.5, 0 7" fill="#818cf8" />
                           </marker>
                       </defs>
                       {!isVenn && (conceptMapNodes || [])
