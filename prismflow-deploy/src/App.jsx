@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'b6d08b93';
+    var pluginCdnVersion = '6c83d916';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15660,7 +15660,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
-          verificationAudit: reVerify,
+          // Never let a FAILED re-verify (quota/timeout on later rounds)
+          // null out the prior round's verification — that unmounted the
+          // Verification section and dead-ended its dashboard pill
+          // (user report 2026-06-11). Carry forward + mark stale.
+          verificationAudit: reVerify || (cur.verificationAudit ? Object.assign({}, cur.verificationAudit, { _staleFromEarlierPass: true }) : null),
           afterScore: newScore,
           autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
           htmlChars: result.html.length,
