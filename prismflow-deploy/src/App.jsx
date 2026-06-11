@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'd4991e01';
+    var pluginCdnVersion = 'eeaf6b63';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10515,7 +10515,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         // never reach accessibleHtml — they leaked into the HTML export,
         // the plain TTS text, and the final engine audits.
         const _clone = doc.documentElement.cloneNode(true);
-        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg]').forEach((el) => el.remove()); } catch (_) {}
+        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
         const html = '<!DOCTYPE html>\n' + _clone.outerHTML;
         setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html } : prev);
       } catch (_) {}
