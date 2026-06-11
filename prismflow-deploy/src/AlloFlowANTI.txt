@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'ee9cebb9';
+    var pluginCdnVersion = 'eba5470b';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4724,6 +4724,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js');
     loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
+    loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js');
@@ -27175,6 +27176,24 @@ ${_toolList}
                       break;
               }
           }
+      })}
+      {/* Agentic AlloBot S0 (docs/allobot_agentic_design.md): the command
+          palette — Ctrl/Cmd+K anywhere. ONE registry that the bot chat (S1)
+          and voice loop (S2) will reuse; ctx is assembled from the SAME
+          named handlers the HeaderBar/FabStack already receive. */}
+      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && React.createElement(window.AlloModules.AlloCommands.AlloCommandPalette, {
+          ctx: {
+              t, addToast,
+              setShowEducatorHub, setShowLearningHub, openExportPreview, setShowWizard,
+              setShowNotebook, openTranslateModal: handleSetIsTranslateModalOpenToTrue,
+              setShowSessionModal, setShowClassAnalytics, setShowExportMenu, setShowAIBackendModal,
+              setShowTextSettings, setShowVoiceSettings, setShowReadThisPage,
+              handleToggleFocusMode, handleToggleReadingRuler, handleToggleIsHelpMode, handleToggleIsBotVisible,
+              fontBigger: () => { const v = Math.min(32, (sliderFontSize || 16) + 2); setSliderFontSize(v); return v; },
+              fontSmaller: () => { const v = Math.max(10, (sliderFontSize || 16) - 2); setSliderFontSize(v); return v; },
+              resetFontSize,
+              isStudentLinkMode, isIndependentMode,
+          },
       })}
       {isBotVisible && (
           <AlloBot
