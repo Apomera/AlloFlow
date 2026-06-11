@@ -3211,7 +3211,13 @@ Return ONLY JSON:
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (_) {
       }
-    }, className: "ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0" }, "\u{1F4E5} ", t("pdf_audit.whatnow.go") || "Take me to Downloads")), (() => {
+    }, className: "ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0" }, "\u{1F4E5} ", t("pdf_audit.whatnow.go") || "Take me to Downloads"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      const temp = document.createElement("div");
+      temp.innerHTML = pdfFixResult.accessibleHtml;
+      setInputText(temp.textContent || temp.innerText || "");
+      _closePdfAuditModal();
+      addToast(t("toasts.reverse_door") || "\u2728 Document loaded as source material \u2014 generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.", "success");
+    }, className: "px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0", title: t("pdf_audit.whatnow.materials_title") || "Open the content tools with this document as the source \u2014 glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text." }, "\u2728 ", t("pdf_audit.whatnow.materials") || "Make learning materials")), (() => {
       const _n = ((pdfFixResult.accessibleHtml || "").match(/data-allo-kind="/g) || []).length;
       if (_n === 0) return null;
       if (imgReviewIdx === null) return /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50/70 border border-violet-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap", "data-help-key": "pdf_audit_img_review_panel" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F916} ", _n === 1 ? t("pdf_audit.imgreview.one") || "AI looked at 1 image and described it." : t("pdf_audit.imgreview.many") || "AI looked at " + _n + " images and described them.", " ", t("pdf_audit.imgreview.pitch") || "Its descriptions are good but not infallible \u2014 a 30-second review catches what it got wrong."), /* @__PURE__ */ React.createElement("button", { onClick: () => {

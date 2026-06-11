@@ -152,11 +152,24 @@ test.describe('STEM hardening golden — Formula role, Headers/IDTree, image-int
         const imB = doc2.getElementById('b')!;
         const okChart = pipeline._applyImageIntel(doc2, imA, { kind: 'chart', alt: 'Bar chart of rainfall by month', chartSummary: 'Rainfall peaks in April.', chartData: { columns: ['Month', 'Inches'], rows: [['April', '4.2']] } });
         const okKeepAlt = pipeline._applyImageIntel(doc2, imB, { kind: 'photo', alt: 'A river' });
+        // image-of-text (WCAG 1.4.5): transcribed text becomes a REAL text
+        // block with the verify label.
+        const imC = doc2.createElement('img');
+        imC.setAttribute('src', 'data:image/png;base64,AAAA');
+        doc2.body.appendChild(imC);
+        const okImgText = pipeline._applyImageIntel(doc2, imC, { kind: 'image-of-text', alt: 'A paragraph of printed instructions', extractedText: 'Read each question carefully.\n\nShow your work for full credit.' });
+        const imgTextBlock = doc2.querySelector('details.allo-imagetext');
         const chartDetails = doc2.querySelector('details.allo-chart-data');
         return {
           summary: result.summary || {}, diag, dedup,
           roles, formulaAlt, formulaIsLinked, figureCount, idTreePresent, thWithId, tdHeaders,
-          applied: { okChart, okKeepAlt },
+          applied: { okChart, okKeepAlt, okImgText },
+          imgText: {
+            present: !!imgTextBlock,
+            hasRealText: !!(imgTextBlock && /Show your work for full credit/.test(imgTextBlock.textContent || '')),
+            hasVerifyLabel: !!(imgTextBlock && /verify against the original/i.test(imgTextBlock.textContent || '')),
+            kindSet: imC.getAttribute('data-allo-kind'),
+          },
           chartBlock: {
             present: !!chartDetails,
             hasWarning: !!(chartDetails && /AI-estimated from the image/.test(chartDetails.textContent || '')),
@@ -204,6 +217,14 @@ test.describe('STEM hardening golden — Formula role, Headers/IDTree, image-int
   test('_applyImageIntel: substantive author alt is never clobbered', () => {
     expect(r.applied.okKeepAlt).toBeTruthy();
     expect(r.chartBlock.altB).toContain('western watershed');
+  });
+
+  test('image-of-text: transcription becomes real text with the verify label (WCAG 1.4.5)', () => {
+    expect(r.applied.okImgText).toBeTruthy();
+    expect(r.imgText.present).toBeTruthy();
+    expect(r.imgText.hasRealText).toBeTruthy();
+    expect(r.imgText.hasVerifyLabel, 'the AI-transcription label is non-negotiable').toBeTruthy();
+    expect(r.imgText.kindSet).toBe('image-of-text');
   });
 
   test('duplicate images cost ONE Vision call; verdict applies to every copy, chart block only once', () => {

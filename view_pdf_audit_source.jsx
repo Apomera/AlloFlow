@@ -4414,6 +4414,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
                           : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')}</span>
                         <button onClick={() => { try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0">📥 {t('pdf_audit.whatnow.go') || 'Take me to Downloads'}</button>
+                        {/* The reverse door, surfaced (2026-06-11): the Full
+                            Differentiation Pipeline button existed deep in the
+                            languages panel — same source, every content tool. */}
+                        <button onClick={() => {
+                          const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
+                          setInputText(temp.textContent || temp.innerText || '');
+                          _closePdfAuditModal();
+                          addToast(t('toasts.reverse_door') || '✨ Document loaded as source material — generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.', 'success');
+                        }} className="px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0" title={t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.'}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
                       </div>
                       {/* Image-description reviewer (item 8b): entry + stepper. */}
                       {(() => {

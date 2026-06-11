@@ -7399,7 +7399,22 @@ HTML section ${chunkNum}/${chunks.length}:
   const _applyImageIntel = (htmlDoc2, im, parsed) => {
     if (!parsed || typeof parsed !== 'object') return false;
     const kind = String(parsed.kind || '').toLowerCase();
-    if (!['photo', 'chart', 'diagram', 'equation', 'map', 'decorative'].includes(kind)) return false;
+    if (!['photo', 'chart', 'diagram', 'equation', 'map', 'decorative', 'image-of-text'].includes(kind)) return false;
+    // Images of TEXT (WCAG 1.4.5 — the classic worksheet inaccessibility):
+    // surface the transcribed text as REAL text right after the image, so
+    // screen readers, search, copy/paste, and reflow all work. The image
+    // stays as visual ground truth; the block is labeled AI-transcribed.
+    if (kind === 'image-of-text' && parsed.extractedText && String(parsed.extractedText).trim().length > 10) {
+      const det = htmlDoc2.createElement('details');
+      det.setAttribute('class', 'allo-imagetext');
+      det.setAttribute('data-allo-generated', 'vision');
+      det.setAttribute('open', '');
+      const escT = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+      det.innerHTML = '<summary>Text from this image (AI-transcribed)</summary>'
+        + String(parsed.extractedText).trim().split(/\n\n+/).slice(0, 40).map((p) => '<p>' + escT(p) + '</p>').join('')
+        + '<p><em>Transcribed from the image — verify against the original before relying on it.</em></p>';
+      if (im.parentNode) im.parentNode.insertBefore(det, im.nextSibling);
+    }
     im.setAttribute('data-allo-kind', kind);
     const existingAlt = (im.getAttribute('alt') || '').trim();
     const newAlt = String(parsed.alt || '').slice(0, 600);
@@ -7493,9 +7508,10 @@ HTML section ${chunkNum}/${chunks.length}:
         try {
           const raw = await callGeminiVision(
             'You are describing ONE image extracted from an educational document, for accessibility. Return ONLY JSON, no prose:\n'
-            + '{"kind":"photo|chart|diagram|equation|map|decorative","alt":"one factual sentence","latex":"(equations only)","chartSummary":"(charts only: the trend in 1-2 sentences)","chartData":{"columns":["..."],"rows":[["..."]]}}\n'
+            + '{"kind":"photo|chart|diagram|equation|map|decorative|image-of-text","alt":"one factual sentence","latex":"(equations only)","chartSummary":"(charts only: the trend in 1-2 sentences)","chartData":{"columns":["..."],"rows":[["..."]]},"extractedText":"(image-of-text only: the complete text content, verbatim)"}\n'
             + 'Rules: for an EQUATION, alt must be the SPOKEN form (e.g. "x equals negative b plus or minus the square root of b squared minus 4 a c, all over 2 a") and latex the LaTeX. '
             + 'For a CHART, give chartSummary and AT MOST 8 rows of APPROXIMATE values actually visible in the image. '
+            + 'If the image is primarily TEXT rendered as a picture (a scanned paragraph, a screenshot of writing, a text box saved as an image) → kind "image-of-text" with extractedText = the complete verbatim text. '
             + 'NEVER invent data you cannot see. Purely ornamental → kind "decorative" with alt "". Unsure of kind → "photo".'
             + (grp.members.length > 1 ? ('\nNOTE: this exact image appears ' + grp.members.length + ' times across the document — recurring headers, logos, and watermarks are usually "decorative".') : ''),
             m[2], m[1]
