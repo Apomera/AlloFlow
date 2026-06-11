@@ -18,7 +18,19 @@
   if (!React) { console.error('[ViewQuizModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  var _lazyIcon = function (name) {
+  // i18n accessor for module-level code (2026-06-11): components/handlers below call t('key')
+// without binding it (only some do `var t = props.t`), so a free t() throws ReferenceError
+// when they run — latent crashes the SSR golden tests never fire. Bind once at module scope
+// to the app global i18n (window.__alloT); components that DO `var t = props.t` shadow this.
+var t = function () {
+  if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+    try {
+      return window.__alloT.apply(null, arguments);
+    } catch (e) {}
+  }
+  return arguments.length > 1 ? arguments[1] : arguments[0];
+};
+var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
     return I ? /*#__PURE__*/React.createElement(I, props) : null;

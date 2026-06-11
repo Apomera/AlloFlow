@@ -59,6 +59,15 @@
   // ANCHOR CHART COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
 
+const t = function() {
+  if (typeof window !== "undefined" && typeof window.__alloT === "function") {
+    try {
+      return window.__alloT.apply(null, arguments);
+    } catch (e) {
+    }
+  }
+  return arguments.length > 1 ? arguments[1] : arguments[0];
+};
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 const _loadHtml2Canvas = /* @__PURE__ */ (() => {
   let pending = null;

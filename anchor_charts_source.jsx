@@ -12,6 +12,17 @@
 // in AlloFlowANTI.txt. Mirrors the Note-Taking Templates module shape.
 
 // ── Helpers ─────────────────────────────────────────────────────────────
+// i18n accessor for module-level code (2026-06-11): a render-config field below calls
+// t('placeholders.type_answer_here') without `t` in that scope — a free t() throws
+// ReferenceError when that input renders (only when student answers exist, so the
+// empty-state golden never fires it). Bind once at module scope to the app global i18n
+// (window.__alloT); components that receive t via props shadow this.
+const t = function () {
+  if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+    try { return window.__alloT.apply(null, arguments); } catch (e) {}
+  }
+  return arguments.length > 1 ? arguments[1] : arguments[0];
+};
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
 // Lazy-load html2canvas from jsdelivr the first time the user requests a PNG

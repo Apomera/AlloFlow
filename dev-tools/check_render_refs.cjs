@@ -150,12 +150,13 @@ function scanFile(file) {
       // always a scoped prop/dep (module-level helpers use window.__alloT instead).
       if (n.callee.type === 'Identifier' && ALWAYS_SCOPED.has(n.callee.name)
           && unresolved.has(n.callee.range[0] + ':' + n.callee.range[1])) {
-        // ADVISORY (not blocking): a free `t(...)` throws when its code path runs — the
-        // GameThemeToggle class. But there's a pre-existing backlog (~122, mostly in
-        // symbol_studio / anchor_charts event handlers that SSR golden tests never fire),
-        // so blocking here would halt all deploys. Surface it; promote to a hard error
-        // once the backlog is paid down. Run with --verbose to list them.
-        warns.push({ name: n.callee.name, line: n.callee.loc.start.line, where: 'called free i18n var (latent t-crash)' });
+        // BLOCKING (promoted 2026-06-11, after the backlog was cleared): a free `t(...)`
+        // throws ReferenceError when its code path runs — the GameThemeToggle class. `t` is
+        // never a runtime global here (module-level code uses window.__alloT), so an
+        // unresolved, *called* `t` can only be a crash. The original ~122-instance backlog
+        // (symbol_studio / view_quiz / anchor_charts handlers, latent because SSR goldens
+        // never fire them) is fixed, so this now hard-fails the gate to stop regressions.
+        errors.push({ name: n.callee.name, line: n.callee.loc.start.line, where: 'called free i18n var (t-crash)' });
       }
     }
     for (const k in n) {
@@ -199,7 +200,7 @@ for (const file of targets) {
 }
 
 if (totalErrors > 0 || parseErrors > 0) {
-  if (totalErrors) console.log(`\n❌ ${totalErrors} render-crash candidate(s) in hook dependency arrays.`);
+  if (totalErrors) console.log(`\n❌ ${totalErrors} render-crash candidate(s) (hook dep-array free vars + called free t()).`);
   if (parseErrors) console.log(`❌ ${parseErrors} module(s) fail to parse (won't load).`);
   console.log('check_render_refs: fix before deploy (bypass: SKIP_RENDER_CHECK=1).');
   process.exit(1);

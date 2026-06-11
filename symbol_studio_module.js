@@ -11,6 +11,20 @@
 
   var warnLog = function () { console.warn.apply(console, ["[SymStudio]"].concat(Array.prototype.slice.call(arguments))); };
 
+  // i18n accessor for module-level code (2026-06-11): many handlers/callbacks here call
+  // t('key') but `t` was never bound in their scope — a free `t()` throws ReferenceError
+  // when the handler runs (latent crashes the SSR golden tests never fire, e.g. the
+  // avatar-creation toast at the bottom of generateAvatar). Bind it once at module scope
+  // to the app's global i18n (window.__alloT), forwarding all args, with the key (or a
+  // provided fallback) as a last resort. Local `var t` temps in some functions
+  // intentionally shadow this — they're unrelated string/timeout locals.
+  var t = function () {
+    if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+      try { return window.__alloT.apply(null, arguments); } catch (e) {}
+    }
+    return arguments.length > 1 ? arguments[1] : arguments[0];
+  };
+
   // HTML-escape untrusted text/URLs before interpolating into print/export HTML strings
   // (student names, IEP goals, word labels, AI story text, image URLs all reach document.write).
   var escHtml = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
