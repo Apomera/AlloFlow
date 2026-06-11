@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'ec216057';
+    var pluginCdnVersion = '4991a6a8';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10443,6 +10443,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         axeViolations: (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null,
         pages: cur.pageCount || null,
       };
+      // Upsert (sweep 2026-06-11 [9]): auto-continue rounds and post-load
+      // edits used to APPEND a row per state change — one run could leave
+      // 8 phantom rows. If the LAST row is the same file + same baseline,
+      // it's the same run evolving: update it in place.
+      const last = prev[prev.length - 1];
+      if (last && last.fileName === row.fileName && last.beforeScore === row.beforeScore) {
+        return [...prev.slice(0, -1), Object.assign({}, last, row)];
+      }
       const next = [...prev, row];
       return next.length > 200 ? next.slice(-200) : next;
     });
@@ -10502,7 +10510,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         // Strip transient overlay CSS so it doesn't get baked into state.
         const inspect = doc.getElementById('a11y-inspect-css');
         if (inspect) inspect.remove();
-        const html = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+        // Strip editor-only chrome from a CLONE (sweep 2026-06-11 [10]):
+        // sizer bars / picker grids are live UI in the iframe but must
+        // never reach accessibleHtml — they leaked into the HTML export,
+        // the plain TTS text, and the final engine audits.
+        const _clone = doc.documentElement.cloneNode(true);
+        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg]').forEach((el) => el.remove()); } catch (_) {}
+        const html = '<!DOCTYPE html>\n' + _clone.outerHTML;
         setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html } : prev);
       } catch (_) {}
     };
@@ -15578,6 +15592,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
   const autoFixAxeViolations = _docPipeline ? _docPipeline.autoFixAxeViolations : async (h) => h;
+  const aiFixChunked = _docPipeline ? _docPipeline.aiFixChunked : async (h) => h;
+  const runEqualAccessAudit = _docPipeline ? _docPipeline.runEqualAccessAudit : async () => null;
   const remediateSurgicallyThenAI = _docPipeline ? _docPipeline.remediateSurgicallyThenAI : async (h) => ({ html: h, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 });
   const runTier2SurgicalFixes = _docPipeline ? _docPipeline.runTier2SurgicalFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
   const runTier2_5SectionScopedFixes = _docPipeline ? _docPipeline.runTier2_5SectionScopedFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
@@ -15629,12 +15645,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
 
   const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
+    // Re-entry guard (sweep 2026-06-11 [5]): a second concurrent loop's
+    // rounds would interleave with the first and its finally would clobber
+    // the first loop's flags.
+    if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return; }
     pdfAutoContinueAbortRef.current = false;
     const _abortCtrl = new AbortController();
     pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
     if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
     setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
+    const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
+    const _plainTextOf = (html) => { try { const d = new DOMParser().parseFromString(html || '', 'text/html'); return (d.body && d.body.textContent || '').trim(); } catch (_) { return null; } };
     try {
       let lastViolations = Infinity;
       let lastScore = -1;
@@ -15643,20 +15665,31 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (pdfAutoContinueAbortRef.current) break;
         if (!cur || !cur.axeAudit) break;
         if ((cur.afterScore || 0) >= pdfTargetScore) break;
-        if (cur.axeAudit.totalViolations === 0) break;
-        // Run-until-target (2026-06-11, maintainer ask): one flat round used
-        // to end the loop below target. Progress = fewer violations OR a
-        // better score; only TWO consecutive stagnant rounds stop early
-        // (grinding identical rounds burns quota for nothing — and when we
-        // do stop below target, the closing toast says so).
-        const _progressed = cur.axeAudit.totalViolations < lastViolations || (cur.afterScore || 0) > lastScore;
+        const _vio = cur.axeAudit.totalViolations || 0;
+        const _aiIssues = _aiIssuesOf(cur);
+        // Sweep 2026-06-11 [0]: axe-clean used to END the loop even below
+        // target — the AI-rubric half of the score had NO fixer. Now an
+        // axe-clean round feeds the AI-flagged issues to aiFixChunked
+        // (mirroring fixAndVerifyPdf's internal pass loop).
+        if (_vio === 0 && _aiIssues.length === 0) break;
+        // Run-until-target: progress = fewer violations OR better score;
+        // only TWO consecutive stagnant rounds stop early.
+        const _progressed = _vio < lastViolations || (cur.afterScore || 0) > lastScore;
         if (!_progressed) { stagnantRounds++; if (stagnantRounds >= 2) break; }
         else stagnantRounds = 0;
-        lastViolations = cur.axeAudit.totalViolations;
+        lastViolations = _vio;
         lastScore = cur.afterScore || 0;
         setPdfFixLoading(true);
-        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + cur.axeAudit.totalViolations + ' violation' + (cur.axeAudit.totalViolations !== 1 ? 's' : '') + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
-        const result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
+        let result;
+        if (_vio > 0) {
+          result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+        } else {
+          const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).join('\n');
+          const _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
+          const _freshAxe = await runAxeAudit(_fixedHtml);
+          result = { html: _fixedHtml, axe: _freshAxe, passes: 1 };
+        }
         if (pdfAutoContinueAbortRef.current) break;
         const reVerify = await auditOutputAccessibility(result.html);
         if (!reVerify) {
@@ -15666,43 +15699,78 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
           break;
         }
-        const newScore = reVerify.score;
+        // Sweep 2026-06-11 [1]: keep afterScore's SEMANTICS stable across
+        // rounds. fixAndVerifyPdf writes blend(AI, min(axe, EqualAccess));
+        // rounds used to overwrite it with a raw single AI score — the
+        // target check then compared apples to oranges and the consensus
+        // panel showed stale engine results. Recompute the same blend with
+        // fresh deterministic runs each round.
+        let _ea = null;
+        try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
+        let _det = (result.axe && typeof result.axe.score === 'number') ? result.axe.score : null;
+        if (_det !== null && _ea && typeof _ea.score === 'number') _det = Math.min(_det, _ea.score);
+        const newScore = (_det !== null) ? Math.round((reVerify.score + _det) / 2) : reVerify.score;
+        // Sweep 2026-06-11 [2]: commit-or-revert per round — a round that
+        // made things WORSE is discarded instead of committed.
+        if (newScore < (cur.afterScore || 0)) {
+          warnLog('[AutoContinue] round ' + (round + 1) + ' regressed (' + newScore + ' < ' + (cur.afterScore || 0) + ') — reverting this round.');
+          stagnantRounds++;
+          if (stagnantRounds >= 2) break;
+          continue;
+        }
+        const _newPlain = _plainTextOf(result.html);
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
-          // Never let a FAILED re-verify (quota/timeout on later rounds)
-          // null out the prior round's verification — that unmounted the
-          // Verification section and dead-ended its dashboard pill
-          // (user report 2026-06-11). Carry forward + mark stale.
-          verificationAudit: reVerify || (cur.verificationAudit ? Object.assign({}, cur.verificationAudit, { _staleFromEarlierPass: true }) : null),
+          // Never let a FAILED re-verify null out the prior round's
+          // verification (user report 2026-06-11) — carried forward above
+          // via the !reVerify break; here reVerify is always present.
+          verificationAudit: reVerify,
           afterScore: newScore,
+          _scoreIsBlended: _det !== null,
+          axeScore: result.axe && typeof result.axe.score === 'number' ? result.axe.score : cur.axeScore,
+          axeViolations: result.axe ? result.axe.totalViolations : cur.axeViolations,
+          secondEngineAudit: _ea || cur.secondEngineAudit,
+          finalText: _newPlain || cur.finalText,
           autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
           htmlChars: result.html.length,
           chunkState: result.chunkState || cur.chunkState,
           chunkWeightedScore: result.chunkWeightedScore || cur.chunkWeightedScore,
         });
         const snapshot = cur;
+        // Sweep 2026-06-11 [3]: sync the ref NOW — the finally-block
+        // auto-save reads pdfFixResultRef and was one render behind,
+        // silently missing the last round's improvements.
+        pdfFixResultRef.current = Object.assign({}, pdfFixResultRef.current, snapshot);
         setPdfFixResult(prev => Object.assign({}, prev, {
           accessibleHtml: snapshot.accessibleHtml,
           axeAudit: snapshot.axeAudit,
           verificationAudit: snapshot.verificationAudit,
           afterScore: snapshot.afterScore,
+          _scoreIsBlended: snapshot._scoreIsBlended,
+          axeScore: snapshot.axeScore,
+          axeViolations: snapshot.axeViolations,
+          secondEngineAudit: snapshot.secondEngineAudit,
+          finalText: snapshot.finalText,
           autoFixPasses: snapshot.autoFixPasses,
           htmlChars: snapshot.htmlChars,
           chunkState: snapshot.chunkState,
           chunkWeightedScore: snapshot.chunkWeightedScore,
         }));
       }
+      // Sweep 2026-06-11 [0]: success toasts ONLY at/above target — an
+      // axe-clean doc below target used to get the success message.
       if (pdfAutoContinueAbortRef.current) {
         addToast(t('toasts.auto_continue_stopped'), 'info');
-      } else if (cur && cur.axeAudit && cur.axeAudit.totalViolations === 0) {
-        addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
       } else if (cur && (cur.afterScore || 0) >= pdfTargetScore) {
-        addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+        if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
+          addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
+        } else {
+          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+        }
       } else if (cur) {
-        // Honest below-target ending (2026-06-11): say WHY it stopped and
-        // what to do, instead of ending silently under the goal.
-        addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.'), 'info');
+        const _axeClean = cur.axeAudit && cur.axeAudit.totalViolations === 0;
+        addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (_axeClean ? (t('toasts.below_target_axe_clean') || ' — automated checks are clean; the remaining gap is AI-rubric issues that likely need a human (see Remaining Issues).') : (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.')), 'info');
       }
     } finally {
       setPdfFixLoading(false);
@@ -15716,7 +15784,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
-  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, auditOutputAccessibility, addToast, pdfAutoSaveProject]);
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, addToast, pdfAutoSaveProject]);
 
   const saveProjectToFile = React.useCallback((isAuto) => {
     const cur = pdfFixResultRef.current;
