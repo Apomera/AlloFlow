@@ -778,6 +778,9 @@ function PdfAuditView(props) {
   const [imgReviewDraft, setImgReviewDraft] = useState('');
   // Media digestion card state (audio/video pipeline intake).
   const [mediaMode, setMediaMode] = useState(null);
+  // Per-file reset (sweep 2026-06-11 LOW[2]): a prior file's digestion mode
+  // must not silently apply to the next upload.
+  useEffect(() => { setMediaMode(null); setMediaInstructions(''); }, [pendingPdfFile && pendingPdfFile.name]);
   const [mediaInstructions, setMediaInstructions] = useState('');
   const [mediaDigesting, setMediaDigesting] = useState(false);
   const [mediaDigestProgress, setMediaDigestProgress] = useState('');
@@ -2550,10 +2553,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {/* Baseline (pre-fix) consensus: read from pdfAuditResult —
                               NEVER from pdfFixResult here (null on this screen;
                               that exact unguarded read crashed the app once). */}
-                          {!pdfFixResult && pdfAuditResult && pdfAuditResult._baselineSecondEngineAudit ? (
+                          {/* Baseline EA disclosure stays visible post-fix too
+                              (sweep 2026-06-11 LOW[10]) — the before/after story
+                              should show both ends, and the fails[] get the same
+                              expander as the final audit. */}
+                          {pdfAuditResult && pdfAuditResult._baselineSecondEngineAudit ? (
                             <div className="mt-1.5 text-[11px] text-blue-700">
-                              <span className="font-bold">{t('pdf_audit.score.second_engine') || 'Second engine (IBM Equal Access):'}</span>{' '}
-                              {pdfAuditResult._baselineSecondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'} → {t('pdf_audit.score.score_label') || 'score'} {pdfAuditResult._baselineSecondEngineAudit.score}. {t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.'}
+                              <span className="font-bold">{t('pdf_audit.score.second_engine_baseline') || 'Second engine at baseline (IBM Equal Access):'}</span>{' '}
+                              {pdfAuditResult._baselineSecondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'} → {t('pdf_audit.score.score_label') || 'score'} {pdfAuditResult._baselineSecondEngineAudit.score}.{!pdfFixResult ? (' ' + (t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.')) : ''}
+                              {Array.isArray(pdfAuditResult._baselineSecondEngineAudit.fails) && pdfAuditResult._baselineSecondEngineAudit.fails.length > 0 && (
+                                <details className="mt-1">
+                                  <summary className="cursor-pointer font-bold text-blue-600 hover:text-blue-800">{t('pdf_audit.score.ea_fails_baseline_summary') || 'What Equal Access flagged at baseline'}</summary>
+                                  <ul className="mt-0.5 space-y-0.5 text-[10px] text-blue-800">
+                                    {pdfAuditResult._baselineSecondEngineAudit.fails.slice(0, 12).map((f, fi) => (
+                                      <li key={fi}><span className="font-mono">{f.id}</span> — {f.description}{f.nodes > 1 ? (' (' + f.nodes + ' places)') : ''}</li>
+                                    ))}
+                                    {pdfAuditResult._baselineSecondEngineAudit.fails.length > 12 && <li>…{t('pdf_audit.score.ea_more') || 'and'} {pdfAuditResult._baselineSecondEngineAudit.fails.length - 12} {t('pdf_audit.score.ea_more2') || 'more'}</li>}
+                                  </ul>
+                                </details>
+                              )}
                             </div>
                           ) : null}
                           {!pdfFixResult ? null : pdfFixResult.secondEngineAudit ? (
@@ -5299,7 +5317,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </span>
                               </div>
                               <div id="before-pane" style="flex:1;overflow:auto;background:#525659;min-height:0;position:relative">
-                                <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? 'Rendering original PDF…' : 'The original file is not a PDF (Word/PowerPoint input) — the Before preview applies to PDF originals. The After pane on the right is your remediated document.'}</div>
+                                <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? 'Rendering original PDF…' : (_rawB64.startsWith('QUxMT1RSQU5TQ1JJUFQ6') ? 'The original is a transcript (audio/video/text input) — there is no page image to compare. The After pane on the right is your remediated document.' : 'The original file is not a PDF (Word/PowerPoint input) — the Before preview applies to PDF originals. The After pane on the right is your remediated document.')}</div>
                               </div>
                             </div>
                             <div class="divider"></div>

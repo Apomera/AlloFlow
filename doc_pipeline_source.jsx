@@ -4894,7 +4894,13 @@ var createDocPipeline = function(deps) {
           for (const im of _unanchored) _htmlParts.push(_figFor(im));
         }
         const bodyHtml = _htmlParts.join('\n');
-        const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${bodyHtml}</main></body></html>`;
+        // Wrapper carries lang + a real title (sweep 2026-06-11 LOW[3]): the
+        // empty synthetic shell was failing html-has-lang/document-title on
+        // BOTH engines — penalizing the baseline for OUR rendering choice,
+        // not the document. PDF-side lang/title live in PDF metadata, which
+        // an HTML wrapper cannot represent either way.
+        const _wrapTitle = String((_optFileName || 'Document')).replace(/[<>&]/g, ' ');
+        const minimalHtml = `<!DOCTYPE html><html lang="en"><head><title>${_wrapTitle}</title></head><body><main>${bodyHtml}</main></body></html>`;
         let baselineAxe = null;
         try { baselineAxe = await runAxeAudit(minimalHtml); } catch (_) { baselineAxe = null; }
         const result = {
@@ -8758,10 +8764,41 @@ HTML section ${chunkNum}/${chunks.length}:
         const m = (n.html || n.failureSummary || '').match(/id="([^"]+)"/);
         return m ? { tool: 'fix_duplicate_id', params: { id: m[1] } } : null;
       }).filter(Boolean),
-      'image-alt':      (nodes) => nodes.map((n, i) => ({ tool: 'fix_alt_text', params: { index: i, alt: 'Image' } })),
-      'button-name':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_button_name', params: { index: i, label: 'Button' } })),
-      'input-button-name': (nodes) => nodes.map((n, i) => ({ tool: 'fix_button_name', params: { index: i, label: 'Button' } })),
-      'link-name':      (nodes) => nodes.map((n, i) => ({ tool: 'fix_link_text', params: { index: i, newText: 'Learn more', force: true } })),
+      // Honest deterministic text (sweep 2026-06-11 [7]): the old flat
+      // placeholders (alt="Image", "Learn more") cleared the axe rule with
+      // semantically useless text — gaming the checker. Derive what we CAN
+      // from the markup (filename stem, title attr, href) and self-flag
+      // what still needs a human; the AI verify reads the html each round
+      // and re-flags "(needs description)" text, so when AI is available
+      // the auto-continue loop replaces these with real descriptions.
+      'image-alt':      (nodes) => nodes.map((n, i) => {
+        const h = n.html || '';
+        const tm = h.match(/title="([^"]{3,120})"/);
+        const sm = h.match(/src="([^"]*?)([^/"]+?)(?:\.\w{2,5})?(?:[?#][^"]*)?"/);
+        const stem = tm ? tm[1] : (sm && sm[2] && !/^data:|^[0-9a-f-]{8,}$/i.test(sm[2]) ? sm[2].replace(/[-_+.]+/g, ' ').trim() : '');
+        return { tool: 'fix_alt_text', params: { index: i, alt: stem ? ('Image: ' + stem.slice(0, 100) + ' (auto-named — needs description)') : 'Image (needs description)' } };
+      }),
+      'button-name':    (nodes) => nodes.map((n, i) => {
+        const vm = (n.html || '').match(/(?:value|title|name)="([^"]{2,60})"/);
+        return { tool: 'fix_button_name', params: { index: i, label: vm ? vm[1] : 'Button (unlabeled — needs review)' } };
+      }),
+      'input-button-name': (nodes) => nodes.map((n, i) => {
+        const vm = (n.html || '').match(/(?:value|title|name)="([^"]{2,60})"/);
+        return { tool: 'fix_button_name', params: { index: i, label: vm ? vm[1] : 'Button (unlabeled — needs review)' } };
+      }),
+      'link-name':      (nodes) => nodes.map((n, i) => {
+        const hm = (n.html || '').match(/href="([^"]+)"/);
+        let label = '';
+        if (hm && hm[1] && !/^#|^javascript:/i.test(hm[1])) {
+          try {
+            const u = new URL(hm[1], 'https://x.invalid/');
+            const seg = (u.pathname.split('/').filter(Boolean).pop() || '').replace(/\.\w{2,5}$/, '').replace(/[-_+]+/g, ' ').trim();
+            label = 'Link to ' + (u.hostname && u.hostname !== 'x.invalid' ? u.hostname.replace(/^www\./, '') : '') + (seg ? (': ' + seg.slice(0, 60)) : '');
+            label = label.replace(/^Link to : /, 'Link: ').replace(/^Link to $/, '');
+          } catch (_) {}
+        }
+        return { tool: 'fix_link_text', params: { index: i, newText: label || 'Link (destination unclear — needs review)', force: true } };
+      }),
       'frame-title':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_iframe_title', params: { index: i, title: 'Embedded content' } })),
       'empty-heading':  (nodes) => nodes.map((n, i) => ({ tool: 'fix_remove_empty_heading', params: { index: i } })),
       'skip-link':      () => ({ tool: 'fix_skip_nav', params: {} }),
@@ -13960,6 +13997,10 @@ tr { page-break-inside: avoid; }
     const html = (fixResult && fixResult.accessibleHtml) || '';
     const parser = new DOMParser();
     const htmlDoc = parser.parseFromString(html, 'text/html');
+    // Unfilled image placeholders are editor scaffolding, not content
+    // (sweep 2026-06-11 LOW[5]): without this they became empty Figure
+    // leaves in the tag tree whose ActualText was the placeholder chrome.
+    try { Array.from(htmlDoc.querySelectorAll('figure[data-img-placeholder]')).filter((f) => !f.querySelector('img')).forEach((el) => el.remove()); } catch (_) {}
     // StructElem "role" mapping from HTML tag → PDF standard structure type.
     // See ISO 32000-1 §14.8.4 "Standard Structure Types".
     const TAG_TO_PDF_ROLE = {

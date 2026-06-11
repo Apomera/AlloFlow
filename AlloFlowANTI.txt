@@ -15789,7 +15789,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const saveProjectToFile = React.useCallback((isAuto) => {
     const cur = pdfFixResultRef.current;
     if (!cur || !cur.accessibleHtml) return false;
-    const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0);
+    const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '');
     if (isAuto && lastAutoSaveHashRef.current === hashKey) return false;
     const project = {
       version: 1,
