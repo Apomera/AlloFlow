@@ -129,6 +129,13 @@ function _htmlToDocxSpec(html) {
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
       const tag = n.tagName;
       if (tag === 'BR') { out.push({ br: true }); continue; }
+      // Fillable S0 fields → Word keeps visible blanks (real content
+      // controls are the S1+ question; an underscore run prints right).
+      if (tag === 'INPUT' && n.getAttribute('data-allo-field')) {
+        if (n.getAttribute('type') === 'checkbox') { out.push({ text: '☐ ', bold: !!fmt.bold, italic: !!fmt.italic, underline: false, link: null }); }
+        else { const _wm = (n.getAttribute('style') || '').match(/width:\s*(\d+)ch/); const w = Math.max(6, Math.min(40, parseInt((_wm && _wm[1]) || '12', 10))); out.push({ text: ' ' + '_'.repeat(w) + ' ', bold: false, italic: false, underline: false, link: null }); }
+        continue;
+      }
       const isNewLink = tag === 'A' && n.getAttribute('href') && !fmt.link;
       if (isNewLink) counts.links++;
       out = out.concat(inlineRuns(n, {
@@ -698,7 +705,7 @@ function PdfAuditView(props) {
     addToast, agentActivityLog, agentLogFullView, applyWordRestorationInPlace,
     auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-    callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
+    applyFormBlanks, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
@@ -941,6 +948,8 @@ function PdfAuditView(props) {
   const [plainLangBusy, setPlainLangBusy] = useState(false);
   const [plainLangProgress, setPlainLangProgress] = useState('');
   const [showPlainCompare, setShowPlainCompare] = useState(false);
+  const [fillableCandidates, setFillableCandidates] = useState(null); // null = panel closed
+  const [fillableAccepted, setFillableAccepted] = useState({});
   // S3 (agent): the translate_document command pre-fills the language
   // here via event — the RUN click stays the teacher's (quota guardrail).
   useEffect(() => {
@@ -7453,6 +7462,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </>)}
                           </span>
                         )}
+                        {/* ── Fillable S0 (2026-06-12, design doc) ── detect blanks →
+                            review panel → semantic fields. HTML export becomes fillable
+                            in any browser; Word keeps visible blanks; real PDF AcroForm
+                            fields are S1. */}
+                        {typeof detectFormBlanks === 'function' && <button data-help-key="pdf_audit_make_fillable_btn" onClick={() => {
+                          if (!pdfFixResult?.accessibleHtml) return;
+                          try {
+                            const cands = detectFormBlanks(pdfFixResult.accessibleHtml);
+                            if (!cands.length) { addToast(t('toasts.fillable_none') || 'No fill-in blanks detected — this looks for underscore runs (___), dotted lines, and checkbox marks (☐, [ ]).', 'info'); return; }
+                            const acc = {};
+                            cands.forEach((c) => { acc[c.id] = { label: c.label }; });
+                            setFillableAccepted(acc);
+                            setFillableCandidates(cands);
+                          } catch (e) { addToast((t('toasts.fillable_failed') || 'Blank detection failed: ') + ((e && e.message) || 'unknown'), 'error'); }
+                        }} className="px-4 py-2 bg-fuchsia-50 text-fuchsia-700 rounded-xl font-bold text-xs hover:bg-fuchsia-100 transition-colors" title={t('pdf_audit.fillable.btn_title') || 'Finds the fill-in blanks (underscore runs, dotted lines, checkbox marks) and — after you review the list — converts them into real form fields. The HTML export becomes fillable in any browser immediately; the Word export keeps visible blanks; fillable tagged-PDF fields are the next stage. Nothing converts without your review.'}>
+                          📝 {t('pdf_audit.fillable.btn') || 'Make fillable'}
+                        </button>}
+
                         {/* Cross-session resume (2026-06-11): the saved project
                             carries the job POSITION; segments rebuild
                             deterministically and generation continues into the
@@ -10302,6 +10329,47 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   aria-expanded={smartTableOpen}
                   aria-label={t('pdf_audit.toolbar.smart_table_aria') || 'Smart table: paste data, get an accessible table'} title={t('pdf_audit.toolbar.smart_table_title') || 'Smart table — paste ANY data (rows from email, notes, CSV) and get a clean accessible table. Delimited data parses instantly with no AI; messy data is organized by AI using only your values.'}>📊✨</button>
               </div>
+              {/* Fillable S0 review panel (2026-06-12): review-first, never
+                  silent — every detected blank listed, labels editable,
+                  each rejectable. */}
+              {fillableCandidates && (
+                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setFillableCandidates(null)}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.panel_aria') || 'Review detected form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <div className="px-4 py-3 border-b border-slate-200">
+                      <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.panel_heading') || 'Detected blanks — review before converting')}</div>
+                      <div className="text-[11px] text-slate-600 mt-0.5">{fillableCandidates.filter((c) => c.kind === 'text').length} {t('pdf_audit.fillable.text_fields') || 'text fields'} · {fillableCandidates.filter((c) => c.kind === 'checkbox').length} {t('pdf_audit.fillable.checkboxes') || 'checkboxes'} — {t('pdf_audit.fillable.panel_note') || 'uncheck any false positives; edit labels (screen readers announce them).'}</div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+                      {fillableCandidates.map((c) => (
+                        <div key={c.id} className={`flex items-center gap-2 p-2 rounded-lg border ${fillableAccepted[c.id] ? 'border-fuchsia-200 bg-fuchsia-50/50' : 'border-slate-200 bg-slate-50 opacity-60'}`}>
+                          <input type="checkbox" checked={!!fillableAccepted[c.id]} onChange={(e) => setFillableAccepted((prev) => { const nx = { ...prev }; if (e.target.checked) nx[c.id] = { label: c.label }; else delete nx[c.id]; return nx; })} aria-label={(t('pdf_audit.fillable.include_aria') || 'Include field: ') + (c.label || c.context)} className="shrink-0" />
+                          <span className="text-base shrink-0" aria-hidden="true">{c.kind === 'checkbox' ? '☑️' : '✍️'}</span>
+                          <input value={(fillableAccepted[c.id] && fillableAccepted[c.id].label != null) ? fillableAccepted[c.id].label : c.label} onChange={(e) => setFillableAccepted((prev) => prev[c.id] ? { ...prev, [c.id]: { label: e.target.value } } : prev)} disabled={!fillableAccepted[c.id]} placeholder={t('pdf_audit.fillable.label_ph') || 'Field label (needed for screen readers)'} className={`w-44 text-xs border rounded px-2 py-1 ${(!c.label && !(fillableAccepted[c.id] && fillableAccepted[c.id].label)) ? 'border-amber-400 bg-amber-50' : 'border-slate-300 bg-white'}`} />
+                          <span className="flex-1 min-w-0 text-[11px] text-slate-600 truncate font-mono" title={c.context}>{c.context}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-4 py-3 border-t border-slate-200 flex items-center gap-2">
+                      <button onClick={() => {
+                        try {
+                          const r = applyFormBlanks(pdfFixResult.accessibleHtml, fillableAccepted);
+                          setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() } : prev);
+                          try {
+                            const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+                            if (ldoc && ldoc.body) { const nd = new DOMParser().parseFromString(r.html, 'text/html'); ldoc.body.innerHTML = nd.body.innerHTML; }
+                          } catch (_) {}
+                          setFillableCandidates(null);
+                          addToast('📝 ' + (t('toasts.fillable_done') || 'Converted ') + r.converted + (t('toasts.fillable_done2') || ' blanks into real form fields. The HTML export is now fillable in any browser; Word keeps visible blanks. Re-run detection any time — already-converted fields are skipped.'), 'success');
+                        } catch (e) { addToast((t('toasts.fillable_apply_failed') || 'Conversion failed: ') + ((e && e.message) || 'unknown'), 'error'); }
+                      }} disabled={Object.keys(fillableAccepted).length === 0} className="px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50">
+                        ✅ {(t('pdf_audit.fillable.apply') || 'Convert')} {Object.keys(fillableAccepted).length} {(t('pdf_audit.fillable.apply2') || 'fields')}
+                      </button>
+                      <button onClick={() => setFillableCandidates(null)} className="px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">{t('pdf_audit.fillable.cancel') || 'Cancel'}</button>
+                      <span className="text-[10px] text-slate-500 ml-auto">{t('pdf_audit.fillable.footer') || 'Amber labels need a name — unlabeled fields confuse screen readers.'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Plain-language compare (2026-06-12) */}
               {showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage && (
                 <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowPlainCompare(false)}>

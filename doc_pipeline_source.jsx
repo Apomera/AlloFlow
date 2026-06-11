@@ -736,6 +736,121 @@ var createDocPipeline = function(deps) {
     return { html: result, lang: targetLang, langCode: _langCode, rtl: _rtl, chunksTotal: chunks.length, chunksFailed: failed };
   };
 
+  // ── Fillable worksheet S0 (2026-06-12, design doc §3) ──
+  // Deterministic blank detection + review-first conversion to semantic
+  // HTML fields. One shared walker visits text nodes in document order so
+  // detect and apply produce IDENTICAL candidate ids; the teacher approves
+  // the list in between (never silent). Text blanks: runs of ≥3
+  // underscores or ≥6 dots. Checkboxes: ☐ □ ▢ [ ] ( ) glyphs. Labels
+  // derive from the preceding phrase ("Name:") or the following text
+  // (checkbox items); fields with no derivable label are flagged.
+  const _FILLABLE_BLANK_RE = /(_{3,}|\.{6,})/g;
+  const _FILLABLE_CHECK_RE = /(\u2610|\u25A1|\u25A2|\[\s?_?\s?\]|\(\s\))/g;
+  const _fillableWalk = (doc, visit) => {
+    const root = doc.querySelector('main') || doc.body;
+    if (!root) return;
+    const blocks = root.querySelectorAll('p, li, td, th, figcaption, dd, blockquote');
+    let fieldIdx = 0;
+    blocks.forEach((block) => {
+      if (block.closest('[data-allo-glossary], [data-allo-translation-note], [data-allo-plain-note]')) return;
+      if (block.querySelector('input, button, select, textarea')) { /* still scan text nodes around existing controls */ }
+      const tw = doc.createTreeWalker(block, 4 /* NodeFilter.SHOW_TEXT */);
+      const textNodes = [];
+      let tn;
+      while ((tn = tw.nextNode())) {
+        if (tn.parentElement && tn.parentElement.closest('input, button, select, textarea, script, style, [data-allo-field]')) continue;
+        textNodes.push(tn);
+      }
+      textNodes.forEach((node) => {
+        const text = node.nodeValue || '';
+        const found = [];
+        let m;
+        _FILLABLE_BLANK_RE.lastIndex = 0;
+        while ((m = _FILLABLE_BLANK_RE.exec(text))) found.push({ kind: 'text', start: m.index, len: m[0].length });
+        _FILLABLE_CHECK_RE.lastIndex = 0;
+        while ((m = _FILLABLE_CHECK_RE.exec(text))) found.push({ kind: 'checkbox', start: m.index, len: m[0].length });
+        if (!found.length) return;
+        found.sort((x, y) => x.start - y.start);
+        found.forEach((f) => {
+          const before = text.slice(0, f.start);
+          const after = text.slice(f.start + f.len);
+          let label = '';
+          if (f.kind === 'text') {
+            const bm = before.match(/([A-Za-z\u00C0-\u024F][^.!?\n_]{0,60}?)\s*[:\-–]?\s*$/);
+            label = bm ? bm[1].trim() : '';
+          } else {
+            const am = after.match(/^\s*([^.!?\n_]{2,80})/);
+            label = am ? am[1].trim() : '';
+          }
+          visit({
+            id: 'f' + (fieldIdx++),
+            kind: f.kind,
+            label,
+            widthCh: f.kind === 'text' ? Math.max(6, Math.min(40, f.len)) : 0,
+            context: (before.slice(-40) + '⟦' + (f.kind === 'text' ? '____' : '☐') + '⟧' + after.slice(0, 40)).trim(),
+            node, start: f.start, len: f.len, block,
+          });
+        });
+      });
+    });
+  };
+  const detectFormBlanks = (html) => {
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
+    const out = [];
+    _fillableWalk(doc, (c) => out.push({ id: c.id, kind: c.kind, label: c.label, widthCh: c.widthCh, context: c.context, labelMissing: !c.label }));
+    return out;
+  };
+  const applyFormBlanks = (html, accepted) => {
+    // accepted: map id → {label?} (presence = accepted; label overrides)
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
+    const hits = [];
+    _fillableWalk(doc, (c) => { if (accepted && Object.prototype.hasOwnProperty.call(accepted, c.id)) hits.push(c); });
+    // Replace from the END of each text node so earlier offsets stay valid.
+    const byNode = new Map();
+    hits.forEach((h) => { const arr = byNode.get(h.node) || []; arr.push(h); byNode.set(h.node, arr); });
+    let converted = 0;
+    const usedNames = {};
+    byNode.forEach((arr, node) => {
+      arr.sort((x, y) => y.start - x.start);
+      arr.forEach((h) => {
+        const ov = accepted[h.id] || {};
+        const label = String(ov.label != null ? ov.label : h.label || '').trim();
+        const base = (label || 'field').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 24) || 'field';
+        usedNames[base] = (usedNames[base] || 0) + 1;
+        const name = usedNames[base] > 1 ? (base + '_' + usedNames[base]) : base;
+        const text = node.nodeValue || '';
+        const beforeTxt = text.slice(0, h.start);
+        const afterTxt = text.slice(h.start + h.len);
+        const frag = doc.createDocumentFragment();
+        if (beforeTxt) frag.appendChild(doc.createTextNode(beforeTxt));
+        const input = doc.createElement('input');
+        input.setAttribute('data-allo-field', h.kind);
+        input.setAttribute('name', name);
+        if (h.kind === 'text') {
+          input.setAttribute('type', 'text');
+          input.setAttribute('style', 'width:' + h.widthCh + 'ch;max-width:100%;border:none;border-bottom:1.5px solid #475569;background:transparent;font:inherit;padding:0 2px');
+          if (label) input.setAttribute('aria-label', label);
+          else input.setAttribute('aria-label', 'Fill-in field');
+          frag.appendChild(input);
+          if (afterTxt) frag.appendChild(doc.createTextNode(afterTxt));
+        } else {
+          input.setAttribute('type', 'checkbox');
+          // Wrap glyph+following-text into a label for implicit association.
+          const lab = doc.createElement('label');
+          lab.setAttribute('style', 'display:inline-flex;align-items:baseline;gap:6px');
+          lab.appendChild(input);
+          if (afterTxt) lab.appendChild(doc.createTextNode(afterTxt));
+          else if (label) lab.appendChild(doc.createTextNode(label));
+          frag.appendChild(lab);
+        }
+        node.parentNode.replaceChild(frag, node);
+        converted++;
+      });
+    });
+    const result = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    return { html: result, converted };
+  };
+
   // ── Plain-language companion (2026-06-12, approved synergy #5) ──
   // Rewrites the document into plain language (short sentences, common
   // words, ~grade 3-4) for cognitive accessibility — a UDL core move.
@@ -22919,6 +23034,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     aiFixChunked: _wrapAsync(aiFixChunked),
     translateAccessibleHtml: _wrapAsync(translateAccessibleHtml),
     simplifyAccessibleHtml: _wrapAsync(simplifyAccessibleHtml),
+    detectFormBlanks: _wrap(detectFormBlanks),
+    applyFormBlanks: _wrap(applyFormBlanks),
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
