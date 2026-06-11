@@ -4319,6 +4319,12 @@ Return ONLY JSON:
             }
             safeDownloadBlob(new Blob([taggedBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, "") + "-tagged-typeset.pdf");
             const _s = _result && _result.summary || {};
+            if (_s.typesetFont) {
+              addToast("\u{1F233} " + (t("toasts.typeset_unicode_font") || "Non-Latin text detected \u2014 embedded ") + _s.typesetFont.family + (t("toasts.typeset_unicode_font2") || " so the PDF keeps the real characters (script: ") + _s.typesetFont.script + ").", "info");
+            }
+            if (_s.unicodeTypesetWarning) {
+              addToast("\u26A0 " + (t("toasts.typeset_unicode_warning") || "Some text could not be typeset honestly: ") + _s.unicodeTypesetWarning.advice, "warning");
+            }
             addToast((_s.uaDeclared ? "\u2705 " : "\u{1F4C4} ") + (t("toasts.typeset_tagged_done") || "Typeset tagged PDF ready \u2014 clean regenerated layout (not the original design), full structure tags.") + (_s.uaDeclared ? " PDF/UA declared." : ""), "success");
           } catch (err) {
             addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (err?.message || "unknown"), "error");

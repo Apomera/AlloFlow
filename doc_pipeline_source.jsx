@@ -3826,6 +3826,10 @@ var createDocPipeline = function(deps) {
   // caller catches and falls back to Stage 3.
   const _stage4_tryWrapPage = async (page, pi, pdfjsDoc, outlineItems, context, libs, structRootRef, artifactHashSet) => {
     const { PDFName, PDFString, PDFNumber } = libs;
+    // Unicode-safe text strings (2026-06-11): PDFString.of writes
+    // PDFDocEncoding which mangles non-Latin; PDFHexString.fromText writes
+    // UTF-16BE — the PDF-native unicode form. Fall back when absent.
+    const _uniText = (libs.PDFHexString && libs.PDFHexString.fromText) ? libs.PDFHexString.fromText.bind(libs.PDFHexString) : PDFString.of.bind(PDFString);
     if (!window.pako || typeof window.pako.inflate !== 'function') throw new Error('pako unavailable');
     const streamInfo = _stage4_getStreamBytesAndFilter(page, PDFName, context);
     if (!streamInfo || streamInfo.bytes.length === 0) throw new Error('no content stream');
@@ -3929,7 +3933,7 @@ var createDocPipeline = function(deps) {
         Pg: page.ref,
         K: context.obj([mcr]),
       };
-      if (info.text) d.ActualText = PDFString.of(info.text);
+      if (info.text) d.ActualText = _uniText(info.text);
       blockElemRefs.push(context.register(context.obj(d)));
     }
     // Stage 4c flat Figure elems — appended AFTER the text elems so the
@@ -7339,31 +7343,134 @@ HTML section ${chunkNum}/${chunks.length}:
   // linking matches near-exactly and the evidence-gated declaration is
   // earnable the normal way. Non-WinAnsi scripts degrade like the OCR layer
   // (mapped punctuation, dropped glyphs) — v1 scope, Latin-script documents.
+  // ── Shared script-detection + Noto font tables (2026-06-11) ──
+  // Factored out of createTaggedPdf's OCR layer so the typeset path can
+  // reuse them. Pure data + a pure detector — behavior identical for the
+  // OCR consumer (tag-tree goldens pin it).
+  const _ALLO_NOTO_URL = (fam) => 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/' + fam + '/hinted/ttf/' + fam + '-Regular.ttf';
+  const _ALLO_NOTO_BOLD_URL = (fam) => 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/' + fam + '/hinted/ttf/' + fam + '-Bold.ttf';
+  const _ALLO_SCRIPT_FONT = {
+    arabic: 'NotoSansArabic', ethiopic: 'NotoSansEthiopic', devanagari: 'NotoSansDevanagari',
+    hebrew: 'NotoSansHebrew', thai: 'NotoSansThai', lao: 'NotoSansLao', khmer: 'NotoSansKhmer',
+    myanmar: 'NotoSansMyanmar', latinplus: 'NotoSans', latinext: 'NotoSans',
+  };
+  const _ALLO_CJK_URL = {
+    japanese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/JP/NotoSansJP-Regular.otf',
+    korean: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/KR/NotoSansKR-Regular.otf',
+    chinese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/SC/NotoSansSC-Regular.otf',
+  };
+  const _ALLO_CJK_BOLD_URL = {
+    japanese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/JP/NotoSansJP-Bold.otf',
+    korean: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/KR/NotoSansKR-Bold.otf',
+    chinese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/SC/NotoSansSC-Bold.otf',
+  };
+  const _alloDetectScript = (s) => {
+    const t = String(s || '');
+    const ranges = {
+      arabic: /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/g,
+      ethiopic: /[ሀ-፿]/g, devanagari: /[ऀ-ॿ]/g, hebrew: /[֐-׿]/g,
+      thai: /[฀-๿]/g, lao: /[຀-໿]/g, khmer: /[ក-៿]/g,
+      myanmar: /[က-႟]/g,
+      latinplus: /[Ͱ-ϿЀ-ӿ]/g,
+      // Latin Extended (Vietnamese, full Polish/Czech/Turkish…): outside
+      // WinAnsi but well-served by NotoSans with no shaping concerns.
+      latinext: /[Ā-ɏḀ-ỿ]/g,
+    };
+    const _kana = (t.match(/[぀-ヿ]/g) || []).length;
+    const _hangul = (t.match(/[가-힯]/g) || []).length;
+    const _han = (t.match(/[㐀-鿿豈-﫿]/g) || []).length;
+    const _cjk = _kana + _hangul + _han;
+    let best = null, bestN = 0;
+    for (const k of Object.keys(ranges)) { const n = (t.match(ranges[k]) || []).length; if (n > bestN) { bestN = n; best = k; } }
+    if (_cjk > 0 && _cjk >= bestN) return _kana > 0 ? 'japanese' : (_hangul > 0 ? 'korean' : 'chinese');
+    return bestN > 0 ? best : null;
+  };
+  // Scripts the VISIBLE typeset can render honestly with plain drawText:
+  // no contextual shaping, no bidi reordering, no mark stacking. RTL and
+  // Indic/Thai scripts need a shaping engine pdf-lib doesn't have — for
+  // those we keep Latin content and WARN instead of shipping broken text.
+  const _ALLO_TYPESET_SAFE_SCRIPTS = { japanese: 1, korean: 1, chinese: 1, latinplus: 1, latinext: 1, ethiopic: 1 };
+
   const createTypesetTaggedPdf = async (fixResult, opts = {}) => {
     const html = fixResult && fixResult.accessibleHtml;
     if (!html) throw new Error('createTypesetTaggedPdf: no accessibleHtml');
     const PDFLibNS = (typeof window !== 'undefined' && window.PDFLib) || null;
     if (!PDFLibNS) throw new Error('pdf-lib unavailable');
     const { PDFDocument, StandardFonts } = PDFLibNS;
-    const winAnsi = (s) => (s || '')
+    // ── Unicode typeset support (2026-06-11, maintainer roadmap item 4) ──
+    // The old path stripped everything past 0xFF, so Korean / Chinese /
+    // Cyrillic / Vietnamese content silently VANISHED from the typeset PDF.
+    // Now: detect the dominant non-WinAnsi script; for scripts that render
+    // honestly without a shaping engine (CJK, Greek/Cyrillic, extended
+    // Latin, Ethiopic) embed the matching Noto font via fontkit and keep
+    // the real characters. Scripts that REQUIRE shaping/bidi (Arabic,
+    // Hebrew, Indic, Thai…) are not faked: we keep the Latin content and
+    // return an explicit warning instead of shipping broken glyph soup.
+    const _punctMap = (s) => (s || '')
       .replace(/[‘’‚′]/g, "'")
       .replace(/[“”„″]/g, '"')
       .replace(/[–—]/g, '-')
       .replace(/…/g, '...')
-      .replace(/ /g, ' ')
-      .replace(/[^\x20-\xFF]/g, '');
+      .replace(/ /g, ' ');
+    const _winAnsiStrip = (s) => _punctMap(s).replace(/[^\x20-\xFF]/g, '');
+    // Unicode mode keeps everything printable; only control chars are dropped.
+    const _unicodeClean = (s) => _punctMap(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '');
     const doc = await PDFDocument.create();
-    const font = await doc.embedFont(StandardFonts.Helvetica);
-    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    let font = await doc.embedFont(StandardFonts.Helvetica);
+    let bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    let _uniMode = false, _cjkWrap = false;
+    let _typesetFontInfo = null, _unicodeTypesetWarning = null;
+    {
+      const _probeDom = new DOMParser().parseFromString(html, 'text/html');
+      const _probeText = ((_probeDom.body && _probeDom.body.textContent) || '') + ' '
+        + Array.from(_probeDom.querySelectorAll('img[alt]')).map((im) => im.getAttribute('alt') || '').join(' ');
+      const _nonWinAnsi = (_punctMap(_probeText).match(/[^\x20-\xFF\n\r\t]/g) || []).length;
+      if (_nonWinAnsi > 0) {
+        const _script = _alloDetectScript(_probeText);
+        if (_script && _ALLO_TYPESET_SAFE_SCRIPTS[_script]) {
+          try {
+            const _fkOk = await _loadCdnScript('fontkit', [
+              'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
+              'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
+            ], () => !!window.fontkit);
+            if (!_fkOk || !window.fontkit) throw new Error('fontkit unavailable');
+            doc.registerFontkit(window.fontkit);
+            const _regUrl = _ALLO_CJK_URL[_script] || _ALLO_NOTO_URL(_ALLO_SCRIPT_FONT[_script]);
+            const _boldUrl = _ALLO_CJK_BOLD_URL[_script] || _ALLO_NOTO_BOLD_URL(_ALLO_SCRIPT_FONT[_script]);
+            const _fetchFont = async (u) => {
+              const r = await fetch(u);
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return new Uint8Array(await r.arrayBuffer());
+            };
+            const _regBytes = await _fetchFont(_regUrl);
+            font = await doc.embedFont(_regBytes, { subset: true });
+            try { bold = await doc.embedFont(await _fetchFont(_boldUrl), { subset: true }); }
+            catch (_) { bold = font; }
+            _uniMode = true;
+            _cjkWrap = (_script === 'japanese' || _script === 'korean' || _script === 'chinese');
+            _typesetFontInfo = { script: _script, family: _ALLO_CJK_URL[_script] ? ('NotoSans' + (_script === 'japanese' ? 'JP' : _script === 'korean' ? 'KR' : 'SC')) : _ALLO_SCRIPT_FONT[_script] };
+          } catch (e) {
+            _unicodeTypesetWarning = { script: _script, droppedChars: _nonWinAnsi, reason: 'font-load-failed: ' + ((e && e.message) || 'unknown'), advice: 'The Noto font could not be fetched — non-Latin characters were dropped from the typeset PDF. The HTML and Word exports keep them; retry online for the PDF.' };
+            try { warnLog('[TypesetTagged] ' + _script + ' font load failed — falling back to WinAnsi strip: ' + (e && e.message)); } catch (_) {}
+          }
+        } else {
+          _unicodeTypesetWarning = { script: _script || 'unknown', droppedChars: _nonWinAnsi, reason: _script ? 'needs-shaping-engine' : 'script-not-detected', advice: _script ? 'This script needs text shaping the typeset PDF cannot do honestly (right-to-left joining / conjuncts / mark stacking). Non-Latin characters were left out rather than rendered broken — use the HTML or Word export, which render it correctly.' : 'Some characters fall outside the typeset font and were dropped — the HTML and Word exports keep them.' };
+        }
+      }
+    }
+    const winAnsi = (s) => _uniMode ? _unicodeClean(s) : _winAnsiStrip(s);
     const PAGE_W = 612, PAGE_H = 792, M = 54;
     let page = doc.addPage([PAGE_W, PAGE_H]);
     let y = PAGE_H - M;
     const newPageIfNeeded = (need) => { if (y - need < M) { page = doc.addPage([PAGE_W, PAGE_H]); y = PAGE_H - M; } };
     const wrapText = (text, f, size, width) => {
-      const words = winAnsi(text).split(/\s+/).filter(Boolean);
+      // CJK has no inter-word spaces — word-splitting would produce one
+      // unwrappable mega-line running off the page. Wrap per character.
+      const _sep = _cjkWrap ? '' : ' ';
+      const words = _cjkWrap ? Array.from(winAnsi(text).replace(/\s+/g, ' ').trim()) : winAnsi(text).split(/\s+/).filter(Boolean);
       const lines = []; let cur = '';
       for (const w of words) {
-        const t = cur ? cur + ' ' + w : w;
+        const t = cur ? cur + _sep + w : w;
         let tooWide = false;
         try { tooWide = f.widthOfTextAtSize(t, size) > width; } catch (_) { tooWide = t.length * size * 0.55 > width; }
         if (tooWide && cur) { lines.push(cur); cur = w; } else cur = t;
@@ -7423,7 +7530,13 @@ HTML section ${chunkNum}/${chunks.length}:
     const typesetBytes = await doc.save();
     // Hand the typeset PDF to the standard tagger — same html, same gates,
     // same evidence-based declaration.
-    return await createTaggedPdf(typesetBytes, fixResult, opts);
+    const _tagged = await createTaggedPdf(typesetBytes, fixResult, opts);
+    // Surface the unicode outcome honestly in the summary the UI reads.
+    if (_tagged && _tagged.summary) {
+      if (_typesetFontInfo) _tagged.summary.typesetFont = _typesetFontInfo;
+      if (_unicodeTypesetWarning) _tagged.summary.unicodeTypesetWarning = _unicodeTypesetWarning;
+    }
+    return _tagged;
   };
 
   // ── STEM image intelligence (2026-06-10) ──
@@ -14351,8 +14464,8 @@ tr { page-break-inside: avoid; }
         if (item.role === 'LI') {
           const liRef = context.nextRef();
           const lblText = item.isOrdered ? (item.liIndex + '.') : '•';
-          const lblD = { Type: PDFName.of('StructElem'), S: PDFName.of('Lbl'), P: liRef, ActualText: PDFString.of(lblText) };
-          const lBodyD = { Type: PDFName.of('StructElem'), S: PDFName.of('LBody'), P: liRef, ActualText: PDFString.of(item.text || '') };
+          const lblD = { Type: PDFName.of('StructElem'), S: PDFName.of('Lbl'), P: liRef, ActualText: PDFHexString.fromText(lblText) };
+          const lBodyD = { Type: PDFName.of('StructElem'), S: PDFName.of('LBody'), P: liRef, ActualText: PDFHexString.fromText(item.text || '') };
           if (item.lang) { lBodyD.Lang = PDFString.of(item.lang); }
           const lblRef = context.register(context.obj(lblD));
           const lBodyRef = context.register(context.obj(lBodyD));
@@ -14404,7 +14517,7 @@ tr { page-break-inside: avoid; }
           // walks the structure tree gets the text. Table cells previously got
           // /Scope and /Headers but NO text, so an orphaned cell announced its
           // header role with nothing to read — adding ActualText fixes that.
-          d.ActualText = PDFString.of(item.text);
+          d.ActualText = PDFHexString.fromText(item.text);
         }
         // Stage 6a: /Lang overrides the document-level language for this
         // StructElem. SR readers use this to switch pronunciation voice
@@ -14680,42 +14793,15 @@ tr { page-break-inside: avoid; }
     // empty layer). Requires a network fetch (consistent with the pipeline already loading
     // pdf-lib/pdf.js/axe/Tesseract from CDNs); falls back gracefully (Helvetica + coverage
     // warning) on any failure.
-    const _notoUrl = (fam) => 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/' + fam + '/hinted/ttf/' + fam + '-Regular.ttf';
-    const _SCRIPT_FONT = {
-      arabic: 'NotoSansArabic', ethiopic: 'NotoSansEthiopic', devanagari: 'NotoSansDevanagari',
-      hebrew: 'NotoSansHebrew', thai: 'NotoSansThai', lao: 'NotoSansLao', khmer: 'NotoSansKhmer',
-      myanmar: 'NotoSansMyanmar', latinplus: 'NotoSans', // Greek + Cyrillic (basic Latin handled by Helvetica)
-    };
-    // CJK fonts live in a different repo (notofonts/noto-cjk) and are OTF/CFF; the
-    // language-subsetted regional builds keep the fetch to ~4-5MB and pdf-lib subset:true
-    // shrinks the embed to only the glyphs the document actually uses.
-    const _CJK_URL = {
-      japanese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/JP/NotoSansJP-Regular.otf',
-      korean: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/KR/NotoSansKR-Regular.otf',
-      chinese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/SC/NotoSansSC-Regular.otf',
-    };
-    const _detectScript = (s) => {
-      const t = String(s || '');
-      const ranges = {
-        arabic: /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/g,
-        ethiopic: /[ሀ-፿]/g, devanagari: /[ऀ-ॿ]/g, hebrew: /[֐-׿]/g,
-        thai: /[฀-๿]/g, lao: /[຀-໿]/g, khmer: /[ក-៿]/g,
-        myanmar: /[က-႟]/g,
-        latinplus: /[Ͱ-ϿЀ-ӿ]/g,
-      };
-      // CJK is resolved separately: a pure count vote would misroute Japanese (kanji usually
-      // outnumber kana) to a Chinese font and drop the kana. Tally the families, then pick by
-      // script priority — kana→JP (also covers kanji), hangul→KR (also covers hanja), else
-      // ideographs→SC. CJK only wins if it's at least as common as any non-CJK script.
-      const _kana = (t.match(/[぀-ヿ]/g) || []).length;
-      const _hangul = (t.match(/[가-힯]/g) || []).length;
-      const _han = (t.match(/[㐀-鿿豈-﫿]/g) || []).length;
-      const _cjk = _kana + _hangul + _han;
-      let best = null, bestN = 0;
-      for (const k of Object.keys(ranges)) { const n = (t.match(ranges[k]) || []).length; if (n > bestN) { bestN = n; best = k; } }
-      if (_cjk > 0 && _cjk >= bestN) return _kana > 0 ? 'japanese' : (_hangul > 0 ? 'korean' : 'chinese');
-      return bestN > 0 ? best : null;
-    };
+    // Shared with createTypesetTaggedPdf (2026-06-11) — tables + detector
+    // factored to factory scope; aliases keep this fn's call sites stable.
+    // The shared detector adds a 'latinext' range (Vietnamese / full
+    // Polish / Czech…): those chars previously fell to the Helvetica drop
+    // path here — now they get NotoSans, an OCR-layer improvement too.
+    const _notoUrl = _ALLO_NOTO_URL;
+    const _SCRIPT_FONT = _ALLO_SCRIPT_FONT;
+    const _CJK_URL = _ALLO_CJK_URL;
+    const _detectScript = _alloDetectScript;
     let _fontkitReady = false;
     const _ensureFontkit = async () => {
       if (_fontkitReady) return true;
@@ -14943,7 +15029,7 @@ tr { page-break-inside: avoid; }
         try {
           const s4 = await _stage4_tryWrapPage(
             page, pi, pdfjsDocForTagging, stage4OutlineItems,
-            context, { PDFName, PDFString, PDFNumber }, structRootRef, artifactHashSet
+            context, { PDFName, PDFString, PDFNumber, PDFHexString }, structRootRef, artifactHashSet
           );
           if (s4 && s4.pageSectRef) {
             pageElemRefs.push(s4.pageSectRef);
