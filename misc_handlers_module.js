@@ -6,7 +6,7 @@ if (window.AlloModules && window.AlloModules.MiscHandlersModule) { console.log('
 // extracted from AlloFlowANTI.txt 2026-04-25.
 
 const handleFileUpload = async (e, deps) => {
-  const { LargeFileHandler, callGeminiVision, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult } = deps;
+  const { LargeFileHandler, callGeminiVision, convertXlsxToMarkdownTables, addToast, t, warnLog, setShowLargeFileModal, setPendingLargeFile, setError, setIsExtracting, setGenerationStep, setInputText, setPendingPdfBase64, setPendingPdfFile, setPdfAuditResult } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleFileUpload fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
@@ -48,6 +48,37 @@ const handleFileUpload = async (e, deps) => {
     // structure (CSV becomes a scoped table → full /Headers + /IDTree in the
     // tagged PDF). 'Skip to Text Extraction' keeps the old source-box path.
     // .txt stays on the content path — it is the content tools' workhorse.
+    // ── Spreadsheets (.xlsx/.xls/.xlsb/.ods) → pipeline (2026-06-11) ──
+    // SheetJS (Lumen's lazy-CDN pattern) converts each sheet to a markdown
+    // pipe-table; the transcript lane builds REAL scoped tables from them.
+    if (/\.(xlsx|xls|xlsb|ods)$/i.test(file.name) && typeof convertXlsxToMarkdownTables === 'function') {
+        setIsExtracting(true);
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            try {
+                const b64 = reader.result.split(',')[1];
+                addToast(t('toasts.spreadsheet_converting') || '📊 Reading the workbook…', 'info');
+                const conv = await convertXlsxToMarkdownTables(b64);
+                const text = '# ' + file.name.replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + conv.text
+                    + (conv.truncatedRows ? ('\n\n*Note: ' + conv.truncatedRows + ' row(s) beyond the first 200 per sheet were not included.*') : '');
+                const MAGIC = 'ALLOTRANSCRIPT:v1\n';
+                const bytes = new TextEncoder().encode(MAGIC + text);
+                let bin = '';
+                for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+                setPendingPdfBase64(btoa(bin));
+                setPendingPdfFile(file);
+                setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _transcriptSource: true });
+                setIsExtracting(false);
+                addToast('✅ ' + (conv.sheets > 1 ? conv.sheets + ' sheets' : '1 sheet') + (t('toasts.spreadsheet_ready') || ' loaded as accessible tables — Make Accessible for the full treatment (tagged PDF included).'), 'success');
+            } catch (err) {
+                warnLog('[Spreadsheet→Pipeline] failed:', err?.message || err);
+                setError((t('toasts.spreadsheet_failed') || 'Could not read the spreadsheet: ') + (err?.message || 'unknown') + ' — export it as CSV and try again.');
+                setIsExtracting(false);
+            }
+        };
+        reader.readAsDataURL(file);
+        return;
+    }
     if (/\.(md|markdown|csv|tsv)$/i.test(file.name)) {
         const reader = new FileReader();
         reader.onload = (event) => {

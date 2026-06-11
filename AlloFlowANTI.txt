@@ -14130,6 +14130,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (_m && typeof _m.handleFileUpload === "function") return _m.handleFileUpload(e, {
         LargeFileHandler,
         callGeminiVision,
+        convertXlsxToMarkdownTables: (_docPipeline && _docPipeline.convertXlsxToMarkdownTables) || null,
         addToast,
         t,
         warnLog,

@@ -2881,6 +2881,58 @@ var createDocPipeline = function(deps) {
     return { payload: encodeTranscriptPayload(text.trim()), words: text.trim().split(/\s+/).length, mode };
   };
 
+  // ── Spreadsheets → markdown tables (2026-06-11, item 3) ──
+  // .xlsx/.xls/.xlsb/.ods via SheetJS (same lazy-CDN pattern Lumen uses).
+  // Each sheet becomes '## SheetName' + a pipe-table, which the transcript
+  // lane turns into REAL scoped tables → Stage 5b /Headers + /IDTree.
+  var _sheetJsPromise = null;
+  const _lazyLoadSheetJS = () => {
+    if (typeof window !== 'undefined' && window.XLSX && window.XLSX.read) return Promise.resolve();
+    if (_sheetJsPromise) return _sheetJsPromise;
+    _sheetJsPromise = new Promise((resolve, reject) => {
+      const urls = ['https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'];
+      const tryAt = (i) => {
+        if (i >= urls.length) { _sheetJsPromise = null; reject(new Error('SheetJS load failed from all mirrors')); return; }
+        const s = document.createElement('script');
+        s.src = urls[i];
+        s.onload = () => ((window.XLSX && window.XLSX.read) ? resolve() : (_sheetJsPromise = null, reject(new Error('XLSX missing after load'))));
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
+    });
+    return _sheetJsPromise;
+  };
+  const convertXlsxToMarkdownTables = async (base64, opts = {}) => {
+    await _lazyLoadSheetJS();
+    const wb = window.XLSX.read(base64, { type: 'base64' });
+    const maxRows = opts.maxRowsPerSheet || 200;
+    const parts = [];
+    let truncated = 0;
+    for (const name of wb.SheetNames) {
+      const sheet = wb.Sheets[name];
+      if (!sheet) continue;
+      const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+      const nonEmpty = rows.filter((r) => Array.isArray(r) && r.some((c) => String(c).trim()));
+      if (!nonEmpty.length) continue;
+      if (nonEmpty.length > maxRows) truncated += nonEmpty.length - maxRows;
+      const use = nonEmpty.slice(0, maxRows);
+      const width = Math.max.apply(null, use.map((r) => r.length));
+      const cell = (c) => String(c == null ? '' : c).replace(/\|/g, '/').replace(/\r?\n/g, ' ').trim();
+      const md = use.map((r, i) => {
+        const padded = Array.from({ length: width }, (_, ci) => cell(r[ci]));
+        return '| ' + padded.join(' | ') + ' |' + (i === 0 ? ('\n|' + padded.map(() => ' --- ').join('|') + '|') : '');
+      }).join('\n');
+      parts.push('## ' + name + '\n\n' + md);
+    }
+    if (!parts.length) throw new Error('no tabular data found in the workbook');
+    return {
+      text: parts.join('\n\n'),
+      sheets: parts.length,
+      truncatedRows: truncated,
+    };
+  };
+
   const extractPdfTextDeterministic = async (base64) => {
     // Transcript chokepoint: EVERY caller (skip-to-extraction, the audit
     // baseline, the fix flow's Step 0) inherits transcript awareness here.
@@ -22493,6 +22545,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     encodeTranscriptPayload,
     decodeTranscriptPayload,
     transcribeMediaToPayload: _wrapAsync(transcribeMediaToPayload),
+    convertXlsxToMarkdownTables: _wrapAsync(convertXlsxToMarkdownTables),
     extractPdfTextDeterministic: _wrapAsync(extractPdfTextDeterministic),
     fixContrastViolations: _wrap(fixContrastViolations),
     fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),
