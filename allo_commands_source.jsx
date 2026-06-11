@@ -70,6 +70,10 @@ function buildAlloCommands(ctx) {
     { id: 'pipeline_downloads', icon: '📥', roles: 'teacher', when: (c) => !!c.pipelineOpen, label: t('cmd.pipeline_downloads', 'Go to pipeline downloads'), aliases: ['downloads', 'get my files', 'tagged pdf'], hint: t('cmd.pipeline_downloads_hint', 'Scrolls to the Downloads section'), run: (c) => { return c.jumpToPipelineSection('allo-sec-downloads') ? t('cmd.pipeline_downloads_done', 'Downloads section — the tagged PDF is the share-ready copy.') : t('cmd.pipeline_jump_miss', 'That section isn’t on screen right now.'); } },
     { id: 'pipeline_verification', icon: '✅', roles: 'teacher', when: (c) => !!c.pipelineOpen, label: t('cmd.pipeline_verification', 'Go to pipeline verification'), aliases: ['verification', 'verify section', 'evidence'], hint: t('cmd.pipeline_verification_hint', 'Scrolls to the Verification section'), run: (c) => { return c.jumpToPipelineSection('allo-sec-verify') ? t('cmd.pipeline_verification_done', 'Verification section.') : t('cmd.pipeline_jump_miss', 'That section isn’t on screen right now.'); } },
 
+    // ── Show me how (tours by command) ──
+    { id: 'app_tour', icon: '✨', roles: 'all', when: (c) => !!c.startAppTour, label: t('cmd.app_tour', 'Show me around the app'), aliases: ['tour', 'app tour', 'show me around', 'how does this work', 'walkthrough'], hint: t('cmd.app_tour_hint', 'A guided tour of the main features'), run: (c) => { c.startAppTour(); return t('cmd.app_tour_done', 'Starting the tour — use Next to walk through.'); } },
+    { id: 'pipeline_tour', icon: '🧭', roles: 'teacher', when: (c) => !!c.pipelineOpen && !!c.startPipelineTour, label: t('cmd.pipeline_tour', 'Show me around these results'), aliases: ['pipeline tour', 'explain this screen', 'walk me through the results'], hint: t('cmd.pipeline_tour_hint', 'A 60-second tour of the remediation results'), run: (c) => { c.startPipelineTour('results'); return t('cmd.pipeline_tour_done', 'Starting the results tour.'); } },
+
     // ── Voice control (S2) ──
     { id: 'voice_start', icon: '🎙️', roles: 'all', when: (c) => !c.voiceActive && c.voiceAvailable, label: t('cmd.voice_start', 'Start voice control'), aliases: ['voice control', 'listen', 'voice mode', 'hands free'], hint: t('cmd.voice_start_hint', 'AlloBot listens for commands until you stop it'), run: (c) => { c.startVoiceLoop(); return t('cmd.voice_start_done', 'Voice control on. Say a command like “bigger text” or “open the educator hub”. Say “stop listening” to finish.'); } },
     { id: 'voice_stop', icon: '🛑', roles: 'all', when: (c) => !!c.voiceActive, label: t('cmd.voice_stop', 'Stop voice control'), aliases: ['stop listening', 'stop voice', 'voice off'], hint: t('cmd.voice_stop_hint', 'Stops the microphone'), run: (c) => { c.stopVoiceLoop(); return t('cmd.voice_stop_done', 'Voice control off — the microphone is released.'); } },
@@ -88,6 +92,14 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || '').trim();
   if (!text || text.length > 200) return null;
   const t = _mkT(ctx && ctx.t);
+  // "Where is X?" — answered by POINTING (spotlight on the live control)
+  // rather than describing. Deterministic prefix grammar; the host's
+  // whereIs scans the on-screen [data-help-key] vocabulary.
+  const _whereM = text.match(/^(?:where(?:'s| is| are)?|find|locate|show me where)\s+(?:the\s+|my\s+|is\s+|are\s+)?(.{2,60}?)\??$/i);
+  if (_whereM && typeof ctx.whereIs === 'function') {
+    const narration = ctx.whereIs(_whereM[1].trim());
+    if (narration) return { handled: true, narration, commandId: 'where_is', via: 'where-is' };
+  }
   const commands = buildAlloCommands(ctx);
   let best = null, bestScore = 0;
   for (const c of commands) { const s = scoreCommand(c, text); if (s > bestScore) { bestScore = s; best = c; } }
