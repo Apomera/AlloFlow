@@ -10,7 +10,7 @@
 function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
-    setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
+    setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
     setStemLabTab, showLearningHub, t,
   } = props;
   return (
@@ -45,6 +45,15 @@ function LearningHubModal(props) {
                   <p className="text-xs text-violet-600 mt-1">{t('learning_hub.litlab_desc') || 'Bring stories to life with character voices & literary analysis'}</p>
                 </div>
               </button>
+              {setShowMindMap && (
+                <button onClick={() => { setShowLearningHub(false); setShowMindMap(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl">🧩</span>
+                  <div>
+                    <h3 className="font-bold text-amber-800">{t('learning_hub.mindmap_title') || 'Mind Map'}</h3>
+                    <p className="text-xs text-amber-700 mt-1">{t('learning_hub.mindmap_desc') || 'Build a knowledge graph that grows with you — concepts, connections, mnemonics'}</p>
+                  </div>
+                </button>
+              )}
               <button onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🌳</span>
                 <div>
