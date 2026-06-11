@@ -69,6 +69,58 @@ function _ensureDocxLib() {
     tryAt(0);
   });
 }
+let _ommlToolsPromise = null;
+async function _latexToOmml(latex) {
+  try {
+    if (!latex || typeof window === "undefined") return null;
+    if (!_ommlToolsPromise) {
+      _ommlToolsPromise = (async () => {
+        if (!window.temml || !window.temml.renderToString) {
+          await new Promise((resolve, reject) => {
+            const urls = ["https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js", "https://unpkg.com/temml@0.10.34/dist/temml.min.js"];
+            const tryAt = (i) => {
+              if (i >= urls.length) {
+                reject(new Error("temml load failed"));
+                return;
+              }
+              const s = document.createElement("script");
+              s.src = urls[i];
+              s.onload = () => window.temml ? resolve(null) : reject(new Error("temml missing after load"));
+              s.onerror = () => {
+                try {
+                  s.remove();
+                } catch (_) {
+                }
+                tryAt(i + 1);
+              };
+              document.head.appendChild(s);
+            };
+            tryAt(0);
+          });
+        }
+        const _dynImport = new Function("u", "return import(u)");
+        const mod = await _dynImport("https://cdn.jsdelivr.net/npm/mathml2omml/+esm");
+        const mml2omml = mod.mml2omml || mod.default && mod.default.mml2omml || mod.default;
+        if (typeof mml2omml !== "function") throw new Error("mathml2omml export shape unexpected");
+        return { mml2omml };
+      })();
+      _ommlToolsPromise.catch(() => {
+        _ommlToolsPromise = null;
+      });
+    }
+    const tools = await _ommlToolsPromise;
+    const mathmlFull = window.temml.renderToString(String(latex), { displayMode: true });
+    const m = mathmlFull.match(/<math[\s\S]*<\/math>/);
+    if (!m) return null;
+    let omml = tools.mml2omml(m[0]);
+    if (!omml || typeof omml !== "string" || !/<m:o/.test(omml)) return null;
+    if (!/xmlns:m=/.test(omml)) omml = omml.replace(/<m:(oMathPara|oMath)/, '<m:$1 xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"');
+    return omml;
+  } catch (_) {
+    return null;
+  }
+}
+if (typeof window !== "undefined") window.__alloLatexToOmml = _latexToOmml;
 function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const title = ((doc.querySelector("title") || {}).textContent || (doc.querySelector("h1") || {}).textContent || "Accessible document").trim().slice(0, 200) || "Accessible document";
@@ -120,7 +172,7 @@ function _htmlToDocxSpec(html) {
   const pushImage = (img, fallbackAlt) => {
     const src = img.getAttribute("src") || "";
     const alt = (img.getAttribute("alt") || fallbackAlt || "").trim();
-    blocks.push({ type: "image", src: /^data:image\//.test(src) ? src : null, alt, width: img.getAttribute("width"), height: img.getAttribute("height") });
+    blocks.push({ type: "image", src: /^data:image\//.test(src) ? src : null, alt, width: img.getAttribute("width"), height: img.getAttribute("height"), latex: img.getAttribute("data-allo-latex") || null });
     counts.images++;
   };
   const listItems = (listEl, level, items) => {
@@ -253,6 +305,16 @@ async function _buildDocxBlobFromSpec(spec, d) {
         }
       }
       if (!placed) children.push(new d.Paragraph({ children: [new d.TextRun({ text: "[Image: " + (b.alt || "no description available") + "]", italics: true })] }));
+      if (b.latex && typeof _latexToOmml === "function") {
+        try {
+          const omml = await _latexToOmml(b.latex);
+          if (omml && d.ImportedXmlComponent && typeof d.ImportedXmlComponent.fromXmlString === "function") {
+            children.push(new d.Paragraph({ children: [d.ImportedXmlComponent.fromXmlString(omml)] }));
+            children.push(new d.Paragraph({ children: [new d.TextRun({ text: "Editable equation (AI-transcribed from the image above \u2014 verify before reuse).", italics: true, size: 16 })] }));
+          }
+        } catch (_) {
+        }
+      }
     }
   }
   const docFile = new d.Document({

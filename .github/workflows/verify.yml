@@ -152,3 +152,5 @@ jobs:
         run: npx playwright test tests/e2e/pptx_export_golden.spec.ts
       - name: Writing Check sentinel (real Harper WASM lint)
         run: npx playwright test tests/e2e/writing_check_golden.spec.ts
+      - name: OMML math chain (temml + mathml2omml CDN — Word-native equations)
+        run: npx playwright test tests/e2e/omml_math_golden.spec.ts
