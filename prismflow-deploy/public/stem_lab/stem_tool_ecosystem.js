@@ -1135,6 +1135,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         canvas.addEventListener('mouseup', onMouseUp);
         canvas.addEventListener('click', onClick);
 
+        // Touch parity for the sandbox 'Move' (drag-to-reposition) tool on the
+        // pilot's touchscreen Chromebooks — placement tools already work via the
+        // synthesized click. Forward the single-touch point to the mouse handlers;
+        // only preventDefault once a drag is actually in progress, so tap-to-place
+        // and normal page scrolling over the canvas are unaffected.
+        var onTouchStart = function(e) {
+          if (e.touches && e.touches[0]) {
+            onMouseDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+            if (canvas._dragging) e.preventDefault();
+          }
+        };
+        var onTouchMove = function(e) {
+          if (e.touches && e.touches[0]) {
+            onMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+            if (canvas._dragging) e.preventDefault();
+          }
+        };
+        canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+        canvas.addEventListener('touchend', onMouseUp);
+        canvas.addEventListener('touchcancel', onMouseUp);
+
         // ── Ground level: animals stay on/below the terrain horizon ──
         var groundY = Math.round(ch * 0.46);
         var groundBottom = ch - 20;

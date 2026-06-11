@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '367b54f8';
+    var pluginCdnVersion = 'e3cd6e83';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10188,6 +10188,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [pdfFixResult, pdfFixLoading]);
 
   const _closePdfAuditModal = () => {
+    // Help-mode guard (2026-06-11, user report: pressing the floating ? then
+    // interacting "took you out of the pipeline"). Whatever the click path,
+    // while help mode is ON the pipeline modal must never close — closing is
+    // never what a help-seeking user wants. Exit help (yellow ✕) first.
+    if (isHelpMode) {
+      addToast(t('toasts.help_mode_close_blocked') || '❓ Help mode is on — click any control to learn about it. Press the yellow ✕ (right edge) to exit help mode first.', 'info');
+      return;
+    }
     setPdfFixLoading(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);

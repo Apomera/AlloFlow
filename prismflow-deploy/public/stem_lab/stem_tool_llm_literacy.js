@@ -1504,12 +1504,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               }
             }, seg.text);
           }),
-          anyFlags && h('span', {
-            style: { display: 'block', marginTop: '8px', fontSize: '11px', color: COLORS.muted, fontStyle: 'italic', borderTop: '1px dashed ' + COLORS.border, paddingTop: '6px' },
-            'aria-live': 'polite'
-          },
-            '\uD83D\uDEA9 Highlighted phrases are potential red flags \u2014 hover for why. This is a heuristic, not a verdict.'
-          )
+          anyFlags && (function() {
+            // The "why" used to live only in a hover title / SR aria-label, so a
+            // sighted touchscreen student (the pilot case) saw the highlight but
+            // could never read the explanation. Render each distinct red-flag type
+            // and its reason as ALWAYS-VISIBLE text \u2014 touch, mouse, and SR all get it.
+            var seen = {}, distinct = [];
+            segs.forEach(function(s) { if (s.flag && !seen[s.flag.label]) { seen[s.flag.label] = 1; distinct.push(s.flag); } });
+            return h('span', {
+              style: { display: 'block', marginTop: '8px', fontSize: '11px', color: COLORS.muted, borderTop: '1px dashed ' + COLORS.border, paddingTop: '6px' },
+              'aria-live': 'polite'
+            },
+              h('span', { style: { display: 'block', fontStyle: 'italic', marginBottom: '4px' } }, '\uD83D\uDEA9 Highlighted phrases are potential red flags (a heuristic, not a verdict):'),
+              distinct.map(function(fl, di) {
+                return h('span', { key: di, style: { display: 'block', marginTop: '2px' } },
+                  h('strong', { style: { color: fl.color } }, fl.label + ': '),
+                  fl.why
+                );
+              })
+            );
+          })()
         );
       }
 

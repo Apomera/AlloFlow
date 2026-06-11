@@ -4329,6 +4329,16 @@ window.StemLab = window.StemLab || {
               onMouseMove: handleMouseMove,
               onMouseUp: handleMouseUp,
               onMouseLeave: handleMouseUp,
+              // Touch parity: drag-to-reposition is the ONLY way to populate
+              // customPositions (and complete 2 of the 4 football drills), but the
+              // pilot device is a touchscreen Chromebook. Mirror the mouse handlers,
+              // forwarding the single-touch point through the same clientX/Y math.
+              // touchAction:'none' (below) already declares this a non-scroll surface,
+              // so preventDefault won't fight a scroll the page wasn't doing here.
+              onTouchStart: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
+              onTouchMove: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
+              onTouchEnd: function(e) { e.preventDefault(); handleMouseUp(); },
+              onTouchCancel: function() { handleMouseUp(); },
               style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', cursor: 'pointer', touchAction: 'none' }
             }),
             // ── Run Play button — the headline action ──

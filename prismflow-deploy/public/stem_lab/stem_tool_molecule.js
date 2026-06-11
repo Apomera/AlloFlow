@@ -1580,7 +1580,35 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 onMouseUp: () => upd('buildDragging', null),
 
-                onMouseLeave: () => upd('buildDragging', null)
+                onMouseLeave: () => upd('buildDragging', null),
+
+                // Touch parity for atom repositioning on the pilot's touchscreen
+                // Chromebooks — mirrors onMouseMove with the single-touch point.
+                onTouchMove: e => {
+
+                  if ((d.buildDragging !== null && d.buildDragging !== undefined) && e.touches && e.touches[0]) {
+
+                    e.preventDefault();
+
+                    const svg = e.currentTarget;
+
+                    const rect = svg.getBoundingClientRect();
+
+                    const nx = (e.touches[0].clientX - rect.left) / rect.width * W;
+
+                    const ny = (e.touches[0].clientY - rect.top) / rect.height * H;
+
+                    const na = (d.buildAtoms || []).map((a, i) => i === d.buildDragging ? { ...a, x: Math.max(20, Math.min(W - 20, Math.round(nx))), y: Math.max(20, Math.min(H - 20, Math.round(ny))) } : a);
+
+                    upd('buildAtoms', na);
+
+                  }
+
+                },
+
+                onTouchEnd: () => upd('buildDragging', null),
+
+                onTouchCancel: () => upd('buildDragging', null)
 
               },
 
@@ -1751,6 +1779,32 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                           upd('buildDragging', i);
                         }
 
+                      },
+
+                      // Touch parity: a drag (touchAction:'none' + preventDefault below)
+                      // suppresses the synthesized mousedown, so the press that begins a
+                      // reposition/bond must be handled on touch too. Same body as onMouseDown.
+                      onTouchStart: e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) {
+                          if (d.buildBondFrom === null || d.buildBondFrom === undefined) {
+                            upd('buildBondFrom', i);
+                          } else if (d.buildBondFrom === i) {
+                            upd('buildBondFrom', null);
+                          } else {
+                            const existingBonds = d.buildBonds || [];
+                            const already = existingBonds.find(b => (b[0] === d.buildBondFrom && b[1] === i) || (b[0] === i && b[1] === d.buildBondFrom));
+                            if (!already) {
+                              upd('buildBonds', [...existingBonds, [d.buildBondFrom, i, 1]]);
+                              if (typeof announceToSR === 'function') announceToSR("Connected atom " + d.buildAtoms[d.buildBondFrom].el + " to " + a.el);
+                            }
+                            upd('buildBondFrom', null);
+                            upd('buildCheckResult', null);
+                          }
+                        } else {
+                          upd('buildDragging', i);
+                        }
                       }
 
                     }),

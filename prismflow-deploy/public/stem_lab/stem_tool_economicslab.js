@@ -2128,8 +2128,10 @@ var d = labToolData || {};
                 BUDGET_RULES.map(function(rule, ri) {
                   var isActive = (d.budgetRuleIdx || 0) === ri;
                   return React.createElement('div', { key: ri,
+                    role: 'button', tabIndex: 0, 'aria-label': 'Show ' + rule.name + ' details',
                     onClick: function() { upd('budgetRuleIdx', ri); },
-                    className: 'cursor-pointer rounded-xl p-3 border-2 transition-all ' + (isActive ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300')
+                    onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('budgetRuleIdx', ri); } },
+                    className: 'cursor-pointer rounded-xl p-3 border-2 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ' + (isActive ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300')
                   },
                     React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                       React.createElement('span', { className: 'text-lg' }, rule.icon),
@@ -2190,9 +2192,11 @@ var d = labToolData || {};
                   ECON_SCHOOLS.map(function(school, si) {
                     var isActive = d.econSchoolIdx === si;
                     return React.createElement('div', { key: si },
-                      React.createElement('div', { 
-                        className: 'grid grid-cols-4 cursor-pointer transition-all ' + (isActive ? '' : 'hover:bg-purple-50') + (si % 2 === 0 ? ' bg-white' : ' bg-slate-50'),
+                      React.createElement('div', {
+                        role: 'button', tabIndex: 0, 'aria-label': 'Toggle ' + school.name + ' school details',
+                        className: 'grid grid-cols-4 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ' + (isActive ? '' : 'hover:bg-purple-50') + (si % 2 === 0 ? ' bg-white' : ' bg-slate-50'),
                         onClick: function() { upd('econSchoolIdx', isActive ? null : si); },
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('econSchoolIdx', isActive ? null : si); } },
                         style: isActive ? { background: school.color + '10', borderLeft: '3px solid ' + school.color } : {}
                       },
                         React.createElement('div', { className: 'p-1.5 text-[11px]' },
@@ -2244,8 +2248,10 @@ var d = labToolData || {};
                   ECON_CONCEPTS.filter(function(c) { return (d.econConceptFilter || 'all') === 'all' || c.category === d.econConceptFilter; }).map(function(concept, ci) {
                     var isActive = d.econConceptIdx === ci;
                     return React.createElement('div', { key: ci,
+                      role: 'button', tabIndex: 0, 'aria-label': 'Toggle ' + concept.name + ' details',
                       onClick: function() { upd('econConceptIdx', isActive ? null : ci); },
-                      className: 'cursor-pointer rounded-xl p-2.5 border-2 transition-all ' + (isActive ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300')
+                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('econConceptIdx', isActive ? null : ci); } },
+                      className: 'cursor-pointer rounded-xl p-2.5 border-2 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 ' + (isActive ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300')
                     },
                       React.createElement('div', { className: 'flex items-center gap-1.5 mb-1' },
                         React.createElement('span', { className: 'text-lg' }, concept.icon),
@@ -2293,8 +2299,10 @@ var d = labToolData || {};
                   MARKET_STRUCTURES.map(function(ms, mi) {
                     var isActive = d.marketStructIdx === mi;
                     return React.createElement('div', { key: mi,
+                      role: 'button', tabIndex: 0, 'aria-label': 'Toggle ' + ms.name + ' details',
                       onClick: function() { upd('marketStructIdx', isActive ? null : mi); },
-                      className: 'cursor-pointer rounded-xl p-3 border-2 transition-all ' + (isActive ? 'scale-[1.02] shadow-md' : 'hover:scale-[1.01]'),
+                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('marketStructIdx', isActive ? null : mi); } },
+                      className: 'cursor-pointer rounded-xl p-3 border-2 transition-all focus:outline-none focus:ring-2 focus:ring-slate-400 ' + (isActive ? 'scale-[1.02] shadow-md' : 'hover:scale-[1.01]'),
                       style: { borderColor: isActive ? ms.color : ms.color + '40', background: isActive ? ms.color + '08' : '#fff' }
                     },
                       React.createElement('div', { className: 'flex items-center gap-1 mb-1' },
@@ -2381,8 +2389,10 @@ var d = labToolData || {};
                 FAMOUS_ECONOMISTS.map(function(econ, ei) {
                   var isActive = d.economistIdx === ei;
                   return React.createElement('div', { key: ei,
+                    role: 'button', tabIndex: 0, 'aria-label': 'Toggle ' + econ.name + ' biography',
                     onClick: function() { upd('economistIdx', isActive ? null : ei); },
-                    className: 'cursor-pointer rounded-xl p-2.5 border-2 transition-all ' + (isActive ? 'border-violet-400 bg-violet-50' : 'border-slate-200 bg-white hover:border-violet-300')
+                    onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('economistIdx', isActive ? null : ei); } },
+                    className: 'cursor-pointer rounded-xl p-2.5 border-2 transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (isActive ? 'border-violet-400 bg-violet-50' : 'border-slate-200 bg-white hover:border-violet-300')
                   },
                     React.createElement('div', { className: 'flex items-center gap-2' },
                       React.createElement('span', { className: 'text-xl' }, econ.icon),
