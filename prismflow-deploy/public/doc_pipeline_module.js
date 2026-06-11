@@ -16523,7 +16523,12 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // Strip transient overlay CSS so it doesn't get baked into the export source.
           const inspect = liveDoc.getElementById('a11y-inspect-css');
           if (inspect) inspect.remove();
-          sourceHtml = '<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML;
+          // Editor-only chrome stays out of the themed re-render (sweep
+          // 2026-06-11 [10]): after one outerHTML round-trip the sizer
+          // buttons would be dead chrome anyway.
+          const _liveClone = liveDoc.documentElement.cloneNode(true);
+          try { _liveClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg]').forEach((el) => el.remove()); } catch (_) {}
+          sourceHtml = '<!DOCTYPE html>\n' + _liveClone.outerHTML;
         }
       }
     } catch (_) { /* fall through to accessibleHtml */ }
@@ -17512,7 +17517,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     const inspectEl = doc.getElementById('a11y-inspect-css');
     if (inspectEl) inspectEl.remove();
     try { doc.designMode = 'off'; } catch(e) {}
-    const html = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    // Editor-only chrome (sizer bars, picker grids) never reaches exports.
+    const _expClone = doc.documentElement.cloneNode(true);
+    try { _expClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg]').forEach((el) => el.remove()); } catch (_) {}
+    const html = '<!DOCTYPE html>\n' + _expClone.outerHTML;
     try { doc.designMode = 'on'; } catch(e) {}
     return html;
   };
@@ -22557,6 +22565,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),
     sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
+    aiFixChunked: _wrapAsync(aiFixChunked),
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),

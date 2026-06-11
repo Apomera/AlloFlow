@@ -1078,6 +1078,12 @@ function PdfAuditView(props) {
         return prev;
       }
     });
+    try {
+      const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+      const limgs = ldoc ? ldoc.querySelectorAll("img[data-allo-kind]") : null;
+      if (limgs && limgs[idx]) fn(limgs[idx], ldoc);
+    } catch (_) {
+    }
   };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
@@ -1743,7 +1749,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       }
       await new Promise((res) => setTimeout(res, 250));
       const r = pdfFixResultRef.current;
-      const needsLoop = r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore;
+      const needsLoop = r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0);
       if (needsLoop) {
         runAutoFixLoop(8);
       } else if (pdfAutoSaveProject) {
@@ -1920,7 +1926,7 @@ Return ONLY JSON:
       await runPdfAccessibilityAudit(pendingPdfBase64);
       setTimeout(() => {
         const r = pdfFixResultRef.current;
-        const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore;
+        const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0);
         if (needsLoop) {
           runAutoFixLoop(8);
         } else if (pdfAutoSaveProject) {
@@ -2522,7 +2528,7 @@ Return ONLY JSON:
       } else {
         fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name });
       }
-    }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), pdfFixLoading ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), pdfFixLoading && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": pdfFixStep.includes("Step 1") ? 15 : pdfFixStep.includes("Step 2") ? 50 : pdfFixStep.includes("Step 3") ? 80 : pdfFixStep.includes("Step 4") ? 92 : pdfFixStep.includes("Auto-fix") ? 96 : 5, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: pdfFixStep.includes("Step 1") ? "15%" : pdfFixStep.includes("Step 2") ? "50%" : pdfFixStep.includes("Step 3") ? "80%" : pdfFixStep.includes("Step 4") ? "92%" : pdfFixStep.includes("Auto-fix") ? "96%" : "5%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-0.5 text-center", role: "status", "aria-live": "polite" }, pdfFixStep), (() => {
+    }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), pdfFixLoading ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), pdfFixLoading && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": pdfFixStep.includes("Step 1") ? 15 : pdfFixStep.includes("Step 2") ? 50 : pdfFixStep.includes("Step 3") ? 80 : pdfFixStep.includes("Step 4") ? 92 : pdfFixStep.includes("Auto-fix") ? 96 : 5, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: pdfFixStep.includes("Step 1") ? "15%" : pdfFixStep.includes("Step 2") ? "50%" : pdfFixStep.includes("Step 3") ? "80%" : pdfFixStep.includes("Step 4") ? "92%" : pdfFixStep.includes("Auto-fix") || pdfFixStep.includes("Auto-continue") ? "96%" : "5%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-0.5 text-center", role: "status", "aria-live": "polite" }, pdfFixStep), (() => {
       const steps = [
         { step: 1, label: "Extract", icon: "\u{1F4C4}" },
         { step: 2, label: "Build HTML", icon: "\u{1F3D7}\uFE0F" },
@@ -2550,7 +2556,7 @@ Return ONLY JSON:
           if (/verif/i.test(stepText)) return { what: "An AI accessibility reviewer is examining your document for problems that automated tools can't detect.", why: `Automated checkers are excellent at finding technical violations, but some accessibility problems require understanding the content. For example: an image might have alt text that says "chart" \u2014 technically present, but useless to a blind student who needs "Bar chart showing 73% of students improved reading scores." The AI evaluates whether descriptions are meaningful, whether heading levels make logical sense for the content, and whether the document's structure matches how someone would actually read and navigate it.` };
           return { what: "Measuring your document's current accessibility level against the WCAG 2.1 AA standard before making any fixes.", why: 'This baseline score tells you where your document stands. The score reflects how well a student using a screen reader, screen magnifier, voice control, switch device, or other assistive technology could independently read and navigate it. It also establishes a "before" measurement so you can see exactly how much the remediation improves the document \u2014 both the numeric score and the specific barriers that were removed.' };
         }
-        if (/Step 4|Auto-fix|Improv|pass \d/i.test(stepText)) {
+        if (/Step 4|Auto-fix|Auto-continue|Improv|pass \d/i.test(stepText)) {
           if (/Verif|check/i.test(stepText)) return { what: "Verifying that each round of fixes actually improved accessibility without introducing new problems.", why: "After fixing issues, we re-check the entire document. For example, fixing one heading level might affect the navigation hierarchy elsewhere, or adding alt text to one image might create a duplicate ID. If any fix accidentally made the document less accessible, it's automatically rolled back. This verify-then-accept approach ensures the document only gets better, never worse \u2014 because an accessibility regression could leave a student more confused than before." };
           if (/surg|micro/i.test(stepText)) return { what: "Applying targeted accessibility fixes \u2014 each one addresses a single specific barrier in your document.", why: 'These are precise repairs: adding a meaningful description to a specific image (so a blind student knows what it shows instead of hearing silence), correcting a heading that jumped from "Chapter" to "Subsection" with no "Section" in between (so keyboard navigation makes logical sense), adding a label to a form field (so a screen reader announces "Student Name" instead of just "edit text"), and adding scope attributes to table headers (so a screen reader can say "Column: Grade, Row: Student A, Value: 92" instead of just "92" with no context).' };
           if (/zero issue|clean|0 issue/i.test(stepText)) return { what: "Your document passed! No remaining accessibility barriers were detected by either the automated checker or AI reviewer.", why: "Your document now meets WCAG 2.1 Level AA \u2014 the standard required by the ADA for all public educational institutions as of April 2026. This means: a student using a screen reader can navigate by headings and read all content including image descriptions; a student with low vision can zoom to 200% without losing content; a student who can't use a mouse can reach every element by keyboard; data tables announce their headers so values have context; and the document has proper reading order, sufficient color contrast, and labeled form fields." };
@@ -2582,7 +2588,7 @@ Return ONLY JSON:
       };
       const context = getContextNote(pdfFixStep);
       return /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white rounded-xl border border-slate-400 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.pipeline.tracker_aria") || "Pipeline progress tracker" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px]" }, steps.map((s, i) => {
-        const currentStep = pdfFixStep.includes("Step " + s.step) || pdfFixStep.includes("step " + s.step);
+        const currentStep = pdfFixStep.includes("Step " + s.step) || pdfFixStep.includes("step " + s.step) || s.step === 4 && /Auto-fix|Auto-continue/i.test(pdfFixStep);
         const completedStep = steps.some((later) => later.step > s.step && (pdfFixStep.includes("Step " + later.step) || pdfFixStep.includes("step " + later.step)));
         return /* @__PURE__ */ React.createElement(React.Fragment, { key: s.step }, i > 0 && /* @__PURE__ */ React.createElement("div", { className: `flex-1 h-0.5 rounded ${completedStep ? "bg-green-400" : currentStep ? "bg-indigo-300" : "bg-slate-200"}` }), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-1 px-2 py-1 rounded-lg font-bold whitespace-nowrap ${completedStep ? "bg-green-50 text-green-700 border border-green-200" : currentStep ? "bg-indigo-50 text-indigo-700 border border-indigo-300 animate-pulse" : "text-slate-600"}` }, /* @__PURE__ */ React.createElement("span", null, completedStep ? "\u2705" : s.icon), /* @__PURE__ */ React.createElement("span", null, s.label)));
       })), context && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl px-4 py-3 border border-slate-400 space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-slate-800 font-semibold leading-relaxed whitespace-pre-line" }, "\u{1F504} ", context.what), /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 leading-relaxed border-t border-slate-200 pt-1.5" }, "\u{1F4A1} ", /* @__PURE__ */ React.createElement("span", { className: "font-medium" }, t("pdf_audit.pipeline.why_matters") || "Why this matters:"), " ", context.why)));
@@ -3452,7 +3458,7 @@ Return ONLY JSON:
       {
         onClick: () => {
           addToast("Applying new settings and re-running\u2026", "info");
-          runAutoFixLoop(Math.max(1, pdfAutoFixPasses || 1));
+          runAutoFixLoop(8);
         },
         className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold"
       },
@@ -3557,8 +3563,23 @@ Return ONLY JSON:
             });
             addToast("\u2702 Cropped region added to the remediated document with alt text \u2014 re-export (PDF/Word/HTML) to include it.", "success");
             try {
-              window.__alloflowExtractedImages = window.__alloflowExtractedImages || [];
-              window.__alloflowExtractedImages.push({ src: _src, description: _alt });
+              const _ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+              if (_ldoc && _ldoc.body) {
+                const _lfig = _ldoc.createElement("figure");
+                const _lim = _ldoc.createElement("img");
+                _lim.src = _src;
+                _lim.alt = _alt;
+                _lim.style.maxWidth = "100%";
+                const _lcap = _ldoc.createElement("figcaption");
+                _lcap.textContent = _alt;
+                _lfig.appendChild(_lim);
+                _lfig.appendChild(_lcap);
+                (_ldoc.querySelector("main") || _ldoc.body).appendChild(_lfig);
+              }
+            } catch (_) {
+            }
+            try {
+              window.dispatchEvent(new CustomEvent("alloflow:extraction-complete", { detail: { images: [...extractedImagesList || [], { src: _src, description: _alt }] } }));
             } catch (_) {
             }
           } catch (_) {

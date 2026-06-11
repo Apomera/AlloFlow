@@ -907,6 +907,14 @@ function PdfAuditView(props) {
         return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
       } catch (_) { return prev; }
     });
+    // Mirror into the LIVE preview iframe (sweep 2026-06-11 [8]): the next
+    // theme/font toggle prefers the live DOM over state — a state-only alt
+    // edit would be silently reverted by that snapshot.
+    try {
+      const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+      const limgs = ldoc ? ldoc.querySelectorAll('img[data-allo-kind]') : null;
+      if (limgs && limgs[idx]) fn(limgs[idx], ldoc);
+    } catch (_) {}
   };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   // Failed-verification tagged download: bytes wait here while the teacher
@@ -1682,7 +1690,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     } catch (_) { /* fix surface shows its own errors; chain continues to the check below */ }
                     await new Promise((res) => setTimeout(res, 250));
                     const r = pdfFixResultRef.current;
-                    const needsLoop = r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore;
+                    const needsLoop = r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0);
                     if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
@@ -1928,7 +1936,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
                   <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
@@ -3070,7 +3078,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     {pdfFixLoading && (
                       <div className="basis-full mt-1" role="status" aria-live="polite">
                         <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" role="progressbar" aria-label={t('pdf_audit.fix_pass.progress_aria') || 'Fix and verify progress'} aria-valuenow={pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : pdfFixStep.includes('Auto-fix') ? 96 : 5} aria-valuemin={0} aria-valuemax={100}>
-                          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: pdfFixStep.includes('Step 1') ? '15%' : pdfFixStep.includes('Step 2') ? '50%' : pdfFixStep.includes('Step 3') ? '80%' : pdfFixStep.includes('Step 4') ? '92%' : pdfFixStep.includes('Auto-fix') ? '96%' : '5%' }}></div>
+                          <div className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full" style={{ width: pdfFixStep.includes('Step 1') ? '15%' : pdfFixStep.includes('Step 2') ? '50%' : pdfFixStep.includes('Step 3') ? '80%' : pdfFixStep.includes('Step 4') ? '92%' : (pdfFixStep.includes('Auto-fix') || pdfFixStep.includes('Auto-continue')) ? '96%' : '5%' }}></div>
                         </div>
                         <div className="text-xs text-slate-700 mt-0.5 text-center" role="status" aria-live="polite">{pdfFixStep}</div>
 
@@ -3104,7 +3112,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (/verif/i.test(stepText)) return { what: 'An AI accessibility reviewer is examining your document for problems that automated tools can\'t detect.', why: 'Automated checkers are excellent at finding technical violations, but some accessibility problems require understanding the content. For example: an image might have alt text that says "chart" — technically present, but useless to a blind student who needs "Bar chart showing 73% of students improved reading scores." The AI evaluates whether descriptions are meaningful, whether heading levels make logical sense for the content, and whether the document\'s structure matches how someone would actually read and navigate it.' };
                               return { what: 'Measuring your document\'s current accessibility level against the WCAG 2.1 AA standard before making any fixes.', why: 'This baseline score tells you where your document stands. The score reflects how well a student using a screen reader, screen magnifier, voice control, switch device, or other assistive technology could independently read and navigate it. It also establishes a "before" measurement so you can see exactly how much the remediation improves the document — both the numeric score and the specific barriers that were removed.' };
                             }
-                            if (/Step 4|Auto-fix|Improv|pass \d/i.test(stepText)) {
+                            if (/Step 4|Auto-fix|Auto-continue|Improv|pass \d/i.test(stepText)) {
                               if (/Verif|check/i.test(stepText)) return { what: 'Verifying that each round of fixes actually improved accessibility without introducing new problems.', why: 'After fixing issues, we re-check the entire document. For example, fixing one heading level might affect the navigation hierarchy elsewhere, or adding alt text to one image might create a duplicate ID. If any fix accidentally made the document less accessible, it\'s automatically rolled back. This verify-then-accept approach ensures the document only gets better, never worse — because an accessibility regression could leave a student more confused than before.' };
                               if (/surg|micro/i.test(stepText)) return { what: 'Applying targeted accessibility fixes — each one addresses a single specific barrier in your document.', why: 'These are precise repairs: adding a meaningful description to a specific image (so a blind student knows what it shows instead of hearing silence), correcting a heading that jumped from "Chapter" to "Subsection" with no "Section" in between (so keyboard navigation makes logical sense), adding a label to a form field (so a screen reader announces "Student Name" instead of just "edit text"), and adding scope attributes to table headers (so a screen reader can say "Column: Grade, Row: Student A, Value: 92" instead of just "92" with no context).' };
                               if (/zero issue|clean|0 issue/i.test(stepText)) return { what: 'Your document passed! No remaining accessibility barriers were detected by either the automated checker or AI reviewer.', why: 'Your document now meets WCAG 2.1 Level AA — the standard required by the ADA for all public educational institutions as of April 2026. This means: a student using a screen reader can navigate by headings and read all content including image descriptions; a student with low vision can zoom to 200% without losing content; a student who can\'t use a mouse can reach every element by keyboard; data tables announce their headers so values have context; and the document has proper reading order, sufficient color contrast, and labeled form fields.' };
@@ -3136,7 +3144,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="mt-3 bg-white rounded-xl border border-slate-400 p-3 space-y-2" role="region" aria-label={t('pdf_audit.pipeline.tracker_aria') || 'Pipeline progress tracker'}>
                               <div className="flex items-center gap-1.5 text-[11px]">
                                 {steps.map((s, i) => {
-                                  const currentStep = pdfFixStep.includes('Step ' + s.step) || pdfFixStep.includes('step ' + s.step);
+                                  const currentStep = pdfFixStep.includes('Step ' + s.step) || pdfFixStep.includes('step ' + s.step) || (s.step === 4 && /Auto-fix|Auto-continue/i.test(pdfFixStep));
                                   const completedStep = steps.some(later => later.step > s.step && (pdfFixStep.includes('Step ' + later.step) || pdfFixStep.includes('step ' + later.step)));
                                   return (
                                     <React.Fragment key={s.step}>
@@ -4951,7 +4959,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       // runAutoFixLoop reads pdfFixResultRef.current.accessibleHtml as the
                                       // starting point, so this naturally re-runs against existing remediation.
                                       addToast('Applying new settings and re-running…', 'info');
-                                      runAutoFixLoop(Math.max(1, pdfAutoFixPasses || 1));
+                                      runAutoFixLoop(8); // rounds, not passes (sweep 2026-06-11 [6]) — pdfAutoFixPasses feeds the inner fixer
                                     }}
                                     className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold"
                                   >▶ Apply new settings and continue</button>
@@ -5182,12 +5190,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   return { ...prev, accessibleHtml: html };
                                 });
                                 addToast('✂ Cropped region added to the remediated document with alt text — re-export (PDF/Word/HTML) to include it.', 'success');
-                                // Crops join the extracted-image pool (2026-06-11,
-                                // maintainer ask) — pickable/draggable everywhere
-                                // the pool is offered.
+                                // Mirror into the LIVE preview iframe (sweep
+                                // 2026-06-11 [8]): the next theme/font toggle
+                                // prefers the live DOM over state — a state-only
+                                // insert would be silently reverted.
                                 try {
-                                  window.__alloflowExtractedImages = window.__alloflowExtractedImages || [];
-                                  window.__alloflowExtractedImages.push({ src: _src, description: _alt });
+                                  const _ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+                                  if (_ldoc && _ldoc.body) {
+                                    const _lfig = _ldoc.createElement('figure');
+                                    const _lim = _ldoc.createElement('img');
+                                    _lim.src = _src; _lim.alt = _alt; _lim.style.maxWidth = '100%';
+                                    const _lcap = _ldoc.createElement('figcaption');
+                                    _lcap.textContent = _alt;
+                                    _lfig.appendChild(_lim); _lfig.appendChild(_lcap);
+                                    (_ldoc.querySelector('main') || _ldoc.body).appendChild(_lfig);
+                                  }
+                                } catch (_) {}
+                                // Crops join the extracted-image pool (sweep
+                                // 2026-06-11 [11]): the pool the pickers actually
+                                // read is the HOST's state-derived list (it
+                                // overwrites the window global on every sync), so
+                                // route through the same event the extractor uses.
+                                try {
+                                  window.dispatchEvent(new CustomEvent('alloflow:extraction-complete', { detail: { images: [...(extractedImagesList || []), { src: _src, description: _alt }] } }));
                                 } catch (_) {}
                               } catch (_) {}
                             };
