@@ -119,6 +119,33 @@ test.describe('STEM hardening golden — Formula role, Headers/IDTree, image-int
         if (rootK) walk(rootK);
         diag.rolesLen = roles.length;
 
+        // Duplicate-image dedup (2026-06-10): the SAME image twice must cost
+        // ONE Vision call, with the verdict applied to every copy and the
+        // companion chart block attached only once.
+        let visionCallCount = 0;
+        const dedupPipeline = (window as any).AlloModules.createDocPipeline({
+          callGemini: async () => '{}',
+          callGeminiVision: async () => { visionCallCount++; return JSON.stringify({ kind: 'chart', alt: 'Bar chart of weekly attendance', chartSummary: 'Attendance rises through May.', chartData: { columns: ['Week', 'Count'], rows: [['1', '20']] } }); },
+          callImagen: async () => null,
+          addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {},
+          getDefaultTitle: () => 'Document', state: {},
+        });
+        const dupHtml = '<main><p>intro</p>'
+          + '<img src="data:image/png;base64,' + PNG_B64 + '" alt="">'
+          + '<p>middle</p>'
+          + '<img src="data:image/png;base64,' + PNG_B64 + '" alt="">'
+          + '</main>';
+        const dedupRes = await dedupPipeline.describeAndClassifyImages(dupHtml, { cap: 10 });
+        const dedupDoc = new DOMParser().parseFromString(dedupRes.html, 'text/html');
+        const dedup = {
+          visionCallCount,
+          reportedCalls: dedupRes.visionCalls,
+          classified: dedupRes.classified,
+          dedupedCopies: dedupRes.dedupedCopies,
+          kinds: Array.from(dedupDoc.querySelectorAll('img')).map((im) => im.getAttribute('data-allo-kind')),
+          chartBlocks: dedupDoc.querySelectorAll('details.allo-chart-data').length,
+        };
+
         // _applyImageIntel honesty contract (pure, no AI).
         const doc2 = new DOMParser().parseFromString('<main><img id="a" src="data:image/png;base64,AAAA" alt="Figure 3"><img id="b" src="data:image/png;base64,AAAA" alt="Hand-written description of the western watershed by the author"></main>', 'text/html');
         const imA = doc2.getElementById('a')!;
@@ -127,7 +154,7 @@ test.describe('STEM hardening golden — Formula role, Headers/IDTree, image-int
         const okKeepAlt = pipeline._applyImageIntel(doc2, imB, { kind: 'photo', alt: 'A river' });
         const chartDetails = doc2.querySelector('details.allo-chart-data');
         return {
-          summary: result.summary || {}, diag,
+          summary: result.summary || {}, diag, dedup,
           roles, formulaAlt, formulaIsLinked, figureCount, idTreePresent, thWithId, tdHeaders,
           applied: { okChart, okKeepAlt },
           chartBlock: {
@@ -177,5 +204,14 @@ test.describe('STEM hardening golden — Formula role, Headers/IDTree, image-int
   test('_applyImageIntel: substantive author alt is never clobbered', () => {
     expect(r.applied.okKeepAlt).toBeTruthy();
     expect(r.chartBlock.altB).toContain('western watershed');
+  });
+
+  test('duplicate images cost ONE Vision call; verdict applies to every copy, chart block only once', () => {
+    expect(r.dedup.visionCallCount, 'identical images must be grouped before calling Vision').toBe(1);
+    expect(r.dedup.reportedCalls).toBe(1);
+    expect(r.dedup.classified).toBe(2);
+    expect(r.dedup.dedupedCopies).toBeGreaterThanOrEqual(1);
+    expect(r.dedup.kinds).toEqual(['chart', 'chart']);
+    expect(r.dedup.chartBlocks, 'companion block must not repeat per copy').toBe(1);
   });
 });

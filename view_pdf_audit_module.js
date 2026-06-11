@@ -879,6 +879,75 @@ function PdfAuditView(props) {
   const [imgReviewIdx, setImgReviewIdx] = useState(null);
   const [imgReviewItems, setImgReviewItems] = useState([]);
   const [imgReviewDraft, setImgReviewDraft] = useState("");
+  const [audioJob, setAudioJob] = useState(null);
+  const audioJobRef = useRef(null);
+  const _stitchAudioJob = async (auto) => {
+    const j = audioJobRef.current;
+    if (!j || !j.blobs.length) {
+      addToast(t("toasts.audio_nothing_yet") || "No audio sections generated yet.", "error");
+      return;
+    }
+    const combined = await _concatAudioBlobs(j.blobs.filter(Boolean));
+    if (!combined) {
+      addToast(t("toasts.audio_generation_failed_tts_may"), "error");
+      return;
+    }
+    const dlUrl = URL.createObjectURL(combined);
+    const a = document.createElement("a");
+    a.href = dlUrl;
+    const _partial = j.blobs.length < j.segments.length;
+    a.download = (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + "-audio" + (_partial ? "-part1-" + j.blobs.length + "of" + j.segments.length : "") + "." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(dlUrl);
+    if (_partial) addToast("\u{1F3A7} " + (t("toasts.audio_partial_dl") || "Partial audio downloaded") + " (" + j.blobs.length + "/" + j.segments.length + " sections \u2014 the filename says which part). " + (t("toasts.audio_partial_resume") || "Resume to finish the rest."), auto ? "error" : "info");
+    else addToast((t("toasts.audio_downloaded") || "\u{1F3A7} Audio downloaded: ") + j.blobs.length + "/" + j.segments.length + " sections", "success");
+  };
+  const _runAudioJob = async () => {
+    const j = audioJobRef.current;
+    if (!j) return;
+    j.pauseRequested = false;
+    setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed || 0, status: "running" });
+    let consecutiveNull = 0;
+    while (j.nextIdx < j.segments.length) {
+      if (j.pauseRequested) {
+        setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "paused" });
+        return;
+      }
+      try {
+        const url = await callTTS(j.segments[j.nextIdx], selectedVoice || "Puck", 1, 2);
+        if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
+          const resp = await fetch(url);
+          j.blobs.push(await resp.blob());
+          j.nextIdx++;
+          consecutiveNull = 0;
+        } else {
+          j.failed++;
+          consecutiveNull++;
+          j.nextIdx++;
+        }
+      } catch (e) {
+        warnLog("[Audio Job] segment " + (j.nextIdx + 1) + " failed:", e?.message || e);
+        j.failed++;
+        consecutiveNull++;
+        if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
+          setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "stalled" });
+          addToast("\u23F8 " + (t("toasts.audio_stalled") || "The voice service rate-limited \u2014 your progress is saved. Resume in about a minute."), "info");
+          return;
+        }
+        j.nextIdx++;
+      }
+      if (consecutiveNull >= 3) {
+        setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "stalled" });
+        addToast("\u23F8 " + (t("toasts.audio_stalled") || "The voice service rate-limited \u2014 your progress is saved. Resume in about a minute."), "info");
+        return;
+      }
+      setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "running" });
+    }
+    setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "complete" });
+    await _stitchAudioJob(true);
+  };
   const _collectClassifiedImgs = (html) => {
     try {
       const doc = new DOMParser().parseFromString(html || "", "text/html");
@@ -4953,8 +5022,7 @@ Return simplified text with # for headings, - for lists.`, false);
       setInputText(temp.textContent || temp.innerText || "");
       _closePdfAuditModal();
       addToast(t("toasts.content_loaded_generate_leveled_text"), "success");
-    }, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center" }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && /* @__PURE__ */ React.createElement("button", { id: "pdf-audio-dl-btn", onClick: async () => {
-      const btn = document.getElementById("pdf-audio-dl-btn");
+    }, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center" }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_audio_download_btn", onClick: () => {
       const temp = document.createElement("div");
       temp.innerHTML = pdfFixResult.accessibleHtml;
       const fullText = (temp.textContent || "").trim();
@@ -4976,73 +5044,16 @@ Return simplified text with # for headings, - for lists.`, false);
         segments.push(remaining.substring(0, splitAt));
         remaining = remaining.substring(splitAt).trim();
       }
-      if (btn) btn.textContent = "\u23F3 0/" + segments.length + "...";
-      if (btn) btn.disabled = true;
-      addToast(t("toasts.generating") + segments.length + " audio segments...", "info");
-      const audioBlobs = [];
-      let failed = 0;
-      let consecutiveNull = 0;
-      let stoppedEarly = false;
-      for (let si = 0; si < segments.length; si++) {
-        if (btn) btn.textContent = "\u23F3 " + (si + 1) + "/" + segments.length + "...";
-        try {
-          const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 2);
-          if (url) {
-            if (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http")) {
-              const resp = await fetch(url);
-              audioBlobs.push(await resp.blob());
-              consecutiveNull = 0;
-            } else {
-              warnLog("[Audio DL] Unexpected TTS return type:", typeof url);
-              failed++;
-              consecutiveNull++;
-            }
-          } else {
-            failed++;
-            consecutiveNull++;
-          }
-        } catch (e) {
-          warnLog("[Audio DL] Segment " + (si + 1) + " failed:", e?.message || e);
-          failed++;
-          consecutiveNull++;
-          if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
-            stoppedEarly = true;
-            break;
-          }
-        }
-        if (consecutiveNull >= 3) {
-          stoppedEarly = true;
-          break;
-        }
-      }
-      if (btn) {
-        btn.textContent = "\u{1F3A7} Download Audio";
-        btn.disabled = false;
-      }
-      if (audioBlobs.length === 0) {
-        addToast(t("toasts.audio_generation_failed_tts_may"), "error");
-        return;
-      }
-      const combined = await _concatAudioBlobs(audioBlobs);
-      if (!combined) {
-        addToast(t("toasts.audio_generation_failed_tts_may"), "error");
-        return;
-      }
-      const dlUrl = URL.createObjectURL(combined);
-      const a = document.createElement("a");
-      a.href = dlUrl;
-      a.download = (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-audio." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(dlUrl);
-      const _incomplete = stoppedEarly || audioBlobs.length < segments.length;
-      if (_incomplete) {
-        addToast("\u26A0 Audio incomplete \u2014 only " + audioBlobs.length + " of " + segments.length + " sections were generated" + (stoppedEarly ? " before the TTS service rate-limited (retry in ~60s for the rest)" : "") + ". The downloaded file is partial.", "error");
-      } else {
-        addToast(t("toasts.audio_downloaded") + audioBlobs.length + "/" + segments.length + " sections", "success");
-      }
-    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors disabled:opacity-50" }, "\u{1F3A7} Download Audio")), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-changed", className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4CB} What Changed ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-white rounded-lg border border-slate-400 p-3 space-y-1.5 text-xs text-slate-600" }, (() => {
+      audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false };
+      addToast((t("toasts.generating") || "Generating ") + segments.length + " audio sections\u2026 " + (segments.length > 20 ? t("toasts.audio_big_doc") || "Big document \u2014 you can pause anytime and resume later; finished sections are kept." : ""), "info");
+      _runAudioJob();
+    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors" }, "\u{1F3A7} ", t("pdf_audit.audio.btn") || "Download Audio"), callTTS && audioJob && /* @__PURE__ */ React.createElement("div", { className: "w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900", "data-help-key": "pdf_audit_audio_download_btn" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F3A7} ", t("pdf_audit.audio.job") || "Audio", ": ", audioJob.done, "/", audioJob.total, " ", t("pdf_audit.audio.sections") || "sections", audioJob.failed > 0 ? " \xB7 " + audioJob.failed + " " + (t("pdf_audit.audio.failed") || "failed") : ""), /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded font-bold text-[10px] uppercase " + (audioJob.status === "running" ? "bg-blue-100 text-blue-700" : audioJob.status === "complete" ? "bg-green-100 text-green-700" : "bg-amber-200 text-amber-800") }, audioJob.status === "stalled" ? t("pdf_audit.audio.stalled") || "rate-limited \u2014 resume in ~1 min" : audioJob.status), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 ml-auto" }, audioJob.status === "running" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      if (audioJobRef.current) audioJobRef.current.pauseRequested = true;
+    }, className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" }, "\u23F8 ", t("pdf_audit.audio.pause") || "Pause"), (audioJob.status === "paused" || audioJob.status === "stalled") && /* @__PURE__ */ React.createElement("button", { onClick: _runAudioJob, className: "px-2 py-1 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700" }, "\u25B6 ", t("pdf_audit.audio.resume") || "Resume"), audioJob.done > 0 && audioJob.status !== "complete" && /* @__PURE__ */ React.createElement("button", { onClick: () => _stitchAudioJob(false), className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100", title: t("pdf_audit.audio.partial_title") || "Stitch the finished sections into one playable file now \u2014 you can keep generating afterwards." }, "\u2B07 ", t("pdf_audit.audio.partial") || "Download what\u2019s ready"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      if (audioJobRef.current) audioJobRef.current.pauseRequested = true;
+      audioJobRef.current = null;
+      setAudioJob(null);
+    }, className: "px-2 py-1 text-amber-700 font-bold hover:text-red-600" }, "\u2715"))), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 h-1.5 bg-amber-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-500 rounded-full transition-all", style: { width: Math.round(audioJob.done / Math.max(1, audioJob.total) * 100) + "%" } })))), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-changed", className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4CB} What Changed ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-white rounded-lg border border-slate-400 p-3 space-y-1.5 text-xs text-slate-600" }, (() => {
       const changes = [];
       if (pdfFixResult.autoFixPasses > 0) changes.push(`\u{1F527} ${pdfFixResult.autoFixPasses} automated fix pass${pdfFixResult.autoFixPasses > 1 ? "es" : ""} applied`);
       const html = pdfFixResult.accessibleHtml || "";

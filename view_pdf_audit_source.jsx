@@ -721,6 +721,65 @@ function PdfAuditView(props) {
   const [imgReviewIdx, setImgReviewIdx] = useState(null);
   const [imgReviewItems, setImgReviewItems] = useState([]);
   const [imgReviewDraft, setImgReviewDraft] = useState('');
+  // Resumable audio job (2026-06-10, maintainer ask): big documents hit TTS
+  // rate limits mid-run — the old handler died and discarded position. The
+  // job now generates in chunks (it always did), PAUSES on demand, STALLS
+  // honestly on rate limits keeping every finished segment, RESUMES from the
+  // next segment, and stitches whatever exists on request. In-session only —
+  // Canvas has no cross-session storage; the WAV download is the durable copy.
+  const [audioJob, setAudioJob] = useState(null); // {total, done, failed, status: running|paused|stalled|complete}
+  const audioJobRef = useRef(null); // {segments, blobs, nextIdx, pauseRequested}
+  const _stitchAudioJob = async (auto) => {
+    const j = audioJobRef.current;
+    if (!j || !j.blobs.length) { addToast(t('toasts.audio_nothing_yet') || 'No audio sections generated yet.', 'error'); return; }
+    const combined = await _concatAudioBlobs(j.blobs.filter(Boolean));
+    if (!combined) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
+    const dlUrl = URL.createObjectURL(combined);
+    const a = document.createElement('a');
+    a.href = dlUrl;
+    const _partial = j.blobs.length < j.segments.length;
+    a.download = (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-audio' + (_partial ? ('-part1-' + j.blobs.length + 'of' + j.segments.length) : '') + '.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(dlUrl);
+    if (_partial) addToast('🎧 ' + (t('toasts.audio_partial_dl') || 'Partial audio downloaded') + ' (' + j.blobs.length + '/' + j.segments.length + ' sections — the filename says which part). ' + (t('toasts.audio_partial_resume') || 'Resume to finish the rest.'), auto ? 'error' : 'info');
+    else addToast((t('toasts.audio_downloaded') || '🎧 Audio downloaded: ') + j.blobs.length + '/' + j.segments.length + ' sections', 'success');
+  };
+  const _runAudioJob = async () => {
+    const j = audioJobRef.current;
+    if (!j) return;
+    j.pauseRequested = false;
+    setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed || 0, status: 'running' });
+    let consecutiveNull = 0;
+    while (j.nextIdx < j.segments.length) {
+      if (j.pauseRequested) { setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: 'paused' }); return; }
+      try {
+        const url = await callTTS(j.segments[j.nextIdx], selectedVoice || 'Puck', 1, 2);
+        if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
+          const resp = await fetch(url);
+          j.blobs.push(await resp.blob());
+          j.nextIdx++;
+          consecutiveNull = 0;
+        } else { j.failed++; consecutiveNull++; j.nextIdx++; }
+      } catch (e) {
+        warnLog('[Audio Job] segment ' + (j.nextIdx + 1) + ' failed:', e?.message || e);
+        j.failed++; consecutiveNull++;
+        if (e?.message?.includes('429') || e?.message?.includes('Rate')) {
+          setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: 'stalled' });
+          addToast('⏸ ' + (t('toasts.audio_stalled') || 'The voice service rate-limited — your progress is saved. Resume in about a minute.'), 'info');
+          return;
+        }
+        j.nextIdx++;
+      }
+      if (consecutiveNull >= 3) {
+        setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: 'stalled' });
+        addToast('⏸ ' + (t('toasts.audio_stalled') || 'The voice service rate-limited — your progress is saved. Resume in about a minute.'), 'info');
+        return;
+      }
+      setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: 'running' });
+    }
+    setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: 'complete' });
+    await _stitchAudioJob(true);
+  };
   const _collectClassifiedImgs = (html) => {
     try {
       const doc = new DOMParser().parseFromString(html || '', 'text/html');
@@ -6684,11 +6743,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <p className="text-[11px] text-violet-500">Translations and simplifications stack — add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.</p>
                       </div>
                       <div className="flex gap-2">
-                        {callTTS && <button id="pdf-audio-dl-btn" onClick={async () => {
-                          const btn = document.getElementById('pdf-audio-dl-btn');
+                        {callTTS && !audioJob && <button data-help-key="pdf_audit_audio_download_btn" onClick={() => {
                           const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
                           const fullText = (temp.textContent || '').trim();
                           if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
+                          // Sentence-boundary segmentation (~600 chars/segment) — the
+                          // same proven splitter, now feeding a resumable job.
                           const segments = [];
                           let remaining = fullText;
                           while (remaining.length > 0) {
@@ -6699,60 +6759,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             segments.push(remaining.substring(0, splitAt));
                             remaining = remaining.substring(splitAt).trim();
                           }
-                          if (btn) btn.textContent = '⏳ 0/' + segments.length + '...';
-                          if (btn) btn.disabled = true;
-                          addToast(t('toasts.generating') + segments.length + ' audio segments...', 'info');
-                          const audioBlobs = [];
-                          let failed = 0;
-                          let consecutiveNull = 0;   // TTS resolving null WITHOUT throwing (rate-limit cooldown)
-                          let stoppedEarly = false;
-                          for (let si = 0; si < segments.length; si++) {
-                            if (btn) btn.textContent = '⏳ ' + (si + 1) + '/' + segments.length + '...';
-                            try {
-                              const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
-                              if (url) {
-                                if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http')) {
-                                  const resp = await fetch(url);
-                                  audioBlobs.push(await resp.blob());
-                                  consecutiveNull = 0;
-                                } else {
-                                  warnLog('[Audio DL] Unexpected TTS return type:', typeof url);
-                                  failed++; consecutiveNull++;
-                                }
-                              } else { failed++; consecutiveNull++; }
-                            } catch(e) {
-                              warnLog('[Audio DL] Segment ' + (si+1) + ' failed:', e?.message || e);
-                              failed++; consecutiveNull++;
-                              if (e?.message?.includes('429') || e?.message?.includes('Rate')) {
-                                stoppedEarly = true;
-                                break;
-                              }
-                            }
-                            // callTTS resolving null WITHOUT throwing (e.g. a Gemini 429 sets a 60s
-                            // cooldown and returns null) used to slip past the 429-break above and
-                            // cascade to a near-empty file reported as "success". Stop after a short
-                            // run of consecutive nulls and report honestly below.
-                            if (consecutiveNull >= 3) { stoppedEarly = true; break; }
-                          }
-                          if (btn) { btn.textContent = '🎧 Download Audio'; btn.disabled = false; }
-                          if (audioBlobs.length === 0) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
-                          const combined = await _concatAudioBlobs(audioBlobs);
-                          if (!combined) { addToast(t('toasts.audio_generation_failed_tts_may'), 'error'); return; }
-                          const dlUrl = URL.createObjectURL(combined);
-                          const a = document.createElement('a');
-                          a.href = dlUrl;
-                          a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-audio.' + (combined.type?.includes('mpeg') || combined.type?.includes('mp3') ? 'mp3' : 'wav');
-                          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                          URL.revokeObjectURL(dlUrl);
-                          const _incomplete = stoppedEarly || audioBlobs.length < segments.length;
-                          if (_incomplete) {
-                            addToast('⚠ Audio incomplete — only ' + audioBlobs.length + ' of ' + segments.length + ' sections were generated' + (stoppedEarly ? ' before the TTS service rate-limited (retry in ~60s for the rest)' : '') + '. The downloaded file is partial.', 'error');
-                          } else {
-                            addToast(t('toasts.audio_downloaded') + audioBlobs.length + '/' + segments.length + ' sections', 'success');
-                          }
-                        }} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors disabled:opacity-50">
-                          🎧 Download Audio
+                          audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false };
+                          addToast((t('toasts.generating') || 'Generating ') + segments.length + ' audio sections… ' + (segments.length > 20 ? (t('toasts.audio_big_doc') || 'Big document — you can pause anytime and resume later; finished sections are kept.') : ''), 'info');
+                          _runAudioJob();
+                        }} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors">
+                          🎧 {t('pdf_audit.audio.btn') || 'Download Audio'}
                         </button>}
+                        {callTTS && audioJob && (
+                          <div className="w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900" data-help-key="pdf_audit_audio_download_btn">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold">🎧 {t('pdf_audit.audio.job') || 'Audio'}: {audioJob.done}/{audioJob.total} {t('pdf_audit.audio.sections') || 'sections'}{audioJob.failed > 0 ? (' · ' + audioJob.failed + ' ' + (t('pdf_audit.audio.failed') || 'failed')) : ''}</span>
+                              <span className={'px-1.5 py-0.5 rounded font-bold text-[10px] uppercase ' + (audioJob.status === 'running' ? 'bg-blue-100 text-blue-700' : audioJob.status === 'complete' ? 'bg-green-100 text-green-700' : 'bg-amber-200 text-amber-800')}>{audioJob.status === 'stalled' ? (t('pdf_audit.audio.stalled') || 'rate-limited — resume in ~1 min') : audioJob.status}</span>
+                              <div className="flex gap-1.5 ml-auto">
+                                {audioJob.status === 'running' && <button onClick={() => { if (audioJobRef.current) audioJobRef.current.pauseRequested = true; }} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100">⏸ {t('pdf_audit.audio.pause') || 'Pause'}</button>}
+                                {(audioJob.status === 'paused' || audioJob.status === 'stalled') && <button onClick={_runAudioJob} className="px-2 py-1 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700">▶ {t('pdf_audit.audio.resume') || 'Resume'}</button>}
+                                {audioJob.done > 0 && audioJob.status !== 'complete' && <button onClick={() => _stitchAudioJob(false)} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" title={t('pdf_audit.audio.partial_title') || 'Stitch the finished sections into one playable file now — you can keep generating afterwards.'}>⬇ {t('pdf_audit.audio.partial') || 'Download what’s ready'}</button>}
+                                <button onClick={() => { if (audioJobRef.current) audioJobRef.current.pauseRequested = true; audioJobRef.current = null; setAudioJob(null); }} className="px-2 py-1 text-amber-700 font-bold hover:text-red-600">✕</button>
+                              </div>
+                            </div>
+                            <div className="mt-1.5 h-1.5 bg-amber-100 rounded-full overflow-hidden"><div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: Math.round((audioJob.done / Math.max(1, audioJob.total)) * 100) + '%' }}></div></div>
+                          </div>
+                        )}
                       </div>
 
                       {/* ── Remediation Changelog ── */}

@@ -7290,16 +7290,68 @@ HTML section ${chunkNum}/${chunks.length}:
     }
     return true;
   };
+  // Perceptual average-hash for near-duplicate grouping: 8×8 grayscale
+  // downscale → 64-bit luminance hash. Fail-soft null (treated as unique).
+  const _imageAHash = (dataUrl) => new Promise((resolve) => {
+    try {
+      const img = new Image();
+      const to = setTimeout(() => resolve(null), 4000);
+      img.onload = () => {
+        clearTimeout(to);
+        try {
+          const c = document.createElement('canvas');
+          c.width = 8; c.height = 8;
+          const g = c.getContext('2d', { willReadFrequently: true });
+          g.drawImage(img, 0, 0, 8, 8);
+          const px = g.getImageData(0, 0, 8, 8).data;
+          const lum = [];
+          for (let i = 0; i < 64; i++) lum.push(0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]);
+          const avg = lum.reduce((a, b) => a + b, 0) / 64;
+          resolve(lum.map((v) => (v >= avg ? '1' : '0')).join(''));
+        } catch (_) { resolve(null); }
+      };
+      img.onerror = () => { clearTimeout(to); resolve(null); };
+      img.src = dataUrl;
+    } catch (_) { resolve(null); }
+  });
+  const _hashDistance = (a, b) => { let d = 0; for (let i = 0; i < 64; i++) if (a[i] !== b[i]) d++; return d; };
+
   const describeAndClassifyImages = async (htmlContent, opts = {}) => {
     const cap = opts.cap || 10;
-    const out = { html: htmlContent, classified: 0, equations: 0, charts: 0, visionCalls: 0 };
+    const out = { html: htmlContent, classified: 0, equations: 0, charts: 0, visionCalls: 0, dedupedCopies: 0 };
     try {
       if (typeof DOMParser === 'undefined' || typeof callGeminiVision !== 'function') return out;
       const htmlDoc2 = new DOMParser().parseFromString(htmlContent, 'text/html');
       const imgs = Array.from(htmlDoc2.querySelectorAll('img')).filter((im) => /^data:image\//i.test(im.getAttribute('src') || '') && !im.getAttribute('data-allo-kind'));
       if (!imgs.length) return out;
+      // ── Duplicate grouping (2026-06-10, maintainer ask): extraction often
+      // yields the SAME image many times (letterhead/logo on every page).
+      // Group exact-identical srcs, then near-identical via perceptual hash
+      // (Hamming ≤ 6/64) — ONE Vision call per group, verdict applied to
+      // every copy. The prompt learns the repeat count, which helps Vision
+      // recognize recurring chrome as decorative.
+      const groups = [];
+      {
+        const byExact = new Map();
+        for (const im of imgs) {
+          const src = im.getAttribute('src') || '';
+          if (byExact.has(src)) byExact.get(src).push(im);
+          else byExact.set(src, [im]);
+        }
+        const exactGroups = Array.from(byExact.entries()).map(([src, members]) => ({ src, members, hash: null }));
+        const HASH_CAP = 24;
+        for (let i = 0; i < Math.min(exactGroups.length, HASH_CAP); i++) {
+          exactGroups[i].hash = await _imageAHash(exactGroups[i].src);
+        }
+        for (const g of exactGroups) {
+          const near = g.hash && groups.find((h) => h.hash && _hashDistance(h.hash, g.hash) <= 6);
+          if (near) { near.members.push(...g.members); out.dedupedCopies += g.members.length; }
+          else { groups.push(g); if (g.members.length > 1) out.dedupedCopies += g.members.length - 1; }
+        }
+      }
       let changed = false;
-      for (const im of imgs) {
+      for (const grp of groups) {
+        const im = grp.members[0];
         if (out.visionCalls >= cap) break;
         const m = (im.getAttribute('src') || '').match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
         if (!m || m[2].length > 2800000) continue; // ~2 MB base64 cap per image
@@ -7310,7 +7362,8 @@ HTML section ${chunkNum}/${chunks.length}:
             + '{"kind":"photo|chart|diagram|equation|map|decorative","alt":"one factual sentence","latex":"(equations only)","chartSummary":"(charts only: the trend in 1-2 sentences)","chartData":{"columns":["..."],"rows":[["..."]]}}\n'
             + 'Rules: for an EQUATION, alt must be the SPOKEN form (e.g. "x equals negative b plus or minus the square root of b squared minus 4 a c, all over 2 a") and latex the LaTeX. '
             + 'For a CHART, give chartSummary and AT MOST 8 rows of APPROXIMATE values actually visible in the image. '
-            + 'NEVER invent data you cannot see. Purely ornamental → kind "decorative" with alt "". Unsure of kind → "photo".',
+            + 'NEVER invent data you cannot see. Purely ornamental → kind "decorative" with alt "". Unsure of kind → "photo".'
+            + (grp.members.length > 1 ? ('\nNOTE: this exact image appears ' + grp.members.length + ' times across the document — recurring headers, logos, and watermarks are usually "decorative".') : ''),
             m[2], m[1]
           );
           let parsed = null;
@@ -7322,6 +7375,16 @@ HTML section ${chunkNum}/${chunks.length}:
           if (parsed && _applyImageIntel(htmlDoc2, im, parsed)) {
             changed = true;
             out.classified++;
+            // One verdict, every copy: alt/kind/latex apply to all group
+            // members; the companion blocks (chart table, MathML) attach to
+            // the FIRST occurrence only — repeating them per copy is noise.
+            for (let gi = 1; gi < grp.members.length; gi++) {
+              try {
+                const dup = grp.members[gi];
+                _applyImageIntel(htmlDoc2, dup, { kind: parsed.kind, alt: parsed.alt, latex: parsed.latex });
+                out.classified++;
+              } catch (_) {}
+            }
             if (parsed.kind === 'equation') out.equations++;
             if (parsed.kind === 'chart') out.charts++;
             // Equation bonus: navigable MathML + copyable LaTeX in a collapsed
