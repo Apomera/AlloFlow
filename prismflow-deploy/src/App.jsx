@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'e773e800';
+    var pluginCdnVersion = '3d0b36b8';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -19649,6 +19649,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         } catch (_) { return null; }
       },
       startAppTour: () => { try { setTourStep(0); } catch (_) {} setRunTour(true); },
+      // S3: parameter-carrying capabilities
+      startLessonFlow: (p) => {
+        try {
+          const g = p && p.grade ? String(p.grade).replace(/D/g, '') : '';
+          if (g) setGradeLevel(g + (g === '1' ? 'st' : g === '2' ? 'nd' : g === '3' ? 'rd' : 'th') + ' Grade');
+        } catch (_) {}
+        if (p && p.topic) { try { setInputText(p.topic); } catch (_) {} }
+        try { setIsBotVisible(true); } catch (_) {}
+        // Reuse the PRODUCTION Auto-Fill entry — same stage seeding, same
+        // bot welcome — so the agent and the checkbox share one path.
+        handleAutoFillToggle({ target: { checked: true } });
+      },
+      setFontSizeTo: (nv) => { const v = Math.max(10, Math.min(32, Number(nv) || 16)); setSliderFontSize(v); return v; },
+      prefillTranslateLang: (lang) => { try { window.dispatchEvent(new CustomEvent('alloflow:agent-set-translate-lang', { detail: { lang: String(lang || '') } })); } catch (_) {} },
       startPipelineTour: (which) => { try { startPipelineTour(which || 'results'); } catch (_) {} },
     };
     _alloCmdCtxRef.current = ctx;
@@ -23457,14 +23471,14 @@ ${_toolList}
           <p className="text-[11px] opacity-70 mt-2">{t('lms.audit_queue_help') || 'Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.'}</p>
         </div>
       )}
-      <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
+      <div role="status" aria-live="polite" className="fixed top-44 left-1/2 -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
         {toasts.map(toast => (
             <div
                 key={toast.id}
                 role={toast.type === 'error' ? 'alert' : 'status'}
                 aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
                 aria-atomic="true"
-                className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all animate-in slide-in-from-right-10 fade-in duration-300 max-w-sm ${
+                className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all animate-in slide-in-from-top-2 fade-in duration-300 max-w-sm ${
                     toast.type === 'success' ? 'bg-white border-green-200 text-green-800 shadow-green-100' :
                     toast.type === 'error' ? 'bg-white border-red-200 text-red-800 shadow-red-100' :
                     toast.type === 'warning' ? 'bg-white border-amber-200 text-amber-800 shadow-amber-100' :
@@ -23517,6 +23531,10 @@ ${_toolList}
         summary:focus-visible {
           outline: 3px solid #6366f1 !important;
           outline-offset: 2px !important;
+          /* White halo outside the indigo ring so the indicator stays >=3:1 on ANY
+             background — the bare #6366f1 ring measured ~2.4:1 on the header's
+             purple-900 gradient and ~1.4:1 on indigo-600 panels (WCAG 1.4.11). */
+          box-shadow: 0 0 0 5px rgba(255,255,255,0.85) !important;
           border-radius: 6px;
         }
         /* ── WCAG 1.4.10 Reflow — let multi-panel STEM tools reflow at 320px / 400% zoom ── */
@@ -24113,7 +24131,30 @@ ${_toolList}
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-50,
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-50,
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-50,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50 { background-color: transparent !important; }
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50,
+        /* -100 light shades (2026-06-11): organizer cards (e.g. the static Venn overlap, which used
+           bg-purple-100/95) + other content used -100 backgrounds that escaped the -50-only list above
+           and stayed bright under reading themes while their -50 siblings went transparent. Theme-gated,
+           so default/light mode is completely unaffected; reading themes just neutralize these too. */
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-slate-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-gray-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-indigo-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-blue-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-sky-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-cyan-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-green-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-emerald-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-lime-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-amber-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-orange-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-red-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-pink-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-fuchsia-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-violet-100 { background-color: transparent !important; }
         [data-reading-theme] [role="dialog"].bg-white,
         [data-reading-theme] .allo-popover-solid {
             background-color: #ffffff !important;
