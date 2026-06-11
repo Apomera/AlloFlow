@@ -4420,7 +4420,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           additions only, zero relocations). Chips scroll to section
                           anchors; details targets auto-open on jump. */}
                       {(() => {
-                        const _jump = (id) => { try { const el = document.getElementById(id); if (!el) return; if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} };
+                        const _jump = (id) => { try { const el = document.getElementById(id); if (!el) { addToast(t('pdf_audit.dashboard.section_unavailable') || 'That section has nothing to show for this pass (its data didn’t apply this round) — everything else is below.', 'info'); return; } if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} };
                         const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
                         const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
                         return (

@@ -3237,7 +3237,10 @@ Return ONLY JSON:
       const _jump = (id) => {
         try {
           const el = document.getElementById(id);
-          if (!el) return;
+          if (!el) {
+            addToast(t("pdf_audit.dashboard.section_unavailable") || "That section has nothing to show for this pass (its data didn\u2019t apply this round) \u2014 everything else is below.", "info");
+            return;
+          }
           if (el.tagName === "DETAILS") el.open = true;
           el.scrollIntoView({ behavior: "smooth", block: "start" });
         } catch (_) {
