@@ -20471,7 +20471,8 @@
               h('canvas', {
                 ref: function(cvEl) {
                   if (!cvEl) return;
-                  if (cvEl._ptAnim) return;
+                  if (cvEl._ptDone) return;
+                  cvEl._ptDone = true;
                   var c2 = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 600;
                   var H = cvEl.offsetHeight || 180;
@@ -20513,12 +20514,13 @@
                     c2.fillRect(8, H - 14, W - 16, 12);
                     c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#86efac'; c2.textAlign = 'center';
                     c2.fillText('Mendeleev 1869 \u2014 predicted undiscovered elements from gaps in the table.', W / 2, H - 5);
-                    cvEl._ptAnim = requestAnimationFrame(drawPt);
+                    // Static scene (no time/phase consumed) \u2014 draw once, not a 60fps loop.
                   }
                   drawPt();
                   var ro = new ResizeObserver(function() {
                     W = cvEl.offsetWidth; H = cvEl.offsetHeight;
                     cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    drawPt(); // repaint the static diagram at the new size
                   });
                   ro.observe(cvEl);
                 },

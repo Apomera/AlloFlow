@@ -943,11 +943,15 @@ window.StemLab = window.StemLab || {
 
       // ── Particle canvas logic (via callback ref) ──
       function particleRef(canvas) {
-        if (!canvas || !particleRunning) return;
+        // Always tear down any live loop FIRST — when Stop flips particleRunning
+        // false the component re-renders and particleRef runs again; cancelling
+        // here (before the early return) is the only path that actually stops a
+        // running sim. Previously the cancel sat after the guard and was skipped.
         if (window._epiParticles) {
           cancelAnimationFrame(window._epiParticles);
           window._epiParticles = null;
         }
+        if (!canvas || !particleRunning) return;
         var cw = 700, ch = 200;
         // PL7 batch 3: HiDPI — scale internal buffer by dpr, keep CSS at logical.
         var _epiDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));

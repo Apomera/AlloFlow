@@ -2362,7 +2362,9 @@ var d = labToolData.universe || {};
                     var BW = bhEl.offsetWidth || 300, BH = 240;
                     bhEl.width = BW * 2; bhEl.height = BH * 2; bctx.scale(2, 2);
                     var btick = 0;
+                    var bhRaf;
                     function drawBH() {
+                      if (!bhEl.isConnected) { cancelAnimationFrame(bhRaf); bhEl._bhInit = false; return; }
                       btick++;
                       bctx.fillStyle = '#050510';
                       bctx.fillRect(0, 0, BW, BH);
@@ -2447,7 +2449,7 @@ var d = labToolData.universe || {};
                       bctx.fillStyle = '#818cf8';
                       bctx.fillText('Relativistic Jet', cx2 + 12, cy2 - 45);
                       bctx.fillText('Relativistic Jet', cx2 + 12, cy2 + 50);
-                      requestAnimationFrame(drawBH);
+                      bhRaf = requestAnimationFrame(drawBH);
                     }
                     drawBH();
                   }
@@ -2846,7 +2848,9 @@ var d = labToolData.universe || {};
                     var LW = lensEl.offsetWidth || 300, LH = 260;
                     lensEl.width = LW * 2; lensEl.height = LH * 2; lctx.scale(2, 2);
                     var ltick = 0;
+                    var lensRaf;
                     function drawLens() {
+                      if (!lensEl.isConnected) { cancelAnimationFrame(lensRaf); lensEl._lensInit = false; return; }
                       ltick++;
                       lctx.fillStyle = '#050510';
                       lctx.fillRect(0, 0, LW, LH);
@@ -2920,7 +2924,7 @@ var d = labToolData.universe || {};
                       lctx.fillText('Einstein Ring', lcx, lcy - 38);
                       lctx.fillStyle = '#94a3b8'; lctx.font = '8px system-ui';
                       lctx.fillText('Light from a background galaxy is bent around a massive foreground object', LW / 2, LH - 8);
-                      requestAnimationFrame(drawLens);
+                      lensRaf = requestAnimationFrame(drawLens);
                     }
                     drawLens();
                   }
@@ -3027,7 +3031,9 @@ var d = labToolData.universe || {};
                     var RW = rsEl.offsetWidth || 300, RH = 260;
                     rsEl.width = RW * 2; rsEl.height = RH * 2; rctx.scale(2, 2);
                     var rtick = 0;
+                    var rsRaf;
                     function drawRS() {
+                      if (!rsEl.isConnected) { cancelAnimationFrame(rsRaf); rsEl._rsInit = false; return; }
                       rtick++;
                       rctx.fillStyle = '#050510';
                       rctx.fillRect(0, 0, RW, RH);
@@ -3141,7 +3147,7 @@ var d = labToolData.universe || {};
                       rctx.textAlign = 'left'; rctx.fillText('Blue (short \u03BB)', 20, specY - 2);
                       rctx.textAlign = 'right'; rctx.fillText('Red (long \u03BB)', RW - 20, specY - 2);
 
-                      requestAnimationFrame(drawRS);
+                      rsRaf = requestAnimationFrame(drawRS);
                     }
                     drawRS();
                   }

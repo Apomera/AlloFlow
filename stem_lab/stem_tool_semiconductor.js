@@ -766,7 +766,10 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-doping-canvas');
           if (!canvas) return;
-          function draw() { canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          // Only loop while there's a moving free carrier to animate (dopant set).
+          // The intrinsic (none) lattice is static — paint it once; the effect
+          // re-fires and restarts the loop when the student picks a real dopant.
+          function draw() { canvasRef(canvas); if (d.dopant !== 'none') animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [d.dopant, d.dopantCount, d.crystalSize]);

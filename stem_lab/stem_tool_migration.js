@@ -115,7 +115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // ── Wing types for aerodynamics tab ──
   var WING_TYPES = [
     { id: 'soaring', name: 'Soaring (Eagle)', emoji: '\uD83E\uDD85', aspectRatio: 'High (7:1)', shape: 'Long, narrow, slotted tips', liftCoeff: 1.6, dragCoeff: 0.02, bestAngle: 5, stallAngle: 16, desc: 'Long narrow wings maximize lift-to-drag ratio for effortless soaring. Slotted wingtip feathers reduce induced drag by spreading vortices. Eagles can soar for hours without a single flap, using thermals and ridge lift.' },
-    { id: 'flapping', name: 'Flapping (Goose)', emoji: '\uD83E\uDEBF', aspectRatio: 'Medium (5:1)', shape: 'Medium, broad, rounded', liftCoeff: 1.4, dragCoeff: 0.035, bestAngle: 6, stallAngle: 14, desc: 'Broad wings provide good lift at moderate speeds. Geese use powered flight with steady flapping for long-distance migration. The V-formation reduces drag by 65% for trailing birds via upwash exploitation.' },
+    { id: 'flapping', name: 'Flapping (Goose)', emoji: '\uD83E\uDEBF', aspectRatio: 'Medium (5:1)', shape: 'Medium, broad, rounded', liftCoeff: 1.4, dragCoeff: 0.035, bestAngle: 6, stallAngle: 14, desc: 'Broad wings provide good lift at moderate speeds. Geese use powered flight with steady flapping for long-distance migration. A well-positioned trailing bird can cut its drag substantially via upwash exploitation (real flocks measure ~10–30% energy savings; ~65% is a theoretical per-position maximum).' },
     { id: 'hovering', name: 'Hovering (Hummingbird)', emoji: '\uD83D\uDC26', aspectRatio: 'Low (3:1)', shape: 'Short, figure-8 stroke', liftCoeff: 1.8, dragCoeff: 0.08, bestAngle: 40, stallAngle: 90, desc: 'Hummingbird wings rotate at the shoulder, allowing a figure-8 stroke pattern that generates lift on both the downstroke AND upstroke. They can fly backwards, sideways, and hover in place. Wing beat: 50-80 times per second.' },
     { id: 'speed', name: 'Speed (Falcon)', emoji: '\uD83E\uDD85', aspectRatio: 'Medium-High (6:1)', shape: 'Swept back, pointed', liftCoeff: 1.2, dragCoeff: 0.018, bestAngle: 4, stallAngle: 12, desc: 'Swept-back pointed wings minimize drag at high speeds. During a stoop (dive), Peregrines tuck their wings to form a teardrop shape, reaching 240+ mph. A small tubercle on the beak disrupts airflow to prevent suffocation at speed.' }
   ];
@@ -1631,7 +1631,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var scaleX = W / 620;
           var scaleY = H / 400;
 
+          var _flyDrawn = false;
           function frame() {
+            // Idle in the default (no-species) state: the map + title are static for
+            // this canvas instance (selectedSpecies/isDark are frozen by the _rtInit
+            // guard), so paint once and skip the 60fps repaint. The loop stays alive;
+            // a species selection re-inits on a fresh canvas and animates the bird.
+            if (!selectedSpecies && _flyDrawn) { animRef.current = requestAnimationFrame(frame); return; }
+            _flyDrawn = true;
             timeRef.current += 0.016;
             c.clearRect(0, 0, W, H);
 
