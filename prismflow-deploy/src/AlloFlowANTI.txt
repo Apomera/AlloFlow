@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '591a7b43';
+    var pluginCdnVersion = '9b5ba4f3';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -19616,6 +19616,36 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         window.__alloVoiceLoop.start();
       },
       stopVoiceLoop: () => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} },
+      // "Where is X?" — answer by POINTING: score every visible
+      // [data-help-key] element against the query, spotlight the best.
+      whereIs: (query) => {
+        try {
+          const q = String(query || '').toLowerCase().trim();
+          if (!q) return null;
+          const qTokens = q.split(/\s+/).filter((w) => w.length > 2);
+          let best = null, bestScore = 0;
+          document.querySelectorAll('[data-help-key]').forEach((el) => {
+            if (!el.offsetParent && el.getClientRects().length === 0) return; // off-screen/hidden
+            const key = (el.getAttribute('data-help-key') || '').replace(/_/g, ' ');
+            const hay = (key + ' ' + (el.getAttribute('aria-label') || '') + ' ' + (el.getAttribute('title') || '') + ' ' + (el.textContent || '').slice(0, 80)).toLowerCase();
+            let s = 0;
+            if (hay.includes(q)) s = 100;
+            else s = qTokens.filter((w) => hay.includes(w)).length * 30;
+            if (s > bestScore) { bestScore = s; best = el; }
+          });
+          if (!best || bestScore < 30) {
+            return (t('agent.where_miss') || 'I don’t see “') + query + (t('agent.where_miss2') || '” on this screen — it may live in a different view. Try opening the Educator Hub or Learning Hub first.');
+          }
+          const label = best.getAttribute('aria-label') || best.getAttribute('title') || (best.textContent || '').trim().slice(0, 40) || query;
+          let helpText = '';
+          try { helpText = (typeof _helpLookup === 'function' ? (_helpLookup(best.getAttribute('data-help-key')) || '') : '').split('. ')[0]; } catch (_) {}
+          try { best.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+          showSpotlight(best, '📍 ' + label, helpText || (t('agent.where_found_text') || 'Here it is.'));
+          return (t('agent.where_found') || 'Found it — spotlighting “') + label + (t('agent.where_found2') || '” on screen.');
+        } catch (_) { return null; }
+      },
+      startAppTour: () => { try { setTourStep(0); } catch (_) {} setRunTour(true); },
+      startPipelineTour: (which) => { try { startPipelineTour(which || 'results'); } catch (_) {} },
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
