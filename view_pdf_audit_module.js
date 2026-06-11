@@ -1094,6 +1094,7 @@ function PdfAuditView(props) {
   const [smartTableData, setSmartTableData] = useState("");
   const [smartTableSpec, setSmartTableSpec] = useState("");
   const [smartTableBusy, setSmartTableBusy] = useState(false);
+  const [glossaryAppendixBusy, setGlossaryAppendixBusy] = useState(false);
   const _smartTableParseDelimited = (raw) => {
     const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (lines.length < 2) return null;
@@ -5468,7 +5469,45 @@ Return simplified text with # for headings, - for lists.`, false);
       audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: true };
       addToast((t("toasts.generating_sr") || "Generating screen-reader-style audio \u2014 structure announced (headings, lists, tables): ") + segments.length + " sections\u2026", "info");
       _runAudioJob();
-    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors", title: t("pdf_audit.audio.sr_title") || 'Same voice, but announcing the structure the way a screen reader would: "Heading level 2\u2026", "List, 5 items\u2026", "Table, 3 rows\u2026", image descriptions. Hear the structural experience without running a screen reader.' }, "\u{1F9BB} ", t("pdf_audit.audio.sr_btn") || "Audio (screen-reader style)"), callTTS && !audioJob && pdfFixResult._audioJobMeta && pdfFixResult._audioJobMeta.nextIdx > 0 && pdfFixResult._audioJobMeta.nextIdx < pdfFixResult._audioJobMeta.total && /* @__PURE__ */ React.createElement("button", { onClick: _resumeAudioFromMeta, className: "px-4 py-2 bg-amber-100 border border-amber-400 text-amber-800 rounded-xl font-bold text-xs hover:bg-amber-200 transition-colors", title: t("pdf_audit.audio.resume_meta_title") || "This project saved an unfinished audio job. Resuming regenerates nothing you already downloaded \u2014 it continues from the saved section into a new part file (play the part files in order)." }, "\u23EF ", t("pdf_audit.audio.resume_meta") || "Resume audio at section ", pdfFixResult._audioJobMeta.nextIdx + 1, "/", pdfFixResult._audioJobMeta.total, pdfFixResult._audioJobMeta.srMode ? " (SR-style)" : ""), callTTS && audioJob && /* @__PURE__ */ React.createElement("div", { className: "w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900", "data-help-key": "pdf_audit_audio_download_btn" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F3A7} ", t("pdf_audit.audio.job") || "Audio", ": ", audioJob.done, "/", audioJob.total, " ", t("pdf_audit.audio.sections") || "sections", audioJob.failed > 0 ? " \xB7 " + audioJob.failed + " " + (t("pdf_audit.audio.failed") || "failed") : ""), /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded font-bold text-[10px] uppercase " + (audioJob.status === "running" ? "bg-blue-100 text-blue-700" : audioJob.status === "complete" ? "bg-green-100 text-green-700" : "bg-amber-200 text-amber-800") }, audioJob.status === "stalled" ? t("pdf_audit.audio.stalled") || "rate-limited \u2014 resume in ~1 min" : audioJob.status), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 ml-auto" }, audioJob.status === "running" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors", title: t("pdf_audit.audio.sr_title") || 'Same voice, but announcing the structure the way a screen reader would: "Heading level 2\u2026", "List, 5 items\u2026", "Table, 3 rows\u2026", image descriptions. Hear the structural experience without running a screen reader.' }, "\u{1F9BB} ", t("pdf_audit.audio.sr_btn") || "Audio (screen-reader style)"), callGemini && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_glossary_appendix_btn", disabled: glossaryAppendixBusy, onClick: async () => {
+      if (!pdfFixResult?.accessibleHtml) return;
+      setGlossaryAppendixBusy(true);
+      try {
+        const tmp = document.createElement("div");
+        tmp.innerHTML = pdfFixResult.accessibleHtml;
+        const docText = (tmp.textContent || "").slice(0, 12e3);
+        const out = await callGemini(`From this educational document, pick the 8-14 KEY TERMS a student would most need defined. HARD RULES: only terms that literally APPEAR in the document; definitions must be short (one sentence), grade-appropriate to the document's level, and factual. Return ONLY JSON: [{"term": string, "definition": string}].
+
+DOCUMENT:
+` + docText);
+        const m = String(out || "").match(/\[[\s\S]*\]/);
+        const terms = JSON.parse(m ? m[0] : String(out)).filter((x) => x && x.term && x.definition).slice(0, 14);
+        if (!terms.length) throw new Error("no terms extracted");
+        const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const section = '<section data-allo-glossary="true" aria-labelledby="allo-glossary-h"><h2 id="allo-glossary-h">' + (t("pdf_audit.glossary.heading") || "Glossary") + "</h2><p><em>" + (t("pdf_audit.glossary.note") || "Definitions drafted by AI from this document \u2014 review before sharing.") + "</em></p><dl>" + terms.map((x) => "<dt><strong>" + esc(x.term) + "</strong></dt><dd>" + esc(x.definition) + "</dd>").join("") + "</dl></section>";
+        setPdfFixResult((prev) => {
+          if (!prev || !prev.accessibleHtml) return prev;
+          let html = prev.accessibleHtml.replace(/<section data-allo-glossary="true"[\s\S]*?<\/section>/i, "");
+          html = html.includes("</main>") ? html.replace("</main>", section + "</main>") : html.replace(/<\/body>/i, section + "</body>");
+          return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+        });
+        try {
+          const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+          if (ldoc && ldoc.body) {
+            const old = ldoc.querySelector("section[data-allo-glossary]");
+            if (old) old.remove();
+            const holder = ldoc.createElement("div");
+            holder.innerHTML = section;
+            (ldoc.querySelector("main") || ldoc.body).appendChild(holder.firstChild);
+          }
+        } catch (_) {
+        }
+        addToast("\u{1F4D6} " + (t("toasts.glossary_added") || "Glossary appendix added \u2014 ") + terms.length + (t("toasts.glossary_added2") || " terms from this document (AI-drafted definitions, labeled for review). Every export now includes it; run it again to refresh."), "success");
+      } catch (e) {
+        addToast((t("toasts.glossary_failed") || "Could not build the glossary: ") + (e && e.message || "unknown"), "error");
+      }
+      setGlossaryAppendixBusy(false);
+    }, className: "px-4 py-2 bg-violet-50 text-violet-700 rounded-xl font-bold text-xs hover:bg-violet-100 transition-colors disabled:opacity-50", title: t("pdf_audit.glossary.btn_title") || "Extracts the key terms a student would need (only words that appear in this document), drafts one-sentence definitions, and appends an accessible Glossary section \u2014 headings, definition list, screen-reader-ready. Lands in the document itself, so the Word, HTML, tagged-PDF, and audio exports all include it. AI-drafted and labeled for your review; run again to rebuild." }, glossaryAppendixBusy ? "\u23F3" : "\u{1F4D6}", " ", t("pdf_audit.glossary.btn") || "Add glossary appendix"), callTTS && !audioJob && pdfFixResult._audioJobMeta && pdfFixResult._audioJobMeta.nextIdx > 0 && pdfFixResult._audioJobMeta.nextIdx < pdfFixResult._audioJobMeta.total && /* @__PURE__ */ React.createElement("button", { onClick: _resumeAudioFromMeta, className: "px-4 py-2 bg-amber-100 border border-amber-400 text-amber-800 rounded-xl font-bold text-xs hover:bg-amber-200 transition-colors", title: t("pdf_audit.audio.resume_meta_title") || "This project saved an unfinished audio job. Resuming regenerates nothing you already downloaded \u2014 it continues from the saved section into a new part file (play the part files in order)." }, "\u23EF ", t("pdf_audit.audio.resume_meta") || "Resume audio at section ", pdfFixResult._audioJobMeta.nextIdx + 1, "/", pdfFixResult._audioJobMeta.total, pdfFixResult._audioJobMeta.srMode ? " (SR-style)" : ""), callTTS && audioJob && /* @__PURE__ */ React.createElement("div", { className: "w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900", "data-help-key": "pdf_audit_audio_download_btn" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F3A7} ", t("pdf_audit.audio.job") || "Audio", ": ", audioJob.done, "/", audioJob.total, " ", t("pdf_audit.audio.sections") || "sections", audioJob.failed > 0 ? " \xB7 " + audioJob.failed + " " + (t("pdf_audit.audio.failed") || "failed") : ""), /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded font-bold text-[10px] uppercase " + (audioJob.status === "running" ? "bg-blue-100 text-blue-700" : audioJob.status === "complete" ? "bg-green-100 text-green-700" : "bg-amber-200 text-amber-800") }, audioJob.status === "stalled" ? t("pdf_audit.audio.stalled") || "rate-limited \u2014 resume in ~1 min" : audioJob.status), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 ml-auto" }, audioJob.status === "running" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (audioJobRef.current) audioJobRef.current.pauseRequested = true;
     }, className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" }, "\u23F8 ", t("pdf_audit.audio.pause") || "Pause"), (audioJob.status === "paused" || audioJob.status === "stalled") && /* @__PURE__ */ React.createElement("button", { onClick: _runAudioJob, className: "px-2 py-1 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700" }, "\u25B6 ", t("pdf_audit.audio.resume") || "Resume"), audioJob.done > 0 && audioJob.status !== "complete" && /* @__PURE__ */ React.createElement("button", { onClick: () => _stitchAudioJob(false), className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100", title: t("pdf_audit.audio.partial_title") || "Stitch the finished sections into one playable file now \u2014 you can keep generating afterwards." }, "\u2B07 ", t("pdf_audit.audio.partial") || "Download what\u2019s ready"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const j = audioJobRef.current;

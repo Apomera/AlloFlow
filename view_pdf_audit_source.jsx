@@ -929,6 +929,7 @@ function PdfAuditView(props) {
   const [smartTableData, setSmartTableData] = useState('');
   const [smartTableSpec, setSmartTableSpec] = useState('');
   const [smartTableBusy, setSmartTableBusy] = useState(false);
+  const [glossaryAppendixBusy, setGlossaryAppendixBusy] = useState(false);
   const _smartTableParseDelimited = (raw) => {
     const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (lines.length < 2) return null;
@@ -7219,6 +7220,45 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           _runAudioJob();
                         }} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors" title={t('pdf_audit.audio.sr_title') || 'Same voice, but announcing the structure the way a screen reader would: "Heading level 2…", "List, 5 items…", "Table, 3 rows…", image descriptions. Hear the structural experience without running a screen reader.'}>
                           🦻 {t('pdf_audit.audio.sr_btn') || 'Audio (screen-reader style)'}
+                        </button>}
+                        {/* Glossary appendix (2026-06-11, approved synergy #4):
+                            terms grounded in THIS document, appended as an
+                            accessible <dl> section — every export (HTML, Word,
+                            tagged PDF, audio) inherits it automatically. */}
+                        {callGemini && <button data-help-key="pdf_audit_glossary_appendix_btn" disabled={glossaryAppendixBusy} onClick={async () => {
+                          if (!pdfFixResult?.accessibleHtml) return;
+                          setGlossaryAppendixBusy(true);
+                          try {
+                            const tmp = document.createElement('div'); tmp.innerHTML = pdfFixResult.accessibleHtml;
+                            const docText = (tmp.textContent || '').slice(0, 12000);
+                            const out = await callGemini('From this educational document, pick the 8-14 KEY TERMS a student would most need defined. HARD RULES: only terms that literally APPEAR in the document; definitions must be short (one sentence), grade-appropriate to the document\'s level, and factual. Return ONLY JSON: [{"term": string, "definition": string}].\n\nDOCUMENT:\n' + docText);
+                            const m = String(out || '').match(/\[[\s\S]*\]/);
+                            const terms = JSON.parse(m ? m[0] : String(out)).filter((x) => x && x.term && x.definition).slice(0, 14);
+                            if (!terms.length) throw new Error('no terms extracted');
+                            const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            const section = '<section data-allo-glossary="true" aria-labelledby="allo-glossary-h"><h2 id="allo-glossary-h">' + (t('pdf_audit.glossary.heading') || 'Glossary') + '</h2><p><em>' + (t('pdf_audit.glossary.note') || 'Definitions drafted by AI from this document — review before sharing.') + '</em></p><dl>' + terms.map((x) => '<dt><strong>' + esc(x.term) + '</strong></dt><dd>' + esc(x.definition) + '</dd>').join('') + '</dl></section>';
+                            setPdfFixResult((prev) => {
+                              if (!prev || !prev.accessibleHtml) return prev;
+                              let html = prev.accessibleHtml.replace(/<section data-allo-glossary="true"[\s\S]*?<\/section>/i, '');
+                              html = html.includes('</main>') ? html.replace('</main>', section + '</main>') : html.replace(/<\/body>/i, section + '</body>');
+                              return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+                            });
+                            // Mirror into the live preview iframe (live-DOM-wins).
+                            try {
+                              const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+                              if (ldoc && ldoc.body) {
+                                const old = ldoc.querySelector('section[data-allo-glossary]'); if (old) old.remove();
+                                const holder = ldoc.createElement('div'); holder.innerHTML = section;
+                                (ldoc.querySelector('main') || ldoc.body).appendChild(holder.firstChild);
+                              }
+                            } catch (_) {}
+                            addToast('📖 ' + (t('toasts.glossary_added') || 'Glossary appendix added — ') + terms.length + (t('toasts.glossary_added2') || ' terms from this document (AI-drafted definitions, labeled for review). Every export now includes it; run it again to refresh.'), 'success');
+                          } catch (e) {
+                            addToast((t('toasts.glossary_failed') || 'Could not build the glossary: ') + ((e && e.message) || 'unknown'), 'error');
+                          }
+                          setGlossaryAppendixBusy(false);
+                        }} className="px-4 py-2 bg-violet-50 text-violet-700 rounded-xl font-bold text-xs hover:bg-violet-100 transition-colors disabled:opacity-50" title={t('pdf_audit.glossary.btn_title') || 'Extracts the key terms a student would need (only words that appear in this document), drafts one-sentence definitions, and appends an accessible Glossary section — headings, definition list, screen-reader-ready. Lands in the document itself, so the Word, HTML, tagged-PDF, and audio exports all include it. AI-drafted and labeled for your review; run again to rebuild.'}>
+                          {glossaryAppendixBusy ? '⏳' : '📖'} {t('pdf_audit.glossary.btn') || 'Add glossary appendix'}
                         </button>}
                         {/* Cross-session resume (2026-06-11): the saved project
                             carries the job POSITION; segments rebuild
