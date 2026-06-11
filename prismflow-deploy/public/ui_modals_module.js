@@ -232,7 +232,7 @@ const StudentQuizOverlay = React.memo(({
   }, "-", bossStats.lastDamage)), /*#__PURE__*/React.createElement("div", {
     className: "w-full"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider"
+    className: "flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, bossStats.name || "Boss", " HP"), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.currentHP), " / ", bossStats.maxHP)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -243,7 +243,7 @@ const StudentQuizOverlay = React.memo(({
   }))), /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider"
+    className: "flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, t('quiz.boss.class_hp')), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.classHP ?? 100), " / ", bossStats.classMaxHP || 100)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-5 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -703,7 +703,7 @@ const StudentEntryModal = React.memo(({
     "data-help-key": "entry_start_new"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
-    className: "text-yellow-700 fill-current"
+    className: "text-yellow-400 fill-current"
   }), " ", t('entry.start')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.upload'),
     onClick: () => handleConfirm('load'),
