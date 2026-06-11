@@ -9,13 +9,16 @@ const handleFileUpload = async (e, deps) => {
     if (!file) return;
     if (LargeFileHandler.needsChunking(file)) {
         const fileType = LargeFileHandler.getFileType(file);
-        if (fileType === 'audio') {
-            setShowLargeFileModal(true);
-            setPendingLargeFile(file);
-            return;
-        } else if (fileType === 'video') {
-            setShowLargeFileModal(true);
-            setPendingLargeFile(file);
+        if (fileType === 'audio' || fileType === 'video') {
+            // Long recordings route to the PIPELINE triage too (2026-06-10):
+            // the digestion card runs the existing LargeFileHandler chunked
+            // transcription (speech mode — visual analysis needs ≤15MB).
+            // No base64 stash: readAsDataURL on a 100MB file would bloat
+            // memory; the File object rides pendingPdfFile instead.
+            setPendingPdfFile(file);
+            setPendingPdfBase64(null);
+            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _mediaPending: { mime: file.type || '', isVideo: fileType === 'video', chunked: true } });
+            addToast(t('toasts.media_choose_digestion_long') || '🎙 Long recording loaded — it will be transcribed in segments (speech analysis). Start from the digestion card.', 'info');
             return;
         } else if (fileType === 'pdf') {
             if (file.size > 30 * 1024 * 1024) {

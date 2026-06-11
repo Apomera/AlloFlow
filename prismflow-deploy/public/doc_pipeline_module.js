@@ -2844,7 +2844,30 @@ var createDocPipeline = function(deps) {
   // the prompt. Returns the ALLOTRANSCRIPT payload ready for the pipeline.
   const transcribeMediaToPayload = async (base64Data, mimeType, opts = {}) => {
     const mode = opts.mode || 'speech';
-    const isVideo = /^video\//i.test(mimeType || '');
+    const isVideo = /^video\//i.test(mimeType || (opts.file && opts.file.type) || '');
+    // Pre-transcribed text (e.g. the existing YouTube fileUri extractor in
+    // utils_pure) — just wrap it in the format.
+    if (opts.preText) {
+      const t2 = String(opts.preText).trim();
+      if (t2.length < 20) throw new Error('no usable text');
+      return { payload: encodeTranscriptPayload(t2), words: t2.split(/\s+/).length, mode: 'pretranscribed' };
+    }
+    // Long recordings (>15MB): the EXISTING LargeFileHandler machinery —
+    // 10-minute 16kHz WAV segments, per-segment transcription, joined.
+    // Video chunking extracts the AUDIO track (that's what the machinery
+    // does), so chunked = speech analysis; visual/dual need ≤15MB files.
+    const LF = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.LargeFileHandler) || null;
+    if (opts.file && LF && typeof LF.needsChunking === 'function' && LF.needsChunking(opts.file)) {
+      const chunkPrompt = 'You are an expert educational transcriber. This is ONE SEGMENT of a longer recording. Provide an accurate transcript of the spoken content in THIS segment only. Use blank lines between topic shifts.'
+        + (opts.instructions ? ('\nADDITIONAL INSTRUCTIONS from the teacher: ' + String(opts.instructions).slice(0, 1500)) : '')
+        + '\nReturn ONLY the transcript text. Never invent content you did not hear.';
+      const fn = (isVideo && typeof LF.processVideoFile === 'function') ? 'processVideoFile' : 'processAudioFile';
+      const res = await LF[fn](opts.file, async (b64c, mimec) => await callGeminiVision(chunkPrompt, b64c, mimec || 'audio/wav'), opts.onProgress || (() => {}));
+      const joined = ((res && res.transcript) || '').trim();
+      if (joined.length < 20) throw new Error('chunked transcription returned no usable text');
+      return { payload: encodeTranscriptPayload(joined), words: joined.split(/\s+/).length, mode: 'speech', chunked: true };
+    }
+    if (!base64Data) throw new Error('no media data provided');
     const MODE_PROMPTS = {
       speech: 'Provide a comprehensive, accurate transcript of the SPOKEN content only. Use blank lines between natural topic shifts.',
       visual: 'Describe the VISUAL content only: each scene, slide, diagram, demonstration, or on-screen text, in order. One paragraph per distinct visual. Do not transcribe speech.',

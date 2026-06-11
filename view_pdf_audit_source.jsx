@@ -725,6 +725,7 @@ function PdfAuditView(props) {
   const [mediaMode, setMediaMode] = useState(null);
   const [mediaInstructions, setMediaInstructions] = useState('');
   const [mediaDigesting, setMediaDigesting] = useState(false);
+  const [mediaDigestProgress, setMediaDigestProgress] = useState('');
   // Resumable audio job (2026-06-10, maintainer ask): big documents hit TTS
   // rate limits mid-run — the old handler died and discarded position. The
   // job now generates in chunks (it always did), PAUSES on demand, STALLS
@@ -1011,6 +1012,26 @@ function PdfAuditView(props) {
                         <button onClick={async () => {
                           const url = document.getElementById('web-audit-url')?.value?.trim();
                           if (!url) { addToast(t('toasts.enter_url'), 'info'); return; }
+                          // YouTube → the pipeline as a transcript (2026-06-10):
+                          // reuses the EXISTING Gemini fileUri extractor in
+                          // utils_pure (fetchAndCleanUrl). Speech transcript v1 —
+                          // digestion modes need an uploaded file ≤15MB.
+                          if (/(?:youtube\.com\/(?:watch|embed|shorts)|youtu\.be\/)/i.test(url)) {
+                            try {
+                              const _fac = typeof window !== 'undefined' && window.__alloUtils && window.__alloUtils.fetchAndCleanUrl;
+                              if (typeof _fac !== 'function') throw new Error('URL extractor module not loaded yet — try again in a moment');
+                              addToast(t('toasts.youtube_to_pipeline') || '🎬 YouTube detected — extracting the transcript for the accessibility pipeline…', 'info');
+                              const text = await _fac(url, null, addToast);
+                              if (!text || text.trim().length < 50) throw new Error('no transcript extracted (private/region-locked videos cannot be read)');
+                              const r = await transcribeMediaToPayload(null, 'text/plain', { preText: text });
+                              setPendingPdfBase64(r.payload);
+                              setPendingPdfFile({ name: 'youtube-transcript.txt', size: text.length });
+                              setPdfWebMode(false);
+                              setPdfAuditResult({ _choosing: true, fileName: t('pdf_audit.youtube.file_label') || 'YouTube transcript', fileSize: text.length, _transcriptSource: true });
+                              addToast('✅ ' + (t('toasts.youtube_ready') || 'YouTube transcript loaded — run Make Accessible for the full treatment. Review for transcription errors before distributing.'), 'success');
+                            } catch (e) { addToast((t('toasts.youtube_failed') || 'YouTube extraction failed: ') + (e?.message || 'unknown'), 'error'); }
+                            return;
+                          }
                           addToast(t('toasts.fetching_website'), 'info');
                           try {
                             const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
@@ -1506,8 +1527,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     unlock. ── */}
                 {pdfAuditResult._mediaPending && (() => {
                   const mp = pdfAuditResult._mediaPending;
-                  const effMode = mediaMode || (mp.isVideo ? 'dual' : 'speech');
-                  const MODES = mp.isVideo
+                  const effMode = mp.chunked ? 'speech' : (mediaMode || (mp.isVideo ? 'dual' : 'speech'));
+                  const MODES = mp.chunked
+                    ? [['speech', '🎙 Speech transcript (long recording — transcribed in segments; visual analysis needs files under 15MB)']]
+                    : mp.isVideo
                     ? [['speech', '🎙 Speech only'], ['visual', '🎬 Visuals only'], ['dual', '🎞 Dual-track (spoken + shown + divergences)'], ['synthesis', '📖 Synthesized narrative']]
                     : [['speech', '🎙 Speech transcript'], ['synthesis', '📖 Cleaned narrative']];
                   return (
@@ -1527,14 +1550,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button disabled={mediaDigesting || typeof transcribeMediaToPayload !== 'function'} onClick={async () => {
                         setMediaDigesting(true);
                         try {
-                          const r = await transcribeMediaToPayload(pendingPdfBase64, mp.mime, { mode: effMode, instructions: mediaInstructions });
+                          const r = await transcribeMediaToPayload(pendingPdfBase64, mp.mime, { mode: effMode, instructions: mediaInstructions, file: mp.chunked ? pendingPdfFile : null, onProgress: (done, total, label) => setMediaDigestProgress(label || (done + '/' + total + ' segments')) });
                           setPendingPdfBase64(r.payload);
                           setPdfAuditResult((prev) => prev ? { ...prev, _mediaPending: null, _transcriptSource: true } : prev);
                           addToast('✅ ' + (t('toasts.digest_ready') || 'Digest ready') + ' (' + r.words.toLocaleString() + ' ' + (t('pdf_audit.media.words') || 'words') + ') — ' + (t('toasts.digest_next') || 'now run Make Accessible for the full treatment. Review for transcription errors before distributing.'), 'success');
                         } catch (e) { addToast((t('toasts.digestion_failed') || 'Digestion failed: ') + (e?.message || 'unknown'), 'error'); }
                         setMediaDigesting(false);
                       }} className="px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50">
-                        {mediaDigesting ? '⏳ ' + (t('pdf_audit.media.digesting') || 'Digesting… (large recordings take a while)') : '▶ ' + (t('pdf_audit.media.go') || 'Digest recording')}
+                        {mediaDigesting ? '⏳ ' + (mediaDigestProgress || (t('pdf_audit.media.digesting') || 'Digesting… (large recordings take a while)')) : '▶ ' + (t('pdf_audit.media.go') || 'Digest recording')}
                       </button>
                       <span className="text-[10px] text-slate-500 ml-2">{t('pdf_audit.media.unlock_note') || 'The buttons below unlock once the digest is ready.'}</span>
                     </div>
