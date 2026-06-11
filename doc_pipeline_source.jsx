@@ -4837,6 +4837,10 @@ var createDocPipeline = function(deps) {
           hasSearchableText: true,
           hasImages: false,
         };
+        // Cache write (sweep 2026-06-11 LOW[8]): the key was computed and READ
+        // for transcripts but never written — repeat audits of the same
+        // recording re-ran the whole branch.
+        if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
         if (!_skipUi) { setPdfAuditResult((prev) => ({ ...(prev || {}), ...result })); setPdfAuditLoading(false); }
         return result;
       } catch (trErr) {
@@ -6729,10 +6733,10 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     }
     try { setPdfBatchStep(''); } catch (_) {}
 
-    const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,Time (s),Expert Review,Tagged PDF,Status'];
+    const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,EA Fails,EA Score,Time (s),Expert Review,Tagged PDF,Status'];
     pdfBatchQueue.forEach(f => {
       const r = f.result;
-      csvRows.push(`"${f.fileName}",${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},"${_taggedNotes.get(f.id) || ''}",${f.status}`);
+      csvRows.push(`"${f.fileName}",${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},"${_taggedNotes.get(f.id) || ''}",${f.status}`);
     });
     zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
 
@@ -6745,7 +6749,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       files: pdfBatchQueue.map(f => ({
         fileName: f.fileName, fileSize: f.fileSize, status: f.status, error: f.error || null,
         taggedPdf: _taggedNotes.get(f.id) || null,
-        result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
+        result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, secondEngine: f.result.secondEngineAudit ? { engine: f.result.secondEngineAudit.engine, failViolations: f.result.secondEngineAudit.failViolations, potentialViolations: f.result.secondEngineAudit.potentialViolations, score: f.result.secondEngineAudit.score } : null, scoreIsBlended: !!f.result._scoreIsBlended, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
       })),
     };
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
@@ -6834,7 +6838,7 @@ Return ONLY the extracted text.`;
         } else {
           setGenerationStep('Extracting PDF text layer...');
           const det = await extractPdfTextDeterministic(pendingPdfBase64);
-          if (det && !det.isScanned && det.sourceCharCount > 100) {
+          if (det && !det.isScanned && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan
             extractedText = det.fullText;
             warnLog(`[ProceedTransform Det] PDF → ${det.sourceCharCount} chars from ${det.pageCount} pages`);
           }
@@ -10251,7 +10255,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         } else if (isPdf) {
           updateProgress(1, 'Extracting PDF text layer deterministically...');
           const det = await extractPdfTextDeterministic(_base64);
-          if (det && !det.isScanned && det.sourceCharCount > 100) {
+          if (det && !det.isScanned && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan
             // Multi-session: if a pageRange was specified, narrow the extracted pages to
             // [start, end]. Keeps the full per-page map for later reference but only feeds
             // the selected pages to the downstream remediation pipeline.

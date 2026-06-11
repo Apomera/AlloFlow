@@ -1693,7 +1693,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     } catch (_) { /* fix surface shows its own errors; chain continues to the check below */ }
                     await new Promise((res) => setTimeout(res, 250));
                     const r = pdfFixResultRef.current;
-                    const needsLoop = r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0);
+                    const needsLoop = r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); }
                     if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
@@ -1939,7 +1939,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (pdfAutoContinue && r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); } if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
                   <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
@@ -5189,6 +5189,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const _head = atob(_rawB64.slice(0, 8));
                             _isPdfMagic = _head.charCodeAt(0) === 0x25 && _head.charCodeAt(1) === 0x50 && _head.charCodeAt(2) === 0x44 && _head.charCodeAt(3) === 0x46;
                           } catch (_) {}
+                          // Transcript Before pane (sweep 2026-06-11 LOW[9]): the
+                          // transcript IS the source — decode and show it (capped),
+                          // honestly labeled, instead of only a "no preview" notice.
+                          let _transcriptPreviewHtml = '';
+                          if (!_isPdfMagic && _rawB64.startsWith('QUxMT1RSQU5TQ1JJUFQ6')) {
+                            try {
+                              const _bin = atob(_rawB64);
+                              const _full = new TextDecoder().decode(Uint8Array.from(_bin, (c) => c.charCodeAt(0)));
+                              const _body = _full.slice(_full.indexOf('\n') + 1);
+                              const _esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                              _transcriptPreviewHtml = '<div style="text-align:left;max-height:calc(100% - 8px);overflow:auto"><div style="font-weight:700;color:#fbbf24;margin-bottom:8px">📜 ' + (t('pdf_audit.compare.transcript_heading') || 'AI transcript of the original recording — review for transcription errors; the After pane is the remediated document built from it.') + '</div><pre style="white-space:pre-wrap;font-family:inherit;font-size:12px;line-height:1.5;color:#e2e8f0;margin:0">' + _esc(_body.slice(0, 20000)) + (_body.length > 20000 ? '\n…(' + (_body.length - 20000) + ' more characters)' : '') + '</pre></div>';
+                            } catch (_) {}
+                          }
                           // Crop-tool persistence: the popup hands cropped regions back
                           // here so they land in the remediated HTML and survive
                           // re-exports (PDF/Word/PPTX/HTML). Registered fresh per open.
@@ -5317,7 +5330,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </span>
                               </div>
                               <div id="before-pane" style="flex:1;overflow:auto;background:#525659;min-height:0;position:relative">
-                                <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? 'Rendering original PDF…' : (_rawB64.startsWith('QUxMT1RSQU5TQ1JJUFQ6') ? 'The original is a transcript (audio/video/text input) — there is no page image to compare. The After pane on the right is your remediated document.' : 'The original file is not a PDF (Word/PowerPoint input) — the Before preview applies to PDF originals. The After pane on the right is your remediated document.')}</div>
+                                <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? 'Rendering original PDF…' : (_transcriptPreviewHtml || 'The original file is not a PDF (Word/PowerPoint input) — the Before preview applies to PDF originals. The After pane on the right is your remediated document.')}</div>
                               </div>
                             </div>
                             <div class="divider"></div>

@@ -1754,6 +1754,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       await new Promise((res) => setTimeout(res, 250));
       const r = pdfFixResultRef.current;
       const needsLoop = r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0);
+      if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) {
+        addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
+      }
       if (needsLoop) {
         runAutoFixLoop(8);
       } else if (pdfAutoSaveProject) {
@@ -1931,6 +1934,9 @@ Return ONLY JSON:
       setTimeout(() => {
         const r = pdfFixResultRef.current;
         const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0);
+        if (pdfAutoContinue && r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) {
+          addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
+        }
         if (needsLoop) {
           runAutoFixLoop(8);
         } else if (pdfAutoSaveProject) {
@@ -3552,6 +3558,17 @@ Return ONLY JSON:
         _isPdfMagic = _head.charCodeAt(0) === 37 && _head.charCodeAt(1) === 80 && _head.charCodeAt(2) === 68 && _head.charCodeAt(3) === 70;
       } catch (_) {
       }
+      let _transcriptPreviewHtml = "";
+      if (!_isPdfMagic && _rawB64.startsWith("QUxMT1RSQU5TQ1JJUFQ6")) {
+        try {
+          const _bin = atob(_rawB64);
+          const _full = new TextDecoder().decode(Uint8Array.from(_bin, (c) => c.charCodeAt(0)));
+          const _body = _full.slice(_full.indexOf("\n") + 1);
+          const _esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          _transcriptPreviewHtml = '<div style="text-align:left;max-height:calc(100% - 8px);overflow:auto"><div style="font-weight:700;color:#fbbf24;margin-bottom:8px">\u{1F4DC} ' + (t("pdf_audit.compare.transcript_heading") || "AI transcript of the original recording \u2014 review for transcription errors; the After pane is the remediated document built from it.") + '</div><pre style="white-space:pre-wrap;font-family:inherit;font-size:12px;line-height:1.5;color:#e2e8f0;margin:0">' + _esc(_body.slice(0, 2e4)) + (_body.length > 2e4 ? "\n\u2026(" + (_body.length - 2e4) + " more characters)" : "") + "</pre></div>";
+        } catch (_) {
+        }
+      }
       try {
         window.__alloflowCompareCropInsert = (payload) => {
           try {
@@ -3674,7 +3691,7 @@ Return ONLY JSON:
                                 </span>
                               </div>
                               <div id="before-pane" style="flex:1;overflow:auto;background:#525659;min-height:0;position:relative">
-                                <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? "Rendering original PDF\u2026" : _rawB64.startsWith("QUxMT1RSQU5TQ1JJUFQ6") ? "The original is a transcript (audio/video/text input) \u2014 there is no page image to compare. The After pane on the right is your remediated document." : "The original file is not a PDF (Word/PowerPoint input) \u2014 the Before preview applies to PDF originals. The After pane on the right is your remediated document."}</div>
+                                <div id="before-status" style="color:#e2e8f0;padding:20px;font-size:12px">${_isPdfMagic ? "Rendering original PDF\u2026" : _transcriptPreviewHtml || "The original file is not a PDF (Word/PowerPoint input) \u2014 the Before preview applies to PDF originals. The After pane on the right is your remediated document."}</div>
                               </div>
                             </div>
                             <div class="divider"></div>
