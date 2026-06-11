@@ -15828,6 +15828,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // lets a future session resume generating from section N (audio blobs
       // themselves are far too big for the project file).
       _audioJobMeta: cur._audioJobMeta || null,
+      _translation: cur._translation || null,
       runHistory: pdfRunHistoryRef.current,
       prefs: {
         auditors: pdfAuditorCount,
@@ -15870,6 +15871,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const createTaggedPdf = _docPipeline ? _docPipeline.createTaggedPdf : async () => null;
   const createTypesetTaggedPdf = _docPipeline ? _docPipeline.createTypesetTaggedPdf : async () => null;
   const transcribeMediaToPayload = _docPipeline ? _docPipeline.transcribeMediaToPayload : null;
+  const translateAccessibleHtml = _docPipeline ? _docPipeline.translateAccessibleHtml : null;
   const convertXlsxToMarkdownTables = _docPipeline ? _docPipeline.convertXlsxToMarkdownTables : null;
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
@@ -26917,7 +26919,7 @@ ${_toolList}
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, t, updatePdfPreview,
+          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, translateAccessibleHtml, t, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
           fixContrastViolations, fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,

@@ -681,6 +681,61 @@ var createDocPipeline = function(deps) {
     } catch (e) { return null; }
   };
 
+  // ── Document translation (2026-06-12, maintainer ask) ──
+  // Translate the remediated document's TEXT into another language while
+  // preserving the accessibility structure: every tag, attribute, class,
+  // and data-* token unchanged; text content + alt/aria-label/title values
+  // translated. Per-chunk DETERMINISTIC verification: the output's tag-name
+  // sequence must equal the input's — a failed chunk retries once, then
+  // keeps the ORIGINAL text (counted + reported, never silently mangled).
+  // Images ride the fixer's token-strip. Sets <html lang> (+ dir for RTL)
+  // so screen readers pronounce correctly and the typeset tagger declares
+  // the right language. Every downstream export inherits the result.
+  const _tagSeqOf = (s) => (String(s || '').match(/<\/?[a-zA-Z][a-zA-Z0-9-]*/g) || []).join(',');
+  const translateAccessibleHtml = async (html, targetLang, opts = {}) => {
+    if (!callGemini) throw new Error('AI unavailable');
+    if (!html || !targetLang) throw new Error('translateAccessibleHtml: html + targetLang required');
+    const onProgress = typeof opts.onProgress === 'function' ? opts.onProgress : () => {};
+    const _imgDataMap = {};
+    let _imgCounter = 0;
+    const strippedHtml = html.replace(/src="(data:image\/[^"]{100,})"/gi, function (m, dataUrl) {
+      const key = '__IMG_DATA_' + (++_imgCounter) + '__';
+      _imgDataMap[key] = dataUrl;
+      return 'src="' + key + '"';
+    });
+    const chunks = splitHtmlOnTagBoundary(strippedHtml, HTML_FIX_CHUNK);
+    const out = [];
+    let failed = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      onProgress(i + 1, chunks.length);
+      const chunk = chunks[i];
+      const wantSeq = _tagSeqOf(chunk);
+      const prompt = 'Translate ALL human-readable text in this HTML into ' + targetLang + ' — body text, headings, list items, table cells, captions, figcaption, AND the values of alt, aria-label, and title attributes. PRESERVE THE HTML EXACTLY otherwise: every tag, every attribute name, every class/id/data-* value, every token like __IMG_DATA_N__ or __ALLOFLOW_* must remain byte-identical. Do NOT translate URLs, code, or placeholder tokens. Do NOT add, remove, or reorder any element. Keep numbers and proper names as customary in ' + targetLang + '. Return the COMPLETE translated HTML — raw, no code fence, no commentary.\n\nHTML:\n"""\n' + chunk + '\n"""';
+      let ok = false;
+      for (let attempt = 0; attempt < 2 && !ok; attempt++) {
+        try {
+          let resp = String(await callGemini(prompt) || '').trim();
+          resp = resp.replace(/^```html?\s*/i, '').replace(/```\s*$/, '').trim();
+          if (resp && _tagSeqOf(resp) === wantSeq) { out.push(resp); ok = true; }
+        } catch (_) {}
+      }
+      if (!ok) { out.push(chunk); failed++; warnLog('[translateDoc] chunk ' + (i + 1) + '/' + chunks.length + ' failed tag-parity — kept original text for that section'); }
+    }
+    let result = out.join('');
+    for (const key of Object.keys(_imgDataMap)) result = result.split(key).join(_imgDataMap[key]);
+    const _langCode = (opts.langCode || '').trim() || null;
+    const _rtl = (() => { try { return isRtlLang(targetLang); } catch (_) { return false; } })();
+    if (/<html[^>]*>/i.test(result)) {
+      result = result.replace(/<html([^>]*)>/i, (m, attrs) => {
+        const a = attrs.replace(/\s+lang="[^"]*"/i, '').replace(/\s+dir="[^"]*"/i, '');
+        return '<html' + a + (_langCode ? (' lang="' + _langCode + '"') : '') + (_rtl ? ' dir="rtl"' : '') + '>';
+      });
+    }
+    const _note = '<p data-allo-translation-note="true"><em>' + (opts.noteText || ('AI-translated to ' + targetLang + ' — have a bilingual reviewer check before official use.')) + '</em></p>';
+    result = result.includes('<main') ? result.replace(/(<main[^>]*>)/i, '$1' + _note) : result.replace(/(<body[^>]*>)/i, '$1' + _note);
+    return { html: result, lang: targetLang, langCode: _langCode, rtl: _rtl, chunksTotal: chunks.length, chunksFailed: failed };
+  };
+
   // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
   const aiFixChunked = async (html, violationsText, label) => {
@@ -22809,6 +22864,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
     aiFixChunked: _wrapAsync(aiFixChunked),
+    translateAccessibleHtml: _wrapAsync(translateAccessibleHtml),
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
