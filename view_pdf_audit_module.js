@@ -732,6 +732,7 @@ function PdfAuditView(props) {
     t,
     updatePdfPreview,
     createTaggedPdf,
+    createTypesetTaggedPdf,
     diffLibReady,
     downloadAccessiblePdf,
     downloadBatchResults,
@@ -3902,7 +3903,42 @@ Return ONLY JSON:
         title: t("pdf_audit.tagged_pdf.title") || "Preserve the original PDF's visual layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-column documents, and branded PDFs where visual fidelity matters."
       },
       "\u{1F4C4} Tagged PDF"
-    ) : /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2.5 bg-slate-50 text-slate-500 rounded-xl text-[11px] font-medium self-center", title: t("pdf_audit.tagged_pdf.office_note_title") || "Structure tags can only be injected into PDF bytes. For Word/PowerPoint inputs, the accessible Word and HTML downloads carry the remediated structure." }, "\u{1F4C4} ", t("pdf_audit.tagged_pdf.office_note") || "Tagged PDF applies to PDF inputs \u2014 use Word/HTML"), /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "data-help-key": "pdf_audit_view_typeset_tagged_btn",
+        onClick: async () => {
+          try {
+            const ok = await _ensurePdfLib();
+            if (!ok) {
+              addToast(t("toasts.couldn_load_pdf_tagging_library"), "error");
+              return;
+            }
+            addToast(t("toasts.typeset_tagging") || "\u{1F4C4} Generating a typeset tagged PDF from the accessible content\u2026 (clean layout, not the original design)", "info");
+            const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, ""), lang: "en", subject: "Typeset and tagged for accessibility by AlloFlow (generated layout)" });
+            const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
+            if (!taggedBytes) {
+              addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
+              return;
+            }
+            const _rt = _result && _result.roundTrip || null;
+            if (_rt && _rt.ok === false) {
+              addToast("\u26A0 " + (t("toasts.typeset_failed_check") || "The typeset tagged PDF failed its post-save structure check \u2014 use the Word or HTML download instead."), "error");
+              return;
+            }
+            safeDownloadBlob(new Blob([taggedBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, "") + "-tagged-typeset.pdf");
+            const _s = _result && _result.summary || {};
+            addToast((_s.uaDeclared ? "\u2705 " : "\u{1F4C4} ") + (t("toasts.typeset_tagged_done") || "Typeset tagged PDF ready \u2014 clean regenerated layout (not the original design), full structure tags.") + (_s.uaDeclared ? " PDF/UA declared." : ""), "success");
+          } catch (err) {
+            addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (err?.message || "unknown"), "error");
+          }
+        },
+        className: "px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl text-xs font-bold hover:from-slate-700 hover:to-slate-800 transition-all flex items-center gap-1.5",
+        title: t("pdf_audit.tagged_pdf.typeset_title") || "Word/PowerPoint inputs have no PDF bytes to tag \u2014 this generates a CLEAN typeset PDF from the remediated content (simple layout, NOT the original design) and runs the full tagger on it: real structure tree, verified after saving, declaration only when earned."
+      },
+      "\u{1F4C4} ",
+      t("pdf_audit.tagged_pdf.typeset_label") || "Tagged PDF (generated layout)"
+    ), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: async () => {

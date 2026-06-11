@@ -7139,6 +7139,101 @@ HTML section ${chunkNum}/${chunks.length}:
     }
   };
 
+  // ── Typeset-then-tag (2026-06-10, item 8) ──
+  // Office inputs (DOCX/PPTX) have no source-PDF bytes to inject tags into —
+  // so generate a CLEAN typeset PDF from the accessible HTML (simple honest
+  // layout, NOT the original design — labeled as such in the UI) and run the
+  // standard tagger on it. Both sides derive from the SAME html, so per-leaf
+  // linking matches near-exactly and the evidence-gated declaration is
+  // earnable the normal way. Non-WinAnsi scripts degrade like the OCR layer
+  // (mapped punctuation, dropped glyphs) — v1 scope, Latin-script documents.
+  const createTypesetTaggedPdf = async (fixResult, opts = {}) => {
+    const html = fixResult && fixResult.accessibleHtml;
+    if (!html) throw new Error('createTypesetTaggedPdf: no accessibleHtml');
+    const PDFLibNS = (typeof window !== 'undefined' && window.PDFLib) || null;
+    if (!PDFLibNS) throw new Error('pdf-lib unavailable');
+    const { PDFDocument, StandardFonts } = PDFLibNS;
+    const winAnsi = (s) => (s || '')
+      .replace(/[‘’‚′]/g, "'")
+      .replace(/[“”„″]/g, '"')
+      .replace(/[–—]/g, '-')
+      .replace(/…/g, '...')
+      .replace(/ /g, ' ')
+      .replace(/[^\x20-\xFF]/g, '');
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const PAGE_W = 612, PAGE_H = 792, M = 54;
+    let page = doc.addPage([PAGE_W, PAGE_H]);
+    let y = PAGE_H - M;
+    const newPageIfNeeded = (need) => { if (y - need < M) { page = doc.addPage([PAGE_W, PAGE_H]); y = PAGE_H - M; } };
+    const wrapText = (text, f, size, width) => {
+      const words = winAnsi(text).split(/\s+/).filter(Boolean);
+      const lines = []; let cur = '';
+      for (const w of words) {
+        const t = cur ? cur + ' ' + w : w;
+        let tooWide = false;
+        try { tooWide = f.widthOfTextAtSize(t, size) > width; } catch (_) { tooWide = t.length * size * 0.55 > width; }
+        if (tooWide && cur) { lines.push(cur); cur = w; } else cur = t;
+      }
+      if (cur) lines.push(cur);
+      return lines;
+    };
+    const drawBlock = (text, o = {}) => {
+      const size = o.size || 11, f = o.f || font, indent = o.indent || 0;
+      const lines = wrapText(text, f, size, PAGE_W - 2 * M - indent);
+      if (!lines.length) return;
+      y -= (o.before != null ? o.before : 6);
+      for (const ln of lines) {
+        newPageIfNeeded(size * 1.35);
+        y -= size * 1.35;
+        try { page.drawText(ln, { x: M + indent, y, size, font: f }); } catch (_) {}
+      }
+      y -= (o.after != null ? o.after : 4);
+    };
+    const dom = new DOMParser().parseFromString(html, 'text/html');
+    const H_SIZE = { h1: 20, h2: 17, h3: 15, h4: 13, h5: 12, h6: 11 };
+    const els = Array.from((dom.body || dom).querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,th,td,caption,blockquote,figcaption,img'));
+    for (const el of els) {
+      const tag = el.tagName.toLowerCase();
+      // li renders its own text; skip p-inside-li double draws. th/td render
+      // individually (one cell per line — the same shape the tagger's
+      // fixtures use, so table linking behaves identically).
+      if (tag === 'p' && el.closest('li')) continue;
+      if (tag === 'img') {
+        const src = el.getAttribute('src') || '';
+        const m = src.match(/^data:image\/(png|jpe?g);base64,(.+)$/i);
+        if (!m || m[2].length > 2800000) continue;
+        try {
+          const bytes = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
+          const img = /png/i.test(m[1]) ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+          const natW = img.width || 300, natH = img.height || 200;
+          const w = Math.min(natW, 300);
+          const h = Math.max(20, Math.round(natH * (w / natW)));
+          newPageIfNeeded(h + 12);
+          y -= h + 6;
+          page.drawImage(img, { x: M, y, width: w, height: h });
+          y -= 6;
+        } catch (_) { /* unembeddable image → its alt rides the tag tree anyway */ }
+        continue;
+      }
+      const text = (tag === 'li')
+        ? '• ' + (el.childNodes ? Array.from(el.childNodes).filter((n) => !(n.tagName && /^(ul|ol)$/i.test(n.tagName))).map((n) => n.textContent || '').join(' ').trim() : (el.textContent || '').trim())
+        : (el.textContent || '').trim();
+      if (!text) continue;
+      if (H_SIZE[tag]) drawBlock(text, { size: H_SIZE[tag], f: bold, before: 12, after: 6 });
+      else if (tag === 'th') drawBlock(text, { f: bold, size: 11, before: 3, after: 1 });
+      else if (tag === 'td' || tag === 'caption' || tag === 'figcaption') drawBlock(text, { size: 11, before: 3, after: 1 });
+      else if (tag === 'blockquote') drawBlock(text, { size: 11, indent: 24 });
+      else if (tag === 'li') drawBlock(text, { size: 11, indent: 14, before: 3, after: 2 });
+      else drawBlock(text, { size: 11 });
+    }
+    const typesetBytes = await doc.save();
+    // Hand the typeset PDF to the standard tagger — same html, same gates,
+    // same evidence-based declaration.
+    return await createTaggedPdf(typesetBytes, fixResult, opts);
+  };
+
   // ── STEM image intelligence (2026-06-10) ──
   // The ONLY path that looks at embedded-image PIXELS (alt text otherwise
   // derives from text context). One Vision call per data-URL image, capped,
@@ -22181,6 +22276,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     runEqualAccessAudit: _wrapAsync(runEqualAccessAudit),
     describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
     _applyImageIntel,
+    createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),
     fixContrastViolations: _wrap(fixContrastViolations),
     fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),
     sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),

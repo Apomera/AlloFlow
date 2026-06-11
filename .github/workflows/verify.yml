@@ -128,6 +128,8 @@ jobs:
         run: npx playwright test tests/e2e/ai_path_golden.spec.ts
       - name: STEM golden (Formula role, Headers/IDTree, image-intel honesty)
         run: npx playwright test tests/e2e/stem_golden.spec.ts
+      - name: Typeset-then-tag golden (Office-input tagged PDFs)
+        run: npx playwright test tests/e2e/typeset_tagged_golden.spec.ts
 
   cdn-goldens:
     name: CDN-heavy goldens (non-blocking — network flake tolerated)
