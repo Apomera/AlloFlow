@@ -71,6 +71,11 @@ const VERBOSE = args.includes('--verbose');
 const fileArgs = args.filter(a => !a.startsWith('--'));
 
 const KNOWN = new Set(['undefined','NaN','Infinity','globalThis','Math','JSON','Object','Array','String','Number','Boolean','Date','RegExp','Error','TypeError','RangeError','Promise','Map','Set','WeakMap','WeakSet','Symbol','Proxy','Reflect','parseInt','parseFloat','isNaN','isFinite','encodeURIComponent','decodeURIComponent','encodeURI','decodeURI','setTimeout','clearTimeout','setInterval','clearInterval','queueMicrotask','structuredClone','btoa','atob','window','document','navigator','location','history','localStorage','sessionStorage','console','fetch','Audio','AudioContext','webkitAudioContext','Blob','File','FileReader','URL','URLSearchParams','FormData','Image','XMLHttpRequest','MutationObserver','IntersectionObserver','ResizeObserver','requestAnimationFrame','cancelAnimationFrame','getComputedStyle','alert','confirm','prompt','CustomEvent','Event','KeyboardEvent','DOMParser','TextEncoder','TextDecoder','crypto','performance','speechSynthesis','SpeechSynthesisUtterance','HTMLElement','HTMLCanvasElement','Node','NodeList','Element','CanvasRenderingContext2D','Path2D','DOMException','AbortController','React','ReactDOM','Chart','lucide','process','module','require','exports','__dirname','__filename']);
+// Identifiers that are NEVER a module-global in this codebase, so an unresolved + called
+// one can ONLY be a render crash (no runtime scope provides them). Keep this list tight —
+// it is the opposite of KNOWN. `t` = i18n (always a scoped prop; module-level code uses
+// window.__alloT). Don't add setX/callX/handleX here — CDN factories receive those at runtime.
+const ALWAYS_SCOPED = new Set(['t']);
 
 function isHook(callee, name) {
   if (callee.type === 'MemberExpression' && callee.object.type === 'Identifier' &&
@@ -135,6 +140,22 @@ function scanFile(file) {
       if ((n.callee.type === 'FunctionExpression' || n.callee.type === 'ArrowFunctionExpression') && n.callee.body) {
         const found = []; collectIds(n.callee.body, unresolved, found);
         found.filter(f => /^[a-z_$]/.test(f.name)).forEach(f => warns.push({ ...f, where: 'IIFE body' }));
+      }
+      // Called free i18n var: `t(...)` where `t` is unresolved. This is the class that
+      // crashed GameThemeToggle (a free `t()` in an aria-label, which no dep-array /
+      // useMemo / IIFE check covered). A BLANKET called-free-var check is unusable here
+      // (~300 hits — CDN factories legitimately receive setX/callX/handleX from their
+      // runtime scope), so we restrict to ALWAYS_SCOPED: identifiers that are NEVER a
+      // module-global in this codebase, so an unresolved one can ONLY be a crash. `t` is
+      // always a scoped prop/dep (module-level helpers use window.__alloT instead).
+      if (n.callee.type === 'Identifier' && ALWAYS_SCOPED.has(n.callee.name)
+          && unresolved.has(n.callee.range[0] + ':' + n.callee.range[1])) {
+        // ADVISORY (not blocking): a free `t(...)` throws when its code path runs — the
+        // GameThemeToggle class. But there's a pre-existing backlog (~122, mostly in
+        // symbol_studio / anchor_charts event handlers that SSR golden tests never fire),
+        // so blocking here would halt all deploys. Surface it; promote to a hard error
+        // once the backlog is paid down. Run with --verbose to list them.
+        warns.push({ name: n.callee.name, line: n.callee.loc.start.line, where: 'called free i18n var (latent t-crash)' });
       }
     }
     for (const k in n) {
