@@ -10188,6 +10188,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [pdfFixResult, pdfFixLoading]);
 
   const _closePdfAuditModal = () => {
+    // Help-mode guard (2026-06-11, user report: pressing the floating ? then
+    // interacting "took you out of the pipeline"). Whatever the click path,
+    // while help mode is ON the pipeline modal must never close — closing is
+    // never what a help-seeking user wants. Exit help (yellow ✕) first.
+    if (isHelpMode) {
+      addToast(t('toasts.help_mode_close_blocked') || '❓ Help mode is on — click any control to learn about it. Press the yellow ✕ (right edge) to exit help mode first.', 'info');
+      return;
+    }
     setPdfFixLoading(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);
