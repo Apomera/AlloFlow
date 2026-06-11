@@ -5,6 +5,15 @@ if (window.AlloModules && window.AlloModules.CmapHandlersModule) { console.log('
 // 6 mid-tier handlers covering concept-map init/layout, batch roster
 // generation, lesson plans, source auto-correct, and visual panel refine.
 
+// Shared visual-organizer accent palette — keep in sync with _CONCEPT_ACCENTS in
+// key_concept_map_source.jsx (the static KeyConceptMapView). Drives Venn tokens AND
+// the interactive concept-map branch/item nodes + their edges, so the static map and
+// this canvas colour-code by the SAME six accents. Names → Tailwind classes (families
+// safelisted in prismflow tailwind.config.js); hexes → SVG edge strokes (the hexes are
+// _CONCEPT_ACCENTS[i].border, so canvas edges match the static map's connector colours).
+const _VO_ACCENTS = ['indigo', 'teal', 'rose', 'amber', 'violet', 'sky'];
+const _VO_ACCENT_HEX = ['#6366f1', '#14b8a6', '#f43f5e', '#f59e0b', '#8b5cf6', '#0ea5e9'];
+
 const handleInitializeMap = async (deps) => {
   const { generatedContent, conceptMapNodes, conceptMapEdges, mapContainerRef, hasAutoLayoutRunRef, setConceptMapNodes, setConceptMapEdges, setIsConceptMapReady, parseFlowChartData, handleAutoLayout, warnLog } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleInitializeMap fired"); } catch(_) {}
@@ -20,7 +29,7 @@ const handleInitializeMap = async (deps) => {
               // across re-renders. Colour is decorative variety ONLY — deliberately
               // not keyed to the source set, so it never reveals which circle a
               // token belongs in. (Families safelisted in prismflow tailwind.config.js.)
-              const colors = ['indigo', 'teal', 'rose', 'amber', 'violet', 'sky'];
+              const colors = _VO_ACCENTS; // shared palette (defined at module top)
               let _tokenIdx = 0;
               if (Array.isArray(branches)) {
                   branches.forEach((branch, bIdx) => {
@@ -297,14 +306,21 @@ const handleInitializeMap = async (deps) => {
                   const branchId = `b-${bIdx}`;
                   const bx = 50 + (bIdx * 200) % 700;
                   const by = 200 + Math.floor(bIdx / 4) * 150;
+                  // Colour-code each branch by the shared accent (cyclic by index, exactly
+                  // like the static map's _conceptAccentFor) so the whole subtree — branch
+                  // node, its items, and the edges linking them — reads as one colour, and
+                  // the interactive map mirrors the static map's colour-coded branches.
+                  const _bAccent = _VO_ACCENTS[bIdx % _VO_ACCENTS.length];
+                  const _bAccentHex = _VO_ACCENT_HEX[bIdx % _VO_ACCENT_HEX.length];
                   newNodes.push({
                       id: branchId,
                       x: bx,
                       y: by,
                       text: branch.title,
-                      type: 'branch'
+                      type: 'branch',
+                      colorVariant: _bAccent
                   });
-                  newEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId });
+                  newEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId, color: _bAccentHex });
                   if (Array.isArray(branch.items)) {
                       branch.items.forEach((item, iIdx) => {
                           const itemId = `i-${bIdx}-${iIdx}`;
@@ -313,9 +329,10 @@ const handleInitializeMap = async (deps) => {
                               x: bx + (Math.random() * 40 - 20),
                               y: by + 120 + (iIdx * 60),
                               text: item,
-                              type: 'item'
+                              type: 'item',
+                              colorVariant: _bAccent
                           });
-                          newEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId });
+                          newEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId, color: _bAccentHex });
                       });
                   }
               });

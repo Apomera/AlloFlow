@@ -2159,7 +2159,7 @@ const renderInteractiveMap = (deps) => {
                                             <line
                                                 x1={fromNode.x} y1={fromNode.y}
                                                 x2={toNode.x} y2={toNode.y}
-                                                stroke={edge.style === 'dashed' ? '#94a3b8' : strokeColor}
+                                                stroke={edge.style === 'dashed' ? '#94a3b8' : (edge.status ? strokeColor : (edge.color || strokeColor))}
                                                 strokeWidth={strokeWidth}
                                                 strokeOpacity={edge.status ? "1" : "0.6"}
                                                 strokeDasharray={edge.status === 'incorrect' || edge.style === 'dashed' ? "5,5" : "none"}
@@ -2205,7 +2205,7 @@ const renderInteractiveMap = (deps) => {
                               absolute z-10 flex items-center justify-center text-center font-bold shadow-md group
                               ${!isMapLocked ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
                               ${node.type === 'main' ? 'bg-indigo-600 text-white w-40 h-40 rounded-full border-4 border-indigo-200 text-sm shadow-indigo-200' :
-                                node.type === 'branch' ? 'bg-white text-indigo-900 w-32 h-32 rounded-full border-2 border-indigo-200 text-xs shadow-indigo-100' :
+                                node.type === 'branch' ? `bg-white text-${node.colorVariant || 'indigo'}-900 w-32 h-32 rounded-full border-2 border-${node.colorVariant || 'indigo'}-300 text-xs shadow-sm` :
                                 node.type === 'venn-token' ? `bg-${node.colorVariant || 'slate'}-50 text-slate-800 px-4 py-2 rounded-xl border-b-4 border-${node.colorVariant || 'slate'}-200 text-xs hover:border-${node.colorVariant || 'slate'}-400 shadow-sm min-w-[80px] max-w-[150px] hover:scale-105 hover:shadow-lg hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all` :
                                 node.type === 'flow-start' || node.type === 'flow-end' ? 'bg-slate-800 text-white px-6 py-3 rounded-full border-2 border-slate-600 text-xs uppercase tracking-wider' :
                                 node.type === 'flow-process' ? 'bg-white text-indigo-900 w-48 h-20 rounded-lg border-2 border-indigo-200 text-xs shadow-sm flex items-center justify-center px-4' :
@@ -2223,6 +2223,7 @@ const renderInteractiveMap = (deps) => {
                                 node.type === 'ps-solution-item' ? 'bg-green-50 text-green-800 w-40 py-2 px-3 rounded-lg border border-green-300 text-[11px] shadow-sm hover:bg-green-100 transition-colors' :
                                 node.type === 'ps-outcome' ? 'bg-blue-600 text-white w-56 py-4 px-5 rounded-2xl border-4 border-blue-300 text-sm shadow-xl shadow-blue-200 z-20' :
                                 node.type === 'ps-outcome-item' ? 'bg-blue-50 text-blue-800 w-40 py-2 px-3 rounded-lg border border-blue-300 text-[11px] shadow-sm hover:bg-blue-100 transition-colors' :
+                                node.type === 'item' ? `bg-${node.colorVariant || 'slate'}-50 text-${node.colorVariant || 'slate'}-900 w-28 h-28 rounded-full border border-${node.colorVariant || 'slate'}-300 text-[11px] shadow-sm hover:bg-white transition-all` :
                                 'bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-[11px] hover:bg-white'}
                               ${connectingSourceId === node.id ? 'ring-4 ring-yellow-400 ring-offset-2 scale-105' : ''}
                           `}
