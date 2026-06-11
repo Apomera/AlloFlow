@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'f4906d5c';
+    var pluginCdnVersion = 'd4991e01';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15869,6 +15869,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const createTaggedPdf = _docPipeline ? _docPipeline.createTaggedPdf : async () => null;
   const createTypesetTaggedPdf = _docPipeline ? _docPipeline.createTypesetTaggedPdf : async () => null;
   const transcribeMediaToPayload = _docPipeline ? _docPipeline.transcribeMediaToPayload : null;
+  const convertXlsxToMarkdownTables = _docPipeline ? _docPipeline.convertXlsxToMarkdownTables : null;
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
   const applyWordRestorationInPlace = _docPipeline ? _docPipeline.applyWordRestorationInPlace : () => ({ restored: [], unplaceable: [] });
@@ -26824,7 +26825,7 @@ ${_toolList}
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, t, updatePdfPreview,
+          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, t, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
           fixContrastViolations, fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
