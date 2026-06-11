@@ -4389,7 +4389,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '42acfcc3';
+    var pluginCdnVersion = '6f016994';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15764,6 +15764,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
   const createTaggedPdf = _docPipeline ? _docPipeline.createTaggedPdf : async () => null;
+  const createTypesetTaggedPdf = _docPipeline ? _docPipeline.createTypesetTaggedPdf : async () => null;
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
   const applyWordRestorationInPlace = _docPipeline ? _docPipeline.applyWordRestorationInPlace : () => ({ restored: [], unplaceable: [] });
@@ -26719,7 +26720,7 @@ ${_toolList}
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, createTaggedPdf, t, updatePdfPreview,
+          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, createTaggedPdf, createTypesetTaggedPdf, t, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
           fixContrastViolations, fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
