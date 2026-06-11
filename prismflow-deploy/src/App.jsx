@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '3d0b36b8';
+    var pluginCdnVersion = '0b7484f9';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15874,6 +15874,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const transcribeMediaToPayload = _docPipeline ? _docPipeline.transcribeMediaToPayload : null;
   const translateAccessibleHtml = _docPipeline ? _docPipeline.translateAccessibleHtml : null;
   const simplifyAccessibleHtml = _docPipeline ? _docPipeline.simplifyAccessibleHtml : null;
+  const detectFormBlanks = _docPipeline ? _docPipeline.detectFormBlanks : null;
+  const applyFormBlanks = _docPipeline ? _docPipeline.applyFormBlanks : null;
   const convertXlsxToMarkdownTables = _docPipeline ? _docPipeline.convertXlsxToMarkdownTables : null;
   const getPdfPreviewHtml = _docPipeline ? _docPipeline.getPdfPreviewHtml : () => '';
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
@@ -24131,30 +24133,7 @@ ${_toolList}
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-50,
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-50,
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-50,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50,
-        /* -100 light shades (2026-06-11): organizer cards (e.g. the static Venn overlap, which used
-           bg-purple-100/95) + other content used -100 backgrounds that escaped the -50-only list above
-           and stayed bright under reading themes while their -50 siblings went transparent. Theme-gated,
-           so default/light mode is completely unaffected; reading themes just neutralize these too. */
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-slate-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-gray-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-indigo-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-blue-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-sky-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-cyan-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-green-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-emerald-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-lime-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-amber-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-orange-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-red-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-pink-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-fuchsia-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-100,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-violet-100 { background-color: transparent !important; }
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50 { background-color: transparent !important; }
         [data-reading-theme] [role="dialog"].bg-white,
         [data-reading-theme] .allo-popover-solid {
             background-color: #ffffff !important;
@@ -26962,7 +26941,7 @@ ${_toolList}
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-          languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
+          applyFormBlanks, detectFormBlanks, languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
           fixContrastViolations, fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
