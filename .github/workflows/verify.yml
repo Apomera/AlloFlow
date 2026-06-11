@@ -126,6 +126,8 @@ jobs:
         run: npx playwright test tests/e2e/multipage_golden.spec.ts
       - name: AI-path contracts (scripted Gemini — plan/surgical/rewrite guards)
         run: npx playwright test tests/e2e/ai_path_golden.spec.ts
+      - name: STEM golden (Formula role, Headers/IDTree, image-intel honesty)
+        run: npx playwright test tests/e2e/stem_golden.spec.ts
 
   cdn-goldens:
     name: CDN-heavy goldens (non-blocking — network flake tolerated)

@@ -7127,6 +7127,122 @@ HTML section ${chunkNum}/${chunks.length}:
     }
   };
 
+  // ── STEM image intelligence (2026-06-10) ──
+  // The ONLY path that looks at embedded-image PIXELS (alt text otherwise
+  // derives from text context). One Vision call per data-URL image, capped,
+  // fail-soft per image, zero calls when no images exist. Equations get a
+  // spoken-math Alt + LaTeX (→ /Formula role in the tag tree + optional
+  // MathML block); charts get a trend summary + a clearly-AI-ESTIMATED data
+  // table. DOJ named complex STEM content the industry-wide remediation
+  // weakness — this is the honest first slice at it.
+  var _temmlPromise = null;
+  const _ensureTemml = () => {
+    if (typeof window !== 'undefined' && window.temml && window.temml.renderToString) return Promise.resolve();
+    if (_temmlPromise) return _temmlPromise;
+    _temmlPromise = new Promise((resolve, reject) => {
+      const urls = ['https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js', 'https://unpkg.com/temml@0.10.34/dist/temml.min.js'];
+      const tryAt = (i) => {
+        if (i >= urls.length) { _temmlPromise = null; reject(new Error('temml load failed')); return; }
+        const s = document.createElement('script');
+        s.src = urls[i];
+        s.onload = () => (window.temml ? resolve() : (_temmlPromise = null, reject(new Error('temml loaded but missing'))));
+        s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
+        document.head.appendChild(s);
+      };
+      tryAt(0);
+    });
+    return _temmlPromise;
+  };
+  // Pure apply step (exported for tests): mutates the img + inserts the
+  // chart/math blocks from one parsed classification.
+  const _applyImageIntel = (htmlDoc2, im, parsed) => {
+    if (!parsed || typeof parsed !== 'object') return false;
+    const kind = String(parsed.kind || '').toLowerCase();
+    if (!['photo', 'chart', 'diagram', 'equation', 'map', 'decorative'].includes(kind)) return false;
+    im.setAttribute('data-allo-kind', kind);
+    const existingAlt = (im.getAttribute('alt') || '').trim();
+    const newAlt = String(parsed.alt || '').slice(0, 600);
+    // Vision saw the pixels — its alt wins over empty/placeholder alts, but
+    // never clobbers a substantive human/author-provided description.
+    if (newAlt && (existingAlt.length < 12 || /^(image|figure|photo|img|picture)\b/i.test(existingAlt))) im.setAttribute('alt', newAlt);
+    if (kind === 'decorative' && !existingAlt) { im.setAttribute('alt', ''); im.setAttribute('role', 'presentation'); }
+    if (kind === 'equation' && parsed.latex && String(parsed.latex).length < 2000) im.setAttribute('data-allo-latex', String(parsed.latex));
+    if (kind === 'chart' && (parsed.chartSummary || (parsed.chartData && Array.isArray(parsed.chartData.rows) && parsed.chartData.rows.length))) {
+      const det = htmlDoc2.createElement('details');
+      det.setAttribute('class', 'allo-chart-data');
+      det.setAttribute('data-allo-generated', 'vision');
+      const cols = (parsed.chartData && Array.isArray(parsed.chartData.columns)) ? parsed.chartData.columns.slice(0, 8) : [];
+      const rows = (parsed.chartData && Array.isArray(parsed.chartData.rows)) ? parsed.chartData.rows.slice(0, 8) : [];
+      const esc2 = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      det.innerHTML = '<summary>Chart description (AI-generated)</summary>'
+        + (parsed.chartSummary ? '<p>' + esc2(String(parsed.chartSummary).slice(0, 1200)) + '</p>' : '')
+        + (rows.length ? ('<table><thead><tr>' + cols.map((c) => '<th scope="col">' + esc2(c) + '</th>').join('') + '</tr></thead><tbody>'
+          + rows.map((r) => '<tr>' + (Array.isArray(r) ? r : [r]).slice(0, 8).map((c) => '<td>' + esc2(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>') : '')
+        + '<p><em>Values are AI-estimated from the image — verify against the source data before relying on them.</em></p>';
+      if (im.parentNode) im.parentNode.insertBefore(det, im.nextSibling);
+    }
+    return true;
+  };
+  const describeAndClassifyImages = async (htmlContent, opts = {}) => {
+    const cap = opts.cap || 10;
+    const out = { html: htmlContent, classified: 0, equations: 0, charts: 0, visionCalls: 0 };
+    try {
+      if (typeof DOMParser === 'undefined' || typeof callGeminiVision !== 'function') return out;
+      const htmlDoc2 = new DOMParser().parseFromString(htmlContent, 'text/html');
+      const imgs = Array.from(htmlDoc2.querySelectorAll('img')).filter((im) => /^data:image\//i.test(im.getAttribute('src') || '') && !im.getAttribute('data-allo-kind'));
+      if (!imgs.length) return out;
+      let changed = false;
+      for (const im of imgs) {
+        if (out.visionCalls >= cap) break;
+        const m = (im.getAttribute('src') || '').match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
+        if (!m || m[2].length > 2800000) continue; // ~2 MB base64 cap per image
+        out.visionCalls++;
+        try {
+          const raw = await callGeminiVision(
+            'You are describing ONE image extracted from an educational document, for accessibility. Return ONLY JSON, no prose:\n'
+            + '{"kind":"photo|chart|diagram|equation|map|decorative","alt":"one factual sentence","latex":"(equations only)","chartSummary":"(charts only: the trend in 1-2 sentences)","chartData":{"columns":["..."],"rows":[["..."]]}}\n'
+            + 'Rules: for an EQUATION, alt must be the SPOKEN form (e.g. "x equals negative b plus or minus the square root of b squared minus 4 a c, all over 2 a") and latex the LaTeX. '
+            + 'For a CHART, give chartSummary and AT MOST 8 rows of APPROXIMATE values actually visible in the image. '
+            + 'NEVER invent data you cannot see. Purely ornamental → kind "decorative" with alt "". Unsure of kind → "photo".',
+            m[2], m[1]
+          );
+          let parsed = null;
+          try {
+            const js = String(raw || '');
+            const a = js.indexOf('{'); const b = js.lastIndexOf('}');
+            if (a >= 0 && b > a) parsed = JSON.parse(js.slice(a, b + 1));
+          } catch (_) { parsed = null; }
+          if (parsed && _applyImageIntel(htmlDoc2, im, parsed)) {
+            changed = true;
+            out.classified++;
+            if (parsed.kind === 'equation') out.equations++;
+            if (parsed.kind === 'chart') out.charts++;
+            // Equation bonus: navigable MathML + copyable LaTeX in a collapsed
+            // block (no duplicate announcement — the img keeps the spoken alt;
+            // the block is opt-in via its summary).
+            if (parsed.kind === 'equation' && im.getAttribute('data-allo-latex')) {
+              try {
+                await _ensureTemml();
+                const mathml = window.temml.renderToString(im.getAttribute('data-allo-latex'), { displayMode: true });
+                if (mathml && mathml.includes('<math')) {
+                  const det = htmlDoc2.createElement('details');
+                  det.setAttribute('class', 'allo-math-source');
+                  det.setAttribute('data-allo-generated', 'vision');
+                  det.innerHTML = '<summary>Math (navigable MathML + LaTeX)</summary>' + mathml
+                    + '<pre class="allo-latex">' + im.getAttribute('data-allo-latex').replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</pre>'
+                    + '<p><em>AI-transcribed from the image — verify before reuse.</em></p>';
+                  if (im.parentNode) im.parentNode.insertBefore(det, im.nextSibling);
+                }
+              } catch (_) { /* temml unavailable → spoken alt still carries the math */ }
+            }
+          }
+        } catch (e) { try { warnLog('[STEM Vision] image classify failed (fail-soft): ' + (e && e.message)); } catch (_) {} }
+      }
+      if (changed) out.html = '<!DOCTYPE html>\n' + (htmlDoc2.documentElement ? htmlDoc2.documentElement.outerHTML : htmlContent);
+      return out;
+    } catch (_) { return out; }
+  };
+
   // ── IBM Equal Access — the SECOND deterministic engine (2026-06-10) ──
   // Engine consensus: two independent rule engines agreeing is more
   // persuasive evidence than one engine blended more cleverly (strategic-
@@ -12096,6 +12212,19 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
         // Safety-net deterministic WCAG gap closures
         accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
+        // ── STEM image intelligence (2026-06-10) ── Vision classifies each
+        // embedded image (equation/chart/diagram/photo/decorative): spoken-math
+        // alt + LaTeX/MathML for equations, AI-ESTIMATED-labeled data tables
+        // for charts. Runs once, capped at 10 Vision calls, fail-soft to a
+        // no-op. AI passes already ran, so AI usage is already consented.
+        let stemImageIntel = null;
+        try {
+          stemImageIntel = await describeAndClassifyImages(accessibleHtml, { cap: 10 });
+          if (stemImageIntel && stemImageIntel.classified > 0) {
+            accessibleHtml = stemImageIntel.html;
+            warnLog(`[PDF Fix] STEM image intelligence: ${stemImageIntel.classified} image(s) classified (${stemImageIntel.equations} equation(s), ${stemImageIntel.charts} chart(s)) in ${stemImageIntel.visionCalls} Vision call(s)`);
+          }
+        } catch (_) { stemImageIntel = null; }
         // Re-run axe after safety-net fixes
         const safetyAxe = await runAxeAudit(accessibleHtml);
         if (safetyAxe) axeResults = safetyAxe;
@@ -13736,7 +13865,11 @@ tr { page-break-inside: avoid; }
         if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(tag) && !(el.textContent || '').trim()) continue;
         items.push({
           parentKey: (tag === 'th' || tag === 'td' || tag === 'li' || tag === 'caption') ? _nearestContainerKey(el) : 0,
-          role: pdfRole,
+          // STEM (2026-06-10): Vision-classified equation images become
+          // /Formula (ISO 32000-1 §14.8.4.4.4) instead of /Figure — same
+          // image-XObject linkage path, semantically honest role, spoken-math
+          // Alt riding the same attribute.
+          role: (tag === 'img' && el.getAttribute('data-allo-kind') === 'equation') ? 'Formula' : pdfRole,
           // 2026-06-07: removed substring(0, 400) cap on outline-walker ActualText.
           // PDF spec has no /ActualText length limit. Long paragraphs / TDs / captions /
           // BlockQuotes previously had their tail silently dropped from the semantic
@@ -13818,7 +13951,7 @@ tr { page-break-inside: avoid; }
           return liRef;
         }
         const d = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: parentRef };
-        if (item.role === 'Figure') {
+        if (item.role === 'Figure' || item.role === 'Formula') {
           if (item.isDecorative) {
             // Stage 3 E-lite: decorative images become /NonStruct instead of
             // /Span so validators treat them as pure chrome with no content
@@ -14616,7 +14749,7 @@ tr { page-break-inside: avoid; }
         // images) stays unlinked: a WRONG alt-text attribution is worse than
         // a withheld declaration.
         try {
-          const figureLeaves = _unifiableLeafRefs.filter((lf) => lf.role === 'Figure');
+          const figureLeaves = _unifiableLeafRefs.filter((lf) => lf.role === 'Figure' || lf.role === 'Formula');
           const imageStream = [];
           for (const pr of _stage4PageResults) {
             let pArr = null;
@@ -15334,7 +15467,7 @@ tr { page-break-inside: avoid; }
       }
       // Content-leaf roles only (same set the post-export validator counts):
       // containers like Sect/Part legitimately carry no MCR and must not veto.
-      const _COUNTABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Figure: 1, Caption: 1, BlockQuote: 1, Lbl: 1, LBody: 1, TH: 1, TD: 1, Span: 1, Link: 1 };
+      const _COUNTABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Figure: 1, Formula: 1, Caption: 1, BlockQuote: 1, Lbl: 1, LBody: 1, TH: 1, TD: 1, Span: 1, Link: 1 };
       for (const lf of _unifiableLeafRefs) {
         if (!lf || !lf.ref || typeof lf.ref.objectNumber !== 'number') continue;
         if (!_COUNTABLE[lf.role]) continue;
@@ -22033,6 +22166,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
+    runEqualAccessAudit: _wrapAsync(runEqualAccessAudit),
+    describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
+    _applyImageIntel,
     fixContrastViolations: _wrap(fixContrastViolations),
     fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),
     sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
