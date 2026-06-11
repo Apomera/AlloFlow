@@ -963,6 +963,12 @@ function PdfAuditView(props) {
     if (_partial) addToast("\u{1F3A7} " + (t("toasts.audio_partial_dl") || "Partial audio downloaded") + " (" + j.blobs.length + "/" + j.segments.length + " sections \u2014 the filename says which part). " + (t("toasts.audio_partial_resume") || "Resume to finish the rest."), auto ? "error" : "info");
     else addToast((t("toasts.audio_downloaded") || "\u{1F3A7} Audio downloaded: ") + j.blobs.length + "/" + j.segments.length + " sections", "success");
   };
+  const _saveAudioMeta = (j, complete) => {
+    try {
+      setPdfFixResult((prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, savedAt: Date.now() } } : prev);
+    } catch (_) {
+    }
+  };
   const _runAudioJob = async () => {
     const j = audioJobRef.current;
     if (!j) return;
@@ -972,6 +978,7 @@ function PdfAuditView(props) {
     while (j.nextIdx < j.segments.length) {
       if (j.pauseRequested) {
         setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "paused" });
+        _saveAudioMeta(j);
         return;
       }
       try {
@@ -992,6 +999,7 @@ function PdfAuditView(props) {
         consecutiveNull++;
         if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
           setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "stalled" });
+          _saveAudioMeta(j);
           addToast("\u23F8 " + (t("toasts.audio_stalled") || "The voice service rate-limited \u2014 your progress is saved. Resume in about a minute."), "info");
           return;
         }
@@ -999,13 +1007,46 @@ function PdfAuditView(props) {
       }
       if (consecutiveNull >= 3) {
         setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "stalled" });
+        _saveAudioMeta(j);
         addToast("\u23F8 " + (t("toasts.audio_stalled") || "The voice service rate-limited \u2014 your progress is saved. Resume in about a minute."), "info");
         return;
       }
       setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "running" });
     }
     setAudioJob({ total: j.segments.length, done: j.blobs.length, failed: j.failed, status: "complete" });
+    _saveAudioMeta(j, true);
     await _stitchAudioJob(true);
+  };
+  const _resumeAudioFromMeta = () => {
+    const meta = pdfFixResult && pdfFixResult._audioJobMeta;
+    if (!meta || !pdfFixResult.accessibleHtml) return;
+    const srcText = meta.srMode ? _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim() : (() => {
+      const d = document.createElement("div");
+      d.innerHTML = pdfFixResult.accessibleHtml;
+      return (d.textContent || "").trim();
+    })();
+    const segments = [];
+    let remaining = srcText;
+    while (remaining.length > 0) {
+      if (remaining.length <= 600) {
+        segments.push(remaining);
+        break;
+      }
+      let splitAt = remaining.lastIndexOf(". ", 600);
+      if (splitAt < 200) splitAt = remaining.indexOf(". ", 400);
+      if (splitAt < 0 || splitAt > 800) splitAt = 500;
+      else splitAt += 2;
+      segments.push(remaining.substring(0, splitAt));
+      remaining = remaining.substring(splitAt).trim();
+    }
+    if (segments.length !== meta.total) {
+      addToast(t("toasts.audio_resume_mismatch") || "\u26A0 The document changed since that audio job (section count differs) \u2014 starting fresh instead so nothing mismatches.", "info");
+      audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: !!meta.srMode };
+    } else {
+      audioJobRef.current = { segments, blobs: [], nextIdx: meta.nextIdx, failed: 0, pauseRequested: false, srMode: !!meta.srMode, partOffset: meta.nextIdx };
+      addToast((t("toasts.audio_resuming_saved") || "Resuming audio from section ") + (meta.nextIdx + 1) + "/" + meta.total + (t("toasts.audio_resuming_saved2") || " \u2014 this session\u2019s sections will download as the next part file (your earlier part file has sections 1\u2013" + meta.nextIdx + ")."), "info");
+    }
+    _runAudioJob();
   };
   const _collectClassifiedImgs = (html) => {
     try {
@@ -2045,7 +2086,8 @@ Return ONLY JSON:
             extractedChars: project.extractedChars || 0,
             issuesFixed: project.issuesFixed || 0,
             remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-            autoFixPasses: project.autoFixPasses || 0
+            autoFixPasses: project.autoFixPasses || 0,
+            _audioJobMeta: project._audioJobMeta || null
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf" });
           try {
@@ -4712,7 +4754,8 @@ Return ONLY JSON:
             extractedChars: project.extractedChars || 0,
             issuesFixed: project.issuesFixed || 0,
             remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-            autoFixPasses: project.autoFixPasses || 0
+            autoFixPasses: project.autoFixPasses || 0,
+            _audioJobMeta: project._audioJobMeta || null
           });
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf", size: project.multiSession?.fileSize || 0 });
           try {
@@ -5240,13 +5283,17 @@ Return simplified text with # for headings, - for lists.`, false);
       audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, srMode: true };
       addToast((t("toasts.generating_sr") || "Generating screen-reader-style audio \u2014 structure announced (headings, lists, tables): ") + segments.length + " sections\u2026", "info");
       _runAudioJob();
-    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors", title: t("pdf_audit.audio.sr_title") || 'Same voice, but announcing the structure the way a screen reader would: "Heading level 2\u2026", "List, 5 items\u2026", "Table, 3 rows\u2026", image descriptions. Hear the structural experience without running a screen reader.' }, "\u{1F9BB} ", t("pdf_audit.audio.sr_btn") || "Audio (screen-reader style)"), callTTS && audioJob && /* @__PURE__ */ React.createElement("div", { className: "w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900", "data-help-key": "pdf_audit_audio_download_btn" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F3A7} ", t("pdf_audit.audio.job") || "Audio", ": ", audioJob.done, "/", audioJob.total, " ", t("pdf_audit.audio.sections") || "sections", audioJob.failed > 0 ? " \xB7 " + audioJob.failed + " " + (t("pdf_audit.audio.failed") || "failed") : ""), /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded font-bold text-[10px] uppercase " + (audioJob.status === "running" ? "bg-blue-100 text-blue-700" : audioJob.status === "complete" ? "bg-green-100 text-green-700" : "bg-amber-200 text-amber-800") }, audioJob.status === "stalled" ? t("pdf_audit.audio.stalled") || "rate-limited \u2014 resume in ~1 min" : audioJob.status), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 ml-auto" }, audioJob.status === "running" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: "px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors", title: t("pdf_audit.audio.sr_title") || 'Same voice, but announcing the structure the way a screen reader would: "Heading level 2\u2026", "List, 5 items\u2026", "Table, 3 rows\u2026", image descriptions. Hear the structural experience without running a screen reader.' }, "\u{1F9BB} ", t("pdf_audit.audio.sr_btn") || "Audio (screen-reader style)"), callTTS && !audioJob && pdfFixResult._audioJobMeta && pdfFixResult._audioJobMeta.nextIdx > 0 && pdfFixResult._audioJobMeta.nextIdx < pdfFixResult._audioJobMeta.total && /* @__PURE__ */ React.createElement("button", { onClick: _resumeAudioFromMeta, className: "px-4 py-2 bg-amber-100 border border-amber-400 text-amber-800 rounded-xl font-bold text-xs hover:bg-amber-200 transition-colors", title: t("pdf_audit.audio.resume_meta_title") || "This project saved an unfinished audio job. Resuming regenerates nothing you already downloaded \u2014 it continues from the saved section into a new part file (play the part files in order)." }, "\u23EF ", t("pdf_audit.audio.resume_meta") || "Resume audio at section ", pdfFixResult._audioJobMeta.nextIdx + 1, "/", pdfFixResult._audioJobMeta.total, pdfFixResult._audioJobMeta.srMode ? " (SR-style)" : ""), callTTS && audioJob && /* @__PURE__ */ React.createElement("div", { className: "w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900", "data-help-key": "pdf_audit_audio_download_btn" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F3A7} ", t("pdf_audit.audio.job") || "Audio", ": ", audioJob.done, "/", audioJob.total, " ", t("pdf_audit.audio.sections") || "sections", audioJob.failed > 0 ? " \xB7 " + audioJob.failed + " " + (t("pdf_audit.audio.failed") || "failed") : ""), /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded font-bold text-[10px] uppercase " + (audioJob.status === "running" ? "bg-blue-100 text-blue-700" : audioJob.status === "complete" ? "bg-green-100 text-green-700" : "bg-amber-200 text-amber-800") }, audioJob.status === "stalled" ? t("pdf_audit.audio.stalled") || "rate-limited \u2014 resume in ~1 min" : audioJob.status), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 ml-auto" }, audioJob.status === "running" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (audioJobRef.current) audioJobRef.current.pauseRequested = true;
     }, className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" }, "\u23F8 ", t("pdf_audit.audio.pause") || "Pause"), (audioJob.status === "paused" || audioJob.status === "stalled") && /* @__PURE__ */ React.createElement("button", { onClick: _runAudioJob, className: "px-2 py-1 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700" }, "\u25B6 ", t("pdf_audit.audio.resume") || "Resume"), audioJob.done > 0 && audioJob.status !== "complete" && /* @__PURE__ */ React.createElement("button", { onClick: () => _stitchAudioJob(false), className: "px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100", title: t("pdf_audit.audio.partial_title") || "Stitch the finished sections into one playable file now \u2014 you can keep generating afterwards." }, "\u2B07 ", t("pdf_audit.audio.partial") || "Download what\u2019s ready"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      if (audioJobRef.current) audioJobRef.current.pauseRequested = true;
+      const j = audioJobRef.current;
+      if (j) {
+        j.pauseRequested = true;
+        if (j.nextIdx > 0 && j.nextIdx < j.segments.length) _saveAudioMeta(j);
+      }
       audioJobRef.current = null;
       setAudioJob(null);
-    }, className: "px-2 py-1 text-amber-700 font-bold hover:text-red-600" }, "\u2715"))), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 h-1.5 bg-amber-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-500 rounded-full transition-all", style: { width: Math.round(audioJob.done / Math.max(1, audioJob.total) * 100) + "%" } })))), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-changed", className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4CB} What Changed ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-white rounded-lg border border-slate-400 p-3 space-y-1.5 text-xs text-slate-600" }, (() => {
+    }, className: "px-2 py-1 text-amber-700 font-bold hover:text-red-600", title: t("pdf_audit.audio.dismiss_title") || "Close this job. Progress position is kept in the project \u2014 save the project and you can resume in a future session." }, "\u2715"))), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 h-1.5 bg-amber-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-500 rounded-full transition-all", style: { width: Math.round(audioJob.done / Math.max(1, audioJob.total) * 100) + "%" } })))), /* @__PURE__ */ React.createElement("details", { id: "allo-sec-changed", className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4CB} What Changed ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-white rounded-lg border border-slate-400 p-3 space-y-1.5 text-xs text-slate-600" }, (() => {
       const changes = [];
       if (pdfFixResult.autoFixPasses > 0) changes.push(`\u{1F527} ${pdfFixResult.autoFixPasses} automated fix pass${pdfFixResult.autoFixPasses > 1 ? "es" : ""} applied`);
       const html = pdfFixResult.accessibleHtml || "";
