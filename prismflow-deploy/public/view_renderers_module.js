@@ -188,46 +188,52 @@ const renderOutlineContent = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, broadcastInteractiveOrganizer } = deps;
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {
   });
+  const _GameLoadingFallback = () => React.createElement(
+    "div",
+    { className: "p-8 flex flex-col items-center justify-center gap-3 text-center", role: "status", "aria-live": "polite" },
+    React.createElement("div", { className: "w-10 h-10 rounded-full border-[3px] border-indigo-100 border-t-indigo-500 motion-safe:animate-spin", "aria-hidden": "true" }),
+    React.createElement("div", { className: "text-sm font-bold text-slate-500" }, t("common.loading") || "Loading the activity\u2026")
+  );
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() {
     const _C = window.AlloModules.CauseEffectSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() {
     const _C = window.AlloModules.PipelineBuilderGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() {
     const _C = window.AlloModules.TChartSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const ConceptMapSortGame = window.AlloModules && window.AlloModules.ConceptMapSortGame ? (function() {
     const _C = window.AlloModules.ConceptMapSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() {
     const _C = window.AlloModules.OutlineSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? (function() {
     const _C = window.AlloModules.FishboneSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? (function() {
     const _C = window.AlloModules.ProblemSolutionSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? (function() {
     const _C = window.AlloModules.FrayerSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? (function() {
     const _C = window.AlloModules.SeeThinkWonderSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? (function() {
     const _C = window.AlloModules.StoryMapSortGame;
     return React.memo((props) => React.createElement(_C, props));
-  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  })() : _GameLoadingFallback;
   const handleGenerateFrayerImage = deps.handleGenerateFrayerImage;
   const handleRemoveFrayerImage = deps.handleRemoveFrayerImage;
   try {
@@ -1357,6 +1363,11 @@ const renderInteractiveMap = (deps) => {
         if (e.target === e.currentTarget && !isMapLocked) setConnectingSourceId(null);
       }
     },
+    /* @__PURE__ */ React.createElement("style", null, `
+                      @keyframes vo-node-in { from { opacity: 0; } to { opacity: 1; } }
+                      .vo-node-anim { animation: vo-node-in 0.35s ease-out both; }
+                      @media (prefers-reduced-motion: reduce) { .vo-node-anim { animation: none; } }
+                  `),
     !isMapLocked && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-dot-pattern pointer-events-none z-0" }),
     generatedContent?.data?.structureType === "Cause and Effect" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0 flex" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-4 text-orange-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-orange-300" }), "CAUSES")), /* @__PURE__ */ React.createElement("div", { className: "w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 right-4 text-teal-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, "EFFECTS", /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-teal-300" }))), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-600" }, /* @__PURE__ */ React.createElement("svg", { width: "48", height: "48", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: "animate-pulse" }, /* @__PURE__ */ React.createElement("path", { d: "M5 12h14" }), /* @__PURE__ */ React.createElement("path", { d: "m12 5 7 7-7 7" })))),
     generatedContent?.data?.structureType === "Problem Solution" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0 flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "h-[20%] w-full bg-gradient-to-b from-red-50/70 to-transparent border-b-2 border-dashed border-red-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-3 left-4 text-red-600 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "10" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "8", x2: "12", y2: "12" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "16", x2: "12.01", y2: "16" })), "PROBLEM")), /* @__PURE__ */ React.createElement("div", { className: "flex-grow w-full bg-gradient-to-b from-transparent via-green-50/30 to-transparent" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-[22%] left-4 text-green-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 rounded-sm bg-green-300 rotate-45" }), "SOLUTIONS")), /* @__PURE__ */ React.createElement("div", { className: "h-[25%] w-full bg-gradient-to-t from-blue-50/60 to-transparent border-t-2 border-dashed border-blue-200" }, /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-3 left-4 text-blue-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5" }, /* @__PURE__ */ React.createElement("path", { d: "M22 11.08V12a10 10 0 1 1-5.93-9.14" }), /* @__PURE__ */ React.createElement("polyline", { points: "22 4 12 14.01 9 11.01" })), "OUTCOME"))),
@@ -1445,7 +1456,7 @@ const renderInteractiveMap = (deps) => {
         !isChallengeActive && !isMapLocked && /* @__PURE__ */ React.createElement("g", { className: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" }, /* @__PURE__ */ React.createElement("circle", { cx: (fromNode.x + toNode.x) / 2, cy: (fromNode.y + toNode.y) / 2, r: "8", fill: "#ef4444" }), /* @__PURE__ */ React.createElement("text", { x: (fromNode.x + toNode.x) / 2, y: (fromNode.y + toNode.y) / 2, dy: "3", textAnchor: "middle", fill: "white", fontSize: "10", fontWeight: "bold" }, "\xD7"))
       );
     }), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("filter", { id: "vo-edge-glow", x: "-50%", y: "-50%", width: "200%", height: "200%" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "2" })), /* @__PURE__ */ React.createElement("marker", { id: "arrowhead", markerWidth: "10", markerHeight: "7", refX: "9", refY: "3.5", orient: "auto" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#818cf8" }))), !isVenn && (conceptMapNodes || []).filter((node) => node.type && node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(React.Fragment, { key: node.id }, renderFlowShape(node, connectingSourceId === node.id))), !isVenn && connectingSourceId && /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "rgba(99, 102, 241, 0.05)", className: "pointer-events-none animate-pulse" })),
-    (conceptMapNodes || []).filter((node) => !node.type || !node.type.startsWith("flow-")).map((node) => /* @__PURE__ */ React.createElement(
+    (conceptMapNodes || []).filter((node) => !node.type || !node.type.startsWith("flow-")).map((node, _nodeIdx) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: node.id,
@@ -1459,10 +1470,13 @@ const renderInteractiveMap = (deps) => {
           ...node.type === "main" ? {
             background: "radial-gradient(circle at 30% 30%, #818cf8 0%, #6366f1 45%, #4338ca 100%)",
             boxShadow: "0 0 45px rgba(99,102,241,0.4), 0 8px 24px rgba(67,56,202,0.22), inset 0 -8px 24px rgba(30,27,75,0.22)"
-          } : {}
+          } : {},
+          // Per-node entrance stagger (bounded by % so a late-added node never waits
+          // long). Pairs with the .vo-node-anim class + keyframe above.
+          animationDelay: _nodeIdx % 10 * 35 + "ms"
         },
         className: `
-                              absolute z-10 flex items-center justify-center text-center font-bold shadow-md group
+                              vo-node-anim absolute z-10 flex items-center justify-center text-center font-bold shadow-md group
                               ${!isMapLocked ? "cursor-grab active:cursor-grabbing" : "cursor-default"}
                               ${node.type === "main" ? "text-white w-40 h-40 rounded-full border-4 border-white text-sm transition-all" : node.type === "branch" ? `bg-white text-${node.colorVariant || "indigo"}-900 w-32 h-32 rounded-full border-2 border-${node.colorVariant || "indigo"}-300 text-xs shadow-sm transition-all hover:shadow-md` : node.type === "venn-token" ? `bg-${node.colorVariant || "slate"}-50 text-slate-800 px-4 py-2 rounded-xl border-b-4 border-${node.colorVariant || "slate"}-200 text-xs hover:border-${node.colorVariant || "slate"}-400 shadow-sm min-w-[80px] max-w-[150px] hover:scale-105 hover:shadow-lg hover:-translate-y-1 active:border-b-0 active:translate-y-0 transition-all` : node.type === "flow-start" || node.type === "flow-end" ? "bg-slate-800 text-white px-6 py-3 rounded-full border-2 border-slate-600 text-xs uppercase tracking-wider" : node.type === "flow-process" ? "bg-white text-indigo-900 w-48 h-20 rounded-lg border-2 border-indigo-200 text-xs shadow-sm flex items-center justify-center px-4" : node.type === "flow-decision" ? "bg-yellow-50 text-yellow-900 w-32 h-32 rotate-45 border-2 border-yellow-400 text-xs shadow-sm flex items-center justify-center" : node.type === "flow-note" ? "bg-yellow-100 text-yellow-800 px-3 py-2 text-[11px] border border-yellow-200 shadow-sm max-w-[150px] rounded-bl-none" : node.type === "outline-main" ? "bg-slate-900 text-white w-60 py-4 px-6 rounded-xl border-2 border-slate-700 shadow-xl text-sm z-20" : node.type === "outline-branch" ? "bg-white text-indigo-900 w-48 py-3 px-4 rounded-lg border-l-8 border-l-indigo-600 border-y border-r border-slate-200 text-xs shadow-md z-10" : node.type === "outline-item" ? "bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-400 text-[11px] shadow-sm hover:bg-white z-0" : node.type === "ce-main" ? "bg-slate-800 text-white w-56 py-4 px-6 rounded-xl border-2 border-slate-600 shadow-xl text-sm z-20" : node.type === "cause-node" ? "bg-orange-50 text-orange-900 w-48 py-3 px-4 rounded-xl border-l-[6px] border-l-orange-400 border-y border-r border-orange-200 text-xs shadow-md hover:shadow-lg hover:border-orange-300 transition-all" : node.type === "effect-node" ? "bg-teal-50 text-teal-900 w-48 py-3 px-4 rounded-xl border-r-[6px] border-r-teal-400 border-y border-l border-teal-200 text-xs shadow-md hover:shadow-lg hover:border-teal-300 transition-all" : node.type === "chain-node" ? "bg-purple-50 text-purple-900 w-44 py-3 px-4 rounded-lg border-2 border-purple-300 text-xs shadow-md hover:shadow-lg transition-all" : node.type === "ps-problem" ? "bg-red-600 text-white w-64 py-5 px-6 rounded-2xl border-4 border-red-300 text-sm shadow-xl shadow-red-200 z-20" : node.type === "ps-solution" ? "bg-white text-green-900 w-48 py-3 px-4 rounded-xl border-t-[6px] border-t-green-500 border-x border-b border-green-200 text-xs shadow-lg hover:shadow-xl hover:scale-105 transition-all" : node.type === "ps-solution-item" ? "bg-green-50 text-green-800 w-40 py-2 px-3 rounded-lg border border-green-300 text-[11px] shadow-sm hover:bg-green-100 transition-colors" : node.type === "ps-outcome" ? "bg-blue-600 text-white w-56 py-4 px-5 rounded-2xl border-4 border-blue-300 text-sm shadow-xl shadow-blue-200 z-20" : node.type === "ps-outcome-item" ? "bg-blue-50 text-blue-800 w-40 py-2 px-3 rounded-lg border border-blue-300 text-[11px] shadow-sm hover:bg-blue-100 transition-colors" : node.type === "item" ? `bg-${node.colorVariant || "slate"}-50 text-${node.colorVariant || "slate"}-900 w-28 h-28 rounded-full border border-${node.colorVariant || "slate"}-300 text-[11px] shadow-sm hover:bg-white hover:shadow-md transition-all` : "bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-[11px] hover:bg-white"}
                               ${connectingSourceId === node.id ? "ring-4 ring-yellow-400 ring-offset-2 scale-105" : ""}

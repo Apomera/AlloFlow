@@ -193,16 +193,26 @@ const renderOutlineContent = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, broadcastInteractiveOrganizer } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
-  const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const ConceptMapSortGame = window.AlloModules && window.AlloModules.ConceptMapSortGame ? (function() { const _C = window.AlloModules.ConceptMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() { const _C = window.AlloModules.OutlineSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? (function() { const _C = window.AlloModules.FishboneSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? (function() { const _C = window.AlloModules.ProblemSolutionSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? (function() { const _C = window.AlloModules.FrayerSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? (function() { const _C = window.AlloModules.SeeThinkWonderSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
-  const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? (function() { const _C = window.AlloModules.StoryMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  // Branded loading state for lazily-registered organizer games — shown only in the brief
+  // window before window.AlloModules.<Game> registers (or if it fails to load). Replaces 10
+  // identical plain-text "Loading game..." fallbacks with one spinner + localized label
+  // (role=status for screen readers; the spin is motion-safe so reduced-motion users don't see it).
+  const _GameLoadingFallback = () => React.createElement(
+    'div',
+    { className: 'p-8 flex flex-col items-center justify-center gap-3 text-center', role: 'status', 'aria-live': 'polite' },
+    React.createElement('div', { className: 'w-10 h-10 rounded-full border-[3px] border-indigo-100 border-t-indigo-500 motion-safe:animate-spin', 'aria-hidden': 'true' }),
+    React.createElement('div', { className: 'text-sm font-bold text-slate-500' }, (t('common.loading') || 'Loading the activity…'))
+  );
+  const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const ConceptMapSortGame = window.AlloModules && window.AlloModules.ConceptMapSortGame ? (function() { const _C = window.AlloModules.ConceptMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() { const _C = window.AlloModules.OutlineSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? (function() { const _C = window.AlloModules.FishboneSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? (function() { const _C = window.AlloModules.ProblemSolutionSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? (function() { const _C = window.AlloModules.FrayerSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? (function() { const _C = window.AlloModules.SeeThinkWonderSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? (function() { const _C = window.AlloModules.StoryMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
   const handleGenerateFrayerImage = deps.handleGenerateFrayerImage;
   const handleRemoveFrayerImage = deps.handleRemoveFrayerImage;
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired"); } catch(_) {}
@@ -2010,6 +2020,15 @@ const renderInteractiveMap = (deps) => {
                   className={`relative w-full ${isVenn ? 'h-[800px]' : 'h-[75vh] min-h-[600px]'} bg-white border border-slate-400 rounded-xl overflow-hidden shadow-inner select-none mb-6 ${isMapLocked ? 'cursor-default' : 'cursor-crosshair'} ${isChallengeActive ? 'ring-4 ring-yellow-100' : ''}`}
                   onMouseDown={(e) => { if(e.target === e.currentTarget && !isMapLocked) setConnectingSourceId(null); }}
               >
+                  {/* Staggered entrance — nodes fade in on mount (opacity only, so the centring
+                      transform is untouched), echoing the static KeyConceptMapView's draw-in. Class-
+                      based so prefers-reduced-motion can disable it (an inline animation can't be
+                      overridden by a media query); the per-node stagger delay is set inline below. */}
+                  <style>{`
+                      @keyframes vo-node-in { from { opacity: 0; } to { opacity: 1; } }
+                      .vo-node-anim { animation: vo-node-in 0.35s ease-out both; }
+                      @media (prefers-reduced-motion: reduce) { .vo-node-anim { animation: none; } }
+                  `}</style>
                   {!isMapLocked && <div className="absolute inset-0 bg-dot-pattern pointer-events-none z-0"></div>}
                   {/* Cause & Effect zone backgrounds */}
                   {generatedContent?.data?.structureType === 'Cause and Effect' && (
@@ -2212,7 +2231,7 @@ const renderInteractiveMap = (deps) => {
                   </svg>
                   {(conceptMapNodes || [])
                     .filter(node => !node.type || !node.type.startsWith('flow-'))
-                    .map(node => (
+                    .map((node, _nodeIdx) => (
                       <div
                           key={node.id}
                           style={{
@@ -2225,10 +2244,13 @@ const renderInteractiveMap = (deps) => {
                               ...(node.type === 'main' ? {
                                   background: 'radial-gradient(circle at 30% 30%, #818cf8 0%, #6366f1 45%, #4338ca 100%)',
                                   boxShadow: '0 0 45px rgba(99,102,241,0.4), 0 8px 24px rgba(67,56,202,0.22), inset 0 -8px 24px rgba(30,27,75,0.22)'
-                              } : {})
+                              } : {}),
+                              // Per-node entrance stagger (bounded by % so a late-added node never waits
+                              // long). Pairs with the .vo-node-anim class + keyframe above.
+                              animationDelay: ((_nodeIdx % 10) * 35) + 'ms'
                           }}
                           className={`
-                              absolute z-10 flex items-center justify-center text-center font-bold shadow-md group
+                              vo-node-anim absolute z-10 flex items-center justify-center text-center font-bold shadow-md group
                               ${!isMapLocked ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
                               ${node.type === 'main' ? 'text-white w-40 h-40 rounded-full border-4 border-white text-sm transition-all' :
                                 node.type === 'branch' ? `bg-white text-${node.colorVariant || 'indigo'}-900 w-32 h-32 rounded-full border-2 border-${node.colorVariant || 'indigo'}-300 text-xs shadow-sm transition-all hover:shadow-md` :
