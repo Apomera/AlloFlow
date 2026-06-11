@@ -16651,6 +16651,100 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
 
   // ── PDF Preview: Update iframe content ──
   // Accept overrides to avoid stale closure — state may not have updated yet when called from setTimeout
+  // ── Word-like drag-resize for preview images (2026-06-11, maintainer ask) ──
+  // Attached after every preview write (doc.write kills listeners, so
+  // re-attach is the lifecycle). Click an image → an indigo corner handle +
+  // size badge appear; drag (or arrow keys — the handle is a real slider for
+  // keyboard users) to resize. Width persists as BOTH the inline style (%)
+  // and the width attribute, so preview, HTML, tagged PDF, and Word/PPTX all
+  // inherit it — same persistence contract as the −/+ sizer buttons. The
+  // handle/badge carry class 'allo-img-controls', which every snapshot and
+  // export path already strips: they can never leak into accessibleHtml.
+  const _attachPreviewImageResizer = (idoc) => {
+    try {
+      if (!idoc || !idoc.body || !idoc.defaultView || idoc.getElementById('allo-img-resize-style')) return;
+      const st = idoc.createElement('style');
+      st.id = 'allo-img-resize-style';
+      st.textContent = '.allo-resize-handle{position:absolute;width:14px;height:14px;background:#4f46e5;border:2px solid #fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.4);cursor:nwse-resize;z-index:9999;touch-action:none}.allo-resize-handle:focus{outline:3px solid #fbbf24;outline-offset:1px}.allo-resize-badge{position:absolute;background:#1e293b;color:#fff;font:700 11px system-ui;padding:2px 8px;border-radius:6px;z-index:9999;pointer-events:none}';
+      idoc.head.appendChild(st);
+      let handle = null, badge = null, target = null, drag = null;
+      const clear = () => { try { if (handle) handle.remove(); if (badge) badge.remove(); } catch (_) {} handle = badge = target = drag = null; };
+      const place = () => {
+        if (!handle || !target || !target.isConnected) { clear(); return; }
+        const w = idoc.defaultView;
+        const r = target.getBoundingClientRect();
+        handle.style.left = (r.right + w.scrollX - 8) + 'px';
+        handle.style.top = (r.bottom + w.scrollY - 8) + 'px';
+        if (badge) { badge.style.left = (r.left + w.scrollX + 4) + 'px'; badge.style.top = (r.top + w.scrollY + 4) + 'px'; }
+      };
+      const pctOf = (img) => { const pw = (img.parentElement && img.parentElement.clientWidth) || 600; return Math.max(10, Math.min(100, Math.round((img.getBoundingClientRect().width / pw) * 100))); };
+      const apply = (img, pct) => {
+        pct = Math.max(10, Math.min(100, Math.round(pct)));
+        img.style.width = pct + '%';
+        img.style.height = 'auto';
+        img.setAttribute('width', String(Math.round(pct * 6)));
+        if (badge) badge.textContent = pct + '%';
+        place();
+        return pct;
+      };
+      const notify = () => { try { const w = idoc.defaultView; if (w && w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} };
+      const select = (img) => {
+        clear();
+        target = img;
+        handle = idoc.createElement('div');
+        handle.className = 'allo-img-controls allo-resize-handle';
+        handle.setAttribute('contenteditable', 'false');
+        handle.setAttribute('role', 'slider');
+        handle.setAttribute('tabindex', '0');
+        handle.setAttribute('aria-label', 'Resize image: drag the corner handle, or press the arrow keys');
+        handle.setAttribute('aria-valuemin', '10');
+        handle.setAttribute('aria-valuemax', '100');
+        handle.setAttribute('aria-valuenow', String(pctOf(img)));
+        badge = idoc.createElement('div');
+        badge.className = 'allo-img-controls allo-resize-badge';
+        badge.setAttribute('contenteditable', 'false');
+        badge.setAttribute('aria-hidden', 'true');
+        badge.textContent = pctOf(img) + '%';
+        idoc.body.appendChild(handle);
+        idoc.body.appendChild(badge);
+        place();
+        handle.addEventListener('keydown', (ke) => {
+          let d = 0;
+          if (ke.key === 'ArrowLeft' || ke.key === 'ArrowDown') d = -5;
+          else if (ke.key === 'ArrowRight' || ke.key === 'ArrowUp') d = 5;
+          else if (ke.key === 'Escape') { clear(); return; }
+          else return;
+          ke.preventDefault();
+          if (!target) return;
+          const np = apply(target, pctOf(target) + d);
+          handle.setAttribute('aria-valuenow', String(np));
+          notify();
+        });
+        handle.addEventListener('pointerdown', (pe) => {
+          pe.preventDefault(); pe.stopPropagation();
+          if (!target) return;
+          const pw = (target.parentElement && target.parentElement.clientWidth) || 600;
+          drag = { x0: pe.clientX, w0: target.getBoundingClientRect().width, pw };
+          try { handle.setPointerCapture(pe.pointerId); } catch (_) {}
+        });
+        handle.addEventListener('pointermove', (pe) => {
+          if (!drag || !target) return;
+          apply(target, ((drag.w0 + (pe.clientX - drag.x0)) / drag.pw) * 100);
+        });
+        const end = () => { if (!drag) return; drag = null; if (handle && target) handle.setAttribute('aria-valuenow', String(pctOf(target))); notify(); };
+        handle.addEventListener('pointerup', end);
+        handle.addEventListener('pointercancel', end);
+      };
+      idoc.addEventListener('click', (e) => {
+        const t = e.target;
+        if (!t || t === handle) return;
+        if (t.tagName === 'IMG' && t.closest && !t.closest('.allo-img-controls') && !t.closest('[data-alloflow-picker]')) { select(t); return; }
+        if (!t.closest || !t.closest('.allo-resize-handle')) clear();
+      });
+      idoc.defaultView.addEventListener('scroll', place, { passive: true });
+      idoc.defaultView.addEventListener('resize', place, { passive: true });
+    } catch (_) {}
+  };
   const updatePdfPreview = (overrideTheme, overrideFontSize, overrideA11y) => {
     if (!pdfPreviewRef.current || !pdfFixResult?.accessibleHtml) return;
     const iframe = pdfPreviewRef.current;
@@ -16675,7 +16769,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // 2026-06-11 [10]): after one outerHTML round-trip the sizer
           // buttons would be dead chrome anyway.
           const _liveClone = liveDoc.documentElement.cloneNode(true);
-          try { _liveClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg]').forEach((el) => el.remove()); } catch (_) {}
+          try { _liveClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
           sourceHtml = '<!DOCTYPE html>\n' + _liveClone.outerHTML;
         }
       }
@@ -16699,6 +16793,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Enable editing
     setTimeout(() => {
       try { doc.designMode = 'on'; } catch(e) {}
+      _attachPreviewImageResizer(doc);
                             // Auto-run lightweight a11y audit on preview load
                             var _ear = (_s && typeof _s === 'function') ? (_s().exportAuditResult) : (typeof exportAuditResult !== 'undefined' ? exportAuditResult : null);
                             if (!_ear) { setTimeout(async () => { try { setExportAuditLoading(true); const html = doc.documentElement.outerHTML; const [aiR, axeR] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html).catch(() => null)]); const combined = aiR || { score: 0, summary: '', issues: [], passes: [] }; if (axeR) { combined.axeViolations = axeR.totalViolations; combined.axePasses = axeR.totalPasses; } setExportAuditResult(combined); } catch(e) {} setExportAuditLoading(false); }, 500); }
@@ -17667,7 +17762,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     try { doc.designMode = 'off'; } catch(e) {}
     // Editor-only chrome (sizer bars, picker grids) never reaches exports.
     const _expClone = doc.documentElement.cloneNode(true);
-    try { _expClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg]').forEach((el) => el.remove()); } catch (_) {}
+    try { _expClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
     const html = '<!DOCTYPE html>\n' + _expClone.outerHTML;
     try { doc.designMode = 'on'; } catch(e) {}
     return html;

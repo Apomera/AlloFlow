@@ -10515,7 +10515,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         // never reach accessibleHtml — they leaked into the HTML export,
         // the plain TTS text, and the final engine audits.
         const _clone = doc.documentElement.cloneNode(true);
-        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg]').forEach((el) => el.remove()); } catch (_) {}
+        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
         const html = '<!DOCTYPE html>\n' + _clone.outerHTML;
         setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html } : prev);
       } catch (_) {}
