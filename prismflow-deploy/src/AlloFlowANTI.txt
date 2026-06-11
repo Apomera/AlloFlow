@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'f17ce0e4';
+    var pluginCdnVersion = 'ec216057';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15637,13 +15637,23 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     let cur = pdfFixResultRef.current;
     try {
       let lastViolations = Infinity;
+      let lastScore = -1;
+      let stagnantRounds = 0;
       for (let round = 0; round < maxRounds; round++) {
         if (pdfAutoContinueAbortRef.current) break;
         if (!cur || !cur.axeAudit) break;
         if ((cur.afterScore || 0) >= pdfTargetScore) break;
         if (cur.axeAudit.totalViolations === 0) break;
-        if (cur.axeAudit.totalViolations >= lastViolations) break; // no progress last round
+        // Run-until-target (2026-06-11, maintainer ask): one flat round used
+        // to end the loop below target. Progress = fewer violations OR a
+        // better score; only TWO consecutive stagnant rounds stop early
+        // (grinding identical rounds burns quota for nothing — and when we
+        // do stop below target, the closing toast says so).
+        const _progressed = cur.axeAudit.totalViolations < lastViolations || (cur.afterScore || 0) > lastScore;
+        if (!_progressed) { stagnantRounds++; if (stagnantRounds >= 2) break; }
+        else stagnantRounds = 0;
         lastViolations = cur.axeAudit.totalViolations;
+        lastScore = cur.afterScore || 0;
         setPdfFixLoading(true);
         setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + cur.axeAudit.totalViolations + ' violation' + (cur.axeAudit.totalViolations !== 1 ? 's' : '') + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
         const result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
@@ -15689,6 +15699,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
       } else if (cur && (cur.afterScore || 0) >= pdfTargetScore) {
         addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+      } else if (cur) {
+        // Honest below-target ending (2026-06-11): say WHY it stopped and
+        // what to do, instead of ending silently under the goal.
+        addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.'), 'info');
       }
     } finally {
       setPdfFixLoading(false);
