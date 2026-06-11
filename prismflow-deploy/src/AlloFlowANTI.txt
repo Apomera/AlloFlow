@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '163be8a7';
+    var pluginCdnVersion = '588a2a7c';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -24135,7 +24135,30 @@ ${_toolList}
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-50,
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-50,
         [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-50,
-        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50 { background-color: transparent !important; }
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-50,
+        /* -100 light shades (2026-06-11): organizer cards (e.g. the static Venn overlap, which used
+           bg-purple-100/95) + other content used -100 backgrounds that escaped the -50-only list above
+           and stayed bright under reading themes while their -50 siblings went transparent. Theme-gated,
+           so default/light mode is completely unaffected; reading themes just neutralize these too. */
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-slate-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-gray-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-indigo-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-blue-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-sky-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-cyan-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-teal-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-green-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-emerald-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-lime-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-yellow-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-amber-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-orange-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-red-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-rose-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-pink-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-fuchsia-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-purple-100,
+        [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"]) .bg-violet-100 { background-color: transparent !important; }
         [data-reading-theme] [role="dialog"].bg-white,
         [data-reading-theme] .allo-popover-solid {
             background-color: #ffffff !important;
