@@ -6023,8 +6023,10 @@ const d = labToolData.solarSystem || {};
                         cvEl.style.cursor = overFeature ? 'help' : overPlanet ? 'grab' : (overMoon || overAtmo) ? 'pointer' : 'default';
                       });
 
+                      var planetRaf;
                       function drawPlanet() {
 
+                        if (!cvEl.isConnected) { cancelAnimationFrame(planetRaf); if (ro) ro.disconnect(); return; } // tear down loop + observer on remount/close
                         tick++;
 
                         ctx.clearRect(0, 0, W, H);
@@ -7099,7 +7101,7 @@ const d = labToolData.solarSystem || {};
                         ctx.fillText(sel.dist ? sel.dist + ' AU' : '', 28, 18);
                         ctx.globalAlpha = 1;
 
-                        requestAnimationFrame(drawPlanet);
+                        planetRaf = requestAnimationFrame(drawPlanet);
 
                       }
 
@@ -13032,7 +13034,9 @@ const d = labToolData.solarSystem || {};
                       var SW = skyEl.offsetWidth || 300, SH = 80;
                       skyEl.width = SW * 2; skyEl.height = SH * 2; skyCtx.scale(2, 2);
                       var skyTick = 0;
+                      var skyRaf;
                       function drawSky() {
+                        if (!skyEl.isConnected) { cancelAnimationFrame(skyRaf); skyEl._skyInit = null; return; } // stop + allow clean restart when the panel re-shows
                         skyTick++;
                         skyCtx.fillStyle = '#020210';
                         skyCtx.fillRect(0, 0, SW, SH);
@@ -13064,7 +13068,7 @@ const d = labToolData.solarSystem || {};
                         skyCtx.font = '8px system-ui';
                         skyCtx.textAlign = 'center';
                         skyCtx.fillText('View from ' + sel.name + '\'s surface', SW * 0.5, SH - 4);
-                        requestAnimationFrame(drawSky);
+                        skyRaf = requestAnimationFrame(drawSky);
                       }
                       drawSky();
                     }
@@ -13823,7 +13827,9 @@ const d = labToolData.solarSystem || {};
                       var HW = hohEl.offsetWidth || 300, HH = 100;
                       hohEl.width = HW * 2; hohEl.height = HH * 2; hctx.scale(2, 2);
                       var htick = 0;
+                      var hohRaf;
                       function drawHohmann() {
+                        if (!hohEl.isConnected) { cancelAnimationFrame(hohRaf); hohEl._hohInit = null; return; }
                         htick++;
                         hctx.fillStyle = '#020210';
                         hctx.fillRect(0, 0, HW, HH);
@@ -13886,7 +13892,7 @@ const d = labToolData.solarSystem || {};
                         hctx.fillText('Earth \u2192 ' + sel.name + ' transfer orbit', HW * 0.65, 15);
                         hctx.fillStyle = '#94a3b8';
                         hctx.fillText(HOHMANN[sel.name].travelDays + ' days', HW * 0.65, 27);
-                        requestAnimationFrame(drawHohmann);
+                        hohRaf = requestAnimationFrame(drawHohmann);
                       }
                       drawHohmann();
                     }

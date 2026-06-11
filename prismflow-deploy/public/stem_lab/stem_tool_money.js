@@ -3240,9 +3240,21 @@ window.StemLab = window.StemLab || {
                       cvEl.width = W * 2; cvEl.height = H * 2;
                       c2.scale(2, 2);
                       var start = performance.now();
+                      var lastBlink = -1;
                       function drawDb() {
                         if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dbAnim); return; }
                         var t = (performance.now() - start) / 1000;
+                        var features = [
+                          { color: '#fb7185', label: 'Microprinting' },
+                          { color: '#fbbf24', label: 'Portrait watermark' },
+                          { color: '#67e8f9', label: 'Color-shifting ink' },
+                          { color: '#a855f7', label: 'Security thread (UV)' }
+                        ];
+                        var blink = Math.floor((t * 0.5) % features.length);
+                        // Only the highlighted feature changes (~every 2s); skip the
+                        // full bill redraw on the frames where it's unchanged.
+                        if (blink === lastBlink) { cvEl._dbAnim = requestAnimationFrame(drawDb); return; }
+                        lastBlink = blink;
                         c2.fillStyle = '#022c22';
                         c2.fillRect(0, 0, W, H);
                         var bx = W * 0.08;
@@ -3275,13 +3287,6 @@ window.StemLab = window.StemLab || {
                         c2.font = 'bold 22px serif';
                         c2.fillText('1', bx + 16, by + 22);
                         c2.fillText('1', bx + bw - 16, by + bh - 8);
-                        var features = [
-                          { color: '#fb7185', label: 'Microprinting' },
-                          { color: '#fbbf24', label: 'Portrait watermark' },
-                          { color: '#67e8f9', label: 'Color-shifting ink' },
-                          { color: '#a855f7', label: 'Security thread (UV)' }
-                        ];
-                        var blink = Math.floor((t * 0.5) % features.length);
                         features.forEach(function(f, i) {
                           var sel = i === blink;
                           c2.fillStyle = f.color;
@@ -3301,6 +3306,7 @@ window.StemLab = window.StemLab || {
                       var ro = new ResizeObserver(function() {
                         W = cvEl.offsetWidth; H = cvEl.offsetHeight;
                         cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                        lastBlink = -1; // force a repaint at the new size
                       });
                       ro.observe(cvEl);
                     },

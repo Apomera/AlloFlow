@@ -942,6 +942,11 @@ var d = labToolData.dissection || {};
 
             function drawDissectionFrame() {
 
+              // Stop the loop once React unmounts the canvas — this heavyweight
+              // full-anatomy redraw otherwise reschedules itself at 60fps forever,
+              // surviving tab switches and navigation away from the tool.
+              if (!canvas.isConnected) { canvas._dissAnim = null; return; }
+
               dissTick++;
 
               // Guard: skip frame if canvas dimensions are not finite or zero

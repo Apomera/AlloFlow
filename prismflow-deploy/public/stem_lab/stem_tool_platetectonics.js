@@ -264,9 +264,15 @@
       var prefersReduced = false;
       try { prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
 
+      // draw() is deterministic on (sRef.current, stationsRef.current, isDark) and
+      // consumes no time/phase variable — the scene only changes on drag/toggle.
+      // Skip the (gradient-allocating) full repaint on frames where none of that
+      // state changed; the signature covers every field draw() reads.
+      var _lastSig = null;
       function frame() {
         if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; }
-        draw(ctx, sRef.current);
+        var sig = JSON.stringify(sRef.current) + '|' + JSON.stringify(stationsRef.current) + '|' + isDark;
+        if (sig !== _lastSig) { _lastSig = sig; draw(ctx, sRef.current); }
         if (!prefersReduced) animRef.current = requestAnimationFrame(frame);
       }
       frame();

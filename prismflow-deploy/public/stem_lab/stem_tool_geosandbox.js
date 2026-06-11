@@ -159,6 +159,7 @@ window.StemLab = window.StemLab || {
     var animId;
     var animate = function() {
       animId = requestAnimationFrame(animate);
+      renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
       if (controls) controls.update();
       var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
     };
@@ -208,7 +209,7 @@ window.StemLab = window.StemLab || {
 
   function cleanupScene() {
     if (window._geoScene) {
-      cancelAnimationFrame(window._geoScene.animId);
+      cancelAnimationFrame((window._geoScene.renderer && window._geoScene.renderer._geoAnimId) || window._geoScene.animId);
       try{ if(window._geoScene.renderer && window._geoScene.renderer._alloComposer){ (window._geoScene.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); window._geoScene.renderer._alloComposer=null; } }catch(e){}
       if (window._geoScene.renderer) window._geoScene.renderer.dispose();
       if (window._geoScene.controls) window._geoScene.controls.dispose();

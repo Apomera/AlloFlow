@@ -3198,7 +3198,8 @@
 
         // Animation loop
         function animate() {
-          requestAnimationFrame(animate);
+          if (engine && engine._destroyed) return; // teardown ran — stop rescheduling (the closure engine keeps scene/camera, so the guard below won't catch it)
+          engine._rafId = requestAnimationFrame(animate);
           // Guard: if Three.js isn't on window (CDN failure, teardown), skip frame entirely
           if (!window.THREE || !engine || !engine.scene || !engine.camera) return;
           var dt = Math.min(engine.clock.getDelta(), 0.1);
@@ -4080,6 +4081,8 @@
       function destroyEngine() {
         var engine = window[engineKey];
         if (engine) {
+          engine._destroyed = true;
+          if (engine._rafId) cancelAnimationFrame(engine._rafId); // stop the FPS render loop on teardown
           // Remove every listener registered during initEngine. Without this
           // step, document-scoped handlers (mousemove / keydown / keyup /
           // pointerlockchange) keep firing after navigation and the closure

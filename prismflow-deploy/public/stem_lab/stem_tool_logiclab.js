@@ -2368,6 +2368,7 @@ window.StemLab = window.StemLab || {
                     cvEl.width = W * 2; cvEl.height = H * 2;
                     c2.scale(2, 2);
                     var start = performance.now();
+                    var lastBlink = -1;
                     var ops = [
                       { name: 'AND', sym: '\u2227', fn: function(a,b){return a&&b;}, color: '#3b82f6' },
                       { name: 'OR', sym: '\u2228', fn: function(a,b){return a||b;}, color: '#22c55e' },
@@ -2377,9 +2378,13 @@ window.StemLab = window.StemLab || {
                     function drawTt() {
                       if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); return; }
                       var t = (performance.now() - start) / 1000;
+                      var blink = Math.floor((t * 0.5) % ops.length);
+                      // Content only changes when `blink` flips (~every 2s); skip the
+                      // full redraw on the ~119/120 frames where it's unchanged.
+                      if (blink === lastBlink) { cvEl._ttAnim = requestAnimationFrame(drawTt); return; }
+                      lastBlink = blink;
                       c2.fillStyle = '#1e1b4b';
                       c2.fillRect(0, 0, W, H);
-                      var blink = Math.floor((t * 0.5) % ops.length);
                       var op = ops[blink];
                       // Title
                       c2.fillStyle = op.color;
@@ -2465,6 +2470,7 @@ window.StemLab = window.StemLab || {
                     var ro = new ResizeObserver(function() {
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      lastBlink = -1; // force a repaint at the new size
                     });
                     ro.observe(cvEl);
                   },
