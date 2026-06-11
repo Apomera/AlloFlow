@@ -1683,7 +1683,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     await new Promise((res) => setTimeout(res, 250));
                     const r = pdfFixResultRef.current;
                     const needsLoop = r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore;
-                    if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); }
+                    if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
                   </button>
@@ -1928,7 +1928,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 <div className="flex gap-3 justify-center">
-                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
+                  <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
                   <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
@@ -2556,6 +2556,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <span className="text-blue-700">
                                   <span className="font-bold">{t('pdf_audit.score.second_engine') || 'Second engine (IBM Equal Access):'}</span>{' '}
                                   {pdfFixResult.secondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'}{pdfFixResult.secondEngineAudit.potentialViolations > 0 ? (', ' + pdfFixResult.secondEngineAudit.potentialViolations + ' ' + (t('pdf_audit.score.needs_review') || 'needing human review')) : ''} → {t('pdf_audit.score.score_label') || 'score'} {pdfFixResult.secondEngineAudit.score}. {t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.'}
+                                  {Array.isArray(pdfFixResult.secondEngineAudit.fails) && pdfFixResult.secondEngineAudit.fails.length > 0 && (
+                                    <details className="mt-1">
+                                      <summary className="cursor-pointer font-bold text-blue-600 hover:text-blue-800">{t('pdf_audit.score.ea_fails_summary') || 'What Equal Access flagged'}</summary>
+                                      <ul className="mt-0.5 space-y-0.5 text-[10px] text-blue-800">
+                                        {pdfFixResult.secondEngineAudit.fails.slice(0, 12).map((f, fi) => (
+                                          <li key={fi}><span className="font-mono">{f.id}</span> — {f.description}{f.nodes > 1 ? (' (' + f.nodes + ' places)') : ''}</li>
+                                        ))}
+                                        {pdfFixResult.secondEngineAudit.fails.length > 12 && <li>…{t('pdf_audit.score.ea_more') || 'and'} {pdfFixResult.secondEngineAudit.fails.length - 12} {t('pdf_audit.score.ea_more2') || 'more'}</li>}
+                                      </ul>
+                                    </details>
+                                  )}
                                 </span>
                               )}
                             </div>
@@ -4465,7 +4476,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _jump = (id) => { try { const el = document.getElementById(id); if (!el) { addToast(t('pdf_audit.dashboard.section_unavailable') || 'That section has nothing to show for this pass (its data didn’t apply this round) — everything else is below.', 'info'); return; } if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} };
                         const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
                         const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
-                        return (
+                        return (<>
+                          {/* Unmissable running banner (2026-06-11, maintainer ask):
+                              results render after round 1 while auto-continue keeps
+                              working — without this it looked FINISHED. */}
+                          {(pdfFixLoading || pdfAutoContinueRunning) && (
+                            <div className="sticky -top-5 -mx-5 px-5 py-2.5 bg-indigo-600 text-white z-30 flex items-center gap-2 flex-wrap rounded-t-2xl" role="status" aria-live="polite">
+                              <span className="inline-block w-3 h-3 rounded-full bg-white animate-ping shrink-0" aria-hidden="true"></span>
+                              <span className="text-xs font-bold flex-1 min-w-0">⏳ {t('pdf_audit.running.lead') || 'STILL WORKING'} — {pdfFixStep || (t('pdf_audit.running.generic') || 'improving toward the target score')}. {t('pdf_audit.running.note') || 'Results below update live; keep this open.'}</span>
+                              <button onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }} className="px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0">⏹ {t('pdf_audit.running.stop') || 'Stop after this round'}</button>
+                            </div>
+                          )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
                             <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Accessibility score: before → after'}>
                               {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span>
@@ -4487,7 +4508,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <button className={_chip} onClick={() => startPipelineTour('results')} data-help-ignore="true" title={t('pdf_audit.tour.results_title') || 'A 60-second guided walk through this screen — what to download, what the score means, where the reports live.'}>✨ {t('pdf_audit.tour.results_cta') || 'Tour'}</button>
                             )}
                           </div>
-                        );
+                        </>);
                       })()}
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">✅ {t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready'}</h4>
