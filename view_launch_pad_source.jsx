@@ -149,8 +149,8 @@ function LaunchPadView(props) {
           </div>
           <div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeIn 0.6s ease-out' }}>
             <img src="https://raw.githubusercontent.com/Apomera/AlloFlow/main/rainbow-book.jpg" alt="AlloFlow" style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
-            <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
-            <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
+            <h1 style={{ fontSize: '32px', fontWeight: 900, background: 'linear-gradient(90deg,#fcd34d,#fdba74,#fb923c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
+            <p style={{ fontSize: '12px', color: '#c7d2fe', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
           </div>
           {/* ── Mic Permission Banner ── */}
           {!micBannerDismissed && (
@@ -172,7 +172,7 @@ function LaunchPadView(props) {
                     <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>
                       {t('launch_pad.mic_title') || 'Microphone Setup'}
                     </p>
-                    <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.7)', margin: 0, lineHeight: '1.5' }}>
+                    <p style={{ fontSize: '11px', color: '#c7d2fe', margin: 0, lineHeight: '1.5' }}>
                       {t('launch_pad.mic_desc') || 'Some tools use your microphone for dictation, recording, and voice input.'}
                     </p>
                   </div>
@@ -204,7 +204,7 @@ function LaunchPadView(props) {
                     style={{
                       padding: '10px 24px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.2)',
                       cursor: 'pointer', background: 'rgba(255,255,255,0.06)',
-                      color: 'rgba(165,180,252,0.8)', fontSize: '13px', fontWeight: 600,
+                      color: '#c7d2fe', fontSize: '13px', fontWeight: 600,
                       transition: 'all 0.2s',
                     }}
                   >
@@ -224,28 +224,28 @@ function LaunchPadView(props) {
             <div className="lp-card" style={{ animationDelay: '0.1s' }} role="button" tabIndex={0} aria-label={t('launch_pad.full_title') + '. ' + t('launch_pad.full_desc')} onClick={() => { setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }} aria-hidden="true">🚀</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.full_title')}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.full_desc')}</p>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.full_desc')}</p>
             </div>
             <div className="lp-card" style={{ animationDelay: '0.2s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.guided_title') || 'Guided Mode') + ' (recommended). ' + t('launch_pad.guided_desc')} onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge">{t('launch_pad.badge_recommended')}</span></div>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '0.5s' }} aria-hidden="true">🧭</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.guided_title') || 'Guided Mode'}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.guided_desc')}</p>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.guided_desc')}</p>
             </div>
             <div className="lp-card" style={{ animationDelay: '0.3s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.learning_tools_title') || 'Learning Tools') + '. ' + (t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub')} onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #34d399, #059669)' }}>{t('launch_pad.badge_3_tools') || '3 Tools'}</span></div>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }} aria-hidden="true">{'\uD83E\uDDE9'}</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.learning_tools_title') || 'Learning Tools'}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow'}</p>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow'}</p>
             </div>
             <div className="lp-card" style={{ animationDelay: '0.4s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.educator_tools_title') || 'Educator Tools') + '. ' + (t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer') + (APP_CONFIG._cfg_validation_key ? ' (password protected)' : '')} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>{APP_CONFIG._cfg_validation_key ? (t('launch_pad.badge_educator') || '🔒 Educator') : (t('launch_pad.badge_educator_open') || '🛠️ Educator')}</span></div>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1.5s' }} aria-hidden="true">🛠️</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.educator_tools_title') || 'Educator Tools'}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer, and professional clinical tools — password protected'}</p>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer, and professional clinical tools — password protected'}</p>
             </div>
           </div>
-          <p style={{ marginTop: '48px', fontSize: '11px', color: 'rgba(165,180,252,0.4)', fontWeight: 500 }}>{t('launch_pad.switch_hint')}</p>
+          <p style={{ marginTop: '48px', fontSize: '11px', color: 'rgba(199,210,254,0.85)', fontWeight: 500 }}>{t('launch_pad.switch_hint')}</p>
           {!_isCanvasEnv && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowAIBackendModal(true); }}

@@ -114,8 +114,10 @@ function HeaderBar(props) {
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>
               <h1 className={`text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 ${theme === 'contrast' ? 'text-yellow-400' : 'text-white drop-shadow-sm'}`}>
-                <Layers className="w-10 h-10" aria-hidden="true" />
-                {t('header.app_name')}
+                <span className={`inline-flex items-center justify-center ${theme === 'contrast' ? '' : 'p-1.5 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30'}`} aria-hidden="true">
+                  <Layers className="w-10 h-10" aria-hidden="true" />
+                </span>
+                {theme === 'contrast' ? t('header.app_name') : <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent">{t('header.app_name')}</span>}
                 <div className={`hidden md:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                     <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-green-200'}`}>
                         <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
@@ -133,15 +135,17 @@ function HeaderBar(props) {
                     </div>
                 </div>
               </h1>
-              <p className={`mt-2 text-sm font-medium opacity-90 ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
+              <p className={`mt-2 text-sm font-medium italic opacity-90 ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
                 {t('header.tagline')}
               </p>
-              <p className={`text-[11px] mt-1 ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-300/80'}`}>
-                {t('header.rights')}
-              </p>
-              <p className={`text-[11px] mt-1 font-medium flex items-center gap-1 ${theme === 'contrast' ? 'text-red-400' : 'text-orange-200'}`}>
-                <AlertCircle size={10} /> {t('header.pii_warning')}
-              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <span className={`inline-flex items-center gap-1 text-[11px] ${theme === 'contrast' ? 'text-yellow-400' : 'px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100'}`}>
+                  {t('header.rights')}
+                </span>
+                <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100'}`}>
+                  <AlertCircle size={10} aria-hidden="true" /> {t('header.pii_warning')}
+                </span>
+              </div>
             </div>
             <div className="flex flex-col items-end gap-4 w-full lg:w-auto">
                 <div className="flex items-center gap-4 flex-wrap justify-end relative">

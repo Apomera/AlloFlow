@@ -242,7 +242,10 @@
     style: {
       fontSize: '32px',
       fontWeight: 900,
-      color: 'white',
+      background: 'linear-gradient(90deg,#fcd34d,#fdba74,#fb923c)',
+      WebkitBackgroundClip: 'text',
+      backgroundClip: 'text',
+      color: 'transparent',
       margin: '0 0 8px',
       letterSpacing: '-0.5px',
       fontFamily: 'system-ui, -apple-system, sans-serif'
@@ -250,7 +253,7 @@
   }, "AlloFlow"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '12px',
-      color: 'rgba(165,180,252,0.7)',
+      color: '#c7d2fe',
       fontWeight: 600,
       letterSpacing: '2px',
       textTransform: 'uppercase',
@@ -296,7 +299,7 @@
   }, t('launch_pad.mic_title') || 'Microphone Setup'), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '11px',
-      color: 'rgba(165,180,252,0.7)',
+      color: '#c7d2fe',
       margin: 0,
       lineHeight: '1.5'
     }
@@ -342,7 +345,7 @@
       border: '1px solid rgba(255,255,255,0.2)',
       cursor: 'pointer',
       background: 'rgba(255,255,255,0.06)',
-      color: 'rgba(165,180,252,0.8)',
+      color: '#c7d2fe',
       fontSize: '13px',
       fontWeight: 600,
       transition: 'all 0.2s'
@@ -405,7 +408,7 @@
   }, t('launch_pad.full_title')), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '12px',
-      color: 'rgba(165,180,252,0.7)',
+      color: '#c7d2fe',
       lineHeight: '1.6',
       margin: 0
     }
@@ -453,7 +456,7 @@
   }, t('launch_pad.guided_title') || 'Guided Mode'), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '12px',
-      color: 'rgba(165,180,252,0.7)',
+      color: '#c7d2fe',
       lineHeight: '1.6',
       margin: 0
     }
@@ -507,7 +510,7 @@
   }, t('launch_pad.learning_tools_title') || 'Learning Tools'), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '12px',
-      color: 'rgba(165,180,252,0.7)',
+      color: '#c7d2fe',
       lineHeight: '1.6',
       margin: 0
     }
@@ -566,7 +569,7 @@
   }, t('launch_pad.educator_tools_title') || 'Educator Tools'), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '12px',
-      color: 'rgba(165,180,252,0.7)',
+      color: '#c7d2fe',
       lineHeight: '1.6',
       margin: 0
     }
@@ -574,7 +577,7 @@
     style: {
       marginTop: '48px',
       fontSize: '11px',
-      color: 'rgba(165,180,252,0.4)',
+      color: 'rgba(199,210,254,0.85)',
       fontWeight: 500
     }
   }, t('launch_pad.switch_hint')), !_isCanvasEnv && /*#__PURE__*/React.createElement("button", {
