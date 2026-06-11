@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '6c83d916';
+    var pluginCdnVersion = '7423af82';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15740,6 +15740,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // Cross-session memory (2026-06-10): Canvas wipes all origin storage
       // between sessions, so the project FILE carries the teacher's run
       // history and pipeline preferences. Restored by the Load Project path.
+      // Audio job position (2026-06-11): segments rebuild deterministically
+      // from the same accessibleHtml + splitter, so saving just the POSITION
+      // lets a future session resume generating from section N (audio blobs
+      // themselves are far too big for the project file).
+      _audioJobMeta: cur._audioJobMeta || null,
       runHistory: pdfRunHistoryRef.current,
       prefs: {
         auditors: pdfAuditorCount,
