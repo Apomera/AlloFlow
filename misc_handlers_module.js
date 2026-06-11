@@ -67,6 +67,53 @@ const handleFileUpload = async (e, deps) => {
         auditReader.readAsDataURL(file);
         return;
     }
+    // ── Audio/video → the remediation pipeline (2026-06-10) ──
+    // Recordings become a first-class pipeline input: transcribe, wrap in the
+    // 'ALLOTRANSCRIPT' format (magic-prefixed base64 — flows through every
+    // pipeline dispatcher like a document), open the triage. From there the
+    // teacher gets the FULL export suite: structured remediation, typeset
+    // tagged PDF, accessible Word, audio re-export. The triage's 'Skip to
+    // Text Extraction' covers the old put-it-in-the-source-box behavior.
+    // Files needing chunking (>15MB) keep the existing chunked-transcription
+    // modal (content path) — they never reach this branch.
+    if ((file.type.startsWith('audio/') || file.type.startsWith('video/')) && !LargeFileHandler.needsChunking(file)) {
+        try {
+            setIsExtracting(true);
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                try {
+                    const base64String = reader.result.split(',')[1];
+                    addToast(t('toasts.transcribing_for_pipeline') || '🎙 Transcribing the recording… it will open in the accessibility pipeline when ready.', 'info');
+                    const transcript = await callGeminiVision(
+                        'You are an expert educational transcriber. Listen to this recording and provide a comprehensive, accurate transcript of the spoken content. Use blank lines between natural topic shifts/paragraphs. Return ONLY the transcript text.',
+                        base64String, file.type || 'audio/mpeg'
+                    );
+                    if (!transcript || transcript.trim().length < 20) throw new Error('transcription returned no usable text');
+                    // Inline ALLOTRANSCRIPT encoder (canonical copy lives in
+                    // doc_pipeline_source.jsx — keep the MAGIC in sync).
+                    const MAGIC = 'ALLOTRANSCRIPT:v1\n';
+                    const bytes = new TextEncoder().encode(MAGIC + transcript.trim());
+                    let bin = '';
+                    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+                    setPendingPdfBase64(btoa(bin));
+                    setPendingPdfFile(file);
+                    setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size, _transcriptSource: true });
+                    setIsExtracting(false);
+                    addToast(t('toasts.transcript_ready_pipeline') || '✅ Transcript ready — choose Make Accessible for the full treatment, or Skip to Text Extraction to use it as source material. Review for transcription errors before distributing.', 'success');
+                } catch (trErr) {
+                    warnLog('[Media→Pipeline] transcription failed:', trErr?.message || trErr);
+                    setError((t('toasts.transcription_failed') || 'Transcription failed: ') + (trErr?.message || 'unknown error'));
+                    setIsExtracting(false);
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (err) {
+            warnLog('[Media→Pipeline] unhandled:', err);
+            setError(t('toasts.file_process_error'));
+            setIsExtracting(false);
+        }
+        return;
+    }
     if (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')) {
         try {
             if (false) { // PDF handling now goes through audit route above
@@ -418,6 +465,49 @@ const handleLoadProject = (e, deps) => {
                     }
                     window.dispatchEvent(new CustomEvent('alloflow-roadready-restored'));
                 } catch (e) { warnLog && warnLog('RoadReady restore failed:', e); }
+            }
+            // SEL Hub teacher-authored Stations (custom curated tool bundles
+            // with quests). Mirror to window slot AND localStorage, then fire
+            // a custom event so an open SEL Hub re-hydrates its savedStations
+            // state from the window slot without remount.
+            if (rawData.selStations && (Array.isArray(rawData.selStations) || typeof rawData.selStations === 'object')) {
+                try {
+                    window.__alloflowSelStations = rawData.selStations;
+                    if (Array.isArray(rawData.selStations)) {
+                        try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(rawData.selStations)); } catch (e) {}
+                    }
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-stations-restored'));
+                } catch (e) { warnLog && warnLog('SEL stations restore failed:', e); }
+            }
+            // SEL Hub per-station quest progress (xpThreshold / timeSpent /
+            // freeResponse / manualComplete tracking). Same restore flow.
+            if (rawData.selProgress && typeof rawData.selProgress === 'object') {
+                try {
+                    window.__alloflowSelProgress = rawData.selProgress;
+                    try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(rawData.selProgress)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-progress-restored'));
+                } catch (e) { warnLog && warnLog('SEL progress restore failed:', e); }
+            }
+            // SEL Hub per-tool persistent state (Voice Detective confusion
+            // matrix, Journal entries, etc.). The window slot is keyed by
+            // toolId; individual tools listen for the custom event and pull
+            // their own slice via window.SelToolDataManager.get(toolId).
+            if (rawData.selToolData && typeof rawData.selToolData === 'object') {
+                try {
+                    window.__alloflowSelToolData = rawData.selToolData;
+                    // Also mirror each tool's per-tool localStorage key so
+                    // tools that read directly from localStorage on mount
+                    // (instead of via the manager) pick up the restore.
+                    Object.keys(rawData.selToolData || {}).forEach(function (toolId) {
+                        try {
+                            var slot = rawData.selToolData[toolId];
+                            if (slot && typeof slot === 'object' && slot._lsKey && typeof slot._lsKey === 'string') {
+                                localStorage.setItem(slot._lsKey, JSON.stringify(slot._lsValue !== undefined ? slot._lsValue : slot));
+                            }
+                        } catch (e) {}
+                    });
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-restored'));
+                } catch (e) { warnLog && warnLog('SEL tool data restore failed:', e); }
             }
             // Rehydrate sticker overlays. Stickers are saved into the
             // project JSON by phase_k_helpers.executeSaveFile so a teacher's

@@ -130,6 +130,8 @@ jobs:
         run: npx playwright test tests/e2e/stem_golden.spec.ts
       - name: Typeset-then-tag golden (Office-input tagged PDFs)
         run: npx playwright test tests/e2e/typeset_tagged_golden.spec.ts
+      - name: Transcript-format golden (audio/video as first-class input)
+        run: npx playwright test tests/e2e/transcript_golden.spec.ts
 
   cdn-goldens:
     name: CDN-heavy goldens (non-blocking — network flake tolerated)

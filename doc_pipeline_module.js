@@ -2813,7 +2813,44 @@ var createDocPipeline = function(deps) {
   // Extract text from a PDF using pdf.js's native text layer. Zero AI calls, zero truncation.
   // Returns { fullText, pages, pageCount, sourceCharCount, isScanned }.
   // isScanned = true when the PDF has no text layer (< 50 chars/page average) — fall back to OCR.
+  // ── 'ALLOTRANSCRIPT' document format (2026-06-10) ──
+  // Audio/video inputs become a first-class pipeline format: the transcript
+  // is wrapped with a magic prefix and base64-encoded, so it flows through
+  // every existing dispatcher exactly like JVBER (PDF) and UEsDB (zip) do —
+  // intake, audit, fix, project save/load, typeset tagged PDF, all exports.
+  // Unicode-safe (TextEncoder/TextDecoder, chunked btoa).
+  const TRANSCRIPT_MAGIC = 'ALLOTRANSCRIPT:v1\n';
+  const TRANSCRIPT_B64_PREFIX = 'QUxMT1RSQU5TQ1JJUFQ6djE'; // base64('ALLOTRANSCRIPT:v1')
+  const encodeTranscriptPayload = (text) => {
+    const bytes = new TextEncoder().encode(TRANSCRIPT_MAGIC + String(text || ''));
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  };
+  const decodeTranscriptPayload = (base64) => {
+    try {
+      if (typeof base64 !== 'string' || !base64.startsWith(TRANSCRIPT_B64_PREFIX)) return null;
+      const bin = atob(base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const text = new TextDecoder().decode(bytes);
+      return text.startsWith(TRANSCRIPT_MAGIC) ? text.slice(TRANSCRIPT_MAGIC.length) : null;
+    } catch (_) { return null; }
+  };
+
   const extractPdfTextDeterministic = async (base64) => {
+    // Transcript chokepoint: EVERY caller (skip-to-extraction, the audit
+    // baseline, the fix flow's Step 0) inherits transcript awareness here.
+    const _transcript = decodeTranscriptPayload(base64);
+    if (_transcript !== null) {
+      return {
+        fullText: _transcript,
+        sourceCharCount: _transcript.length,
+        method: 'transcript',
+        pageCount: Math.max(1, Math.round(_transcript.split(/\s+/).length / 350)),
+        hasTextLayer: true,
+      };
+    }
     try {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
@@ -4656,6 +4693,40 @@ var createDocPipeline = function(deps) {
     // Full AI verification still runs during Fix & Verify (which works on text).
     // Detection: filename extension first; zip magic ('UEsDB' = base64 'PK..') as
     // the fallback signal when no name is available.
+    // ── Transcript inputs (audio/video → 'ALLOTRANSCRIPT' format) ──
+    // Like Office: no visual layer to send Vision, so the initial audit is
+    // deterministic + axe-only and says so. Structure (headings, lists) gets
+    // CREATED during Fix & Verify — a raw transcript legitimately starts low.
+    const _transcriptText = decodeTranscriptPayload(base64Data);
+    if (_transcriptText !== null) {
+      try {
+        const _paras = _transcriptText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+        const _tHtml = '<!DOCTYPE html><html lang="en"><head><title></title></head><body><main>'
+          + (_paras.length ? _paras : [_transcriptText]).map((p) => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n')
+          + '</main></body></html>';
+        const _tAxe = await runAxeAudit(_tHtml);
+        const _words = _transcriptText.split(/\s+/).filter(Boolean).length;
+        const result = {
+          score: _tAxe && typeof _tAxe.score === 'number' ? _tAxe.score : -1,
+          summary: 'AI-transcribed recording (' + _words.toLocaleString() + ' words). This initial check is rule-based only — there is no visual layer to audit. Run Make Accessible / Fix & Verify to structure the transcript (headings, paragraphs, emphasis) and unlock every export, including the typeset tagged PDF. Review the transcript for transcription errors before distributing.',
+          critical: [], serious: [], moderate: [],
+          minor: _tAxe ? (_tAxe.minor || []) : [],
+          passes: _tAxe ? (_tAxe.passes || []).slice(0, 10) : [],
+          _transcriptInput: true,
+          _baselineAxeAudit: _tAxe || null,
+          pageCount: Math.max(1, Math.round(_words / 350)),
+          hasSearchableText: true,
+          hasImages: false,
+        };
+        if (!_skipUi) { setPdfAuditResult((prev) => ({ ...(prev || {}), ...result })); setPdfAuditLoading(false); }
+        return result;
+      } catch (trErr) {
+        warnLog('[PDF Audit] Transcript audit failed:', trErr);
+        const sparse = { score: -1, summary: 'Transcript could not be audited: ' + (trErr && trErr.message), critical: [], serious: [], moderate: [], minor: [], passes: [], _transcriptInput: true };
+        if (!_skipUi) { setPdfAuditResult(sparse); setPdfAuditLoading(false); }
+        return sparse;
+      }
+    }
     const _optFileName = (options && options.fileName) || (pendingPdfFile && pendingPdfFile.name) || '';
     const _isZipContainer = typeof base64Data === 'string' && base64Data.slice(0, 5) === 'UEsDB';
     const _officeKind = /\.docx$/i.test(_optFileName) ? 'docx'
@@ -22340,6 +22411,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
     _applyImageIntel,
     createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),
+    encodeTranscriptPayload,
+    decodeTranscriptPayload,
+    extractPdfTextDeterministic: _wrapAsync(extractPdfTextDeterministic),
     fixContrastViolations: _wrap(fixContrastViolations),
     fixAxeContrastViolationsTargeted: _wrap(fixAxeContrastViolationsTargeted),
     sanitizeStyleForWCAG: _wrap(sanitizeStyleForWCAG),
