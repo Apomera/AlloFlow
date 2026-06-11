@@ -104,10 +104,199 @@ function buildAlloCommands(ctx) {
     { id: "toggle_bot", icon: "\u{1F916}", roles: "all", label: t("cmd.toggle_bot", "Show or hide AlloBot"), aliases: ["allobot", "bot", "assistant", "hide bot", "show bot"], hint: t("cmd.toggle_bot_hint", "The assistant character"), run: (c) => {
       c.handleToggleIsBotVisible();
       return t("cmd.toggle_bot_done", "AlloBot visibility toggled.");
+    } },
+    { id: "toggle_line_focus", icon: "\u{1F526}", roles: "all", label: t("cmd.toggle_line_focus", "Toggle line focus"), aliases: ["line focus", "focus line", "one line"], hint: t("cmd.toggle_line_focus_hint", "Highlight one line at a time"), run: (c) => {
+      c.toggleLineFocus();
+      return t("cmd.toggle_line_focus_done", "Line focus toggled.");
+    } },
+    { id: "toggle_visual_supports", icon: "\u{1F5BC}\uFE0F", roles: "all", label: t("cmd.toggle_visual_supports", "Toggle visual supports"), aliases: ["visual supports", "picture supports", "visuals"], hint: t("cmd.toggle_visual_supports_hint", "Picture cues alongside the text"), run: (c) => {
+      c.handleToggleVisualSupports();
+      return t("cmd.toggle_visual_supports_done", "Visual supports toggled.");
+    } },
+    { id: "toggle_dictation", icon: "\u{1F3A4}", roles: "all", label: t("cmd.toggle_dictation", "Toggle dictation"), aliases: ["dictation", "speech to text", "type by voice"], hint: t("cmd.toggle_dictation_hint", "Speak instead of typing"), run: (c) => {
+      c.toggleDictation();
+      return t("cmd.toggle_dictation_done", "Dictation toggled.");
+    } },
+    { id: "toggle_socratic", icon: "\u{1F4AC}", roles: "all", label: t("cmd.toggle_socratic", "Toggle the Socratic chat"), aliases: ["socratic", "study chat", "thinking partner"], hint: t("cmd.toggle_socratic_hint", "A question-first study companion"), run: (c) => {
+      c.handleToggleShowSocraticChat();
+      return t("cmd.toggle_socratic_done", "Socratic chat toggled.");
+    } },
+    { id: "zen_on", icon: "\u{1F9D8}", roles: "all", label: t("cmd.zen_on", "Enter zen mode"), aliases: ["zen", "zen mode", "quiet mode", "minimal"], hint: t("cmd.zen_on_hint", "Hide everything but the content"), run: (c) => {
+      c.zenOn();
+      return t("cmd.zen_on_done", "Zen mode on \u2014 press Ctrl+K and run \u201Cexit zen\u201D to come back.");
+    } },
+    { id: "zen_off", icon: "\u{1F519}", roles: "all", label: t("cmd.zen_off", "Exit zen mode"), aliases: ["exit zen", "leave zen", "show interface"], hint: t("cmd.zen_off_hint", "Bring the interface back"), run: (c) => {
+      c.zenOff();
+      return t("cmd.zen_off_done", "Zen mode off.");
+    } },
+    // ── Pipeline (only offered while remediation results are open) ──
+    { id: "pipeline_score", icon: "\u{1F3AF}", roles: "teacher", when: (c) => !!c.getPipelineScore && !!c.getPipelineScore(), label: t("cmd.pipeline_score", "What\u2019s my accessibility score?"), aliases: ["score", "my score", "accessibility score", "how accessible"], hint: t("cmd.pipeline_score_hint", "Speaks the current before \u2192 after"), run: (c) => {
+      const s = c.getPipelineScore();
+      return s ? t("cmd.pipeline_score_done", "Score: ") + (s.before != null ? s.before + " before, " : "") + s.after + " of 100 now, target " + s.target + "." : t("cmd.pipeline_score_none", "No remediation run is open.");
+    } },
+    { id: "pipeline_issues", icon: "\u{1F4CB}", roles: "teacher", when: (c) => !!c.getRemainingIssues && c.getRemainingIssues().length > 0, label: t("cmd.pipeline_issues", "Read the remaining issues"), aliases: ["remaining issues", "issues left", "what is left", "problems"], hint: t("cmd.pipeline_issues_hint", "Speaks the top remaining issues"), run: (c) => {
+      const iss = c.getRemainingIssues();
+      const top = iss.slice(0, 3).map((x, i) => i + 1 + ". " + (typeof x === "string" ? x : x.issue || x.description || "")).join(" ");
+      return t("cmd.pipeline_issues_done", "Remaining issues: ") + iss.length + ". " + top + (iss.length > 3 ? " \u2026" + t("cmd.pipeline_issues_more", "and ") + (iss.length - 3) + t("cmd.pipeline_issues_more2", " more in the Issues panel.") : "");
+    } },
+    { id: "pipeline_downloads", icon: "\u{1F4E5}", roles: "teacher", when: (c) => !!c.pipelineOpen, label: t("cmd.pipeline_downloads", "Go to pipeline downloads"), aliases: ["downloads", "get my files", "tagged pdf"], hint: t("cmd.pipeline_downloads_hint", "Scrolls to the Downloads section"), run: (c) => {
+      return c.jumpToPipelineSection("allo-sec-downloads") ? t("cmd.pipeline_downloads_done", "Downloads section \u2014 the tagged PDF is the share-ready copy.") : t("cmd.pipeline_jump_miss", "That section isn\u2019t on screen right now.");
+    } },
+    { id: "pipeline_verification", icon: "\u2705", roles: "teacher", when: (c) => !!c.pipelineOpen, label: t("cmd.pipeline_verification", "Go to pipeline verification"), aliases: ["verification", "verify section", "evidence"], hint: t("cmd.pipeline_verification_hint", "Scrolls to the Verification section"), run: (c) => {
+      return c.jumpToPipelineSection("allo-sec-verify") ? t("cmd.pipeline_verification_done", "Verification section.") : t("cmd.pipeline_jump_miss", "That section isn\u2019t on screen right now.");
+    } },
+    // ── Voice control (S2) ──
+    { id: "voice_start", icon: "\u{1F399}\uFE0F", roles: "all", when: (c) => !c.voiceActive && c.voiceAvailable, label: t("cmd.voice_start", "Start voice control"), aliases: ["voice control", "listen", "voice mode", "hands free"], hint: t("cmd.voice_start_hint", "AlloBot listens for commands until you stop it"), run: (c) => {
+      c.startVoiceLoop();
+      return t("cmd.voice_start_done", "Voice control on. Say a command like \u201Cbigger text\u201D or \u201Copen the educator hub\u201D. Say \u201Cstop listening\u201D to finish.");
+    } },
+    { id: "voice_stop", icon: "\u{1F6D1}", roles: "all", when: (c) => !!c.voiceActive, label: t("cmd.voice_stop", "Stop voice control"), aliases: ["stop listening", "stop voice", "voice off"], hint: t("cmd.voice_stop_hint", "Stops the microphone"), run: (c) => {
+      c.stopVoiceLoop();
+      return t("cmd.voice_stop_done", "Voice control off \u2014 the microphone is released.");
     } }
   ];
   const isStudentish = !!(ctx.isStudentLinkMode || ctx.isIndependentMode);
-  return cmds.filter((c) => c.roles === "all" || !isStudentish);
+  return cmds.filter((c) => (c.roles === "all" || !isStudentish) && (!c.when || (() => {
+    try {
+      return !!c.when(ctx);
+    } catch (_) {
+      return false;
+    }
+  })()));
+}
+async function routeUtterance(ctx, rawText, opts = {}) {
+  const text = String(rawText || "").trim();
+  if (!text || text.length > 200) return null;
+  const t = _mkT(ctx && ctx.t);
+  const commands = buildAlloCommands(ctx);
+  let best = null, bestScore = 0;
+  for (const c of commands) {
+    const s = scoreCommand(c, text);
+    if (s > bestScore) {
+      bestScore = s;
+      best = c;
+    }
+  }
+  const run = (cmd, via) => {
+    if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
+    let msg = null;
+    try {
+      msg = cmd.run(ctx);
+    } catch (e) {
+      return { handled: true, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via };
+    }
+    return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via };
+  };
+  if (bestScore >= 60) return run(best, "deterministic");
+  if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
+  if (text.split(/\s+/).length > 14) return null;
+  try {
+    const menu = commands.map((c) => c.id + ": " + c.label + (c.aliases && c.aliases.length ? " (" + c.aliases.slice(0, 3).join(", ") + ")" : "")).join("\n");
+    const out = await ctx.callGemini("A user typed a request to an education app's assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n" + menu + '\n\nUser: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"commandId": string | null, "confidence": number between 0 and 1}. Use null unless you are confident they want the APP ACTION (not a content question).');
+    const m = String(out || "").match(/\{[\s\S]*\}/);
+    const j = JSON.parse(m ? m[0] : String(out));
+    if (j && j.commandId && typeof j.confidence === "number" && j.confidence >= 0.7) {
+      const cmd = commands.find((c) => c.id === j.commandId);
+      if (cmd) return run(cmd, "ai");
+    }
+  } catch (_) {
+  }
+  return null;
+}
+function createVoiceLoop(getCtx) {
+  let rec = null, active = false, errStreak = 0;
+  const announce = (msg) => {
+    const c = getCtx();
+    try {
+      if (window.alloAnnounce) window.alloAnnounce(msg);
+    } catch (_) {
+    }
+    try {
+      if (c && c.addToast) c.addToast(msg, "info");
+    } catch (_) {
+    }
+  };
+  const stop = (reason) => {
+    if (!active) return;
+    active = false;
+    try {
+      if (rec) {
+        rec.onend = null;
+        rec.stop();
+      }
+    } catch (_) {
+    }
+    rec = null;
+    const c = getCtx();
+    try {
+      if (c && c.setVoiceActive) c.setVoiceActive(false);
+    } catch (_) {
+    }
+    if (reason) announce(reason);
+  };
+  const start = () => {
+    const c = getCtx();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      announce("Voice control isn\u2019t available in this browser.");
+      return false;
+    }
+    if (active) return true;
+    try {
+      rec = new SR();
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.lang = c && c.voiceLang || "en-US";
+      rec.onresult = async (ev) => {
+        errStreak = 0;
+        const last = ev.results[ev.results.length - 1];
+        if (!last || !last.isFinal) return;
+        const text = String(last[0] && last[0].transcript || "").trim();
+        if (!text) return;
+        const cc = getCtx();
+        if (/^(stop listening|stop voice|voice off)\b/i.test(text)) {
+          stop("Voice control off \u2014 the microphone is released.");
+          return;
+        }
+        const r = await routeUtterance(cc, text, { allowAi: true });
+        if (r && r.handled) announce(r.narration);
+        else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or \u201Copen the educator hub\u201D.");
+      };
+      rec.onerror = (ev) => {
+        errStreak++;
+        if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed")) {
+          stop("Microphone permission was denied \u2014 voice control stopped.");
+          return;
+        }
+        if (errStreak >= 3) stop("Voice control stopped after repeated microphone errors.");
+      };
+      rec.onend = () => {
+        if (active) {
+          try {
+            rec.start();
+          } catch (_) {
+            stop("Voice control stopped.");
+          }
+        }
+      };
+      rec.start();
+      active = true;
+      errStreak = 0;
+      try {
+        if (c && c.setVoiceActive) c.setVoiceActive(true);
+      } catch (_) {
+      }
+      try {
+        window.addEventListener("pagehide", () => stop(), { once: true });
+      } catch (_) {
+      }
+      return true;
+    } catch (e) {
+      announce("Voice control could not start: " + (e && e.message || "unknown"));
+      return false;
+    }
+  };
+  return { start, stop: () => stop("Voice control off \u2014 the microphone is released."), isActive: () => active };
 }
 function scoreCommand(cmd, q) {
   if (!q) return 1;
@@ -261,6 +450,6 @@ const AlloCommandPalette = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, createVoiceLoop: createVoiceLoop };
   console.log('[CDN] AlloCommands loaded');
 })();

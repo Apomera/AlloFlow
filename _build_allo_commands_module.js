@@ -15,7 +15,7 @@ const TMP = path.join(ROOT, '_tmp_allo_commands_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__alloCommandsExports = { AlloCommandPalette, buildAlloCommands, scoreCommand };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__alloCommandsExports = { AlloCommandPalette, buildAlloCommands, scoreCommand, routeUtterance, createVoiceLoop };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 console.log('[AlloCommands] Compiling allo_commands_source.jsx...');
 try {
@@ -43,7 +43,7 @@ const outputCode = `/**
 ${compiled}
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, createVoiceLoop: createVoiceLoop };
   console.log('[CDN] AlloCommands loaded');
 })();
 `;

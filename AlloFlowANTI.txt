@@ -19576,7 +19576,68 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
       }, 100);
   };
+  // ── Agentic AlloBot S1+S2 (docs/allobot_agentic_design.md) ──
+  // ONE ctx builder shared by the ⌘K palette, the bot-chat router, and
+  // the voice loop. Assembled from the same named handlers the rest of
+  // the app already uses — the agent has no special powers.
+  const [alloVoiceActive, setAlloVoiceActive] = useState(false);
+  const _alloCmdCtxRef = useRef(null);
+  const _alloCmdCtx = () => {
+    const ctx = {
+      t, addToast, callGemini,
+      setShowEducatorHub, setShowLearningHub, openExportPreview, setShowWizard,
+      setShowNotebook, openTranslateModal: handleSetIsTranslateModalOpenToTrue,
+      setShowSessionModal, setShowClassAnalytics, setShowExportMenu, setShowAIBackendModal,
+      setShowTextSettings, setShowVoiceSettings, setShowReadThisPage,
+      handleToggleFocusMode, handleToggleReadingRuler, handleToggleIsHelpMode, handleToggleIsBotVisible,
+      handleToggleVisualSupports, handleToggleShowSocraticChat,
+      toggleLineFocus: () => setIsLineFocusMode(prev => !prev),
+      toggleDictation: () => setIsDictationMode(prev => !prev),
+      zenOn: handleSetIsZenModeToTrue, zenOff: handleSetIsZenModeToFalse,
+      fontBigger: () => { const v = Math.min(32, (sliderFontSize || 16) + 2); setSliderFontSize(v); return v; },
+      fontSmaller: () => { const v = Math.max(10, (sliderFontSize || 16) - 2); setSliderFontSize(v); return v; },
+      resetFontSize,
+      isStudentLinkMode, isIndependentMode,
+      // Pipeline-aware commands (guarded by `when` in the registry)
+      pipelineOpen: !!pdfFixResult,
+      getPipelineScore: () => pdfFixResult ? { before: (pdfFixResult.beforeScore != null ? pdfFixResult.beforeScore : null), after: (pdfFixResult.afterScore || 0), target: pdfTargetScore } : null,
+      getRemainingIssues: () => (pdfFixResult && pdfFixResult.verificationAudit && Array.isArray(pdfFixResult.verificationAudit.issues)) ? pdfFixResult.verificationAudit.issues : [],
+      jumpToPipelineSection: (id) => { try { const el = document.getElementById(id); if (!el) return false; if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return true; } catch (_) { return false; } },
+      // Voice loop (opt-in only; singleton lives on window so an old
+      // session can never leave a hidden live mic)
+      voiceActive: alloVoiceActive,
+      voiceAvailable: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+      setVoiceActive: setAlloVoiceActive,
+      voiceLang: 'en-US',
+      startVoiceLoop: () => {
+        const AC = window.AlloModules && window.AlloModules.AlloCommands;
+        if (!AC || !AC.createVoiceLoop) { addToast(t('toasts.voice_module_missing') || 'Voice control is still loading — try again in a moment.', 'info'); return; }
+        if (!window.__alloVoiceLoop) window.__alloVoiceLoop = AC.createVoiceLoop(() => _alloCmdCtxRef.current || _alloCmdCtx());
+        window.__alloVoiceLoop.start();
+      },
+      stopVoiceLoop: () => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} },
+    };
+    _alloCmdCtxRef.current = ctx;
+    return ctx;
+  };
   const handleSendUDLMessage = async (manualText = null) => {
+    // S1: the bot chat understands app commands. A deterministic match
+    // runs instantly; one cheap AI fallback maps free-form phrasing;
+    // anything unconfident falls through to the normal chat — the bot
+    // keeps its conversational self, it just gains hands.
+    try {
+      const _AC = window.AlloModules && window.AlloModules.AlloCommands;
+      const _utter = (manualText != null ? manualText : udlInput) || '';
+      if (_AC && typeof _AC.routeUtterance === 'function' && _utter.trim()) {
+        const _r = await _AC.routeUtterance(_alloCmdCtx(), _utter, { allowAi: true });
+        if (_r && _r.handled) {
+          setUdlMessages(prev => [...prev, { role: 'user', text: _utter }, { role: 'model', text: '✅ ' + _r.narration }]);
+          setUdlInput('');
+          try { if (window.alloAnnounce) window.alloAnnounce(_r.narration); } catch (_) {}
+          return;
+        }
+      }
+    } catch (_) { /* the router must never break the chat */ }
     const _m = window.AlloModules && window.AlloModules.UdlChat;
     if (_m && typeof _m.handleSendUDLMessage === "function") return _m.handleSendUDLMessage(manualText, {
       activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
@@ -27181,20 +27242,15 @@ ${_toolList}
           palette — Ctrl/Cmd+K anywhere. ONE registry that the bot chat (S1)
           and voice loop (S2) will reuse; ctx is assembled from the SAME
           named handlers the HeaderBar/FabStack already receive. */}
-      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && React.createElement(window.AlloModules.AlloCommands.AlloCommandPalette, {
-          ctx: {
-              t, addToast,
-              setShowEducatorHub, setShowLearningHub, openExportPreview, setShowWizard,
-              setShowNotebook, openTranslateModal: handleSetIsTranslateModalOpenToTrue,
-              setShowSessionModal, setShowClassAnalytics, setShowExportMenu, setShowAIBackendModal,
-              setShowTextSettings, setShowVoiceSettings, setShowReadThisPage,
-              handleToggleFocusMode, handleToggleReadingRuler, handleToggleIsHelpMode, handleToggleIsBotVisible,
-              fontBigger: () => { const v = Math.min(32, (sliderFontSize || 16) + 2); setSliderFontSize(v); return v; },
-              fontSmaller: () => { const v = Math.max(10, (sliderFontSize || 16) - 2); setSliderFontSize(v); return v; },
-              resetFontSize,
-              isStudentLinkMode, isIndependentMode,
-          },
-      })}
+      {isAppReady && window.AlloModules && window.AlloModules.AlloCommands && React.createElement(window.AlloModules.AlloCommands.AlloCommandPalette, { ctx: _alloCmdCtx() })}
+      {/* Voice-control indicator (S2): visible + announced whenever the mic is live. */}
+      {alloVoiceActive && (
+        <div role="status" aria-live="polite" className="fixed bottom-24 left-4 z-[11500] flex items-center gap-2 px-3 py-2 bg-rose-600 text-white rounded-full shadow-xl text-xs font-bold no-print">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-white animate-ping" aria-hidden="true"></span>
+          🎙️ Listening — say “stop listening” to finish
+          <button onClick={() => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} }} className="ml-1 px-2 py-0.5 bg-white/20 border border-white/50 rounded-full hover:bg-white/30" aria-label="Stop voice control">⏹</button>
+        </div>
+      )}
       {isBotVisible && (
           <AlloBot
             ref={alloBotRef}
