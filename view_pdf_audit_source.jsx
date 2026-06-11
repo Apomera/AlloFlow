@@ -2216,6 +2216,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               2026-06-10, caught by ErrorBoundary). EA runs at
                               final remediation only, so pre-fix there is nothing
                               to show. */}
+                          {/* Baseline (pre-fix) consensus: read from pdfAuditResult —
+                              NEVER from pdfFixResult here (null on this screen;
+                              that exact unguarded read crashed the app once). */}
+                          {!pdfFixResult && pdfAuditResult && pdfAuditResult._baselineSecondEngineAudit ? (
+                            <div className="mt-1.5 text-[11px] text-blue-700">
+                              <span className="font-bold">{t('pdf_audit.score.second_engine') || 'Second engine (IBM Equal Access):'}</span>{' '}
+                              {pdfAuditResult._baselineSecondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'} → {t('pdf_audit.score.score_label') || 'score'} {pdfAuditResult._baselineSecondEngineAudit.score}. {t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.'}
+                            </div>
+                          ) : null}
                           {!pdfFixResult ? null : pdfFixResult.secondEngineAudit ? (
                             <div className="mt-1.5 text-[11px]">
                               {pdfFixResult.secondEngineAudit.failViolations === 0 && axeAudit.totalViolations === 0 ? (

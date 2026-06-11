@@ -5113,17 +5113,28 @@ Return ONLY valid JSON:
           ? buildHtmlFromStructTree(_structTreeForBaseline, rawText)
           : rawText.split('\n\n').filter(p => p.trim()).map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>').join('\n');
         const minimalHtml = `<!DOCTYPE html><html><head><title></title></head><body><main>${bodyHtml}</main></body></html>`;
-        const baselineAxe = await runAxeAudit(minimalHtml);
+        // Engine consensus at BASELINE too (2026-06-10, item 6): both
+        // deterministic engines run in parallel; when both report, the
+        // deterministic half is the MORE CONSERVATIVE — making the
+        // before/after comparison two-engine on BOTH ends. EA fail-soft →
+        // exactly the prior axe-only behavior.
+        const [baselineAxe, baselineEa] = await Promise.all([
+          runAxeAudit(minimalHtml),
+          runEqualAccessAudit(minimalHtml).catch(() => null),
+        ]);
         if (baselineAxe) {
-          warnLog(`[PDF Audit] Baseline axe-core: score ${baselineAxe.score}, ${baselineAxe.totalViolations} violations`);
-          // Blend initial score: 50/50 AI + axe-core
+          const _eaOk = baselineEa && typeof baselineEa.score === 'number';
+          const deterministicBaseline = _eaOk ? Math.min(baselineAxe.score, baselineEa.score) : baselineAxe.score;
+          warnLog(`[PDF Audit] Baseline deterministic: axe ${baselineAxe.score} (${baselineAxe.totalViolations} violations)${_eaOk ? ', EqualAccess ' + baselineEa.score + ' (' + baselineEa.failViolations + ' fails) — using the more conservative' : ' (EA unavailable)'}`);
+          // Blend initial score: 50/50 AI + deterministic engines
           const aiOnlyScore = triangulated.score;
-          const blendedInitial = Math.round((aiOnlyScore + baselineAxe.score) / 2);
+          const blendedInitial = Math.round((aiOnlyScore + deterministicBaseline) / 2);
           // Mutate the triangulated object so the returned result carries the blended score
           triangulated.score = blendedInitial;
           triangulated._aiOnlyScore = aiOnlyScore;
           triangulated._baselineAxeScore = baselineAxe.score;
           triangulated._baselineAxeAudit = baselineAxe;
+          triangulated._baselineSecondEngineAudit = baselineEa || null;
           triangulated._scoreIsBlended = true;
           if (!_skipUi) {
             setPdfAuditResult(prev => ({
@@ -5132,6 +5143,7 @@ Return ONLY valid JSON:
               _aiOnlyScore: aiOnlyScore,
               _baselineAxeScore: baselineAxe.score,
               _baselineAxeAudit: baselineAxe,
+              _baselineSecondEngineAudit: baselineEa || null,
               _scoreIsBlended: true
             }));
           }
