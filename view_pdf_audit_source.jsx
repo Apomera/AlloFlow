@@ -5498,6 +5498,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {_listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => (
                                 <li key={i} className="flex items-center gap-2">
                                   <span className="flex-1 min-w-0 truncate text-slate-700">{r.caption || ('Reconstructed table ' + (i + 1))} <span className="text-slate-500">({r.rows} row{r.rows === 1 ? '' : 's'})</span></span>
+                                  {/* 'Where is it?' fix (2026-06-11, user report): the table IS
+                                      in the document html, but nothing showed WHERE — jump the
+                                      preview to it and flash an outline. Honest fallback when the
+                                      preview pane isn't open/rendered. */}
+                                  <button onClick={() => {
+                                    try {
+                                      const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+                                      const el = d && d.body && d.body.querySelectorAll('table[data-allo-reconstructed]')[i];
+                                      if (el) {
+                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        const prev = el.style.outline;
+                                        el.style.outline = '3px solid #9333ea';
+                                        setTimeout(() => { try { el.style.outline = prev; } catch (_) {} }, 2500);
+                                      } else {
+                                        addToast(t('pdf_audit.recon.show_fallback') || 'The table is in the document (it rides every download) — open the preview pane or Preview & Edit to see it in place.', 'info');
+                                      }
+                                    } catch (_) {}
+                                  }} className="shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50">👁 {t('pdf_audit.recon.show') || 'Show'}</button>
                                   <button onClick={() => {
                                     try {
                                       const _doc = new DOMParser().parseFromString(pdfFixResult.accessibleHtml || '', 'text/html');
