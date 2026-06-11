@@ -698,7 +698,7 @@ function PdfAuditView(props) {
     addToast, agentActivityLog, agentLogFullView, applyWordRestorationInPlace,
     auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-    callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, translateAccessibleHtml, t, updatePdfPreview,
+    callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
@@ -938,6 +938,9 @@ function PdfAuditView(props) {
   const [pdfTranslateBusy, setPdfTranslateBusy] = useState(false);
   const [pdfTranslateProgress, setPdfTranslateProgress] = useState('');
   const [showTranslationCompare, setShowTranslationCompare] = useState(false);
+  const [plainLangBusy, setPlainLangBusy] = useState(false);
+  const [plainLangProgress, setPlainLangProgress] = useState('');
+  const [showPlainCompare, setShowPlainCompare] = useState(false);
   const _smartTableParseDelimited = (raw) => {
     const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (lines.length < 2) return null;
@@ -2297,6 +2300,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             autoFixPasses: project.autoFixPasses || 0,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
+                            _plainLanguage: project._plainLanguage || null,
                           });
                           setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
                           // Restore the cross-session memory the project file carries
@@ -6638,6 +6642,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   autoFixPasses: project.autoFixPasses || 0,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
+                            _plainLanguage: project._plainLanguage || null,
                                 });
                                 setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: project.multiSession?.fileSize || 0 });
                                 // Restore run history + pipeline prefs (see the other
@@ -7278,18 +7283,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             fonts shipped 2026-06-11 make non-Latin targets real). */}
                         {typeof translateAccessibleHtml === 'function' && (
                           <span className="inline-flex items-center gap-1.5 flex-wrap" data-help-key="pdf_audit_translate_doc_btn">
-                            <select value={pdfTranslateLang} onChange={(e) => setPdfTranslateLang(e.target.value)} disabled={pdfTranslateBusy}
-                              className="px-2 py-2 bg-sky-50 text-sky-800 rounded-xl font-bold text-xs border border-sky-200"
-                              aria-label={t('pdf_audit.translate.lang_aria') || 'Target language for document translation'}>
-                              {['Spanish', 'Portuguese', 'French', 'Haitian Creole', 'Arabic', 'Vietnamese', 'Chinese (Simplified)', 'Korean', 'Somali', 'Russian', 'Ukrainian', 'Tagalog', 'Swahili', 'Pashto', 'Dari'].map((l) => <option key={l} value={l}>{l}</option>)}
-                            </select>
+                            <input list="allo-translate-langs" value={pdfTranslateLang} onChange={(e) => setPdfTranslateLang(e.target.value)} disabled={pdfTranslateBusy}
+                              className="px-2 py-2 bg-sky-50 text-sky-800 rounded-xl font-bold text-xs border border-sky-200 w-36"
+                              placeholder={t('pdf_audit.translate.lang_ph') || 'Any language…'}
+                              aria-label={t('pdf_audit.translate.lang_aria') || 'Target language for document translation — type any language'} />
+                            <datalist id="allo-translate-langs">
+                              {['Spanish', 'Portuguese', 'French', 'Haitian Creole', 'Arabic', 'Vietnamese', 'Chinese (Simplified)', 'Korean', 'Somali', 'Russian', 'Ukrainian', 'Tagalog', 'Swahili', 'Pashto', 'Dari', 'Hmong', 'Karen', 'Amharic', 'Polish', 'Japanese'].map((l) => <option key={l} value={l} />)}
+                            </datalist>
                             <button disabled={pdfTranslateBusy} onClick={async () => {
                               if (!pdfFixResult?.accessibleHtml) return;
                               setPdfTranslateBusy(true);
                               try {
-                                const _codeMap = { 'Spanish': 'es', 'Portuguese': 'pt', 'French': 'fr', 'Haitian Creole': 'ht', 'Arabic': 'ar', 'Vietnamese': 'vi', 'Chinese (Simplified)': 'zh', 'Korean': 'ko', 'Somali': 'so', 'Russian': 'ru', 'Ukrainian': 'uk', 'Tagalog': 'tl', 'Swahili': 'sw', 'Pashto': 'ps', 'Dari': 'fa-AF' };
+                                // Any language (2026-06-12 correction): resolve the
+                                // BCP-47 code via the app's language util; for the
+                                // long tail it doesn't know (it falls back to 'en'),
+                                // ONE tiny AI call gets the subtag — and if that
+                                // fails too, NO lang attr (absent beats wrong).
+                                let _code = '';
+                                try { const _u = typeof languageToTTSCode === 'function' ? languageToTTSCode(pdfTranslateLang) : ''; if (_u && !(_u === 'en' && !/english/i.test(pdfTranslateLang))) _code = _u; } catch (_) {}
+                                if (!_code && typeof callGemini === 'function') {
+                                  try {
+                                    const _resp = String(await callGemini('Return ONLY the BCP-47 primary language subtag (2-3 lowercase letters) for the language named "' + pdfTranslateLang.replace(/"/g, '') + '". If you are not sure, return exactly: und')).trim().toLowerCase();
+                                    if (/^[a-z]{2,3}$/.test(_resp) && _resp !== 'und') _code = _resp;
+                                  } catch (_) {}
+                                }
                                 const r = await translateAccessibleHtml(pdfFixResult.accessibleHtml, pdfTranslateLang, {
-                                  langCode: _codeMap[pdfTranslateLang] || '',
+                                  langCode: _code,
                                   onProgress: (i, total) => setPdfTranslateProgress(i + '/' + total),
                                 });
                                 setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
@@ -7350,6 +7369,79 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 _runAudioJob();
                               }} className="px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200" title={t('pdf_audit.translate.audio_title') || 'Spoken audio of the TRANSLATION — the same resumable job (pause, rate-limit survival, partial download). Gemini voices are multilingual; preview before sharing.'}>
                                 🎧 {(t('pdf_audit.translate.audio') || 'Audio')} ({pdfFixResult._translation.langCode || '…'})
+                              </button>}
+                            </>)}
+                          </span>
+                        )}
+                        {/* ── Plain-language companion (2026-06-12, synergy #5) ──
+                            Cognitive accessibility: an AI-simplified easy-read version
+                            with the STRUCTURE verified per section (headings/images/
+                            tables must survive; wording is free). Original stays
+                            authoritative. */}
+                        {typeof simplifyAccessibleHtml === 'function' && (
+                          <span className="inline-flex items-center gap-1.5 flex-wrap" data-help-key="pdf_audit_plain_language_btn">
+                            <button disabled={plainLangBusy} onClick={async () => {
+                              if (!pdfFixResult?.accessibleHtml) return;
+                              setPlainLangBusy(true);
+                              try {
+                                const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { onProgress: (i, total) => setPlainLangProgress(i + '/' + total) });
+                                setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                addToast('🪶 ' + (t('toasts.plain_done') || 'Plain-language version ready') + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.plain_partial') || ' sections kept the original text (structure check failed).')) : (t('toasts.plain_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.plain_review') || 'Wording simplified, facts kept; the original remains authoritative.'), r.chunksFailed > 0 ? 'info' : 'success');
+                              } catch (e) {
+                                addToast((t('toasts.plain_failed') || 'Plain-language version failed: ') + ((e && e.message) || 'unknown'), 'error');
+                              }
+                              setPlainLangBusy(false);
+                              setPlainLangProgress('');
+                            }} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                              title={t('pdf_audit.plain.btn_title') || 'Rewrites the document into plain language (about grade 3-4): short sentences, everyday words, hard words explained in parentheses — facts kept, nothing invented. Structure is verified section by section (headings, images, and tables must survive; a section that fails keeps its original text and is reported). Then it gets its own compare view, HTML download, audio, and typeset tagged PDF.'}>
+                              {plainLangBusy ? ('⏳ ' + (plainLangProgress || '…')) : '🪶'} {plainLangBusy ? (t('pdf_audit.plain.busy') || 'Simplifying') : (t('pdf_audit.plain.btn') || 'Plain-language version')}
+                            </button>
+                            {pdfFixResult._plainLanguage && !plainLangBusy && (<>
+                              <button onClick={() => setShowPlainCompare(true)} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" title={t('pdf_audit.plain.compare_title') || 'Side-by-side: the original and the plain-language version.'}>
+                                ⚖ {t('pdf_audit.plain.compare') || 'Compare'}
+                              </button>
+                              <button onClick={() => {
+                                const blob = new Blob([pdfFixResult._plainLanguage.html], { type: 'text/html' });
+                                safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language.html');
+                                addToast('🪶 ' + (t('toasts.plain_html_dl') || 'Plain-language HTML downloaded.'), 'success');
+                              }} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200">
+                                📄 HTML
+                              </button>
+                              <button onClick={async () => {
+                                try {
+                                  addToast(t('toasts.typeset_plain') || '📄 Typesetting the plain-language version — same tagger, same gates…', 'info');
+                                  const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (plain language)', lang: 'en' });
+                                  const _bytes = _result && _result.bytes ? _result.bytes : _result;
+                                  if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                                  const _rt = _result && _result.roundTrip;
+                                  if (_rt && _rt.ok === false) { addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check.'), 'error'); return; }
+                                  safeDownloadBlob(new Blob([_bytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language-tagged.pdf');
+                                  const _s = (_result && _result.summary) || {};
+                                  addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (t('toasts.plain_tagged_done') || 'Plain-language tagged PDF ready') + (_s.uaDeclared ? ' — PDF/UA declared.' : '.'), 'success');
+                                } catch (e) { addToast((t('toasts.typeset_failed') || 'Typeset tagging failed: ') + ((e && e.message) || 'unknown'), 'error'); }
+                              }} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200">
+                                📑 {t('pdf_audit.plain.tagged') || 'Tagged PDF'}
+                              </button>
+                              {callTTS && !audioJob && <button onClick={() => {
+                                const tmp = document.createElement('div'); tmp.innerHTML = pdfFixResult._plainLanguage.html;
+                                const note = tmp.querySelector('[data-allo-plain-note]'); if (note) note.remove();
+                                const fullText = (tmp.textContent || '').trim();
+                                if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
+                                const segments = [];
+                                let remaining = fullText;
+                                while (remaining.length > 0) {
+                                  if (remaining.length <= 600) { segments.push(remaining); break; }
+                                  let splitAt = remaining.lastIndexOf('. ', 600);
+                                  if (splitAt < 200) splitAt = remaining.indexOf('. ', 400);
+                                  if (splitAt < 0 || splitAt > 800) splitAt = 500; else splitAt += 2;
+                                  segments.push(remaining.substring(0, splitAt));
+                                  remaining = remaining.substring(splitAt).trim();
+                                }
+                                audioJobRef.current = { segments, blobs: [], nextIdx: 0, failed: 0, pauseRequested: false, langSuffix: '-plain' };
+                                addToast('🎧 ' + (t('toasts.plain_audio_start') || 'Generating plain-language audio — ') + segments.length + ' ' + (t('toasts.plain_audio_start2') || 'sections.'), 'info');
+                                _runAudioJob();
+                              }} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" title={t('pdf_audit.plain.audio_title') || 'Spoken audio of the plain-language version — simpler wording often serves struggling readers better as audio too.'}>
+                                🎧 {t('pdf_audit.plain.audio') || 'Audio'}
                               </button>}
                             </>)}
                           </span>
@@ -10202,6 +10294,32 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   aria-expanded={smartTableOpen}
                   aria-label={t('pdf_audit.toolbar.smart_table_aria') || 'Smart table: paste data, get an accessible table'} title={t('pdf_audit.toolbar.smart_table_title') || 'Smart table — paste ANY data (rows from email, notes, CSV) and get a clean accessible table. Delimited data parses instantly with no AI; messy data is organized by AI using only your values.'}>📊✨</button>
               </div>
+              {/* Plain-language compare (2026-06-12) */}
+              {showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage && (
+                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowPlainCompare(false)}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.plain.compare_aria') || 'Original and plain-language version, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
+                      <span className="text-sm font-black text-slate-800">⚖ {t('pdf_audit.plain.compare_heading') || 'Original ↔ Plain language'}</span>
+                      <div className="flex items-center gap-2">
+                        {pdfFixResult._plainLanguage.chunksFailed > 0 && (
+                          <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._plainLanguage.chunksFailed}/{pdfFixResult._plainLanguage.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
+                        )}
+                        <button onClick={() => setShowPlainCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
+                      </div>
+                    </div>
+                    <div className="flex-1 grid grid-cols-2 gap-0 min-h-0">
+                      <div className="flex flex-col min-h-0 border-r border-slate-200">
+                        <div className="px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200">{t('pdf_audit.translate.pane_original') || 'Remediated original'}</div>
+                        <iframe title={t('pdf_audit.translate.iframe_original') || 'Remediated original document'} sandbox="allow-same-origin" srcDoc={pdfFixResult.accessibleHtml} className="flex-1 w-full border-0" />
+                      </div>
+                      <div className="flex flex-col min-h-0">
+                        <div className="px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border-b border-slate-200">🪶 {t('pdf_audit.plain.pane_note') || 'Plain language — AI-simplified, original stays authoritative'}</div>
+                        <iframe title={t('pdf_audit.plain.iframe') || 'Plain-language version'} sandbox="allow-same-origin" srcDoc={pdfFixResult._plainLanguage.html} className="flex-1 w-full border-0" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Translation compare (2026-06-12): remediated original |
                   translation, side by side. srcdoc iframes; the translated
                   pane carries its own lang/dir so SRs pronounce correctly. */}

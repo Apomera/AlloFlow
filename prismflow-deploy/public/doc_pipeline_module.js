@@ -738,6 +738,51 @@ var createDocPipeline = function(deps) {
     return { html: result, lang: targetLang, langCode: _langCode, rtl: _rtl, chunksTotal: chunks.length, chunksFailed: failed };
   };
 
+  // ── Plain-language companion (2026-06-12, approved synergy #5) ──
+  // Rewrites the document into plain language (short sentences, common
+  // words, ~grade 3-4) for cognitive accessibility — a UDL core move.
+  // Unlike translation, sentences may merge/split, so parity is checked
+  // on the STRUCTURAL skeleton only: headings, figures/images, and table
+  // structure must survive every chunk exactly; a chunk that drops or
+  // invents structure retries once, then keeps the ORIGINAL text
+  // (counted + reported). Facts must be preserved; nothing invented.
+  const _structSeqOf = (s) => (String(s || '').match(/<\/?(?:h[1-6]|figure|img|table|thead|tbody|tr|th|td|caption|ul|ol)\b/gi) || []).map((x) => x.toLowerCase().replace(/\s.*$/, '')).join(',');
+  const simplifyAccessibleHtml = async (html, opts = {}) => {
+    if (!callGemini) throw new Error('AI unavailable');
+    if (!html) throw new Error('simplifyAccessibleHtml: html required');
+    const onProgress = typeof opts.onProgress === 'function' ? opts.onProgress : () => {};
+    const _imgDataMap = {};
+    let _imgCounter = 0;
+    const strippedHtml = html.replace(/src="(data:image\/[^"]{100,})"/gi, function (m, dataUrl) {
+      const key = '__IMG_DATA_' + (++_imgCounter) + '__';
+      _imgDataMap[key] = dataUrl;
+      return 'src="' + key + '"';
+    });
+    const chunks = splitHtmlOnTagBoundary(strippedHtml, HTML_FIX_CHUNK);
+    const out = [];
+    let failed = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      onProgress(i + 1, chunks.length);
+      const chunk = chunks[i];
+      const wantSeq = _structSeqOf(chunk);
+      const prompt = 'Rewrite the text in this HTML into PLAIN LANGUAGE for readers around grade 3-4: short sentences, everyday words, active voice. Explain hard words in parentheses the first time. KEEP EVERY FACT — never add, guess, or drop information. STRUCTURE RULES: keep every heading at the same level (you may simplify its wording), keep every image/figure and its alt text (you may simplify the alt), keep every table with the same rows and columns (you may simplify cell wording), keep lists as lists. Keep all attributes and tokens like __IMG_DATA_N__ exactly as-is. Paragraph and sentence boundaries MAY change. Return the COMPLETE rewritten HTML — raw, no code fence.\n\nHTML:\n"""\n' + chunk + '\n"""';
+      let ok = false;
+      for (let attempt = 0; attempt < 2 && !ok; attempt++) {
+        try {
+          let resp = String(await callGemini(prompt) || '').trim();
+          resp = resp.replace(/^```html?\s*/i, '').replace(/```\s*$/, '').trim();
+          if (resp && _structSeqOf(resp) === wantSeq) { out.push(resp); ok = true; }
+        } catch (_) {}
+      }
+      if (!ok) { out.push(chunk); failed++; warnLog('[simplifyDoc] chunk ' + (i + 1) + '/' + chunks.length + ' failed structure-parity — kept original text for that section'); }
+    }
+    let result = out.join('');
+    for (const key of Object.keys(_imgDataMap)) result = result.split(key).join(_imgDataMap[key]);
+    const _note = '<p data-allo-plain-note="true"><em>' + (opts.noteText || 'Plain-language version (AI-simplified for easier reading) — wording changed, facts kept; the original document remains the authoritative version.') + '</em></p>';
+    result = result.includes('<main') ? result.replace(/(<main[^>]*>)/i, '$1' + _note) : result.replace(/(<body[^>]*>)/i, '$1' + _note);
+    return { html: result, chunksTotal: chunks.length, chunksFailed: failed };
+  };
+
   // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
   const aiFixChunked = async (html, violationsText, label) => {
@@ -22867,6 +22912,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     autoFixAxeViolations: _wrapAsync(autoFixAxeViolations),
     aiFixChunked: _wrapAsync(aiFixChunked),
     translateAccessibleHtml: _wrapAsync(translateAccessibleHtml),
+    simplifyAccessibleHtml: _wrapAsync(simplifyAccessibleHtml),
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
