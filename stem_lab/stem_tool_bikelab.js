@@ -1851,10 +1851,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   return h('div', {
                     key: i,
                     draggable: true,
+                    role: 'button',
+                    tabIndex: 0,
+                    'aria-label': 'Use ' + t.replace(/-/g, ' ') + ' tool',
                     onDragStart: function() { setDragged(t); },
                     onDragEnd: function() { setDragged(null); },
                     onClick: function() { handleDrop(t); },
-                    className: 'w-20 h-20 rounded-xl border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ' + (dragged === t ? 'opacity-40 scale-95' : '')
+                    onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDrop(t); } },
+                    className: 'w-20 h-20 rounded-xl border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500 ' + (dragged === t ? 'opacity-40 scale-95' : '')
                   },
                     h('span', { className: 'text-3xl' }, TOOL_ICONS[t] || '🔧'),
                     h('span', { className: 'text-[10px] font-bold text-slate-600 capitalize' }, t.replace(/-/g, ' '))

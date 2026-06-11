@@ -7809,7 +7809,8 @@ const d = labToolData.solarSystem || {};
                         transform: isActive ? "translateY(-1px)" : "translateY(0)"
                       },
                       onClick: function() { upd('_descentProbeY', li / DESCENT_LAYERS[sel.name].length); tryAward('atmosphere_descent'); },
-                      role: "button", "aria-pressed": isActive ? "true" : "false",
+                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('_descentProbeY', li / DESCENT_LAYERS[sel.name].length); tryAward('atmosphere_descent'); } },
+                      role: "button", tabIndex: 0, "aria-pressed": isActive ? "true" : "false",
                       "aria-label": layer.name + " at " + (layer.alt >= 0 ? '+' : '') + layer.alt + " km. " + layer.desc + " Temperature " + layer.temp + ". Pressure " + layer.pressure + "."
                     },
                       // Left accent strip — wider on active, glows on hover
