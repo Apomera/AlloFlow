@@ -637,7 +637,7 @@ const renderOutlineContent = (deps) => {
                              </div>
                         </div>
                         <div className="w-full max-w-md z-20">
-                             <div className="bg-purple-100/95 border-4 border-purple-300 rounded-[60px] p-12 text-center shadow-xl transform hover:scale-105 transition-transform">
+                             <div className="bg-purple-50 border-4 border-purple-300 rounded-[60px] p-12 text-center shadow-xl transform hover:scale-105 transition-transform">
                                  <h4 className="font-black text-purple-800 text-sm uppercase tracking-wider mb-3 border-b-2 border-purple-200 pb-1 inline-block">
                                      {renderVennTitle(shared.title || "Shared", shared.title_en, 2)}
                                  </h4>
