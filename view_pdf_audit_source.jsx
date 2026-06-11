@@ -713,6 +713,41 @@ function PdfAuditView(props) {
   // Spell-check-style walkthrough for Content-Recovery words: index into
   // autoRestoreSummary.unplaceable (null = closed) + per-word outcomes.
   const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
+  // Image-description reviewer (2026-06-10, item 8b): the recovery-walkthrough
+  // pattern generalized to Vision-classified images — step through each
+  // AI-judged image (kind, alt, LaTeX, chart block) one at a time: accept,
+  // edit the alt, or strip the AI extras. Human-in-the-loop on exactly the
+  // judgments the STEM Vision pass automates.
+  const [imgReviewIdx, setImgReviewIdx] = useState(null);
+  const [imgReviewItems, setImgReviewItems] = useState([]);
+  const [imgReviewDraft, setImgReviewDraft] = useState('');
+  const _collectClassifiedImgs = (html) => {
+    try {
+      const doc = new DOMParser().parseFromString(html || '', 'text/html');
+      return Array.from(doc.querySelectorAll('img[data-allo-kind]')).map((im, i) => ({
+        i,
+        kind: im.getAttribute('data-allo-kind') || '',
+        alt: im.getAttribute('alt') || '',
+        latex: im.getAttribute('data-allo-latex') || '',
+        src: /^data:image\//.test(im.getAttribute('src') || '') ? im.getAttribute('src') : null,
+        hasMathBlock: !!(im.nextElementSibling && im.nextElementSibling.matches && im.nextElementSibling.matches('details.allo-math-source')),
+        hasChartBlock: !!(im.nextElementSibling && im.nextElementSibling.matches && (im.nextElementSibling.matches('details.allo-chart-data') || (im.nextElementSibling.nextElementSibling && im.nextElementSibling.nextElementSibling.matches && im.nextElementSibling.nextElementSibling.matches('details.allo-chart-data')))),
+      }));
+    } catch (_) { return []; }
+  };
+  const _mutateClassifiedImg = (idx, fn) => {
+    setPdfFixResult((prev) => {
+      if (!prev || !prev.accessibleHtml) return prev;
+      try {
+        const doc = new DOMParser().parseFromString(prev.accessibleHtml, 'text/html');
+        const imgs = Array.from(doc.querySelectorAll('img[data-allo-kind]'));
+        if (!imgs[idx]) return prev;
+        fn(imgs[idx], doc);
+        const html = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+        return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+      } catch (_) { return prev; }
+    });
+  };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   // Failed-verification tagged download: bytes wait here while the teacher
   // decides via the inline panel (replaces a blocking window.confirm).
@@ -4250,6 +4285,57 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')}</span>
                         <button onClick={() => { try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0">📥 {t('pdf_audit.whatnow.go') || 'Take me to Downloads'}</button>
                       </div>
+                      {/* Image-description reviewer (item 8b): entry + stepper. */}
+                      {(() => {
+                        const _n = ((pdfFixResult.accessibleHtml || '').match(/data-allo-kind="/g) || []).length;
+                        if (_n === 0) return null;
+                        if (imgReviewIdx === null) return (
+                          <div className="bg-violet-50/70 border border-violet-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap" data-help-key="pdf_audit_img_review_panel">
+                            <span>🤖 {(_n === 1 ? (t('pdf_audit.imgreview.one') || 'AI looked at 1 image and described it.') : (t('pdf_audit.imgreview.many') || 'AI looked at ' + _n + ' images and described them.'))} {t('pdf_audit.imgreview.pitch') || 'Its descriptions are good but not infallible — a 30-second review catches what it got wrong.'}</span>
+                            <button onClick={() => { const items = _collectClassifiedImgs(pdfFixResult.accessibleHtml); if (!items.length) return; setImgReviewItems(items); setImgReviewIdx(0); setImgReviewDraft(items[0].alt); }} className="ml-auto px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0">🔍 {t('pdf_audit.imgreview.start') || 'Review one by one'}</button>
+                          </div>
+                        );
+                        const it = imgReviewItems[imgReviewIdx];
+                        if (!it) { return null; }
+                        const _advance = () => {
+                          const next = imgReviewIdx + 1;
+                          if (next >= imgReviewItems.length) { setImgReviewIdx(null); setImgReviewItems([]); addToast(t('toasts.imgreview_done') || '✅ Image review complete — your edits are in the document and ride every download.', 'success'); }
+                          else { setImgReviewIdx(next); setImgReviewDraft(imgReviewItems[next].alt); }
+                        };
+                        return (
+                          <div className="bg-white border-2 border-violet-300 rounded-xl p-3 text-xs" role="dialog" aria-label={t('pdf_audit.imgreview.aria') || 'Review AI image description'}>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-black text-violet-800">🔍 {t('pdf_audit.imgreview.heading') || 'Image'} {imgReviewIdx + 1} / {imgReviewItems.length} <span className="ml-2 px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded font-bold uppercase text-[10px]">{it.kind}</span></span>
+                              <button onClick={() => { setImgReviewIdx(null); setImgReviewItems([]); }} className="text-slate-500 hover:text-red-600 font-bold">✕ {t('pdf_audit.imgreview.close') || 'Close'}</button>
+                            </div>
+                            <div className="flex gap-3 flex-wrap">
+                              {it.src && <img src={it.src} alt="" className="max-h-36 max-w-[220px] object-contain border border-slate-200 rounded-lg bg-slate-50" />}
+                              <div className="flex-1 min-w-[240px]">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.imgreview.alt_label') || 'Description (what a screen reader says)'}</label>
+                                <textarea value={imgReviewDraft} onChange={(e) => setImgReviewDraft(e.target.value)} rows={3} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5" />
+                                {it.latex && (
+                                  <div className="mt-1.5">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.imgreview.latex_label') || 'AI-transcribed math (LaTeX)'}</span>
+                                    <code className="block bg-slate-50 border border-slate-200 rounded p-1.5 mt-0.5 text-[11px] break-all">{it.latex}</code>
+                                  </div>
+                                )}
+                                {(it.hasChartBlock || it.hasMathBlock) && <p className="text-[10px] text-slate-500 mt-1">{t('pdf_audit.imgreview.blocks_note') || 'This image carries an AI-generated companion block (chart data or MathML) — "Strip AI extras" removes it if it’s wrong.'}</p>}
+                              </div>
+                            </div>
+                            <div className="flex gap-2 flex-wrap mt-2">
+                              <button onClick={() => { _mutateClassifiedImg(it.i, (im) => { im.setAttribute('alt', imgReviewDraft); }); _advance(); }} className="px-3 py-1.5 bg-violet-600 text-white rounded-lg font-bold hover:bg-violet-700">✓ {imgReviewDraft.trim() !== it.alt.trim() ? (t('pdf_audit.imgreview.save') || 'Save & next') : (t('pdf_audit.imgreview.accept') || 'Looks right — next')}</button>
+                              {(it.latex || it.hasChartBlock || it.hasMathBlock) && (
+                                <button onClick={() => { _mutateClassifiedImg(it.i, (im) => {
+                                  im.removeAttribute('data-allo-latex');
+                                  let sib = im.nextElementSibling;
+                                  while (sib && sib.matches && (sib.matches('details.allo-math-source') || sib.matches('details.allo-chart-data'))) { const nx = sib.nextElementSibling; sib.remove(); sib = nx; }
+                                }); _advance(); }} className="px-3 py-1.5 bg-amber-50 border border-amber-400 text-amber-800 rounded-lg font-bold hover:bg-amber-100" title={t('pdf_audit.imgreview.strip_title') || 'Removes the AI-transcribed LaTeX/MathML and chart-data blocks for THIS image (the description stays). Use when the transcription is wrong.'}>🧹 {t('pdf_audit.imgreview.strip') || 'Strip AI extras'}</button>
+                              )}
+                              <button onClick={_advance} className="px-3 py-1.5 text-slate-600 font-bold hover:text-slate-800">{t('pdf_audit.imgreview.skip') || 'Skip'}</button>
+                            </div>
+                          </div>
+                        );
+                      })()}
                       {pdfFixResult.pageCount && (
                         <div className="flex gap-2 flex-wrap">
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📄 {pdfFixResult.pageCount} pages processed</span>
