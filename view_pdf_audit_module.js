@@ -526,6 +526,37 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
   }
   return p.write({ outputType: "blob" });
 }
+function _audioReadyText(html) {
+  const doc = new DOMParser().parseFromString(html || "", "text/html");
+  const root = doc.body || doc.documentElement;
+  if (!root) return "";
+  root.querySelectorAll(".allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], script, style, button, input, select").forEach((el) => el.remove());
+  root.querySelectorAll("details > summary").forEach((el) => el.remove());
+  root.querySelectorAll("details em, figcaption em").forEach((el) => {
+    if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || "")) el.remove();
+  });
+  root.querySelectorAll("annotation, annotation-xml, [data-allo-latex-src]").forEach((el) => el.remove());
+  root.querySelectorAll("figure").forEach((fig) => {
+    const img = fig.querySelector("img");
+    const cap = fig.querySelector("figcaption");
+    if (fig.hasAttribute("data-img-placeholder")) {
+      const d = cap && cap.textContent.trim() || "";
+      fig.replaceWith(doc.createTextNode(d ? "Image: " + d + ". " : ""));
+      return;
+    }
+    if (img) {
+      const alt = (img.getAttribute("alt") || "").trim();
+      const capText = cap ? cap.textContent.trim() : "";
+      const say = capText || alt;
+      if (cap) cap.remove();
+      img.replaceWith(doc.createTextNode(say && img.getAttribute("role") !== "presentation" ? "Image: " + say + ". " : ""));
+    }
+  });
+  root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption").forEach((el) => {
+    el.appendChild(doc.createTextNode(". "));
+  });
+  return (root.textContent || "").replace(/\s+/g, " ").replace(/\s+([.,;:!?])/g, "$1").replace(/([.!?])\s*\.+/g, "$1").replace(/\.{2,}/g, ".").trim();
+}
 function _srStyleTextFromHtml(html) {
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const out = [];
@@ -5552,9 +5583,7 @@ Return simplified text with # for headings, - for lists.`, false);
       _closePdfAuditModal();
       addToast(t("toasts.content_loaded_generate_leveled_text"), "success");
     }, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center" }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_audio_download_btn", onClick: () => {
-      const temp = document.createElement("div");
-      temp.innerHTML = pdfFixResult.accessibleHtml;
-      const fullText = (temp.textContent || "").trim();
+      const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
       if (!fullText) {
         addToast(t("toasts.text_content_convert"), "error");
         return;
@@ -5713,11 +5742,7 @@ DOCUMENT:
         addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (e && e.message || "unknown"), "error");
       }
     }, className: "px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200", title: t("pdf_audit.translate.tagged_title") || "A clean typeset tagged PDF of the TRANSLATION \u2014 correct lang metadata, the Noto fonts handle non-Latin scripts, and RTL targets warn honestly (use the HTML export for those)." }, "\u{1F4D1} ", t("pdf_audit.translate.tagged") || "Tagged PDF", " (", pdfFixResult._translation.langCode || "\u2026", ")"), callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const tmp = document.createElement("div");
-      tmp.innerHTML = pdfFixResult._translation.html;
-      const note = tmp.querySelector("[data-allo-translation-note]");
-      if (note) note.remove();
-      const fullText = (tmp.textContent || "").trim();
+      const fullText = _audioReadyText(pdfFixResult._translation.html);
       if (!fullText) {
         addToast(t("toasts.text_content_convert"), "error");
         return;
@@ -5787,11 +5812,7 @@ DOCUMENT:
         addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (e && e.message || "unknown"), "error");
       }
     }, className: "px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" }, "\u{1F4D1} ", t("pdf_audit.plain.tagged") || "Tagged PDF"), callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const tmp = document.createElement("div");
-      tmp.innerHTML = pdfFixResult._plainLanguage.html;
-      const note = tmp.querySelector("[data-allo-plain-note]");
-      if (note) note.remove();
-      const fullText = (tmp.textContent || "").trim();
+      const fullText = _audioReadyText(pdfFixResult._plainLanguage.html);
       if (!fullText) {
         addToast(t("toasts.text_content_convert"), "error");
         return;

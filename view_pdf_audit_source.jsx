@@ -489,6 +489,54 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
 // hear the structural experience through plain TTS: sighted teachers
 // previewing the SR experience, low-vision users who want structure cues
 // without running a screen reader.
+// Audio text preparation (2026-06-12, maintainer ask): strip everything a
+// LISTENER was never meant to hear — deterministically (it's all markup we
+// emit ourselves, so a DOM pass catches it exactly; no AI, no fidelity
+// risk, no quota):
+//   • editor scaffolding — unfilled image placeholders (collapse to
+//     'Image: caption.'), picker grids, sizer bars
+//   • reviewer chrome — <details> SUMMARY lines ('Text from this image
+//     (AI-transcribed)'); the body content still reads
+//   • per-block honesty footnotes + translation/plain banners — they're
+//     for the reader's EYES; the listener gets content
+//   • LaTeX source beside MathML (TTS would spell \frac{...})
+//   • figures WITH images: one spoken 'Image: {caption-or-alt}.' instead
+//     of silence (plain textContent skips alt entirely)
+// Block boundaries gain sentence pauses so headings/cells don't run
+// together. The SR-style serializer is untouched (already curated).
+function _audioReadyText(html) {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const root = doc.body || doc.documentElement;
+  if (!root) return '';
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], script, style, button, input, select').forEach((el) => el.remove());
+  root.querySelectorAll('details > summary').forEach((el) => el.remove());
+  root.querySelectorAll('details em, figcaption em').forEach((el) => { if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || '')) el.remove(); });
+  root.querySelectorAll('annotation, annotation-xml, [data-allo-latex-src]').forEach((el) => el.remove());
+  root.querySelectorAll('figure').forEach((fig) => {
+    const img = fig.querySelector('img');
+    const cap = fig.querySelector('figcaption');
+    if (fig.hasAttribute('data-img-placeholder')) {
+      const d = (cap && cap.textContent.trim()) || '';
+      fig.replaceWith(doc.createTextNode(d ? ('Image: ' + d + '. ') : ''));
+      return;
+    }
+    if (img) {
+      const alt = (img.getAttribute('alt') || '').trim();
+      const capText = cap ? cap.textContent.trim() : '';
+      const say = capText || alt;
+      if (cap) cap.remove();
+      img.replaceWith(doc.createTextNode((say && img.getAttribute('role') !== 'presentation') ? ('Image: ' + say + '. ') : ''));
+    }
+  });
+  root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
+  return (root.textContent || '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([.,;:!?])/g, '$1')
+    .replace(/([.!?])\s*\.+/g, '$1')
+    .replace(/\.{2,}/g, '.')
+    .trim();
+}
+
 function _srStyleTextFromHtml(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const out = [];
@@ -7289,8 +7337,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       <div className="flex gap-2">
                         {callTTS && !audioJob && <button data-help-key="pdf_audit_audio_download_btn" onClick={() => {
-                          const temp = document.createElement('div'); temp.innerHTML = pdfFixResult.accessibleHtml;
-                          const fullText = (temp.textContent || '').trim();
+                          const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
                           if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           // Sentence-boundary segmentation (~600 chars/segment) — the
                           // same proven splitter, now feeding a resumable job.
@@ -7447,9 +7494,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📑 {(t('pdf_audit.translate.tagged') || 'Tagged PDF')} ({pdfFixResult._translation.langCode || '…'})
                               </button>
                               {callTTS && !audioJob && <button onClick={() => {
-                                const tmp = document.createElement('div'); tmp.innerHTML = pdfFixResult._translation.html;
-                                const note = tmp.querySelector('[data-allo-translation-note]'); if (note) note.remove();
-                                const fullText = (tmp.textContent || '').trim();
+                                const fullText = _audioReadyText(pdfFixResult._translation.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                                 const segments = [];
                                 let remaining = fullText;
@@ -7525,9 +7570,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📑 {t('pdf_audit.plain.tagged') || 'Tagged PDF'}
                               </button>
                               {callTTS && !audioJob && <button onClick={() => {
-                                const tmp = document.createElement('div'); tmp.innerHTML = pdfFixResult._plainLanguage.html;
-                                const note = tmp.querySelector('[data-allo-plain-note]'); if (note) note.remove();
-                                const fullText = (tmp.textContent || '').trim();
+                                const fullText = _audioReadyText(pdfFixResult._plainLanguage.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                                 const segments = [];
                                 let remaining = fullText;
