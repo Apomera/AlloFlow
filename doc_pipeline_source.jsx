@@ -10258,6 +10258,50 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   // Takes a chunk index, re-runs the full pipeline (deterministic → surgical → AI → verify → score)
   // on just that chunk, then reassembles the full document with only that chunk replaced.
   const refixChunk = async (chunkIndex, options = {}) => {
+    // Self-heal (2026-06-12, user bug): the singleton is CLEARED whenever a
+    // LATER autoFixAxeViolations call sees mutated html — auto-continue
+    // rounds, fidelity restoration, glossary/placeholder edits all change
+    // the fingerprint, so SAME-document evolution trips the cross-document
+    // guard. The UI's section map renders from the PERSISTED copy in React
+    // state, so Re-fix looked available while the singleton was gone →
+    // 'run full remediation first' minutes after remediating. Rebuild
+    // FRESH from the caller's current html (never adopt stale fixedChunks:
+    // reassembly is preamble+fixedChunks, so stale chunks would CLOBBER
+    // later mutations in every other section). Scores/instructions carry
+    // from the persisted copy when the chunk count matches.
+    if (!_chunkState && options.currentHtml) {
+      try {
+        const cur = String(options.currentHtml);
+        const pre = (cur.match(/^[\s\S]*?<body[^>]*>/i) || ['<!DOCTYPE html><html lang="en"><head></head><body>'])[0];
+        const bodyM = cur.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        const body = bodyM ? bodyM[1] : cur;
+        const chunks = splitHtmlOnTagBoundary(body, HTML_FIX_CHUNK);
+        if (chunks.length > 0) {
+          const ps = options.persistedState;
+          const carry = (ps && Array.isArray(ps.chunkResults) && ps.chunkResults.length === chunks.length) ? ps.chunkResults : null;
+          _chunkState = {
+            docKey: _docFingerprint(cur),
+            preamble: pre,
+            postamble: '</body></html>',
+            originalChunks: chunks.slice(),
+            fixedChunks: chunks.slice(),
+            chunkResults: chunks.map((h, i) => ({
+              index: i, html: h,
+              score: carry ? (carry[i].score || 0) : 0,
+              integrityCheck: carry ? carry[i].integrityCheck : undefined,
+              aiVerified: carry ? !!carry[i].aiVerified : false,
+              wasRetried: false, usedOriginal: false,
+              deterministicFixCount: 0, surgicalFixCount: 0,
+              sizeKB: Math.round(h.length / 1000),
+            })),
+            violationInstructions: (ps && ps.violationInstructions) || '',
+            headSection: '',
+            timestamp: Date.now(),
+          };
+          try { warnLog('[RefixChunk] chunk state had been cleared by later document edits — rebuilt fresh from the current html (' + chunks.length + ' chunks; scores ' + (carry ? 'carried' : 'reset') + ')'); } catch (_) {}
+        }
+      } catch (_) { /* fall through to the honest error */ }
+    }
     if (!_chunkState) throw new Error('No chunk state available — run full remediation first');
     if (chunkIndex < 0 || chunkIndex >= _chunkState.fixedChunks.length) {
       throw new Error(`Invalid chunk index ${chunkIndex} (have ${_chunkState.fixedChunks.length} chunks)`);

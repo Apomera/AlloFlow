@@ -4574,7 +4574,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         setPdfFixLoading(true);
                                         setPdfFixStep(`Re-fixing section ${chunk.index + 1}...`);
                                         try {
-                                          const result = await refixChunk(chunk.index, { onProgress: setPdfFixStep });
+                                          const result = await refixChunk(chunk.index, { onProgress: setPdfFixStep, currentHtml: pdfFixResult.accessibleHtml, persistedState: pdfFixResult.chunkState });
                                           if (result?.html) {
                                             const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
                                             if (!reAi) {
@@ -5261,7 +5261,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       setPdfFixLoading(true);
                                       setPdfFixStep(`Re-fixing section ${ci + 1}...`);
                                       try {
-                                        const result = await refixChunk(ci, { onProgress: setPdfFixStep });
+                                        const result = await refixChunk(ci, { onProgress: setPdfFixStep, currentHtml: pdfFixResult.accessibleHtml, persistedState: pdfFixResult.chunkState });
                                         if (result?.html) {
                                           const [reAi, reAxe] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
                                           if (!reAi) {
