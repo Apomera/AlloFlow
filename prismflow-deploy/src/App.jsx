@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'b6c1f75a';
+    var pluginCdnVersion = 'b034dbea';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -26508,7 +26508,7 @@ ${_toolList}
       {(isHelpMode || showWizard || isWordSoundsMode || isSyntaxGame || isMemoryGame || isCrosswordGame || isMatchingGame || isTimelineGame || isConceptSortGame || isReviewGame || escapeRoomState.isActive || isProjectSettingsOpen || !!pdfAuditResult || pdfAuditLoading || showExportPreview) && (
       <button
         data-help-ignore="true"
-        onClick={handleToggleIsHelpMode}
+        onClick={(e) => { try { e.preventDefault(); e.stopPropagation(); } catch (_) {} handleToggleIsHelpMode(); }}
         aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
         title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
         className={`fixed right-3 top-1/2 -translate-y-1/2 z-[10999] w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 transition-all duration-300 no-print ${
