@@ -6197,7 +6197,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const _linked = summary.reachableLeaves - (summary.orphanedLeaves || 0);
                                 _rpt.push(summary.uaDeclared
                                   ? { tone: 'success', text: 'Content linkage: ' + _linked + '/' + summary.reachableLeaves + ' semantic elements linked to page content — PDF/UA-1 declared. Confirm in PAC 2024 or veraPDF before claiming compliance.' }
-                                  : { tone: 'info', text: 'Content linkage: ' + _linked + '/' + summary.reachableLeaves + ' semantic elements linked — PDF/UA-1 declaration withheld until full linkage. Still far more accessible than untagged.' });
+                                  : { tone: 'info', text: 'Content linkage: ' + _linked + '/' + summary.reachableLeaves + ' semantic elements linked — PDF/UA-1 declaration withheld until full linkage. Still far more accessible than untagged.' + (summary.symbolRunsExcluded > 0 ? (' (' + summary.symbolRunsExcluded + ' decorative symbol-font runs — bullets/dingbats — excluded from the count.)') : '') });
                               } else if (pdfAuditResult?.hasSearchableText === true) {
                                 _rpt.push({ tone: 'info', text: t('pdf_audit.tagged.born_digital_note') || 'For text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. Verify in PAC 2024 or Acrobat before claiming PDF/UA conformance.' });
                               }

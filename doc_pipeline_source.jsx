@@ -4019,12 +4019,33 @@ var createDocPipeline = function(deps) {
   // _stage4_extractPdfjsItems — return a normalised per-page list of text
   // items from pdf.js. Filters empty strings (pdf.js emits positioning-only
   // items with empty str that would confuse matching).
+  let _symbolRunsExcludedTotal = 0; // reset per createTaggedPdf run; reported in summary
   const _stage4_extractPdfjsItems = async (pdfjsDoc, pageIdx) => {
     try {
       const page = await pdfjsDoc.getPage(pageIdx + 1);
       const tc = await page.getTextContent();
-      return (tc.items || [])
+      // Symbol-font runs are decorative marks, not text (2026-06-12,
+      // approved): Wingdings/Symbol/Dingbats bullets decode as glyph soup
+      // that can never match a tag-tree leaf — every office-made PDF's
+      // bullets were poisoning the linkage denominator and the declaration
+      // gate. Flag them via pdf.js style fontFamily + a PUA-density check
+      // (symbol glyphs map to U+F0xx); flagged items are excluded from
+      // matching and counted for the honest report line.
+      const _styles = tc.styles || {};
+      const _isSymbolItem = (it) => {
+        try {
+          const fam = String((_styles[it.fontName] && _styles[it.fontName].fontFamily) || '');
+          if (/wingdings|webdings|dingbat|symbol|marlett/i.test(fam)) return true;
+          const chars = Array.from(it.str || '');
+          if (!chars.length) return false;
+          const pua = chars.filter((c) => { const cp = c.codePointAt(0); return (cp >= 0xE000 && cp <= 0xF8FF) || cp === 0xF0B7 || cp === 0x25CF; }).length;
+          return pua / chars.length >= 0.6;
+        } catch (_) { return false; }
+      };
+      let _symbolRuns = 0;
+      const out = (tc.items || [])
         .filter(it => it && typeof it.str === 'string' && it.str.trim().length > 0)
+        .filter(it => { if (_isSymbolItem(it)) { _symbolRuns++; return false; } return true; })
         .map(it => ({
           str: it.str,
           x: it.transform ? it.transform[4] : 0,
@@ -4034,6 +4055,9 @@ var createDocPipeline = function(deps) {
           width: it.width || 0,
           height: it.height || 0,
         }));
+      out._symbolRunsExcluded = _symbolRuns;
+      _symbolRunsExcludedTotal += _symbolRuns;
+      return out;
     } catch (_) { return []; }
   };
 
@@ -14522,6 +14546,7 @@ tr { page-break-inside: avoid; }
     } catch (_) { return null; }
   };
   const createTaggedPdf = async (originalPdfBytes, fixResult, meta) => {
+    _symbolRunsExcludedTotal = 0;
     meta = meta || {};
     if (!window.PDFLib || !window.PDFLib.PDFDocument) {
       throw new Error('pdf-lib not loaded — call _ensurePdfLib() first');
@@ -16476,6 +16501,7 @@ tr { page-break-inside: avoid; }
     try {
       if (_summary && typeof _summary === 'object') {
         _summary.reachableLeaves = _reachableLeafCountAtStamp;
+        _summary.symbolRunsExcluded = _symbolRunsExcludedTotal;
         _summary.orphanedLeaves = _orphanedLeafCountAtStamp;
         _summary.uaDeclared = _uaDeclared;
         // CORRECTNESS OVERWRITE: the summary literal sets pdfUaDeclared from

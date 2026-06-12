@@ -4517,7 +4517,7 @@ Return ONLY JSON:
             }
             if (summary && typeof summary.reachableLeaves === "number" && summary.reachableLeaves > 0) {
               const _linked = summary.reachableLeaves - (summary.orphanedLeaves || 0);
-              _rpt.push(summary.uaDeclared ? { tone: "success", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked to page content \u2014 PDF/UA-1 declared. Confirm in PAC 2024 or veraPDF before claiming compliance." } : { tone: "info", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked \u2014 PDF/UA-1 declaration withheld until full linkage. Still far more accessible than untagged." });
+              _rpt.push(summary.uaDeclared ? { tone: "success", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked to page content \u2014 PDF/UA-1 declared. Confirm in PAC 2024 or veraPDF before claiming compliance." } : { tone: "info", text: "Content linkage: " + _linked + "/" + summary.reachableLeaves + " semantic elements linked \u2014 PDF/UA-1 declaration withheld until full linkage. Still far more accessible than untagged." + (summary.symbolRunsExcluded > 0 ? " (" + summary.symbolRunsExcluded + " decorative symbol-font runs \u2014 bullets/dingbats \u2014 excluded from the count.)" : "") });
             } else if (pdfAuditResult?.hasSearchableText === true) {
               _rpt.push({ tone: "info", text: t("pdf_audit.tagged.born_digital_note") || "For text-layer PDFs the semantic tags use ActualText associations rather than full content linkage. Verify in PAC 2024 or Acrobat before claiming PDF/UA conformance." });
             }
