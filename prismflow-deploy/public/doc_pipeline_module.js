@@ -1001,7 +1001,8 @@ var createDocPipeline = function(deps) {
       onProgress(i + 1, chunks.length);
       const chunk = chunks[i];
       const wantSeq = _structSeqOf(chunk);
-      const prompt = 'Rewrite the text in this HTML into PLAIN LANGUAGE for readers around grade 3-4: short sentences, everyday words, active voice. Explain hard words in parentheses the first time. KEEP EVERY FACT — never add, guess, or drop information. STRUCTURE RULES: keep every heading at the same level (you may simplify its wording), keep every image/figure and its alt text (you may simplify the alt), keep every table with the same rows and columns (you may simplify cell wording), keep lists as lists. Keep all attributes and tokens like __IMG_DATA_N__ exactly as-is. Paragraph and sentence boundaries MAY change. Return the COMPLETE rewritten HTML — raw, no code fence.\n\nHTML:\n"""\n' + chunk + '\n"""';
+      const _grade = (opts.gradeBand === '2-3' || opts.gradeBand === '5-6') ? opts.gradeBand : '3-4';
+      const prompt = 'Rewrite the text in this HTML into PLAIN LANGUAGE for readers around grade ' + _grade + ': short sentences, everyday words, active voice. Explain hard words in parentheses the first time. KEEP EVERY FACT — never add, guess, or drop information. STRUCTURE RULES: keep every heading at the same level (you may simplify its wording), keep every image/figure and its alt text (you may simplify the alt), keep every table with the same rows and columns (you may simplify cell wording), keep lists as lists. Keep all attributes and tokens like __IMG_DATA_N__ exactly as-is. Paragraph and sentence boundaries MAY change. Return the COMPLETE rewritten HTML — raw, no code fence.\n\nHTML:\n"""\n' + chunk + '\n"""';
       let ok = false;
       for (let attempt = 0; attempt < 2 && !ok; attempt++) {
         try {

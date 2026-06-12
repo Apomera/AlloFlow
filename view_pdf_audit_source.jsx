@@ -946,6 +946,7 @@ function PdfAuditView(props) {
   const [pdfTranslateProgress, setPdfTranslateProgress] = useState('');
   const [showTranslationCompare, setShowTranslationCompare] = useState(false);
   const [plainLangBusy, setPlainLangBusy] = useState(false);
+  const [plainLangLevel, setPlainLangLevel] = useState('3-4');
   const [plainLangProgress, setPlainLangProgress] = useState('');
   const [showPlainCompare, setShowPlainCompare] = useState(false);
   const [fillableCandidates, setFillableCandidates] = useState(null); // null = panel closed
@@ -6792,7 +6793,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Alternative Formats (matching Anthology Ally feature set) */}
                       <details data-help-key="pdf_audit_alt_formats_summary" className="group">
                         <summary className="text-[11px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
-                          📑 Alternative Formats <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
+                          📑 {t('pdf_audit.alt_formats.heading') || 'Alternative Formats'} <span className="normal-case font-normal text-slate-500">{t('pdf_audit.alt_formats.list') || '— EPUB · Braille (BRF) · Plain text · Markdown'}</span> <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1.5">
                           <p id="allo-sec-downloads" className="text-[11px] text-slate-600">{t('pdf_audit.alt_formats.intro') || 'Download the remediated document in accessible alternative formats'}</p>
@@ -7423,11 +7424,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             authoritative. */}
                         {typeof simplifyAccessibleHtml === 'function' && (
                           <span className="inline-flex items-center gap-1.5 flex-wrap" data-help-key="pdf_audit_plain_language_btn">
+                            <select value={plainLangLevel} onChange={(e) => setPlainLangLevel(e.target.value)} disabled={plainLangBusy} className="px-2 py-2 bg-emerald-50 text-emerald-800 rounded-xl font-bold text-xs border border-emerald-200" aria-label={t('pdf_audit.plain.level_aria') || 'Reading level for the plain-language version'}>
+                              <option value="2-3">{t('pdf_audit.plain.level_23') || 'Grade 2-3'}</option>
+                              <option value="3-4">{t('pdf_audit.plain.level_34') || 'Grade 3-4'}</option>
+                              <option value="5-6">{t('pdf_audit.plain.level_56') || 'Grade 5-6'}</option>
+                            </select>
                             <button disabled={plainLangBusy} onClick={async () => {
                               if (!pdfFixResult?.accessibleHtml) return;
                               setPlainLangBusy(true);
                               try {
-                                const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { onProgress: (i, total) => setPlainLangProgress(i + '/' + total) });
+                                const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { gradeBand: plainLangLevel, onProgress: (i, total) => setPlainLangProgress(i + '/' + total) });
                                 setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
                                 addToast('🪶 ' + (t('toasts.plain_done') || 'Plain-language version ready') + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.plain_partial') || ' sections kept the original text (structure check failed).')) : (t('toasts.plain_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.plain_review') || 'Wording simplified, facts kept; the original remains authoritative.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
@@ -7590,7 +7596,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* ── Plain Language Summary Generator ── */}
                       <details className="group">
                         <summary className="text-[11px] font-bold text-blue-600 uppercase tracking-widest cursor-pointer hover:text-blue-800 transition-colors flex items-center gap-1">
-                          📖 Plain Language Summary <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
+                          📖 {t('pdf_audit.plain_summary.heading') || 'Easy-Read Summary (one page)'} <span className="normal-case font-normal text-slate-500">{t('pdf_audit.plain_summary.vs') || '— a short overview; for the full document rewritten in plain language, use 🪶 Plain-language version above'}</span> <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-600 rounded-xl p-3 space-y-2">
                           <p className="text-[11px] text-slate-600">{t('pdf_audit.plain_summary.intro') || 'Generate an easy-to-read version for parents, guardians, or community members.'}</p>
