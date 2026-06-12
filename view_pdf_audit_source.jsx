@@ -692,6 +692,7 @@ function _listReconstructedTables(html) {
       out.push({
         caption: cap ? cap.textContent.replace(/\s+/g, ' ').trim().slice(0, 100) : '',
         rows: t.querySelectorAll('tbody tr').length,
+        html: t.outerHTML, // mini-preview (2026-06-12): show the table right here
       });
     });
   } catch (_) {}
@@ -5878,8 +5879,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="text-[11px] text-purple-700 mt-0.5">{_listReconstructedTables(pdfFixResult.accessibleHtml).length} table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each — check each matches its image, and reject any that's wrong (the image stays).</div>
                             <ul className="mt-1 space-y-1" role="list">
                               {_listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => (
-                                <li key={i} className="flex items-center gap-2">
+                                <li key={i} className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
                                   <span className="flex-1 min-w-0 truncate text-slate-700">{r.caption || ('Reconstructed table ' + (i + 1))} <span className="text-slate-500">({r.rows} row{r.rows === 1 ? '' : 's'})</span></span>
+                                  {/* Inline mini-preview (2026-06-12, maintainer ask):
+                                      verify the table right here — no preview pane
+                                      needed. The html is OUR generated table. */}
+                                  {r.html && (
+                                    <button onClick={() => setReconPreviewIdx((prev) => prev === i ? null : i)} aria-expanded={reconPreviewIdx === i} className="shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50">
+                                      {reconPreviewIdx === i ? ('▾ ' + (t('pdf_audit.recon.hide_preview') || 'Hide')) : ('🔍 ' + (t('pdf_audit.recon.preview') || 'Preview here'))}
+                                    </button>
+                                  )}
                                   {/* 'Where is it?' fix (2026-06-11, user report): the table IS
                                       in the document html, but nothing showed WHERE — jump the
                                       preview to it and flash an outline. Honest fallback when the
@@ -5911,6 +5921,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       }
                                     } catch (_) {}
                                   }} className="shrink-0 px-2 py-0.5 bg-white border border-rose-300 text-rose-700 rounded text-[10px] font-bold hover:bg-rose-50">✗ Reject (keep image)</button>
+                                </div>
+                                {reconPreviewIdx === i && r.html && (
+                                  <div className="max-h-44 overflow-auto bg-white border border-purple-200 rounded-lg p-2 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-50 [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_td]:border [&_td]:border-slate-300 [&_td]:px-2 [&_td]:py-1 [&_caption]:font-bold [&_caption]:text-left [&_caption]:mb-1 text-[11px] text-slate-800"
+                                    dangerouslySetInnerHTML={{ __html: r.html }} />
+                                )}
                                 </li>
                               ))}
                             </ul>

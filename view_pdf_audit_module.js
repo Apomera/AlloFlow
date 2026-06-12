@@ -760,7 +760,9 @@ function _listReconstructedTables(html) {
       const cap = t.querySelector("caption");
       out.push({
         caption: cap ? cap.textContent.replace(/\s+/g, " ").trim().slice(0, 100) : "",
-        rows: t.querySelectorAll("tbody tr").length
+        rows: t.querySelectorAll("tbody tr").length,
+        html: t.outerHTML
+        // mini-preview (2026-06-12): show the table right here
       });
     });
   } catch (_) {
@@ -4254,7 +4256,7 @@ Return ONLY JSON:
         title: t("pdf_audit.pdf_from_html.title") || "Regenerate a PDF from the remediated HTML. Layout reflows \u2014 page breaks, fonts, and pagination may differ from the original. Works well for simple prose documents."
       },
       "\u{1F4E5} PDF (from HTML)"
-    ), pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf("data-allo-reconstructed") >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full mt-1 bg-purple-50 border border-purple-300 rounded-xl px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-purple-800" }, "\u2728 AI-reconstructed structure \u2014 please verify"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-purple-700 mt-0.5" }, _listReconstructedTables(pdfFixResult.accessibleHtml).length, " table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each \u2014 check each matches its image, and reject any that's wrong (the image stays)."), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1", role: "list" }, _listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0 truncate text-slate-700" }, r.caption || "Reconstructed table " + (i + 1), " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "(", r.rows, " row", r.rows === 1 ? "" : "s", ")")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    ), pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf("data-allo-reconstructed") >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full mt-1 bg-purple-50 border border-purple-300 rounded-xl px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-purple-800" }, "\u2728 AI-reconstructed structure \u2014 please verify"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-purple-700 mt-0.5" }, _listReconstructedTables(pdfFixResult.accessibleHtml).length, " table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each \u2014 check each matches its image, and reject any that's wrong (the image stays)."), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1", role: "list" }, _listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0 truncate text-slate-700" }, r.caption || "Reconstructed table " + (i + 1), " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "(", r.rows, " row", r.rows === 1 ? "" : "s", ")")), r.html && /* @__PURE__ */ React.createElement("button", { onClick: () => setReconPreviewIdx((prev) => prev === i ? null : i), "aria-expanded": reconPreviewIdx === i, className: "shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50" }, reconPreviewIdx === i ? "\u25BE " + (t("pdf_audit.recon.hide_preview") || "Hide") : "\u{1F50D} " + (t("pdf_audit.recon.preview") || "Preview here")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       try {
         const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
         const el = d && d.body && d.body.querySelectorAll("table[data-allo-reconstructed]")[i];
@@ -4286,7 +4288,13 @@ Return ONLY JSON:
         }
       } catch (_) {
       }
-    }, className: "shrink-0 px-2 py-0.5 bg-white border border-rose-300 text-rose-700 rounded text-[10px] font-bold hover:bg-rose-50" }, "\u2717 Reject (keep image)"))))), (() => {
+    }, className: "shrink-0 px-2 py-0.5 bg-white border border-rose-300 text-rose-700 rounded text-[10px] font-bold hover:bg-rose-50" }, "\u2717 Reject (keep image)")), reconPreviewIdx === i && r.html && /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: "max-h-44 overflow-auto bg-white border border-purple-200 rounded-lg p-2 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-50 [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_td]:border [&_td]:border-slate-300 [&_td]:px-2 [&_td]:py-1 [&_caption]:font-bold [&_caption]:text-left [&_caption]:mb-1 text-[11px] text-slate-800",
+        dangerouslySetInnerHTML: { __html: r.html }
+      }
+    ))))), (() => {
       const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile && pendingPdfFile.name);
       const cur = pdfMetaOverride || {};
       const curTitle = cur.title != null ? cur.title : _dm.title;

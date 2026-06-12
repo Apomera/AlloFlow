@@ -7018,7 +7018,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { helpKey: 'pdf_audit_dashboard_bar', title: t('ptour.dashboard_title') || 'Your navigation bar', text: t('ptour.dashboard_text') || 'This bar sticks to the top while you scroll. The score shows before → after; the chips jump straight to any section — Downloads is the one you\'ll use most.\n**Why it matters:** everything below is organized into sections (verification, recovered content, remaining issues, downloads, the tag inspector) — the chips mean you never scroll hunting for one.' },
       { helpKey: 'pdf_audit_results_score_badge', title: t('ptour.score_title') || 'The score, honestly', text: t('ptour.score_text') || 'AlloFlow\'s own estimate: several independent AI reviews averaged, blended 50/50 with TWO deterministic rule engines (axe-core + IBM Equal Access — when they disagree, the lower score wins).\n**Why it matters:** it\'s honest but it\'s not a certification. For an official verdict, open the file in PAC 2024 (free) or send the report to your district accessibility coordinator — the report itself says how.' },
       { helpKey: 'pdf_audit_results_tab_original_btn', title: t('ptour.tabs_title') || 'Before and after', text: t('ptour.tabs_text') || 'Flip to the Original tab anytime to see what the document looked like before the fixes.\n**Why it matters:** when a parent, administrator, or IEP team asks "what actually changed?", the answer is one click — and the Compare view shows both versions side by side.' },
-      { helpKey: 'pdf_audit_view_report_menu_btn', title: t('ptour.report_title') || 'Reports for grown-ups', text: t('ptour.report_text') || 'Printable accessibility reports — for your records, an IEP file, or your district accessibility coordinator. There\'s also a tamper-evident signed version.\n**Why it matters:** public schools have legal accessibility obligations (ADA Title II). A dated report showing what was checked and fixed is the paper trail your district wants to have.' },
+      { helpKey: 'pdf_audit_view_report_menu_btn', title: t('ptour.report_title') || 'Reports & records', text: t('ptour.report_text') || 'Printable accessibility reports — for your records, an IEP file, or your district accessibility coordinator. There\'s also a tamper-evident signed version.\n**Why it matters:** public schools have legal accessibility obligations (ADA Title II). A dated report showing what was checked and fixed is the paper trail your district wants to have.' },
+      { helpKey: 'pdf_audit_translate_doc_btn', title: t('ptour.translate_title') || 'Any language, verified', text: t('ptour.translate_text') || 'Translate the whole document for families — type ANY language. The structure is checked section by section, the copy gets compare/audio/tagged-PDF downloads of its own, and a review banner keeps it honest.
+**Why it matters:** IDEA requires parent-language access to key documents — districts pay per page for this.' },
+      { helpKey: 'pdf_audit_plain_language_btn', title: t('ptour.plain_title') || 'Easy-read version', text: t('ptour.plain_text') || 'Rewrites the full document in plain language (pick the grade band). Facts kept, structure verified, original stays authoritative — and it gets its own compare, audio, and tagged PDF.' },
+      { helpKey: 'pdf_audit_make_fillable_btn', title: t('ptour.fillable_title') || 'Make it fillable', text: t('ptour.fillable_text') || 'Turns blanks and checkboxes into REAL typed-into form fields — review the detected list first, then download fillable HTML or a tagged fillable PDF. Students with dysgraphia type instead of handwriting.' },
       { helpKey: 'pdf_audit_alt_formats_summary', title: t('ptour.altformats_title') || 'More ways to share', text: t('ptour.altformats_text') || 'The same accessible content as braille-ready text, ePub for e-readers, plain text, and Markdown.\n**Why it matters:** accessibility isn\'t one format — a student with low vision may want ePub\'s reflowing text, while your district\'s braille transcriber wants the braille-ready file as a starting point. That\'s the tour — the ? button gives per-button help anywhere.' },
     ] : [
       { helpKey: 'pdf_audit_view_make_accessible_btn', title: t('ptour.hero_title') || 'The one-click path', text: t('ptour.hero_text') || 'Make Accessible runs everything automatically: audit → fix → re-check until it hits the target → downloads ready. For most documents, this is all you need.\n**Why it matters:** the pipeline is built to be safe unattended — content is never silently dropped (anything unplaceable lands in a visible Recovery section), and the AI\'s work is re-checked by rule engines every pass.' },
@@ -7352,6 +7356,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   alloBotRef.current.moveTo(targetX, targetY);
                   setBotSpotlightPos({ x: targetX, y: targetY });
               }
+          } else {
+              // Auto-skip steps whose targets are not on screen right now
+              // (state-dependent anchors — e.g. the what-now strip hides
+              // while auto-continue runs; user report 2026-06-12: the tour
+              // kept the PREVIOUS step's highlight, looking broken).
+              // Bounded: ends the tour rather than looping.
+              const _stepsArr = (customTourSteps || tourSteps);
+              let _next = tourStep + 1;
+              while (_next < _stepsArr.length && !_resolveTourEl(_stepsArr[_next])) _next++;
+              if (_next < _stepsArr.length) setTourStep(_next);
+              else { setRunTour(false); setCustomTourSteps(null); }
           }
       }, 600);
   }, [runTour, tourStep, spotlightMessage, customTourSteps]);
