@@ -4045,8 +4045,12 @@ var createDocPipeline = function(deps) {
       let _symbolRuns = 0;
       const out = (tc.items || [])
         .filter(it => it && typeof it.str === 'string' && it.str.trim().length > 0)
-        .filter(it => { if (_isSymbolItem(it)) { _symbolRuns++; return false; } return true; })
         .map(it => ({
+          // Flag, don't filter (2026-06-12 refactor): removing items changed
+          // segment↔item pairing from index to coordinate mode on bullet
+          // pages. Symbolic items stay in the list — the wrap-builder routes
+          // them to /Artifact instead (correct PDF semantics).
+          symbolic: (() => { const sy = _isSymbolItem(it); if (sy) _symbolRuns++; return sy; })(),
           str: it.str,
           x: it.transform ? it.transform[4] : 0,
           y: it.transform ? it.transform[5] : 0,
@@ -4217,7 +4221,10 @@ var createDocPipeline = function(deps) {
     for (let i = 0; i < segments.length; i++) {
       const item = matched[i] || { str: '', fontScale: fontScaleMedian, fontName: '' };
       const norm = hasArtifacts ? _stage6b_normalizeArtifactText(item.str) : '';
-      const isArtifact = hasArtifacts && norm && artifactHashSet.has(norm);
+      // Symbolic runs (Wingdings bullets etc.) are decorative marks — wrap
+      // as /Artifact: correct PDF semantics, and they leave leaf matching
+      // by construction (artifact blocks carry no MCID/ActualText).
+      const isArtifact = (item && item.symbolic) || (hasArtifacts && norm && artifactHashSet.has(norm));
       if (isArtifact) {
         wraps.push({ bdc: '/Artifact BMC\n', emc: '\nEMC\n' });
         blockInfo.push({ isArtifact: true });
@@ -16151,6 +16158,41 @@ tr { page-break-inside: avoid; }
             StemV: PDFNumber.of(bold ? 140 : 80),
             FontFile2: ffRef,
           }));
+          // Safety gates (2026-06-12, user-visible jank: interleaved/piled
+          // glyphs in the tagged render). The in-place rewrite forces
+          // WinAnsiEncoding + substitute /Widths — only safe when the
+          // ORIGINAL font was WinAnsi-shaped. Skip (honest-scope) when:
+          //  (a) the original /Encoding carries /Differences (custom code
+          //      points — the byte→glyph assumption is wrong), or
+          //  (b) the original declared /Widths disagree with the substitute
+          //      beyond tolerance (advances shift → words overlap).
+          try {
+            const _origEnc = fDict.get(PDFName.of('Encoding'));
+            const _origEncObj = _origEnc ? (context.lookup(_origEnc) || _origEnc) : null;
+            if (_origEncObj && typeof _origEncObj.get === 'function' && _origEncObj.get(PDFName.of('Differences'))) {
+              _fontsUnrepairable.push(baseName + ' (custom /Differences encoding)');
+              continue;
+            }
+            const _origWidthsRef = fDict.get(PDFName.of('Widths'));
+            const _origWidths = _origWidthsRef ? (context.lookup(_origWidthsRef) || _origWidthsRef) : null;
+            const _origFirstRaw = fDict.get(PDFName.of('FirstChar'));
+            const _origFirst = _origFirstRaw != null ? Number(String(_origFirstRaw).replace(/[^0-9.-]/g, '')) : 32;
+            if (_origWidths && typeof _origWidths.get === 'function' && Number.isFinite(_origFirst)) {
+              let _sum = 0, _cnt = 0;
+              for (let cc = 65; cc <= 122; cc++) {
+                const oi = cc - _origFirst;
+                if (oi < 0) continue;
+                let ow = null;
+                try { const v = _origWidths.get(oi); ow = v != null ? Number(String(v).replace(/[^0-9.-]/g, '')) : null; } catch (_) {}
+                const sw = widths[cc - 32];
+                if (ow != null && Number.isFinite(ow) && ow > 0 && Number.isFinite(sw) && sw > 0) { _sum += Math.abs(ow - sw) / Math.max(ow, sw); _cnt++; }
+              }
+              if (_cnt >= 20 && (_sum / _cnt) > 0.035) {
+                _fontsUnrepairable.push(baseName + ' (declared widths differ ' + Math.round((_sum / _cnt) * 100) + '% from the substitute — skipped to avoid layout shift)');
+                continue;
+              }
+            }
+          } catch (_) { /* gate errors must not block the safe path */ }
           // Rewrite the EXISTING dict in place so every content-stream
           // reference picks up the embedded program.
           fDict.set(PDFName.of('Subtype'), PDFName.of('TrueType'));
