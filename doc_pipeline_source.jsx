@@ -12187,6 +12187,26 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         bodyContent = bodyContent.replace(/<figure data-img-placeholder="true"[\s\S]*?<\/figure>/gi, (match) => {
           const captionMatch = match.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i);
           const altText = captionMatch ? captionMatch[1].replace(/<[^>]*>/g, '').trim() : 'Image';
+          // Unwrap guard (2026-06-12, user report: section content rendered
+          // INSIDE the placeholder box): any block content the AI nested in
+          // its marker-figure — headings, lists, long paragraphs beyond the
+          // caption — is carried OUT and re-emitted after the placeholder.
+          let _carriedOut = '';
+          try {
+            const _fd = new DOMParser().parseFromString(match, 'text/html');
+            const _fig = _fd.querySelector('figure');
+            if (_fig) {
+              const _keep = [];
+              Array.from(_fig.children).forEach((ch) => {
+                const _tag = (ch.tagName || '').toUpperCase();
+                if (_tag === 'IMG' || _tag === 'FIGCAPTION') return;
+                const _txt = (ch.textContent || '').trim();
+                if (/^(UL|OL|TABLE|H[1-6]|SECTION|BLOCKQUOTE)$/.test(_tag) || (_tag === 'P' && _txt.length > 60) || (_tag === 'DIV' && _txt.length > 120)) _keep.push(ch.outerHTML);
+              });
+              _carriedOut = _keep.join('');
+              if (_carriedOut) { try { warnLog('[Images] carried ' + _keep.length + ' nested block(s) out of an image placeholder'); } catch (_) {} }
+            }
+          } catch (_) {}
           {
             const imgInfo = extractedImages[imgIdx] || null;
             imgIdx++;
@@ -12243,7 +12263,7 @@ ${hasSrc
   ? `<img src="${srcToken}" alt="${desc.replace(/"/g, '&quot;')}" style="max-width:100%;border-radius:8px;border:1px solid #e2e8f0">`
   : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
 <span style="font-size:13px;color:#334155;font-weight:600">${imgInfo ? 'Image from page ' + imgInfo.page : 'Image placeholder'}</span>
-<span style="font-size:12px;color:#475569">${desc.substring(0, 100)}${desc.length > 100 ? '...' : ''}</span>
+
 <span style="font-size:11px;color:#64748b;font-style:italic">Drag an extracted image here, or:</span>`}
 <div style="display:flex;gap:4px;margin-top:4px;align-items:center;justify-content:center;flex-wrap:wrap">
 <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:${hasSrc ? '#475569' : '#1d4ed8'};color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ${hasSrc ? '#334155' : '#1e3a8a'}">
@@ -12252,11 +12272,12 @@ ${hasSrc
 <input type="file" accept="image/*" style="display:none" onchange="${_uploadHandler2}">
 </label>
 ${!hasSrc ? `<button type="button" onclick="${_pickHandler2}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick from extracted images"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>` : ''}
+${!hasSrc ? `<button type="button" data-allo-genai onclick="(function(b){b.disabled=true;var s0=b.querySelector('span');if(s0)s0.textContent='⏳ Generating…';try{if(window.parent&&window.parent.__alloflowGenerateImage){window.parent.__alloflowGenerateImage('${imgId}');}else{if(s0)s0.textContent='AI unavailable';}}catch(_){if(s0)s0.textContent='AI unavailable';}})(this)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#0d9488;color:#ffffff !important;border:1px solid #0f766e;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Generate an AI illustration from the description"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg><span style="color:#ffffff !important">✨ Generate (AI)</span></button>` : ''}
 ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#6d28d9;color:#ffffff;border:1px solid #4c1d95;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Adjust crop for this image"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>Adjust Crop</button>` : ''}
 </div>
 </div>
 <figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em">${desc}${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose + '</em>' : ''}</figcaption>
-</figure>`;
+</figure>` + _carriedOut;
           }
         });
         _pipeLog('Images', 'Deferred ' + Object.keys(_deferredImageMap).length + ' image(s) as placeholder tokens — real data URLs restored at end of pipeline');

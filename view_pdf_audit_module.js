@@ -1139,6 +1139,65 @@ function PdfAuditView(props) {
     window.addEventListener("alloflow:agent-set-translate-lang", onLang);
     return () => window.removeEventListener("alloflow:agent-set-translate-lang", onLang);
   }, []);
+  useEffect(() => {
+    window.__alloflowGenerateImage = async (imgId) => {
+      try {
+        if (typeof callImagen !== "function") {
+          addToast(t("toasts.genimg_unavailable") || "AI image generation is unavailable in this session.", "error");
+          return;
+        }
+        const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+        const fig = ldoc && ldoc.getElementById(imgId + "-figure");
+        const container = ldoc && ldoc.getElementById(imgId + "-container");
+        if (!fig || !container) {
+          addToast(t("toasts.genimg_lost") || "Could not find that placeholder \u2014 re-open the preview and try again.", "error");
+          return;
+        }
+        const cap = fig.querySelector("figcaption");
+        const desc = (cap && cap.textContent || "").trim().slice(0, 400) || "an educational illustration";
+        const url = await callImagen("Recreate this image for an educational document: " + desc + ". Clean, professional, high-contrast, K-12 appropriate, no watermark.", 420, 0.85);
+        if (!url) {
+          addToast(t("toasts.genimg_failed") || "Image generation returned nothing \u2014 quota or safety filter. The placeholder is unchanged.", "error");
+          const b = container.querySelector("[data-allo-genai] span");
+          if (b) b.textContent = "\u2728 Generate (AI)";
+          const btn = container.querySelector("[data-allo-genai]");
+          if (btn) btn.disabled = false;
+          return;
+        }
+        const im = ldoc.createElement("img");
+        im.src = url;
+        im.alt = desc;
+        im.style.maxWidth = "100%";
+        im.style.borderRadius = "8px";
+        im.style.border = "1px solid #e2e8f0";
+        im.setAttribute("data-allo-regenerated", "true");
+        container.innerHTML = "";
+        container.appendChild(im);
+        container.style.background = "none";
+        container.style.border = "none";
+        container.style.padding = "0";
+        container.style.minHeight = "0";
+        container.removeAttribute("ondragover");
+        container.removeAttribute("ondragleave");
+        container.removeAttribute("ondrop");
+        if (cap) cap.innerHTML = cap.innerHTML + ' <em style="color:#0d9488">' + (t("pdf_audit.genimg.label") || "(AI-generated illustration \u2014 verify it matches the intended diagram before sharing)") + "</em>";
+        try {
+          if (window.__alloflowOnPdfPreviewMutated) window.__alloflowOnPdfPreviewMutated();
+        } catch (_) {
+        }
+        addToast("\u2728 " + (t("toasts.genimg_done") || "AI illustration generated from the description and inserted \u2014 labeled for verification. Replace it any time with Upload or Pick extracted."), "success");
+      } catch (e) {
+        addToast((t("toasts.genimg_err") || "Image generation failed: ") + (e && e.message || "unknown"), "error");
+      }
+    };
+    return () => {
+      try {
+        delete window.__alloflowGenerateImage;
+      } catch (_) {
+        window.__alloflowGenerateImage = null;
+      }
+    };
+  }, [callImagen, addToast, t]);
   const _smartTableParseDelimited = (raw) => {
     const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (lines.length < 2) return null;
