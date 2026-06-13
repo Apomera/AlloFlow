@@ -6366,7 +6366,7 @@ var d = labToolData.plateTectonics || {};
                 if (searchResults) {
                   els.push(React.createElement("div", { key: "search", className: "flex flex-wrap justify-center gap-1 mb-3 w-full" },
                     searchResults.length === 0
-                      ? React.createElement("span", { className: "text-xs text-slate-500 italic" }, "No matches.")
+                      ? React.createElement("span", { className: "text-xs italic " + (isDark ? "text-slate-300" : "text-slate-500") }, "No matches.")
                       : searchResults.map(function(m) {
                           return React.createElement("button", {
                             key: m,
@@ -6415,7 +6415,7 @@ var d = labToolData.plateTectonics || {};
 
             // Challenges Progress Card
             React.createElement("div", {
-              className: "mt-4 rounded-xl p-4 border bg-gradient-to-r from-orange-50 to-red-50 border-orange-200",
+              className: "mt-4 rounded-xl p-4 border " + (isDark ? "bg-slate-900/60 border-slate-800" : "bg-gradient-to-r from-orange-50 to-red-50 border-orange-200") + "",
               style: { boxShadow: '0 2px 8px rgba(220,38,38,0.1)' }
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -6573,7 +6573,7 @@ var d = labToolData.plateTectonics || {};
                   ),
                   aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                   aiText && React.createElement("p", { className: "text-xs leading-relaxed rounded-lg p-3 border " + (isDark ? "bg-slate-900 text-slate-200 border-purple-900/50" : "bg-white text-slate-700 border-purple-100") }, aiText),
-                  !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe the current simulation at your chosen reading level.")
+                  !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic " + (isDark ? "text-slate-300" : "text-slate-600") }, "Click \u201CExplain\u201D for the AI tutor to describe the current simulation at your chosen reading level.")
                 );
               })()
 
@@ -7310,7 +7310,7 @@ var d = labToolData.plateTectonics || {};
                       chosenOpt !== null && qz.wrongFeedback ? qz.wrongFeedback[chosenOpt] : qz.explain
                     ),
 
-                    React.createElement("div", { className: "text-[11px] text-slate-400 mt-1 italic" },
+                    React.createElement("div", { className: "text-[11px] text-slate-700 mt-1 italic" },
                       "Explanation: " + qz.explain
                     )
 
@@ -7458,7 +7458,7 @@ var d = labToolData.plateTectonics || {};
                   }).map(function(p) {
                     return React.createElement('button', { key: p.id, onClick: function() { upd({ _plateFocus: p.id }); }, className: 'text-left p-3 rounded-lg border transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950/60 border-slate-800 hover:border-red-500 hover:bg-slate-900/60 text-slate-300' : 'bg-white border-red-200 hover:border-red-500 hover:bg-red-50 text-slate-700') },
                       React.createElement('div', { className: 'font-bold text-red-800 text-sm' }, p.name),
-                      React.createElement('div', { className: 'text-[10px] text-slate-500 italic' }, p.tier + ' / ' + p.type),
+                      React.createElement('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, p.tier + ' / ' + p.type),
                       p.area ? React.createElement('div', { className: 'text-[10px] text-slate-600' }, 'Area: ' + p.area.toLocaleString() + ' km2') : null,
                       p.motion ? React.createElement('div', { className: 'text-[10px] text-slate-600' }, p.motion) : null,
                       p.notes ? React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1' }, p.notes) : null

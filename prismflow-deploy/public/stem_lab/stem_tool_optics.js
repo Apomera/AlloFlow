@@ -110,12 +110,15 @@
       '[data-op-focusable]:focus { outline: 2px solid #38bdf8; outline-offset: 2px; }',
       '[data-op-focusable]:focus:not(:focus-visible) { outline: none; }',
       '[data-op-focusable]:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
+      '[data-op-focusable] { transition: filter 0.12s ease, box-shadow 0.12s ease; }',
+      '[data-op-focusable]:hover:not(:disabled):not([aria-busy="true"]) { filter: brightness(1.12); }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .op-anim { animation: none !important; transition: none !important; }',
       '}',
       '.op-aria-live { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }',
       '.op-knob { cursor: grab; touch-action: none; user-select: none; }',
-      '.op-knob:active { cursor: grabbing; }'
+      '.op-knob:active { cursor: grabbing; }',
+      'input[type="range"][data-op-focusable], input[type="checkbox"][data-op-focusable] { accent-color: #38bdf8; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -3136,7 +3139,7 @@
               'data-op-focusable': 'true',
               style: {
                 textAlign: 'left',
-                background: 'rgba(56,189,248,0.06)',
+                background: 'rgba(56,189,248,0.10)',
                 border: '1px solid rgba(56,189,248,0.40)',
                 borderRadius: 10, padding: 12, cursor: 'pointer',
                 display: 'flex', flexDirection: 'column', gap: 6
@@ -3664,7 +3667,7 @@
                     lineHeight: 1.45
                   }
                 },
-                  h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#475569', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                  h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#64748b', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
                   h('span', { style: { flex: 1, minWidth: 0 } },
                     q.q.length > 80 ? q.q.substring(0, 77) + '…' : q.q,
                     done && entry.firstCorrectAt && h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
@@ -5059,14 +5062,14 @@
             'data-op-focusable': 'true' }),
           h('span', { style: { fontWeight: 700 } }, '👓 Glasses')
         ),
-        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: glassesOn ? '#cbd5e1' : '#475569' } },
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: glassesOn ? '#cbd5e1' : '#64748b' } },
           'Power:',
           h('input', { type: 'range', min: -6, max: 6, step: 0.25, value: glassesDiopters,
             onChange: function(e) { upd('phenoEyeGlassesD', parseFloat(e.target.value)); },
             disabled: !glassesOn,
             'data-op-focusable': 'true', 'aria-label': 'Corrective lens power in diopters',
             style: { flex: 1, opacity: glassesOn ? 1 : 0.4 } }),
-          h('span', { style: { fontFamily: 'monospace', color: glassesOn ? '#fbbf24' : '#475569', minWidth: 56 } },
+          h('span', { style: { fontFamily: 'monospace', color: glassesOn ? '#fbbf24' : '#94a3b8', minWidth: 56 } },
             (glassesDiopters > 0 ? '+' : '') + glassesDiopters.toFixed(2) + ' D')
         )
       ),

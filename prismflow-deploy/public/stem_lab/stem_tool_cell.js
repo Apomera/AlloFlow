@@ -19545,16 +19545,16 @@ var d = labToolData.cell || {};
                 els.push(React.createElement('div', { key: 'top', className: 'flex flex-wrap items-center gap-2 w-full mb-2' },
                   React.createElement('button', {
                     onClick: function() { setCat(null); upd('_cellPicked', false); },
-                    className: 'px-3 py-1 rounded-lg text-xs font-bold ' + (atHub ? 'bg-green-700 text-white' : 'bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300')
+                    className: 'px-3 py-1 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1 ' + (atHub ? 'bg-green-700 text-white' : 'bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300')
                   }, '🏠 Hub'),
-                  activeCat && !atHub && React.createElement('span', { className: 'text-xs text-slate-400' }, '/'),
+                  activeCat && !atHub && React.createElement('span', { className: 'text-xs text-slate-500' }, '/'),
                   activeCat && !atHub && React.createElement('span', { className: 'px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-green-700 border border-green-200' }, activeCat.icon + ' ' + activeCat.label),
                   React.createElement('input', {
                     type: 'text',
                     placeholder: 'Search modes...',
                     value: d._cellSearch || '',
                     onChange: function(e) { upd('_cellSearch', e.target.value); upd('_cellCategory', null); },
-                    className: 'ml-auto px-2 py-1 text-xs border border-slate-300 rounded'
+                    className: 'ml-auto px-2 py-1 text-xs border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600'
                   })
                 ));
 
@@ -20308,7 +20308,7 @@ var d = labToolData.cell || {};
 
                     React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
 
-                    React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                    React.createElement("span", { className: "font-bold text-amber-700" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
 
                   )
 
@@ -20599,7 +20599,7 @@ var d = labToolData.cell || {};
                   React.createElement('h3', { className: 'text-base font-bold text-green-700 flex items-center gap-1.5' }, '📚 Organism Encyclopedia'),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-full' }, filtered.length + ' organisms')
                 ),
-                React.createElement('input', { type: 'text', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
                 React.createElement('div', { className: 'flex flex-wrap gap-1' },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
@@ -20633,7 +20633,7 @@ var d = labToolData.cell || {};
                         style: { width: percentage + '%' }
                       })
                     ),
-                    React.createElement('div', { className: 'flex justify-between text-[8px] text-slate-400 font-mono mt-0.5' },
+                    React.createElement('div', { className: 'flex justify-between text-[8px] text-slate-600 font-mono mt-0.5' },
                       React.createElement('span', null, '1 μm (Bacteria)'),
                       React.createElement('span', null, '100 μm (Protist)'),
                       React.createElement('span', null, '1000 μm (Water Bear)')
