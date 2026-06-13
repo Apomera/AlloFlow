@@ -691,7 +691,31 @@ var createDocPipeline = function(deps) {
   // Images ride the fixer's token-strip. Sets <html lang> (+ dir for RTL)
   // so screen readers pronounce correctly and the typeset tagger declares
   // the right language. Every downstream export inherits the result.
-  const _tagSeqOf = (s) => (String(s || '').match(/<\/?[a-zA-Z][a-zA-Z0-9-]*/g) || []).join(',');
+  // Translation parity fingerprint (audit 2026-06-13): the tag-NAME sequence
+  // alone let a chunk pass while id/class/data-*/scope/headers/for/href/src
+  // were corrupted — any of which silently breaks label association, table
+  // header references, skip-link targets, or image-restore tokens. This
+  // fingerprints the structure AND every NON-translatable attribute, while
+  // still allowing alt/aria-label/title VALUES to change (the whole point of
+  // translation). Strictly stronger than the old tag-name match.
+  const _tagSeqOf = (s) => {
+    try {
+      const d = new DOMParser().parseFromString('<body>' + String(s || '') + '</body>', 'text/html');
+      const parts = [];
+      d.body.querySelectorAll('*').forEach((el) => {
+        const a = [];
+        for (const at of el.getAttributeNames()) {
+          if (at === 'alt' || at === 'aria-label' || at === 'title' || at === 'aria-description' || at === 'placeholder') continue; // translatable VALUES
+          a.push(at + '=' + el.getAttribute(at));
+        }
+        a.sort();
+        parts.push(el.tagName.toLowerCase() + '[' + a.join(';') + ']');
+      });
+      return parts.join('|');
+    } catch (_) {
+      return (String(s || '').match(/<\/?[a-zA-Z][a-zA-Z0-9-]*/g) || []).join(',');
+    }
+  };
   const translateAccessibleHtml = async (html, targetLang, opts = {}) => {
     if (!callGemini) throw new Error('AI unavailable');
     if (!html || !targetLang) throw new Error('translateAccessibleHtml: html + targetLang required');
@@ -980,7 +1004,12 @@ var createDocPipeline = function(deps) {
   // structure must survive every chunk exactly; a chunk that drops or
   // invents structure retries once, then keeps the ORIGINAL text
   // (counted + reported). Facts must be preserved; nothing invented.
-  const _structSeqOf = (s) => (String(s || '').match(/<\/?(?:h[1-6]|figure|img|table|thead|tbody|tr|th|td|caption|ul|ol)\b/gi) || []).map((x) => x.toLowerCase().replace(/\s.*$/, '')).join(',');
+  // Plain-language structural skeleton (audit 2026-06-13): added li/dt/dd —
+  // the gate ignored list items, so a chunk could silently DROP bullets
+  // (facts) while keeping the <ul> and passing parity. Headings/figures/
+  // tables/lists/list-items/definition-terms must all survive; sentence
+  // wording is free.
+  const _structSeqOf = (s) => (String(s || '').match(/<\/?(?:h[1-6]|figure|img|table|thead|tbody|tr|th|td|caption|ul|ol|li|dl|dt|dd)\b/gi) || []).map((x) => x.toLowerCase().replace(/\s.*$/, '')).join(',');
   const simplifyAccessibleHtml = async (html, opts = {}) => {
     if (!callGemini) throw new Error('AI unavailable');
     if (!html) throw new Error('simplifyAccessibleHtml: html required');
@@ -14078,9 +14107,18 @@ tr { page-break-inside: avoid; }
     ` : '';
 
     // Score-blend block
-    const aiOnly = ar._aiOnlyScore;
-    const axeOnly = ar._baselineAxeScore;
-    const blendOk = aiOnly != null && axeOnly != null;
+    // Explain the POST-FIX score with POST-FIX operands (audit 2026-06-13):
+    // it previously used the BASELINE _aiOnlyScore/_baselineAxeScore to
+    // "explain" fr.afterScore, so the numbers didn't add up — and it
+    // labeled the deterministic half 'axe-core' when the blend uses the
+    // more conservative of axe / Equal Access.
+    const aiAfter = (fr.verificationAudit && fr.verificationAudit.score != null) ? fr.verificationAudit.score : null;
+    const _axeAfter = (fr.axeAudit && fr.axeAudit.score != null) ? fr.axeAudit.score : null;
+    const _eaAfter = (fr.secondEngineAudit && fr.secondEngineAudit.score != null) ? fr.secondEngineAudit.score : null;
+    const detAfter = (_axeAfter != null && _eaAfter != null) ? Math.min(_axeAfter, _eaAfter) : (_axeAfter != null ? _axeAfter : _eaAfter);
+    const aiOnly = aiAfter;
+    const axeOnly = detAfter;
+    const blendOk = fr._scoreIsBlended && aiAfter != null && detAfter != null;
     const _scoreBlock = `
       <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Accessibility Score</h2>
       <div style="display:flex;gap:16px;margin-bottom:12px;align-items:center">
@@ -14095,7 +14133,7 @@ tr { page-break-inside: avoid; }
         </div>
         <div style="font-size:14px;color:#16a34a;font-weight:700">+${fr.afterScore - fr.beforeScore} points</div>` : ''}
       </div>
-      ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Composite score blends AI rubric (${aiOnly}) and axe-core automated WCAG checks (${axeOnly}) at 50/50.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from AI rubric only.</p>'}
+      ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Composite score blends the AI rubric (${aiOnly}) with the more conservative deterministic engine — axe-core / IBM Equal Access (${axeOnly}) — at 50/50.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from AI rubric only.</p>'}
     `;
 
     // Issue resolution block

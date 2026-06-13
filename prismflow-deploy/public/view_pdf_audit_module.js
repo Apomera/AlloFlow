@@ -1667,7 +1667,8 @@ function PdfAuditView(props) {
                       addToast('"' + file.name + '" \u2014 spreadsheet support is still loading; try again in a moment. Skipped.', "error");
                       return;
                     }
-                    _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                    const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                    _text = "# " + (file.name || "Spreadsheet").replace(/\.(xlsx|xls|xlsb|ods)$/i, "") + "\n\n" + (_conv.text || "") + (_conv.truncatedRows ? "\n\n*Note: " + _conv.truncatedRows + " row(s) beyond the first 200 per sheet were omitted.*" : "");
                   } else {
                     _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
                   }
@@ -1710,7 +1711,8 @@ function PdfAuditView(props) {
                     addToast('"' + file.name + '" \u2014 spreadsheet support is still loading; try again in a moment. Skipped.', "error");
                     return;
                   }
-                  _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                  const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                  _text = "# " + (file.name || "Spreadsheet").replace(/\.(xlsx|xls|xlsb|ods)$/i, "") + "\n\n" + (_conv.text || "") + (_conv.truncatedRows ? "\n\n*Note: " + _conv.truncatedRows + " row(s) beyond the first 200 per sheet were omitted.*" : "");
                 } else {
                   _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
                 }
@@ -2962,12 +2964,42 @@ Return ONLY JSON:
           {
             defaultValue: img.description || "",
             onChange: (e) => {
-              idxs.forEach((di) => window.dispatchEvent(new CustomEvent("alloflow:alt-text-edited", { detail: { index: di, altText: e.target.value } })));
+              const _newAlt = e.target.value;
+              idxs.forEach((di) => window.dispatchEvent(new CustomEvent("alloflow:alt-text-edited", { detail: { index: di, altText: _newAlt } })));
               setExtractionData((prev) => {
                 if (!prev) return prev;
-                const updated = { ...prev, images: prev.images.map((im, i) => idxs.includes(i) ? { ...im, description: e.target.value } : im) };
+                const updated = { ...prev, images: prev.images.map((im, i) => idxs.includes(i) ? { ...im, description: _newAlt } : im) };
                 return updated;
               });
+              if (img.src && pdfFixResult?.accessibleHtml) {
+                setPdfFixResult((prev) => {
+                  if (!prev || !prev.accessibleHtml) return prev;
+                  try {
+                    const d = new DOMParser().parseFromString(prev.accessibleHtml, "text/html");
+                    let touched = 0;
+                    d.querySelectorAll("img").forEach((im) => {
+                      if (im.getAttribute("src") === img.src) {
+                        const oldAlt = (im.getAttribute("alt") || "").trim();
+                        im.setAttribute("alt", _newAlt);
+                        const fc = im.closest("figure") && im.closest("figure").querySelector("figcaption");
+                        if (fc && oldAlt && fc.textContent.trim() === oldAlt) fc.textContent = _newAlt;
+                        touched++;
+                      }
+                    });
+                    if (!touched) return prev;
+                    return { ...prev, accessibleHtml: "<!DOCTYPE html>\n" + d.documentElement.outerHTML, _userEditedAt: Date.now() };
+                  } catch (_) {
+                    return prev;
+                  }
+                });
+                try {
+                  const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+                  if (ldoc) ldoc.querySelectorAll("img").forEach((im) => {
+                    if (im.getAttribute("src") === img.src) im.setAttribute("alt", _newAlt);
+                  });
+                } catch (_) {
+                }
+              }
             },
             placeholder: t("pdf_audit.images.alt_placeholder") || "Describe this image for screen reader users...",
             rows: 2,
@@ -3666,17 +3698,21 @@ Return ONLY JSON:
         _advance();
       }, className: "px-3 py-1.5 bg-amber-50 border border-amber-400 text-amber-800 rounded-lg font-bold hover:bg-amber-100", title: t("pdf_audit.imgreview.strip_title") || "Removes the AI-transcribed LaTeX/MathML and chart-data blocks for THIS image (the description stays). Use when the transcription is wrong." }, "\u{1F9F9} ", t("pdf_audit.imgreview.strip") || "Strip AI extras"), /* @__PURE__ */ React.createElement("button", { onClick: _advance, className: "px-3 py-1.5 text-slate-600 font-bold hover:text-slate-800" }, t("pdf_audit.imgreview.skip") || "Skip")));
     })(), pdfFixResult.pageCount && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold" }, "\u{1F4C4} ", pdfFixResult.pageCount, " pages processed"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold" }, "\u{1F4DD} ", (pdfFixResult.extractedChars || 0).toLocaleString(), " chars extracted"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold" }, "\u{1F310} ", (pdfFixResult.htmlChars || 0).toLocaleString(), " chars HTML"), pdfFixResult.imageCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold" }, "\u{1F5BC}\uFE0F ", pdfFixResult.imageCount, " images identified")), (() => {
-      const afterAi = pdfFixResult.afterScore;
       const afterAxe = pdfFixResult.axeAudit?.score ?? null;
-      const blendedAfter = afterAi !== null && afterAxe !== null ? Math.round((afterAxe + afterAi) / 2) : afterAxe ?? afterAi ?? null;
+      const afterEa = pdfFixResult.secondEngineAudit?.score ?? null;
+      const afterDet = afterAxe !== null && afterEa !== null ? Math.min(afterAxe, afterEa) : afterAxe ?? afterEa ?? null;
+      const afterAi = pdfFixResult.verificationAudit?.score ?? pdfFixResult.afterScore;
+      const blendedAfter = pdfFixResult.afterScore ?? afterDet ?? null;
       const initialBlended = pdfAuditResult?.score ?? null;
       const initialAi = pdfAuditResult?._aiOnlyScore ?? pdfFixResult.beforeScore;
-      const initialAxe = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
+      const _beforeEa = pdfAuditResult?._baselineSecondEngineAudit?.score ?? null;
+      const initialAxeRaw = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
+      const initialAxe = initialAxeRaw !== null && _beforeEa !== null ? Math.min(initialAxeRaw, _beforeEa) : initialAxeRaw;
       const blendedBefore = initialBlended ?? (initialAi !== null && initialAxe !== null ? Math.round((initialAxe + initialAi) / 2) : initialAi ?? null);
       const beforeDisplay = blendedBefore ?? "?";
       const afterDisplay = blendedAfter !== null ? blendedAfter : "?";
       const gain = blendedAfter !== null && blendedBefore !== null ? blendedAfter - blendedBefore : 0;
-      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedBefore || 0) < 50 ? "text-red-600" : (blendedBefore || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, beforeDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Before")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl text-slate-600" }, "\u2192"), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedAfter || 0) < 50 ? "text-red-600" : (blendedAfter || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, afterDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "After")), gain > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold" }, "+", gain)), /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "("), /* @__PURE__ */ React.createElement("span", { className: "text-purple-700 font-bold", title: t("pdf_audit.score.ai_rubric_label") || "AI Rubric" }, "AI: ", initialAi ?? "?", "\u2192", afterAi ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "+"), /* @__PURE__ */ React.createElement("span", { className: "text-blue-700 font-bold", title: "axe-core" }, "axe: ", initialAxe ?? "?", "\u2192", afterAxe ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, ") / 2"))));
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedBefore || 0) < 50 ? "text-red-600" : (blendedBefore || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, beforeDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Before")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl text-slate-600" }, "\u2192"), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedAfter || 0) < 50 ? "text-red-600" : (blendedAfter || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, afterDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "After")), gain > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold" }, "+", gain)), /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "("), /* @__PURE__ */ React.createElement("span", { className: "text-purple-700 font-bold", title: t("pdf_audit.score.ai_rubric_label") || "AI Rubric (self-consistency)" }, "AI: ", initialAi ?? "?", "\u2192", afterAi ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "+"), /* @__PURE__ */ React.createElement("span", { className: "text-blue-700 font-bold", title: t("pdf_audit.score.det_label") || "Deterministic engines \u2014 the more conservative of axe-core / IBM Equal Access" }, "checks: ", initialAxe ?? "?", "\u2192", afterDet ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, ") / 2"))));
     })(), pdfFixResult.issueResolution && pdfFixResult.issueResolution.summary && pdfFixResult.issueResolution.summary.totalPre > 0 && (() => {
       const s = pdfFixResult.issueResolution.summary;
       const pct = s.totalPre > 0 ? Math.round(s.resolvedCount / s.totalPre * 100) : 0;
@@ -3933,7 +3969,7 @@ Return ONLY JSON:
       const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? "?";
       const afterAi = pdfFixResult.afterScore;
       const afterAxe = pdfFixResult.axeAudit?.score ?? null;
-      const afterScore = afterAi !== null && afterAxe !== null ? Math.round((afterAxe + afterAi) / 2) : afterAxe ?? afterAi ?? "?";
+      const afterScore = afterAi != null ? afterAi : afterAxe ?? "?";
       const scoreColor = (s) => typeof s === "number" ? s >= 80 ? "#16a34a" : s >= 50 ? "#d97706" : "#dc2626" : "#64748b";
       win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Before / After Comparison</title>
                           <style>
@@ -4880,7 +4916,7 @@ Return ONLY JSON:
     })(), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _rptAi = pdfFixResult.afterScore;
       const _rptAxe = pdfFixResult.axeAudit?.score ?? null;
-      const _rptBlended = _rptAi !== null && _rptAxe !== null ? Math.round((_rptAxe + _rptAi) / 2) : _rptAxe ?? _rptAi;
+      const _rptBlended = _rptAi != null ? _rptAi : _rptAxe;
       const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || "" };
       const html = generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true);
       const w = window.open("", "_blank");
@@ -4899,7 +4935,7 @@ Return ONLY JSON:
     }, "data-help-key": "pdf_audit_view_formatted_report_btn", className: "w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors" }, "\u{1F4C4} Formatted Report (PDF)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _dlAi = pdfFixResult.afterScore;
       const _dlAxe = pdfFixResult.axeAudit?.score ?? null;
-      const _dlBlended = _dlAi !== null && _dlAxe !== null ? Math.round((_dlAxe + _dlAi) / 2) : _dlAxe ?? _dlAi;
+      const _dlBlended = _dlAi != null ? _dlAi : _dlAxe;
       const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || "" };
       const html = generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true);
       const blob = new Blob([html], { type: "text/html" });
@@ -4915,7 +4951,7 @@ Return ONLY JSON:
     }, "data-help-key": "pdf_audit_view_html_report_btn", className: "w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100" }, "\u{1F310} HTML Report"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const _jsonAi = pdfFixResult.afterScore;
       const _jsonAxe = pdfFixResult.axeAudit?.score ?? null;
-      const _jsonBlended = _jsonAi !== null && _jsonAxe !== null ? Math.round((_jsonAxe + _jsonAi) / 2) : _jsonAxe ?? _jsonAi;
+      const _jsonBlended = _jsonAi != null ? _jsonAi : _jsonAxe;
       const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, fileName: pendingPdfFile?.name, date: (/* @__PURE__ */ new Date()).toISOString(), tool: "AlloFlow", standard: "WCAG 2.1 AA", engines: ["AI (Gemini, 5-pass self-consistency)", "axe-core (Deque WCAG 2.1 AA)"] };
       const blob = new Blob([JSON.stringify(full, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -4940,7 +4976,7 @@ Return ONLY JSON:
         const signer = promptedName || "Unknown";
         const _aiS = pdfFixResult.afterScore;
         const _axS = pdfFixResult.axeAudit?.score ?? null;
-        const blended = _aiS !== null && _axS !== null ? Math.round((_axS + _aiS) / 2) : _axS ?? _aiS;
+        const blended = _aiS != null ? _aiS : _axS;
         let docFingerprint = null;
         if (pendingPdfBase64) {
           try {

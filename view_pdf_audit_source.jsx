@@ -1468,7 +1468,9 @@ function PdfAuditView(props) {
                                   let _text;
                                   if (_isSheet) {
                                     if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
-                                    _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                                    const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                                    // audit 2026-06-13: was assigning the {text,...} OBJECT → .trim() threw → every spreadsheet dropped
+                                    _text = '# ' + (file.name || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + (_conv.text || '') + (_conv.truncatedRows ? ('\n\n*Note: ' + _conv.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
                                   } else {
                                     _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
                                   }
@@ -1505,7 +1507,9 @@ function PdfAuditView(props) {
                                   let _text;
                                   if (_isSheet) {
                                     if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
-                                    _text = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                                    const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+                                    // audit 2026-06-13: was assigning the {text,...} OBJECT → .trim() threw → every spreadsheet dropped
+                                    _text = '# ' + (file.name || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + (_conv.text || '') + (_conv.truncatedRows ? ('\n\n*Note: ' + _conv.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
                                   } else {
                                     _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
                                   }
@@ -3705,12 +3709,44 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <textarea
                                           defaultValue={img.description || ''}
                                           onChange={(e) => {
-                                            idxs.forEach((di) => window.dispatchEvent(new CustomEvent('alloflow:alt-text-edited', { detail: { index: di, altText: e.target.value } })));
+                                            const _newAlt = e.target.value;
+                                            idxs.forEach((di) => window.dispatchEvent(new CustomEvent('alloflow:alt-text-edited', { detail: { index: di, altText: _newAlt } })));
                                             setExtractionData(prev => {
                                               if (!prev) return prev;
-                                              const updated = { ...prev, images: prev.images.map((im, i) => idxs.includes(i) ? { ...im, description: e.target.value } : im) };
+                                              const updated = { ...prev, images: prev.images.map((im, i) => idxs.includes(i) ? { ...im, description: _newAlt } : im) };
                                               return updated;
                                             });
+                                            // Audit 2026-06-13: on the RESULTS screen the fix is
+                                            // already done — the in-engine listener no longer
+                                            // applies, so the edit must reach accessibleHtml (the
+                                            // export source of truth) directly. Patch by src
+                                            // (grouped copies share it); update the adjacent
+                                            // figcaption too when it mirrored the alt.
+                                            if (img.src && pdfFixResult?.accessibleHtml) {
+                                              setPdfFixResult((prev) => {
+                                                if (!prev || !prev.accessibleHtml) return prev;
+                                                try {
+                                                  const d = new DOMParser().parseFromString(prev.accessibleHtml, 'text/html');
+                                                  let touched = 0;
+                                                  d.querySelectorAll('img').forEach((im) => {
+                                                    if (im.getAttribute('src') === img.src) {
+                                                      const oldAlt = (im.getAttribute('alt') || '').trim();
+                                                      im.setAttribute('alt', _newAlt);
+                                                      const fc = im.closest('figure') && im.closest('figure').querySelector('figcaption');
+                                                      if (fc && oldAlt && fc.textContent.trim() === oldAlt) fc.textContent = _newAlt;
+                                                      touched++;
+                                                    }
+                                                  });
+                                                  if (!touched) return prev;
+                                                  return { ...prev, accessibleHtml: '<!DOCTYPE html>\n' + d.documentElement.outerHTML, _userEditedAt: Date.now() };
+                                                } catch (_) { return prev; }
+                                              });
+                                              // Mirror into the live preview iframe (live-DOM-wins).
+                                              try {
+                                                const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+                                                if (ldoc) ldoc.querySelectorAll('img').forEach((im) => { if (im.getAttribute('src') === img.src) im.setAttribute('alt', _newAlt); });
+                                              } catch (_) {}
+                                            }
                                           }}
                                           placeholder={t('pdf_audit.images.alt_placeholder') || 'Describe this image for screen reader users...'}
                                           rows={2}
@@ -4884,14 +4920,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                       {/* Before → After Score */}
                       {(() => {
-                        const afterAi = pdfFixResult.afterScore;
+                        // Score honesty (audit 2026-06-13): pdfFixResult.afterScore is
+                        // ALREADY the engine's canonical blend — round((AI + min(axe,EA))/2).
+                        // Display it DIRECTLY; re-blending it with axe inflated the headline
+                        // and the signed report. The breakdown chips show the TRUE operands
+                        // (AI-only = verificationAudit.score; deterministic = min(axe,EA)).
                         const afterAxe = pdfFixResult.axeAudit?.score ?? null;
-                        const blendedAfter = (afterAi !== null && afterAxe !== null)
-                          ? Math.round((afterAxe + afterAi) / 2)
-                          : (afterAxe ?? afterAi ?? null);
+                        const afterEa = pdfFixResult.secondEngineAudit?.score ?? null;
+                        const afterDet = (afterAxe !== null && afterEa !== null) ? Math.min(afterAxe, afterEa) : (afterAxe ?? afterEa ?? null);
+                        const afterAi = pdfFixResult.verificationAudit?.score ?? pdfFixResult.afterScore; // true AI-only after (for the chip)
+                        const blendedAfter = pdfFixResult.afterScore ?? afterDet ?? null;
                         const initialBlended = pdfAuditResult?.score ?? null;
                         const initialAi = pdfAuditResult?._aiOnlyScore ?? pdfFixResult.beforeScore;
-                        const initialAxe = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
+                        const _beforeEa = pdfAuditResult?._baselineSecondEngineAudit?.score ?? null;
+                        const initialAxeRaw = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
+                        const initialAxe = (initialAxeRaw !== null && _beforeEa !== null) ? Math.min(initialAxeRaw, _beforeEa) : initialAxeRaw;
                         const blendedBefore = initialBlended ?? ((initialAi !== null && initialAxe !== null) ? Math.round((initialAxe + initialAi) / 2) : (initialAi ?? null));
                         const beforeDisplay = blendedBefore ?? '?';
                         const afterDisplay = blendedAfter !== null ? blendedAfter : '?';
@@ -4921,9 +4964,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="text-center mt-1 text-[11px]">
                         <div className="inline-flex items-center gap-1">
                           <span className="text-slate-600">(</span>
-                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric'}>AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
+                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric (self-consistency)'}>AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
                           <span className="text-slate-600">+</span>
-                          <span className="text-blue-700 font-bold" title="axe-core">axe: {initialAxe ?? '?'}{'\u2192'}{afterAxe ?? '?'}</span>
+                          <span className="text-blue-700 font-bold" title={t('pdf_audit.score.det_label') || 'Deterministic engines \u2014 the more conservative of axe-core / IBM Equal Access'}>checks: {initialAxe ?? '?'}{'\u2192'}{afterDet ?? '?'}</span>
                           <span className="text-slate-600">) / 2</span>
                         </div>
                       </div>
@@ -5544,7 +5587,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? '?';
                           const afterAi = pdfFixResult.afterScore;
                           const afterAxe = pdfFixResult.axeAudit?.score ?? null;
-                          const afterScore = (afterAi !== null && afterAxe !== null) ? Math.round((afterAxe + afterAi) / 2) : (afterAxe ?? afterAi ?? '?');
+                          const afterScore = (afterAi != null ? afterAi : (afterAxe ?? '?')); // canonical blend; no re-blend (audit 2026-06-13)
                           const scoreColor = (s) => typeof s === 'number' ? (s >= 80 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626') : '#64748b';
                           win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Before / After Comparison</title>
                           <style>
@@ -6569,7 +6612,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               );
                             })()}
                             <button onClick={() => {
-                              const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi !== null && _rptAxe !== null) ? Math.round((_rptAxe + _rptAi) / 2) : (_rptAxe ?? _rptAi);
+                              const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi != null ? _rptAi : _rptAxe) /* canonical engine blend; no re-blend (audit 2026-06-13) */;
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '' };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const w = window.open('', '_blank');
@@ -6585,7 +6628,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               📄 Formatted Report (PDF)
                             </button>
                             <button onClick={() => {
-                              const _dlAi = pdfFixResult.afterScore; const _dlAxe = pdfFixResult.axeAudit?.score ?? null; const _dlBlended = (_dlAi !== null && _dlAxe !== null) ? Math.round((_dlAxe + _dlAi) / 2) : (_dlAxe ?? _dlAi);
+                              const _dlAi = pdfFixResult.afterScore; const _dlAxe = pdfFixResult.axeAudit?.score ?? null; const _dlBlended = (_dlAi != null ? _dlAi : _dlAxe);
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, summary: pdfAuditResult?.summary || '' };
                               const html = generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true);
                               const blob = new Blob([html], { type: 'text/html' });
@@ -6597,7 +6640,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               🌐 HTML Report
                             </button>
                             <button onClick={() => {
-                              const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi !== null && _jsonAxe !== null) ? Math.round((_jsonAxe + _jsonAi) / 2) : (_jsonAxe ?? _jsonAi);
+                              const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi != null ? _jsonAi : _jsonAxe);
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.1 AA', engines: ['AI (Gemini, 5-pass self-consistency)', 'axe-core (Deque WCAG 2.1 AA)'] };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
@@ -6623,7 +6666,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (promptedName) { try { localStorage.setItem('alloflow_teacher_name', promptedName); } catch (_) {} }
                                 const signer = promptedName || 'Unknown';
                                 const _aiS = pdfFixResult.afterScore; const _axS = pdfFixResult.axeAudit?.score ?? null;
-                                const blended = (_aiS !== null && _axS !== null) ? Math.round((_axS + _aiS) / 2) : (_axS ?? _aiS);
+                                const blended = (_aiS != null ? _aiS : _axS);
                                 let docFingerprint = null;
                                 if (pendingPdfBase64) {
                                   try {

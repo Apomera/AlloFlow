@@ -967,20 +967,52 @@ function ExportPreviewView(props) {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
       const text = doc.body.innerText || doc.body.textContent || "";
-      const brailleMap = { "a": "1", "b": "12", "c": "14", "d": "145", "e": "15", "f": "124", "g": "1245", "h": "125", "i": "24", "j": "245", "k": "13", "l": "123", "m": "134", "n": "1345", "o": "135", "p": "1234", "q": "12345", "r": "1235", "s": "234", "t": "2345", "u": "136", "v": "1236", "w": "2456", "x": "1346", "y": "13456", "z": "1356", " ": " ", "1": "1", "2": "12", "3": "14", "4": "145", "5": "15", "6": "124", "7": "1245", "8": "125", "9": "24", "0": "245", ".": "256", ",": "2", "?": "236", "!": "235", ":": "25", ";": "23", "-": "36", "'": "3" };
-      const dotToAscii = (dots) => String.fromCharCode(10240 + dots.split("").reduce((s, d) => s + (1 << parseInt(d) - 1), 0));
-      let brf = "";
-      text.split("\n").forEach((line) => {
-        let bl = "";
-        const lower = line.toLowerCase();
-        for (let i = 0; i < lower.length; i++) {
-          if (line[i] !== lower[i]) bl += dotToAscii("6");
-          if (/[0-9]/.test(lower[i]) && (i === 0 || !/[0-9]/.test(lower[i - 1]))) bl += dotToAscii("3456");
-          bl += brailleMap[lower[i]] ? dotToAscii(brailleMap[lower[i]]) : lower[i];
+      const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
+      const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": "7", ")": "7", '"': "7", "'": "'", "-": "-", "/": "/", "*": "9", "&": "&", "@": "@", "#": "#" };
+      const _toBRF = (src) => {
+        const lines = src.replace(/\r\n?/g, "\n").split("\n");
+        const out = [];
+        for (const line of lines) {
+          let bl = "";
+          let numMode = false;
+          for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch >= "0" && ch <= "9") {
+              if (!numMode) {
+                bl += "#";
+                numMode = true;
+              }
+              bl += _brfDigit[ch];
+              continue;
+            }
+            numMode = false;
+            if (ch >= "a" && ch <= "z") {
+              bl += ch.toUpperCase();
+              continue;
+            }
+            if (ch >= "A" && ch <= "Z") {
+              bl += "," + ch;
+              continue;
+            }
+            if (ch === " " || ch === "	") {
+              bl += " ";
+              continue;
+            }
+            bl += _brfPunct[ch] !== void 0 ? _brfPunct[ch] : ch.charCodeAt(0) >= 32 && ch.charCodeAt(0) <= 126 ? ch.toUpperCase() : "";
+          }
+          out.push(bl.slice(0, 40));
+          if (bl.length > 40) {
+            let rest = bl.slice(40);
+            while (rest.length) {
+              out.push(rest.slice(0, 40));
+              rest = rest.slice(40);
+            }
+          }
         }
-        brf += bl + "\n";
-      });
-      const blob = new Blob([brf], { type: "text/plain" });
+        return out.join("\r\n");
+      };
+      const brf = _toBRF(text);
+      const blob = new Blob([brf], { type: "application/x-brf" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = "document.brf";
