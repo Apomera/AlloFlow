@@ -24,15 +24,15 @@ function buildAlloCommands(ctx) {
   const t = _mkT(ctx && ctx.t);
   const cmds = [
     // ── Navigate ──
-    { id: "open_educator_hub", icon: "\u{1F3EB}", roles: "teacher", label: t("cmd.open_educator_hub", "Open the Educator Hub"), aliases: ["educator hub", "teacher hub", "hub", "document pipeline", "remediation pipeline", "make a document accessible", "fix a pdf"], hint: t("cmd.open_educator_hub_hint", "Lesson tools + the Document Pipeline card"), run: (c) => {
+    { id: "open_educator_hub", opensPanel: "educatorHub", icon: "\u{1F3EB}", roles: "teacher", label: t("cmd.open_educator_hub", "Open the Educator Hub"), aliases: ["educator hub", "teacher hub", "hub", "document pipeline", "remediation pipeline", "make a document accessible", "fix a pdf"], hint: t("cmd.open_educator_hub_hint", "Lesson tools + the Document Pipeline card"), run: (c) => {
       c.setShowEducatorHub(true);
       return t("cmd.open_educator_hub_done", "Educator Hub opened \u2014 the Document Pipeline card is near the top.");
     } },
-    { id: "open_learning_hub", icon: "\u{1F393}", roles: "all", label: t("cmd.open_learning_hub", "Open the Learning Hub"), aliases: ["learning hub", "student hub", "games"], hint: t("cmd.open_learning_hub_hint", "Games, practice, and study tools"), run: (c) => {
+    { id: "open_learning_hub", opensPanel: "learningHub", icon: "\u{1F393}", roles: "all", label: t("cmd.open_learning_hub", "Open the Learning Hub"), aliases: ["learning hub", "student hub", "games"], hint: t("cmd.open_learning_hub_hint", "Games, practice, and study tools"), run: (c) => {
       c.setShowLearningHub(true);
       return t("cmd.open_learning_hub_done", "Learning Hub opened.");
     } },
-    { id: "open_document_builder", icon: "\u{1F4DD}", roles: "teacher", label: t("cmd.open_document_builder", "Open the Document Builder"), aliases: ["document builder", "builder", "export preview", "differentiate"], hint: t("cmd.open_document_builder_hint", "Build and export differentiated documents"), run: (c) => {
+    { id: "open_document_builder", opensPanel: "exportPreview", icon: "\u{1F4DD}", roles: "teacher", label: t("cmd.open_document_builder", "Open the Document Builder"), aliases: ["document builder", "builder", "export preview", "differentiate"], hint: t("cmd.open_document_builder_hint", "Build and export differentiated documents"), run: (c) => {
       c.openExportPreview();
       return t("cmd.open_document_builder_done", "Document Builder opened.");
     } },
@@ -40,7 +40,7 @@ function buildAlloCommands(ctx) {
       c.setShowWizard(true);
       return t("cmd.open_wizard_done", "Lesson wizard started.");
     } },
-    { id: "open_notebook", icon: "\u{1F4D3}", roles: "all", label: t("cmd.open_notebook", "Open my notebook"), aliases: ["notebook", "notes"], hint: t("cmd.open_notebook_hint", "Saved notes and entries"), run: (c) => {
+    { id: "open_notebook", opensPanel: "notebook", icon: "\u{1F4D3}", roles: "all", label: t("cmd.open_notebook", "Open my notebook"), aliases: ["notebook", "notes"], hint: t("cmd.open_notebook_hint", "Saved notes and entries"), run: (c) => {
       c.setShowNotebook(true);
       return t("cmd.open_notebook_done", "Notebook opened.");
     } },
@@ -48,21 +48,34 @@ function buildAlloCommands(ctx) {
       c.openTranslateModal();
       return t("cmd.open_translate_done", "Translation dialog opened.");
     } },
-    { id: "open_class_session", icon: "\u{1F465}", roles: "teacher", label: t("cmd.open_class_session", "Open class session"), aliases: ["class session", "session", "live class", "class code"], hint: t("cmd.open_class_session_hint", "Start or join a live class session"), run: (c) => {
+    { id: "open_class_session", opensPanel: "sessionModal", icon: "\u{1F465}", roles: "teacher", label: t("cmd.open_class_session", "Open class session"), aliases: ["class session", "session", "live class", "class code"], hint: t("cmd.open_class_session_hint", "Start or join a live class session"), run: (c) => {
       c.setShowSessionModal(true);
       return t("cmd.open_class_session_done", "Class session dialog opened.");
     } },
-    { id: "open_class_analytics", icon: "\u{1F4C8}", roles: "teacher", label: t("cmd.open_class_analytics", "Open class analytics"), aliases: ["analytics", "class data", "progress data"], hint: t("cmd.open_class_analytics_hint", "Whole-class progress"), run: (c) => {
+    { id: "open_class_analytics", opensPanel: "classAnalytics", icon: "\u{1F4C8}", roles: "teacher", label: t("cmd.open_class_analytics", "Open class analytics"), aliases: ["analytics", "class data", "progress data"], hint: t("cmd.open_class_analytics_hint", "Whole-class progress"), run: (c) => {
       c.setShowClassAnalytics(true);
       return t("cmd.open_class_analytics_done", "Class analytics opened.");
     } },
-    { id: "open_export_menu", icon: "\u{1F4E4}", roles: "teacher", label: t("cmd.open_export_menu", "Open the export menu"), aliases: ["export", "download menu", "share"], hint: t("cmd.open_export_menu_hint", "Export the current content"), run: (c) => {
+    { id: "open_export_menu", opensPanel: "exportMenu", icon: "\u{1F4E4}", roles: "teacher", label: t("cmd.open_export_menu", "Open the export menu"), aliases: ["export", "download menu", "share"], hint: t("cmd.open_export_menu_hint", "Export the current content"), run: (c) => {
       c.setShowExportMenu(true);
       return t("cmd.open_export_menu_done", "Export menu opened.");
     } },
     { id: "open_ai_settings", icon: "\u{1F916}", roles: "teacher", label: t("cmd.open_ai_settings", "Open AI settings"), aliases: ["ai settings", "ai backend", "api key", "model settings"], hint: t("cmd.open_ai_settings_hint", "Configure the AI backend"), run: (c) => {
       c.setShowAIBackendModal(true);
       return t("cmd.open_ai_settings_done", "AI settings opened.");
+    } },
+    // ── Navigate (added 2026-06-13: dashboard + roster + project-settings parity) ──
+    { id: "go_dashboard", opensPanel: "dashboard", icon: "\u{1F3E0}", roles: "all", label: t("cmd.go_dashboard", "Go to the dashboard"), aliases: ["dashboard", "home", "go home", "main view", "overview"], hint: t("cmd.go_dashboard_hint", "Back to the main lesson view"), run: (c) => {
+      c.goToDashboard();
+      return t("cmd.go_dashboard_done", "Dashboard.");
+    } },
+    { id: "open_roster", icon: "\u{1F9D1}\u200D\u{1F91D}\u200D\u{1F9D1}", roles: "teacher", label: t("cmd.open_roster", "Open the class roster"), aliases: ["roster", "manage roster", "class roster", "roster key"], hint: t("cmd.open_roster_hint", "Manage your class groups"), run: (c) => {
+      c.openRoster();
+      return t("cmd.open_roster_done", "Class roster opened.");
+    } },
+    { id: "open_project_settings", icon: "\u2699\uFE0F", roles: "teacher", label: t("cmd.open_project_settings", "Open project settings"), aliases: ["project settings", "student settings", "lesson settings", "permissions", "allow ai"], hint: t("cmd.open_project_settings_hint", "Per-project AI, dictation, and Socratic gating"), run: (c) => {
+      c.openProjectSettings();
+      return t("cmd.open_project_settings_done", "Project settings opened.");
     } },
     // ── Accessibility self-service (available in every mode) ──
     { id: "font_bigger", icon: "\u{1F50D}", roles: "all", label: t("cmd.font_bigger", "Make the text bigger"), aliases: ["bigger text", "larger text", "increase font", "zoom in text"], hint: t("cmd.font_bigger_hint", "+2 to the reading font size"), run: (c) => {
@@ -85,7 +98,7 @@ function buildAlloCommands(ctx) {
       c.setShowVoiceSettings(true);
       return t("cmd.open_voice_settings_done", "Voice settings opened.");
     } },
-    { id: "read_this_page", icon: "\u{1F4D6}", roles: "all", label: t("cmd.read_this_page", "Read this page to me"), aliases: ["read aloud", "read page", "read it", "listen"], hint: t("cmd.read_this_page_hint", "Opens the page reader"), run: (c) => {
+    { id: "read_this_page", opensPanel: "readThisPage", icon: "\u{1F4D6}", roles: "all", label: t("cmd.read_this_page", "Read this page to me"), aliases: ["read aloud", "read page", "read it", "listen"], hint: t("cmd.read_this_page_hint", "Opens the page reader"), run: (c) => {
       c.setShowReadThisPage(true);
       return t("cmd.read_this_page_done", "Page reader opened \u2014 choose where to start.");
     } },
@@ -128,6 +141,23 @@ function buildAlloCommands(ctx) {
     { id: "zen_off", icon: "\u{1F519}", roles: "all", label: t("cmd.zen_off", "Exit zen mode"), aliases: ["exit zen", "leave zen", "show interface"], hint: t("cmd.zen_off_hint", "Bring the interface back"), run: (c) => {
       c.zenOff();
       return t("cmd.zen_off_done", "Zen mode off.");
+    } },
+    // ── Display & motion + report-a-problem (added 2026-06-13: palette parity) ──
+    { id: "switch_theme", icon: "\u{1F3A8}", roles: "all", label: t("cmd.switch_theme", "Switch the theme (light / dark / high contrast)"), aliases: ["theme", "dark mode", "light mode", "high contrast", "contrast mode", "night mode"], hint: t("cmd.switch_theme_hint", "Cycle light \u2192 dark \u2192 high contrast"), run: (c) => {
+      c.toggleTheme();
+      return t("cmd.switch_theme_done", "Theme switched \u2014 cycling light, then dark, then high contrast.");
+    } },
+    { id: "toggle_color_overlay", icon: "\u{1F308}", roles: "all", label: t("cmd.toggle_color_overlay", "Toggle the color overlay"), aliases: ["color overlay", "overlay", "tint", "color filter", "irlen", "screen tint"], hint: t("cmd.toggle_color_overlay_hint", "Cycle a soft colored tint over the page"), run: (c) => {
+      c.toggleOverlay();
+      return t("cmd.toggle_color_overlay_done", "Color overlay changed.");
+    } },
+    { id: "toggle_animations", icon: "\u{1F300}", roles: "all", label: t("cmd.toggle_animations", "Turn animations off (reduced motion)"), aliases: ["disable animations", "reduce motion", "stop animations", "no motion", "calm motion"], hint: t("cmd.toggle_animations_hint", "Reduce on-screen motion"), run: (c) => {
+      c.toggleAnimations();
+      return t("cmd.toggle_animations_done", "Animations toggled.");
+    } },
+    { id: "report_problem", icon: "\u{1F41E}", roles: "all", label: t("cmd.report_problem", "Report a problem"), aliases: ["report a problem", "feedback", "bug report", "something is broken", "contact support"], hint: t("cmd.report_problem_hint", "Open the problem reporter"), run: (c) => {
+      c.openErrorReporter();
+      return t("cmd.report_problem_done", "Problem reporter opened.");
     } },
     // ── Pipeline (only offered while remediation results are open) ──
     { id: "pipeline_score", icon: "\u{1F3AF}", roles: "teacher", when: (c) => !!c.getPipelineScore && !!c.getPipelineScore(), label: t("cmd.pipeline_score", "What\u2019s my accessibility score?"), aliases: ["score", "my score", "accessibility score", "how accessible"], hint: t("cmd.pipeline_score_hint", "Speaks the current before \u2192 after"), run: (c) => {
@@ -223,6 +253,12 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   }
   const _runCmd = (cmd, via, params) => {
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
+    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
+      try {
+        ctx.closeOtherPanels(cmd.opensPanel);
+      } catch (_) {
+      }
+    }
     let msg = null;
     try {
       msg = cmd.run(ctx, params || {});
@@ -422,6 +458,12 @@ const AlloCommandPalette = ({ ctx }) => {
       return;
     }
     setConfirming(null);
+    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
+      try {
+        ctx.closeOtherPanels(cmd.opensPanel);
+      } catch (_) {
+      }
+    }
     let msg = null;
     try {
       msg = cmd.run(ctx);
