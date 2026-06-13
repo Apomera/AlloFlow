@@ -1264,7 +1264,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Molecule Lab"),
 
@@ -1280,7 +1280,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['build', '\uD83E\uDDF1 Build'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table'], ['reactions', '⚗️ Reactions']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Switch to " + label + " mode", key: m, onClick: () => { upd('moleculeMode', m); if (typeof canvasNarrate === 'function') { canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + label + ' mode.', repeat: label + ' mode.', terse: label + '.' }, { debounce: 500 }); } }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700') }, label)
+                React.createElement("button", { "aria-label": "Switch to " + label + " mode", key: m, onClick: () => { upd('moleculeMode', m); if (typeof canvasNarrate === 'function') { canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + label + ' mode.', repeat: label + ' mode.', terse: label + '.' }, { debounce: 500 }); } }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:bg-white/70 hover:text-slate-800') }, label)
 
               )
 
@@ -1319,7 +1319,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             mode === 'viewer' && React.createElement("div", null,
 
-              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200') }, p.name))),
+              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, p.name))),
 
               threeLoaded
                 ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border border-stone-200", style: { height: "300px" } },
@@ -1474,7 +1474,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-200') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
+                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
 
                 )
 
@@ -2144,7 +2144,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     ),
 
-                    React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-600 hover:text-slate-600 flex-shrink-0", "aria-label": "Close" }, "\u2715")
+                    React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-600 hover:text-slate-900 rounded-md transition-colors flex-shrink-0", "aria-label": "Close" }, "\u2715")
 
                   ),
 
@@ -2893,9 +2893,9 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg" }, done ? '✅' : ch.emoji),
                       React.createElement("div", { className: "flex-1 min-w-0" },
                         React.createElement("p", { className: "text-xs font-bold " + (done ? 'text-emerald-700 line-through' : 'text-slate-700') }, ch.name),
-                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-200') }, ch.desc)
+                        React.createElement("p", { className: "text-[11px] " + (done ? 'text-emerald-500' : 'text-slate-600') }, ch.desc)
                       ),
-                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-200') }, "+" + ch.reward + " RP")
+                      React.createElement("span", { className: "text-[11px] font-bold " + (done ? 'text-emerald-600' : 'text-slate-500') }, "+" + ch.reward + " RP")
                     );
                   })
                 )

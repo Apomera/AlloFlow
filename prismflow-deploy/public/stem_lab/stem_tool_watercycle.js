@@ -1327,7 +1327,7 @@ const d = labToolData.waterCycle || {};
               h('div', {
                 style: {
                   fontSize: 11,
-                  color: isDark ? '#64748b' : '#475569',
+                  color: isDark ? '#94a3b8' : '#475569',
                   lineHeight: 1.5,
                   paddingTop: 8,
                   borderTop: isDark ? '1px solid rgba(56,189,248,0.2)' : '1px solid rgba(14,165,233,0.2)',
@@ -1828,9 +1828,9 @@ const d = labToolData.waterCycle || {};
                       }, '📚') : null
                     ),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
-                      [['Q', Math.round(c.quality), c.quality < 40 ? '#ef4444' : c.quality < 65 ? '#f59e0b' : '#22c55e', def.targets.quality],
-                       ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? '#ef4444' : c.connectivity < 65 ? '#f59e0b' : '#22c55e', def.targets.connectivity],
-                       ['Sup', Math.round(c.support), c.support < 40 ? '#ef4444' : c.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                      [['Q', Math.round(c.quality), c.quality < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.quality < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.quality],
+                       ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.connectivity < 65 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.connectivity],
+                       ['Sup', Math.round(c.support), c.support < 40 ? (isDark ? '#ef4444' : '#b91c1c') : c.support < 60 ? (isDark ? '#f59e0b' : '#b45309') : (isDark ? '#22c55e' : '#15803d'), def.targets.support]
                       ].map(function(st, si) {
                         return h('div', {
                           key: si,
@@ -1842,9 +1842,9 @@ const d = labToolData.waterCycle || {};
                             textAlign: 'center'
                           }
                         },
-                          h('div', { style: { fontSize: 10, color: isDark ? '#64748b' : '#94a3b8' } }, st[0]),
+                          h('div', { style: { fontSize: 10, color: isDark ? '#94a3b8' : '#64748b' } }, st[0]),
                           h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                          h('div', { style: { fontSize: 9, color: isDark ? '#475569' : '#64748b' } }, 'goal ' + st[3])
+                          h('div', { style: { fontSize: 9, color: isDark ? '#94a3b8' : '#475569' } }, 'goal ' + st[3])
                         );
                       })
                     ),

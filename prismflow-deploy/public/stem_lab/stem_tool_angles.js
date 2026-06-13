@@ -655,7 +655,7 @@ window.StemLab = window.StemLab || {
           // Score + streak
           h('div', { className: 'flex items-center gap-2 ml-1' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
-            streak > 0 && h('div', { className: 'text-xs font-bold text-amber-500' }, '\uD83D\uDD25 ' + streak),
+            streak > 0 && h('div', { className: 'text-xs font-bold text-amber-700' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('div', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak)
           ),
           h('div', { className: 'flex items-center gap-1 ml-auto' },
@@ -837,7 +837,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             [0, 30, 45, 60, 90, 120, 135, 150, 180, 270, 360].map(function(a) {
               return h('button', { 'aria-label': 'Set angle to ' + a + ' degrees', 'aria-pressed': angleValue === a, key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
-                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
+                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
               }, a + '\u00B0');
             }),
             h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: 'Pin this angle on protractor' }, '\uD83D\uDCCC Pin')
@@ -863,7 +863,7 @@ window.StemLab = window.StemLab || {
             supplementary != null && h('div', { className: 'flex-1 bg-teal-50 rounded-lg p-2 border border-teal-100 text-center min-w-[120px]' },
               h('div', { className: 'text-[11px] font-bold text-teal-500 uppercase' }, 'Supplementary'),
               h('div', { className: 'text-sm font-bold text-teal-700' }, supplementary + '\u00B0'),
-              h('div', { className: 'text-[11px] text-teal-400' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
+              h('div', { className: 'text-[11px] text-teal-700' }, angleValue + '\u00B0 + ' + supplementary + '\u00B0 = 180\u00B0')
             ),
             h('div', { className: 'flex-1 bg-indigo-50 rounded-lg p-2 border border-indigo-100 text-center min-w-[120px]' },
               h('div', { className: 'text-[11px] font-bold text-indigo-500 uppercase' }, 'Vertical Angle'),
@@ -894,7 +894,7 @@ window.StemLab = window.StemLab || {
             ),
             aiAdvice
               ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, aiAdvice)
-              : h('div', { className: 'text-xs text-pink-400' }, 'Click to get personalized angle tips!')
+              : h('div', { className: 'text-xs text-pink-700' }, 'Click to get personalized angle tips!')
           )
         ),
 
@@ -905,10 +905,10 @@ window.StemLab = window.StemLab || {
           // Tolerance indicator
           h('div', { className: 'flex items-center gap-2 text-[11px]' },
             h('span', { className: 'text-slate-600' }, 'Difficulty:'),
-            h('span', { className: 'font-bold ' + (tolerance <= 2 ? 'text-red-500' : tolerance <= 3 ? 'text-orange-500' : 'text-green-500') },
+            h('span', { className: 'font-bold ' + (tolerance <= 2 ? 'text-red-600' : tolerance <= 3 ? 'text-orange-700' : 'text-green-700') },
               tolerance <= 2 ? '\uD83D\uDD25 Expert (\u00B1' + tolerance + '\u00B0)' : tolerance <= 3 ? '\u26A1 Medium (\u00B1' + tolerance + '\u00B0)' : '\uD83C\uDF3F Easy (\u00B1' + tolerance + '\u00B0)'
             ),
-            streak > 0 && h('span', { className: 'text-amber-500 font-bold' }, '\uD83D\uDD25 Streak: ' + streak)
+            streak > 0 && h('span', { className: 'text-amber-700 font-bold' }, '\uD83D\uDD25 Streak: ' + streak)
           ),
 
           // ── Challenge buttons ──

@@ -857,7 +857,7 @@ window.StemLab = window.StemLab || {
                 // Dynamic Wires
                 (function() {
                   var wires = [];
-                  var wireColor = isShort ? '#ef4444' : '#475569';
+                  var wireColor = isShort ? '#ef4444' : '#64748b';
                   var wWidth = isShort ? 2.5 : 2;
                   
                   if (components.length === 0) {
@@ -1359,9 +1359,9 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2' },
               [
                 { label: 'Mode', val: mode, color: 'slate', icon: mode === 'series' ? '\\u2192' : '\\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
-                { label: 'Resistance', val: totalR >= 1e8 ? '\\u221E' : totalR.toFixed(1) + '\\u03A9', color: 'yellow', icon: '\\u2AE8', textCls: 'text-yellow-500/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
-                { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue', icon: '\\u26A1', textCls: 'text-blue-500/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
-                { label: 'Power', val: power.toFixed(2) + 'W', color: 'red', icon: '\\uD83D\\uDD25', textCls: 'text-rose-500/80', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
+                { label: 'Resistance', val: totalR >= 1e8 ? '\\u221E' : totalR.toFixed(1) + '\\u03A9', color: 'yellow', icon: '\\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
+                { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue', icon: '\\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
+                { label: 'Power', val: power.toFixed(2) + 'W', color: 'red', icon: '\\uD83D\\uDD25', textCls: 'text-rose-400/80', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
               ].map(function(m) {
                 var isSh = isShort && m.label !== 'Mode';
                 return h('div', {
@@ -1523,7 +1523,7 @@ window.StemLab = window.StemLab || {
                         upd('challenge', ch);
                       }
                     },
-                    className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-500/60 border-emerald-800' : 'bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800')
+                    className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ' + (close ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/40 shadow-sm' : challengesDoneSet[ci] ? 'bg-emerald-950/20 text-emerald-400/80 border-emerald-700' : 'bg-slate-900 border-slate-800 text-amber-500 hover:bg-slate-800')
                   }, (close || challengesDoneSet[ci] ? '\\u2705 ' : '\\uD83C\\uDFAF ') + ch.label);
                 })
               )
