@@ -1760,7 +1760,7 @@ const d = labToolData.solarSystem || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors " + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-200" : "text-slate-200" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors " + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-200" : "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold " + (isDark ? 'text-slate-100' : 'text-slate-800') }, "\uD83C\uDF0D Solar System Explorer"),
 

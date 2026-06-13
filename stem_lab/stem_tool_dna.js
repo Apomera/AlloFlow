@@ -1698,7 +1698,7 @@ window.StemLab = window.StemLab || {
         h("div", { className: "flex items-center justify-between" },
           h("div", { className: "flex items-center gap-3" },
             h("button", { onClick: function() { setStemLabTool(null); announceToSR('Returned to tool grid'); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools' },
-              h(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              h(ArrowLeft, { size: 18, className: "text-slate-600" })),
             h("div", null,
               h("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDEC DNA / Genetics Lab"),
               h("p", { className: "text-xs text-slate-600" }, "Build \u2022 Replicate \u2022 Transcribe \u2022 Translate \u2022 Mutate \u2022 CRISPR \u2022 Forensics"))

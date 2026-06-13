@@ -3454,7 +3454,7 @@ var d = labToolData || {};
         return React.createElement('div',{className:'space-y-3 max-w-3xl mx-auto animate-in fade-in duration-200'},
           // Header
           React.createElement('div',{className:'flex items-center gap-3'},
-            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-200'})),
+            React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
             React.createElement('h3',{className:'text-lg font-bold text-violet-800'},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-600'},exploreScore.correct+'/'+exploreScore.total),

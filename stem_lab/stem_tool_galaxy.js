@@ -1366,7 +1366,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
 

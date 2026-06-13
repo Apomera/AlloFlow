@@ -6035,7 +6035,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": "Back to tools"
 
-                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
                 React.createElement("div", null,
 

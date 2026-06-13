@@ -1844,7 +1844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
             // ── Header ──
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
               React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500" }, "\uD83C\uDFB9 Music Synthesizer"),
               React.createElement("span", { className: "px-2 py-0.5 bg-purple-100 text-purple-700 text-[11px] font-bold rounded-full" },
                 synthEngine === 'supersaw' ? '\u26A1 SUPERSAW' : synthEngine === 'fm' ? '\uD83C\uDF1F FM' : synthEngine === 'sub' ? '\uD83C\uDF0A SUB' : synthEngine === 'pad' ? '\u2601\uFE0F PAD' : synthEngine === 'plucked' ? '\uD83C\uDFB8 PLUCKED' : '\u223F ' + (d.waveType || 'sine').toUpperCase()

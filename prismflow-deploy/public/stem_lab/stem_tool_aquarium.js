@@ -16317,7 +16317,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools'
 
-              }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
+              }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-700 bg-clip-text text-transparent" }, "\uD83D\uDC20 Aquaculture & Ocean Lab"),
 
