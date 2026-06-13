@@ -741,6 +741,10 @@ var createDocPipeline = function(deps) {
       for (let attempt = 0; attempt < 2 && !ok; attempt++) {
         try {
           let resp = String(await callGemini(prompt) || '').trim();
+          // Unwrap a JSON envelope first (audit 2026-06-13): when the model
+          // returns {"html":"…"} the fence-strip left the braces, parity
+          // failed, and the chunk kept its ORIGINAL (untranslated) text.
+          if (_isJsonWrapped(resp)) { const _u = _tryUnwrapJsonHtml(resp); if (_u) resp = _u.trim(); }
           resp = resp.replace(/^```html?\s*/i, '').replace(/```\s*$/, '').trim();
           if (resp && _tagSeqOf(resp) === wantSeq) { out.push(resp); ok = true; }
         } catch (_) {}
@@ -963,8 +967,13 @@ var createDocPipeline = function(deps) {
         const ov = accepted[h.id] || {};
         const label = String(ov.label != null ? ov.label : h.label || '').trim();
         const base = (label || 'field').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 24) || 'field';
-        usedNames[base] = (usedNames[base] || 0) + 1;
-        const name = usedNames[base] > 1 ? (base + '_' + usedNames[base]) : base;
+        // Collision-proof on the ASSEMBLED name (audit 2026-06-13): keying
+        // the counter on `base` alone let a distinct label collide with an
+        // already-suffixed name (e.g. 'date' #2 → 'date_2' clashing with a
+        // real 'date_2' field). Increment until the final name is unused.
+        let name = base, _k = 1;
+        while (usedNames[name]) { _k++; name = base + '_' + _k; }
+        usedNames[name] = true;
         const text = node.nodeValue || '';
         const beforeTxt = text.slice(0, h.start);
         const afterTxt = text.slice(h.start + h.len);
@@ -1036,6 +1045,7 @@ var createDocPipeline = function(deps) {
       for (let attempt = 0; attempt < 2 && !ok; attempt++) {
         try {
           let resp = String(await callGemini(prompt) || '').trim();
+          if (_isJsonWrapped(resp)) { const _u = _tryUnwrapJsonHtml(resp); if (_u) resp = _u.trim(); } // audit 2026-06-13: unwrap {"html":…} before parity
           resp = resp.replace(/^```html?\s*/i, '').replace(/```\s*$/, '').trim();
           if (resp && _structSeqOf(resp) === wantSeq) { out.push(resp); ok = true; }
         } catch (_) {}
@@ -4107,13 +4117,20 @@ var createDocPipeline = function(deps) {
     }
     for (let i = 0; i < segments.length; i++) {
       const seg = segments[i];
+      // Prefer NON-symbolic items (audit 2026-06-13): a symbolic item
+      // (Wingdings bullet) winning nearest-neighbour would route a REAL
+      // text segment to /Artifact downstream — silent content loss. Track
+      // the best non-symbolic separately; fall back to a symbolic match
+      // only when no non-symbolic candidate exists at all.
       let best = null, bestDist = Infinity;
+      let bestSym = null, bestSymDist = Infinity;
       for (const it of items) {
         const dx = it.x - seg.x, dy = it.y - seg.y;
         const d = dx * dx + dy * dy;
-        if (d < bestDist) { bestDist = d; best = it; }
+        if (it.symbolic) { if (d < bestSymDist) { bestSymDist = d; bestSym = it; } }
+        else if (d < bestDist) { bestDist = d; best = it; }
       }
-      matched[i] = best || { str: '', fontScale: 12, fontName: '' };
+      matched[i] = best || bestSym || { str: '', fontScale: 12, fontName: '' };
     }
     return matched;
   };
@@ -10317,6 +10334,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         if (chunks.length > 0) {
           const ps = options.persistedState;
           const carry = (ps && Array.isArray(ps.chunkResults) && ps.chunkResults.length === chunks.length) ? ps.chunkResults : null;
+          // Per-chunk content gate (audit 2026-06-13): a count match alone let
+          // the self-heal stamp a persisted score/aiVerified onto a freshly
+          // re-split chunk whose CONTENT differs — labels then described the
+          // wrong section. Carry a score only when the new chunk's normalized
+          // text matches the persisted FIXED chunk that earned it; otherwise
+          // reset to 0/unverified (honest: 'not yet scored this session').
+          const _normChunk = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+          const _carryOk = (i) => { if (!carry) return false; const pf = (ps && Array.isArray(ps.fixedChunks)) ? ps.fixedChunks[i] : (carry[i] && carry[i].html); return pf != null && _normChunk(pf) === _normChunk(chunks[i]); };
           _chunkState = {
             docKey: _docFingerprint(cur),
             preamble: pre,
@@ -10325,9 +10350,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             fixedChunks: chunks.slice(),
             chunkResults: chunks.map((h, i) => ({
               index: i, html: h,
-              score: carry ? (carry[i].score || 0) : 0,
-              integrityCheck: carry ? carry[i].integrityCheck : undefined,
-              aiVerified: carry ? !!carry[i].aiVerified : false,
+              score: _carryOk(i) ? (carry[i].score || 0) : 0,
+              integrityCheck: _carryOk(i) ? carry[i].integrityCheck : undefined,
+              aiVerified: _carryOk(i) ? !!carry[i].aiVerified : false,
               wasRetried: false, usedOriginal: false,
               deterministicFixCount: 0, surgicalFixCount: 0,
               sizeKB: Math.round(h.length / 1000),
@@ -16224,7 +16249,11 @@ tr { page-break-inside: avoid; }
                 if (oi < 0) continue;
                 let ow = null;
                 try { const v = _origWidths.get(oi); ow = v != null ? Number(String(v).replace(/[^0-9.-]/g, '')) : null; } catch (_) {}
-                const sw = widths[cc - 32];
+                // widths[] holds PDFNumber objects (audit 2026-06-13): the
+                // gate compared a PDFNumber with Number.isFinite() → always
+                // false → the whole width-deviation gate was DEAD. Coerce.
+                const _swRaw = widths[cc - 32];
+                const sw = _swRaw != null ? Number(String(_swRaw).replace(/[^0-9.-]/g, '')) : NaN;
                 if (ow != null && Number.isFinite(ow) && ow > 0 && Number.isFinite(sw) && sw > 0) { _sum += Math.abs(ow - sw) / Math.max(ow, sw); _cnt++; }
               }
               if (_cnt >= 20 && (_sum / _cnt) > 0.035) {

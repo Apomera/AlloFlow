@@ -24532,7 +24532,7 @@ ${_toolList}
                         ref={fileInputRef}
                         onChange={handleFileUpload}
                         className="hidden"
-                        accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.csv,.json,.html,.xml,video/*,audio/*"
+                        accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.xml,.xlsx,.xls,.xlsb,.ods,video/*,audio/*"
                      />
                      <button
                          id="tour-upload-source"

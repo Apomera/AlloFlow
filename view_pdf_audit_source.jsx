@@ -508,6 +508,12 @@ function _audioReadyText(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const root = doc.body || doc.documentElement;
   if (!root) return '';
+  // Speak the AI-translated / AI-simplified disclosure instead of silently
+  // dropping it for listeners (audit 2026-06-13 [11]): capture it as a
+  // spoken preamble BEFORE removing the visual banner.
+  let _preamble = '';
+  const _note = root.querySelector('[data-allo-translation-note], [data-allo-plain-note]');
+  if (_note) { const _nt = (_note.textContent || '').replace(/\s+/g, ' ').trim(); if (_nt) _preamble = _nt + '. '; }
   root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], script, style, button, input, select').forEach((el) => el.remove());
   root.querySelectorAll('details > summary').forEach((el) => el.remove());
   root.querySelectorAll('details em, figcaption em').forEach((el) => { if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || '')) el.remove(); });
@@ -515,21 +521,27 @@ function _audioReadyText(html) {
   root.querySelectorAll('figure').forEach((fig) => {
     const img = fig.querySelector('img');
     const cap = fig.querySelector('figcaption');
-    if (fig.hasAttribute('data-img-placeholder')) {
+    // Collapse the REAL exported placeholder too (audit 2026-06-13 [14]):
+    // it carries data-img-idx with no <img>, not just data-img-placeholder —
+    // otherwise the upload-UI button text gets read aloud.
+    if (fig.hasAttribute('data-img-placeholder') || (fig.hasAttribute('data-img-idx') && !img)) {
       const d = (cap && cap.textContent.trim()) || '';
       fig.replaceWith(doc.createTextNode(d ? ('Image: ' + d + '. ') : ''));
       return;
     }
     if (img) {
       const alt = (img.getAttribute('alt') || '').trim();
+      // A real author figcaption is content — always read it (audit
+      // 2026-06-13 [5]); only the ALT is gated by decorative role.
+      const isPres = img.getAttribute('role') === 'presentation' || img.getAttribute('aria-hidden') === 'true';
       const capText = cap ? cap.textContent.trim() : '';
-      const say = capText || alt;
       if (cap) cap.remove();
-      img.replaceWith(doc.createTextNode((say && img.getAttribute('role') !== 'presentation') ? ('Image: ' + say + '. ') : ''));
+      const say = capText || (isPres ? '' : alt);
+      img.replaceWith(doc.createTextNode(say ? ('Image: ' + say + '. ') : ''));
     }
   });
   root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
-  return (root.textContent || '')
+  return _preamble + (root.textContent || '')
     .replace(/\s+/g, ' ')
     .replace(/\s+([.,;:!?])/g, '$1')
     .replace(/([.!?])\s*\.+/g, '$1')
@@ -1044,6 +1056,14 @@ function PdfAuditView(props) {
         addToast('✨ ' + (t('toasts.genimg_done') || 'AI illustration generated from the description and inserted — labeled for verification. Replace it any time with Upload or Pick extracted.'), 'success');
       } catch (e) {
         addToast((t('toasts.genimg_err') || 'Image generation failed: ') + ((e && e.message) || 'unknown'), 'error');
+        // Re-enable the iframe button (audit 2026-06-13 [8]): on a throw it
+        // was left permanently disabled showing '⏳ Generating…'.
+        try {
+          const _ld = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+          const _c = _ld && _ld.getElementById(imgId + '-container');
+          const _b = _c && _c.querySelector('[data-allo-genai]');
+          if (_b) { _b.disabled = false; const _s = _b.querySelector('span'); if (_s) _s.textContent = '✨ Generate (AI)'; }
+        } catch (_) {}
       }
     };
     return () => { try { delete window.__alloflowGenerateImage; } catch (_) { window.__alloflowGenerateImage = null; } };
@@ -7498,7 +7518,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   langCode: _code,
                                   onProgress: (i, total) => setPdfTranslateProgress(i + '/' + total),
                                 });
-                                setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
                                 addToast('🌐 ' + (t('toasts.translated_doc') || 'Document translated to ') + r.lang + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.translated_doc_partial') || ' sections kept the original text (structure check failed); review them in Compare.')) : (t('toasts.translated_doc_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.translated_doc_review') || 'AI translation: have a bilingual reviewer check before official use.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.translate_failed') || 'Translation failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -7575,7 +7595,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               setPlainLangBusy(true);
                               try {
                                 const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { gradeBand: plainLangLevel, onProgress: (i, total) => setPlainLangProgress(i + '/' + total) });
-                                setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
                                 addToast('🪶 ' + (t('toasts.plain_done') || 'Plain-language version ready') + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.plain_partial') || ' sections kept the original text (structure check failed).')) : (t('toasts.plain_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.plain_review') || 'Wording simplified, facts kept; the original remains authoritative.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.plain_failed') || 'Plain-language version failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -10627,6 +10647,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {pdfFixResult._plainLanguage.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._plainLanguage.chunksFailed}/{pdfFixResult._plainLanguage.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
+                        {pdfFixResult._plainLanguage.srcLen != null && pdfFixResult._plainLanguage.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.plain.stale_title') || 'The document changed after this plain-language version was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowPlainCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
@@ -10655,6 +10676,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {pdfFixResult._translation.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._translation.chunksFailed}/{pdfFixResult._translation.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
+                        {pdfFixResult._translation.srcLen != null && pdfFixResult._translation.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.translate.stale_title') || 'The document changed after this translation was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowTranslationCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
