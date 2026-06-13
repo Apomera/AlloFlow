@@ -28116,13 +28116,17 @@ ${_toolList}
                     },
             })}
         </CDNModuleGate>
-        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => setShowMindMap(false)} icon="🧩" displayName="Mind Map" t={t}>
+        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => setShowMindMap(false)} icon="🧭" displayName="Throughline" t={t}>
             {(MindMap) => React.createElement(MindMap, {
                 isOpen: true,
                 onClose: () => setShowMindMap(false),
                 addToast,
                 studentNickname,
                 t,
+                history: Array.isArray(history) ? history : [],
+                currentLesson: generatedContent || null,
+                inLiveSession: !!(isTeacherMode && activeSessionCode),
+                onOpenLesson: (item) => { if (!item || !item.id) { addToast('Lesson not found in this unit.', 'info'); return; } setShowMindMap(false); setTimeout(() => { handleRestoreView(item); }, 50); },
             })}
         </CDNModuleGate>
         <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>

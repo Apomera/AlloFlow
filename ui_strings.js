@@ -10618,6 +10618,8 @@
     "close_aria": "Close learning hub",
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories to life with character voices & literary analysis",
+    "throughline_title": "Throughline",
+    "throughline_desc": "Arrange your lessons into a spatial unit: teaching sequence, prerequisites, one exportable file",
     "poettree_title": "PoetTree",
     "poettree_desc": "Write poems with form scaffolds, rhyme & meter analysis, AI feedback"
   },
