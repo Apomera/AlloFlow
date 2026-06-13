@@ -97,6 +97,7 @@ function HistoryPanel(props) {
     setStemLabTab,
     t,
     units,
+    onVisualizeUnit,
     activeSelStation = null,
     setActiveSelStation = (() => {
     })
@@ -195,6 +196,15 @@ function HistoryPanel(props) {
       "aria-label": t("history.create_unit_tooltip")
     },
     /* @__PURE__ */ React.createElement(FolderPlus, { size: 14 })
+  ), activeUnitId !== "all" && activeUnitId !== "uncategorized" && typeof onVisualizeUnit === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => onVisualizeUnit(activeUnitId),
+      className: "p-1 rounded bg-amber-700/40 hover:bg-amber-600 text-amber-200 hover:text-white transition-colors",
+      title: t("history.visualize_unit_tooltip") || "Visualize this unit in Throughline",
+      "aria-label": t("history.visualize_unit_tooltip") || "Visualize this unit in Throughline"
+    },
+    /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", lineHeight: 1 } }, "\u{1F9ED}")
   ), activeUnitId !== "all" && activeUnitId !== "uncategorized" && /* @__PURE__ */ React.createElement(
     "button",
     {

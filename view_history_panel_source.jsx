@@ -54,6 +54,7 @@ function HistoryPanel(props) {
     pendingSync, projectFileInputRef, sanitizeString, setActiveStation, setActiveUnitId,
     setEditTitle, setIsCommunityCatalogOpen, setMovingItemId, setNewUnitName,
     setSelHubTab, setShowSelHub, setShowStemLab, setStemLabTab, t, units,
+    onVisualizeUnit,
     activeSelStation = null,
     setActiveSelStation = (() => {}),
   } = props;
@@ -203,6 +204,16 @@ function HistoryPanel(props) {
                             >
                                 <FolderPlus size={14}/>
                             </button>
+                            {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && typeof onVisualizeUnit === 'function' && (
+                                <button
+                                    onClick={() => onVisualizeUnit(activeUnitId)}
+                                    className="p-1 rounded bg-amber-700/40 hover:bg-amber-600 text-amber-200 hover:text-white transition-colors"
+                                    title={t('history.visualize_unit_tooltip') || 'Visualize this unit in Throughline'}
+                                    aria-label={t('history.visualize_unit_tooltip') || 'Visualize this unit in Throughline'}
+                                >
+                                    <span style={{fontSize:'13px',lineHeight:1}}>🧭</span>
+                                </button>
+                            )}
                             {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && (
                                 <button
                                     data-help-key="history_delete_unit_btn"

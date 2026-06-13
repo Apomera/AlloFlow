@@ -224,6 +224,16 @@
     var currentLesson = props.currentLesson || null;
     var inLiveSession = !!props.inLiveSession;
     var onOpenLesson = typeof props.onOpenLesson === 'function' ? props.onOpenLesson : null;
+    // v1.1 units integration: the existing AlloFlow units feature (item.unitId
+    // folders). `units` = [{id,name}]; `seedUnitId` opens the tool pre-built
+    // from a chosen unit. One system, two altitudes — Throughline visualizes
+    // the same units the history panel groups by, it does not parallel them.
+    var hostUnits = Array.isArray(props.units) ? props.units : [];
+    var seedUnitId = props.seedUnitId || null;
+    function unitName(id) {
+      for (var i = 0; i < hostUnits.length; i++) { if (hostUnits[i] && hostUnits[i].id === id) return hostUnits[i].name || 'Unit'; }
+      return 'Unit';
+    }
 
     var unitRef = useRef(null);
     if (unitRef.current === null) unitRef.current = loadUnitFromStorage();
@@ -382,6 +392,49 @@
       });
       addToast((t('throughline.added_n') || 'Added') + ' ' + newNodes.length + ' ' + (t('throughline.lessons') || 'lessons'), 'success');
     }
+
+    // Build a FRESH unit from one existing units-feature unit (item.unitId).
+    function seedFromUnit(unitId) {
+      var items = hostHistory.filter(function (it) { return it && it.unitId === unitId; });
+      if (!items.length) {
+        addToast((t('throughline.unit_empty') || 'That unit has no lessons yet') + ': ' + unitName(unitId), 'info');
+        return false;
+      }
+      var fresh = emptyUnit();
+      fresh.title = unitName(unitId);
+      fresh.sourceUnitId = unitId;
+      var startX = 80, y0 = 120, gapX = NODE_W + 40, gapY = NODE_H + 50, perRow = 6;
+      var imp = {};
+      items.forEach(function (it, i) {
+        imp[it.id] = it;
+        fresh.nodes.push({
+          nodeId: uid('n_'), lessonId: it.id,
+          x: startX + (i % perRow) * gapX, y: y0 + Math.floor(i / perRow) * gapY,
+          description: '', role: '', status: 'draft', category: unitId
+        });
+      });
+      for (var k = 1; k < fresh.nodes.length; k++) fresh.edges.push({ from: fresh.nodes[k - 1].nodeId, to: fresh.nodes[k].nodeId, type: 'sequence' });
+      setImportedLessons(function (m) { return Object.assign({}, m, imp); });
+      setUnit(fresh);
+      return true;
+    }
+
+    // Seed-on-open from a chosen unit (the "Visualize in Throughline" entry).
+    // Empty canvas → build silently. Non-empty → confirm replace (consistent
+    // with the import-replace idiom). Consume each seedUnitId once.
+    var seedConsumedRef = useRef(null);
+    useEffect(function () {
+      if (!seedUnitId || seedConsumedRef.current === seedUnitId) return;
+      seedConsumedRef.current = seedUnitId;
+      if (unit.nodes.length === 0) {
+        if (seedFromUnit(seedUnitId)) {
+          addToast((t('throughline.opened_unit') || 'Opened unit') + ': ' + unitName(seedUnitId), 'success');
+        }
+      } else {
+        var ok = window.confirm((t('throughline.confirm_seed_replace') || 'Replace your current canvas with the unit') + ' "' + unitName(seedUnitId) + '"?');
+        if (ok) seedFromUnit(seedUnitId);
+      }
+    }, [seedUnitId]); // eslint-disable-line
 
     // ── Open a node's lesson (hardened) ───────────────────────────
     function openNodeLesson(node) {
@@ -793,6 +846,25 @@
           })()
         ),
         pickerForNode === 'BULK' && hostHistory.length > 0 && h('div', { style: { padding: 12, borderTop: '1px solid #e2e8f0' } },
+          // Unit-grouped quick-adds (the existing item.unitId folders).
+          hostUnits.length > 0 && (function () {
+            var withCounts = hostUnits.map(function (u) {
+              var n = hostHistory.filter(function (it) { return it && it.unitId === u.id; }).length;
+              return { id: u.id, name: u.name, n: n };
+            }).filter(function (u) { return u.n > 0; });
+            if (!withCounts.length) return null;
+            return h('div', { style: { marginBottom: 10 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 6 } }, t('throughline.add_from_unit') || 'Add a whole unit'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                withCounts.map(function (u) {
+                  return h('button', { key: u.id,
+                    onClick: function () { bulkAddLessons(hostHistory.filter(function (it) { return it && it.unitId === u.id; })); setPickerForNode(null); setPickerQuery(''); },
+                    style: { fontSize: 12, fontWeight: 600, padding: '5px 10px', borderRadius: 999, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#4338ca', cursor: 'pointer' } },
+                    '📁 ' + u.name + ' (' + u.n + ')');
+                })
+              )
+            );
+          })(),
           h('button', { onClick: function () { bulkAddLessons(hostHistory.slice()); setPickerForNode(null); setPickerQuery(''); },
             style: { width: '100%', padding: 9, borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' } },
             (t('throughline.add_all') || 'Add all') + ' ' + hostHistory.length + ' ' + (t('throughline.lessons') || 'lessons'))

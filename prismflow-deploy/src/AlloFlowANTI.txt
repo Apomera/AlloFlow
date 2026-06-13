@@ -4195,6 +4195,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setShowLitLab = React.useCallback((v) => { if (v && window.__alloLazyLitLab) { try { window.__alloLazyLitLab(); } catch(_) {} } _setShowLitLabRaw(v); }, []);
   const [showMindMap, _setShowMindMapRaw] = useState(false);
   const setShowMindMap = React.useCallback((v) => { if (v && window.__alloLazyMindMap) { try { window.__alloLazyMindMap(); } catch(_) {} } _setShowMindMapRaw(v); }, []);
+  // Throughline (the unit builder, registered as MindMap): a chosen units-feature
+  // unitId to pre-build the canvas from, set by "Visualize in Throughline".
+  const [throughlineSeedUnitId, setThroughlineSeedUnitId] = useState(null);
+  const openThroughlineForUnit = React.useCallback((unitId) => { setThroughlineSeedUnitId(unitId || null); setShowMindMap(true); }, [setShowMindMap]);
   const [showPoetTree, _setShowPoetTreeRaw] = useState(false);
   const setShowPoetTree = React.useCallback((v) => { if (v && window.__alloLazyPoetTree) { try { window.__alloLazyPoetTree(); } catch(_) {} } _setShowPoetTreeRaw(v); }, []);
   const [showResearchHub, _setShowResearchHubRaw] = useState(false);
@@ -25175,7 +25179,7 @@ ${_toolList}
             )}
             {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setBridgeSendOpen={setBridgeSendOpen} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} units={units} />}
+            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
         </aside>
         {!isFullscreen && !isZenMode && (
             <div
@@ -28116,17 +28120,19 @@ ${_toolList}
                     },
             })}
         </CDNModuleGate>
-        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => setShowMindMap(false)} icon="🧭" displayName="Throughline" t={t}>
+        <CDNModuleGate moduleKey="MindMap" isOpen={showMindMap} onClose={() => { setShowMindMap(false); setThroughlineSeedUnitId(null); }} icon="🧭" displayName="Throughline" t={t}>
             {(MindMap) => React.createElement(MindMap, {
                 isOpen: true,
-                onClose: () => setShowMindMap(false),
+                onClose: () => { setShowMindMap(false); setThroughlineSeedUnitId(null); },
                 addToast,
                 studentNickname,
                 t,
                 history: Array.isArray(history) ? history : [],
                 currentLesson: generatedContent || null,
                 inLiveSession: !!(isTeacherMode && activeSessionCode),
-                onOpenLesson: (item) => { if (!item || !item.id) { addToast('Lesson not found in this unit.', 'info'); return; } setShowMindMap(false); setTimeout(() => { handleRestoreView(item); }, 50); },
+                onOpenLesson: (item) => { if (!item || !item.id) { addToast('Lesson not found in this unit.', 'info'); return; } setShowMindMap(false); setThroughlineSeedUnitId(null); setTimeout(() => { handleRestoreView(item); }, 50); },
+                units: Array.isArray(units) ? units : [],
+                seedUnitId: throughlineSeedUnitId,
             })}
         </CDNModuleGate>
         <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
