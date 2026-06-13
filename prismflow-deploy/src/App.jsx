@@ -4391,7 +4391,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'b32713a7';
+    var pluginCdnVersion = '13c5bcda';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -19682,6 +19682,40 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setFontSizeTo: (nv) => { const v = Math.max(10, Math.min(32, Number(nv) || 16)); setSliderFontSize(v); return v; },
       prefillTranslateLang: (lang) => { try { window.dispatchEvent(new CustomEvent('alloflow:agent-set-translate-lang', { detail: { lang: String(lang || '') } })); } catch (_) {} },
       startPipelineTour: (which) => { try { startPipelineTour(which || 'results'); } catch (_) {} },
+      // ── S0 additions (2026-06-13) ──
+      // closeOtherPanels(keep): the panel-stacking fix. A Ctrl+K / voice / bot command that
+      // opens a LARGE primary surface used to leave any already-open hub stacked behind it
+      // (no mutual-exclusion existed). This closes the other large fixed-inset overlays via
+      // their existing setters, skipping the one being opened. DELIBERATELY excludes the
+      // wizard/setup screen (showWizard defaults true — closing it blanks the view), the
+      // educator gate, the palette itself, the voice indicator, and the z-300 AI-Settings /
+      // Translate modals (those are designed to sit OVER a hub).
+      closeOtherPanels: (keep) => {
+        const closers = {
+          educatorHub: () => setShowEducatorHub(false),
+          learningHub: () => setShowLearningHub(false),
+          notebook: () => setShowNotebook(false),
+          classAnalytics: () => setShowClassAnalytics(false),
+          sessionModal: () => setShowSessionModal(false),
+          exportMenu: () => setShowExportMenu(false),
+          exportPreview: () => setShowExportPreview(false),
+          readThisPage: () => setShowReadThisPage(false),
+        };
+        Object.keys(closers).forEach((id) => { if (id !== keep) { try { closers[id](); } catch (_) {} } });
+      },
+      // Accessibility self-service parity (toggles — no panel, so not tagged opensPanel):
+      toggleTheme,
+      toggleOverlay,
+      toggleAnimations: handleToggleDisableAnimations,
+      // Navigation parity:
+      goToDashboard: handleSetActiveViewToDashboard,
+      openRoster: () => setIsRosterKeyOpen(true),
+      openProjectSettings: handleSetIsProjectSettingsOpenToTrue,
+      // Report a problem — mirror the ErrorReporter public API with a graceful fallback:
+      openErrorReporter: () => {
+        try { if (window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === 'function') { window.AlloModules.ErrorReporter.openPanel(); return; } } catch (_) {}
+        try { addToast((t('toasts.error_reporter_loading') || 'The problem reporter is still loading — try again in a moment.'), 'info'); } catch (_) {}
+      },
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
@@ -24498,7 +24532,7 @@ ${_toolList}
                         ref={fileInputRef}
                         onChange={handleFileUpload}
                         className="hidden"
-                        accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.csv,.json,.html,.xml,video/*,audio/*"
+                        accept="image/*,application/pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.xml,.xlsx,.xls,.xlsb,.ods,video/*,audio/*"
                      />
                      <button
                          id="tour-upload-source"
@@ -24543,6 +24577,18 @@ ${_toolList}
                                 issuesFixed: project.issuesFixed || 0,
                                 remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
                                 autoFixPasses: project.autoFixPasses || 0,
+                                // Audit 2026-06-13: this input-screen loader dropped the
+                                // companion-lane + score-honesty + resume keys the two
+                                // view-file loaders restore — so a project loaded via THIS
+                                // button silently lost its translation, plain-language copy,
+                                // audio-resume position, and showed an AI-only score even
+                                // when the engine blended. Restored to parity.
+                                _translation: project._translation || null,
+                                _plainLanguage: project._plainLanguage || null,
+                                _audioJobMeta: project._audioJobMeta || null,
+                                _scoreIsBlended: !!project._scoreIsBlended,
+                                secondEngineAudit: project.secondEngineAudit || null,
+                                chunkState: project.chunkState || null,
                               });
                               setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
                               addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
