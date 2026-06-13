@@ -143,6 +143,7 @@
           var phishMode       = d.phishMode || 'investigate';
           var cluesFound      = d.cluesFound || [];
           var casesClosed     = d.casesClosed || 0;
+          var showHeaders     = d.showHeaders || false;
           var triageTimeLeft  = d.triageTimeLeft != null ? d.triageTimeLeft : 15;
           var triageActive    = d.triageActive || false;
           var evidenceExpanded = d.evidenceExpanded || false;
@@ -280,81 +281,101 @@
           var phishEmails = [
             // Easy
             { from: 'security@g00gle-support.com', fromDisplay: 'Google Security Team', subject: '\u26A0\uFE0F URGENT: Your account will be suspended!', body: 'Dear user, we detected unusual activity on your account. Click below IMMEDIATELY or your account will be permanently deleted within 24 hours.', link: 'http://g00gle-support.com/verify-now', isPhish: true, difficulty: 'easy',
-              flags: ['Misspelled domain (g00gle with zeros)', 'Urgency/fear tactics ("IMMEDIATELY", "permanently deleted")', 'Generic greeting ("Dear user")', 'Suspicious link domain'],
+              headers: { returnPath: 'delivery@mail-delivery-relay-09.ru', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Misspelled domain (g00gle with zeros)', 'Urgency/fear tactics ("IMMEDIATELY", "permanently deleted")', 'Generic greeting ("Dear user")', 'Suspicious link domain', 'Header Validation: SPF softfail, DKIM fail, DMARC fail. Return-Path domain does not match sender domain.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'g00gle-support.com uses zeros instead of o\'s \u2014 a classic spoofing trick', suspicious: true },
                 { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"URGENT" and threats of suspension create panic to bypass your judgment', suspicious: true },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Generic Greeting', desc: '"Dear user" \u2014 real companies use your actual name', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTP (not HTTPS) link to a fake domain \u2014 never click these!', suspicious: true }
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTP (not HTTPS) link to a fake domain \u2014 never click these!', suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Return-Path (mail-delivery-relay-09.ru) does not match the sender domain, and DMARC checks failed.', suspicious: true }
               ] },
             { from: 'noreply@school.edu', fromDisplay: 'School Library', subject: 'Library Book Due Reminder', body: 'Hi! This is a reminder that "Charlotte\'s Web" is due back to the library by Friday. Please return it to the front desk. Thanks!', link: null, isPhish: false, difficulty: 'easy',
-              flags: ['Legitimate school domain', 'Specific book title', 'No urgent threats', 'No suspicious links'],
+              headers: { returnPath: 'noreply@school.edu', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Legitimate school domain', 'Specific book title', 'No urgent threats', 'No suspicious links', 'Header Validation: SPF, DKIM, and DMARC are fully aligned and valid.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'school.edu is a legitimate educational domain', suspicious: false },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Specific Details', desc: 'Mentions a specific book title \u2014 real messages have real details', suspicious: false },
-                { zone: 'subject', icon: '\u26A1', label: 'Tone Check', desc: 'Friendly reminder with no threats or urgency', suspicious: false }
+                { zone: 'subject', icon: '\u26A1', label: 'Tone Check', desc: 'Friendly reminder with no threats or urgency', suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'All cryptographic checks (SPF, DKIM, DMARC) pass and are aligned with school.edu.', suspicious: false }
               ] },
             { from: 'prizes@win-big-now.net', fromDisplay: 'Prize Award Center', subject: '\uD83C\uDF89 YOU WON $1,000,000!!!', body: 'Congratulations! You have been randomly selected to receive ONE MILLION DOLLARS! Send us your full name, address, and parent\'s credit card number to claim your prize NOW!', link: 'http://win-big-now.net/claim', isPhish: true, difficulty: 'easy',
-              flags: ['Too good to be true', 'Asks for personal/financial info', 'Random prize from unknown sender', 'Suspicious domain'],
+              headers: { returnPath: 'admin@spambox-server-east.cn', spf: 'fail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Too good to be true', 'Asks for personal/financial info', 'Random prize from unknown sender', 'Suspicious domain', 'Header Validation: SPF/DKIM checks failed completely, Return-Path domain is unrelated.'],
               clues: [
                 { zone: 'subject', icon: '\u26A1', label: 'Too Good To Be True', desc: 'Winning $1M from a random email? That\'s never real', suspicious: true },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Asks for Personal Info', desc: 'Requests credit card number \u2014 legitimate prizes NEVER ask for payment info', suspicious: true },
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'win-big-now.net is a sketchy, unfamiliar domain', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to the same suspicious domain \u2014 designed to steal your info', suspicious: true }
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to the same suspicious domain \u2014 designed to steal your info', suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Return-Path (spambox-server-east.cn) is totally different and lacks SPF/DKIM verification.', suspicious: true }
               ] },
             // Medium
             { from: 'support@amaz0n-orders.com', fromDisplay: 'Amazon Order Support', subject: 'Problem with your recent order #38291', body: 'We were unable to process payment for your recent order. Please update your payment information within 48 hours to avoid cancellation. Click here to update.', link: 'http://amaz0n-orders.com/update-payment', isPhish: true, difficulty: 'medium',
-              flags: ['Misspelled domain (amaz0n with zero)', 'Creates urgency (48 hours)', 'Vague order reference', 'Link to suspicious domain'],
+              headers: { returnPath: 'orders-update@amaz0n-orders.com', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Misspelled domain (amaz0n with zero)', 'Creates urgency (48 hours)', 'Vague order reference', 'Link to suspicious domain', 'Header Validation: SPF softfail and DKIM failure indicate unauthorized origin.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'amaz0n-orders.com \u2014 note the zero! Real Amazon uses amazon.com', suspicious: true },
                 { zone: 'subject', icon: '\u26A1', label: 'Vague Reference', desc: 'Generic order number \u2014 phishers use random numbers hoping you recently ordered something', suspicious: true },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Urgency Pressure', desc: '"48 hours" deadline creates pressure to act without thinking', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to amaz0n-orders.com, not amazon.com', suspicious: true }
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Links to amaz0n-orders.com, not amazon.com', suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'DKIM signature failed, and SPF softfailed, indicating a domain spoofing attempt.', suspicious: true }
               ] },
             { from: 'teacher@myschool.edu', fromDisplay: 'Mrs. Johnson', subject: 'Science Fair Project Update', body: 'Hi! Just a reminder that science fair projects are due next Tuesday. Please bring your display board and any materials. Let me know if you need extra time. - Mrs. Johnson', link: null, isPhish: false, difficulty: 'medium',
-              flags: ['Legitimate school domain', 'Specific teacher name', 'Normal classroom request', 'No links or downloads'],
+              headers: { returnPath: 'teacher@myschool.edu', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Legitimate school domain', 'Specific teacher name', 'Normal classroom request', 'No links or downloads', 'Header Validation: Valid DKIM and SPF alignment.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'myschool.edu \u2014 legitimate school domain', suspicious: false },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Personal Tone', desc: 'Signed by a specific teacher, offers extra time \u2014 normal teacher behavior', suspicious: false },
-                { zone: 'subject', icon: '\u26A1', label: 'Normal Request', desc: 'A reminder about a real assignment with a reasonable deadline', suspicious: false }
+                { zone: 'subject', icon: '\u26A1', label: 'Normal Request', desc: 'A reminder about a real assignment with a reasonable deadline', suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Valid SPF, DKIM, and DMARC alignments confirm identity of myschool.edu.', suspicious: false }
               ] },
             { from: 'help@paypa1-secure.com', fromDisplay: 'PayPal Security', subject: 'Unusual login from new device', body: 'We noticed a login to your account from a new device in Russia. If this wasn\'t you, secure your account immediately by verifying your identity below.', link: 'http://paypa1-secure.com/verify', isPhish: true, difficulty: 'medium',
-              flags: ['Misspelled domain (paypa1 with number 1)', 'Fear of unauthorized access', 'Link to fake domain', 'Real PayPal would say paypal.com'],
+              headers: { returnPath: 'verification@paypa1-secure.com', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Misspelled domain (paypa1 with number 1)', 'Fear of unauthorized access', 'Link to fake domain', 'Real PayPal would say paypal.com', 'Header Validation: SPF softfail and corrupt DKIM signature trigger DMARC reject.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'paypa1-secure.com uses the number 1 instead of lowercase L \u2014 very sneaky!', suspicious: true },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Fear Tactic', desc: '"login from Russia" creates fear of being hacked', suspicious: true },
-                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Real PayPal links go to paypal.com, not paypa1-secure.com', suspicious: true }
+                { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Real PayPal links go to paypal.com, not paypa1-secure.com', suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'DKIM signature verification failed, and DMARC check failed, rejecting authentication.', suspicious: true }
               ] },
             { from: 'newsletter@nationalgeographic.com', fromDisplay: 'National Geographic Kids', subject: 'This Week: Amazing Ocean Creatures!', body: 'Dive into this week\'s feature about bioluminescent sea creatures! Watch videos, play games, and learn about the deep ocean. New content every Wednesday.', link: 'https://kids.nationalgeographic.com/ocean', isPhish: false, difficulty: 'medium',
-              flags: ['Legitimate domain', 'Educational content', 'No personal info requested', 'HTTPS link to real site'],
+              headers: { returnPath: 'bounce-natgeo@nationalgeographic.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Legitimate domain', 'Educational content', 'No personal info requested', 'HTTPS link to real site', 'Header Validation: All validation checks (SPF, DKIM, DMARC) passed.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'nationalgeographic.com \u2014 a well-known, legitimate organization', suspicious: false },
                 { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTPS link to kids.nationalgeographic.com \u2014 real subdomain of real site', suspicious: false },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Content Check', desc: 'Educational content, no personal info requested, no urgency', suspicious: false }
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Content Check', desc: 'Educational content, no personal info requested, no urgency', suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'All cryptographic validations align perfectly with nationalgeographic.com.', suspicious: false }
               ] },
             // Hard
             { from: 'it-dept@yourschool.edu.support-portal.com', fromDisplay: 'School IT Department', subject: 'Password Reset Required - Network Maintenance', body: 'Due to scheduled network maintenance this weekend, all students must reset their passwords. Please use the secure portal below to create a new password. This must be completed before Friday.', link: 'https://yourschool.edu.support-portal.com/reset', isPhish: true, difficulty: 'hard',
-              flags: ['Subdomain trick (school name in a different domain)', 'Actual domain is support-portal.com, not yourschool.edu', 'Mass password reset is unusual', 'Real IT would use the actual school domain'],
+              headers: { returnPath: 'system-maintenance@support-portal.com', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Subdomain trick (school name in a different domain)', 'Actual domain is support-portal.com, not yourschool.edu', 'Mass password reset is unusual', 'Real IT would use the actual school domain', 'Header Validation: Domain spoofing detected as yourschool.edu does not match support-portal.com.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'yourschool.edu.support-portal.com \u2014 the REAL domain is support-portal.com! The school name is just a subdomain trick', suspicious: true },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Mass Action Request', desc: '"All students must reset" \u2014 real IT departments don\'t require mass password resets via email', suspicious: true },
                 { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'Link domain also uses the subdomain trick \u2014 it\'s NOT a school website', suspicious: true },
-                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Must be completed before Friday" \u2014 creates a false deadline', suspicious: true }
+                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Must be completed before Friday" \u2014 creates a false deadline', suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Return-Path (support-portal.com) SPF/DKIM verification failed due to misalignment.', suspicious: true }
               ] },
             { from: 'admin@clever.com', fromDisplay: 'Clever Portal', subject: 'New app added to your Clever dashboard', body: 'Your teacher has added "Khan Academy" to your Clever dashboard. Log in to Clever to access it. If you have questions, ask your teacher.', link: 'https://clever.com/login', isPhish: false, difficulty: 'hard',
-              flags: ['Legitimate Clever domain', 'Specific app mentioned', 'Directs to official login', 'References teacher'],
+              headers: { returnPath: 'notifications@clever.com', spf: 'pass', dkim: 'pass', dmarc: 'pass' },
+              flags: ['Legitimate Clever domain', 'Specific app mentioned', 'Directs to official login', 'References teacher', 'Header Validation: Verified SPF and DKIM pass and align with clever.com.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Domain', desc: 'clever.com \u2014 the real Clever platform used by many schools', suspicious: false },
                 { zone: 'link', icon: '\uD83D\uDD17', label: 'Link Analysis', desc: 'HTTPS link to clever.com/login \u2014 the official Clever login page', suspicious: false },
-                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Specific Details', desc: 'Names a specific app (Khan Academy) and references your teacher', suspicious: false }
+                { zone: 'body', icon: '\uD83D\uDCDD', label: 'Specific Details', desc: 'Names a specific app (Khan Academy) and references your teacher', suspicious: false },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'DKIM and SPF signatures are fully authenticated and verified.', suspicious: false }
               ] },
             { from: 'friend.sarah@gmail.com', fromDisplay: 'Sarah M.', subject: 'Check out this funny video of you!!', body: 'OMG I found this hilarious video of you from the school assembly!! You HAVE to see it lol. Click here before they take it down!', link: 'http://bit.ly/3xFk2z9', isPhish: true, difficulty: 'hard',
-              flags: ['Shortened/obscured URL (bit.ly)', 'Emotional manipulation ("funny video of you")', 'Urgency ("before they take it down")', 'Even real friends\' accounts can be hacked'],
+              headers: { returnPath: 'sarah-spam-relay@freehoster-xyz.xyz', spf: 'softfail', dkim: 'fail', dmarc: 'fail' },
+              flags: ['Shortened/obscured URL (bit.ly)', 'Emotional manipulation ("funny video of you")', 'Urgency ("before they take it down")', 'Even real friends\' accounts can be hacked', 'Header Validation: Return-Path domain mismatch (freehoster-xyz.xyz) and SPF/DKIM verification failure.'],
               clues: [
                 { zone: 'sender', icon: '\uD83D\uDCE7', label: 'Sender Identity', desc: 'Even gmail.com accounts can be hacked \u2014 the sender could be compromised', suspicious: true },
                 { zone: 'body', icon: '\uD83D\uDCDD', label: 'Emotional Bait', desc: '"Funny video of you" targets curiosity and social anxiety', suspicious: true },
                 { zone: 'link', icon: '\uD83D\uDD17', label: 'Shortened URL', desc: 'bit.ly hides the real destination \u2014 never click shortened links from unexpected messages', suspicious: true },
-                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Before they take it down" creates FOMO to make you click without thinking', suspicious: true }
+                { zone: 'subject', icon: '\u26A1', label: 'Urgency Tactic', desc: '"Before they take it down" creates FOMO to make you click without thinking', suspicious: true },
+                { zone: 'headers', icon: '\uD83D\uDD0D', label: 'Header Alignment', desc: 'Sender domain is gmail.com, but Return-Path points to freehoster-xyz.xyz (mismatch).', suspicious: true }
               ] }
           ];
 
@@ -571,6 +592,7 @@
             upd('phishAnswer', null);
             upd('cluesFound', []);
             upd('triageTimeLeft', 15);
+            upd('showHeaders', false);
             upd('aiGeneratedEmail', null); // clear AI email so next defaults to static pool
             if (phishMode === 'triage') upd('triageActive', true);
           }
@@ -649,6 +671,56 @@
 
           // â”€â”€ Active Email (AI-generated overrides static pool) â”€â”€
           var activeEmail = aiGeneratedEmail || currentEmail;
+
+          if (activeEmail && !activeEmail.headers) {
+            var domain = (activeEmail.from && activeEmail.from.split('@')[1]) || 'unknown.com';
+            var returnPath = activeEmail.isPhish ? 'bounce@phish-delivery-net.ru' : 'bounce@' + domain;
+            if (activeEmail.from && activeEmail.from.indexOf('school.edu.support-portal.com') !== -1) {
+              returnPath = 'it-dept@support-portal.com';
+            } else if (activeEmail.from && activeEmail.from.indexOf('g00gle-support.com') !== -1) {
+              returnPath = 'verify@g00gle-support.com';
+            }
+            var spf = activeEmail.isPhish ? 'softfail' : 'pass';
+            var dkim = activeEmail.isPhish ? 'fail' : 'pass';
+            var dmarc = activeEmail.isPhish ? 'fail' : 'pass';
+
+            activeEmail.headers = {
+              returnPath: returnPath,
+              spf: spf,
+              dkim: dkim,
+              dmarc: dmarc
+            };
+
+            activeEmail.clues = activeEmail.clues || [];
+            var hasHeadersClue = activeEmail.clues.some(function(cl) { return cl.zone === 'headers'; });
+            if (!hasHeadersClue) {
+              if (activeEmail.isPhish) {
+                activeEmail.clues.push({
+                  zone: 'headers',
+                  icon: '\uD83D\uDD0D',
+                  label: 'Header Alignment',
+                  desc: 'SPF and DKIM signature check failed, resulting in a DMARC validation rejection.',
+                  suspicious: true
+                });
+              } else {
+                activeEmail.clues.push({
+                  zone: 'headers',
+                  icon: '\uD83D\uDD0D',
+                  label: 'Header Alignment',
+                  desc: 'SPF, DKIM, and DMARC are fully aligned and valid, indicating verified authenticity.',
+                  suspicious: false
+                });
+              }
+            }
+
+            if (activeEmail.flags && activeEmail.flags.indexOf('Header Validation checked') === -1) {
+              activeEmail.flags.push(
+                activeEmail.isPhish ? 
+                'Header Validation: SPF/DKIM verification failed due to misalignment.' : 
+                'Header Validation: All validation checks (SPF, DKIM, DMARC) passed.'
+              );
+            }
+          }
 
           // â”€â”€ Password Strength Calculator â”€â”€
           function calcPasswordStrength(pw) {
@@ -2529,6 +2601,10 @@
                       el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 600 } }, casesClosed + ' case' + (casesClosed !== 1 ? 's' : '') + ' closed' + (nextRank ? ' \u2022 ' + (nextRank.min - casesClosed) + ' to ' + nextRank.rank : ' \u2022 MAX RANK!'))
                     )
                   ),
+                  // Co-branding Badge
+                  el('div', { style: { padding: '4px 10px', borderRadius: 20, background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)', color: '#a5b4fc', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 } },
+                    el('span', null, '🛡️'), 'Powered by Physher'
+                  ),
                   // Stats
                   el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
                     el('span', { style: { padding: '3px 10px', borderRadius: 12, background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2714 ' + phishScore + ' correct'),
@@ -2583,7 +2659,35 @@
                               '\uD83D\uDD0D');
                           })
                         ),
-                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>')
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>'),
+                        el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
+                          el('button', {
+                            onClick: function() { upd('showHeaders', !showHeaders); },
+                            style: {
+                              background: showHeaders ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
+                              border: '1px solid ' + (showHeaders ? '#6366f1' : 'rgba(255,255,255,0.15)'),
+                              borderRadius: 6,
+                              padding: '2px 8px',
+                              cursor: 'pointer',
+                              fontSize: 10,
+                              color: showHeaders ? '#a5b4fc' : '#94a3b8',
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              transition: 'all 0.2s'
+                            }
+                          }, showHeaders ? '🔑 Hide Headers' : '🔍 Inspect Headers'),
+                          // Headers clue button
+                          phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
+                            if (clue.zone !== 'headers') return null;
+                            var found = cluesFound.indexOf(ci) !== -1;
+                            return el('button', { key: 'clue-h-' + ci, onClick: function() { handleClueClick(ci); },
+                              title: 'Investigate email headers',
+                              style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                              '\uD83D\uDD0D');
+                          })
+                        )
                       )
                     ),
                     el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
@@ -2597,6 +2701,64 @@
                           style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                           '\uD83D\uDD0D');
                       })
+                    )
+                  ),
+                  // Technical Header Inspector Panel
+                  showHeaders && activeEmail && activeEmail.headers && el('div', {
+                    style: {
+                      background: '#0f172a',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      padding: '12px 18px',
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      color: '#94a3b8',
+                      lineHeight: 1.5
+                    }
+                  },
+                    el('div', { style: { color: '#38bdf8', fontWeight: 800, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                      el('span', null, '\uD83D\uDDF3\uFE0F Technical Header Inspector'),
+                      el('span', { style: { fontSize: 9, background: 'rgba(56,189,248,0.15)', padding: '2px 6px', borderRadius: 4, color: '#38bdf8' } }, 'RFC 5322')
+                    ),
+                    el('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                      el('div', null,
+                        el('span', { style: { color: '#64748b' } }, 'Return-Path: '),
+                        el('span', { style: { color: activeEmail.isPhish && (activeEmail.from.indexOf('g00gle') !== -1 || activeEmail.from.indexOf('win-big') !== -1 || activeEmail.from.indexOf('paypa1') !== -1 || activeEmail.from.indexOf('sarah') !== -1 || activeEmail.from.indexOf('support-portal') !== -1) ? '#fb7185' : '#e2e8f0', fontWeight: activeEmail.isPhish ? 'bold' : 'normal' } }, activeEmail.headers.returnPath)
+                      ),
+                      el('div', null,
+                        el('span', { style: { color: '#64748b' } }, 'SPF-Status:   '),
+                        el('span', { style: {
+                          color: activeEmail.headers.spf === 'pass' ? '#4ade80' : activeEmail.headers.spf === 'softfail' ? '#fbbf24' : '#fb7185',
+                          fontWeight: 'bold',
+                          padding: '1px 4px',
+                          borderRadius: 4,
+                          background: activeEmail.headers.spf === 'pass' ? 'rgba(74,222,128,0.1)' : activeEmail.headers.spf === 'softfail' ? 'rgba(251,191,36,0.1)' : 'rgba(251,113,133,0.1)'
+                        } }, activeEmail.headers.spf.toUpperCase())
+                      ),
+                      el('div', null,
+                        el('span', { style: { color: '#64748b' } }, 'DKIM-Signature:'),
+                        el('span', { style: {
+                          color: activeEmail.headers.dkim === 'pass' ? '#4ade80' : '#fb7185',
+                          fontWeight: 'bold',
+                          padding: '1px 4px',
+                          borderRadius: 4,
+                          background: activeEmail.headers.dkim === 'pass' ? 'rgba(74,222,128,0.1)' : 'rgba(251,113,133,0.1)'
+                        } }, activeEmail.headers.dkim.toUpperCase())
+                      ),
+                      el('div', null,
+                        el('span', { style: { color: '#64748b' } }, 'DMARC-Status: '),
+                        el('span', { style: {
+                          color: activeEmail.headers.dmarc === 'pass' ? '#4ade80' : '#fb7185',
+                          fontWeight: 'bold',
+                          padding: '1px 4px',
+                          borderRadius: 4,
+                          background: activeEmail.headers.dmarc === 'pass' ? 'rgba(74,222,128,0.1)' : 'rgba(251,113,133,0.1)'
+                        } }, activeEmail.headers.dmarc.toUpperCase())
+                      )
+                    ),
+                    el('div', { style: { marginTop: 8, fontSize: 10, color: '#64748b', borderTop: '1px dashed rgba(255,255,255,0.06)', paddingTop: 6 } },
+                      activeEmail.isPhish ? 
+                      '\u26A0\uFE0F Domain mismatch or cryptographic signature failure detected. Check Return-Path alignment!' : 
+                      '\u2705 Cryptographic validation and SPF checks passed. Domain is verified.'
                     )
                   ),
                   // Email body with clue buttons
