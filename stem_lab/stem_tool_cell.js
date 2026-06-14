@@ -20042,6 +20042,7 @@ var d = labToolData.cell || {};
                     }
 
                     upd("selectedOrganism", d.selectedOrganism === org.id ? null : org.id);
+                    if (typeof announceToSR === 'function' && d.selectedOrganism !== org.id) announceToSR('Selected ' + (org.name || org.label || org.id));
 
                     var cv = document.querySelector('[data-cell-sim-canvas]');
 
@@ -20127,6 +20128,7 @@ var d = labToolData.cell || {};
                         cellSound('photosynthesis');
                       };
                       cv._onOrganelleClick = function (name) {
+                        if (typeof announceToSR === 'function') announceToSR(name + ' organelle');
                         var clicks = ext.organellesClicked.slice();
                         if (clicks.indexOf(name) === -1) clicks.push(name);
                         updExtAndBadge({ organellesClicked: clicks });
@@ -20335,6 +20337,7 @@ var d = labToolData.cell || {};
 
                           upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Incorrect." });
                           upd("_selectedOption", idx);
+                          if (typeof announceToSR === 'function') announceToSR(correct ? 'Correct!' : 'Incorrect.');
 
                           if (correct) {
 
@@ -20397,6 +20400,7 @@ var d = labToolData.cell || {};
 
                           upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Incorrect." });
                           upd("_selectedOption", org.id);
+                          if (typeof announceToSR === 'function') announceToSR(correct ? 'Correct!' : 'Incorrect.');
 
                           if (correct) {
 
@@ -20442,7 +20446,7 @@ var d = labToolData.cell || {};
 
                   ),
 
-                d.quizFeedback && React.createElement("div", { className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 animate-pulse" : "border-red-200") },
+                d.quizFeedback && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 animate-pulse" : "border-red-200") },
 
                   React.createElement("p", { className: "font-bold text-sm " + (d.quizFeedback.correct ? "text-green-700" : "text-red-600") }, d.quizFeedback.msg),
 
@@ -20531,7 +20535,7 @@ var d = labToolData.cell || {};
                 }),
                 React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
               ),
-              d._cellAIResp && React.createElement("div", { className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
+              d._cellAIResp && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
             ),
 
 
