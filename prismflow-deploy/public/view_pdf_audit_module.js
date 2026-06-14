@@ -4684,6 +4684,7 @@ Return ONLY JSON:
     }, className: "px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700" }, "\u{1F4DD} ", t("pdf_audit.gate.word_instead") || "Use the Word or HTML download instead"), /* @__PURE__ */ React.createElement("button", { onClick: () => setTaggedGateIssue(null), className: "px-3 py-1.5 text-amber-700 font-bold hover:text-red-600" }, "\u2715 ", t("pdf_audit.gate.dismiss") || "Dismiss"))), lastTaggedReport && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "w-full mt-2 bg-white border-2 border-indigo-300 rounded-xl p-3 text-xs relative shadow-md" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setLastTaggedReport(null), "aria-label": t("pdf_audit.tagged_report.close_aria") || "Dismiss tagged-PDF report", className: "absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold" }, "\u2715"), /* @__PURE__ */ React.createElement("div", { className: "font-black text-indigo-800 mb-1.5 pr-7" }, "\u{1F4C4} ", t("pdf_audit.tagged_report.heading") || "Tagged PDF report", " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 ", lastTaggedReport.file, " \xB7 ", lastTaggedReport.when)), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1", role: "list" }, lastTaggedReport.lines.map((l, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex gap-1.5 " + (l.tone === "success" ? "text-green-700" : l.tone === "warn" ? "text-amber-700" : l.tone === "error" ? "text-red-700" : "text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0", "aria-hidden": "true" }, l.tone === "success" ? "\u2713" : l.tone === "warn" ? "\u26A0" : l.tone === "error" ? "\u2717" : "\xB7"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, l.text)))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[10px] text-slate-500" }, t("pdf_audit.tagged_report.note") || "This panel stays until you dismiss it. The same details ship inside the Adobe-style A11y Report download.")), /* @__PURE__ */ React.createElement("p", { className: "w-full text-[11px] text-slate-600 mt-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.format_legend.lead") || "Which file?"), " ", t("pdf_audit.format_legend.body") || "\u{1F4C4} Tagged PDF \u2014 give this to students (looks identical to the original, works with screen readers). \u{1F4DD} Word \u2014 keep editing it. \u{1F4FD} PowerPoint \u2014 present it. \u{1F4C4} HTML \u2014 opens anywhere, no software needed."), _inputIsPdf ? /* @__PURE__ */ React.createElement(
       "button",
       {
+        id: "allo-tagged-pdf-btn",
         onClick: async () => {
           try {
             const freshBase64 = await ensurePdfBase64();
@@ -4809,6 +4810,7 @@ Return ONLY JSON:
     ) : /* @__PURE__ */ React.createElement(
       "button",
       {
+        id: "allo-tagged-pdf-btn",
         "data-help-key": "pdf_audit_view_typeset_tagged_btn",
         onClick: async () => {
           try {
@@ -6241,7 +6243,34 @@ Return ONLY the plain language summary in ${lang}.`, false);
         "\u{1F4BE} ",
         t("pdf_audit.close_confirm.save_close") || "Save & close"
       )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-4" }, "Tip: ", /* @__PURE__ */ React.createElement("strong", null, "Save & close"), " downloads a ", /* @__PURE__ */ React.createElement("code", { className: "px-1 bg-slate-100 rounded" }, ".alloflow.json"), " project file that you can re-open later via the sidebar's ", /* @__PURE__ */ React.createElement("strong", null, "Load Project"), " button."))
-    ), pdfPreviewOpen && pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[70] bg-black/50 flex items-stretch", role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.preview.modal_aria") || "Accessible document preview and editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 m-4 gap-0 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-800" }, "\u267F Preview & Edit"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfPreviewOpen(false), className: "p-1 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": t("pdf_audit.preview.close_aria") || "Close preview" }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.preview.edit_hint") || "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance."), (() => {
+    ), pdfPreviewOpen && pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[70] bg-black/50 flex items-stretch", role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.preview.modal_aria") || "Accessible document preview and editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 m-4 gap-0 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-800" }, "\u267F Preview & Edit"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfPreviewOpen(false), className: "p-1 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": t("pdf_audit.preview.close_aria") || "Close preview" }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.preview.edit_hint") || "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          try {
+            const _h = typeof getPdfPreviewHtml === "function" ? getPdfPreviewHtml() : "";
+            if (_h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev);
+          } catch (_) {
+          }
+          setPdfPreviewOpen(false);
+          setTimeout(() => {
+            try {
+              const b = document.getElementById("allo-tagged-pdf-btn");
+              if (b) b.click();
+              else {
+                const el = document.getElementById("allo-sec-downloads");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            } catch (_) {
+            }
+          }, 220);
+        },
+        className: "w-full px-3 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm",
+        title: t("pdf_audit.preview.tag_now_title") || "Generate an accessible tagged PDF from your current edits \u2014 preserves the original layout and injects the structure tree. Runs the same verified, gated flow as the Tagged PDF button on the results screen."
+      },
+      "\u{1F4C4} ",
+      t("pdf_audit.preview.tag_now") || "Generate Tagged PDF"
+    ), (() => {
       const wc = writingCheck;
       const _leafBlocks = () => {
         const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;

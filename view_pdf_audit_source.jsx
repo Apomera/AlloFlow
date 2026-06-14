@@ -6428,6 +6428,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             bytes to tag — they get the Word/HTML exports instead. */}
                         {_inputIsPdf ? (
                         <button
+                          id="allo-tagged-pdf-btn"
                           onClick={async () => {
                             try {
                               const freshBase64 = await ensurePdfBase64();
@@ -6569,6 +6570,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                         ) : (
                         <button
+                          id="allo-tagged-pdf-btn"
                           data-help-key="pdf_audit_view_typeset_tagged_btn"
                           onClick={async () => {
                             try {
@@ -8118,6 +8120,24 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </button>
               </div>
               <p className="text-[11px] text-slate-600">{t('pdf_audit.preview.edit_hint') || 'Click anywhere in the preview to edit text directly. Use the controls below to customize appearance.'}</p>
+
+              {/* Tag this edited document directly from the builder (2026-06-14):
+                  previously you had to close this modal and hunt for the Tagged
+                  PDF button on the results screen. This force-syncs the CURRENT
+                  edits into accessibleHtml, closes the modal, and triggers the
+                  same gated tagged-PDF flow (which surfaces its report/gate on
+                  the results screen). */}
+              <button
+                onClick={() => {
+                  try { const _h = (typeof getPdfPreviewHtml === 'function') ? getPdfPreviewHtml() : ''; if (_h) setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev); } catch (_) {}
+                  setPdfPreviewOpen(false);
+                  // let the state sync + modal close settle, then trigger the real (gated) flow
+                  setTimeout(() => { try { const b = document.getElementById('allo-tagged-pdf-btn'); if (b) b.click(); else { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {} }, 220);
+                }}
+                className="w-full px-3 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                title={t('pdf_audit.preview.tag_now_title') || 'Generate an accessible tagged PDF from your current edits — preserves the original layout and injects the structure tree. Runs the same verified, gated flow as the Tagged PDF button on the results screen.'}>
+                📄 {t('pdf_audit.preview.tag_now') || 'Generate Tagged PDF'}
+              </button>
 
               {/* ── Writing check (Harper — local grammar, suggestions-only) ──
                   Top of the editor controls so it's easy to find; browser native
