@@ -178,9 +178,9 @@ function _htmlToDocxSpec(html) {
     return out;
   };
   const _runsText = (runs) => runs.map((r) => r.text || "").join("").trim();
-  const pushParagraph = (runs) => {
+  const pushParagraph = (runs, opts) => {
     if (_runsText(runs)) {
-      blocks.push({ type: "paragraph", runs });
+      blocks.push({ type: "paragraph", runs, ...opts && opts.hanging ? { hanging: true } : {} });
       counts.paragraphs++;
     }
   };
@@ -209,6 +209,10 @@ function _htmlToDocxSpec(html) {
       const n = kids[i];
       if (_isControlEl(n)) continue;
       const tag = n.tagName;
+      if (n.classList && n.classList.contains("allo-block-pagebreak")) {
+        blocks.push({ type: "pagebreak" });
+        continue;
+      }
       const h = /^H([1-6])$/.exec(tag);
       if (h) {
         const runs = inlineRuns(n, {});
@@ -219,7 +223,8 @@ function _htmlToDocxSpec(html) {
         continue;
       }
       if (tag === "P" || tag === "BLOCKQUOTE" || tag === "PRE" || tag === "DT" || tag === "DD" || tag === "FIGCAPTION" || tag === "CAPTION") {
-        pushParagraph(inlineRuns(n, tag === "DT" ? { bold: true } : {}));
+        const isRef = n.classList && n.classList.contains("allo-ref-entry") || n.closest && n.closest(".allo-references");
+        pushParagraph(inlineRuns(n, tag === "DT" ? { bold: true } : {}), { hanging: !!isRef });
         continue;
       }
       if (tag === "UL" || tag === "OL") {
@@ -277,7 +282,8 @@ function _htmlToDocxSpec(html) {
   walk(doc.body);
   return { title, lang, blocks, counts };
 }
-async function _buildDocxBlobFromSpec(spec, d) {
+async function _buildDocxBlobFromSpec(spec, d, mode) {
+  const academic = !!(mode && mode.academic);
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
@@ -286,9 +292,16 @@ async function _buildDocxBlobFromSpec(spec, d) {
   });
   const children = [];
   for (const b of spec.blocks) {
-    if (b.type === "heading") children.push(new d.Paragraph({ heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) }));
-    else if (b.type === "paragraph") children.push(new d.Paragraph({ children: runsTo(b.runs) }));
-    else if (b.type === "list") {
+    if (b.type === "heading") {
+      const hp = { heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) };
+      if (academic && b.level === 1 && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
+      children.push(new d.Paragraph(hp));
+    } else if (b.type === "pagebreak") children.push(new d.Paragraph({ children: [new d.PageBreak()] }));
+    else if (b.type === "paragraph") {
+      const pp = { children: runsTo(b.runs) };
+      if (b.hanging) pp.indent = { left: 720, hanging: 720 };
+      children.push(new d.Paragraph(pp));
+    } else if (b.type === "list") {
       for (const it of b.items) {
         children.push(new d.Paragraph({
           children: runsTo(it.runs),
@@ -332,12 +345,23 @@ async function _buildDocxBlobFromSpec(spec, d) {
       }
     }
   }
-  const docFile = new d.Document({
+  const _docOpts = {
     title: spec.title,
     creator: "AlloFlow",
     numbering: { config: [{ reference: "allo-ol", levels: [0, 1, 2, 3, 4].map((l) => ({ level: l, format: d.LevelFormat.DECIMAL, text: "%" + (l + 1) + ".", alignment: d.AlignmentType.START })) }] },
-    sections: [{ children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: " " })] })] }]
-  });
+    sections: [{
+      // Academic modes: 1-inch margins (1440 twips) — APA/MLA/Chicago standard.
+      ...academic ? { properties: { page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } } } : {},
+      children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: " " })] })]
+    }]
+  };
+  if (academic) {
+    _docOpts.styles = { default: { document: {
+      run: { font: "Times New Roman", size: 24 },
+      paragraph: { spacing: { line: 480, lineRule: d.LineRuleType && d.LineRuleType.AUTO || "auto" } }
+    } } };
+  }
+  const docFile = new d.Document(_docOpts);
   return d.Packer.toBlob(docFile);
 }
 function _ensurePptxLib() {
@@ -4804,7 +4828,7 @@ Return ONLY JSON:
               return;
             }
             const spec = _htmlToDocxSpec(pdfFixResult.accessibleHtml);
-            const blob = await _buildDocxBlobFromSpec(spec, d);
+            const blob = await _buildDocxBlobFromSpec(spec, d, DOC_MODES[docMode]);
             safeDownloadBlob(blob, `${(pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "")}-accessible.docx`);
             const bits = [];
             if (spec.counts.headings) bits.push(spec.counts.headings + " real heading style" + (spec.counts.headings === 1 ? "" : "s"));

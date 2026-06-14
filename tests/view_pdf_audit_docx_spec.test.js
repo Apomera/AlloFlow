@@ -58,6 +58,30 @@ describe('view_pdf_audit · _htmlToDocxSpec (accessible Word export)', () => {
     expect(runs.find(r => /and/.test(r.text)).sub).toBe(false);
   });
 
+  it('turns a page-break block into a pagebreak block and never leaks its label text', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<p>before</p>' +
+      '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak"><span class="allo-pb-label" aria-hidden="true">— Page Break —</span><span class="allo-sr-only">Page break</span></div>' +
+      '<p>after</p>'
+    ));
+    const types = spec.blocks.map(b => b.type);
+    expect(types).toEqual(['paragraph', 'pagebreak', 'paragraph']);
+    // the "— Page Break —" / "Page break" chrome must not appear as content
+    expect(JSON.stringify(spec.blocks)).not.toContain('Page Break');
+    expect(JSON.stringify(spec.blocks)).not.toContain('Page break');
+  });
+
+  it('flags reference-list entries for hanging indent (APA/MLA/Chicago)', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<p>normal para</p>' +
+      '<section class="allo-references"><h2>References</h2><p class="allo-ref-entry">Author, A. (2020). <em>Title</em>. Source.</p></section>'
+    ));
+    const refPara = spec.blocks.find(b => b.type === 'paragraph' && /Author, A\./.test((b.runs || []).map(r => r.text).join('')));
+    expect(refPara.hanging).toBe(true);
+    // a normal paragraph is not flagged
+    expect(spec.blocks.find(b => b.type === 'paragraph' && /normal para/.test((b.runs || []).map(r => r.text).join(''))).hanging).toBeUndefined();
+  });
+
   it('maps ul/ol with nesting levels and preserves order kind', () => {
     const spec = _htmlToDocxSpec(wrap('<ol><li>first</li><li>second<ul><li>nested</li></ul></li></ol>'));
     const list = spec.blocks.find(b => b.type === 'list');

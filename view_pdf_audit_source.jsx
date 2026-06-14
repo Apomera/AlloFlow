@@ -153,7 +153,7 @@ function _htmlToDocxSpec(html) {
     return out;
   };
   const _runsText = (runs) => runs.map((r) => r.text || '').join('').trim();
-  const pushParagraph = (runs) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs }); counts.paragraphs++; } };
+  const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}) }); counts.paragraphs++; } };
   const pushImage = (img, fallbackAlt) => {
     const src = img.getAttribute('src') || '';
     const alt = (img.getAttribute('alt') || fallbackAlt || '').trim();
@@ -182,9 +182,19 @@ function _htmlToDocxSpec(html) {
       const n = kids[i];
       if (_isControlEl(n)) continue;
       const tag = n.tagName;
+      // Page break (2026-06-13): the .allo-block-pagebreak div used to fall
+      // through to the generic DIV handler, which leaked its "— Page Break —"
+      // label text as a paragraph AND emitted no actual break. Now it becomes a
+      // real docx page break and the label never reaches the document.
+      if (n.classList && n.classList.contains('allo-block-pagebreak')) { blocks.push({ type: 'pagebreak' }); continue; }
       const h = /^H([1-6])$/.exec(tag);
       if (h) { const runs = inlineRuns(n, {}); if (_runsText(runs)) { blocks.push({ type: 'heading', level: parseInt(h[1], 10), runs }); counts.headings++; } continue; }
-      if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'PRE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') { pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {})); continue; }
+      if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'PRE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') {
+        // Reference-list entries (APA/MLA/Chicago) get a hanging indent in docx.
+        const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references'));
+        pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef });
+        continue;
+      }
       if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
       if (tag === 'TABLE') {
         const rows = [];
@@ -232,7 +242,13 @@ function _htmlToDocxSpec(html) {
 // Accessibility mapping: real HeadingN styles, tableHeader rows, real list
 // numbering/bullets, ExternalHyperlink (keeps link semantics), ImageRun with
 // altText; an image that can't embed degrades to its alt text, never silence.
-async function _buildDocxBlobFromSpec(spec, d) {
+async function _buildDocxBlobFromSpec(spec, d, mode) {
+  // Document mode (2026-06-13): when an academic mode (APA/MLA/Chicago) is
+  // active, the .docx must actually carry the formatting the preview shows —
+  // otherwise picking "APA" then downloading Word gives plain Calibri,
+  // single-spaced, no hanging indent (the mode looked like a no-op in the
+  // format teachers actually submit). All native to docx@8.5.0; no new dep.
+  const academic = !!(mode && mode.academic);
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
@@ -241,8 +257,21 @@ async function _buildDocxBlobFromSpec(spec, d) {
   });
   const children = [];
   for (const b of spec.blocks) {
-    if (b.type === 'heading') children.push(new d.Paragraph({ heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) }));
-    else if (b.type === 'paragraph') children.push(new d.Paragraph({ children: runsTo(b.runs) }));
+    if (b.type === 'heading') {
+      const hp = { heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) };
+      // APA/MLA/Chicago center the title (the H1). Word's heading style stays,
+      // keeping the doc navigable + tagged on Word's own PDF export.
+      if (academic && b.level === 1 && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
+      children.push(new d.Paragraph(hp));
+    }
+    else if (b.type === 'pagebreak') children.push(new d.Paragraph({ children: [new d.PageBreak()] }));
+    else if (b.type === 'paragraph') {
+      const pp = { children: runsTo(b.runs) };
+      // Reference-list hanging indent (0.5"): first line flush, continuation
+      // lines indented — required by APA-7 / MLA-9 reference lists.
+      if (b.hanging) pp.indent = { left: 720, hanging: 720 };
+      children.push(new d.Paragraph(pp));
+    }
     else if (b.type === 'list') {
       for (const it of b.items) {
         children.push(new d.Paragraph({
@@ -289,12 +318,25 @@ async function _buildDocxBlobFromSpec(spec, d) {
       }
     }
   }
-  const docFile = new d.Document({
+  const _docOpts = {
     title: spec.title,
     creator: 'AlloFlow',
     numbering: { config: [{ reference: 'allo-ol', levels: [0, 1, 2, 3, 4].map((l) => ({ level: l, format: d.LevelFormat.DECIMAL, text: '%' + (l + 1) + '.', alignment: d.AlignmentType.START })) }] },
-    sections: [{ children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: ' ' })] })] }],
-  });
+    sections: [{
+      // Academic modes: 1-inch margins (1440 twips) — APA/MLA/Chicago standard.
+      ...(academic ? { properties: { page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } } } : {}),
+      children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: ' ' })] })],
+    }],
+  };
+  if (academic) {
+    // Document defaults: Times New Roman 12pt (size is in half-points), double
+    // spacing (240 twips = single, 480 = double). Rides every body run.
+    _docOpts.styles = { default: { document: {
+      run: { font: 'Times New Roman', size: 24 },
+      paragraph: { spacing: { line: 480, lineRule: (d.LineRuleType && d.LineRuleType.AUTO) || 'auto' } },
+    } } };
+  }
+  const docFile = new d.Document(_docOpts);
   return d.Packer.toBlob(docFile);
 }
 
@@ -6505,7 +6547,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const d = await _ensureDocxLib();
                             if (!d) { addToast('Could not load the Word export library from any CDN mirror — check the network, or use the HTML download.', 'error'); return; }
                             const spec = _htmlToDocxSpec(pdfFixResult.accessibleHtml);
-                            const blob = await _buildDocxBlobFromSpec(spec, d);
+                            const blob = await _buildDocxBlobFromSpec(spec, d, DOC_MODES[docMode]);
                             safeDownloadBlob(blob, `${(pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '')}-accessible.docx`);
                             const bits = [];
                             if (spec.counts.headings) bits.push(spec.counts.headings + ' real heading style' + (spec.counts.headings === 1 ? '' : 's'));
