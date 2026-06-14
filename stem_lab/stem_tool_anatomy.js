@@ -198,9 +198,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     color: 'slate',
     category: 'science',
     questHooks: [
-      { id: 'explore_3_systems', label: 'Explore 3 different body systems', icon: '\uD83E\uDEC0', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/3 systems'; } },
-      { id: 'explore_all_systems', label: 'Explore all body systems', icon: '\uD83C\uDFC6', check: function(d) { return Object.keys(d.systemsViewed || {}).length >= 8; }, progress: function(d) { return Object.keys(d.systemsViewed || {}).length + '/8 systems'; } },
-      { id: 'complete_tour', label: 'Complete a guided anatomy tour', icon: '\uD83D\uDCDA', check: function(d) { return (d._tourComplete || false); }, progress: function(d) { return d._tourComplete ? 'Done!' : 'Not yet'; } },
+      { id: 'explore_3_systems', label: 'Explore 3 different body systems', icon: '\uD83E\uDEC0', check: function(d) { return Object.keys(d._systemsExplored || {}).length >= 3; }, progress: function(d) { return Object.keys(d._systemsExplored || {}).length + '/3 systems'; } },
+      { id: 'explore_all_systems', label: 'Explore all body systems', icon: '\uD83C\uDFC6', check: function(d) { return Object.keys(d._systemsExplored || {}).length >= 8; }, progress: function(d) { return Object.keys(d._systemsExplored || {}).length + '/8 systems'; } },
+      { id: 'complete_tour', label: 'Complete a guided anatomy tour', icon: '\uD83D\uDCDA', check: function(d) { return (d._tourCompleted|| false); }, progress: function(d) { return d._tourCompleted? 'Done!' : 'Not yet'; } },
       { id: 'toggle_layers', label: 'Use the layer toggle to reveal internal structures', icon: '\uD83D\uDD2C', check: function(d) { var l = d.visibleLayers || {}; return Object.keys(l).length >= 2; }, progress: function(d) { return Object.keys(d.visibleLayers || {}).length >= 2 ? 'Explored!' : 'Toggle layers'; } }
     ],
     render: function(ctx) {
@@ -267,7 +267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var activeTab = d._activeTab || 'explore';
 
         var ANAT_CHALLENGES = [
-          { id: 'explore_systems', name: 'System Explorer', desc: 'Explore 3 different body systems', icon: '🫁', rp: 15, check: function() { return Object.keys(d.systemsViewed || {}).length >= 3; } },
+          { id: 'explore_systems', name: 'System Explorer', desc: 'Explore 3 different body systems', icon: '🫁', rp: 15, check: function() { return Object.keys(d._systemsExplored || {}).length >= 3; } },
           { id: 'spotter_3', name: 'Spotter Pro', desc: 'Identify 3 structures in the Spotter Test', icon: '🎯', rp: 20, check: function() { return (d._spotterScore || 0) >= 3; } },
           { id: 'cases_solved', name: 'Clinical Intern', desc: 'Solve 2 clinical cases', icon: '🥼', rp: 25, check: function() { return (d._clinicalSolved || 0) >= 2; } },
           { id: 'pathways_traced', name: 'Pathway Explorer', desc: 'Complete 2 physiological pathways', icon: '🛣️', rp: 20, check: function() { return Object.keys(d._pathwaysCompleted || {}).length >= 2; } },
@@ -437,7 +437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ]
               },
               { id: 'cerebral_cortex', name: 'Cerebral Cortex (4 Lobes)', x: 0.50, y: 0.04, v: 'a', fn: 'Thin (2\u20134mm) outer layer of gray matter with ~16 billion neurons. 6 layers of cortical columns. Divided into 4 lobes: Frontal (executive function, motor, Broca area), Parietal (somatosensory, spatial), Temporal (auditory, Wernicke area, memory), Occipital (vision). Comprises 80% of brain mass.', clinical: 'Frontal lobe damage: personality change (Phineas Gage case), impaired judgment. Parietal lesions: hemispatial neglect. Temporal lobe epilepsy: most common focal seizure type. Occipital stroke: cortical blindness.', detail: 'Brodmann areas map 52 cytoarchitectural regions. Primary motor cortex (area 4), primary somatosensory (areas 3,1,2), primary visual (area 17), primary auditory (areas 41,42). Prefrontal cortex is last to myelinate (age ~25).' },
-              { id: 'cerebellum', name: 'Cerebellum', x: 0.52, y: 0.07, v: 'p', fn: '10% of brain volume but contains ~50% of all neurons (~69 billion). "Little brain" at posterior fossa. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (limb coordination), cerebrocerebellum (motor planning, cognition). Compares intended vs actual movement for error correction.', clinical: 'Cerebellar lesions: ataxia (uncoordinated gait), intention tremor, dysarthria (scanning speech), nystagmus, past-pointing. Cerebellar stroke: acute vertigo and ataxia may be misdiagnosed as inner ear problems. Fetal alcohol syndrome damages cerebellum.', detail: 'Purkinje cells are among the largest neurons, each receiving ~200,000 synaptic inputs. Cerebellar cortex has 3 layers: molecular, Purkinje, granular. Emerging research shows roles in cognition, emotion, and language.' },
+              { id: 'cerebellum', name: 'Cerebellum', x: 0.52, y: 0.07, v: 'p', fn: '10% of brain volume but contains ~80% of all neurons (~69 billion). "Little brain" at posterior fossa. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (limb coordination), cerebrocerebellum (motor planning, cognition). Compares intended vs actual movement for error correction.', clinical: 'Cerebellar lesions: ataxia (uncoordinated gait), intention tremor, dysarthria (scanning speech), nystagmus, past-pointing. Cerebellar stroke: acute vertigo and ataxia may be misdiagnosed as inner ear problems. Fetal alcohol syndrome damages cerebellum.', detail: 'Purkinje cells are among the largest neurons, each receiving ~200,000 synaptic inputs. Cerebellar cortex has 3 layers: molecular, Purkinje, granular. Emerging research shows roles in cognition, emotion, and language.' },
               { id: 'brainstem', name: 'Brainstem (Midbrain, Pons, Medulla)', x: 0.50, y: 0.08, v: 'p', fn: 'Connects cerebrum to spinal cord. Three parts: Midbrain (visual/auditory reflexes, substantia nigra for dopamine), Pons (relay between cortex and cerebellum, respiratory rhythm), Medulla oblongata (cardiovascular center, respiratory center, vomiting, swallowing). Reticular formation spans all three \u2014 controls arousal and consciousness.', clinical: 'Brainstem death = legal death in many jurisdictions (irreversible loss of consciousness and vital reflexes). Locked-in syndrome (ventral pons lesion): conscious but unable to move except eyes. Central sleep apnea from medullary dysfunction.', detail: 'Contains nuclei for cranial nerves III\u2013XII. Reticular activating system (RAS) is the brain\'s "on switch" \u2014 damage causes coma. Decussation of pyramids in medulla: motor crossover explains contralateral motor control.' },
               { id: 'hippocampus', name: 'Hippocampus', x: 0.48, y: 0.06, v: 'a', fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term memory to long-term memory (consolidation). Contains place cells for spatial navigation (Nobel Prize 2014, O\'Keefe). One of two brain regions with adult neurogenesis (new neuron formation). Theta rhythms during memory encoding.', clinical: 'Alzheimer disease begins here \u2014 hippocampal atrophy on MRI is an early diagnostic marker. Bilateral hippocampal damage (e.g., Patient H.M.) causes severe anterograde amnesia. Chronic stress and cortisol shrink the hippocampus. PTSD associated with reduced hippocampal volume.', detail: 'Memory replay during sleep: hippocampal neurons "replay" daytime experiences during N3 sleep, transferring memories to neocortex. Grid cells in entorhinal cortex provide spatial coordinates to hippocampal place cells.' },
               { id: 'amygdala', name: 'Amygdala', x: 0.46, y: 0.06, v: 'a', fn: 'Almond-shaped nuclei in anterior temporal lobe. Key hub for processing fear, threat detection, and emotional memory. Receives fast "low road" input from thalamus for rapid danger response (before conscious awareness). Modulates memory storage based on emotional arousal (why emotional events are remembered better).', clinical: 'Hyperactive amygdala in anxiety disorders, PTSD, and phobias. Bilateral amygdala damage (Urbach-Wiethe disease): inability to recognize fear in faces, impaired fear conditioning. Amygdala involved in autism spectrum disorder (social threat processing).', detail: 'Fear conditioning pathway: auditory cortex \u2192 lateral amygdala \u2192 central amygdala \u2192 hypothalamus (stress response) + PAG (freezing). Amygdala-prefrontal interactions allow emotional regulation \u2014 basis of CBT therapy.' },
@@ -737,7 +737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             { id: 'mn_intestine', title: 'Layers of GI Wall', phrase: 'Mary\'s Silly Monkey Made Smelly Sounds', meaning: 'Mucosa, Submucosa, Muscularis (circular + longitudinal), Serosa', structures: ['sm_intestine', 'stomach'] }
           ],
           integumentary: [
-            { id: 'mn_skin', title: 'Epidermis Layers (Deep to Superficial)', phrase: 'Come, Let\'s Get Sun Burned', meaning: 'Corneum (stratum), Lucidum, Granulosum, Spinosum, Basale', structures: ['epidermis'] }
+            { id: 'mn_skin', title: 'Epidermis Layers (Superficial to Deep)', phrase: 'Come, Let\'s Get Sun Burned', meaning: 'Corneum (stratum), Lucidum, Granulosum, Spinosum, Basale', structures: ['epidermis'] }
           ],
           respiratory: [
             { id: 'mn_resp', title: 'Structures Air Passes Through', phrase: 'Nice People Like Talking But All Are Late', meaning: 'Nose, Pharynx, Larynx, Trachea, Bronchi, Alveoli', structures: ['nasal_cavity', 'larynx', 'bronchi', 'alveoli'] }
@@ -929,7 +929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Tour state ──
         var tourSteps = GUIDED_TOURS[sysKey] || [];
-        var tourStepIdx = d._tourStepIdx || 0;
+        var tourStepIdx = Math.min(d._tourStepIdx || 0, Math.max(0, tourSteps.length - 1));
         var tourActive = d._tourActive || false;
         var currentTourStep = tourActive && tourSteps.length > 0 ? tourSteps[tourStepIdx] : null;
 
@@ -975,13 +975,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           { id: 'brown', label: 'Brown', base: '#8d5e3c', mid: '#7d5234', shadow: '#6e482e', deep: '#5f3e28', outline: '#4a2e1c', hairline: '#2a1a10' },
           { id: 'deep', label: 'Deep', base: '#4a3228', mid: '#3e2a22', shadow: '#34241e', deep: '#2c1e18', outline: '#1e1410', hairline: '#0e0a06' }
         ];
-        var skinToneId = d._skinTone || 'light';
+        var skinToneId = d._skinTone || 'olive';
         var skinTone = SKIN_TONES.find(function(t) { return t.id === skinToneId; }) || SKIN_TONES[0];
 
         // ── Flashcard state ──
         var flashcardIdx = d._flashcardIdx || 0;
         var flashcardFlipped = d._flashcardFlipped || false;
-        var flashcardPool = allStructures.filter(function(s) { return s.fn && passesComplexity(s); });
+        var flashcardPool = allStructures.filter(function(s) { return s.fn && passesComplexity(s); }); if (flashcardIdx >= flashcardPool.length) flashcardIdx = 0;
 
         // ── Confetti state ──
         var confettiParticles = d._confettiParticles || [];
@@ -1135,7 +1135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           canvas.height = CSS_H * dpr;
           canvas.style.width = CSS_W + 'px';
           canvas.style.height = CSS_H + 'px';
-          var cCtx = canvas.getContext('2d');
+          var cCtx = canvas.getContext('2d'); if (cCtx && !cCtx.roundRect) { cCtx.roundRect = function (rx, ry, rw, rh, rr) { if (typeof rr === 'number') rr = [rr, rr, rr, rr]; if (!rr || rr.length < 4) rr = [0, 0, 0, 0]; this.moveTo(rx + rr[0], ry); this.arcTo(rx + rw, ry, rx + rw, ry + rh, rr[1]); this.arcTo(rx + rw, ry + rh, rx, ry + rh, rr[2]); this.arcTo(rx, ry + rh, rx, ry, rr[3]); this.arcTo(rx, ry, rx + rw, ry, rr[0]); this.closePath(); return this; }; }
           cCtx.scale(dpr, dpr);
           // W and H stay at CSS dimensions — all drawing code uses these logical coordinates
           var W = CSS_W, H = CSS_H;
@@ -4238,8 +4238,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // Grade-band intro
           h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800' }, gradeIntro),
 
-          // Tab bar (7 tabs)
-          h('div', { className: 'flex gap-1 mb-3', role: 'tablist', },
+          // Tab bar (8 tabs)
+          h('div', { className: 'flex flex-wrap gap-1 gap-y-1.5 mb-3', role: 'tablist', },
             h('button', { 'aria-label': 'Explore',
               role: 'tab', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'explore'); },
@@ -4324,7 +4324,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               aiTutor:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDD16', title: 'AI tutor',                    hint: 'Ask a question about the active organ or system. The tutor knows what is on screen and tailors answers to your grade band.' },
               spotter:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83C\uDFAF', title: 'Structure spotter',           hint: 'Click the named structure on the diagram. Builds the click-the-thing reflex that AP and medical exams rely on.' },
               pathways:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\uD83D\uDEE4\uFE0F', title: 'Trace the pathway',          hint: 'Follow blood, air, food, or signals through the body in sequence. Pathways are how isolated facts become a system you can reason about.' },
-              flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: 'Spaced-repetition cards',     hint: 'Quick-recall cards with spaced repetition. Six-second review now beats five-minute re-read tomorrow \u2014 that is the testing effect.' }
+              flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: 'Spaced-repetition cards',     hint: 'Quick-recall cards with spaced repetition. Six-second review now beats five-minute re-read tomorrow \u2014 that is the testing effect.' },
+              homeoHunt:   { accent: '#4338ca', soft: 'rgba(67,56,202,0.10)', icon: '🏠', title: 'Homeostasis Hunt',         hint: 'Adjust the sliders to keep each body variable in its healthy range, and watch how the systems work together to maintain balance.' }
             };
             var meta = TAB_META[activeTab] || TAB_META.explore;
             return h('div', {
@@ -5049,7 +5050,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
                     CONNECTIONS.map(function(conn) {
                       var isViewed = connectionsViewed[conn.id];
-                      return h('button', { 'aria-label': 'Play sound',
+                      return h('button', { 'aria-label': conn.title,
+                        'aria-expanded': d._expandedConn === conn.id,
                         key: conn.id,
                         onClick: function() {
                           playSound('connectionView');
