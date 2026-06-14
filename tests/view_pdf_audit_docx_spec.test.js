@@ -58,6 +58,26 @@ describe('view_pdf_audit · _htmlToDocxSpec (accessible Word export)', () => {
     expect(runs.find(r => /and/.test(r.text)).sub).toBe(false);
   });
 
+  it('emits REAL footnotes: anchor → footnoteId run, notes section skipped, spec.footnotes populated (A6)', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<p>Body text<sup class="allo-fn-ref" data-fn-uid="a"><a href="#fn-a">1</a></sup> and more<sup class="allo-fn-ref" data-fn-uid="b"><a href="#fn-b">2</a></sup>.</p>' +
+      '<section class="allo-footnotes"><hr/><ol>' +
+      '<li data-fn-uid="a"><span class="allo-fn-text">First note.</span> <a class="allo-fn-back">↩</a></li>' +
+      '<li data-fn-uid="b"><span class="allo-fn-text">Second note.</span> <a class="allo-fn-back">↩</a></li>' +
+      '</ol></section>'
+    ));
+    // footnote definitions collected in document order (id 1, 2)
+    expect(Object.keys(spec.footnotes)).toEqual(['1', '2']);
+    expect(spec.footnotes['1'].map(r => r.text || '').join('')).toContain('First note');
+    // anchors became footnote-reference runs, NOT superscript digits
+    const runs = spec.blocks[0].runs;
+    expect(runs.filter(r => r.footnoteId).map(r => r.footnoteId)).toEqual([1, 2]);
+    expect(runs.some(r => r.text === '1' && r.sup)).toBe(false);
+    // the footnotes section must NOT also appear as a trailing list / paragraph
+    expect(spec.blocks.some(b => b.type === 'list')).toBe(false);
+    expect(JSON.stringify(spec.blocks)).not.toContain('First note');
+  });
+
   it('turns a page-break block into a pagebreak block and never leaks its label text', () => {
     const spec = _htmlToDocxSpec(wrap(
       '<p>before</p>' +

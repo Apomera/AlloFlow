@@ -127,6 +127,8 @@ function _htmlToDocxSpec(html) {
   const lang = (doc.documentElement.getAttribute("lang") || "en").trim() || "en";
   const blocks = [];
   const counts = { headings: 0, paragraphs: 0, images: 0, tables: 0, lists: 0, links: 0 };
+  const _fnIdByUid = {};
+  const _fnDefs = {};
   const SKIP = { SCRIPT: 1, STYLE: 1, BUTTON: 1, SELECT: 1, INPUT: 1, TEXTAREA: 1, AUDIO: 1, VIDEO: 1, TEMPLATE: 1, NOSCRIPT: 1, IFRAME: 1, CANVAS: 1 };
   const _isControlEl = (el) => {
     if (SKIP[el.tagName]) return true;
@@ -147,6 +149,14 @@ function _htmlToDocxSpec(html) {
       }
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
       const tag = n.tagName;
+      if (tag === "SUP" && n.classList && n.classList.contains("allo-fn-ref")) {
+        const _fuid = n.getAttribute("data-fn-uid");
+        const _fid = _fuid && _fnIdByUid[_fuid];
+        if (_fid) {
+          out.push({ footnoteId: _fid });
+          continue;
+        }
+      }
       if (tag === "BR") {
         out.push({ br: true });
         continue;
@@ -209,6 +219,7 @@ function _htmlToDocxSpec(html) {
       const n = kids[i];
       if (_isControlEl(n)) continue;
       const tag = n.tagName;
+      if (n.classList && n.classList.contains("allo-footnotes")) continue;
       if (n.classList && n.classList.contains("allo-block-pagebreak")) {
         blocks.push({ type: "pagebreak" });
         continue;
@@ -280,14 +291,33 @@ function _htmlToDocxSpec(html) {
       pushParagraph(inlineRuns(n, {}));
     }
   };
+  try {
+    const _fnSec = doc.querySelector("section.allo-footnotes");
+    if (_fnSec) {
+      let _fnSeq = 0;
+      Array.from(_fnSec.querySelectorAll("ol > li[data-fn-uid]")).forEach((li) => {
+        const uid = li.getAttribute("data-fn-uid");
+        if (!uid || _fnIdByUid[uid]) return;
+        const id = ++_fnSeq;
+        _fnIdByUid[uid] = id;
+        const _txtEl = li.querySelector(".allo-fn-text") || li;
+        const _runs = inlineRuns(_txtEl, {});
+        _fnDefs[id] = _runs && _runs.length ? _runs : [{ text: (li.textContent || "").replace(/↩/g, "").trim() }];
+      });
+    }
+  } catch (_) {
+  }
   walk(doc.body);
-  return { title, lang, blocks, counts };
+  return { title, lang, blocks, counts, footnotes: _fnDefs };
 }
 async function _buildDocxBlobFromSpec(spec, d, mode) {
   const academic = !!(mode && mode.academic);
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
+    if (r.footnoteId) {
+      return typeof d.FootnoteReferenceRun === "function" ? new d.FootnoteReferenceRun(r.footnoteId) : new d.TextRun({ text: String(r.footnoteId), superScript: true });
+    }
     const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : void 0, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? "Hyperlink" : void 0 });
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
@@ -357,6 +387,16 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       children: children.length ? children : [new d.Paragraph({ children: [new d.TextRun({ text: " " })] })]
     }]
   };
+  if (spec.footnotes && Object.keys(spec.footnotes).length && typeof d.FootnoteReferenceRun === "function") {
+    const _fn = {};
+    for (const id of Object.keys(spec.footnotes)) {
+      try {
+        _fn[id] = { children: [new d.Paragraph({ children: runsTo(spec.footnotes[id]) })] };
+      } catch (_) {
+      }
+    }
+    if (Object.keys(_fn).length) _docOpts.footnotes = _fn;
+  }
   if (academic) {
     const _acHead = { font: "Times New Roman", size: 24, bold: true, color: "000000" };
     _docOpts.styles = { default: {
@@ -7776,6 +7816,31 @@ Return ONLY JSON:
           const block = ctrlBtn.closest("[data-allo-block]");
           if (!block) return;
           const isRubric = block.classList.contains("allo-block-rubric");
+          if (action === "ref-add-entry" || action === "ref-sort") {
+            if (block.classList.contains("allo-references")) {
+              const _ctrls = block.querySelector(".allo-block-controls");
+              if (action === "ref-add-entry") {
+                const _e = doc.createElement("p");
+                _e.className = "allo-ref-entry";
+                _e.setAttribute("contenteditable", "true");
+                _e.textContent = "Author, A. A. (Year). Title of the work. Source.";
+                block.insertBefore(_e, _ctrls);
+                setTimeout(() => {
+                  try {
+                    _e.focus();
+                    doc.getSelection().selectAllChildren(_e);
+                  } catch (_) {
+                  }
+                }, 40);
+              } else {
+                const _entries = Array.from(block.querySelectorAll(".allo-ref-entry"));
+                _entries.sort((a, b) => (a.textContent || "").trim().localeCompare((b.textContent || "").trim(), void 0, { sensitivity: "base" }));
+                _entries.forEach((e) => block.insertBefore(e, _ctrls));
+              }
+              persist();
+            }
+            return;
+          }
           if (action === "add-row") {
             const tbody = block.querySelector("tbody");
             const headerRow = block.querySelector("thead tr");
@@ -8531,7 +8596,7 @@ Return ONLY JSON:
           html: () => {
             const m = DOC_MODES[docMode] || DOC_MODES.apa;
             const h = m.refHeading || "References";
-            return '<section class="allo-references allo-block" data-allo-block="references" tabindex="0" aria-label="' + h + '"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove ' + h + '" title="Remove">\xD7</button><h2>' + h + '</h2><p class="allo-ref-entry" contenteditable="true">Author, A. A. (Year). <em>Title of the work</em>. Publisher or Source. https://doi.org/xxxx</p></section>';
+            return '<section class="allo-references allo-block" data-allo-block="references" tabindex="0" aria-label="' + h + '"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove ' + h + '" title="Remove">\xD7</button><h2>' + h + '</h2><p class="allo-ref-entry" contenteditable="true">Author, A. A. (Year). <em>Title of the work</em>. Publisher or Source. https://doi.org/xxxx</p><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">' + h + '</span><button type="button" data-action="ref-add-entry">+ Entry</button><button type="button" data-action="ref-sort">\u2195 Sort A\u2013Z</button></div></section>';
           }
         },
         {
