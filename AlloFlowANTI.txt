@@ -10454,17 +10454,30 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setPdfRunHistory((prev) => {
       if (prev.some((r) => r._k === key)) return prev;
       const _ps = cur.pipelineStats || null;
+      const _resid = (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null;
+      // Honest tri-state outcome (2026-06-14): a run that COMPLETED is not the
+      // same as a run that SUCCEEDED. Marking every completed run 'success' put
+      // afterScore=35-with-residual-violations docs into the numerator of the
+      // reliability rate Aaron defends to UMaine. 'success' now means the run
+      // actually reached the teacher's target (pdfTargetScore) with no known
+      // residual axe violations; anything that completed below that is
+      // 'incomplete' (counts in the denominator, not the success numerator).
+      // CONSERVATIVE: a NULL axe audit (checker didn't run) is NOT downgraded on
+      // the violations axis — we only flag a KNOWN low/violating result, so older
+      // / loaded rows that lack data aren't over-flagged. (afterScore is non-null
+      // here by the effect guard above.)
+      const _outcome = (cur.afterScore >= pdfTargetScore && (_resid === 0 || _resid == null)) ? 'success' : 'incomplete';
       const row = {
         _k: key, at: new Date().toISOString(),
         fileName: pendingPdfFile?.name || 'document',
         beforeScore: cur.beforeScore != null ? cur.beforeScore : null,
         afterScore: cur.afterScore != null ? cur.afterScore : null,
         passes: cur.autoFixPasses || 0,
-        axeViolations: (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null,
+        axeViolations: _resid,
         pages: cur.pageCount || null,
         // Reliability telemetry (2026-06-13): an honest outcome + the per-run
         // stats from fixResult.pipelineStats (null on older/loaded rows).
-        outcome: 'success',
+        outcome: _outcome,
         retries: _ps ? _ps.retries : null,
         visionCalls: _ps ? _ps.visionCalls : null,
         apiCalls: _ps ? _ps.apiCalls : null,
