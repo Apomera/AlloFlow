@@ -1033,13 +1033,20 @@ const COMPILE_PAIRS = [
         modPath: path.join(ROOT, 'gemini_api_module.js'),
         publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'gemini_api_module.js'),
         wrap(src) {
-            const compiled = compileJsx(src);
+            // gemini_api_source.jsx is PURE JS (no JSX). Running it through
+            // compileJsx (Babel) re-printed the source into a different ~804-line
+            // form that DRIFTED from the canonical 686-line raw-wrap produced by
+            // _build_gemini_api_module.js (→ _build_simple_iife) on EVERY build —
+            // so the two builders fought and gemini_api had to be re-minified by
+            // hand on consecutive deploys (@3271ffd0, @8bc35926). Raw-wrap it
+            // BYTE-FOR-BYTE like _build_simple_iife (and like DocPipeline above)
+            // so both builders produce identical bytes and the drift is now
+            // structurally impossible. Keep this matching _build_simple_iife.
             return (
-                '(function() {\n'
-                + "'use strict';\n"
-                + "if (window.AlloModules && window.AlloModules.GeminiAPI) { console.log('[CDN] GeminiAPI already loaded, skipping'); return; }\n"
-                + compiled
-                + '\n})();\n'
+                '(function(){"use strict";\n'
+                + 'if(window.AlloModules&&window.AlloModules.GeminiAPI){console.log("[CDN] GeminiAPI already loaded, skipping"); return;}\n'
+                + src.trim() + '\n'
+                + '})();\n'
             );
         },
     },
