@@ -19636,6 +19636,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       contentLoaded: !!generatedContent,
       zenActive: isZenMode,
       focusActive: focusMode,
+      // Slice 2 (2026-06-13): essential ACTION capabilities — thin wrappers on existing host
+      // handlers (handleGenerate ~20978, handleSetShowSubmitModalToTrue ~7753). hasSourceOrAnalysis
+      // (~23395) gates the generate commands; isTeacherMode (~3434) gates the student submit command.
+      hasSourceOrAnalysis,
+      isTeacherMode,
+      generateQuiz: () => handleGenerate('quiz'),
+      generateGlossary: () => handleGenerate('glossary'),
+      generateSimplified: (cfg) => handleGenerate('simplified', null, false, null, cfg || {}),
+      generateSentenceFrames: () => handleGenerate('sentence-frames'),
+      generateAnalysis: () => handleGenerate('analysis'),
+      submitWork: handleSetShowSubmitModalToTrue,
       // Pipeline-aware commands (guarded by `when` in the registry)
       pipelineOpen: !!pdfFixResult,
       getPipelineScore: () => pdfFixResult ? { before: (pdfFixResult.beforeScore != null ? pdfFixResult.beforeScore : null), after: (pdfFixResult.afterScore || 0), target: pdfTargetScore } : null,

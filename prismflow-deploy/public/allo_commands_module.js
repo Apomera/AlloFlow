@@ -77,6 +77,31 @@ function buildAlloCommands(ctx) {
       c.openProjectSettings();
       return t("cmd.open_project_settings_done", "Project settings opened.");
     } },
+    // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
+    { id: "generate_quiz", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_quiz", "Make a quiz from this"), aliases: ["make a quiz", "quiz me on this", "create a quiz", "comprehension questions", "generate quiz"], hint: t("cmd.generate_quiz_hint", "Generate a quiz from the current content"), run: (c) => {
+      c.generateQuiz();
+      return t("cmd.generate_quiz_done", "Generating a quiz from this content\u2026");
+    } },
+    { id: "generate_glossary", icon: "\u{1F4D6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_glossary", "Make a vocabulary glossary"), aliases: ["glossary", "vocabulary", "vocab", "key terms", "word list"], hint: t("cmd.generate_glossary_hint", "Generate a glossary from the current content"), run: (c) => {
+      c.generateGlossary();
+      return t("cmd.generate_glossary_done", "Generating a glossary\u2026");
+    } },
+    { id: "generate_simplified", icon: "\u{1F4C9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_simplified", "Simplify this text"), aliases: ["simplify", "simplify this", "make it easier", "lower the reading level", "leveled text", "easier version"], hint: t("cmd.generate_simplified_hint", "Generate a simpler reading level \u2014 say \u201Cto grade N\u201D for a target"), run: (c, params) => {
+      c.generateSimplified(params && params.grade ? { grade: params.grade } : {});
+      return t("cmd.generate_simplified_done", "Generating a simpler version\u2026");
+    } },
+    { id: "generate_sentence_frames", icon: "\u{1F9E9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_sentence_frames", "Make sentence frames"), aliases: ["sentence frames", "sentence starters", "scaffolds", "language support"], hint: t("cmd.generate_sentence_frames_hint", "Generate sentence frames from the current content"), run: (c) => {
+      c.generateSentenceFrames();
+      return t("cmd.generate_sentence_frames_done", "Generating sentence frames\u2026");
+    } },
+    { id: "generate_analysis", icon: "\u{1F52C}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_analysis", "Analyze this source"), aliases: ["analyze", "analysis", "source analysis", "analyze this"], hint: t("cmd.generate_analysis_hint", "Run a source analysis on the current content"), run: (c) => {
+      c.generateAnalysis();
+      return t("cmd.generate_analysis_done", "Analyzing this source\u2026");
+    } },
+    { id: "submit_work", icon: "\u{1F4E8}", roles: "all", when: (c) => !c.isTeacherMode, label: t("cmd.submit_work", "Submit my work"), aliases: ["submit", "submit my work", "hand it in", "turn in"], hint: t("cmd.submit_work_hint", "Send your work to your teacher"), run: (c) => {
+      c.submitWork();
+      return t("cmd.submit_work_done", "Opening the submit dialog\u2026");
+    } },
     // ── Accessibility self-service (available in every mode) ──
     { id: "font_bigger", icon: "\u{1F50D}", roles: "all", label: t("cmd.font_bigger", "Make the text bigger"), aliases: ["bigger text", "larger text", "increase font", "zoom in text"], hint: t("cmd.font_bigger_hint", "+2 to the reading font size"), run: (c) => {
       const v = c.fontBigger();
@@ -233,7 +258,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   const _grammars = [
     { id: "create_lesson", re: /^(?:create|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
     { id: "set_font_size", re: /^(?:set\s+)?(?:the\s+)?(?:text|font)\s*(?:size)?\s*(?:to)?\s*(\d{1,2})\s*\.?$/i, params: (m) => ({ size: m[1] }) },
-    { id: "translate_document", re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) }
+    { id: "translate_document", re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) },
+    { id: "generate_simplified", re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) }
   ];
   const commands = buildAlloCommands(ctx);
   for (const g of _grammars) {
