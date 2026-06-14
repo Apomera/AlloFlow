@@ -87,6 +87,21 @@
     prerequisite: { stroke: '#d97706', dash: '6 4',  label: 'prerequisite gate' }
   };
 
+  // ── Generate Unit (the AI co-author flow) ───────────────────────────
+  // The resource types the review editor lets a teacher toggle per lesson.
+  // Mirrors the host's _UNIT_KNOWN_TYPES allowlist; the host re-validates.
+  var RESOURCE_TYPE_OPTIONS = [
+    'analysis', 'simplified', 'glossary', 'outline', 'sentence-frames',
+    'concept-sort', 'brainstorm', 'timeline', 'quiz', 'faq', 'note-taking',
+    'anchor-chart', 'adventure', 'dbq', 'persona', 'image', 'lesson-plan'
+  ];
+  // Pacing between lessons (the "pauses at regular intervals" the flow promises).
+  // A short cool-down after each lesson, and a longer breather every Nth, so a
+  // full unit run does not hammer the model. Skippable via "Continue now".
+  var PACE_SECONDS = 5;
+  var BREATHER_EVERY = 4;
+  var BREATHER_SECONDS = 15;
+
   // ── ID generation ──────────────────────────────────────────────────
   function uid(prefix) {
     return (prefix || 'id_') + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
@@ -142,7 +157,8 @@
         description: typeof n.description === 'string' ? n.description : '',
         role: typeof n.role === 'string' ? n.role : '',
         status: typeof n.status === 'string' ? n.status : (n.lessonId ? 'draft' : 'planned'),
-        category: (typeof n.category === 'string' && n.category) ? n.category : null
+        category: (typeof n.category === 'string' && n.category) ? n.category : null,
+        bundledLessonIds: Array.isArray(n.bundledLessonIds) ? n.bundledLessonIds.filter(function (id) { return typeof id === 'string' && id; }) : undefined
       };
     });
     var ids = {};
@@ -252,8 +268,22 @@
     var headerHook = useState(false); var editingHeader = headerHook[0]; var setEditingHeader = headerHook[1];
     var quotaHook = useState(false); var quotaFailed = quotaHook[0]; var setQuotaFailed = quotaHook[1];
 
+    // ── Generate Unit machine. `gen` null = closed. When set, holds the whole
+    //    flow (setup → proposing → review → generating → done). The async driver
+    //    reads live state through genRef so user edits mid-run are honored.
+    var genHook = useState(null); var gen = genHook[0]; var setGen = genHook[1];
+    var onProposeUnit = typeof props.onProposeUnit === 'function' ? props.onProposeUnit : null;
+    var onGenerateUnitLesson = typeof props.onGenerateUnitLesson === 'function' ? props.onGenerateUnitLesson : null;
+    var canGenerate = !!(onProposeUnit && onGenerateUnitLesson);
+
     var svgRef = useRef(null);
     var fileInputRef = useRef(null);
+    var genRef = useRef(null);            // latest `gen` for the async loop
+    var mountedRef = useRef(true);        // false after unmount → loop bails
+    var abortRef = useRef(null);          // AbortController for the active run
+    var decisionRef = useRef(null);       // resolver for the per-lesson backpressure gate
+    var paceResolveRef = useRef(null);    // resolver for the pacing countdown
+    var paceTimerRef = useRef(null);      // active pacing setTimeout
 
     // Resolve a lessonId against (host history ∪ imported lessons).
     var lessonPool = useMemo(function () {
@@ -458,9 +488,14 @@
     // ── Export: existing pack shape + unitLayout sidecar ──────────
     function exportUnit() {
       try {
-        // subset history to lessons actually referenced by nodes
+        // subset history to lessons actually referenced by nodes (the attached
+        // lesson AND any sibling resources a Generate-Unit run bundled with it,
+        // so export is non-lossy)
         var referenced = {};
-        unit.nodes.forEach(function (n) { if (n.lessonId) referenced[n.lessonId] = true; });
+        unit.nodes.forEach(function (n) {
+          if (n.lessonId) referenced[n.lessonId] = true;
+          if (Array.isArray(n.bundledLessonIds)) n.bundledLessonIds.forEach(function (id) { if (id) referenced[id] = true; });
+        });
         var history = Object.keys(referenced).map(function (id) { return lessonPool[id]; }).filter(Boolean);
         var stamped = Object.assign({}, unit, { updatedAt: nowIso(), generator: GENERATOR, schemaVersion: SCHEMA_VERSION });
         var payload = {
@@ -597,6 +632,279 @@
       }
     }
 
+    // ── Generate Unit engine ──────────────────────────────────────
+    // The module owns the loop (one lesson at a time) so it can pace, pause for
+    // review, and survive an in-flight unmount without orphaning host state. The
+    // host provides only two capabilities: onProposeUnit (draft a structure) and
+    // onGenerateUnitLesson (run ONE lesson through the shared blueprint engine).
+    var genBaseRef = useRef(120);
+    useEffect(function () { genRef.current = gen; }, [gen]);
+    useEffect(function () {
+      mountedRef.current = true;
+      return function () {
+        mountedRef.current = false;
+        try { if (abortRef.current) abortRef.current.abort(); } catch (e) {}
+        try { if (paceTimerRef.current) clearTimeout(paceTimerRef.current); } catch (e) {}
+      };
+    }, []);
+
+    function setGenMerge(patch) { setGen(function (g) { return g ? Object.assign({}, g, patch) : g; }); }
+    function setLesson(idx, patch) {
+      setGen(function (g) {
+        if (!g || !g.results) return g;
+        var results = g.results.slice();
+        results[idx] = Object.assign({}, results[idx], patch);
+        return Object.assign({}, g, { results: results });
+      });
+    }
+
+    function openGenerate() {
+      if (!canGenerate) return;
+      if (inLiveSession) {
+        addToast(t('throughline.gen_live_block') || 'Generate Unit is paused during a live class session. End the session before planning a new unit.', 'info');
+        return;
+      }
+      setGen({
+        phase: 'setup',
+        input: { topic: unit.title || '', gradeLevel: '', standards: '', lessonCount: 4, tone: '', notes: '', sourceText: '' },
+        proposal: null, results: [], cursor: -1, awaiting: -1,
+        autoContinue: false, pacing: 0, busy: false, error: null
+      });
+    }
+    function closeGenerate() {
+      try { if (abortRef.current) abortRef.current.abort(); } catch (e) {}
+      try { if (paceTimerRef.current) clearTimeout(paceTimerRef.current); } catch (e) {}
+      decisionRef.current = null; paceResolveRef.current = null;
+      setGen(null);
+    }
+    function setInput(patch) { setGen(function (g) { return g ? Object.assign({}, g, { input: Object.assign({}, g.input, patch) }) : g; }); }
+
+    // setup → proposing → review
+    function proposeStructure() {
+      var g = genRef.current; if (!g || !onProposeUnit) return;
+      if (!g.input.topic || !g.input.topic.trim()) { setGenMerge({ error: t('throughline.gen_need_topic') || 'Add a topic or focus for the unit first.' }); return; }
+      setGenMerge({ phase: 'proposing', busy: true, error: null });
+      Promise.resolve().then(function () { return onProposeUnit(g.input); }).then(function (proposal) {
+        if (!mountedRef.current) return;
+        var lessons = (proposal && Array.isArray(proposal.lessons)) ? proposal.lessons : [];
+        if (!lessons.length) throw new Error(t('throughline.gen_empty') || 'no lessons returned');
+        setGenMerge({ phase: 'review', busy: false, proposal: proposal, results: lessons.map(function () { return { status: 'pending', sub: null, nulls: 0, error: null, nodeId: null }; }) });
+      }).catch(function (e) {
+        if (!mountedRef.current) return;
+        setGenMerge({ phase: 'setup', busy: false, error: (t('throughline.gen_propose_failed') || 'Could not draft a structure') + ': ' + (e && e.message ? e.message : 'unknown error') });
+      });
+    }
+
+    // review editors (operate on gen.proposal)
+    function patchProposal(patch) { setGen(function (g) { return g ? Object.assign({}, g, { proposal: Object.assign({}, g.proposal, patch) }) : g; }); }
+    function patchLessonSpec(i, patch) {
+      setGen(function (g) {
+        if (!g || !g.proposal) return g;
+        var lessons = g.proposal.lessons.slice();
+        lessons[i] = Object.assign({}, lessons[i], patch);
+        return Object.assign({}, g, { proposal: Object.assign({}, g.proposal, { lessons: lessons }) });
+      });
+    }
+    function toggleLessonType(i, type) {
+      var g = genRef.current; if (!g || !g.proposal) return;
+      var cur = (g.proposal.lessons[i].suggestedResourceTypes || []).slice();
+      var at = cur.indexOf(type);
+      if (at >= 0) cur.splice(at, 1); else if (cur.length < 6) cur.push(type);
+      patchLessonSpec(i, { suggestedResourceTypes: cur });
+    }
+    function removeLessonSpec(i) {
+      setGen(function (g) {
+        if (!g || !g.proposal) return g;
+        var lessons = g.proposal.lessons.slice(); lessons.splice(i, 1);
+        var results = g.results.slice(); results.splice(i, 1);
+        return Object.assign({}, g, { proposal: Object.assign({}, g.proposal, { lessons: lessons }), results: results });
+      });
+    }
+    function addLessonSpec() {
+      setGen(function (g) {
+        if (!g || !g.proposal || g.proposal.lessons.length >= 8) return g;
+        var lessons = g.proposal.lessons.concat([{ title: t('throughline.gen_new_lesson') || 'New lesson', objective: '', focus: '', suggestedResourceTypes: ['analysis', 'glossary', 'lesson-plan'], sourceStrategy: 'shared' }]);
+        var results = g.results.concat([{ status: 'pending', sub: null, nulls: 0, error: null, nodeId: null }]);
+        return Object.assign({}, g, { proposal: Object.assign({}, g.proposal, { lessons: lessons }), results: results });
+      });
+    }
+    function moveLessonSpec(i, dir) {
+      setGen(function (g) {
+        if (!g || !g.proposal) return g;
+        var j = i + dir; if (j < 0 || j >= g.proposal.lessons.length) return g;
+        var lessons = g.proposal.lessons.slice(); var results = g.results.slice();
+        var a = lessons[i]; lessons[i] = lessons[j]; lessons[j] = a;
+        var b = results[i]; results[i] = results[j]; results[j] = b;
+        return Object.assign({}, g, { proposal: Object.assign({}, g.proposal, { lessons: lessons }), results: results });
+      });
+    }
+    function estimateCalls(proposal) {
+      if (!proposal || !proposal.lessons) return 0;
+      return proposal.lessons.reduce(function (s, l) { return s + (((l.suggestedResourceTypes && l.suggestedResourceTypes.length) || 0)); }, 0);
+    }
+
+    // backpressure gate + pacing
+    function waitForDecision() { return new Promise(function (res) { decisionRef.current = res; }); }
+    function resolveDecision(value) {
+      var r = decisionRef.current; decisionRef.current = null;
+      setGenMerge({ awaiting: -1 });
+      if (r) r(value);
+    }
+    function pace(seconds) {
+      return new Promise(function (resolve) {
+        var remaining = seconds;
+        paceResolveRef.current = resolve;
+        setGenMerge({ pacing: remaining });
+        function tick() {
+          if (!mountedRef.current || (abortRef.current && abortRef.current.signal.aborted)) { paceResolveRef.current = null; setGenMerge({ pacing: 0 }); return resolve(); }
+          remaining -= 1;
+          if (remaining <= 0) { paceResolveRef.current = null; setGenMerge({ pacing: 0 }); return resolve(); }
+          setGenMerge({ pacing: remaining });
+          paceTimerRef.current = setTimeout(tick, 1000);
+        }
+        paceTimerRef.current = setTimeout(tick, 1000);
+      });
+    }
+    function continueNow() {
+      try { if (paceTimerRef.current) clearTimeout(paceTimerRef.current); } catch (e) {}
+      var r = paceResolveRef.current; paceResolveRef.current = null;
+      setGenMerge({ pacing: 0 });
+      if (r) r();
+    }
+    function stopGeneration() {
+      try { if (abortRef.current) abortRef.current.abort(); } catch (e) {}
+      // unblock whichever gate the loop is parked on
+      if (paceResolveRef.current) continueNow();
+      if (decisionRef.current) resolveDecision('stop');
+      else setGenMerge({ awaiting: -1 });
+    }
+
+    function placeGeneratedNode(i, lessonId, description, bundleIds, prevNodeId, category) {
+      var perRow = 5, gapX = NODE_W + 50, gapY = NODE_H + 80;
+      var x = 80 + (i % perRow) * gapX;
+      var y = genBaseRef.current + Math.floor(i / perRow) * gapY;
+      var nodeId = uid('n_');
+      var node = {
+        nodeId: nodeId, lessonId: lessonId || null, x: x, y: y,
+        description: description || '', role: '', status: lessonId ? 'draft' : 'planned',
+        category: category || null, bundledLessonIds: (bundleIds && bundleIds.length) ? bundleIds.slice() : undefined
+      };
+      setUnit(function (u) {
+        var nodes = u.nodes.concat([node]);
+        var edges = prevNodeId ? u.edges.concat([{ from: prevNodeId, to: nodeId, type: 'sequence' }]) : u.edges;
+        return Object.assign({}, u, { nodes: nodes, edges: edges });
+      });
+      return nodeId;
+    }
+
+    function startGeneration() {
+      var g = genRef.current; if (!g || !g.proposal) return;
+      if (!unit.title && g.proposal.title) patchUnit({ title: g.proposal.title });
+      if (!unit.essentialQuestion && g.proposal.essentialQuestion) patchUnit({ essentialQuestion: g.proposal.essentialQuestion });
+      var maxY = 0; unit.nodes.forEach(function (n) { if (n.y > maxY) maxY = n.y; });
+      genBaseRef.current = unit.nodes.length ? (maxY + NODE_H + 100) : 120;
+      abortRef.current = (typeof AbortController !== 'undefined')
+        ? new AbortController()
+        : { abort: function () {}, signal: { aborted: false, addEventListener: function () {} } };
+      setGenMerge({ phase: 'generating', cursor: 0, error: null });
+      runGeneration();
+    }
+
+    function runGeneration() {
+      var g = genRef.current; if (!g || !g.proposal) return;
+      var lessons = g.proposal.lessons;
+      var dna = {
+        grade: g.proposal.gradeBand || g.input.gradeLevel || '',
+        topic: g.proposal.title || g.input.topic || '',
+        standard: g.input.standards || '',
+        concepts: Array.isArray(g.proposal.goldenThread) ? g.proposal.goldenThread.slice() : [],
+        keyTerms: Array.isArray(g.proposal.keyTerms) ? g.proposal.keyTerms.slice() : [],
+        essentialQuestion: g.proposal.essentialQuestion || ''
+      };
+      var prevNodeId = null;
+      var i = 0;
+
+      function finish() {
+        if (!mountedRef.current) return;
+        setGenMerge({ phase: 'done', cursor: -1, awaiting: -1, pacing: 0 });
+      }
+      function aborted() { return !mountedRef.current || (abortRef.current && abortRef.current.signal.aborted); }
+
+      function step() {
+        if (aborted() || i >= lessons.length) return finish();
+        var idx = i;
+        // regenerate cleanup: drop the node a prior attempt at this index made
+        var prior = genRef.current.results[idx] && genRef.current.results[idx].nodeId;
+        if (prior) {
+          setUnit(function (u) {
+            return Object.assign({}, u, {
+              nodes: u.nodes.filter(function (n) { return n.nodeId !== prior; }),
+              edges: u.edges.filter(function (e) { return e.from !== prior && e.to !== prior; })
+            });
+          });
+        }
+        var spec = genRef.current.proposal.lessons[idx]; // latest (user may have edited)
+        var total = (spec.suggestedResourceTypes && spec.suggestedResourceTypes.length) || 0;
+        var prog = { done: 0 };
+        setGenMerge({ cursor: idx });
+        setLesson(idx, { status: 'running', sub: null, error: null, nodeId: null });
+
+        onGenerateUnitLesson(spec, dna, {
+          signal: abortRef.current.signal,
+          onResource: function (type) {
+            if (!mountedRef.current) return;
+            prog.done += 1;
+            setLesson(idx, { sub: { type: type, done: prog.done, total: total } });
+          }
+        }).then(function (res) {
+          if (!mountedRef.current) return;
+          dna = (res && res.dnaOut) || dna;
+          var items = (res && Array.isArray(res.items)) ? res.items.filter(Boolean) : [];
+          if (items.length) {
+            setImportedLessons(function (m) { var n = Object.assign({}, m); items.forEach(function (it) { if (it && it.id) n[it.id] = it; }); return n; });
+          }
+          var anchor = (res && res.anchorItem) || (items.length ? items[items.length - 1] : null);
+          var bundleIds = items.map(function (it) { return it && it.id; }).filter(Boolean);
+          var nodeId = placeGeneratedNode(idx, anchor ? anchor.id : null, spec.objective || spec.focus || '', bundleIds, prevNodeId, unit.sourceUnitId || null);
+          prevNodeId = nodeId;
+          var nullCount = (res && Array.isArray(res.nulls)) ? res.nulls.length : 0;
+          setLesson(idx, { status: anchor ? 'done' : 'empty', sub: null, nulls: nullCount, nodeId: nodeId, count: items.length });
+          afterLesson(idx);
+        }).catch(function (e) {
+          if (!mountedRef.current) return;
+          if (aborted()) return finish();
+          setLesson(idx, { status: 'error', sub: null, error: (e && e.message) ? e.message : 'generation failed' });
+          afterLesson(idx);
+        });
+      }
+
+      function afterLesson(idx) {
+        if (aborted()) return finish();
+        var isLast = idx >= lessons.length - 1;
+        if (genRef.current.autoContinue) {
+          i = idx + 1;
+          if (isLast) return finish();
+          var s0 = (i % BREATHER_EVERY === 0) ? BREATHER_SECONDS : PACE_SECONDS;
+          pace(s0).then(step);
+          return;
+        }
+        setGenMerge({ awaiting: idx });
+        waitForDecision().then(function (decision) {
+          if (!mountedRef.current) return;
+          if (decision === 'stop') return finish();
+          if (decision === 'regenerate') { i = idx; return step(); }       // same index
+          if (decision === 'skip') { setLesson(idx, { status: 'skipped' }); i = idx + 1; if (isLast) return finish(); return pace(PACE_SECONDS).then(step); }
+          // accept
+          i = idx + 1;
+          if (isLast) return finish();
+          var s1 = (i % BREATHER_EVERY === 0) ? BREATHER_SECONDS : PACE_SECONDS;
+          pace(s1).then(step);
+        });
+      }
+
+      step();
+    }
+
     // ── Render ────────────────────────────────────────────────────
     if (!isOpen) return null;
 
@@ -706,6 +1014,18 @@
     }
 
     var toolbar = h('div', { style: { background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '8px 18px', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
+      canGenerate && h('button', {
+        onClick: openGenerate,
+        disabled: inLiveSession,
+        title: inLiveSession ? (t('throughline.gen_live_block') || 'Disabled during a live class session') : (t('throughline.gen_btn_title') || 'Draft a multi-lesson unit with AI, then review each lesson as it is built'),
+        style: {
+          padding: '6px 13px', borderRadius: 8, fontSize: 12, fontWeight: 800,
+          border: '1px solid ' + (inLiveSession ? '#e2e8f0' : '#7c3aed'),
+          background: inLiveSession ? '#f1f5f9' : 'linear-gradient(90deg,#7c3aed,#4f46e5)',
+          color: inLiveSession ? '#94a3b8' : '#fff', cursor: inLiveSession ? 'not-allowed' : 'pointer'
+        }
+      }, '✨ ' + (t('throughline.gen_btn') || 'Generate unit')),
+      canGenerate && h('div', { style: { width: 1, height: 20, background: '#cbd5e1', margin: '0 2px' } }),
       tbBtn('➕ ' + (t('throughline.add_node') || 'Add node'), mode === 'addNode', function () { setMode(mode === 'addNode' ? 'view' : 'addNode'); setPendingFrom(null); }),
       tbBtn('🔗 ' + (t('throughline.connect') || 'Connect'), mode === 'connect', function () { setMode(mode === 'connect' ? 'view' : 'connect'); setPendingFrom(null); }),
       tbBtn('🗑 ' + (t('throughline.delete') || 'Delete'), mode === 'delete', function () { setMode(mode === 'delete' ? 'view' : 'delete'); setPendingFrom(null); }),
@@ -936,10 +1256,189 @@
       )
     );
 
+    // ── Generate Unit overlay ─────────────────────────────────────
+    var genModal = gen && (function () {
+      var phase = gen.phase;
+      var inp = gen.input || {};
+      var proposal = gen.proposal;
+
+      function field(label, node) {
+        return h('div', { style: { marginBottom: 11 } },
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 } }, label), node);
+      }
+      var inStyle = { width: '100%', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' };
+
+      var body, footer, headline, sub;
+
+      if (phase === 'setup') {
+        headline = '✨ ' + (t('throughline.gen_title') || 'Generate a unit');
+        sub = t('throughline.gen_setup_sub') || 'AI drafts a backward-designed structure, then builds each lesson with the blueprint engine. You review and refine every step. This makes several AI calls and is paced to respect rate limits.';
+        body = h('div', null,
+          gen.error && h('div', { style: { background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 8, padding: '8px 10px', fontSize: 12, marginBottom: 10, fontWeight: 600 } }, '⚠️ ' + gen.error),
+          field((t('throughline.gen_topic') || 'Topic or focus') + ' *', h('input', { autoFocus: true, value: inp.topic || '', onChange: function (e) { setInput({ topic: e.target.value }); }, placeholder: t('throughline.gen_topic_ph') || 'e.g. The water cycle; Causes of the American Revolution', style: inStyle })),
+          h('div', { style: { display: 'flex', gap: 10 } },
+            h('div', { style: { flex: 2 } }, field(t('throughline.gen_grade') || 'Grade band', h('input', { value: inp.gradeLevel || '', onChange: function (e) { setInput({ gradeLevel: e.target.value }); }, placeholder: t('throughline.gen_grade_ph') || 'e.g. 5th grade (blank = use app setting)', style: inStyle }))),
+            h('div', { style: { flex: 1 } }, field(t('throughline.gen_count') || 'Lessons', h('input', { type: 'number', min: 2, max: 8, value: inp.lessonCount || 4, onChange: function (e) { var v = parseInt(e.target.value, 10); setInput({ lessonCount: isNaN(v) ? 4 : Math.max(2, Math.min(8, v)) }); }, style: inStyle })))
+          ),
+          field(t('throughline.gen_standards') || 'Standards (optional)', h('input', { value: inp.standards || '', onChange: function (e) { setInput({ standards: e.target.value }); }, placeholder: t('throughline.gen_standards_ph') || 'e.g. NGSS 5-ESS2-1', style: inStyle })),
+          field(t('throughline.gen_tone') || 'Tone / approach (optional)', h('input', { value: inp.tone || '', onChange: function (e) { setInput({ tone: e.target.value }); }, placeholder: t('throughline.gen_tone_ph') || 'e.g. inquiry-first, lots of scaffolding', style: inStyle })),
+          field(t('throughline.gen_source') || 'Source text (optional)', h('textarea', { value: inp.sourceText || '', rows: 3, onChange: function (e) { setInput({ sourceText: e.target.value }); }, placeholder: t('throughline.gen_source_ph') || 'Paste a text to ground the whole unit in it. Leave blank to generate from the topic.', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          field(t('throughline.gen_notes') || 'Notes for the planner (optional)', h('textarea', { value: inp.notes || '', rows: 2, onChange: function (e) { setInput({ notes: e.target.value }); }, placeholder: t('throughline.gen_notes_ph') || 'e.g. my class has several emerging bilingual students', style: Object.assign({}, inStyle, { resize: 'vertical' }) }))
+        );
+        footer = h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
+          h('button', { onClick: closeGenerate, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, t('common.cancel') || 'Cancel'),
+          h('button', { onClick: proposeStructure, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, (t('throughline.gen_propose') || 'Propose structure') + ' →')
+        );
+      } else if (phase === 'proposing') {
+        headline = '✨ ' + (t('throughline.gen_drafting') || 'Drafting a unit structure');
+        sub = inp.topic || '';
+        body = h('div', { style: { padding: '30px 10px', textAlign: 'center' } },
+          h('div', { style: { fontSize: 40, marginBottom: 12 }, 'aria-hidden': 'true' }, '🧭'),
+          h('div', { style: { fontSize: 14, color: '#475569', fontWeight: 600 } }, t('throughline.gen_thinking') || 'Designing backward from your essential question…'),
+          h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 6 } }, t('throughline.gen_one_call') || 'One AI call — your lessons are not built yet.')
+        );
+        footer = h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+          h('button', { onClick: closeGenerate, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, t('common.cancel') || 'Cancel'));
+      } else if (phase === 'review' && proposal) {
+        var calls = estimateCalls(proposal);
+        headline = '📋 ' + (t('throughline.gen_review_title') || 'Review the plan');
+        sub = t('throughline.gen_review_sub') || 'Edit, reorder, or remove any lesson before building. Nothing has been generated yet.';
+        var chip = function (txt, key) { return h('span', { key: key, style: { display: 'inline-block', fontSize: 11, color: '#4338ca', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 999, padding: '2px 8px', margin: '0 4px 4px 0' } }, txt); };
+        body = h('div', null,
+          h('div', { style: { background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '8px 10px', fontSize: 12, color: '#5b21b6', marginBottom: 12, fontWeight: 600 } },
+            '~' + calls + ' ' + (t('throughline.gen_calls') || 'AI generations across') + ' ' + proposal.lessons.length + ' ' + (t('throughline.lessons') || 'lessons') + '. ' + (t('throughline.gen_paced_note') || 'Paced, and you review each one as it is built.')),
+          field(t('throughline.gen_unit_title') || 'Unit title', h('input', { value: proposal.title || '', onChange: function (e) { patchProposal({ title: e.target.value }); }, style: inStyle })),
+          field(t('throughline.eq_label') || 'Essential question', h('textarea', { value: proposal.essentialQuestion || '', rows: 2, onChange: function (e) { patchProposal({ essentialQuestion: e.target.value }); }, style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          (proposal.keyTerms && proposal.keyTerms.length > 0) && h('div', { style: { marginBottom: 10 } },
+            h('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 } }, t('throughline.gen_key_terms') || 'Key terms (carried through every lesson)'),
+            h('div', null, proposal.keyTerms.slice(0, 14).map(function (kt, i) { return chip(kt, 'kt' + i); }))),
+          h('div', { style: { fontSize: 12, fontWeight: 800, color: '#1e293b', margin: '12px 0 6px' } }, (t('throughline.gen_lessons_label') || 'Lessons')),
+          proposal.lessons.map(function (l, i) {
+            return h('div', { key: 'L' + i, style: { border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, marginBottom: 8, background: '#fff' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                h('span', { style: { fontWeight: 800, color: '#6366f1', fontSize: 13, minWidth: 20 } }, (i + 1) + '.'),
+                h('input', { value: l.title || '', onChange: function (e) { patchLessonSpec(i, { title: e.target.value }); }, style: Object.assign({}, inStyle, { flex: 1, fontWeight: 700 }) }),
+                h('button', { onClick: function () { moveLessonSpec(i, -1); }, disabled: i === 0, title: t('throughline.move_up') || 'Move up', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === 0 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↑'),
+                h('button', { onClick: function () { moveLessonSpec(i, 1); }, disabled: i === proposal.lessons.length - 1, title: t('throughline.move_down') || 'Move down', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === proposal.lessons.length - 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↓'),
+                h('button', { onClick: function () { removeLessonSpec(i); }, disabled: proposal.lessons.length <= 1, title: t('throughline.gen_remove_lesson') || 'Remove lesson', style: { border: '1px solid #fecaca', background: '#fef2f2', borderRadius: 6, cursor: proposal.lessons.length <= 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#b91c1c' } }, '✕')
+              ),
+              h('input', { value: l.objective || '', onChange: function (e) { patchLessonSpec(i, { objective: e.target.value }); }, placeholder: t('throughline.gen_objective_ph') || 'Measurable objective', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
+              h('input', { value: l.focus || '', onChange: function (e) { patchLessonSpec(i, { focus: e.target.value }); }, placeholder: t('throughline.gen_focus_ph') || 'One-line focus that steers every resource in this lesson', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                RESOURCE_TYPE_OPTIONS.map(function (rt) {
+                  var on = (l.suggestedResourceTypes || []).indexOf(rt) >= 0;
+                  return h('button', { key: rt, onClick: function () { toggleLessonType(i, rt); },
+                    title: rt, style: { fontSize: 11, padding: '3px 8px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + (on ? '#4338ca' : '#e2e8f0'), background: on ? '#4f46e5' : '#fff', color: on ? '#fff' : '#64748b', fontWeight: on ? 700 : 500 } },
+                    typeIcon(rt) + ' ' + typeLabel(rt));
+                })
+              )
+            );
+          }),
+          proposal.lessons.length < 8 && h('button', { onClick: addLessonSpec, style: { marginTop: 4, padding: '7px 12px', borderRadius: 8, border: '1px dashed #c7d2fe', background: '#f8fafc', color: '#4338ca', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '➕ ' + (t('throughline.gen_add_lesson') || 'Add a lesson')),
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 12, color: '#475569', cursor: 'pointer' } },
+            h('input', { type: 'checkbox', checked: !!gen.autoContinue, onChange: function (e) { setGenMerge({ autoContinue: e.target.checked }); } }),
+            (t('throughline.gen_auto') || 'Build all lessons without pausing for me (still paced between calls)'))
+        );
+        footer = h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
+          h('button', { onClick: function () { setGenMerge({ phase: 'setup' }); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, '← ' + (t('common.back') || 'Back')),
+          h('button', { onClick: startGeneration, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(90deg,#7c3aed,#4f46e5)', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '✨ ' + (t('throughline.gen_build') || 'Build') + ' ' + proposal.lessons.length + ' ' + (t('throughline.lessons') || 'lessons'))
+        );
+      } else if ((phase === 'generating' || phase === 'done') && proposal) {
+        var lessons = proposal.lessons;
+        var statusMeta = {
+          pending: { icon: '•', color: '#94a3b8', label: t('throughline.gen_pending') || 'waiting' },
+          running: { icon: '⏳', color: '#7c3aed', label: t('throughline.gen_running') || 'building' },
+          done: { icon: '✅', color: '#16a34a', label: t('throughline.gen_done') || 'added to canvas' },
+          empty: { icon: '⚠️', color: '#b45309', label: t('throughline.gen_empty_label') || 'no resources returned' },
+          error: { icon: '❌', color: '#dc2626', label: t('throughline.gen_error_label') || 'failed' },
+          skipped: { icon: '⤼', color: '#94a3b8', label: t('throughline.gen_skipped') || 'skipped' }
+        };
+        var doneN = gen.results.filter(function (r) { return r.status === 'done'; }).length;
+        headline = (phase === 'done' ? '🎉 ' : '🛠 ') + (phase === 'done' ? (t('throughline.gen_complete') || 'Unit built') : (t('throughline.gen_building') || 'Building your unit'));
+        sub = phase === 'done'
+          ? (doneN + ' / ' + lessons.length + ' ' + (t('throughline.gen_lessons_added') || 'lessons added to your canvas'))
+          : ((t('throughline.gen_lesson') || 'Lesson') + ' ' + (Math.min(gen.cursor + 1, lessons.length)) + ' ' + (t('throughline.gen_of') || 'of') + ' ' + lessons.length);
+
+        body = h('div', null,
+          lessons.map(function (l, i) {
+            var r = gen.results[i] || { status: 'pending' };
+            var meta = statusMeta[r.status] || statusMeta.pending;
+            var current = phase === 'generating' && gen.cursor === i;
+            return h('div', { key: 'G' + i, style: { display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 10px', borderRadius: 8, marginBottom: 6, border: '1px solid ' + (current ? '#c4b5fd' : '#eef2f6'), background: current ? '#f5f3ff' : '#fff' } },
+              h('span', { style: { fontSize: 16, lineHeight: '20px' }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontWeight: 700, fontSize: 13, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, (i + 1) + '. ' + (l.title || (t('throughline.gen_lesson') || 'Lesson'))),
+                h('div', { style: { fontSize: 11, color: meta.color, fontWeight: 600 } },
+                  meta.label +
+                  (r.status === 'running' && r.sub ? ' — ' + typeLabel(r.sub.type) + (r.sub.total ? ' (' + r.sub.done + '/' + r.sub.total + ')' : '') : '') +
+                  (r.status === 'done' && r.count ? ' — ' + r.count + ' ' + (t('throughline.gen_resources') || 'resources') + (r.nulls ? ' (' + r.nulls + ' ' + (t('throughline.gen_skipped_res') || 'skipped') + ')' : '') : '') +
+                  (r.status === 'error' && r.error ? ' — ' + r.error : '')
+                )
+              ),
+              (phase === 'done' && r.status === 'done' && r.nodeId && onOpenLesson) && h('button', { onClick: function () { var nd = null; unit.nodes.forEach(function (n) { if (n.nodeId === r.nodeId) nd = n; }); if (nd) openNodeLesson(nd); }, style: { fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 6, border: '1px solid #6366f1', background: '#eef2ff', color: '#4338ca', cursor: 'pointer', whiteSpace: 'nowrap' } }, (t('throughline.open_lesson') || 'Open') + ' ↗')
+            );
+          }),
+          // pacing countdown
+          (phase === 'generating' && gen.pacing > 0) && h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginTop: 6, fontSize: 12, color: '#92400e', fontWeight: 600 } },
+            h('span', null, '⏸ ' + (t('throughline.gen_pacing') || 'Pausing') + ' ' + gen.pacing + 's ' + (t('throughline.gen_pacing_why') || 'to respect rate limits…')),
+            h('button', { onClick: continueNow, style: { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 6, border: '1px solid #f59e0b', background: '#fff', color: '#b45309', cursor: 'pointer' } }, t('throughline.gen_continue_now') || 'Continue now')),
+          // backpressure / review gate
+          (phase === 'generating' && gen.awaiting >= 0) && h('div', { style: { background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 8, padding: '10px', marginTop: 6 } },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: '#3730a3', marginBottom: 8 } }, (t('throughline.gen_review_gate') || 'Lesson') + ' ' + (gen.awaiting + 1) + ' ' + (t('throughline.gen_ready_review') || 'is ready. Review it, then continue.')),
+            h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              h('button', { onClick: function () { resolveDecision('accept'); }, style: { fontSize: 12, fontWeight: 800, padding: '6px 12px', borderRadius: 7, border: 'none', background: '#4f46e5', color: '#fff', cursor: 'pointer' } }, '✓ ' + (t('throughline.gen_accept') || 'Accept & continue')),
+              h('button', { onClick: function () { resolveDecision('regenerate'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #c7d2fe', background: '#fff', color: '#4338ca', cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_regen') || 'Regenerate')),
+              h('button', { onClick: function () { resolveDecision('skip'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' } }, '⤼ ' + (t('throughline.gen_skip') || 'Skip')),
+              h('button', { onClick: function () { resolveDecision('stop'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', cursor: 'pointer' } }, (t('throughline.gen_finish_here') || 'Finish here'))
+            )
+          ),
+          phase === 'generating' && h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 12, color: '#475569', cursor: 'pointer' } },
+            h('input', { type: 'checkbox', checked: !!gen.autoContinue, onChange: function (e) { setGenMerge({ autoContinue: e.target.checked }); if (e.target.checked && gen.awaiting >= 0) resolveDecision('accept'); } }),
+            (t('throughline.gen_auto_running') || 'Stop pausing — build the rest without me (still paced)')),
+          phase === 'done' && h('div', { style: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px', marginTop: 8, fontSize: 12, color: '#166534' } },
+            '💾 ' + (t('throughline.gen_export_nudge') || 'Your lessons live in this browser. Use Export unit to save a durable file you can reopen or share.'))
+        );
+
+        footer = phase === 'done'
+          ? h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+              h('button', { onClick: closeGenerate, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, t('throughline.gen_open_unit') || 'Open the unit'))
+          : h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
+              h('div', { style: { fontSize: 11, color: '#94a3b8', alignSelf: 'center' } }, t('throughline.gen_safe_note') || 'Lessons already built stay in your unit.'),
+              h('button', { onClick: function () { stopGeneration(); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fecaca', background: '#fff', color: '#b91c1c', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '■ ' + (t('throughline.gen_stop') || 'Stop')));
+      } else {
+        body = null; footer = null; headline = ''; sub = '';
+      }
+
+      function onOverlayClose() {
+        if (phase === 'generating') {
+          var ok = window.confirm(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.');
+          if (!ok) return;
+          stopGeneration();
+        }
+        closeGenerate();
+      }
+
+      return h('div', {
+        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 },
+        onClick: function (e) { if (e.target === e.currentTarget && phase !== 'generating') onOverlayClose(); }
+      },
+        h('div', { style: { background: '#fff', borderRadius: 16, width: '100%', maxWidth: 720, maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(15,23,42,0.3)' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': t('throughline.gen_title') || 'Generate a unit' },
+          h('div', { style: { padding: '14px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-start', gap: 10 } },
+            h('div', { style: { flex: 1 } },
+              h('div', { style: { fontSize: 15, fontWeight: 800, color: '#1e293b' } }, headline),
+              sub && h('div', { style: { fontSize: 12, color: '#64748b', marginTop: 2, lineHeight: 1.45 } }, sub)),
+            h('button', { onClick: onOverlayClose, 'aria-label': t('common.close') || 'Close', style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#475569', padding: 2 } }, '✕')
+          ),
+          h('div', { style: { padding: 18, overflow: 'auto', flex: 1 } }, body),
+          footer && h('div', { style: { padding: '12px 18px', borderTop: '1px solid #e2e8f0', background: '#f8fafc' } }, footer)
+        )
+      );
+    })();
+
     return h('div', { style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.85)', zIndex: 100, display: 'flex', flexDirection: 'column' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': TOOL_NAME },
       topBar, toolbar, quotaNudge, hint,
       h('div', { style: { flex: 1, position: 'relative', display: 'flex' } }, canvas, outlinePanel),
-      pickerModal, editModal, headerModal
+      pickerModal, editModal, headerModal, genModal
     );
   }
 

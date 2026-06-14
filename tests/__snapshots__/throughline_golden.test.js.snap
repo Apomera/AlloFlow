@@ -1,0 +1,78 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Throughline render goldens > Generate-Unit button is disabled in a live class session (hard block) 1`] = `
+{
+  "buttons": 10,
+  "inputs": 1,
+  "lengthBucket": 25,
+  "sha": "82208e66ded31b17",
+  "svgs": 1,
+  "textareas": 0,
+}
+`;
+
+exports[`Throughline render goldens > Generate-Unit capability wired → toolbar shows the ✨ button 1`] = `
+{
+  "buttons": 10,
+  "inputs": 1,
+  "lengthBucket": 25,
+  "sha": "cd728c28226672c6",
+  "svgs": 1,
+  "textareas": 0,
+}
+`;
+
+exports[`Throughline render goldens > host-wired empty (history + currentLesson + onOpenLesson) 1`] = `
+{
+  "buttons": 9,
+  "inputs": 1,
+  "lengthBucket": 23,
+  "sha": "298b754d0ce02e0f",
+  "svgs": 1,
+  "textareas": 0,
+}
+`;
+
+exports[`Throughline render goldens > manual mode (5 props, empty) — empty state + manual-import hint 1`] = `
+{
+  "buttons": 8,
+  "inputs": 1,
+  "lengthBucket": 22,
+  "sha": "03519051a89a1b88",
+  "svgs": 1,
+  "textareas": 0,
+}
+`;
+
+exports[`Throughline render goldens > populated unit (seeded localStorage + matching history) — cards + edges 1`] = `
+{
+  "buttons": 13,
+  "inputs": 1,
+  "lengthBucket": 34,
+  "sha": "1a86b1a73db93c21",
+  "svgs": 1,
+  "textareas": 0,
+}
+`;
+
+exports[`Throughline render goldens > populated unit tolerates a dangling lessonId without crashing (normalize guard) 1`] = `
+{
+  "buttons": 15,
+  "inputs": 1,
+  "lengthBucket": 41,
+  "sha": "e87a532d4c0c8960",
+  "svgs": 1,
+  "textareas": 0,
+}
+`;
+
+exports[`Throughline render goldens > units-aware empty (history with unitId + units prop) 1`] = `
+{
+  "buttons": 9,
+  "inputs": 1,
+  "lengthBucket": 23,
+  "sha": "298b754d0ce02e0f",
+  "svgs": 1,
+  "textareas": 0,
+}
+`;

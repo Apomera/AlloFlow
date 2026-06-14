@@ -20637,6 +20637,84 @@ ${_toolList}
           return currentConfig;
       }
   };
+  // ── Generate Unit (Throughline) — two host capabilities; the module owns the
+  //    loop/pacing/review. onProposeUnit = ONE Gemini call → editable UbD outline.
+  //    onGenerateUnitLesson = generate ONE lesson's resources via the shared
+  //    blueprint engine (executeOneBlueprint). No new AI-call code. ──
+  const _UNIT_KNOWN_TYPES = new Set(['analysis','simplified','glossary','outline','image','quiz','sentence-frames','brainstorm','timeline','concept-sort','adventure','faq','persona','dbq','note-taking','anchor-chart','math','lesson-plan','gemini-bridge','alignment-report']);
+  const onProposeUnit = async (input) => {
+      input = input || {};
+      const _toolList = (typeof window !== 'undefined' && typeof window.formatToolCatalogInline === 'function')
+          ? window.formatToolCatalogInline()
+          : 'analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq, note-taking, anchor-chart, lesson-plan';
+      const grade = input.gradeLevel || gradeLevel || '';
+      const count = Math.max(2, Math.min(8, parseInt(input.lessonCount, 10) || 4)); // hard ceiling 8
+      const prompt = `You are a Curriculum Designer using Understanding by Design (backward design) to propose a coherent multi-lesson UNIT (a teaching arc), NOT 15 representations of one text.
+Teacher input:
+- Topic: ${input.topic || ''}
+- Grade band: ${grade}
+- Standards: ${input.standards || ''}
+- Desired lessons: ${count}
+- Tone: ${input.tone || ''}
+- Notes: ${input.notes || ''}
+${input.sourceText ? 'Source text provided (use it):\n"""\n' + String(input.sourceText).slice(0, 4000) + '\n"""' : ''}
+
+Design BACKWARD: name the enduring understandings + the essential question FIRST, then sequence exactly ${count} lessons that build toward them. Each lesson is ONE teaching moment with a measurable objective, a one-line focus, and a LEAN set of 3-6 resource types (not everything).
+
+Return ONLY valid JSON of this exact shape:
+{
+  "title": "unit title",
+  "essentialQuestion": "one overarching UbD question",
+  "gradeBand": "${grade}",
+  "desiredResults": ["1-3 enduring understandings"],
+  "goldenThread": ["recurring concepts"],
+  "keyTerms": ["unit vocabulary"],
+  "lessons": [ { "title": "short title", "objective": "measurable objective", "focus": "one-line focus directive", "suggestedResourceTypes": ["analysis","glossary","quiz"] } ]
+}
+Use ONLY these resource type ids (id — when to use):
+${_toolList}
+Place "lesson-plan" LAST in a lesson's resources when it is a full teaching block. Keep each lesson to 3-6 resources. Produce exactly ${count} lessons.`;
+      try {
+          const result = await callGemini(prompt, true);
+          const parsed = JSON.parse(cleanJson(result));
+          if (!parsed || !Array.isArray(parsed.lessons) || parsed.lessons.length === 0) throw new Error('empty proposal');
+          parsed.lessons = parsed.lessons.slice(0, 8).map(l => {
+              let types = (Array.isArray(l.suggestedResourceTypes) ? l.suggestedResourceTypes : []).filter(tp => _UNIT_KNOWN_TYPES.has(tp));
+              types = Array.from(new Set(types)).slice(0, 6);
+              if (!types.length) types = ['analysis','glossary','lesson-plan'];
+              return { title: String(l.title || 'Lesson').slice(0,120), objective: String(l.objective || '').slice(0,400), focus: String(l.focus || '').slice(0,400), suggestedResourceTypes: types, sourceStrategy: 'shared' };
+          });
+          parsed.gradeBand = parsed.gradeBand || grade;
+          parsed.title = String(parsed.title || (input.topic || 'New Unit')).slice(0,140);
+          parsed.essentialQuestion = String(parsed.essentialQuestion || '').slice(0,300);
+          parsed.goldenThread = Array.isArray(parsed.goldenThread) ? parsed.goldenThread.slice(0,12) : [];
+          parsed.keyTerms = Array.isArray(parsed.keyTerms) ? parsed.keyTerms.slice(0,20) : [];
+          parsed.desiredResults = Array.isArray(parsed.desiredResults) ? parsed.desiredResults.slice(0,4) : [];
+          return parsed;
+      } catch (e) { warnLog('onProposeUnit failed', e); throw e; }
+  };
+  const onGenerateUnitLesson = async (lessonSpec, dna, opts) => {
+      opts = opts || {}; lessonSpec = lessonSpec || {};
+      const _po = window.AlloModules && window.AlloModules.PhaseOHandlers;
+      if (!_po || typeof _po.executeOneBlueprint !== 'function') throw new Error('blueprint engine unavailable');
+      let types = (Array.isArray(lessonSpec.suggestedResourceTypes) && lessonSpec.suggestedResourceTypes.length) ? lessonSpec.suggestedResourceTypes : ['analysis','glossary','lesson-plan'];
+      const blueprint = { recommendedResources: types, toolDirectives: types.reduce((a, tp) => { a[tp] = lessonSpec.focus || ''; return a; }, {}), globalSettings: {} };
+      const seedDna = {
+          grade: (dna && dna.grade) || gradeLevel || '',
+          topic: lessonSpec.title || (dna && dna.topic) || '',
+          standard: (dna && dna.standard) || standardsInput || '',
+          concepts: (dna && Array.isArray(dna.concepts)) ? dna.concepts.slice() : [],
+          keyTerms: (dna && Array.isArray(dna.keyTerms)) ? dna.keyTerms.slice() : [],
+          visualContext: '', essentialQuestion: (dna && dna.essentialQuestion) || ''
+      };
+      let initialSourceText = inputText;
+      const existingAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+      if (existingAnalysis && existingAnalysis.data && existingAnalysis.data.originalText) initialSourceText = existingAnalysis.data.originalText;
+      const res = await _po.executeOneBlueprint(blueprint, { handleGenerate, historyOverride: [...history], dna: seedDna, initialSourceText, signal: opts.signal || null, onResource: opts.onResource });
+      let anchorItem = null;
+      if (Array.isArray(res.items) && res.items.length) anchorItem = res.items.find(it => it && it.type === 'lesson-plan') || res.items[res.items.length - 1];
+      return { items: res.items, dnaOut: res.dnaOut, anchorItem, nulls: res.nulls };
+  };
   const autoConfigureSettings = async (text, grade, standards, language, customInput, existingResources = [], targetCount = 'Auto') => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.autoConfigureSettings === "function") return _m.autoConfigureSettings(text, grade, standards, language, customInput, existingResources, targetCount, {
@@ -28271,6 +28349,8 @@ ${_toolList}
                 onOpenLesson: (item) => { if (!item || !item.id) { addToast('Lesson not found in this unit.', 'info'); return; } setShowMindMap(false); setThroughlineSeedUnitId(null); setTimeout(() => { handleRestoreView(item); }, 50); },
                 units: Array.isArray(units) ? units : [],
                 seedUnitId: throughlineSeedUnitId,
+                onProposeUnit,
+                onGenerateUnitLesson,
             })}
         </CDNModuleGate>
         <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
