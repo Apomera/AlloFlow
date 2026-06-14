@@ -134,11 +134,11 @@ function buildAlloCommands(ctx) {
       c.handleToggleShowSocraticChat();
       return t("cmd.toggle_socratic_done", "Socratic chat toggled.");
     } },
-    { id: "zen_on", icon: "\u{1F9D8}", roles: "all", label: t("cmd.zen_on", "Enter zen mode"), aliases: ["zen", "zen mode", "quiet mode", "minimal"], hint: t("cmd.zen_on_hint", "Hide everything but the content"), run: (c) => {
+    { id: "zen_on", icon: "\u{1F9D8}", roles: "all", when: (c) => !c.zenActive, label: t("cmd.zen_on", "Enter zen mode"), aliases: ["zen", "zen mode", "quiet mode", "minimal"], hint: t("cmd.zen_on_hint", "Hide everything but the content"), run: (c) => {
       c.zenOn();
       return t("cmd.zen_on_done", "Zen mode on \u2014 press Ctrl+K and run \u201Cexit zen\u201D to come back.");
     } },
-    { id: "zen_off", icon: "\u{1F519}", roles: "all", label: t("cmd.zen_off", "Exit zen mode"), aliases: ["exit zen", "leave zen", "show interface"], hint: t("cmd.zen_off_hint", "Bring the interface back"), run: (c) => {
+    { id: "zen_off", icon: "\u{1F519}", roles: "all", when: (c) => !!c.zenActive, label: t("cmd.zen_off", "Exit zen mode"), aliases: ["exit zen", "leave zen", "show interface"], hint: t("cmd.zen_off_hint", "Bring the interface back"), run: (c) => {
       c.zenOff();
       return t("cmd.zen_off_done", "Zen mode off.");
     } },

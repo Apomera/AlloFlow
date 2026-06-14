@@ -19624,6 +19624,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       fontSmaller: () => { const v = Math.max(10, (sliderFontSize || 16) - 2); setSliderFontSize(v); return v; },
       resetFontSize,
       isStudentLinkMode, isIndependentMode,
+      // Context signals (2026-06-13, read-only) — drive contextual command surfacing/grouping
+      // in the palette. Pure state mirrors beside pipelineOpen/voiceActive: no handlers, cannot
+      // throw. (Slice 1 of the context-aware palette; the renderer consumes these in a later slice.)
+      educatorHubOpen: showEducatorHub,
+      learningHubOpen: showLearningHub,
+      symbolStudioOpen: isSymbolStudioOpen,
+      stemLabOpen: showStemLab,
+      stemLabTool,
+      behaviorLensOpen: showBehaviorLens,
+      contentLoaded: !!generatedContent,
+      zenActive: isZenMode,
+      focusActive: focusMode,
       // Pipeline-aware commands (guarded by `when` in the registry)
       pipelineOpen: !!pdfFixResult,
       getPipelineScore: () => pdfFixResult ? { before: (pdfFixResult.beforeScore != null ? pdfFixResult.beforeScore : null), after: (pdfFixResult.afterScore || 0), target: pdfTargetScore } : null,
