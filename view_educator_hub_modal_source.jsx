@@ -26,6 +26,10 @@ function EducatorHubModal(props) {
     // hasn't wired the STEM-Lab setters still renders the rest of the hub.
     setShowStemLab = (() => {}),
     setStemLabTool = (() => {}),
+    // Lesson-builder card (2026-06-13): opens the AlloBot guided lesson flow. The host
+    // passes a closure mirroring startLessonFlow({}) (show bot + trigger Auto-Fill).
+    // Optional default so legacy hosts that don't pass it still render the hub.
+    startLessonFlow = (() => {}),
   } = props;
 
   // ── Platform Check (2026-06-12) ──
@@ -178,6 +182,13 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
                   <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
+                </div>
+              </button>
+              <button data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🪄</span>
+                <div>
+                  <h3 className="font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</h3>
+                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.lesson_builder_desc') || "I'll ask you a few questions and build a differentiated lesson with you, step by step."}</p>
                 </div>
               </button>
               <button data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">

@@ -45,6 +45,11 @@ function EducatorHubModal(props) {
     setShowStemLab = (() => {
     }),
     setStemLabTool = (() => {
+    }),
+    // Lesson-builder card (2026-06-13): opens the AlloBot guided lesson flow. The host
+    // passes a closure mirroring startLessonFlow({}) (show bot + trigger Auto-Fill).
+    // Optional default so legacy hosts that don't pass it still render the hub.
+    startLessonFlow = (() => {
     })
   } = props;
   const [platProbe, setPlatProbe] = React.useState(null);
@@ -241,7 +246,10 @@ function EducatorHubModal(props) {
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F3A8}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-800" }, t("educator_hub.symbol_studio_title") || "Symbol Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-purple-600 mt-1" }, t("educator_hub.symbol_studio_desc") || "AI-generated PCS-style icons for visual supports, AAC boards, and schedules \u2014 powered by image-to-image editing"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {
     setShowEducatorHub(false);
     setIsDynamicAssessmentOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-blue-800" }, t("educator_hub.dynamic_assessment_title") || "Dynamic Assessment"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-blue-600 mt-1" }, t("educator_hub.dynamic_assessment_desc") || "Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_lumen_card", onClick: () => {
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-blue-800" }, t("educator_hub.dynamic_assessment_title") || "Dynamic Assessment"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-blue-600 mt-1" }, t("educator_hub.dynamic_assessment_desc") || "Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_lesson_builder_card", onClick: () => {
+    setShowEducatorHub(false);
+    startLessonFlow();
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1FA84}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("educator_hub.lesson_builder_title") || "Help me build a lesson"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("educator_hub.lesson_builder_desc") || "I'll ask you a few questions and build a differentiated lesson with you, step by step."))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_lumen_card", onClick: () => {
     setShowEducatorHub(false);
     setStemLabTool("lumen");
     setShowStemLab(true);
