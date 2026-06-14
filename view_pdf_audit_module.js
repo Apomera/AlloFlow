@@ -564,6 +564,52 @@ function _audioReadyText(html) {
   });
   return _preamble + (root.textContent || "").replace(/\s+/g, " ").replace(/\s+([.,;:!?])/g, "$1").replace(/([.!?])\s*\.+/g, "$1").replace(/\.{2,}/g, ".").trim();
 }
+const _DOC_MODE_CSS_BASE = '.prose,main{font-family:"Times New Roman",Times,Georgia,serif;font-size:12pt;line-height:2}.allo-references>.allo-ref-entry,.allo-references li,.allo-footnotes li{padding-left:2.5em;text-indent:-2.5em}.allo-references{margin-top:2em}.allo-footnotes{margin-top:2em}.allo-footnotes hr{border:none;border-top:1px solid #000;width:30%;margin:1em 0}.allo-fn-ref{font-size:0.7em;vertical-align:super;line-height:0}';
+const DOC_MODES = {
+  standard: { id: "standard", label: "Standard", icon: "\u{1F4C4}", blurb: "Default document formatting \u2014 all blocks, no citation style applied.", academic: false, css: "" },
+  apa: { id: "apa", label: "APA 7", icon: "\u{1F393}", blurb: "APA 7th edition: Times New Roman 12pt, double-spaced, centered bold title, hanging-indent References.", academic: true, refHeading: "References", citation: "(Author, Year)", css: _DOC_MODE_CSS_BASE + "main h1{text-align:center;font-weight:bold}main h2{font-weight:bold}" },
+  mla: { id: "mla", label: "MLA 9", icon: "\u{1F4DD}", blurb: "MLA 9th edition: Times New Roman 12pt, double-spaced, centered Works Cited heading, hanging indent.", academic: true, refHeading: "Works Cited", citation: "(Author 12)", css: _DOC_MODE_CSS_BASE + "main h1{text-align:center;font-weight:normal}.allo-references h2{text-align:center;font-weight:normal}" },
+  chicago: { id: "chicago", label: "Chicago", icon: "\u{1F4DA}", blurb: "Chicago (notes\u2013bibliography): Times New Roman 12pt, double-spaced, footnotes, hanging-indent Bibliography.", academic: true, refHeading: "Bibliography", citation: "\xB9", css: _DOC_MODE_CSS_BASE + "main h1{text-align:center}.allo-references h2{text-align:center}" }
+};
+function _alloRenumberFootnotes(doc) {
+  try {
+    const refs = Array.from(doc.querySelectorAll("sup.allo-fn-ref"));
+    const sec = doc.querySelector("section.allo-footnotes");
+    const ol = sec && sec.querySelector("ol");
+    if (!ol) return;
+    const liByUid = {};
+    Array.from(ol.children).forEach((li) => {
+      const u = li.getAttribute("data-fn-uid");
+      if (u) liByUid[u] = li;
+    });
+    const used = {};
+    refs.forEach((ref, i) => {
+      let uid = ref.getAttribute("data-fn-uid");
+      if (!uid) {
+        uid = "fx" + i;
+        ref.setAttribute("data-fn-uid", uid);
+      }
+      used[uid] = 1;
+      const a = ref.querySelector("a") || ref;
+      a.textContent = String(i + 1);
+      a.setAttribute("href", "#fn-" + uid);
+      ref.setAttribute("id", "fnref-" + uid);
+      const li = liByUid[uid];
+      if (li) {
+        li.setAttribute("id", "fn-" + uid);
+        ol.appendChild(li);
+        const back = li.querySelector("a.allo-fn-back");
+        if (back) back.setAttribute("href", "#fnref-" + uid);
+      }
+    });
+    Array.from(ol.children).forEach((li) => {
+      const u = li.getAttribute("data-fn-uid");
+      if (u && !used[u]) li.remove();
+    });
+    if (!ol.children.length) sec.remove();
+  } catch (_) {
+  }
+}
 function _srStyleTextFromHtml(html) {
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const out = [];
@@ -1325,6 +1371,39 @@ function PdfAuditView(props) {
   };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   const [reconPreviewIdx, setReconPreviewIdx] = useState(null);
+  const [docMode, setDocMode] = useState("standard");
+  const _applyDocMode = (modeId) => {
+    const css = DOC_MODES[modeId] && DOC_MODES[modeId].css || "";
+    try {
+      const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+      if (d) {
+        let st = d.getElementById("allo-docmode-style");
+        if (css) {
+          if (!st) {
+            st = d.createElement("style");
+            st.id = "allo-docmode-style";
+            (d.head || d.documentElement).appendChild(st);
+          }
+          st.textContent = css;
+        } else if (st) {
+          st.remove();
+        }
+        if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
+      }
+    } catch (_) {
+    }
+    setPdfFixResult((prev) => {
+      if (!prev || !prev.accessibleHtml) return prev;
+      let html = prev.accessibleHtml.replace(/<style id="allo-docmode-style">[\s\S]*?<\/style>/i, "");
+      if (css) {
+        const tag = '<style id="allo-docmode-style">' + css + "</style>";
+        if (/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, tag + "</head>");
+        else if (/<body[^>]*>/i.test(html)) html = html.replace(/(<body[^>]*>)/i, "$1" + tag);
+        else html = tag + html;
+      }
+      return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+    });
+  };
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
   const _taggedGateBytesRef = useRef(null);
   const [auditElapsedSec, setAuditElapsedSec] = useState(0);
@@ -8053,10 +8132,54 @@ Return ONLY JSON:
           category: "media",
           keywords: "code syntax programming snippet",
           html: '<div class="allo-block allo-block-code-wrap" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code" title="Remove">\xD7</button><div class="allo-code-header" contenteditable="false"><label style="font-size:11px;color:#94a3b8;">Lang:</label><select class="allo-code-lang-select" aria-label="Programming language"><option value="python" selected>Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="java">Java</option><option value="csharp">C#</option><option value="cpp">C++</option><option value="c">C</option><option value="ruby">Ruby</option><option value="go">Go</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Bash</option><option value="json">JSON</option><option value="markdown">Markdown</option><option value="plaintext">Plain text</option></select><button type="button" class="allo-code-copy-btn" aria-label="Copy code to clipboard" title="Copy code" style="font-size:11px;background:#475569;color:white;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-family:inherit;font-weight:600;margin-left:auto;">\u{1F4CB} Copy</button></div><pre><code class="language-python" aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div>'
+        },
+        // ── Footnote (always available) ── inserts a superscript
+        // anchor; the post-insert handler creates the paired note
+        // in an end-of-doc <section class="allo-footnotes"> and
+        // renumbers. Works in HTML/print export with zero changes.
+        {
+          label: "Footnote",
+          icon: "\u{1F516}",
+          category: "content",
+          keywords: "footnote endnote note citation reference superscript",
+          html: '<sup class="allo-fn-ref" data-allo-block="footnote"><a href="#">?</a></sup>'
+        },
+        // ── Academic blocks (modeOnly — surface in APA/MLA/Chicago) ──
+        // Mode-aware: headings + citation format follow DOC_MODES.
+        {
+          label: "In-text Citation",
+          icon: "\u270D\uFE0F",
+          category: "academic",
+          modeOnly: true,
+          keywords: "citation in-text parenthetical author year reference source",
+          html: () => {
+            const m = DOC_MODES[docMode] || DOC_MODES.apa;
+            return '<span class="allo-citation" contenteditable="true">' + (m.citation || "(Author, Year)") + "</span>";
+          }
+        },
+        {
+          label: "References",
+          icon: "\u{1F4DA}",
+          category: "academic",
+          modeOnly: true,
+          keywords: "references works cited bibliography sources citation list",
+          html: () => {
+            const m = DOC_MODES[docMode] || DOC_MODES.apa;
+            const h = m.refHeading || "References";
+            return '<section class="allo-references allo-block" data-allo-block="references" tabindex="0" aria-label="' + h + '"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove ' + h + '" title="Remove">\xD7</button><h2>' + h + '</h2><p class="allo-ref-entry" contenteditable="true">Author, A. A. (Year). <em>Title of the work</em>. Publisher or Source. https://doi.org/xxxx</p></section>';
+          }
+        },
+        {
+          label: "Title Page",
+          icon: "\u{1F4C3}",
+          category: "academic",
+          modeOnly: true,
+          keywords: "title page cover heading author affiliation course date",
+          html: '<section class="allo-titlepage allo-block" data-allo-block="titlepage" tabindex="0" aria-label="Title page" style="text-align:center;padding:3em 1em;"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove title page" title="Remove">\xD7</button><h1 contenteditable="true">Title of Your Paper</h1><p contenteditable="true">Author Name</p><p contenteditable="true">Institutional Affiliation</p><p contenteditable="true">Course &middot; Instructor &middot; Date</p></section><div class="allo-block-pagebreak" contenteditable="false" aria-label="Page break" style="page-break-after:always;break-after:page;height:0;"></div>'
         }
       ];
-      const _CAT_LABELS = { layout: "\u{1F3A8} Layout", content: "\u{1F4DD} Content", educational: "\u{1F393} Educational", interactive: "\u{1F5B1}\uFE0F Interactive", media: "\u{1F4F7} Media" };
-      const _CAT_ORDER = ["layout", "content", "educational", "interactive", "media"];
+      const _CAT_LABELS = { layout: "\u{1F3A8} Layout", content: "\u{1F4DD} Content", educational: "\u{1F393} Educational", interactive: "\u{1F5B1}\uFE0F Interactive", media: "\u{1F4F7} Media", academic: "\u{1F393} Academic" };
+      const _CAT_ORDER = ["layout", "content", "educational", "interactive", "media", "academic"];
       const _insertBlock = (block) => {
         const iframe = pdfPreviewRef.current;
         if (!iframe) return;
@@ -8127,6 +8250,38 @@ Return ONLY JSON:
           } else if (blockType === "code") {
             const codeEl = newBlock.querySelector("code");
             _ensurePrism(doc, "python", codeEl || void 0);
+          } else if (blockType === "footnote") {
+            try {
+              const uid = "fn" + Date.now().toString(36) + Math.floor(Math.random() * 1e3).toString(36);
+              newBlock.setAttribute("data-fn-uid", uid);
+              newBlock.removeAttribute("data-allo-block");
+              newBlock.removeAttribute("tabindex");
+              let sec = doc.querySelector("section.allo-footnotes");
+              if (!sec) {
+                sec = doc.createElement("section");
+                sec.className = "allo-footnotes";
+                sec.setAttribute("aria-label", "Footnotes");
+                sec.innerHTML = "<hr/><ol></ol>";
+                (doc.querySelector("main") || doc.body).appendChild(sec);
+              }
+              const ol = sec.querySelector("ol");
+              const li = doc.createElement("li");
+              li.setAttribute("data-fn-uid", uid);
+              li.innerHTML = '<span class="allo-fn-text" contenteditable="true">Footnote text \u2014 click to edit.</span> <a href="#fnref-' + uid + '" class="allo-fn-back" aria-label="Back to reference">\u21A9</a>';
+              ol.appendChild(li);
+              _alloRenumberFootnotes(doc);
+              setTimeout(() => {
+                try {
+                  const tx = li.querySelector(".allo-fn-text");
+                  if (tx) {
+                    tx.focus();
+                    doc.getSelection().selectAllChildren(tx);
+                  }
+                } catch (_) {
+                }
+              }, 80);
+            } catch (_) {
+            }
           }
         }
         try {
@@ -8153,7 +8308,9 @@ Return ONLY JSON:
         }
       };
       const f = (insertBlockFilter || "").toLowerCase().trim();
-      const visible = f ? blocks.filter((b) => b.label.toLowerCase().includes(f) || b.keywords && b.keywords.toLowerCase().includes(f)) : blocks;
+      const _modeAcademic = !!(DOC_MODES[docMode] && DOC_MODES[docMode].academic);
+      const _modeOk = (b) => !b.modeOnly || _modeAcademic;
+      const visible = (f ? blocks.filter((b) => b.label.toLowerCase().includes(f) || b.keywords && b.keywords.toLowerCase().includes(f)) : blocks).filter(_modeOk);
       const _bt = (label) => {
         const key = "docbuilder.block." + String(label).toLowerCase().replace(/[\s&]+/g, "_");
         const out = typeof t === "function" ? t(key) : null;
@@ -8181,7 +8338,25 @@ Return ONLY JSON:
         e.preventDefault();
         buttons[next] && buttons[next].focus();
       };
-      return /* @__PURE__ */ React.createElement("div", { ref: insertBlockPickerRef, className: "space-y-1.5", onKeyDown: _onPickerKey }, /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { ref: insertBlockPickerRef, className: "space-y-1.5", onKeyDown: _onPickerKey }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-docmode", className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider shrink-0" }, "Mode"), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          id: "allo-docmode",
+          value: docMode,
+          onChange: (e) => {
+            const m = e.target.value;
+            setDocMode(m);
+            _applyDocMode(m);
+            try {
+              if (typeof addToast === "function") addToast((DOC_MODES[m] && DOC_MODES[m].label || "Standard") + " mode", "success");
+            } catch (_) {
+            }
+          },
+          "aria-label": "Document mode \u2014 formatting and citation style",
+          className: "w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none"
+        },
+        Object.keys(DOC_MODES).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, DOC_MODES[k].icon, " ", DOC_MODES[k].label))
+      )), docMode !== "standard" && DOC_MODES[docMode] && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug px-0.5" }, DOC_MODES[docMode].blurb), /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "search",

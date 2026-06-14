@@ -14977,7 +14977,11 @@ tr { page-break-inside: avoid; }
       while (walker.nextNode()) {
         const el = walker.currentNode;
         const tag = (el.tagName || '').toLowerCase();
-        const pdfRole = TAG_TO_PDF_ROLE[tag];
+        let pdfRole = TAG_TO_PDF_ROLE[tag];
+        // Footnote / reference semantics (2026-06-13): note list-items get the
+        // PDF/UA 'Note' standard structure type (ISO 32000 §14.8.4) so screen
+        // readers announce them as footnotes, not generic list items.
+        if (tag === 'li' && el.closest && (el.closest('.allo-footnotes') || el.closest('.allo-references'))) pdfRole = 'Note';
         if (!pdfRole) continue;
         if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot') continue;
         // <figure> wrapping an <img> would produce TWO Figure leaves for one
