@@ -4395,7 +4395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '2c4ffd5c';
+    var pluginCdnVersion = '1ae953b5';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10454,17 +10454,30 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setPdfRunHistory((prev) => {
       if (prev.some((r) => r._k === key)) return prev;
       const _ps = cur.pipelineStats || null;
+      const _resid = (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null;
+      // Honest tri-state outcome (2026-06-14): a run that COMPLETED is not the
+      // same as a run that SUCCEEDED. Marking every completed run 'success' put
+      // afterScore=35-with-residual-violations docs into the numerator of the
+      // reliability rate Aaron defends to UMaine. 'success' now means the run
+      // actually reached the teacher's target (pdfTargetScore) with no known
+      // residual axe violations; anything that completed below that is
+      // 'incomplete' (counts in the denominator, not the success numerator).
+      // CONSERVATIVE: a NULL axe audit (checker didn't run) is NOT downgraded on
+      // the violations axis — we only flag a KNOWN low/violating result, so older
+      // / loaded rows that lack data aren't over-flagged. (afterScore is non-null
+      // here by the effect guard above.)
+      const _outcome = (cur.afterScore >= pdfTargetScore && (_resid === 0 || _resid == null)) ? 'success' : 'incomplete';
       const row = {
         _k: key, at: new Date().toISOString(),
         fileName: pendingPdfFile?.name || 'document',
         beforeScore: cur.beforeScore != null ? cur.beforeScore : null,
         afterScore: cur.afterScore != null ? cur.afterScore : null,
         passes: cur.autoFixPasses || 0,
-        axeViolations: (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null,
+        axeViolations: _resid,
         pages: cur.pageCount || null,
         // Reliability telemetry (2026-06-13): an honest outcome + the per-run
         // stats from fixResult.pipelineStats (null on older/loaded rows).
-        outcome: 'success',
+        outcome: _outcome,
         retries: _ps ? _ps.retries : null,
         visionCalls: _ps ? _ps.visionCalls : null,
         apiCalls: _ps ? _ps.apiCalls : null,
@@ -19832,6 +19845,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       toggleCloudSync: () => { const wasOn = isCloudSyncEnabled; handleCloudToggleClick(); return wasOn ? 'off' : 'consent'; },
       generateOutline: () => handleGenerate('outline'),
       exportPack: () => handleExport('html'),
+      // ── Round-2 coverage (2026-06-14, discovery wfi4bz28q) ── each = ONE App-scope handler.
+      // Flashcards render ONLY inside GlossaryView — switch to it first (gated on glossary content
+      // by `contentIsGlossary` in the registry) so the deck actually mounts instead of silently no-op'ing.
+      launchFlashcards: () => { try { setActiveView('glossary'); } catch (_) {} launchInteractiveFlashcards('standard'); },
+      contentIsGlossary: !!generatedContent && generatedContent.type === 'glossary',
+      resetScaffolds: handleResetScaffolds,         // self-confirms via setConfirmDialog
+      openPersona: handleSetActiveViewToPersona,
+      clearWorkspace: handleClearHistory,           // no internal confirm → registry destructive:true
+      restoreLastSettings: restoreIntentSnapshot,   // self-gates with a "nothing to undo yet" toast
+      startNewPdfAudit,
+      rerunPipelineFix: () => runAutoFixLoop(),      // default rounds; runAutoFixLoop has its own re-entry guard
+      stopPipelineFix: () => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} try { addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); } catch (_) {} },
+      pipelineFixRunning: pdfAutoContinueRunning,    // read-only signal: gates fix-again vs stop
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
