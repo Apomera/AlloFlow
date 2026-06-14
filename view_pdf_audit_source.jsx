@@ -7130,29 +7130,38 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
                             const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-                            const brailleMap = {'a':'1','b':'12','c':'14','d':'145','e':'15','f':'124','g':'1245','h':'125','i':'24','j':'245','k':'13','l':'123','m':'134','n':'1345','o':'135','p':'1234','q':'12345','r':'1235','s':'234','t':'2345','u':'136','v':'1236','w':'2456','x':'1346','y':'13456','z':'1356',' ':' ','1':'1','2':'12','3':'14','4':'145','5':'15','6':'124','7':'1245','8':'125','9':'24','0':'245','.':'256',',':'2','?':'236','!':'235',':':'25',';':'23','-':'36',"'":"3"};
-                            const dotToAscii = (dots) => {
-                              const val = dots.split('').reduce((s, d) => s + (1 << (parseInt(d) - 1)), 0);
-                              return String.fromCharCode(0x2800 + val);
-                            };
-                            let brf = '';
-                            const lines = text.split('\n');
-                            for (const line of lines) {
-                              let brailleLine = '';
-                              const lower = line.toLowerCase();
-                              for (let i = 0; i < lower.length; i++) {
-                                const ch = lower[i];
-                                if (brailleMap[ch]) {
-                                  if (line[i] !== lower[i]) brailleLine += dotToAscii('6');
-                                  if (/[0-9]/.test(ch) && (i === 0 || !/[0-9]/.test(lower[i-1]))) brailleLine += dotToAscii('3456');
-                                  brailleLine += dotToAscii(brailleMap[ch]);
-                                } else {
-                                  brailleLine += ch;
+                            // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit
+                            // 2026-06-13): a .brf must be ASCII braille (0x20–0x5F North-
+                            // American Braille Computer Code), NOT Unicode U+2800 patterns —
+                            // embossers and braille displays read the ASCII bytes, so the old
+                            // U+2800 output was un-embossable garbage under a "BRF" label.
+                            // Ported from the export-preview lane's _toBRF so both braille
+                            // exports match: capital sign (,) before each capital; number
+                            // sign (#) before a 1-0→A-J digit run; standard BRF punctuation;
+                            // 40-cell line wrap.
+                            const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+                            const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
+                            const _toBRF = (src) => {
+                              const lines = src.replace(/\r\n?/g, '\n').split('\n');
+                              const out = [];
+                              for (const line of lines) {
+                                let bl = ''; let numMode = false;
+                                for (let i = 0; i < line.length; i++) {
+                                  const ch = line[i];
+                                  if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
+                                  numMode = false;
+                                  if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
+                                  if (ch >= 'A' && ch <= 'Z') { bl += ',' + ch; continue; }
+                                  if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+                                  bl += (_brfPunct[ch] !== undefined ? _brfPunct[ch] : (ch.charCodeAt(0) >= 0x20 && ch.charCodeAt(0) <= 0x7e ? ch.toUpperCase() : ''));
                                 }
+                                out.push(bl.slice(0, 40));
+                                if (bl.length > 40) { let rest = bl.slice(40); while (rest.length) { out.push(rest.slice(0, 40)); rest = rest.slice(40); } }
                               }
-                              brf += brailleLine + '\n';
-                            }
-                            const blob = new Blob([brf], { type: 'text/plain;charset=utf-8' });
+                              return out.join('\r\n');
+                            };
+                            const brf = _toBRF(text);
+                            const blob = new Blob([brf], { type: 'application/x-brf' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a'); a.href = url;
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';

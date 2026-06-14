@@ -83,13 +83,18 @@ describe('REAL generateAuditReportHtml (Generator A) renders the honest, parity-
     expect(html).toContain('96%');
   });
   it('uses honest agreement labels, not psychometric coefficient names', () => {
-    expect(html).toContain('Auditor Agreement (heuristic index)');
-    expect(html).toContain('Auditor Agreement (consistency heuristic)');
+    expect(html).toContain('Cross-pass agreement (heuristic index)');
+    expect(html).toContain('Cross-pass agreement (consistency heuristic)');
   });
   it('contains none of the prior overclaims', () => {
     expect(html).not.toContain('inter-rater reliability');
     expect(html).not.toContain('(ICC, SEM, CV)');
     expect(html).not.toContain("Cronbach's α (pragmatic hybrid)");
+    // Credibility sweep 2026-06-13: N passes of one AI model are self-consistency,
+    // not independent triangulation. The report must not imply independent reviewers.
+    expect(html).not.toContain('independent auditors');
+    expect(html).not.toContain('triangulated across');
+    expect(html).not.toContain('AI triangulation');
   });
 });
 
@@ -123,8 +128,8 @@ describe('REAL generateAccessibilityReportHtml (Generator B, the conformance rep
     expect(html).toContain('96%');
   });
   it('uses honest agreement labels and the reworded heuristics disclaimer', () => {
-    expect(html).toContain('Auditor Agreement (heuristic index)');
-    expect(html).toContain('Auditor Agreement (consistency heuristic)');
+    expect(html).toContain('Cross-pass agreement (heuristic index)');
+    expect(html).toContain('Cross-pass agreement (consistency heuristic)');
     expect(html).toContain('agreement heuristics computed across multiple AI audit passes');
   });
   it('contains none of the prior overclaims', () => {

@@ -5689,7 +5689,7 @@ Return ONLY valid JSON:
         reliability: icc >= 0.9 ? 'excellent' : icc >= 0.75 ? 'good' : icc >= 0.5 ? 'moderate' : 'variable',
         summary: scoreRange > 25
           ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
-          : `${parsedAudits[0].summary} (${n}-auditor consensus, SD: ${scoreSD})`,
+          : `${parsedAudits[0].summary} (${n}-pass self-consistency, SD: ${scoreSD})`,
         critical: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.critical))),
         serious: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.serious || a.major))),
         moderate: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.moderate))),
@@ -13910,7 +13910,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#64748b;font-size:13px">Document: <strong>${fileName}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: AI multi-auditor triangulation + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#64748b;font-size:13px">Document: <strong>${fileName}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -13936,13 +13936,13 @@ tr { page-break-inside: avoid; }
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
     if (audit.scores && audit.scores.length > 1) {
-      html += `<h2>Auditor Agreement Metrics</h2><div class="meta-grid">
+      html += `<h2>Cross-Pass Agreement Metrics</h2><div class="meta-grid">
         <div class="meta-card"><div class="meta-val">${audit.ci95 ? audit.ci95[0] + '&ndash;' + audit.ci95[1] : 'N/A'}</div><div class="meta-label">95% Confidence Interval</div></div>
         <div class="meta-card"><div class="meta-val">${audit.scoreSD ?? 'N/A'}</div><div class="meta-label">Standard Deviation</div></div>
-        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Auditor Agreement (heuristic index)</div></div>
-        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Auditor Agreement (consistency heuristic)</div></div>' : ''}
+        <div class="meta-card"><div class="meta-val">${audit.icc ?? 'N/A'}</div><div class="meta-label">Cross-pass agreement (heuristic index)</div></div>
+        ${audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Cross-pass agreement (consistency heuristic)</div></div>' : ''}
       </div>
-      <p style="font-size:12px;color:#64748b">Auditors: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>`;
+      <p style="font-size:12px;color:#64748b">AI passes: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>`;
     }
 
     // Document info
@@ -14099,7 +14099,7 @@ tr { page-break-inside: avoid; }
     <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passing checks proportionally offset deductions — a document that passes 90% of checks receives up to 36% reduction in effective deductions, reflecting that remaining violations represent a small proportion of the overall content. Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
 
     html += `<div class="footer">
-      <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI triangulation with adaptive confidence scoring, a descriptive score-variability summary (SD, SEM) across passes, and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
+      <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI self-consistency review with adaptive confidence scoring, a descriptive score-variability summary (SD, SEM) across passes, and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
       <p><strong>Standards:</strong> WCAG 2.1 Level AA | ADA Title II (28 CFR Part 35 Subpart H) | Section 508 | EN 301 549</p>
       <p><strong>Limitations:</strong> This automated audit identifies common accessibility barriers but cannot replace manual testing with assistive technology. For comprehensive compliance verification, consider professional accessibility auditing services such as <a href="https://knowbility.org" style="color:#2563eb">Knowbility</a> (AccessWorks usability testing with people with disabilities).</p>
       <p>Generated by AlloFlow Document Accessibility Pipeline | ${date} | Open source (GNU AGPL v3)</p>
@@ -14163,17 +14163,17 @@ tr { page-break-inside: avoid; }
 
     // Reliability block — pulled from auditResult
     const _reliabilityBlock = ar.auditorCount > 1 ? `
-      <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Audit Reliability</h2>
-      <p style="font-size:13px;color:#475569;margin:0 0 12px">Source-document audit triangulated across <strong>${ar.auditorCount} independent auditors</strong>. Higher agreement indicates more reliable scoring.</p>
+      <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Score Stability (cross-pass)</h2>
+      <p style="font-size:13px;color:#475569;margin:0 0 12px">Source document scored across <strong>${ar.auditorCount} passes of a single AI model</strong> — self-consistency, not independent reviewers. Higher agreement means more <em>stable</em> (repeatable) scoring, not more <em>valid</em> scoring.</p>
       <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px">
         <tbody>
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Deviation (across auditors)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.scoreSD ?? 'n/a'}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard Deviation (across passes)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.scoreSD ?? 'n/a'}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Standard error of pass scores (SEM)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">±${ar.scoreSEM ?? 'n/a'}</td></tr>
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">95% Confidence Interval</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.ci95) ? ar.ci95.join(' – ') : 'n/a'}</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Auditor Agreement (heuristic index)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
-          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Auditor Agreement (consistency heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass agreement (heuristic index)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.icc ?? 'n/a'}</td></tr>
+          ${ar.cronbachAlpha != null ? `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Cross-pass agreement (consistency heuristic)</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${ar.cronbachAlpha}</td></tr>` : ''}
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Agreement Classification</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-transform:capitalize">${_esc(ar.reliability || 'n/a')}</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Individual Auditor Scores</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.scores) ? ar.scores.join(', ') : 'n/a'}</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Individual pass scores</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.scores) ? ar.scores.join(', ') : 'n/a'}</td></tr>
         </tbody>
       </table>
       <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports a cross-pass agreement signal. This is an AlloFlow extension: these are agreement heuristics computed across multiple AI audit passes of the same single model — repeat-measurement stability, <strong>not</strong> independent human reviewer agreement. Read them as a consistency signal, not a validity guarantee.</p>
@@ -14293,7 +14293,7 @@ tr { page-break-inside: avoid; }
     <div class="summary-row">
       <div>
         <div class="conformance" style="color:${conformanceColor}">${conformanceLabel}</div>
-        <div class="conformance-pct">${checkSum.conformancePct}% conformance · ${checkSum.pass + checkSum.fail + checkSum.warn} automated rules checked</div>
+        <div class="conformance-pct">${checkSum.conformancePct}% conformance (self-check) · ${checkSum.pass + checkSum.fail + checkSum.warn} automated rules checked</div>
       </div>
       <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <span class="stat-pill" style="background:#dcfce7;color:#16a34a">✓ ${checkSum.pass} Passed</span>
@@ -14411,7 +14411,7 @@ tr { page-break-inside: avoid; }
   </div>`;
   })()}
 
-  <h2>PDF/UA-1 Compliance Checks</h2>
+  <h2>PDF/UA-1 Self-Check</h2>
   ${hasChecks
     ? `<p style="font-size:13px;color:#475569;margin:0 0 12px">Automated rule-by-rule verification of the tagged PDF against PDF/UA-1 (ISO 14289-1). Categories follow the Adobe Accessibility Checker format for familiarity. Items marked "Manual Check" cannot be verified automatically and require human review with assistive technology.</p>${_checksBlock}`
     : `<div style="padding:16px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:13px;color:#92400e"><strong>No tagged PDF available for compliance check.</strong> Click <em>Tagged PDF</em> in the action bar to generate a tagged PDF — the next report download will include automated PDF/UA-1 rule verification.</div>`
@@ -14426,7 +14426,7 @@ tr { page-break-inside: avoid; }
   <div class="footer">
     <p><strong>About this report:</strong> AlloFlow's PDF/UA-1 self-check inspects the tagged PDF structure (StructTreeRoot, MarkInfo, ParentTree, MCID linkage, Lang, Title, ViewerPreferences) and reports per-rule pass/fail in the format used by Adobe Accessibility Checker and PAC 3. Self-check results are advisory — for high-stakes compliance filings (federal contracts, ADA Title II audits), pair this report with an independent run through <a href="https://pdfua.foundation/en/pdf-accessibility-checker-pac">PAC 3</a> or Adobe Acrobat Pro's Accessibility Checker.</p>
     <p><strong>Standards referenced:</strong> PDF/UA-1 (ISO 14289-1) · WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
-    <p><strong>Methodology:</strong> Multi-auditor AI triangulation (up to 10 stakeholder-perspective passes), axe-core (Deque Systems) automated WCAG 2.1 AA verification, deterministic content-stream MCID wrapping with role inference from font scale + source tag tree, and structural validation against PDF/UA-1 specification requirements.</p>
+    <p><strong>Methodology:</strong> Multi-pass AI self-consistency review (up to 10 stakeholder-perspective passes of a single model), axe-core (Deque Systems) automated WCAG 2.1 AA verification, deterministic content-stream MCID wrapping with role inference from font scale + source tag tree, and structural validation against PDF/UA-1 specification requirements.</p>
     <p><strong>Limitations:</strong> Automated checks cannot verify reading order intent, alt-text quality, or contextual appropriateness. For comprehensive compliance verification consider professional accessibility auditing services such as <a href="https://knowbility.org">Knowbility</a> (AccessWorks usability testing with people with disabilities).</p>
     <p>Generated by AlloFlow · Open source (GNU AGPL v3) · ${_esc(date)}</p>
   </div>
