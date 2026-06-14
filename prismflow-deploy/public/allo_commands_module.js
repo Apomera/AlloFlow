@@ -324,6 +324,40 @@ function buildAlloCommands(ctx) {
     { id: "export_pack", icon: "\u{1F4E6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.export_pack", "Download the lesson pack"), aliases: ["export pack", "download pack", "download lesson", "save lesson", "export html"], hint: t("cmd.export_pack_hint", "Download the lesson as a self-contained file"), run: (c) => {
       c.exportPack();
       return t("cmd.export_pack_done", "Preparing the lesson pack download\u2026");
+    } },
+    // ── Round-2 coverage (2026-06-14, discovery wfi4bz28q) — each maps to ONE App-scope handler
+    //    (verified by symbol). pipeline_* gate on pipelineOpen / pipelineFixRunning. ──
+    { id: "launch_flashcards", icon: "\u{1F0CF}", roles: "all", when: (c) => !!c.contentIsGlossary, label: t("cmd.launch_flashcards", "Study with flashcards"), aliases: ["flashcards", "flash cards", "study cards", "review cards", "study mode"], hint: t("cmd.launch_flashcards_hint", "Study this glossary as a flashcard deck"), run: (c) => {
+      c.launchFlashcards();
+      return t("cmd.launch_flashcards_done", "Flashcards ready.");
+    } },
+    { id: "open_persona_chat", icon: "\u{1F3AD}", roles: "all", label: t("cmd.open_persona_chat", "Open Persona interview"), aliases: ["persona", "interview", "interview mode", "talk to a character", "role play", "historical figure"], hint: t("cmd.open_persona_chat_hint", "Interview an AI persona about this topic"), run: (c) => {
+      c.openPersona();
+      return t("cmd.open_persona_chat_done", "Persona interview opened.");
+    } },
+    { id: "clear_my_answers", icon: "\u{1F9F9}", roles: "all", when: (c) => !!c.contentLoaded, label: t("cmd.clear_my_answers", "Clear my answers (start over)"), aliases: ["clear answers", "reset answers", "start over", "erase my answers", "redo activity"], hint: t("cmd.clear_my_answers_hint", "Reset your responses on this activity"), run: (c) => {
+      c.resetScaffolds();
+      return t("cmd.clear_my_answers_done", "Confirm in the dialog to clear your answers.");
+    } },
+    { id: "clear_workspace", icon: "\u{1F5D1}\uFE0F", roles: "teacher", destructive: true, label: t("cmd.clear_workspace", "Clear everything and start fresh"), aliases: ["clear workspace", "clear all", "start fresh", "clear history", "reset everything", "blank slate"], hint: t("cmd.clear_workspace_hint", "Removes the current content and history \u2014 asks first"), run: (c) => {
+      c.clearWorkspace();
+      return t("cmd.clear_workspace_done", "Workspace cleared.");
+    } },
+    { id: "undo_settings", icon: "\u23EA", roles: "teacher", label: t("cmd.undo_settings", "Undo my last settings change"), aliases: ["undo settings", "restore settings", "revert settings", "undo that change"], hint: t("cmd.undo_settings_hint", "Restore the previous lesson settings (not generated content)"), run: (c) => {
+      c.restoreLastSettings();
+      return t("cmd.undo_settings_done", "Restored your previous settings (if there was a change to undo).");
+    } },
+    { id: "pipeline_fix_again", icon: "\u{1F501}", roles: "teacher", when: (c) => !!c.pipelineOpen && !c.pipelineFixRunning, label: t("cmd.pipeline_fix_again", "Run the accessibility fix again"), aliases: ["fix again", "run again", "keep fixing", "improve the score", "another round"], hint: t("cmd.pipeline_fix_again_hint", "Another remediation pass to push the score higher"), run: (c) => {
+      c.rerunPipelineFix();
+      return t("cmd.pipeline_fix_again_done", "Running another remediation pass\u2026");
+    } },
+    { id: "pipeline_stop", icon: "\u{1F6D1}", roles: "teacher", when: (c) => !!c.pipelineFixRunning, label: t("cmd.pipeline_stop", "Stop the running fix"), aliases: ["stop fixing", "stop the fix", "halt remediation", "cancel fix"], hint: t("cmd.pipeline_stop_hint", "Stop after the current round \u2014 keeps what\u2019s done"), run: (c) => {
+      c.stopPipelineFix();
+      return t("cmd.pipeline_stop_done", "Stopping after the current round.");
+    } },
+    { id: "pipeline_new_doc", icon: "\u{1F195}", roles: "teacher", destructive: true, when: (c) => !!c.pipelineOpen, label: t("cmd.pipeline_new_doc", "Start over with a new document"), aliases: ["new document", "new pdf", "another document", "clear pipeline", "upload new"], hint: t("cmd.pipeline_new_doc_hint", "Clear this result and upload a new file"), run: (c) => {
+      c.startNewPdfAudit();
+      return t("cmd.pipeline_new_doc_done", "Cleared \u2014 upload a new document to begin.");
     } }
   ];
   const isStudentish = !!(ctx.isStudentLinkMode || ctx.isIndependentMode);
@@ -576,7 +610,15 @@ const CMD_GROUP = {
   open_submission_inbox: "navigate",
   toggle_cloud_sync: "navigate",
   generate_outline: "create",
-  export_pack: "create"
+  export_pack: "create",
+  launch_flashcards: "create",
+  clear_my_answers: "create",
+  clear_workspace: "create",
+  undo_settings: "create",
+  open_persona_chat: "navigate",
+  pipeline_fix_again: "pipeline",
+  pipeline_stop: "pipeline",
+  pipeline_new_doc: "pipeline"
 };
 const CMD_CONTEXT = {
   pipeline_score: ["pipeline"],
@@ -617,7 +659,14 @@ const CMD_CONTEXT = {
   line_spacing_less: ["reading"],
   open_submission_inbox: ["educatorHub"],
   generate_outline: ["content"],
-  export_pack: ["content"]
+  export_pack: ["content"],
+  launch_flashcards: ["content", "learningHub"],
+  clear_my_answers: ["content"],
+  clear_workspace: ["content"],
+  open_persona_chat: ["content"],
+  pipeline_fix_again: ["pipeline"],
+  pipeline_stop: ["pipeline"],
+  pipeline_new_doc: ["pipeline"]
 };
 const GROUP_ORDER = ["navigate", "create", "tools", "accessibility", "display", "pipeline", "help", "voice"];
 const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };

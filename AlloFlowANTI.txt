@@ -19845,6 +19845,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       toggleCloudSync: () => { const wasOn = isCloudSyncEnabled; handleCloudToggleClick(); return wasOn ? 'off' : 'consent'; },
       generateOutline: () => handleGenerate('outline'),
       exportPack: () => handleExport('html'),
+      // ── Round-2 coverage (2026-06-14, discovery wfi4bz28q) ── each = ONE App-scope handler.
+      // Flashcards render ONLY inside GlossaryView — switch to it first (gated on glossary content
+      // by `contentIsGlossary` in the registry) so the deck actually mounts instead of silently no-op'ing.
+      launchFlashcards: () => { try { setActiveView('glossary'); } catch (_) {} launchInteractiveFlashcards('standard'); },
+      contentIsGlossary: !!generatedContent && generatedContent.type === 'glossary',
+      resetScaffolds: handleResetScaffolds,         // self-confirms via setConfirmDialog
+      openPersona: handleSetActiveViewToPersona,
+      clearWorkspace: handleClearHistory,           // no internal confirm → registry destructive:true
+      restoreLastSettings: restoreIntentSnapshot,   // self-gates with a "nothing to undo yet" toast
+      startNewPdfAudit,
+      rerunPipelineFix: () => runAutoFixLoop(),      // default rounds; runAutoFixLoop has its own re-entry guard
+      stopPipelineFix: () => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} try { addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); } catch (_) {} },
+      pipelineFixRunning: pdfAutoContinueRunning,    // read-only signal: gates fix-again vs stop
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
