@@ -826,14 +826,14 @@ var d = labToolData.cell || {};
             },
             {
               id: 33,
-              name: "Brachiosauris embryo cell",
-              kingdom: "Mammalian cell",
+              name: "Generic Animal Cell",
+              kingdom: "Animal Cell",
               cellType: "Eukaryote",
               size: "10-50 μm",
-              description: "Generic mammalian cell with nucleus + organelles. Includes ER, Golgi, mitochondria.",
+              description: "Generic animal cell with a nucleus and organelles. Includes ER, Golgi, and mitochondria.",
               habitat: "Tissue + culture",
               feeding: "Glucose + amino acids",
-              reproduction: "Mitosis + meiosis",
+              reproduction: "Mitosis",
               movement: "Variable",
               discovered: "Cell theory 1838",
               relevance: "Foundation of cell biology"
@@ -16553,9 +16553,9 @@ var d = labToolData.cell || {};
 
             if (!canvasEl) {
 
-              if (canvasRefCb._lastCanvas && canvasRefCb._lastCanvas._cellSimAnim) {
+              if (canvasRefCb._lastCanvas && canvasRefCb._lastCanvas._cellSimCleanup) {
 
-                cancelAnimationFrame(canvasRefCb._lastCanvas._cellSimAnim);
+                canvasRefCb._lastCanvas._cellSimCleanup();
 
                 canvasRefCb._lastCanvas._cellSimInit = false;
 
@@ -19629,12 +19629,12 @@ var d = labToolData.cell || {};
                   return React.createElement('div', {
                     key: chal.id,
                     className: 'p-2 rounded-lg border flex flex-col items-center justify-between text-center transition-all ' +
-                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400'),
+                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-600'),
                     title: chal.desc
                   },
                     React.createElement('span', { className: 'text-lg mb-1' }, chal.icon),
                     React.createElement('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
-                    React.createElement('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-500') },
+                    React.createElement('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600') },
                       isDone ? 'Done' : 'Locked'
                     )
                   );
@@ -19725,7 +19725,7 @@ var d = labToolData.cell || {};
 
                 (d.simSpeed || 1) + "x",
 
-                React.createElement("button", { "aria-label": "Play", onClick: function () { var p = !d.paused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { "aria-label": d.paused ? "Play simulation" : "Pause simulation", "aria-pressed": !d.paused, onClick: function () { var p = !d.paused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
 
               ),
 
@@ -20057,7 +20057,7 @@ var d = labToolData.cell || {};
 
                   },
 
-                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "border-" + org.color.replace('#', '') + " bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
 
                   style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color } : {}
 
@@ -20498,7 +20498,7 @@ var d = labToolData.cell || {};
             d._cellShowBadges && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83C\uDFC5 Badges (" + ext.badges.length + "/" + Object.keys(cellBadges).length + ")"),
-                React.createElement("button", { onClick: function () { upd('_cellShowBadges', false); }, className: "text-amber-400 hover:text-amber-600" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": "Close badges", onClick: function () { upd('_cellShowBadges', false); }, className: "text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 Object.keys(cellBadges).map(function (key) {
@@ -20519,7 +20519,7 @@ var d = labToolData.cell || {};
             d._cellShowAI && React.createElement("div", { className: "mt-3 bg-blue-50 rounded-xl border-2 border-blue-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-blue-700" }, "\uD83E\uDD16 AI Biology Tutor"),
-                React.createElement("button", { onClick: function () { upd('_cellShowAI', false); }, className: "text-blue-400 hover:text-blue-600" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": "Close AI tutor", onClick: function () { upd('_cellShowAI', false); }, className: "text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
@@ -20798,7 +20798,7 @@ var d = labToolData.cell || {};
                     return React.createElement('div', { key: k, className: 'p-2.5 rounded-xl border transition-all ' + (isDifferent ? 'bg-amber-50/50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200') },
                       React.createElement('div', { className: 'flex justify-between items-center mb-1' },
                         React.createElement('span', { className: 'text-[9px] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
-                        isDifferent && React.createElement('span', { className: 'text-[8px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.2 rounded' }, 'Difference')
+                        isDifferent && React.createElement('span', { className: 'text-[8px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded' }, 'Difference')
                       ),
                       React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-xs' },
                         React.createElement('div', { className: 'text-slate-700 leading-normal' },
@@ -20955,7 +20955,7 @@ var d = labToolData.cell || {};
             // FINALE MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'finale' && React.createElement('div', { className: 'mt-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl border-2 border-amber-400 p-6 text-center' },
-              React.createElement('div', { className: 'text-6xl mb-2' }, 'Goal!'),
+              React.createElement('div', { className: 'text-6xl mb-2' }, '🎆'),
               React.createElement('h3', { className: 'text-2xl font-bold text-amber-800 mb-2' }, 'Cell Master Achievement'),
               React.createElement('p', { className: 'text-sm text-amber-700 italic' }, 'You explored a microscopic universe of life.')
             ),
@@ -21051,7 +21051,7 @@ var d = labToolData.cell || {};
                 },
                   React.createElement('button', {
                     onClick: function() { upd('_studyConcept', null); },
-                    className: 'absolute top-3 right-3 text-slate-400 hover:text-slate-600 font-bold p-1 rounded-lg hover:bg-slate-100',
+                    className: 'absolute top-3 right-3 text-slate-600 hover:text-slate-900 font-bold p-1 rounded-lg hover:bg-slate-100',
                     'aria-label': 'Close flashcard'
                   }, '✕'),
                   React.createElement('div', { className: 'text-center' },
