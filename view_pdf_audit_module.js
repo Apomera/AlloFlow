@@ -1094,6 +1094,93 @@ function PdfAuditView(props) {
   });
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   const [tagOutline, setTagOutline] = useState(null);
+  const _TAG_EDIT_SURFACE = "h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer";
+  const _editTagAt = (domIndex, mutate) => {
+    try {
+      const srcHtml = typeof getPdfPreviewHtml === "function" && getPdfPreviewHtml() || pdfFixResult && pdfFixResult.accessibleHtml || "";
+      if (!srcHtml) return;
+      const doc = new DOMParser().parseFromString(srcHtml, "text/html");
+      if (!doc || !doc.body) return;
+      const el = doc.body.querySelectorAll(_TAG_EDIT_SURFACE)[domIndex];
+      if (!el) return;
+      mutate(el, doc);
+      const newHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+      setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() } : prev);
+      try {
+        if (typeof updatePdfPreview === "function") setTimeout(() => updatePdfPreview(), 40);
+      } catch (_) {
+      }
+      setTagOutline(_buildTagOutline(newHtml));
+    } catch (_) {
+    }
+  };
+  const _retagTagEl = (el, doc, newTag) => {
+    if (!el || el.tagName.toLowerCase() === newTag) return;
+    const n = doc.createElement(newTag);
+    for (const a of Array.from(el.attributes)) {
+      try {
+        n.setAttribute(a.name, a.value);
+      } catch (_) {
+      }
+    }
+    while (el.firstChild) n.appendChild(el.firstChild);
+    el.replaceWith(n);
+  };
+  const _toggleDecorativeEl = (el) => {
+    const img = el.tagName.toLowerCase() === "img" ? el : el.querySelector && el.querySelector("img");
+    const target = img || el;
+    const isDec = target.getAttribute("role") === "presentation" || target.getAttribute("aria-hidden") === "true";
+    if (isDec) {
+      target.removeAttribute("role");
+      target.removeAttribute("aria-hidden");
+    } else {
+      target.setAttribute("role", "presentation");
+      if (img) img.setAttribute("alt", "");
+      target.setAttribute("aria-hidden", "true");
+    }
+  };
+  const _moveTagEl = (el, dir) => {
+    const sib = dir === "up" ? el.previousElementSibling : el.nextElementSibling;
+    if (sib && el.parentNode) {
+      if (dir === "up") el.parentNode.insertBefore(el, sib);
+      else el.parentNode.insertBefore(sib, el);
+    }
+  };
+  const _tableHeaderFix = (tableEl, doc, mode) => {
+    if (!tableEl || tableEl.tagName.toLowerCase() !== "table") return;
+    const _toTh = (cell, scope) => {
+      if (cell.tagName.toLowerCase() === "th") {
+        if (!cell.getAttribute("scope")) cell.setAttribute("scope", scope);
+        return;
+      }
+      const th = doc.createElement("th");
+      for (const a of Array.from(cell.attributes)) {
+        try {
+          th.setAttribute(a.name, a.value);
+        } catch (_) {
+        }
+      }
+      while (cell.firstChild) th.appendChild(cell.firstChild);
+      th.setAttribute("scope", scope);
+      cell.replaceWith(th);
+    };
+    const rows = Array.from(tableEl.querySelectorAll("tr"));
+    if (!rows.length) return;
+    if (mode === "firstRowHeader") {
+      Array.from(rows[0].children).forEach((c) => {
+        const tg = c.tagName.toLowerCase();
+        if (tg === "td" || tg === "th") _toTh(c, "col");
+      });
+    } else if (mode === "firstColHeader") {
+      rows.forEach((r) => {
+        const c = r.children[0];
+        if (c) {
+          const tg = c.tagName.toLowerCase();
+          if (tg === "td" || tg === "th") _toTh(c, "row");
+        }
+      });
+    }
+  };
   const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
   const [imgReviewIdx, setImgReviewIdx] = useState(null);
   const [imgReviewItems, setImgReviewItems] = useState([]);
@@ -4613,7 +4700,7 @@ Return ONLY JSON:
           setTagOutline([]);
         }
       }
-    } }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, "\u{1F50D} Inspect tag structure ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 the roles + warnings your tagged PDF will contain")), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, "Derived from the remediated HTML \u2014 the same structure createTaggedPdf tags. Click a row to find it in the preview above."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, "\u{1F50D} Tag structure ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 view + edit the roles your tagged PDF will carry")), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, "Derived from the remediated HTML \u2014 the same structure createTaggedPdf tags. Re-tag a block (role dropdown), mark a figure decorative (\u25D0), or reorder (\u25B2\u25BC). Click a row to find it in the preview."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       try {
         const _h = typeof getPdfPreviewHtml === "function" && getPdfPreviewHtml() || pdfFixResult && pdfFixResult.accessibleHtml || "";
         setTagOutline(_buildTagOutline(_h));
@@ -4642,7 +4729,10 @@ Return ONLY JSON:
       return /* @__PURE__ */ React.createElement("li", { key: idx, style: { paddingLeft: n.indent * 12 + "px" }, className: "flex items-start gap-1.5", onMouseEnter: () => _hl(true), onMouseLeave: () => _hl(false) }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
         const el = _findEl();
         if (el && el.scrollIntoView) el.scrollIntoView({ block: "center" });
-      }, onFocus: () => _hl(true), onBlur: () => _hl(false), className: "text-left hover:underline flex-1 min-w-0", title: "Scroll the preview to this element" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold" }, n.role), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 ml-1" }, n.text || "(empty)")), n.warnings.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 text-[11px] shrink-0", title: n.warnings.join("; ") }, "\u26A0"), /* @__PURE__ */ React.createElement(
+      }, onFocus: () => _hl(true), onBlur: () => _hl(false), className: "text-left hover:underline flex-1 min-w-0", title: "Scroll the preview to this element" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold" }, n.role), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 ml-1" }, n.text || "(empty)")), ["H1", "H2", "H3", "H4", "H5", "H6", "P", "BlockQuote"].includes(n.role) && /* @__PURE__ */ React.createElement("select", { value: n.role, onChange: (e) => {
+        const _rt = { H1: "h1", H2: "h2", H3: "h3", H4: "h4", H5: "h5", H6: "h6", P: "p", BlockQuote: "blockquote" }[e.target.value];
+        if (_rt) _editTagAt(n.domIndex, (el, doc) => _retagTagEl(el, doc, _rt));
+      }, className: "shrink-0 text-[10px] border border-slate-300 rounded px-0.5 py-0.5 bg-white text-slate-700", title: t("pdf_audit.taginspect.retag_title") || "Re-tag this block \u2014 change its role (e.g. a paragraph that should be a heading)", "aria-label": "Tag role for " + (n.text || "block") }, ["H1", "H2", "H3", "H4", "H5", "H6", "P", "BlockQuote"].map((r) => /* @__PURE__ */ React.createElement("option", { key: r, value: r }, r))), n.role === "Figure" && /* @__PURE__ */ React.createElement("button", { onClick: () => _editTagAt(n.domIndex, (el) => _toggleDecorativeEl(el)), className: "shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.taginspect.decorative_title") || "Mark this image as decorative (artifact \u2014 screen readers skip it) / restore as content", "aria-label": "Toggle decorative" }, "\u25D0"), n.role === "Table" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: () => _editTagAt(n.domIndex, (el, doc) => _tableHeaderFix(el, doc, "firstRowHeader")), className: "shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.taginspect.table_rowhead_title") || "Make the first ROW header cells (th, scope=col) \u2014 so columns are announced", "aria-label": "First row as headers" }, "\u2B13H"), /* @__PURE__ */ React.createElement("button", { onClick: () => _editTagAt(n.domIndex, (el, doc) => _tableHeaderFix(el, doc, "firstColHeader")), className: "shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.taginspect.table_colhead_title") || "Make the first COLUMN header cells (th, scope=row) \u2014 so rows are announced", "aria-label": "First column as headers" }, "\u258FH")), /* @__PURE__ */ React.createElement("button", { onClick: () => _editTagAt(n.domIndex, (el) => _moveTagEl(el, "up")), className: "shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.taginspect.move_up_title") || "Move earlier in the reading order", "aria-label": "Move up" }, "\u25B2"), /* @__PURE__ */ React.createElement("button", { onClick: () => _editTagAt(n.domIndex, (el) => _moveTagEl(el, "down")), className: "shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.taginspect.move_down_title") || "Move later in the reading order", "aria-label": "Move down" }, "\u25BC"), n.warnings.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 text-[11px] shrink-0", title: n.warnings.join("; ") }, "\u26A0"), /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => {
@@ -4664,7 +4754,7 @@ Return ONLY JSON:
         },
         "\u{1F6E0}"
       ));
-    })), tagOutline.some((x) => x.warnings.length) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-slate-500" }, "Hover \u26A0 for the issue. Fix it in the preview above (relabel headings, add alt text / table headers), then \u21BB Refresh. This is structure editing on the HTML that generates the tags \u2014 not byte-level PDF tag editing.")), Array.isArray(tagOutline) && tagOutline.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, "No taggable block structure found in the remediated HTML."))), taggedGateIssue && /* @__PURE__ */ React.createElement("div", { className: "w-full mt-2 bg-amber-50 border-2 border-amber-400 rounded-xl p-3 text-xs text-amber-900", role: "alert" }, /* @__PURE__ */ React.createElement("div", { className: "font-black mb-1" }, "\u26A0 ", t("pdf_audit.gate.heading") || "This tagged PDF did not pass its own structure check"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("pdf_audit.gate.body") || "The accessibility structure may not have survived saving:", " ", /* @__PURE__ */ React.createElement("span", { className: "font-mono text-[11px]" }, taggedGateIssue)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    })), tagOutline.some((x) => x.warnings.length) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-slate-500" }, "Hover \u26A0 for the issue. Re-tag/reorder here, or fix content (alt text, table headers) in the preview, then \u21BB Refresh. Edits change the HTML the tags are ", /* @__PURE__ */ React.createElement("em", null, "derived"), " from, so the tag tree and the document can't drift apart \u2014 this is structure editing, not byte-level PDF tag patching.")), Array.isArray(tagOutline) && tagOutline.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, "No taggable block structure found in the remediated HTML."))), taggedGateIssue && /* @__PURE__ */ React.createElement("div", { className: "w-full mt-2 bg-amber-50 border-2 border-amber-400 rounded-xl p-3 text-xs text-amber-900", role: "alert" }, /* @__PURE__ */ React.createElement("div", { className: "font-black mb-1" }, "\u26A0 ", t("pdf_audit.gate.heading") || "This tagged PDF did not pass its own structure check"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("pdf_audit.gate.body") || "The accessibility structure may not have survived saving:", " ", /* @__PURE__ */ React.createElement("span", { className: "font-mono text-[11px]" }, taggedGateIssue)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       try {
         const g2 = _taggedGateBytesRef.current;
         if (g2) {

@@ -978,6 +978,71 @@ function PdfAuditView(props) {
   const [pdfMetaOverride, setPdfMetaOverride] = useState(null);
   // Read-only tag-structure inspector output (null = not built yet; [] = built, empty).
   const [tagOutline, setTagOutline] = useState(null);
+  // ── Editable tag inspector (2026-06-14, Adobe-parity #2) ──
+  // Edits the tag tree by mutating the HTML the tags are DERIVED from — since the
+  // PDF tags are generated from this structure, re-tagging a block here can't
+  // drift from the output. Operates on the HTML STRING (parse → mutate →
+  // serialize → re-render) so it works whether or not the live preview iframe is
+  // mounted, then refreshes the outline. domIndex matches _buildTagOutline's
+  // SURFACE selector (same one _findEl uses).
+  const _TAG_EDIT_SURFACE = 'h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer';
+  const _editTagAt = (domIndex, mutate) => {
+    try {
+      const srcHtml = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || '';
+      if (!srcHtml) return;
+      const doc = new DOMParser().parseFromString(srcHtml, 'text/html');
+      if (!doc || !doc.body) return;
+      const el = doc.body.querySelectorAll(_TAG_EDIT_SURFACE)[domIndex];
+      if (!el) return;
+      mutate(el, doc);
+      const newHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+      setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() } : prev);
+      try { if (typeof updatePdfPreview === 'function') setTimeout(() => updatePdfPreview(), 40); } catch (_) {}
+      setTagOutline(_buildTagOutline(newHtml));
+    } catch (_) {}
+  };
+  // Re-tag a block: rename its element (P ↔ H1–H6 / BlockQuote), preserving
+  // attributes + children — the cleanest "change this tag's role" operation.
+  const _retagTagEl = (el, doc, newTag) => {
+    if (!el || el.tagName.toLowerCase() === newTag) return;
+    const n = doc.createElement(newTag);
+    for (const a of Array.from(el.attributes)) { try { n.setAttribute(a.name, a.value); } catch (_) {} }
+    while (el.firstChild) n.appendChild(el.firstChild);
+    el.replaceWith(n);
+  };
+  // Mark a figure/image decorative (PDF/UA artifact) or restore it to content.
+  const _toggleDecorativeEl = (el) => {
+    const img = el.tagName.toLowerCase() === 'img' ? el : (el.querySelector && el.querySelector('img'));
+    const target = img || el;
+    const isDec = target.getAttribute('role') === 'presentation' || target.getAttribute('aria-hidden') === 'true';
+    if (isDec) { target.removeAttribute('role'); target.removeAttribute('aria-hidden'); }
+    else { target.setAttribute('role', 'presentation'); if (img) img.setAttribute('alt', ''); target.setAttribute('aria-hidden', 'true'); }
+  };
+  // Reading-order move: swap with the previous/next block-level sibling.
+  const _moveTagEl = (el, dir) => {
+    const sib = dir === 'up' ? el.previousElementSibling : el.nextElementSibling;
+    if (sib && el.parentNode) { if (dir === 'up') el.parentNode.insertBefore(el, sib); else el.parentNode.insertBefore(sib, el); }
+  };
+  // ── Table header editor (2026-06-14, Adobe-parity #3) ──
+  // The most common table-accessibility fix: promote the first row (or first
+  // column) of cells to <th> with the right /scope, so a screen reader can
+  // associate each data cell with its header. mode = 'firstRowHeader' (scope=col)
+  // | 'firstColHeader' (scope=row). td→th preserves attributes + children.
+  const _tableHeaderFix = (tableEl, doc, mode) => {
+    if (!tableEl || tableEl.tagName.toLowerCase() !== 'table') return;
+    const _toTh = (cell, scope) => {
+      if (cell.tagName.toLowerCase() === 'th') { if (!cell.getAttribute('scope')) cell.setAttribute('scope', scope); return; }
+      const th = doc.createElement('th');
+      for (const a of Array.from(cell.attributes)) { try { th.setAttribute(a.name, a.value); } catch (_) {} }
+      while (cell.firstChild) th.appendChild(cell.firstChild);
+      th.setAttribute('scope', scope);
+      cell.replaceWith(th);
+    };
+    const rows = Array.from(tableEl.querySelectorAll('tr'));
+    if (!rows.length) return;
+    if (mode === 'firstRowHeader') { Array.from(rows[0].children).forEach((c) => { const tg = c.tagName.toLowerCase(); if (tg === 'td' || tg === 'th') _toTh(c, 'col'); }); }
+    else if (mode === 'firstColHeader') { rows.forEach((r) => { const c = r.children[0]; if (c) { const tg = c.tagName.toLowerCase(); if (tg === 'td' || tg === 'th') _toTh(c, 'row'); } }); }
+  };
   // Spell-check-style walkthrough for Content-Recovery words: index into
   // autoRestoreSummary.unplaceable (null = closed) + per-word outcomes.
   const [recoveryReviewIdx, setRecoveryReviewIdx] = useState(null);
@@ -6328,10 +6393,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         })()}
                         {/* ── Read-only tag-structure inspector (the "tag tree": what the tagged PDF will contain) ── */}
                         <details id="allo-sec-taginspect" className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs" onToggle={(e) => { if (e.currentTarget.open && tagOutline === null) { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } } }}>
-                          <summary className="cursor-pointer font-bold text-slate-700">🔍 Inspect tag structure <span className="font-normal text-slate-500">— the roles + warnings your tagged PDF will contain</span></summary>
+                          <summary className="cursor-pointer font-bold text-slate-700">🔍 Tag structure <span className="font-normal text-slate-500">— view + edit the roles your tagged PDF will carry</span></summary>
                           <div className="mt-2">
                             <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="text-[10px] text-slate-500">Derived from the remediated HTML — the same structure createTaggedPdf tags. Click a row to find it in the preview above.</span>
+                              <span className="text-[10px] text-slate-500">Derived from the remediated HTML — the same structure createTaggedPdf tags. Re-tag a block (role dropdown), mark a figure decorative (◐), or reorder (▲▼). Click a row to find it in the preview.</span>
                               <button onClick={() => { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } }} className="px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold hover:bg-slate-300 shrink-0">↻ Refresh</button>
                             </div>
                             {Array.isArray(tagOutline) && tagOutline.length > 0 && (
@@ -6351,6 +6416,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <span className="inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold">{n.role}</span>
                                         <span className="text-slate-600 ml-1">{n.text || '(empty)'}</span>
                                       </button>
+                                      {/* ── Edit controls (2026-06-14, Adobe-parity #2): re-tag role, mark decorative, reading-order move ── */}
+                                      {['H1','H2','H3','H4','H5','H6','P','BlockQuote'].includes(n.role) && (
+                                        <select value={n.role} onChange={(e) => { const _rt = { H1:'h1',H2:'h2',H3:'h3',H4:'h4',H5:'h5',H6:'h6',P:'p',BlockQuote:'blockquote' }[e.target.value]; if (_rt) _editTagAt(n.domIndex, (el, doc) => _retagTagEl(el, doc, _rt)); }} className="shrink-0 text-[10px] border border-slate-300 rounded px-0.5 py-0.5 bg-white text-slate-700" title={t('pdf_audit.taginspect.retag_title') || 'Re-tag this block — change its role (e.g. a paragraph that should be a heading)'} aria-label={'Tag role for ' + (n.text || 'block')}>
+                                          {['H1','H2','H3','H4','H5','H6','P','BlockQuote'].map((r) => <option key={r} value={r}>{r}</option>)}
+                                        </select>
+                                      )}
+                                      {n.role === 'Figure' && (
+                                        <button onClick={() => _editTagAt(n.domIndex, (el) => _toggleDecorativeEl(el))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.decorative_title') || 'Mark this image as decorative (artifact — screen readers skip it) / restore as content'} aria-label="Toggle decorative">◐</button>
+                                      )}
+                                      {n.role === 'Table' && (<>
+                                        <button onClick={() => _editTagAt(n.domIndex, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
+                                        <button onClick={() => _editTagAt(n.domIndex, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
+                                      </>)}
+                                      <button onClick={() => _editTagAt(n.domIndex, (el) => _moveTagEl(el, 'up'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_up_title') || 'Move earlier in the reading order'} aria-label="Move up">▲</button>
+                                      <button onClick={() => _editTagAt(n.domIndex, (el) => _moveTagEl(el, 'down'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_down_title') || 'Move later in the reading order'} aria-label="Move down">▼</button>
                                       {n.warnings.length > 0 && <span className="text-amber-600 text-[11px] shrink-0" title={n.warnings.join('; ')}>⚠</span>}
                                       <button
                                         onClick={() => {
@@ -6373,7 +6453,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     );
                                   })}
                                 </ul>
-                                {tagOutline.some(x => x.warnings.length) && <div className="mt-1 text-[10px] text-slate-500">Hover ⚠ for the issue. Fix it in the preview above (relabel headings, add alt text / table headers), then ↻ Refresh. This is structure editing on the HTML that generates the tags — not byte-level PDF tag editing.</div>}
+                                {tagOutline.some(x => x.warnings.length) && <div className="mt-1 text-[10px] text-slate-500">Hover ⚠ for the issue. Re-tag/reorder here, or fix content (alt text, table headers) in the preview, then ↻ Refresh. Edits change the HTML the tags are <em>derived</em> from, so the tag tree and the document can't drift apart — this is structure editing, not byte-level PDF tag patching.</div>}
                               </div>
                             )}
                             {Array.isArray(tagOutline) && tagOutline.length === 0 && <div className="text-[11px] text-slate-500">No taggable block structure found in the remediated HTML.</div>}
