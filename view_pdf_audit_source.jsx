@@ -153,7 +153,7 @@ function _htmlToDocxSpec(html) {
     return out;
   };
   const _runsText = (runs) => runs.map((r) => r.text || '').join('').trim();
-  const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}) }); counts.paragraphs++; } };
+  const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}), ...(opts && opts.centered ? { centered: true } : {}) }); counts.paragraphs++; } };
   const pushImage = (img, fallbackAlt) => {
     const src = img.getAttribute('src') || '';
     const alt = (img.getAttribute('alt') || fallbackAlt || '').trim();
@@ -187,12 +187,15 @@ function _htmlToDocxSpec(html) {
       // label text as a paragraph AND emitted no actual break. Now it becomes a
       // real docx page break and the label never reaches the document.
       if (n.classList && n.classList.contains('allo-block-pagebreak')) { blocks.push({ type: 'pagebreak' }); continue; }
+      const _inTitlePage = n.closest && n.closest('.allo-titlepage');
       const h = /^H([1-6])$/.exec(tag);
-      if (h) { const runs = inlineRuns(n, {}); if (_runsText(runs)) { blocks.push({ type: 'heading', level: parseInt(h[1], 10), runs }); counts.headings++; } continue; }
+      if (h) { const runs = inlineRuns(n, {}); if (_runsText(runs)) { blocks.push({ type: 'heading', level: parseInt(h[1], 10), runs, ...(_inTitlePage ? { centered: true } : {}) }); counts.headings++; } continue; }
       if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'PRE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') {
-        // Reference-list entries (APA/MLA/Chicago) get a hanging indent in docx.
+        // Reference-list entries (APA/MLA/Chicago) get a hanging indent in docx;
+        // title-page lines (title/author/affiliation/course) are centered in any
+        // mode — a title page is inherently centered.
         const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references'));
-        pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef });
+        pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
         continue;
       }
       if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
@@ -259,9 +262,10 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   for (const b of spec.blocks) {
     if (b.type === 'heading') {
       const hp = { heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) };
-      // APA/MLA/Chicago center the title (the H1). Word's heading style stays,
-      // keeping the doc navigable + tagged on Word's own PDF export.
-      if (academic && b.level === 1 && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
+      // Center the title: the H1 in an academic mode, OR any heading inside a
+      // title-page block (any mode). Word's heading style stays, keeping the
+      // doc navigable + tagged on Word's own PDF export.
+      if (((academic && b.level === 1) || b.centered) && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
       children.push(new d.Paragraph(hp));
     }
     else if (b.type === 'pagebreak') children.push(new d.Paragraph({ children: [new d.PageBreak()] }));
@@ -270,6 +274,8 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       // Reference-list hanging indent (0.5"): first line flush, continuation
       // lines indented — required by APA-7 / MLA-9 reference lists.
       if (b.hanging) pp.indent = { left: 720, hanging: 720 };
+      // Title-page lines (author/affiliation/course) center in any mode.
+      if (b.centered && d.AlignmentType) pp.alignment = d.AlignmentType.CENTER;
       children.push(new d.Paragraph(pp));
     }
     else if (b.type === 'list') {
@@ -331,10 +337,19 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   if (academic) {
     // Document defaults: Times New Roman 12pt (size is in half-points), double
     // spacing (240 twips = single, 480 = double). Rides every body run.
-    _docOpts.styles = { default: { document: {
-      run: { font: 'Times New Roman', size: 24 },
-      paragraph: { spacing: { line: 480, lineRule: (d.LineRuleType && d.LineRuleType.AUTO) || 'auto' } },
-    } } };
+    // Heading overrides: APA-style headings are TNR 12pt bold black — NOT Word's
+    // large coloured default. We override only the RUN of each heading style, so
+    // they stay REAL Word headings (navigable + tagged on Word's PDF export) but
+    // look academic. L1 centering is handled per-block above.
+    const _acHead = { font: 'Times New Roman', size: 24, bold: true, color: '000000' };
+    _docOpts.styles = { default: {
+      document: {
+        run: { font: 'Times New Roman', size: 24 },
+        paragraph: { spacing: { line: 480, lineRule: (d.LineRuleType && d.LineRuleType.AUTO) || 'auto' } },
+      },
+      heading1: { run: _acHead }, heading2: { run: _acHead }, heading3: { run: _acHead },
+      heading4: { run: _acHead }, heading5: { run: _acHead }, heading6: { run: _acHead },
+    } };
   }
   const docFile = new d.Document(_docOpts);
   return d.Packer.toBlob(docFile);

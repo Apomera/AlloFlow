@@ -71,6 +71,19 @@ describe('view_pdf_audit · _htmlToDocxSpec (accessible Word export)', () => {
     expect(JSON.stringify(spec.blocks)).not.toContain('Page break');
   });
 
+  it('centers title-page lines (title + author/affiliation) in any mode', () => {
+    const spec = _htmlToDocxSpec(wrap(
+      '<section class="allo-titlepage"><h1>Title of Your Paper</h1><p>Author Name</p><p>Institutional Affiliation</p></section>' +
+      '<p>body paragraph after</p>'
+    ));
+    const title = spec.blocks.find(b => b.type === 'heading');
+    expect(title.centered).toBe(true);
+    const author = spec.blocks.find(b => b.type === 'paragraph' && /Author Name/.test((b.runs || []).map(r => r.text).join('')));
+    expect(author.centered).toBe(true);
+    // a normal body paragraph outside the title page is NOT centered
+    expect(spec.blocks.find(b => b.type === 'paragraph' && /body paragraph/.test((b.runs || []).map(r => r.text).join(''))).centered).toBeUndefined();
+  });
+
   it('flags reference-list entries for hanging indent (APA/MLA/Chicago)', () => {
     const spec = _htmlToDocxSpec(wrap(
       '<p>normal para</p>' +

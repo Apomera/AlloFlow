@@ -180,7 +180,7 @@ function _htmlToDocxSpec(html) {
   const _runsText = (runs) => runs.map((r) => r.text || "").join("").trim();
   const pushParagraph = (runs, opts) => {
     if (_runsText(runs)) {
-      blocks.push({ type: "paragraph", runs, ...opts && opts.hanging ? { hanging: true } : {} });
+      blocks.push({ type: "paragraph", runs, ...opts && opts.hanging ? { hanging: true } : {}, ...opts && opts.centered ? { centered: true } : {} });
       counts.paragraphs++;
     }
   };
@@ -213,18 +213,19 @@ function _htmlToDocxSpec(html) {
         blocks.push({ type: "pagebreak" });
         continue;
       }
+      const _inTitlePage = n.closest && n.closest(".allo-titlepage");
       const h = /^H([1-6])$/.exec(tag);
       if (h) {
         const runs = inlineRuns(n, {});
         if (_runsText(runs)) {
-          blocks.push({ type: "heading", level: parseInt(h[1], 10), runs });
+          blocks.push({ type: "heading", level: parseInt(h[1], 10), runs, ..._inTitlePage ? { centered: true } : {} });
           counts.headings++;
         }
         continue;
       }
       if (tag === "P" || tag === "BLOCKQUOTE" || tag === "PRE" || tag === "DT" || tag === "DD" || tag === "FIGCAPTION" || tag === "CAPTION") {
         const isRef = n.classList && n.classList.contains("allo-ref-entry") || n.closest && n.closest(".allo-references");
-        pushParagraph(inlineRuns(n, tag === "DT" ? { bold: true } : {}), { hanging: !!isRef });
+        pushParagraph(inlineRuns(n, tag === "DT" ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
         continue;
       }
       if (tag === "UL" || tag === "OL") {
@@ -294,12 +295,13 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   for (const b of spec.blocks) {
     if (b.type === "heading") {
       const hp = { heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) };
-      if (academic && b.level === 1 && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
+      if ((academic && b.level === 1 || b.centered) && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
       children.push(new d.Paragraph(hp));
     } else if (b.type === "pagebreak") children.push(new d.Paragraph({ children: [new d.PageBreak()] }));
     else if (b.type === "paragraph") {
       const pp = { children: runsTo(b.runs) };
       if (b.hanging) pp.indent = { left: 720, hanging: 720 };
+      if (b.centered && d.AlignmentType) pp.alignment = d.AlignmentType.CENTER;
       children.push(new d.Paragraph(pp));
     } else if (b.type === "list") {
       for (const it of b.items) {
@@ -356,10 +358,19 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     }]
   };
   if (academic) {
-    _docOpts.styles = { default: { document: {
-      run: { font: "Times New Roman", size: 24 },
-      paragraph: { spacing: { line: 480, lineRule: d.LineRuleType && d.LineRuleType.AUTO || "auto" } }
-    } } };
+    const _acHead = { font: "Times New Roman", size: 24, bold: true, color: "000000" };
+    _docOpts.styles = { default: {
+      document: {
+        run: { font: "Times New Roman", size: 24 },
+        paragraph: { spacing: { line: 480, lineRule: d.LineRuleType && d.LineRuleType.AUTO || "auto" } }
+      },
+      heading1: { run: _acHead },
+      heading2: { run: _acHead },
+      heading3: { run: _acHead },
+      heading4: { run: _acHead },
+      heading5: { run: _acHead },
+      heading6: { run: _acHead }
+    } };
   }
   const docFile = new d.Document(_docOpts);
   return d.Packer.toBlob(docFile);
