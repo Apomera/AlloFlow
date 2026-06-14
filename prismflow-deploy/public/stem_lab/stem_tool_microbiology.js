@@ -773,7 +773,7 @@
               padding: '6px 12px',
               borderRadius: 6,
               background: active ? '#a855f7' : 'rgba(168,85,247,0.1)',
-              color: active ? '#cbd5e1' : '#d8b4fe',
+              color: active ? '#0f172a' : '#d8b4fe',
               border: '1.5px solid #a855f7',
               fontSize: 10,
               fontWeight: 700,
@@ -968,7 +968,7 @@
             className: sel.id === 'parame' ? 'micro-swim' : (sel.id === 'phage' ? 'micro-phage-float' : 'micro-wiggle'),
             style: { filter: 'blur(' + blurPx + 'px)', transformOrigin: '100px 100px', transition: 'filter 100ms ease' }
           }, renderOrganism(sel, apparentSize, labels && isFocused)) : hh('g', null,
-            hh('text', { x: 100, y: 90, fontSize: 8, fill: '#475569', textAnchor: 'middle' }, 'Below visibility threshold'),
+            hh('text', { x: 100, y: 90, fontSize: 8, fill: '#94a3b8', textAnchor: 'middle' }, 'Below visibility threshold'),
             hh('text', { x: 100, y: 105, fontSize: 6, fill: '#64748b', textAnchor: 'middle' }, sel.name + ' needs ≥' + sel.minVisibleMag + '×'),
             hh('text', { x: 100, y: 130, fontSize: 24, textAnchor: 'middle' }, '·')
           )
@@ -1152,7 +1152,7 @@
 
       function sectionCard(title, children, accent) {
         accent = accent || EMERALD;
-        return h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + accent, boxShadow: '0 2px 10px rgba(0,0,0,0.20)', marginBottom: 12 } },
           title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, title) : null,
           children
         );
@@ -4468,7 +4468,7 @@
           h('div', { id: 'micro-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Microbiology Reference'),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)' } }, 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4')
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4')
             ),
 
             h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#7f1d1d' } },
@@ -4484,7 +4484,7 @@
                 h('li', null, h('strong', null, 'BSL-3: '), 'Serious airborne pathogens. M. tuberculosis, SARS-CoV-2 (in labs), West Nile. Negative pressure rooms, respirators.'),
                 h('li', null, h('strong', null, 'BSL-4: '), 'Lethal, no vaccine. Ebola, Marburg, Lassa. Full positive-pressure suits, air locks, only a few labs in the world.')
               ),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic', marginTop: 4 } }, 'School labs operate at BSL-1. Anything else is for trained professional labs.')
+              h('div', { style: { fontSize: 11, color: '#475569', fontStyle: 'italic', marginTop: 4 } }, 'School labs operate at BSL-1. Anything else is for trained professional labs.')
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
@@ -4546,7 +4546,7 @@
               )
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
               'Sources: CDC (cdc.gov/antibiotic-use) · NIH Human Microbiome Project (commonfund.nih.gov/hmp) · Madigan et al., Brock Biology of Microorganisms (15th ed.) · Mukherjee, S. (2022), The Song of the Cell · Yong, E. (2016), I Contain Multitudes. Printed from AlloFlow STEM Lab.'
             )
           )

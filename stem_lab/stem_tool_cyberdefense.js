@@ -2721,11 +2721,11 @@
                     ),
                     el('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
                       el('div', null,
-                        el('span', { style: { color: '#64748b' } }, 'Return-Path: '),
+                        el('span', { style: { color: '#94a3b8' } }, 'Return-Path: '),
                         el('span', { style: { color: activeEmail.isPhish && (activeEmail.from.indexOf('g00gle') !== -1 || activeEmail.from.indexOf('win-big') !== -1 || activeEmail.from.indexOf('paypa1') !== -1 || activeEmail.from.indexOf('sarah') !== -1 || activeEmail.from.indexOf('support-portal') !== -1) ? '#fb7185' : '#e2e8f0', fontWeight: activeEmail.isPhish ? 'bold' : 'normal' } }, activeEmail.headers.returnPath)
                       ),
                       el('div', null,
-                        el('span', { style: { color: '#64748b' } }, 'SPF-Status:   '),
+                        el('span', { style: { color: '#94a3b8' } }, 'SPF-Status:   '),
                         el('span', { style: {
                           color: activeEmail.headers.spf === 'pass' ? '#4ade80' : activeEmail.headers.spf === 'softfail' ? '#fbbf24' : '#fb7185',
                           fontWeight: 'bold',
@@ -2735,7 +2735,7 @@
                         } }, activeEmail.headers.spf.toUpperCase())
                       ),
                       el('div', null,
-                        el('span', { style: { color: '#64748b' } }, 'DKIM-Signature:'),
+                        el('span', { style: { color: '#94a3b8' } }, 'DKIM-Signature:'),
                         el('span', { style: {
                           color: activeEmail.headers.dkim === 'pass' ? '#4ade80' : '#fb7185',
                           fontWeight: 'bold',
@@ -2745,7 +2745,7 @@
                         } }, activeEmail.headers.dkim.toUpperCase())
                       ),
                       el('div', null,
-                        el('span', { style: { color: '#64748b' } }, 'DMARC-Status: '),
+                        el('span', { style: { color: '#94a3b8' } }, 'DMARC-Status: '),
                         el('span', { style: {
                           color: activeEmail.headers.dmarc === 'pass' ? '#4ade80' : '#fb7185',
                           fontWeight: 'bold',
@@ -2755,7 +2755,7 @@
                         } }, activeEmail.headers.dmarc.toUpperCase())
                       )
                     ),
-                    el('div', { style: { marginTop: 8, fontSize: 10, color: '#64748b', borderTop: '1px dashed rgba(255,255,255,0.06)', paddingTop: 6 } },
+                    el('div', { style: { marginTop: 8, fontSize: 10, color: '#94a3b8', borderTop: '1px dashed rgba(255,255,255,0.06)', paddingTop: 6 } },
                       activeEmail.isPhish ? 
                       '\u26A0\uFE0F Domain mismatch or cryptographic signature failure detected. Check Return-Path alignment!' : 
                       '\u2705 Cryptographic validation and SPF checks passed. Domain is verified.'
@@ -2932,7 +2932,7 @@
                       { label: 'Not a common password', ok: !pwStrength.checks.isCommon && pwInput.length > 0 }
                     ].map(function(check, ci) {
                       return el('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, background: check.ok ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (check.ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') } },
-                        el('span', { style: { fontSize: 12, color: check.ok ? '#4ade80' : '#475569' } }, check.ok ? '\u2714' : '\u25CB'),
+                        el('span', { style: { fontSize: 12, color: check.ok ? '#4ade80' : '#64748b' } }, check.ok ? '\u2714' : '\u25CB'),
                         el('span', { style: { fontSize: 11, fontWeight: 600, color: check.ok ? '#86efac' : '#94a3b8' } }, check.label));
                     })
                   ),

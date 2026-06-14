@@ -5513,7 +5513,7 @@
           el('span', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
           // Rotation badge (only when non-cube shape selected)
           selectedShape > 0 && el('span', {
-            style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#475569', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
+            style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#94a3b8', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
             onClick: function() { upd('blockRotation', (blockRotation + 1) % 4); },
             title: 'Click or press R to rotate (' + (blockRotation * 90) + '\u00b0)'
           }, '\u21BB' + (blockRotation > 0 ? blockRotation * 90 + '\u00b0' : '')),
@@ -5554,7 +5554,7 @@
                 boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.5), inset 0 0 8px rgba(124,58,237,0.2)' : 'none' }
             },
               bt.emoji,
-              el('span', { style: { position: 'absolute', bottom: '1px', right: '3px', fontSize: '8px', color: isActive ? '#c4b5fd' : '#4b5563', fontWeight: 700, lineHeight: 1 } }, String(i + 1))
+              el('span', { style: { position: 'absolute', bottom: '1px', right: '3px', fontSize: '8px', color: isActive ? '#c4b5fd' : '#94a3b8', fontWeight: 700, lineHeight: 1 } }, String(i + 1))
             );
           })
         ),
@@ -5807,7 +5807,7 @@
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
             return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
               el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
-              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#475569' } }, '=' + mh.vol)
+              el('span', { style: { color: mi === 0 ? '#fbbf24' : '#94a3b8' } }, '=' + mh.vol)
             );
           })
         ),
@@ -6158,7 +6158,7 @@
                     return el('div', { key: 'stepdot-' + di, style: { width: 8, height: 8, borderRadius: '50%', background: di < curStep ? '#22c55e' : di === curStep ? '#7c3aed' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
                   })
                 ),
-                el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#7c3aed', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
+                el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
                 homeLang !== 'en' && translation && translation.question && curStep === 0 && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
                 curQ.choices.map(function(choice, ci) {
                   return el('button', {
@@ -6262,7 +6262,7 @@
                         announceToSR('Not quite right. ' + hintText.replace(/^❌\s*Not quite\.\s*/, ''));
                       }
                     },
-                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
+                    style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', boxShadow: 'inset 0 0 0 1px #475569' }
                   }, choice);
                 }),
                 // Gated AI hint (slice-2 pilot). Only shows when the teacher has
@@ -6654,7 +6654,7 @@
                   el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
                   el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
                 ),
-                el('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#64748b', marginTop: 4 } }, 'Design: discrete 4-state transform marker; no reveal.')
+                el('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#94a3b8', marginTop: 4 } }, 'Design: discrete 4-state transform marker; no reveal.')
               );
             })()
       );

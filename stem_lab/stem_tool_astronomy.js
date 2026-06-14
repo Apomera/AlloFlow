@@ -457,6 +457,7 @@
           return h('button', {
             key: t.id, role: 'tab', 'aria-selected': active,
             'aria-label': t.label,
+            className: 'astr-focus astr-btn',
             onClick: function() { upd({ tab: t.id }); },
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none',
@@ -632,6 +633,7 @@
                       upd({ askResponse: 'Sorry — the AI is unavailable right now. Try again, or check a free resource like NASA\'s sky watching page.', askLoading: false });
                     });
                   },
+                  className: 'astr-focus astr-btn',
                   disabled: d.askLoading || !(d.askInput || '').trim() || !callGemini,
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: callGemini && (d.askInput || '').trim() && !d.askLoading ? INDIGO : '#475569', color: '#fff', fontWeight: 700, fontSize: 13, cursor: callGemini && (d.askInput || '').trim() && !d.askLoading ? 'pointer' : 'not-allowed' }
                 }, d.askLoading ? 'Thinking…' : '🔭 Ask'),
@@ -658,6 +660,7 @@
               return h('button', {
                 key: c.id,
                 onClick: function() { upd({ selectedConstellation: c.id }); },
+                className: 'astr-focus astr-btn',
                 'aria-label': c.name + ', ' + c.common,
                 style: {
                   padding: 10, borderRadius: 8, textAlign: 'left',
@@ -6492,6 +6495,7 @@
           h('button', {
             onClick: submit,
             disabled: !allAnswered,
+            className: 'astr-focus astr-btn',
             style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? INDIGO : '#475569', color: '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
           }, allAnswered ? 'Submit quiz' : 'Answer all questions to submit (' + answers.filter(function(a) { return a != null; }).length + '/' + QUIZ_QUESTIONS.length + ')')
         );
@@ -6570,7 +6574,7 @@
                 'I understand — explain in own words'),
               iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how mass, temperature, and luminosity define a stellar category.',
                 style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
-            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+            h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } },
               'Design note: discrete 5-category star marker; no luminosity-class score; no reveal — by design.')
           )
         );
@@ -6601,7 +6605,7 @@
           h('div', { id: 'astro-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Night Sky Observing Kit'),
-              h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'NGSS MS-ESS1 · HS-ESS1')
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'NGSS MS-ESS1 · HS-ESS1')
             ),
 
             h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 12, fontSize: 12, lineHeight: 1.55, color: '#7f1d1d' } },

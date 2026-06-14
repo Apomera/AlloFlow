@@ -1882,8 +1882,8 @@ window.StemLab = window.StemLab || {
               h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: '#1e293b' }),
               h('line', { x1: 36, y1: 130 - 0.8 * 110, x2: 296, y2: 130 - 0.8 * 110, stroke: '#16a34a', strokeDasharray: '3 3', opacity: 0.6 }),
               h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: '#16a34a', fontSize: 8, textAnchor: 'end' }, 'power = 80%'),
-              [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
-              [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: '#64748b', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
+              [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
+              [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
               h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px ' + sm.color + ')' } }),
               h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
               h('text', { x: 160, y: 156, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at d=' + iq.effect.toFixed(2) + ', α=' + iq.alpha)
@@ -1907,7 +1907,7 @@ window.StemLab = window.StemLab || {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, d: iq.effect.toFixed(2), a: iq.alpha, n: iq.nGroup, power: (power * 100).toFixed(0) + '%', state: sm.label }]) });
               }, style: { flex: 1, padding: 8, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this design'),
-              h('button', { onClick: function() { setIQ({ effect: 0.5, alpha: 0.05, nGroup: 30 }); }, style: { padding: '8px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+              h('button', { 'data-sl-focusable': 'true', onClick: function() { setIQ({ effect: 0.5, alpha: 0.05, nGroup: 30 }); }, style: { padding: '8px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · d' + e.d + ' α' + e.a + ' n' + e.n + ' → ' + e.power); })
@@ -2972,7 +2972,7 @@ window.StemLab = window.StemLab || {
           var statusLabel = cs.doneCount === 0 ? 'Untouched'
             : cs.doneCount === cs.questions.length ? '✓ All mastered'
             : cs.doneCount + ' / ' + cs.questions.length;
-          var statusColor = cs.doneCount === 0 ? '#64748b'
+          var statusColor = cs.doneCount === 0 ? '#94a3b8'
             : cs.doneCount === cs.questions.length ? '#22c55e'
             : cs.concept.color;
           return h('div', {
@@ -2999,7 +2999,7 @@ window.StemLab = window.StemLab || {
                   style: {
                     display: 'flex', alignItems: 'flex-start', gap: 6,
                     fontSize: 11,
-                    color: done ? '#cbd5e1' : '#64748b',
+                    color: done ? '#cbd5e1' : '#94a3b8',
                     lineHeight: 1.45
                   }
                 },
