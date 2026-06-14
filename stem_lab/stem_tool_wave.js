@@ -1611,7 +1611,7 @@ const d = labToolData.wave;
                       terse: m[1]
                     });
                   }
-                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
+                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, m[1]);
 
               }),
 
@@ -1814,7 +1814,7 @@ const d = labToolData.wave;
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "A2:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, "A2:"),
 
                   React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': 'Second wave amplitude', onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
@@ -1998,7 +1998,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
 
                   (d.matchTarget && d.matchTarget.isEquation) ? "Your Equation:" : "Current Equation:",
 
@@ -2023,7 +2023,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[11px] text-slate-600 mt-2" }, 
+              React.createElement("p", { className: "text-[11px] text-slate-400 mt-2" }, 
 
                   waveMode === 'standing' 
 
@@ -2065,7 +2065,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Energy"),
+                React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, "Energy"),
 
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, "\u221D A\u00B2 = " + (d.amplitude * d.amplitude).toFixed(0))
 
@@ -2233,7 +2233,7 @@ const d = labToolData.wave;
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
               );
             })()
 

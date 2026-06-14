@@ -3140,7 +3140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   }
                 }
               }),
-              h('span', { className: 'text-[11px] font-bold text-emerald-600 min-w-[28px] text-right' }, speedLabel(simSpeed))
+              h('span', { className: 'text-[11px] font-bold text-emerald-700 dark:text-emerald-400 min-w-[28px] text-right' }, speedLabel(simSpeed))
             )
           ),
 
@@ -3483,7 +3483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Run Graph Simulation button ──
           h('button', { 'aria-label': 'Run Graph Simulation',
             className: 'w-full py-2.5 rounded-xl font-bold text-white text-sm shadow-lg transition-all ' +
-              'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98]',
+              'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2',
             onClick: simulate
           }, '\u25B6 Run Graph Simulation'),
 
@@ -3669,9 +3669,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Placement count display ──
           h('div', { className: 'flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg px-3 py-2' },
             h('span', { className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, 'Entities Placed:'),
-            h('span', { className: 'text-sm font-bold text-teal-600' }, sandboxPlaceCount),
+            h('span', { className: 'text-sm font-bold text-teal-700 dark:text-teal-300' }, sandboxPlaceCount),
             h('button', { 'aria-label': 'Sync Count',
-              className: 'text-[11px] text-teal-500 hover:text-teal-700 underline',
+              className: 'text-[11px] text-teal-700 hover:text-teal-800 dark:text-teal-300 dark:hover:text-teal-200 underline',
               onClick: syncSandboxCount
             }, 'Sync Count')
           ),
@@ -4916,7 +4916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               },
                 h('span', { className: 'text-lg', style: { filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                 h('div', null,
-                  h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-200') }, b.label),
+                  h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300') }, b.label),
                   h('p', { className: 'text-[11px] text-slate-600' }, b.desc),
                   earned && h('span', { className: 'text-[11px] text-emerald-700 dark:text-emerald-400 font-bold' }, '\u2714 EARNED')
                 )
@@ -4946,7 +4946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('span', { className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' },
                 '\uD83C\uDF3F Step ' + (tutorialStep + 1) + ' of 5'),
-              h('button', { 'aria-label': 'Dismiss Tutorial', className: 'text-slate-600 hover:text-slate-600 text-sm', onClick: dismissTutorial }, '\u2715')
+              h('button', { 'aria-label': 'Dismiss Tutorial', className: 'text-slate-600 hover:text-slate-900 text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500', onClick: dismissTutorial }, '\u2715')
             ),
             h('p', { className: 'text-sm text-slate-700 dark:text-slate-200 mb-4 leading-relaxed' },
               [

@@ -3550,8 +3550,8 @@ var d = labToolData.brainAtlas || {};
                       React.createElement('text', { x: x + 20, y: 135, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, iq[nt.k])
                     );
                   }),
-                  React.createElement('text', { x: 6, y: 28, fill: '#475569', fontSize: 8 }, '100'),
-                  React.createElement('text', { x: 6, y: 110, fill: '#475569', fontSize: 8 }, '0')
+                  React.createElement('text', { x: 6, y: 28, fill: '#64748b', fontSize: 8 }, '100'),
+                  React.createElement('text', { x: 6, y: 110, fill: '#94a3b8', fontSize: 8 }, '0')
                 ),
                 React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2 mb-2' },
                   nts.map(function(nt) {
@@ -4059,7 +4059,7 @@ var d = labToolData.brainAtlas || {};
 
                     onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
 
-                    className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700"
+                    className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-800"
 
                   }, "Next Question \u2192")
 
@@ -4109,7 +4109,7 @@ var d = labToolData.brainAtlas || {};
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
-                          className: "px-2 py-1 rounded-md text-[11px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'text-white/50 hover:text-white/80'),
+                          className: "px-2 py-1 rounded-md text-[11px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'text-white/70 hover:text-white/90'),
 
                           style: isActive ? { background: meta.color } : {}
 
@@ -4197,7 +4197,7 @@ var d = labToolData.brainAtlas || {};
 
                   })(),
 
-                  React.createElement("p", { className: "text-[11px] text-white/40 mt-2 italic text-center" }, (function () {
+                  React.createElement("p", { className: "text-[11px] text-white/55 mt-2 italic text-center" }, (function () {
 
                     var WAVE_META = {
 
@@ -4604,7 +4604,7 @@ var d = labToolData.brainAtlas || {};
 
                               "aria-label": "Generate AI explanation for " + sel.name + " at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
 
-                              className: "px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                              className: "px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-1"
 
                             }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
 

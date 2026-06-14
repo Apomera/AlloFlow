@@ -1881,7 +1881,7 @@ window.StemLab = window.StemLab || {
             h("button", { onClick: function() { updMulti({ replStep: 0, replPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, '\u21BA Reset'),
             h("div", { className: "flex items-center gap-2 ml-auto" },
               h("span", { className: "text-xs text-slate-600" }, 'Speed:'),
-              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-200') }, s + 'x'); })
+              [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600') }, s + 'x'); })
             )
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
@@ -2071,7 +2071,7 @@ window.StemLab = window.StemLab || {
                   h("p", { className: "text-slate-600" }, '\uD83C\uDFAF Target: pos ' + (selectedPAMSite.cutSite - crisprGuideLen + 1) + '-' + selectedPAMSite.cutSite + ' | PAM: ' + dnaSeq.substring(selectedPAMSite.pamStart, selectedPAMSite.pamStart + 3) + ' at pos ' + (selectedPAMSite.pamStart + 1)),
                   h("p", { className: "text-blue-600 font-mono mt-0.5" }, 'gRNA: ' + dnaSeq.substring(selectedPAMSite.cutSite - crisprGuideLen, selectedPAMSite.cutSite).split('').map(function(b) { return DNA_TO_RNA[b] || b; }).join(''))
                 ),
-                h("button", { onClick: startCRISPRScan, disabled: !selectedPAMSite, className: "mt-2 px-4 py-2 text-sm font-bold rounded-xl transition-all " + (selectedPAMSite ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-md' : 'bg-slate-200 text-slate-200 cursor-not-allowed') }, '\uD83D\uDE80 Deploy Cas9')
+                h("button", { onClick: startCRISPRScan, disabled: !selectedPAMSite, className: "mt-2 px-4 py-2 text-sm font-bold rounded-xl transition-all " + (selectedPAMSite ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-md' : 'bg-slate-500 text-white cursor-not-allowed') }, '\uD83D\uDE80 Deploy Cas9')
               )
             ),
 
@@ -2170,7 +2170,7 @@ window.StemLab = window.StemLab || {
                 h("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-100" },
                   h("p", { className: "text-[11px] font-bold text-amber-700 uppercase" }, 'Nonpolar (Hydrophobic)'),
                   h("p", { className: "text-sm font-black text-amber-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'nonpolar'; }).length),
-                  h("p", { className: "text-[11px] text-amber-500" }, 'Ala, Val, Leu, Ile, Pro, Phe, Trp, Met, Gly')
+                  h("p", { className: "text-[11px] text-amber-700" }, 'Ala, Val, Leu, Ile, Pro, Phe, Trp, Met, Gly')
                 ),
                 h("div", { className: "bg-blue-50 rounded-lg p-2 border border-blue-100" },
                   h("p", { className: "text-[11px] font-bold text-blue-700 uppercase" }, 'Polar (Hydrophilic)'),
@@ -2480,7 +2480,7 @@ window.StemLab = window.StemLab || {
                     }, s.label);
                   })
                 ),
-                h("button", { onClick: checkForensicAnswer, disabled: forensicGuess == null, className: "px-4 py-2 text-sm font-bold rounded-xl transition-all " + (forensicGuess != null ? 'bg-cyan-700 text-white hover:bg-cyan-700 shadow-md' : 'bg-slate-200 text-slate-200 cursor-not-allowed') }, '\u2713 Submit Answer')
+                h("button", { onClick: checkForensicAnswer, disabled: forensicGuess == null, className: "px-4 py-2 text-sm font-bold rounded-xl transition-all " + (forensicGuess != null ? 'bg-cyan-700 text-white hover:bg-cyan-800 shadow-md' : 'bg-slate-500 text-white cursor-not-allowed') }, '\u2713 Submit Answer')
               ),
 
               // Result
@@ -2584,7 +2584,7 @@ window.StemLab = window.StemLab || {
           h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50" }, "\uD83D\uDCD6 Codon Reference Table"),
             h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[11px] font-mono max-h-60 overflow-y-auto" },
-              Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-200" }, "\u2192 " + aa2)); })
+              Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-700" }, "\u2192 " + aa2)); })
             )
           )
         ),
