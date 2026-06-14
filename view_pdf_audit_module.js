@@ -639,24 +639,28 @@ function _alloRenumberFootnotes(doc) {
       if (u) liByUid[u] = li;
     });
     const used = {};
+    let n = 0;
     refs.forEach((ref, i) => {
       let uid = ref.getAttribute("data-fn-uid");
       if (!uid) {
         uid = "fx" + i;
         ref.setAttribute("data-fn-uid", uid);
       }
+      const li = liByUid[uid];
+      if (!li) {
+        ref.remove();
+        return;
+      }
+      n++;
       used[uid] = 1;
       const a = ref.querySelector("a") || ref;
-      a.textContent = String(i + 1);
+      a.textContent = String(n);
       a.setAttribute("href", "#fn-" + uid);
       ref.setAttribute("id", "fnref-" + uid);
-      const li = liByUid[uid];
-      if (li) {
-        li.setAttribute("id", "fn-" + uid);
-        ol.appendChild(li);
-        const back = li.querySelector("a.allo-fn-back");
-        if (back) back.setAttribute("href", "#fnref-" + uid);
-      }
+      li.setAttribute("id", "fn-" + uid);
+      ol.appendChild(li);
+      const back = li.querySelector("a.allo-fn-back");
+      if (back) back.setAttribute("href", "#fnref-" + uid);
     });
     Array.from(ol.children).forEach((li) => {
       const u = li.getAttribute("data-fn-uid");
@@ -6245,6 +6249,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
         return Array.from(doc.body.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote")).filter((el) => !el.closest('section[data-content-recovery="true"]')).filter((el) => !el.closest('[contenteditable="false"]')).filter((el) => !el.querySelector("p,li,td,th,blockquote")).filter((el) => (el.textContent || "").trim().length >= 3);
       };
       const runWritingCheck = async () => {
+        const _docLang = (() => {
+          try {
+            const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+            return d && d.documentElement && (d.documentElement.getAttribute("lang") || "").toLowerCase() || "";
+          } catch (_) {
+            return "";
+          }
+        })();
+        if (_docLang && _docLang.split("-")[0] !== "en") {
+          setWritingCheck({ status: "error", error: t("export_preview.writing.non_english") || 'Writing Check is English-only \u2014 this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.' });
+          return;
+        }
         setWritingCheck({ status: "loading" });
         try {
           const linter = await _ensurePdfHarper();

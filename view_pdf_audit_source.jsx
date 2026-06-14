@@ -664,16 +664,30 @@ function _alloRenumberFootnotes(doc) {
     const liByUid = {};
     Array.from(ol.children).forEach((li) => { const u = li.getAttribute('data-fn-uid'); if (u) liByUid[u] = li; });
     const used = {};
+    let n = 0;
     refs.forEach((ref, i) => {
       let uid = ref.getAttribute('data-fn-uid');
       if (!uid) { uid = 'fx' + i; ref.setAttribute('data-fn-uid', uid); }
+      const li = liByUid[uid];
+      if (!li) {
+        // Orphan ref (2026-06-14): the note was deleted but the <sup> marker
+        // survived in the body text. Numbering + linking it would ship a
+        // dangling link to a non-existent #fn-uid in the exported PDF/HTML.
+        // Remove the stray marker so refs ↔ notes stay 1:1 (symmetric with the
+        // orphan-NOTE prune below). Use a separate counter `n` so removing one
+        // doesn't leave a gap in the surviving numbers.
+        ref.remove();
+        return;
+      }
+      n++;
       used[uid] = 1;
       const a = ref.querySelector('a') || ref;
-      a.textContent = String(i + 1);
+      a.textContent = String(n);
       a.setAttribute('href', '#fn-' + uid);
       ref.setAttribute('id', 'fnref-' + uid);
-      const li = liByUid[uid];
-      if (li) { li.setAttribute('id', 'fn-' + uid); ol.appendChild(li); const back = li.querySelector('a.allo-fn-back'); if (back) back.setAttribute('href', '#fnref-' + uid); }
+      li.setAttribute('id', 'fn-' + uid);
+      ol.appendChild(li);
+      const back = li.querySelector('a.allo-fn-back'); if (back) back.setAttribute('href', '#fnref-' + uid);
     });
     Array.from(ol.children).forEach((li) => { const u = li.getAttribute('data-fn-uid'); if (u && !used[u]) li.remove(); });
     if (!ol.children.length) sec.remove();
@@ -8120,6 +8134,17 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     .filter((el) => (el.textContent || '').trim().length >= 3);
                 };
                 const runWritingCheck = async () => {
+                  // Harper is English-only (2026-06-14). If the document declares a
+                  // non-English language, don't lint it — and don't download the
+                  // ~10 MB WASM — because every word would come back as a false
+                  // "error", flooding the panel and eroding trust on exactly the
+                  // multilingual surface AlloFlow leans on. An empty/missing lang
+                  // is treated as English (conservative; no false block).
+                  const _docLang = (() => { try { const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; return (d && d.documentElement && (d.documentElement.getAttribute('lang') || '').toLowerCase()) || ''; } catch (_) { return ''; } })();
+                  if (_docLang && _docLang.split('-')[0] !== 'en') {
+                    setWritingCheck({ status: 'error', error: (t('export_preview.writing.non_english') || ('Writing Check is English-only — this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.')) });
+                    return;
+                  }
                   setWritingCheck({ status: 'loading' });
                   try {
                     const linter = await _ensurePdfHarper();
