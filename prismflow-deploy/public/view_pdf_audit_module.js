@@ -142,7 +142,7 @@ function _htmlToDocxSpec(html) {
       const n = kids[i];
       if (n.nodeType === 3) {
         const txt = String(n.textContent || "").replace(/\s+/g, " ");
-        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null });
+        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null, sup: !!fmt.sup, sub: !!fmt.sub });
         continue;
       }
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
@@ -167,7 +167,12 @@ function _htmlToDocxSpec(html) {
         bold: fmt.bold || tag === "B" || tag === "STRONG",
         italic: fmt.italic || tag === "I" || tag === "EM",
         underline: fmt.underline || tag === "U",
-        link: fmt.link || tag === "A" && n.getAttribute("href") || null
+        link: fmt.link || tag === "A" && n.getAttribute("href") || null,
+        // Superscript/subscript (2026-06-13): footnote anchors (<sup>),
+        // exponents (x²), ordinals, and chemical formulae (H₂O) were
+        // flattening to baseline in docx/pptx. Thread vertical alignment.
+        sup: fmt.sup || tag === "SUP",
+        sub: fmt.sub || tag === "SUB"
       }));
     }
     return out;
@@ -276,7 +281,7 @@ async function _buildDocxBlobFromSpec(spec, d) {
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : void 0, style: r.link ? "Hyperlink" : void 0 });
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : void 0, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? "Hyperlink" : void 0 });
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
   const children = [];
@@ -7206,6 +7211,10 @@ Return ONLY JSON:
             if (block2) {
               const type = block2.getAttribute("data-allo-block") || "block";
               block2.remove();
+              try {
+                _alloRenumberFootnotes(doc);
+              } catch (_) {
+              }
               announce("Removed " + type + " block");
               persist();
             }
@@ -7220,6 +7229,10 @@ Return ONLY JSON:
             while (prev && (prev.tagName === "SPAN" || prev.id === "allo-blocks-live")) prev = prev.previousElementSibling;
             if (prev && block2.parentNode) {
               block2.parentNode.insertBefore(block2, prev);
+              try {
+                _alloRenumberFootnotes(doc);
+              } catch (_) {
+              }
               announce("Moved up");
               setTimeout(() => {
                 try {
@@ -7242,6 +7255,10 @@ Return ONLY JSON:
             while (next && (next.tagName === "SPAN" || next.id === "allo-blocks-live")) next = next.nextElementSibling;
             if (next && block2.parentNode) {
               block2.parentNode.insertBefore(next, block2);
+              try {
+                _alloRenumberFootnotes(doc);
+              } catch (_) {
+              }
               announce("Moved down");
               setTimeout(() => {
                 try {
@@ -7669,6 +7686,18 @@ Return ONLY JSON:
         doc.addEventListener("input", (ev) => {
           const t2 = ev.target;
           if (!t2) return;
+          try {
+            const _fnSec = doc.querySelector("section.allo-footnotes");
+            if (_fnSec) {
+              const _refN = doc.querySelectorAll("sup.allo-fn-ref").length;
+              const _noteN = _fnSec.querySelectorAll("ol > li[data-fn-uid]").length;
+              if (_refN !== _noteN) {
+                _alloRenumberFootnotes(doc);
+                persist();
+              }
+            }
+          } catch (_) {
+          }
           if (t2.classList && t2.classList.contains("allo-math-input")) {
             const block = t2.closest(".allo-block-math");
             if (!block) return;

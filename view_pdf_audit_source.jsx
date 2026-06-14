@@ -123,7 +123,7 @@ function _htmlToDocxSpec(html) {
       const n = kids[i];
       if (n.nodeType === 3) {
         const txt = String(n.textContent || '').replace(/\s+/g, ' ');
-        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null });
+        if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, link: fmt.link || null, sup: !!fmt.sup, sub: !!fmt.sub });
         continue;
       }
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
@@ -143,6 +143,11 @@ function _htmlToDocxSpec(html) {
         italic: fmt.italic || tag === 'I' || tag === 'EM',
         underline: fmt.underline || tag === 'U',
         link: fmt.link || (tag === 'A' && n.getAttribute('href')) || null,
+        // Superscript/subscript (2026-06-13): footnote anchors (<sup>),
+        // exponents (x²), ordinals, and chemical formulae (H₂O) were
+        // flattening to baseline in docx/pptx. Thread vertical alignment.
+        sup: fmt.sup || tag === 'SUP',
+        sub: fmt.sub || tag === 'SUB',
       }));
     }
     return out;
@@ -231,7 +236,7 @@ async function _buildDocxBlobFromSpec(spec, d) {
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, style: r.link ? 'Hyperlink' : undefined });
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? 'Hyperlink' : undefined });
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
   const children = [];
@@ -8936,6 +8941,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           if (block) {
                             const type = block.getAttribute('data-allo-block') || 'block';
                             block.remove();
+                            try { _alloRenumberFootnotes(doc); } catch (_) {} // a footnote ref may have ridden inside the removed block
                             announce('Removed ' + type + ' block');
                             persist();
                           }
@@ -8952,6 +8958,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           while (prev && (prev.tagName === 'SPAN' || prev.id === 'allo-blocks-live')) prev = prev.previousElementSibling;
                           if (prev && block.parentNode) {
                             block.parentNode.insertBefore(block, prev);
+                            try { _alloRenumberFootnotes(doc); } catch (_) {} // reorder may change footnote ref order → renumber
                             announce('Moved up');
                             setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
                             persist();
@@ -8969,6 +8976,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           while (next && (next.tagName === 'SPAN' || next.id === 'allo-blocks-live')) next = next.nextElementSibling;
                           if (next && block.parentNode) {
                             block.parentNode.insertBefore(next, block);
+                            try { _alloRenumberFootnotes(doc); } catch (_) {} // reorder may change footnote ref order → renumber
                             announce('Moved down');
                             setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
                             persist();
@@ -9325,6 +9333,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       doc.addEventListener('input', (ev) => {
                         const t = ev.target;
                         if (!t) return;
+                        // Footnote integrity (2026-06-13): a contenteditable edit may
+                        // delete a superscript anchor. Re-sync numbering + prune the
+                        // orphaned note — but ONLY when ref/note counts diverge, so
+                        // typing inside a note never triggers a reorder that would
+                        // disrupt the caret.
+                        try {
+                          const _fnSec = doc.querySelector('section.allo-footnotes');
+                          if (_fnSec) {
+                            const _refN = doc.querySelectorAll('sup.allo-fn-ref').length;
+                            const _noteN = _fnSec.querySelectorAll('ol > li[data-fn-uid]').length;
+                            if (_refN !== _noteN) { _alloRenumberFootnotes(doc); persist(); }
+                          }
+                        } catch (_) {}
                         // Math LaTeX live-render
                         if (t.classList && t.classList.contains('allo-math-input')) {
                           const block = t.closest('.allo-block-math');

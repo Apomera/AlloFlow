@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -15019,7 +15019,12 @@ tr { page-break-inside: avoid; }
           // PDF spec has no /ActualText length limit. Long paragraphs / TDs / captions /
           // BlockQuotes previously had their tail silently dropped from the semantic
           // tree — visible to pdf.js extractors but truncated to SR walkers.
-          text: (el.textContent || '').trim(),
+          // Footnote Note leaves (2026-06-13): drop the trailing ↩ back-link glyph
+          // from the spoken/ActualText so a screen reader reads the note, not "left
+          // arrow hook". The <a> itself is already skipped as a leaf (see above).
+          text: (pdfRole === 'Note' && el.querySelector && el.querySelector('.allo-fn-back'))
+            ? (el.textContent || '').replace(/\s*↩\s*$/u, '').trim()
+            : (el.textContent || '').trim(),
           alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
           isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
           level: HEADING_LEVEL[tag] || 0,
@@ -15125,7 +15130,7 @@ tr { page-break-inside: avoid; }
             d.Alt = PDFString.of('Link (unlabeled)');
           }
         }
-        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote','TH','TD'].includes(item.role) && item.text) {
+        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote','TH','TD','Note'].includes(item.role) && item.text) {
           // ActualText carries the element's text in the semantic tree. Until the
           // semantic StructElems are linked to page marked content via MCID (the
           // larger "unified tag tree" work — see docs), ActualText is how an AT that
@@ -15764,7 +15769,7 @@ tr { page-break-inside: avoid; }
         // the marker glyph lives inside the same content line the LBody's MCR
         // covers, and one MCID can map to only one StructElem in the
         // ParentTree — the gate exempts pure-marker Lbls instead.
-        const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1, TH: 1, TD: 1, LBody: 1 };
+        const LINKABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1, TH: 1, TD: 1, LBody: 1, Note: 1 };
         // Leading list-marker fold: the PDF line is '• Apples' / '1. Apples'
         // while the LBody leaf text is 'Apples' (the builder moves the marker
         // into /Lbl). Compared only for LBody leaves, and only as a FALLBACK
@@ -16624,7 +16629,7 @@ tr { page-break-inside: avoid; }
       }
       // Content-leaf roles only (same set the post-export validator counts):
       // containers like Sect/Part legitimately carry no MCR and must not veto.
-      const _COUNTABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Figure: 1, Formula: 1, Caption: 1, BlockQuote: 1, Lbl: 1, LBody: 1, TH: 1, TD: 1, Span: 1, Link: 1 };
+      const _COUNTABLE = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Figure: 1, Formula: 1, Caption: 1, BlockQuote: 1, Lbl: 1, LBody: 1, TH: 1, TD: 1, Span: 1, Link: 1, Note: 1 };
       for (const lf of _unifiableLeafRefs) {
         if (!lf || !lf.ref || typeof lf.ref.objectNumber !== 'number') continue;
         if (!_COUNTABLE[lf.role]) continue;
@@ -16849,6 +16854,24 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       } else {
         _addCheck('Lists', 'Lists present', 'na', 'No lists in document');
       }
+      // FOOTNOTES (2026-06-13): the builder's footnote feature emits /Note
+      // structure leaves (ISO 32000 §14.8.4.4). Surface them so the newest
+      // structure type isn't silently omitted from the self-check, and report
+      // how many lack MCID content linkage (those withhold the UA declaration).
+      try {
+        const _noteLeaves = _unifiableLeafRefs.filter((lf) => lf.role === 'Note' && lf.ref && typeof lf.ref.objectNumber === 'number');
+        if (_noteLeaves.length) {
+          let _noteLinked = 0;
+          for (const lf of _noteLeaves) {
+            try { const d = context.lookup(lf.ref); if (d && typeof d.get === 'function' && d.get(PDFName.of('K')) != null) _noteLinked++; } catch (_) {}
+          }
+          const _noteUnlinked = _noteLeaves.length - _noteLinked;
+          _addCheck('Footnotes', 'Footnotes tagged (Note role)', _noteUnlinked === 0 ? 'pass' : 'warn',
+            _noteLeaves.length + ' footnote/endnote tagged as /Note' + (_noteUnlinked === 0
+              ? ', all content-linked'
+              : '; ' + _noteUnlinked + ' without MCID content linkage — these withhold the PDF/UA-1 declaration until linked'));
+        }
+      } catch (_) {}
       // HEADINGS
       const _hHierIssues = (_summary && _summary.headingHierarchyIssues) || 0;
       const _hPath = (_summary && _summary.headingHierarchyPath) || [];
@@ -23507,11 +23530,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

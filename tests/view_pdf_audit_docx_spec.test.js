@@ -47,6 +47,17 @@ describe('view_pdf_audit · _htmlToDocxSpec (accessible Word export)', () => {
     expect(spec.counts.links).toBe(1);
   });
 
+  it('captures superscript/subscript so footnote anchors and formulae survive docx', () => {
+    const spec = _htmlToDocxSpec(wrap('<p>H<sub>2</sub>O and x<sup>2</sup> note<sup class="allo-fn-ref">1</sup></p>'));
+    const runs = spec.blocks[0].runs;
+    expect(runs.find(r => r.text === '2' && r.sub).sub).toBe(true);
+    const sups = runs.filter(r => r.sup);
+    expect(sups.map(r => r.text).join('')).toBe('21'); // x² exponent + footnote marker
+    // plain text carries neither flag
+    expect(runs.find(r => /and/.test(r.text)).sup).toBe(false);
+    expect(runs.find(r => /and/.test(r.text)).sub).toBe(false);
+  });
+
   it('maps ul/ol with nesting levels and preserves order kind', () => {
     const spec = _htmlToDocxSpec(wrap('<ol><li>first</li><li>second<ul><li>nested</li></ul></li></ol>'));
     const list = spec.blocks.find(b => b.type === 'list');
