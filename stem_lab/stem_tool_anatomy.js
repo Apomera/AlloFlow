@@ -950,6 +950,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var spotterStartTime = d._spotterStartTime || 0;
         var spotterOptions = d._spotterOpts || [];
         var spotterBestTime = d._spotterBestTime || 999;
+        // Spotter accessibility: a coarse positional region cue (viewer perspective) so SR / non-visual
+        // and keyboard users can identify the marked structure without seeing the canvas crosshair.
+        // Deliberately coarse (5 vertical x 3 horizontal zones) so it never names or uniquely reveals
+        // the answer; it narrows the figure region so the multiple-choice options become answerable.
+        function spotterRegionCue(st) {
+          if (!st) return '';
+          var vert = st.y < 0.16 ? 'near the top, around the head and neck'
+            : st.y < 0.30 ? 'in the upper body, around the shoulders and chest'
+            : st.y < 0.45 ? 'in the chest and upper belly area'
+            : st.y < 0.62 ? 'in the lower belly and hip area'
+            : 'in the lower body, around the legs';
+          var horiz = st.x < 0.42 ? 'on the left side of the figure'
+            : st.x > 0.58 ? 'on the right side of the figure'
+            : 'near the center of the figure';
+          return 'The marker is ' + horiz + ', ' + vert + '.';
+        }
+        var spotterTargetStruct = spotterTarget ? (allStructures.find(function(s) { return s.id === spotterTarget; }) || null) : null;
+        var spotterCueText = spotterRegionCue(spotterTargetStruct);
 
         // ── Compare mode state ──
         var compareStructureId = d._compareStructure || null;
@@ -4868,6 +4886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
                         var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
                         updMulti({ _spotterActive: true, _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
+                        if (typeof announceToSR === 'function') announceToSR('Spotter test started. ' + spotterRegionCue(target) + ' Now choose which structure is marked from the buttons below.');
                       },
                       className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all shadow-sm'
                     }, '\uD83C\uDFAF Start Spotter Test'),
@@ -4875,7 +4894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   ) : h('div', { className: 'space-y-3' },
                     h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200 text-center' },
                       h('p', { className: 'text-sm font-bold text-cyan-900 mb-1' }, 'What structure is marked on the figure?'),
-                      h('p', { className: 'text-[11px] text-cyan-700' }, 'Look for the pulsing cyan crosshair on the canvas')
+                      h('p', { className: 'text-[11px] text-cyan-700' }, (spotterCueText ? spotterCueText + ' ' : '') + 'Look for the pulsing cyan crosshair on the canvas.')
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-2' },
                       spotterOptions.map(function(opt) {
@@ -4956,6 +4975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
                             var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
                             updMulti({ _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
+                            if (typeof announceToSR === 'function') announceToSR('Next structure. ' + spotterRegionCue(target) + ' Choose which structure is marked from the buttons below.');
                           },
                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all'
                         }, 'Next Structure ➔'),
