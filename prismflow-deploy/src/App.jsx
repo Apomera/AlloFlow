@@ -4395,7 +4395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'ef4fae21';
+    var pluginCdnVersion = '2c4ffd5c';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10453,6 +10453,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const key = (pendingPdfFile?.name || '?') + ':' + (cur.afterScore || 0) + ':' + (cur.accessibleHtml.length || 0);
     setPdfRunHistory((prev) => {
       if (prev.some((r) => r._k === key)) return prev;
+      const _ps = cur.pipelineStats || null;
       const row = {
         _k: key, at: new Date().toISOString(),
         fileName: pendingPdfFile?.name || 'document',
@@ -10461,6 +10462,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         passes: cur.autoFixPasses || 0,
         axeViolations: (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null,
         pages: cur.pageCount || null,
+        // Reliability telemetry (2026-06-13): an honest outcome + the per-run
+        // stats from fixResult.pipelineStats (null on older/loaded rows).
+        outcome: 'success',
+        retries: _ps ? _ps.retries : null,
+        visionCalls: _ps ? _ps.visionCalls : null,
+        apiCalls: _ps ? _ps.apiCalls : null,
+        apiMs: _ps ? _ps.totalApiMs : null,
+        durationMs: _ps ? _ps.durationMs : null,
       };
       // Upsert (sweep 2026-06-11 [9]): auto-continue rounds and post-load
       // edits used to APPEND a row per state change — one run could leave
@@ -15733,8 +15742,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // made things WORSE is discarded instead of committed.
         if (newScore < (cur.afterScore || 0)) {
           warnLog('[AutoContinue] round ' + (round + 1) + ' regressed (' + newScore + ' < ' + (cur.afterScore || 0) + ') — reverting this round.');
-          stagnantRounds++;
-          if (stagnantRounds >= 2) break;
+          // Reliability fix (2026-06-13): do NOT increment stagnantRounds here.
+          // The revert leaves `cur` unchanged, so the NEXT round's top-of-loop
+          // no-progress check (comparing against lastViolations/lastScore set
+          // this round) already counts this stall — exactly once. The old
+          // `stagnantRounds++` here DOUBLE-counted one regression (here + next
+          // round), so a single wobble abandoned the loop instead of allowing
+          // a recovery attempt. A regression now reverts and tries again; the
+          // loop still stops after two genuinely-consecutive stalls.
           continue;
         }
         const _newPlain = _plainTextOf(result.html);
@@ -15884,7 +15899,42 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return true;
     } catch (e) { return false; }
   }, [pendingPdfFile, pdfMultiSession, addToast, pdfAuditorCount, pdfPolishPasses, pdfAutoFixPasses, pdfTargetScore]);
-  const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
+  const _rawFixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
+  // Reliability telemetry (2026-06-13): wrap the pipeline so a FAILED run is
+  // recorded in the run-history too — success rows are written by the
+  // pdfFixResult effect, so without this the history (and its CSV) was
+  // success-ONLY and could not yield an honest failure rate for the UMaine
+  // reliability gate. Stage attribution comes from the pipeline's last-open
+  // step (getPipelineStats). Re-throws so every caller's existing error UI is
+  // unchanged. Covers single-file + batch + page-range call sites at once.
+  const fixAndVerifyPdf = async (opts) => {
+    try {
+      return await _rawFixAndVerifyPdf(opts);
+    } catch (err) {
+      try {
+        const _st = (_docPipeline && _docPipeline.getPipelineStats) ? _docPipeline.getPipelineStats() : {};
+        const _fname = (opts && opts.fileName) || pendingPdfFile?.name || 'document';
+        setPdfRunHistory((prev) => {
+          const next = [...prev, {
+            _k: 'fail:' + _fname + ':' + Date.now(),
+            at: new Date().toISOString(),
+            fileName: _fname,
+            outcome: 'failed',
+            failStage: _st.lastOpenStepLabel || 'unknown',
+            failReason: (err && err.message) ? String(err.message).slice(0, 200) : String(err).slice(0, 200),
+            retries: _st.retries != null ? _st.retries : null,
+            visionCalls: _st.visionCalls != null ? _st.visionCalls : null,
+            apiCalls: _st.apiCalls != null ? _st.apiCalls : null,
+            apiMs: _st.totalApiMs != null ? _st.totalApiMs : null,
+            durationMs: _st.durationMs != null ? _st.durationMs : null,
+            beforeScore: null, afterScore: null, passes: null, axeViolations: null, pages: null,
+          }];
+          return next.length > 200 ? next.slice(-200) : next;
+        });
+      } catch (_) {}
+      throw err;
+    }
+  };
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
   const createTaggedPdf = _docPipeline ? _docPipeline.createTaggedPdf : async () => null;
@@ -19727,6 +19777,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           exportMenu: () => setShowExportMenu(false),
           exportPreview: () => setShowExportPreview(false),
           readThisPage: () => setShowReadThisPage(false),
+          // Tool workspaces (2026-06-13): launching a tool from the palette/voice/bot now
+          // closes any other open tool or hub instead of stacking. Lumen rides on stemLab.
+          behaviorLens: () => setShowBehaviorLens(false),
+          reportWriter: () => setShowReportWriter(false),
+          symbolStudio: () => setIsSymbolStudioOpen(false),
+          accessibilityLab: () => setIsAccessibilityLabOpen(false),
+          communityCatalog: () => setIsCommunityCatalogOpen(false),
+          dynamicAssessment: () => setIsDynamicAssessmentOpen(false),
+          stemLab: () => setShowStemLab(false),
+          storyForge: () => setShowStoryForge(false),
+          alloHaven: () => setIsAlloHavenOpen(false),
+          selHub: () => setShowSelHub(false),
         };
         Object.keys(closers).forEach((id) => { if (id !== keep) { try { closers[id](); } catch (_) {} } });
       },
@@ -19743,6 +19805,33 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         try { if (window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === 'function') { window.AlloModules.ErrorReporter.openPanel(); return; } } catch (_) {}
         try { addToast((t('toasts.error_reporter_loading') || 'The problem reporter is still loading — try again in a moment.'), 'info'); } catch (_) {}
       },
+      // ── Nested-tool launchers (2026-06-13) ── open a workspace that normally lives behind a
+      // hub card. closeOtherPanels (each command is opensPanel-tagged in the registry) closes the
+      // hub / other tools first, so these just OPEN — mirroring the hub cards' setters exactly.
+      openStemLab: () => { setStemLabTool(null); setStemLabTab('explore'); setShowStemLab(true); },
+      openStoryForge: () => setShowStoryForge(true),
+      openAlloHaven: () => setIsAlloHavenOpen(true),
+      openBehaviorLens: () => setShowBehaviorLens(true),
+      openReportWriter: () => setShowReportWriter(true),
+      openSymbolStudio: () => setIsSymbolStudioOpen(true),
+      openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
+      openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
+      openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
+      openDynamicAssessment: () => setIsDynamicAssessmentOpen(true),
+      // ── More command-coverage capabilities (2026-06-13, discovery w59vf8skj) ── each maps to ONE
+      // existing host handler (verified by symbol in this file). Cycle/spacing read current state
+      // (readingTheme/lineHeight) the same way fontBigger reads sliderFontSize — ctx rebuilds per render.
+      stopReading: stopPlayback,
+      toggleMute: () => { const next = !isGlobalMuted(); setGlobalMute(next); return next; },
+      cycleReadingTheme: () => { const order = ['default','warm','sepia','dark','highContrast','blue','green','rose','dyslexia']; const i = order.indexOf(readingTheme); const next = order[(i + 1) % order.length]; setReadingTheme(next); return next; },
+      lineSpacingMore: () => { const v = Math.min(2.5, Math.round(((lineHeight || 1.6) + 0.1) * 10) / 10); setLineHeight(v); return v; },
+      lineSpacingLess: () => { const v = Math.max(1.0, Math.round(((lineHeight || 1.6) - 0.1) * 10) / 10); setLineHeight(v); return v; },
+      openSelHub: () => setShowSelHub(true),
+      openStudyTimer: () => handleSetShowStudyTimerModalToTrue(),
+      openSubmissionInbox: () => setIsSubmissionInboxOpen(true),
+      toggleCloudSync: () => { const wasOn = isCloudSyncEnabled; handleCloudToggleClick(); return wasOn ? 'off' : 'consent'; },
+      generateOutline: () => handleGenerate('outline'),
+      exportPack: () => handleExport('html'),
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
