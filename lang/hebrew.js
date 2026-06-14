@@ -12041,7 +12041,7 @@
     "image_too_large_5mb": "התמונה גדולה מדי (מקסימום 5MB). אנא השתמש בתמונה קטנה יותר.",
     "need_card_front_back": "הוסף לפחות כרטיס אחד עם צד קדמי וצד אחורי.",
     "type_word_first": "הקלד מילה או רצף אותיות תחילה.",
-    "write_something_first": "כתוב something ראשון.",
+    "write_something_first": "כתוב משהו תחילה.",
     "pick_decoration_first": "בחר קישוט לקשר אליו תחילה.",
     "write_association": "כתוב אסוציאציה קצרה — את מה זה מזכיר לך?",
     "no_crop_data": "אין נתוני חיתוך זמינים לתמונה זו.",
@@ -12085,7 +12085,7 @@
   },
   "confirms": {
     "replace_imported_cards": "להחליף את כל הכרטיסים הקיימים בכרטיסים שיובאו?",
-    "delete_voice_note": "מחק זה קול note?",
+    "delete_voice_note": "למחוק את הערת הקול הזו?",
     "remove_companion": "להסיר את בן הלוויה שלך?",
     "delete_goal": "מחק זה מטרות?",
     "delete_atlas": "למחוק אטלס זה? קשתות והצדקות לא ניתנות לשחזור.",
