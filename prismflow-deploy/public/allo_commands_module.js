@@ -418,6 +418,103 @@ function scoreCommand(cmd, q) {
   }
   return best;
 }
+const CMD_GROUP = {
+  open_educator_hub: "navigate",
+  open_learning_hub: "navigate",
+  open_document_builder: "navigate",
+  open_wizard: "navigate",
+  open_notebook: "navigate",
+  open_translate: "navigate",
+  open_class_session: "navigate",
+  open_class_analytics: "navigate",
+  open_export_menu: "navigate",
+  open_ai_settings: "navigate",
+  go_dashboard: "navigate",
+  open_roster: "navigate",
+  open_project_settings: "navigate",
+  generate_quiz: "create",
+  generate_glossary: "create",
+  generate_simplified: "create",
+  generate_sentence_frames: "create",
+  generate_analysis: "create",
+  create_lesson: "create",
+  submit_work: "create",
+  font_bigger: "accessibility",
+  font_smaller: "accessibility",
+  font_reset: "accessibility",
+  open_text_settings: "accessibility",
+  open_voice_settings: "accessibility",
+  read_this_page: "accessibility",
+  toggle_focus_mode: "accessibility",
+  toggle_reading_ruler: "accessibility",
+  toggle_help_mode: "accessibility",
+  toggle_bot: "accessibility",
+  toggle_line_focus: "accessibility",
+  toggle_visual_supports: "accessibility",
+  toggle_dictation: "accessibility",
+  toggle_socratic: "accessibility",
+  zen_on: "accessibility",
+  zen_off: "accessibility",
+  switch_theme: "display",
+  toggle_color_overlay: "display",
+  toggle_animations: "display",
+  pipeline_score: "pipeline",
+  pipeline_issues: "pipeline",
+  pipeline_downloads: "pipeline",
+  pipeline_verification: "pipeline",
+  app_tour: "help",
+  pipeline_tour: "help",
+  report_problem: "help",
+  voice_start: "voice",
+  voice_stop: "voice"
+};
+const CMD_CONTEXT = {
+  pipeline_score: ["pipeline"],
+  pipeline_issues: ["pipeline"],
+  pipeline_downloads: ["pipeline"],
+  pipeline_verification: ["pipeline"],
+  pipeline_tour: ["pipeline"],
+  translate_document: ["pipeline"],
+  open_document_builder: ["educatorHub", "content"],
+  open_wizard: ["educatorHub"],
+  create_lesson: ["educatorHub"],
+  open_translate: ["educatorHub", "content"],
+  open_class_session: ["educatorHub"],
+  open_class_analytics: ["educatorHub", "behaviorLens"],
+  open_roster: ["educatorHub"],
+  open_project_settings: ["educatorHub"],
+  open_notebook: ["learningHub"],
+  toggle_socratic: ["learningHub"],
+  generate_quiz: ["content"],
+  generate_glossary: ["content"],
+  generate_simplified: ["content", "reading"],
+  generate_sentence_frames: ["content"],
+  generate_analysis: ["content"],
+  open_export_menu: ["content"],
+  read_this_page: ["learningHub", "symbolStudio", "stemLab", "content", "reading"],
+  font_bigger: ["reading"],
+  font_smaller: ["reading"],
+  toggle_reading_ruler: ["reading"],
+  toggle_line_focus: ["reading"],
+  toggle_color_overlay: ["reading"],
+  zen_off: ["reading"],
+  toggle_visual_supports: ["symbolStudio"],
+  open_voice_settings: ["symbolStudio"],
+  toggle_focus_mode: ["stemLab"],
+  zen_on: ["stemLab"]
+};
+const GROUP_ORDER = ["navigate", "create", "accessibility", "display", "pipeline", "help", "voice"];
+const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
+const CTX_FLAG = { pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", stemLab: "stemLabOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
+const CTX_PRIORITY = ["symbolStudio", "stemLab", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
+const CONTEXT_LABEL_FALLBACK = { pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", stemLab: "Here \u2014 STEM Lab", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+function _activeContexts(ctx) {
+  if (!ctx) return [];
+  return CTX_PRIORITY.filter((k) => {
+    const f = CTX_FLAG[k];
+    return typeof f === "function" ? f(ctx) : !!ctx[f];
+  });
+}
 const AlloCommandPalette = ({ ctx }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -427,11 +524,52 @@ const AlloCommandPalette = ({ ctx }) => {
   const prevFocusRef = useRef(null);
   const t = _mkT(ctx && ctx.t);
   const commands = useMemo(() => ctx ? buildAlloCommands(ctx) : [], [ctx]);
-  const matches = useMemo(() => {
-    const scored = commands.map((c) => ({ c, s: scoreCommand(c, query) })).filter((x) => x.s > 0);
-    scored.sort((a, b) => b.s - a.s);
-    return scored.map((x) => x.c).slice(0, 9);
-  }, [commands, query]);
+  const rows = useMemo(() => {
+    const out = [];
+    if (query) {
+      const acts2 = _activeContexts(ctx);
+      const ctxRank = (c) => (CMD_CONTEXT[c.id] || []).some((x) => acts2.indexOf(x) >= 0) ? 0 : 1;
+      const scored = commands.map((c) => ({ c, s: scoreCommand(c, query) })).filter((x) => x.s > 0);
+      scored.sort((a, b) => b.s - a.s || ctxRank(a.c) - ctxRank(b.c));
+      scored.slice(0, 12).forEach((x) => out.push({ kind: "cmd", c: x.c }));
+      return out;
+    }
+    const acts = _activeContexts(ctx);
+    const promotedIds = /* @__PURE__ */ new Set();
+    if (acts.length) {
+      const promoted = [];
+      for (const c of commands) {
+        if ((CMD_CONTEXT[c.id] || []).some((x) => acts.indexOf(x) >= 0)) {
+          promoted.push(c);
+          promotedIds.add(c.id);
+          if (promoted.length >= 6) break;
+        }
+      }
+      if (promoted.length) {
+        const top = acts[0];
+        out.push({ kind: "header", label: t("palette.ctx." + top, CONTEXT_LABEL_FALLBACK[top] || "Here") });
+        promoted.forEach((c) => out.push({ kind: "cmd", c }));
+      }
+    }
+    let cmdCount = promotedIds.size;
+    for (const g of GROUP_ORDER) {
+      if (cmdCount >= 24) break;
+      const inGroup = commands.filter((c) => (CMD_GROUP[c.id] || "navigate") === g && !promotedIds.has(c.id));
+      const take = inGroup.slice(0, 24 - cmdCount);
+      if (!take.length) continue;
+      out.push({ kind: "header", label: t("palette.group." + g, GROUP_LABEL_FALLBACK[g]) });
+      take.forEach((c) => out.push({ kind: "cmd", c }));
+      cmdCount += take.length;
+    }
+    return out;
+  }, [commands, query, ctx, t]);
+  const selectable = useMemo(() => {
+    const a = [];
+    rows.forEach((r, i) => {
+      if (r.kind === "cmd") a.push(i);
+    });
+    return a;
+  }, [rows]);
   useEffect(() => {
     const onKey = (e) => {
       const k = (e.key || "").toLowerCase();
@@ -447,7 +585,6 @@ const AlloCommandPalette = ({ ctx }) => {
           return !v;
         });
         setQuery("");
-        setSel(0);
         setConfirming(null);
       }
     };
@@ -465,8 +602,16 @@ const AlloCommandPalette = ({ ctx }) => {
     }
   }, [open]);
   useEffect(() => {
-    setSel(0);
-  }, [query]);
+    if (open) setSel(selectable.length ? selectable[0] : 0);
+  }, [open, query]);
+  useEffect(() => {
+    if (!open) return;
+    if (!selectable.length) {
+      if (sel !== 0) setSel(0);
+      return;
+    }
+    if (selectable.indexOf(sel) === -1) setSel(selectable[0]);
+  }, [open, selectable, sel]);
   const announce = useCallback((msg) => {
     try {
       if (window.alloAnnounce) window.alloAnnounce(msg);
@@ -524,13 +669,20 @@ const AlloCommandPalette = ({ ctx }) => {
         onKeyDown: (e) => {
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            setSel((s) => Math.min(s + 1, matches.length - 1));
+            setSel((s) => {
+              for (const idx of selectable) if (idx > s) return idx;
+              return selectable.length ? selectable[selectable.length - 1] : s;
+            });
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            setSel((s) => Math.max(s - 1, 0));
+            setSel((s) => {
+              for (let j = selectable.length - 1; j >= 0; j--) if (selectable[j] < s) return selectable[j];
+              return selectable.length ? selectable[0] : s;
+            });
           } else if (e.key === "Enter") {
             e.preventDefault();
-            runCmd(matches[sel]);
+            const row = rows[sel];
+            if (row && row.kind === "cmd") runCmd(row.c);
           } else if (e.key === "Escape") {
             e.preventDefault();
             if (confirming) setConfirming(null);
@@ -542,19 +694,19 @@ const AlloCommandPalette = ({ ctx }) => {
         role: "combobox",
         "aria-expanded": "true",
         "aria-controls": "allo-palette-list",
-        "aria-activedescendant": matches[sel] ? "allo-cmd-" + matches[sel].id : void 0,
+        "aria-activedescendant": rows[sel] && rows[sel].kind === "cmd" ? "allo-cmd-" + rows[sel].c.id : void 0,
         className: "flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500"
       }
     ), /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5" }, "Esc")),
-    /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, matches.length === 0 && /* @__PURE__ */ React.createElement("li", { className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")), matches.map((cmd, i) => /* @__PURE__ */ React.createElement("li", { key: cmd.id, id: "allo-cmd-" + cmd.id, role: "option", "aria-selected": i === sel }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, selectable.length === 0 && /* @__PURE__ */ React.createElement("li", { role: "presentation", className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")), rows.map((row, i) => row.kind === "header" ? /* @__PURE__ */ React.createElement("li", { key: "h-" + i, role: "presentation", className: "px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none" }, row.label) : /* @__PURE__ */ React.createElement("li", { key: row.c.id, id: "allo-cmd-" + row.c.id, role: "option", "aria-selected": i === sel }, /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => runCmd(cmd),
+        onClick: () => runCmd(row.c),
         onMouseEnter: () => setSel(i),
         className: `w-full text-left px-4 py-2.5 flex items-center gap-3 ${i === sel ? "bg-indigo-50" : ""}`
       },
-      /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0", "aria-hidden": "true" }, cmd.icon),
-      /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: `block text-sm font-bold ${i === sel ? "text-indigo-900" : "text-slate-800"}` }, cmd.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 truncate" }, confirming === cmd.id ? t("palette.confirm", "\u26A0 Press Enter again to confirm") : cmd.hint)),
+      /* @__PURE__ */ React.createElement("span", { className: "text-lg shrink-0", "aria-hidden": "true" }, row.c.icon),
+      /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: `block text-sm font-bold ${i === sel ? "text-indigo-900" : "text-slate-800"}` }, row.c.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 truncate" }, confirming === row.c.id ? t("palette.confirm", "\u26A0 Press Enter again to confirm") : row.c.hint)),
       i === sel && /* @__PURE__ */ React.createElement("kbd", { className: "text-[10px] text-indigo-600 border border-indigo-300 rounded px-1.5 py-0.5 shrink-0" }, "\u21B5")
     )))),
     /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 border-t border-slate-200 text-[10px] text-slate-600 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u2191\u2193"), " ", t("palette.nav", "navigate")), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("kbd", { className: "border border-slate-300 rounded px-1" }, "\u21B5"), " ", t("palette.run", "run")), /* @__PURE__ */ React.createElement("span", { className: "ml-auto" }, t("palette.footer", "Every action is announced. Ctrl+K toggles.")))
