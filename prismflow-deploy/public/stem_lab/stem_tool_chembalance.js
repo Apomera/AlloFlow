@@ -18791,9 +18791,9 @@
                 coeffs.map(function(c, i) {
                   return h('div', { key: i, className: 'flex flex-col items-center gap-1' },
                     h('span', { className: 'text-[11px] font-bold text-slate-600 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
-                    h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg' }, '+'),
+                    h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' }, '+'),
                     h('span', { className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
-                    h('button', { 'aria-label': 'Chem Sound', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-500 hover:bg-red-100 transition-colors text-lg' }, '\u2212')
+                    h('button', { 'aria-label': 'Chem Sound', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-600 hover:bg-red-100 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1' }, '\u2212')
                   );
                 })
               ),
@@ -18869,7 +18869,7 @@
                       rt.examples.map(function(ex, ei) {
                         return h('div', { key: ei, className: 'flex items-center gap-2 bg-' + rt.color + '-50 rounded-lg p-2 border border-' + rt.color + '-100' },
                           h('span', { className: 'text-xs font-mono font-bold text-' + rt.color + '-700 flex-1' }, ex.eq),
-                          h('span', { className: 'text-[11px] text-' + rt.color + '-500' }, ex.name)
+                          h('span', { className: 'text-[11px] font-medium text-' + rt.color + '-700' }, ex.name)
                         );
                       })
                     )
@@ -19038,15 +19038,15 @@
               // Info cards
               h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[11px] font-bold text-indigo-500' }, 'SHAPE'),
+                  h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider' }, 'SHAPE'),
                   h('p', { className: 'text-[11px] font-bold text-indigo-700' }, currentMol.shape)
                 ),
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[11px] font-bold text-indigo-500' }, 'BOND ANGLE'),
+                  h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider' }, 'BOND ANGLE'),
                   h('p', { className: 'text-[11px] font-bold text-indigo-700' }, currentMol.angle)
                 ),
                 h('div', { className: 'bg-indigo-50 rounded-lg p-2 text-center border border-indigo-100' },
-                  h('p', { className: 'text-[11px] font-bold text-indigo-500' }, 'POLARITY'),
+                  h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider' }, 'POLARITY'),
                   h('p', { className: 'text-[11px] font-bold text-indigo-700' }, currentMol.polarity)
                 )
               ),

@@ -2709,7 +2709,7 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-lg font-bold text-slate-600' }, '= ' + (frac.val * 100).toFixed(0) + '%'),
                   h('p', { className: 'text-xs text-slate-600' }, '\u2248 ' + frac.val.toFixed(3)),
                   (frac.sn !== frac.n || frac.sd !== frac.d) && h('p', { className: 'text-xs text-slate-600' }, '\u2192 ' + frac.sn + '/' + frac.sd),
-                  frac.n > frac.d && h('p', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDCE6 ' + toMixed(frac.n, frac.d))
+                  frac.n > frac.d && h('p', { className: 'text-xs font-bold text-orange-700' }, '\uD83D\uDCE6 ' + toMixed(frac.n, frac.d))
                 )
               ),
               mode === 'bar' ? drawBar(frac.n, frac.d, frac.color) : h('div', { className: 'flex justify-center' }, drawPie(frac.n, frac.d, 100, frac.color))
@@ -2722,7 +2722,7 @@ window.StemLab = window.StemLab || {
             return h('button', { 'aria-label': 'Number Line',
               key: m,
               onClick: function() { sfxClick(); upd({ mode: m }); },
-              className: 'px-3 py-1 rounded-lg text-xs font-bold capitalize ' + (mode === m ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600')
+              className: 'px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50')
             }, m === 'bar' ? '\u2588 Bar' : '\u25CF Pie');
           })
         ),
@@ -2769,7 +2769,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-2 mb-2' },
             h('button', { 'aria-label': 'Which fraction is larger?',
               onClick: makeQuiz,
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (quiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + ' hover:opacity-90 transition-all'
+              className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (quiz ? 'bg-orange-100 text-orange-800' : 'bg-orange-700 text-white') + ' hover:opacity-90 transition-all'
             }, quiz ? '\uD83D\uDD04 Next Round' : '\u26A1 Which is Larger?'),
             quizScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 ' + quizScore + ' | \uD83D\uDD25 ' + quizStreak)
           ),
@@ -2863,7 +2863,7 @@ window.StemLab = window.StemLab || {
             return h('button', { key: op[0],
               onClick: function() { sfxClick(); upd({ opMode: op[0] }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
-                (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50')
+                (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') + ' focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-1'
             }, op[1]);
           })
         ),
@@ -9598,7 +9598,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-violet-200 p-4' },
           h('div', { className: 'flex items-center gap-2 flex-wrap mb-2' },
             h('h5', { className: 'text-base font-black text-violet-900' }, problem.title),
-            h('span', { className: 'text-[10px] text-violet-500' }, 'Grade ' + problem.grade + ' · ' + (problem.ccss || []).join(', '))
+            h('span', { className: 'text-[10px] text-violet-600' }, 'Grade ' + problem.grade + ' · ' + (problem.ccss || []).join(', '))
           ),
           h('p', { className: 'text-sm text-slate-800 italic mb-3' }, '📖 ' + problem.story),
           // Step progress
@@ -10082,7 +10082,7 @@ window.StemLab = window.StemLab || {
             onClick: function() { sfxClick(); upd({ tab: t2.id }); trackTab(t2.id); },
             role: 'tab', 'aria-selected': tab === t2.id, tabIndex: (tab === t2.id) ? 0 : -1,
             className: 'py-1.5 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap ' +
-              (tab === t2.id ? 'bg-white text-rose-800 shadow-sm border border-rose-200' : 'text-rose-500 hover:text-rose-700 hover:bg-rose-100')
+              (tab === t2.id ? 'bg-white text-rose-800 shadow-sm border border-rose-200' : 'text-rose-700 hover:text-rose-900 hover:bg-rose-100')
           }, t2.icon + ' ' + t2.label);
         })
       ),
