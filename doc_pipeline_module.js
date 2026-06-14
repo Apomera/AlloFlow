@@ -6350,24 +6350,36 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       }
     }
 
-    // 9. Fix heading level skips (h1→h3 becomes h1→h2)
-    const batchHeadingLevels = [...accessibleHtml.matchAll(/<h([1-6])[\s>]/gi)].map(m => parseInt(m[1]));
-    if (batchHeadingLevels.length > 1) {
-      let bPrevLevel = batchHeadingLevels[0];
-      for (let hi = 1; hi < batchHeadingLevels.length; hi++) {
-        if (batchHeadingLevels[hi] > bPrevLevel + 1) {
-          const wrongLevel = batchHeadingLevels[hi];
-          const correctLevel = bPrevLevel + 1;
-          const skipRe = new RegExp(`<h${wrongLevel}([\\s>])`, 'i');
-          const closeRe = new RegExp(`</h${wrongLevel}>`, 'i');
-          if (skipRe.test(accessibleHtml)) {
-            accessibleHtml = accessibleHtml.replace(skipRe, `<h${correctLevel}$1`);
-            accessibleHtml = accessibleHtml.replace(closeRe, `</h${correctLevel}>`);
-            aiFixCount++;
-          }
-          batchHeadingLevels[hi] = correctLevel;
+    // 9. Fix heading level skips (h1→h3 becomes h1→h2). POSITIONAL (2026-06-13):
+    // the old code used a NON-GLOBAL regex that always rewrote the FIRST <hN> in
+    // the whole doc — so a VALID <h4> appearing before a later SKIPPING <h4> got
+    // demoted while the real skip survived (and the in-memory level array then
+    // diverged from the HTML), degrading the SR outline this is meant to repair.
+    // Now each heading is rewritten by its OWN position (open + its matching
+    // close); headings don't nest, so the first </hN> after an open is
+    // unambiguously that open's close. Mirrors fixHeadingHierarchy's approach.
+    {
+      const _hOpens = [];
+      let _hm; const _hRe = /<h([1-6])\b([^>]*)>/gi;
+      while ((_hm = _hRe.exec(accessibleHtml)) !== null) _hOpens.push({ pos: _hm.index, openLen: _hm[0].length, level: parseInt(_hm[1], 10) });
+      if (_hOpens.length > 1) {
+        _hOpens[0].newLevel = _hOpens[0].level;
+        let _prev = _hOpens[0].level;
+        for (let hi = 1; hi < _hOpens.length; hi++) {
+          _hOpens[hi].newLevel = (_hOpens[hi].level > _prev + 1) ? _prev + 1 : _hOpens[hi].level;
+          _prev = _hOpens[hi].newLevel;
         }
-        bPrevLevel = batchHeadingLevels[hi];
+        const _edits = [];
+        for (const op of _hOpens) {
+          if (op.newLevel === op.level) continue;
+          _edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
+          const _cm = '</h' + op.level + '>';
+          const _ci = accessibleHtml.indexOf(_cm, op.pos + op.openLen);
+          if (_ci !== -1) _edits.push({ pos: _ci, oldStr: _cm, newStr: '</h' + op.newLevel + '>' });
+          aiFixCount++;
+        }
+        _edits.sort((a, b) => b.pos - a.pos);
+        for (const e of _edits) accessibleHtml = accessibleHtml.slice(0, e.pos) + e.newStr + accessibleHtml.slice(e.pos + e.oldStr.length);
       }
     }
 
@@ -12861,24 +12873,35 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
 
-        // 9. Fix heading level skips (h1->h3 becomes h1->h2)
-        const headingLevels = [...accessibleHtml.matchAll(/<h([1-6])[\s>]/gi)].map(m => parseInt(m[1]));
-        if (headingLevels.length > 1) {
-          let prevLevel = headingLevels[0];
-          for (let hi = 1; hi < headingLevels.length; hi++) {
-            if (headingLevels[hi] > prevLevel + 1) {
-              const wrongLevel = headingLevels[hi];
-              const correctLevel = prevLevel + 1;
-              const skipRe = new RegExp(`<h${wrongLevel}([\\s>])`, 'i');
-              const closeRe = new RegExp(`</h${wrongLevel}>`, 'i');
-              if (skipRe.test(accessibleHtml)) {
-                accessibleHtml = accessibleHtml.replace(skipRe, `<h${correctLevel}$1`);
-                accessibleHtml = accessibleHtml.replace(closeRe, `</h${correctLevel}>`);
-                aiFixCount++;
-              }
-              headingLevels[hi] = correctLevel;
+        // 9. Fix heading level skips (h1->h3 becomes h1->h2). POSITIONAL
+        // (2026-06-13): the old code used a NON-GLOBAL regex that always rewrote
+        // the FIRST <hN> in the whole doc — so a VALID <hN> appearing before a
+        // later SKIPPING <hN> got demoted while the real skip survived, degrading
+        // the SR outline. Now each heading is rewritten by its OWN position
+        // (open + matching close); headings don't nest so the first </hN> after
+        // an open is that open's close. Mirrors fixHeadingHierarchy.
+        {
+          const _hOpens = [];
+          let _hm; const _hRe = /<h([1-6])\b([^>]*)>/gi;
+          while ((_hm = _hRe.exec(accessibleHtml)) !== null) _hOpens.push({ pos: _hm.index, openLen: _hm[0].length, level: parseInt(_hm[1], 10) });
+          if (_hOpens.length > 1) {
+            _hOpens[0].newLevel = _hOpens[0].level;
+            let _prev = _hOpens[0].level;
+            for (let hi = 1; hi < _hOpens.length; hi++) {
+              _hOpens[hi].newLevel = (_hOpens[hi].level > _prev + 1) ? _prev + 1 : _hOpens[hi].level;
+              _prev = _hOpens[hi].newLevel;
             }
-            prevLevel = headingLevels[hi];
+            const _edits = [];
+            for (const op of _hOpens) {
+              if (op.newLevel === op.level) continue;
+              _edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
+              const _cm = '</h' + op.level + '>';
+              const _ci = accessibleHtml.indexOf(_cm, op.pos + op.openLen);
+              if (_ci !== -1) _edits.push({ pos: _ci, oldStr: _cm, newStr: '</h' + op.newLevel + '>' });
+              aiFixCount++;
+            }
+            _edits.sort((a, b) => b.pos - a.pos);
+            for (const e of _edits) accessibleHtml = accessibleHtml.slice(0, e.pos) + e.newStr + accessibleHtml.slice(e.pos + e.oldStr.length);
           }
         }
 

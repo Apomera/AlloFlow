@@ -367,6 +367,64 @@ describe('heading hierarchy fixer (WCAG 1.3.1 / 2.4.6 / 2.4.10)', () => {
   });
 });
 
+// ── Mirror: STRICT heading-skip fixer (the two inline deterministic-fix copies,
+// doc_pipeline_source.jsx batch ~L6351 + main ~L12874; positional fix 2026-06-13) ──
+// Unlike fixHeadingHierarchy above (lenient: only renumbers skips > 2), these
+// clamp ANY skip > 1 to prev+1. The 2026-06-13 fix (#10) replaced a NON-GLOBAL
+// first-match regex — which rewrote the FIRST <hN> in the whole doc, demoting a
+// valid heading that appeared before a later skip and leaving the real skip —
+// with this POSITIONAL approach (each heading rewritten by its own position).
+function fixHeadingSkipsStrict(html) {
+  const _hOpens = [];
+  let _hm; const _hRe = /<h([1-6])\b([^>]*)>/gi;
+  while ((_hm = _hRe.exec(html)) !== null) _hOpens.push({ pos: _hm.index, openLen: _hm[0].length, level: parseInt(_hm[1], 10) });
+  if (_hOpens.length <= 1) return html;
+  _hOpens[0].newLevel = _hOpens[0].level;
+  let _prev = _hOpens[0].level;
+  for (let hi = 1; hi < _hOpens.length; hi++) {
+    _hOpens[hi].newLevel = (_hOpens[hi].level > _prev + 1) ? _prev + 1 : _hOpens[hi].level;
+    _prev = _hOpens[hi].newLevel;
+  }
+  const _edits = [];
+  for (const op of _hOpens) {
+    if (op.newLevel === op.level) continue;
+    _edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
+    const _cm = '</h' + op.level + '>';
+    const _ci = html.indexOf(_cm, op.pos + op.openLen);
+    if (_ci !== -1) _edits.push({ pos: _ci, oldStr: _cm, newStr: '</h' + op.newLevel + '>' });
+  }
+  _edits.sort((a, b) => b.pos - a.pos);
+  let result = html;
+  for (const e of _edits) result = result.slice(0, e.pos) + e.newStr + result.slice(e.pos + e.oldStr.length);
+  return result;
+}
+
+describe('strict heading-skip fixer — positional targeting (regression for #10)', () => {
+  it('demotes only the SKIPPING heading, not a valid same-level heading before it', () => {
+    // [h1,h2,h3,h4(valid),h2,h4(skip)] — the OLD first-match regex demoted the
+    // FIRST <h4> (the valid one) and left the real skip, degrading the outline.
+    const html = '<h1>A</h1><h2>B</h2><h3>C</h3><h4>Valid</h4><h2>D</h2><h4>Skip</h4>';
+    const out = fixHeadingSkipsStrict(html);
+    expect(out).toContain('<h4>Valid</h4>'); // valid heading preserved
+    expect(out).toContain('<h3>Skip</h3>');  // real skip (h2→h4) clamped to h3
+    expect(out).not.toContain('<h4>Skip');    // the skip is no longer an h4
+  });
+  it('fixes a simple skip h1 → h3 down to h2 (strict policy)', () => {
+    expect(fixHeadingSkipsStrict('<h1>A</h1><h3>B</h3>')).toBe('<h1>A</h1><h2>B</h2>');
+  });
+  it('leaves a valid sequence (incl. repeated h2) unchanged', () => {
+    const html = '<h1>A</h1><h2>B</h2><h2>C</h2><h3>D</h3>';
+    expect(fixHeadingSkipsStrict(html)).toBe(html);
+  });
+  it('keeps every open/close balanced at the same level (no mismatched tags)', () => {
+    const out = fixHeadingSkipsStrict('<h1>A</h1><h4>X</h4><h2>Y</h2><h6>Z</h6>');
+    const opens = (out.match(/<h[1-6]>/g) || []);
+    const closes = (out.match(/<\/h[1-6]>/g) || []);
+    expect(opens.length).toBe(closes.length);
+    opens.forEach((o, i) => expect(closes[i]).toBe(o.replace('<', '</')));
+  });
+});
+
 describe('text-spacing CSS injection (sanitizeStyleForWCAG step 4)', () => {
   it('injects the spacing block when <head> is present and no marker exists', () => {
     const result = injectTextSpacingCss('<html><head><title>t</title></head><body><p>x</p></body></html>');
