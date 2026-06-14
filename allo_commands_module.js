@@ -77,6 +77,49 @@ function buildAlloCommands(ctx) {
       c.openProjectSettings();
       return t("cmd.open_project_settings_done", "Project settings opened.");
     } },
+    // ── Open a tool (added 2026-06-13) — quick-launch the workspaces that normally live behind a
+    //    hub card. Each is opensPanel-tagged so launching it CLOSES any open hub / other tool (the
+    //    panel-stacking fix) instead of stacking. The ctx open-closures mirror the hub cards. ──
+    { id: "open_stem_lab", opensPanel: "stemLab", icon: "\u{1F52C}", roles: "all", label: t("cmd.open_stem_lab", "Open the STEM Lab"), aliases: ["stem lab", "stem", "science lab", "math lab", "simulations", "labs"], hint: t("cmd.open_stem_lab_hint", "Interactive science & math tools"), run: (c) => {
+      c.openStemLab();
+      return t("cmd.open_stem_lab_done", "STEM Lab opened.");
+    } },
+    { id: "open_storyforge", opensPanel: "storyForge", icon: "\u270D\uFE0F", roles: "all", label: t("cmd.open_storyforge", "Open StoryForge"), aliases: ["storyforge", "story forge", "creative writing", "write a story"], hint: t("cmd.open_storyforge_hint", "Guided creative writing"), run: (c) => {
+      c.openStoryForge();
+      return t("cmd.open_storyforge_done", "StoryForge opened.");
+    } },
+    { id: "open_allohaven", opensPanel: "alloHaven", icon: "\u{1F3DD}\uFE0F", roles: "all", label: t("cmd.open_allohaven", "Open AlloHaven"), aliases: ["allohaven", "allo haven", "haven", "calm space", "regulation space", "break space"], hint: t("cmd.open_allohaven_hint", "A calm, regulating space"), run: (c) => {
+      c.openAlloHaven();
+      return t("cmd.open_allohaven_done", "AlloHaven opened.");
+    } },
+    { id: "open_behavior_lens", opensPanel: "behaviorLens", icon: "\u{1F50E}", roles: "teacher", label: t("cmd.open_behavior_lens", "Open the Behavior Lens"), aliases: ["behavior lens", "behaviour lens", "abc data", "behavior data", "fba", "observation"], hint: t("cmd.open_behavior_lens_hint", "Behavior observation & analysis"), run: (c) => {
+      c.openBehaviorLens();
+      return t("cmd.open_behavior_lens_done", "Behavior Lens opened.");
+    } },
+    { id: "open_report_writer", opensPanel: "reportWriter", icon: "\u{1F4C4}", roles: "teacher", label: t("cmd.open_report_writer", "Open the Report Writer"), aliases: ["report writer", "write a report", "evaluation report", "psych report", "reports"], hint: t("cmd.open_report_writer_hint", "Draft evaluation reports"), run: (c) => {
+      c.openReportWriter();
+      return t("cmd.open_report_writer_done", "Report Writer opened.");
+    } },
+    { id: "open_symbol_studio", opensPanel: "symbolStudio", icon: "\u{1F523}", roles: "teacher", label: t("cmd.open_symbol_studio", "Open Symbol Studio"), aliases: ["symbol studio", "aac", "communication board", "picture symbols", "symbols", "visual schedule"], hint: t("cmd.open_symbol_studio_hint", "AAC boards & visual supports"), run: (c) => {
+      c.openSymbolStudio();
+      return t("cmd.open_symbol_studio_done", "Symbol Studio opened.");
+    } },
+    { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: "teacher", label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
+      c.openAccessibilityLab();
+      return t("cmd.open_accessibility_lab_done", "Accessibility Lab opened.");
+    } },
+    { id: "open_lumen", opensPanel: "stemLab", icon: "\u{1F4A1}", roles: "teacher", label: t("cmd.open_lumen", "Open Lumen (data canvas)"), aliases: ["lumen", "data canvas", "chart data", "graph data", "progress charts", "visualize data"], hint: t("cmd.open_lumen_hint", "Turn assessment data into charts"), run: (c) => {
+      c.openLumen();
+      return t("cmd.open_lumen_done", "Lumen opened in the STEM Lab.");
+    } },
+    { id: "open_community_catalog", opensPanel: "communityCatalog", icon: "\u{1F5C2}\uFE0F", roles: "teacher", label: t("cmd.open_community_catalog", "Open the Community Catalog"), aliases: ["community catalog", "catalog", "shared lessons", "browse lessons", "community"], hint: t("cmd.open_community_catalog_hint", "Browse shared community lessons"), run: (c) => {
+      c.openCommunityCatalog();
+      return t("cmd.open_community_catalog_done", "Community Catalog opened.");
+    } },
+    { id: "open_dynamic_assessment", opensPanel: "dynamicAssessment", icon: "\u{1F4CA}", roles: "teacher", label: t("cmd.open_dynamic_assessment", "Open Dynamic Assessment"), aliases: ["dynamic assessment", "progress monitoring", "probe", "cbm", "assessment"], hint: t("cmd.open_dynamic_assessment_hint", "Run a dynamic assessment"), run: (c) => {
+      c.openDynamicAssessment();
+      return t("cmd.open_dynamic_assessment_done", "Dynamic Assessment opened.");
+    } },
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
     { id: "generate_quiz", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_quiz", "Make a quiz from this"), aliases: ["make a quiz", "quiz me on this", "create a quiz", "comprehension questions", "generate quiz"], hint: t("cmd.generate_quiz_hint", "Generate a quiz from the current content"), run: (c) => {
       c.generateQuiz();
@@ -466,7 +509,17 @@ const CMD_GROUP = {
   pipeline_tour: "help",
   report_problem: "help",
   voice_start: "voice",
-  voice_stop: "voice"
+  voice_stop: "voice",
+  open_stem_lab: "tools",
+  open_storyforge: "tools",
+  open_allohaven: "tools",
+  open_behavior_lens: "tools",
+  open_report_writer: "tools",
+  open_symbol_studio: "tools",
+  open_accessibility_lab: "tools",
+  open_lumen: "tools",
+  open_community_catalog: "tools",
+  open_dynamic_assessment: "tools"
 };
 const CMD_CONTEXT = {
   pipeline_score: ["pipeline"],
@@ -503,8 +556,8 @@ const CMD_CONTEXT = {
   toggle_focus_mode: ["stemLab"],
   zen_on: ["stemLab"]
 };
-const GROUP_ORDER = ["navigate", "create", "accessibility", "display", "pipeline", "help", "voice"];
-const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
+const GROUP_ORDER = ["navigate", "create", "tools", "accessibility", "display", "pipeline", "help", "voice"];
+const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
 const CTX_FLAG = { pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", symbolStudio: "symbolStudioOpen", stemLab: "stemLabOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
 const CTX_PRIORITY = ["symbolStudio", "stemLab", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
 const CONTEXT_LABEL_FALLBACK = { pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", stemLab: "Here \u2014 STEM Lab", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
@@ -551,11 +604,12 @@ const AlloCommandPalette = ({ ctx }) => {
         promoted.forEach((c) => out.push({ kind: "cmd", c }));
       }
     }
+    const PER_GROUP = 6, MAX_ROWS = 40;
     let cmdCount = promotedIds.size;
     for (const g of GROUP_ORDER) {
-      if (cmdCount >= 24) break;
+      if (cmdCount >= MAX_ROWS) break;
       const inGroup = commands.filter((c) => (CMD_GROUP[c.id] || "navigate") === g && !promotedIds.has(c.id));
-      const take = inGroup.slice(0, 24 - cmdCount);
+      const take = inGroup.slice(0, Math.min(PER_GROUP, MAX_ROWS - cmdCount));
       if (!take.length) continue;
       out.push({ kind: "header", label: t("palette.group." + g, GROUP_LABEL_FALLBACK[g]) });
       take.forEach((c) => out.push({ kind: "cmd", c }));

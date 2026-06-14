@@ -19727,6 +19727,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           exportMenu: () => setShowExportMenu(false),
           exportPreview: () => setShowExportPreview(false),
           readThisPage: () => setShowReadThisPage(false),
+          // Tool workspaces (2026-06-13): launching a tool from the palette/voice/bot now
+          // closes any other open tool or hub instead of stacking. Lumen rides on stemLab.
+          behaviorLens: () => setShowBehaviorLens(false),
+          reportWriter: () => setShowReportWriter(false),
+          symbolStudio: () => setIsSymbolStudioOpen(false),
+          accessibilityLab: () => setIsAccessibilityLabOpen(false),
+          communityCatalog: () => setIsCommunityCatalogOpen(false),
+          dynamicAssessment: () => setIsDynamicAssessmentOpen(false),
+          stemLab: () => setShowStemLab(false),
+          storyForge: () => setShowStoryForge(false),
+          alloHaven: () => setIsAlloHavenOpen(false),
         };
         Object.keys(closers).forEach((id) => { if (id !== keep) { try { closers[id](); } catch (_) {} } });
       },
@@ -19743,6 +19754,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         try { if (window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === 'function') { window.AlloModules.ErrorReporter.openPanel(); return; } } catch (_) {}
         try { addToast((t('toasts.error_reporter_loading') || 'The problem reporter is still loading — try again in a moment.'), 'info'); } catch (_) {}
       },
+      // ── Nested-tool launchers (2026-06-13) ── open a workspace that normally lives behind a
+      // hub card. closeOtherPanels (each command is opensPanel-tagged in the registry) closes the
+      // hub / other tools first, so these just OPEN — mirroring the hub cards' setters exactly.
+      openStemLab: () => { setStemLabTool(null); setStemLabTab('explore'); setShowStemLab(true); },
+      openStoryForge: () => setShowStoryForge(true),
+      openAlloHaven: () => setIsAlloHavenOpen(true),
+      openBehaviorLens: () => setShowBehaviorLens(true),
+      openReportWriter: () => setShowReportWriter(true),
+      openSymbolStudio: () => setIsSymbolStudioOpen(true),
+      openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
+      openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
+      openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
+      openDynamicAssessment: () => setIsDynamicAssessmentOpen(true),
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
