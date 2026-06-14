@@ -54,7 +54,15 @@ var createDocPipeline = function(deps) {
   // ── Pipeline telemetry logger ──
   // Structured logging with timestamps, durations, and API call tracking.
   // All output prefixed with [DocPipe] for easy filtering in DevTools.
-  var _pipelineStats = { apiCalls: 0, visionCalls: 0, totalApiMs: 0, retries: 0, startTime: 0, stepTimes: {} };
+  var _pipelineStats = { apiCalls: 0, visionCalls: 0, totalApiMs: 0, retries: 0, startTime: 0, stepTimes: {}, lastOpenStep: null, lastOpenStepLabel: '' };
+  // Reliability telemetry (2026-06-13): human labels for the 4 pipeline stages,
+  // so a failure can be attributed ("Stage 2: generate accessible HTML") in the
+  // run-history + the download toast instead of a bare error message.
+  var _PIPE_STEP_LABELS = { 1: 'extract text', 2: 'generate accessible HTML', 3: 'audit (axe + AI)', 4: 'auto-fix loop' };
+  // The current run's alt-text-edit listener, kept module-side so each run can
+  // remove the PRIOR run's listener before installing its own (was a leak: every
+  // run added a handler that kept firing on that run's stale extractedImages).
+  var _altTextEditHandler = null;
   // Canvas-visible sink: in canvas/embedded runtimes, warnLog/console.warn aren't shown. We keep
   // a rolling window-level array AND dispatch a CustomEvent so a host listener (panel, toast,
   // diagnostic overlay) can surface pipeline telemetry without touching each call site.
@@ -87,11 +95,27 @@ var createDocPipeline = function(deps) {
   };
   var _pipeStepStart = function(step) {
     _pipelineStats.stepTimes[step] = performance.now();
+    _pipelineStats.lastOpenStep = step;
+    _pipelineStats.lastOpenStepLabel = _PIPE_STEP_LABELS[step] || ('step ' + step);
     _pipeLog('Step ' + step, 'Starting...');
   };
   var _pipeStepEnd = function(step, detail) {
     var dur = _pipelineStats.stepTimes[step] ? ((performance.now() - _pipelineStats.stepTimes[step]) / 1000).toFixed(1) + 's' : '?';
+    // Step closed cleanly — clear the open-step marker so a later throw in a
+    // BETWEEN-steps phase isn't misattributed to a finished step.
+    if (_pipelineStats.lastOpenStep === step) { _pipelineStats.lastOpenStep = null; _pipelineStats.lastOpenStepLabel = ''; }
     _pipeLog('Step ' + step, 'Complete (' + dur + ')' + (detail ? ' — ' + detail : ''));
+  };
+  // Snapshot of the current/last run's telemetry — read by the app on a failed
+  // run to record an honest "failed at Stage N" history row (the success path
+  // carries the same numbers in fixResult.pipelineStats).
+  var _getPipelineStats = function() {
+    return {
+      apiCalls: _pipelineStats.apiCalls, visionCalls: _pipelineStats.visionCalls,
+      totalApiMs: Math.round(_pipelineStats.totalApiMs), retries: _pipelineStats.retries,
+      lastOpenStep: _pipelineStats.lastOpenStep, lastOpenStepLabel: _pipelineStats.lastOpenStepLabel,
+      durationMs: _pipelineStats.startTime ? Math.round(performance.now() - _pipelineStats.startTime) : null,
+    };
   };
 
   // Wrap callGemini/callGeminiVision at the binding layer:
@@ -10639,6 +10663,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // Reset pipeline telemetry for this run
     _pipelineStats.apiCalls = 0; _pipelineStats.visionCalls = 0; _pipelineStats.totalApiMs = 0; _pipelineStats.retries = 0;
     _pipelineStats.startTime = performance.now(); _pipelineStats.stepTimes = {};
+    _pipelineStats.lastOpenStep = null; _pipelineStats.lastOpenStepLabel = '';
     _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
@@ -11353,6 +11378,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (extractedImages[e.detail.index]) extractedImages[e.detail.index].description = e.detail.altText;
         }
       };
+      // Leak fix (2026-06-13): remove the PRIOR run's listener before installing
+      // this run's. Without this, every run accumulated a handler that kept
+      // firing on its own (now-stale) extractedImages — a memory leak across a
+      // multi-doc session AND a correctness hazard (a keystroke in the current
+      // run's alt-text editor wrote into past runs' arrays). Caps live listeners
+      // at exactly one.
+      try { if (_altTextEditHandler) window.removeEventListener('alloflow:alt-text-edited', _altTextEditHandler); } catch (_) {}
+      _altTextEditHandler = _onAltTextEdit;
       window.addEventListener('alloflow:alt-text-edited', _onAltTextEdit);
 
       // ── Emit extracted data for UI to show during wait ──
@@ -13643,6 +13676,19 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // already tagged, rather than re-guessing from font scale.
         sourceStructTree: (_auditResult && _auditResult.structTree) || null,
         elapsed: Math.round((Date.now() - _startTime) / 1000),
+        // Reliability telemetry (2026-06-13): the per-run stats that were
+        // previously only logged. The app's run-history records these so a
+        // teacher/coordinator gets an honest success/failure + retries/vision/
+        // API-time denominator (the failure path carries the same via
+        // getPipelineStats()).
+        pipelineStats: {
+          outcome: 'success',
+          apiCalls: _pipelineStats.apiCalls,
+          visionCalls: _pipelineStats.visionCalls,
+          totalApiMs: Math.round(_pipelineStats.totalApiMs),
+          retries: _pipelineStats.retries,
+          durationMs: Date.now() - _startTime,
+        },
       };
 
       _pipeStepEnd(4, autoFixPasses + ' fix passes, score: ' + (verification ? verification.score : '?') + '/100');
@@ -23455,6 +23501,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   var _wrap = function(fn) { return function() { _bindState(); return fn.apply(this, arguments); }; };
   var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
   return {
+    getPipelineStats: _getPipelineStats,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),

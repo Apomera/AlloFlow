@@ -10453,6 +10453,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const key = (pendingPdfFile?.name || '?') + ':' + (cur.afterScore || 0) + ':' + (cur.accessibleHtml.length || 0);
     setPdfRunHistory((prev) => {
       if (prev.some((r) => r._k === key)) return prev;
+      const _ps = cur.pipelineStats || null;
       const row = {
         _k: key, at: new Date().toISOString(),
         fileName: pendingPdfFile?.name || 'document',
@@ -10461,6 +10462,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         passes: cur.autoFixPasses || 0,
         axeViolations: (cur.axeAudit && cur.axeAudit.totalViolations != null) ? cur.axeAudit.totalViolations : null,
         pages: cur.pageCount || null,
+        // Reliability telemetry (2026-06-13): an honest outcome + the per-run
+        // stats from fixResult.pipelineStats (null on older/loaded rows).
+        outcome: 'success',
+        retries: _ps ? _ps.retries : null,
+        visionCalls: _ps ? _ps.visionCalls : null,
+        apiCalls: _ps ? _ps.apiCalls : null,
+        apiMs: _ps ? _ps.totalApiMs : null,
+        durationMs: _ps ? _ps.durationMs : null,
       };
       // Upsert (sweep 2026-06-11 [9]): auto-continue rounds and post-load
       // edits used to APPEND a row per state change — one run could leave
@@ -15733,8 +15742,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // made things WORSE is discarded instead of committed.
         if (newScore < (cur.afterScore || 0)) {
           warnLog('[AutoContinue] round ' + (round + 1) + ' regressed (' + newScore + ' < ' + (cur.afterScore || 0) + ') — reverting this round.');
-          stagnantRounds++;
-          if (stagnantRounds >= 2) break;
+          // Reliability fix (2026-06-13): do NOT increment stagnantRounds here.
+          // The revert leaves `cur` unchanged, so the NEXT round's top-of-loop
+          // no-progress check (comparing against lastViolations/lastScore set
+          // this round) already counts this stall — exactly once. The old
+          // `stagnantRounds++` here DOUBLE-counted one regression (here + next
+          // round), so a single wobble abandoned the loop instead of allowing
+          // a recovery attempt. A regression now reverts and tries again; the
+          // loop still stops after two genuinely-consecutive stalls.
           continue;
         }
         const _newPlain = _plainTextOf(result.html);
@@ -15884,7 +15899,42 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return true;
     } catch (e) { return false; }
   }, [pendingPdfFile, pdfMultiSession, addToast, pdfAuditorCount, pdfPolishPasses, pdfAutoFixPasses, pdfTargetScore]);
-  const fixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
+  const _rawFixAndVerifyPdf = _docPipeline ? _docPipeline.fixAndVerifyPdf : async () => {};
+  // Reliability telemetry (2026-06-13): wrap the pipeline so a FAILED run is
+  // recorded in the run-history too — success rows are written by the
+  // pdfFixResult effect, so without this the history (and its CSV) was
+  // success-ONLY and could not yield an honest failure rate for the UMaine
+  // reliability gate. Stage attribution comes from the pipeline's last-open
+  // step (getPipelineStats). Re-throws so every caller's existing error UI is
+  // unchanged. Covers single-file + batch + page-range call sites at once.
+  const fixAndVerifyPdf = async (opts) => {
+    try {
+      return await _rawFixAndVerifyPdf(opts);
+    } catch (err) {
+      try {
+        const _st = (_docPipeline && _docPipeline.getPipelineStats) ? _docPipeline.getPipelineStats() : {};
+        const _fname = (opts && opts.fileName) || pendingPdfFile?.name || 'document';
+        setPdfRunHistory((prev) => {
+          const next = [...prev, {
+            _k: 'fail:' + _fname + ':' + Date.now(),
+            at: new Date().toISOString(),
+            fileName: _fname,
+            outcome: 'failed',
+            failStage: _st.lastOpenStepLabel || 'unknown',
+            failReason: (err && err.message) ? String(err.message).slice(0, 200) : String(err).slice(0, 200),
+            retries: _st.retries != null ? _st.retries : null,
+            visionCalls: _st.visionCalls != null ? _st.visionCalls : null,
+            apiCalls: _st.apiCalls != null ? _st.apiCalls : null,
+            apiMs: _st.totalApiMs != null ? _st.totalApiMs : null,
+            durationMs: _st.durationMs != null ? _st.durationMs : null,
+            beforeScore: null, afterScore: null, passes: null, axeViolations: null, pages: null,
+          }];
+          return next.length > 200 ? next.slice(-200) : next;
+        });
+      } catch (_) {}
+      throw err;
+    }
+  };
   const generateAuditReportHtml = _docPipeline ? _docPipeline.generateAuditReportHtml : () => '';
   const downloadAccessiblePdf = _docPipeline ? _docPipeline.downloadAccessiblePdf : () => {};
   const createTaggedPdf = _docPipeline ? _docPipeline.createTaggedPdf : async () => null;
