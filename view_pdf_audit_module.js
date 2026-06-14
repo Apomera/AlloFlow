@@ -1324,6 +1324,7 @@ function PdfAuditView(props) {
     }
   };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
+  const [reconPreviewIdx, setReconPreviewIdx] = useState(null);
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
   const _taggedGateBytesRef = useRef(null);
   const [auditElapsedSec, setAuditElapsedSec] = useState(0);

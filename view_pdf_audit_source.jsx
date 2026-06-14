@@ -1133,6 +1133,13 @@ function PdfAuditView(props) {
     } catch (e) { addToast((t('toasts.smart_table_insert_failed') || 'Insert failed: ') + ((e && e.message) || 'unknown'), 'error'); }
   };
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
+  // Reconstructed-table mini-preview (which row's inline table is expanded).
+  // FATAL-CRASH FIX 2026-06-13: this declaration was lost during a concurrent
+  // edit-war stomp while its 3 usages (the recon review-row map) survived →
+  // 'reconPreviewIdx is not defined' took down the whole PdfAuditView via the
+  // ErrorBoundary. (The render-refs gate doesn't catch a component-local
+  // undefined ref inside a JSX .map.)
+  const [reconPreviewIdx, setReconPreviewIdx] = useState(null);
   // Failed-verification tagged download: bytes wait here while the teacher
   // decides via the inline panel (replaces a blocking window.confirm).
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
