@@ -145,6 +145,11 @@ const checks = [
     informational: true,
   },
   {
+    name: 'Safety-string Spanglish (alerts/confirms)',
+    cmd: ['node', 'dev-tools/i18n/check_safety_string_spanglish.cjs', '--quiet'],
+    description: 'BLOCKING. Catches HALF-translated alerts.*/confirms.* (incl. destructive-action confirms) that the passthrough metric misses — the 2026-06-08 Finding-1 regression class. Source-relative + script-aware + cognate-safe; at 0 after the fix, so it only fires on a new regression.',
+  },
+  {
     name: 'Deploy mirror sync',
     cmd: ['node', 'dev-tools/check_deploy_mirror.cjs', '--quiet'],
     description: 'Root *_module.js matches prismflow-deploy/public/ mirror',
