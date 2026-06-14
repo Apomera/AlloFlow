@@ -19305,6 +19305,17 @@ var d = labToolData.cell || {};
             canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; };
 
             canvasEl._cellSimSetPaused = function (p) { canvasEl._cellSimPaused = p; };
+            // Canvas organism-click -> React state + SR announce. Was a dead wire: _onSelect was
+            // called on click (19261) but never assigned, so canvas clicks updated only the glow,
+            // never d.selectedOrganism / the info card, and were silent to AT. upd is functional
+            // (reads prev), so this stale-closure assignment accumulates into live state correctly.
+            canvasEl._onSelect = function (id) {
+              upd('selectedOrganism', id);
+              if (id && typeof announceToSR === 'function') {
+                var od = (typeof ORGANISMS !== 'undefined' && ORGANISMS) ? ORGANISMS.find(function (o) { return o.id === id; }) : null;
+                announceToSR('Selected ' + (od && od.name ? od.name : id));
+              }
+            };
 
             canvasEl._cellSimSetSpeed = function (s) { speedMultiplier = Math.max(1, Math.min(5, Math.round(s))); };
 
@@ -19579,6 +19590,7 @@ var d = labToolData.cell || {};
                       : searchResults.map(function(m) {
                           return React.createElement('button', {
                             key: m,
+                            'aria-current': d.mode === m ? 'true' : undefined,
                             onClick: function() { setMode(m); upd('_cellSearch', ''); },
                             className: 'px-2 py-1 rounded text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-green-50 hover:border-green-500'
                           }, CELL_MODE_LABELS[m] || m);
@@ -19611,6 +19623,7 @@ var d = labToolData.cell || {};
                       var isActive = d.mode === m;
                       return React.createElement('button', {
                         key: m,
+                        'aria-current': isActive ? 'true' : undefined,
                         onClick: function() { setMode(m); },
                         className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
                           (isActive
@@ -19782,6 +19795,8 @@ var d = labToolData.cell || {};
 
                 return React.createElement("div", {
 
+                  role: "dialog", "aria-modal": "true", "aria-labelledby": "cell-playinstr-title", tabIndex: -1,
+                  onKeyDown: function (e) { if (e.key === 'Escape') { e.stopPropagation(); upd("showPlayInstructions", false); } },
                   className: "absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30",
 
                   style: { animation: 'fadeIn 0.3s ease-out' }
@@ -19796,7 +19811,7 @@ var d = labToolData.cell || {};
 
                       React.createElement("div", { className: "text-3xl mb-1" }, org.icon),
 
-                      React.createElement("h3", { className: "text-white font-black text-base" }, "Playing as " + org.label),
+                      React.createElement("h3", { id: "cell-playinstr-title", className: "text-white font-black text-base" }, "Playing as " + org.label),
 
                       React.createElement("p", { className: "text-white/80 text-[11px] mt-0.5" }, org.desc)
 
@@ -19870,7 +19885,7 @@ var d = labToolData.cell || {};
 
                     React.createElement("div", { className: "px-5 pb-4" },
 
-                      React.createElement("button", { "aria-label": "Got it Let's Go!",
+                      React.createElement("button", { "aria-label": "Got it Let's Go!", autoFocus: true,
 
                         onClick: function () { upd("showPlayInstructions", false); },
 
@@ -20071,6 +20086,7 @@ var d = labToolData.cell || {};
 
                   },
 
+                  "aria-pressed": d.selectedOrganism === org.id,
                   className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
 
                   style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color } : {}
@@ -20115,7 +20131,7 @@ var d = labToolData.cell || {};
 
                       cv._onXP = function (xp, label) {
 
-                        upd("xpEarned", (d.xpEarned || 0) + xp);
+                        setLabToolData(function (prev) { var c = prev.cell || {}; return Object.assign({}, prev, { cell: Object.assign({}, c, { xpEarned: (c.xpEarned || 0) + xp }) }); });
 
                         if (typeof addToast === 'function') addToast("+" + xp + " XP: " + label + "!", "success");
 
@@ -20356,7 +20372,7 @@ var d = labToolData.cell || {};
 
                             upd("quizScore", (d.quizScore || 0) + 1);
                             upd("quizStreak", (d.quizStreak || 0) + 1);
-                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz', 10, 'Cell quiz correct');
+                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz_' + (d.quizIdx || 0), 10, 'Cell quiz correct');
 
                             cellSound('correct');
                             if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
@@ -20419,7 +20435,7 @@ var d = labToolData.cell || {};
 
                             upd("quizScore", (d.quizScore || 0) + 1);
                             upd("quizStreak", (d.quizStreak || 0) + 1);
-                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz', 10, 'Cell quiz correct');
+                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz_' + (d.quizIdx || 0), 10, 'Cell quiz correct');
 
                             cellSound('correct');
                             if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
@@ -20557,8 +20573,8 @@ var d = labToolData.cell || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
-              React.createElement("button", { "aria-label": "AI Tutor", onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700 hover:bg-blue-200") }, "\uD83E\uDD16 AI Tutor"),
+              React.createElement("button", { "aria-label": "Toggle badges panel", "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              React.createElement("button", { "aria-label": "AI Tutor", "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700 hover:bg-blue-200") }, "\uD83E\uDD16 AI Tutor"),
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
@@ -21062,19 +21078,22 @@ var d = labToolData.cell || {};
               var isStudied = d._studiedVocab && d._studiedVocab[termKey];
 
               return React.createElement('div', {
+                role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cell-flashcard-title', tabIndex: -1,
+                onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); upd('_studyConcept', null); } },
                 className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200'
               },
                 React.createElement('div', {
                   className: 'bg-white rounded-2xl border-2 border-emerald-500 max-w-sm w-full p-6 shadow-2xl relative animate-in zoom-in-95 duration-200'
                 },
                   React.createElement('button', {
+                    autoFocus: true,
                     onClick: function() { upd('_studyConcept', null); },
                     className: 'absolute top-3 right-3 text-slate-600 hover:text-slate-900 font-bold p-1 rounded-lg hover:bg-slate-100',
                     'aria-label': 'Close flashcard'
                   }, '✕'),
                   React.createElement('div', { className: 'text-center' },
                     React.createElement('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),
-                    React.createElement('h4', { className: 'text-lg font-bold text-emerald-800 mb-2' }, vocabInfo.term),
+                    React.createElement('h4', { id: 'cell-flashcard-title', className: 'text-lg font-bold text-emerald-800 mb-2' }, vocabInfo.term),
                     React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
                       vocabInfo.def
                     ),
