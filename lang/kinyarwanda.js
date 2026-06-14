@@ -12029,7 +12029,7 @@
   },
   "confirms": {
     "replace_imported_cards": "Gusimbuza amakarita yose ariho n'ayinjijwe?",
-    "delete_voice_note": "Siba iki ijwi note?",
+    "delete_voice_note": "Siba iyi nyandiko y'ijwi?",
     "remove_companion": "Kuvanaho umunyangazi wawe?",
     "delete_goal": "Siba iki intego?",
     "delete_atlas": "Gusiba iyi atlas? Imihora n'impamvu ntibishobora kugaruka.",

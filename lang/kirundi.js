@@ -12029,7 +12029,7 @@
   },
   "confirms": {
     "replace_imported_cards": "Gusubiriza amakarata yose ariho n'ayazanywe?",
-    "delete_voice_note": "Futa iki ijwi note?",
+    "delete_voice_note": "Futa iki capango c'ijwi?",
     "remove_companion": "Kuraho umugenzi wawe?",
     "delete_goal": "Futa iki intumbero?",
     "delete_atlas": "Gufuta iyi atlasi? Imihora n'imvo bidashobora gusubizwa.",

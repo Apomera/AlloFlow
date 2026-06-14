@@ -11853,7 +11853,7 @@
     "pick_decoration_first": "Kālet juon men in kāinōknōk ñan an koba ie ṃokta.",
     "write_association": "Jeje juon ekkejel e kadu — ta eo men in ej kakeememej eok kake?",
     "no_crop_data": "Ejjeḷọk meḷeḷe in mwijit ñan pija in.",
-    "invalid_crop_data": "Crop data ejjab jejjet.",
+    "invalid_crop_data": "Data in jeke pija ejjab jejjet.",
     "no_full_page_image": "Ejjeḷọk pija eo aolepen peij. Bar kōṃṃane jerbal in kōkāāl ñan an maroñ mwijit.",
     "selection_too_small": "Eḷap an dik men eo kwaar kālete. Iperḷọk juon jikin eḷapḷọk.",
     "encryption_unavailable": "Ejjeḷọk kein kọkkure naan ilo browser in. Bōlen kwōj aikuj juon browser e kāāl ḷọk ñan kōjparok men ko kwōj leḷọk.",
@@ -11873,7 +11873,7 @@
     "warning_unsaved": "Eor amim oktak ko jab kakōne."
   },
   "confirms": {
-    "replace_imported_cards": "Pinej aolep card ko kiiō kōn ko emōj import?",
+    "replace_imported_cards": "Pinej aolep kaat ko kiiō kōn ko emōj būki tok?",
     "delete_voice_note": "Joḷọk ainikien in ke?",
     "remove_companion": "Joḷọk ṃōttaṃ ke?",
     "delete_goal": "Joḷọk mejānkajjik in ke?",
@@ -11900,7 +11900,7 @@
     "replace_board": "Pinej board kiiō? Cell ko jañin kōjparok renaaj jako.",
     "change_granularity": "Ukōt joñan kanooj enaaj kōjepḷaak men ko kwaar abwin. Wōnṃaanḷọk ke?",
     "clear_pdf_progress": "Jolok progress emōj kōjparok ñan PDF in? Eban kōkar.",
-    "switch_sentence_frame": "Oktak template in sentence frame? Aṃ edit ko ilo blank ko naaj pinej.",
+    "switch_sentence_frame": "Oktak template in kōkkar in naan? Aṃ oktak ko ilo jikin ko rejjeḷọk naaj pinej.",
     "replace_program_with_template": "Pinej program kiiō kōn template?"
   },
   "headings": {

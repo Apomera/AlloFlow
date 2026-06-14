@@ -12091,7 +12091,7 @@
     "delete_atlas": "Efase atlas sa a? Ou p ap kapab rekipere koneksyon yo ak jistifikasyon yo.",
     "delete_realm": "Efase wayòm sa a? Ou p ap kapab rekipere zòn yo ak jistifikasyon yo.",
     "delete_entry_tokens": "Efase antre sa a? Yo p ap remèt jeton ou deja genyen yo.",
-    "restore_backup_destructive": "Restore depi sovgad sa a? Sa ranplase TOUT done aktyèl yo — dekorasyon, jounal, jeton, istwa, paramèt. Ou pa kapab defè sa.",
+    "restore_backup_destructive": "Retabli depi sovgad sa a? Sa ap ranplase TOUT done aktyèl yo — dekorasyon, jounal, jeton, istwa, paramèt. Ou pa ka defè sa.",
     "reset_skill_progress": "Reyinisyalize tout pwogrè ladrès yo? Ou pa kapab defè sa.",
     "remove_my_annotations": "Retire tout nòt ak souliyman ou yo? Anotasyon pwofesè yo ap rete.",
     "exit_calibration_full": "Soti nan mòd kalibraj la? Yo pral jete pwogrè a.",
