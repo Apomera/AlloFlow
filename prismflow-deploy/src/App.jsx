@@ -4395,7 +4395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '933ee37d';
+    var pluginCdnVersion = 'ef4fae21';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -19624,6 +19624,29 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       fontSmaller: () => { const v = Math.max(10, (sliderFontSize || 16) - 2); setSliderFontSize(v); return v; },
       resetFontSize,
       isStudentLinkMode, isIndependentMode,
+      // Context signals (2026-06-13, read-only) — drive contextual command surfacing/grouping
+      // in the palette. Pure state mirrors beside pipelineOpen/voiceActive: no handlers, cannot
+      // throw. (Slice 1 of the context-aware palette; the renderer consumes these in a later slice.)
+      educatorHubOpen: showEducatorHub,
+      learningHubOpen: showLearningHub,
+      symbolStudioOpen: isSymbolStudioOpen,
+      stemLabOpen: showStemLab,
+      stemLabTool,
+      behaviorLensOpen: showBehaviorLens,
+      contentLoaded: !!generatedContent,
+      zenActive: isZenMode,
+      focusActive: focusMode,
+      // Slice 2 (2026-06-13): essential ACTION capabilities — thin wrappers on existing host
+      // handlers (handleGenerate ~20978, handleSetShowSubmitModalToTrue ~7753). hasSourceOrAnalysis
+      // (~23395) gates the generate commands; isTeacherMode (~3434) gates the student submit command.
+      hasSourceOrAnalysis,
+      isTeacherMode,
+      generateQuiz: () => handleGenerate('quiz'),
+      generateGlossary: () => handleGenerate('glossary'),
+      generateSimplified: (cfg) => handleGenerate('simplified', null, false, null, cfg || {}),
+      generateSentenceFrames: () => handleGenerate('sentence-frames'),
+      generateAnalysis: () => handleGenerate('analysis'),
+      submitWork: handleSetShowSubmitModalToTrue,
       // Pipeline-aware commands (guarded by `when` in the registry)
       pipelineOpen: !!pdfFixResult,
       getPipelineScore: () => pdfFixResult ? { before: (pdfFixResult.beforeScore != null ? pdfFixResult.beforeScore : null), after: (pdfFixResult.afterScore || 0), target: pdfTargetScore } : null,
@@ -27507,7 +27530,7 @@ ${_toolList}
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
