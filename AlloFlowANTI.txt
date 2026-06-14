@@ -19788,6 +19788,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           stemLab: () => setShowStemLab(false),
           storyForge: () => setShowStoryForge(false),
           alloHaven: () => setIsAlloHavenOpen(false),
+          selHub: () => setShowSelHub(false),
         };
         Object.keys(closers).forEach((id) => { if (id !== keep) { try { closers[id](); } catch (_) {} } });
       },
@@ -19817,6 +19818,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
       openDynamicAssessment: () => setIsDynamicAssessmentOpen(true),
+      // ── More command-coverage capabilities (2026-06-13, discovery w59vf8skj) ── each maps to ONE
+      // existing host handler (verified by symbol in this file). Cycle/spacing read current state
+      // (readingTheme/lineHeight) the same way fontBigger reads sliderFontSize — ctx rebuilds per render.
+      stopReading: stopPlayback,
+      toggleMute: () => { const next = !isGlobalMuted(); setGlobalMute(next); return next; },
+      cycleReadingTheme: () => { const order = ['default','warm','sepia','dark','highContrast','blue','green','rose','dyslexia']; const i = order.indexOf(readingTheme); const next = order[(i + 1) % order.length]; setReadingTheme(next); return next; },
+      lineSpacingMore: () => { const v = Math.min(2.5, Math.round(((lineHeight || 1.6) + 0.1) * 10) / 10); setLineHeight(v); return v; },
+      lineSpacingLess: () => { const v = Math.max(1.0, Math.round(((lineHeight || 1.6) - 0.1) * 10) / 10); setLineHeight(v); return v; },
+      openSelHub: () => setShowSelHub(true),
+      openStudyTimer: () => handleSetShowStudyTimerModalToTrue(),
+      openSubmissionInbox: () => setIsSubmissionInboxOpen(true),
+      toggleCloudSync: () => { const wasOn = isCloudSyncEnabled; handleCloudToggleClick(); return wasOn ? 'off' : 'consent'; },
+      generateOutline: () => handleGenerate('outline'),
+      exportPack: () => handleExport('html'),
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;

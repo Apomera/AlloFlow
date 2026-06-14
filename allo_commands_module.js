@@ -278,6 +278,52 @@ function buildAlloCommands(ctx) {
     { id: "voice_stop", icon: "\u{1F6D1}", roles: "all", when: (c) => !!c.voiceActive, label: t("cmd.voice_stop", "Stop voice control"), aliases: ["stop listening", "stop voice", "voice off"], hint: t("cmd.voice_stop_hint", "Stops the microphone"), run: (c) => {
       c.stopVoiceLoop();
       return t("cmd.voice_stop_done", "Voice control off \u2014 the microphone is released.");
+    } },
+    // ── More coverage (2026-06-13, discovery w59vf8skj) — each maps to ONE existing host handler
+    //    (verified by symbol in AlloFlowANTI.txt). Grouped via CMD_GROUP / CMD_CONTEXT above. ──
+    { id: "stop_reading", icon: "\u23F9\uFE0F", roles: "all", label: t("cmd.stop_reading", "Stop reading aloud"), aliases: ["stop reading", "stop talking", "be quiet", "silence", "stop speech", "stop the voice"], hint: t("cmd.stop_reading_hint", "Interrupt the current text-to-speech"), run: (c) => {
+      c.stopReading();
+      return t("cmd.stop_reading_done", "Stopped reading aloud.");
+    } },
+    { id: "toggle_mute", icon: "\u{1F507}", roles: "all", label: t("cmd.toggle_mute", "Mute or unmute all audio"), aliases: ["mute", "unmute", "mute audio", "sound off", "sound on", "silence audio"], hint: t("cmd.toggle_mute_hint", "Toggle all app audio"), run: (c) => {
+      const m = c.toggleMute();
+      return m ? t("cmd.toggle_mute_on", "Audio muted.") : t("cmd.toggle_mute_off", "Audio unmuted.");
+    } },
+    { id: "cycle_reading_theme", icon: "\u{1F3A8}", roles: "all", label: t("cmd.cycle_reading_theme", "Change the reading theme"), aliases: ["reading theme", "next reading theme", "sepia", "dyslexia theme", "reading color", "paper color"], hint: t("cmd.cycle_reading_theme_hint", "Cycle warm, sepia, dark, dyslexia-friendly, and more"), run: (c) => {
+      const th = c.cycleReadingTheme();
+      return t("cmd.cycle_reading_theme_done", "Reading theme: ") + th + ".";
+    } },
+    { id: "line_spacing_more", icon: "\u2195\uFE0F", roles: "all", label: t("cmd.line_spacing_more", "Increase line spacing"), aliases: ["more line spacing", "increase spacing", "wider lines", "space out lines"], hint: t("cmd.line_spacing_more_hint", "+0.1 to the line height"), run: (c) => {
+      const v = c.lineSpacingMore();
+      return t("cmd.line_spacing_more_done", "Line spacing set to ") + v + ".";
+    } },
+    { id: "line_spacing_less", icon: "\u{1F90F}", roles: "all", label: t("cmd.line_spacing_less", "Decrease line spacing"), aliases: ["less line spacing", "decrease spacing", "tighter lines"], hint: t("cmd.line_spacing_less_hint", "\u22120.1 to the line height"), run: (c) => {
+      const v = c.lineSpacingLess();
+      return t("cmd.line_spacing_less_done", "Line spacing set to ") + v + ".";
+    } },
+    { id: "open_study_timer", icon: "\u23F2\uFE0F", roles: "all", label: t("cmd.open_study_timer", "Start a study timer"), aliases: ["study timer", "timer", "pomodoro", "focus timer", "countdown"], hint: t("cmd.open_study_timer_hint", "A focus / break timer"), run: (c) => {
+      c.openStudyTimer();
+      return t("cmd.open_study_timer_done", "Study timer opened.");
+    } },
+    { id: "open_sel_hub", opensPanel: "selHub", icon: "\u{1F49A}", roles: "all", label: t("cmd.open_sel_hub", "Open the SEL Hub"), aliases: ["sel hub", "social emotional", "feelings", "check in", "emotions", "calm corner"], hint: t("cmd.open_sel_hub_hint", "Social-emotional learning tools"), run: (c) => {
+      c.openSelHub();
+      return t("cmd.open_sel_hub_done", "SEL Hub opened.");
+    } },
+    { id: "open_submission_inbox", icon: "\u{1F4E5}", roles: "teacher", label: t("cmd.open_submission_inbox", "Open the submission inbox"), aliases: ["submission inbox", "submissions", "student work", "turned in", "inbox"], hint: t("cmd.open_submission_inbox_hint", "Review work students have submitted"), run: (c) => {
+      c.openSubmissionInbox();
+      return t("cmd.open_submission_inbox_done", "Submission inbox opened.");
+    } },
+    { id: "toggle_cloud_sync", icon: "\u2601\uFE0F", roles: "teacher", label: t("cmd.toggle_cloud_sync", "Turn cloud sync on or off"), aliases: ["cloud sync", "sync", "cloud save", "backup", "enable sync"], hint: t("cmd.toggle_cloud_sync_hint", "Sync your work to the cloud (asks consent the first time)"), run: (c) => {
+      const r = c.toggleCloudSync();
+      return r === "off" ? t("cmd.toggle_cloud_sync_off", "Cloud sync turned off.") : t("cmd.toggle_cloud_sync_consent", "Opening the cloud-sync consent dialog \u2014 confirm there to turn it on.");
+    } },
+    { id: "generate_outline", icon: "\u{1F5C2}\uFE0F", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_outline", "Make a concept outline"), aliases: ["outline", "concept outline", "make an outline", "structure", "summary outline"], hint: t("cmd.generate_outline_hint", "Generate an outline from the current content"), run: (c) => {
+      c.generateOutline();
+      return t("cmd.generate_outline_done", "Generating an outline\u2026");
+    } },
+    { id: "export_pack", icon: "\u{1F4E6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.export_pack", "Download the lesson pack"), aliases: ["export pack", "download pack", "download lesson", "save lesson", "export html"], hint: t("cmd.export_pack_hint", "Download the lesson as a self-contained file"), run: (c) => {
+      c.exportPack();
+      return t("cmd.export_pack_done", "Preparing the lesson pack download\u2026");
     } }
   ];
   const isStudentish = !!(ctx.isStudentLinkMode || ctx.isIndependentMode);
@@ -519,7 +565,18 @@ const CMD_GROUP = {
   open_accessibility_lab: "tools",
   open_lumen: "tools",
   open_community_catalog: "tools",
-  open_dynamic_assessment: "tools"
+  open_dynamic_assessment: "tools",
+  stop_reading: "accessibility",
+  toggle_mute: "accessibility",
+  line_spacing_more: "accessibility",
+  line_spacing_less: "accessibility",
+  open_study_timer: "accessibility",
+  cycle_reading_theme: "display",
+  open_sel_hub: "tools",
+  open_submission_inbox: "navigate",
+  toggle_cloud_sync: "navigate",
+  generate_outline: "create",
+  export_pack: "create"
 };
 const CMD_CONTEXT = {
   pipeline_score: ["pipeline"],
@@ -554,7 +611,13 @@ const CMD_CONTEXT = {
   toggle_visual_supports: ["symbolStudio"],
   open_voice_settings: ["symbolStudio"],
   toggle_focus_mode: ["stemLab"],
-  zen_on: ["stemLab"]
+  zen_on: ["stemLab"],
+  stop_reading: ["reading"],
+  line_spacing_more: ["reading"],
+  line_spacing_less: ["reading"],
+  open_submission_inbox: ["educatorHub"],
+  generate_outline: ["content"],
+  export_pack: ["content"]
 };
 const GROUP_ORDER = ["navigate", "create", "tools", "accessibility", "display", "pipeline", "help", "voice"];
 const GROUP_LABEL_FALLBACK = { navigate: "Navigate", create: "Create from this content", tools: "Open a tool", accessibility: "Reading & access", display: "Display & motion", pipeline: "Pipeline results", help: "Help", voice: "Voice" };
