@@ -114,6 +114,12 @@ window.StemLab = window.StemLab || {
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
       var gradeLevel = ctx.gradeLevel;
+      // Grade band (k2/g35/g68/g912) from the student profile; unknown -> k2 (most restrictive),
+      // matching the anatomy sibling. Clinical/disease content (microbial diseases incl. STIs and
+      // death-toll figures, plus clinical organism encyclopedia entries) is shown only to grades
+      // 6-8 and 9-12 and hidden for K-2 and 3-5 (content-appropriateness gate).
+      var cellGradeBand = (function () { var g = parseInt(ctx.gradeLevel, 10); if (isNaN(g) || g <= 2) return 'k2'; if (g <= 5) return 'g35'; if (g <= 8) return 'g68'; return 'g912'; })();
+      var cellBandAllowsClinical = (cellGradeBand === 'g68' || cellGradeBand === 'g912');
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
@@ -593,6 +599,7 @@ var d = labToolData.cell || {};
               cellType: "Prokaryote",
               size: "5-50 μm",
               description: "Flexible spiral bacterium. Includes Treponema pallidum (syphilis), Borrelia burgdorferi (Lyme disease).",
+              mature: true,
               habitat: "Various - some pathogenic",
               feeding: "Variable",
               reproduction: "Binary fission",
@@ -901,6 +908,7 @@ var d = labToolData.cell || {};
               cellType: "Eukaryote",
               size: "10-20 μm",
               description: "Flagellated parasite. T. vaginalis causes urogenital infections.",
+              mature: true,
               habitat: "Human + cattle hosts",
               feeding: "Mucus + cells",
               reproduction: "Binary fission",
@@ -971,6 +979,7 @@ var d = labToolData.cell || {};
               cellType: "Prokaryote",
               size: "2-5 μm",
               description: "Spiral bacterium living in stomach. Causes ulcers + linked to gastric cancer. Nobel 2005.",
+              mature: true,
               habitat: "Human stomach",
               feeding: "Mucus + cells",
               reproduction: "Binary fission",
@@ -1139,6 +1148,7 @@ var d = labToolData.cell || {};
               cellType: "Eukaryote",
               size: "50 μm (length)",
               description: "Mobile reproductive cell. Carries haploid male DNA. Powered by mitochondria.",
+              mature: true,
               habitat: "Reproductive tract",
               feeding: "Glucose",
               reproduction: "Spermatogenesis from precursors",
@@ -1153,6 +1163,7 @@ var d = labToolData.cell || {};
               cellType: "Eukaryote",
               size: "100-200 μm",
               description: "Largest human cell. Contains haploid female DNA + cytoplasmic resources for early embryo.",
+              mature: true,
               habitat: "Ovary",
               feeding: "Stored yolk",
               reproduction: "Oogenesis",
@@ -19522,6 +19533,8 @@ var d = labToolData.cell || {};
                 var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
                 var searchTerm = (d._cellSearch || '').toLowerCase();
                 var allModes = ['observe','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
+                // Grade gate: hide the Diseases mode (STIs, death tolls) from K-2 and 3-5.
+                if (!cellBandAllowsClinical) { CELL_CATEGORIES.forEach(function(c) { c.modes = c.modes.filter(function(m) { return m !== 'disease'; }); }); allModes = allModes.filter(function(m) { return m !== 'disease'; }); }
                 var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
 
                 function setMode(m) {
@@ -20587,6 +20600,7 @@ var d = labToolData.cell || {};
               var filterK = d._encyclopediaFilter || 'all';
               var search = d._encyclopediaSearch || '';
               var filtered = ORGANISM_DB.filter(function(o) {
+                if (o.mature && !cellBandAllowsClinical) return false;
                 if (filterK !== 'all' && o.kingdom !== filterK) return false;
                 if (search && o.name.toLowerCase().indexOf(search.toLowerCase()) === -1 && o.description.toLowerCase().indexOf(search.toLowerCase()) === -1) return false;
                 return true;
@@ -20906,7 +20920,7 @@ var d = labToolData.cell || {};
             // ═══════════════════════════════════════════════════════════
             // DISEASE MODE
             // ═══════════════════════════════════════════════════════════
-            d.mode === 'disease' && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-rose-300 p-4 space-y-2' },
+            d.mode === 'disease' && cellBandAllowsClinical && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-rose-300 p-4 space-y-2' },
               React.createElement('h3', { className: 'text-base font-bold text-rose-700' }, 'Microbial Diseases'),
               MICROBIAL_DISEASES.map(function(disease) {
                 return React.createElement('div', { key: disease.id, className: 'bg-rose-50 border border-rose-200 rounded p-2 text-xs' },
