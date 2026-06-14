@@ -375,6 +375,22 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   const docFile = new d.Document(_docOpts);
   return d.Packer.toBlob(docFile);
 }
+let _pdfHarperPromise = null;
+function _ensurePdfHarper() {
+  if (_pdfHarperPromise) return _pdfHarperPromise;
+  _pdfHarperPromise = (async () => {
+    const _imp = new Function("u", "return import(u)");
+    const mod = await _imp("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/+esm");
+    const binary = await mod.createBinaryModuleFromUrl("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm");
+    const linter = new mod.LocalLinter({ binary });
+    if (linter.setup) await linter.setup();
+    return linter;
+  })();
+  _pdfHarperPromise.catch(() => {
+    _pdfHarperPromise = null;
+  });
+  return _pdfHarperPromise;
+}
 function _ensurePptxLib() {
   if (typeof window === "undefined") return Promise.resolve(null);
   if (window.PptxGenJS) return Promise.resolve(window.PptxGenJS);
@@ -1412,6 +1428,7 @@ function PdfAuditView(props) {
   const [recoveryReviewOutcomes, setRecoveryReviewOutcomes] = useState({});
   const [reconPreviewIdx, setReconPreviewIdx] = useState(null);
   const [docMode, setDocMode] = useState("standard");
+  const [writingCheck, setWritingCheck] = useState(null);
   const _applyDocMode = (modeId) => {
     const css = DOC_MODES[modeId] && DOC_MODES[modeId].css || "";
     try {
@@ -6218,7 +6235,121 @@ Return ONLY the plain language summary in ${lang}.`, false);
         "\u{1F4BE} ",
         t("pdf_audit.close_confirm.save_close") || "Save & close"
       )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-4" }, "Tip: ", /* @__PURE__ */ React.createElement("strong", null, "Save & close"), " downloads a ", /* @__PURE__ */ React.createElement("code", { className: "px-1 bg-slate-100 rounded" }, ".alloflow.json"), " project file that you can re-open later via the sidebar's ", /* @__PURE__ */ React.createElement("strong", null, "Load Project"), " button."))
-    ), pdfPreviewOpen && pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[70] bg-black/50 flex items-stretch", role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.preview.modal_aria") || "Accessible document preview and editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 m-4 gap-0 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-800" }, "\u267F Preview & Edit"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfPreviewOpen(false), className: "p-1 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": t("pdf_audit.preview.close_aria") || "Close preview" }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.preview.edit_hint") || "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance."), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Style"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.preview.wcag_guaranteed") || "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only \u2014 not a full WCAG audit)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === "Match Original").map(([key, s]) => /* @__PURE__ */ React.createElement(
+    ), pdfPreviewOpen && pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[70] bg-black/50 flex items-stretch", role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.preview.modal_aria") || "Accessible document preview and editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 m-4 gap-0 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-800" }, "\u267F Preview & Edit"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfPreviewOpen(false), className: "p-1 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": t("pdf_audit.preview.close_aria") || "Close preview" }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.preview.edit_hint") || "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance."), (() => {
+      const wc = writingCheck;
+      const _leafBlocks = () => {
+        const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+        if (!doc || !doc.body) return null;
+        return Array.from(doc.body.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote")).filter((el) => !el.closest('section[data-content-recovery="true"]')).filter((el) => !el.closest('[contenteditable="false"]')).filter((el) => !el.querySelector("p,li,td,th,blockquote")).filter((el) => (el.textContent || "").trim().length >= 3);
+      };
+      const runWritingCheck = async () => {
+        setWritingCheck({ status: "loading" });
+        try {
+          const linter = await _ensurePdfHarper();
+          const blocks = _leafBlocks();
+          if (!blocks) {
+            setWritingCheck({ status: "error", error: t("export_preview.writing.no_preview") || "Preview not ready \u2014 wait for it to render." });
+            return;
+          }
+          const items = [];
+          let capped = false;
+          for (let bi = 0; bi < blocks.length; bi++) {
+            if (items.length >= 150) {
+              capped = true;
+              break;
+            }
+            const text = blocks[bi].textContent || "";
+            let lints = [];
+            try {
+              lints = await linter.lint(text);
+            } catch (_) {
+              continue;
+            }
+            for (const l of lints) {
+              try {
+                const span = l.span();
+                const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s.get_replacement_text ? s.get_replacement_text() : "").filter(Boolean).slice(0, 3);
+                items.push({ blockIndex: bi, message: l.message ? l.message() : "Possible issue", start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? "\u2026" : "") + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? "\u2026" : ""), suggestions: sugg });
+              } catch (_) {
+              }
+              if (items.length >= 150) {
+                capped = true;
+                break;
+              }
+            }
+          }
+          setWritingCheck({ status: "done", items, capped });
+        } catch (e) {
+          setWritingCheck({ status: "error", error: (e && e.message || "The checker failed to load \u2014 check the network and try again.").slice(0, 180) });
+        }
+      };
+      const _locate = (item, outline) => {
+        const blocks = _leafBlocks();
+        const el = blocks && blocks[item.blockIndex];
+        if (!el) return null;
+        try {
+          el.scrollIntoView({ block: "center", behavior: "smooth" });
+          if (outline) {
+            el.style.outline = "3px solid #f59e0b";
+            el.style.outlineOffset = "2px";
+            setTimeout(() => {
+              try {
+                el.style.outline = "";
+                el.style.outlineOffset = "";
+              } catch (_) {
+              }
+            }, 2200);
+          }
+        } catch (_) {
+        }
+        return el;
+      };
+      const _apply = (item, replacement) => {
+        try {
+          const el = _locate(item, false);
+          const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+          if (!el || !doc) {
+            addToast(t("toasts.writing_block_gone") || "That block is no longer in the preview \u2014 re-run the check.", "info");
+            return;
+          }
+          const cur = el.textContent || "";
+          if (cur.slice(item.start, item.end) !== item.bad) {
+            addToast(t("toasts.writing_text_shifted") || "The text changed since this check ran \u2014 re-run the check to apply safely.", "info");
+            return;
+          }
+          const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+          let node, off = 0, hit = null;
+          while (node = walker.nextNode()) {
+            const len = node.textContent.length;
+            if (item.start >= off && item.end <= off + len) {
+              hit = { node, local: item.start - off };
+              break;
+            }
+            off += len;
+          }
+          if (!hit) {
+            _locate(item, true);
+            addToast(t("toasts.writing_spans_markup") || "This suggestion spans formatting (a link or bold text) \u2014 fix it by hand at the highlighted spot.", "info");
+            return;
+          }
+          const raw = hit.node.textContent;
+          hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + (item.end - item.start));
+          try {
+            if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
+          } catch (_) {
+          }
+          try {
+            if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
+          } catch (_) {
+          }
+          setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
+          addToast('\u2713 "' + item.bad + '" \u2192 "' + replacement + '"', "success");
+        } catch (e) {
+          addToast("Apply failed: " + (e && e.message || "error"), "error");
+        }
+      };
+      return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), item.suggestions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || "(remove)")))))));
+    })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Style"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.preview.wcag_guaranteed") || "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only \u2014 not a full WCAG audit)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === "Match Original").map(([key, s]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,
