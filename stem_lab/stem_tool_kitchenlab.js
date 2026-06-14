@@ -1784,7 +1784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { flex: 1, minWidth: 240 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#fde68a', letterSpacing: '-0.01em' } }, 'Kitchen Lab'),
-                h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fb923c', background: 'rgba(251,146,60,0.12)',
+                h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fdba74', background: 'rgba(251,146,60,0.12)',
                     border: '1px solid rgba(251,146,60,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   sectionCount + ' sections')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
@@ -3305,12 +3305,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Pan temperature'),
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: tempColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F'),
                 h('div', { style: { fontSize: 11, color: tempColor, marginTop: 2 } }, tempLabel),
-                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'peak this run: ' + maxTemp + '°F')),
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'peak this run: ' + maxTemp + '°F')),
               // Active cook time
               h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 10, padding: '12px 14px' } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Food in pan'),
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, activeTime + 's'),
-                h('div', { style: { fontSize: 11, color: (d.recipeItemsInPan || []).length > 0 ? '#86efac' : '#64748b', marginTop: 2 } }, (d.recipeItemsInPan || []).length > 0 ? '🟢 Cooking' : '— Empty pan'))),
+                h('div', { style: { fontSize: 11, color: (d.recipeItemsInPan || []).length > 0 ? '#86efac' : '#94a3b8', marginTop: 2 } }, (d.recipeItemsInPan || []).length > 0 ? '🟢 Cooking' : '— Empty pan'))),
 
             // Burner / oven-dial slider — labels adapt to cooking mode
             (function() {
@@ -3348,7 +3348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     onClick: function() { addItem(ing.id); },
                     style: { padding: '10px 14px', background: 'rgba(15,23,42,0.7)',
                       border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8,
-                      color: '#fde68a', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                      color: '#fde68a', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.35)', letterSpacing: '0.01em',
                       display: 'flex', alignItems: 'center', gap: 8 } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, ing.icon),
                     'Add ' + ing.name);
@@ -3697,7 +3697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               'base ' + compResult.baseScore + (compResult.bonusTotal > 0 ? ' + ' + compResult.bonusTotal + ' bonus' : '') +
               (compResult.penaltyTotal < 0 ? ' ' + compResult.penaltyTotal + ' penalty' : '')) : null,
             h('div', { style: { fontSize: 48, fontWeight: 900, color: gradeColor, marginTop: 4 } }, 'Grade: ' + j.grade),
-            h('div', { style: { fontSize: 16, color: '#fde68a', marginTop: 18, fontWeight: 600 } }, j.verdict)),
+            h('div', { style: { fontSize: 17, color: '#fde68a', marginTop: 18, fontWeight: 700, lineHeight: 1.4 } }, j.verdict)),
 
           // ─── Competition constraint results ───
           compResult ? h('div', { style: cardStyle() },
@@ -3862,7 +3862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   display: 'flex', alignItems: 'center', gap: 6 } },
                 h('span', { 'aria-hidden': 'true' }, s.icon),
                 s.label,
-                s.count ? h('span', { style: { fontSize: 10, color: active ? '#fb923c' : '#64748b', fontFamily: 'ui-monospace, Menlo, monospace' } }, ' (' + s.count + ')') : null);
+                s.count ? h('span', { style: { fontSize: 10, color: active ? '#fdba74' : '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, ' (' + s.count + ')') : null);
             })),
 
           // ─── GLOSSARY ───

@@ -19786,7 +19786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
                 h('button', {
                   onClick: function() { updMulti({ droneBriefing: false, selectedChallenge: null }); },
-                  style: { flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                  style: { flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #334155', background: 'transparent', color: '#cbd5e1', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
                 }, 'Cancel'),
                 h('button', {
                   onClick: function() {
@@ -19917,7 +19917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     [['📏 ' + dist + ' nm', 'Distance'], ['🧭 ' + String(hdg).padStart(3, '0') + '°', 'Heading'], ['⏱️ ~' + estMin + ' min', 'Est. Time'], ['🔝 FL' + (cruiseAlt / 100), 'Cruise Alt']].map(function(s) {
                       return h('div', { key: s[1], style: { background: '#1e293b', borderRadius: '4px', padding: '4px', textAlign: 'center' } },
                         h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa' } }, s[0]),
-                        h('div', { style: { fontSize: '7px', color: '#94a3b8' } }, s[1])
+                        h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, s[1])
                       );
                     })
                   ),
@@ -19950,7 +19950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 },
                   h('div', { style: { fontSize: '20px' } }, ac.icon),
                   h('div', { style: { fontSize: '9px', fontWeight: 700, marginTop: '2px', lineHeight: '1.2' } }, ac.name.split(' ')[0]),
-                  h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '1px' } }, ac.category)
+                  h('div', { style: { fontSize: '8px', color: '#cbd5e1', marginTop: '1px' } }, ac.category)
                 );
               })
             ),
@@ -19999,7 +19999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' } },
                     h('span', { style: { fontSize: '12px' } }, flag),
                     h('span', { style: { color: '#60a5fa', fontWeight: 800, fontSize: '12px' } }, wp.code),
-                    isHub && h('span', { style: { fontSize: '7px', fontWeight: 800, color: '#fbbf24', background: '#78350f', padding: '1px 4px', borderRadius: '3px', letterSpacing: '0.5px' } }, 'HUB'),
+                    isHub && h('span', { style: { fontSize: '8px', fontWeight: 800, color: '#fbbf24', background: '#78350f', padding: '2px 5px', borderRadius: '4px', letterSpacing: '0.5px' } }, 'HUB'),
                     visited && h('span', { style: { marginLeft: 'auto', color: '#4ade80', fontSize: '10px' } }, '\u2713')
                   ),
                   // Name
@@ -20121,7 +20121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ACHIEVEMENTS.map(function(ach) {
                 var earned = !!earnedBadges[ach.id];
                 return h('div', { key: ach.id, title: ach.name + ': ' + ach.desc,
-                  style: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, background: earned ? '#1e3a5f' : '#0f172a', color: earned ? '#fbbf24' : '#334155', border: '1px solid ' + (earned ? '#3b82f6' : '#1e293b'), cursor: 'default' }
+                  style: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, background: earned ? '#1e3a5f' : '#0f172a', color: earned ? '#fbbf24' : '#64748b', border: '1px solid ' + (earned ? '#3b82f6' : '#334155'), cursor: 'default' }
                 }, ach.icon + ' ' + (earned ? ach.name : '???'));
               })
             )

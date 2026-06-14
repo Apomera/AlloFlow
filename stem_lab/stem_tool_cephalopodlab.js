@@ -803,7 +803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 20 } },
             h('button', { onClick: function() { setSection('field'); awardXP(3); },
-              style: { padding: '12px 24px', background: '#6366f1', color: 'white',
+              style: { padding: '12px 24px', background: '#4f46e5', color: 'white', boxShadow: '0 4px 12px rgba(79,70,229,0.35)', transition: 'box-shadow 0.15s, transform 0.15s',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               '📖 Browse the field guide'),
             h('button', { onClick: function() { setSection('hunt'); awardXP(3); },
@@ -14315,7 +14315,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       setCL({ _evasionShowGo: true });
                     }, delayMs);
                   },
-                  style: { width: 200, padding: '24px', background: d._evasionShowGo ? '#22c55e' : '#dc2626',
+                  style: { width: 200, padding: '24px', background: d._evasionShowGo ? '#15803d' : '#dc2626',
                     color: 'white', border: 'none', borderRadius: 12, fontSize: 24, fontWeight: 900, cursor: 'pointer',
                     boxShadow: '0 6px 18px rgba(220,38,38,0.4)' } },
                   d._evasionShowGo ? '✓ CLICK NOW!' : '⏳ Wait for GO...')))
@@ -15548,7 +15548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var view = d.timeView || 'timeline';
         // Era data — 500M-year cephalopod history in 8 chunks
         var ERAS = [
-          { id: 'cambrian', name: 'Cambrian', startMya: 538, endMya: 485, color: '#92400e',
+          { id: 'cambrian', name: 'Cambrian', startMya: 538, endMya: 485, color: '#c2620e',
             headline: 'First cephalopods appear',
             event: 'Around 530 MYA, the first cephalopod emerges: ',
             highlight: 'Plectronoceras',
@@ -15569,7 +15569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             after: ' appear: coiled cephalopods with more complex internal chambers. Fish develop jaws and start competing with cephalopods for the apex slot.',
             keyFossils: ['orthoceras'],
             ecosystem: 'Devonian = "Age of Fishes." Cephalopods lose ground to fish but ammonoids carve out a new niche. Late Devonian extinction (~372 MYA) is gradual + lasts ~25 million years.' },
-          { id: 'carb-permian', name: 'Carboniferous-Permian', startMya: 359, endMya: 252, color: '#854d0e',
+          { id: 'carb-permian', name: 'Carboniferous-Permian', startMya: 359, endMya: 252, color: '#a87a1e',
             headline: 'Goniatites + first octopus',
             event: 'Goniatites — ammonoids with characteristically zigzag sutures — dominate. Around 300 MYA, ',
             highlight: 'Pohlsepia',

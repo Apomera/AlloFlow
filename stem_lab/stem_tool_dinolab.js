@@ -5128,17 +5128,17 @@
       var seen = d.seen || {};
 
       function badge(label, color) {
-        return el('span', { style: { display: 'inline-block', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: color + '22', color: T.text, border: '1px solid ' + color + '55', marginRight: 6, marginBottom: 4, whiteSpace: 'nowrap' } }, label);
+        return el('span', { style: { display: 'inline-block', fontSize: 11, letterSpacing: '0.01em', fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: color + '22', color: T.text, border: '1px solid ' + color + '55', marginRight: 6, marginBottom: 4, whiteSpace: 'nowrap' } }, label);
       }
       function panel(children, extra) {
-        var style = { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, padding: 14, color: T.text };
+        var style = { background: T.panel, border: '1px solid ' + T.border, borderRadius: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.28)', padding: 14, color: T.text };
         var props = {};
         if (extra) { for (var k in extra) { if (k === 'key' || k === 'ref') { props[k] = extra[k]; } else { style[k] = extra[k]; } } }
         props.style = style;
         return el('div', props, children);
       }
       function pill(active, label, onClick, key) {
-        return el('button', { key: key, onClick: onClick, 'aria-pressed': active ? 'true' : 'false', 'aria-label': label, style: { padding: '6px 12px', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 600, border: '1px solid ' + (active ? '#15803d' : T.border), background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap', marginRight: 6, marginBottom: 6 } }, label);
+        return el('button', { key: key, onClick: onClick, 'aria-pressed': active ? 'true' : 'false', 'aria-label': label, style: { padding: '6px 12px', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', border: '1px solid ' + (active ? '#15803d' : T.border), background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap', marginRight: 6, marginBottom: 6 } }, label);
       }
       function statRow(label, value) {
         return el('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, padding: '4px 0', borderBottom: '1px solid ' + T.border, fontSize: 13 } }, el('span', { style: { color: T.soft } }, label), el('span', { style: { fontWeight: 600, textAlign: 'right' } }, value));
@@ -5272,7 +5272,7 @@
       ];
       var tabBar = el('div', { role: 'tablist', 'aria-label': 'Dino Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb) {
         var active = tab === tb.id;
-        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
+        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
 
       function renderDetail(dn) {
@@ -5333,7 +5333,7 @@
           el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { fontSize: 12, color: T.soft } }, 'Sort:'), pill(sortBy === 'name', 'A to Z', function () { upd('sortBy', 'name'); }, 's_name'), pill(sortBy === 'time', 'Oldest first', function () { upd('sortBy', 'time'); }, 's_time'), pill(sortBy === 'length', 'Longest', function () { upd('sortBy', 'length'); }, 's_len'), pill(sortBy === 'weight', 'Heaviest', function () { upd('sortBy', 'weight'); }, 's_wt'), el('button', { key: 'surprise', onClick: function () { var n = (d.surpriseN || 0) + 1; var pick = DINOS[(n * 48271) % DINOS.length]; var ns = {}; for (var sk in seen) { ns[sk] = seen[sk]; } ns[pick.id] = true; upd({ selected: pick.id, seen: ns, surpriseN: n }); announceToSR('Surprise: ' + pick.common); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: 'transparent', color: T.text } }, '🎲 Surprise me'), el('span', { style: { marginLeft: 'auto', fontSize: 12, color: T.soft } }, list.length + ' of ' + DINOS.length))
         );
         var grid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 } }, list.map(function (dn) {
-          return el('button', { key: dn.id, onClick: function () { markSeen(dn.id); }, 'aria-label': 'Open ' + dn.common, style: { textAlign: 'left', cursor: 'pointer', background: T.panel, border: '1px solid ' + (selected === dn.id ? '#22c55e' : T.border), borderRadius: 12, padding: 12, color: T.text, position: 'relative' } },
+          return el('button', { key: dn.id, onClick: function () { markSeen(dn.id); }, 'aria-label': 'Open ' + dn.common, style: { textAlign: 'left', cursor: 'pointer', background: T.panel, border: '1px solid ' + (selected === dn.id ? '#22c55e' : T.border), borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.30)', padding: 12, color: T.text, position: 'relative' } },
             el('div', { style: { fontSize: 26, marginBottom: 4 } }, dn.diet === 'carnivore' ? '🦖' : (dn.group === 'sauropod' ? '🦕' : '🦴')),
             el('div', { style: { fontWeight: 700, fontSize: 14 } }, dn.common),
             el('div', { style: { fontSize: 11, color: T.soft, fontStyle: 'italic', marginBottom: 6 } }, dn.meaning),
@@ -5772,7 +5772,7 @@
           el('div', { key: 's', style: { fontSize: 12, color: T.soft, marginBottom: 10, lineHeight: 1.5 } }, 'Energy flows up from the sun. Some is lost at every step, so each level can feed fewer animals than the one below it. Bar width shows energy, not exact numbers.'),
           el('div', { key: 'p' },
             plevel(34, '#b91c1c', '🥩 Hunters · ' + hunters.length, apex ? 'apex predator here: ' + apex.common : 'no hunters found here'),
-            plevel(64, '#b45309', '🦕 Plant-eaters + omnivores · ' + primaryN, 'the primary consumers'),
+            plevel(64, '#c2410c', '🦕 Plant-eaters + omnivores · ' + primaryN, 'the primary consumers'),
             plevel(100, '#15803d', '🌿 Plants (producers)', 'ferns, cycads, and conifers — the green base that fed it all')
           ),
           el('div', { key: 'n', style: { fontSize: 11.5, color: T.soft, marginTop: 8, fontStyle: 'italic' } }, primaryN + ' kinds of plant-eater and omnivore shared this rock unit with ' + hunters.length + ' kind' + (hunters.length === 1 ? '' : 's') + ' of hunter. That few-predators-on-top shape is what an energy pyramid predicts.')

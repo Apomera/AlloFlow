@@ -799,7 +799,7 @@
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
             'Warren truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
-            h('strong', { style: { color: '#fbbf24' } }, 'Red = tension'), ', ',
+            h('strong', { style: { color: '#f87171' } }, 'Red = tension'), ', ',
             h('strong', { style: { color: '#7dd3fc' } }, 'blue = compression'),
             ', thickness shows magnitude. Forces calculated using the deep-beam approximation (real analysis would use method of joints or matrix structural analysis).'
           ),
@@ -4055,7 +4055,7 @@
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
               );
             }),
-            h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#fff', fontWeight: 700, cursor: 'pointer' } }, 'Retake quiz')
+            h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#0f172a', fontWeight: 700, cursor: 'pointer' } }, 'Retake quiz')
           );
         }
 
@@ -4077,7 +4077,7 @@
           h('button', {
             onClick: submit,
             disabled: !allAnswered,
-            style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? AMBER : '#475569', color: '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
+            style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? AMBER : '#475569', color: allAnswered ? '#0f172a' : '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
           }, allAnswered ? 'Submit quiz' : 'Answer all questions (' + answers.filter(function(a) { return a != null; }).length + '/' + QUIZ_QUESTIONS.length + ')')
         );
       }
@@ -4176,7 +4176,7 @@
               h('textarea', { id: 'iq-hypo', value: iq.hypothesis || '',
                 onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                 placeholder: 'What single change is the most efficient way to move a FAILED bridge into SAFE? Does doubling span require doubling area? Type your own theory.',
-                style: { width: '100%', minHeight: 60, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 3 })
+                style: { width: '100%', minHeight: 60, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'inherit' }, rows: 3 })
             ),
             // Opt-in questions
             h('div', { style: { marginBottom: 12 } },
@@ -4202,7 +4202,7 @@
               iq.understood && h('textarea', { value: iq.explanation || '',
                 onChange: function(e) { setIQ({ explanation: e.target.value }); },
                 placeholder: 'Explain in your own words: how do span, cross-section area, and material strength interact to determine load-bearing capacity? Which one matters most? What is the trade-off a real engineer faces?',
-                style: { width: '100%', minHeight: 80, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),
+                style: { width: '100%', minHeight: 80, padding: 6, background: '#0a1525', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'inherit' }, rows: 4 }),
               iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { style: { marginTop: 6, fontSize: 10, fontStyle: 'italic', color: '#10b981' } },
                 '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
             ),
@@ -4231,7 +4231,7 @@
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: function() { try { window.print(); } catch (e) {} },
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #c2410c 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
