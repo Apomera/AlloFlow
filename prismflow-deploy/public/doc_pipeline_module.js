@@ -13978,16 +13978,24 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // DOCX/PPTX augmentation marker chars do not inflate the denominator and
         // trigger false "low fidelity" banners on extractor-augmented documents.
         const _srcRaw = (extractedText || '').replace(_ALLO_MARKER_RE, '');
+        // recov-coverage (2026-06-15): the Content-recovery appendix is an OUT-OF-
+        // READING-ORDER sink for words we could not place in context. Counting its
+        // chars toward coverage re-inflates finalText and masks genuine reading-order
+        // loss, suppressing the "review the Diff" warning. Strip it (same selector the
+        // restorer/dedup passes already exclude on) before measuring the final text.
+        const _stripRecoveryAppendix = (h) => String(h || '')
+          .replace(/<section\b[^>]*\bdata-content-recovery\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ');
+        const _finalForIntegrity = _stripRecoveryAppendix(accessibleHtml);
         let groundTruth, finalText, groundTruthMethod;
         if (_srcRaw) {
           // Preferred: normalized source TEXT vs normalized output TEXT (de-hyphenation-safe).
           groundTruth = _normIntegrity(_srcRaw).length;
-          finalText = _normIntegrity(htmlToPlainText(accessibleHtml)).length;
+          finalText = _normIntegrity(htmlToPlainText(_finalForIntegrity)).length;
           groundTruthMethod = (window.__lastGroundTruthMethod || 'extracted-text') + '+normalized';
         } else {
           // Fallback: deterministic ground-truth char count (legacy path, source text unavailable).
           groundTruth = window.__lastGroundTruthCharCount || 0;
-          finalText = textCharCount(accessibleHtml);
+          finalText = textCharCount(_finalForIntegrity);
           groundTruthMethod = window.__lastGroundTruthMethod || 'unknown';
         }
         if (groundTruth > 0) {
