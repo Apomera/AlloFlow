@@ -456,7 +456,7 @@
     "remove_standard": "معیار ہٹائیں",
     "remove_concept": "تصور ہٹائیں",
     "choose_overwrite_version": "منتخب کریں کہ موجودہ متن کو اوور رائٹ کیا جائے یا نیا ورژن بنایا جائے",
-    "apply_nano_edit": "حسب ضرورت Nano Banana ترمیم نہیںگو کریں",
+    "apply_nano_edit": "حسب ضرورت Nano Banana ترمیم لاگو کریں",
     "link_opened_copy_paste": "لنک کھل گیا۔ URL کو کاپی کر کے یہاں چسپاں کریں۔",
     "find_relevant_standards": "متعلقہ معیارات تلاش کریں",
     "export_for_grading": "تشخیص کے لیے کام برآمد کریں (تصاویر ہٹا دی گئیں)",

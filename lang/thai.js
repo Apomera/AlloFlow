@@ -459,7 +459,7 @@
     "remove_standard": "นำมาตรฐานออก",
     "remove_concept": "นำแนวคิดออก",
     "choose_overwrite_version": "เลือกว่าจะเขียนทับข้อความปัจจุบันหรือสร้างเวอร์ชันใหม่",
-    "apply_nano_edit": "ใช้การแก้ไขแบบ Nano Banana",
+    "apply_nano_edit": "ใช้การแก้ไขแบบ Nano Banana ที่กำหนดเอง",
     "link_opened_copy_paste": "เปิดลิงก์แล้ว คัดลอก URL แล้ววางที่นี่",
     "find_relevant_standards": "ค้นหามาตรฐานที่เกี่ยวข้อง",
     "export_for_grading": "ส่งออกงานเพื่อให้ครูตรวจ (ลบภาพแล้ว)",
@@ -12620,7 +12620,7 @@
     "vocab_usage": "คำศัพท์ Usage",
     "storybook_ready": "Your หนังสือนิทาน is Ready!",
     "per_dimension_findings": "ผลการค้นพบรายมิติ",
-    "your_self_assessment": "Your Self-การประเมิน",
+    "your_self_assessment": "การประเมินตนเองของคุณ",
     "cloud_voice_unavailable": "Cloud เสียง ไม่พร้อมใช้งาน",
     "allohaven": "AlloHaven",
     "tts": "ข้อความ-to-Speech"

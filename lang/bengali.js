@@ -72,7 +72,7 @@
     "badge_new": "নতুন",
     "badge_educator": "🔒 শিক্ষক",
     "badge_educator_open": "🛠️ শিক্ষক",
-    "switch_hint": "আপনি can switch মোড anytime থেকে menu",
+    "switch_hint": "আপনি মেনু থেকে যেকোনো সময় মোড পরিবর্তন করতে পারেন",
     "learning_tools_title": "শেখা সরঞ্জাম",
     "learning_tools_desc": "STEM Lab, StoryForge & SEL Hub — explore, তৈরি করুন, এবং grow",
     "mic_title": "Microphone setup",
@@ -1828,7 +1828,7 @@
   "history": {
     "load_project": "লোড করুন Project",
     "save_teacher": "সংরক্ষণ Project (শিক্ষক পূর্ণ backup)",
-    "save_student": "সংরক্ষণ as শিক্ষার্থী Project (তালাবদ্ধ View)",
+    "save_student": "শিক্ষার্থী প্রজেক্ট হিসেবে সংরক্ষণ করুন (লকড ভিউ)",
     "save_work": "সংরক্ষণ কাজ",
     "settings": "Project সেটিং",
     "maximize": "Maximize ইতিহাস",

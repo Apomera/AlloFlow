@@ -370,7 +370,7 @@
     "placeholder_type_a_language_name_e_g_hindi_swahili_haitian_cre": "Typ ein Sprache Name (z. B. Hindi, Swahili, Haitian Creole...)",
     "placeholder_type_or_tap_letters": "Typ oder tippen letters...",
     "placeholder_type_the_word": "Typ die Wort...",
-    "play_all_remaining_words_aloud": "Abspielen alle remaining Worts aloud",
+    "play_all_remaining_words_aloud": "Alle verbleibenden Wörter vorlesen",
     "play_all_sounds": "Abspielen alle Tons",
     "play_phoneme_sequence": "Abspielen phoneme sequence",
     "play_tts": "Abspielen TTS",

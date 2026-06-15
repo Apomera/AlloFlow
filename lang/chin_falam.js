@@ -204,7 +204,7 @@
     "enter_wiz_interest_input": "Wizard interest lut",
     "enter_wiz_lang_input": "Wizard holh lut",
     "enter_word": "Biafang lut",
-    "escape_room_enter_answer": "Enter your answer...",
+    "escape_room_enter_answer": "Leihnak lut...",
     "escape_room_unscramble_placeholder": "Type the unscrambled word...",
     "expand": "Expand",
     "export_all_panels_as_png_images": "Panel zapi PNG lim in export",

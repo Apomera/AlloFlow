@@ -91,7 +91,7 @@
     "all_done": "🎉 Byose Byarangiye! Reba Ibikoresho Byose",
     "about": "Ku byerekeye",
     "source_prompt": "Komeza cyangwa injiza inkomoko inyandiko ku begin",
-    "history_hint": "💡 cyawe byakozwe umutungo ni byabitswe muri History tab — wowe irashobora revisit na ohereza hanze them anytime!",
+    "history_hint": "💡 Umutungo wawe wakozwe ubitswe muri History tab — ushobora kuwusubiramo no kuwohereza hanze igihe cyose!",
     "about_prefix": "📖",
     "exit": "Sohoka"
   },
