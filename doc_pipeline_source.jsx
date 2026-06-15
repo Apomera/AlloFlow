@@ -262,6 +262,96 @@ function _deriveFieldLabel(sourceTU, fieldName, index) {
   return _flagged;
 }
 
+// ── Redaction infrastructure (true content removal — NEVER a cover) ───────────────────────────
+// SAFETY CONTRACT: redaction must REMOVE the sensitive text, never hide it behind a box/CSS. A
+// covered-but-present string is still copy-pasteable + machine-readable — a FERPA breach (a teacher
+// redacting a student's name/SSN from an IEP would be handing out the data while believing it gone).
+// These pure helpers operate on the accessible HTML — the source every HTML / Word / EPUB / DAISY
+// export and any re-rendered PDF is built from. CRITICAL LIMITATION: the "Tagged PDF" output injects
+// a tag tree into the ORIGINAL uploaded PDF bytes, so HTML-level redaction does NOT reach it — the
+// UI must block/redirect the tagged-PDF download (or force a re-render from the redacted HTML) when
+// redactions exist. Full design + workflow: docs/redaction_design.md.
+// (assign-then-return everywhere → no `return {` at 2-space, so the factory-export heuristic is safe.)
+function _redactTargets(targets) {
+  return (Array.isArray(targets) ? targets : [targets])
+    .map((t) => (t && typeof t === 'object' ? t.text : t))
+    .map((t) => String(t == null ? '' : t).replace(/\s+/g, ' ').trim())
+    .filter((t) => t.length > 0)
+    .sort((a, b) => b.length - a.length); // longest first → redact a PII string before any substring of it
+}
+// Truly remove every occurrence of each target from the document's text nodes AND text-carrying
+// attributes (alt/title/aria-label — PII hides there too), replacing with `marker` (default
+// "[redacted]" — a fixed marker that, unlike a length-matched bar, does not leak the original length,
+// and reads as "redacted" to a screen reader). Whitespace inside a target is matched flexibly. Pure.
+function _redactDocHtml(html, targets, opts) {
+  opts = opts || {};
+  const marker = typeof opts.marker === 'string' ? opts.marker : '[redacted]';
+  const flags = opts.caseSensitive ? 'g' : 'gi';
+  const list = _redactTargets(targets);
+  if (!list.length) { const _r0 = { html: String(html == null ? '' : html), count: 0, redacted: [] }; return _r0; }
+  let doc;
+  try { doc = new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html'); }
+  catch (_) { const _re0 = { html: String(html == null ? '' : html), count: 0, redacted: [] }; return _re0; }
+  const root = doc.body || doc.documentElement;
+  let count = 0; const hit = new Set();
+  const res = list.map((needle) => new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+'), flags));
+  const _scrub = (s) => {
+    let out = String(s);
+    for (let i = 0; i < list.length; i++) out = out.replace(res[i], () => { count++; hit.add(list[i]); return marker; });
+    return out;
+  };
+  if (root && doc.createTreeWalker) {
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const edits = []; let n;
+    while ((n = walker.nextNode())) {
+      const p = n.parentNode;
+      if (p && p.nodeType === 1 && (p.tagName === 'SCRIPT' || p.tagName === 'STYLE')) continue;
+      const orig = n.nodeValue || '';
+      const next = _scrub(orig);
+      if (next !== orig) edits.push([n, next]);
+    }
+    for (const e of edits) e[0].nodeValue = e[1];
+  }
+  if (root && root.querySelectorAll) {
+    root.querySelectorAll('[alt],[title],[aria-label]').forEach((el) => {
+      ['alt', 'title', 'aria-label'].forEach((a) => {
+        if (el.hasAttribute(a)) { const v = el.getAttribute(a); const nv = _scrub(v); if (nv !== v) el.setAttribute(a, nv); }
+      });
+    });
+  }
+  const outHtml = doc.documentElement ? ('<!DOCTYPE html>\n' + doc.documentElement.outerHTML) : String(html == null ? '' : html);
+  const _r = { html: outHtml, count: count, redacted: Array.from(hit) };
+  return _r;
+}
+// SAFETY VERIFIER: re-extract ALL readable text (textContent + alt/title/aria-label), normalize
+// whitespace, and confirm none of the targets survive ANYWHERE — so a target that the per-text-node
+// pass could not fully remove (e.g. split across elements) is still caught. Returns {clean, leaks}.
+// The UI MUST treat clean===false as a HARD block: a redaction that doesn't verify clean is worse
+// than none (it gives a false sense of safety).
+function _redactionLeaks(html, targets) {
+  const list = _redactTargets(targets);
+  let hay = '';
+  try {
+    const doc = new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html');
+    hay = ((doc.body || doc.documentElement || {}).textContent) || '';
+    const els = doc.querySelectorAll ? doc.querySelectorAll('[alt],[title],[aria-label]') : [];
+    els.forEach((el) => { hay += ' ' + (el.getAttribute('alt') || '') + ' ' + (el.getAttribute('title') || '') + ' ' + (el.getAttribute('aria-label') || ''); });
+  } catch (_) { hay = String(html == null ? '' : html); }
+  const _norm = (s) => String(s).toLowerCase().replace(/\s+/g, ' ');
+  const _hay = _norm(hay);
+  const leaks = list.filter((t) => _hay.indexOf(_norm(t)) !== -1);
+  const _r = { clean: leaks.length === 0, leaks: leaks };
+  return _r;
+}
+// The SAFE one-call API the UI should use: redact, THEN verify in the same call. Callers must never
+// apply/distribute a result whose clean===false. Returns {html, count, redacted, clean, leaks}.
+function _redactDocument(html, targets, opts) {
+  const r = _redactDocHtml(html, targets, opts);
+  const v = _redactionLeaks(r.html, targets);
+  const _r = { html: r.html, count: r.count, redacted: r.redacted, clean: v.clean, leaks: v.leaks };
+  return _r;
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -24344,6 +24434,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     getChunkState: _wrap(getChunkState),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
+    // Redaction infra (true removal + safety verify). Pure module-scope helpers; the UI flow
+    // (select → confirm → redactDocument → block-if-not-clean) is wired separately. (redaction)
+    redactDocument: _redactDocument,
+    redactDocHtml: _redactDocHtml,
+    redactionLeaks: _redactionLeaks,
     downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
     createTaggedPdf: _wrapAsync(createTaggedPdf),
     // Office extractors exposed for the e2e media-preservation sentinel
