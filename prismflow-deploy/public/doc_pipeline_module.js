@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -13449,6 +13449,69 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       }
 
+      // ── Auto-restore dual-OCR-confirmed dropped text (2026-06-14) ──
+      // The recovery engine (applyWordRestoration) + the AI retry both EXIST, but
+      // since the 2026-06-07 redesign (1714fdcc) they were opt-in only (the Tier B
+      // [Re-run with restoration] button), so a fresh remediation shipped with every
+      // accidental drop un-recovered — the user had to hand-restore in the diff.
+      // The 2026-06-07 plan refused SILENT auto-restore because it could not tell a
+      // real accidental drop from an OCR hallucination or a cosmetic de-hyphenation.
+      // The 2026-06-08 dual-OCR signal is exactly that missing discriminator: a token
+      // BOTH Tesseract AND Vision saw in the source but that vanished from the final
+      // is a high-confidence accidental drop (hallucinations are seen by only ONE
+      // engine; cosmetic variants survive normalization). So we now auto-run the
+      // proven restorer on JUST that high-confidence subset. This is NOT silent —
+      // the count + word list ride on `_result.autoRestore` for a reviewable banner
+      // and `preRestoreHtml` is stashed for one-click undo. Unplaceable words still
+      // land in the Content-recovery appendix, so nothing is ever dropped. Gated on
+      // dual-OCR presence (scanned docs — the drop-prone path); born-digital docs
+      // have no second engine, so they keep the opt-in button (no behavior change).
+      let _autoRestore = null;
+      try {
+        const _arTess = (typeof window !== 'undefined' && window.__lastOcrTesseractText) || '';
+        const _arVis = (typeof window !== 'undefined' && window.__lastOcrVisionText) || '';
+        if (_arTess && _arVis && typeof applyWordRestoration === 'function') {
+          const _arNorm = (tk) => String(tk || '').toLowerCase().replace(/­/g, '').replace(/[^a-z0-9'-]/g, '');
+          const _arSetOf = (s) => { const o = new Set(); for (const p of String(s || '').split(/\s+/)) { const n = _arNorm(p); if (n.length >= 2) o.add(n); } return o; };
+          const _arSetT = _arSetOf(_arTess);
+          const _arSetV = _arSetOf(_arVis);
+          const _arSrc = (extractedText || '').replace(_ALLO_MARKER_RE, '');
+          const _arFinalSet = _arSetOf(htmlToPlainText(accessibleHtml));
+          // High-confidence missing = source token, >=3 chars, seen by BOTH OCR
+          // engines, absent from the remediated final. De-duped (one ask per word;
+          // applyWordRestoration places every occurrence of a given word itself).
+          const _arSeen = new Set();
+          const _arMissing = [];
+          for (const raw of (_arSrc.match(/\S+/g) || [])) {
+            const n = _arNorm(raw);
+            if (n.length < 3 || _arSeen.has(n)) continue;
+            if (_arFinalSet.has(n)) continue;
+            if (!(_arSetT.has(n) && _arSetV.has(n))) continue;
+            _arSeen.add(n);
+            _arMissing.push({ word: n });
+          }
+          if (_arMissing.length > 0) {
+            const _arPreHtml = accessibleHtml;
+            const _arResult = applyWordRestoration(accessibleHtml, _arMissing, _arSrc);
+            const _arInline = (_arResult && _arResult.restored) ? _arResult.restored.length : 0;
+            const _arAppendix = (_arResult && _arResult.unplaceable) ? _arResult.unplaceable.length : 0;
+            if (_arResult && _arResult.html && (_arInline > 0 || _arAppendix > 0)) {
+              accessibleHtml = _arResult.html;
+              _autoRestore = {
+                mode: 'dual-ocr',
+                candidateCount: _arMissing.length,
+                restoredInline: _arInline,
+                preservedInAppendix: _arAppendix,
+                words: (_arResult.restored || []).slice(0, 150).map(x => x.word)
+                  .concat((_arResult.unplaceable || []).slice(0, 150).map(x => x.word)).slice(0, 200),
+                preRestoreHtml: _arPreHtml,
+              };
+              warnLog('[AutoRestore] dual-OCR high-confidence: ' + _arInline + ' restored inline + ' + _arAppendix + ' to appendix, of ' + _arMissing.length + ' candidate word(s)');
+            }
+          }
+        }
+      } catch (_arErr) { warnLog('[AutoRestore] non-fatal:', _arErr && _arErr.message); }
+
       // ── Integrity check: compare final HTML text content to deterministic ground truth ──
       // This catches silent truncation that slipped past individual fix-pass guards.
       // Both sides are normalized IDENTICALLY first — words split across a line break by a
@@ -13670,6 +13733,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // user-visible Diff panel never shows marker substrings as content.
         sourceText: (extractedText || '').replace(_ALLO_MARKER_RE, ''),
         finalText: htmlToPlainText(accessibleHtml),
+        // Dual-OCR auto-restore summary (null unless high-confidence drops were
+        // recovered above). Drives the reviewable "N words auto-restored" banner +
+        // one-click undo (preRestoreHtml). See the Auto-restore block above.
+        autoRestore: _autoRestore,
         groundTruthCharCount: window.__lastGroundTruthCharCount || 0,
         groundTruthMethod: window.__lastGroundTruthMethod || null,
         verificationAudit: verification,
@@ -23600,11 +23667,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

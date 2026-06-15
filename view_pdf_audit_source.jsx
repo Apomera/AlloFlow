@@ -4527,6 +4527,47 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     </div>
                                   </details>
                                 )}
+                                {/* Automatic dual-OCR recovery banner. High-confidence drops —
+                                    words BOTH Tesseract AND Vision saw in the source but that the
+                                    remediation dropped — are restored automatically at remediation
+                                    time (doc_pipeline Auto-restore block). This surfaces it (NOT
+                                    silent, per the 1714fdcc "never hide a real loss" rule) and gives
+                                    one-click undo. Unplaceable words are in the Content Recovery
+                                    appendix, so nothing is ever dropped either way. */}
+                                {pdfFixResult && pdfFixResult.autoRestore && !pdfFixResult.autoRestore.undone && (() => {
+                                  const _ar = pdfFixResult.autoRestore;
+                                  const _total = (_ar.restoredInline || 0) + (_ar.preservedInAppendix || 0);
+                                  return (
+                                    <div className="mb-2 bg-rose-50 border-2 border-rose-300 rounded-xl px-3 py-2 text-[11px] text-rose-900" role="status">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-bold" aria-hidden="true">✓✓</span>
+                                        <span className="font-bold">{_total.toLocaleString()} {t('pdf_audit.auto_restore.title') || (_total === 1 ? 'word auto-restored' : 'words auto-restored')}</span>
+                                        <span>{t('pdf_audit.auto_restore.detail') || 'Both Tesseract AND Vision saw these in your source, but the remediation had dropped them.'}{' '}{_ar.restoredInline > 0 ? `${_ar.restoredInline.toLocaleString()} ${t('pdf_audit.auto_restore.inline') || 'put back in context'}` : ''}{_ar.preservedInAppendix > 0 ? `${_ar.restoredInline > 0 ? ' · ' : ''}${_ar.preservedInAppendix.toLocaleString()} ${t('pdf_audit.auto_restore.appendix') || 'preserved in the Content Recovery section'}` : ''}.</span>
+                                        <button
+                                          onClick={() => {
+                                            const _pre = _ar.preRestoreHtml;
+                                            if (!_pre) return;
+                                            setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true } } : prev);
+                                            if (addToast) addToast(t('pdf_audit.auto_restore.undone') || 'Auto-restore undone — the dropped words were removed again.', 'info');
+                                          }}
+                                          className="ml-auto px-2 py-0.5 bg-white border border-rose-400 text-rose-800 rounded-full text-[10px] font-bold hover:bg-rose-100 focus:ring-2 focus:ring-rose-400"
+                                          title={t('pdf_audit.auto_restore.undo_title') || 'Remove the automatically restored words again (revert to the pre-restore remediation).'}
+                                        >{t('pdf_audit.auto_restore.undo') || '↶ Undo auto-restore'}</button>
+                                      </div>
+                                      {Array.isArray(_ar.words) && _ar.words.length > 0 && (
+                                        <details className="mt-1.5">
+                                          <summary className="cursor-pointer text-[10px] text-rose-700 font-semibold">{t('pdf_audit.auto_restore.show_words') || 'Show restored words'}</summary>
+                                          <div className="mt-1 flex flex-wrap gap-1">
+                                            {_ar.words.map((w, i) => (
+                                              <span key={i} className="px-1.5 py-0.5 bg-white border border-rose-300 rounded text-[10px] font-mono text-rose-800">{String(w).slice(0, 40)}</span>
+                                            ))}
+                                          </div>
+                                        </details>
+                                      )}
+                                      <p className="text-[10px] text-rose-700 mt-1">{t('pdf_audit.auto_restore.review_hint') || 'Review them in the Diff view — click Undo if any were intentional removals.'}</p>
+                                    </div>
+                                  );
+                                })()}
                                 {/* Auto-restore summary — shown after the auto-flow or a manual restore run. */}
                                 {autoRestoreSummary && (
                                   <div className="mb-2 bg-emerald-50 border border-emerald-200 rounded-xl px-2.5 py-1.5 text-[11px] text-emerald-900 flex items-center gap-2 flex-wrap">
