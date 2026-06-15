@@ -1,23 +1,23 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`brainAtlas render goldens > detail panel: cerebellum (pins the accuracy-critical fn string) 1`] = `
+exports[`brainAtlas render goldens > detail panel: cerebellum (ACCURACY LOCK — ~80%, not 50%) 1`] = `
 {
   "buttons": 20,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 68,
-  "sha": "896e21ce9b767f23",
+  "lengthBucket": 69,
+  "sha": "f412958c1f23ccb6",
   "svgs": 1,
 }
 `;
 
-exports[`brainAtlas render goldens > detail panel: dopamine (pins a localizationism-hedge target) 1`] = `
+exports[`brainAtlas render goldens > detail panel: dopamine (ACCURACY LOCK — no "pleasure chemical" overclaim) 1`] = `
 {
   "buttons": 27,
   "canvases": 1,
   "inputs": 7,
   "lengthBucket": 83,
-  "sha": "ed6beaf13b40f231",
+  "sha": "e6668d559a7779b1",
   "svgs": 1,
 }
 `;
@@ -72,7 +72,7 @@ exports[`brainAtlas render goldens > view: lateral renders + pins a digest 1`] =
   "canvases": 1,
   "inputs": 7,
   "lengthBucket": 78,
-  "sha": "f8e10e682511da2e",
+  "sha": "5e2047b99c734c50",
   "svgs": 1,
 }
 `;
@@ -83,7 +83,7 @@ exports[`brainAtlas render goldens > view: medial renders + pins a digest 1`] = 
   "canvases": 1,
   "inputs": 7,
   "lengthBucket": 76,
-  "sha": "30bd63571a840885",
+  "sha": "6451f3e837a2b6ef",
   "svgs": 1,
 }
 `;
@@ -105,7 +105,7 @@ exports[`brainAtlas render goldens > view: neurotransmitters renders + pins a di
   "canvases": 1,
   "inputs": 7,
   "lengthBucket": 95,
-  "sha": "2b094a1981ca81d6",
+  "sha": "35f9513d5353f7e3",
   "svgs": 1,
 }
 `;

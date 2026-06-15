@@ -49,18 +49,23 @@ describe('brainAtlas render goldens', () => {
     });
   });
 
-  it('detail panel: cerebellum (pins the accuracy-critical fn string)', () => {
+  it('detail panel: cerebellum (ACCURACY LOCK — ~80%, not 50%)', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ view: 'lateral', selectedRegion: 'cerebellum' });
-    // the cerebellum fn is rendered verbatim in the detail panel
     expect(html).toMatch(/Motor coordination/);
+    // the 2026-06-15 accuracy fix: cerebellum holds ~80% (four-fifths) of neurons
+    expect(html).toMatch(/~?80%|four-fifths/);
+    expect(html).not.toMatch(/50% of brain/);
     expect(digest(html)).toMatchSnapshot();
   });
 
-  it('detail panel: dopamine (pins a localizationism-hedge target)', () => {
+  it('detail panel: dopamine (ACCURACY LOCK — no "pleasure chemical" overclaim)', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ view: 'neurotransmitters', selectedRegion: 'dopamine' });
     expect(html).toMatch(/Dopamine|dopamine/);
+    // the hedge: reward-prediction framing, "pleasure chemical" flagged as oversimplified
+    expect(html).toMatch(/Reward-prediction/);
+    expect(html).not.toMatch(/Reward and pleasure signaling/);
     expect(digest(html)).toMatchSnapshot();
   });
 
