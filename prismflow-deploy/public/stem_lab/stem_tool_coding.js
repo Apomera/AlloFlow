@@ -17,6 +17,396 @@
   function sfxCodeError() { codeTone(220, 0.15, 'sawtooth', 0.06); setTimeout(function() { codeTone(180, 0.12, 'sawtooth', 0.05); }, 80); }
   function sfxCodeSuccess() { codeTone(523, 0.08, 'sine', 0.07); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { codeTone(784, 0.1, 'sine', 0.08); }, 140); setTimeout(function() { codeTone(1047, 0.15, 'sine', 0.09); }, 210); }
 
+  /* __CODING_INTERP_START__ */
+  // Pure, testable interpreter core for codingPlayground (extracted 2026-06-14,
+  // roadmap C1). Single source of truth for parse / serialize / execute so the
+  // copy-paste defect class that produced the A3 3D-serializer bug cannot recur
+  // silently. Exercised by tests/coding_interp.test.js.
+  var CodingInterp = (function () {
+    function resolveVal(val, vars) {
+      if (typeof val === 'string' && val.charAt(0) === '$') {
+        var vName = val.substring(1);
+        return vars[vName] != null ? vars[vName] : 0;
+      }
+      return typeof val === 'number' ? val : (parseFloat(val) || 0);
+    }
+    function evalCondition(cond, turtle, vars) {
+      if (!cond) return false;
+      var m;
+      if ((m = cond.match(/^(\$?[\w.]+)\s*(>|<|>=|<=|==|!=)\s*(.+)$/))) {
+        var lhsRaw = m[1].trim(), op = m[2], rhsRaw = m[3].trim();
+        var lhs, rhs;
+        if (lhsRaw === 'x') lhs = turtle.x;
+        else if (lhsRaw === 'y') lhs = turtle.y;
+        else if (lhsRaw === 'angle') lhs = turtle.angle;
+        else if (lhsRaw === 'penDown') lhs = turtle.penDown;
+        else if (lhsRaw.charAt(0) === '$') lhs = vars[lhsRaw.substring(1)] || 0;
+        else lhs = parseFloat(lhsRaw) || 0;
+        if (rhsRaw === 'true') rhs = true;
+        else if (rhsRaw === 'false') rhs = false;
+        else if (rhsRaw.charAt(0) === '$') rhs = vars[rhsRaw.substring(1)] || 0;
+        else rhs = parseFloat(rhsRaw);
+        if (isNaN(rhs) && typeof rhs !== 'boolean') rhs = 0;
+        if (op === '>') return lhs > rhs;
+        if (op === '<') return lhs < rhs;
+        if (op === '>=') return lhs >= rhs;
+        if (op === '<=') return lhs <= rhs;
+        if (op === '==') return lhs == rhs;
+        if (op === '!=') return lhs != rhs;
+      }
+      return false;
+    }
+    function getEndpoints(lines) {
+      if (lines.length === 0) return { closed: false, turns: 0, segments: 0 };
+      var first = lines[0];
+      var last = lines[lines.length - 1];
+      var dist = Math.sqrt(Math.pow(last.x2 - first.x1, 2) + Math.pow(last.y2 - first.y1, 2));
+      var totalAngle = 0;
+      for (var i = 1; i < lines.length; i++) {
+        var a1 = Math.atan2(lines[i - 1].y2 - lines[i - 1].y1, lines[i - 1].x2 - lines[i - 1].x1);
+        var a2 = Math.atan2(lines[i].y2 - lines[i].y1, lines[i].x2 - lines[i].x1);
+        var diff = (a2 - a1) * 180 / Math.PI;
+        while (diff > 180) diff -= 360;
+        while (diff < -180) diff += 360;
+        totalAngle += Math.abs(diff);
+      }
+      return { closed: dist < 15, turns: totalAngle, segments: lines.length };
+    }
+    function blocksToText(blks, indent) {
+      indent = indent || '';
+      var lines = [];
+      for (var i = 0; i < blks.length; i++) {
+        var b = blks[i];
+        if (b.type === 'forward') lines.push(indent + 'forward(' + (b.distance || 50) + ')');
+        else if (b.type === 'backward') lines.push(indent + 'backward(' + (b.distance || 50) + ')');
+        else if (b.type === 'right') lines.push(indent + 'right(' + (b.degrees || 90) + ')');
+        else if (b.type === 'left') lines.push(indent + 'left(' + (b.degrees || 90) + ')');
+        else if (b.type === 'penup') lines.push(indent + 'penUp()');
+        else if (b.type === 'pendown') lines.push(indent + 'penDown()');
+        else if (b.type === 'color') lines.push(indent + 'setColor("' + (b.color || '#6366f1') + '")');
+        else if (b.type === 'width') lines.push(indent + 'setWidth(' + (b.width || 2) + ')');
+        else if (b.type === 'circle') lines.push(indent + 'circle(' + (b.radius || 30) + ')');
+        else if (b.type === 'goto') lines.push(indent + 'goto(' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')');
+        else if (b.type === 'home') lines.push(indent + 'home()');
+        else if (b.type === 'setVar') lines.push(indent + 'setVar("' + (b.varName || 'size') + '", ' + (b.varValue != null ? b.varValue : 50) + ')');
+        else if (b.type === 'changeVar') lines.push(indent + 'changeVar("' + (b.varName || 'size') + '", ' + (b.varDelta != null ? b.varDelta : 10) + ')');
+        else if (b.type === 'repeat') {
+          lines.push(indent + 'repeat(' + (b.times || 4) + ', function() {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '})');
+        }
+        else if (b.type === 'ifelse') {
+          lines.push(indent + 'if (' + (b.condition || 'x > 250') + ') {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '} else {');
+          if (b.elseChildren && b.elseChildren.length > 0) lines.push(blocksToText(b.elseChildren, indent + '  '));
+          lines.push(indent + '}');
+        }
+        else if (b.type === 'while') {
+          lines.push(indent + 'while (' + (b.condition || 'x < 450') + ') {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '}');
+        }
+        else if (b.type === 'function') {
+          lines.push(indent + 'function ' + (b.funcName || 'myShape') + '() {');
+          if (b.children && b.children.length > 0) lines.push(blocksToText(b.children, indent + '  '));
+          lines.push(indent + '}');
+        }
+        else if (b.type === 'callFunction') lines.push(indent + (b.funcName || 'myShape') + '()');
+        else if (b.type === 'random') lines.push(indent + 'random("' + (b.varName || 'r') + '", ' + (b.randomMin || 0) + ', ' + (b.randomMax || 100) + ')');
+        else if (b.type === 'stamp') lines.push(indent + 'stamp()');
+        else if (b.type === 'arc') lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
+        else if (b.type === 'playNote') lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
+        else if (b.type === 'spawnTurtle') lines.push(indent + 'spawnTurtle("' + (b.turtleName || 'bob') + '")');
+        else if (b.type === 'switchTurtle') lines.push(indent + 'switchTurtle("' + (b.turtleName || 'bob') + '")');
+        else if (b.type === 'pitch') lines.push(indent + 'pitch(' + (b.degrees || 30) + ')');
+        else if (b.type === 'yaw') lines.push(indent + 'yaw(' + (b.degrees || 30) + ')');
+        else if (b.type === 'forward3D') lines.push(indent + 'forward3D(' + (b.distance || 50) + ')');
+        else if (b.type === 'roll') lines.push(indent + 'roll(' + (b.degrees || 30) + ')');
+        else if (b.type === 'moveUp') lines.push(indent + 'moveUp(' + (b.distance || 30) + ')');
+        else if (b.type === 'moveDown') lines.push(indent + 'moveDown(' + (b.distance || 30) + ')');
+        else if (b.type) lines.push(indent + '// unsupported: ' + String(b.type));
+      }
+      return lines.join('\n');
+    }
+    function textToBlocks(code) {
+      var result = [];
+      var lineArr = code.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+      var i = 0;
+      function parse() {
+        var blks = [];
+        while (i < lineArr.length) {
+          var line = lineArr[i];
+          if (line.match(/^}\)?;?$/) || line.match(/^\} else \{$/)) { i++; return blks; }
+          var m;
+          if ((m = line.match(/^forward\(([\$\w]+)\)/))) { blks.push({ type: 'forward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^backward\(([\$\w]+)\)/))) { blks.push({ type: 'backward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^right\(([\$\w]+)\)/))) { blks.push({ type: 'right', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^left\(([\$\w]+)\)/))) { blks.push({ type: 'left', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
+          else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
+          else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
+          else if ((m = line.match(/^setWidth\(([\$\w]+)\)/))) { blks.push({ type: 'width', width: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^circle\(([\$\w]+)\)/))) { blks.push({ type: 'circle', radius: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
+          else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
+          else if ((m = line.match(/^setVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'setVar', varName: m[1], varValue: parseFloat(m[2]) }); }
+          else if ((m = line.match(/^changeVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'changeVar', varName: m[1], varDelta: parseFloat(m[2]) }); }
+          else if ((m = line.match(/^if\s*\((.+)\)\s*\{/))) {
+            i++;
+            var ifChildren = parse();
+            var elseChildren = [];
+            if (i < lineArr.length && lineArr[i - 1] && lineArr[i - 1].match(/\} else \{/)) { elseChildren = parse(); }
+            blks.push({ type: 'ifelse', condition: m[1].trim(), children: ifChildren, elseChildren: elseChildren });
+            continue;
+          }
+          else if ((m = line.match(/^repeat\((\d+)/))) {
+            i++;
+            var children = parse();
+            blks.push({ type: 'repeat', times: parseInt(m[1]), children: children });
+            continue;
+          }
+          else if ((m = line.match(/^while\s*\((.+)\)\s*\{/))) {
+            i++;
+            var whileChildren = parse();
+            blks.push({ type: 'while', condition: m[1].trim(), children: whileChildren });
+            continue;
+          }
+          else if ((m = line.match(/^function\s+(\w+)\(\)\s*\{/))) {
+            i++;
+            var funcBody = parse();
+            blks.push({ type: 'function', funcName: m[1], children: funcBody });
+            continue;
+          }
+          else if ((m = line.match(/^(\w+)\(\)$/))) { blks.push({ type: 'callFunction', funcName: m[1] }); }
+          else if ((m = line.match(/^random\("([^"]+)",\s*(-?[\d.]+),\s*(-?[\d.]+)\)/))) { blks.push({ type: 'random', varName: m[1], randomMin: parseFloat(m[2]), randomMax: parseFloat(m[3]) }); }
+          else if (line.match(/^stamp\(\)/)) { blks.push({ type: 'stamp' }); }
+          else if ((m = line.match(/^arc\(([\d.]+),\s*([\d.]+)\)/))) { blks.push({ type: 'arc', arcAngle: parseFloat(m[1]), arcRadius: parseFloat(m[2]) }); }
+          else if ((m = line.match(/^playNote\(([\d.]+)(?:,\s*([\d.]+))?\)/))) { blks.push({ type: 'playNote', frequency: parseFloat(m[1]), duration: m[2] ? parseFloat(m[2]) : 200 }); }
+          else if ((m = line.match(/^spawnTurtle\("([^"]+)"\)/))) { blks.push({ type: 'spawnTurtle', turtleName: m[1] }); }
+          else if ((m = line.match(/^switchTurtle\("([^"]+)"\)/))) { blks.push({ type: 'switchTurtle', turtleName: m[1] }); }
+          else if ((m = line.match(/^pitch\((\d+)\)/))) { blks.push({ type: 'pitch', degrees: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^yaw\((\d+)\)/))) { blks.push({ type: 'yaw', degrees: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^forward3D\(([\$\w]+)\)/))) { blks.push({ type: 'forward3D', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          else if ((m = line.match(/^roll\((\d+)\)/))) { blks.push({ type: 'roll', degrees: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^moveUp\((\d+)\)/))) { blks.push({ type: 'moveUp', distance: parseFloat(m[1]) }); }
+          else if ((m = line.match(/^moveDown\((\d+)\)/))) { blks.push({ type: 'moveDown', distance: parseFloat(m[1]) }); }
+          i++;
+        }
+        return blks;
+      }
+      return parse();
+    }
+    // Pure execution: returns { frames, finalTurtle, finalLines, finalLines3D,
+    // finalExtraTurtles, vars }. Each frame is the state AFTER one step:
+    //   { turtle, add (2D segs added), add3D, stepIdx, vars, pitchAngle, yawAngle,
+    //     rollAngle, turtleZ, extraTurtles, audio }. No side effects.
+    var MAXSTEPS = 100000; // synchronous backstop vs unbounded recursion
+    function simulate(blocks, startTurtle, opts) {
+      opts = opts || {};
+      var project3D = typeof opts.project3D === 'function' ? opts.project3D : null;
+      var t = Object.assign({}, startTurtle);
+      var allLines = (opts.startLines || []).slice();
+      var lines3D = (opts.startLines3D || []).slice();
+      var extraTurtles = (opts.extraTurtles || []).slice();
+      var vars = {};
+      var pitchAngle = opts.pitchAngle || 0, yawAngle = opts.yawAngle || 0, rollAngle = opts.rollAngle || 0, turtleZ = opts.turtleZ || 0;
+      function flattenBlocks(bArr) {
+        var flat = [];
+        for (var j = 0; j < bArr.length; j++) {
+          var blk = bArr[j];
+          if (blk.type === 'repeat') {
+            var times = blk.times || 4;
+            for (var r = 0; r < times; r++) { flat = flat.concat(flattenBlocks(blk.children || [])); }
+          } else { flat.push(blk); }
+        }
+        return flat;
+      }
+      var flat = flattenBlocks(blocks);
+      var idx = 0;
+      var frames = [];
+      while (idx < flat.length) {
+        if (frames.length >= MAXSTEPS) break;
+        var b = flat[idx];
+        var preLen = allLines.length, pre3DLen = lines3D.length, audio = null;
+        if (b.type === 'setVar') {
+          vars[b.varName || 'size'] = b.varValue != null ? b.varValue : 50;
+        } else if (b.type === 'changeVar') {
+          var vn = b.varName || 'size';
+          vars[vn] = (vars[vn] || 0) + (b.varDelta != null ? b.varDelta : 10);
+        } else if (b.type === 'ifelse') {
+          var condResult = evalCondition(b.condition || 'x > 250', t, vars);
+          var branch = condResult ? (b.children || []) : (b.elseChildren || []);
+          var branchFlat = flattenBlocks(branch);
+          flat = flat.slice(0, idx + 1).concat(branchFlat).concat(flat.slice(idx + 1));
+        } else if (b.type === 'forward') {
+          var dist = resolveVal(b.distance != null ? b.distance : 50, vars);
+          var rad = t.angle * Math.PI / 180;
+          var nx = t.x + Math.cos(rad) * dist;
+          var ny = t.y + Math.sin(rad) * dist;
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: nx, y2: ny, color: t.color, width: t.width }); }
+          t.x = nx; t.y = ny;
+        } else if (b.type === 'backward') {
+          var dist2 = resolveVal(b.distance != null ? b.distance : 50, vars);
+          var rad2 = t.angle * Math.PI / 180;
+          var nx2 = t.x - Math.cos(rad2) * dist2;
+          var ny2 = t.y - Math.sin(rad2) * dist2;
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: nx2, y2: ny2, color: t.color, width: t.width }); }
+          t.x = nx2; t.y = ny2;
+        } else if (b.type === 'right') {
+          t.angle = (t.angle + resolveVal(b.degrees != null ? b.degrees : 90, vars)) % 360;
+        } else if (b.type === 'left') {
+          t.angle = (t.angle - resolveVal(b.degrees != null ? b.degrees : 90, vars) + 360) % 360;
+        } else if (b.type === 'penup') {
+          t.penDown = false;
+        } else if (b.type === 'pendown') {
+          t.penDown = true;
+        } else if (b.type === 'color') {
+          t.color = b.color || '#6366f1';
+        } else if (b.type === 'width') {
+          t.width = resolveVal(b.width != null ? b.width : 2, vars);
+        } else if (b.type === 'circle') {
+          var cRadius = resolveVal(b.radius != null ? b.radius : 30, vars);
+          if (t.penDown) {
+            var segs = 36;
+            for (var si = 0; si < segs; si++) {
+              var a1 = t.angle + (si / segs) * 360;
+              var a2 = t.angle + ((si + 1) / segs) * 360;
+              var r1 = a1 * Math.PI / 180;
+              var r2 = a2 * Math.PI / 180;
+              var cx1 = t.x + cRadius * (Math.cos(r1) - Math.cos(t.angle * Math.PI / 180));
+              var cy1 = t.y + cRadius * (Math.sin(r1) - Math.sin(t.angle * Math.PI / 180));
+              var cx2 = t.x + cRadius * (Math.cos(r2) - Math.cos(t.angle * Math.PI / 180));
+              var cy2 = t.y + cRadius * (Math.sin(r2) - Math.sin(t.angle * Math.PI / 180));
+              allLines.push({ x1: cx1, y1: cy1, x2: cx2, y2: cy2, color: t.color, width: t.width });
+            }
+          }
+        } else if (b.type === 'goto') {
+          var gx = b.x != null ? b.x : 250;
+          var gy = b.y != null ? b.y : 250;
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: gx, y2: gy, color: t.color, width: t.width }); }
+          t.x = gx; t.y = gy;
+        } else if (b.type === 'home') {
+          if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width }); }
+          t.x = 250; t.y = 250; t.angle = -90;
+        } else if (b.type === 'while') {
+          if (!b._iterCount) b._iterCount = 0;
+          if (b._iterCount < 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
+            b._iterCount++;
+            var whileBody = flattenBlocks(b.children || []);
+            var whileMarker = Object.assign({}, b);
+            flat = flat.slice(0, idx + 1).concat(whileBody).concat([whileMarker]).concat(flat.slice(idx + 1));
+          } else { b._iterCount = 0; }
+        } else if (b.type === 'function') {
+          vars['__func_' + (b.funcName || 'myShape')] = b.children || [];
+        } else if (b.type === 'callFunction') {
+          var funcBody = vars['__func_' + (b.funcName || 'myShape')];
+          if (funcBody && funcBody.length > 0) {
+            var callBody = flattenBlocks(JSON.parse(JSON.stringify(funcBody)));
+            flat = flat.slice(0, idx + 1).concat(callBody).concat(flat.slice(idx + 1));
+          }
+        } else if (b.type === 'random') {
+          var rMin = b.randomMin != null ? b.randomMin : 0;
+          var rMax = b.randomMax != null ? b.randomMax : 100;
+          vars[b.varName || 'r'] = Math.floor(Math.random() * (rMax - rMin + 1)) + rMin;
+        } else if (b.type === 'stamp') {
+          if (allLines.length > 0) {
+            var stampLines = allLines.slice();
+            var ox = stampLines[0].x1, oy = stampLines[0].y1;
+            var dx = t.x - ox, dy = t.y - oy;
+            for (var sj = 0; sj < stampLines.length; sj++) {
+              allLines.push({ x1: stampLines[sj].x1 + dx, y1: stampLines[sj].y1 + dy, x2: stampLines[sj].x2 + dx, y2: stampLines[sj].y2 + dy, color: stampLines[sj].color, width: stampLines[sj].width });
+            }
+          }
+        } else if (b.type === 'arc') {
+          var arcAngle = resolveVal(b.arcAngle != null ? b.arcAngle : 180, vars);
+          var arcRadius = resolveVal(b.arcRadius != null ? b.arcRadius : 30, vars);
+          if (t.penDown) {
+            var arcSegs = Math.max(8, Math.ceil(Math.abs(arcAngle) / 10));
+            var arcStep = arcAngle / arcSegs;
+            var prevX = t.x, prevY = t.y;
+            for (var ai = 1; ai <= arcSegs; ai++) {
+              var stepDist = (2 * arcRadius * Math.sin(Math.abs(arcStep) * Math.PI / 360));
+              var ax = prevX + Math.cos((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
+              var ay = prevY + Math.sin((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
+              allLines.push({ x1: prevX, y1: prevY, x2: ax, y2: ay, color: t.color, width: t.width });
+              prevX = ax; prevY = ay;
+            }
+            t.x = prevX; t.y = prevY;
+          }
+          t.angle = (t.angle + arcAngle) % 360;
+        } else if (b.type === 'pitch') {
+          pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
+        } else if (b.type === 'yaw') {
+          yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
+        } else if (b.type === 'forward3D') {
+          var dist3D = resolveVal(b.distance || 50, vars);
+          var radAngle = t.angle * Math.PI / 180;
+          var radPitch = pitchAngle * Math.PI / 180;
+          var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
+          var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
+          var dz3 = Math.sin(radPitch) * dist3D;
+          var nx3 = t.x + dx3, ny3 = t.y + dy3, nz3 = turtleZ + dz3;
+          if (t.penDown) {
+            lines3D.push({ x1: t.x, y1: t.y, z1: turtleZ, x2: nx3, y2: ny3, z2: nz3, color: t.color, width: t.width });
+            if (project3D) {
+              var p1 = project3D(t.x - 250, t.y - 250, turtleZ);
+              var p2 = project3D(nx3 - 250, ny3 - 250, nz3);
+              allLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, color: t.color, width: Math.max(0.5, t.width * p2.scale) });
+            }
+          }
+          t.x = nx3; t.y = ny3; turtleZ = nz3;
+        } else if (b.type === 'roll') {
+          rollAngle = (rollAngle + resolveVal(b.degrees || 30, vars)) % 360;
+        } else if (b.type === 'moveUp') {
+          var upDist = resolveVal(b.distance || 30, vars);
+          var nzUp = turtleZ + upDist;
+          if (t.penDown) {
+            lines3D.push({ x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzUp, color: t.color, width: t.width });
+            if (project3D) {
+              var pU1 = project3D(t.x - 250, t.y - 250, turtleZ);
+              var pU2 = project3D(t.x - 250, t.y - 250, nzUp);
+              allLines.push({ x1: pU1.x, y1: pU1.y, x2: pU2.x, y2: pU2.y, color: t.color, width: Math.max(0.5, t.width * pU2.scale) });
+            }
+          }
+          turtleZ = nzUp;
+        } else if (b.type === 'moveDown') {
+          var downDist = resolveVal(b.distance || 30, vars);
+          var nzDown = turtleZ - downDist;
+          if (t.penDown) {
+            lines3D.push({ x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzDown, color: t.color, width: t.width });
+            if (project3D) {
+              var pD1 = project3D(t.x - 250, t.y - 250, turtleZ);
+              var pD2 = project3D(t.x - 250, t.y - 250, nzDown);
+              allLines.push({ x1: pD1.x, y1: pD1.y, x2: pD2.x, y2: pD2.y, color: t.color, width: Math.max(0.5, t.width * pD2.scale) });
+            }
+          }
+          turtleZ = nzDown;
+        } else if (b.type === 'spawnTurtle') {
+          var tName = b.turtleName || 'bob';
+          var newT = { name: tName, x: t.x, y: t.y, angle: t.angle, penDown: true, color: '#22c55e', width: 2, skin: '\uD83D\uDC22' };
+          extraTurtles = extraTurtles.filter(function (et) { return et.name !== tName; });
+          extraTurtles.push(newT);
+        } else if (b.type === 'switchTurtle') {
+          var sName = b.turtleName || 'bob';
+          var found = extraTurtles.find(function (et) { return et.name === sName; });
+          if (found) {
+            t.x = found.x; t.y = found.y; t.angle = found.angle;
+            t.penDown = found.penDown; t.color = found.color; t.width = found.width;
+          }
+        } else if (b.type === 'playNote') {
+          audio = { frequency: resolveVal(b.frequency != null ? b.frequency : 440, vars), duration: (b.duration || 200) };
+        }
+        var _uv = {}; for (var vk in vars) { if (vars.hasOwnProperty(vk) && vk.indexOf('__func_') !== 0 && typeof vars[vk] === 'number') _uv[vk] = vars[vk]; }
+        frames.push({ turtle: Object.assign({}, t), add: allLines.slice(preLen), add3D: lines3D.slice(pre3DLen), stepIdx: idx, vars: _uv, pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ, extraTurtles: extraTurtles.slice(), audio: audio });
+        idx++;
+      }
+      return { frames: frames, finalTurtle: t, finalLines: allLines, finalLines3D: lines3D, finalExtraTurtles: extraTurtles, vars: vars };
+    }
+    return { resolveVal: resolveVal, evalCondition: evalCondition, getEndpoints: getEndpoints, blocksToText: blocksToText, textToBlocks: textToBlocks, simulate: simulate };
+  })();
+  /* __CODING_INTERP_END__ */
+
   window.StemLab.registerTool('codingPlayground', {
     icon: '🔬',
     label: 'codingPlayground',
@@ -617,481 +1007,56 @@
           }
 
           // ── Helper: analyze drawn lines for challenge checking ──
-          function getEndpoints(lines) {
-            if (lines.length === 0) return { closed: false, turns: 0, segments: 0 };
-            var first = lines[0];
-            var last = lines[lines.length - 1];
-            var dist = Math.sqrt(Math.pow(last.x2 - first.x1, 2) + Math.pow(last.y2 - first.y1, 2));
-            var totalAngle = 0;
-            for (var i = 1; i < lines.length; i++) {
-              var a1 = Math.atan2(lines[i - 1].y2 - lines[i - 1].y1, lines[i - 1].x2 - lines[i - 1].x1);
-              var a2 = Math.atan2(lines[i].y2 - lines[i].y1, lines[i].x2 - lines[i].x1);
-              var diff = (a2 - a1) * 180 / Math.PI;
-              while (diff > 180) diff -= 360;
-              while (diff < -180) diff += 360;
-              totalAngle += Math.abs(diff);
-            }
-            return { closed: dist < 15, turns: totalAngle, segments: lines.length };
-          }
+          var getEndpoints = CodingInterp.getEndpoints;
+          var blocksToText = CodingInterp.blocksToText;
+          var textToBlocks = CodingInterp.textToBlocks;
+          var resolveVal = CodingInterp.resolveVal;
+          var evalCondition = CodingInterp.evalCondition;
 
-          // ── Generate text code from blocks ──
-          function blocksToText(blks, indent) {
-            indent = indent || '';
-            var lines = [];
-            for (var i = 0; i < blks.length; i++) {
-              var b = blks[i];
-              if (b.type === 'forward') lines.push(indent + 'forward(' + (b.distance || 50) + ')');
-              else if (b.type === 'backward') lines.push(indent + 'backward(' + (b.distance || 50) + ')');
-              else if (b.type === 'right') lines.push(indent + 'right(' + (b.degrees || 90) + ')');
-              else if (b.type === 'left') lines.push(indent + 'left(' + (b.degrees || 90) + ')');
-              else if (b.type === 'penup') lines.push(indent + 'penUp()');
-              else if (b.type === 'pendown') lines.push(indent + 'penDown()');
-              else if (b.type === 'color') lines.push(indent + 'setColor("' + (b.color || '#6366f1') + '")');
-              else if (b.type === 'width') lines.push(indent + 'setWidth(' + (b.width || 2) + ')');
-              else if (b.type === 'circle') lines.push(indent + 'circle(' + (b.radius || 30) + ')');
-              else if (b.type === 'goto') lines.push(indent + 'goto(' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')');
-              else if (b.type === 'home') lines.push(indent + 'home()');
-              else if (b.type === 'setVar') lines.push(indent + 'setVar("' + (b.varName || 'size') + '", ' + (b.varValue != null ? b.varValue : 50) + ')');
-              else if (b.type === 'changeVar') lines.push(indent + 'changeVar("' + (b.varName || 'size') + '", ' + (b.varDelta != null ? b.varDelta : 10) + ')');
-              else if (b.type === 'repeat') {
-                lines.push(indent + 'repeat(' + (b.times || 4) + ', function() {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '})');
-              } else if (b.type === 'ifelse') {
-                lines.push(indent + 'if (' + (b.condition || 'x > 250') + ') {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '} else {');
-                if (b.elseChildren && b.elseChildren.length > 0) {
-                  lines.push(blocksToText(b.elseChildren, indent + '  '));
-                }
-                lines.push(indent + '}');
-              } else if (b.type === 'while') {
-                lines.push(indent + 'while (' + (b.condition || 'x < 450') + ') {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '}');
-              } else if (b.type === 'function') {
-                lines.push(indent + 'function ' + (b.funcName || 'myShape') + '() {');
-                if (b.children && b.children.length > 0) {
-                  lines.push(blocksToText(b.children, indent + '  '));
-                }
-                lines.push(indent + '}');
-              } else if (b.type === 'callFunction') {
-                lines.push(indent + (b.funcName || 'myShape') + '()');
-              } else if (b.type === 'random') {
-                lines.push(indent + 'random("' + (b.varName || 'r') + '", ' + (b.randomMin || 0) + ', ' + (b.randomMax || 100) + ')');
-              } else if (b.type === 'stamp') {
-                lines.push(indent + 'stamp()');
-              } else if (b.type === 'arc') {
-                lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
-              } else if (b.type === 'playNote') {
-                lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
-              } else if (b.type === 'spawnTurtle') {
-                lines.push(indent + 'spawnTurtle("' + (b.turtleName || 'bob') + '")');
-              } else if (b.type === 'switchTurtle') {
-                lines.push(indent + 'switchTurtle("' + (b.turtleName || 'bob') + '")');
-              } else if (b.type === 'pitch') {
-                lines.push(indent + 'pitch(' + (b.degrees || 30) + ')');
-              } else if (b.type === 'yaw') {
-                lines.push(indent + 'yaw(' + (b.degrees || 30) + ')');
-              } else if (b.type === 'forward3D') {
-                lines.push(indent + 'forward3D(' + (b.distance || 50) + ')');
-              } else if (b.type === 'roll') {
-                lines.push(indent + 'roll(' + (b.degrees || 30) + ')');
-              } else if (b.type === 'moveUp') {
-                lines.push(indent + 'moveUp(' + (b.distance || 30) + ')');
-              } else if (b.type === 'moveDown') {
-                lines.push(indent + 'moveDown(' + (b.distance || 30) + ')');
-              } else if (b.type) {
-                lines.push(indent + '// unsupported: ' + String(b.type));
-              }
-            }
-            return lines.join('\n');
-          }
-
-          // ── Parse text code to blocks ──
-          function textToBlocks(code) {
-            var result = [];
-            var lineArr = code.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
-            var i = 0;
-            function parse() {
-              var blks = [];
-              while (i < lineArr.length) {
-                var line = lineArr[i];
-                if (line.match(/^}\)?;?$/) || line.match(/^\} else \{$/)) { i++; return blks; }
-                var m;
-                if ((m = line.match(/^forward\(([\$\w]+)\)/))) { blks.push({ type: 'forward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^backward\(([\$\w]+)\)/))) { blks.push({ type: 'backward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^right\(([\$\w]+)\)/))) { blks.push({ type: 'right', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^left\(([\$\w]+)\)/))) { blks.push({ type: 'left', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
-                else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
-                else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
-                else if ((m = line.match(/^setWidth\(([\$\w]+)\)/))) { blks.push({ type: 'width', width: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^circle\(([\$\w]+)\)/))) { blks.push({ type: 'circle', radius: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
-                else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
-                else if ((m = line.match(/^setVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'setVar', varName: m[1], varValue: parseFloat(m[2]) }); }
-                else if ((m = line.match(/^changeVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'changeVar', varName: m[1], varDelta: parseFloat(m[2]) }); }
-                else if ((m = line.match(/^if\s*\((.+)\)\s*\{/))) {
-                  i++;
-                  var ifChildren = parse();
-                  // After parse returns, current line should be '} else {' or '}'
-                  var elseChildren = [];
-                  if (i < lineArr.length && lineArr[i - 1] && lineArr[i - 1].match(/\} else \{/)) {
-                    elseChildren = parse();
-                  }
-                  blks.push({ type: 'ifelse', condition: m[1].trim(), children: ifChildren, elseChildren: elseChildren });
-                  continue;
-                }
-                else if ((m = line.match(/^repeat\((\d+)/))) {
-                  i++;
-                  var children = parse();
-                  blks.push({ type: 'repeat', times: parseInt(m[1]), children: children });
-                  continue;
-                }
-                else if ((m = line.match(/^while\s*\((.+)\)\s*\{/))) {
-                  i++;
-                  var whileChildren = parse();
-                  blks.push({ type: 'while', condition: m[1].trim(), children: whileChildren });
-                  continue;
-                }
-                else if ((m = line.match(/^function\s+(\w+)\(\)\s*\{/))) {
-                  i++;
-                  var funcBody = parse();
-                  blks.push({ type: 'function', funcName: m[1], children: funcBody });
-                  continue;
-                }
-                else if ((m = line.match(/^(\w+)\(\)$/))) { blks.push({ type: 'callFunction', funcName: m[1] }); }
-                else if ((m = line.match(/^random\("([^"]+)",\s*(-?[\d.]+),\s*(-?[\d.]+)\)/))) { blks.push({ type: 'random', varName: m[1], randomMin: parseFloat(m[2]), randomMax: parseFloat(m[3]) }); }
-                else if (line.match(/^stamp\(\)/)) { blks.push({ type: 'stamp' }); }
-                else if ((m = line.match(/^arc\(([\d.]+),\s*([\d.]+)\)/))) { blks.push({ type: 'arc', arcAngle: parseFloat(m[1]), arcRadius: parseFloat(m[2]) }); }
-                else if ((m = line.match(/^playNote\(([\d.]+)(?:,\s*([\d.]+))?\)/))) { blks.push({ type: 'playNote', frequency: parseFloat(m[1]), duration: m[2] ? parseFloat(m[2]) : 200 }); }
-                else if ((m = line.match(/^spawnTurtle\("([^"]+)"\)/))) { blks.push({ type: 'spawnTurtle', turtleName: m[1] }); }
-                else if ((m = line.match(/^switchTurtle\("([^"]+)"\)/))) { blks.push({ type: 'switchTurtle', turtleName: m[1] }); }
-                else if ((m = line.match(/^pitch\((\d+)\)/))) { blks.push({ type: 'pitch', degrees: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^yaw\((\d+)\)/))) { blks.push({ type: 'yaw', degrees: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^forward3D\(([\$\w]+)\)/))) { blks.push({ type: 'forward3D', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-                else if ((m = line.match(/^roll\((\d+)\)/))) { blks.push({ type: 'roll', degrees: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^moveUp\((\d+)\)/))) { blks.push({ type: 'moveUp', distance: parseFloat(m[1]) }); }
-                else if ((m = line.match(/^moveDown\((\d+)\)/))) { blks.push({ type: 'moveDown', distance: parseFloat(m[1]) }); }
-                i++;
-              }
-              return blks;
-            }
-            return parse();
-          }
-
-          // ── Resolve variable values ──
-          function resolveVal(val, vars) {
-            if (typeof val === 'string' && val.charAt(0) === '$') {
-              var vName = val.substring(1);
-              return vars[vName] != null ? vars[vName] : 0;
-            }
-            return typeof val === 'number' ? val : (parseFloat(val) || 0);
-          }
-
-          // ── Evaluate condition against turtle state + vars ──
-          function evalCondition(cond, turtle, vars) {
-            if (!cond) return false;
-            var m;
-            // Pattern: lhs op rhs
-            if ((m = cond.match(/^(\$?[\w.]+)\s*(>|<|>=|<=|==|!=)\s*(.+)$/))) {
-              var lhsRaw = m[1].trim(), op = m[2], rhsRaw = m[3].trim();
-              var lhs, rhs;
-              // Resolve lhs
-              if (lhsRaw === 'x') lhs = turtle.x;
-              else if (lhsRaw === 'y') lhs = turtle.y;
-              else if (lhsRaw === 'angle') lhs = turtle.angle;
-              else if (lhsRaw === 'penDown') lhs = turtle.penDown;
-              else if (lhsRaw.charAt(0) === '$') lhs = vars[lhsRaw.substring(1)] || 0;
-              else lhs = parseFloat(lhsRaw) || 0;
-              // Resolve rhs
-              if (rhsRaw === 'true') rhs = true;
-              else if (rhsRaw === 'false') rhs = false;
-              else if (rhsRaw.charAt(0) === '$') rhs = vars[rhsRaw.substring(1)] || 0;
-              else rhs = parseFloat(rhsRaw);
-              if (isNaN(rhs) && typeof rhs !== 'boolean') rhs = 0;
-              if (op === '>') return lhs > rhs;
-              if (op === '<') return lhs < rhs;
-              if (op === '>=') return lhs >= rhs;
-              if (op === '<=') return lhs <= rhs;
-              if (op === '==') return lhs == rhs;
-              if (op === '!=') return lhs != rhs;
-            }
-            return false;
-          }
-
-          // ── Execute blocks (async with animation) ──
-          function executeBlocks(blks, turtle, lines, cb, spd, stepCb, runToken) {
-            var t = Object.assign({}, turtle);
-            var allLines = lines.slice();
-            var vars = {};
-
-            function flattenBlocks(bArr) {
-              var flat = [];
-              for (var j = 0; j < bArr.length; j++) {
-                var blk = bArr[j];
-                if (blk.type === 'repeat') {
-                  var times = blk.times || 4;
-                  for (var r = 0; r < times; r++) {
-                    flat = flat.concat(flattenBlocks(blk.children || []));
-                  }
-                } else if (blk.type === 'while') {
-                  // While — push as marker for deferred evaluation in step()
-                  flat.push(blk);
-                } else if (blk.type === 'function') {
-                  // Function definition — push as marker to register in step()
-                  flat.push(blk);
-                } else if (blk.type === 'ifelse') {
-                  // defer evaluation — push a marker
-                  flat.push(blk);
-                } else {
-                  flat.push(blk);
-                }
-              }
-              return flat;
-            }
-            var flat = flattenBlocks(blks);
+          // ── Execute blocks (single source: replays CodingInterp.simulate) ──
+                    function executeBlocks(blks, turtle, lines, cb, spd, stepCb, runToken) {
+            // Thin animation driver: compute the whole run once via the pure
+            // CodingInterp.simulate, then replay its frames on a timer. Single
+            // source of truth for execution; cancellation honors the run token.
+            var sim = CodingInterp.simulate(blks, turtle, {
+              startLines: lines, startLines3D: lines3D, extraTurtles: extraTurtles,
+              pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ,
+              project3D: project3D
+            });
+            var frames = sim.frames;
+            var replayLines = lines.slice();
+            var replay3D = lines3D.slice();
             var idx = 0;
-
+            function fireAudio(a) {
+              if (!a) return;
+              try {
+                var audioCtx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = a.frequency;
+                gain.gain.value = 0.15;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                var noteDur = (a.duration || 200) / 1000;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteDur);
+                osc.stop(audioCtx.currentTime + noteDur + 0.05);
+              } catch (e) { /* Audio not available */ }
+            }
             function step() {
               if (runToken != null && runToken !== _codeRunToken) { return; }
-              if (idx >= flat.length) {
-                if (cb) cb(t, allLines);
+              if (idx >= frames.length) {
+                if (cb) cb(sim.finalTurtle, replayLines);
                 return;
               }
-              var b = flat[idx];
+              var fr = frames[idx];
               if (stepCb) stepCb(idx);
-
-              if (b.type === 'setVar') {
-                vars[b.varName || 'size'] = b.varValue != null ? b.varValue : 50;
-              } else if (b.type === 'changeVar') {
-                var vn = b.varName || 'size';
-                vars[vn] = (vars[vn] || 0) + (b.varDelta != null ? b.varDelta : 10);
-              } else if (b.type === 'ifelse') {
-                var condResult = evalCondition(b.condition || 'x > 250', t, vars);
-                var branch = condResult ? (b.children || []) : (b.elseChildren || []);
-                var branchFlat = flattenBlocks(branch);
-                // Insert branch blocks right after the current position
-                var before = flat.slice(0, idx + 1);
-                var after = flat.slice(idx + 1);
-                flat = before.concat(branchFlat).concat(after);
-              } else if (b.type === 'forward') {
-                var dist = resolveVal(b.distance != null ? b.distance : 50, vars);
-                var rad = t.angle * Math.PI / 180;
-                var nx = t.x + Math.cos(rad) * dist;
-                var ny = t.y + Math.sin(rad) * dist;
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: nx, y2: ny, color: t.color, width: t.width });
-                }
-                t.x = nx; t.y = ny;
-              } else if (b.type === 'backward') {
-                var dist2 = resolveVal(b.distance != null ? b.distance : 50, vars);
-                var rad2 = t.angle * Math.PI / 180;
-                var nx2 = t.x - Math.cos(rad2) * dist2;
-                var ny2 = t.y - Math.sin(rad2) * dist2;
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: nx2, y2: ny2, color: t.color, width: t.width });
-                }
-                t.x = nx2; t.y = ny2;
-              } else if (b.type === 'right') {
-                t.angle = (t.angle + resolveVal(b.degrees != null ? b.degrees : 90, vars)) % 360;
-              } else if (b.type === 'left') {
-                t.angle = (t.angle - resolveVal(b.degrees != null ? b.degrees : 90, vars) + 360) % 360;
-              } else if (b.type === 'penup') {
-                t.penDown = false;
-              } else if (b.type === 'pendown') {
-                t.penDown = true;
-              } else if (b.type === 'color') {
-                t.color = b.color || '#6366f1';
-              } else if (b.type === 'width') {
-                t.width = resolveVal(b.width != null ? b.width : 2, vars);
-              } else if (b.type === 'circle') {
-                var cRadius = resolveVal(b.radius != null ? b.radius : 30, vars);
-                if (t.penDown) {
-                  var segs = 36;
-                  for (var si = 0; si < segs; si++) {
-                    var a1 = t.angle + (si / segs) * 360;
-                    var a2 = t.angle + ((si + 1) / segs) * 360;
-                    var r1 = a1 * Math.PI / 180;
-                    var r2 = a2 * Math.PI / 180;
-                    var cx1 = t.x + cRadius * (Math.cos(r1) - Math.cos(t.angle * Math.PI / 180));
-                    var cy1 = t.y + cRadius * (Math.sin(r1) - Math.sin(t.angle * Math.PI / 180));
-                    var cx2 = t.x + cRadius * (Math.cos(r2) - Math.cos(t.angle * Math.PI / 180));
-                    var cy2 = t.y + cRadius * (Math.sin(r2) - Math.sin(t.angle * Math.PI / 180));
-                    allLines.push({ x1: cx1, y1: cy1, x2: cx2, y2: cy2, color: t.color, width: t.width });
-                  }
-                }
-              } else if (b.type === 'goto') {
-                var gx = b.x != null ? b.x : 250;
-                var gy = b.y != null ? b.y : 250;
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: gx, y2: gy, color: t.color, width: t.width });
-                }
-                t.x = gx; t.y = gy;
-              } else if (b.type === 'home') {
-                if (t.penDown) {
-                  allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width });
-                }
-                t.x = 250; t.y = 250; t.angle = -90;
-              } else if (b.type === 'while') {
-                // While loop: evaluate condition and insert children + self if true (with safety cap)
-                if (!b._iterCount) b._iterCount = 0;
-                if (b._iterCount < 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
-                  b._iterCount++;
-                  var whileBody = flattenBlocks(b.children || []);
-                  var whileMarker = Object.assign({}, b); // re-evaluate on next pass
-                  var beforeW = flat.slice(0, idx + 1);
-                  var afterW = flat.slice(idx + 1);
-                  flat = beforeW.concat(whileBody).concat([whileMarker]).concat(afterW);
-                } else {
-                  b._iterCount = 0; // reset for next run
-                }
-              } else if (b.type === 'function') {
-                // Function definition — store in registry, don't execute
-                vars['__func_' + (b.funcName || 'myShape')] = b.children || [];
-              } else if (b.type === 'callFunction') {
-                // Call function — insert its body into execution stream
-                var funcBody = vars['__func_' + (b.funcName || 'myShape')];
-                if (funcBody && funcBody.length > 0) {
-                  var callBody = flattenBlocks(JSON.parse(JSON.stringify(funcBody)));
-                  var beforeC = flat.slice(0, idx + 1);
-                  var afterC = flat.slice(idx + 1);
-                  flat = beforeC.concat(callBody).concat(afterC);
-                }
-              } else if (b.type === 'random') {
-                // Random — set variable to random value in [min, max]
-                var rMin = b.randomMin != null ? b.randomMin : 0;
-                var rMax = b.randomMax != null ? b.randomMax : 100;
-                vars[b.varName || 'r'] = Math.floor(Math.random() * (rMax - rMin + 1)) + rMin;
-              } else if (b.type === 'stamp') {
-                // Stamp — duplicate all current lines at current position (creates a "stamp")
-                if (allLines.length > 0) {
-                  var stampLines = allLines.slice();
-                  var ox = stampLines[0].x1, oy = stampLines[0].y1;
-                  var dx = t.x - ox, dy = t.y - oy;
-                  for (var si = 0; si < stampLines.length; si++) {
-                    allLines.push({ x1: stampLines[si].x1 + dx, y1: stampLines[si].y1 + dy, x2: stampLines[si].x2 + dx, y2: stampLines[si].y2 + dy, color: stampLines[si].color, width: stampLines[si].width });
-                  }
-                }
-              } else if (b.type === 'arc') {
-                // Arc — draw a portion of a circle (arcAngle degrees, arcRadius pixels)
-                var arcAngle = resolveVal(b.arcAngle != null ? b.arcAngle : 180, vars);
-                var arcRadius = resolveVal(b.arcRadius != null ? b.arcRadius : 30, vars);
-                if (t.penDown) {
-                  var arcSegs = Math.max(8, Math.ceil(Math.abs(arcAngle) / 10));
-                  var arcStep = arcAngle / arcSegs;
-                  var prevX = t.x, prevY = t.y;
-                  for (var ai = 1; ai <= arcSegs; ai++) {
-                    var curAngle = t.angle + arcStep * ai;
-                    var curRad = curAngle * Math.PI / 180;
-                    var stepDist = (2 * arcRadius * Math.sin(Math.abs(arcStep) * Math.PI / 360));
-                    var ax = prevX + Math.cos((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
-                    var ay = prevY + Math.sin((t.angle + arcStep * (ai - 0.5)) * Math.PI / 180) * stepDist;
-                    allLines.push({ x1: prevX, y1: prevY, x2: ax, y2: ay, color: t.color, width: t.width });
-                    prevX = ax; prevY = ay;
-                  }
-                  t.x = prevX; t.y = prevY;
-                }
-                t.angle = (t.angle + arcAngle) % 360;
-              } else if (b.type === 'pitch') {
-                pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('pitchAngle', pitchAngle);
-              } else if (b.type === 'yaw') {
-                yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('yawAngle', yawAngle);
-              } else if (b.type === 'forward3D') {
-                var dist3D = resolveVal(b.distance || 50, vars);
-                var radAngle = t.angle * Math.PI / 180;
-                var radPitch = pitchAngle * Math.PI / 180;
-                var radRoll = rollAngle * Math.PI / 180;
-                // Full 3D direction vector
-                var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
-                var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
-                var dz3 = Math.sin(radPitch) * dist3D;
-                var nx3 = t.x + dx3;
-                var ny3 = t.y + dy3;
-                var nz3 = turtleZ + dz3;
-                if (t.penDown) {
-                  // Store as 3D line for perspective rendering
-                  var l3d = { x1: t.x, y1: t.y, z1: turtleZ, x2: nx3, y2: ny3, z2: nz3, color: t.color, width: t.width };
-                  lines3D.push(l3d);
-                  upd('lines3D', lines3D.slice());
-                  // Also project to 2D for compatibility
-                  var p1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var p2 = project3D(nx3 - 250, ny3 - 250, nz3);
-                  allLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, color: t.color, width: Math.max(0.5, t.width * p2.scale) });
-                }
-                t.x = nx3; t.y = ny3; turtleZ = nz3;
-                upd('turtleZ', turtleZ);
-              } else if (b.type === 'roll') {
-                rollAngle = (rollAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('rollAngle', rollAngle);
-              } else if (b.type === 'moveUp') {
-                var upDist = resolveVal(b.distance || 30, vars);
-                var nzUp = turtleZ + upDist;
-                if (t.penDown) {
-                  var l3dU = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzUp, color: t.color, width: t.width };
-                  lines3D.push(l3dU); upd('lines3D', lines3D.slice());
-                  var pU1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pU2 = project3D(t.x - 250, t.y - 250, nzUp);
-                  allLines.push({ x1: pU1.x, y1: pU1.y, x2: pU2.x, y2: pU2.y, color: t.color, width: Math.max(0.5, t.width * pU2.scale) });
-                }
-                turtleZ = nzUp; upd('turtleZ', turtleZ);
-              } else if (b.type === 'moveDown') {
-                var downDist = resolveVal(b.distance || 30, vars);
-                var nzDown = turtleZ - downDist;
-                if (t.penDown) {
-                  var l3dD = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzDown, color: t.color, width: t.width };
-                  lines3D.push(l3dD); upd('lines3D', lines3D.slice());
-                  var pD1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pD2 = project3D(t.x - 250, t.y - 250, nzDown);
-                  allLines.push({ x1: pD1.x, y1: pD1.y, x2: pD2.x, y2: pD2.y, color: t.color, width: Math.max(0.5, t.width * pD2.scale) });
-                }
-                turtleZ = nzDown; upd('turtleZ', turtleZ);
-              } else if (b.type === 'spawnTurtle') {
-                // Spawn a named turtle at current position
-                var tName = b.turtleName || 'bob';
-                var newT = { name: tName, x: t.x, y: t.y, angle: t.angle, penDown: true, color: '#22c55e', width: 2, skin: '🐢' };
-                var existing = extraTurtles.filter(function(et) { return et.name !== tName; });
-                existing.push(newT);
-                upd('extraTurtles', existing);
-              } else if (b.type === 'switchTurtle') {
-                // Switch to a named turtle
-                var sName = b.turtleName || 'bob';
-                var found = extraTurtles.find(function(et) { return et.name === sName; });
-                if (found) {
-                  // Save current main turtle state, load the named one
-                  var mainTurtle = Object.assign({}, t);
-                  t.x = found.x; t.y = found.y; t.angle = found.angle;
-                  t.penDown = found.penDown; t.color = found.color; t.width = found.width;
-                }
-              } else if (b.type === 'playNote') {
-                // Play Note — use Web Audio API for sound
-                try {
-                  var audioCtx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
-                  var osc = audioCtx.createOscillator();
-                  var gain = audioCtx.createGain();
-                  osc.type = 'sine';
-                  osc.frequency.value = resolveVal(b.frequency != null ? b.frequency : 440, vars);
-                  gain.gain.value = 0.15;
-                  osc.connect(gain);
-                  gain.connect(audioCtx.destination);
-                  var noteDur = (b.duration || 200) / 1000;
-                  osc.start();
-                  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteDur);
-                  osc.stop(audioCtx.currentTime + noteDur + 0.05);
-                } catch(e) { /* Audio not available */ }
-              }
-              var _uv = {}; for (var _vk in vars) { if (vars.hasOwnProperty(_vk) && _vk.indexOf('__func_') !== 0 && typeof vars[_vk] === 'number') _uv[_vk] = vars[_vk]; }
-              updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true, _vars: _uv });
-              recordFrame(t, allLines, idx);
+              if (fr.add && fr.add.length) replayLines = replayLines.concat(fr.add);
+              if (fr.add3D && fr.add3D.length) replay3D = replay3D.concat(fr.add3D);
+              fireAudio(fr.audio);
+              updMulti({ turtle: fr.turtle, lines: replayLines.slice(), stepIdx: idx, running: true, _vars: fr.vars, pitchAngle: fr.pitchAngle, yawAngle: fr.yawAngle, rollAngle: fr.rollAngle, turtleZ: fr.turtleZ, lines3D: replay3D.slice(), extraTurtles: fr.extraTurtles });
+              recordFrame(fr.turtle, replayLines, idx);
               idx++;
               _codeStepTimer = setTimeout(step, spd || 200);
             }
