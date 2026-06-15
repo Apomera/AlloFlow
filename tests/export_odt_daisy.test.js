@@ -272,3 +272,28 @@ describe('EPUB/DAISY well-formedness + navigation (2026-06-15 third-review fixes
     expect(src).toContain('_odtRuns(_fnRuns, footnotes)');
   });
 });
+
+describe('loose text between blocks is preserved (audit #8 — container-text drop)', () => {
+  it('ODT keeps text that is a direct child of a container that also holds a block element', () => {
+    const xml = _htmlToOdtContentXml(wrap('<div>Intro text<p>Body</p></div>'));
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).toContain('Intro text'); // was silently dropped before the fix
+    expect(xml).toContain('Body');
+  });
+  it('DAISY (DTBook) keeps the same loose container text', () => {
+    const xml = _htmlToDtbookXml(wrap('<div>Intro text<p>Body</p></div>'));
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).toContain('Intro text');
+  });
+  it('preserves loose text + inline siblings in document order (Lead in note, then Body)', () => {
+    const xml = _htmlToOdtContentXml(wrap('<div>Lead <strong>in</strong> note<p>Body</p></div>'));
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).toMatch(/Lead[\s\S]*in[\s\S]*note[\s\S]*Body/); // trailing "note" used to vanish
+  });
+  it('does NOT invent empty paragraphs from whitespace-only text between blocks', () => {
+    const xml = _htmlToOdtContentXml(wrap('<div>\n  <p>A</p>\n  <p>B</p>\n</div>'));
+    expect(xml).toContain('>A<');
+    expect(xml).toContain('>B<');
+    expect(xml).not.toMatch(/<text:p[^>]*>\s*<\/text:p>/); // no empty paragraph from whitespace
+  });
+});

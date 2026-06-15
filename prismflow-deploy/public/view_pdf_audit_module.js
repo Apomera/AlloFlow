@@ -214,11 +214,28 @@ function _htmlToDocxSpec(html) {
     }
   };
   const walk = (el) => {
-    const kids = el.children || [];
+    const _INLINE = { SPAN: 1, B: 1, STRONG: 1, I: 1, EM: 1, U: 1, A: 1, SUP: 1, SUB: 1, CODE: 1, SMALL: 1, MARK: 1, ABBR: 1, CITE: 1, Q: 1, S: 1, DEL: 1, INS: 1, BR: 1, WBR: 1, TIME: 1, BDI: 1, BDO: 1, KBD: 1, SAMP: 1, VAR: 1 };
+    let _pending = [];
+    const _flushInline = () => {
+      if (_pending.length) {
+        pushParagraph(inlineRuns({ childNodes: _pending }, {}));
+        _pending = [];
+      }
+    };
+    const kids = el.childNodes || [];
     for (let i = 0; i < kids.length; i++) {
       const n = kids[i];
-      if (_isControlEl(n)) continue;
+      if (n.nodeType === 3) {
+        if ((n.nodeValue || "").trim()) _pending.push(n);
+        continue;
+      }
+      if (n.nodeType !== 1 || _isControlEl(n)) continue;
       const tag = n.tagName;
+      if (tag !== "IMG" && _INLINE[tag]) {
+        _pending.push(n);
+        continue;
+      }
+      _flushInline();
       if (n.classList && n.classList.contains("allo-footnotes")) continue;
       if (n.classList && n.classList.contains("allo-block-pagebreak")) {
         blocks.push({ type: "pagebreak" });
@@ -290,6 +307,7 @@ function _htmlToDocxSpec(html) {
       }
       pushParagraph(inlineRuns(n, {}));
     }
+    _flushInline();
   };
   try {
     const _fnSec = doc.querySelector("section.allo-footnotes");

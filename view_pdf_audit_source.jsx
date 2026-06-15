@@ -192,11 +192,23 @@ function _htmlToDocxSpec(html) {
     }
   };
   const walk = (el) => {
-    const kids = el.children || [];
+    // Inline content (text nodes + inline elements) directly inside a container — possibly
+    // interleaved with block elements — accumulates here and flushes as ONE paragraph at each block
+    // boundary (and at the container's end). BUGFIX (audit #8, 2026-06-15): walk() iterated
+    // el.children (elements only), so a container with any block descendant recursed and never
+    // visited its own TEXT nodes — '<div>Intro<p>Body</p></div>' silently dropped "Intro". DOCX/ODT/
+    // DAISY all share this walk, so loose text between blocks was lost from every Office/DAISY export.
+    const _INLINE = { SPAN: 1, B: 1, STRONG: 1, I: 1, EM: 1, U: 1, A: 1, SUP: 1, SUB: 1, CODE: 1, SMALL: 1, MARK: 1, ABBR: 1, CITE: 1, Q: 1, S: 1, DEL: 1, INS: 1, BR: 1, WBR: 1, TIME: 1, BDI: 1, BDO: 1, KBD: 1, SAMP: 1, VAR: 1 };
+    let _pending = [];
+    const _flushInline = () => { if (_pending.length) { pushParagraph(inlineRuns({ childNodes: _pending }, {})); _pending = []; } };
+    const kids = el.childNodes || [];
     for (let i = 0; i < kids.length; i++) {
       const n = kids[i];
-      if (_isControlEl(n)) continue;
+      if (n.nodeType === 3) { if ((n.nodeValue || '').trim()) _pending.push(n); continue; } // loose text → accumulate
+      if (n.nodeType !== 1 || _isControlEl(n)) continue;
       const tag = n.tagName;
+      if (tag !== 'IMG' && _INLINE[tag]) { _pending.push(n); continue; } // inline element → accumulate (IMG is block)
+      _flushInline(); // a block element ends the current inline paragraph
       // Footnotes section (A6): skip it here — its notes are emitted as Word's
       // native footnotes (collected before the walk), so it must NOT also appear
       // as a trailing list in the body.
@@ -254,6 +266,7 @@ function _htmlToDocxSpec(html) {
       }
       pushParagraph(inlineRuns(n, {}));
     }
+    _flushInline(); // trailing inline (container ending with loose text/inline)
   };
   // ── Collect footnote definitions (A6) BEFORE the walk, so the in-text anchors
   // can resolve their ids. Each note's spoken text (minus the ↩ back-link) becomes
