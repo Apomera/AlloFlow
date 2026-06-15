@@ -10361,6 +10361,9 @@ Return ONLY the complete fixed HTML.`, true);
             }
           } catch(e) { /* non-blocking */ }
 
+          // Per-chunk SOURCE fingerprint — lets resume verify a saved fixed-chunk actually
+          // corresponds to the current document's chunk at the same index (audit #6).
+          const _chunkFp = (s) => { const _n = String(s || '').replace(/\s+/g, ' ').trim(); return _n.length + ':' + _n.slice(0, 80) + ':' + _n.slice(-80); };
           // ── Resume detection: check IndexedDB for saved progress from a prior session ──
           const _sessionId = _chunkSessionId(
             pendingPdfFile ? pendingPdfFile.name : 'document',
@@ -10393,17 +10396,33 @@ Return ONLY the complete fixed HTML.`, true);
               setPdfFixStep('Found saved progress (' + saved.chunkResults.length + '/' + saved.totalChunks + ' sections). Waiting for your choice...');
               const userWantsResume = await resumePromise;
               if (userWantsResume) {
-                _resumedResults = saved.chunkResults;
-                _resumeStartIndex = saved.chunkResults.length;
-                warnLog('[ChunkProgress] Resuming from chunk ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length);
-                setPdfFixStep('Resuming from section ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length + '...');
-                // Re-emit chunk-fixed events for already-completed chunks so live UI populates
-                for (var ri = 0; ri < _resumedResults.length; ri++) {
-                  try {
-                    window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', {
-                      detail: Object.assign({}, _resumedResults[ri], { index: ri, total: bodyChunks.length, resumed: true, timestamp: Date.now() })
-                    }));
-                  } catch(e) {}
+                // Content-match guard (audit #6, 2026-06-15): _sessionId is only
+                // hash(filename|size|chunkCount), so a CHANGED document with the same name/size/chunk
+                // count collides and would splice STALE fixed chunks back in BY INDEX. Verify every
+                // carried chunk's source fingerprint against the CURRENT bodyChunks[i]; on any mismatch
+                // (or a pre-fix save with no srcFp) the progress is stale → discard + re-process rather
+                // than silently corrupt the document.
+                let _resumeValid = true;
+                for (var _vi = 0; _vi < saved.chunkResults.length; _vi++) {
+                  if (!saved.chunkResults[_vi] || saved.chunkResults[_vi].srcFp !== _chunkFp(bodyChunks[_vi])) { _resumeValid = false; break; }
+                }
+                if (!_resumeValid) {
+                  await clearChunkProgress(_sessionId);
+                  warnLog('[ChunkProgress] Saved progress does not match the current document (content changed / unverifiable) — discarded; starting fresh.');
+                  setPdfFixStep('Saved progress was for a different version of this document — starting fresh.');
+                } else {
+                  _resumedResults = saved.chunkResults;
+                  _resumeStartIndex = saved.chunkResults.length;
+                  warnLog('[ChunkProgress] Resuming from chunk ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length);
+                  setPdfFixStep('Resuming from section ' + (_resumeStartIndex + 1) + '/' + bodyChunks.length + '...');
+                  // Re-emit chunk-fixed events for already-completed chunks so live UI populates
+                  for (var ri = 0; ri < _resumedResults.length; ri++) {
+                    try {
+                      window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', {
+                        detail: Object.assign({}, _resumedResults[ri], { index: ri, total: bodyChunks.length, resumed: true, timestamp: Date.now() })
+                      }));
+                    } catch(e) {}
+                  }
                 }
               } else {
                 await clearChunkProgress(_sessionId);
@@ -10747,7 +10766,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             try {
               saveChunkProgress(_sessionId, {
                 chunkResults: chunkResults.map(function(cr, i) {
-                  return { index: i, html: cr.html, score: cr.score, integrityCheck: cr.integrityCheck, aiVerified: cr.aiVerified, wasRetried: cr.wasRetried, usedOriginal: cr.usedOriginal, deterministicFixCount: cr.deterministicFixCount || 0, surgicalFixCount: cr.surgicalFixCount || 0, sizeKB: Math.round(cr.html.length / 1000) };
+                  return { index: i, html: cr.html, score: cr.score, integrityCheck: cr.integrityCheck, aiVerified: cr.aiVerified, wasRetried: cr.wasRetried, usedOriginal: cr.usedOriginal, deterministicFixCount: cr.deterministicFixCount || 0, surgicalFixCount: cr.surgicalFixCount || 0, sizeKB: Math.round(cr.html.length / 1000), srcFp: _chunkFp(bodyChunks[i]) };
                 }),
                 totalChunks: bodyChunks.length,
                 violationInstructions: violationInstructions,
