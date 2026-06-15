@@ -451,7 +451,7 @@ function GlossaryView(props) {
   }, isRunningHealthCheck ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin"
-  }) : /*#__PURE__*/React.createElement("span", null, "📊"), isRunningHealthCheck ? 'Analyzing...' : glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check')))), isInteractiveFlashcards && generatedContent?.data && /*#__PURE__*/React.createElement("div", {
+  }) : /*#__PURE__*/React.createElement("span", null, "📊"), isRunningHealthCheck ? 'Analyzing...' : glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check')))), isInteractiveFlashcards && Array.isArray(generatedContent?.data) && generatedContent.data.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 overflow-auto"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: closeInteractiveFlashcards,
