@@ -1857,6 +1857,7 @@ window.StemLab = window.StemLab || {
         }));
       }
       return h('div', {
+        role: 'img', 'aria-label': num + ' of ' + den + ' parts shaded',
         className: 'flex h-10 rounded-lg overflow-hidden border-2',
         style: { borderColor: color || '#f43f5e' }
       }, segs);
@@ -2625,9 +2626,11 @@ window.StemLab = window.StemLab || {
             Array.from({ length: pd }, function(_, i) {
               return h('div', { 
                 key: i,
+                role: 'button', tabIndex: 0,
                 onClick: function() { sfxClick(); upd({ pieces: { denominator: pd, numerator: i < pn ? i : i + 1 } }); },
-                className: 'flex-1 cursor-pointer transition-all ' + (i < pn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-rose-100 hover:bg-rose-200'),
-                title: (i + 1) + '/' + pd
+                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sfxClick(); upd({ pieces: { denominator: pd, numerator: i < pn ? i : i + 1 } }); } },
+                className: 'flex-1 cursor-pointer transition-all outline-none focus:ring-2 focus:ring-rose-500 focus:relative focus:z-10 ' + (i < pn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-rose-100 hover:bg-rose-200'),
+                'aria-label': (i + 1) + ' of ' + pd, title: (i + 1) + '/' + pd
               });
             })
           )
@@ -2861,8 +2864,8 @@ window.StemLab = window.StemLab || {
         ),
         // Operation buttons
         h('div', { className: 'flex gap-2 justify-center' },
-          [['add', '+'], ['sub', '\u2212'], ['mul', '\u00D7'], ['div', '\u00F7']].map(function(op) {
-            return h('button', { key: op[0],
+          [['add', '+', 'Add'], ['sub', '\u2212', 'Subtract'], ['mul', '\u00D7', 'Multiply'], ['div', '\u00F7', 'Divide']].map(function(op) {
+            return h('button', { key: op[0], 'aria-pressed': opMode === op[0], 'aria-label': op[2],
               onClick: function() { sfxClick(); upd({ opMode: op[0] }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
                 (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') + ' focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-1'
@@ -2870,10 +2873,10 @@ window.StemLab = window.StemLab || {
           })
         ),
         // Result
-        h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-4 text-center' },
+        h('div', { role: 'status', 'aria-live': 'polite', className: 'bg-white rounded-xl border-2 border-orange-200 p-4 text-center' },
           h('div', { className: 'text-2xl font-bold text-slate-800 mb-3' },
             h('span', { className: 'text-blue-600' }, num1 + '/' + den1),
-            h('span', { className: 'mx-3 text-orange-500' }, opSymbols[opMode]),
+            h('span', { className: 'mx-3 text-orange-600' }, opSymbols[opMode]),
             h('span', { className: 'text-red-600' }, num2 + '/' + den2),
             h('span', { className: 'mx-3 text-slate-600' }, '='),
             h('span', { className: 'text-emerald-600' }, opUndefined ? 'undefined' : opSimplified[0] + '/' + opSimplified[1])
@@ -3285,7 +3288,7 @@ window.StemLab = window.StemLab || {
         // Quick questions
         h('div', { className: 'flex flex-wrap gap-1.5' },
           ['How do I add fractions?', 'What are equivalent fractions?', 'How do I simplify?', 'What is a mixed number?'].map(function(q) {
-            return h('button', { 'aria-label': 'Ask question',
+            return h('button', {
               key: q,
               onClick: function() { upd({ aiQuestion: q }); },
               className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
@@ -10291,7 +10294,7 @@ window.StemLab = window.StemLab || {
           : h('div', { className: 'space-y-2' },
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-[11px] font-bold uppercase text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full' }, challenge.type),
-                streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
+                streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-700' }, '\uD83D\uDD25 ' + streak)
               ),
               h('p', { className: 'text-sm font-bold text-rose-800' }, challenge.question),
               h('div', { className: 'flex gap-2' },

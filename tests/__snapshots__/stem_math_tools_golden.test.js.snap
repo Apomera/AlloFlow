@@ -38,24 +38,24 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for fractionViz 1`] = `
 {
-  "buttons": 33,
+  "buttons": 41,
   "circles": 1,
   "inputs": 2,
-  "lengthBucket": 66,
+  "lengthBucket": 71,
   "rects": 0,
-  "sha": "0ba60f8d53adb24b",
+  "sha": "99c314192921faf7",
   "svgs": 1,
 }
 `;
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for fractions 1`] = `
 {
-  "buttons": 33,
+  "buttons": 41,
   "circles": 1,
   "inputs": 2,
-  "lengthBucket": 66,
+  "lengthBucket": 71,
   "rects": 0,
-  "sha": "0ba60f8d53adb24b",
+  "sha": "99c314192921faf7",
   "svgs": 1,
 }
 `;
