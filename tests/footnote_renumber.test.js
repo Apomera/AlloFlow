@@ -39,10 +39,19 @@ describe('_alloRenumberFootnotes — footnote lifecycle', () => {
     expect(noteUids(doc)).toEqual(['b', 'a']);
   });
 
-  it('prunes an orphan NOTE (note whose ref was deleted)', () => {
+  it('removes an orphan NOTE from the footnotes list (note whose ref was deleted)', () => {
     const doc = makeDoc(`<p>X${ref('a')}</p>` + notes(['a', 'keep'], ['b', 'orphan']));
     _alloRenumberFootnotes(doc);
     expect(noteUids(doc)).toEqual(['a']);
+  });
+
+  it('ed-footnote-delete: preserves an orphan NOTE\'s authored text in a recovery section (not silently dropped)', () => {
+    const doc = makeDoc(`<p>X${ref('a')}</p>` + notes(['a', 'keep'], ['b', 'important orphan text']));
+    _alloRenumberFootnotes(doc);
+    expect(noteUids(doc)).toEqual(['a']);                  // the <li> leaves the footnotes <ol>
+    const rec = doc.querySelector('section.allo-recovered-footnotes');
+    expect(rec).not.toBe(null);                            // ...but its text is preserved
+    expect(rec.textContent).toContain('important orphan text');
   });
 
   it('A3: prunes an orphan REF (marker whose note was deleted) — no dangling link survives', () => {

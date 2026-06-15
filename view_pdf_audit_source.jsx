@@ -487,6 +487,31 @@ const _DAISY_OPF_XML = (title, lang) => '<?xml version="1.0" encoding="utf-8"?>\
 // SMIL <par> linking the id to its clip so a reading system highlights the text
 // as the audio plays. These are the PURE pieces (id assignment, SMIL, OPF); the
 // async handler generates the per-block audio + measures clip durations.
+// Recover a WAV clip's duration from its header bytes when HTMLMediaElement reports
+// 0/Infinity (default Gemini WAV: metadata never resolves, so clipEnd would collapse
+// to 0s and that block would speak nothing / never highlight). Uses the SAME canonical
+// header offsets as _concatAudioBlobs: byteRate@28, 'data' chunk scanned like there.
+// Returns seconds (>0) or 0 when the bytes are not a parseable PCM WAV. (exp-clip-duration)
+function _wavDurationFromBytes(u8) {
+  try {
+    if (!u8 || u8.length <= 44) return 0;
+    if (!(u8[0]===0x52 && u8[1]===0x49 && u8[2]===0x46 && u8[3]===0x46 && u8[8]===0x57 && u8[9]===0x41 && u8[10]===0x56 && u8[11]===0x45)) return 0; // 'RIFF'....'WAVE'
+    const byteRate = (u8[28] | (u8[29]<<8) | (u8[30]<<16) | (u8[31]<<24)) >>> 0;
+    if (!(byteRate > 0)) return 0;
+    let dataLen = 0;
+    for (let j = 12; j < Math.min(u8.length - 8, 256); j++) {
+      if (u8[j]===0x64 && u8[j+1]===0x61 && u8[j+2]===0x74 && u8[j+3]===0x61) { // 'data'
+        dataLen = (u8[j+4] | (u8[j+5]<<8) | (u8[j+6]<<16) | (u8[j+7]<<24)) >>> 0;
+        if (!(dataLen > 0) || dataLen > (u8.length - (j+8))) dataLen = u8.length - (j+8); // honor actual bytes if header size is 0/over-long
+        break;
+      }
+    }
+    if (!(dataLen > 0)) return 0;
+    const sec = dataLen / byteRate;
+    return (isFinite(sec) && sec > 0) ? sec : 0;
+  } catch (_) { return 0; }
+}
+
 function _moClock(sec) {
   // SMIL clock value in seconds form (e.g. "12.345s") — valid for clipEnd and
   // media:duration. Guards NaN/negatives to 0.
@@ -1037,8 +1062,48 @@ function _alloRenumberFootnotes(doc) {
       ol.appendChild(li);
       const back = li.querySelector('a.allo-fn-back'); if (back) back.setAttribute('href', '#fnref-' + uid);
     });
-    Array.from(ol.children).forEach((li) => { const u = li.getAttribute('data-fn-uid'); if (u && !used[u]) li.remove(); });
+    // Orphan NOTE (2026-06-15, ed-footnote-delete): the ref/marker was deleted (e.g.
+    // backspaced in the body) but the note survives. Do NOT silently drop the
+    // user-authored text — move it to a recovery appendix and announce, so it is never
+    // lost and we're honest about the change (symmetric with the block-remove announce
+    // and the Content Recovery appendix pattern).
+    let _recovered = 0;
+    Array.from(ol.children).forEach((li) => {
+      const u = li.getAttribute('data-fn-uid');
+      if (!u || used[u]) return;
+      const _txtEl = li.querySelector('.allo-fn-text');
+      const _txt = ((_txtEl ? _txtEl.textContent : li.textContent) || '').replace(/↩/g, '').trim();
+      if (_txt) {
+        let rec = doc.querySelector('section.allo-recovered-footnotes');
+        if (!rec) {
+          rec = doc.createElement('section');
+          rec.className = 'allo-recovered-footnotes';
+          rec.setAttribute('aria-label', 'Recovered footnote text');
+          const h = doc.createElement('p');
+          const b = doc.createElement('strong');
+          b.textContent = 'Recovered footnote text (its marker was deleted):';
+          h.appendChild(b);
+          rec.appendChild(h);
+          (doc.querySelector('main') || doc.body).appendChild(rec);
+        }
+        const p = doc.createElement('p');
+        p.className = 'allo-recovered-fn';
+        p.textContent = _txt;
+        rec.appendChild(p);
+        _recovered++;
+      }
+      li.remove();
+    });
     if (!ol.children.length) sec.remove();
+    if (_recovered) {
+      try {
+        const _msg = _recovered + (_recovered === 1 ? ' footnote whose marker was deleted was moved to a Recovered footnote text section.' : ' footnotes whose markers were deleted were moved to a Recovered footnote text section.');
+        const _lr = doc.getElementById('allo-blocks-live');
+        if (_lr) { _lr.textContent = ''; setTimeout(() => { _lr.textContent = _msg; }, 30); }
+        const _w = doc.defaultView;
+        if (_w && _w.parent && typeof _w.parent.addToast === 'function') _w.parent.addToast(_msg, 'info');
+      } catch (_) {}
+    }
   } catch (_) {}
 }
 
@@ -1334,7 +1399,10 @@ function PdfAuditView(props) {
   // mounted, then refreshes the outline. domIndex matches _buildTagOutline's
   // SURFACE selector (same one _findEl uses).
   const _TAG_EDIT_SURFACE = 'h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,header,footer';
-  const _editTagAt = (domIndex, mutate) => {
+  const _editTagAt = (row, mutate) => {
+    // Accept either the snapshot row object (preferred — enables the desync guard) or a
+    // bare index (legacy internal callers). (ed-outline-desync)
+    const domIndex = row && typeof row === 'object' ? row.domIndex : row;
     try {
       const srcHtml = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || '';
       if (!srcHtml) return;
@@ -1342,6 +1410,23 @@ function PdfAuditView(props) {
       if (!doc || !doc.body) return;
       const el = doc.body.querySelectorAll(_TAG_EDIT_SURFACE)[domIndex];
       if (!el) return;
+      // Fail-closed desync guard: the outline is a snapshot; positional domIndex can desync
+      // after any preview insert/move/delete, so a row action would silently hit the wrong
+      // element and corrupt reading order. If the live element no longer matches the row's
+      // identity (PDF role + leading text), DON'T mutate — rebuild the outline and tell the
+      // user to retry. (ed-outline-desync)
+      if (row && typeof row === 'object') {
+        const _tn = el.tagName.toLowerCase();
+        const _liveRole = _TAG_TO_PDF_ROLE[_tn] || 'P';
+        const _liveText = _tn === 'img' ? (el.getAttribute('alt') || '(no alt)') : (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+        const _expectText = (row.text || '');
+        const _txtOk = _tn === 'table' || _tn === 'ul' || _tn === 'ol' || _liveText.slice(0, 40) === _expectText.slice(0, 40);
+        if (_liveRole !== row.role || !_txtOk) {
+          try { setTagOutline(_buildTagOutline(srcHtml)); } catch (_) {}
+          try { addToast((t('pdf_audit.taginspect.desync') || 'The preview changed since this tag list was built — the list was refreshed. Please re-apply your edit.'), 'error'); } catch (_) {}
+          return;
+        }
+      }
       mutate(el, doc);
       const newHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
       setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() } : prev);
@@ -1515,6 +1600,9 @@ function PdfAuditView(props) {
           if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
             dur = await measure(url);
             blob = await (await fetch(url)).blob();
+            // Recover duration from WAV header bytes when measure() gave 0/Infinity, so the
+            // clip's clipEnd isn't 0s (block would speak nothing / never highlight). (exp-clip-duration)
+            if (!(typeof dur === 'number' && isFinite(dur) && dur > 0) && blob) { try { dur = _wavDurationFromBytes(new Uint8Array(await blob.arrayBuffer())); } catch (_) {} }
             try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
           }
         } catch (_) { /* keep going — a missing clip degrades to text-only for that block */ }
@@ -6936,19 +7024,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       </button>
                                       {/* ── Edit controls (2026-06-14, Adobe-parity #2): re-tag role, mark decorative, reading-order move ── */}
                                       {['H1','H2','H3','H4','H5','H6','P','BlockQuote'].includes(n.role) && (
-                                        <select value={n.role} onChange={(e) => { const _rt = { H1:'h1',H2:'h2',H3:'h3',H4:'h4',H5:'h5',H6:'h6',P:'p',BlockQuote:'blockquote' }[e.target.value]; if (_rt) _editTagAt(n.domIndex, (el, doc) => _retagTagEl(el, doc, _rt)); }} className="shrink-0 text-[10px] border border-slate-300 rounded px-0.5 py-0.5 bg-white text-slate-700" title={t('pdf_audit.taginspect.retag_title') || 'Re-tag this block — change its role (e.g. a paragraph that should be a heading)'} aria-label={'Tag role for ' + (n.text || 'block')}>
+                                        <select value={n.role} onChange={(e) => { const _rt = { H1:'h1',H2:'h2',H3:'h3',H4:'h4',H5:'h5',H6:'h6',P:'p',BlockQuote:'blockquote' }[e.target.value]; if (_rt) _editTagAt(n, (el, doc) => _retagTagEl(el, doc, _rt)); }} className="shrink-0 text-[10px] border border-slate-300 rounded px-0.5 py-0.5 bg-white text-slate-700" title={t('pdf_audit.taginspect.retag_title') || 'Re-tag this block — change its role (e.g. a paragraph that should be a heading)'} aria-label={'Tag role for ' + (n.text || 'block')}>
                                           {['H1','H2','H3','H4','H5','H6','P','BlockQuote'].map((r) => <option key={r} value={r}>{r}</option>)}
                                         </select>
                                       )}
                                       {n.role === 'Figure' && (
-                                        <button onClick={() => _editTagAt(n.domIndex, (el) => _toggleDecorativeEl(el))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.decorative_title') || 'Mark this image as decorative (artifact — screen readers skip it) / restore as content'} aria-label="Toggle decorative">◐</button>
+                                        <button onClick={() => _editTagAt(n, (el) => _toggleDecorativeEl(el))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.decorative_title') || 'Mark this image as decorative (artifact — screen readers skip it) / restore as content'} aria-label="Toggle decorative">◐</button>
                                       )}
                                       {n.role === 'Table' && (<>
-                                        <button onClick={() => _editTagAt(n.domIndex, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
-                                        <button onClick={() => _editTagAt(n.domIndex, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
+                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
+                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
                                       </>)}
-                                      <button onClick={() => _editTagAt(n.domIndex, (el) => _moveTagEl(el, 'up'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_up_title') || 'Move earlier in the reading order'} aria-label="Move up">▲</button>
-                                      <button onClick={() => _editTagAt(n.domIndex, (el) => _moveTagEl(el, 'down'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_down_title') || 'Move later in the reading order'} aria-label="Move down">▼</button>
+                                      <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'up'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_up_title') || 'Move earlier in the reading order'} aria-label="Move up">▲</button>
+                                      <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'down'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_down_title') || 'Move later in the reading order'} aria-label="Move down">▼</button>
                                       {n.warnings.length > 0 && <span className="text-amber-600 text-[11px] shrink-0" title={n.warnings.join('; ')}>⚠</span>}
                                       <button
                                         onClick={() => {

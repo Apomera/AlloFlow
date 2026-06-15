@@ -13,8 +13,8 @@ const start = src.indexOf('function _htmlToDocxSpec(html) {');
 const end = src.indexOf('\n// _buildDocxBlobFromSpec:', start);
 if (start === -1 || end === -1) throw new Error('extraction markers for the ODT/DAISY slice missing');
 const slice = src.slice(start, end);
-const { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _collectMoSegments, _buildMoSmil, _buildMoOpf } =
-  new Function(slice + '; return { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _collectMoSegments, _buildMoSmil, _buildMoOpf };')();
+const { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes } =
+  new Function(slice + '; return { _htmlToOdtContentXml, _htmlToDtbookXml, _htmlToDaisyNcx, _collectMoSegments, _buildMoSmil, _buildMoOpf, _wavDurationFromBytes };')();
 
 const wrap = (body, attrs) => `<!DOCTYPE html><html ${attrs || 'lang="en"'}><head><title>Test Doc</title></head><body>${body}</body></html>`;
 const parseXml = (xml) => {
@@ -175,6 +175,36 @@ describe('ODT / DAISY footnotes (2026-06-15 — were silently dropped)', () => {
     expect(xml).toContain('<noteref idref="dtbfn1">');
     expect(xml).toContain('<note id="dtbfn1">');
     expect(xml).toContain('First note');
+  });
+});
+
+describe('exp-clip-duration — recover WAV duration from header bytes when measure() gives 0/Infinity', () => {
+  // build a canonical 16-bit mono PCM WAV with `samples` data bytes at sampleRate
+  const makeWav = (dataBytes, sampleRate) => {
+    const byteRate = sampleRate * 1 * 2; // mono, 16-bit
+    const u8 = new Uint8Array(44 + dataBytes);
+    const wr4 = (off, s) => { for (let i = 0; i < 4; i++) u8[off + i] = s.charCodeAt(i); };
+    const wrU32 = (off, v) => { u8[off] = v & 255; u8[off + 1] = (v >> 8) & 255; u8[off + 2] = (v >> 16) & 255; u8[off + 3] = (v >> 24) & 255; };
+    wr4(0, 'RIFF'); wrU32(4, 36 + dataBytes); wr4(8, 'WAVE');
+    wr4(12, 'fmt '); wrU32(16, 16); u8[20] = 1; u8[22] = 1; wrU32(24, sampleRate); wrU32(28, byteRate); u8[32] = 2; u8[34] = 16;
+    wr4(36, 'data'); wrU32(40, dataBytes);
+    return u8;
+  };
+
+  it('returns data-bytes / byteRate seconds for a canonical WAV', () => {
+    // 24000 Hz mono 16-bit → byteRate 48000; 48000 data bytes → 1.0s
+    expect(_wavDurationFromBytes(makeWav(48000, 24000))).toBeCloseTo(1.0, 5);
+    expect(_wavDurationFromBytes(makeWav(24000, 24000))).toBeCloseTo(0.5, 5);
+  });
+  it('falls back to actual remaining bytes when the data size field is 0/over-long', () => {
+    const w = makeWav(48000, 24000);
+    w[40] = w[41] = w[42] = w[43] = 0; // zero the data-chunk size field
+    expect(_wavDurationFromBytes(w)).toBeCloseTo(1.0, 5); // uses real remaining bytes
+  });
+  it('returns 0 for non-WAV bytes (mp3 path stays unchanged)', () => {
+    expect(_wavDurationFromBytes(new Uint8Array([0xff, 0xfb, 0x90, 0x00, 1, 2, 3, 4]))).toBe(0);
+    expect(_wavDurationFromBytes(new Uint8Array(10))).toBe(0);
+    expect(_wavDurationFromBytes(null)).toBe(0);
   });
 });
 
