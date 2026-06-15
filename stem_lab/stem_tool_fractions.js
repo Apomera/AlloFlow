@@ -1730,7 +1730,8 @@ window.StemLab = window.StemLab || {
       { id: 'wallExplorer', icon: '\uD83E\uDDF1', name: 'Wall Explorer', desc: 'Find 3 equivalent pairs on the fraction wall', check: function(u) { return u.wallPairsFound >= 3; } },
       { id: 'operations5', icon: '\u2795', name: 'Operator', desc: 'Complete 5 operation challenges', check: function(u) { return u.opsSolved >= 5; } },
       { id: 'tabExplorer', icon: '\uD83D\uDDFA\uFE0F', name: 'Explorer', desc: 'Visit all 6 tabs', check: function(u) { return u.tabsVisited >= 6; } },
-      { id: 'aiLearner', icon: '\uD83E\uDD16', name: 'AI Learner', desc: 'Ask the AI tutor a question', check: function(u) { return u.aiAsked >= 1; } }
+      { id: 'aiLearner', icon: '\uD83E\uDD16', name: 'AI Learner', desc: 'Ask the AI tutor a question', check: function(u) { return u.aiAsked >= 1; } },
+      { id: 'stripStacker', icon: '\uD83D\uDCCA', name: 'Strip Stacker', desc: 'Find an equivalent set with the common-denominator grid', check: function(u) { return u.stripEquivFound >= 1; } }
     ];
 
     var checkBadges = function(updates) {
@@ -9943,16 +9944,190 @@ window.StemLab = window.StemLab || {
       );
     };
 
-    // Stub for the not-yet-built "Number Line" view in the Models cluster.
-    // Renders a friendly placeholder so clicking the tab does not crash;
-    // 2026-06-08: replaced an undefined `renderNumberLineTab()` call that
-    // multi-tab render-smoke surfaced (was crashing the whole fractions tool
-    // any time a user navigated to the numberline tab).
+    // ── COMPARE STRIPS: dynamic multi-strip fraction-magnitude comparison ──
+    // Replaces the old "Number line" stub. Set any n/d, see a unit-width strip
+    // divided into d parts with n shaded; stack up to 5 and turn on the
+    // common-denominator grid so equivalent fractions visibly line up on the
+    // same LCD gridline. The standalone Number Line tool owns single-line
+    // plotting; a deep-link at the bottom cross-references it instead of
+    // duplicating it. All button/number-input driven (no drag, no canvas);
+    // ids are minted in handlers (never in render) so SSR stays deterministic.
     var renderNumberLineTab = function() {
-      return h('div', { className: 'p-6 text-center text-slate-600' },
-        h('div', { className: 'text-3xl mb-2' }, '📏'),
-        h('div', { className: 'text-sm font-bold mb-1' }, 'Number Line view'),
-        h('div', { className: 'text-xs italic' }, 'Coming soon — use the STEM Lab → Number Line tool for now.')
+      var MAX_STRIPS = 5, MAX_NUM = 20, MAX_DEN = 20, MAX_GRID_LCD = 60, BAR_W = 280;
+      var STRIP_COLORS = ['#6366f1', '#3b82f6', '#06b6d4', '#14b8a6', '#22c55e', '#eab308', '#f97316', '#ef4444', '#ec4899'];
+      var strips = _f.strips || [{ id: 's1', n: 1, d: 2 }, { id: 's2', n: 2, d: 3 }];
+      var stripGrid = !!_f.stripGrid;
+      var stripLabels = _f.stripLabels !== false;
+      var stripPairsSeen = _f.stripPairsSeen || {};
+
+      var lcd = strips.length ? strips.reduce(function(acc, s) { return lcm(acc, Math.max(1, s.d)); }, 1) : 1;
+      var gridShowable = stripGrid && lcd > 1 && lcd <= MAX_GRID_LCD;
+
+      // Equivalence grouping (pure; drives rings + banner + reward detection).
+      var valGroups = {};
+      strips.forEach(function(s, i) { var sp = simplify(s.n, Math.max(1, s.d)); var k = sp[0] + '/' + sp[1]; (valGroups[k] = valGroups[k] || []).push(i); });
+      var equivIdx = {};
+      var hasDiffDenomEquiv = false;
+      Object.keys(valGroups).forEach(function(k) {
+        var idxs = valGroups[k];
+        if (idxs.length >= 2) {
+          idxs.forEach(function(i) { equivIdx[i] = true; });
+          var dens = {}; idxs.forEach(function(i) { dens[strips[i].d] = true; });
+          if (Object.keys(dens).length >= 2) hasDiffDenomEquiv = true;
+        }
+      });
+
+      var clampN = function(v) { v = parseInt(v); if (isNaN(v)) v = 0; return Math.max(0, Math.min(MAX_NUM, v)); };
+      var clampD = function(v) { v = parseInt(v); if (isNaN(v)) v = 1; return Math.max(1, Math.min(MAX_DEN, v)); };
+      var newId = function() { return 's' + Date.now() + Math.random().toString(36).slice(2, 5); };
+
+      // Reward only NEW different-denominator equivalences, deduped by simplified
+      // value, and only while the grid is on (matches the badge description).
+      var rewardEquiv = function(arr) {
+        var seen = Object.assign({}, stripPairsSeen);
+        var base = _f.stripEquivFound || 0;
+        var groups = {};
+        arr.forEach(function(s) { var dd = Math.max(1, s.d); var sp = simplify(s.n, dd); var k = sp[0] + '/' + sp[1]; (groups[k] = groups[k] || []).push(dd); });
+        var newly = 0;
+        Object.keys(groups).forEach(function(k) {
+          var dens = groups[k];
+          if (dens.length >= 2) {
+            var distinct = {}; dens.forEach(function(x) { distinct[x] = true; });
+            if (Object.keys(distinct).length >= 2 && !seen[k]) { seen[k] = true; newly++; }
+          }
+        });
+        if (newly > 0) {
+          var nf = base + newly;
+          upd({ stripPairsSeen: seen, stripEquivFound: nf });
+          sfxCorrect();
+          announceToSR('Equivalent fractions found. They line up at the same gridline.');
+          checkBadges({
+            correct: score.correct, streak: streak,
+            typesUsed: Object.keys(challengeTypesUsed).length,
+            equivSolved: _f.equivSolved || 0, simplifySolved: _f.simplifySolved || 0,
+            convertCount: _f.convertCount || 0, wallPairsFound: _f.wallPairsFound || 0,
+            opsSolved: _f.opsSolved || 0, tabsVisited: Object.keys(tabsVisited).length,
+            aiAsked: _f.aiAsked || 0, stripEquivFound: nf
+          });
+        }
+      };
+
+      var addStrip = function() {
+        if (strips.length >= MAX_STRIPS) return;
+        var ns = strips.concat([{ id: newId(), n: 1, d: 4 }]);
+        upd({ strips: ns }); sfxClick();
+        announceToSR('Added 1 over 4 strip. ' + ns.length + ' strips now.');
+        if (stripGrid) rewardEquiv(ns);
+      };
+      var removeStrip = function(id) {
+        var removed = strips.filter(function(s) { return s.id === id; })[0];
+        var ns = strips.filter(function(s) { return s.id !== id; });
+        upd({ strips: ns }); sfxClick();
+        if (removed) announceToSR('Removed ' + removed.n + ' over ' + removed.d + ' strip.');
+      };
+      var setStrip = function(id, patch) {
+        var ns = strips.map(function(s) { return s.id === id ? Object.assign({}, s, patch) : s; });
+        upd({ strips: ns });
+        if (stripGrid) rewardEquiv(ns);
+      };
+      var toggleGrid = function() {
+        var ng = !stripGrid; sfxClick(); upd({ stripGrid: ng });
+        announceToSR(ng ? 'Common-denominator grid on. Common denominator is ' + lcd + '.' : 'Grid off.');
+        if (ng) rewardEquiv(strips);
+      };
+      var toggleLabels = function() { sfxClick(); upd({ stripLabels: !stripLabels }); };
+      var seedExample = function() {
+        var sets = [[[1, 2], [2, 4], [3, 6]], [[1, 3], [2, 6], [3, 9]], [[2, 3], [4, 6]], [[1, 4], [2, 8], [3, 12]]];
+        var set = pick(sets);
+        var ns = set.map(function(p, i) { return { id: newId() + i, n: p[0], d: p[1] }; });
+        upd({ strips: ns, stripGrid: true }); sfxClick();
+        announceToSR('Example loaded with the grid on. Watch the strips line up.');
+        rewardEquiv(ns);
+      };
+      var clearStrips = function() { upd({ strips: [] }); sfxClick(); announceToSR('Cleared all strips.'); if (typeof addToast === 'function') addToast('Strips cleared', 'info'); };
+
+      var gridOverlay = function() {
+        if (!gridShowable) return null;
+        var ticks = [];
+        for (var i = 1; i < lcd; i++) {
+          ticks.push(h('div', { key: 'gl' + i, style: { position: 'absolute', left: (i / lcd * 100) + '%', top: 0, bottom: 0, width: 0, borderLeft: '1px dashed #94a3b8' } }));
+        }
+        return h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, pointerEvents: 'none' } }, ticks);
+      };
+
+      var rows = strips.map(function(s, i) {
+        var color = STRIP_COLORS[i % STRIP_COLORS.length];
+        var dd = Math.max(1, s.d);
+        var sp = simplify(s.n, dd);
+        var dec = s.n / dd;
+        var scaled = gridShowable ? { n: s.n * (lcd / dd), d: lcd } : null;
+        var improper = s.n > s.d;
+        var isEq = !!equivIdx[i] && gridShowable;
+        var labelText = s.n + '/' + s.d
+          + ((sp[0] !== s.n || sp[1] !== s.d) ? ' = ' + sp[0] + '/' + sp[1] : '')
+          + (scaled ? ' = ' + scaled.n + '/' + scaled.d : '')
+          + ' (' + dec.toFixed(2) + ')';
+        return h('div', { key: s.id, className: 'flex items-center gap-2 p-1 rounded-lg ' + (isEq ? 'ring-2 ring-emerald-400 bg-emerald-50/40' : '') },
+          h('div', { className: 'flex items-center gap-1', style: { flex: '0 0 auto' } },
+            h('input', { type: 'number', min: 0, max: MAX_NUM, value: s.n, 'aria-label': 'Strip ' + (i + 1) + ' numerator',
+              onChange: function(e) { setStrip(s.id, { n: clampN(e.target.value) }); },
+              className: 'w-12 px-1 py-0.5 rounded border border-slate-300 text-center text-sm font-bold' }),
+            h('span', { className: 'text-slate-400 font-bold' }, '/'),
+            h('input', { type: 'number', min: 1, max: MAX_DEN, value: s.d, 'aria-label': 'Strip ' + (i + 1) + ' denominator',
+              onChange: function(e) { setStrip(s.id, { d: clampD(e.target.value) }); },
+              className: 'w-12 px-1 py-0.5 rounded border border-slate-300 text-center text-sm font-bold' }),
+            h('button', { onClick: function() { removeStrip(s.id); }, 'aria-label': 'Remove ' + s.n + ' over ' + s.d + ' strip', title: 'Remove',
+              className: 'ml-0.5 px-1.5 py-0.5 rounded text-rose-600 hover:bg-rose-100 text-sm font-bold' }, '×')
+          ),
+          h('div', { style: { position: 'relative', flex: '0 0 auto', width: BAR_W } },
+            drawBar(Math.min(s.n, s.d), s.d, color),
+            gridOverlay()
+          ),
+          stripLabels && h('div', { className: 'text-xs font-mono whitespace-nowrap ' + (isEq ? 'text-emerald-700 font-bold' : 'text-slate-700'), style: { flex: '1 1 auto', minWidth: 80 } },
+            labelText,
+            improper ? h('span', { className: 'ml-1 px-1 rounded bg-amber-100 text-amber-800 text-[10px] font-bold' }, '> 1 whole') : null,
+            isEq ? h('span', { className: 'ml-1 px-1 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold' }, '= equivalent') : null
+          )
+        );
+      });
+
+      var toggleBtn = function(on, fn, label) {
+        return h('button', { onClick: fn, 'aria-pressed': on,
+          className: 'px-3 py-1.5 rounded text-xs font-bold transition-all ' + (on ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50') }, label);
+      };
+
+      return h('div', { className: 'space-y-3' },
+        h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
+          h('h4', { className: 'text-sm font-bold text-indigo-800 mb-1' }, '📊 Compare fractions as sizes'),
+          h('p', { className: 'text-[11px] text-indigo-700' },
+            'A fraction is a number with a size. Each strip is one whole wide, so how far the color reaches is the value. Turn on the common-denominator grid to see equivalent fractions line up on the same line.')
+        ),
+        h('div', { className: 'flex flex-wrap gap-2 items-center' },
+          h('button', { onClick: addStrip, disabled: strips.length >= MAX_STRIPS,
+            className: 'px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40' }, '+ Add strip'),
+          h('button', { onClick: seedExample,
+            className: 'px-3 py-1.5 rounded text-xs font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50' }, 'Example'),
+          h('button', { onClick: clearStrips, disabled: strips.length === 0,
+            className: 'px-3 py-1.5 rounded text-xs font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 disabled:opacity-40' }, 'Clear'),
+          toggleBtn(stripGrid, toggleGrid, (stripGrid ? '▣' : '□') + ' Common-denominator grid'),
+          toggleBtn(stripLabels, toggleLabels, (stripLabels ? '▣' : '□') + ' Labels'),
+          strips.length >= MAX_STRIPS && h('span', { className: 'text-[11px] text-slate-500' }, 'Max ' + MAX_STRIPS + ' strips')
+        ),
+        strips.length === 0
+          ? h('div', { className: 'bg-white rounded-xl border-2 border-dashed border-slate-200 p-6 text-center text-slate-500 text-sm' }, 'No strips yet. Add one above, or tap Example to watch equivalent fractions line up.')
+          : h('div', { role: 'group', 'aria-label': 'Fraction comparison strips', className: 'bg-white rounded-xl border-2 border-indigo-100 p-3 space-y-2 overflow-x-auto' }, rows),
+        (stripGrid && lcd > MAX_GRID_LCD) && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-2 text-[11px] text-amber-800' },
+          'The common denominator (' + lcd + ') is too large to draw a clean grid. Try denominators that share factors, or compare fewer strips.'),
+        hasDiffDenomEquiv && h('div', { className: 'bg-violet-50 border border-violet-200 rounded-lg p-2 text-[11px] text-violet-800' },
+          '⚠ Some strips show a different number of parts but the SAME size. Equivalence means equal magnitude, not an equal count of pieces.'),
+        (stripGrid && lcd > 1) && h('div', { className: 'bg-violet-100 rounded-lg p-2 text-center', role: 'status', 'aria-live': 'polite' },
+          h('p', { className: 'text-sm font-bold text-violet-900' }, '🎯 Common denominator: ' + lcd),
+          h('p', { className: 'text-[11px] text-violet-700 font-mono' }, strips.map(function(s) { return (s.n * (lcd / Math.max(1, s.d))) + '/' + lcd; }).join(',  '))
+        ),
+        h('div', { className: 'text-center pt-1' },
+          h('button', { onClick: function() { sfxClick(); if (typeof setStemLabTool === 'function') setStemLabTool('numberline'); },
+            className: 'text-xs text-indigo-600 underline hover:text-indigo-800' }, 'Plot these on a number line →')
+        )
       );
     };
 
@@ -9964,7 +10139,7 @@ window.StemLab = window.StemLab || {
       // === LEARN ===
       { id: 'practice',       icon: '\uD83C\uDF55', label: 'Practice',       group: 'learn' },
       { id: 'models',         icon: '\uD83C\uDFA8', label: 'Models',         group: 'learn' },
-      { id: 'numberline',     icon: '\u23DC',       label: 'Number line',    group: 'learn' },
+      { id: 'numberline',     icon: '\uD83D\uDCCA',     label: 'Compare strips', group: 'learn' },
       { id: 'cra',            icon: '\uD83D\uDCDA', label: 'CRA',            group: 'learn' },
       { id: 'wall',           icon: '\uD83E\uDDF1', label: 'Wall',           group: 'learn' },
       { id: 'manip',          icon: '\uD83E\uDDE9', label: 'Manipulatives',  group: 'learn' },
@@ -10004,7 +10179,7 @@ window.StemLab = window.StemLab || {
     var _legacyTabsForReference = [
       { id: 'practice',       icon: '\uD83C\uDF55', label: 'Practice',       group: 'learn' },
       { id: 'models',         icon: '\uD83C\uDFA8', label: 'Models',         group: 'learn' },
-      { id: 'numberline',     icon: '\u23DC',       label: 'Number line',    group: 'learn' },
+      { id: 'numberline',     icon: '\uD83D\uDCCA',     label: 'Compare strips', group: 'learn' },
       { id: 'cra',            icon: '\uD83D\uDCDA', label: 'CRA',            group: 'learn' },
       { id: 'wall',           icon: '\uD83E\uDDF1', label: 'Wall',           group: 'learn' },
       { id: 'compare',        icon: '\uD83D\uDD0D', label: 'Compare',        group: 'practice' },
