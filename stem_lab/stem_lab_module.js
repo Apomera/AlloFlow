@@ -3016,7 +3016,7 @@
             className: "flex items-center gap-2"
           }, /*#__PURE__*/React.createElement("span", {
             className: "text-sm"
-          }, snap.tool === 'volume' ? '📦' : snap.tool === 'base10' ? '🧮' : snap.tool === 'coordinate' ? '📍' : '📐'), /*#__PURE__*/React.createElement("span", {
+          }, snap.tool === 'volume' ? '📦' : snap.tool === 'base10' ? '🧮' : snap.tool === 'coordinate' ? '📍' : snap.tool === 'codingPlayground' ? '🔬' : '📐'), /*#__PURE__*/React.createElement("span", {
             className: "text-xs font-bold text-slate-700 flex-1 truncate"
           }, snap.label), /*#__PURE__*/React.createElement("button", { "aria-label": "Open " + snap.label + " snapshot",
             onClick: () => {
@@ -3035,6 +3035,7 @@
               if (snap.tool === 'base10' && snap.data) setBase10Value(snap.data);
               if (snap.tool === 'coordinate' && snap.data) setGridPoints(snap.data.points || []);
               if (snap.tool === 'protractor' && snap.data) setAngleValue(snap.data.angle || 45);
+              if (snap.tool === 'codingPlayground' && snap.data) setLabToolData(function (prev) { return Object.assign({}, prev, { _codingPlayground: snap.data }); });
             },
             className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", { "aria-label": "Set Tool Snapshots",

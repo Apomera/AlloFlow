@@ -460,6 +460,8 @@
     return (function() {
           // ── State from labToolData ──
           var d = (labToolData && labToolData._codingPlayground) || {};
+          var projectName = d.projectName || '';
+          function slugifyName(nm) { var z = String(nm || '').trim().replace(/[^A-Za-z0-9_ -]+/g, '').replace(/ +/g, '_').slice(0, 40); return z || 'coding'; }
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -1251,7 +1253,7 @@
             var blob = new Blob([svg], { type: 'image/svg+xml' });
             var url = URL.createObjectURL(blob);
             var link = document.createElement('a');
-            link.download = 'coding_playground_' + Date.now() + '.svg';
+            link.download = slugifyName(projectName) + '_' + Date.now() + '.svg';
             link.href = url;
             document.body.appendChild(link);
             link.click();
@@ -1281,10 +1283,10 @@
           // ── Import/Export JSON ──
           function handleExportJSON() {
             if (blocks.length === 0) { if (addToast) addToast('Add some blocks first!', 'info'); return; }
-            var data = JSON.stringify({ blocks: blocks, version: 2, skin: turtleSkin }, null, 2);
+            var data = JSON.stringify({ projectName: projectName, title: projectName, blocks: blocks, version: 2, skin: turtleSkin }, null, 2);
             var blob = new Blob([data], { type: 'application/json' });
             var link = document.createElement('a');
-            link.download = 'coding_program_' + Date.now() + '.json';
+            link.download = slugifyName(projectName) + '_' + Date.now() + '.json';
             link.href = URL.createObjectURL(blob);
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
@@ -1394,7 +1396,7 @@
             if (!canvasRef || !canvasRef.current) return;
             var dataURL = canvasRef.current.toDataURL('image/png');
             var link = document.createElement('a');
-            link.download = 'coding_playground_' + Date.now() + '.png';
+            link.download = slugifyName(projectName) + '_' + Date.now() + '.png';
             link.href = dataURL;
             document.body.appendChild(link);
             link.click();
@@ -2806,10 +2808,14 @@
                 )
               ),
 
+              // Name your creation (only when a program exists)
+              blocks.length > 0 && React.createElement("input", { "aria-label": "Name your creation", type: "text", value: projectName, placeholder: "Name your creation", maxLength: 40,
+                onChange: function (e) { upd('projectName', e.target.value); },
+                className: "px-3 py-1.5 text-xs rounded-full border border-slate-300 bg-white text-slate-700 placeholder-slate-400 w-44" }),
               // Snapshot button
               React.createElement("button", { "aria-label": "Snapshot",
                 onClick: function () {
-                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
+                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: projectName || 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
                   if (addToast) addToast('📸 Code snapshot saved!', 'success');
                 },
                 className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
