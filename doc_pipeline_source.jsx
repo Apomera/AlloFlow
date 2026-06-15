@@ -136,6 +136,20 @@ function _sanitizeStyleObj(obj) {
   return out;
 }
 
+// Live-progress chunk events carry before/after HTML purely so the review panel
+// can render a small diff preview. That panel shows only the first 2000 chars
+// (+ a "… (truncated)" marker), but the listener spreads the whole detail into a
+// session-lifetime React state array (liveChunkStream) — so on a multi-pass
+// large-document run the full before+after HTML of every chunk/pass is pinned in
+// memory (tens of MB on a Chromebook) while only ~2 KB is ever shown. Cap the
+// carried strings just ABOVE the render window: keeping the cap > 2000 means the
+// "… (truncated)" marker still fires for any oversized chunk, so the rendered
+// preview stays byte-identical to the uncapped payload.
+function _chunkHtmlPreview(s) {
+  const str = String(s == null ? '' : s);
+  return str.length > 2200 ? str.slice(0, 2200) : str;
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -9886,7 +9900,7 @@ Return ONLY the complete fixed HTML.`, true);
             }
           }
           // Emit single-pass completion so Live UI updates
-          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: _origHtmlForDiff, fixedHtml: currentHtml, score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: _chunkHtmlPreview(_origHtmlForDiff), fixedHtml: _chunkHtmlPreview(currentHtml), score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
           try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: { totalChunks: 1, failedCount: 0, retriedCount: 0, timestamp: Date.now() } })); } catch(e) {}
         } else {
           // ── Large document: chunked remediation ──
@@ -10359,8 +10373,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   detail: {
                     index: chi,
                     total: bodyChunks.length,
-                    originalHtml: originalChunk,
-                    fixedHtml: accepted.html,
+                    originalHtml: _chunkHtmlPreview(originalChunk),
+                    fixedHtml: _chunkHtmlPreview(accepted.html),
                     score: accepted.score,
                     deterministicFixCount: accepted.deterministicFixCount || 0,
                     surgicalFixCount: accepted.surgicalFixCount || 0,
@@ -10857,8 +10871,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           detail: {
             index: chunkIndex,
             total: totalChunks,
-            originalHtml: originalChunk,
-            fixedHtml: accepted.html,
+            originalHtml: _chunkHtmlPreview(originalChunk),
+            fixedHtml: _chunkHtmlPreview(accepted.html),
             score: accepted.score,
             deterministicFixCount: accepted.deterministicFixCount || 0,
             surgicalFixCount: accepted.surgicalFixCount || 0,
@@ -13462,7 +13476,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // Emit per-pass completion for live UI. snapshotHtml (line ~9224)
           // captured the BEFORE state of this pass; passing it as originalHtml
           // gives the diff view something to compare against.
-          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: snapshotHtml, fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
+          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
 
           // If BOTH engines report 0 actionable issues, stop regardless of score
           if (newAxeViolations === 0 && (!reVerify || !reVerify.issues || reVerify.issues.length === 0)) {
