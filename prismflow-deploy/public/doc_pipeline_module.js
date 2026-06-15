@@ -10,6 +10,94 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 // Factory: returns all pipeline functions bound to provided deps
 // State access: functions read window.__docPipelineState (updated every render by monolith)
 // This avoids stale closures — each function call reads fresh state from the window ref.
+// ── Accessible table reconstruction core (2026-06-14) ───────────────────────
+// The "AI-diagnoses / code-executes / accept-or-revert" pattern for complex /
+// borderless tables that Adobe rejects and that today get rasterised into a flat
+// image (the "all blue" bug). The vision pass fills a NEUTRAL GRID schema
+// (rows[] -> cells[] {text, colspan, rowspan, isHeader, scope}); these pure
+// functions then (a) ASSERT the grid is span-consistent and (b) emit
+// accessibility-grade HTML. A grid that fails validation is REVERTED (caller
+// keeps the honest image) instead of shipping malformed table markup.
+
+// Span-consistency validator. Walks the grid placing each cell into an occupancy
+// model that honours colspan (advance columns) + rowspan (reserve columns in
+// following rows). Returns {ok:false, reason} if any row's expanded width differs
+// from the others, if two cells overlap, or if a rowspan runs past the last row —
+// the exact failure modes that make a screen-reader table unnavigable.
+function _validateTableGrid(grid) {
+  if (!grid || !Array.isArray(grid.rows) || grid.rows.length === 0) return { ok: false, reason: 'no-rows' };
+  const pending = {}; // colIndex -> rows still occupied by a rowspan from above (incl. current)
+  let colCount = null;
+  for (let r = 0; r < grid.rows.length; r++) {
+    const cells = (grid.rows[r] && Array.isArray(grid.rows[r].cells)) ? grid.rows[r].cells : null;
+    if (!cells) return { ok: false, reason: 'row-' + r + '-no-cells' };
+    const occupied = {};
+    for (const c in pending) { if (pending[c] > 0) occupied[c] = true; }
+    let col = 0, maxCol = 0;
+    for (const cellRaw of cells) {
+      const cell = cellRaw || {};
+      const cs = Math.max(1, parseInt(cell.colspan, 10) || 1);
+      const rs = Math.max(1, parseInt(cell.rowspan, 10) || 1);
+      while (occupied[col]) col++;
+      for (let c = col; c < col + cs; c++) {
+        if (occupied[c]) return { ok: false, reason: 'overlap-r' + r + '-c' + c };
+        occupied[c] = true;
+        if (rs > 1) pending[c] = rs;
+      }
+      col += cs;
+      if (col > maxCol) maxCol = col;
+    }
+    for (const c in occupied) { const v = parseInt(c, 10) + 1; if (v > maxCol) maxCol = v; }
+    if (colCount === null) colCount = maxCol;
+    else if (maxCol !== colCount) return { ok: false, reason: 'row-' + r + '-width-' + maxCol + '-expected-' + colCount };
+    for (const c in pending) { pending[c]--; if (pending[c] <= 0) delete pending[c]; }
+  }
+  for (const c in pending) { if (pending[c] > 0) return { ok: false, reason: 'rowspan-overflow-col-' + c }; }
+  // NB: assign-then-return (not `return { ... }` at 2-space indent) on purpose —
+  // check_pipeline_integrity.js locates the factory export block via the FIRST
+  // `\n  return {`, so a module-scope `return {` here would masquerade as it.
+  const _gridOk = { ok: true, cols: colCount, rows: grid.rows.length };
+  return _gridOk;
+}
+
+// Emit accessibility-grade HTML from a validated grid: real <th scope="col|row|
+// colgroup|rowgroup">, colspan/rowspan, a <caption>, and a leading all-header row
+// promoted to <thead>. `opts.sanitize` escapes cell text; `opts.tableBorder` /
+// `opts.tableBg` carry the doc palette; `opts.reconNote` / `opts.reconAttr` flag
+// AI-reconstructed tables for the review gate.
+function _emitAccessibleTableHtml(grid, opts) {
+  opts = opts || {};
+  const esc = typeof opts.sanitize === 'function' ? opts.sanitize : function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  const border = opts.tableBorder || '#cbd5e1';
+  const headBg = opts.tableBg || '#f1f5f9';
+  const headColor = opts.headColor || '#0f172a';
+  const capText = ((opts.reconNote || '') + (grid.caption || '')).trim();
+  const cap = capText ? '<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:' + (opts.reconAttr ? '#9333ea' : headColor) + '">' + esc(capText) + '</caption>' : '';
+  const cellHtml = function (cellRaw) {
+    const c = cellRaw || {};
+    const isH = !!c.isHeader;
+    const tag = isH ? 'th' : 'td';
+    let attrs = '';
+    if (isH) {
+      const sc = (['col', 'row', 'colgroup', 'rowgroup'].indexOf(c.scope) !== -1) ? c.scope : 'col';
+      attrs += ' scope="' + sc + '"';
+    }
+    const cs = Math.max(1, parseInt(c.colspan, 10) || 1); if (cs > 1) attrs += ' colspan="' + cs + '"';
+    const rs = Math.max(1, parseInt(c.rowspan, 10) || 1); if (rs > 1) attrs += ' rowspan="' + rs + '"';
+    const style = isH
+      ? ' style="background:' + headBg + ';border:1px solid ' + border + ';padding:8px 12px;font-weight:bold;text-align:left"'
+      : ' style="border:1px solid ' + border + ';padding:8px 12px"';
+    return '<' + tag + attrs + style + '>' + esc(c.text) + '</' + tag + '>';
+  };
+  const rowHtml = function (row) { return '<tr>' + ((row && row.cells) || []).map(cellHtml).join('') + '</tr>'; };
+  const rows = grid.rows;
+  const firstAllHeader = rows[0] && Array.isArray(rows[0].cells) && rows[0].cells.length > 0 && rows[0].cells.every(function (c) { return c && c.isHeader; });
+  let thead = '', tbodyRows = rows;
+  if (firstAllHeader) { thead = '<thead>' + rowHtml(rows[0]) + '</thead>'; tbodyRows = rows.slice(1); }
+  const tbody = '<tbody>' + tbodyRows.map(rowHtml).join('') + '</tbody>';
+  return '<table' + (opts.reconAttr ? ' data-allo-reconstructed="image"' : '') + ' style="width:100%;border-collapse:collapse;margin:1em 0">' + cap + thead + tbody + '</table>';
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -1541,6 +1629,74 @@ var createDocPipeline = function(deps) {
     };
   };
 
+  // Reconstruct a COMPLEX / BORDERLESS table (merged cells, header row AND/OR
+  // header column) from the page image into the neutral grid schema, then hand it
+  // to the deterministic validator+emitter. This is the "Beat-Adobe tables" path:
+  // Adobe rejects these (BAD_PDF_COMPLEX_TABLE); we vision-reconstruct, but only
+  // SHIP it when _validateTableGrid confirms the spans reconcile — otherwise we
+  // return null and the caller keeps the honest image (accept-or-revert). Verbatim,
+  // no-invent prompt; the schema demands accessibility structure (scope, spans).
+  const _reextractAsRichTable = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
+    if (!callGeminiVisionFn) return null;
+    const pageHint = pageRange && pageRange.length === 2 ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. ' : '';
+    const captionHint = originalBlock.caption ? 'A hint at the table caption: "' + String(originalBlock.caption).slice(0, 200) + '". ' : '';
+    const prompt =
+      pageHint + captionHint + '\n\n' +
+      'You are transcribing a TABLE from a document image into a structured grid. It may be COMPLEX: borderless, with MERGED cells (spanning multiple columns or rows), and with header cells on the top row AND/OR the left column.\n\n' +
+      'Transcribe the table VERBATIM. Do NOT invent, summarize, infer, or add content — copy each cell exactly as shown.\n\n' +
+      'Output a single JSON object with this EXACT shape:\n' +
+      '{\n' +
+      '  "caption": "<short caption, or empty>",\n' +
+      '  "rows": [\n' +
+      '    { "cells": [ { "text": "<verbatim cell text>", "isHeader": <true|false>, "scope": "<col|row, only when isHeader>", "colspan": <int>, "rowspan": <int> } ] }\n' +
+      '  ]\n' +
+      '}\n\n' +
+      'CRITICAL RULES:\n' +
+      '- Transcribe VERBATIM. NEVER invent cells or content — a fabricated cell would mislead a screen-reader user who cannot see the table.\n' +
+      '- isHeader:true with scope:"col" for a cell that labels a COLUMN (top row); scope:"row" for a cell that labels a ROW (left column).\n' +
+      '- Use colspan/rowspan ONLY for visibly merged cells; default each to 1. After expanding spans the grid MUST be rectangular — every row totals the same number of columns.\n' +
+      '- Include EVERY cell, including empty ones as {"text":""}, so the grid stays aligned.\n' +
+      '- Output ONLY the JSON object. No code fence. No commentary.\n' +
+      '- If it is NOT actually a table (a photo, a single chart, decorative art, or you are unsure), output exactly: null';
+    let raw;
+    try { raw = await callGeminiVisionFn(prompt, pdfBase64, pdfMimeType); }
+    catch (e) { _legendDiag({ phase: 'rich-table-error', error: e && e.message ? e.message : String(e), pageRange }); return null; }
+    if (!raw) { _legendDiag({ phase: 'rich-table-empty', pageRange }); return null; }
+    let cleaned = _stripCodeFence(raw).trim();
+    if (!cleaned || cleaned === 'null') { _legendDiag({ phase: 'rich-table-said-no', pageRange }); return null; }
+    const fi = cleaned.indexOf('{'); if (fi >= 0) cleaned = cleaned.substring(fi);
+    const li = cleaned.lastIndexOf('}'); if (li > 0) cleaned = cleaned.substring(0, li + 1);
+    let parsed = null;
+    try { parsed = JSON.parse(cleaned); }
+    catch (e) {
+      try { parsed = JSON.parse(cleaned.replace(/,\s*([}\]])/g, '$1')); }
+      catch (e2) { _legendDiag({ phase: 'rich-table-parse-failed', pageRange, snippet: cleaned.slice(0, 200) }); return null; }
+    }
+    if (!parsed || !Array.isArray(parsed.rows) || parsed.rows.length === 0) { _legendDiag({ phase: 'rich-table-wrong-shape', pageRange }); return null; }
+    // Normalize into the grid the validator/emitter expect. Tolerate a cell given
+    // as a bare string, and clamp spans to sane positive ints.
+    const grid = {
+      caption: (parsed.caption && String(parsed.caption)) || (originalBlock.caption ? String(originalBlock.caption) : ''),
+      rows: parsed.rows.map(function (r) {
+        const cells = Array.isArray(r && r.cells) ? r.cells : (Array.isArray(r) ? r : []);
+        return { cells: cells.map(function (c) {
+          if (typeof c === 'string') return { text: c };
+          c = c || {};
+          const out = { text: String(c.text == null ? '' : c.text), isHeader: !!c.isHeader };
+          if (out.isHeader && (c.scope === 'col' || c.scope === 'row')) out.scope = c.scope;
+          const cs = parseInt(c.colspan, 10); if (cs > 1) out.colspan = cs;
+          const rs = parseInt(c.rowspan, 10); if (rs > 1) out.rowspan = rs;
+          return out;
+        }) };
+      }),
+    };
+    const v = _validateTableGrid(grid);
+    if (!v.ok) { _legendDiag({ phase: 'rich-table-invalid-grid', pageRange, reason: v.reason }); return null; } // REVERT — keep the image
+    if (v.rows < 2 || v.cols < 2) { _legendDiag({ phase: 'rich-table-too-small', pageRange, cols: v.cols, rows: v.rows }); return null; }
+    _legendDiag({ phase: 'rich-table-success', pageRange, cols: v.cols, rows: v.rows });
+    return { type: 'table', grid: grid, _reconstructed: true };
+  };
+
   const detectAndRepairLegends = async (blocks, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
     if (!Array.isArray(blocks) || blocks.length === 0) return blocks;
     if (!callGeminiVisionFn || !pdfBase64) return blocks;
@@ -1561,6 +1717,14 @@ var createDocPipeline = function(deps) {
           out.push(block); // not actually structured / Vision unavailable — keep the honest flat image
         }
         continue;
+      }
+      // Complex/borderless table the flat extractor botched (mostly-empty, or a
+      // small categorized table): try a full rich-grid reconstruction FIRST. Only
+      // ships when the grid validates; otherwise falls through to the legend /
+      // honest-downgrade path below.
+      if (block.type === 'table') {
+        const richTable = await _reextractAsRichTable(block, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn);
+        if (richTable) { out.push(richTable); continue; }
       }
       const replacement = await _reextractAsLegend(block, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn);
       if (replacement) { out.push(replacement); }
@@ -11657,6 +11821,25 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // find it (the original image is kept as a sibling for verification).
               const _recon = !!block._reconstructed;
               const _reconNote = _recon ? '✨ AI-reconstructed from an image — please verify it matches the image shown below. ' : '';
+              // Rich grid path (2026-06-14): when the vision pass filled a neutral
+              // grid (per-cell colspan/rowspan/isHeader/scope), validate span
+              // consistency and emit accessibility-grade HTML. On ANY validation
+              // failure, fall through to the flat headers/rows path below — a broken
+              // span grid must never ship as malformed table markup (accept-or-revert).
+              if (block.grid && Array.isArray(block.grid.rows)) {
+                const _gv = _validateTableGrid(block.grid);
+                if (_gv.ok) {
+                  return _emitAccessibleTableHtml(block.grid, {
+                    sanitize: sanitizeField,
+                    tableBorder: docStyle.tableBorder,
+                    tableBg: docStyle.tableBg,
+                    headColor: docStyle.headingColor,
+                    reconNote: _reconNote,
+                    reconAttr: _recon,
+                  });
+                }
+                warnLog('[Table] grid failed span-consistency (' + _gv.reason + ') — reverting to flat headers/rows');
+              }
               const cap = (block.caption || _recon) ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${_recon ? '#9333ea' : docStyle.headingColor}">`+sanitizeField(_reconNote + (block.caption || ''))+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
               const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+sanitizeField(h)+`</th>`).join('')+`</tr></thead>` : '';
