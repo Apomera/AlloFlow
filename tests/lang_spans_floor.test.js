@@ -52,4 +52,25 @@ describe('fixLangSpans — deterministic language-of-parts floor (§3)', () => {
     const r = fixLangSpans('<span lang="bn">আমি বাংলা</span>');
     expect((r.html.match(/<span lang=/g) || []).length).toBe(1);
   });
+
+  // 2026-06-15 (lang-double-wrap): an ANCESTOR lang span (text reached via a nested
+  // child) must also suppress re-wrapping — precedingTag is the child tag, so the
+  // direct guard misses it. Pure string-depth walk (runs under this no-DOMParser harness).
+  it('does not double-wrap when a lang span has a nested child', () => {
+    const r = fixLangSpans('<span lang="bn"><b>আমি বাংলা পড়ি</b></span>');
+    expect((r.html.match(/<span lang=/g) || []).length).toBe(1);
+  });
+  it('does not double-wrap a nested child PLUS trailing text in the same lang span', () => {
+    const r = fixLangSpans('<span lang="ar"><em>مرحبا</em> بالعالم اليوم</span>');
+    expect((r.html.match(/<span lang=/g) || []).length).toBe(1);
+  });
+  it('does not double-wrap under deep nesting', () => {
+    const r = fixLangSpans('<span lang="am"><b><i>ሰላም ለዓለም</i></b></span>');
+    expect((r.html.match(/<span lang=/g) || []).length).toBe(1);
+  });
+  it('REGRESSION GUARD: still wraps text after a CLOSED sibling lang span', () => {
+    // the depth counter must reset on </span>, so the second Bengali run still gets tagged
+    const r = fixLangSpans('<p><span lang="bn">আমি</span> বাংলা পড়ি আছি</p>');
+    expect((r.html.match(/<span lang=/g) || []).length).toBe(2);
+  });
 });

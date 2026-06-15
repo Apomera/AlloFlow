@@ -926,7 +926,11 @@ var createDocPipeline = function(deps) {
           // failed, and the chunk kept its ORIGINAL (untranslated) text.
           if (_isJsonWrapped(resp)) { const _u = _tryUnwrapJsonHtml(resp); if (_u) resp = _u.trim(); }
           resp = resp.replace(/^```html?\s*/i, '').replace(/```\s*$/, '').trim();
-          if (resp && _tagSeqOf(resp) === wantSeq) { out.push(resp); ok = true; }
+          // Structure-parity is not enough: a tag-preserving but text-EMPTIED chunk would
+          // pass and silently drop facts. AND a loose gross-drop text floor (F=0.5; zero-text
+          // chunks pass naturally since the floor is 0) so a gutted chunk falls through to
+          // retry / keep-original / failed++. (lang-text-floor, 2026-06-15)
+          if (resp && _tagSeqOf(resp) === wantSeq && textCharCount(resp) >= textCharCount(chunk) * 0.5) { out.push(resp); ok = true; }
         } catch (_) {}
       }
       if (!ok) { out.push(chunk); failed++; warnLog('[translateDoc] chunk ' + (i + 1) + '/' + chunks.length + ' failed tag-parity — kept original text for that section'); }
@@ -942,7 +946,10 @@ var createDocPipeline = function(deps) {
       });
     }
     const _note = '<p data-allo-translation-note="true"><em>' + (opts.noteText || ('AI-translated to ' + targetLang + ' — have a bilingual reviewer check before official use.')) + '</em></p>';
-    result = result.includes('<main') ? result.replace(/(<main[^>]*>)/i, '$1' + _note) : result.replace(/(<body[^>]*>)/i, '$1' + _note);
+    // Three-way fall-through so the bilingual-reviewer disclaimer ALWAYS ships, even for a
+    // body-inner fragment with no <main>/<body> landmark (else non-authoritative copy goes
+    // out with no caveat). (lang-banner-fragment, 2026-06-15)
+    result = result.includes('<main') ? result.replace(/(<main[^>]*>)/i, '$1' + _note) : result.includes('<body') ? result.replace(/(<body[^>]*>)/i, '$1' + _note) : (_note + result);
     return { html: result, lang: targetLang, langCode: _langCode, rtl: _rtl, chunksTotal: chunks.length, chunksFailed: failed };
   };
 
@@ -1227,7 +1234,11 @@ var createDocPipeline = function(deps) {
           let resp = String(await callGemini(prompt) || '').trim();
           if (_isJsonWrapped(resp)) { const _u = _tryUnwrapJsonHtml(resp); if (_u) resp = _u.trim(); } // audit 2026-06-13: unwrap {"html":…} before parity
           resp = resp.replace(/^```html?\s*/i, '').replace(/```\s*$/, '').trim();
-          if (resp && _structSeqOf(resp) === wantSeq) { out.push(resp); ok = true; }
+          // AND a loose gross-drop text floor (F=0.35 — looser than translate because plain-
+          // language rewrites legitimately shorten text; zero-text chunks pass naturally) so a
+          // structure-matching but text-emptied chunk fails parity and keeps its original text
+          // instead of silently dropping facts. (lang-text-floor, 2026-06-15)
+          if (resp && _structSeqOf(resp) === wantSeq && textCharCount(resp) >= textCharCount(chunk) * 0.35) { out.push(resp); ok = true; }
         } catch (_) {}
       }
       if (!ok) { out.push(chunk); failed++; warnLog('[simplifyDoc] chunk ' + (i + 1) + '/' + chunks.length + ' failed structure-parity — kept original text for that section'); }
@@ -1235,7 +1246,9 @@ var createDocPipeline = function(deps) {
     let result = out.join('');
     for (const key of Object.keys(_imgDataMap)) result = result.split(key).join(_imgDataMap[key]);
     const _note = '<p data-allo-plain-note="true"><em>' + (opts.noteText || 'Plain-language version (AI-simplified for easier reading) — wording changed, facts kept; the original document remains the authoritative version.') + '</em></p>';
-    result = result.includes('<main') ? result.replace(/(<main[^>]*>)/i, '$1' + _note) : result.replace(/(<body[^>]*>)/i, '$1' + _note);
+    // Three-way fall-through so the plain-language disclaimer ALWAYS ships, even for a
+    // body-inner fragment with no <main>/<body> landmark. (lang-banner-fragment, 2026-06-15)
+    result = result.includes('<main') ? result.replace(/(<main[^>]*>)/i, '$1' + _note) : result.includes('<body') ? result.replace(/(<body[^>]*>)/i, '$1' + _note) : (_note + result);
     return { html: result, chunksTotal: chunks.length, chunksFailed: failed };
   };
 
@@ -9267,13 +9280,28 @@ HTML section ${chunkNum}/${chunks.length}:
 
     // Only touch text inside visible content tags — skip text already inside <span lang="...">
     // Use a broader regex that captures the preceding tag so we can check for existing lang attr
-    fixed = fixed.replace(/(<[^>]*>)([^<]+)/g, (match, precedingTag, textContent) => {
+    fixed = fixed.replace(/(<[^>]*>)([^<]+)/g, (match, precedingTag, textContent, _matchOffset) => {
       // Skip if this text node is already inside a <span lang="..."> — prevents double-wrapping
       // Skip rawtext / escapable-rawtext elements — a <span> injected inside
       // <title>/<style>/<script>/<textarea> is invalid or renders as visible markup
       // (2026-06-15 review fix; bit non-Latin <title>s, incl. the new bn/am docs).
       if (/^<\s*(?:title|style|script|textarea)\b/i.test(precedingTag)) return match;
       if (/<span\b[^>]*\blang\s*=/i.test(precedingTag)) return match;
+      // Also skip when an *ancestor* <span lang> wraps this text via a nested child
+      // (e.g. <span lang="bn"><b>...</b></span>) — precedingTag is the child tag, so the
+      // check above misses it and we would double-wrap. Walk the markup before this text
+      // (offset indexes the original input — `fixed` still equals htmlContent here) for an
+      // unbalanced open lang-span. Pure string so it still runs under the no-DOMParser test
+      // harness (2026-06-15 review fix; the DOMParser/closest() route would no-op in Node).
+      { let _depth = 0, _langDepth = 0;
+        const _before = htmlContent.slice(0, _matchOffset + precedingTag.length);
+        const _sx = /<span\b([^>]*)>|<\/span\s*>/gi; let _sm;
+        while ((_sm = _sx.exec(_before))) {
+          if (_sm[1] === undefined) { if (_langDepth === _depth) _langDepth = 0; if (_depth > 0) _depth--; }
+          else { _depth++; if (/\blang\s*=/i.test(_sm[1])) _langDepth = _depth; }
+        }
+        if (_langDepth > 0) return match;
+      }
       let newText = textContent;
       for (const { lang, pattern } of scriptRanges) {
         newText = newText.replace(pattern, (runMatch) => {
