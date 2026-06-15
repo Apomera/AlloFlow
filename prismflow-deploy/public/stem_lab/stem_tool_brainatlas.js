@@ -301,6 +301,11 @@ var d = labToolData.brainAtlas || {};
                 { id: 'adolescent_remodel', name: 'Adolescent remodeling', x: 0.70, y: 0.55, w: 0.08, fn: 'Adolescence is a second window of large-scale remodeling: prefrontal pruning and myelination plus changes in the dopamine system. The limbic/reward system matures EARLIER than prefrontal control, a normal developmental gap (not a deficit) linked to greater risk-taking, novelty-seeking, and sensitivity to peers. This is typical maturation, not damage.', conditions: 'Many psychiatric conditions first emerge in adolescence as these circuits remodel; this is an association, not a simple cause.' }
               ]
             },
+            stimulate: {
+              name: '\u26A1 Stimulation Lab', desc: 'Predict what stimulating each region does (how Penfield mapped the brain)', 
+              isStim: true,
+              regions: []
+            },
             sleepStages: {
 
               name: '\u{1F4A4} Sleep Stages', desc: 'Hypnogram visualization \u2014 sleep architecture across a full night',
@@ -2737,6 +2742,27 @@ var d = labToolData.brainAtlas || {};
                 ctx.textAlign = 'left'; ctx.font = '11px sans-serif';
                 ctx.fillStyle = '#22d3ee'; ctx.fillRect(x0 + 12, y0 + 8, 16, 4); ctx.fillStyle = '#cbd5e1'; ctx.fillText('Sensory cortex (prunes early)', x0 + 34, y0 + 13);
                 ctx.fillStyle = '#f59e0b'; ctx.fillRect(x0 + 12, y0 + 26, 16, 4); ctx.fillStyle = '#cbd5e1'; ctx.fillText('Prefrontal cortex (prunes into the mid-20s)', x0 + 34, y0 + 31);
+              } else if (currentView.isStim) {
+                // ── Stimulation Lab: a stylized brain with a pulsing electrode ──
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                var bx = W * 0.5, by = H * 0.54, brw = W * 0.30, brh = H * 0.26;
+                ctx.fillStyle = '#fbcfe8'; ctx.strokeStyle = '#db2777'; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.ellipse(bx, by, brw, brh, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 1.5;
+                [-0.45, -0.15, 0.2, 0.55].forEach(function (fx) { ctx.beginPath(); ctx.moveTo(bx + fx * brw, by - brh * 0.7); ctx.quadraticCurveTo(bx + fx * brw + 14, by, bx + fx * brw, by + brh * 0.7); ctx.stroke(); });
+                ctx.beginPath(); ctx.ellipse(bx + brw * 0.78, by + brh * 0.62, brw * 0.22, brh * 0.32, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#f9a8d4'; ctx.fill(); ctx.strokeStyle = '#db2777'; ctx.stroke();
+                ctx.fillStyle = '#f9a8d4'; ctx.fillRect(bx + brw * 0.45, by + brh * 0.7, 10, brh * 0.5);
+                var pulse = 0.5 + 0.5 * Math.sin((canvas._brainTick || 0) * 0.12);
+                var ex = bx - brw * 0.12, ey = by - brh * 0.72;
+                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex, 36); ctx.stroke();
+                ctx.fillStyle = '#cbd5e1'; ctx.fillRect(ex - 6, 28, 12, 10);
+                ctx.fillStyle = 'rgba(250,204,21,' + (0.25 + 0.45 * pulse) + ')'; ctx.beginPath(); ctx.arc(ex, ey, 12 + 8 * pulse, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(ex, ey, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#fde047'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('\u26A1 Stimulation Lab', bx, 24);
+                ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif';
+                ctx.fillText('Place the electrode, predict the effect', bx, H - 22);
               } else if (currentView.isSleep) {
 
                 // ── Sleep Stages Hypnogram Animation ──
@@ -3300,7 +3326,7 @@ var d = labToolData.brainAtlas || {};
 
 
               // ── Enhanced Region Markers (anatomical views only) ──
-              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse)
+              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isStim)
               filtered.forEach(function (r) {
 
                 var px = r.x * W, py = r.y * H;
@@ -3482,6 +3508,18 @@ var d = labToolData.brainAtlas || {};
 
 
           // ── Keyboard shortcuts (WCAG 2.1.1) ──
+          var STIM_SCENARIOS = [
+            { target: 'the primary motor cortex (hand area)', options: ['A twitch or movement of the opposite hand', 'Tingling in the opposite hand', 'A flash of light', 'Speech suddenly stops'], correctIdx: 0, note: 'Motor-cortex stimulation produces MOVEMENT on the opposite side of the body. Penfield mapped the motor homunculus exactly this way in awake patients.' },
+            { target: 'the primary somatosensory cortex (hand area)', options: ['A twitch of the opposite hand', 'Tingling or numbness in the opposite hand', 'A ringing sound', 'A vivid memory'], correctIdx: 1, note: 'The somatosensory strip (just behind the motor strip) produces a SENSATION on the opposite side, not a movement.' },
+            { target: 'the primary visual cortex (occipital lobe)', options: ['A buzzing sound', 'A flash or spot of light in the opposite visual field', 'A twitch of the hand', 'A wave of fear'], correctIdx: 1, note: 'V1 stimulation causes phosphenes (simple flashes or spots of light), not formed images. This is the basis of experimental visual prostheses.' },
+            { target: 'the primary auditory cortex (temporal lobe)', options: ['A buzzing, ringing, or humming sound', 'A flash of light', 'Numbness in the hand', 'Speech arrest'], correctIdx: 0, note: 'Auditory-cortex stimulation produces simple sounds (buzzing or ringing), not words or music.' },
+            { target: 'Broca area (left frontal lobe)', options: ['Speech becomes fluent but jumbled', 'Speech arrests: the person cannot get words out, but still understands', 'A flash of light', 'A twitch of the leg'], correctIdx: 1, note: 'Stimulating Broca area causes speech ARREST with intact comprehension, the brief mirror of Broca aphasia.' },
+            { target: 'Wernicke area (left temporal lobe)', options: ['Speech stops cleanly with full understanding', 'Comprehension is disrupted and output becomes jumbled', 'A ringing sound', 'Tingling in the hand'], correctIdx: 1, note: 'Wernicke-area stimulation disrupts language COMPREHENSION and produces jargon, unlike the clean arrest from Broca area.' },
+            { target: 'the temporal-lobe association cortex', options: ['A leg twitch', 'A vivid memory, a remembered song, or a sense of deja vu', 'A bright flash', 'A sudden chill'], correctIdx: 1, note: 'Penfield famously evoked experiential responses (vivid memories, songs, deja vu) from temporal-lobe stimulation, a clue to how memory is organized.' },
+            { target: 'the amygdala (deep in the temporal lobe)', options: ['A flash of light', 'A sudden surge of fear with a racing heart', 'A hand twitch', 'A remembered song'], correctIdx: 1, note: 'Amygdala stimulation can trigger fear and autonomic arousal, consistent with its role in threat processing.' },
+            { target: 'the hypothalamus', options: ['A flash of light', 'Autonomic changes: flushing, a heart-rate change, or hunger', 'Speech arrest', 'Tingling in the hand'], correctIdx: 1, note: 'The hypothalamus drives autonomic and homeostatic responses (temperature, hunger, heart rate), not sensation or movement.' },
+            { target: 'the prefrontal association cortex', options: ['An immediate hand twitch', 'A loud ringing', 'Usually little or no obvious effect', 'A bright flash of light'], correctIdx: 2, note: 'Much of association cortex (including prefrontal) is electrically quiet: stimulation produces no dramatic response. Not every brain area maps to one obvious output.' }
+          ];
           var VIEW_KEYS = Object.keys(VIEWS);
           function onBrainKey(e) {
             var tgt = e.target || {};
@@ -4030,7 +4068,41 @@ var d = labToolData.brainAtlas || {};
                 React.createElement("p", { className: "text-[11px] text-purple-500 italic text-center" }, "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s.")
               ),
 
-              // ─── Detail panel (below canvas) ───
+              // \u2500\u2500\u2500 Stimulation Lab (predict the effect) \u2500\u2500\u2500
+              currentView.isStim && React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3" },
+                React.createElement("div", { className: "flex items-center justify-between" },
+                  React.createElement("h4", { className: "font-black text-amber-800 text-sm" }, "\u26A1 Stimulation Lab"),
+                  React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700" }, "\u2B50 " + (d.stimScore || 0))
+                ),
+                React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, "Wilder Penfield mapped the brain by gently stimulating awake patients during surgery. Predict what the patient would experience."),
+                (function () {
+                  var sc = STIM_SCENARIOS[(d.stimIdx || 0) % STIM_SCENARIOS.length];
+                  var fb = d.stimFeedback; var show = fb !== null && fb !== undefined;
+                  return React.createElement("div", { className: "space-y-2" },
+                    React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "Electrode on: ", React.createElement("span", { className: "text-amber-700" }, sc.target)),
+                    React.createElement("p", { className: "text-xs text-slate-600" }, "What does the awake patient experience?"),
+                    React.createElement("div", { role: "radiogroup", "aria-label": "Predict the effect of stimulation", className: "grid grid-cols-1 gap-1.5" },
+                      sc.options.map(function (optText, oi) {
+                        var isCorrect = oi === sc.correctIdx; var wasChosen = show && fb.chosen === oi;
+                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
+                          onClick: function () { upd('stimFeedback', { chosen: oi, correct: isCorrect }); if (isCorrect) upd('stimScore', (d.stimScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
+                            (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 hover:border-amber-300 text-slate-600 hover:bg-amber-50')
+                        }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optText);
+                      })
+                    ),
+                    show && React.createElement('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (fb.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                      React.createElement('p', { className: 'font-black ' + (fb.correct ? 'text-green-800' : 'text-amber-800') }, fb.correct ? '\u2705 Correct!' : '\u274C The answer:'),
+                      React.createElement('p', { className: 'text-slate-700' }, sc.note)
+                    ),
+                    show && React.createElement('button', { 'aria-label': 'Next stimulation',
+                      onClick: function () { upd('stimIdx', (d.stimIdx || 0) + 1); upd('stimFeedback', null); },
+                      className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800' }, 'Next \u2192')
+                  );
+                })()
+              ),
+
+              // \u2500\u2500\u2500 Detail panel (below canvas) \u2500\u2500\u2500
 
               d.quizMode ? (
 

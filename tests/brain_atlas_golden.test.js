@@ -15,7 +15,7 @@ import { resetStemLab, loadTool, renderTool } from './helpers/stem_widgets_smoke
 // The quiz shuffles its options with Math.random(); freeze it so digests are stable.
 
 const FILE = 'stem_lab/stem_tool_brainatlas.js';
-const VIEWS = ['lateral', 'medial', 'superior', 'inferior', 'neurotransmitters', 'neuron', 'synapses', 'sleepStages', 'eegWaves', 'crossLateral'];
+const VIEWS = ['lateral', 'medial', 'superior', 'inferior', 'neurotransmitters', 'neuron', 'synapses', 'stimulate', 'sleepStages', 'eegWaves', 'crossLateral'];
 
 function digest(html) {
   const count = (re) => (html.match(re) || []).length;
@@ -73,6 +73,18 @@ describe('brainAtlas render goldens', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ quizMode: true, quizIdx: 0 });
     expect(digest(html)).toMatchSnapshot();
+  });
+
+  it('stimulate view: the predict panel renders the first Penfield scenario', () => {
+    loadTool(FILE, 'brainAtlas');
+    const html = render({ view: 'stimulate', stimIdx: 0 });
+    expect(html).toMatch(/Stimulation Lab/);
+    expect(html).toMatch(/Electrode on:/);
+    expect(html).toMatch(/primary motor cortex/);
+    expect(html).toMatch(/Penfield/);
+    // the 4 predict options as a radiogroup
+    expect(html).toMatch(/role="radiogroup"/);
+    expect(html).toMatch(/opposite hand/);
   });
 
   it('synapses view: pruning + integrity-hedged neurodiversity content present', () => {
