@@ -1404,6 +1404,7 @@ window.StemLab = window.StemLab || {
                   var compI = mode === 'series' ? current : voltage / compR;
                   var compV = mode === 'series' ? current * compR : voltage;
                   var compP = compV * compI;
+                  var isIdealParallelBranch = mode === 'parallel' && compR < 0.01; // ammeter / closed switch as its own branch reads a meaningless ~V/0 current
                   var typeIcon = comp.type === 'resistor' ? '\u2AE8 R' : comp.type === 'bulb' ? '\uD83D\uDCA1 B' : comp.type === 'switch' ? '\uD83D\uDD18 S' : comp.type === 'led' ? '\uD83D\uDD34 L' : comp.type === 'ammeter' ? '\u26A1 A' : comp.type === 'voltmeter' ? '\uD83D\uDD0B V' : '\u2E28 C';
                   var rDisplay = comp.type === 'switch' ? (comp.closed ? '~0\u03A9' : '\u221E') : comp.type === 'ammeter' ? '~0\u03A9' : comp.type === 'voltmeter' ? '\u221E' : comp.type === 'led' ? '~40\u03A9' : comp.type === 'capacitor' ? '\u221E' : comp.value + '\u03A9';
 
@@ -1412,10 +1413,10 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-slate-400 w-20 font-mono' }, rDisplay),
 
                     comp.type === 'ammeter'
-                      ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
+                      ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, isIdealParallelBranch ? '\u26A0 connect ammeters in series' : '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
                       : comp.type === 'voltmeter'
                       ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
-                      : h(React.Fragment, null,
+                      : isIdealParallelBranch ? h('span', { className: 'text-red-400 w-40 font-mono font-bold' }, '\u26A0 short branch (~0 \u03A9)') : h(React.Fragment, null,
                           h('span', { className: 'text-cyan-400 w-20 font-mono' }, compV.toFixed(2) + 'V'),
                           h('span', { className: 'text-emerald-400 w-20 font-mono' }, compI.toFixed(3) + 'A'),
                           h('span', { className: 'text-rose-400 w-20 font-mono font-bold' }, compP.toFixed(2) + 'W')
@@ -1985,7 +1986,7 @@ window.StemLab = window.StemLab || {
                         id: 'ci-' + Date.now(),
                         tool: 'circuit',
                         label: components.length + ' parts ' + voltage + 'V ' + mode,
-                        data: Object.assign({}, d, { mode: mode }),
+                        data: (function () { var _s = Object.assign({}, d, { mode: mode }); delete _s.tick; delete _s._aiLoading; delete _s._aiResponse; return _s; })(),
                         timestamp: Date.now()
                       }]);
                     });
