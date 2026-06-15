@@ -719,7 +719,7 @@
     "resource": "umutungo",
     "loading": "Birapakira...",
     "processing": "Birakorwa...",
-    "error": "ikosa",
+    "error": "Ikosa",
     "error_details": "ikosa ibisigura",
     "success": "intsinzi",
     "fetch": "Zana",
@@ -1783,7 +1783,7 @@
     "collapse_tooltip": "Collapse vyose ikarata",
     "ai_guide": "Umuyobozi na Umufasha wa AI",
     "ai_guide_sub": "Pedagogie, Igendero & Ugutunganya kwiyobora",
-    "ai_guide_welcome": "Bwakeye! Ndi umuyobozi wawe wa AI. Nshobora gufasha mu nzira za UDL, kuyobora porogaramu, canke gushyiraho amabwirizwa y'isomo ryawe muri otomatike. Baza!",
+    "ai_guide_welcome": "Bwakeye! Ndi umuyobozi wawe wa AI. Nshobora gufasha mu nzira za UDL, kuyobora porogaramu, canke gushiraho amabwiriza y'isomo ryawe mu buryo bwikora. Baza gusa!",
     "tool_analysis": "Sesengura imvo Material",
     "tool_glossary": "inkoranya & ururimi Selection",
     "tool_simplified": "inyandiko Adaptation",
@@ -6740,7 +6740,10 @@
     "brainstorm_worksheet": "Igaragara ry'igitekerezo cyo brainstorm rireba umunyeshure — risohora metadata y'umwigisha (uburyol rationale, prompt history, generation timing) kandi rigaragaza gusa ishusho yo kw'igifuniko (niba ihari), umutwe, n'inyandiko mu miterere yorohereye yo gucapa. Bifasha ku: gutanga inyuma nk'artifact y'urupapuro, kwinjiza muri PDF y'icigwa, canke kwerekana igitekerezo kuri smartboard ku biganiro by'ishure AI 'plumbing' itagaragara. Inama: ibitekerezo vya brainstorm bifise umutwe ukomeye wa generative-AI; igaragara rya worksheet ni ico ABANYESHURI babona, mu gihe paneli yuzuye ni ico ABARIMU babona. Guhindura iyi mu igaragara ry'umwigisha ni inzira yihuse yo kureba mbere ivyo abanyeshure bazabona.",
     "concept_sort_image_scale": "Slider yo kuringaniza ingano y'amashusho yakozwe na AI muri Concept Sort (igaragara gusa iyo nibura card imwe ifise ishusho). Iringaniza ingano ya thumbnail pixel hagati y'ibyiciro vya small / medium / large / xl. Bibikwa hamwe na sort kugira guhitamo kw'ingano kugume muri PDF yacapwe + sort ya digital. Inama: ingano nini (large / xl) ni ico gukora ku mashuri abanza aho ishusho-nk'akamenyetso ari scaffold nyamukuru; ingano ntoya (small / medium) zifitiraho cards nyinshi ku ecran ku banyeshuri bakuze bashobora gusoma amakenyetso bakoresha ishusho nk'ikimenyetso cya kabiri. Slider ihishe iyo nta cards zifite amashusho kugira idatwara umwanya.",
     "glossary_pronounce_term": "Buto y'umufasha wo kuvuga ku buri imvugo ya glossary — yerekana IPA notation (style ya /əˈ/), kugabanya ku gisilibe, n'inyobora yo kuvuga imvugo. Vyiza cyane ku: banyeshuri ba ELL biga imvugo y'ibikubiyemo by'Icyongereza, imvugo y'ibyigwa ya Tier 3 ifise pronunciation itari nyabyo (mitochondria, hyperbole, antecedent), na glossaries z'ibyigwa aho ijambo ridashobora kugaragara mu ijambo ry'umunsi. Bihuza na buto yo kumanura ijwi iri hafi yayo ku gushyigikira pronunciation yuzuye. Inama: shimangira abanyeshure kwitoza IPA mu ijwi rirenga — kumenya ko 'mi-toh-KON-dree-uh' ari urugero rw'amabwiriza ni itandukaniro hagati y'ifatanya rifite kwizera n'ihagarara mu kiganiro cy'ishure.",
-    "timeline_image_size": "Igenzura ryo guhindura ingano y'amashusho yakozwe na AI ashyizwe mu cards z'ivyabaye vya timeline (igaragara gusa iyo ivyabaye bifise amashusho). Three-step slider: small / medium / large. Bibikwa hamwe na timeline kugira ihitamo ry'ingano rigume kuri PDF yacapwa + cards ziri mu mukino. Inama: ingano nini zikora neza ku timelines za K-5 aho visual anchors zigira agaciro cyane (life cycles, ivyabaye by'amateka, story plots). Ku timelines za AP-urwego zifite ivyabaye 15+, medium canke small zituma urutonde rwose ruhura ku rupapuro rumwe rwacapwa nta abanyeshure kongera kuyihindura inyuma."
+    "timeline_image_size": "Igenzura ryo guhindura ingano y'amashusho yakozwe na AI ashyizwe mu cards z'ivyabaye vya timeline (igaragara gusa iyo ivyabaye bifise amashusho). Three-step slider: small / medium / large. Bibikwa hamwe na timeline kugira ihitamo ry'ingano rigume kuri PDF yacapwa + cards ziri mu mukino. Inama: ingano nini zikora neza ku timelines za K-5 aho visual anchors zigira agaciro cyane (life cycles, ivyabaye by'amateka, story plots). Ku timelines za AP-urwego zifite ivyabaye 15+, medium canke small zituma urutonde rwose ruhura ku rupapuro rumwe rwacapwa nta abanyeshure kongera kuyihindura inyuma.",
+    "pdf_audit_view_web_audit_btn": "Iha urupapuro amanota y'ukugerwaho (accessibility) ku rwego rwa WCAG 2.1 AA hakoreshejwe umugenzuzi wa AI hamwe n'icuma axe-core (icuma nyene abagenzuzi b'abahinga bakoresha). Nta na kimwe gihinduwa — koresha iki igihe ushaka gusa kumenya ingene urupapuro ruhagaze uno musi.",
+    "pdf_audit_results_score_badge": "Amanota yose y'ukugerwaho (accessibility) ya PDF yawe kuva kuri 0 gushika kuri 100. Icatsi (80+) kiri hafi ya WCAG AA, umuhondo (50-79) usaba akazi, agatukura (<50) gafise ingorane zikomeye ku banyeshure bakoresha screen readers canke ibikoresho vy'imfashanyo.",
+    "pdf_audit_alt_formats_braille_btn": "Bika idosiye ya Braille yo ku rwego Grade-1 (itagufijwe) ishobora gucapwa kuri imprimante ya Braille canke kurungikwa ku caretsi ca Braille kivugururwa. Ku magufya ya Grade-2, ha iyo dosiye umwigisha TVI (umwigisha w'abanyeshure bafise ubumuga bwo kutabona) kugira ayinonosore."
   },
   "groups": {
     "title": "Amatsinda y'Ukutandukanya",

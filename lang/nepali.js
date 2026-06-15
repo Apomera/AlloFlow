@@ -59,7 +59,7 @@
     "note_taking_text": "संरचित नोट लिने टेम्प्लेटहरू जसले विद्यार्थीहरूलाई *कसरी* नोट लिने भनेर सिकाउँछ, केवल *के* लेख्ने मात्र होइन। कर्नेल, ग्राफिक संगठक, डबल-एन्ट्री, र सिक्ने पत्रिकाहरू समावेश छन्।"
   },
   "launch_pad": {
-    "subtitle": "छान्नुहोस् तपाईंको सिकाइ pathway",
+    "subtitle": "तपाईंको सिकाइ मार्ग छान्नुहोस्।",
     "full_title": "पूर्ण Platform",
     "full_desc": "पूरा गर्नुहोस् पहुँच मा सबै AlloFlow सुविधाहरू — पाठ, STEM प्रयोगशाला, र उपकरणहरू",
     "guided_title": "Guided मोड",
@@ -711,7 +711,7 @@
     "your_answer": "तपाईंको उत्तर",
     "discard": "त्याग्नुहोस्",
     "reset": "रिसेट गर्नुहोस्",
-    "back": "फर्केर",
+    "back": "पछाडि",
     "prev": "अघिल्लो",
     "finish": "समाप्त गर्नुहोस्",
     "start": "सुरु गर्नुहोस्",
@@ -6740,7 +6740,10 @@
     "brainstorm_worksheet": "Brainstormed विचारको विद्यार्थी-facing worksheet दृश्य—शिक्षक-तर्फी metadata हटाई cover तस्बिर (यदि छ), शीर्षक र body मात्र render गर्छ।",
     "concept_sort_image_scale": "Concept Sort का AI द्वारा उत्पन्न कार्ड तस्बिरका लागि दृश्य-size slider (कम्तीमा एक कार्डमा तस्बिर हुँदा मात्र देखिन्छ)। small/medium/large/xl thumbnail size समायोजन।",
     "glossary_pronounce_term": "Pronunciation मद्दत बटनहरू per शब्दावली शब्द — देखाउँछ IPA notation (/əˈ/-शैली), syllable breakdown, र pronunciation guide का लागि शब्द. Especially useful का लागि: ELL विद्यार्थी सिकाइ English सामग्री शब्दकोश, Tier 3 शैक्षिक शब्दकोश सँग non-obvious pronunciation (mitochondria, hyperbole, antecedent), र सामग्री क्षेत्रफल glossaries कहाँ शब्दहरू सक्छ छैन देखा पर्नु मा everyday speech. Pairs सँग अडियो डाउनलोड गर्नुहोस् बटनहरू alongside it का लागि पूर्ण pronunciation सहयोग. सुझाव: encourage विद्यार्थी मा अभ्यास गर्नुहोस् IPA out loud — knowing त्यो 'mi-toh-KON-dree-uh' हो stress pattern हो भिन्नता बीच confident participation र silent avoidance दौडान कक्षा discussion.",
-    "timeline_image_size": "Timeline event कार्डमा embedded AI द्वारा उत्पन्न तस्बिरका लागि Resize नियन्त्रण (घटनामा तस्बिर हुँदा मात्र देखिन्छ)। small/medium/large तीन-चरण slider।"
+    "timeline_image_size": "Timeline event कार्डमा embedded AI द्वारा उत्पन्न तस्बिरका लागि Resize नियन्त्रण (घटनामा तस्बिर हुँदा मात्र देखिन्छ)। small/medium/large तीन-चरण slider।",
+    "pdf_audit_view_web_audit_btn": "AI अडिटर र axe-core इन्जिन (पेसेवर अडिटरहरूले प्रयोग गर्ने उही इन्जिन) दुवै प्रयोग गरेर यो पृष्ठलाई WCAG 2.1 AA पहुँचयोग्यताका लागि अङ्क दिन्छ। केही पनि परिवर्तन गरिँदैन — पृष्ठ आज कस्तो अवस्थामा छ भनेर मात्र जान्न चाहनुहुन्छ भने यो प्रयोग गर्नुहोस्।",
+    "pdf_audit_results_score_badge": "तपाईंको PDF को समग्र पहुँचयोग्यता अङ्क ० देखि १०० सम्म। हरियो (८०+) WCAG AA को नजिक छ, पहेँलो (५०-७९) लाई सुधार आवश्यक छ, रातो (<५०) मा स्क्रिन रिडर वा सहायक प्रविधि प्रयोग गर्ने विद्यार्थीहरूका लागि ठूला अवरोधहरू छन्।",
+    "pdf_audit_alt_formats_braille_btn": "ग्रेड-१ (असंक्षिप्त) ब्रेल फाइल सुरक्षित गर्नुहोस् जुन ब्रेल प्रिन्टरमा एम्बोस गर्न वा रिफ्रेसेबल ब्रेल डिस्प्लेमा पठाउन सकिन्छ। ग्रेड-२ संक्षेपहरूका लागि, फाइललाई पूरा गर्न TVI (दृष्टिविहीन विद्यार्थीहरूका शिक्षक) लाई दिनुहोस्।"
   },
   "groups": {
     "title": "Differentiation समूह",

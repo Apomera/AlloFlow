@@ -59,7 +59,7 @@
     "note_taking_text": "တၢ်ကွဲးနၢ်ပၢၢ်ပြၤလၢပျၤထီၣ်ဖိသၣ်ဘၢၣ်ၣ်ၣ်"
   },
   "launch_pad": {
-    "subtitle": "ဃုထၢ နၤအ learning pathway",
+    "subtitle": "ဃုထၢ နၤအ တၢ်မၤလိ ကျဲ",
     "full_title": "Full Platform",
     "full_desc": "ဝံၤ access ဆူ all AlloFlow features — တၢ်မၤလိ, STEM Lab, ဒီး tools",
     "guided_title": "Guided Mode",
@@ -447,7 +447,7 @@
     "common_standards_region_placeholder": "ဘှၢ.standards_region_placeholder",
     "common_url_placeholder": "ဘှၢ.url_placeholder",
     "configure_rti_thresholds": "Configure group cutoffs",
-    "confirm": "အုၣ်အသး",
+    "confirm": "ဆိၣ်",
     "confirm_and_launch_escape_room": "ဆိၣ် ဒီး launch escape room",
     "connect": "Connect",
     "content_tabs": "Content tabs",
@@ -718,7 +718,7 @@
     "end": "End",
     "resource": "Resource",
     "loading": "ဂုာ်ထီၣ်ဝဲ...",
-    "processing": "အိၣ်ဝဲဒၣ်...",
+    "processing": "မၤဝဲဒၣ်...",
     "error": "တၢ်ကမၣ်",
     "error_details": "Error Details",
     "success": "အိၣ်ဆူၣ်ဆဲ!",

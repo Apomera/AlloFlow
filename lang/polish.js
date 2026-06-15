@@ -58,7 +58,7 @@
     "note_taking_text": "Strukturalne szablony robienia notatek, które uczą uczniów *jak* robić notatki, a nie tylko *co* pisać. Zawiera Cornell, organizatory graficzne, podwójne wpisy i dzienniki uczenia się."
   },
   "launch_pad": {
-    "subtitle": "Wybierz swój ścieżka nauki",
+    "subtitle": "Wybierz swoją ścieżkę nauki",
     "full_title": "Pełna platforma",
     "full_desc": "Pełny dostęp do wszystkich funkcji AlloFlow — lekcji, STEM Lab i narzędzi",
     "guided_title": "Tryb prowadzony",

@@ -59,7 +59,7 @@
     "note_taking_text": "ተማሪዎችን ምን እንደሚጽፉ ብቻ ሳይሆን *እንዴት* ማስታወሻ መውሰድ እንደሚገባ የሚያስተምሩ የተዋቀሩ የማስታወሻ መውሰጃ ቴምፕሌቶች።"
   },
   "launch_pad": {
-    "subtitle": "ምረጥ የእርስዎ መማር pathway",
+    "subtitle": "የመማሪያ መንገድዎን ይምረጡ",
     "full_title": "ሙሉ Platform",
     "full_desc": "አጠናቅቅ መዳረሻ ወደ ሁሉም AlloFlow ባህሪያት — ትምህርት, STEM ላቦራቶሪ, እና መሳሪያዎች",
     "guided_title": "Guided ሁነታ",
@@ -1783,7 +1783,7 @@
     "collapse_tooltip": "Collapse ሁሉም ካርድ",
     "ai_guide": "AI መመሪያ እና ረዳት",
     "ai_guide_sub": "ትምህርት፣ ዳሰሳ እና ራስ-ሰር ማዋቀር",
-    "ai_guide_welcome": "ሰላም! I'm የእርስዎ AI Guide. I ይችላል እርዳታ ከ UDL ስልቶች, navigate app ለ እርስዎ, ወይም auto-setup የእርስዎ ትምህርት ቅንብሮች. ይጠይቁ!",
+    "ai_guide_welcome": "ሰላም! እኔ የእርስዎ AI መመሪያ ነኝ። በUDL ስልቶች ልረዳዎት፣ መተግበሪያውን ስለ እርስዎ ላስሄድ፣ ወይም የትምህርት ቅንብሮችዎን በራስ-ሰር ላዘጋጅ እችላለሁ። ይጠይቁ!",
     "tool_analysis": "ተንትን የምንጭ ቁሳቁስ",
     "tool_glossary": "መዝገበ ቃላት & ቋንቋ Selection",
     "tool_simplified": "ጽሑፍ Adaptation",
@@ -6740,7 +6740,10 @@
     "brainstorm_worksheet": "የተማሪ-ፊት ለፊት የብሬንስቶርም ሐሳብ የጠረጴዛ ስራ እይታ — የመምህር-ጎን ሜታዳታን ይገፋል እና ሽፋን ምስልን (ካለ)፣ ርዕስንና አካል ጽሑፍ በተጣራ ሊታተም በሚችል ቅርጸት ብቻ ይወክላል።",
     "concept_sort_image_scale": "በConcept Sort ውስጥ ለበAI የተመረቱ የካርድ ምስሎች የእይታ-መጠን ስላይደር (ቢያንስ አንድ ካርድ ምስል ሲኖረው ብቻ ይታያል)። small / medium / large / xl።",
     "glossary_pronounce_term": "Pronunciation እርዳታ አዝራር per መዝገበ ቃላት ቃል — ያሳያል IPA notation (/əˈ/-ዘይቤ), syllable breakdown, እና pronunciation guide ለ ቃል. Especially useful ለ: ELL ተማሪ መማር English ይዘት ቃላት, Tier 3 አካዳሚክ ቃላት ከ non-obvious pronunciation (mitochondria, hyperbole, antecedent), እና ይዘት ስፋት glossaries የት ቃላት ይችላል አይደለም መታየት ውስጥ everyday speech. Pairs ከ ድምጽ አውርድ አዝራር alongside it ለ ሙሉ pronunciation ድጋፍ. ምክር: encourage ተማሪ ወደ ተለማመድ IPA out loud — knowing ያ 'mi-toh-KON-dree-uh' ነው stress pattern ነው ልዩነት መካከል confident participation እና silent avoidance በሚደረግበት ጊዜ ክፍል discussion.",
-    "timeline_image_size": "በTimeline ክስተት ካርዶች ውስጥ ለበAI የተመረቱ ምስሎች የመጠን ቁጥጥር (ክስተቶች ምስሎች ሲኖራቸው ብቻ ይታያል)። ሶስት-ደረጃ ስላይደር፡ small / medium / large።"
+    "timeline_image_size": "በTimeline ክስተት ካርዶች ውስጥ ለበAI የተመረቱ ምስሎች የመጠን ቁጥጥር (ክስተቶች ምስሎች ሲኖራቸው ብቻ ይታያል)። ሶስት-ደረጃ ስላይደር፡ small / medium / large።",
+    "pdf_audit_view_web_audit_btn": "ገጹን ለWCAG 2.1 AA ተደራሽነት የAI ኦዲተርን እና axe-core ሞተርን (ባለሙያ ኦዲተሮች የሚጠቀሙበትን ተመሳሳይ ሞተር) በመጠቀም ይመዝናል። ምንም አይቀየርም — ገጹ ዛሬ በምን ሁኔታ ላይ እንዳለ ብቻ ማወቅ ሲፈልጉ ይህንን ይጠቀሙ።",
+    "pdf_audit_results_score_badge": "የእርስዎ PDF አጠቃላይ የተደራሽነት ነጥብ ከ0 እስከ 100። አረንጓዴ (80+) ለWCAG AA ቅርብ ነው፣ ብርቱካናማ (50-79) ማሻሻያ ይፈልጋል፣ ቀይ (<50) የስክሪን አንባቢ ወይም ረዳት ቴክኖሎጂ ለሚጠቀሙ ተማሪዎች ከባድ እንቅፋቶች አሉት።",
+    "pdf_audit_alt_formats_braille_btn": "በBraille ማተሚያ ላይ ሊቀረጽ ወይም ወደ የሚታደስ የBraille ማሳያ ሊላክ የሚችል የደረጃ-1 (ያልተኮማተረ) የBraille ፋይል ያስቀምጡ። ለደረጃ-2 ኩማታዎች፣ ለማጠናቀቅ ፋይሉን ለTVI (የማየት እክል ላለባቸው ተማሪዎች መምህር) ይስጡ።"
   },
   "groups": {
     "title": "Differentiation ቡድን",

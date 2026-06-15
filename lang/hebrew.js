@@ -534,7 +534,27 @@
     "alloflow_loading_aria": "AlloFlow טוען",
     "optional_parenthetical": "(אופציונלי)",
     "enter_value": "הזן ערך",
-    "ok": "אישור"
+    "ok": "אישור",
+    "wave": {
+      "u26a0_audio_not_supported_in": "\\u26A0 אודיו אינו נתמך בדפדפן זה"
+    },
+    "chem_balance": {
+      "ud83cudfb2_random": "\\uD83C\\uDFB2 אקראי:",
+      "table_salt": "מלח שולחן"
+    },
+    "circuit": {
+      "u2705_challenge_complete_you_hit": "\\u2705 האתגר הושלם! השגת",
+      "ud83cudfaf_target": "\\uD83C\\uDFAF יעד:"
+    },
+    "punnett": {
+      "complete_dominance": "דומיננטיות מלאה"
+    },
+    "func_graph": {
+      "cell_sim": "סימולטור תאים"
+    },
+    "data_plot": {
+      "correct": "? נכון!"
+    }
   },
   "header": {
     "app_name": "AlloFlow",
@@ -12087,7 +12107,7 @@
     "replace_imported_cards": "להחליף את כל הכרטיסים הקיימים בכרטיסים שיובאו?",
     "delete_voice_note": "למחוק את הערת הקול הזו?",
     "remove_companion": "להסיר את בן הלוויה שלך?",
-    "delete_goal": "מחק זה מטרות?",
+    "delete_goal": "למחוק מטרה זו?",
     "delete_atlas": "למחוק אטלס זה? קשתות והצדקות לא ניתנות לשחזור.",
     "delete_realm": "למחוק ממלכה זו? אזורים והצדקות לא ניתנים לשחזור.",
     "delete_entry_tokens": "למחוק רשומה זו? אסימונים שכבר הושגו לא יוחזרו.",
@@ -12149,15 +12169,15 @@
     "review_feedback": "סקירה ומשוב",
     "character_name_check": "בדיקת שמות דמויות",
     "writing_analytics": "ניתוח כתיבה",
-    "word_frequency": "מילים Frequency",
-    "score_breakdown": "ציונים Breakdown",
-    "vocab_usage": "אוצר מילים Usage",
+    "word_frequency": "שכיחות מילים",
+    "score_breakdown": "פירוט ציונים",
+    "vocab_usage": "שימוש באוצר מילים",
     "storybook_ready": "ספר הסיפורים שלך מוכן!",
     "per_dimension_findings": "ממצאים לפי ממד",
     "your_self_assessment": "הערכה עצמית שלך",
-    "cloud_voice_unavailable": "Cloud קול לא זמין",
+    "cloud_voice_unavailable": "קול ענן לא זמין",
     "allohaven": "AlloHaven",
-    "tts": "טקסט-to-Speech"
+    "tts": "טקסט-לדיבור"
   },
   "th": {
     "status": "סטטוס",

@@ -6748,7 +6748,10 @@
     "brainstorm_worksheet": "Worksheet view សម្រាប់សិស្ស នៃ brainstormed idea៖ លុប teacher-side metadata និង render តែ cover image (បើមាន), title និងអត្ថបទ body។",
     "concept_sort_image_scale": "Slider ទំហំរូបភាពសម្រាប់រូបភាពកាត AI ក្នុង Concept Sort (មើលឃើញតែពេលមានយ៉ាងហោចណាស់រូបភាព ១)៖ small/medium/large/xl។",
     "glossary_pronounce_term": "Pronunciation ជំនួយ ប៊ូតុង per វាក្យានុក្រម ពាក្យ — បង្ហាញ IPA notation (/əˈ/-រចនាប័ទ្ម), syllable breakdown, និង pronunciation guide សម្រាប់ ពាក្យ. Especially useful សម្រាប់: ELL សិស្ស ការរៀន English មាតិកា វាក្យសព្ទ, Tier 3 សិក្សា វាក្យសព្ទ ជាមួយ non-obvious pronunciation (mitochondria, hyperbole, antecedent), និង មាតិកា ផ្ទៃ glossaries កន្លែង ពាក្យ អាច មិន លេចឡើង ក្នុង everyday speech. Pairs ជាមួយ សំឡេង ទាញយក ប៊ូតុង alongside it សម្រាប់ ពេញលេញ pronunciation ការគាំទ្រ. គន្លឹះ: encourage សិស្ស ទៅ អនុវត្ត IPA out loud — knowing នោះ 'mi-toh-KON-dree-uh' គឺ stress pattern គឺ ភាពខុសគ្នា រវាង confident participation និង silent avoidance ក្នុងអំឡុង ថ្នាក់រៀន discussion.",
-    "timeline_image_size": "Slider ប្ដូរទំហំសម្រាប់រូបភាព AI embedded ក្នុងកាតឧប្បត្តិហេតុ timeline (មើលឃើញតែពេលឧប្បត្តិហេតុមានរូបភាព)៖ small/medium/large។"
+    "timeline_image_size": "Slider ប្ដូរទំហំសម្រាប់រូបភាព AI embedded ក្នុងកាតឧប្បត្តិហេតុ timeline (មើលឃើញតែពេលឧប្បត្តិហេតុមានរូបភាព)៖ small/medium/large។",
+    "pdf_audit_view_web_audit_btn": "ដាក់ពិន្ទុទំព័រសម្រាប់ភាពងាយស្រួលប្រើតាមស្តង់ដារ WCAG 2.1 AA ដោយប្រើទាំងអ្នកធ្វើសវនកម្ម AI និងម៉ាស៊ីន axe-core (ម៉ាស៊ីនដូចគ្នានឹងអ្នកធ្វើសវនកម្មអាជីពប្រើ)។ គ្មានអ្វីត្រូវបានផ្លាស់ប្តូរឡើយ — ប្រើវានៅពេលដែលអ្នកគ្រាន់តែចង់ដឹងថាទំព័រនេះស្ថិតក្នុងស្ថានភាពយ៉ាងណានៅថ្ងៃនេះ។",
+    "pdf_audit_results_score_badge": "ពិន្ទុភាពងាយស្រួលប្រើសរុបនៃ PDF របស់អ្នកចាប់ពី ០ ដល់ ១០០។ ពណ៌បៃតង (៨០+) គឺជិតដល់ WCAG AA, ពណ៌លឿងទុំ (៥០-៧៩) ត្រូវការកែលម្អ, ពណ៌ក្រហម (<៥០) មានឧបសគ្គធំៗសម្រាប់សិស្សដែលប្រើកម្មវិធីអានអេក្រង់ ឬបច្ចេកវិទ្យាជំនួយ។",
+    "pdf_audit_alt_formats_braille_btn": "រក្សាទុកឯកសារអក្សរផុសកម្រិត ១ (មិនបង្រួម) ដែលអាចបោះពុម្ពលើម៉ាស៊ីនបោះពុម្ពអក្សរផុស ឬផ្ញើទៅអេក្រង់អក្សរផុសដែលអាចធ្វើបច្ចុប្បន្នភាពបាន។ សម្រាប់ការបង្រួមកម្រិត ២ សូមប្រគល់ឯកសារនេះទៅ TVI (គ្រូបង្រៀនសិស្សដែលមានពិការភ្នែក) ដើម្បីបញ្ចប់។"
   },
   "groups": {
     "title": "ក្រុមបែងចែក",
