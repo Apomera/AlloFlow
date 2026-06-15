@@ -4081,15 +4081,21 @@ Return ONLY JSON:
             if (!d || !d.body) return null;
             const useBefore = _beforeWords.length >= 2;
             const anchor = (useBefore ? _beforeWords : _afterWords).join(" ");
-            if (!anchor || anchor.length < 6) return null;
+            if (!anchor || anchor.length < 12) return null;
             const walker = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null);
-            let node;
+            let node, hit = null, count = 0;
             while (node = walker.nextNode()) {
               if (node.parentElement && node.parentElement.closest('section[data-content-recovery="true"]')) continue;
-              const ni = _norm(node.textContent).indexOf(anchor);
-              if (ni !== -1) return { node, anchor, useBefore, doc: d, live: rd.live };
+              const _txt = _norm(node.textContent);
+              let from = 0, idx;
+              while ((idx = _txt.indexOf(anchor, from)) !== -1) {
+                count++;
+                if (!hit) hit = { node, anchor, useBefore, doc: d, live: rd.live };
+                if (count > 1) return null;
+                from = idx + anchor.length;
+              }
             }
-            return null;
+            return hit;
           } catch (_) {
             return null;
           }
@@ -4130,11 +4136,16 @@ Return ONLY JSON:
             }
             hit.node.textContent = raw.slice(0, rawPos) + (hit.useBefore ? " " + it.word : it.word + " ") + raw.slice(rawPos);
             try {
+              const _resid = (it.missingCount > 1 ? it.missingCount : 1) - 1;
               const lis = d.querySelectorAll('section[data-content-recovery="true"] li');
               for (const li of lis) {
                 const st = li.querySelector("strong");
                 if (st && st.textContent === it.word) {
-                  li.remove();
+                  if (_resid > 0) {
+                    li.appendChild(d.createTextNode(" \u2014 " + _resid + " more occurrence" + (_resid === 1 ? "" : "s") + " could not be auto-placed; kept here."));
+                  } else {
+                    li.remove();
+                  }
                   break;
                 }
               }

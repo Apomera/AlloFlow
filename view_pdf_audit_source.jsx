@@ -5151,15 +5151,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       if (!d || !d.body) return null;
                                       const useBefore = _beforeWords.length >= 2;
                                       const anchor = (useBefore ? _beforeWords : _afterWords).join(' ');
-                                      if (!anchor || anchor.length < 6) return null;
+                                      // Mirror the AUTO path's uniqueness rule (findUniqueContext refuses a non-unique
+                                      // anchor): a short/common anchor that recurs would splice the word into an
+                                      // unrelated but similarly-worded passage while the UI claims "found the matching
+                                      // spot". Require a specific anchor (>=12 chars) AND exactly ONE occurrence
+                                      // doc-wide; otherwise no confident match (word stays in the appendix). (#8)
+                                      if (!anchor || anchor.length < 12) return null;
                                       const walker = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null);
-                                      let node;
+                                      let node, hit = null, count = 0;
                                       while ((node = walker.nextNode())) {
                                         if (node.parentElement && node.parentElement.closest('section[data-content-recovery="true"]')) continue;
-                                        const ni = _norm(node.textContent).indexOf(anchor);
-                                        if (ni !== -1) return { node, anchor, useBefore, doc: d, live: rd.live };
+                                        const _txt = _norm(node.textContent);
+                                        let from = 0, idx;
+                                        while ((idx = _txt.indexOf(anchor, from)) !== -1) {
+                                          count++;
+                                          if (!hit) hit = { node, anchor, useBefore, doc: d, live: rd.live };
+                                          if (count > 1) return null; // ambiguous — refuse, like the auto path
+                                          from = idx + anchor.length;
+                                        }
                                       }
-                                      return null;
+                                      return hit;
                                     } catch (_) { return null; }
                                   };
                                   const _anchorHit = _findAnchor();
@@ -5191,10 +5202,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         else { rawPos++; normCount++; }
                                       }
                                       hit.node.textContent = raw.slice(0, rawPos) + (hit.useBefore ? ' ' + it.word : it.word + ' ') + raw.slice(rawPos);
-                                      // Remove this word's entry from the appendix (it's placed now).
+                                      // Update the appendix entry. We insert exactly ONE occurrence, so a word that
+                                      // was missing N>1 times still has N-1 occurrences unplaced — DON'T remove its
+                                      // record (that silently dropped them, breaking "nothing is ever dropped"). Keep
+                                      // the <li> and annotate the residual; only remove it when the single occurrence
+                                      // is fully placed. (#7)
                                       try {
+                                        const _resid = (it.missingCount > 1 ? it.missingCount : 1) - 1;
                                         const lis = d.querySelectorAll('section[data-content-recovery="true"] li');
-                                        for (const li of lis) { const st = li.querySelector('strong'); if (st && st.textContent === it.word) { li.remove(); break; } }
+                                        for (const li of lis) {
+                                          const st = li.querySelector('strong');
+                                          if (st && st.textContent === it.word) {
+                                            if (_resid > 0) { li.appendChild(d.createTextNode(' — ' + _resid + ' more occurrence' + (_resid === 1 ? '' : 's') + ' could not be auto-placed; kept here.')); }
+                                            else { li.remove(); }
+                                            break;
+                                          }
+                                        }
                                         const ul = d.querySelector('section[data-content-recovery="true"] ul');
                                         if (ul && ul.children.length === 0) { const sec = d.querySelector('section[data-content-recovery="true"]'); if (sec) sec.remove(); }
                                       } catch (_) {}
