@@ -9538,12 +9538,10 @@ HTML section ${chunkNum}/${chunks.length}:
         return `<th id="docpipe-th-${tableIdx}-${thCounter}"${attrs}>`;
       });
 
-      // For complex tables, ensure scope attributes exist on <th>
-      newBody = newBody.replace(/<th\b([^>]*)>/gi, (m, attrs) => {
-        if (/\sscope\s*=/i.test(attrs)) return m;
-        fixCount++;
-        return `<th scope="col"${attrs}>`;
-      });
+      // Scope on scope-less <th> is NOT stamped here. BUGFIX (audit #14, 2026-06-15): a blanket
+      // scope="col" mis-announced left-column ROW headers in merged-cell tables (a gradebook row
+      // label read as a column header). Geometry-aware scope is applied by
+      // _stampThScopeGeometryAware in runDeterministicWcagFixes immediately after this fixer.
 
       return `<table${tableAttrs}>${newBody}</table>`;
     });
@@ -9919,6 +9917,10 @@ HTML section ${chunkNum}/${chunks.length}:
     try { result = fixFormLabels(result).html; } catch (e) { warnLog('[Det WCAG] fixFormLabels failed:', e?.message); }
     try { result = fixDecorativeImages(result).html; } catch (e) { warnLog('[Det WCAG] fixDecorativeImages failed:', e?.message); }
     try { result = fixComplexTables(result).html; } catch (e) { warnLog('[Det WCAG] fixComplexTables failed:', e?.message); }
+    // Geometry-aware <th> scope (audit #14): runs EACH loop iteration so a scope-less row header an
+    // AI pass re-emits gets scope="row" (not a blanket "col"). Pre-loop stamp at the inline step is
+    // not enough; this is the in-loop counterpart. Fail-safe (returns input on any error).
+    try { result = _stampThScopeGeometryAware(result); } catch (e) { warnLog('[Det WCAG] th-scope geometry failed:', e?.message); }
     try { result = fixLangSpans(result).html; } catch (e) { warnLog('[Det WCAG] fixLangSpans failed:', e?.message); }
     try { result = fixHeadingHierarchy(result).html; } catch (e) { warnLog('[Det WCAG] fixHeadingHierarchy failed:', e?.message); }
     // Strict pass AFTER the lenient one so a skip the lenient fixer tolerates (h1→h3) — which an AI
