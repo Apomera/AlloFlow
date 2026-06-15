@@ -11405,6 +11405,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthCharCount = 0;
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
+      window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
       // Reset Vision-strip audit trail. Every conservative JSON-strip decision is
       // recorded here so the fidelity panel can show what was kept vs stripped.
       window.__lastVisionStripTrail = [];
@@ -11724,6 +11725,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         window.__lastOcrVisionText = visionResult.fullText || '';
         window.__lastOcrDisagreements = rec.disagreements || [];
         window.__lastOcrMethod = (tessResult.fullText && visionResult.fullText) ? 'tesseract+vision' : (tessResult.fullText ? 'tesseract' : 'vision');
+        // Per-page OCR failures from BOTH engines (audit #17). A failed page becomes empty text but
+        // the doc was still marked fully remediated; surface them so the UI's Stage-1 partial-
+        // extraction banner renders instead of a blind student silently losing whole pages.
+        window.__lastOcrPageErrors = [].concat(tessResult.pageErrors || [], visionResult.pageErrors || []);
         // Wire the reconciled OCR page map (carries Tesseract word boxes + page dims) so
         // createTaggedPdf can lay down a POSITIONED, searchable invisible text layer for the
         // scanned PDF. Previously this was never set on the scanned path, so the tagged-PDF
@@ -12161,6 +12166,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 language: /[\u0600-\u06FF]/.test(extractedText) ? 'ar' : /[\u4E00-\u9FFF]/.test(extractedText) ? 'zh' : /[\u0400-\u04FF]/.test(extractedText) ? 'ru' : 'en',
                 isScanned: (window.__lastOcrMethod === 'tesseract+vision' || window.__lastOcrMethod === 'tesseract' || window.__lastOcrMethod === 'vision'),
                 extractionMethod: window.__lastOcrMethod || window.__lastGroundTruthMethod || 'pdfjs',
+                // Per-page extraction failures (audit #17) — drives the Stage-1 partial-extraction
+                // banner; previously omitted, so a page that failed OCR vanished silently.
+                pageErrors: (typeof window !== 'undefined' && Array.isArray(window.__lastOcrPageErrors)) ? window.__lastOcrPageErrors : [],
               },
               timestamp: Date.now(),
             }
