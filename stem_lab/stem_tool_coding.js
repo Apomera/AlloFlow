@@ -2776,7 +2776,7 @@
 
               // ── Accessibility Controls ──
               React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("button", { "aria-label": "Toggle high contrast mode",
+                React.createElement("button", { "aria-label": "Toggle high contrast mode", "aria-pressed": highContrastMode,
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
                   className: "flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " +
                     (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-200 hover:text-white")

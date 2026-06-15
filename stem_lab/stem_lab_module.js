@@ -2169,21 +2169,22 @@
         var _turtleState = _cpgd.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
         var _drawnLines = _cpgd.lines || [];
         var _showTurtle = _cpgd.showTurtle !== false;
+        var _hc = !!_cpgd.highContrastMode; // C3: high-contrast = black bg, white thick lines (21:1, AA)
         var cvs = _codingCanvasRef.current;
         if (!cvs) return;
         var ctx = cvs.getContext('2d');
         var W = 500, H = 500;
         cvs.width = W; cvs.height = H;
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = _hc ? '#000000' : '#0f172a';
         ctx.fillRect(0, 0, W, H);
-        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 0.5;
+        ctx.strokeStyle = _hc ? '#1f1f1f' : '#1e293b'; ctx.lineWidth = 0.5;
         for (var gx = 0; gx <= W; gx += 25) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
         for (var gy = 0; gy <= H; gy += 25) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
-        ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+        ctx.strokeStyle = _hc ? '#3a3a3a' : '#334155'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
         _drawnLines.forEach(function (ln) {
-          ctx.strokeStyle = ln.color || '#6366f1'; ctx.lineWidth = ln.width || 2; ctx.lineCap = 'round';
+          ctx.strokeStyle = _hc ? '#ffffff' : (ln.color || '#6366f1'); ctx.lineWidth = _hc ? Math.max(3, (ln.width || 2) + 1) : (ln.width || 2); ctx.lineCap = 'round';
           ctx.beginPath(); ctx.moveTo(ln.x1, ln.y1); ctx.lineTo(ln.x2, ln.y2); ctx.stroke();
         });
         var tx = _turtleState.x, ty = _turtleState.y, ta = _turtleState.angle * Math.PI / 180;
