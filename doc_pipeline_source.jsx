@@ -4904,6 +4904,25 @@ var createDocPipeline = function(deps) {
   // surface them for review. This is a union-of-best-per-page strategy, not a set-union on
   // tokens (which would introduce ordering artifacts).
   const reconcileOcrPages = (tessPages, visionPages) => {
+    // Language-agnostic OCR "junk" ratio: the fraction of non-whitespace chars that are NOT a
+    // Unicode letter or number. Clean prose in ANY script (Latin, Arabic, Bengali, …) is mostly
+    // letters/digits → low; symbol-soup garble (broken ligatures, stray punctuation, replacement
+    // chars) → high. Lets us avoid a longer-but-garbled OCR pass beating a clean one. (ocr-quality)
+    const _ocrJunk = (s) => {
+      const ns = String(s || '').replace(/\s+/g, '');
+      if (!ns.length) return 1;
+      const textChars = (ns.match(/[\p{L}\p{N}]/gu) || []).length;
+      return 1 - textChars / ns.length;
+    };
+    // Mean Tesseract per-word confidence (0-100) for a page, or null when unavailable (Vision
+    // produces no per-word confidence, so this only ever assesses the Tesseract side).
+    const _meanConf = (page) => {
+      const w = page && Array.isArray(page.words) ? page.words : null;
+      if (!w || !w.length) return null;
+      let sum = 0, n = 0;
+      for (const x of w) { if (x && typeof x.c === 'number') { sum += x.c; n++; } }
+      return n ? sum / n : null;
+    };
     const pageCount = Math.max(tessPages.length, visionPages.length);
     const merged = [];
     const disagreements = [];
@@ -4912,9 +4931,27 @@ var createDocPipeline = function(deps) {
       const vText = (visionPages[i] && visionPages[i].text) || '';
       const tLen = tText.length, vLen = vText.length;
       const longest = Math.max(tLen, vLen);
-      // Pick the longer one — loses nothing vs picking shorter; Tesseract wins ties for
-      // determinism.
-      const chosen = tLen >= vLen ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
+      // Default: the longer text wins (more captured content); Tesseract wins ties (determinism).
+      let _winner = tLen >= vLen ? 'tesseract' : 'vision';
+      // QUALITY OVERRIDE (Aaron 2026-06-15, posture: avoid garbled output, robust to MIXED scan
+      // quality). Only flip AWAY from the longer text when it is CLEARLY garbled relative to a
+      // SUBSTANTIAL cleaner alternative — so a faxed/photocopied page whose longer OCR is symbol-
+      // soup no longer beats the clean transcription, while a clean page never loses real content.
+      // Whenever quality is comparable the deterministic length rule (tie→tesseract) is unchanged.
+      if (tLen > 0 && vLen > 0) {
+        const _tJ = _ocrJunk(tText), _vJ = _ocrJunk(vText);
+        const _winJ = _winner === 'tesseract' ? _tJ : _vJ;
+        const _altJ = _winner === 'tesseract' ? _vJ : _tJ;
+        const _winLen = _winner === 'tesseract' ? tLen : vLen;
+        const _altLen = _winner === 'tesseract' ? vLen : tLen;
+        const _substantialAlt = _altLen >= _winLen * 0.5;       // don't drop >half the captured content
+        const _tConf = _meanConf(tessPages[i]);
+        const _extremeGarbage = _winJ >= 0.45 && _altJ < _winJ; // winner is mostly non-text → garbage even if longer
+        const _clearlyWorse = _winJ >= 0.18 && _winJ >= _altJ * 1.6 && _substantialAlt; // absolutely + relatively junkier
+        const _lowConfTess = _winner === 'tesseract' && _tConf != null && _tConf < 50 && _vJ <= _tJ && _substantialAlt;
+        if (_extremeGarbage || _clearlyWorse || _lowConfTess) _winner = _winner === 'tesseract' ? 'vision' : 'tesseract';
+      }
+      const chosen = _winner === 'tesseract' ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
       // Carry the Tesseract word boxes + page dims through reconciliation (Vision has
       // none). These are text+position PAIRS from Tesseract, used to draw a positioned
       // searchable layer — independent of which engine's TEXT won the length contest.

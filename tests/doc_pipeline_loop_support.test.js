@@ -130,6 +130,28 @@ describe('reconcileOcrPages — Tesseract/Vision merge', () => {
     const r = reconcileOcrPages([{ text: 'one' }, { text: '' }, { text: 'three' }], [{}, {}, {}]);
     expect(r.fullText).toBe('one\n\nthree');
   });
+
+  // OCR quality override (2026-06-15, posture: avoid garbled output, robust to mixed scan
+  // quality). Length alone no longer lets a garbled-but-longer pass beat a clean one.
+  const src = (t, v) => reconcileOcrPages([t], [v]).pages[0].source;
+  it('prefers the cleaner shorter text over a longer GARBLED one (the reported bug)', () => {
+    expect(src({ text: 'Th3 b##rd ~~ appr@@ved ## bud~~t !! f0r th3 y##r' }, { text: 'The board approved the budget for the year' })).toBe('vision');
+  });
+  it('rejects an EXTREMELY garbled longer pass even when the clean alternative is much shorter', () => {
+    expect(src({ text: '#####@@@@@~~~~~|||||_____#####@@@@@~~~~~' }, { text: 'real clean text' })).toBe('vision');
+  });
+  it('distrusts a longer Tesseract pass with LOW mean word confidence when a clean alternative exists', () => {
+    expect(src({ text: 'the board approved the budget today right now', words: [{ c: 38 }, { c: 40 }, { c: 35 }, { c: 42 }] }, { text: 'the board approved the budget today' })).toBe('vision');
+  });
+  it('does NOT flip when both texts are clean (no regression; tie → tesseract)', () => {
+    expect(src({ text: 'the board approved the budget' }, { text: 'the board approved the budget' })).toBe('tesseract');
+  });
+  it('does NOT flip a longer Tesseract pass with HIGH confidence', () => {
+    expect(src({ text: 'the board approved the annual operating budget today', words: [{ c: 92 }, { c: 95 }] }, { text: 'the board approved the budget' })).toBe('tesseract');
+  });
+  it('multilingual safety: clean non-Latin text (Arabic) is NOT mistaken for junk', () => {
+    expect(src({ text: 'مرحبا بالعالم هذا نص عربي نظيف وطويل' }, { text: 'مرحبا' })).toBe('tesseract'); // longer clean Arabic wins
+  });
 });
 
 describe('_docFingerprint — cross-document chunk-state guard', () => {
