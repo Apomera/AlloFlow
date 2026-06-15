@@ -468,18 +468,22 @@ function _collectMoSegments(html) {
   });
   return { segments, bodyHtml: root.innerHTML, lang: doc.documentElement.getAttribute("lang") || "en" };
 }
-function _buildMoSmil(segments, durations, ext) {
+function _buildMoSmil(segments, durations, ext, hasAudio) {
   const _ext = ext || "mp3";
+  const _has = (i) => !hasAudio || hasAudio[i];
   const pars = (segments || []).map((s, idx) => {
+    const text = '<text src="content.xhtml#' + _expXmlEsc(s.id) + '"/>';
+    if (!_has(idx)) return '<par id="par' + (idx + 1) + '">' + text + "</par>";
     const dur = durations && durations[idx] || 0;
-    return '<par id="par' + (idx + 1) + '"><text src="content.xhtml#' + _expXmlEsc(s.id) + '"/><audio src="audio/seg' + (idx + 1) + "." + _ext + '" clipBegin="' + _moClock(0) + '" clipEnd="' + _moClock(dur) + '"/></par>';
+    return '<par id="par' + (idx + 1) + '">' + text + '<audio src="audio/seg' + (idx + 1) + "." + _ext + '" clipBegin="' + _moClock(0) + '" clipEnd="' + _moClock(dur) + '"/></par>';
   }).join("\n");
   return '<?xml version="1.0" encoding="utf-8"?>\n<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n<body><seq>' + pars + "</seq></body>\n</smil>";
 }
-function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime) {
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio) {
   const _ext = ext || "mp3";
   const _mime = mime || "audio/mpeg";
-  const audioItems = (segments || []).map((s, i) => '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + "." + _ext + '" media-type="' + _mime + '"/>').join("\n");
+  const _has = (i) => !hasAudio || hasAudio[i];
+  const audioItems = (segments || []).map((s, i) => _has(i) ? '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + "." + _ext + '" media-type="' + _mime + '"/>' : "").filter(Boolean).join("\n");
   return '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n<dc:identifier id="uid">alloflow-mo-' + Date.now() + "</dc:identifier><dc:title>" + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(lang || "en") + '</dc:language><dc:creator>AlloFlow Document Pipeline</dc:creator><meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || (/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")) + '</meta><meta property="media:duration">' + _moClock(totalSec) + '</meta><meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta><meta property="media:active-class">-epub-media-overlay-active</meta><meta property="schema:accessMode">textual</meta><meta property="schema:accessMode">auditory</meta><meta property="schema:accessModeSufficient">textual,auditory</meta><meta property="schema:accessibilityFeature">readingOrder</meta><meta property="schema:accessibilityFeature">synchronizedAudioText</meta><meta property="schema:accessibilityFeature">structuralNavigation</meta><meta property="schema:accessibilityHazard">none</meta><meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta></metadata>\n<manifest>\n<item id="content" href="content.xhtml" media-type="application/xhtml+xml" media-overlay="smil"/>\n<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' + audioItems + '\n</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
 }
 async function _buildDocxBlobFromSpec(spec, d, mode) {
@@ -1552,14 +1556,15 @@ function PdfAuditView(props) {
       const mime = isWav ? "audio/wav" : "audio/mpeg";
       const totalSec = durations.reduce((a2, b) => a2 + (b || 0), 0);
       const withAudio = audioBlobs.filter(Boolean).length;
+      const _hasAudio = audioBlobs.map(Boolean);
       const zip = new window.JSZip();
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
       let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + "</title></head><body>" + bodyHtml + "</body></html>";
       xhtml = xhtml.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
       zip.file("OEBPS/content.xhtml", xhtml);
-      zip.file("OEBPS/content.smil", _buildMoSmil(segments, durations, ext));
-      zip.file("OEBPS/content.opf", _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime));
+      zip.file("OEBPS/content.smil", _buildMoSmil(segments, durations, ext, _hasAudio));
+      zip.file("OEBPS/content.opf", _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio));
       zip.file("OEBPS/nav.xhtml", '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + "</a></li></ol></nav></body></html>");
       for (let i = 0; i < audioBlobs.length; i++) {
         if (audioBlobs[i]) zip.file("OEBPS/audio/seg" + (i + 1) + "." + ext, audioBlobs[i]);

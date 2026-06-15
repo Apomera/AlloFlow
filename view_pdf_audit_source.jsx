@@ -518,11 +518,19 @@ function _collectMoSegments(html) {
 // 0..duration of its own file. `ext` is the audio extension (mp3 by default;
 // the TTS service may return wav, which we pass through honestly rather than
 // mislabel as mp3 — most reading systems play wav even though mp3 is the core type).
-function _buildMoSmil(segments, durations, ext) {
+function _buildMoSmil(segments, durations, ext, hasAudio) {
   const _ext = ext || 'mp3';
+  // hasAudio[idx] === false → that block's TTS failed: emit a TEXT-ONLY <par> (no
+  // <audio>) instead of referencing a clip that isn't in the zip. A missing audio
+  // resource makes the WHOLE EPUB invalid/unopenable (epubcheck RSC-001), so one
+  // failed TTS call must NOT poison the file (2026-06-15 review P0 fix). Omitting
+  // hasAudio entirely keeps the prior all-present behavior.
+  const _has = (i) => !hasAudio || hasAudio[i];
   const pars = (segments || []).map((s, idx) => {
+    const text = '<text src="content.xhtml#' + _expXmlEsc(s.id) + '"/>';
+    if (!_has(idx)) return '<par id="par' + (idx + 1) + '">' + text + '</par>';
     const dur = (durations && durations[idx]) || 0;
-    return '<par id="par' + (idx + 1) + '"><text src="content.xhtml#' + _expXmlEsc(s.id) + '"/>' +
+    return '<par id="par' + (idx + 1) + '">' + text +
       '<audio src="audio/seg' + (idx + 1) + '.' + _ext + '" clipBegin="' + _moClock(0) + '" clipEnd="' + _moClock(dur) + '"/></par>';
   }).join('\n');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
@@ -531,10 +539,13 @@ function _buildMoSmil(segments, durations, ext) {
 }
 // OPF for the media-overlay ePub: content references its overlay; manifest lists
 // the SMIL + every audio clip; media:duration (global + per-overlay) is required.
-function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime) {
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio) {
   const _ext = ext || 'mp3';
   const _mime = mime || 'audio/mpeg';
-  const audioItems = (segments || []).map((s, i) => '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + '.' + _ext + '" media-type="' + _mime + '"/>').join('\n');
+  // Only manifest the audio clips that actually exist in the zip (a declared item
+  // with no file = invalid EPUB). 2026-06-15 review P0 fix.
+  const _has = (i) => !hasAudio || hasAudio[i];
+  const audioItems = (segments || []).map((s, i) => _has(i) ? '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + '.' + _ext + '" media-type="' + _mime + '"/>' : '').filter(Boolean).join('\n');
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n' +
     '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n' +
@@ -1515,14 +1526,15 @@ function PdfAuditView(props) {
       const mime = isWav ? 'audio/wav' : 'audio/mpeg';
       const totalSec = durations.reduce((a, b) => a + (b || 0), 0);
       const withAudio = audioBlobs.filter(Boolean).length;
+      const _hasAudio = audioBlobs.map(Boolean); // which segments actually got a clip
       const zip = new window.JSZip();
       zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
       zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
       let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + '</title></head><body>' + bodyHtml + '</body></html>';
       xhtml = xhtml.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
       zip.file('OEBPS/content.xhtml', xhtml);
-      zip.file('OEBPS/content.smil', _buildMoSmil(segments, durations, ext));
-      zip.file('OEBPS/content.opf', _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime));
+      zip.file('OEBPS/content.smil', _buildMoSmil(segments, durations, ext, _hasAudio));
+      zip.file('OEBPS/content.opf', _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio));
       zip.file('OEBPS/nav.xhtml', '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + '</a></li></ol></nav></body></html>');
       for (let i = 0; i < audioBlobs.length; i++) { if (audioBlobs[i]) zip.file('OEBPS/audio/seg' + (i + 1) + '.' + ext, audioBlobs[i]); }
       const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });

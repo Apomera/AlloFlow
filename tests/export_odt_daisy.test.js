@@ -177,3 +177,23 @@ describe('ODT / DAISY footnotes (2026-06-15 — were silently dropped)', () => {
     expect(xml).toContain('First note');
   });
 });
+
+describe('EPUB3 MO — blob-less segments (2026-06-15 P0: one failed TTS must not invalidate the EPUB)', () => {
+  const segs = [{ id: 'mo1', text: 'a' }, { id: 'mo2', text: 'b' }, { id: 'mo3', text: 'c' }];
+  it('SMIL emits a text-only par (no <audio>) for a blob-less segment', () => {
+    const smil = _buildMoSmil(segs, [2, 0, 3], 'mp3', [true, false, true]);
+    expect(parseXml(smil).wellFormed).toBe(true);
+    expect((smil.match(/<par /g) || []).length).toBe(3);    // all blocks still tracked
+    expect((smil.match(/<audio /g) || []).length).toBe(2);  // only the 2 with a clip
+    expect(smil).not.toContain('audio/seg2.mp3');           // blob-less par references no file
+  });
+  it('OPF manifests only the audio clips that exist (no dangling resource)', () => {
+    const opf = _buildMoOpf('Doc', 'en', segs, 5, '2026-06-15T00:00:00Z', 'mp3', 'audio/mpeg', [true, false, true]);
+    expect(parseXml(opf).wellFormed).toBe(true);
+    expect((opf.match(/audio\/seg\d+\.mp3/g) || []).length).toBe(2);
+    expect(opf).not.toContain('audio/seg2.mp3');
+  });
+  it('back-compat: omitting hasAudio keeps all-present behavior', () => {
+    expect((_buildMoSmil(segs, [1, 2, 3], 'mp3').match(/<audio /g) || []).length).toBe(3);
+  });
+});
