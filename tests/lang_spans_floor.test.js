@@ -24,13 +24,24 @@ describe('fixLangSpans — deterministic language-of-parts floor (§3)', () => {
   it('tags Amharic (Ethiopic) script as lang="am"', () => {
     expect(wrap('ሰላም ለዓለም')).toContain('<span lang="am">');
   });
-  it('tags Burmese (Myanmar) script as lang="my"', () => {
-    expect(wrap('မင်္ဂလာပါ ကမ္ဘာ')).toContain('<span lang="my">');
+  it('does NOT deterministically tag Myanmar script (Karen also uses it — left to the VLM)', () => {
+    expect(wrap('မင်္ဂလာပါ ကမ္ဘာ')).not.toContain('lang="my"');
   });
   it('still tags the previously-covered scripts (no regression)', () => {
     expect(wrap('Привет мир друзья')).toContain('lang="ru"');
     expect(wrap('مرحبا بالعالم')).toContain('lang="ar"');
     expect(wrap('안녕하세요 여러분')).toContain('lang="ko"');
+  });
+
+  // 2026-06-15 review fixes (rawtext skip + RTL dir; zh/ja kana-disambiguation and
+  // dropping Myanmar were deferred — they need editing the literal-Unicode ranges).
+  it('adds dir="rtl" to Arabic / Hebrew language-of-parts spans', () => {
+    expect(wrap('مرحبا بالعالم')).toContain('dir="rtl"');
+    expect(wrap('שלום עולם חברים')).toContain('dir="rtl"');
+  });
+  it('never injects a <span> inside a rawtext element like <title>', () => {
+    const r = fixLangSpans('<title>مرحبا بالعالم</title>');
+    expect(r.html).not.toContain('<span');
   });
   it('leaves plain English untouched and reports zero fixes', () => {
     const r = fixLangSpans('<p>Just plain English here.</p>');

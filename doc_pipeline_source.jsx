@@ -9221,20 +9221,26 @@ HTML section ${chunkNum}/${chunks.length}:
       // vision call (Latin-script language-of-parts still needs the VLM/LID pass).
       { lang: 'bn', pattern: /([\u0980-\u09FF][\u0980-\u09FF\s,.!?;:'"()-]{1,})/g },
       { lang: 'am', pattern: /([\u1200-\u137F][\u1200-\u137F\s,.!?;:'"()-]{1,})/g },
-      { lang: 'my', pattern: /([\u1000-\u109F][\u1000-\u109F\s,.!?;:'"()-]{1,})/g },
     ];
 
     // Only touch text inside visible content tags — skip text already inside <span lang="...">
     // Use a broader regex that captures the preceding tag so we can check for existing lang attr
     fixed = fixed.replace(/(<[^>]*>)([^<]+)/g, (match, precedingTag, textContent) => {
       // Skip if this text node is already inside a <span lang="..."> — prevents double-wrapping
+      // Skip rawtext / escapable-rawtext elements — a <span> injected inside
+      // <title>/<style>/<script>/<textarea> is invalid or renders as visible markup
+      // (2026-06-15 review fix; bit non-Latin <title>s, incl. the new bn/am docs).
+      if (/^<\s*(?:title|style|script|textarea)\b/i.test(precedingTag)) return match;
       if (/<span\b[^>]*\blang\s*=/i.test(precedingTag)) return match;
       let newText = textContent;
       for (const { lang, pattern } of scriptRanges) {
         newText = newText.replace(pattern, (runMatch) => {
           if (runMatch.trim().length < 2) return runMatch;
           fixCount++;
-          return `<span lang="${lang}">${runMatch}</span>`;
+          // RTL scripts need a direction so boundary neutrals (punctuation) render on
+          // the correct side under weak-bidi (2026-06-15 review fix).
+          const _dir = (lang === 'ar' || lang === 'he') ? ' dir="rtl"' : '';
+          return `<span lang="${lang}"${_dir}>${runMatch}</span>`;
         });
       }
       return precedingTag + newText;
