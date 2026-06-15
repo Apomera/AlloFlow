@@ -18085,7 +18085,15 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           if (_coverage < 0.99) {
             const _msg = 'Text-level verification: ' + _missing.length + ' tokens missing total (' + Math.round(_coverage * 100) + '% coverage). Of those, ' + _normEquivCount + ' differ only in hyphenation/whitespace/case (likely cosmetic) and ' + _residualCount + ' are residual (review). The [Re-run with restoration] action gates on residual count.';
             (_roundTrip.warnings = _roundTrip.warnings || []).push(_msg);
-            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Text content survived save (token coverage)', status: _coverage < 0.95 ? 'fail' : 'warn', detail: Math.round(_coverage * 100) + '% (' + _shared + '/' + _origTokens.size + ' tokens; ' + _residualCount + ' residual)' });
+            const _covStatus = _coverage < 0.95 ? 'fail' : 'warn';
+            (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Text content survived save (token coverage)', status: _covStatus, detail: Math.round(_coverage * 100) + '% (' + _shared + '/' + _origTokens.size + ' tokens; ' + _residualCount + ' residual)' });
+            // KEYSTONE GATE FIX (2026-06-15): fold a >5% token-coverage LOSS into roundTrip.ok.
+            // The structural _rtFailed/ok was finalized at ~17971 BEFORE this text diff ran, so
+            // without this a shipped PDF silently missing words returned ok:true and sailed past
+            // BOTH gates (batch EXCLUDE on ok===false ~7696; single-file UNVERIFIED decision panel
+            // ~7228). Matches the documented intent (~15230) that <99% text coverage exposes this
+            // bug class; a 'warn' (95-99%) still ships, only a 'fail' (<95%) downgrades the check.
+            if (_covStatus === 'fail') _roundTrip.ok = false;
             if (_normEquivCount > 0) {
               (_roundTrip.checks = _roundTrip.checks || []).push({ rule: 'Normalization-equivalent missing tokens (cosmetic)', status: 'info', detail: _normEquivCount + ' tokens differ only in hyphenation/whitespace/case' });
             }
