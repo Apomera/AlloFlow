@@ -6750,14 +6750,18 @@ window.StemLab = window.StemLab || {
       var addPiece = function(denom) {
         var newPieces = manipPieces.concat([{ n: 1, d: denom, id: Date.now() + Math.random() }]);
         upd({ manipPieces: newPieces });
+        announceToSR('Added 1/' + denom + '. ' + newPieces.length + ' pieces, total ' + newPieces.reduce(function(a,p){return a+p.n/p.d;},0).toFixed(2) + '.');
         sfxClick();
       };
       var removePiece = function(id) {
-        upd({ manipPieces: manipPieces.filter(function(p) { return p.id !== id; }) });
+        var _rem = manipPieces.filter(function(p) { return p.id !== id; });
+        upd({ manipPieces: _rem });
+        announceToSR('Removed piece. ' + _rem.length + ' pieces remaining.');
         sfxClick();
       };
       var clearPieces = function() {
         upd({ manipPieces: [] });
+        announceToSR('Workspace cleared.');
       };
       var totalVal = manipPieces.reduce(function(acc, p) { return acc + (p.n / p.d); }, 0);
 
@@ -6780,7 +6784,9 @@ window.StemLab = window.StemLab || {
             var active = manipType === m;
             return h('button', {
               key: 'mtt-' + m,
-              onClick: function() { upd({ manipType: m }); },
+              onClick: function() { upd({ manipType: m }); announceToSR(m + ' view'); },
+              'aria-pressed': active,
+              'aria-label': m + ' view',
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold transition-all capitalize ' +
                 (active ? 'bg-orange-700 text-white' : 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100')
             }, m);
@@ -6793,6 +6799,7 @@ window.StemLab = window.StemLab || {
               return h('button', {
                 key: 'mp-' + d,
                 onClick: function() { addPiece(d); },
+                'aria-label': 'Add 1/' + d + ' piece',
                 className: 'px-3 py-2 rounded text-sm font-bold bg-orange-100 text-orange-800 hover:bg-orange-300 border border-orange-300 font-mono'
               }, '1/' + d);
             })
@@ -6801,7 +6808,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-[11px] font-bold text-orange-700' }, 'Workspace (' + manipPieces.length + ' pieces, total = ' + totalVal.toFixed(3) + '):'),
-            h('button', { onClick: clearPieces,
+            h('button', { onClick: clearPieces, 'aria-label': 'Clear workspace',
               disabled: manipPieces.length === 0,
               className: 'px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 disabled:opacity-40' },
               '↺ Clear'
@@ -6817,13 +6824,13 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'flex gap-1 flex-wrap' },
                       pieces.map(function(p) {
                         if (manipType === 'circles') {
-                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: 'Remove', style: { width: 50 } },
+                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: 'Remove', 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 50 } },
                             drawPie(p.n, p.d, 40, palMain));
                         } else if (manipType === 'bars') {
-                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: 'Remove', style: { width: 100 } },
+                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: 'Remove', 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 100 } },
                             drawBar(p.n, p.d, palMain));
                         } else {
-                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: 'Remove', style: { width: 80 } },
+                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: 'Remove', 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 80 } },
                             drawLengthModel(p.n, p.d, { width: 80, height: 24 }));
                         }
                       })
