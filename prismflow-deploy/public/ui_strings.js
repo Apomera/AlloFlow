@@ -1529,6 +1529,15 @@
     "braille_file_downloaded_grade_brf": "⠃⠗⠇ Braille file downloaded (Grade 1 BRF)",
     "plain_text_downloaded": "📝 Plain text downloaded",
     "markdown_downloaded": "📋 Markdown downloaded",
+    "html_downloaded": "🌐 HTML downloaded — opens in any browser.",
+    "odt_downloaded": "📄 OpenDocument (.odt) downloaded — opens in LibreOffice, Google Docs, or Word.",
+    "daisy_downloaded": "🔊 DAISY talking-book package (.zip) downloaded — open in a DAISY reader.",
+    "mo_no_voice": "The voice service is unavailable, so read-along audio can’t be generated right now.",
+    "mo_busy": "A read-along export is already running.",
+    "mo_no_text": "No readable text found to narrate.",
+    "mo_no_audio": "⚠ Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.",
+    "mo_done": "Read-along ebook downloaded",
+    "audio_unavailable_now": "Audio is unavailable right now (a job may be running, or the voice service is off).",
     "command_applied": "✅ Command applied!",
     "changes_applied": "ℹ️ No changes applied",
     "workbench_failed": "❌ Workbench failed: ",
@@ -4615,6 +4624,33 @@
     "alt_formats": {
       "intro": "Download the remediated document in accessible alternative formats"
     },
+    "export_menu": {
+      "button": "Export / Download",
+      "aria": "Export formats",
+      "intro": "Download the remediated document in any format — pick the one that fits how it’ll be used.",
+      "group_docs": "Documents",
+      "tagged_pdf": "Tagged PDF (PDF/UA — give to students)",
+      "word": "Word (.docx — keep editing)",
+      "pptx": "PowerPoint (.pptx — present it)",
+      "html": "HTML (opens anywhere, no software)",
+      "group_access": "Accessible formats",
+      "daisy": "DAISY talking book (full text)",
+      "daisy_title": "DAISY 3 (DTBook) full-text talking-book package. Open in a DAISY reader, which provides speech, braille, or large print. (For synced read-aloud audio, use Read-along below.)",
+      "readalong": "Read-along ebook (synced audio)",
+      "readalong_progress": "Narrating… {done}/{total}",
+      "readalong_title": "Read-along ebook (EPUB3 Media Overlays): generates text-to-speech for each paragraph and syncs it to the text so a reading system highlights words as they’re spoken. Makes many voice calls — can take a few minutes.",
+      "group_text": "Text & editable",
+      "odt": "ODT (LibreOffice / Google Docs)",
+      "odt_title": "OpenDocument Text — opens natively in LibreOffice and Google Docs (and Word).",
+      "group_audio": "Audio narration",
+      "audio": "Audio narration (standard)",
+      "audio_title": "Spoken narration of the document (MP3/WAV).",
+      "audio_sr": "Audio (screen-reader style)",
+      "audio_sr_title": "Same voice, but announcing structure the way a screen reader would (heading levels, list counts, table rows, image alts)."
+    },
+    "mo": {
+      "confirm": "Build a read-along ebook? This narrates {n} text sections with text-to-speech — about {n} voice calls, which can take a few minutes."
+    },
     "expert": {
       "command_aria": "Expert remediation command",
       "log_aria": "Agent activity log"
@@ -6236,7 +6272,10 @@
     "pdf_audit_alt_formats_epub_btn": "Save the remediated document as an ePub file with table of contents and accessibility metadata. Works on Kindle, Apple Books, and most mobile readers — students can change font size, color, and reading speed.",
     "pdf_audit_alt_formats_braille_btn": "Save a Grade-1 (uncontracted) Braille file that can be embossed on a Braille printer or sent to a refreshable Braille display. For Grade-2 contractions, hand the file to a TVI (teacher of students with visual impairments) for finishing.",
     "pdf_audit_alt_formats_text_btn": "Save a plain .txt file with all formatting stripped out — easiest format for screen readers, large-print conversion, or pasting into another tool.",
-    "pdf_audit_alt_formats_markdown_btn": "Save the document as Markdown — drops cleanly into Canvas, Schoology, or D2L pages, Google Docs (via paste), wikis, and GitHub-style notes without losing headings or links."
+    "pdf_audit_alt_formats_markdown_btn": "Save the document as Markdown — drops cleanly into Canvas, Schoology, or D2L pages, Google Docs (via paste), wikis, and GitHub-style notes without losing headings or links.",
+    "pdf_audit_alt_formats_daisy_btn": "Save a DAISY 3 full-text talking-book package. DAISY readers (common in special education) add their own speech, braille, or large print with full navigation. Text-only here — for synced read-aloud, use Read-along ebook.",
+    "pdf_audit_alt_formats_readalong_btn": "Build a read-along ebook (EPUB3 Media Overlays): each paragraph is narrated with text-to-speech and synced to the text so words highlight as they're spoken. One voice call per section, so it can take a few minutes.",
+    "pdf_audit_alt_formats_odt_btn": "Save an OpenDocument Text (.odt) file — native to LibreOffice and Google Docs (Word opens it too). Use it when your school isn't all-Microsoft but you still want an editable document with structure intact."
   },
   "groups": {
     "title": "Differentiation Groups",
