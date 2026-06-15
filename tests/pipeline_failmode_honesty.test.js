@@ -65,3 +65,43 @@ describe('chunked output audit — honest about partial coverage when chunks fai
     expect(src).toContain('_partialAudit: _partialAudit');
   });
 });
+
+describe('multi-chunk text transform — failed chunks are auto-retried before placeholdering', () => {
+  // mirror of the shipped retry loop structure
+  async function retryFailed(results, attemptFn, maxRetries) {
+    let idx = [];
+    for (let i = 0; i < results.length; i++) if (!results[i]) idx.push(i);
+    for (let att = 1; att <= maxRetries && idx.length > 0; att++) {
+      const still = [];
+      for (const i of idx) { const r = await attemptFn(i, att); if (r) results[i] = r; else still.push(i); }
+      idx = still;
+    }
+    return { results, stillFailed: idx.length };
+  }
+
+  it('recovers a chunk that fails the batch but succeeds on a fresh retry (no dropped page)', async () => {
+    const out = await retryFailed(['ok', null, 'ok'], (i, att) => (i === 1 ? 'recovered' : null), 2);
+    expect(out.results[1]).toBe('recovered');
+    expect(out.stillFailed).toBe(0);
+  });
+  it('recovers a chunk that only succeeds on the SECOND retry attempt', async () => {
+    const out = await retryFailed(['ok', null], (i, att) => (att === 2 ? 'late' : null), 2);
+    expect(out.results[1]).toBe('late');
+    expect(out.stillFailed).toBe(0);
+  });
+  it('a persistently-failing chunk remains failed after 2 retries (→ placeholder + integrity warning)', async () => {
+    const out = await retryFailed(['ok', null], () => null, 2);
+    expect(out.stillFailed).toBe(1);
+  });
+  it('no failures → no retry work', async () => {
+    let calls = 0;
+    const out = await retryFailed(['a', 'b'], () => { calls++; return 'x'; }, 2);
+    expect(calls).toBe(0);
+    expect(out.stillFailed).toBe(0);
+  });
+
+  it('anti-drift: the retry pass + residual-failure record are live in source', () => {
+    expect(src).toContain('Retry pass ${_att}: re-running');
+    expect(src).toContain('window.__lastTransformFragmentFailures = _retryIdx.length');
+  });
+});

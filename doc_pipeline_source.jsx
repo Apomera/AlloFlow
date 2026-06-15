@@ -6435,6 +6435,29 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         for (const { ci, result } of batchResults) chunkResults[ci] = result;
         if (batchEnd < textChunks.length) await new Promise(r => setTimeout(r, 500));
       }
+      // Auto-retry any chunk that came back null. callGemini's _withRetry only retries transient
+      // errors WITHIN a single attempt; a FRESH attempt after the batch recovers a chunk that hit
+      // a momentary timeout / quota / RECITATION blip — so a transient failure no longer silently
+      // becomes a dropped page. Up to 2 sequential retries with backoff; whatever still fails falls
+      // through to the honest placeholder below AND the text-loss integrity gate (which now demotes
+      // the success toast). (failed-chunk auto-retry, 2026-06-15)
+      let _retryIdx = [];
+      for (let ci = 0; ci < textChunks.length; ci++) if (!chunkResults[ci]) _retryIdx.push(ci);
+      for (let _att = 1; _att <= 2 && _retryIdx.length > 0; _att++) {
+        warnLog(`[Transform] Retry pass ${_att}: re-running ${_retryIdx.length} failed chunk(s)`);
+        const _stillFailed = [];
+        for (const ci of _retryIdx) {
+          const meta = { isFirst: ci === 0, isLast: ci === textChunks.length - 1, chunkIdx: ci, totalChunks: textChunks.length };
+          try {
+            const r = await callGemini(buildTransformPrompt(textChunks[ci], meta), false);
+            if (r) chunkResults[ci] = r; else _stillFailed.push(ci);
+          } catch (e) { warnLog(`[Transform] Chunk ${ci + 1} retry ${_att} failed:`, e && e.message); _stillFailed.push(ci); }
+          await new Promise(res => setTimeout(res, 400));
+        }
+        _retryIdx = _stillFailed;
+      }
+      try { if (typeof window !== 'undefined') window.__lastTransformFragmentFailures = _retryIdx.length; } catch (_) {}
+      if (_retryIdx.length > 0) warnLog(`[Transform] ${_retryIdx.length} chunk(s) still failed after 2 retries — placeholder + integrity warning will flag them`);
       // Strip markdown fences from each chunk and join
       const cleanChunks = chunkResults.map((r, i) => {
         if (!r) return `<section aria-label="Fragment ${i + 1} failed to process"><p>[Fragment ${i + 1} could not be transformed]</p></section>`;
