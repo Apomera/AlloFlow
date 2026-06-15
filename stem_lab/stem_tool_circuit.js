@@ -509,6 +509,7 @@ window.StemLab = window.StemLab || {
           var ohmScore = d.ohmScore || 0;
           var ohmStreak = d.ohmStreak || 0;
           var shortTriggered = d.shortTriggered || false;
+          var _prefersReducedMotion = (typeof window !== 'undefined' && window.matchMedia) ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
           var presetsLoaded = d.presetsLoaded || 0;
           var presetsLoadedSet = d.presetsLoadedSet || {};
           var challengesDoneSet = d.challengesDoneSet || {};
@@ -629,7 +630,7 @@ window.StemLab = window.StemLab || {
           // ── Electron animation (managed without useEffect) ──
           var W = 440, H = 200;
 
-          if (current > 0.001 && !isShort) {
+          if (current > 0.001 && !isShort && !_prefersReducedMotion) {
             if (window._circuitAnimTimer) clearTimeout(window._circuitAnimTimer);
             window._circuitAnimTimer = setTimeout(function() {
               upd('tick', (tick + 1) % 400);
@@ -728,6 +729,7 @@ window.StemLab = window.StemLab || {
 
           // ── AI Tutor ──
           var askAI = function() {
+            if (aiLoading) return;
             if (!aiQuestion || !aiQuestion.trim()) return;
             updMulti({ _aiLoading: true, _aiResponse: '' });
             var prompt = 'You are a friendly electronics tutor. ' +
@@ -824,7 +826,7 @@ window.StemLab = window.StemLab || {
               // Mode buttons
               h('div', { className: 'flex gap-1 ml-auto' },
                 ['series', 'parallel'].map(function(m) {
-                  return h('button', { key: m,
+                  return h('button', { key: m, 'aria-pressed': mode === m,
                     onClick: function() { upd('mode', m); },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200')
                   }, m);
@@ -1204,7 +1206,7 @@ window.StemLab = window.StemLab || {
                     }
                     
                     canvas.particles = canvas.particles.filter(function(pt) { return pt.life > 0; });
-                    requestAnimationFrame(loop);
+                    if (!_prefersReducedMotion) requestAnimationFrame(loop);
                   }
                   
                   requestAnimationFrame(loop);
@@ -1373,7 +1375,7 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Readout cards (4 metrics)
             // ══════════════════════════════════════
-            h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2' },
+            h('div', { className: 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
               [
                 { label: 'Mode', val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
                 { label: 'Resistance', val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
@@ -1474,12 +1476,12 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Open/Short circuit warnings
             // ══════════════════════════════════════
-            isOpen && h('div', { className: 'mt-4 bg-amber-950/20 rounded-xl border border-amber-500/40 p-4 text-center' },
+            isOpen && h('div', { role: 'alert', className: 'mt-4 bg-amber-950/20 rounded-xl border border-amber-500/40 p-4 text-center' },
               h('p', { className: 'text-base font-black text-amber-400' }, '\uD83D\uDD13 CIRCUIT OPEN'),
               h('p', { className: 'text-xs text-amber-500/90 mt-1' }, 'A switch is open - no current flows. Close all switches to complete the circuit.')
             ),
 
-            isShort && h('div', { className: 'mt-4 bg-red-950/30 rounded-xl border border-red-500/40 p-4 text-center short-active-flash' },
+            isShort && h('div', { role: 'alert', className: 'mt-4 bg-red-950/30 rounded-xl border border-red-500/40 p-4 text-center short-active-flash' },
               h('p', { className: 'text-base font-black text-red-400' }, '\u26A0\uFE0F SHORT CIRCUIT DETECTED'),
               h('p', { className: 'text-xs text-red-400/90 mt-1' }, 'Total resistance is below 1\u03A9! In real life, this could damage components or cause a fire. Add more resistance.')
             ),
@@ -1638,14 +1640,14 @@ window.StemLab = window.StemLab || {
                   onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
                   className: 'flex-1 px-3 py-2 text-xs border border-blue-800 bg-slate-950/80 text-slate-100 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500'
                 }),
-                h('button', { 'aria-label': 'AI is thinking...',
+                h('button', { 'aria-label': aiLoading ? 'AI is thinking' : 'Ask the AI tutor', 'aria-busy': aiLoading,
                   onClick: askAI,
                   disabled: aiLoading,
                   className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10')
                 }, aiLoading ? 'Thinking...' : 'Ask')
               ),
               aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse' }, 'AI is thinking...'),
-              aiResponse && h('div', { className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
+              aiResponse && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 bg-slate-950/80 rounded-lg p-3 border border-blue-900/50 text-xs text-blue-200 whitespace-pre-wrap leading-relaxed' }, aiResponse),
               // Quick-ask suggestions
               h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
                 ["What is Ohm's Law?", 'Series vs parallel?', 'What is a short circuit?', 'How do capacitors work?', 'What does an ammeter measure?'].map(function(q) {
