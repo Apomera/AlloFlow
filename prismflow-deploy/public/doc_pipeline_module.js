@@ -166,6 +166,27 @@ function _chunkHtmlPreview(s) {
   return str.length > 2200 ? str.slice(0, 2200) : str;
 }
 
+// Stamp scope on scope-less <th> with GRID GEOMETRY, not a blanket scope="col": a header in
+// the first row / <thead> labels its column (scope="col"), but a <th> in a LATER row is a
+// left-column ROW header (scope="row") — blanket "col" makes a screen reader announce the wrong
+// header axis (e.g. a gradebook row label read as a column). Per-table, per-row token walk;
+// explicit AI-declared scope is preserved (the negative lookahead). Fail-safe: any error returns
+// the original html (today's behavior), so it can never corrupt output. (th-scope-geometry)
+function _stampThScopeGeometryAware(html) {
+  try {
+    return String(html).replace(/<table\b[\s\S]*?<\/table>/gi, function (tableHtml) {
+      let inThead = false, rowIdx = -1;
+      return tableHtml.replace(/<thead\b[^>]*>|<\/thead\s*>|<tr\b[^>]*>|<th(?![^>]*scope)([^>]*)>/gi, function (m, attrs) {
+        if (/^<thead/i.test(m)) { inThead = true; return m; }
+        if (/^<\/thead/i.test(m)) { inThead = false; return m; }
+        if (/^<tr/i.test(m)) { rowIdx++; return m; }
+        const sc = (inThead || rowIdx <= 0) ? 'col' : 'row'; // header row → col; later row → row
+        return '<th scope="' + sc + '"' + (attrs || '') + '>';
+      });
+    });
+  } catch (_) { return html; }
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -4885,8 +4906,12 @@ var createDocPipeline = function(deps) {
         words: (Array.isArray(_tp.words) && _tp.words.length ? _tp.words : null),
         pageW: (typeof _tp.pageW === 'number' ? _tp.pageW : null),
         pageH: (typeof _tp.pageH === 'number' ? _tp.pageH : null) });
-      // Flag disagreement if length gap > 10% or > 20 chars absolute.
-      if (longest > 0 && (Math.abs(tLen - vLen) > Math.max(20, longest * 0.1))) {
+      // Flag disagreement if length gap > 10% or > 20 chars absolute — but ONLY when BOTH
+      // engines produced text for this page. An empty side is a pagination artifact (single-pass
+      // Vision returns one pseudo-page for a multi-page range) or a total per-engine failure,
+      // already handled by "longest wins" — not a content conflict, so it must not raise the
+      // scary "engines disagree" flag on small scanned handouts. (ocr false-alarm)
+      if (longest > 0 && tLen > 0 && vLen > 0 && (Math.abs(tLen - vLen) > Math.max(20, longest * 0.1))) {
         disagreements.push({ pageNum: i + 1, tesseractChars: tLen, visionChars: vLen, tesseractText: tText, visionText: vText });
       }
     }
@@ -6532,7 +6557,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     }
 
     // 5. Ensure all tables have scope on th elements
-    accessibleHtml = accessibleHtml.replace(/<th(?![^>]*scope)/gi, () => { aiFixCount++; return '<th scope="col"'; });
+    { const _thN = (accessibleHtml.match(/<th(?![^>]*scope)/gi) || []).length; accessibleHtml = _stampThScopeGeometryAware(accessibleHtml); aiFixCount += _thN; } // geometry-aware scope (th-scope-geometry)
 
     // 6. Ensure all links have descriptive text (not empty)
     accessibleHtml = accessibleHtml.replace(/<a([^>]*)>\s*<\/a>/gi, (match, attrs) => {
@@ -7397,7 +7422,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const _failList = failed.length > 0
       ? ` \u00b7 Failed: ${failed.slice(0, 3).map(q => q.fileName).join(', ')}${failed.length > 3 ? ` + ${failed.length - 3} more` : ''}`
       : '';
-    addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${done.length ? Math.round(done.reduce((s, q) => s + ((q.result?.afterScore || 0) - (q.result?.beforeScore || 0)), 0) / done.length) : 0} points)${_failList}`, failed.length > 0 ? 'warning' : 'success');
+    addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, failed.length > 0 ? 'warning' : 'success');
     // Audio: triumphant chord when batch finishes
     try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
   };
@@ -7472,7 +7497,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,EA Fails,EA Score,Time (s),Expert Review,Tagged PDF,Status'];
     pdfBatchQueue.forEach(f => {
       const r = f.result;
-      csvRows.push(`${_csvCell(f.fileName)},${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},${_csvCell(_taggedNotes.get(f.id) || '')},${f.status}`);
+      csvRows.push(`${_csvCell(f.fileName)},${r?.beforeScore || ''},${r?.afterScore || ''},${r && r.afterScore != null && r.beforeScore != null ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},${_csvCell(_taggedNotes.get(f.id) || '')},${f.status}`);
     });
     zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
 
@@ -7491,7 +7516,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
 
     const done = pdfBatchQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>+'+(r?(r.afterScore-r.beforeScore):'\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':'\u274c '+_escRpt(f.error||''))+'</td></tr>';}).join('')}</tbody></table></body></html>`;
+    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':'\u274c '+_escRpt(f.error||''))+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -13254,10 +13279,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
 
         // 5. Ensure all tables have scope on th elements
-        accessibleHtml = accessibleHtml.replace(/<th(?![^>]*scope)/gi, () => {
-          aiFixCount++;
-          return '<th scope="col"';
-        });
+        { const _thN = (accessibleHtml.match(/<th(?![^>]*scope)/gi) || []).length; accessibleHtml = _stampThScopeGeometryAware(accessibleHtml); aiFixCount += _thN; } // geometry-aware scope (th-scope-geometry)
 
         // 6. Ensure all links have descriptive text (not empty)
         accessibleHtml = accessibleHtml.replace(/<a([^>]*)>\s*<\/a>/gi, (match, attrs) => {
