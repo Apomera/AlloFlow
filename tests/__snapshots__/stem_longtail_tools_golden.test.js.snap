@@ -32,10 +32,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for codingPlayground 1`] = `
 {
-  "buttons": 54,
+  "buttons": 58,
   "inputs": 3,
-  "lengthBucket": 163,
-  "sha": "ae822705e61728f1",
+  "lengthBucket": 172,
+  "sha": "ebded24cff0b8553",
   "svgs": 1,
 }
 `;

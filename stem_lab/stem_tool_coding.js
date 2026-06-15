@@ -723,7 +723,11 @@
             { id: 'spiral', title: '7. Spiral', desc: 'Create a spiral that grows outward.', concept: 'Variables in Loops', hint: 'This is tricky! Try increasing the distance each time.', check: function (lines) { return lines.length >= 10; } },
             { id: 'hexagon', title: '8. Hexagon Hero', desc: 'Draw a perfect regular hexagon.', concept: 'Math + Patterns', hint: 'Repeat 6×: Move Forward 60, Turn Right 60°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6 && Math.abs(ex.turns - 360) < 15; } },
             { id: 'freestyle', title: '9. Freestyle!', desc: 'Create any drawing with 20+ line segments.', concept: 'Creativity', hint: 'Combine everything you\'ve learned!', check: function (lines) { return lines.length >= 20; } },
-            { id: 'house', title: '10. Build a House', desc: 'Draw a house: a square base with a triangle roof on top.', concept: 'Decomposition', hint: 'Draw a square, then use Pen Up to move, then draw a triangle for the roof. Think about angles: square = 90°, triangle = 120°.', check: function (lines) { return lines.length >= 7 && getEndpoints(lines.slice(0, 4)).segments >= 4; } }
+            { id: 'house', title: '10. Build a House', desc: 'Draw a house: a square base with a triangle roof on top.', concept: 'Decomposition', hint: 'Draw a square, then use Pen Up to move, then draw a triangle for the roof. Think about angles: square = 90°, triangle = 120°.', check: function (lines) { return lines.length >= 7 && getEndpoints(lines.slice(0, 4)).segments >= 4; } },
+            { id: 'w_square', kind: 'worked', title: '\uD83D\uDCD6 Worked: Square', desc: 'Study this finished square, then click Run to watch it draw.', concept: 'Sequencing', hint: 'Notice the pattern: move, turn, repeated four times.', seedBlocks: [{ type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }], check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 4; } },
+            { id: 'f_loopsquare', kind: 'faded', title: '\uD83E\uDDE9 Fix: Loop Square', desc: 'This loop should draw a square but it is missing the turn. Add a Turn Right 90 inside the Repeat.', concept: 'Loops', hint: 'Add Turn Right 90 after the Move Forward, inside the Repeat block.', seedBlocks: [{ type: 'repeat', times: 4, children: [{ type: 'forward', distance: 100 }] }], check: function (lines, blks) { return blks.some(function (b) { return b.type === 'repeat'; }) && getEndpoints(lines).closed && lines.length >= 4; } },
+            { id: 'w_triangle', kind: 'worked', title: '\uD83D\uDCD6 Worked: Triangle', desc: 'A finished triangle made with a loop. Run it, then read how it works.', concept: 'Loops + Angles', hint: 'Repeat three times: move forward, then turn 120.', seedBlocks: [{ type: 'repeat', times: 3, children: [{ type: 'forward', distance: 120 }, { type: 'right', degrees: 120 }] }], check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 3 && Math.abs(ex.turns - 360) < 15; } },
+            { id: 'f_hexagon', kind: 'faded', title: '\uD83E\uDDE9 Fix: Hexagon', desc: 'Almost a hexagon. Add the missing turn inside the loop to close it.', concept: 'Patterns', hint: 'Add Turn Right 60 after the Move Forward, inside the Repeat block.', seedBlocks: [{ type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }] }], check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6; } }
           ];
 
           // ── Starter Templates ──
@@ -1405,6 +1409,14 @@
           }
 
           // ── Load template ──
+          function seedChallenge(ch, ci) {
+            if (blocks.length > 0 && typeof confirm === 'function' && !confirm('Replace your current program with this example?')) return;
+            pushUndo();
+            var sb = JSON.parse(JSON.stringify(ch.seedBlocks || []));
+            updMulti({ blocks: sb, challengeIdx: ci });
+            if (codeMode === 'text') upd('textCode', blocksToText(sb));
+            if (addToast) addToast((ch.kind === 'worked' ? 'Study this example, then click Run: ' : 'Finish this one: ') + ch.title, 'info');
+          }
           function loadTemplate(tmpl) {
             if (blocks.length > 0 && !confirm('Replace current program with template?')) return;
             pushUndo();
@@ -2593,7 +2605,7 @@
                     var active = challengeIdx === ci;
                     return React.createElement("button", { "aria-label": "Select challenge: " + ch.title,
                       key: ch.id,
-                      onClick: function () { upd('challengeIdx', active ? -1 : ci); },
+                      onClick: function () { if (active) { upd('challengeIdx', -1); } else if (ch.seedBlocks) { seedChallenge(ch, ci); } else { upd('challengeIdx', ci); } },
                       className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
                         (done ? 'bg-green-900/40 text-green-300 border border-green-700/50' :
                           active ? 'bg-indigo-900/60 text-indigo-200 border border-indigo-500/50 ring-1 ring-indigo-400' :
