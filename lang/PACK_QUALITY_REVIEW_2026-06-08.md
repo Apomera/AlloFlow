@@ -174,3 +174,33 @@ Lowercased standalone labels, wrong case (помилки genitive), "насту�
 | hindi | excellent | 0/0/0/1 | llm-native |
 
 *Generated from workflow wf_2561df8f-65b. Full per-finding detail in the task output JSON.*
+
+---
+
+## RESOLUTION (2026-06-14) — all findings addressed
+
+Status of every finding from this review. All work is committed to local `main`
+(deploy HELD pending tree coordination per Aaron); mirror regenerates via deploy.sh.
+
+| Finding | Status | Commit(s) |
+|---|---|---|
+| 1 — alerts/confirms half-Spanglish (242+ keys) | **FIXED** — structural-Spanglish 242→0; ~913 keys re-translated across 31 packs | f330b0c9, f48ab681 |
+| (preventive) CI guard | **ADDED** — `check_safety_string_spanglish.cjs`, BLOCKING in verify_all + verify:gate | 616dbb21 |
+| 2 — maay_maay is wrong language | **HUMAN DECISION** — verified it is Standard Somali (Af-Maxaa), not Maay Maay (Af-Maay). Cannot produce real Af-Maay without a native source (fabrication would be worse). Options for Aaron: (a) relabel the pack as a Somali variant, or (b) recruit an Af-Maay translator. Left untouched. | — |
+| 3 — common.* outright errors (low-resource) | **FIXED** — verified per-language (web-backed): lingala Delete kill→remove, yoruba/acholi/chin_hakha/marshallese/somali/ukrainian/etc. | b1a00e9d |
+| 4 — corruption residue | **FIXED** (real ones) — angola "Cancelarar", urdu/pashto/dari/farsi scrambled subtitles, tamil danda, yoruba tone, etc. **Latin common.close="Claude" confirmed FALSE POSITIVE** (correct Latin imperative of *claudere*) — left as-is. | b1a00e9d |
+| 5 — sister-pack dialect bleed | **FIXED** — PT-Portugal/Angola BR→PT-PT sweep; Spanish Castilian/LATAM term fixes | b1a00e9d |
+| 6 — Ukrainian common.* caps/case | **FIXED** — capitalization + "Далі" for Next | b1a00e9d |
+| 4 socket-failed packs (never reviewed) | **REVIEWED + FIXED** — found SYSTEMIC breakage: korean (~196) + punjabi (~78) common.* word-salad MT; chinese_traditional + hebrew smaller fixes | b1a00e9d |
+| Additional errors (beyond the review) | **FIXED** — 186 newer untranslated keys (errors.*, audio/mic controls, hints) across 31 packs; residue 228→58 (remainder = PPS passthrough + brand/feature FPs) | 9dfc0d5b |
+
+Method throughout: verify-then-fix (the review was AI-generated and contained ~40
+false positives, all rejected), web-search-backed for low-resource languages,
+honest passthrough-or-skip over a wrong guess, placeholder/tag integrity enforced,
+every batch validated (check_lang_json 56/56, safety-spanglish guard 0).
+
+Known remaining (low-severity, documented): ~13 non-PPS residue keys that are
+mostly false positives (feature names like "Word Sounds", placeholder examples
+like "Minecraft/K-pop/pixel art", accepted tech loanwords) plus a few unverifiable
+low-resource tooltips; the PPS cluster's intentional English passthrough on
+long-tail keys; and maay_maay (Finding 2, human decision).
