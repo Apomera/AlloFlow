@@ -2481,7 +2481,7 @@ window.StemLab = window.StemLab || {
     };
 
     var checkChallenge = function() {
-      if (!challenge) return;
+      if (!challenge || challenge.answered) return;
       var ans = parseInt(answer);
       var ok = ans === challenge.answer;
       var newStreak = ok ? streak + 1 : 0;
@@ -2507,6 +2507,7 @@ window.StemLab = window.StemLab || {
         feedback: ok
           ? { correct: true, msg: '\u2705 Correct!' + (challenge.hint ? '' : '') }
           : { correct: false, msg: '\u274C The answer was ' + challenge.answer + (challenge.hint ? ' (' + challenge.hint + ')' : '') },
+        challenge: Object.assign({}, challenge, { answered: true }),
         score: { correct: newCorrect, total: newTotal },
         streak: newStreak,
         bestStreak: newBest,
@@ -9550,6 +9551,9 @@ window.StemLab = window.StemLab || {
       var msAnswer = _f.msAnswer || '';
       var msFeedback = _f.msFeedback || null;
       var problem = MULTI_STEP_PROBLEMS[msIdx % MULTI_STEP_PROBLEMS.length];
+      // Clamp the persisted step index to the current problem (step counts vary; a stale index
+      // would deref problem.steps[msStep] === undefined and crash the tab on first paint).
+      if (problem && problem.steps) { if (msStep > problem.steps.length - 1) msStep = problem.steps.length - 1; if (msStep < 0) msStep = 0; }
       var step = problem.steps[msStep];
 
       var checkMS = function() {
@@ -10045,7 +10049,7 @@ window.StemLab = window.StemLab || {
     return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
       // Header
       h('div', { className: 'flex items-center gap-3 mb-2' },
-        h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
+        h('button', { onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
           h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
         h('h3', { className: 'text-lg font-bold text-rose-800' }, '\uD83C\uDF55 Fraction Lab'),
         // Stats
