@@ -9453,11 +9453,19 @@ HTML section ${chunkNum}/${chunks.length}:
       const heightMatch = attrs.match(/\bheight\s*=\s*["']?(\d+)/i);
       const srcMatch = attrs.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
 
+      // BUGFIX (audit #13, 2026-06-15): never DESTROY a meaningful alt. An image the author/AI gave
+      // a non-empty alt is not decorative — leave it untouched (a 600x16 banner or a signature line
+      // must keep its description).
+      const altMatch = attrs.match(/\balt\s*=\s*["']([^"']*)["']/i);
+      if (altMatch && altMatch[1].trim().length > 0) return match;
+
       const isDecoratClass = classMatch && /\b(decor|decoration|separator|divider|bullet|spacer|ornament|ornamental|background|bg)\b/i.test(classMatch[1]);
-      const isTiny = (widthMatch && parseInt(widthMatch[1], 10) <= 16) || (heightMatch && parseInt(heightMatch[1], 10) <= 16);
-      const isTinySvg = srcMatch && /\.svg$/i.test(srcMatch[1]) && (
-        (widthMatch && parseInt(widthMatch[1], 10) <= 24) || (heightMatch && parseInt(heightMatch[1], 10) <= 24)
-      );
+      // "Tiny" requires BOTH dimensions present AND small — a single small dimension (e.g. a 600x16
+      // banner, height 16) is a wide short image, NOT a decorative dot (audit #13).
+      const _w = widthMatch ? parseInt(widthMatch[1], 10) : null;
+      const _h = heightMatch ? parseInt(heightMatch[1], 10) : null;
+      const isTiny = _w != null && _h != null && _w <= 16 && _h <= 16;
+      const isTinySvg = srcMatch && /\.svg$/i.test(srcMatch[1]) && _w != null && _h != null && _w <= 24 && _h <= 24;
       const hasPresentationRole = /\srole\s*=\s*["']presentation["']/i.test(attrs);
 
       if (!isDecoratClass && !isTiny && !isTinySvg && !hasPresentationRole) return match;
@@ -9477,7 +9485,10 @@ HTML section ${chunkNum}/${chunks.length}:
       const widthMatch = attrs.match(/\bwidth\s*=\s*["']?(\d+)/i);
       const heightMatch = attrs.match(/\bheight\s*=\s*["']?(\d+)/i);
       const isDecoratClass = classMatch && /\b(decor|decoration|separator|divider|bullet|spacer|ornament|icon|chevron)\b/i.test(classMatch[1]);
-      const isTiny = (widthMatch && parseInt(widthMatch[1], 10) <= 24) || (heightMatch && parseInt(heightMatch[1], 10) <= 24);
+      // Both dims small (audit #13) — don't hide a wide-but-short labeled svg (e.g. a 600x24 banner).
+      const _sw = widthMatch ? parseInt(widthMatch[1], 10) : null;
+      const _sh = heightMatch ? parseInt(heightMatch[1], 10) : null;
+      const isTiny = _sw != null && _sh != null && _sw <= 24 && _sh <= 24;
       if (!isDecoratClass && !isTiny) return match;
       let newAttrs = attrs.replace(/\srole\s*=\s*["'][^"']*["']/gi, '').replace(/\saria-hidden\s*=\s*["'][^"']*["']/gi, '');
       fixCount++;
