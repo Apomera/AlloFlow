@@ -260,4 +260,15 @@ describe('EPUB/DAISY well-formedness + navigation (2026-06-15 third-review fixes
     expect(dtbook).toContain('[Image: A bar chart of class scores]'); // alt preserved
     expect(parseXml(dtbook).wellFormed).toBe(true);
   });
+
+  it('#5 ODT footnote serialization threads the footnotes map (a footnote-in-footnote ref survives)', () => {
+    // regression guard: the common single-level footnote still renders + stays well-formed
+    const fn = wrap('<p>Body<sup class="allo-fn-ref" data-fn-uid="a"><a href="#fn-a">1</a></sup>.</p>' +
+      '<section class="allo-footnotes"><hr/><ol><li data-fn-uid="a"><span class="allo-fn-text">A note.</span></li></ol></section>');
+    const xml = _htmlToOdtContentXml(fn);
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).toContain('A note');
+    // anti-drift: the recursive footnote-run call now receives the footnotes map
+    expect(src).toContain('_odtRuns(_fnRuns, footnotes)');
+  });
 });

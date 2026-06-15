@@ -318,7 +318,7 @@ function _odtRuns(runs, footnotes) {
     if (!r) return "";
     if (r.footnoteId != null) {
       const _fnRuns = footnotes && footnotes[r.footnoteId] || [];
-      const _body = _odtRuns(_fnRuns) || _expXmlEsc(String(r.footnoteId));
+      const _body = _odtRuns(_fnRuns, footnotes) || _expXmlEsc(String(r.footnoteId));
       const _fid = _expXmlEsc(String(r.footnoteId));
       return '<text:note text:id="ftn' + _fid + '" text:note-class="footnote"><text:note-citation>' + _fid + '</text:note-citation><text:note-body><text:p text:style-name="Standard">' + _body + "</text:p></text:note-body></text:note>";
     }
