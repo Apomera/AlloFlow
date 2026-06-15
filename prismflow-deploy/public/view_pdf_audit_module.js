@@ -2720,11 +2720,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       setPdfFixMode("auto");
       setPdfAuditResult(null);
       addToast(t("toasts.auditing_remediating_pdf"), "info");
-      await runPdfAccessibilityAudit(pendingPdfBase64);
+      let _audit = null;
+      try {
+        _audit = await runPdfAccessibilityAudit(pendingPdfBase64);
+      } catch (auditErr) {
+        addToast(t("toasts.audit_error_continuing") || "\u26A0 The audit hit an error \u2014 attempting remediation anyway.", "warning");
+      }
       await new Promise((res) => setTimeout(res, 250));
       addToast(t("toasts.make_accessible_fixing") || "\u2728 Audit done \u2014 remediating automatically (no clicks needed)\u2026", "info");
       try {
-        await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name });
+        await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || void 0 });
       } catch (_) {
       }
       await new Promise((res) => setTimeout(res, 250));

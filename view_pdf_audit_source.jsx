@@ -2765,12 +2765,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     setPdfFixMode('auto');
                     setPdfAuditResult(null);
                     addToast(t('toasts.auditing_remediating_pdf'), 'info');
-                    await runPdfAccessibilityAudit(pendingPdfBase64);
-                    // Let the audit state settle through a render before the fix reads it.
+                    // Capture the audit result and hand it DIRECTLY to the fix. fixAndVerifyPdf
+                    // REQUIRES an audit result and otherwise reads it from React state (pdfAuditResult),
+                    // which the fixed setTimeout(250) below did NOT reliably let propagate on a slow/
+                    // large run — so the fix bailed with "no audit results found" and remediation
+                    // silently never ran after the audit (the reported intermittent bug). Passing
+                    // auditResult removes that race; the try/catch keeps an audit error from aborting
+                    // the whole chain. (Make-Accessible auto-continue fix 2026-06-15)
+                    let _audit = null;
+                    try { _audit = await runPdfAccessibilityAudit(pendingPdfBase64); }
+                    catch (auditErr) { addToast((t('toasts.audit_error_continuing') || '⚠ The audit hit an error — attempting remediation anyway.'), 'warning'); }
+                    // Cosmetic settle only — the fix no longer depends on audit STATE (it gets auditResult below).
                     await new Promise((res) => setTimeout(res, 250));
                     addToast(t('toasts.make_accessible_fixing') || '✨ Audit done — remediating automatically (no clicks needed)…', 'info');
                     try {
-                      await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name });
+                      await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined });
                     } catch (_) { /* fix surface shows its own errors; chain continues to the check below */ }
                     await new Promise((res) => setTimeout(res, 250));
                     const r = pdfFixResultRef.current;
