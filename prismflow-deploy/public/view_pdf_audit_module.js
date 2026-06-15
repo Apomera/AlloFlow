@@ -3939,7 +3939,7 @@ Return ONLY JSON:
             onClick: () => {
               const _pre = _ar.preRestoreHtml;
               if (!_pre) return;
-              setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true } } : prev);
+              setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true, preRestoreHtml: null } } : prev);
               if (addToast) addToast(t("pdf_audit.auto_restore.undone") || "Auto-restore undone \u2014 the dropped words were removed again.", "info");
             },
             className: "ml-auto px-2 py-0.5 bg-white border border-rose-400 text-rose-800 rounded-full text-[10px] font-bold hover:bg-rose-100 focus:ring-2 focus:ring-rose-400",

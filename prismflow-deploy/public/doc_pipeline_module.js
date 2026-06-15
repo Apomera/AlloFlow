@@ -11591,28 +11591,46 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   // a real figure keeps colour variance at 24×24; a fill collapses to one
                   // colour. Rejected crops fall through to the text placeholder (the
                   // figure's description) instead of a meaningless coloured rectangle.
-                  const _cropIsNearUniform = (srcCanvas) => {
+                  const _cropPixelsAreFill = (data, strict) => {
+                    const total = data.length / 4;
+                    let count = 0, transparent = 0, sumR = 0, sumG = 0, sumB = 0;
+                    const buckets = Object.create(null);
+                    for (let i = 0; i < data.length; i += 4) {
+                      if (data[i + 3] < 16) { transparent++; continue; }
+                      sumR += data[i]; sumG += data[i + 1]; sumB += data[i + 2]; count++;
+                      const key = (data[i] >> 5) * 64 + (data[i + 1] >> 5) * 8 + (data[i + 2] >> 5);
+                      buckets[key] = (buckets[key] || 0) + 1;
+                    }
+                    if (transparent / total > 0.9) return true;
+                    if (!count) return true;
+                    const mR = sumR / count, mG = sumG / count, mB = sumB / count;
+                    let near = 0;
+                    for (let i = 0; i < data.length; i += 4) {
+                      if (data[i + 3] < 16) continue;
+                      if (Math.abs(data[i] - mR) + Math.abs(data[i + 1] - mG) + Math.abs(data[i + 2] - mB) < 24) near++;
+                    }
+                    // Geometry-confirmed (non-strict) crops keep a distinct-quantized-color
+                    // escape: a sparse line-chart/diagram has white + ink + a few series
+                    // colours (>=4 32-level buckets each holding >2% of pixels) and must NOT
+                    // be rejected as a solid fill, so we only treat it as fill at a much
+                    // tighter near-mean cutoff. The blind band-crop (strict) keeps the
+                    // original 0.92 gate where false positives are cheap. (crop-sparse-chart)
+                    if (!strict) {
+                      let distinct = 0;
+                      for (const k in buckets) { if (buckets[k] / count > 0.02) distinct++; }
+                      if (distinct >= 4) return false;
+                      return near / count > 0.985;
+                    }
+                    return near / count > 0.92;
+                  };
+                  const _cropIsNearUniform = (srcCanvas, strict) => {
                     try {
                       const S = 24;
                       const tiny = document.createElement('canvas'); tiny.width = S; tiny.height = S;
                       const tctx = tiny.getContext('2d');
                       tctx.drawImage(srcCanvas, 0, 0, S, S);
                       const data = tctx.getImageData(0, 0, S, S).data;
-                      const total = data.length / 4;
-                      let count = 0, transparent = 0, sumR = 0, sumG = 0, sumB = 0;
-                      for (let i = 0; i < data.length; i += 4) {
-                        if (data[i + 3] < 16) { transparent++; continue; }
-                        sumR += data[i]; sumG += data[i + 1]; sumB += data[i + 2]; count++;
-                      }
-                      if (transparent / total > 0.9) return true;
-                      if (!count) return true;
-                      const mR = sumR / count, mG = sumG / count, mB = sumB / count;
-                      let near = 0;
-                      for (let i = 0; i < data.length; i += 4) {
-                        if (data[i + 3] < 16) continue;
-                        if (Math.abs(data[i] - mR) + Math.abs(data[i + 1] - mG) + Math.abs(data[i + 2] - mB) < 24) near++;
-                      }
-                      return near / count > 0.92;
+                      return _cropPixelsAreFill(data, strict !== false);
                     } catch (_) { return false; }
                   };
 
@@ -11649,7 +11667,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                           crop.width = Math.round(pos.w);
                           crop.height = Math.round(pos.h);
                           crop.getContext('2d').drawImage(canvas, Math.round(pos.x), Math.round(pos.y), Math.round(pos.w), Math.round(pos.h), 0, 0, crop.width, crop.height);
-                          if (_cropIsNearUniform(crop)) {
+                          if (_cropIsNearUniform(crop, false)) { // geometry-confirmed XObject — looser fill test so sparse charts survive (crop-sparse-chart)
                             // Solid-fill crop (a vector organizer's background, or a bad
                             // transform landing off the real glyphs) — don't embed a blue
                             // block; leave generatedSrc unset so it degrades to the text
@@ -22691,6 +22709,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               pink:   { fill: 'rgba(244,114,182,0.36)', border: 'rgba(219,39,119,0.55)' },
             };
 
+            // Escape HTML-significant chars before any innerHTML insertion of untrusted
+            // annotation fields (authorName/title can arrive from tampered localStorage or a
+            // crafted imported annotation JSON). (sec-annot-escape)
+            function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
             function buildTitle(a) {
               var parts = [];
               if (a.author === 'teacher') parts.push('Teacher feedback');
@@ -22844,7 +22866,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       expanded.style.cssText = 'min-width:240px;max-width:320px;background:white;border:2px solid ' + accent + ';border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);padding:0;';
                       var hdr = document.createElement('div');
                       hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;background:' + accent + ';color:white;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.04em;border-radius:6px 6px 0 0;';
-                      hdr.innerHTML = '<span>🎤 ' + (isT ? 'Teacher voice note' : (a.authorName || 'Voice note')) + (dur ? ' • ' + dur : '') + '</span>';
+                      hdr.innerHTML = '<span>🎤 ' + (isT ? 'Teacher voice note' : esc(a.authorName || 'Voice note')) + (dur ? ' • ' + dur : '') + '</span>';
                       var closeBtn = document.createElement('button');
                       closeBtn.type = 'button';
                       closeBtn.textContent = '✓';
@@ -23357,7 +23379,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   listHtml += '<div class="alloflow-anno-item ' + (isT ? 'teacher' : 'student') + '" data-rt-anno-focus="' + a.id + '" role="button" tabindex="0" aria-label="Jump to annotation">' +
                     '<div class="alloflow-anno-item-body">' +
                       '<div class="alloflow-anno-item-text">' + annoPreview(a).replace(/</g, '&lt;') + '</div>' +
-                      '<div class="alloflow-anno-item-meta">' + title + '</div>' +
+                      '<div class="alloflow-anno-item-meta">' + esc(title) + '</div>' +
                     '</div>' +
                     (canDelete ? '<button type="button" class="alloflow-anno-item-del" data-rt-anno-del="' + a.id + '" aria-label="Delete this annotation" title="Delete">✕</button>' : '') +
                     '</div>';
