@@ -1,0 +1,54 @@
+{
+  "appId": "com.alloflow.remediation",
+  "productName": "AlloFlow Remediation",
+  "afterPack": "./afterPack.js",
+  "files": [
+    "build/**/*",
+    "public/**/*",
+    "node_modules/**/*"
+  ],
+  "extraMetadata": {
+    "main": "public/main.js",
+    "alloEdition": "remediation",
+    "version": "0.1.0"
+  },
+  "extraResources": [
+    {
+      "from": "../local-app/build",
+      "to": "local-app",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "../local-app/backend",
+      "to": "local-app/backend",
+      "filter": ["**/*"]
+    }
+  ],
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["arm64"]
+      }
+    ],
+    "category": "public.app-category.education",
+    "icon": "public/icons/icon.icns"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/icons/icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "AlloFlow Remediation",
+    "warningsAsErrors": false
+  }
+}

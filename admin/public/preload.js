@@ -79,6 +79,9 @@ contextBridge.exposeInMainWorld('alloAPI', {
   // ── Shell utilities ──────────────────────────────────────────────────────
   openExternal: (url) => ipcRenderer.invoke('shell:open-external', url),
 
+  // ── LM Studio status (used by SetupWizard.jsx install gate) ──────────────
+  lmstudioStatus: () => ipcRenderer.invoke('lmstudio:status'),
+
   // ── Service health & status (used by Dashboard.jsx, Services.jsx) ────────
   getHealth:        () => ipcRenderer.invoke('services:health'),
   getServices:      () => ipcRenderer.invoke('services:list'),
@@ -100,6 +103,22 @@ contextBridge.exposeInMainWorld('alloAPI', {
     backendStatus: () => ipcRenderer.invoke('local:backend-status'),
     // Re-open local app in system browser to reload config (picks up new OAuth tokens)
     reload: () => ipcRenderer.invoke('localApp:reload'),
+    // Open local app in system browser — used by the wizard once setup fully completes
+    open: () => ipcRenderer.invoke('localApp:open'),
+  },
+
+  // ── Build edition ('full' | 'remediation') ────────────────────────────────
+  getEdition: () => ipcRenderer.invoke('app:get-edition'),
+
+  // ── Remediation edition: folder ingestion + focused launch ─────────────────
+  remediation: {
+    // Open a directory picker and recursively list PDF/DOCX/PPTX documents.
+    // Returns { canceled } or { canceled:false, root, files:[{name,path,relPath,sizeBytes}] }
+    selectFolder: () => ipcRenderer.invoke('remediation:select-folder'),
+    // Read one file by absolute path → { base64, sizeBytes } or { error }
+    readFileBase64: (filePath) => ipcRenderer.invoke('remediation:read-file-base64', filePath),
+    // Navigate the app window to the focused remediation screen (after provider setup)
+    launch: () => ipcRenderer.invoke('remediation:launch'),
   },
 
   // ── Gemini OAuth (image generation via Google Sign-In) ──────────────────

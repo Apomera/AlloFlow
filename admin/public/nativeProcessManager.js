@@ -22,6 +22,10 @@ const DATA_DIR = path.join(ALLOFLOW_DIR, 'data');
 // Running child processes
 const processes = {};
 
+// Set once we launch the LM Studio GUI as a CLI-failure fallback, so repeated
+// start attempts (e.g. wizard polling) don't keep reopening the app
+let lmStudioGuiLaunched = false;
+
 // ── Download URLs for each platform ───────────────────────────────────────────
 // These point to the latest stable releases. 
 // The manager downloads them once on first setup.
@@ -52,16 +56,23 @@ function getLLMEngineDownload(platform, arch) {
     };
   } else if (platform === 'darwin') {
     const isAppleSilicon = arch === 'arm64';
+    if (!isAppleSilicon) {
+      // LM Studio ships Apple Silicon builds only — no Intel Mac installer exists
+      return {
+        url: null,
+        type: 'unsupported',
+        binary: 'LMStudio.app',
+        name: 'LM Studio (llama.cpp)',
+        description: 'LM Studio requires an Apple Silicon Mac (M1 or later). Intel Macs are not supported.',
+        portHint: 1234
+      };
+    }
     return {
-      url: isAppleSilicon 
-        ? 'https://lmstudio.ai/download/latest/osx/arm64' 
-        : 'https://lmstudio.ai/download/latest/osx/x64',
+      url: 'https://lmstudio.ai/download/latest/darwin/arm64',
       type: 'dmg',
       binary: 'LMStudio.app',
       name: 'LM Studio (llama.cpp)',
-      description: isAppleSilicon 
-        ? 'llama.cpp with Metal backend for Apple Silicon M1/M2/M3/M4'
-        : 'llama.cpp with Intel GPU support',
+      description: 'llama.cpp with Metal backend for Apple Silicon M1/M2/M3/M4',
       portHint: 1234
     };
   } else {
@@ -150,15 +161,29 @@ const PIP_URL = 'https://bootstrap.pypa.io/get-pip.py';
 function findPython() {
   const { execSync } = require('child_process');
 
-  // 1. Check bundled Python 3.12
-  const bundledPython = process.platform === 'win32'
-    ? path.join(PYTHON_312_DIR, 'python.exe')
-    : path.join(PYTHON_312_DIR, 'bin', 'python3');
+  // 0. Python runtime bundled in the app (extraResources → Resources/python-runtime).
+  //    This is the primary path so a user never needs to install Python.
+  const runtimeCandidates = [];
+  try {
+    const isPackaged = require('electron').app.isPackaged;
+    const runtimeRoot = isPackaged
+      ? path.join(process.resourcesPath, 'python-runtime')
+      : path.join(__dirname, '..', '..', 'python-runtime');
+    runtimeCandidates.push(process.platform === 'win32'
+      ? path.join(runtimeRoot, 'python.exe')
+      : path.join(runtimeRoot, 'bin', 'python3'));
+  } catch { /* electron not available (tests) — fall through */ }
 
-  if (fs.existsSync(bundledPython)) {
+  // 1. Check legacy bundled Python 3.12 in the data dir
+  runtimeCandidates.push(process.platform === 'win32'
+    ? path.join(PYTHON_312_DIR, 'python.exe')
+    : path.join(PYTHON_312_DIR, 'bin', 'python3'));
+
+  for (const bundledPython of runtimeCandidates) {
+    if (!fs.existsSync(bundledPython)) continue;
     try {
       const ver = execSync(`"${bundledPython}" --version`, { stdio: 'pipe', encoding: 'utf-8' }).trim();
-      if (ver.startsWith('Python 3.12')) {
+      if (ver.startsWith('Python 3')) {
         console.log(`[native-pm] Found bundled Python: ${bundledPython} (${ver})`);
         return bundledPython;
       }
@@ -560,6 +585,94 @@ async function ensurePiperVoiceModel() {
   }
 }
 
+// ── Piper (pip-based) helpers ─────────────────────────────────────────────────
+// The standalone piper macOS binary release ships without its required dylibs
+// and cannot run, so on macOS/Linux we install the maintained `piper-tts`
+// Python package into a dedicated venv and drive it via `python -m piper`.
+// (Windows still uses the native piper.exe, which works.)
+
+const PIPER_VENV_DIR   = path.join(BINARIES_DIR, 'piper-venv');
+const PIPER_VOICES_DIR = path.join(BINARIES_DIR, 'piper', 'voices');
+
+/** Path to the venv's python, or null if the venv doesn't exist yet. */
+function getPiperVenvPython() {
+  const py = process.platform === 'win32'
+    ? path.join(PIPER_VENV_DIR, 'Scripts', 'python.exe')
+    : path.join(PIPER_VENV_DIR, 'bin', 'python');
+  return fs.existsSync(py) ? py : null;
+}
+
+/** True if the pip-based Piper (venv + piper module) is installed. */
+function isPiperVenvInstalled() {
+  const py = getPiperVenvPython();
+  if (!py) return false;
+  try {
+    require('child_process').execFileSync(py, ['-c', 'import piper'],
+      { stdio: 'ignore', timeout: 30000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Install Piper via pip into a venv and pre-download the default voice.
+ * @param {function} onProgress
+ */
+async function installPiperVenv(onProgress) {
+  const { execFileSync } = require('child_process');
+
+  if (isPiperVenvInstalled()) {
+    onProgress({ status: 'Piper TTS already installed', progress: 100 });
+    await ensurePiperVoiceModelPip();
+    return;
+  }
+
+  const python = findPython();
+  if (!python) {
+    throw new Error('Python 3 is required for Piper TTS but was not found. Install Python 3 from python.org, then re-run setup.');
+  }
+
+  onProgress({ status: 'Creating Piper TTS environment...', progress: 20 });
+  execFileSync(python, ['-m', 'venv', PIPER_VENV_DIR], { stdio: 'pipe', timeout: 120000 });
+
+  const venvPython = getPiperVenvPython();
+  if (!venvPython) throw new Error('Failed to create Piper venv');
+
+  onProgress({ status: 'Installing Piper TTS (downloading package)...', progress: 45 });
+  execFileSync(venvPython, ['-m', 'pip', 'install', '--quiet', '--upgrade', 'pip'],
+    { stdio: 'pipe', timeout: 180000 });
+  execFileSync(venvPython, ['-m', 'pip', 'install', '--quiet', 'piper-tts'],
+    { stdio: 'pipe', timeout: 600000 });
+
+  // Verify the module imports
+  execFileSync(venvPython, ['-c', 'import piper'], { stdio: 'pipe', timeout: 60000 });
+
+  onProgress({ status: 'Downloading default voice (en_US-amy-medium)...', progress: 80 });
+  await ensurePiperVoiceModelPip();
+
+  onProgress({ status: 'Piper TTS installed', progress: 100 });
+}
+
+/** Download the default Piper voice into PIPER_VOICES_DIR via piper.download_voices. */
+async function ensurePiperVoiceModelPip() {
+  const venvPython = getPiperVenvPython();
+  if (!venvPython) return false;
+  fs.mkdirSync(PIPER_VOICES_DIR, { recursive: true });
+  const onnx = path.join(PIPER_VOICES_DIR, 'en_US-amy-medium.onnx');
+  if (fs.existsSync(onnx)) return true;
+  try {
+    require('child_process').execFileSync(venvPython,
+      ['-m', 'piper.download_voices', 'en_US-amy-medium', '--data-dir', PIPER_VOICES_DIR],
+      { stdio: 'pipe', timeout: 300000 });
+    console.log('[native-pm] Piper voice en_US-amy-medium downloaded');
+    return true;
+  } catch (e) {
+    console.warn('[native-pm] Piper voice download failed (non-fatal):', e.message);
+    return false;
+  }
+}
+
 function updateFluxServerScript() {
   const fluxDir = path.join(BINARIES_DIR, 'flux');
   const destScript = path.join(fluxDir, 'flux_server.py');
@@ -872,6 +985,8 @@ function isServiceInstalled(serviceId) {
   if (serviceId === 'flux') return isFluxInstalled();
   if (serviceId === 'search') return true; // built-in
   if (serviceId === 'llm-engine') return !!findLMStudioPath();
+  // Piper on macOS/Linux is the pip venv, not a native binary
+  if (serviceId === 'piper' && process.platform !== 'win32') return isPiperVenvInstalled();
 
   const downloads = getDownloadInfo();
   const info = downloads[serviceId];
@@ -900,6 +1015,9 @@ async function installService(serviceId, onProgress, gpuInfo) {
   const info = downloads[serviceId];
 
   if (!info) throw new Error(`Unknown service: ${serviceId}`);
+  if (info.type === 'unsupported' || !info.url) {
+    throw new Error(info.description || `${serviceId} is not supported on this platform`);
+  }
 
   const serviceDir = path.join(BINARIES_DIR, serviceId);
   if (!fs.existsSync(serviceDir)) {
@@ -938,6 +1056,25 @@ async function installService(serviceId, onProgress, gpuInfo) {
     try { fs.unlinkSync(installerPath); } catch {}
 
     onProgress({ status: 'LM Studio installed', progress: 100 });
+    return;
+  }
+
+  // macOS — LM Studio is installed manually by the user (the setup wizard
+  // guides them and waits until it's detected running with a model).
+  if (serviceId === 'llm-engine' && info.type === 'dmg') {
+    const existingPath = findLMStudioPath();
+    if (existingPath) {
+      console.log(`[native-pm] LM Studio already installed at: ${existingPath}`);
+      onProgress({ status: 'LM Studio already installed', progress: 100 });
+      return;
+    }
+    throw new Error('LM Studio must be installed manually — download it from https://lmstudio.ai');
+  }
+
+  // Piper on macOS/Linux: install the maintained pip package into a venv
+  // (the native binary release is missing its runtime libraries).
+  if (serviceId === 'piper' && process.platform !== 'win32') {
+    await installPiperVenv(onProgress);
     return;
   }
 
@@ -1032,6 +1169,34 @@ function startService(serviceId) {
     return processes[serviceId].pid;
   }
 
+  // Piper on macOS/Linux uses the pip venv, not a native binary, so it has no
+  // getServiceBinaryPath. Handle it before the generic binary-path check.
+  if (serviceId === 'piper' && process.platform !== 'win32') {
+    const venvPython = getPiperVenvPython();
+    if (!venvPython) throw new Error('Piper TTS not installed (venv missing). Re-run setup.');
+
+    const isDev = !require('electron').app.isPackaged;
+    const piperServerScript = isDev
+      ? path.join(__dirname, '..', '..', 'tts-server', 'piper_server.py')
+      : path.join(process.resourcesPath, 'tts-server', 'piper_server.py');
+    if (!fs.existsSync(piperServerScript)) {
+      throw new Error(`piper_server.py not found at ${piperServerScript}`);
+    }
+
+    fs.mkdirSync(PIPER_VOICES_DIR, { recursive: true });
+    const piperProc = spawn(venvPython, [piperServerScript], {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, PIPER_PYTHON: venvPython, PIPER_VOICES_DIR: PIPER_VOICES_DIR, PIPER_PORT: '5500' },
+    });
+    piperProc.stdout.on('data', (d) => console.log(`[piper-server] ${d.toString().trim()}`));
+    piperProc.stderr.on('data', (d) => console.log(`[piper-server:err] ${d.toString().trim()}`));
+    piperProc.on('exit', (code) => { console.log(`[piper-server] exited with code ${code}`); delete processes[serviceId]; });
+    processes[serviceId] = piperProc;
+    console.log(`[native-pm] Piper HTTP server started (PID ${piperProc.pid}) on port 5500`);
+    return piperProc.pid;
+  }
+
   const binaryPath = getServiceBinaryPath(serviceId);
   if (!binaryPath) {
     throw new Error(`Binary not found for ${serviceId}. Install it first.`);
@@ -1058,19 +1223,35 @@ function startService(serviceId) {
           stdio: ['ignore', 'pipe', 'pipe'],
           env: { ...process.env, HIP_VISIBLE_DEVICES: '0' },
         });
-        
+
         // Log CLI output but don't track as a running process
         cliProc.stdout.on('data', (d) => console.log(`[llm-engine:cli] ${d.toString().trim()}`));
         cliProc.stderr.on('data', (d) => console.log(`[llm-engine:cli:err] ${d.toString().trim()}`));
         cliProc.on('exit', (code) => {
           console.log(`[native-pm] lms CLI exited with code ${code} (expected — CLI is one-shot)`);
+          if (code !== 0) {
+            // The CLI fails until LM Studio has been launched once (its daemon
+            // isn't bootstrapped yet). Clear the sentinel so the next start
+            // attempt retries, and open the GUI once to bootstrap the daemon.
+            delete processes[serviceId];
+            if (lmPath && !lmStudioGuiLaunched) {
+              lmStudioGuiLaunched = true;
+              console.log('[native-pm] lms CLI failed — launching LM Studio GUI to bootstrap its daemon');
+              try {
+                const gui = spawn(lmPath, [], { detached: true, stdio: 'ignore', windowsHide: true });
+                gui.unref();
+              } catch (e) {
+                console.warn('[native-pm] Could not launch LM Studio GUI:', e.message);
+              }
+            }
+          }
         });
-        
+
         // Mark LM Studio as "running" with a sentinel so health checks work.
         // The actual server runs inside the LM Studio desktop app.
         processes[serviceId] = { pid: -1, _lmStudioManaged: true };
         console.log(`[native-pm] LM Studio server start requested via CLI`);
-        
+
         return -1; // Sentinel: LM Studio manages its own server process
       } else if (lmPath) {
         // Fallback: launch LM Studio GUI (user must start server manually)
@@ -1410,6 +1591,9 @@ module.exports = {
   uninstallAll,
   updateFluxServerScript,
   ensurePiperVoiceModel,
+  ensurePiperVoiceModelPip,
+  isPiperVenvInstalled,
+  getPiperVenvPython,
   BINARIES_DIR,
   DATA_DIR,
   ALLOFLOW_DIR

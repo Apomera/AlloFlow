@@ -169,14 +169,17 @@
             if (!text || this._ttsProvider === 'off') return null;
             if (this._ttsProvider === 'browser') return this._browserTTS(text, speed);
 
-            // Try Piper HTTP server (port 5500 — started by nativeProcessManager)
+            // Try Piper HTTP server (port 5500 — started by nativeProcessManager).
+            // Timeout is generous: a long passage on a slower Mac, or a cold first
+            // request (model load), can take well over the old 8s budget. Better to
+            // wait for real Piper audio than fall back to browser speech.
             const piperServerUrl = global.__alloLocalConfig?.ttsServerUrl || 'http://localhost:5500';
             try {
                 const resp = await fetch(`${piperServerUrl}/v1/audio/speech`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ model: 'tts-1', input: text, voice: voice || 'nova', speed }),
-                    signal: AbortSignal.timeout(8000),
+                    signal: AbortSignal.timeout(60000),
                 });
                 if (resp.ok) {
                     const blob = await resp.blob();
@@ -184,8 +187,9 @@
                     this._ttsCache.set(`piper-http:${text}:${voice}:${speed}`, url);
                     return url;
                 }
-            } catch {
-                // Piper server not running — fall through
+                this._warnLog(`[LocalAI TTS] Piper server returned HTTP ${resp.status} at ${piperServerUrl}`);
+            } catch (e) {
+                this._warnLog(`[LocalAI TTS] Piper server unreachable at ${piperServerUrl}: ${e.message}`);
             }
 
             // Try Piper WASM if loaded

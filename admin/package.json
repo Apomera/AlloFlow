@@ -1,6 +1,6 @@
 {
   "name": "alloflow-admin",
-  "version": "0.10.3",
+  "version": "0.11.3",
   "description": "AlloFlow Admin - Setup Wizard & Management",
   "main": "public/main.js",
   "author": "AlloFlow Team",
@@ -25,7 +25,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "clean": "rimraf dist",
-    "dist": "npm run clean && npm run build && electron-builder -w --publish never"
+    "ensure-python": "node scripts/ensure-python.js",
+    "dist": "npm run clean && npm run ensure-python && npm run build && electron-builder --publish never",
+    "dist:win": "npm run clean && npm run ensure-python && npm run build && electron-builder -w --publish never",
+    "dist:mac": "npm run clean && npm run ensure-python && npm run build && electron-builder --mac --publish never",
+    "build:local": "node ../local_build.js",
+    "dist:mac:remediation": "node scripts/build-remediation.js mac",
+    "dist:win:remediation": "node scripts/build-remediation.js win"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -55,21 +61,37 @@
       "main": "public/main.js"
     },
     "extraResources": [
-      "docker_templates/flux-server/flux_server.py",
-      "uninstall.bat",
+      {
+        "from": "../python-runtime",
+        "to": "python-runtime",
+        "filter": ["**/*"]
+      },
       {
         "from": "../tts-server",
-        "to": "tts-server"
+        "to": "tts-server",
+        "filter": ["**/*", "!*.bat"]
       },
       {
         "from": "../local-app/build",
-        "to": "local-app"
+        "to": "local-app",
+        "filter": ["**/*"]
       },
       {
         "from": "../local-app/backend",
-        "to": "local-app/backend"
+        "to": "local-app/backend",
+        "filter": ["**/*"]
       }
     ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        }
+      ],
+      "category": "public.app-category.education",
+      "icon": "public/icons/icon.icns"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -83,11 +105,10 @@
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
-      ]
+      ],
+      "icon": "public/icons/icon.ico"
     }
   }
 }

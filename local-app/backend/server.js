@@ -1,8 +1,11 @@
 /**
- * AlloFlow — Local SQLite Backend (C2.2 + C2.3)
+ * AlloFlow — Local Data Backend (C2.2 + C2.3)
  *
  * Pure Node.js HTTP server (no external framework).
- * Uses node:sqlite (bundled since Node v22.5) — no npm dependencies.
+ * Storage engine:
+ *   - node:sqlite (bundled since Node v22.5) when available
+ *   - JSON file store fallback otherwise (works on any Node ≥16, including
+ *     Electron's bundled Node via ELECTRON_RUN_AS_NODE)
  *
  * Endpoints:
  *   GET  /health
@@ -20,7 +23,7 @@
  * Security: localhost-only (127.0.0.1 / ::1). All other remotes → 403.
  *
  * Run standalone: node local-app/backend/server.js
- * Or started automatically by local-app/server.js in dev mode.
+ * Or started automatically by the AlloFlow admin app (localBackendManager).
  */
 
 'use strict';
@@ -31,88 +34,241 @@ const fs      = require('fs');
 const os      = require('os');
 const { randomUUID } = require('crypto');
 
-// ── SQLite (Node v22.5+) ──────────────────────────────────────────────────────
-let DatabaseSync;
-try {
-    ({ DatabaseSync } = require('node:sqlite'));
-} catch {
-    console.error('[AlloFlow SQLite] node:sqlite requires Node.js v22.5 or later.');
-    process.exit(1);
-}
-
 // ── Config ────────────────────────────────────────────────────────────────────
 const PORT     = parseInt(process.env.SQLITE_PORT || '3747', 10);
 const DATA_DIR = process.env.DATA_DIR  || path.join(os.homedir(), '.alloflow');
 const DB_FILE  = process.env.DB_FILE   || path.join(DATA_DIR, 'local.db');
+const JSON_FILE = process.env.JSON_DB_FILE || path.join(DATA_DIR, 'local-data.json');
 
-// ── Database init ─────────────────────────────────────────────────────────────
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const sqlite = new DatabaseSync(DB_FILE);
+// ── Storage engine selection ─────────────────────────────────────────────────
+// Prefer node:sqlite; fall back to a JSON file store on older Node runtimes
+// (e.g. the Electron-bundled Node used when no system Node is installed).
+let DatabaseSync = null;
+try {
+    ({ DatabaseSync } = require('node:sqlite'));
+} catch {
+    console.log('[AlloFlow Backend] node:sqlite unavailable — using JSON file store at', JSON_FILE);
+}
 
-sqlite.exec(`PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;`);
+// ── SQLite store ──────────────────────────────────────────────────────────────
 
-// ── Schema migration: detect old PIN-based schema and rebuild if needed ──────
-// Old schema had: username TEXT NOT NULL, pin_hash TEXT
-// New schema uses: login_id TEXT UNIQUE NOT NULL, display_name TEXT
-(function migrateSchema() {
-    const cols = sqlite.prepare("PRAGMA table_info(users)").all();
-    const colNames = cols.map(c => c.name);
-    const hasOldSchema = colNames.includes('username') || colNames.includes('pin_hash');
-    const hasNewSchema = colNames.includes('login_id');
-    if (hasOldSchema && !hasNewSchema) {
-        // Old PIN schema — drop and recreate (no real data loss; old PINs are unusable)
-        console.log('[DB] Migrating from old PIN schema to new login_id schema…');
-        sqlite.exec('DROP TABLE IF EXISTS users');
-    } else if (hasOldSchema && hasNewSchema) {
-        // Hybrid table (old NOT NULL username column lingering alongside login_id) —
-        // inserts fail with "NOT NULL constraint failed: users.username".
-        // Rebuild, preserving rows that already have a usable login_id.
-        console.log('[DB] Rebuilding hybrid users table (dropping legacy username/pin_hash columns)…');
-        const hasRole = colNames.includes('role');
-        sqlite.exec(`
-            CREATE TABLE IF NOT EXISTS users_new (
-                id           TEXT PRIMARY KEY,
-                login_id     TEXT UNIQUE NOT NULL,
-                display_name TEXT NOT NULL,
-                role         TEXT NOT NULL DEFAULT 'teacher',
-                token        TEXT,
-                created_at   TEXT DEFAULT (datetime('now'))
-            );
-            INSERT OR IGNORE INTO users_new (id, login_id, display_name, role, token, created_at)
-                SELECT id, login_id,
-                       COALESCE(display_name, login_id),
-                       ${hasRole ? "COALESCE(role, 'teacher')" : "'teacher'"},
-                       token, created_at
-                FROM users
-                WHERE login_id IS NOT NULL AND login_id != '';
-            DROP TABLE users;
-            ALTER TABLE users_new RENAME TO users;
-        `);
+function createSqliteStore() {
+    const sqlite = new DatabaseSync(DB_FILE);
+    sqlite.exec(`PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;`);
+
+    // Schema migration: detect old PIN-based schema and rebuild if needed.
+    // Old schema had: username TEXT NOT NULL, pin_hash TEXT
+    // New schema uses: login_id TEXT UNIQUE NOT NULL, display_name TEXT
+    (function migrateSchema() {
+        const cols = sqlite.prepare("PRAGMA table_info(users)").all();
+        const colNames = cols.map(c => c.name);
+        const hasOldSchema = colNames.includes('username') || colNames.includes('pin_hash');
+        const hasNewSchema = colNames.includes('login_id');
+        if (hasOldSchema && !hasNewSchema) {
+            console.log('[DB] Migrating from old PIN schema to new login_id schema…');
+            sqlite.exec('DROP TABLE IF EXISTS users');
+        } else if (hasOldSchema && hasNewSchema) {
+            console.log('[DB] Rebuilding hybrid users table (dropping legacy username/pin_hash columns)…');
+            const hasRole = colNames.includes('role');
+            sqlite.exec(`
+                CREATE TABLE IF NOT EXISTS users_new (
+                    id           TEXT PRIMARY KEY,
+                    login_id     TEXT UNIQUE NOT NULL,
+                    display_name TEXT NOT NULL,
+                    role         TEXT NOT NULL DEFAULT 'teacher',
+                    token        TEXT,
+                    created_at   TEXT DEFAULT (datetime('now'))
+                );
+                INSERT OR IGNORE INTO users_new (id, login_id, display_name, role, token, created_at)
+                    SELECT id, login_id,
+                           COALESCE(display_name, login_id),
+                           ${hasRole ? "COALESCE(role, 'teacher')" : "'teacher'"},
+                           token, created_at
+                    FROM users
+                    WHERE login_id IS NOT NULL AND login_id != '';
+                DROP TABLE users;
+                ALTER TABLE users_new RENAME TO users;
+            `);
+        }
+    })();
+
+    sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+            id           TEXT PRIMARY KEY,
+            login_id     TEXT UNIQUE NOT NULL,
+            display_name TEXT NOT NULL,
+            role         TEXT NOT NULL DEFAULT 'teacher',
+            token        TEXT,
+            created_at   TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS documents (
+            collection  TEXT NOT NULL,
+            doc_id      TEXT NOT NULL,
+            data        TEXT NOT NULL DEFAULT '{}',
+            created_at  TEXT DEFAULT (datetime('now')),
+            updated_at  TEXT DEFAULT (datetime('now')),
+            PRIMARY KEY (collection, doc_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_docs_collection ON documents(collection);
+    `);
+
+    const rowToUser = (r) => r ? {
+        id: r.id, loginId: r.login_id, displayName: r.display_name,
+        role: r.role, token: r.token, createdAt: r.created_at,
+    } : null;
+
+    return {
+        engine: 'sqlite',
+        location: DB_FILE,
+
+        getUserByLoginId(loginId) {
+            return rowToUser(sqlite.prepare('SELECT * FROM users WHERE login_id = ? LIMIT 1').get(loginId));
+        },
+        getUserByToken(token) {
+            return rowToUser(sqlite.prepare('SELECT * FROM users WHERE token = ? LIMIT 1').get(token));
+        },
+        createUser({ id, loginId, displayName, role, token }) {
+            sqlite.prepare(
+                'INSERT INTO users (id, login_id, display_name, role, token) VALUES (?, ?, ?, ?, ?)'
+            ).run(id, loginId, displayName, role, token);
+        },
+        setUserToken(userId, token) {
+            sqlite.prepare('UPDATE users SET token = ? WHERE id = ?').run(token, userId);
+        },
+        clearToken(token) {
+            sqlite.prepare('UPDATE users SET token = NULL WHERE token = ?').run(token);
+        },
+        listTeachers() {
+            return sqlite.prepare(
+                "SELECT * FROM users WHERE role = 'teacher' ORDER BY created_at ASC"
+            ).all().map(rowToUser);
+        },
+
+        listDocs(collection, limit) {
+            return sqlite.prepare(
+                'SELECT doc_id, data FROM documents WHERE collection = ? LIMIT ?'
+            ).all(collection, limit).map(r => ({ id: r.doc_id, ...JSON.parse(r.data) }));
+        },
+        getDoc(collection, docId) {
+            const row = sqlite.prepare(
+                'SELECT data FROM documents WHERE collection = ? AND doc_id = ? LIMIT 1'
+            ).get(collection, docId);
+            return row ? JSON.parse(row.data) : null;
+        },
+        setDoc(collection, docId, data) {
+            const now = new Date().toISOString();
+            sqlite.prepare(`
+                INSERT INTO documents (collection, doc_id, data, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(collection, doc_id)
+                DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
+            `).run(collection, docId, JSON.stringify(data), now, now);
+        },
+        deleteDoc(collection, docId) {
+            sqlite.prepare('DELETE FROM documents WHERE collection = ? AND doc_id = ?').run(collection, docId);
+        },
+    };
+}
+
+// ── JSON file store ───────────────────────────────────────────────────────────
+// Shape: { users: [user...], documents: { [collection]: { [docId]: data } } }
+// Writes are debounced and atomic (tmp file + rename).
+
+function createJsonStore() {
+    let state = { users: [], documents: {} };
+    try {
+        if (fs.existsSync(JSON_FILE)) {
+            state = JSON.parse(fs.readFileSync(JSON_FILE, 'utf-8'));
+            state.users = state.users || [];
+            state.documents = state.documents || {};
+        }
+    } catch (e) {
+        console.warn('[AlloFlow Backend] Could not read JSON store (starting fresh):', e.message);
     }
-})();
 
-sqlite.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-        id           TEXT PRIMARY KEY,
-        login_id     TEXT UNIQUE NOT NULL,
-        display_name TEXT NOT NULL,
-        role         TEXT NOT NULL DEFAULT 'teacher',
-        token        TEXT,
-        created_at   TEXT DEFAULT (datetime('now'))
-    );
+    let writeTimer = null;
+    function persist() {
+        if (writeTimer) return;
+        writeTimer = setTimeout(() => {
+            writeTimer = null;
+            try {
+                const tmp = JSON_FILE + '.tmp';
+                fs.writeFileSync(tmp, JSON.stringify(state));
+                fs.renameSync(tmp, JSON_FILE);
+            } catch (e) {
+                console.error('[AlloFlow Backend] Failed to persist JSON store:', e.message);
+            }
+        }, 150);
+    }
+    function persistNow() {
+        if (writeTimer) { clearTimeout(writeTimer); writeTimer = null; }
+        try {
+            const tmp = JSON_FILE + '.tmp';
+            fs.writeFileSync(tmp, JSON.stringify(state));
+            fs.renameSync(tmp, JSON_FILE);
+        } catch (e) {
+            console.error('[AlloFlow Backend] Failed to persist JSON store:', e.message);
+        }
+    }
+    process.on('exit', persistNow);
+    process.on('SIGTERM', () => { persistNow(); process.exit(0); });
+    process.on('SIGINT',  () => { persistNow(); process.exit(0); });
 
-    CREATE TABLE IF NOT EXISTS documents (
-        collection  TEXT NOT NULL,
-        doc_id      TEXT NOT NULL,
-        data        TEXT NOT NULL DEFAULT '{}',
-        created_at  TEXT DEFAULT (datetime('now')),
-        updated_at  TEXT DEFAULT (datetime('now')),
-        PRIMARY KEY (collection, doc_id)
-    );
+    return {
+        engine: 'json',
+        location: JSON_FILE,
 
-    CREATE INDEX IF NOT EXISTS idx_docs_collection ON documents(collection);
-`);
+        getUserByLoginId(loginId) {
+            return state.users.find(u => u.loginId === loginId) || null;
+        },
+        getUserByToken(token) {
+            return state.users.find(u => u.token === token) || null;
+        },
+        createUser({ id, loginId, displayName, role, token }) {
+            state.users.push({ id, loginId, displayName, role, token, createdAt: new Date().toISOString() });
+            persist();
+        },
+        setUserToken(userId, token) {
+            const u = state.users.find(u => u.id === userId);
+            if (u) { u.token = token; persist(); }
+        },
+        clearToken(token) {
+            const u = state.users.find(u => u.token === token);
+            if (u) { u.token = null; persist(); }
+        },
+        listTeachers() {
+            return state.users
+                .filter(u => u.role === 'teacher')
+                .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+        },
+
+        listDocs(collection, limit) {
+            const coll = state.documents[collection] || {};
+            return Object.entries(coll).slice(0, limit).map(([id, data]) => ({ id, ...data }));
+        },
+        getDoc(collection, docId) {
+            const coll = state.documents[collection] || {};
+            return Object.prototype.hasOwnProperty.call(coll, docId) ? coll[docId] : null;
+        },
+        setDoc(collection, docId, data) {
+            if (!state.documents[collection]) state.documents[collection] = {};
+            state.documents[collection][docId] = data;
+            persist();
+        },
+        deleteDoc(collection, docId) {
+            if (state.documents[collection]) {
+                delete state.documents[collection][docId];
+                persist();
+            }
+        },
+    };
+}
+
+const store = DatabaseSync ? createSqliteStore() : createJsonStore();
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -150,15 +306,10 @@ function getToken(req) {
     return auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
 }
 
-function getUserByToken(token) {
-    if (!token) return null;
-    return sqlite.prepare('SELECT * FROM users WHERE token = ? LIMIT 1').get(token) || null;
-}
-
 // ── Route handlers ────────────────────────────────────────────────────────────
 
 function handleHealth(_req, res) {
-    json(res, 200, { ok: true, version: '0.1.0', backend: 'sqlite-local', db: DB_FILE });
+    json(res, 200, { ok: true, version: '0.2.0', backend: `${store.engine}-local`, db: store.location });
 }
 
 // POST /auth/create-account
@@ -173,14 +324,13 @@ async function handleCreateAccount(req, res) {
     if (!loginId) return json(res, 400, { error: 'Login ID is required (letters, numbers, hyphens)' });
     if (loginId.length < 2) return json(res, 400, { error: 'Login ID must be at least 2 characters' });
 
-    const existing = sqlite.prepare('SELECT id FROM users WHERE login_id = ? LIMIT 1').get(loginId);
-    if (existing)  return json(res, 409, { error: 'That Login ID is already taken' });
+    if (store.getUserByLoginId(loginId)) {
+        return json(res, 409, { error: 'That Login ID is already taken' });
+    }
 
     const id    = randomUUID();
     const token = randomUUID();
-    sqlite.prepare(
-        'INSERT INTO users (id, login_id, display_name, role, token) VALUES (?, ?, ?, ?, ?)'
-    ).run(id, loginId, name, role, token);
+    store.createUser({ id, loginId, displayName: name, role, token });
 
     json(res, 200, {
         token,
@@ -195,19 +345,19 @@ async function handleLogin(req, res) {
     const loginId = sanitizeLoginId(body.loginId || '');
     if (!loginId) return json(res, 400, { error: 'Login ID is required' });
 
-    const user = sqlite.prepare('SELECT * FROM users WHERE login_id = ? LIMIT 1').get(loginId);
+    const user = store.getUserByLoginId(loginId);
     if (!user)  return json(res, 401, { error: 'No account found with that Login ID' });
 
     // Rotate token on every login
     const token = randomUUID();
-    sqlite.prepare('UPDATE users SET token = ? WHERE id = ?').run(token, user.id);
+    store.setUserToken(user.id, token);
 
     json(res, 200, {
         token,
         user: {
             uid:         user.id,
-            displayName: user.display_name,
-            loginId:     user.login_id,
+            displayName: user.displayName,
+            loginId:     user.loginId,
             role:        user.role,
             isTeacher:   true,
         },
@@ -216,24 +366,22 @@ async function handleLogin(req, res) {
 
 // GET /auth/accounts — list all teacher accounts (for admin UI)
 function handleListAccounts(_req, res) {
-    const rows = sqlite.prepare(
-        "SELECT id, login_id, display_name, created_at FROM users WHERE role = 'teacher' ORDER BY created_at ASC"
-    ).all();
+    const rows = store.listTeachers();
     json(res, 200, { accounts: rows.map(r => ({
-        uid: r.id, loginId: r.login_id, displayName: r.display_name, createdAt: r.created_at,
+        uid: r.id, loginId: r.loginId, displayName: r.displayName, createdAt: r.createdAt,
     })) });
 }
 
 // GET /auth/session
 function handleSession(req, res) {
-    const user = getUserByToken(getToken(req));
+    const user = getToken(req) ? store.getUserByToken(getToken(req)) : null;
     if (!user) return json(res, 401, { error: 'No active session' });
     json(res, 200, {
         user: {
             uid:         user.id,
-            displayName: user.display_name,
+            displayName: user.displayName,
             role:        user.role,
-            email:       `${user.username}@alloflow.local`,
+            email:       `${user.loginId}@alloflow.local`,
             isTeacher:   user.role === 'teacher',
         },
     });
@@ -242,9 +390,7 @@ function handleSession(req, res) {
 // POST /auth/logout
 function handleLogout(req, res) {
     const token = getToken(req);
-    if (token) {
-        sqlite.prepare('UPDATE users SET token = NULL WHERE token = ?').run(token);
-    }
+    if (token) store.clearToken(token);
     json(res, 200, { ok: true });
 }
 
@@ -252,20 +398,14 @@ function handleLogout(req, res) {
 function handleListDocs(req, res, collection) {
     const url    = new URL(req.url, `http://localhost:${PORT}`);
     const limitN = Math.min(parseInt(url.searchParams.get('limit') || '500', 10), 5000);
-    const rows   = sqlite.prepare(
-        'SELECT doc_id, data FROM documents WHERE collection = ? LIMIT ?'
-    ).all(collection, limitN);
-    const docs = rows.map(r => ({ id: r.doc_id, ...JSON.parse(r.data) }));
-    json(res, 200, { docs });
+    json(res, 200, { docs: store.listDocs(collection, limitN) });
 }
 
 // GET /db/:collection/:id
 function handleGetDoc(req, res, collection, docId) {
-    const row = sqlite.prepare(
-        'SELECT data FROM documents WHERE collection = ? AND doc_id = ? LIMIT 1'
-    ).get(collection, docId);
-    if (!row) return json(res, 404, { error: 'Document not found' });
-    json(res, 200, { id: docId, ...JSON.parse(row.data) });
+    const data = store.getDoc(collection, docId);
+    if (data === null) return json(res, 404, { error: 'Document not found' });
+    json(res, 200, { id: docId, ...data });
 }
 
 // POST /db/:collection
@@ -274,46 +414,22 @@ async function handleSetDoc(req, res, collection) {
     const body = await parseBody(req);
     const { id, ...data } = body;
     const docId = id || randomUUID();
-    const now   = new Date().toISOString();
-
-    sqlite.prepare(`
-        INSERT INTO documents (collection, doc_id, data, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(collection, doc_id)
-        DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-    `).run(collection, docId, JSON.stringify(data), now, now);
-
+    store.setDoc(collection, docId, data);
     json(res, 200, { id: docId, ...data });
 }
 
 // PUT /db/:collection/:id  — merge update (shallow)
 async function handleUpdateDoc(req, res, collection, docId) {
-    const existing = (() => {
-        const row = sqlite.prepare(
-            'SELECT data FROM documents WHERE collection = ? AND doc_id = ? LIMIT 1'
-        ).get(collection, docId);
-        return row ? JSON.parse(row.data) : {};
-    })();
-
-    const updates = await parseBody(req);
-    const merged  = { ...existing, ...updates };
-    const now     = new Date().toISOString();
-
-    sqlite.prepare(`
-        INSERT INTO documents (collection, doc_id, data, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(collection, doc_id)
-        DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-    `).run(collection, docId, JSON.stringify(merged), now, now);
-
+    const existing = store.getDoc(collection, docId) || {};
+    const updates  = await parseBody(req);
+    const merged   = { ...existing, ...updates };
+    store.setDoc(collection, docId, merged);
     json(res, 200, { id: docId, ...merged });
 }
 
 // DELETE /db/:collection/:id
 function handleDeleteDoc(req, res, collection, docId) {
-    sqlite.prepare(
-        'DELETE FROM documents WHERE collection = ? AND doc_id = ?'
-    ).run(collection, docId);
+    store.deleteDoc(collection, docId);
     json(res, 200, { ok: true });
 }
 
@@ -369,14 +485,14 @@ const server = http.createServer(async (req, res) => {
         json(res, 404, { error: 'Not found' });
 
     } catch (err) {
-        console.error('[AlloFlow SQLite Backend] Error:', err.message);
+        console.error('[AlloFlow Backend] Error:', err.message);
         json(res, 500, { error: 'Internal server error' });
     }
 });
 
 server.listen(PORT, '127.0.0.1', () => {
     console.log(`✅ AlloFlow SQLite backend: http://localhost:${PORT}`);
-    console.log(`   DB file: ${DB_FILE}`);
+    console.log(`   Storage: ${store.engine} (${store.location})`);
 });
 
-module.exports = { server, sqlite };
+module.exports = { server, store };

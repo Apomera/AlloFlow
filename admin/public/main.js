@@ -220,6 +220,32 @@ function getInstallerVersion() {
 
 const INSTALLER_VERSION = getInstallerVersion();
 
+// Build edition — 'full' (default) or 'remediation' (focused document-remediation
+// build). Baked in at package time via electron-builder extraMetadata.alloEdition.
+function getEdition() {
+  // Env override for dev testing (e.g. ALLO_EDITION=remediation electron .)
+  if (process.env.ALLO_EDITION) return process.env.ALLO_EDITION;
+  try {
+    return require('../package.json').alloEdition || 'full';
+  } catch { return 'full'; }
+}
+const EDITION = getEdition();
+
+// True when an AI provider has been configured (ai_config.json has aiProvider).
+// Used by the remediation edition to decide whether to show the provider picker
+// or jump straight to the remediation screen.
+function isAiConfigured() {
+  try {
+    if (!fs.existsSync(AI_CONFIG_FILE)) return false;
+    const cfg = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+    if (!cfg.aiProvider) return false;
+    if (cfg.aiProvider === 'gemini') return !!cfg.geminiApiKey || !!cfg.googleClientId;
+    if (cfg.aiProvider === 'nvidia') return !!cfg.nvidiaApiKey;
+    if (cfg.aiProvider === 'llm-engine') return true; // LM Studio detected/started separately
+    return true;
+  } catch { return false; }
+}
+
 // Ensure AlloFlow directory exists
 function ensureAlloFlowDir() {
   if (!fs.existsSync(ALLOFLOW_DIR)) {
@@ -328,15 +354,28 @@ const createWindow = () => {
     mainWindow.show();
   });
 
-  const startURL = isDev
+  // Remediation edition: if a provider is already configured, jump straight to the
+  // focused remediation screen (the local app served on 3730). Otherwise load the
+  // admin build, where App.jsx shows the streamlined provider picker.
+  const adminURL = isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html')}`;
 
+  let startURL = adminURL;
+  if (EDITION === 'remediation' && isAiConfigured()) {
+    startURL = `http://localhost:${getLocalAppPort()}/?mode=remediation`;
+  }
+
   mainWindow.loadURL(startURL);
 
-  // Prevent renderer from opening new BrowserWindows (e.g. window.open)
+  // Window-open handling. In the remediation edition we allow same-app popups
+  // (the compliance dashboard opens via window.open with a blob/about:blank URL)
+  // to render as child windows; real external http(s) links still open in the
+  // system browser.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    // Open external URLs in the system browser instead
+    if (EDITION === 'remediation' && (url === 'about:blank' || url.startsWith('blob:') || url.startsWith('data:'))) {
+      return { action: 'allow' };
+    }
     if (url.startsWith('http://') || url.startsWith('https://')) {
       require('electron').shell.openExternal(url);
     }
@@ -414,10 +453,28 @@ async function initServices() {
       }
       
       if (!nativePM.isServiceInstalled(serviceId)) {
-        console.warn(`[app:ready] Service not installed (will skip): ${serviceId}`);
+        // Self-heal: Piper on macOS/Linux moved from a native binary to a pip
+        // venv. Upgraded installs (or a failed first install) have no venv, so
+        // install it in the background, then start — otherwise TTS silently
+        // falls back to browser speech forever. Other services just skip.
+        if (serviceId === 'piper' && process.platform !== 'win32') {
+          console.log('[app:ready] Piper not installed — installing venv in background...');
+          (async () => {
+            try {
+              await nativePM.installService('piper', (p) =>
+                console.log(`[app:ready][piper-install] ${p.progress}% ${p.status}`));
+              nativePM.startService('piper');
+              console.log('[app:ready] ✓ piper installed and started');
+            } catch (e) {
+              console.error('[app:ready] Piper background install failed:', e.message);
+            }
+          })();
+        } else {
+          console.warn(`[app:ready] Service not installed (will skip): ${serviceId}`);
+        }
         continue;
       }
-      
+
       try {
         console.log(`[app:ready] Starting service: ${serviceId}`);
         nativePM.startService(serviceId);
@@ -426,7 +483,7 @@ async function initServices() {
         console.error(`[app:ready] Failed to start ${serviceId}:`, err.message);
       }
     }
-    
+
     // Wait for LM Studio (llm-engine) in background — no longer blocks window
     if (selectedServices.includes('llm-engine')) {
       try {
@@ -593,6 +650,88 @@ ipcMain.handle('setup:browse-folder', async (event, defaultPath) => {
 });
 
 // ============================================================================
+// REMEDIATION EDITION — folder ingestion, edition flag, focused launch
+// ============================================================================
+
+const REMEDIATION_EXTS = new Set(['.pdf', '.docx', '.pptx']);
+
+// Return the build edition ('full' | 'remediation').
+ipcMain.handle('app:get-edition', async () => EDITION);
+
+// Open a directory picker, then recursively collect supported documents.
+// Returns file metadata only (paths, not contents) to keep the IPC payload small;
+// contents are fetched on demand via remediation:read-file-base64.
+ipcMain.handle('remediation:select-folder', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      defaultPath: os.homedir(),
+      properties: ['openDirectory'],
+      title: 'Choose a folder of documents to remediate',
+    });
+    if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+    const root = result.filePaths[0];
+    const files = [];
+    const MAX_FILES = 1000; // safety cap
+
+    const walk = (dir) => {
+      if (files.length >= MAX_FILES) return;
+      let entries;
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+      catch { return; }
+      for (const entry of entries) {
+        if (files.length >= MAX_FILES) break;
+        if (entry.name.startsWith('.')) continue; // skip hidden / dotfiles
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === 'node_modules') continue;
+          walk(full);
+        } else if (entry.isFile() && REMEDIATION_EXTS.has(path.extname(entry.name).toLowerCase())) {
+          let sizeBytes = 0;
+          try { sizeBytes = fs.statSync(full).size; } catch {}
+          files.push({ name: entry.name, path: full, relPath: path.relative(root, full), sizeBytes });
+        }
+      }
+    };
+    walk(root);
+
+    console.log(`[remediation:select-folder] ${root} → ${files.length} document(s)`);
+    return { canceled: false, root, files };
+  } catch (err) {
+    console.error('[remediation:select-folder] Error:', err.message);
+    return { canceled: true, error: err.message };
+  }
+});
+
+// Read one file (by absolute path) and return its base64 contents on demand.
+ipcMain.handle('remediation:read-file-base64', async (event, filePath) => {
+  try {
+    if (typeof filePath !== 'string' || !fs.existsSync(filePath)) {
+      return { error: 'File not found' };
+    }
+    const buf = fs.readFileSync(filePath);
+    return { base64: buf.toString('base64'), sizeBytes: buf.length };
+  } catch (err) {
+    console.error('[remediation:read-file-base64] Error:', err.message);
+    return { error: err.message };
+  }
+});
+
+// Navigate the main window to the focused remediation screen (local app on 3730).
+// Called by the streamlined provider picker once an AI provider is configured.
+ipcMain.handle('remediation:launch', async () => {
+  try {
+    const url = `http://localhost:${getLocalAppPort()}/?mode=remediation`;
+    if (mainWindow) await mainWindow.loadURL(url);
+    console.log('[remediation:launch] Navigated to', url);
+    return { success: true, url };
+  } catch (err) {
+    console.error('[remediation:launch] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
+// ============================================================================
 // HARDWARE DETECTION & SERVICE MANAGEMENT
 // ============================================================================
 
@@ -663,6 +802,29 @@ function detectHardware() {
           }
         } catch (wmicErr) {
           console.warn('[hardware:detect] WMI GPU detection failed:', wmicErr.message);
+        }
+      } else if (process.platform === 'darwin') {
+        // macOS: Apple Silicon uses Metal; Intel Mac falls back to system_profiler
+        if (os.arch() === 'arm64') {
+          gpu = { type: 'Apple', name: 'Apple Silicon', vramGB: 'unified' };
+          console.log('[hardware:detect] Apple Silicon detected — Metal backend');
+        } else {
+          try {
+            const spOut = execSync(
+              'system_profiler SPDisplaysDataType 2>/dev/null | grep "Chipset Model"',
+              { encoding: 'utf-8', stdio: 'pipe' }
+            );
+            const match = spOut.match(/Chipset Model:\s*(.+)/);
+            if (match) {
+              const name = match[1].trim();
+              const gpuType = name.includes('AMD') || name.includes('Radeon') ? 'AMD'
+                : name.includes('NVIDIA') ? 'NVIDIA'
+                : name.includes('Intel') ? 'Intel'
+                : 'Unknown';
+              gpu = { type: gpuType, name, vramGB: 'detected' };
+              console.log('[hardware:detect] Intel Mac GPU:', name);
+            }
+          } catch {}
         }
       } else {
         try {
@@ -806,6 +968,19 @@ async function startDeployment(setupData, onProgress) {
         continue;
       }
 
+      // LM Studio on macOS is installed by the user, not bundled — the wizard
+      // guides them through it after deployment and waits for detection.
+      if (serviceId === 'llm-engine' && process.platform === 'darwin' && !nativePM.isServiceInstalled('llm-engine')) {
+        console.log('[deploy:start] LM Studio not installed — user will be guided to install it after deployment');
+        onProgress({
+          phase: 'install',
+          status: 'LM Studio: you\'ll be guided to install it in the next step',
+          progress: baseProgress + 60 / totalToInstall
+        });
+        installed++;
+        continue;
+      }
+
       if (nativePM.isServiceInstalled(serviceId)) {
         console.log(`[deploy:start] ${serviceId} already installed, skipping download`);
         onProgress({
@@ -827,7 +1002,10 @@ async function startDeployment(setupData, onProgress) {
         }
         // Always ensure piper voice model is present (may be missing on update from older install)
         if (serviceId === 'piper') {
-          nativePM.ensurePiperVoiceModel().catch((e) => {
+          const ensureVoice = process.platform === 'win32'
+            ? nativePM.ensurePiperVoiceModel()
+            : nativePM.ensurePiperVoiceModelPip();
+          ensureVoice.catch((e) => {
             console.warn('[deploy] Piper voice model check failed (non-fatal):', e.message);
           });
         }
@@ -860,6 +1038,7 @@ async function startDeployment(setupData, onProgress) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
       if (!svcDef) continue;
       if (!svcDef.native) continue; // Cloud services (e.g. gemini-imagen) have no process to start
+      if (serviceId === 'llm-engine' && !nativePM.isServiceInstalled('llm-engine')) continue; // pending manual install
 
       onProgress({
         phase: 'starting',
@@ -881,6 +1060,9 @@ async function startDeployment(setupData, onProgress) {
     for (const serviceId of servicesToInstall) {
       const svcDef = SERVICE_DEFINITIONS[serviceId];
       if (!svcDef || !svcDef.healthCheck) continue;
+      // Never block deployment on LM Studio — the wizard's dedicated LM Studio
+      // step waits for it (server up + model loaded) after deployment finishes
+      if (serviceId === 'llm-engine') continue;
       
       onProgress({
         phase: 'healthcheck',
@@ -965,7 +1147,10 @@ async function startDeployment(setupData, onProgress) {
           fallback: 'neural-chat',
           LM_STUDIO_GPU_BACKEND: gpuBackend
         },
-        ttsProvider: 'browser', // Edge TTS fallback
+        // Prefer local Piper TTS when it's part of the deployment; the app
+        // falls back to browser speech automatically if Piper is unreachable.
+        ttsProvider: servicesToInstallFinal.includes('piper') ? 'piper' : 'browser',
+        ttsServerUrl: 'http://localhost:5500',
         imageProvider: servicesToInstallFinal.includes('gemini')
           ? 'gemini'
           : servicesToInstallFinal.includes('copilot')
@@ -1068,17 +1253,11 @@ async function startDeployment(setupData, onProgress) {
       console.warn('[deploy:start] Could not update aiProvider in ai_config.json:', err.message);
     }
     
-    // PHASE 7: Open AlloFlow local app in user's browser
+    // PHASE 7: Deployment finished. Do NOT open the app here — the wizard still
+    // has post-deploy steps (e.g. the LM Studio install/model gate). The app is
+    // opened only when the wizard fully completes, via the localApp:open IPC.
     const localAppPort = getLocalAppPort();
     const localAppUrl = `http://localhost:${localAppPort}`;
-    onProgress({ phase: 'launching', status: `Launching AlloFlow at ${localAppUrl}...`, progress: 98 });
-    try {
-      const { shell } = require('electron');
-      await shell.openExternal(localAppUrl);
-      console.log('[deploy:start] Opened AlloFlow local app in browser at', localAppUrl);
-    } catch (err) {
-      console.warn('[deploy:start] Could not open browser:', err.message);
-    }
 
     onProgress({
       phase: 'complete',
@@ -1478,6 +1657,21 @@ ipcMain.handle('localApp:reload', async () => {
   return { success: true, url };
 });
 
+// Open the local app in the system browser. Called by the setup wizard only
+// after ALL setup is complete (including the LM Studio gate), so the dashboard
+// never appears before the stack is fully ready.
+ipcMain.handle('localApp:open', async () => {
+  const url = `http://localhost:${getLocalAppPort()}`;
+  try {
+    await shell.openExternal(url);
+    console.log('[localApp:open] Opened AlloFlow at', url);
+    return { success: true, url };
+  } catch (err) {
+    console.warn('[localApp:open] Could not open browser:', err.message);
+    return { success: false, error: err.message };
+  }
+});
+
 // ============================================================================
 // AI CONFIG READ / WRITE  (used by AIConfig.jsx)
 // ============================================================================
@@ -1524,6 +1718,40 @@ ipcMain.handle('shell:open-external', async (event, url) => {
 // SERVICES HEALTH & STATUS  (used by Dashboard.jsx, Services.jsx)
 // ============================================================================
 
+// LM Studio status — used by the setup wizard to gate completion until
+// LM Studio is installed, its server is running, and a model is available.
+// If LM Studio is installed but the server isn't up, attempts to start it
+// (throttled so repeated polling doesn't spawn `lms server start` every tick).
+let lastLmsStartAttempt = 0;
+ipcMain.handle('lmstudio:status', async () => {
+  const installed = !!nativePM.isServiceInstalled('llm-engine');
+  let running = false;
+  let models = [];
+
+  try {
+    const response = await fetch('http://127.0.0.1:1234/v1/models', {
+      signal: AbortSignal.timeout(3000)
+    });
+    if (response.ok) {
+      running = true;
+      const data = await response.json();
+      models = (data.data || []).map(m => m.id);
+    }
+  } catch (_) { /* server not reachable */ }
+
+  if (installed && !running && Date.now() - lastLmsStartAttempt > 15000) {
+    lastLmsStartAttempt = Date.now();
+    try {
+      nativePM.startService('llm-engine');
+      console.log('[lmstudio:status] LM Studio installed but server down — start attempted');
+    } catch (e) {
+      console.warn('[lmstudio:status] Could not start LM Studio server:', e.message);
+    }
+  }
+
+  return { installed, running, models, ready: running && models.length > 0 };
+});
+
 // Overall health — checks LM Studio (llm-engine) reachability
 ipcMain.handle('services:health', async (event) => {
   try {
@@ -1567,6 +1795,27 @@ ipcMain.handle('services:list', async (event) => {
         port: 1234
       }
     ];
+
+    // Check data backend (SQLite/JSON REST server)
+    {
+      const backendPort = localBackend.getPort();
+      let backendHealthy = false;
+      try {
+        const res = await fetch(`http://127.0.0.1:${backendPort}/health`, {
+          signal: AbortSignal.timeout(3000)
+        });
+        backendHealthy = res.ok;
+      } catch (_) { /* backend not responding */ }
+      services.push({
+        name: 'Data Backend',
+        id: 'backend',
+        status: backendHealthy ? 'running' : 'stopped',
+        details: backendHealthy
+          ? `Local data storage on port ${backendPort}`
+          : 'Not running — app data is unavailable',
+        port: backendPort
+      });
+    }
 
     // Check Piper (native process)
     try {
@@ -2165,6 +2414,18 @@ ipcMain.handle('services:stop-all', async (event) => {
 // Restart individual service
 ipcMain.handle('services:restart-one', async (event, serviceName) => {
   try {
+    // Data backend is managed by localBackendManager, not nativePM
+    const normalized = serviceName.toLowerCase();
+    if (normalized === 'backend' || normalized.includes('data backend')) {
+      console.log('[ipc:services:restart-one] Restarting data backend...');
+      localBackend.stop();
+      await new Promise(r => setTimeout(r, 500));
+      const localConfig = readLocalConfig();
+      const sqlitePort = parseInt((localConfig.sqliteUrl || '').split(':').pop(), 10) || 3747;
+      const port = await localBackend.start(sqlitePort, app.isPackaged);
+      return { success: true, message: `Data backend restarted on port ${port}` };
+    }
+
     // Map display name to service ID
     const serviceId = serviceName.toLowerCase().replace(/\s+/g, '').replace('tts', '');
     const actualId = Object.keys(SERVICE_DEFINITIONS).find(id => {

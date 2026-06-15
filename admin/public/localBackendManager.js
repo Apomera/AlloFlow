@@ -118,22 +118,22 @@ async function start(port, isPackaged, dataDir) {
 }
 
 function _spawn(scriptPath, dbDir, resolveOnce, rejectOnce) {
-    // In Electron, process.execPath is the Electron binary itself.
-    // Spawning it with a script path launches a FULL NEW APP INSTANCE.
-    // We must find the system Node.js binary instead.
-    const nodeExe = _findSystemNode();
-    if (!nodeExe) {
-        const msg = 'No system Node.js found — SQLite backend requires Node.js 22.5+ installed on this machine';
-        console.warn('[localBackend]', msg);
-        if (rejectOnce) { rejectOnce(new Error(msg)); resolveOnce = null; rejectOnce = null; }
-        return;
-    }
-
+    // Prefer a modern system Node (gives the backend node:sqlite), but fall
+    // back to Electron's own binary run as plain Node via ELECTRON_RUN_AS_NODE —
+    // always available in the packaged app, no system Node required. The
+    // backend script detects missing node:sqlite and uses its JSON file store.
     const env = {
         ...process.env,
         SQLITE_PORT: String(_port),
         DATA_DIR:    dbDir,
     };
+
+    let nodeExe = _findSystemNode();
+    if (!nodeExe) {
+        nodeExe = process.execPath;
+        env.ELECTRON_RUN_AS_NODE = '1';
+        console.log('[localBackend] No system Node found — using Electron runtime as Node');
+    }
 
     _proc = spawn(nodeExe, [scriptPath], {
         stdio: ['ignore', 'pipe', 'pipe'],

@@ -88,6 +88,8 @@ function buildLocalConfigScript() {
             const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
             if (ai.aiProvider) cfg.aiProvider = ai.aiProvider;
             if (ai.imageProvider) cfg.imageProvider = ai.imageProvider;
+            if (ai.ttsProvider) cfg.ttsProvider = ai.ttsProvider;
+            if (ai.ttsServerUrl) cfg.ttsServerUrl = ai.ttsServerUrl;
             if (ai.copilot?.endpoint) cfg.copilotEndpoint = ai.copilot.endpoint;
             // Expose configured Gemini model so client UI can display it
             if (ai.geminiModel) cfg.geminiModel = ai.geminiModel;            if (ai.geminiTtsModel)      cfg.geminiTtsModel = ai.geminiTtsModel;
@@ -395,6 +397,41 @@ function logAIProxy(route, provider, status, ms) {
 }
 
 /**
+ * Proxy a request to the local LLM (LM Studio) with NO timeout.
+ * Node's global fetch (undici) caps headers/body at 300s, which aborts slow
+ * local inference. This uses the raw http module with all timeouts disabled so
+ * the app waits as long as generation takes.
+ * @returns {Promise<{status:number, body:string}>}
+ */
+function proxyLocalLLM(upstreamUrl, payload) {
+    return new Promise((resolve, reject) => {
+        const u = new URL(upstreamUrl);
+        const data = Buffer.from(JSON.stringify(payload));
+        const reqMod = u.protocol === 'https:' ? require('https') : http;
+        const upReq = reqMod.request({
+            hostname: u.hostname,
+            port: u.port,
+            path: u.pathname + u.search,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Content-Length': data.length },
+            timeout: 0, // no socket timeout — wait for slow local inference
+        }, (upRes) => {
+            const chunks = [];
+            upRes.on('data', (c) => chunks.push(c));
+            upRes.on('end', () => resolve({
+                status: upRes.statusCode || 502,
+                body: Buffer.concat(chunks).toString('utf-8'),
+            }));
+        });
+        upReq.on('error', reject);
+        // Explicitly clear any default socket timeout the agent might impose.
+        upReq.setTimeout(0);
+        upReq.write(data);
+        upReq.end();
+    });
+}
+
+/**
  * Handle /v1/chat/completions — OpenAI-compatible proxy dispatched by aiProvider.
  * Gemini and Copilot are handled server-side with stored tokens.
  * LM Studio requests are passed through to localhost:1234.
@@ -471,17 +508,15 @@ async function handleV1ChatCompletions(req, res, body) {
             return;
 
         } else {
-            // LM Studio / local engine passthrough (lmUrl was previously
-            // undefined here — ReferenceError → 500 on every local request)
-            const upstream = await fetch(`${_lmStudioUpstream}/v1/chat/completions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-            const data = await upstream.json();
-            logAIProxy('/v1/chat/completions', provider, upstream.status, Date.now() - t0);
-            res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
-            return res.end(JSON.stringify(data));
+            // LM Studio / local engine passthrough. Use a raw http proxy with NO
+            // timeout — undici's global fetch caps body/headers at 300s, which
+            // kills slow local inference (e.g. a large PDF on Apple Silicon).
+            const { status, body: respBody } = await proxyLocalLLM(
+                `${_lmStudioUpstream}/v1/chat/completions`, body
+            );
+            logAIProxy('/v1/chat/completions', provider, status, Date.now() - t0);
+            res.writeHead(status, { 'Content-Type': 'application/json' });
+            return res.end(respBody);
         }
     } catch (err) {
         console.error('[localApp:ai-proxy] /v1/chat/completions error:', err.message);
@@ -1185,6 +1220,14 @@ function startLocalAppServer(port, isPackaged) {
                 return res.end('Not Found');
             }
         });
+
+        // Local LLM inference (e.g. analyzing a large PDF on Apple Silicon) can
+        // take many minutes. Disable the HTTP server's request/socket timeouts so
+        // long-running AI proxy calls aren't killed mid-generation — the app waits.
+        _server.requestTimeout = 0;   // no overall request cap (default 300s)
+        _server.headersTimeout = 0;   // no headers cap
+        _server.timeout = 0;          // no idle socket timeout
+        _server.keepAliveTimeout = 0;
 
         _server.on('error', (err) => {
             if (err.code === 'EADDRINUSE') {

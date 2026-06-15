@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Cpu, Settings as SettingsIcon, Server, Wrench, Trash2, Users } from 'lucide-react';
 import SetupWizard from './pages/SetupWizard';
+import RemediationSetup from './pages/RemediationSetup';
 import Dashboard from './pages/Dashboard';
 import Models from './pages/Models';
 import AIConfig from './pages/AIConfig';
@@ -189,6 +190,7 @@ const TAB_NAV = [
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [edition, setEdition] = useState(null); // null = loading, 'full' | 'remediation'
   const [setupState, setSetupState] = useState({
     loading: true,
     installed: false,
@@ -197,6 +199,12 @@ function App() {
   });
 
   useEffect(() => {
+    (async () => {
+      try {
+        const ed = await window.alloAPI.getEdition?.();
+        setEdition(ed || 'full');
+      } catch { setEdition('full'); }
+    })();
     checkSetupStatus();
   }, []);
 
@@ -233,13 +241,20 @@ function App() {
     });
   };
 
-  if (setupState.loading) {
+  if (setupState.loading || edition === null) {
     return (
       <div className="app-container loading">
         <div className="spinner"></div>
         <p>Initializing AlloFlow...</p>
       </div>
     );
+  }
+
+  // Remediation edition: the admin window only loads here when no provider is
+  // configured yet (main.js jumps straight to the remediation screen otherwise).
+  // Show the streamlined provider picker, which launches the remediation screen.
+  if (edition === 'remediation') {
+    return <RemediationSetup />;
   }
 
   if (setupState.error) {

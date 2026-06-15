@@ -197,7 +197,7 @@ async function downloadAndInstallLMStudio(onProgress) {
   if (platform === 'win32') {
     downloadUrl = 'https://lmstudio.ai/download/latest/win32/x64';
   } else if (platform === 'darwin') {
-    downloadUrl = 'https://lmstudio.ai/download/latest/osx/arm64';
+    downloadUrl = 'https://lmstudio.ai/download/latest/darwin/arm64';
   } else {
     downloadUrl = 'https://lmstudio.ai/download/latest/linux/x64';
   }

@@ -4750,6 +4750,19 @@ const DraftFeedbackInterface = React.memo((props) => {
 // AlloFlow Section: TEACHER_GATE
 // @section TEACHER_GATE — Teacher/parent login gate (login only; accounts created in admin)
 const TeacherGate = React.memo((props) => {
+    // Teacher gating DISABLED — any gated action unlocks immediately, no sign-in.
+    // Covers all trigger paths (role select, header toggle, educator hub, landing
+    // card) and overrides any AlloModules.TeacherGate extension. To re-enable,
+    // remove this block so the original gate below runs again.
+    React.useEffect(() => {
+        if (props.isOpen) {
+            props.onUnlock && props.onUnlock();
+            props.onClose && props.onClose();
+        }
+    }, [props.isOpen]);
+    return null;
+
+    // eslint-disable-next-line no-unreachable
     const Ext = window.AlloModules && window.AlloModules.TeacherGate;
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
@@ -8734,7 +8747,9 @@ const AlloFlowContent = () => {
   const [showStudentWelcome, setShowStudentWelcome] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
   // Startup screen: shown after loading when local DB is available and no valid session
-  const [startupDone, setStartupDone] = useState(!window.__alloLocalDB);
+  // Teacher gating disabled: skip the startup login screen entirely (was
+  // `!window.__alloLocalDB`). Role choice still happens via RoleSelectionModal.
+  const [startupDone, setStartupDone] = useState(true);
   const [startupUser, setStartupUser] = useState(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [hasSelectedMode, setHasSelectedMode] = useState(false);
@@ -14336,6 +14351,24 @@ Return only the corrected version of this exact text:`;
   const [pdfBatchMode, setPdfBatchMode] = useState(false);
   const [pdfWebMode, setPdfWebMode] = useState(false);
   const [pdfBatchQueue, setPdfBatchQueue] = useState([]);
+
+  // ── Focused remediation edition (?mode=remediation) ──────────────────────
+  // Skip the landing/role/gate flow and open the batch remediation screen
+  // directly. Used by the standalone "AlloFlow Remediation" Electron build.
+  const _remediationMode = (() => {
+    try { return new URLSearchParams(window.location.search).get('mode') === 'remediation'; }
+    catch { return false; }
+  })();
+  useEffect(() => {
+    if (!_remediationMode) return;
+    setShowWizard(false);
+    setHasSelectedMode(true);
+    setHasSelectedRole(true);
+    setIsTeacherMode(true);
+    setPdfBatchMode(true);
+    setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
+    try { document.body.classList.add('allo-remediation-only'); } catch {}
+  }, [_remediationMode]);
   const [pdfBatchProcessing, setPdfBatchProcessing] = useState(false);
   const [pdfBatchCurrentIndex, setPdfBatchCurrentIndex] = useState(-1);
   const [pdfBatchStep, setPdfBatchStep] = useState('');
@@ -52498,6 +52531,41 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                           e.target.value = '';
                         }} />
                         <label htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">Browse Files</label>
+                      </div>
+                    )}
+
+                    {/* Scan Folder (standalone remediation Electron build only) */}
+                    {!pdfBatchProcessing && !pdfBatchSummary && window.alloAPI?.remediation?.selectFolder && (
+                      <div className="mb-4 text-center">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await window.alloAPI.remediation.selectFolder();
+                              if (!res || res.canceled) return;
+                              const docs = res.files || [];
+                              if (docs.length === 0) { addToast('No PDF, DOCX, or PPTX files found in that folder', 'error'); return; }
+                              addToast(`Loading ${docs.length} document(s)…`, 'info');
+                              const queue = [];
+                              for (const f of docs) {
+                                const r = await window.alloAPI.remediation.readFileBase64(f.path);
+                                if (r && r.base64) {
+                                  queue.push({ id: Date.now() + Math.random(), fileName: f.relPath || f.name, fileSize: f.sizeBytes || r.sizeBytes || 0, base64: r.base64, status: 'pending', result: null });
+                                }
+                              }
+                              if (queue.length === 0) { addToast('Could not read any documents from that folder', 'error'); return; }
+                              setPdfBatchQueue(queue);
+                              addToast(`Remediating ${queue.length} document(s)…`, 'success');
+                              // Pass the queue explicitly to avoid a React state race.
+                              runPdfBatchRemediation({ resumeQueue: queue });
+                            } catch (e) {
+                              addToast('Folder scan failed: ' + (e.message || e), 'error');
+                            }
+                          }}
+                          className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
+                        >
+                          📂 Scan Folder (PDF · DOCX · PPTX, incl. subfolders)
+                        </button>
+                        <p className="text-xs text-slate-500 mt-2">Pick a folder and AlloFlow will remediate every document, then give you a report.</p>
                       </div>
                     )}
 

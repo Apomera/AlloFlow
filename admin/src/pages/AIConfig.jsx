@@ -74,7 +74,7 @@ export default function AIConfig() {
       if (window.alloAPI?.localApp) {
         const cfg = await window.alloAPI.localApp.readConfig();
         if (cfg) {
-          setLlmUrl(cfg.llmEngineUrl || cfg.ollamaUrl || 'http://localhost:1234');
+          setLlmUrl(cfg.llmEngineUrl || 'http://localhost:1234');
           setDefaultModel(cfg.defaultModel || '');
           setPiperEnabled(cfg.piperEnabled !== false);
         }

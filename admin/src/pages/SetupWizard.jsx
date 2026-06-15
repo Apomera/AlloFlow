@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const DEPLOYMENT_TYPES = [
   {
@@ -51,6 +51,25 @@ export default function SetupWizard({ onComplete }) {
   const [copilotEndpoint, setCopilotEndpoint] = useState('');
   const [copilotConnecting, setCopilotConnecting] = useState(false);
   const [selectedAiProvider, setSelectedAiProvider] = useState('llm-engine');
+  const [lmsStatus, setLmsStatus] = useState(null);
+  const [pendingSetupData, setPendingSetupData] = useState(null);
+
+  // Poll LM Studio status while on the install-gate step
+  useEffect(() => {
+    if (step !== 'lmstudio') return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const s = await window.alloAPI.lmstudioStatus();
+        if (!cancelled) setLmsStatus(s);
+      } catch (e) {
+        console.warn('[SetupWizard] LM Studio status check failed:', e.message);
+      }
+    };
+    check();
+    const timer = setInterval(check, 3000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [step]);
 
   // Handle deployment type selection
   const handleSelectDeployment = async (typeId) => {
@@ -250,7 +269,14 @@ export default function SetupWizard({ onComplete }) {
               if (event.webAppUrl) {
                 setWebAppUrl(event.webAppUrl);
               }
-              handleDeploymentComplete(setupData);
+              if (selectedAiProvider === 'llm-engine') {
+                // Don't finish setup until LM Studio is running with a model
+                setPendingSetupData(setupData);
+                setStep('lmstudio');
+                setLoading(false);
+              } else {
+                handleDeploymentComplete(setupData);
+              }
             }
           } else if (event.type === 'error') {
             setError('Deployment failed: ' + event.error);
@@ -284,12 +310,20 @@ export default function SetupWizard({ onComplete }) {
     }
   };
 
-  // Handle deployment completion
+  // Handle deployment completion — setup is now FULLY done (services deployed
+  // and, for local AI, LM Studio verified running with a model). Open the app
+  // now, not during deployment.
   const handleDeploymentComplete = (finalConfig) => {
     console.log('[SetupWizard] Deployment completed');
     setStep('success');
     setLoading(false);
-    
+
+    if (selectedType === 'local') {
+      window.alloAPI?.localApp?.open?.().catch(e =>
+        console.warn('[SetupWizard] Could not open local app:', e.message)
+      );
+    }
+
     setTimeout(() => {
       onComplete({
         deploymentType: selectedType,
@@ -604,7 +638,7 @@ export default function SetupWizard({ onComplete }) {
                       <div style={{padding: '8px 10px', background: 'rgba(124,58,237,0.06)', borderRadius: '6px', border: '1px solid rgba(124,58,237,0.2)'}}>
                         <strong>Steps to complete after setup finishes:</strong>
                         <ol style={{margin: '6px 0 0 0', paddingLeft: '18px', lineHeight: 1.8}}>
-                          <li>Open <strong>LM Studio</strong> (it will appear in your taskbar after setup)</li>
+                          <li>Open <strong>LM Studio</strong> (it will appear in your Dock or taskbar after setup)</li>
                           <li>Click the <strong>Discover</strong> tab (🔍 icon in the left sidebar)</li>
                           <li>Search for one of the recommended models below and click <strong>Download</strong></li>
                           <li>Wait for the download to complete (model files are 4–8 GB)</li>
@@ -1020,6 +1054,100 @@ export default function SetupWizard({ onComplete }) {
     );
   }
 
+  // STEP 5.5: LM Studio install gate — setup cannot finish until LM Studio
+  // is detected running on port 1234 with at least one model available.
+  if (step === 'lmstudio') {
+    const installed = lmsStatus?.installed;
+    const running = lmsStatus?.running;
+    const hasModel = lmsStatus?.ready;
+
+    const StatusRow = ({ done, label, detail }) => (
+      <div style={{display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
+                   background: done ? 'rgba(40,167,69,0.08)' : 'rgba(0,0,0,0.03)',
+                   border: `1px solid ${done ? '#28a745' : '#ddd'}`, borderRadius: '8px', marginBottom: '8px'}}>
+        <span style={{fontSize: '1.2rem'}}>{done ? '✅' : '⏳'}</span>
+        <div>
+          <strong style={{fontSize: '0.95rem'}}>{label}</strong>
+          {detail && <div style={{fontSize: '0.82rem', color: '#666'}}>{detail}</div>}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="setup-wizard">
+        <div className="setup-container">
+          <h1>Set Up LM Studio</h1>
+          <p className="setup-subtitle">
+            AlloFlow uses LM Studio to run AI locally. Install it and load a model — setup
+            will continue automatically once it's detected.
+          </p>
+
+          <div style={{margin: '16px 0'}}>
+            <StatusRow done={installed} label="LM Studio installed"
+              detail={installed ? 'Found in Applications' : 'Waiting for installation...'} />
+            <StatusRow done={running} label="LM Studio server running"
+              detail={running ? 'Responding on port 1234' : installed ? 'Starting server automatically...' : 'Requires LM Studio to be installed'} />
+            <StatusRow done={hasModel} label="Model available"
+              detail={hasModel ? `Detected: ${lmsStatus.models[0]}` : 'Download a model inside LM Studio'} />
+          </div>
+
+          {!installed && (
+            <div className="info-box" style={{borderColor: '#7c3aed', background: 'rgba(124,58,237,0.05)'}}>
+              <strong>Step 1 — Install LM Studio</strong>
+              <ol style={{margin: '8px 0 0 0', paddingLeft: '20px', lineHeight: 1.8, fontSize: '0.9rem'}}>
+                <li>Click the download button below</li>
+                <li>Open the downloaded file and drag <strong>LM Studio</strong> into <strong>Applications</strong></li>
+                <li>Launch LM Studio from Applications</li>
+              </ol>
+              <button className="btn-primary" style={{marginTop: '12px'}}
+                onClick={() => window.alloAPI.openExternal('https://lmstudio.ai')}>
+                ⬇️ Download LM Studio
+              </button>
+            </div>
+          )}
+
+          {installed && !hasModel && (
+            <div className="info-box" style={{borderColor: '#7c3aed', background: 'rgba(124,58,237,0.05)'}}>
+              <strong>Step 2 — Download a model in LM Studio</strong>
+              <ol style={{margin: '8px 0 0 0', paddingLeft: '20px', lineHeight: 1.8, fontSize: '0.9rem'}}>
+                <li>LM Studio should open automatically — if it shows a welcome screen, complete it (the defaults are fine)</li>
+                <li>Click the <strong>Discover</strong> tab (🔍 in the left sidebar)</li>
+                <li>Search for <em>"Mistral 7B Instruct"</em> or <em>"Llama 3.1 8B"</em> and click <strong>Download</strong></li>
+                <li>Wait for the download to finish (model files are 4–8 GB)</li>
+                <li>AlloFlow will detect the model automatically — no further steps needed</li>
+              </ol>
+            </div>
+          )}
+
+          {hasModel && (
+            <div className="info-box" style={{borderColor: '#28a745', background: 'rgba(40,167,69,0.08)'}}>
+              <strong>🟢 LM Studio is ready!</strong>
+              <p style={{margin: '6px 0 0 0', fontSize: '0.9rem'}}>
+                AlloFlow is connected to LM Studio. Click Continue to finish setup.
+              </p>
+            </div>
+          )}
+
+          <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '20px'}}>
+            <button
+              className="btn-primary"
+              disabled={!hasModel}
+              onClick={() => handleDeploymentComplete(pendingSetupData || config)}
+            >
+              Continue →
+            </button>
+          </div>
+
+          {!hasModel && (
+            <p style={{textAlign: 'center', fontSize: '0.82rem', color: '#888', marginTop: '10px'}}>
+              Checking for LM Studio every few seconds...
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // STEP 6: Success
   if (step === 'success') {
     const deployment = DEPLOYMENT_TYPES.find(d => d.id === selectedType);
@@ -1046,14 +1174,23 @@ export default function SetupWizard({ onComplete }) {
             </div>
           )}
 
-          {selectedType === 'local' && selectedAiProvider === 'llm-engine' && (
+          {selectedType === 'local' && selectedAiProvider === 'llm-engine' && lmsStatus?.ready && (
+            <div className="info-box" style={{borderColor: '#28a745', background: 'rgba(40,167,69,0.08)', marginTop: '16px'}}>
+              <strong>🟢 LM Studio connected</strong>
+              <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: 0}}>
+                Model <strong>{lmsStatus.models[0]}</strong> is available on port 1234.
+              </p>
+            </div>
+          )}
+
+          {selectedType === 'local' && selectedAiProvider === 'llm-engine' && !lmsStatus?.ready && (
             <div className="info-box" style={{borderColor: '#7c3aed', background: 'rgba(124,58,237,0.05)', marginTop: '16px'}}>
               <strong>🦙 Required next step: load a model in LM Studio</strong>
               <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '8px'}}>
                 AlloFlow AI features are offline until you complete these steps:
               </p>
               <ol style={{margin: '0', paddingLeft: '20px', lineHeight: 1.8, fontSize: '0.9rem'}}>
-                <li>Open <strong>LM Studio</strong> (check your taskbar — it launched during setup)</li>
+                <li>Open <strong>LM Studio</strong> (check your Dock or taskbar — it launched during setup)</li>
                 <li><strong>Discover</strong> tab → search <em>"Mistral 7B Instruct"</em> → click <strong>Download</strong></li>
                 <li>Wait for the download to complete (4–8 GB)</li>
                 <li><strong>Local Server</strong> tab → select your model → click <strong>"Start Server"</strong></li>
