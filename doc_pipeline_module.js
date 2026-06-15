@@ -13233,6 +13233,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
         try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:fix-issues-detected', { detail: { issues: _issuesList, score: bestAiScore, axeViolations: bestAxeViolations, target: _targetScore } })); }, 0); } catch(e) {}
         try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); }, 0); } catch(e) {}
+        // Persistence counters: a SINGLE bad/flat pass should not end the whole loop —
+        // AI fixes are stochastic, so we keep going (still below target) and only give up
+        // after CONSECUTIVE regressions/stalls. The loop stays bounded by maxFixPasses and
+        // by the target / zero-issue breaks below, so this can never run away.
+        let consecutiveRegressions = 0;
+        let stallCount = 0;
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
           try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
@@ -13342,11 +13348,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             const _why = axeMuchWorse && !aiWorse
               ? `introduced ${newAxeViolations - bestAxeViolations} new axe/WCAG violation(s) despite AI gains`
               : 'both scores got worse';
-            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTING`);
+            // Revert this pass, but DON'T end the loop on a single stochastic dud — retry
+            // from the last-good state (best*/axeResults/verification are untouched here, so
+            // the next pass re-attempts the same remaining violations). Give up only after
+            // 2 CONSECUTIVE regressions.
             accessibleHtml = snapshotHtml;
-            if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted`, 'info');
-            break;
+            consecutiveRegressions++;
+            if (consecutiveRegressions >= 2) {
+              warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — ${consecutiveRegressions} consecutive reverts, stopping`);
+              if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, stopping`, 'info');
+              break;
+            }
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTED, retrying`);
+            if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, retrying`, 'info');
+            continue;
           }
+          consecutiveRegressions = 0;
 
           // Plateau detection (below) compares THIS pass against the PREVIOUS best — capture
           // it BEFORE we overwrite best* here. Otherwise the comparison is new-vs-itself
@@ -13389,8 +13406,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const minDetectable = Math.max(2, Math.round(reSEM * 1.5));
           const aiImproved = newAiScore > prevBestAiScore + minDetectable;
           if (!axeImproved && !aiImproved && fixPass > 0) {
-            warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement, stopping`);
-            break;
+            // One flat pass isn't a plateau — AI is stochastic, so the next pass often makes
+            // progress. Require 2 CONSECUTIVE non-improving passes before giving up (we're
+            // still below target here). Any improvement resets the counter.
+            stallCount++;
+            if (stallCount >= 2) {
+              warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement for ${stallCount} consecutive passes, stopping`);
+              break;
+            }
+            warnLog(`[Auto-fix] No improvement on pass ${fixPass + 1} (stall ${stallCount}/2) — continuing`);
+          } else {
+            stallCount = 0;
           }
         }
         // Emit session complete for live UI
