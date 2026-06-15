@@ -96,6 +96,14 @@ describe('brainAtlas render goldens', () => {
     expect(html).toMatch(/NOT diagnostic/i); // the integrity hedge
   });
 
+  it('AI GATE: the tutor panel is hidden by default (aiHintsEnabled off) and shown when on', () => {
+    loadTool(FILE, 'brainAtlas');
+    const off = renderTool('brainAtlas', { brainAtlas: { view: 'lateral', selectedRegion: 'cerebellum' } });
+    expect(off).not.toMatch(/Explain at my level/);
+    const on = renderTool('brainAtlas', { brainAtlas: { view: 'lateral', selectedRegion: 'cerebellum' } }, { aiHintsEnabled: true });
+    expect(on).toMatch(/Explain at my level/);
+  });
+
   it('INTEGRITY: the felt-state disclaimer survives (the exemplar the review flagged)', () => {
     // The neurotransmitter view's always-visible disclaimer is the scientific-
     // integrity exemplar. Guard its load-bearing phrases against silent removal.

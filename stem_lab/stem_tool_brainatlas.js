@@ -58,6 +58,7 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
       var callGemini = ctx.callGemini;
+      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled); // house default-OFF AI gate
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -3531,7 +3532,7 @@ var d = labToolData.brainAtlas || {};
               if (VIEW_KEYS[idx]) {
                 e.preventDefault();
                 var vk = VIEW_KEYS[idx];
-                upd('view', vk); upd('selectedRegion', null); upd('quizMode', false); upd('search', '');
+                upd('view', vk); upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o[vk] = true; return o; })()); upd('selectedRegion', null); upd('quizMode', false); upd('search', '');
                 if (typeof announceToSR === 'function') announceToSR('View ' + (idx + 1) + ': ' + (VIEWS[vk].name || vk) + '.');
               }
             } else if (k === 'q' || k === 'Q') {
@@ -3683,7 +3684,7 @@ var d = labToolData.brainAtlas || {};
 
                 return React.createElement("button", { key: key,
 
-                  onClick: function () { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
+                  onClick: function () { upd('view', key); upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o[key] = true; return o; })()); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
 
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-400')
 
@@ -4140,7 +4141,7 @@ var d = labToolData.brainAtlas || {};
 
                           upd('quizFeedback', { chosen: opt.id, correct: correct });
 
-                          if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                          if (correct) { upd('quizScore', (d.quizScore || 0) + 1); upd('quizCorrect', (d.quizCorrect || 0) + 1); }
 
                         },
 
@@ -4609,6 +4610,8 @@ var d = labToolData.brainAtlas || {};
 
                       (function () {
 
+                        if (!aiHintsEnabled) return null;
+
                         var aiKey = '_ai_' + sel.id;
 
                         var aiLevelKey = '_aiLevel_' + sel.id;
@@ -4637,7 +4640,7 @@ var d = labToolData.brainAtlas || {};
 
                         function explain() {
 
-                          if (typeof callGemini !== 'function') { upd(aiErrorKey, 'AI tutor not available.'); return; }
+                          if (!aiHintsEnabled || typeof callGemini !== 'function') { upd(aiErrorKey, 'AI tutor not available.'); return; }
 
                           upd(aiLoadingKey, true); upd(aiErrorKey, ''); upd(aiKey, '');
 

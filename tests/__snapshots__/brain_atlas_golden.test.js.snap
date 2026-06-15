@@ -2,22 +2,22 @@
 
 exports[`brainAtlas render goldens > detail panel: cerebellum (ACCURACY LOCK — ~80%, not 50%) 1`] = `
 {
-  "buttons": 22,
+  "buttons": 18,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 70,
-  "sha": "dc351d80eafc3a94",
+  "lengthBucket": 65,
+  "sha": "2157c460c7b3cca3",
   "svgs": 1,
 }
 `;
 
 exports[`brainAtlas render goldens > detail panel: dopamine (ACCURACY LOCK — no "pleasure chemical" overclaim) 1`] = `
 {
-  "buttons": 29,
+  "buttons": 25,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 85,
-  "sha": "5305d60a5909cb03",
+  "lengthBucket": 80,
+  "sha": "d80f42acaa0c9e2e",
   "svgs": 1,
 }
 `;
