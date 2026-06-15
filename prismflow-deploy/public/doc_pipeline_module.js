@@ -17419,7 +17419,13 @@ tr { page-break-inside: avoid; }
     // used to leave reachable==0, which routed an OCR'd document into the
     // groundTruthMethod fallback and could DECLARE without evidence. The
     // declaration is an evidence claim — no completed walk, no claim.
-    _uaDeclared = !_orphanWalkCrashed && (_reachableLeafCountAtStamp > 0
+    // Font embedding is a FIRST-CLASS veto on the claim: PDF/UA-1 §7.21.4.1 requires every
+    // rendering font to be embedded, so any leftover non-embedded font (Type0/CID composite,
+    // symbolic, custom-encoding, substitute-fetch failure, etc.) means the doc CANNOT be
+    // conformant. Declaring part 1 anyway would contradict AlloFlow's own bundled validator,
+    // which FAILs "All page fonts embedded" on exactly these bytes — withhold the claim instead
+    // (the evidence-based-declaration philosophy). (#1f font-embedding veto, 2026-06-15)
+    _uaDeclared = !_orphanWalkCrashed && _fontsUnrepairable.length === 0 && (_reachableLeafCountAtStamp > 0
       ? _orphanedLeafCountAtStamp === 0
       : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || '')));
     // Observability: surface the linkage outcome in the summary so the
@@ -17593,7 +17599,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           : 'No untagged link annotations found (none present, already tagged by the source, or signed-PDF skip)');
       // FONTS (PDF/UA-1 §7.21.4.1 — rendering fonts shall be embedded)
       _addCheck('Fonts', 'Embedding repair',
-        _fontsUnrepairable.length > 0 ? 'warn' : (_fontsRepaired > 0 ? 'pass' : 'na'),
+        _fontsUnrepairable.length > 0 ? 'fail' : (_fontsRepaired > 0 ? 'pass' : 'na'), // fail (was warn): un-embedded font ⇒ not PDF/UA-1 conformant + vetoes the claim (#1f)
         _fontsRepaired > 0 || _fontsUnrepairable.length > 0
           ? _fontsRepaired + ' non-embedded font(s) repaired with metric-compatible substitutes (Liberation/DejaVu)' + (_fontsUnrepairable.length ? '; left untouched (honest scope): ' + _fontsUnrepairable.slice(0, 6).join('; ') : '')
           : 'All source fonts already embedded');
