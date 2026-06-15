@@ -2165,6 +2165,7 @@ window.StemLab = window.StemLab || {
     var opResult = computeOp();
     var opSimplified = simplify(opResult[0], opResult[1]);
     var opSymbols = { add: '+', sub: '\u2212', mul: '\u00D7', div: '\u00F7' };
+    var opUndefined = (opMode === 'div' && num2 === 0); // dividing by a zero fraction is undefined; guard before simplify masks the 0 denominator
 
     // ═══════════════════════════════════════════════════════════════
     // ═══ v3 STEP-BY-STEP VISUALIZERS ═══════════════════════════════
@@ -2874,15 +2875,15 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'mx-3 text-orange-500' }, opSymbols[opMode]),
             h('span', { className: 'text-red-600' }, num2 + '/' + den2),
             h('span', { className: 'mx-3 text-slate-600' }, '='),
-            h('span', { className: 'text-emerald-600' }, opSimplified[0] + '/' + opSimplified[1])
+            h('span', { className: 'text-emerald-600' }, opUndefined ? 'undefined' : opSimplified[0] + '/' + opSimplified[1])
           ),
           // Mixed number result
-          (Math.abs(opSimplified[0]) > opSimplified[1]) && h('p', { className: 'text-sm font-bold text-orange-600 mb-2' },
+          (!opUndefined && Math.abs(opSimplified[0]) > opSimplified[1]) && h('p', { className: 'text-sm font-bold text-orange-600 mb-2' },
             '\uD83D\uDCE6 Mixed: ' + toMixed(opSimplified[0], opSimplified[1])
           ),
           // Decimal result
           h('p', { className: 'text-xs text-slate-600 mb-3' },
-            '\u2248 ' + (opSimplified[1] !== 0 ? (opSimplified[0] / opSimplified[1]).toFixed(4) : 'undefined')
+            opUndefined ? 'Division by 0 is undefined. Pick a nonzero second fraction.' : '\u2248 ' + (opSimplified[1] !== 0 ? (opSimplified[0] / opSimplified[1]).toFixed(4) : 'undefined')
           ),
           // Step-by-step
           h('div', { className: 'bg-orange-50 rounded-lg p-3 text-xs text-orange-800 space-y-1 text-left' },
@@ -2897,13 +2898,13 @@ window.StemLab = window.StemLab || {
               : h(React.Fragment, null,
                   opMode === 'mul'
                     ? h('p', null, 'Multiply straight across: (' + num1 + '\u00D7' + num2 + ')/(' + den1 + '\u00D7' + den2 + ') = ' + opResult[0] + '/' + opResult[1])
-                    : h('p', null, 'Flip and multiply: ' + num1 + '/' + den1 + ' \u00D7 ' + den2 + '/' + num2 + ' = ' + opResult[0] + '/' + opResult[1]),
+                    : h('p', null, opUndefined ? 'You cannot divide by zero. Dividing by 0/' + den2 + ' is undefined.' : 'Flip and multiply: ' + num1 + '/' + den1 + ' \u00D7 ' + den2 + '/' + num2 + ' = ' + opResult[0] + '/' + opResult[1]),
                   (opResult[0] !== opSimplified[0] || opResult[1] !== opSimplified[1]) && h('p', null, 'Simplify: ' + opSimplified[0] + '/' + opSimplified[1])
                 )
           ),
           // Result bar
           h('div', { className: 'mt-3 flex justify-center' },
-            drawBar(Math.min(Math.abs(opSimplified[0]), opSimplified[1] * 2), opSimplified[1], '#22c55e')
+            opUndefined ? null : drawBar(Math.min(Math.abs(opSimplified[0]), opSimplified[1] * 2), opSimplified[1], '#22c55e')
           )
         ),
         // Area model (multiplication only)
@@ -7891,9 +7892,10 @@ window.StemLab = window.StemLab || {
                        choices: [ans[0] + '/' + ans[1]].concat(distract),
                        answer: ans[0] + '/' + ans[1] };
             } else if (op === 'sub') {
+              if (n1 * (cdo / d1) < n2x * (cdo / d2)) { var _tn = n1; n1 = n2x; n2x = _tn; var _td = d1; d1 = d2; d2 = _td; }
               var diff = n1 * (cdo / d1) - n2x * (cdo / d2);
               if (diff < 0) { diff = -diff; }
-              ans = simplify(Math.max(1, diff), cdo);
+              ans = simplify(diff, cdo); // diff is >= 0 after the swap above; equal fractions correctly give 0
               item = { type: 'sub', q: n1 + '/' + d1 + ' − ' + n2x + '/' + d2 + ' = ?',
                        choices: [ans[0] + '/' + ans[1], (ans[0] + 1) + '/' + ans[1], n1 + '/' + d1, n2x + '/' + d2],
                        answer: ans[0] + '/' + ans[1] };
