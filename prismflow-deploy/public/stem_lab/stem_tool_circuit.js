@@ -1046,6 +1046,7 @@ window.StemLab = window.StemLab || {
                       var compR2 = getCompR(comp);
                       var compI2 = voltage / compR2;
                       var compP2 = voltage * compI2;
+                      var isIdealParallelBranch2 = mode === 'parallel' && compR2 < 0.01;
                       var bulbBright2 = comp.type === 'bulb' ? Math.min(compP2 / 12, 1) : 0;
                       var ledGlow2 = comp.type === 'led' && compI2 > 0.005 ? Math.min(compI2 * 20, 1) : 0;
                       var chargeLvl = Math.min(tick / 120, 1);
@@ -1107,11 +1108,11 @@ window.StemLab = window.StemLab || {
 
                         // Value/reading labels (parallel)
                         comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter'
-                          && h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#cbd5e1' }, comp.type === 'led' ? '~2V' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
+                          && h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#cbd5e1' }, comp.type === 'led' ? '~40\u03A9' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
 
-                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, compI2.toFixed(3) + 'A'),
+                        comp.type === 'ammeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, isIdealParallelBranch2 ? 'short' : compI2.toFixed(3) + 'A'),
                         comp.type === 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#fbbf24' }, voltage.toFixed(1) + 'V'),
-                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, compI2.toFixed(2) + 'A')
+                        comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, isIdealParallelBranch2 ? 'short' : compI2.toFixed(2) + 'A')
                       );
                     }),
 
@@ -1415,7 +1416,7 @@ window.StemLab = window.StemLab || {
                     comp.type === 'ammeter'
                       ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, isIdealParallelBranch ? '\u26A0 connect ammeters in series' : '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
                       : comp.type === 'voltmeter'
-                      ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
+                      ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, mode === 'series' ? '\u26A0 connect voltmeters in parallel' : '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
                       : isIdealParallelBranch ? h('span', { className: 'text-red-400 w-40 font-mono font-bold' }, '\u26A0 short branch (~0 \u03A9)') : h(React.Fragment, null,
                           h('span', { className: 'text-cyan-400 w-20 font-mono' }, compV.toFixed(2) + 'V'),
                           h('span', { className: 'text-emerald-400 w-20 font-mono' }, compI.toFixed(3) + 'A'),
@@ -1491,7 +1492,7 @@ window.StemLab = window.StemLab || {
             // Circuit Presets
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('button', { 'aria-label': 'Circuit Presets',
+              h('button', { 'aria-label': 'Circuit Presets', 'aria-expanded': showPresets,
                 onClick: function() { upd('showPresets', !showPresets); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
@@ -1665,7 +1666,7 @@ window.StemLab = window.StemLab || {
             // Kirchhoff's Laws educational panel (g68/g912)
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && h('div', { className: 'mt-4 bg-violet-950/10 border border-violet-500/20 p-4 rounded-xl backdrop-blur-md' },
-              h('button', { onClick: function() { upd('showKirchhoff', !showKirchhoff); },
+              h('button', { 'aria-label': 'Kirchhoff Laws', 'aria-expanded': showKirchhoff, onClick: function() { upd('showKirchhoff', !showKirchhoff); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
                 h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase tracking-wider' }, '\u2696 Kirchhoff\'s Laws'),
@@ -1953,7 +1954,7 @@ window.StemLab = window.StemLab || {
                   { emoji: '\u2764\uFE0F', name: 'Heart Monitor', circuit: 'Series', desc: 'Amplifies tiny electrical signals from heart muscle. Resistors set gain, capacitors filter noise.', comps: 'Resistor, Ammeter' }
                 ].map(function(app) {
                   var expanded = d._expandedApp === app.name;
-                  return h('button', { key: app.name,
+                  return h('button', { key: app.name, 'aria-expanded': expanded,
                     onClick: function() { upd('_expandedApp', expanded ? null : app.name); },
                     className: 'text-left rounded-lg p-2.5 border transition-all ' +
                       (expanded ? 'bg-slate-950/80 border-cyan-500/40 shadow-md shadow-cyan-500/5' : 'bg-slate-950/40 border-slate-800 hover:border-slate-700')
