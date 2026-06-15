@@ -1515,6 +1515,7 @@ function PdfAuditView(props) {
           if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
             dur = await measure(url);
             blob = await (await fetch(url)).blob();
+            try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
           }
         } catch (_) { /* keep going — a missing clip degrades to text-only for that block */ }
         audioBlobs.push(blob); durations.push(dur);
@@ -1560,6 +1561,7 @@ function PdfAuditView(props) {
         if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
           const resp = await fetch(url);
           j.blobs.push(await resp.blob());
+          try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
           j.nextIdx++;
           consecutiveNull = 0;
         } else { j.failed++; consecutiveNull++; j.nextIdx++; }
@@ -11334,6 +11336,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       const url = await callTTS(segments[si], selectedVoice || 'Puck', 1, 2);
                       if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
                         const r = await fetch(url); blobs.push(await r.blob());
+                        try { if (url.startsWith('blob:')) URL.revokeObjectURL(url); } catch (_) {} // free the TTS object URL (review perf fix)
                         consecutiveNull = 0;
                       } else { failed++; consecutiveNull++; }
                     } catch(e) {

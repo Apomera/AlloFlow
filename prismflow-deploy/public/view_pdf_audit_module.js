@@ -1543,6 +1543,10 @@ function PdfAuditView(props) {
           if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
             dur = await measure(url);
             blob2 = await (await fetch(url)).blob();
+            try {
+              if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+            } catch (_) {
+            }
           }
         } catch (_) {
         }
@@ -1603,6 +1607,10 @@ function PdfAuditView(props) {
         if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
           const resp = await fetch(url);
           j.blobs.push(await resp.blob());
+          try {
+            if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+          } catch (_) {
+          }
           j.nextIdx++;
           consecutiveNull = 0;
         } else {
@@ -9783,6 +9791,10 @@ Return ONLY JSON:
           if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
             const r = await fetch(url);
             blobs.push(await r.blob());
+            try {
+              if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+            } catch (_) {
+            }
             consecutiveNull = 0;
           } else {
             failed++;

@@ -6629,10 +6629,22 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const openUls = (accessibleHtml.match(/<ul[\s>]/gi) || []).length;
     const closeUls = (accessibleHtml.match(/<\/ul>/gi) || []).length;
     if (openUls > closeUls) {
-      for (let ui = 0; ui < openUls - closeUls; ui++) {
-        accessibleHtml = accessibleHtml.replace(/<\/li>(?![\s\S]*?<li[\s>])/, '</li></ul>');
-        aiFixCount++;
+      // Single-pass balance (2026-06-15 review perf fix): the old loop ran a
+      // full-document negative-lookahead regex once PER missing </ul> (O(missing·n),
+      // a main-thread stall on malformed list-heavy AI output). The lookahead always
+      // stacked the closers after the LAST </li>, so do exactly that in one splice.
+      const _missingUls = openUls - closeUls;
+      const _pad = '</ul>'.repeat(_missingUls);
+      const _liAt = accessibleHtml.lastIndexOf('</li>');
+      if (_liAt !== -1) {
+        const _at = _liAt + 5; // '</li>'.length
+        accessibleHtml = accessibleHtml.slice(0, _at) + _pad + accessibleHtml.slice(_at);
+      } else if (/<\/(?:body|main)>/i.test(accessibleHtml)) {
+        accessibleHtml = accessibleHtml.replace(/<\/(?:body|main)>/i, _pad + '$&');
+      } else {
+        accessibleHtml += _pad;
       }
+      aiFixCount += _missingUls;
     }
 
     // 15. Fix form inputs without labels
