@@ -112,3 +112,57 @@ test.describe('PdfValidator.validateExportedPdfBytes — discrimination', () => 
     expect(results.garbageErrorIsString).toBe(true);
   });
 });
+
+// Audit #10: the "Every TH has /Scope" rule used to test only for the PRESENCE of an /A
+// attribute dict, so a TH whose /A carried layout attrs (O:/Table) but NO /Scope key falsely
+// PASSED. This proves it now reads the actual /Scope key.
+test.describe('PdfValidator — TH /Scope discrimination (audit #10)', () => {
+  test('a TH whose /A lacks /Scope FAILS the rule; adding /Scope PASSES it', async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: VALIDATOR_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.PdfValidator), null, { timeout: 20000 });
+
+    const res = await page.evaluate(async () => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument, PDFName } = PDFLib;
+      const validate = (window as any).AlloModules.PdfValidator.validateExportedPdfBytes;
+      async function docWithTH(withScope: boolean) {
+        const doc = await PDFDocument.create();
+        doc.addPage();
+        const ctx = doc.context;
+        const aDict = withScope
+          ? ctx.obj({ O: PDFName.of('Table'), Scope: PDFName.of('Column') })
+          : ctx.obj({ O: PDFName.of('Table') }); // layout attrs but NO /Scope
+        const th = ctx.obj({ Type: PDFName.of('StructElem'), S: PDFName.of('TH'), A: aDict });
+        const structRoot = ctx.obj({ Type: PDFName.of('StructTreeRoot'), K: th });
+        doc.catalog.set(PDFName.of('StructTreeRoot'), ctx.register(structRoot));
+        return await doc.save();
+      }
+      const ruleStatus = (r: any) => {
+        const c = (r.checks || []).find((x: any) => x.rule === 'Every TH has /Scope');
+        return c ? c.status : '(missing)';
+      };
+      const noScope = await validate(await docWithTH(false));
+      const withScope = await validate(await docWithTH(true));
+      return {
+        noScopeStatus: ruleStatus(noScope),
+        noScopeThCount: noScope.cellChecks && noScope.cellChecks.thCount,
+        noScopeThWithScope: noScope.cellChecks && noScope.cellChecks.thWithScope,
+        withScopeStatus: ruleStatus(withScope),
+        withScopeThWithScope: withScope.cellChecks && withScope.cellChecks.thWithScope,
+      };
+    });
+    await page.close();
+
+    // The false-pass is now caught: /A present, /Scope absent -> FAIL, 0 of 1 TH scoped.
+    expect(res.noScopeThCount).toBe(1);
+    expect(res.noScopeStatus).toBe('fail');
+    expect(res.noScopeThWithScope).toBe(0);
+    // And a genuine /Scope still passes.
+    expect(res.withScopeStatus).toBe('pass');
+    expect(res.withScopeThWithScope).toBe(1);
+  });
+});

@@ -84,6 +84,20 @@
       var atObj = obj.get(nm('ActualText'));
       var atText = '';
       try { atText = atObj ? (typeof atObj.decodeText === 'function' ? atObj.decodeText() : String(atObj)) : ''; } catch (_) { atText = ''; }
+      // /Scope DETECTION (audit #10, 2026-06-15): the "Every TH has /Scope" rule below previously
+      // tested only for the PRESENCE of an /A attribute dict, so a TH whose /A carried layout attrs
+      // (e.g. O:/Table seeded after a ColSpan/RowSpan edit) but NO /Scope key falsely PASSED — a
+      // false-PASS in the credibility-bearing byte validator. /A may be a single attribute dict OR
+      // an array of them, and either may be an indirect ref — scan them all for an actual /Scope key.
+      var aObj = obj.get(nm('A'));
+      var hasScope = false;
+      if (aObj) {
+        var ar = resolve(aObj);
+        var aItems = [];
+        if (ar instanceof PDFArray) { for (var ai = 0; ai < ar.size(); ai++) aItems.push(resolve(ar.get(ai))); }
+        else { aItems.push(ar); }
+        for (var ax = 0; ax < aItems.length; ax++) { var ad = aItems[ax]; if (ad instanceof PDFDict && ad.get(nm('Scope'))) { hasScope = true; break; } }
+      }
       elems.push({
         role: role,
         parentRole: parentRole || '',
@@ -93,7 +107,8 @@
         hasAlt: !!obj.get(nm('Alt')),
         hasActualText: !!atObj,
         actualText: atText,
-        hasA: !!obj.get(nm('A')),
+        hasA: !!aObj,
+        hasScope: hasScope,
         hasLang: !!obj.get(nm('Lang')),
         hasID: !!obj.get(nm('ID')),
       });
@@ -255,7 +270,7 @@
     pass('Primary language set (/Lang)', !!langRaw, langRaw ? String(langRaw) : '');
     pass('Structure tree has content (rootK not null)', elems.length > 0, elems.length + ' elements');
     pass('At least one heading present', elems.some(function (e) { return /^H[1-6]$/.test(e.role); }));
-    pass('Every TH has /Scope', thElems.length === 0 || thElems.every(function (e) { return e.hasA; }), thElems.length + ' TH cells');
+    pass('Every TH has /Scope', thElems.length === 0 || thElems.every(function (e) { return e.hasScope; }), thElems.length + ' TH cells');
     pass('Every TH/TD has /ActualText', cellElems.length === 0 || cellElems.every(function (e) { return e.hasActualText; }), cellElems.length + ' cells');
     pass('Every Figure has /Alt', figures.length === 0 || figures.every(function (e) { return e.hasAlt; }), figures.length + ' figures');
     pass('Document is NOT encrypted (AT requires read access)', !isEncrypted);
@@ -324,7 +339,7 @@
       },
       cellChecks: {
         thCount: thElems.length,
-        thWithScope: thElems.filter(function (e) { return e.hasA; }).length,
+        thWithScope: thElems.filter(function (e) { return e.hasScope; }).length,
         cellCount: cellElems.length,
         cellsWithActualText: cellElems.filter(function (e) { return e.hasActualText; }).length,
         figureCount: figures.length,
