@@ -18,7 +18,9 @@ const { _validateTableGrid, _emitAccessibleTableHtml } =
 
 const row = (...cells) => ({ cells });
 const td = (text, extra) => ({ text, ...(extra || {}) });
-const th = (text, extra) => ({ text, isHeader: true, ...(extra || {}) });
+// Default header cells to scope:'col' so span-validation tests aren't tripped by
+// the §1.5 headers-without-scope assertion; pass { scope: ... } to override.
+const th = (text, extra) => ({ text, isHeader: true, scope: 'col', ...(extra || {}) });
 
 describe('_validateTableGrid — span consistency', () => {
   it('accepts a plain rectangular grid', () => {
@@ -62,6 +64,24 @@ describe('_validateTableGrid — span consistency', () => {
   it('rejects empty input', () => {
     expect(_validateTableGrid({ rows: [] }).ok).toBe(false);
     expect(_validateTableGrid(null).ok).toBe(false);
+  });
+
+  // §1.5 accessibility-correctness assertions (now wired into _validateTableGrid).
+  it('rejects header cells with NO scope anywhere (headers-without-scope)', () => {
+    const grid = { rows: [row({ text: 'A', isHeader: true }, { text: 'B', isHeader: true }), row(td('1'), td('2'))] };
+    expect(_validateTableGrid(grid)).toEqual({ ok: false, reason: 'headers-without-scope' });
+  });
+  it('accepts header cells once at least one has col/row scope', () => {
+    const grid = { rows: [row(th('A'), th('B')), row(td('1'), td('2'))] }; // th() now defaults scope:col
+    expect(_validateTableGrid(grid).ok).toBe(true);
+  });
+  it('rejects an entirely-empty row (row-N-all-empty — silent vision failure)', () => {
+    const grid = { rows: [row(th('A'), th('B')), row(td(''), td('   '))] };
+    expect(_validateTableGrid(grid)).toEqual({ ok: false, reason: 'row-1-all-empty' });
+  });
+  it('does not reject a header-less grid or a row with SOME empty cells', () => {
+    expect(_validateTableGrid({ rows: [row(td('a'), td('b')), row(td('c'), td('d'))] }).ok).toBe(true);
+    expect(_validateTableGrid({ rows: [row(th('A'), th('B')), row(td('x'), td(''))] }).ok).toBe(true);
   });
 });
 

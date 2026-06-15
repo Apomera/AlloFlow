@@ -53,6 +53,26 @@ function _validateTableGrid(grid) {
     for (const c in pending) { pending[c]--; if (pending[c] <= 0) delete pending[c]; }
   }
   for (const c in pending) { if (pending[c] > 0) return { ok: false, reason: 'rowspan-overflow-col-' + c }; }
+  // §1.5 accessibility-correctness assertions (NEW, beyond span geometry) — a final
+  // pass before success. Any failure → revert (caller keeps the honest image).
+  // 1. headers-without-scope: header cells exist but NONE carries scope col/row →
+  //    the SR header<->cell association the feature exists for is defeated.
+  let _hasHeader = false, _hasScope = false;
+  for (const _r of grid.rows) {
+    for (const _c of ((_r && _r.cells) ? _r.cells : [])) {
+      if (_c && _c.isHeader) { _hasHeader = true; if (_c.scope === 'col' || _c.scope === 'row' || _c.scope === 'colgroup' || _c.scope === 'rowgroup') _hasScope = true; }
+    }
+  }
+  if (_hasHeader && !_hasScope) return { ok: false, reason: 'headers-without-scope' };
+  // 2. row-N-all-empty: a row whose every cell is empty after normalization — a
+  //    legitimate rowspan-continuation does NOT appear as explicit empty cells in
+  //    this grid model, so an all-empty row means Vision failed silently.
+  for (let _ri = 0; _ri < grid.rows.length; _ri++) {
+    const _rc = (grid.rows[_ri] && Array.isArray(grid.rows[_ri].cells)) ? grid.rows[_ri].cells : [];
+    if (_rc.length >= 1 && _rc.every((c) => String((c && c.text) || '').replace(/\s+/g, ' ').trim() === '')) {
+      return { ok: false, reason: 'row-' + _ri + '-all-empty' };
+    }
+  }
   // NB: assign-then-return (not `return { ... }` at 2-space indent) on purpose —
   // check_pipeline_integrity.js locates the factory export block via the FIRST
   // `\n  return {`, so a module-scope `return {` here would masquerade as it.
@@ -1648,12 +1668,12 @@ var createDocPipeline = function(deps) {
       '{\n' +
       '  "caption": "<short caption, or empty>",\n' +
       '  "rows": [\n' +
-      '    { "cells": [ { "text": "<verbatim cell text>", "isHeader": <true|false>, "scope": "<col|row, only when isHeader>", "colspan": <int>, "rowspan": <int> } ] }\n' +
+      '    { "cells": [ { "text": "<verbatim cell text>", "isHeader": <true|false>, "scope": "<col|row|colgroup|rowgroup, only when isHeader>", "colspan": <int>, "rowspan": <int> } ] }\n' +
       '  ]\n' +
       '}\n\n' +
       'CRITICAL RULES:\n' +
       '- Transcribe VERBATIM. NEVER invent cells or content — a fabricated cell would mislead a screen-reader user who cannot see the table.\n' +
-      '- isHeader:true with scope:"col" for a cell that labels a COLUMN (top row); scope:"row" for a cell that labels a ROW (left column).\n' +
+      '- isHeader:true with scope:"col" for a cell that labels a COLUMN (top row); scope:"row" for a cell that labels a ROW (left column). For a header that spans a GROUP of columns/rows (a merged header above sub-headers), use "colgroup"/"rowgroup". EVERY data cell must be reachable from at least one header — if the table has data, it needs headers with scope, or a screen-reader user cannot navigate it.\n' +
       '- Use colspan/rowspan ONLY for visibly merged cells; default each to 1. After expanding spans the grid MUST be rectangular — every row totals the same number of columns.\n' +
       '- Include EVERY cell, including empty ones as {"text":""}, so the grid stays aligned.\n' +
       '- Output ONLY the JSON object. No code fence. No commentary.\n' +
@@ -1683,7 +1703,7 @@ var createDocPipeline = function(deps) {
           if (typeof c === 'string') return { text: c };
           c = c || {};
           const out = { text: String(c.text == null ? '' : c.text), isHeader: !!c.isHeader };
-          if (out.isHeader && (c.scope === 'col' || c.scope === 'row')) out.scope = c.scope;
+          if (out.isHeader && ['col', 'row', 'colgroup', 'rowgroup'].indexOf(c.scope) !== -1) out.scope = c.scope;
           const cs = parseInt(c.colspan, 10); if (cs > 1) out.colspan = cs;
           const rs = parseInt(c.rowspan, 10); if (rs > 1) out.rowspan = rs;
           return out;
