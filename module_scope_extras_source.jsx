@@ -85,13 +85,22 @@ const languageToTTSCode = (friendlyName) => {
     const bcp47 = getSpeechLangCode(friendlyName);
     return bcp47.split('-')[0].toLowerCase();
 };
-const isRtlLang = (languageName) => {
-    if (!languageName) return false;
-    const rtlLanguages = [
-        'Arabic', 'Hebrew', 'Persian', 'Urdu', 'Kurdish',
-        'Pashto', 'Farsi', 'Yiddish'
-    ];
-    return rtlLanguages.includes(languageName);
+const isRtlLang = (languageNameOrCode) => {
+    if (!languageNameOrCode) return false;
+    // Accept EITHER a BCP-47 code (the reliable signal — "ar", "fa-AF", "prs", "ckb") OR a free-text
+    // language name, case-insensitively. BUGFIX (audit #12, 2026-06-15): the old check was an exact
+    // case-sensitive English-name match, so "arabic", any language CODE, and Dari/Sindhi/Uyghur/
+    // Divehi/Sorani all fell through to LTR — wrong text direction in the HTML download AND the
+    // typeset tagged PDF for the Arabic-script/RTL languages AlloFlow's ELL/refugee users need.
+    const s = String(languageNameOrCode).trim().toLowerCase();
+    if (!s) return false;
+    const code = s.split(/[-_]/)[0]; // BCP-47 primary subtag
+    const rtlCodes = new Set(['ar', 'arc', 'he', 'iw', 'fa', 'prs', 'ur', 'ps', 'ku', 'ckb', 'sd', 'ug', 'yi', 'dv', 'syr', 'nqo']);
+    if (rtlCodes.has(s) || rtlCodes.has(code)) return true;
+    // Name path: WHOLE-WORD match so a substring like "manDARIn" can't false-trigger "dari".
+    const rtlNames = new Set(['arabic', 'hebrew', 'persian', 'farsi', 'dari', 'urdu', 'kurdish', 'sorani',
+        'pashto', 'pushto', 'yiddish', 'sindhi', 'uyghur', 'uighur', 'divehi', 'dhivehi', 'maldivian', 'aramaic', 'syriac']);
+    return s.split(/[^a-z]+/).some((tok) => tok && rtlNames.has(tok));
 };
 const getContentDirection = (languageName) => {
     return isRtlLang(languageName) ? 'rtl' : 'ltr';

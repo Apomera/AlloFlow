@@ -81,19 +81,35 @@ const languageToTTSCode = (friendlyName) => {
   const bcp47 = getSpeechLangCode(friendlyName);
   return bcp47.split("-")[0].toLowerCase();
 };
-const isRtlLang = (languageName) => {
-  if (!languageName) return false;
-  const rtlLanguages = [
-    "Arabic",
-    "Hebrew",
-    "Persian",
-    "Urdu",
-    "Kurdish",
-    "Pashto",
-    "Farsi",
-    "Yiddish"
-  ];
-  return rtlLanguages.includes(languageName);
+const isRtlLang = (languageNameOrCode) => {
+  if (!languageNameOrCode) return false;
+  const s = String(languageNameOrCode).trim().toLowerCase();
+  if (!s) return false;
+  const code = s.split(/[-_]/)[0];
+  const rtlCodes = /* @__PURE__ */ new Set(["ar", "arc", "he", "iw", "fa", "prs", "ur", "ps", "ku", "ckb", "sd", "ug", "yi", "dv", "syr", "nqo"]);
+  if (rtlCodes.has(s) || rtlCodes.has(code)) return true;
+  const rtlNames = /* @__PURE__ */ new Set([
+    "arabic",
+    "hebrew",
+    "persian",
+    "farsi",
+    "dari",
+    "urdu",
+    "kurdish",
+    "sorani",
+    "pashto",
+    "pushto",
+    "yiddish",
+    "sindhi",
+    "uyghur",
+    "uighur",
+    "divehi",
+    "dhivehi",
+    "maldivian",
+    "aramaic",
+    "syriac"
+  ]);
+  return s.split(/[^a-z]+/).some((tok) => tok && rtlNames.has(tok));
 };
 const getContentDirection = (languageName) => {
   return isRtlLang(languageName) ? "rtl" : "ltr";

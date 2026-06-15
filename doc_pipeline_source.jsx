@@ -1148,7 +1148,7 @@ var createDocPipeline = function(deps) {
     let result = out.join('');
     for (const key of Object.keys(_imgDataMap)) result = result.split(key).join(_imgDataMap[key]);
     const _langCode = (opts.langCode || '').trim() || null;
-    const _rtl = (() => { try { return isRtlLang(targetLang); } catch (_) { return false; } })();
+    const _rtl = (() => { try { return isRtlLang(opts.langCode) || isRtlLang(targetLang); } catch (_) { return false; } })();
     if (/<html[^>]*>/i.test(result)) {
       result = result.replace(/<html([^>]*)>/i, (m, attrs) => {
         const a = attrs.replace(/\s+lang="[^"]*"/i, '').replace(/\s+dir="[^"]*"/i, '');
