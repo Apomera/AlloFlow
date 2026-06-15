@@ -44,7 +44,7 @@ function buildAlloCommands(ctx) {
       c.setShowNotebook(true);
       return t("cmd.open_notebook_done", "Notebook opened.");
     } },
-    { id: "open_translate", icon: "\u{1F310}", roles: "teacher", label: t("cmd.open_translate", "Open translation"), aliases: ["translate", "translation", "language"], hint: t("cmd.open_translate_hint", "Translate the current content"), run: (c) => {
+    { id: "open_translate", icon: "\u{1F310}", roles: "teacher", label: t("cmd.open_translate", "Open translation"), aliases: ["translate", "translation", "language", "translate to", "translate into"], hint: t("cmd.open_translate_hint", "Translate the current content"), run: (c) => {
       c.openTranslateModal();
       return t("cmd.open_translate_done", "Translation dialog opened.");
     } },
@@ -146,11 +146,11 @@ function buildAlloCommands(ctx) {
       return t("cmd.submit_work_done", "Opening the submit dialog\u2026");
     } },
     // ── Accessibility self-service (available in every mode) ──
-    { id: "font_bigger", icon: "\u{1F50D}", roles: "all", label: t("cmd.font_bigger", "Make the text bigger"), aliases: ["bigger text", "larger text", "increase font", "zoom in text"], hint: t("cmd.font_bigger_hint", "+2 to the reading font size"), run: (c) => {
+    { id: "font_bigger", icon: "\u{1F50D}", roles: "all", label: t("cmd.font_bigger", "Make the text bigger"), aliases: ["bigger text", "larger text", "increase font", "increase text size", "make text bigger", "zoom in text"], hint: t("cmd.font_bigger_hint", "+2 to the reading font size"), run: (c) => {
       const v = c.fontBigger();
       return t("cmd.font_bigger_done", "Text size increased to ") + v + ".";
     } },
-    { id: "font_smaller", icon: "\u{1F50E}", roles: "all", label: t("cmd.font_smaller", "Make the text smaller"), aliases: ["smaller text", "decrease font", "reduce text"], hint: t("cmd.font_smaller_hint", "\u22122 to the reading font size"), run: (c) => {
+    { id: "font_smaller", icon: "\u{1F50E}", roles: "all", label: t("cmd.font_smaller", "Make the text smaller"), aliases: ["smaller text", "decrease font", "reduce text", "make text smaller"], hint: t("cmd.font_smaller_hint", "\u22122 to the reading font size"), run: (c) => {
       const v = c.fontSmaller();
       return t("cmd.font_smaller_done", "Text size decreased to ") + v + ".";
     } },
@@ -162,7 +162,7 @@ function buildAlloCommands(ctx) {
       c.setShowTextSettings(true);
       return t("cmd.open_text_settings_done", "Text settings opened.");
     } },
-    { id: "open_voice_settings", icon: "\u{1F5E3}\uFE0F", roles: "all", label: t("cmd.open_voice_settings", "Open voice settings"), aliases: ["voice settings", "speech settings", "tts settings", "speaking voice"], hint: t("cmd.open_voice_settings_hint", "Voice, speed, and volume"), run: (c) => {
+    { id: "open_voice_settings", icon: "\u{1F5E3}\uFE0F", roles: "all", label: t("cmd.open_voice_settings", "Open voice settings"), aliases: ["voice settings", "speech settings", "tts settings", "speaking voice", "volume", "louder", "quieter"], hint: t("cmd.open_voice_settings_hint", "Voice, speed, and volume"), run: (c) => {
       c.setShowVoiceSettings(true);
       return t("cmd.open_voice_settings_done", "Voice settings opened.");
     } },
@@ -271,7 +271,7 @@ function buildAlloCommands(ctx) {
       return lang ? t("cmd.translate_document_done", "Set the translation language to ") + lang + t("cmd.translate_document_done2", " and spotlighted the button \u2014 press Translate to run it. (Translations use AI quota, so the click stays yours.)") : t("cmd.translate_document_pick", "Spotlighted the translation controls \u2014 pick a language and press Translate.");
     } },
     // ── Voice control (S2) ──
-    { id: "voice_start", icon: "\u{1F399}\uFE0F", roles: "all", when: (c) => !c.voiceActive && c.voiceAvailable, label: t("cmd.voice_start", "Start voice control"), aliases: ["voice control", "listen", "voice mode", "hands free"], hint: t("cmd.voice_start_hint", "AlloBot listens for commands until you stop it"), run: (c) => {
+    { id: "voice_start", icon: "\u{1F399}\uFE0F", roles: "all", when: (c) => !c.voiceActive && c.voiceAvailable, label: t("cmd.voice_start", "Start voice control"), aliases: ["voice control", "start listening", "voice mode", "hands free"], hint: t("cmd.voice_start_hint", "AlloBot listens for commands until you stop it"), run: (c) => {
       c.startVoiceLoop();
       return t("cmd.voice_start_done", "Voice control on. Say a command like \u201Cbigger text\u201D or \u201Copen the educator hub\u201D. Say \u201Cstop listening\u201D to finish.");
     } },
@@ -355,7 +355,7 @@ function buildAlloCommands(ctx) {
       c.stopPipelineFix();
       return t("cmd.pipeline_stop_done", "Stopping after the current round.");
     } },
-    { id: "set_ui_language", icon: "\u{1F310}", roles: "all", label: t("cmd.set_ui_language", "Change the interface language"), aliases: ["interface language", "app language", "ui language", "menu language", "change interface language", "language of the app"], hint: t("cmd.set_ui_language_hint", "Jump to the language picker in the header"), run: (c) => {
+    { id: "set_ui_language", icon: "\u{1F310}", roles: "all", label: t("cmd.set_ui_language", "Change the interface language"), aliases: ["interface language", "app language", "ui language", "menu language", "change interface language", "language of the app", "change language", "switch language", "my language"], hint: t("cmd.set_ui_language_hint", "Jump to the language picker in the header"), run: (c) => {
       return c.spotlightUiLanguage() ? t("cmd.set_ui_language_done", "Pointed you to the language picker in the header \u2014 choose your language there.") : t("cmd.set_ui_language_miss", "The interface-language picker is in the top menu bar.");
     } },
     { id: "pipeline_new_doc", icon: "\u{1F195}", roles: "teacher", destructive: true, when: (c) => !!c.pipelineOpen, label: t("cmd.pipeline_new_doc", "Start over with a new document"), aliases: ["new document", "new pdf", "another document", "clear pipeline", "upload new"], hint: t("cmd.pipeline_new_doc_hint", "Clear this result and upload a new file"), run: (c) => {
@@ -388,21 +388,6 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: "generate_simplified", re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) }
   ];
   const commands = buildAlloCommands(ctx);
-  for (const g of _grammars) {
-    const m = text.match(g.re);
-    if (m) {
-      const cmd = commands.find((c) => c.id === g.id);
-      if (cmd) return _runCmd(cmd, "grammar", g.params(m));
-    }
-  }
-  let best = null, bestScore = 0;
-  for (const c of commands) {
-    const s = scoreCommand(c, text);
-    if (s > bestScore) {
-      bestScore = s;
-      best = c;
-    }
-  }
   const _runCmd = (cmd, via, params) => {
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
     if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
@@ -419,6 +404,21 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     }
     return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via };
   };
+  for (const g of _grammars) {
+    const m = text.match(g.re);
+    if (m) {
+      const cmd = commands.find((c) => c.id === g.id);
+      if (cmd) return _runCmd(cmd, "grammar", g.params(m));
+    }
+  }
+  let best = null, bestScore = 0;
+  for (const c of commands) {
+    const s = scoreCommand(c, text);
+    if (s > bestScore) {
+      bestScore = s;
+      best = c;
+    }
+  }
   if (bestScore >= 60) return _runCmd(best, "deterministic");
   if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
   if (text.split(/\s+/).length > 14) return null;
@@ -541,6 +541,10 @@ function scoreCommand(cmd, q) {
     else if (s.startsWith(needle)) best = Math.max(best, 80);
     else if (s.split(/\s+/).some((w) => w.startsWith(needle))) best = Math.max(best, 60);
     else if (s.includes(needle)) best = Math.max(best, 40);
+  }
+  if (best < 30 && cmd.hint) {
+    const h = String(cmd.hint).toLowerCase();
+    if (h.includes(needle) || h.split(/\s+/).some((w) => w.startsWith(needle))) best = 30;
   }
   return best;
 }

@@ -40,7 +40,7 @@ function buildAlloCommands(ctx) {
     { id: 'open_document_builder', opensPanel: 'exportPreview', icon: '📝', roles: 'teacher', label: t('cmd.open_document_builder', 'Open the Document Builder'), aliases: ['document builder', 'builder', 'export preview', 'differentiate'], hint: t('cmd.open_document_builder_hint', 'Build and export differentiated documents'), run: (c) => { c.openExportPreview(); return t('cmd.open_document_builder_done', 'Document Builder opened.'); } },
     { id: 'open_wizard', icon: '🪄', roles: 'teacher', label: t('cmd.open_wizard', 'Start the lesson wizard'), aliases: ['wizard', 'new lesson', 'create lesson', 'guided setup'], hint: t('cmd.open_wizard_hint', 'Step-by-step lesson creation'), run: (c) => { c.setShowWizard(true); return t('cmd.open_wizard_done', 'Lesson wizard started.'); } },
     { id: 'open_notebook', opensPanel: 'notebook', icon: '📓', roles: 'all', label: t('cmd.open_notebook', 'Open my notebook'), aliases: ['notebook', 'notes'], hint: t('cmd.open_notebook_hint', 'Saved notes and entries'), run: (c) => { c.setShowNotebook(true); return t('cmd.open_notebook_done', 'Notebook opened.'); } },
-    { id: 'open_translate', icon: '🌐', roles: 'teacher', label: t('cmd.open_translate', 'Open translation'), aliases: ['translate', 'translation', 'language'], hint: t('cmd.open_translate_hint', 'Translate the current content'), run: (c) => { c.openTranslateModal(); return t('cmd.open_translate_done', 'Translation dialog opened.'); } },
+    { id: 'open_translate', icon: '🌐', roles: 'teacher', label: t('cmd.open_translate', 'Open translation'), aliases: ['translate', 'translation', 'language', 'translate to', 'translate into'], hint: t('cmd.open_translate_hint', 'Translate the current content'), run: (c) => { c.openTranslateModal(); return t('cmd.open_translate_done', 'Translation dialog opened.'); } },
     { id: 'open_class_session', opensPanel: 'sessionModal', icon: '👥', roles: 'teacher', label: t('cmd.open_class_session', 'Open class session'), aliases: ['class session', 'session', 'live class', 'class code'], hint: t('cmd.open_class_session_hint', 'Start or join a live class session'), run: (c) => { c.setShowSessionModal(true); return t('cmd.open_class_session_done', 'Class session dialog opened.'); } },
     { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
     { id: 'open_export_menu', opensPanel: 'exportMenu', icon: '📤', roles: 'teacher', label: t('cmd.open_export_menu', 'Open the export menu'), aliases: ['export', 'download menu', 'share'], hint: t('cmd.open_export_menu_hint', 'Export the current content'), run: (c) => { c.setShowExportMenu(true); return t('cmd.open_export_menu_done', 'Export menu opened.'); } },
@@ -74,11 +74,11 @@ function buildAlloCommands(ctx) {
     { id: 'submit_work', icon: '📨', roles: 'all', when: (c) => !c.isTeacherMode, label: t('cmd.submit_work', 'Submit my work'), aliases: ['submit', 'submit my work', 'hand it in', 'turn in'], hint: t('cmd.submit_work_hint', 'Send your work to your teacher'), run: (c) => { c.submitWork(); return t('cmd.submit_work_done', 'Opening the submit dialog…'); } },
 
     // ── Accessibility self-service (available in every mode) ──
-    { id: 'font_bigger', icon: '🔍', roles: 'all', label: t('cmd.font_bigger', 'Make the text bigger'), aliases: ['bigger text', 'larger text', 'increase font', 'zoom in text'], hint: t('cmd.font_bigger_hint', '+2 to the reading font size'), run: (c) => { const v = c.fontBigger(); return t('cmd.font_bigger_done', 'Text size increased to ') + v + '.'; } },
-    { id: 'font_smaller', icon: '🔎', roles: 'all', label: t('cmd.font_smaller', 'Make the text smaller'), aliases: ['smaller text', 'decrease font', 'reduce text'], hint: t('cmd.font_smaller_hint', '−2 to the reading font size'), run: (c) => { const v = c.fontSmaller(); return t('cmd.font_smaller_done', 'Text size decreased to ') + v + '.'; } },
+    { id: 'font_bigger', icon: '🔍', roles: 'all', label: t('cmd.font_bigger', 'Make the text bigger'), aliases: ['bigger text', 'larger text', 'increase font', 'increase text size', 'make text bigger', 'zoom in text'], hint: t('cmd.font_bigger_hint', '+2 to the reading font size'), run: (c) => { const v = c.fontBigger(); return t('cmd.font_bigger_done', 'Text size increased to ') + v + '.'; } },
+    { id: 'font_smaller', icon: '🔎', roles: 'all', label: t('cmd.font_smaller', 'Make the text smaller'), aliases: ['smaller text', 'decrease font', 'reduce text', 'make text smaller'], hint: t('cmd.font_smaller_hint', '−2 to the reading font size'), run: (c) => { const v = c.fontSmaller(); return t('cmd.font_smaller_done', 'Text size decreased to ') + v + '.'; } },
     { id: 'font_reset', icon: '↩️', roles: 'all', label: t('cmd.font_reset', 'Reset the text size'), aliases: ['reset font', 'normal text size', 'default font'], hint: t('cmd.font_reset_hint', 'Back to the default size'), run: (c) => { c.resetFontSize(); return t('cmd.font_reset_done', 'Text size reset to default.'); } },
     { id: 'open_text_settings', icon: '🔤', roles: 'all', label: t('cmd.open_text_settings', 'Open text settings'), aliases: ['text settings', 'font settings', 'dyslexia font', 'spacing'], hint: t('cmd.open_text_settings_hint', 'Font, spacing, and color options'), run: (c) => { c.setShowTextSettings(true); return t('cmd.open_text_settings_done', 'Text settings opened.'); } },
-    { id: 'open_voice_settings', icon: '🗣️', roles: 'all', label: t('cmd.open_voice_settings', 'Open voice settings'), aliases: ['voice settings', 'speech settings', 'tts settings', 'speaking voice'], hint: t('cmd.open_voice_settings_hint', 'Voice, speed, and volume'), run: (c) => { c.setShowVoiceSettings(true); return t('cmd.open_voice_settings_done', 'Voice settings opened.'); } },
+    { id: 'open_voice_settings', icon: '🗣️', roles: 'all', label: t('cmd.open_voice_settings', 'Open voice settings'), aliases: ['voice settings', 'speech settings', 'tts settings', 'speaking voice', 'volume', 'louder', 'quieter'], hint: t('cmd.open_voice_settings_hint', 'Voice, speed, and volume'), run: (c) => { c.setShowVoiceSettings(true); return t('cmd.open_voice_settings_done', 'Voice settings opened.'); } },
     { id: 'read_this_page', opensPanel: 'readThisPage', icon: '📖', roles: 'all', label: t('cmd.read_this_page', 'Read this page to me'), aliases: ['read aloud', 'read page', 'read it', 'listen'], hint: t('cmd.read_this_page_hint', 'Opens the page reader'), run: (c) => { c.setShowReadThisPage(true); return t('cmd.read_this_page_done', 'Page reader opened — choose where to start.'); } },
     { id: 'toggle_focus_mode', icon: '🎯', roles: 'all', label: t('cmd.toggle_focus_mode', 'Toggle focus mode'), aliases: ['focus mode', 'concentrate', 'distraction free'], hint: t('cmd.toggle_focus_mode_hint', 'Dim everything but the content'), run: (c) => { c.handleToggleFocusMode(); return t('cmd.toggle_focus_mode_done', 'Focus mode toggled.'); } },
     { id: 'toggle_reading_ruler', icon: '📏', roles: 'all', label: t('cmd.toggle_reading_ruler', 'Toggle the reading ruler'), aliases: ['reading ruler', 'line guide', 'ruler'], hint: t('cmd.toggle_reading_ruler_hint', 'A movable line guide for tracking'), run: (c) => { c.handleToggleReadingRuler(); return t('cmd.toggle_reading_ruler_done', 'Reading ruler toggled.'); } },
@@ -113,7 +113,7 @@ function buildAlloCommands(ctx) {
     { id: 'translate_document', icon: '🌐', roles: 'teacher', when: (c) => !!c.pipelineOpen && !!c.prefillTranslateLang, label: t('cmd.translate_document', 'Translate this document (say a language)'), aliases: ['translate this document', 'translate document to', 'translate to', 'translate it into'], hint: t('cmd.translate_document_hint', 'Pre-fills the language and points at the button'), run: (c, p) => { const lang = (p && p.language) ? String(p.language).trim() : ''; if (lang) c.prefillTranslateLang(lang); try { if (c.whereIs) c.whereIs('translate document'); } catch (_) {} return lang ? (t('cmd.translate_document_done', 'Set the translation language to ') + lang + t('cmd.translate_document_done2', ' and spotlighted the button — press Translate to run it. (Translations use AI quota, so the click stays yours.)')) : t('cmd.translate_document_pick', 'Spotlighted the translation controls — pick a language and press Translate.'); } },
 
     // ── Voice control (S2) ──
-    { id: 'voice_start', icon: '🎙️', roles: 'all', when: (c) => !c.voiceActive && c.voiceAvailable, label: t('cmd.voice_start', 'Start voice control'), aliases: ['voice control', 'listen', 'voice mode', 'hands free'], hint: t('cmd.voice_start_hint', 'AlloBot listens for commands until you stop it'), run: (c) => { c.startVoiceLoop(); return t('cmd.voice_start_done', 'Voice control on. Say a command like “bigger text” or “open the educator hub”. Say “stop listening” to finish.'); } },
+    { id: 'voice_start', icon: '🎙️', roles: 'all', when: (c) => !c.voiceActive && c.voiceAvailable, label: t('cmd.voice_start', 'Start voice control'), aliases: ['voice control', 'start listening', 'voice mode', 'hands free'], hint: t('cmd.voice_start_hint', 'AlloBot listens for commands until you stop it'), run: (c) => { c.startVoiceLoop(); return t('cmd.voice_start_done', 'Voice control on. Say a command like “bigger text” or “open the educator hub”. Say “stop listening” to finish.'); } },
     { id: 'voice_stop', icon: '🛑', roles: 'all', when: (c) => !!c.voiceActive, label: t('cmd.voice_stop', 'Stop voice control'), aliases: ['stop listening', 'stop voice', 'voice off'], hint: t('cmd.voice_stop_hint', 'Stops the microphone'), run: (c) => { c.stopVoiceLoop(); return t('cmd.voice_stop_done', 'Voice control off — the microphone is released.'); } },
 
     // ── More coverage (2026-06-13, discovery w59vf8skj) — each maps to ONE existing host handler
@@ -139,7 +139,7 @@ function buildAlloCommands(ctx) {
     { id: 'undo_settings', icon: '⏪', roles: 'teacher', label: t('cmd.undo_settings', 'Undo my last settings change'), aliases: ['undo settings', 'restore settings', 'revert settings', 'undo that change'], hint: t('cmd.undo_settings_hint', 'Restore the previous lesson settings (not generated content)'), run: (c) => { c.restoreLastSettings(); return t('cmd.undo_settings_done', 'Restored your previous settings (if there was a change to undo).'); } },
     { id: 'pipeline_fix_again', icon: '🔁', roles: 'teacher', when: (c) => !!c.pipelineOpen && !c.pipelineFixRunning, label: t('cmd.pipeline_fix_again', 'Run the accessibility fix again'), aliases: ['fix again', 'run again', 'keep fixing', 'improve the score', 'another round'], hint: t('cmd.pipeline_fix_again_hint', 'Another remediation pass to push the score higher'), run: (c) => { c.rerunPipelineFix(); return t('cmd.pipeline_fix_again_done', 'Running another remediation pass…'); } },
     { id: 'pipeline_stop', icon: '🛑', roles: 'teacher', when: (c) => !!c.pipelineFixRunning, label: t('cmd.pipeline_stop', 'Stop the running fix'), aliases: ['stop fixing', 'stop the fix', 'halt remediation', 'cancel fix'], hint: t('cmd.pipeline_stop_hint', 'Stop after the current round — keeps what’s done'), run: (c) => { c.stopPipelineFix(); return t('cmd.pipeline_stop_done', 'Stopping after the current round.'); } },
-    { id: 'set_ui_language', icon: '🌐', roles: 'all', label: t('cmd.set_ui_language', 'Change the interface language'), aliases: ['interface language', 'app language', 'ui language', 'menu language', 'change interface language', 'language of the app'], hint: t('cmd.set_ui_language_hint', 'Jump to the language picker in the header'), run: (c) => { return c.spotlightUiLanguage() ? t('cmd.set_ui_language_done', 'Pointed you to the language picker in the header — choose your language there.') : t('cmd.set_ui_language_miss', 'The interface-language picker is in the top menu bar.'); } },
+    { id: 'set_ui_language', icon: '🌐', roles: 'all', label: t('cmd.set_ui_language', 'Change the interface language'), aliases: ['interface language', 'app language', 'ui language', 'menu language', 'change interface language', 'language of the app', 'change language', 'switch language', 'my language'], hint: t('cmd.set_ui_language_hint', 'Jump to the language picker in the header'), run: (c) => { return c.spotlightUiLanguage() ? t('cmd.set_ui_language_done', 'Pointed you to the language picker in the header — choose your language there.') : t('cmd.set_ui_language_miss', 'The interface-language picker is in the top menu bar.'); } },
     { id: 'pipeline_new_doc', icon: '🆕', roles: 'teacher', destructive: true, when: (c) => !!c.pipelineOpen, label: t('cmd.pipeline_new_doc', 'Start over with a new document'), aliases: ['new document', 'new pdf', 'another document', 'clear pipeline', 'upload new'], hint: t('cmd.pipeline_new_doc_hint', 'Clear this result and upload a new file'), run: (c) => { c.startNewPdfAudit(); return t('cmd.pipeline_new_doc_done', 'Cleared — upload a new document to begin.'); } },
   ];
   const isStudentish = !!(ctx.isStudentLinkMode || ctx.isIndependentMode);
@@ -174,6 +174,19 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: 'generate_simplified', re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
   ];
   const commands = buildAlloCommands(ctx);
+  // _runCmd MUST be declared before the grammar loop below — the loop calls it on a match, and a
+  // `const` referenced before its declaration is a temporal-dead-zone ReferenceError. That throw
+  // was swallowed by the caller's try-catch as a silent non-match, which killed EVERY natural-
+  // language param grammar (create_lesson / set_font_size / translate_document / generate_simplified)
+  // on both the bot router and the voice loop. (Audit wmb2t8o20, fix 2026-06-15.)
+  const _runCmd = (cmd, via, params) => {
+    if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via };
+    // Panel-stacking fix (shared with the palette runCmd): close other large surfaces first.
+    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
+    let msg = null;
+    try { msg = cmd.run(ctx, params || {}); } catch (e) { return { handled: true, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via }; }
+    return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via };
+  };
   for (const g of _grammars) {
     const m = text.match(g.re);
     if (m) {
@@ -183,14 +196,6 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   }
   let best = null, bestScore = 0;
   for (const c of commands) { const s = scoreCommand(c, text); if (s > bestScore) { bestScore = s; best = c; } }
-  const _runCmd = (cmd, via, params) => {
-    if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via };
-    // Panel-stacking fix (shared with the palette runCmd): close other large surfaces first.
-    if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
-    let msg = null;
-    try { msg = cmd.run(ctx, params || {}); } catch (e) { return { handled: true, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via }; }
-    return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via };
-  };
   if (bestScore >= 60) return _runCmd(best, 'deterministic');
   if (!opts.allowAi || typeof ctx.callGemini !== 'function') return null;
   // Cheap heuristic gate: don't burn a call on clearly-conversational
@@ -282,6 +287,14 @@ function scoreCommand(cmd, q) {
     else if (s.startsWith(needle)) best = Math.max(best, 80);
     else if (s.split(/\s+/).some((w) => w.startsWith(needle))) best = Math.max(best, 60);
     else if (s.includes(needle)) best = Math.max(best, 40);
+  }
+  // The hint is t()-localized in every pack, but aliases are static English — so in non-English
+  // packs keyword/synonym search was dead (label-substring only). Score the hint as a LOW-weight
+  // fallback (max 30): enough to surface a command in the palette's search list, but below the
+  // 60 bot/voice auto-run threshold so a loose hint-substring can never auto-execute a command.
+  if (best < 30 && cmd.hint) {
+    const h = String(cmd.hint).toLowerCase();
+    if (h.includes(needle) || h.split(/\s+/).some((w) => w.startsWith(needle))) best = 30;
   }
   return best;
 }
