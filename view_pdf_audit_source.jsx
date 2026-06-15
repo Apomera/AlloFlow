@@ -278,6 +278,268 @@ function _htmlToDocxSpec(html) {
 }
 // end _htmlToDocxSpec
 
+// ── ODT + DAISY exporters (2026-06-14) ──────────────────────────────────────
+// Both reuse the SAME tested block model from _htmlToDocxSpec(html) as their
+// intermediate representation, then serialize it to OpenDocument Text (ODT) and
+// DAISY 3 (DTBook 2005-3). Pure string builders (no JSZip) so they unit-test
+// like _htmlToDocxSpec; the zip packaging lives in the export handlers.
+function _expXmlEsc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+// Serialize a spec run-array to ODF inline markup (nested text:spans so we only
+// need single-property styles, all defined in the automatic-styles below).
+function _odtRuns(runs) {
+  return (runs || []).map((r) => {
+    if (!r || r.footnoteId) return '';
+    if (r.br) return '<text:line-break/>';
+    if (typeof r.text !== 'string') return '';
+    let t = _expXmlEsc(r.text);
+    if (r.sub) t = '<text:span text:style-name="T_Sub">' + t + '</text:span>';
+    if (r.sup) t = '<text:span text:style-name="T_Sup">' + t + '</text:span>';
+    if (r.italic) t = '<text:span text:style-name="T_Italic">' + t + '</text:span>';
+    if (r.bold) t = '<text:span text:style-name="T_Bold">' + t + '</text:span>';
+    if (r.link) t = '<text:a xlink:href="' + _expXmlEsc(r.link) + '">' + t + '</text:a>';
+    return t;
+  }).join('');
+}
+
+// content.xml for an ODT. Heading_20_N / Standard map to LibreOffice built-ins;
+// the bold/italic/sub/sup + list styles are declared as automatic-styles so the
+// file opens cleanly in LibreOffice / Word / Google Docs with no missing-style.
+function _htmlToOdtContentXml(html) {
+  const spec = _htmlToDocxSpec(html);
+  const body = [];
+  for (const b of (spec.blocks || [])) {
+    if (b.type === 'heading') {
+      const lvl = Math.min(6, Math.max(1, b.level || 1));
+      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs) + '</text:h>');
+    } else if (b.type === 'paragraph') {
+      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs) + '</text:p>');
+    } else if (b.type === 'list') {
+      body.push('<text:list text:style-name="' + (b.ordered ? 'L_Number' : 'L_Bullet') + '">' +
+        (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs) + '</text:p></text:list-item>').join('') +
+        '</text:list>');
+    } else if (b.type === 'table') {
+      const cols = (b.rows && b.rows[0] && b.rows[0].cells.length) || 1;
+      body.push('<table:table table:name="Table1">' +
+        '<table:table-column table:number-columns-repeated="' + cols + '"/>' +
+        (b.rows || []).map((r) => '<table:table-row>' + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs) + '</text:p></table:table-cell>').join('') + '</table:table-row>').join('') +
+        '</table:table>');
+    } else if (b.type === 'image') {
+      // ODT image embedding needs Pictures/ + draw:frame; degrade to alt text so
+      // the figure's meaning is never silently lost (same rule as the docx path).
+      if (b.alt) body.push('<text:p text:style-name="Standard">[' + _expXmlEsc(b.alt) + ']</text:p>');
+    } else if (b.type === 'pagebreak') {
+      body.push('<text:p text:style-name="P_PageBreak"/>');
+    }
+  }
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">\n' +
+    '<office:automatic-styles>' +
+    '<style:style style:name="T_Bold" style:family="text"><style:text-properties fo:font-weight="bold"/></style:style>' +
+    '<style:style style:name="T_Italic" style:family="text"><style:text-properties fo:font-style="italic"/></style:style>' +
+    '<style:style style:name="T_Sub" style:family="text"><style:text-properties style:text-position="sub 58%"/></style:style>' +
+    '<style:style style:name="T_Sup" style:family="text"><style:text-properties style:text-position="super 58%"/></style:style>' +
+    '<style:style style:name="P_PageBreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>' +
+    '<text:list-style style:name="L_Bullet"><text:list-level-style-bullet text:level="1" text:bullet-char="•"><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-bullet></text:list-style>' +
+    '<text:list-style style:name="L_Number"><text:list-level-style-number text:level="1" style:num-format="1" text:num-suffix="."><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-number></text:list-style>' +
+    '</office:automatic-styles>\n' +
+    '<office:body><office:text>' + body.join('\n') + '</office:text></office:body>\n' +
+    '</office:document-content>';
+}
+
+// The fixed ODT sidecar files (mimetype must be FIRST + STORED in the zip).
+const _ODT_MANIFEST_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">' +
+  '<manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>' +
+  '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>' +
+  '<manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>' +
+  '<manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>' +
+  '</manifest:manifest>';
+const _ODT_STYLES_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2"><office:styles>' +
+  '<style:default-style style:family="paragraph"><style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/></style:default-style>' +
+  '<style:style style:name="Standard" style:family="paragraph" style:class="text"/>' +
+  ['1', '2', '3', '4', '5', '6'].map((n) => '<style:style style:name="Heading_20_' + n + '" style:display-name="Heading ' + n + '" style:family="paragraph" style:parent-style-name="Standard" style:class="text"><style:text-properties fo:font-weight="bold" fo:font-size="' + (20 - (n - 1) * 2) + 'pt"/></style:style>').join('') +
+  '</office:styles></office:document-styles>';
+
+// DAISY 3 (DTBook 2005-3) full-text talking book. Text-only: DAISY readers
+// provide their own speech/braille/large-print rendering. (Synced read-aloud
+// audio is the separate EPUB3 Media Overlays export.) Builds the nested levelN
+// containers DTBook requires from the flat heading sequence.
+function _expDtbookRuns(runs) {
+  return (runs || []).map((r) => {
+    if (!r || r.footnoteId) return '';
+    if (r.br) return '<br/>';
+    if (typeof r.text !== 'string') return '';
+    let t = _expXmlEsc(r.text);
+    if (r.sub) t = '<sub>' + t + '</sub>';
+    if (r.sup) t = '<sup>' + t + '</sup>';
+    if (r.italic) t = '<em>' + t + '</em>';
+    if (r.bold) t = '<strong>' + t + '</strong>';
+    if (r.link) t = '<a href="' + _expXmlEsc(r.link) + '">' + t + '</a>';
+    return t;
+  }).join('');
+}
+function _htmlToDtbookXml(html, lang) {
+  const spec = _htmlToDocxSpec(html);
+  const L = lang || spec.lang || 'en';
+  const title = _expXmlEsc(spec.title || 'Document');
+  const out = [];
+  let depth = 0;
+  const ensureContentLevel = () => { if (depth === 0) { out.push('<level1>'); out.push('<h1>' + title + '</h1>'); depth = 1; } };
+  for (const b of (spec.blocks || [])) {
+    if (b.type === 'heading') {
+      const lvl = Math.min(6, Math.max(1, b.level || 1));
+      while (depth >= lvl) { out.push('</level' + depth + '>'); depth--; }
+      while (depth < lvl) { depth++; out.push('<level' + depth + '>'); }
+      const _h = _expDtbookRuns(b.runs);
+      out.push('<h' + lvl + '>' + (_h || title) + '</h' + lvl + '>');
+    } else if (b.type === 'paragraph') {
+      ensureContentLevel();
+      out.push('<p>' + _expDtbookRuns(b.runs) + '</p>');
+    } else if (b.type === 'list') {
+      ensureContentLevel();
+      out.push('<list type="' + (b.ordered ? 'ol' : 'ul') + '">' + (b.items || []).map((it) => '<li>' + _expDtbookRuns(it.runs) + '</li>').join('') + '</list>');
+    } else if (b.type === 'table') {
+      ensureContentLevel();
+      out.push('<table>' + (b.rows || []).map((r) => '<tr>' + (r.cells || []).map((c) => { const tg = c.header ? 'th' : 'td'; return '<' + tg + '>' + _expDtbookRuns(c.runs) + '</' + tg + '>'; }).join('') + '</tr>').join('') + '</table>');
+    } else if (b.type === 'image') {
+      ensureContentLevel();
+      if (b.alt) out.push('<p><imggroup><caption>' + _expXmlEsc(b.alt) + '</caption></imggroup></p>');
+    }
+  }
+  while (depth > 0) { out.push('</level' + depth + '>'); depth--; }
+  const bodyInner = out.join('\n') || ('<level1><h1>' + title + '</h1></level1>');
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n' +
+    '<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '">\n' +
+    '<head>' +
+    '<meta name="dc:Title" content="' + title + '"/>' +
+    '<meta name="dc:Language" content="' + _expXmlEsc(L) + '"/>' +
+    '<meta name="dc:Publisher" content="AlloFlow"/>' +
+    '<meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/>' +
+    '<meta name="dtb:uid" content="alloflow-daisy-' + Date.now() + '"/>' +
+    '</head>\n' +
+    '<book><bodymatter>' + bodyInner + '</bodymatter></book>\n' +
+    '</dtbook>';
+}
+// Navigation Control file (NCX) + OPF package for the DAISY book — navPoints
+// from the document headings so DAISY players get a real navigable TOC.
+function _htmlToDaisyNcx(html, title) {
+  const spec = _htmlToDocxSpec(html);
+  const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
+  let i = 0;
+  const navPoints = heads.map((h) => {
+    i++;
+    const label = _expXmlEsc((h.runs || []).map((r) => r.text || '').join('') || ('Section ' + i));
+    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="dtbook.xml#h' + i + '"/></navPoint>';
+  }).join('\n');
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n' +
+    '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n' +
+    '<head><meta name="dtb:uid" content="alloflow-daisy"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
+    '<docTitle><text>' + _expXmlEsc(title || spec.title || 'Document') + '</text></docTitle>\n' +
+    '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="dtbook.xml"/></navPoint>') + '</navMap>\n' +
+    '</ncx>';
+}
+const _DAISY_OPF_XML = (title, lang) => '<?xml version="1.0" encoding="utf-8"?>\n' +
+  '<package xmlns="http://openebook.org/namespaces/oeb-package/1.0/" unique-identifier="uid">\n' +
+  '<metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
+  '<dc:Title>' + _expXmlEsc(title) + '</dc:Title>' +
+  '<dc:Language>' + _expXmlEsc(lang || 'en') + '</dc:Language>' +
+  '<dc:Format>ANSI/NISO Z39.86-2005</dc:Format>' +
+  '<dc:Identifier id="uid">alloflow-daisy</dc:Identifier>' +
+  '<dc:Publisher>AlloFlow</dc:Publisher>' +
+  '</dc-metadata><x-metadata><meta name="dtb:multimediaType" content="textNCX"/><meta name="dtb:totalTime" content="0:00:00"/></x-metadata></metadata>\n' +
+  '<manifest>' +
+  '<item id="opf" href="package.opf" media-type="text/xml"/>' +
+  '<item id="dtbook" href="dtbook.xml" media-type="application/x-dtbook+xml"/>' +
+  '<item id="ncx" href="navigation.ncx" media-type="application/x-dtbncx+xml"/>' +
+  '</manifest>\n<spine><itemref idref="dtbook"/></spine>\n</package>';
+
+// ── EPUB3 Media Overlays (read-along) — pure helpers (2026-06-14) ────────────
+// True read-along: each spoken text block gets a stable id, one TTS clip, and a
+// SMIL <par> linking the id to its clip so a reading system highlights the text
+// as the audio plays. These are the PURE pieces (id assignment, SMIL, OPF); the
+// async handler generates the per-block audio + measures clip durations.
+function _moClock(sec) {
+  // SMIL clock value in seconds form (e.g. "12.345s") — valid for clipEnd and
+  // media:duration. Guards NaN/negatives to 0.
+  const s = (typeof sec === 'number' && isFinite(sec) && sec > 0) ? sec : 0;
+  return (Math.round(s * 1000) / 1000) + 's';
+}
+// Assign a stable id to every leaf text block + return the per-block spoken text.
+// Reuses existing ids when present so the SMIL references match the xhtml. Strips
+// non-spoken editor chrome (same intent as _audioReadyText) so audio == on-screen.
+function _collectMoSegments(html) {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const root = doc.body || doc.documentElement;
+  if (!root) return { segments: [], bodyHtml: '', lang: 'en' };
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], script, style, .allo-block-controls, .allo-block-remove').forEach((el) => el.remove());
+  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td';
+  const segments = [];
+  let i = 0;
+  Array.from(root.querySelectorAll(SEL)).forEach((el) => {
+    if (el.querySelector(SEL)) return; // only leaf blocks — don't double-speak a wrapper
+    const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!text) return;
+    i++;
+    if (!el.getAttribute('id')) el.setAttribute('id', 'mo' + i);
+    segments.push({ id: el.getAttribute('id'), text });
+  });
+  return { segments, bodyHtml: root.innerHTML, lang: (doc.documentElement.getAttribute('lang') || 'en') };
+}
+// SMIL overlay: one <par> per segment. Per-segment audio files, so each clip is
+// 0..duration of its own file. `ext` is the audio extension (mp3 by default;
+// the TTS service may return wav, which we pass through honestly rather than
+// mislabel as mp3 — most reading systems play wav even though mp3 is the core type).
+function _buildMoSmil(segments, durations, ext) {
+  const _ext = ext || 'mp3';
+  const pars = (segments || []).map((s, idx) => {
+    const dur = (durations && durations[idx]) || 0;
+    return '<par id="par' + (idx + 1) + '"><text src="content.xhtml#' + _expXmlEsc(s.id) + '"/>' +
+      '<audio src="audio/seg' + (idx + 1) + '.' + _ext + '" clipBegin="' + _moClock(0) + '" clipEnd="' + _moClock(dur) + '"/></par>';
+  }).join('\n');
+  return '<?xml version="1.0" encoding="utf-8"?>\n' +
+    '<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n' +
+    '<body><seq>' + pars + '</seq></body>\n</smil>';
+}
+// OPF for the media-overlay ePub: content references its overlay; manifest lists
+// the SMIL + every audio clip; media:duration (global + per-overlay) is required.
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime) {
+  const _ext = ext || 'mp3';
+  const _mime = mime || 'audio/mpeg';
+  const audioItems = (segments || []).map((s, i) => '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + '.' + _ext + '" media-type="' + _mime + '"/>').join('\n');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n' +
+    '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n' +
+    '<dc:identifier id="uid">alloflow-mo-' + Date.now() + '</dc:identifier>' +
+    '<dc:title>' + _expXmlEsc(title) + '</dc:title>' +
+    '<dc:language>' + _expXmlEsc(lang || 'en') + '</dc:language>' +
+    '<dc:creator>AlloFlow Document Pipeline</dc:creator>' +
+    '<meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || new Date().toISOString().replace(/\.\d+Z/, 'Z')) + '</meta>' +
+    '<meta property="media:duration">' + _moClock(totalSec) + '</meta>' +
+    '<meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta>' +
+    '<meta property="media:active-class">-epub-media-overlay-active</meta>' +
+    '<meta property="schema:accessMode">textual</meta>' +
+    '<meta property="schema:accessMode">auditory</meta>' +
+    '<meta property="schema:accessModeSufficient">textual,auditory</meta>' +
+    '<meta property="schema:accessibilityFeature">readingOrder</meta>' +
+    '<meta property="schema:accessibilityFeature">synchronizedAudioText</meta>' +
+    '<meta property="schema:accessibilityFeature">structuralNavigation</meta>' +
+    '<meta property="schema:accessibilityHazard">none</meta>' +
+    '<meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta>' +
+    '</metadata>\n' +
+    '<manifest>\n' +
+    '<item id="content" href="content.xhtml" media-type="application/xhtml+xml" media-overlay="smil"/>\n' +
+    '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n' +
+    '<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' +
+    audioItems + '\n' +
+    '</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
+}
+
 // _buildDocxBlobFromSpec: map the pure spec onto the docx UMD library (d).
 // Accessibility mapping: real HeadingN styles, tableHeader rows, real list
 // numbering/bullets, ExternalHyperlink (keeps link semantics), ImageRun with
@@ -1114,6 +1376,8 @@ function PdfAuditView(props) {
   const [mediaInstructions, setMediaInstructions] = useState('');
   const [mediaDigesting, setMediaDigesting] = useState(false);
   const [mediaDigestProgress, setMediaDigestProgress] = useState('');
+  // Read-along (EPUB3 Media Overlays) export progress: {total, done, status}.
+  const [moExport, setMoExport] = useState(null);
   // Resumable audio job (2026-06-10, maintainer ask): big documents hit TTS
   // rate limits mid-run — the old handler died and discarded position. The
   // job now generates in chunks (it always did), PAUSES on demand, STALLS
@@ -1151,6 +1415,103 @@ function PdfAuditView(props) {
       setPdfFixResult((prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, savedAt: Date.now() } } : prev);
     } catch (_) {}
   };
+
+  // ── New-format export handlers (2026-06-14): ODT, DAISY, read-along EPUB3 ──
+  // ODT (OpenDocument Text) — opens natively in LibreOffice / Google Docs / Word.
+  const _dlOdt = async () => {
+    const html = pdfFixResult?.accessibleHtml;
+    if (!html) return;
+    if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
+    try {
+      const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+      const zip = new window.JSZip();
+      zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' });
+      zip.file('META-INF/manifest.xml', _ODT_MANIFEST_XML);
+      zip.file('content.xml', _htmlToOdtContentXml(html));
+      zip.file('styles.xml', _ODT_STYLES_XML);
+      zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title></office:meta></office:document-meta>');
+      const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.oasis.opendocument.text' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.odt';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      addToast(t('toasts.odt_downloaded') || '📄 OpenDocument (.odt) downloaded — opens in LibreOffice, Google Docs, or Word.', 'success');
+    } catch (e) { addToast('ODT export failed: ' + (e?.message || 'unknown error'), 'error'); }
+  };
+  // DAISY 3 (DTBook 2005-3) full-text talking book — text-only; DAISY readers
+  // provide speech / braille / large-print. (Synced audio = the read-along ePub.)
+  const _dlDaisy = async () => {
+    const html = pdfFixResult?.accessibleHtml;
+    if (!html) return;
+    if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
+    try {
+      const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+      const lang = (html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en';
+      const zip = new window.JSZip();
+      zip.file('dtbook.xml', _htmlToDtbookXml(html, lang));
+      zip.file('navigation.ncx', _htmlToDaisyNcx(html, title));
+      zip.file('package.opf', _DAISY_OPF_XML(title, lang));
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-daisy.zip';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      addToast(t('toasts.daisy_downloaded') || '🔊 DAISY talking-book package (.zip) downloaded — open in a DAISY reader.', 'success');
+    } catch (e) { addToast('DAISY export failed: ' + (e?.message || 'unknown error'), 'error'); }
+  };
+  // Read-along EPUB3 (Media Overlays): per-paragraph TTS synced to the text so a
+  // reading system highlights each block as it's spoken. Generates one TTS clip
+  // per text block (many voice calls) — gated behind a confirm + progress.
+  const _dlEpubMO = async () => {
+    const html = pdfFixResult?.accessibleHtml;
+    if (!html) return;
+    if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
+    if (typeof callTTS !== 'function') { addToast(t('toasts.mo_no_voice') || 'The voice service is unavailable, so read-along audio can’t be generated right now.', 'error'); return; }
+    if (moExport && moExport.status === 'running') { addToast(t('toasts.mo_busy') || 'A read-along export is already running.', 'info'); return; }
+    const { segments, bodyHtml, lang } = _collectMoSegments(html);
+    if (!segments.length) { addToast(t('toasts.mo_no_text') || 'No readable text found to narrate.', 'error'); return; }
+    const _confirm = (t('pdf_audit.mo.confirm') || 'Build a read-along ebook? This narrates {n} text sections with text-to-speech — about {n} voice calls, which can take a few minutes.').replace(/\{n\}/g, String(segments.length));
+    if (!window.confirm(_confirm)) return;
+    const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
+    const epubLang = lang || 'en';
+    setMoExport({ total: segments.length, done: 0, status: 'running' });
+    const measure = (url) => new Promise((res) => { try { const au = new Audio(); au.preload = 'metadata'; au.onloadedmetadata = () => res(au.duration || 0); au.onerror = () => res(0); au.src = url; } catch (_) { res(0); } });
+    try {
+      const audioBlobs = []; const durations = [];
+      for (let i = 0; i < segments.length; i++) {
+        let blob = null, dur = 0;
+        try {
+          const url = await callTTS(segments[i].text, selectedVoice || 'Puck', 1, 2);
+          if (url && (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('http'))) {
+            dur = await measure(url);
+            blob = await (await fetch(url)).blob();
+          }
+        } catch (_) { /* keep going — a missing clip degrades to text-only for that block */ }
+        audioBlobs.push(blob); durations.push(dur);
+        setMoExport({ total: segments.length, done: i + 1, status: 'running' });
+      }
+      const firstBlob = audioBlobs.find(Boolean);
+      const isWav = !!(firstBlob && /wav/i.test(firstBlob.type || ''));
+      const ext = isWav ? 'wav' : 'mp3';
+      const mime = isWav ? 'audio/wav' : 'audio/mpeg';
+      const totalSec = durations.reduce((a, b) => a + (b || 0), 0);
+      const withAudio = audioBlobs.filter(Boolean).length;
+      const zip = new window.JSZip();
+      zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+      zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+      let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + '</title></head><body>' + bodyHtml + '</body></html>';
+      xhtml = xhtml.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+      zip.file('OEBPS/content.xhtml', xhtml);
+      zip.file('OEBPS/content.smil', _buildMoSmil(segments, durations, ext));
+      zip.file('OEBPS/content.opf', _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime));
+      zip.file('OEBPS/nav.xhtml', '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + '</a></li></ol></nav></body></html>');
+      for (let i = 0; i < audioBlobs.length; i++) { if (audioBlobs[i]) zip.file('OEBPS/audio/seg' + (i + 1) + '.' + ext, audioBlobs[i]); }
+      const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-readalong.epub';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+      setMoExport({ total: segments.length, done: segments.length, status: 'done' });
+      if (withAudio === 0) addToast(t('toasts.mo_no_audio') || '⚠ Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.', 'error');
+      else addToast('📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' sections narrated.', 'success');
+      setTimeout(() => setMoExport(null), 4000);
+    } catch (e) { setMoExport(null); addToast('Read-along export failed: ' + (e?.message || 'unknown error'), 'error'); }
+  };
+
   const _runAudioJob = async () => {
     const j = audioJobRef.current;
     if (!j) return;
@@ -6797,7 +7158,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             warnLog('[DocxExport] failed:', err);
                             addToast('Word export failed: ' + (err?.message || 'unknown error') + '. The accessible HTML download carries the same content.', 'error');
                           }
-                        }} className="px-4 py-2.5 bg-sky-50 text-sky-700 rounded-xl font-bold text-sm hover:bg-sky-100 transition-colors flex items-center gap-1.5"
+                        }} id="allo-export-docx" className="px-4 py-2.5 bg-sky-50 text-sky-700 rounded-xl font-bold text-sm hover:bg-sky-100 transition-colors flex items-center gap-1.5"
                           title={t('pdf_audit.docx_export.title') || "Convert the remediated content into a Word document with real heading styles, alt text on images, table header rows, list structure, and working hyperlinks. Verify with Word's built-in Accessibility Checker (Review → Check Accessibility) before distributing."}
                         >
                           📝 Word (.docx)
@@ -6832,7 +7193,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             warnLog('[PptxExport] failed:', err);
                             addToast('PowerPoint export failed: ' + (err?.message || 'unknown error') + '. The accessible HTML and Word downloads carry the same content.', 'error');
                           }
-                        }} className="px-4 py-2.5 bg-orange-50 text-orange-700 rounded-xl font-bold text-sm hover:bg-orange-100 transition-colors flex items-center gap-1.5"
+                        }} id="allo-export-pptx" className="px-4 py-2.5 bg-orange-50 text-orange-700 rounded-xl font-bold text-sm hover:bg-orange-100 transition-colors flex items-center gap-1.5"
                           title={t('pdf_audit.pptx_export.title') || "Rebuild the remediated content as a PowerPoint deck with real slide titles, alt text on images, header-styled table rows, true bullet lists, and reading order = visual order. A rebuilt accessible layout — not a visual clone of the original. Verify with PowerPoint's Accessibility Checker before distributing."}
                         >
                           📽 PowerPoint (.pptx)
@@ -7336,16 +7697,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         📐 Save Structure as Template (for future documents)
                       </button>
 
-                      {/* Alternative Formats (matching Anthology Ally feature set).
-                          Open by default (2026-06-14) so ePub / Braille (BRF) / Plain
-                          text / Markdown are visible on the results screen instead of
-                          hidden behind a collapsed disclosure — Braille discoverability. */}
-                      <details data-help-key="pdf_audit_alt_formats_summary" className="group" open>
-                        <summary className="text-[11px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
-                          📑 {t('pdf_audit.alt_formats.heading') || 'Alternative Formats'} <span className="normal-case font-normal text-slate-500">{t('pdf_audit.alt_formats.list') || '— EPUB · Braille (BRF) · Plain text · Markdown'}</span> <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
+                      {/* Unified Export dropdown (2026-06-14): ONE clear grouped menu for
+                          every output format. Document formats facade the primary buttons
+                          by id (zero logic change to those flows); accessible/text/new
+                          formats call dedicated handlers. Replaces the old collapsed
+                          "Alternative Formats" disclosure (and its open-by-default sprawl). */}
+                      <details data-help-key="pdf_audit_alt_formats_summary" className="group w-full">
+                        <summary className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-xl font-bold text-sm cursor-pointer hover:from-teal-700 hover:to-cyan-700 transition-colors list-none">
+                          ⬇ {t('pdf_audit.export_menu.button') || 'Export / Download'} <span className="text-xs opacity-90 group-open:rotate-180 transition-transform">▾</span>
                         </summary>
-                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1.5">
-                          <p id="allo-sec-downloads" className="text-[11px] text-slate-600">{t('pdf_audit.alt_formats.intro') || 'Download the remediated document in accessible alternative formats'}</p>
+                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1" role="menu" aria-label={t('pdf_audit.export_menu.aria') || 'Export formats'}>
+                          <p id="allo-sec-downloads" className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.export_menu.intro') || 'Download the remediated document in any format — pick the one that fits how it’ll be used.'}</p>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1 mb-0.5">{t('pdf_audit.export_menu.group_docs') || 'Documents'}</div>
+                          {_inputIsPdf && (
+                            <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-tagged-pdf-btn'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📄 {t('pdf_audit.export_menu.tagged_pdf') || 'Tagged PDF (PDF/UA — give to students)'}</button>
+                          )}
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-docx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📝 {t('pdf_audit.export_menu.word') || 'Word (.docx — keep editing)'}</button>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-pptx'); if (b) b.click(); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">📽 {t('pdf_audit.export_menu.pptx') || 'PowerPoint (.pptx — present it)'}</button>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const html = pdfFixResult?.accessibleHtml; if (!html) return; const blob = new Blob(['<!DOCTYPE html>\n' + html], { type: 'text/html;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href); if (addToast) addToast(t('toasts.html_downloaded') || '🌐 HTML downloaded — opens in any browser.', 'success'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">🌐 {t('pdf_audit.export_menu.html') || 'HTML (opens anywhere, no software)'}</button>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_access') || 'Accessible formats'}</div>
 
                           {/* ePub */}
                           <button onClick={() => {
@@ -7453,6 +7825,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             ⠃⠗⠇ Electronic Braille (BRF)
                           </button>
 
+                          {/* DAISY 3 full-text talking book */}
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlDaisy(); }} data-help-key="pdf_audit_alt_formats_daisy_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.daisy_title') || 'DAISY 3 (DTBook) full-text talking-book package. Open in a DAISY reader, which provides speech, braille, or large print. (For synced read-aloud audio, use Read-along below.)'}>
+                            🔊 {t('pdf_audit.export_menu.daisy') || 'DAISY talking book (full text)'}
+                          </button>
+
+                          {/* Read-along EPUB3 (Media Overlays) — TTS synced to text */}
+                          <button role="menuitem" disabled={!!(moExport && moExport.status === 'running')} onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlEpubMO(); }} data-help-key="pdf_audit_alt_formats_readalong_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" title={t('pdf_audit.export_menu.readalong_title') || 'Read-along ebook (EPUB3 Media Overlays): generates text-to-speech for each paragraph and syncs it to the text so a reading system highlights words as they’re spoken. Makes many voice calls — can take a few minutes.'}>
+                            📖🔊 {(moExport && moExport.status === 'running')
+                              ? ((t('pdf_audit.export_menu.readalong_progress') || 'Narrating… {done}/{total}').replace('{done}', String(moExport.done)).replace('{total}', String(moExport.total)))
+                              : (t('pdf_audit.export_menu.readalong') || 'Read-along ebook (synced audio)')}
+                          </button>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_text') || 'Text & editable'}</div>
+
                           {/* Plain text */}
                           <button onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
@@ -7498,6 +7884,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             addToast(t('toasts.markdown_downloaded'), 'success');
                           }} data-help-key="pdf_audit_alt_formats_markdown_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📋 Markdown (LMS, wiki, docs)
+                          </button>
+
+                          {/* ODT (OpenDocument) */}
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; _dlOdt(); }} data-help-key="pdf_audit_alt_formats_odt_btn" className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.odt_title') || 'OpenDocument Text — opens natively in LibreOffice and Google Docs (and Word).'}>
+                            📄 {t('pdf_audit.export_menu.odt') || 'ODT (LibreOffice / Google Docs)'}
+                          </button>
+
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_audio') || 'Audio narration'}</div>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-audio'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_title') || 'Spoken narration of the document (MP3/WAV).'}>
+                            🎧 {t('pdf_audit.export_menu.audio') || 'Audio narration (standard)'}
+                          </button>
+                          <button role="menuitem" onClick={(e) => { const d = e.currentTarget.closest('details'); if (d) d.open = false; const b = document.getElementById('allo-export-audio-sr'); if (b) { b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.click(); } else if (addToast) addToast(t('toasts.audio_unavailable_now') || 'Audio is unavailable right now (a job may be running, or the voice service is off).', 'info'); }} className="w-full text-left px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" title={t('pdf_audit.export_menu.audio_sr_title') || 'Same voice, but announcing structure the way a screen reader would (heading levels, list counts, table rows, image alts).'}>
+                            🦻 {t('pdf_audit.export_menu.audio_sr') || 'Audio (screen-reader style)'}
                           </button>
                         </div>
                       </details>
@@ -7793,7 +8192,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <p className="text-[11px] text-violet-500">Translations and simplifications stack — add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.</p>
                       </div>
                       <div className="flex gap-2">
-                        {callTTS && !audioJob && <button data-help-key="pdf_audit_audio_download_btn" onClick={() => {
+                        {callTTS && !audioJob && <button id="allo-export-audio" data-help-key="pdf_audit_audio_download_btn" onClick={() => {
                           const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
                           if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           // Sentence-boundary segmentation (~600 chars/segment) — the
@@ -7818,7 +8217,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             voice, but announcing structure the way a screen
                             reader would — heading levels, list counts, table
                             rows, image alts. */}
-                        {callTTS && !audioJob && <button data-help-key="pdf_audit_audio_sr_btn" onClick={() => {
+                        {callTTS && !audioJob && <button id="allo-export-audio-sr" data-help-key="pdf_audit_audio_sr_btn" onClick={() => {
                           const srText = _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim();
                           if (!srText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           const segments = [];
