@@ -962,10 +962,13 @@ var createDocPipeline = function(deps) {
           if (_isJsonWrapped(resp)) { const _u = _tryUnwrapJsonHtml(resp); if (_u) resp = _u.trim(); }
           resp = resp.replace(/^```html?\s*/i, '').replace(/```\s*$/, '').trim();
           // Structure-parity is not enough: a tag-preserving but text-EMPTIED chunk would
-          // pass and silently drop facts. AND a loose gross-drop text floor (F=0.5; zero-text
-          // chunks pass naturally since the floor is 0) so a gutted chunk falls through to
-          // retry / keep-original / failed++. (lang-text-floor, 2026-06-15)
-          if (resp && _tagSeqOf(resp) === wantSeq && textCharCount(resp) >= textCharCount(chunk) * 0.5) { out.push(resp); ok = true; }
+          // pass and silently drop facts. AND a loose gross-drop text floor so a gutted chunk
+          // falls through to retry / keep-original / failed++. CJK targets (zh/ja/ko) encode the
+          // same content in ~half the characters of English, so a 0.5 floor false-rejects CORRECT
+          // CJK translations → silent fallback to untranslated source; use 0.25 there. Empty
+          // chunks (0 chars) still fail at any positive floor. (lang-text-floor + CJK fix #10)
+          const _floor = (/\b(zh|ja|ko)\b/i.test(String(opts.langCode || '')) || /chinese|japanese|korean/i.test(String(targetLang || ''))) ? 0.25 : 0.5;
+          if (resp && _tagSeqOf(resp) === wantSeq && textCharCount(resp) >= textCharCount(chunk) * _floor) { out.push(resp); ok = true; }
         } catch (_) {}
       }
       if (!ok) { out.push(chunk); failed++; warnLog('[translateDoc] chunk ' + (i + 1) + '/' + chunks.length + ' failed tag-parity — kept original text for that section'); }
@@ -14215,13 +14218,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (_autoRestore || _imageRecoveryInjected) {
         try {
           const _reAxe = await runAxeAudit(accessibleHtml);
-          if (_reAxe) axeResults = _reAxe;
+          // Base success on the FRESH re-audit, not the possibly-stale prior axeResults — else a
+          // transient axe failure (null) would silently re-blend the AI score with the
+          // PRE-recovery deterministic score. Only adopt fresh results; compute det from them. (#11)
+          const _reAxeOk = _reAxe && typeof _reAxe.score === 'number';
+          if (_reAxeOk) axeResults = _reAxe;
           let _reEa = null;
           try { _reEa = await runEqualAccessAudit(accessibleHtml); } catch (_) { _reEa = null; }
-          if (_reEa) eaResults = _reEa;
-          const _reAxeOk = axeResults && typeof axeResults.score === 'number';
-          const _reEaOk = eaResults && typeof eaResults.score === 'number';
-          const _reDet = _reAxeOk ? (_reEaOk ? Math.min(axeResults.score, eaResults.score) : axeResults.score) : null;
+          const _reEaOk = _reEa && typeof _reEa.score === 'number';
+          if (_reEaOk) eaResults = _reEa;
+          const _reDet = _reAxeOk ? (_reEaOk ? Math.min(_reAxe.score, _reEa.score) : _reAxe.score) : null;
           const _reAi = verification ? verification.score : afterScore;
           if (_reAi !== null && _reAxeOk) {
             axeCoreFailed = false;
@@ -14229,13 +14235,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             warnLog('[PDF Fix] Re-blended score after recovery mutations: AI ' + _reAi + ' + deterministic ' + _reDet + ' = ' + _reBlended + ' (was ' + finalAfterScore + ')');
             finalAfterScore = _reBlended;
           } else if (!_reAxeOk) {
+            // Fresh deterministic re-audit failed: don't keep a stale blend — go AI-only and
+            // mark axe as failed so the triage/_scoreIsBlended stay consistent. (#11)
             axeCoreFailed = true;
+            if (_reAi !== null) finalAfterScore = _reAi;
             warnLog('[PDF Fix] WARNING: axe-core unavailable on re-audit after recovery — final score is AI-only (' + _reAi + ').');
           }
           // Recompute triage values that feed _result so the banner matches the shipped doc.
-          axeViolations = axeResults ? axeResults.totalViolations : 0;
-          axeCritical = axeResults ? axeResults.critical.length : 0;
-          axeFailed = !axeResults || typeof axeResults.score !== 'number';
+          // On a failed re-audit (_reAxeOk false) report axe as failed/unknown rather than reading
+          // counts off the stale pre-recovery axeResults (which would contradict axeCoreFailed).
+          axeViolations = _reAxeOk && axeResults ? axeResults.totalViolations : 0;
+          axeCritical = _reAxeOk && axeResults ? axeResults.critical.length : 0;
+          axeFailed = !_reAxeOk;
           const _reAccessibilityConcern = axeFailed || (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
           needsExpertReview = _reAccessibilityConcern || _contentFidelityConcern;
           expertReviewReason = (_reAccessibilityConcern && _contentFidelityConcern) ? 'both' : _reAccessibilityConcern ? 'accessibility' : _contentFidelityConcern ? 'content-fidelity' : null;

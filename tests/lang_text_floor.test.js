@@ -47,7 +47,10 @@ describe('lang-text-floor — gross-drop text floor on the translate/simplify ac
   });
 
   it('anti-drift: both floor expressions are live in the shipped accept gates', () => {
-    expect(src).toContain('textCharCount(resp) >= textCharCount(chunk) * 0.5');
+    // translate gate now uses a CJK-aware _floor (0.25 for zh/ja/ko, else 0.5 — fix #10)
+    expect(src).toContain('textCharCount(resp) >= textCharCount(chunk) * _floor');
+    expect(src).toContain('? 0.25 : 0.5;');
+    // simplify gate keeps its flat 0.35
     expect(src).toContain('textCharCount(resp) >= textCharCount(chunk) * 0.35');
   });
 });
