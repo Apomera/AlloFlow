@@ -116,6 +116,26 @@ function _emitAccessibleTableHtml(grid, opts) {
   return '<table' + (opts.reconAttr ? ' data-allo-reconstructed="image"' : '') + ' style="width:100%;border-collapse:collapse;margin:1em 0">' + cap + thead + tbody + '</table>';
 }
 
+// Sanitize an AI-parsed doc-style object before its color/font values are
+// interpolated into style="…" attributes (2026-06-15 security fix). Those values
+// render in the script-enabled preview iframe, so a prompt-injected PDF could
+// otherwise break out of the attribute (e.g. headingColor = 'red"><img src=x
+// onerror=…>'). Keep only string values free of attribute/style-breakout chars +
+// CSS vectors; legitimate colors, gradients, and font stacks contain none of them.
+// Invalid values are DROPPED, so the safe default survives the {...style, ...this}.
+function _sanitizeStyleObj(obj) {
+  const out = {};
+  if (!obj || typeof obj !== 'object') return out;
+  for (const k in obj) {
+    const v = obj[k];
+    if (typeof v !== 'string' || v.length > 200) continue;
+    if (/["<>;{}\\]/.test(v)) continue;                                   // attribute/style breakout
+    if (/url\s*\(|expression\s*\(|javascript:|@import/i.test(v)) continue; // CSS injection vectors
+    out[k] = v;
+  }
+  return out;
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -6161,7 +6181,7 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
         if (styleRes) {
           let sc = styleRes.trim();
           if (sc.indexOf('`' + '``') !== -1) { const ps = sc.split('`' + '``'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('`' + '``') !== -1) sc = sc.substring(0, sc.lastIndexOf('`' + '``')); }
-          batchDocStyle = { ...batchDocStyle, ...JSON.parse(sc) };
+          batchDocStyle = { ...batchDocStyle, ..._sanitizeStyleObj(JSON.parse(sc)) };
           log('Extracted brand colors from original PDF');
         }
       } catch(e) { warnLog && warnLog('[batchDocStyle] PDF brand-color extraction failed; falling back to defaults:', e); }
@@ -7386,10 +7406,15 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     }
     try { setPdfBatchStep(''); } catch (_) {}
 
+    // Escape teacher-facing report values (2026-06-15 security fix): fileName /
+    // error are raw strings that previously concatenated into the HTML report
+    // (stored XSS) and the CSV (cell-break + spreadsheet formula injection).
+    const _escRpt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const _csvCell = (s) => { let v = String(s == null ? '' : s); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
     const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,EA Fails,EA Score,Time (s),Expert Review,Tagged PDF,Status'];
     pdfBatchQueue.forEach(f => {
       const r = f.result;
-      csvRows.push(`"${f.fileName}",${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},"${_taggedNotes.get(f.id) || ''}",${f.status}`);
+      csvRows.push(`${_csvCell(f.fileName)},${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},${_csvCell(_taggedNotes.get(f.id) || '')},${f.status}`);
     });
     zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
 
@@ -7408,7 +7433,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
 
     const done = pdfBatchQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+f.fileName+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>+'+(r?(r.afterScore-r.beforeScore):'\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+tg+'</td><td>'+(f.status==='done'?'\u2705':'\u274c '+(f.error||''))+'</td></tr>';}).join('')}</tbody></table></body></html>`;
+    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>+'+(r?(r.afterScore-r.beforeScore):'\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':'\u274c '+_escRpt(f.error||''))+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -11719,7 +11744,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (styleResult) {
             const sc = _stripCodeFence(styleResult);
             const parsed = JSON.parse(sc);
-            docStyle = { ...docStyle, ...parsed };
+            docStyle = { ...docStyle, ..._sanitizeStyleObj(parsed) };
             warnLog('[PDF Fix] Extracted doc style:', docStyle);
           }
 
@@ -14152,24 +14177,35 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       }
 
       // ── Log to institutional compliance dashboard (non-blocking) ──
+      // FERPA/PRIVACY (2026-06-15): by DEFAULT send only non-PII metrics. The raw
+      // filename routinely embeds student PII (e.g. "IEP_JohnDoe.pdf") and the
+      // email identifies the teacher, so they are transmitted ONLY when an
+      // institution has explicitly opted in (window.__alloTelemetryConsent === true).
+      // The hostname check alone was NOT consent.
       try {
         const host = typeof window !== 'undefined' ? window.location.hostname : '';
         if (host.includes('.web.app') || host.includes('.firebaseapp.com')) {
+          const _telemetryConsent = typeof window !== 'undefined' && window.__alloTelemetryConsent === true;
+          const _payload = {
+            beforeScore,
+            afterScore: finalAfterScore,
+            axeViolationsAfter: axeResults ? axeResults.totalViolations : null,
+            fixPasses: autoFixPasses,
+            needsExpertReview,
+            pageCount,
+            elapsed: Math.round((Date.now() - _startTime) / 1000),
+            // Non-identifying: file extension only, never the (PII-bearing) name.
+            fileExt: ((pendingPdfFile && pendingPdfFile.name || '').match(/\.([A-Za-z0-9]+)$/) || [])[1] || '',
+          };
+          if (_telemetryConsent) {
+            _payload.fileName = (pendingPdfFile && pendingPdfFile.name) || 'unknown';
+            _payload.user = (typeof window !== 'undefined' && window.__alloUser && (window.__alloUser.displayName || window.__alloUser.email)) || 'anonymous';
+            _payload.email = (typeof window !== 'undefined' && window.__alloUser && window.__alloUser.email) || null;
+          }
           fetch('/api/logRemediation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fileName: pendingPdfFile?.name || 'unknown',
-              user: typeof window !== 'undefined' && window.__alloUser ? window.__alloUser.displayName || window.__alloUser.email : 'anonymous',
-              email: typeof window !== 'undefined' && window.__alloUser ? window.__alloUser.email : null,
-              beforeScore,
-              afterScore: finalAfterScore,
-              axeViolationsAfter: axeResults ? axeResults.totalViolations : null,
-              fixPasses: autoFixPasses,
-              needsExpertReview,
-              pageCount,
-              elapsed: Math.round((Date.now() - _startTime) / 1000),
-            }),
+            body: JSON.stringify(_payload),
           }).catch(() => {}); // fire-and-forget
         }
       } catch(logErr) { /* non-blocking */ }
