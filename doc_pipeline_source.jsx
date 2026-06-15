@@ -185,6 +185,22 @@ function _stampThScopeGeometryAware(html) {
   } catch (_) { return html; }
 }
 
+// Collapse multiple <main> landmarks into ONE (the chunked transform joins per-chunk <main>
+// wrappers as siblings → axe landmark-one-main, and a second <main> is invalid). Keep the FIRST
+// <main> open + the LAST </main> close and DELETE the intermediate boundary tags so all content
+// merges into a single main. (Rewriting inner mains to <div> would MISMATCH nesting for siblings,
+// e.g. <main>A</div><div>B</main>.) Guard-gated + fail-safe. (one-main dedup)
+function _collapseExtraMains(html) {
+  try {
+    const s = String(html);
+    if ((s.match(/<main\b[^>]*>/gi) || []).length <= 1) return s;
+    let o = 0; let out = s.replace(/<main\b[^>]*>/gi, (m) => (++o === 1 ? m : ''));
+    const tc = (out.match(/<\/main\s*>/gi) || []).length;
+    let c = 0; out = out.replace(/<\/main\s*>/gi, (m) => (++c === tc ? m : ''));
+    return out;
+  } catch (_) { return html; }
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -6577,7 +6593,8 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       }
     }
 
-    // 8. Ensure main landmark exists
+    // 8. Ensure main landmark exists (collapse any duplicate <main> first — one-main dedup)
+    { const _mb = (accessibleHtml.match(/<main\b[^>]*>/gi) || []).length; accessibleHtml = _collapseExtraMains(accessibleHtml); if (_mb > 1) aiFixCount++; }
     if (!accessibleHtml.includes('<main')) {
       accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (m) => { aiFixCount++; return m + '\n<main id="main-content" role="main">'; });
       accessibleHtml = accessibleHtml.replace('</body>', '</main>\n</body>');
@@ -7329,7 +7346,12 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         // quota event into N failures and minutes of grind. Stop now with a resume hint;
         // the unprocessed files stay queued (Tier-4 done-skip resumes cleanly after reset).
         const _isQuota = (err && (err.isQuota || /API_QUOTA_EXHAUSTED|RESOURCE_EXHAUSTED|quota|\b429\b/i.test(err.message || ''))) ||
-          (typeof window !== 'undefined' && window.__alloflowQuotaState && window.__alloflowQuotaState.kind === 'quota');
+          // Global half must be ACTIVE and FRESH (<60s): __alloflowQuotaState is never cleared at
+          // batch start, so a stale quota flag from an earlier run would otherwise strand file 1
+          // with a wrong "quota reached" stop. A real live quota always carries active:true +
+          // a numeric hitAt; the per-error half above still catches a concurrent live quota. (quota-freshness)
+          (typeof window !== 'undefined' && window.__alloflowQuotaState && window.__alloflowQuotaState.kind === 'quota' &&
+            window.__alloflowQuotaState.active === true && (Date.now() - (window.__alloflowQuotaState.hitAt || 0) < 60000));
         if (_isQuota) {
           _quotaStopped = true;
           setPdfBatchStep('Daily AI quota reached — stopped at ' + (i + 1) + '/' + queue.length + '. Remaining files stay queued; resume after the quota resets.');
@@ -13299,7 +13321,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
 
-        // 8. Ensure main landmark exists
+        // 8. Ensure main landmark exists (collapse any duplicate <main> first — one-main dedup)
+        { const _mb = (accessibleHtml.match(/<main\b[^>]*>/gi) || []).length; accessibleHtml = _collapseExtraMains(accessibleHtml); if (_mb > 1) aiFixCount++; }
         if (!accessibleHtml.includes('<main')) {
           accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (match) => {
             aiFixCount++;
