@@ -73,4 +73,17 @@ describe('fixLangSpans — deterministic language-of-parts floor (§3)', () => {
     const r = fixLangSpans('<p><span lang="bn">আমি</span> বাংলা পড়ি আছি</p>');
     expect((r.html.match(/<span lang=/g) || []).length).toBe(2);
   });
+
+  // 2026-06-15 (lang-zh-ja): kanji share the Han range with Chinese and zh is matched first,
+  // so Japanese (kanji + kana) had its kanji mis-tagged lang="zh" (SR reads Mandarin). When
+  // kana is present the text is Japanese → skip zh; pure-Han (no kana) is still Chinese.
+  it('does NOT tag Japanese kanji as zh when kana is present (tags ja instead)', () => {
+    const r = fixLangSpans('<p>私は学生です</p>'); // kanji 私学生 + hiragana はです
+    expect(r.html).not.toContain('lang="zh"');
+    expect(r.html).toContain('lang="ja"');
+  });
+  it('still tags pure-Han (no kana) text as zh (Chinese — no regression)', () => {
+    const r = fixLangSpans('<p>中文测试内容</p>'); // all Han, no kana
+    expect(r.html).toContain('lang="zh"');
+  });
 });

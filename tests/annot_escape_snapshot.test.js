@@ -39,3 +39,14 @@ describe('perf-pdffix-snapshots — the undo handler frees the full-doc snapshot
     expect(viewSrc).toContain('undone: true, preRestoreHtml: null');
   });
 });
+
+describe('sec-annot-storekey — per-student namespace on shared devices', () => {
+  it('both exported-doc storage keys fold in the ?nickname= namespace (absent → unscoped, no orphaning)', () => {
+    // annotation runtime STORE_KEY
+    expect(docSrc).toContain("+ (_annoNick ? '|u:' + _annoNick : '')");
+    // interactive-textarea/box autosave _docKey (the twin defect)
+    expect(docSrc).toContain("+ (_docNick ? '|u:' + _docNick : '')");
+    // both read the nickname from the URL param the submission flow already uses
+    expect((docSrc.match(/URLSearchParams\(window\.location\.search\)\.get\('nickname'\)/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+});

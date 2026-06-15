@@ -6869,6 +6869,9 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       { regex: /([\u0590-\u05FF]{5,})/g, lang: 'he' }         // Hebrew
     ];
     langPatterns.forEach(function(lp) {
+      // zh shares the Han range with Japanese kanji; if the doc contains any kana it is Japanese,
+      // so skip zh (the ja pattern handles kana; kanji deferred to the VLM) rather than mis-tag Han. (lang-zh-ja)
+      if (lp.lang === 'zh' && /[\u3040-\u309F\u30A0-\u30FF]/.test(accessibleHtml)) return;
       accessibleHtml = accessibleHtml.replace(lp.regex, function(match, p1, offset) {
         var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
         // Skip if already tagged with this language
@@ -7096,7 +7099,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         const rAxe = auditResults[auditResults.length - 1]; // last result is axe
         const rvAll = auditResults.slice(0, -1); // all but last are AI audits
 
-        let rvScores = rvAll.map(v => v ? v.score : null).filter(s => s !== null);
+        let rvScores = rvAll.map(v => v ? v.score : null).filter(s => Number.isFinite(s)); // reject null/NaN/undefined (degraded audits) so they can't poison the mean (vision-parseaudit-nan)
 
         // Adaptive: if 2 auditors diverge by >15 points, add a tiebreaker 3rd
         if (rvScores.length === 2 && Math.abs(rvScores[0] - rvScores[1]) > 15) {
@@ -7748,6 +7751,18 @@ Return ONLY JSON:
             parsed._aiReportedScore = parsed.score;
             parsed._scoreAdjusted = true;
             parsed.score = calculatedScore;
+          }
+        }
+        // vision-parseaudit-nan: never let a non-finite score escape this branch. With issues[]
+        // we can deduction-ground it; without issues[] the audit is degraded → null ("AI score
+        // unavailable"), NOT a fabricated number, so the Number.isFinite-guarded averaging/plateau
+        // math skips it instead of being poisoned by NaN/undefined.
+        if (!Number.isFinite(parsed.score)) {
+          if (Array.isArray(parsed.issues)) {
+            parsed.score = Math.max(0, 100 - Math.round(parsed.issues.reduce((s, i) => s + (i.deduction || 0), 0)));
+          } else {
+            parsed._scoreDegraded = true;
+            parsed.score = null;
           }
         }
         // Tone-check: if summary contains harsh language but score is high, soften it
@@ -9304,6 +9319,11 @@ HTML section ${chunkNum}/${chunks.length}:
       }
       let newText = textContent;
       for (const { lang, pattern } of scriptRanges) {
+        // Japanese kanji share the Han range with Chinese; zh is listed first, so a Japanese
+        // run (kanji + kana) would get its kanji mis-tagged lang="zh" and a screen reader would
+        // read it with Mandarin phonology. If this text contains ANY kana it's Japanese — skip
+        // zh and let the ja range tag the kana (kanji deferred to the VLM/LID). (lang-zh-ja)
+        if (lang === 'zh' && /[\u3040-\u309F\u30A0-\u30FF]/.test(newText)) continue;
         newText = newText.replace(pattern, (runMatch) => {
           if (runMatch.trim().length < 2) return runMatch;
           fixCount++;
@@ -13495,7 +13515,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           ]);
 
           // Average 2 AI scores & compute SEM for significance testing
-          const reScores = [reVerify1, reVerify2].map(v => v ? v.score : null).filter(s => s !== null);
+          const reScores = [reVerify1, reVerify2].map(v => v ? v.score : null).filter(s => Number.isFinite(s)); // reject null/NaN/undefined (degraded audits) (vision-parseaudit-nan)
           const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
           const reSD = reScores.length > 1 ? Math.sqrt(reScores.reduce((s, x) => s + (x - newAiScore) ** 2, 0) / (reScores.length - 1)) : 0;
           const reSEM = reScores.length > 1 ? reSD / Math.sqrt(reScores.length) : 0;
@@ -22559,7 +22579,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             // autosave so different exports don't collide.
             var docTitle = (document.title || 'doc').slice(0, 40);
             var bodyLen = (document.body.textContent || '').length;
-            var STORE_KEY = 'alloflow-annotations|' + docTitle + '|' + bodyLen;
+            // Per-student namespace on SHARED devices: localStorage is per-browser-profile, so
+            // without this two students on one device see/edit each other's annotations. Use the
+            // export's existing ?nickname= convention; absent (single-student) → unscoped key,
+            // byte-identical to before, so no saved notes are orphaned. (sec-annot-storekey)
+            var _annoNick = '';
+            try { _annoNick = String(new URLSearchParams(window.location.search).get('nickname') || '').trim().slice(0, 60); } catch (e) {}
+            var STORE_KEY = 'alloflow-annotations|' + docTitle + '|' + bodyLen + (_annoNick ? '|u:' + _annoNick : '');
 
             // Load teacher annotations from embedded script tag.
             var teacherAnno = [];
@@ -23584,7 +23610,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 // Stable key prefix per document: title + a hash of body text length
                 // makes the autosave bucket unique to this resource without leaking
                 // across docs. Falls back to 'doc' if title is empty.
-                const _docKey = ((document.title || 'doc').slice(0, 40)) + '|' + (document.body.textContent || '').length;
+                // Per-student namespace on shared devices (same ?nickname= convention as the
+                // annotation STORE_KEY; absent → unscoped, byte-identical to before). (sec-annot-storekey)
+                let _docNick = '';
+                try { _docNick = String(new URLSearchParams(window.location.search).get('nickname') || '').trim().slice(0, 60); } catch (e) {}
+                const _docKey = ((document.title || 'doc').slice(0, 40)) + '|' + (document.body.textContent || '').length + (_docNick ? '|u:' + _docNick : '');
                 // Hash a string to a short stable id for use in storage keys.
                 const _hash = (s) => {
                     let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
