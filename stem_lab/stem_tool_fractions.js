@@ -1731,7 +1731,8 @@ window.StemLab = window.StemLab || {
       { id: 'operations5', icon: '\u2795', name: 'Operator', desc: 'Complete 5 operation challenges', check: function(u) { return u.opsSolved >= 5; } },
       { id: 'tabExplorer', icon: '\uD83D\uDDFA\uFE0F', name: 'Explorer', desc: 'Visit all 6 tabs', check: function(u) { return u.tabsVisited >= 6; } },
       { id: 'aiLearner', icon: '\uD83E\uDD16', name: 'AI Learner', desc: 'Ask the AI tutor a question', check: function(u) { return u.aiAsked >= 1; } },
-      { id: 'stripStacker', icon: '\uD83D\uDCCA', name: 'Strip Stacker', desc: 'Find an equivalent set with the common-denominator grid', check: function(u) { return u.stripEquivFound >= 1; } }
+      { id: 'stripStacker', icon: '\uD83D\uDCCA', name: 'Strip Stacker', desc: 'Find an equivalent set with the common-denominator grid', check: function(u) { return u.stripEquivFound >= 1; } },
+      { id: 'evenSteven', icon: '\uD83C\uDF7D\uFE0F', name: 'Even Steven', desc: 'Serve 25 equal plates in Plate Rush', check: function(u) { return u.platesServed >= 25; } }
     ];
 
     var checkBadges = function(updates) {
@@ -4776,6 +4777,354 @@ window.StemLab = window.StemLab || {
     };
 
     // ── GAMES HUB ──
+    // ══════════ GAME: PLATE RUSH — The Even-Steven Diner ══════════
+    // Partitive-division fluency (CCSS 5.NF.B.3, a/b = a÷b): share a whole
+    // dish among a table of N guests so each gets an EQUAL share (1/N), or a
+    // tray of T items so each gets T/N items = (T/N)/T of the tray. Distinct
+    // from Recipe Scaler (static multiplication) and Pizza Shop (1:1 part-of-
+    // whole). Zen (no-timer) is the DEFAULT, guaranteed by the belt loop's
+    // early-return; Timed mode adds a forgiving conveyor (a missed plate loops
+    // back, never a game-over). Score is "Happy Tables"/XP only — never framed
+    // as fluency/mastery (measurement-integrity guard). The belt animates via a
+    // ref-callback rAF that writes canvas directly and reads live state from
+    // window._prLive (the captured ctx is stale); refs never fire under SSR so
+    // this cannot affect render-smoke or the goldens.
+    var renderPlateRushGame = function() {
+      var PR_DEFAULT = { phase: 'menu', timed: false, level: 1, served: 0, combo: 0, bestCombo: 0,
+        comboPaused: false, misses: 0, totalServed: 0, active: null, deck: [], input: 2,
+        lastCoach: '', lastResult: null, tempo: 1, reducedMotion: false, audioOn: true,
+        focusMode: false, hideScore: false, holdFrozen: false, lastTable: 4 };
+      var g = Object.assign({}, PR_DEFAULT, _f.plateGame || {});
+      var SERVICE_TARGET = 5;
+      var UNIT_FOODS = [{ e: '🍕', n: 'pizza' }, { e: '🥧', n: 'pie' }, { e: '🎂', n: 'cake' }, { e: '🍩', n: 'donut' }, { e: '🫓', n: 'flatbread' }];
+      var TRAY_FOODS = [{ e: '🥟', n: 'dumplings' }, { e: '🍪', n: 'cookies' }, { e: '🍤', n: 'shrimp' }, { e: '🧁', n: 'cupcakes' }, { e: '🍢', n: 'skewers' }];
+      var POOLS = { 1: [2, 4], 2: [2, 4, 8], 3: [2, 3, 4, 6], 4: [2, 3, 4, 5, 6, 8], 5: [2, 3, 4, 5, 6, 8, 10, 12] };
+      var TRAY_PROB = [0, 0, 0.25, 0.4, 0.5, 0.5];
+      var newPid = function() { return 'pr' + Date.now() + Math.random().toString(36).slice(2, 5); };
+
+      var genPlate = function(level) {
+        var lv = Math.min(5, Math.max(1, level || 1));
+        var table = pick(POOLS[lv]);
+        var isTray = Math.random() < TRAY_PROB[lv];
+        if (isTray) {
+          var k = pick([2, 3]);
+          return { id: newPid(), kind: 'tray', table: table, tray: table * k, food: pick(TRAY_FOODS) };
+        }
+        return { id: newPid(), kind: 'unit', table: table, tray: 1, food: pick(UNIT_FOODS) };
+      };
+
+      var save = function(patch) { upd({ plateGame: Object.assign({}, g, patch) }); };
+
+      var startGame = function(timed) {
+        var rm = false;
+        try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) rm = true; } catch (e) {}
+        var first = genPlate(g.level);
+        upd({ plateGame: Object.assign({}, g, {
+          phase: 'play', timed: !!timed, served: 0, combo: 0, comboPaused: false, misses: 0,
+          active: first, deck: [genPlate(g.level), genPlate(g.level)], input: 2, lastCoach: '',
+          lastResult: null, reducedMotion: g.reducedMotion || rm, lastTable: first.table }) });
+        if (g.audioOn) sfxNewChallenge();
+        announceToSR((timed ? 'Timed service' : 'Zen practice') + ' started. Table ' + first.table + ': split one ' + first.food.n + ' equally.');
+      };
+
+      var serve = function() {
+        var a = g.active;
+        if (!a || g.phase !== 'play') return;
+        var correct = (g.input === a.table);
+        if (correct) {
+          var nServed = g.served + 1;
+          var nCombo = g.combo + 1;
+          var nBest = Math.max(g.bestCombo || 0, nCombo);
+          var nTotal = (g.totalServed || 0) + 1;
+          if (g.audioOn) sfxCorrect();
+          var shareSR = a.kind === 'unit' ? ('one over ' + a.table) : ((a.tray / a.table) + ' ' + a.food.n + ', which is one over ' + a.table + ' of the tray');
+          announceToSR('Fair share! Each guest gets ' + shareSR + '. ' + nServed + ' of ' + SERVICE_TARGET + ' tables happy.');
+          var badgeArgs = { correct: score.correct, streak: streak, typesUsed: Object.keys(challengeTypesUsed).length,
+            equivSolved: _f.equivSolved || 0, simplifySolved: _f.simplifySolved || 0, convertCount: _f.convertCount || 0,
+            wallPairsFound: _f.wallPairsFound || 0, opsSolved: _f.opsSolved || 0, tabsVisited: Object.keys(tabsVisited).length,
+            aiAsked: _f.aiAsked || 0, platesServed: nTotal };
+          if (nServed >= SERVICE_TARGET) {
+            save({ phase: 'clear', served: nServed, combo: nCombo, bestCombo: nBest, totalServed: nTotal,
+              active: null, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table });
+            if (g.audioOn) sfxComplete();
+            awardXP('fractionPlateRush', 40, 'service complete');
+            addToast('🍽️ Service complete! Even Steven approves.', 'success');
+            checkBadges(badgeArgs);
+          } else {
+            var nDeck = (g.deck || []).slice(1).concat([genPlate(g.level)]);
+            save({ active: genPlate(g.level), deck: nDeck, input: 2, served: nServed, combo: nCombo,
+              bestCombo: nBest, totalServed: nTotal, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table });
+            if (g.audioOn) sfxNewChallenge();
+            checkBadges(badgeArgs);
+          }
+        } else {
+          if (g.audioOn) sfxWrong();
+          var coach;
+          if (g.input <= 1) coach = "That's the whole dish - share it equally among all " + a.table + " guests, so each gets a smaller piece.";
+          else if (g.input < a.table) coach = "Not enough equal shares yet - " + a.table + " guests each need a fair piece, so make more cuts.";
+          else coach = "Too many shares - there are only " + a.table + " guests at this table.";
+          announceToSR('Not fair yet. ' + coach);
+          save({ misses: (g.misses || 0) + 1, comboPaused: true, lastResult: 'wrong', lastCoach: coach });
+        }
+      };
+
+      var adjust = function(delta) {
+        var v = Math.max(1, Math.min(12, g.input + delta));
+        if (v !== g.input) { save({ input: v, lastResult: null }); if (g.audioOn) sfxClick(); }
+      };
+      var setCuts = function(v) { v = Math.max(1, Math.min(12, parseInt(v) || 1)); save({ input: v, lastResult: null }); };
+      var toMenu = function() { save({ phase: 'menu', active: null }); };
+      var toZen = function() { if (g.phase === 'play' && g.timed) save({ timed: false, holdFrozen: false }); };
+      var toggle = function(key) { var p = {}; p[key] = !g[key]; save(p); if (g.audioOn || key === 'audioOn') sfxClick(); };
+      var setTempo = function(v) { save({ tempo: Math.max(0.25, Math.min(2, parseFloat(v) || 1)) }); };
+      var preset = function(name) {
+        if (name === 'quiet') save({ audioOn: false, reducedMotion: true, focusMode: true });
+        else if (name === 'motor') save({ tempo: 0.25, holdFrozen: false });
+        else if (name === 'visual') save({ audioOn: false });
+        else if (name === 'audio') save({ audioOn: true, reducedMotion: true });
+        announceToSR('Comfort preset applied.');
+      };
+
+      // Live stash for the belt rAF loop (captured ctx is stale; refs read this).
+      window._prLive = {
+        active: g.active, timed: g.timed, phase: g.phase, holdFrozen: g.holdFrozen,
+        tempo: g.tempo, reducedMotion: g.reducedMotion, level: g.level, deck: g.deck,
+        onTimeout: function() {
+          if (!g.active || g.phase !== 'play' || !g.timed) return;
+          save({ misses: (g.misses || 0) + 1, comboPaused: true,
+            lastCoach: 'The plate came back around - take your time and share it equally.' });
+          announceToSR('Plate came back around. Try again, no rush.');
+        }
+      };
+
+      // ── helper: a comfort/accessibility row (shared by menu + in-game) ──
+      var toggleChip = function(key, label) {
+        return h('button', { key: 'tg-' + key, onClick: function() { toggle(key); }, 'aria-pressed': !!g[key],
+          className: 'px-2 py-1 rounded text-[11px] font-bold transition-all ' +
+            (g[key] ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50') },
+          (g[key] ? '☑ ' : '☐ ') + label);
+      };
+      var tempoSlider = h('label', { className: 'flex items-center gap-2 text-[11px] font-bold text-slate-600' },
+        'Belt speed',
+        h('input', { type: 'range', min: 0.25, max: 2, step: 0.25, value: g.tempo, 'aria-label': 'Belt speed',
+          onChange: function(e) { setTempo(e.target.value); }, className: 'w-28' }),
+        h('span', { className: 'font-mono' }, g.tempo + 'x'));
+
+      // ════════════ MENU ════════════
+      if (g.phase === 'menu') {
+        return h('div', { className: 'space-y-3' },
+          h('div', { className: 'bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-green-200 text-center space-y-2' },
+            h('div', { className: 'text-5xl' }, '🍽️'),
+            h('h4', { className: 'text-xl font-black text-green-800' }, 'Plate Rush: The Even-Steven Diner'),
+            h('p', { className: 'text-sm text-green-700 max-w-md mx-auto' },
+              'House rule: every guest at a table gets an EXACTLY equal plate. Divide each dish into the table\'s number of equal shares, then read off the fraction each guest gets.'),
+            h('div', { className: 'flex flex-wrap gap-2 justify-center pt-1' },
+              h('button', { onClick: function() { startGame(false); },
+                className: 'px-5 py-3 rounded-xl text-base font-bold bg-green-600 text-white hover:bg-green-700 shadow-md' }, '▶ Cook (Zen - no timer)'),
+              h('button', { onClick: function() { startGame(true); },
+                className: 'px-4 py-3 rounded-xl text-sm font-bold bg-white text-green-700 border-2 border-green-300 hover:bg-green-50' }, '⏱ Timed Service')
+            ),
+            h('div', { className: 'flex items-center gap-2 justify-center text-[11px] text-green-700 pt-1' },
+              'Level',
+              [1, 2, 3, 4, 5].map(function(L) {
+                return h('button', { key: 'lv' + L, onClick: function() { save({ level: L }); },
+                  'aria-pressed': g.level === L,
+                  className: 'w-7 h-7 rounded font-bold ' + (g.level === L ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, L);
+              })
+            )
+          ),
+          h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 space-y-2' },
+            h('p', { className: 'text-xs font-bold text-slate-700' }, '♿ Accessibility & Comfort'),
+            tempoSlider,
+            h('div', { className: 'flex flex-wrap gap-1.5' },
+              toggleChip('audioOn', 'Audio'), toggleChip('reducedMotion', 'Reduced motion'),
+              toggleChip('focusMode', 'Focus mode'), toggleChip('hideScore', 'Hide score')),
+            h('div', { className: 'flex flex-wrap gap-1.5 items-center' },
+              h('span', { className: 'text-[11px] font-bold text-slate-500' }, 'Presets:'),
+              h('button', { onClick: function() { preset('quiet'); }, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, 'Quiet Kid'),
+              h('button', { onClick: function() { preset('motor'); }, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, 'Motor'),
+              h('button', { onClick: function() { preset('visual'); }, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, 'Visual'),
+              h('button', { onClick: function() { preset('audio'); }, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, 'Audio only')
+            ),
+            h('p', { className: 'text-[10px] text-slate-400 italic' }, 'Zen mode has no timer and no game-over. A missed plate in Timed mode just loops back around.')
+          )
+        );
+      }
+
+      // ════════════ SERVICE-CLEAR RECEIPT ════════════
+      if (g.phase === 'clear') {
+        var T = g.lastTable || 4;
+        var addParts = [];
+        for (var qi = 0; qi < T; qi++) addParts.push('1/' + T);
+        return h('div', { className: 'space-y-3' },
+          h('div', { className: 'bg-gradient-to-br from-amber-50 to-green-50 rounded-xl p-5 border-2 border-green-300 text-center space-y-2' },
+            h('div', { className: 'text-5xl' }, '🧾'),
+            h('h4', { className: 'text-xl font-black text-green-800' }, 'Service complete - Even Steven approves!'),
+            h('div', { className: 'bg-white rounded-lg border border-green-200 p-3 inline-block' },
+              h('p', { className: 'text-[11px] text-slate-500 mb-1' }, 'The shares add back up to the whole:'),
+              h('p', { className: 'text-base font-mono font-bold text-green-800' }, addParts.join(' + ') + ' = ' + T + '/' + T + ' = 1 whole')
+            ),
+            h('div', { className: 'flex gap-4 justify-center text-sm pt-1' },
+              h('span', { className: 'font-bold text-green-700' }, '😋 Happy tables: ' + g.served),
+              h('span', { className: 'font-bold text-amber-700' }, '🔥 Best combo: ' + (g.bestCombo || 0))
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 justify-center pt-2' },
+              h('button', { onClick: function() { save({ level: Math.min(5, (g.level || 1) + 1) }); startGame(g.timed); },
+                className: 'px-4 py-2 rounded-xl text-sm font-bold bg-green-600 text-white hover:bg-green-700' }, 'Next service (Level ' + Math.min(5, (g.level || 1) + 1) + ')'),
+              h('button', { onClick: function() { startGame(g.timed); },
+                className: 'px-4 py-2 rounded-xl text-sm font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, 'Same level again'),
+              h('button', { onClick: toMenu,
+                className: 'px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, 'Change mode')
+            )
+          )
+        );
+      }
+
+      // ════════════ PLAY (zen or timed) ════════════
+      var a = g.active || { kind: 'unit', table: 4, tray: 1, food: { e: '🍽️', n: 'dish' } };
+      var divides = (a.kind === 'tray') ? (a.tray % g.input === 0) : true;
+      var perItems = (a.kind === 'tray' && divides) ? (a.tray / g.input) : 0;
+      var simp = (a.kind === 'tray' && divides) ? simplify(perItems, a.tray) : [1, g.input];
+      var correctNow = (g.input === a.table);
+
+      // dish visual
+      var dishVisual;
+      if (a.kind === 'unit') {
+        dishVisual = h('div', { className: 'flex flex-col items-center gap-1' },
+          h('div', { className: 'text-3xl' }, a.food.e),
+          drawPie(1, g.input, 170, '#16a34a'),
+          h('p', { className: 'text-[11px] text-slate-500' }, '1 ' + a.food.n + ', cut into ' + g.input + ' equal shares')
+        );
+      } else {
+        dishVisual = h('div', { className: 'flex flex-col items-center gap-1' },
+          h('div', { className: 'text-xl' }, Array.apply(null, { length: Math.min(a.tray, 12) }).map(function() { return a.food.e; }).join(' ')),
+          drawBar(divides ? perItems : 0, a.tray, '#16a34a'),
+          h('p', { className: 'text-[11px] text-slate-500' }, a.tray + ' ' + a.food.n + ', shared into ' + g.input + ' equal groups')
+        );
+      }
+
+      var readout = a.kind === 'unit'
+        ? h('span', null, 'Each guest gets ', h('b', { className: 'font-mono text-lg text-green-700' }, '1/' + g.input))
+        : (divides
+          ? h('span', null, 'Each guest gets ', h('b', { className: 'font-mono text-lg text-green-700' }, perItems + ' ' + a.food.n),
+              ' = ', h('b', { className: 'font-mono text-green-700' }, perItems + '/' + a.tray),
+              (simp[1] !== a.tray ? h('span', null, ' = ', h('b', { className: 'font-mono text-emerald-700' }, simp[0] + '/' + simp[1])) : null),
+              ' of the tray')
+          : h('span', { className: 'text-amber-700 font-bold' }, 'Those groups are not equal - every guest must get the same.'));
+
+      // belt canvas (timed only) — decorative + forgiving miss timer; aria-hidden
+      var belt = g.timed ? h('div', { className: 'rounded-xl overflow-hidden border-2 border-green-200', style: { background: '#0f1f17', height: 96 }, 'aria-hidden': 'true' },
+        h('canvas', {
+          style: { width: '100%', height: '100%', display: 'block' },
+          ref: function(cv) {
+            if (!cv) return;
+            if (cv._prAnim) return;
+            var c2 = cv.getContext('2d');
+            var W = cv.offsetWidth || 600, H = cv.offsetHeight || 96;
+            cv.width = W * 2; cv.height = H * 2; c2.scale(2, 2);
+            cv._prActive = null; cv._prStart = performance.now(); cv._prMissed = null;
+            function frame(now) {
+              if (!cv.isConnected) { cancelAnimationFrame(cv._prAnim); cv._prAnim = 0; return; }
+              var L = window._prLive || {};
+              W = cv.offsetWidth || W; H = cv.offsetHeight || H;
+              c2.clearRect(0, 0, W, H);
+              c2.fillStyle = '#0f1f17'; c2.fillRect(0, 0, W, H);
+              // belt band
+              c2.fillStyle = '#1f3b2c'; c2.fillRect(0, H * 0.55, W, H * 0.25);
+              // pass window (left)
+              c2.fillStyle = 'rgba(250,204,21,0.18)'; c2.fillRect(0, 0, 64, H);
+              c2.strokeStyle = '#facc15'; c2.lineWidth = 2; c2.strokeRect(2, 2, 60, H - 4);
+              c2.fillStyle = '#facc15'; c2.font = 'bold 9px sans-serif'; c2.textAlign = 'center';
+              c2.fillText('PASS', 32, H / 2 - 4); c2.fillText('WINDOW', 32, H / 2 + 8);
+              var ac = L.active;
+              if (ac) {
+                if (cv._prActive !== ac.id) { cv._prActive = ac.id; cv._prStart = now; }
+                var moving = L.timed && L.phase === 'play' && !L.holdFrozen;
+                var limit = Math.max(3, 10 - (L.level || 1)) / (L.tempo || 1);
+                var p = moving ? Math.min(1, (now - cv._prStart) / 1000 / limit) : 0;
+                if (L.reducedMotion) p = Math.floor(p * 8) / 8;
+                if (moving && p >= 1) {
+                  if (cv._prMissed !== ac.id && typeof L.onTimeout === 'function') { cv._prMissed = ac.id; L.onTimeout(); }
+                  cv._prStart = now;
+                }
+                var x = (W - 110) - p * (W - 110 - 84) + 84;
+                var cy = H * 0.42;
+                c2.font = '30px serif'; c2.textAlign = 'center';
+                c2.fillText((ac.food && ac.food.e) || '🍽️', x, cy);
+                c2.fillStyle = '#bbf7d0'; c2.font = 'bold 11px sans-serif';
+                c2.fillText('Table ' + ac.table, x, cy + 26);
+              }
+              // on-deck previews parked at right
+              (L.deck || []).slice(0, 2).forEach(function(d, di) {
+                c2.font = '18px serif'; c2.globalAlpha = 0.5; c2.textAlign = 'center';
+                c2.fillText((d.food && d.food.e) || '🍽️', W - 22 - di * 26, H * 0.40);
+                c2.globalAlpha = 1;
+              });
+              cv._prAnim = requestAnimationFrame(frame);
+            }
+            frame(performance.now());
+          }
+        })
+      ) : null;
+
+      var onKey = function(e) {
+        var k = e.key;
+        if (k === 'ArrowUp' || k === '+' || k === '=') { e.preventDefault(); adjust(1); }
+        else if (k === 'ArrowDown' || k === '-' || k === '_') { e.preventDefault(); adjust(-1); }
+        else if (k === 'Enter') { e.preventDefault(); serve(); }
+        else if (k === 'z' || k === 'Z') { toZen(); }
+        else if (k === 'h' || k === 'H') { if (g.timed) toggle('holdFrozen'); }
+        else if (/^[1-9]$/.test(k)) { setCuts(k); }
+      };
+
+      return h('div', { className: 'space-y-2 ' + (g.focusMode ? 'bg-slate-50 rounded-xl p-2' : ''), tabIndex: 0, onKeyDown: onKey,
+        role: 'group', 'aria-label': 'Plate Rush ' + (g.timed ? 'timed service' : 'zen practice') },
+        // status bar
+        (!g.hideScore) && h('div', { className: 'flex items-center gap-2 flex-wrap bg-green-50 rounded-xl p-2 border border-green-200 text-sm' },
+          h('span', { className: 'font-bold text-green-800' }, '😋 Happy tables: ' + g.served + '/' + SERVICE_TARGET),
+          h('span', { className: 'text-green-300' }, '·'),
+          h('span', { className: 'font-bold text-amber-700' }, '🔥 Combo: ' + g.combo + (g.comboPaused ? ' (paused)' : '')),
+          h('span', { className: 'text-green-300' }, '·'),
+          h('span', { className: 'text-[11px] text-green-700' }, 'Level ' + g.level + ' · ' + (g.timed ? 'Timed' : 'Zen')),
+          h('div', { className: 'ml-auto flex gap-1' },
+            g.timed && h('button', { onClick: function() { toggle('holdFrozen'); }, 'aria-pressed': !!g.holdFrozen,
+              className: 'px-2 py-1 rounded text-[11px] font-bold ' + (g.holdFrozen ? 'bg-amber-500 text-white' : 'bg-white text-amber-700 border border-amber-300') }, g.holdFrozen ? '▶ Resume' : '⏸ Hold'),
+            g.timed && h('button', { onClick: toZen, className: 'px-2 py-1 rounded text-[11px] font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, 'To Zen'),
+            h('button', { onClick: toMenu, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, '↺ Menu')
+          )
+        ),
+        belt,
+        // ticket
+        h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-3 space-y-2 ' + (g.lastResult === 'ok' ? 'ring-2 ring-green-400' : g.lastResult === 'wrong' ? 'ring-2 ring-amber-400' : '') },
+          h('div', { className: 'flex items-center justify-center gap-2 bg-amber-50 rounded-lg p-1.5 border border-amber-200' },
+            h('span', { className: 'text-lg' }, '🎫'),
+            h('span', { className: 'font-bold text-amber-800 text-sm' }, 'Table ' + a.table + ' - split equally (' + a.table + ' guests)')
+          ),
+          h('div', { className: 'flex justify-center' }, dishVisual),
+          // cuts stepper
+          h('div', { className: 'flex items-center justify-center gap-2' },
+            h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Equal shares:'),
+            h('button', { onClick: function() { adjust(-1); }, 'aria-label': 'Fewer shares',
+              className: 'w-9 h-9 rounded-lg text-xl font-black bg-slate-100 text-slate-700 hover:bg-slate-200' }, '−'),
+            h('span', { className: 'w-10 text-center text-2xl font-black text-green-700', 'aria-live': 'polite' }, g.input),
+            h('button', { onClick: function() { adjust(1); }, 'aria-label': 'More shares',
+              className: 'w-9 h-9 rounded-lg text-xl font-black bg-slate-100 text-slate-700 hover:bg-slate-200' }, '+')
+          ),
+          h('div', { className: 'text-center text-sm text-slate-700', role: 'status', 'aria-live': 'polite' }, readout),
+          h('div', { className: 'flex justify-center' },
+            h('button', { onClick: serve, disabled: a.kind === 'tray' && !divides,
+              className: 'px-8 py-2.5 rounded-xl text-base font-black bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-md disabled:opacity-40' }, 'SERVE 🍽️')
+          ),
+          g.lastCoach && h('div', { className: 'text-[12px] text-center rounded-lg p-2 ' + (g.lastResult === 'wrong' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-green-50 text-green-800') }, '💬 ' + g.lastCoach)
+        ),
+        // compact comfort row
+        h('div', { className: 'flex flex-wrap gap-1.5 items-center justify-center' },
+          g.timed && tempoSlider,
+          toggleChip('audioOn', 'Audio'), toggleChip('reducedMotion', 'Reduced motion'), toggleChip('focusMode', 'Focus')
+        )
+      );
+    };
+
     var renderGamesTab = function() {
       var activeGame = _f.activeGame || null;
       if (activeGame === 'connect4') return h('div', null,
@@ -4818,7 +5167,12 @@ window.StemLab = window.StemLab || {
         h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, '← Back to games'),
         renderFractionFishGame()
       );
+      if (activeGame === 'platerush') return h('div', null,
+        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, '\u2190 Back to games'),
+        renderPlateRushGame()
+      );
       var gameList = [
+        { id: 'platerush', icon: '\uD83C\uDF7D\uFE0F', label: 'Plate Rush', desc: 'Share dishes into equal plates for tables of guests. Zen (no-timer) default.', color: 'green' },
         { id: 'pizza', icon: '🍕', label: 'Pizza Shop', desc: 'Serve customers fractional pizzas. Earn tips. 10 customers to win.', color: 'red' },
         { id: 'race', icon: '🏁', label: 'Fraction Race', desc: 'Type the fraction you see. Beat the 30-second clock.', color: 'blue' },
         { id: 'match', icon: '🃏', label: 'Equivalent Match', desc: 'Memory pairing — find 6 pairs of equivalent fractions.', color: 'purple' },
