@@ -154,3 +154,45 @@ describe('CodingInterp.simulate geometry', () => {
     expect(sim.finalLines.length).toBe(0); // no project3D supplied -> no 2D projection
   });
 });
+
+describe('CodingInterp diagnostics (B1)', () => {
+  let CI;
+  beforeAll(() => { CI = loadInterp(); });
+
+  it('parseWithErrors flags unrecognized lines with a line number', () => {
+    const r = CI.parseWithErrors('forward(50)\nwiggle(3)\nright(90)');
+    expect(r.blocks.map((b) => b.type)).toEqual(['forward', 'right']); // garbage dropped
+    expect(r.errors.length).toBe(1);
+    expect(r.errors[0].line).toBe(2);
+    expect(r.errors[0].text).toBe('wiggle(3)');
+  });
+
+  it('parseWithErrors reports the wrong-conditional-syntax misconception', () => {
+    // the A5 lesson: students who copy the old "if(cond, a, b)" form get told
+    const r = CI.parseWithErrors('if(x > 5, forward, back)');
+    expect(r.errors.length).toBe(1);
+  });
+
+  it('clean code produces zero errors', () => {
+    const r = CI.parseWithErrors('repeat(4){\nforward(100)\nright(90)\n}');
+    expect(r.errors.length).toBe(0);
+    expect(r.blocks[0].type).toBe('repeat');
+  });
+
+  it('simulate flags an undefined function call', () => {
+    const sim = CI.simulate([{ type: 'callFunction', funcName: 'ghost' }], START);
+    expect(sim.diagnostics.unknownCalls).toContain('ghost');
+  });
+
+  it('simulate flags a while loop that hits the safety cap', () => {
+    const sim = CI.simulate([{ type: 'while', condition: 'x > 0', children: [{ type: 'forward', distance: 1 }] }], START);
+    expect(sim.diagnostics.cappedWhile).toBe(true);
+  });
+
+  it('a normal program reports no diagnostics', () => {
+    const sim = CI.simulate([{ type: 'forward', distance: 50 }], START);
+    expect(sim.diagnostics.cappedWhile).toBe(false);
+    expect(sim.diagnostics.cappedSteps).toBe(false);
+    expect(sim.diagnostics.unknownCalls.length).toBe(0);
+  });
+});

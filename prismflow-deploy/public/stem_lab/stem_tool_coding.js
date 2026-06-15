@@ -129,10 +129,11 @@
       }
       return lines.join('\n');
     }
-    function textToBlocks(code) {
+    function parseWithErrors(code) {
       var result = [];
       var lineArr = code.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
       var i = 0;
+      var errors = [];
       function parse() {
         var blks = [];
         while (i < lineArr.length) {
@@ -191,12 +192,15 @@
           else if ((m = line.match(/^roll\((\d+)\)/))) { blks.push({ type: 'roll', degrees: parseFloat(m[1]) }); }
           else if ((m = line.match(/^moveUp\((\d+)\)/))) { blks.push({ type: 'moveUp', distance: parseFloat(m[1]) }); }
           else if ((m = line.match(/^moveDown\((\d+)\)/))) { blks.push({ type: 'moveDown', distance: parseFloat(m[1]) }); }
+          else { errors.push({ line: i + 1, text: line }); }
           i++;
         }
         return blks;
       }
-      return parse();
+      var blocks = parse();
+      return { blocks: blocks, errors: errors };
     }
+    function textToBlocks(code) { return parseWithErrors(code).blocks; }
     // Pure execution: returns { frames, finalTurtle, finalLines, finalLines3D,
     // finalExtraTurtles, vars }. Each frame is the state AFTER one step:
     //   { turtle, add (2D segs added), add3D, stepIdx, vars, pitchAngle, yawAngle,
@@ -225,8 +229,9 @@
       var flat = flattenBlocks(blocks);
       var idx = 0;
       var frames = [];
+      var diag = { cappedWhile: false, cappedSteps: false, unknownCalls: [] };
       while (idx < flat.length) {
-        if (frames.length >= MAXSTEPS) break;
+        if (frames.length >= MAXSTEPS) { diag.cappedSteps = true; break; }
         var b = flat[idx];
         var preLen = allLines.length, pre3DLen = lines3D.length, audio = null;
         if (b.type === 'setVar') {
@@ -296,15 +301,16 @@
             var whileBody = flattenBlocks(b.children || []);
             var whileMarker = Object.assign({}, b);
             flat = flat.slice(0, idx + 1).concat(whileBody).concat([whileMarker]).concat(flat.slice(idx + 1));
-          } else { b._iterCount = 0; }
+          } else { if (b._iterCount >= 1000 && evalCondition(b.condition || 'x < 450', t, vars)) diag.cappedWhile = true; b._iterCount = 0; }
         } else if (b.type === 'function') {
           vars['__func_' + (b.funcName || 'myShape')] = b.children || [];
         } else if (b.type === 'callFunction') {
-          var funcBody = vars['__func_' + (b.funcName || 'myShape')];
+          var _fn = b.funcName || 'myShape';
+          var funcBody = vars['__func_' + _fn];
           if (funcBody && funcBody.length > 0) {
             var callBody = flattenBlocks(JSON.parse(JSON.stringify(funcBody)));
             flat = flat.slice(0, idx + 1).concat(callBody).concat(flat.slice(idx + 1));
-          }
+          } else if (diag.unknownCalls.indexOf(_fn) < 0) { diag.unknownCalls.push(_fn); }
         } else if (b.type === 'random') {
           var rMin = b.randomMin != null ? b.randomMin : 0;
           var rMax = b.randomMax != null ? b.randomMax : 100;
@@ -401,9 +407,9 @@
         frames.push({ turtle: Object.assign({}, t), add: allLines.slice(preLen), add3D: lines3D.slice(pre3DLen), stepIdx: idx, vars: _uv, pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ, extraTurtles: extraTurtles.slice(), audio: audio });
         idx++;
       }
-      return { frames: frames, finalTurtle: t, finalLines: allLines, finalLines3D: lines3D, finalExtraTurtles: extraTurtles, vars: vars };
+      return { frames: frames, finalTurtle: t, finalLines: allLines, finalLines3D: lines3D, finalExtraTurtles: extraTurtles, vars: vars, diagnostics: diag };
     }
-    return { resolveVal: resolveVal, evalCondition: evalCondition, getEndpoints: getEndpoints, blocksToText: blocksToText, textToBlocks: textToBlocks, simulate: simulate };
+    return { resolveVal: resolveVal, evalCondition: evalCondition, getEndpoints: getEndpoints, blocksToText: blocksToText, textToBlocks: textToBlocks, parseWithErrors: parseWithErrors, simulate: simulate };
   })();
   /* __CODING_INTERP_END__ */
 
@@ -1014,11 +1020,11 @@
           var evalCondition = CodingInterp.evalCondition;
 
           // ── Execute blocks (single source: replays CodingInterp.simulate) ──
-                    function executeBlocks(blks, turtle, lines, cb, spd, stepCb, runToken) {
+                    function executeBlocks(blks, turtle, lines, cb, spd, stepCb, runToken, simOverride) {
             // Thin animation driver: compute the whole run once via the pure
             // CodingInterp.simulate, then replay its frames on a timer. Single
             // source of truth for execution; cancellation honors the run token.
-            var sim = CodingInterp.simulate(blks, turtle, {
+            var sim = simOverride || CodingInterp.simulate(blks, turtle, {
               startLines: lines, startLines3D: lines3D, extraTurtles: extraTurtles,
               pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ,
               project3D: project3D
@@ -1064,10 +1070,23 @@
           }
 
           // ── Run handler ──
+          function buildCodeErrors(parseErrs, diag) {
+            var msgs = [];
+            (parseErrs || []).forEach(function (e) { msgs.push('Line ' + e.line + ': could not understand "' + e.text + '".'); });
+            if (diag) {
+              (diag.unknownCalls || []).forEach(function (n) { msgs.push('You called ' + n + '() but never defined a function named ' + n + '.'); });
+              if (diag.cappedWhile) msgs.push('A while loop hit the 1000-repeat safety limit (its condition stayed true).');
+              if (diag.cappedSteps) msgs.push('The program got very long and was stopped early.');
+            }
+            return msgs;
+          }
           function handleRun() {
             sfxCodeRun();
             var _myToken = ++_codeRunToken;
-            var blks = codeMode === 'text' ? textToBlocks(textCode) : blocks;
+            var _parseErrs = [];
+            var blks;
+            if (codeMode === 'text') { var _pr = CodingInterp.parseWithErrors(textCode); blks = _pr.blocks; _parseErrs = _pr.errors; }
+            else { blks = blocks; }
             var startTurtle, startLines;
             if (cumulativeMode) {
               // In cumulative mode, start from current turtle state and keep existing lines
@@ -1077,7 +1096,10 @@
               startTurtle = { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
               startLines = [];
             }
-            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0, _vars: {} });
+            var _sim = CodingInterp.simulate(blks, startTurtle, { startLines: startLines, startLines3D: lines3D, extraTurtles: extraTurtles, pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ, project3D: project3D });
+            var _codeErrs = buildCodeErrors(_parseErrs, _sim.diagnostics);
+            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0, _vars: {}, _codeErrors: _codeErrs.length ? _codeErrs : null });
+            if (_codeErrs.length && typeof announceToSR === 'function') { try { announceToSR(_codeErrs.length + ' issue' + (_codeErrs.length > 1 ? 's' : '') + ' in your code. ' + _codeErrs.slice(0, 3).join(' ')); } catch (e) {} }
             setTimeout(function () {
               executeBlocks(blks, startTurtle, startLines, function (finalTurtle, finalLines) {
                 var newHistory = runHistory.concat([{
@@ -1114,7 +1136,7 @@
                 }
               }, speed, function (si) {
                 upd('stepIdx', si);
-              }, _myToken);
+              }, _myToken, _sim);
             }, 50);
           }
 
@@ -2511,6 +2533,11 @@
                 })
               ),
 
+              // Code diagnostics banner (parse + runtime; only when present)
+              d._codeErrors && d._codeErrors.length > 0 && React.createElement("div", { role: "alert", className: "mb-1 p-2 rounded-lg bg-amber-900/40 border border-amber-600/50 text-[11px] text-amber-100" },
+                React.createElement("div", { className: "font-bold mb-0.5 text-amber-200" }, "\u26A0\uFE0F " + d._codeErrors.length + " thing" + (d._codeErrors.length > 1 ? "s" : "") + " to fix:"),
+                React.createElement("ul", { className: "list-disc list-inside space-y-0.5" }, d._codeErrors.slice(0, 6).map(function (msg, ei) { return React.createElement("li", { key: ei }, msg); }))
+              ),
               // Controls
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                 React.createElement("button", { "aria-label": "Run",
