@@ -7914,13 +7914,28 @@ HTML section ${chunkNum}/${chunks.length}:
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
       const summary = chunkResults[0]?.summary || `Audited ${chunks.length} sections of ${htmlContent.length.toLocaleString()} chars.`;
-      warnLog(`[Output Audit] Chunked: ${chunks.length} sections, ${mergedIssues.length} unique issues, ${passCount} passes (${structuralPasses.length} structural), raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${mergedScore}`);
+      // Honesty on partial coverage: each chunk's callGemini/parse failure was swallowed
+      // (.catch→null, filter(Boolean)), and these failures are often CORRELATED (a shared K-12
+      // quota or a timeout storm drops many calls at once). The score is computed only from the
+      // sections that RETURNED, so fewer audited sections → fewer violations found → an
+      // artificially HIGH score. Report the ACTUAL audited count (not the requested count) and
+      // disclose partial coverage so the report/toast can't claim coverage that didn't happen.
+      // (The stronger "null the score past a failure threshold" reroute is a product-judgment
+      // cutoff — left for the maintainer.)
+      const _auditedCount = chunkResults.length;
+      const _failedChunks = chunks.length - _auditedCount;
+      const _partialAudit = _failedChunks > 0;
+      warnLog(`[Output Audit] Chunked: ${_auditedCount}/${chunks.length} sections returned${_partialAudit ? ' (' + _failedChunks + ' FAILED — score covers audited sections only)' : ''}, ${mergedIssues.length} unique issues, ${passCount} passes (${structuralPasses.length} structural), raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${mergedScore}`);
       return {
         score: mergedScore,
-        summary: summary + ` (${chunks.length} sections audited)`,
+        summary: summary + (_partialAudit
+          ? ` (${_auditedCount}/${chunks.length} sections audited; ${_failedChunks} failed — score covers audited sections only)`
+          : ` (${chunks.length} sections audited)`),
         issues: mergedIssues,
         passes: mergedPassList,
-        chunksAudited: chunks.length
+        chunksAudited: _auditedCount,
+        chunksRequested: chunks.length,
+        _partialAudit: _partialAudit
       };
     } catch (err) {
       warnLog('[Output Audit] Failed:', err);
@@ -14363,16 +14378,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
       const scoreGain = finalAfterScore !== null ? finalAfterScore - beforeScore : null;
       const fixNote = autoFixPasses > 0 ? ` (${autoFixPasses} auto-fix pass${autoFixPasses > 1 ? 'es' : ''})` : '';
-      if (finalAfterScore !== null && finalAfterScore >= 80) {
+      if (integrityWarning && finalAfterScore !== null) {
+        // The content-integrity gate flagged missing source text — NEVER show a green
+        // "remediated" headline that contradicts the red integrity error + the failure sound
+        // (the audio already distinguishes this case; the visible toast must too). This is the
+        // literal "doesn't work every time" trap: the teacher acts on the last/loudest message.
+        addToast(`⚠️ Score ${beforeScore} → ${finalAfterScore}${fixNote}, but some source text may be missing — review the Diff before distributing.`, 'warning');
+        try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {}
+      } else if (finalAfterScore !== null && finalAfterScore >= 80) {
         addToast(`✅ PDF remediated! Score: ${beforeScore} → ${finalAfterScore} (+${scoreGain})${fixNote}`, 'success');
-        // Audio: triumphant chord on successful high-score remediation (skipped if integrity warning fired)
-        if (!integrityWarning) { try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {} }
-        else { try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {} }
+        try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
       } else if (finalAfterScore !== null) {
         addToast(`⚠️ PDF improved: ${beforeScore} → ${finalAfterScore}${fixNote}. Some issues may need manual review.`, 'info');
-        // Audio: partial-success still plays the complete chord (document is usable)
-        if (!integrityWarning) { try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {} }
-        else { try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {} }
+        // Audio: partial-success plays the complete chord (the integrityWarning case is handled
+        // by the first branch above, so this path is always the clean one).
+        try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
       } else {
         addToast(t('toasts.pdf_transformed_accessible_html_verification'), 'info');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
@@ -17117,8 +17137,14 @@ tr { page-break-inside: avoid; }
     // ── ViewerPreferences: DisplayDocTitle ──
     // PDF/UA-1 §7.1 requires this so the window title bar shows the doc
     // title rather than the filename.
-    const viewerPrefs = (catalog.get(PDFName.of('ViewerPreferences')));
-    if (viewerPrefs) {
+    // get() returns the RAW value — a PDFRef when the source wrote /ViewerPreferences as an
+    // indirect object (Word/LibreOffice/InDesign commonly do). A PDFRef has no .set, so the old
+    // code threw (swallowed by the catch) and DisplayDocTitle was never written, yet the doc
+    // still shipped pdfuaid:part 1 — a false PDF/UA-1 §7.1 claim. Resolve the ref first, then
+    // set on a real dict (or create one). (lookup(x)||x pattern as at 4570/16453)
+    let viewerPrefs = catalog.get(PDFName.of('ViewerPreferences'));
+    try { viewerPrefs = context.lookup(viewerPrefs) || viewerPrefs; } catch(_) {}
+    if (viewerPrefs && typeof viewerPrefs.set === 'function') {
       try { viewerPrefs.set(PDFName.of('DisplayDocTitle'), context.obj(true)); } catch(_) {}
     } else {
       catalog.set(PDFName.of('ViewerPreferences'), context.obj({ DisplayDocTitle: true }));
