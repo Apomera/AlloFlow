@@ -242,6 +242,28 @@ function _collapseHeadingSkipsStrict(htmlContent) {
   return _out;
 }
 
+// Derive the screen-reader-announced label (/TU + /Alt) for a tagged form field. The raw
+// field.getName() is the MACHINE identifier (a default like "Text1"/"Check Box 3"/"undefined_2",
+// or a dotted FQN like "form[0].Page1[0].StudentName[0]") — announcing it verbatim tells the SR
+// user nothing. Priority: (1) preserve the source field's own /TU if it has one (a well-authored
+// form already carries the right label, today silently discarded); (2) else use the name's
+// meaningful leaf when it isn't a bare author-tool default; (3) else a clearly-flagged placeholder
+// (honest "needs review" rather than a fake-looking real label that makes PAC/veraPDF pass). Pure +
+// assign-then-return (no `return {` at 2-space, to not trip the factory-export heuristic). (#6)
+function _deriveFieldLabel(sourceTU, fieldName, index) {
+  const _clean = (s) => String(s == null ? '' : s).trim();
+  const tu = _clean(sourceTU);
+  if (tu) { const _r = { label: tu, needsReview: false }; return _r; }
+  let name = _clean(fieldName);
+  if (name.indexOf('.') !== -1) name = name.split('.').pop(); // dotted FQN → meaningful leaf
+  name = name.replace(/\[\d+\]/g, '').trim();                  // strip array indices like [0]
+  const _isDefault = !name
+    || /^(?:text|check\s*box|checkbox|radio(?:\s*button)?|button|field|undefined|untitled|form\s*field)\s*[_-]?\d*$/i.test(name);
+  if (!_isDefault) { const _r = { label: name, needsReview: false }; return _r; }
+  const _flagged = { label: 'Form field ' + (index + 1) + ' (label needs review)', needsReview: true };
+  return _flagged;
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -16773,9 +16795,15 @@ tr { page-break-inside: avoid; }
             widgetInfo.set(annotRef.toString(), { annotRef, annotDict, page });
           }
         }
+        let _fieldLabelIdx = 0;
         for (const field of fields) {
           let fieldName = 'form field';
           try { fieldName = field.getName() || fieldName; } catch(_) {}
+          // Prefer the SR label the source form already carries (/TU), else derive a human one from
+          // the field name, else a flagged placeholder — never announce a raw "Text1" machine id. (#6)
+          let _srcTU = '';
+          try { const _tuObj = field.acroField && field.acroField.dict && field.acroField.dict.get(PDFName.of('TU')); if (_tuObj && typeof _tuObj.decodeText === 'function') _srcTU = _tuObj.decodeText(); } catch (_) {}
+          const fieldLabelText = _deriveFieldLabel(_srcTU, fieldName, _fieldLabelIdx++).label;
           // Collect widget refs for this field (Kids array, or the field
           // itself in the merged-widget case).
           const widgetRefs = [];
@@ -16807,10 +16835,10 @@ tr { page-break-inside: avoid; }
               S: PDFName.of('Form'),
               P: structRootRef,
               Pg: info.page.ref,
-              Alt: PDFString.of(fieldName),
+              Alt: PDFString.of(fieldLabelText),
               K: context.obj([objrDict]),
             };
-            try { _fieldDictObj.TU = PDFString.of(fieldName); } catch (_) {}
+            try { _fieldDictObj.TU = PDFString.of(fieldLabelText); } catch (_) {}
             const fieldElemDict = context.obj(_fieldDictObj);
             const fieldElemRef = context.register(fieldElemDict);
             fieldElemRefs.push(fieldElemRef);
