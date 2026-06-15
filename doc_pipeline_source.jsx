@@ -14034,9 +14034,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       }
 
       // ── Triage: flag documents that need expert remediation ──
-      const axeViolations = axeResults ? axeResults.totalViolations : 0;
-      const axeCritical = axeResults ? axeResults.critical.length : 0;
-      const axeFailed = !axeResults || typeof axeResults.score !== 'number';
+      let axeViolations = axeResults ? axeResults.totalViolations : 0;       // let: re-audit after recovery mutations may reassign (recov-score-order)
+      let axeCritical = axeResults ? axeResults.critical.length : 0;
+      let axeFailed = !axeResults || typeof axeResults.score !== 'number';
       // Two independent concerns drive the expert-review banner. Keep them separate so the
       // banner copy can be reason-specific: an accessibility concern is an a11y-expertise
       // problem (Knowbility referral), a content-fidelity concern is a "verify the text
@@ -14049,8 +14049,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _accessibilityConcern = axeFailed || // axe-core failed entirely — can't verify
         (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
       const _contentFidelityConcern = !!integrityWarning;
-      const needsExpertReview = _accessibilityConcern || _contentFidelityConcern;
-      const expertReviewReason = (_accessibilityConcern && _contentFidelityConcern) ? 'both'
+      let needsExpertReview = _accessibilityConcern || _contentFidelityConcern;       // let: reassigned by the post-recovery re-audit (recov-score-order)
+      let expertReviewReason = (_accessibilityConcern && _contentFidelityConcern) ? 'both'
         : _accessibilityConcern ? 'accessibility'
         : _contentFidelityConcern ? 'content-fidelity'
         : null;
@@ -14142,6 +14142,45 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
       } catch(e) { /* non-blocking */ }
+
+      // ── Re-audit + re-blend after post-blend HTML mutations (recov-score-order) ──
+      // Auto-restore (inline words + a `Content recovery` <section>/<h2>) and the deferred-image
+      // recovery (`Extracted images` <section>/<h2>) both mutate accessibleHtml AFTER the score was
+      // blended above, so the reported score + axeViolations described a document the user is NOT
+      // downloading and the injected landmarks/headings were never audited. Re-run ONLY the cheap
+      // deterministic engines (the AI half is unchanged — restored source words are not a11y
+      // regressions) and re-blend with the same consensus + (ai+det)/2. Gated so the common no-op
+      // path keeps identical behavior + cost. Fail-soft: on any error the pre-restore numbers stand.
+      const _imageRecoveryInjected = accessibleHtml.indexOf('data-image-recovery="true"') !== -1;
+      if (_autoRestore || _imageRecoveryInjected) {
+        try {
+          const _reAxe = await runAxeAudit(accessibleHtml);
+          if (_reAxe) axeResults = _reAxe;
+          let _reEa = null;
+          try { _reEa = await runEqualAccessAudit(accessibleHtml); } catch (_) { _reEa = null; }
+          if (_reEa) eaResults = _reEa;
+          const _reAxeOk = axeResults && typeof axeResults.score === 'number';
+          const _reEaOk = eaResults && typeof eaResults.score === 'number';
+          const _reDet = _reAxeOk ? (_reEaOk ? Math.min(axeResults.score, eaResults.score) : axeResults.score) : null;
+          const _reAi = verification ? verification.score : afterScore;
+          if (_reAi !== null && _reAxeOk) {
+            axeCoreFailed = false;
+            const _reBlended = Math.round((_reAi + _reDet) / 2);
+            warnLog('[PDF Fix] Re-blended score after recovery mutations: AI ' + _reAi + ' + deterministic ' + _reDet + ' = ' + _reBlended + ' (was ' + finalAfterScore + ')');
+            finalAfterScore = _reBlended;
+          } else if (!_reAxeOk) {
+            axeCoreFailed = true;
+            warnLog('[PDF Fix] WARNING: axe-core unavailable on re-audit after recovery — final score is AI-only (' + _reAi + ').');
+          }
+          // Recompute triage values that feed _result so the banner matches the shipped doc.
+          axeViolations = axeResults ? axeResults.totalViolations : 0;
+          axeCritical = axeResults ? axeResults.critical.length : 0;
+          axeFailed = !axeResults || typeof axeResults.score !== 'number';
+          const _reAccessibilityConcern = axeFailed || (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
+          needsExpertReview = _reAccessibilityConcern || _contentFidelityConcern;
+          expertReviewReason = (_reAccessibilityConcern && _contentFidelityConcern) ? 'both' : _reAccessibilityConcern ? 'accessibility' : _contentFidelityConcern ? 'content-fidelity' : null;
+        } catch (_reErr) { warnLog('[PDF Fix] re-audit after recovery non-fatal:', _reErr && _reErr.message); }
+      }
 
       // ── Issue-resolution diff (pre-fix vs verification) ──
       // Compute which issues from the original audit were resolved by the fix,
