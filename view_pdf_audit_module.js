@@ -1637,11 +1637,7 @@ function PdfAuditView(props) {
   const _resumeAudioFromMeta = () => {
     const meta = pdfFixResult && pdfFixResult._audioJobMeta;
     if (!meta || !pdfFixResult.accessibleHtml) return;
-    const srcText = meta.srMode ? _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim() : (() => {
-      const d = document.createElement("div");
-      d.innerHTML = pdfFixResult.accessibleHtml;
-      return (d.textContent || "").trim();
-    })();
+    const srcText = meta.srMode ? _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim() : _audioReadyText(pdfFixResult.accessibleHtml).trim();
     const segments = [];
     let remaining = srcText;
     while (remaining.length > 0) {

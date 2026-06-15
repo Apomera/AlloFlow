@@ -11469,6 +11469,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 pageGroups[pg].push({ ...img, idx });
               });
 
+              // Reset the per-page canvas cache at the START of each extraction so a
+              // previous document's full-page PNG dataURLs (1–4 MB each at scale:2)
+              // don't accumulate across runs → session memory growth → Canvas-iframe
+              // OOM mid-pipeline (2026-06-15 review fix; a likely "doesn't work every
+              // time" contributor). The cache is still populated below for this doc's
+              // in-session re-cropping.
+              window.__pdfPageCanvases = {};
               // Extract actual image objects from each page using PDF.js getOperatorList
               for (const [pageNum, imgs] of Object.entries(pageGroups)) {
                 try {
@@ -11607,6 +11614,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       }
                     }
                   }
+                  // Free the per-page render canvas now that crops + the dataURL are
+                  // done — releases the scale:2 backing store immediately instead of
+                  // waiting on GC (2026-06-15 review fix).
+                  try { canvas.width = 0; canvas.height = 0; } catch (_) {}
                 } catch(pgErr) { _imageFailureCount++; warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr); }
               }
             } catch(pdfJsErr) {

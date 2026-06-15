@@ -1592,9 +1592,14 @@ function PdfAuditView(props) {
   const _resumeAudioFromMeta = () => {
     const meta = pdfFixResult && pdfFixResult._audioJobMeta;
     if (!meta || !pdfFixResult.accessibleHtml) return;
+    // Non-SR resume MUST re-segment via _audioReadyText — the SAME prep the original
+    // job used (strips editor chrome, injects "Image: <alt>" text + the translation
+    // preamble). Re-deriving from raw textContent produced a different segment count,
+    // so the "document changed — starting fresh" path fired almost every time,
+    // defeating cross-session resume (2026-06-15 review fix).
     const srcText = meta.srMode
       ? _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim()
-      : (() => { const d = document.createElement('div'); d.innerHTML = pdfFixResult.accessibleHtml; return (d.textContent || '').trim(); })();
+      : _audioReadyText(pdfFixResult.accessibleHtml).trim();
     const segments = [];
     let remaining = srcText;
     while (remaining.length > 0) {
