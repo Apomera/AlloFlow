@@ -312,11 +312,22 @@ function _redactDocHtml(html, targets, opts) {
     }
     for (const e of edits) e[0].nodeValue = e[1];
   }
+  // Text-carrying attributes where selected PII can hide (a screen reader, a copy, or a
+  // "view source / metadata" exposes them). The per-node text walk above covers visible text;
+  // this covers the attribute surface (href/value/placeholder/content/data-* etc.). The verifier
+  // below independently re-scans EVERY attribute, so anything missed here still trips
+  // clean===false rather than shipping a false-clean redaction.
   if (root && root.querySelectorAll) {
-    root.querySelectorAll('[alt],[title],[aria-label]').forEach((el) => {
-      ['alt', 'title', 'aria-label'].forEach((a) => {
+    const _ATTR_REDACT = ['alt', 'title', 'aria-label', 'aria-placeholder', 'aria-roledescription', 'aria-valuetext', 'aria-description', 'placeholder', 'value', 'label', 'content', 'download', 'summary', 'cite', 'href'];
+    root.querySelectorAll('*').forEach((el) => {
+      _ATTR_REDACT.forEach((a) => {
         if (el.hasAttribute(a)) { const v = el.getAttribute(a); const nv = _scrub(v); if (nv !== v) el.setAttribute(a, nv); }
       });
+      const _at = el.attributes; // data-* custom attributes can carry PII too
+      if (_at) for (let i = 0; i < _at.length; i++) {
+        const an = _at[i].name;
+        if (an.indexOf('data-') === 0) { const dv = _at[i].value; const dnv = _scrub(dv); if (dnv !== dv) el.setAttribute(an, dnv); }
+      }
     });
   }
   const outHtml = doc.documentElement ? ('<!DOCTYPE html>\n' + doc.documentElement.outerHTML) : String(html == null ? '' : html);
@@ -334,8 +345,18 @@ function _redactionLeaks(html, targets) {
   try {
     const doc = new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html');
     hay = ((doc.body || doc.documentElement || {}).textContent) || '';
-    const els = doc.querySelectorAll ? doc.querySelectorAll('[alt],[title],[aria-label]') : [];
-    els.forEach((el) => { hay += ' ' + (el.getAttribute('alt') || '') + ' ' + (el.getAttribute('title') || '') + ' ' + (el.getAttribute('aria-label') || ''); });
+    // Re-scan EVERY attribute value (not just alt/title/aria-label) so PII surviving in
+    // href / value / placeholder / content / data-* etc. is never vouched "clean". Skip
+    // data: blobs (base64 — no readable PII and they bloat the haystack).
+    const els = doc.querySelectorAll ? doc.querySelectorAll('*') : [];
+    els.forEach((el) => {
+      const at = el.attributes; if (!at) return;
+      for (let i = 0; i < at.length; i++) {
+        const v = at[i].value || '';
+        if (v.slice(0, 5).toLowerCase() === 'data:') continue;
+        hay += ' ' + v;
+      }
+    });
   } catch (_) { hay = String(html == null ? '' : html); }
   const _norm = (s) => String(s).toLowerCase().replace(/\s+/g, ' ');
   const _hay = _norm(hay);

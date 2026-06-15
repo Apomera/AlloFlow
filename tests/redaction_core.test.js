@@ -77,3 +77,36 @@ describe('redaction SAFETY verifier — never report clean when content survives
     expect(v.clean).toBe(false);
   });
 });
+
+describe('redaction attribute surface — PII hides beyond alt/title/aria-label (audit #4)', () => {
+  it('scrubs PII from href / value / placeholder / meta content / data-*', () => {
+    const html = '<body>'
+      + '<a href="mailto:John Doe">x</a>'
+      + '<input value="John Doe" placeholder="e.g. John Doe">'
+      + '<meta name="author" content="John Doe">'
+      + '<div data-student="John Doe">y</div>'
+      + '</body>';
+    const r = _redactDocHtml(html, ['John Doe']);
+    expect(r.html).not.toContain('John Doe');
+  });
+
+  it('redactDocument verifies CLEAN after scrubbing href + value', () => {
+    const r = _redactDocument('<body><a href="see John Doe">x</a><input value="John Doe"></body>', ['John Doe']);
+    expect(r.clean).toBe(true);
+    expect(r.html).not.toContain('John Doe');
+  });
+
+  it('SAFETY NET: verifier flags PII in an attribute the redactor list does not scrub', () => {
+    // x-note is neither a named text-attr nor data-*, so _redactDocHtml leaves it — but the
+    // verifier re-scans EVERY attribute, so clean MUST be false rather than vouching safe.
+    const v = _redactionLeaks('<body><div x-note="contact John Doe">z</div></body>', ['John Doe']);
+    expect(v.clean).toBe(false);
+    expect(v.leaks).toContain('John Doe');
+  });
+
+  it('does not choke on (or false-flag) data: blobs — they are skipped in the verifier scan', () => {
+    const r = _redactDocument('<body><img src="data:image/png;base64,AAAAJohn"><p>John Doe</p></body>', ['John Doe']);
+    expect(r.clean).toBe(true);
+    expect(r.html).not.toContain('John Doe');
+  });
+});
