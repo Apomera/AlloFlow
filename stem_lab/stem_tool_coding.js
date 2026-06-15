@@ -906,6 +906,7 @@
               if (b.type === '_checkGoal') {
                 if (gridCopy[pos.y] && gridCopy[pos.y][pos.x] && gridCopy[pos.y][pos.x].goal) {
                   reachedGoal = true;
+                  if (typeof announceToSR === 'function') { try { announceToSR('Reached the goal!'); } catch (e) {} }
                   cb(pos, trail, gridCopy, true);
                   return;
                 }
@@ -914,13 +915,13 @@
                 if (nx >= 0 && ny >= 0 && nx < size && ny < size && !gridCopy[ny][nx].wall) {
                   pos.x = nx; pos.y = ny;
                   trail.push({ x: pos.x, y: pos.y });
-                }
+                } else { if (typeof announceToSR === 'function') { try { announceToSR('Blocked by a wall'); } catch (e) {} } }
               } else if (b.type === 'turnRight') {
                 pos.dir = (pos.dir + 1) % 4;
               } else if (b.type === 'turnLeft') {
                 pos.dir = (pos.dir + 3) % 4;
               } else if (b.type === 'collectGem') {
-                if (gridCopy[pos.y] && gridCopy[pos.y][pos.x]) gridCopy[pos.y][pos.x].gem = false;
+                if (gridCopy[pos.y] && gridCopy[pos.y][pos.x] && gridCopy[pos.y][pos.x].gem) { gridCopy[pos.y][pos.x].gem = false; if (typeof announceToSR === 'function') { try { announceToSR('Gem collected'); } catch (e) {} } }
               } else if (b.type === 'paintCell') {
                 if (gridCopy[pos.y] && gridCopy[pos.y][pos.x]) gridCopy[pos.y][pos.x].painted = true;
               } else if (b.type === 'ifWall') {
@@ -1160,6 +1161,19 @@
               if (diag.cappedSteps) msgs.push('The program got very long and was stopped early.');
             }
             return msgs;
+          }
+          // ── Canvas text alternatives (C2, WCAG 1.1.1) ──
+          function describeTurtleCanvas() {
+            if (!drawnLines || drawnLines.length === 0) return "Turtle drawing canvas, currently empty. Build a program and press Run to draw.";
+            var ep = CodingInterp.getEndpoints(drawnLines);
+            return "Turtle drawing: " + drawnLines.length + " line segment" + (drawnLines.length === 1 ? "" : "s") + (ep.closed ? ", forming a closed shape" : "") + ". Turtle is at x " + Math.round(turtleState.x) + ", y " + Math.round(turtleState.y) + ".";
+          }
+          function describeRobotGrid() {
+            if (!robotGrid || !robotGrid.length) return "Robot grid. Select a challenge to begin.";
+            var DIRS = ["up", "right", "down", "left"];
+            var size = robotGrid.length, goal = null, gems = 0, walls = 0;
+            for (var ry = 0; ry < size; ry++) { var row = robotGrid[ry] || []; for (var rx = 0; rx < row.length; rx++) { var c = row[rx]; if (!c) continue; if (c.goal) goal = { x: rx, y: ry }; if (c.gem) gems++; if (c.wall) walls++; } }
+            return "Robot grid, " + size + " by " + size + ". Robot at row " + (robotPos.y + 1) + ", column " + (robotPos.x + 1) + ", facing " + (DIRS[robotPos.dir] || "up") + "." + (goal ? " Goal at row " + (goal.y + 1) + ", column " + (goal.x + 1) + "." : "") + (gems ? " " + gems + " gem" + (gems === 1 ? "" : "s") + " remaining." : "") + (walls ? " " + walls + " wall" + (walls === 1 ? "" : "s") + "." : "");
           }
           function handleRun() {
             sfxCodeRun();
@@ -2185,6 +2199,7 @@
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-500/30 bg-[#0f172a]", style: { height: '380px' } },
                   React.createElement("canvas", {
                     "data-robot-canvas": "true",
+                    role: "img", "aria-label": describeRobotGrid(),
                     style: { width: '100%', height: '100%', display: 'block' },
                     ref: function(cvEl) {
                       if (!cvEl) return;
@@ -2553,6 +2568,7 @@
               React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
                 React.createElement("canvas", {
                   ref: canvasRef, width: 500, height: 500,
+                  role: "img", "aria-label": describeTurtleCanvas(),
                   onClick: canvasClickHandler,
                   className: "w-full rounded-lg" + (showCoordPicker ? " cursor-crosshair" : ""),
                   style: { maxWidth: '500px', aspectRatio: '1/1', imageRendering: 'auto' }

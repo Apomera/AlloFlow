@@ -74,3 +74,26 @@ describe('Robot Commander recursive renderer (B4)', () => {
     expect(addIfWall).toBe(1);
   });
 });
+
+describe('Canvas text alternatives (C2)', () => {
+  beforeEach(() => resetStemLab());
+
+  it('the turtle canvas has role=img + a descriptive aria-label', () => {
+    loadTool(FILE, 'codingPlayground');
+    const html = renderTool('codingPlayground', {});
+    expect(html).toMatch(/role="img"[^>]*aria-label="Turtle drawing canvas, currently empty[^"]*"|aria-label="Turtle drawing canvas, currently empty[^"]*"[^>]*role="img"/);
+  });
+
+  it('the robot grid canvas describes the robot, goal, and gems', () => {
+    loadTool(FILE, 'codingPlayground');
+    const grid = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ wall: false, gem: false, goal: false, painted: false, start: false })));
+    grid[2][3].goal = true; grid[1][1].gem = true; grid[0][0].wall = true;
+    const html = renderTool('codingPlayground', {
+      _codingPlayground: { playgroundMode: 'robot', robotChallengeIdx: 4, robotGrid: grid, robotPos: { x: 0, y: 2, dir: 1 }, robotBlocks: [] },
+    });
+    expect(html).toContain('Robot grid, 5 by 5');
+    expect(html).toContain('facing right');
+    expect(html).toContain('Goal at row 3, column 4');
+    expect(html).toContain('1 gem remaining');
+  });
+});
