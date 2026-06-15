@@ -559,7 +559,7 @@ window.StemLab = window.StemLab || {
             if (c.type === 'switch') return c.closed ? 0.001 : 1e9;
             if (c.type === 'ammeter') return 0.001;
             if (c.type === 'voltmeter') return 1e9;
-            if (c.type === 'capacitor') return 1 / (2 * Math.PI * 60 * (c.value || 1) * 1e-6);
+            if (c.type === 'capacitor') return 1e9; // DC steady state: a capacitor blocks DC (acts as an open branch)
             return c.value || 1;
           };
 
@@ -1024,7 +1024,7 @@ window.StemLab = window.StemLab || {
                             textAnchor: 'middle',
                             style: { fontSize: '8px', fontWeight: 'bold', fontFamily: 'monospace' },
                             fill: '#cbd5e1'
-                          }, comp.type === 'led' ? '~2V drop' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
+                          }, comp.type === 'led' ? '~40\u03A9' : (comp.type === 'capacitor' ? comp.value + '\u00B5F' : comp.value + '\u03A9')),
 
                         // Voltage drop label
                         current > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter'
@@ -1403,7 +1403,7 @@ window.StemLab = window.StemLab || {
                   var compV = mode === 'series' ? current * compR : voltage;
                   var compP = compV * compI;
                   var typeIcon = comp.type === 'resistor' ? '\u2AE8 R' : comp.type === 'bulb' ? '\uD83D\uDCA1 B' : comp.type === 'switch' ? '\uD83D\uDD18 S' : comp.type === 'led' ? '\uD83D\uDD34 L' : comp.type === 'ammeter' ? '\u26A1 A' : comp.type === 'voltmeter' ? '\uD83D\uDD0B V' : '\u2E28 C';
-                  var rDisplay = comp.type === 'switch' ? (comp.closed ? '~0\u03A9' : '\u221E') : comp.type === 'ammeter' ? '~0\u03A9' : comp.type === 'voltmeter' ? '\u221E' : comp.type === 'led' ? '~40\u03A9' : comp.type === 'capacitor' ? Math.round(getCompR(comp)) + '\u03A9 Xc' : comp.value + '\u03A9';
+                  var rDisplay = comp.type === 'switch' ? (comp.closed ? '~0\u03A9' : '\u221E') : comp.type === 'ammeter' ? '~0\u03A9' : comp.type === 'voltmeter' ? '\u221E' : comp.type === 'led' ? '~40\u03A9' : comp.type === 'capacitor' ? '\u221E' : comp.value + '\u03A9';
 
                   return h('div', { key: comp.id, className: 'flex items-center gap-2 text-xs bg-slate-950/40 rounded-lg px-3 py-2 border border-slate-800/60' },
                     h('span', { className: 'font-bold text-yellow-500 w-16' }, typeIcon + (i + 1)),
@@ -1422,7 +1422,7 @@ window.StemLab = window.StemLab || {
                     comp.type === 'bulb' && h('span', { className: 'text-yellow-400 ml-auto' }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05'),
                     comp.type === 'switch' && h('span', { className: 'ml-auto ' + (comp.closed ? 'text-emerald-400' : 'text-red-400') }, comp.closed ? '\u2705 Closed' : '\u274C Open'),
                     comp.type === 'led' && h('span', { className: 'ml-auto', style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\u2B50 Lit' : '\u26AB Off'),
-                    comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[10px]' }, comp.value + '\u00B5F @ 60Hz')
+                    comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[10px]' }, comp.value + '\u00B5F (blocks DC)')
                   );
                 })
               ),
@@ -2550,7 +2550,7 @@ window.StemLab = window.StemLab || {
           q0: {
             ask: 'Why is bulb B much dimmer?',
             options: [
-              { id: 'mismatched_resistance', label: 'Bulb B has higher resistance — it gets more voltage but the SAME (lower) current; dim because power = I² × R but current is the limit' },
+              { id: 'mismatched_resistance', label: 'Bulb B has LOWER resistance. In series both bulbs share the same current, and power = I² × R, so the lower-resistance bulb dissipates less power and glows dimmer.' },
               { id: 'farther_from_battery', label: 'Bulb B is farther from the battery — voltage drops over the wire' },
               { id: 'wrong_polarity', label: 'Bulb B is wired backward' },
               { id: 'bulb_dying', label: 'Bulb B is about to burn out' }
@@ -2565,16 +2565,16 @@ window.StemLab = window.StemLab || {
             ]
           },
           q2: {
-            ask: 'Right — V_bulb = I × R_bulb. If bulb B has 4× the resistance of bulb A, what happens to its power dissipation (P = I² × R)?',
+            ask: 'V_bulb = I × R_bulb, and P = I² × R. Bulb B is the dimmer one. Compared with bulb A, what must be true of bulb B?',
             options: [
-              { id: 'B_more_power', label: 'Bulb B dissipates 4× the power of A and should be brighter' },
-              { id: 'B_less_power', label: 'Bulb B dissipates 4× the power — but since light depends on temperature, not just power, mismatched filaments thermalize differently' },
+              { id: 'B_more_power', label: 'Bulb B dissipates more power than A and should be brighter' },
+              { id: 'B_lower_power', label: 'Bulb B has lower resistance, so with the shared current it dissipates less power (P = I² × R) and drops less voltage, which is why it is dimmer' },
               { id: 'same_power', label: 'Same power, same brightness' }
             ]
           },
-          finalExplanation: 'In series, current is identical through both bulbs. Power dissipation P = I²R, so the higher-resistance bulb dissipates MORE power — but a higher-resistance bulb is typically designed for higher-voltage operation, meaning its filament heats less per watt. So at the same current, the high-R bulb is operating well below its design current and stays dim; the low-R bulb (designed for that current) glows normally. Lesson: nominally identical bulbs with slightly different cold resistances will not share light output evenly in series.',
+          finalExplanation: 'In series, the SAME current flows through both bulbs. Power follows P = I²R, so with the current shared, the bulb with the LOWER resistance dissipates LESS power and glows dimmer. Bulb B is dimmer because it has the lower resistance: it also drops less voltage (V = I × R). The higher-resistance bulb (A) drops more voltage AND dissipates more power, so it is brighter. The counterintuitive part of series circuits: with a shared current, the lower-resistance bulb is the dim one, because brightness here tracks power (I²R).',
           q1CorrectId: 'voltage_splits_by_R',
-          q2CorrectId: 'B_less_power'
+          q2CorrectId: 'B_lower_power'
         },
         {
           id: 'd3',
