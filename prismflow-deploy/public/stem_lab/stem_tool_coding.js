@@ -10,6 +10,7 @@
 
   // ── Coding Playground Audio ──
   var _codeAC = null;
+  var _codeRunToken = 0, _codeStepTimer = null, _codeRobotTimer = null;
   function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
   function codeTone(f, d, t, v) { var ac = getCodeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCodeRun() { codeTone(440, 0.06, 'sine', 0.06); setTimeout(function() { codeTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 100); }
@@ -50,6 +51,7 @@
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
+      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);
       var gradeLevel = ctx.gradeLevel;
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
@@ -444,7 +446,7 @@
           ];
 
           // ── Robot Execution Engine ──
-          function executeRobotBlocks(rBlocks, startPos, startDir, grid, cb) {
+          function executeRobotBlocks(rBlocks, startPos, startDir, grid, cb, runToken) {
             var pos = { x: startPos[0], y: startPos[1], dir: startDir };
             var gridCopy = JSON.parse(JSON.stringify(grid));
             var trail = [{ x: pos.x, y: pos.y }];
@@ -492,6 +494,7 @@
             var reachedGoal = false;
 
             function step() {
+              if (runToken != null && runToken !== _codeRunToken) { return; }
               stepCount++;
               if (stepCount > maxSteps || idx >= flat.length || reachedGoal) {
                 cb(pos, trail, gridCopy, reachedGoal);
@@ -536,12 +539,13 @@
               // Update state for animation
               updMulti({ robotPos: Object.assign({}, pos), robotTrail: trail.slice(), robotGrid: gridCopy, robotRunning: true });
               idx++;
-              setTimeout(step, 250);
+              _codeRobotTimer = setTimeout(step, 250);
             }
             step();
           }
 
           function handleRobotRun() {
+            var _myToken = ++_codeRunToken;
             var ch = robotChallengeIdx >= 0 && robotChallengeIdx < ROBOT_CHALLENGES.length ? ROBOT_CHALLENGES[robotChallengeIdx] : null;
             if (!ch) return;
             var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
@@ -571,7 +575,7 @@
                 } else {
                   if (addToast) addToast('\uD83E\uDD14 Not quite! Check your logic and try again.', 'warning');
                 }
-              });
+              }, _myToken);
             }, 100);
           }
 
@@ -687,61 +691,6 @@
                 lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
               } else if (b.type === 'playNote') {
                 lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
-              } else if (b.type === 'pitch') {
-                pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('pitchAngle', pitchAngle);
-              } else if (b.type === 'yaw') {
-                yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('yawAngle', yawAngle);
-              } else if (b.type === 'forward3D') {
-                var dist3D = resolveVal(b.distance || 50, vars);
-                var radAngle = t.angle * Math.PI / 180;
-                var radPitch = pitchAngle * Math.PI / 180;
-                var radRoll = rollAngle * Math.PI / 180;
-                // Full 3D direction vector
-                var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
-                var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
-                var dz3 = Math.sin(radPitch) * dist3D;
-                var nx3 = t.x + dx3;
-                var ny3 = t.y + dy3;
-                var nz3 = turtleZ + dz3;
-                if (t.penDown) {
-                  // Store as 3D line for perspective rendering
-                  var l3d = { x1: t.x, y1: t.y, z1: turtleZ, x2: nx3, y2: ny3, z2: nz3, color: t.color, width: t.width };
-                  lines3D.push(l3d);
-                  upd('lines3D', lines3D.slice());
-                  // Also project to 2D for compatibility
-                  var p1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var p2 = project3D(nx3 - 250, ny3 - 250, nz3);
-                  allLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, color: t.color, width: Math.max(0.5, t.width * p2.scale) });
-                }
-                t.x = nx3; t.y = ny3; turtleZ = nz3;
-                upd('turtleZ', turtleZ);
-              } else if (b.type === 'roll') {
-                rollAngle = (rollAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('rollAngle', rollAngle);
-              } else if (b.type === 'moveUp') {
-                var upDist = resolveVal(b.distance || 30, vars);
-                var nzUp = turtleZ + upDist;
-                if (t.penDown) {
-                  var l3dU = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzUp, color: t.color, width: t.width };
-                  lines3D.push(l3dU); upd('lines3D', lines3D.slice());
-                  var pU1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pU2 = project3D(t.x - 250, t.y - 250, nzUp);
-                  allLines.push({ x1: pU1.x, y1: pU1.y, x2: pU2.x, y2: pU2.y, color: t.color, width: Math.max(0.5, t.width * pU2.scale) });
-                }
-                turtleZ = nzUp; upd('turtleZ', turtleZ);
-              } else if (b.type === 'moveDown') {
-                var downDist = resolveVal(b.distance || 30, vars);
-                var nzDown = turtleZ - downDist;
-                if (t.penDown) {
-                  var l3dD = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzDown, color: t.color, width: t.width };
-                  lines3D.push(l3dD); upd('lines3D', lines3D.slice());
-                  var pD1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pD2 = project3D(t.x - 250, t.y - 250, nzDown);
-                  allLines.push({ x1: pD1.x, y1: pD1.y, x2: pD2.x, y2: pD2.y, color: t.color, width: Math.max(0.5, t.width * pD2.scale) });
-                }
-                turtleZ = nzDown; upd('turtleZ', turtleZ);
               } else if (b.type === 'spawnTurtle') {
                 lines.push(indent + 'spawnTurtle("' + (b.turtleName || 'bob') + '")');
               } else if (b.type === 'switchTurtle') {
@@ -758,6 +707,8 @@
                 lines.push(indent + 'moveUp(' + (b.distance || 30) + ')');
               } else if (b.type === 'moveDown') {
                 lines.push(indent + 'moveDown(' + (b.distance || 30) + ')');
+              } else if (b.type) {
+                lines.push(indent + '// unsupported: ' + String(b.type));
               }
             }
             return lines.join('\n');
@@ -877,7 +828,7 @@
           }
 
           // ── Execute blocks (async with animation) ──
-          function executeBlocks(blks, turtle, lines, cb, spd, stepCb) {
+          function executeBlocks(blks, turtle, lines, cb, spd, stepCb, runToken) {
             var t = Object.assign({}, turtle);
             var allLines = lines.slice();
             var vars = {};
@@ -910,6 +861,7 @@
             var idx = 0;
 
             function step() {
+              if (runToken != null && runToken !== _codeRunToken) { return; }
               if (idx >= flat.length) {
                 if (cb) cb(t, allLines);
                 return;
@@ -1137,10 +1089,11 @@
                   osc.stop(audioCtx.currentTime + noteDur + 0.05);
                 } catch(e) { /* Audio not available */ }
               }
-              updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true });
+              var _uv = {}; for (var _vk in vars) { if (vars.hasOwnProperty(_vk) && _vk.indexOf('__func_') !== 0 && typeof vars[_vk] === 'number') _uv[_vk] = vars[_vk]; }
+              updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true, _vars: _uv });
               recordFrame(t, allLines, idx);
               idx++;
-              setTimeout(step, spd || 200);
+              _codeStepTimer = setTimeout(step, spd || 200);
             }
             step();
           }
@@ -1148,6 +1101,7 @@
           // ── Run handler ──
           function handleRun() {
             sfxCodeRun();
+            var _myToken = ++_codeRunToken;
             var blks = codeMode === 'text' ? textToBlocks(textCode) : blocks;
             var startTurtle, startLines;
             if (cumulativeMode) {
@@ -1158,7 +1112,7 @@
               startTurtle = { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
               startLines = [];
             }
-            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0 });
+            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0, _vars: {} });
             setTimeout(function () {
               executeBlocks(blks, startTurtle, startLines, function (finalTurtle, finalLines) {
                 var newHistory = runHistory.concat([{
@@ -1195,7 +1149,7 @@
                 }
               }, speed, function (si) {
                 upd('stepIdx', si);
-              });
+              }, _myToken);
             }, 50);
           }
 
@@ -1205,6 +1159,16 @@
 
           function handleReset() {
             updMulti({ blocks: [], turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, textCode: '', challengeIdx: -1, history: [], cumulativeMode: false, showTurtle: true });
+          }
+
+          // Halt a running turtle OR robot program: invalidate the run token,
+          // clear the pending animation timer, flip the running flags off.
+          function stopRun() {
+            _codeRunToken++;
+            if (_codeStepTimer) { clearTimeout(_codeStepTimer); _codeStepTimer = null; }
+            if (_codeRobotTimer) { clearTimeout(_codeRobotTimer); _codeRobotTimer = null; }
+            updMulti({ running: false, robotRunning: false, stepIdx: -1 });
+            if (typeof announceToSR === 'function') { try { announceToSR('Program stopped'); } catch (e) {} }
           }
 
           // ── Undo/Redo helpers ──
@@ -1233,7 +1197,7 @@
 
           // ── AI Assistant Functions ──
           function handleExplainCode() {
-            if (!callGemini || blocks.length === 0) {
+            if (!callGemini || !aiHintsEnabled || blocks.length === 0) {
               if (addToast) addToast('Add some blocks first!', 'info');
               return;
             }
@@ -1242,7 +1206,7 @@
             var code = blocksToText(blocks);
             var prompt = 'You are a friendly coding tutor for kids. The student wrote this turtle graphics program:\n\n' + code + '\n\nExplain in 2-3 simple sentences what this program does and what shape it will draw. Use encouraging language and emojis.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', result || 'I could not analyze this code right now.');
+              upd('aiExplanation', result ? (result + '\n\n\u2014 AI tip; it can be wrong, so check it against your code.') : 'I could not analyze this code right now.');
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', 'Oops! AI is not available right now. Try again later.');
@@ -1251,7 +1215,7 @@
           }
 
           function handleSuggestNext() {
-            if (!callGemini) {
+            if (!callGemini || !aiHintsEnabled) {
               if (addToast) addToast('AI not available', 'info');
               return;
             }
@@ -1260,7 +1224,7 @@
             var code = blocks.length > 0 ? blocksToText(blocks) : '(empty program)';
             var prompt = 'You are a friendly coding tutor. The student has this turtle graphics program so far:\n\n' + code + '\n\nSuggest ONE specific next step they could try to make their drawing more interesting. Be encouraging, use emojis, and keep it to 1-2 sentences. Mention the exact block name they should add.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', '💡 ' + (result || 'Try adding a Repeat block to create a pattern!'));
+              upd('aiExplanation', '💡 ' + (result ? (result + '\n\n\u2014 AI suggestion; double-check it.') : 'Try adding a Repeat block to create a pattern!'));
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', '💡 Try adding a Repeat block around your moves to create a pattern!');
@@ -1269,7 +1233,7 @@
           }
 
           function handleDebugHelp() {
-            if (!callGemini || challengeIdx < 0) {
+            if (!callGemini || !aiHintsEnabled || challengeIdx < 0) {
               if (addToast) addToast('Select a challenge first!', 'info');
               return;
             }
@@ -1279,7 +1243,7 @@
             var ch = CHALLENGES[challengeIdx];
             var prompt = 'You are a friendly coding tutor. The student is trying to solve this challenge:\n\nTitle: ' + ch.title + '\nGoal: ' + ch.desc + '\nHint: ' + ch.hint + '\n\nTheir current code:\n' + code + '\n\nGive them a specific, encouraging hint about what might be wrong or what to try next. Do NOT give the full solution. Use emojis and keep it to 2-3 sentences.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', '🐛 ' + (result || ch.hint));
+              upd('aiExplanation', '🐛 ' + (result ? (result + '\n\n\u2014 AI hint; it may be off, so test your idea.') : ch.hint));
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', '🐛 Hint: ' + ch.hint);
@@ -1602,10 +1566,10 @@
           if (typeof document !== 'undefined') {
             // Re-point to this render's handlers — the once-attached listener
             // otherwise fires first-render closures (stale undo/redo/run/running).
-            window.__codingKB = { undo: handleUndo, redo: handleRedo, run: handleRun, running: running, stop: function() { updMulti({ running: false, stepIdx: -1 }); } };
+            window.__codingKB = { undo: handleUndo, redo: handleRedo, run: handleRun, running: running || robotRunning, stop: stopRun };
             var _kbHandler = function(e) {
               // Only handle if Coding Playground is active
-              if (!document.querySelector('.coding-run-btn')) return;
+              if (!document.querySelector('.coding-run-btn') && !document.querySelector('.coding-robot-run-btn')) return;
               var kb = window.__codingKB || {};
               if (e.ctrlKey && e.key === 'z') { e.preventDefault(); if (kb.undo) kb.undo(); }
               else if (e.ctrlKey && e.key === 'y') { e.preventDefault(); if (kb.redo) kb.redo(); }
@@ -1978,8 +1942,8 @@
               }, "📂 Templates"),
 
 
-              // AI Assistant buttons
-              callGemini && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
+              // AI Assistant buttons (default-OFF; gated on the host teacher AI toggle)
+              callGemini && aiHintsEnabled && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
                 React.createElement("button", { onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
                   title: "AI explains what your code does",
@@ -2242,9 +2206,12 @@
                       }, "\u21BA Reset"),
                       React.createElement("button", { onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
-                        className: "px-3 py-1 rounded text-[11px] font-bold transition-all " +
+                        className: "coding-robot-run-btn px-3 py-1 rounded text-[11px] font-bold transition-all " +
                           (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
-                      }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
+                      }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
+                      robotRunning && React.createElement("button", { "aria-label": "Stop", onClick: stopRun,
+                        className: "px-3 py-1 rounded text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-all"
+                      }, "\u25A0 Stop")
                     )
                   ),
                   robotBlocks.length === 0 ?
@@ -2562,7 +2529,7 @@
                   })
                 ),
                 React.createElement("p", { className: "text-slate-200 text-[11px] mt-1" },
-                  "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(r), goto(x,y), home(), repeat(n, fn), setVar('name', val), changeVar('name', delta), if(condition, ifFn, elseFn)"
+                  "Commands: forward(n) backward(n) right(deg) left(deg) penUp() penDown() setColor(\"#hex\") setWidth(n) circle(r) goto(x,y) home() arc(angle,radius) stamp() playNote(freq,dur). Variables: setVar(\"name\",value) changeVar(\"name\",delta) random(\"name\",min,max) \u2014 use a variable with $ (e.g. forward($name)). Loops & logic use braces: repeat(n){ ... }  while (x < 450){ ... }  if (x > 250){ ... } else { ... }. Functions: function myShape(){ ... } then call it with myShape(). Conditions compare x, y, angle, or $var using > < >= <= == != ."
                 )
               )
             ),
@@ -2587,6 +2554,9 @@
                   className: "coding-run-btn flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 active:scale-95 shadow-lg hover:shadow-green-500/30')
                 }, "▶ Run"),
+                running && React.createElement("button", { "aria-label": "Stop", onClick: stopRun,
+                  className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 active:scale-95 shadow-lg"
+                }, "\u25A0 Stop"),
                 React.createElement("button", { "aria-label": "Clear Canvas",
                   onClick: handleClear,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition-all"
@@ -2824,7 +2794,7 @@
                 ),
                 // User-defined variables
                 d._vars && Object.keys(d._vars).length > 0 && React.createElement("div", { className: "mt-2 border-t border-slate-600/30 pt-2" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "User Variables"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider" }, "User Variables"),
                   React.createElement("div", { className: "grid gap-1 mt-1", style: { gridTemplateColumns: '1fr 1fr' } },
                     Object.keys(d._vars || {}).filter(function(k) { return k.indexOf('__func_') !== 0; }).map(function(vk) {
                       return React.createElement("div", { key: vk, className: "text-[11px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },

@@ -1,3 +1,22 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
+  // ── Coding Playground Audio ──
+  var _codeAC = null;
+  var _codeRunToken = 0, _codeStepTimer = null, _codeRobotTimer = null;
+  function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
+  function codeTone(f, d, t, v) { var ac = getCodeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxCodeRun() { codeTone(440, 0.06, 'sine', 0.06); setTimeout(function() { codeTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 100); }
+  function sfxCodeError() { codeTone(220, 0.15, 'sawtooth', 0.06); setTimeout(function() { codeTone(180, 0.12, 'sawtooth', 0.05); }, 80); }
+  function sfxCodeSuccess() { codeTone(523, 0.08, 'sine', 0.07); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { codeTone(784, 0.1, 'sine', 0.08); }, 140); setTimeout(function() { codeTone(1047, 0.15, 'sine', 0.09); }, 210); }
+
   window.StemLab.registerTool('codingPlayground', {
     icon: '🔬',
     label: 'codingPlayground',
@@ -32,6 +51,7 @@
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
+      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);
       var gradeLevel = ctx.gradeLevel;
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
@@ -163,7 +183,7 @@
             var gridSize = 200;
             var step = 40;
             ctx3d.globalAlpha = 0.15;
-            ctx3d.strokeStyle = '#64748b';
+            ctx3d.strokeStyle = '#94a3b8';
             ctx3d.lineWidth = 0.5;
             for (var gx = -gridSize; gx <= gridSize; gx += step) {
               var p1 = project3D(gx, -gridSize, 0);
@@ -281,7 +301,7 @@
             { type: 'backward', label: '🔙 Move Backward', param: 'distance', defaultVal: 50, unit: 'px', color: '#818cf8' },
             { type: 'right', label: '↩️ Turn Right', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
             { type: 'left', label: '↪️ Turn Left', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
-            { type: 'penup', label: '✏️ Pen Up', param: null, defaultVal: null, unit: null, color: '#94a3b8' },
+            { type: 'penup', label: '✏️ Pen Up', param: null, defaultVal: null, unit: null, color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { type: 'pendown', label: '✏️ Pen Down', param: null, defaultVal: null, unit: null, color: '#22c55e' },
             { type: 'color', label: '🎨 Set Color', param: 'color', defaultVal: '#6366f1', unit: null, color: '#ec4899' },
             { type: 'width', label: '📏 Set Width', param: 'width', defaultVal: 2, unit: 'px', color: '#14b8a6' },
@@ -426,7 +446,7 @@
           ];
 
           // ── Robot Execution Engine ──
-          function executeRobotBlocks(rBlocks, startPos, startDir, grid, cb) {
+          function executeRobotBlocks(rBlocks, startPos, startDir, grid, cb, runToken) {
             var pos = { x: startPos[0], y: startPos[1], dir: startDir };
             var gridCopy = JSON.parse(JSON.stringify(grid));
             var trail = [{ x: pos.x, y: pos.y }];
@@ -474,6 +494,7 @@
             var reachedGoal = false;
 
             function step() {
+              if (runToken != null && runToken !== _codeRunToken) { return; }
               stepCount++;
               if (stepCount > maxSteps || idx >= flat.length || reachedGoal) {
                 cb(pos, trail, gridCopy, reachedGoal);
@@ -518,12 +539,13 @@
               // Update state for animation
               updMulti({ robotPos: Object.assign({}, pos), robotTrail: trail.slice(), robotGrid: gridCopy, robotRunning: true });
               idx++;
-              setTimeout(step, 250);
+              _codeRobotTimer = setTimeout(step, 250);
             }
             step();
           }
 
           function handleRobotRun() {
+            var _myToken = ++_codeRunToken;
             var ch = robotChallengeIdx >= 0 && robotChallengeIdx < ROBOT_CHALLENGES.length ? ROBOT_CHALLENGES[robotChallengeIdx] : null;
             if (!ch) return;
             var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
@@ -553,7 +575,7 @@
                 } else {
                   if (addToast) addToast('\uD83E\uDD14 Not quite! Check your logic and try again.', 'warning');
                 }
-              });
+              }, _myToken);
             }, 100);
           }
 
@@ -669,61 +691,6 @@
                 lines.push(indent + 'arc(' + (b.arcAngle || 180) + ', ' + (b.arcRadius || 30) + ')');
               } else if (b.type === 'playNote') {
                 lines.push(indent + 'playNote(' + (b.frequency || 440) + ', ' + (b.duration || 200) + ')');
-              } else if (b.type === 'pitch') {
-                pitchAngle = (pitchAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('pitchAngle', pitchAngle);
-              } else if (b.type === 'yaw') {
-                yawAngle = (yawAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('yawAngle', yawAngle);
-              } else if (b.type === 'forward3D') {
-                var dist3D = resolveVal(b.distance || 50, vars);
-                var radAngle = t.angle * Math.PI / 180;
-                var radPitch = pitchAngle * Math.PI / 180;
-                var radRoll = rollAngle * Math.PI / 180;
-                // Full 3D direction vector
-                var dx3 = Math.cos(radAngle) * Math.cos(radPitch) * dist3D;
-                var dy3 = Math.sin(radAngle) * Math.cos(radPitch) * dist3D;
-                var dz3 = Math.sin(radPitch) * dist3D;
-                var nx3 = t.x + dx3;
-                var ny3 = t.y + dy3;
-                var nz3 = turtleZ + dz3;
-                if (t.penDown) {
-                  // Store as 3D line for perspective rendering
-                  var l3d = { x1: t.x, y1: t.y, z1: turtleZ, x2: nx3, y2: ny3, z2: nz3, color: t.color, width: t.width };
-                  lines3D.push(l3d);
-                  upd('lines3D', lines3D.slice());
-                  // Also project to 2D for compatibility
-                  var p1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var p2 = project3D(nx3 - 250, ny3 - 250, nz3);
-                  allLines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, color: t.color, width: Math.max(0.5, t.width * p2.scale) });
-                }
-                t.x = nx3; t.y = ny3; turtleZ = nz3;
-                upd('turtleZ', turtleZ);
-              } else if (b.type === 'roll') {
-                rollAngle = (rollAngle + resolveVal(b.degrees || 30, vars)) % 360;
-                upd('rollAngle', rollAngle);
-              } else if (b.type === 'moveUp') {
-                var upDist = resolveVal(b.distance || 30, vars);
-                var nzUp = turtleZ + upDist;
-                if (t.penDown) {
-                  var l3dU = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzUp, color: t.color, width: t.width };
-                  lines3D.push(l3dU); upd('lines3D', lines3D.slice());
-                  var pU1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pU2 = project3D(t.x - 250, t.y - 250, nzUp);
-                  allLines.push({ x1: pU1.x, y1: pU1.y, x2: pU2.x, y2: pU2.y, color: t.color, width: Math.max(0.5, t.width * pU2.scale) });
-                }
-                turtleZ = nzUp; upd('turtleZ', turtleZ);
-              } else if (b.type === 'moveDown') {
-                var downDist = resolveVal(b.distance || 30, vars);
-                var nzDown = turtleZ - downDist;
-                if (t.penDown) {
-                  var l3dD = { x1: t.x, y1: t.y, z1: turtleZ, x2: t.x, y2: t.y, z2: nzDown, color: t.color, width: t.width };
-                  lines3D.push(l3dD); upd('lines3D', lines3D.slice());
-                  var pD1 = project3D(t.x - 250, t.y - 250, turtleZ);
-                  var pD2 = project3D(t.x - 250, t.y - 250, nzDown);
-                  allLines.push({ x1: pD1.x, y1: pD1.y, x2: pD2.x, y2: pD2.y, color: t.color, width: Math.max(0.5, t.width * pD2.scale) });
-                }
-                turtleZ = nzDown; upd('turtleZ', turtleZ);
               } else if (b.type === 'spawnTurtle') {
                 lines.push(indent + 'spawnTurtle("' + (b.turtleName || 'bob') + '")');
               } else if (b.type === 'switchTurtle') {
@@ -740,6 +707,8 @@
                 lines.push(indent + 'moveUp(' + (b.distance || 30) + ')');
               } else if (b.type === 'moveDown') {
                 lines.push(indent + 'moveDown(' + (b.distance || 30) + ')');
+              } else if (b.type) {
+                lines.push(indent + '// unsupported: ' + String(b.type));
               }
             }
             return lines.join('\n');
@@ -859,7 +828,7 @@
           }
 
           // ── Execute blocks (async with animation) ──
-          function executeBlocks(blks, turtle, lines, cb, spd, stepCb) {
+          function executeBlocks(blks, turtle, lines, cb, spd, stepCb, runToken) {
             var t = Object.assign({}, turtle);
             var allLines = lines.slice();
             var vars = {};
@@ -892,6 +861,7 @@
             var idx = 0;
 
             function step() {
+              if (runToken != null && runToken !== _codeRunToken) { return; }
               if (idx >= flat.length) {
                 if (cb) cb(t, allLines);
                 return;
@@ -1119,16 +1089,19 @@
                   osc.stop(audioCtx.currentTime + noteDur + 0.05);
                 } catch(e) { /* Audio not available */ }
               }
-              updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true });
+              var _uv = {}; for (var _vk in vars) { if (vars.hasOwnProperty(_vk) && _vk.indexOf('__func_') !== 0 && typeof vars[_vk] === 'number') _uv[_vk] = vars[_vk]; }
+              updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true, _vars: _uv });
               recordFrame(t, allLines, idx);
               idx++;
-              setTimeout(step, spd || 200);
+              _codeStepTimer = setTimeout(step, spd || 200);
             }
             step();
           }
 
           // ── Run handler ──
           function handleRun() {
+            sfxCodeRun();
+            var _myToken = ++_codeRunToken;
             var blks = codeMode === 'text' ? textToBlocks(textCode) : blocks;
             var startTurtle, startLines;
             if (cumulativeMode) {
@@ -1139,7 +1112,7 @@
               startTurtle = { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
               startLines = [];
             }
-            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0 });
+            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0, _vars: {} });
             setTimeout(function () {
               executeBlocks(blks, startTurtle, startLines, function (finalTurtle, finalLines) {
                 var newHistory = runHistory.concat([{
@@ -1156,9 +1129,10 @@
                       var newCompleted = completed.concat([ch.id]);
                       upd('completed', newCompleted);
                       awardStemXP('codingPlayground', 15, 'Completed: ' + ch.title);
-                      // Victory sound effect
+                      // Victory sound effect (uses shared audio context)
+                      sfxCodeSuccess();
                       try {
-                        var actx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+                        var actx = getCodeAC();
                         var notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
                         notes.forEach(function(freq, ni) {
                           var o = actx.createOscillator(); var g = actx.createGain();
@@ -1175,7 +1149,7 @@
                 }
               }, speed, function (si) {
                 upd('stepIdx', si);
-              });
+              }, _myToken);
             }, 50);
           }
 
@@ -1185,6 +1159,16 @@
 
           function handleReset() {
             updMulti({ blocks: [], turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, textCode: '', challengeIdx: -1, history: [], cumulativeMode: false, showTurtle: true });
+          }
+
+          // Halt a running turtle OR robot program: invalidate the run token,
+          // clear the pending animation timer, flip the running flags off.
+          function stopRun() {
+            _codeRunToken++;
+            if (_codeStepTimer) { clearTimeout(_codeStepTimer); _codeStepTimer = null; }
+            if (_codeRobotTimer) { clearTimeout(_codeRobotTimer); _codeRobotTimer = null; }
+            updMulti({ running: false, robotRunning: false, stepIdx: -1 });
+            if (typeof announceToSR === 'function') { try { announceToSR('Program stopped'); } catch (e) {} }
           }
 
           // ── Undo/Redo helpers ──
@@ -1213,7 +1197,7 @@
 
           // ── AI Assistant Functions ──
           function handleExplainCode() {
-            if (!callGemini || blocks.length === 0) {
+            if (!callGemini || !aiHintsEnabled || blocks.length === 0) {
               if (addToast) addToast('Add some blocks first!', 'info');
               return;
             }
@@ -1222,7 +1206,7 @@
             var code = blocksToText(blocks);
             var prompt = 'You are a friendly coding tutor for kids. The student wrote this turtle graphics program:\n\n' + code + '\n\nExplain in 2-3 simple sentences what this program does and what shape it will draw. Use encouraging language and emojis.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', result || 'I could not analyze this code right now.');
+              upd('aiExplanation', result ? (result + '\n\n\u2014 AI tip; it can be wrong, so check it against your code.') : 'I could not analyze this code right now.');
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', 'Oops! AI is not available right now. Try again later.');
@@ -1231,7 +1215,7 @@
           }
 
           function handleSuggestNext() {
-            if (!callGemini) {
+            if (!callGemini || !aiHintsEnabled) {
               if (addToast) addToast('AI not available', 'info');
               return;
             }
@@ -1240,7 +1224,7 @@
             var code = blocks.length > 0 ? blocksToText(blocks) : '(empty program)';
             var prompt = 'You are a friendly coding tutor. The student has this turtle graphics program so far:\n\n' + code + '\n\nSuggest ONE specific next step they could try to make their drawing more interesting. Be encouraging, use emojis, and keep it to 1-2 sentences. Mention the exact block name they should add.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', '💡 ' + (result || 'Try adding a Repeat block to create a pattern!'));
+              upd('aiExplanation', '💡 ' + (result ? (result + '\n\n\u2014 AI suggestion; double-check it.') : 'Try adding a Repeat block to create a pattern!'));
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', '💡 Try adding a Repeat block around your moves to create a pattern!');
@@ -1249,7 +1233,7 @@
           }
 
           function handleDebugHelp() {
-            if (!callGemini || challengeIdx < 0) {
+            if (!callGemini || !aiHintsEnabled || challengeIdx < 0) {
               if (addToast) addToast('Select a challenge first!', 'info');
               return;
             }
@@ -1259,7 +1243,7 @@
             var ch = CHALLENGES[challengeIdx];
             var prompt = 'You are a friendly coding tutor. The student is trying to solve this challenge:\n\nTitle: ' + ch.title + '\nGoal: ' + ch.desc + '\nHint: ' + ch.hint + '\n\nTheir current code:\n' + code + '\n\nGive them a specific, encouraging hint about what might be wrong or what to try next. Do NOT give the full solution. Use emojis and keep it to 2-3 sentences.';
             callGemini(prompt).then(function(result) {
-              upd('aiExplanation', '🐛 ' + (result || ch.hint));
+              upd('aiExplanation', '🐛 ' + (result ? (result + '\n\n\u2014 AI hint; it may be off, so test your idea.') : ch.hint));
               upd('aiLoading', false);
             }).catch(function() {
               upd('aiExplanation', '🐛 Hint: ' + ch.hint);
@@ -1276,7 +1260,7 @@
             var svgLines = drawnLines.map(function(l) {
               return '<line x1="' + l.x1 + '" y1="' + l.y1 + '" x2="' + l.x2 + '" y2="' + l.y2 + '" stroke="' + l.color + '" stroke-width="' + l.width + '" stroke-linecap="round"/>';
             }).join('\n  ');
-            var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">\n  <rect width="500" height="500" fill="#0f172a"/>\n  ' + svgLines + '\n</svg>';
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500" aria-hidden="true">\n  <rect width="500" height="500" fill="#0f172a"/>\n  ' + svgLines + '\n</svg>';
             var blob = new Blob([svg], { type: 'image/svg+xml' });
             var url = URL.createObjectURL(blob);
             var link = document.createElement('a');
@@ -1580,13 +1564,17 @@
 
           // ── Keyboard Shortcuts ──
           if (typeof document !== 'undefined') {
+            // Re-point to this render's handlers — the once-attached listener
+            // otherwise fires first-render closures (stale undo/redo/run/running).
+            window.__codingKB = { undo: handleUndo, redo: handleRedo, run: handleRun, running: running || robotRunning, stop: stopRun };
             var _kbHandler = function(e) {
               // Only handle if Coding Playground is active
-              if (!document.querySelector('.coding-run-btn')) return;
-              if (e.ctrlKey && e.key === 'z') { e.preventDefault(); handleUndo(); }
-              else if (e.ctrlKey && e.key === 'y') { e.preventDefault(); handleRedo(); }
-              else if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); if (!running) handleRun(); }
-              else if (e.key === 'Escape') { if (running) updMulti({ running: false, stepIdx: -1 }); }
+              if (!document.querySelector('.coding-run-btn') && !document.querySelector('.coding-robot-run-btn')) return;
+              var kb = window.__codingKB || {};
+              if (e.ctrlKey && e.key === 'z') { e.preventDefault(); if (kb.undo) kb.undo(); }
+              else if (e.ctrlKey && e.key === 'y') { e.preventDefault(); if (kb.redo) kb.redo(); }
+              else if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); if (!kb.running && kb.run) kb.run(); }
+              else if (e.key === 'Escape') { if (kb.running && kb.stop) kb.stop(); }
             };
             // Attach once using a flag
             if (!window.__codingKBAttached) {
@@ -1686,7 +1674,7 @@
             return React.createElement("div", {
               key: (isElse ? 'e' : 'i') + ci,
               className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
-              style: { backgroundColor: cdef ? cdef.color : '#64748b', opacity: 0.85 }
+              style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #94a3b8)', opacity: 0.85 }
             },
               React.createElement("span", { className: "flex-1 truncate" },
                 cdef ? cdef.label : child.type,
@@ -1702,7 +1690,7 @@
               ['forward', 'backward', 'right', 'left', 'circle', 'color', 'playNote', 'random'].map(function (ct) {
                 return React.createElement("button", { "aria-label": "Add Child Block",
                   key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
-                  className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
+                  className: "px-2 py-0.5 rounded text-[11px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
                 }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : ct === 'playNote' ? '+🎵' : ct === 'random' ? '+🎲' : '+🎨');
               })
             );
@@ -1721,7 +1709,7 @@
                 React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
                 React.createElement("button", { "aria-label": "Close templates panel",
                   onClick: function () { upd('showTemplates', false); },
-                  className: "text-slate-400 hover:text-white text-lg px-2"
+                  className: "text-slate-200 hover:text-white text-lg px-2"
                 }, "×")
               ),
               React.createElement("div", {
@@ -1736,7 +1724,7 @@
                   },
                     React.createElement("span", { className: "text-2xl group-hover:scale-110 transition-transform" }, tmpl.icon),
                     React.createElement("span", { className: "text-xs font-bold text-white text-center" }, tmpl.name),
-                    React.createElement("span", { className: "text-[10px] text-slate-400 text-center leading-tight" }, tmpl.desc),
+                    React.createElement("span", { className: "text-[11px] text-slate-200 text-center leading-tight" }, tmpl.desc),
                     React.createElement("span", { className: "text-[11px] text-amber-400/70 mt-0.5" }, tmpl.blocks.length + ' blocks')
                   );
                 })
@@ -1760,7 +1748,7 @@
                         React.createElement("span", { className: "text-lg font-bold text-indigo-300 mt-0.5" }, (si + 1) + '.'),
                         React.createElement("div", null,
                           React.createElement("span", { className: "text-xs font-bold text-indigo-200" }, step.title),
-                          React.createElement("p", { className: "text-[10px] text-indigo-300/70 leading-snug mt-0.5" }, step.text)
+                          React.createElement("p", { className: "text-[11px] text-indigo-300/70 leading-snug mt-0.5" }, step.text)
                         )
                       );
                     })
@@ -1772,6 +1760,114 @@
                 }, "Got it! ✕")
               )
             ),
+
+            // ══ COMPLEXITY INQUIRY widget (H7b'') ══
+            (function() {
+              var iq = d.complexityIQ || { n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('complexityIQ', Object.assign({}, iq, patch)); }
+              function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+              var dsLookup = ({
+                array: { name: 'Array index', big: 'O(1)', factor: 1 },
+                arrayScan: { name: 'Array scan', big: 'O(n)', factor: iq.n },
+                hash: { name: 'Hash map', big: 'O(1)', factor: 1 },
+                bst: { name: 'Balanced BST', big: 'O(log n)', factor: Math.log2(Math.max(1, iq.n)) },
+                linkedList: { name: 'Linked list scan', big: 'O(n)', factor: iq.n }
+              });
+              var ds = dsLookup[iq.dataStruct] || dsLookup.array;
+              var loopOps = Math.pow(iq.n, iq.loopDepth);
+              var recOps = iq.recursion === 0 ? 1 : iq.recursion === 1 ? iq.n : iq.recursion === 2 ? iq.n * Math.log2(Math.max(2, iq.n)) : Math.pow(2, Math.min(20, iq.n));
+              var totalOps = loopOps * ds.factor * recOps;
+              var msAt1GHz = totalOps / 1e9 * 1000;
+              var state = totalOps < 1e3 ? 'instant' : totalOps < 1e6 ? 'fast' : totalOps < 1e9 ? 'noticeable' : totalOps < 1e12 ? 'slow' : 'intractable';
+              var sm = ({
+                instant: { label: 'Instant', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Sub-millisecond. Imperceptible to user. Safe for hot inner loops.' },
+                fast: { label: 'Fast', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: '< 1 ms. Well within frame-rate budget; safe for UI event handlers.' },
+                noticeable: { label: 'Noticeable', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: '1ms–1s. Will visibly lag UI; needs progress bar or move off main thread.' },
+                slow: { label: 'Slow', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Seconds to minutes. Batch-job territory; user gets coffee.' },
+                intractable: { label: 'Intractable', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Practically infinite at this scale. Need a better algorithm or smaller input.' }
+              })[state];
+              return React.createElement("div", { className: "col-span-2 rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Big-O Inquiry — Predict the Slowdown'),
+                React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set input size, loop depth, data structure, and recursion shape. Predict how fast (or slow) your code will run before testing it. No score, no reveal.'),
+                React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),
+                React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
+                React.createElement("svg", { width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                  React.createElement("line", { x1: 30, y1: 80, x2: 310, y2: 80, stroke: '#1e293b' }),
+                  React.createElement("line", { x1: 30, y1: 10, x2: 30, y2: 80, stroke: '#1e293b' }),
+                  // Reference curves: O(1) O(log n) O(n) O(n²) O(2^n)
+                  [
+                    { lab: 'O(1)', col: '#4ade80', f: function() { return 1; } },
+                    { lab: 'O(log n)', col: '#22d3ee', f: function(nn) { return Math.log2(nn); } },
+                    { lab: 'O(n)', col: '#facc15', f: function(nn) { return nn; } },
+                    { lab: 'O(n²)', col: '#fb923c', f: function(nn) { return nn * nn; } },
+                    { lab: 'O(2ⁿ)', col: '#f87171', f: function(nn) { return Math.pow(2, Math.min(20, nn)); } }
+                  ].map(function(c) {
+                    var pts = '';
+                    for (var nn = 2; nn <= 100; nn += 2) {
+                      var x = 30 + (nn / 100) * 280;
+                      var y = 80 - Math.max(0, Math.min(70, Math.log10(Math.max(1, c.f(nn))) * 10));
+                      pts += x + ',' + y + ' ';
+                    }
+                    return React.createElement("polyline", { key: c.lab, points: pts.trim(), fill: 'none', stroke: c.col, strokeWidth: 1, opacity: 0.5 });
+                  }),
+                  React.createElement("circle", { cx: 30 + (Math.min(100, iq.n) / 100) * 280, cy: 80 - Math.max(0, Math.min(70, Math.log10(Math.max(1, totalOps)) * 5)), r: 4, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
+                  React.createElement("text", { x: 160, y: 96, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'log scale — green=O(1), red=O(2ⁿ); dot=your config at n=' + iq.n)
+                ),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Input size n'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.n)),
+                    React.createElement("input", { type: 'range', min: 1, max: 100, step: 1, value: iq.n, onChange: function(e) { setKey('n', parseInt(e.target.value, 10)); }, className: "w-full" })
+                  ),
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Nested loop depth'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.loopDepth)),
+                    React.createElement("input", { type: 'range', min: 0, max: 4, step: 1, value: iq.loopDepth, onChange: function(e) { setKey('loopDepth', parseInt(e.target.value, 10)); }, className: "w-full" })
+                  ),
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "mb-0.5" }, 'Data structure access'),
+                    React.createElement("select", { value: iq.dataStruct, onChange: function(e) { setKey('dataStruct', e.target.value); }, className: "w-full p-1 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                      Object.keys(dsLookup).map(function(k) { return React.createElement("option", { key: k, value: k }, dsLookup[k].name + ' ' + dsLookup[k].big); })
+                    )
+                  ),
+                  React.createElement("label", { className: "text-[10px]" },
+                    React.createElement("div", { className: "mb-0.5" }, 'Recursion shape'),
+                    React.createElement("select", { value: iq.recursion, onChange: function(e) { setKey('recursion', parseInt(e.target.value, 10)); }, className: "w-full p-1 rounded text-[10px]", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+                      React.createElement("option", { value: 0 }, 'none'),
+                      React.createElement("option", { value: 1 }, 'linear (×n)'),
+                      React.createElement("option", { value: 2 }, 'divide & conquer (×n log n)'),
+                      React.createElement("option", { value: 3 }, 'exponential (×2ⁿ)')
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "flex gap-2 mb-2" },
+                  React.createElement("button", { onClick: function() {
+                    var t = new Date().toISOString().slice(11, 19);
+                    setIQ({ log: iq.log.concat([{ t: t, n: iq.n, ld: iq.loopDepth, ds: iq.dataStruct, rec: iq.recursion, ops: totalOps.toExponential(1), state: sm.label }]) });
+                  }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this complexity'),
+                  React.createElement("button", { onClick: function() { setIQ({ n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                ),
+                iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                  iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · n' + e.n + ' ld' + e.ld + ' ' + e.ds + ' rec' + e.rec + ' → ' + e.ops + ' ops'); })
+                ),
+                React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (which change buys the biggest speedup — smaller n, fewer loops, or different data structure?)'),
+                React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., swapping array scan for hash lookup drops outer-loop cost by a factor of n...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
+                iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                  React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
+                  React.createElement("ul", { className: "pl-4 m-0" },
+                    React.createElement("li", null, 'Why does loop depth multiply rather than add to operation count?'),
+                    React.createElement("li", null, 'When does it matter that hash lookup is O(1) — at n=10? n=1,000? n=1,000,000?'),
+                    React.createElement("li", null, 'Exponential recursion explodes after roughly what n? Where exactly does the wall hit?'),
+                    React.createElement("li", null, 'For very small n, sometimes O(n²) BEATS O(n log n). Why?')
+                  )
+                ),
+                React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
+                  React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                  React.createElement("span", null, 'I can explain why this combination of n, depth, data structure, and recursion lands here.')
+                ),
+                iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal, no answer dump. Ops counts are illustrative pedagogical estimates assuming ~1 GHz effective throughput; real performance depends on cache, branch prediction, JIT, and constants in front of the Big-O term.')
+              );
+            })(),
 
             // ── Header bar ──
             React.createElement("div", {
@@ -1846,27 +1942,26 @@
               }, "📂 Templates"),
 
 
-              // AI Assistant buttons
-              callGemini && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
-                React.createElement("button", { "aria-label": "Handle Explain Code",
-                  onClick: handleExplainCode,
+              // AI Assistant buttons (default-OFF; gated on the host teacher AI toggle)
+              callGemini && aiHintsEnabled && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
+                React.createElement("button", { onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
                   title: "AI explains what your code does",
-                  className: "px-2.5 py-1.5 text-[10px] font-bold transition-all " +
+                  className: "px-2.5 py-1.5 text-[11px] font-bold transition-all " +
                     (aiLoading ? "bg-white/5 text-white/30 cursor-wait" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, aiLoading ? "⏳" : "🤖 Explain"),
                 React.createElement("button", { "aria-label": "Suggest",
                   onClick: handleSuggestNext,
                   disabled: aiLoading,
                   title: "AI suggests what to try next",
-                  className: "px-2.5 py-1.5 text-[10px] font-bold transition-all border-l border-white/20 " +
+                  className: "px-2.5 py-1.5 text-[11px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, "💡 Suggest"),
                 React.createElement("button", { "aria-label": "Debug",
                   onClick: handleDebugHelp,
                   disabled: aiLoading || challengeIdx < 0,
                   title: "AI helps debug your challenge attempt",
-                  className: "px-2.5 py-1.5 text-[10px] font-bold transition-all border-l border-white/20 " +
+                  className: "px-2.5 py-1.5 text-[11px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading || challengeIdx < 0 ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, "🐛 Debug")
               ),
@@ -1926,7 +2021,7 @@
                   (bgMusicPlaying ? "bg-green-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, bgMusicPlaying ? "🔊 Music" : "🔇 Music"),
               // Canvas Layer toggle
-              React.createElement("button", { "aria-label": "Drawing layer: ",
+              React.createElement("button", { "aria-label": "Toggle drawing layer (foreground or background)",
                 onClick: function() { upd('canvasLayer', canvasLayer === 'foreground' ? 'background' : 'foreground'); },
                 title: 'Drawing layer: ' + canvasLayer,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
@@ -1953,13 +2048,40 @@
               }, "❓")
             ),
 
+            // ── Topic-accent hero band per playground mode ──
+            (function() {
+              var MODE_META = {
+                turtle: { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)', icon: '\uD83D\uDC22', title: 'Turtle \u2014 LOGO\u2019s drawing robot, born 1967',           hint: 'Move forward, turn, pen down: a few primitives \u2192 fractals, spirals, polygons. Seymour Papert\u2019s Mindstorms (1980) showed kids could BUILD intuition for math by teaching the turtle, not the other way round.' },
+                robot:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDD16', title: 'Robot \u2014 navigate the grid, collect, solve',           hint: 'Sequencing \u2192 conditionals \u2192 loops \u2192 functions, wrapped in a maze you can SEE. Mirrors Karel the Robot (Stanford 1981) and modern code.org puzzles. Errors become spatial: \u201Cit walked into a wall.\u201D' }
+              };
+              var meta = MODE_META[playgroundMode] || MODE_META.turtle;
+              return React.createElement('div', {
+                className: 'col-span-2',
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // ══════════════════════════
             // ROBOT GRID MODE UI
             // ══════════════════════════
             playgroundMode === 'robot' && React.createElement("div", { className: "col-span-2 grid gap-4", style: { gridTemplateColumns: "200px 1fr 260px" } },
               // Robot Toolbox
               React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
                     return React.createElement("button", { "aria-label": "Add robot command: " + rb.label,
@@ -1976,7 +2098,7 @@
                   })
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
-                  React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" },
+                  React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
                     "\uD83D\uDCA1 Drag commands into your program. Use If/While blocks for smart navigation!"
                   )
                 )
@@ -2065,12 +2187,12 @@
                 // Robot Program
                 React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                    React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
+                    React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
                       React.createElement("button", { "aria-label": "Clear",
                         onClick: function() { upd('robotBlocks', []); },
                         disabled: robotBlocks.length === 0,
-                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\uD83D\uDDD1 Clear"),
                       React.createElement("button", { "aria-label": "Reset robot grid",
                         onClick: function() {
@@ -2080,29 +2202,31 @@
                             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: false });
                           }
                         },
-                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
-                      React.createElement("button", { "aria-label": "Handle Robot Run",
-                        onClick: handleRobotRun,
+                      React.createElement("button", { onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
-                        className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-400" : "bg-slate-700 text-slate-500 cursor-not-allowed")
-                      }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
+                        className: "coding-robot-run-btn px-3 py-1 rounded text-[11px] font-bold transition-all " +
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
+                      }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
+                      robotRunning && React.createElement("button", { "aria-label": "Stop", onClick: stopRun,
+                        className: "px-3 py-1 rounded text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-all"
+                      }, "\u25A0 Stop")
                     )
                   ),
                   robotBlocks.length === 0 ?
-                    React.createElement("p", { className: "text-[10px] text-slate-500 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
+                    React.createElement("p", { className: "text-[11px] text-slate-600 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
                     React.createElement("div", { className: "space-y-1" },
                       robotBlocks.map(function(b, bi) {
                         var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
                         return React.createElement("div", { key: bi },
-                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : '#64748b' } },
+                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                             React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
                             b.type === 'repeatR' && React.createElement("input", {
                               type: "number", min: 1, max: 20, value: b.times || 3,
                               'aria-label': 'Repeat count',
                               onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
-                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
+                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[11px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
                             }),
                             React.createElement("button", { "aria-label": "Remove robot block",
                               onClick: function() { removeRobotBlock(bi); },
@@ -2113,12 +2237,12 @@
                             React.createElement("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + '60' : '#475569' } },
                               (b.children || []).map(function(child, ci) {
                                 var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
                                   React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
                                   React.createElement("button", { "aria-label": "Remove child block", onClick: function() {
                                     var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                     upd('robotBlocks', updated);
-                                  }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
+                                  }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
                                 );
                               }),
                               React.createElement("div", { className: "flex gap-1 flex-wrap" },
@@ -2132,15 +2256,15 @@
                                 })
                               ),
                               (b.type === 'ifWall' || b.type === 'ifGem') && React.createElement("div", null,
-                                React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mt-1" }, "ELSE:"),
+                                React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-1" }, "ELSE:"),
                                 (b.elseChildren || []).map(function(child, ci) {
                                   var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
                                     React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
                                     React.createElement("button", { "aria-label": "Remove else block", onClick: function() {
                                       var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                       upd('robotBlocks', updated);
-                                    }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
+                                    }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
                                   );
                                 }),
                                 React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
@@ -2162,7 +2286,7 @@
               ),
               // Right sidebar — Robot Challenges
               React.createElement("div", { className: "bg-slate-800/60 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '600px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
                 React.createElement("div", { className: "space-y-1.5" },
                   ROBOT_CHALLENGES.map(function(ch, ci) {
                     var done = robotCompleted.indexOf(ch.id) >= 0;
@@ -2177,22 +2301,22 @@
                         React.createElement("span", { className: "text-sm" }, done ? "\u2705" : active ? "\u25B6\uFE0F" : "\u2B1C"),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("div", { className: "text-xs font-bold " + (done ? "text-emerald-300" : active ? "text-indigo-300" : "text-slate-300") }, ch.title),
-                          React.createElement("div", { className: "text-[10px] " + (done ? "text-emerald-400/60" : "text-slate-500") + " truncate" }, ch.desc)
+                          React.createElement("div", { className: "text-[11px] " + (done ? "text-emerald-400/60" : "text-slate-400") + " truncate" }, ch.desc)
                         ),
                         React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full border " +
                           (ch.concept === 'Sequencing' ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
-                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-700 bg-purple-500/10" :
+                           ch.concept === 'Loops' ? "border-purple-500/40 text-purple-400 bg-purple-500/10" :
                            ch.concept.indexOf('Conditional') >= 0 ? "border-red-500/40 text-red-400 bg-red-500/10" :
                            "border-amber-500/40 text-amber-400 bg-amber-500/10")
                         }, ch.concept)
                       ),
-                      active && ch.hint && React.createElement("div", { className: "mt-2 text-[10px] text-indigo-300/70 bg-indigo-900/40 rounded-lg p-2 border border-indigo-500/20" }, "\uD83D\uDCA1 " + ch.hint)
+                      active && ch.hint && React.createElement("div", { className: "mt-2 text-[11px] text-indigo-300/70 bg-indigo-900/40 rounded-lg p-2 border border-indigo-500/20" }, "\uD83D\uDCA1 " + ch.hint)
                     );
                   })
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
-                  React.createElement("div", { className: "flex items-center justify-between text-[10px]" },
-                    React.createElement("span", { className: "text-slate-400 font-bold" }, "Progress"),
+                  React.createElement("div", { className: "flex items-center justify-between text-[11px]" },
+                    React.createElement("span", { className: "text-slate-200 font-bold" }, "Progress"),
                     React.createElement("span", { className: "text-emerald-400 font-bold" }, robotCompleted.length + "/" + ROBOT_CHALLENGES.length)
                   ),
                   React.createElement("div", { className: "w-full h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden" },
@@ -2229,7 +2353,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" },
                   "📋 Program (" + blocks.length + " blocks)"
                 ),
-                blocks.length === 0 && React.createElement("p", { className: "text-slate-400 text-xs italic text-center py-4" },
+                blocks.length === 0 && React.createElement("p", { className: "text-slate-200 text-xs italic text-center py-4" },
                   'Click blocks above or load a template to start'
                 ),
                 React.createElement("div", { className: "flex flex-col gap-1" },
@@ -2249,11 +2373,11 @@
                       React.createElement("div", {
                         className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-white transition-all " +
                           (isActive ? 'ring-2 ring-yellow-400 scale-105' : ''),
-                        style: { backgroundColor: def ? def.color : '#64748b' }
+                        style: { backgroundColor: def ? def.color: 'var(--allo-stem-text-soft, #94a3b8)' }
                       },
                         // Drag handle
                         React.createElement("span", {
-                          className: "text-white/40 text-[10px] cursor-grab mr-0.5 select-none",
+                          className: "text-white/40 text-[11px] cursor-grab mr-0.5 select-none",
                           title: "Drag to reorder"
                         }, "⠿"),
                         React.createElement("span", { className: "flex-1 truncate" },
@@ -2276,20 +2400,20 @@
                         }),
                         // Goto dual param editor (x, y)
                         b.type === 'goto' && React.createElement("span", { className: "flex items-center gap-0.5" },
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "x"),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "x"),
                           React.createElement("input", {
                             type: "number", value: b.x != null ? b.x : 250,
                             'aria-label': 'Goto X coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'x', parseInt(e.target.value) || 0); },
-                            className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-10 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           }),
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "y"),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "y"),
                           React.createElement("input", {
                             type: "number", value: b.y != null ? b.y : 250,
                             'aria-label': 'Goto Y coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'y', parseInt(e.target.value) || 0); },
-                            className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-10 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2306,15 +2430,15 @@
                             type: "text", value: b.varName || 'size',
                             'aria-label': 'Variable name',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
                           }),
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "="),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "="),
                           React.createElement("input", {
                             type: "number", value: b.varValue != null ? b.varValue : 50,
                             'aria-label': 'Variable value',
                             onChange: function (e) { updateBlockParam(idx, 'varValue', parseFloat(e.target.value) || 0); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2324,15 +2448,14 @@
                             type: "text", value: b.varName || 'size',
                             'aria-label': 'Variable name to change',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
                           }),
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "+="),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "+="),
                           React.createElement("input", {
                             type: "number", value: b.varDelta != null ? b.varDelta : 10,
-                            'aria-label': 'Change amount',
                             onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2341,12 +2464,12 @@
                           type: "text", value: b.condition || 'x > 250',
                           'aria-label': 'If-else condition',
                           onChange: function (e) { updateBlockParam(idx, 'condition', e.target.value); },
-                          className: "w-24 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center font-mono",
+                          className: "w-24 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center font-mono",
                           placeholder: "x > 250"
                         }),
                         // Move / Remove buttons
-                        React.createElement("button", { "aria-label": "Move block up", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { "aria-label": "Move block down", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
                         React.createElement("button", { "aria-label": "Remove block", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
                       // ── Repeat children ──
@@ -2359,14 +2482,14 @@
                         // IF branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-fuchsia-400/50" },
                           React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
-                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
                           (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
                           renderQuickAdd(idx, false)
                         ),
                         // ELSE branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-slate-500/50 mt-1" },
-                          React.createElement("span", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider" }, "✖ Else"),
-                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "✖ Else"),
+                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
                           (b.elseChildren || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, true); }),
                           renderQuickAdd(idx, true)
                         )
@@ -2379,16 +2502,34 @@
               // Code editor (text mode)
               codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
                 React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
-                React.createElement("textarea", {
-                  'aria-label': 'Code editor',
-                  value: textCode,
-                  onChange: function (e) { handleTextChange(e.target.value); },
-                  placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})\n\nsetVar('size', 50)\nchangeVar('size', 10)\n\nif(x > 250, function() {\n  left(45)\n}, function() {\n  right(45)\n})",
-                  className: "w-full h-60 p-3 rounded-lg bg-slate-900 text-green-400 text-xs font-mono border border-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none",
-                  spellCheck: false
-                }),
-                React.createElement("p", { className: "text-slate-500 text-[10px] mt-1" },
-                  "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(r), goto(x,y), home(), repeat(n, fn), setVar('name', val), changeVar('name', delta), if(condition, ifFn, elseFn)"
+                React.createElement("div", { style: { display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' } },
+                  // Line numbers
+                  React.createElement("div", {
+                    'aria-hidden': 'true',
+                    style: { background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text-soft, #475569)', fontFamily: 'monospace', fontSize: '11px', padding: '12px 8px 12px 6px', textAlign: 'right', lineHeight: '1.5', userSelect: 'none', borderRight: '1px solid var(--allo-stem-border, #1e293b)', minWidth: '28px' }
+                  }, (textCode || '').split('\n').map(function(_, i) { return React.createElement('div', { key: i }, i + 1); })),
+                  React.createElement("textarea", {
+                    'aria-label': 'Code editor',
+                    value: textCode,
+                    onChange: function (e) { handleTextChange(e.target.value); },
+                    placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
+                    style: { flex: 1, minHeight: '240px', padding: '12px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
+                    spellCheck: false,
+                    onKeyDown: function(e) {
+                      // Tab inserts 2 spaces instead of changing focus
+                      if (e.key === 'Tab') {
+                        e.preventDefault();
+                        var start = e.target.selectionStart;
+                        var end = e.target.selectionEnd;
+                        var val = e.target.value;
+                        handleTextChange(val.substring(0, start) + '  ' + val.substring(end));
+                        setTimeout(function() { e.target.selectionStart = e.target.selectionEnd = start + 2; }, 0);
+                      }
+                    }
+                  })
+                ),
+                React.createElement("p", { className: "text-slate-200 text-[11px] mt-1" },
+                  "Commands: forward(n) backward(n) right(deg) left(deg) penUp() penDown() setColor(\"#hex\") setWidth(n) circle(r) goto(x,y) home() arc(angle,radius) stamp() playNote(freq,dur). Variables: setVar(\"name\",value) changeVar(\"name\",delta) random(\"name\",min,max) \u2014 use a variable with $ (e.g. forward($name)). Loops & logic use braces: repeat(n){ ... }  while (x < 450){ ... }  if (x > 250){ ... } else { ... }. Functions: function myShape(){ ... } then call it with myShape(). Conditions compare x, y, angle, or $var using > < >= <= == != ."
                 )
               )
             ),
@@ -2411,8 +2552,11 @@
                   onClick: handleRun,
                   disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
                   className: "coding-run-btn flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
-                    (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-green-500/30')
+                    (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 active:scale-95 shadow-lg hover:shadow-green-500/30')
                 }, "▶ Run"),
+                running && React.createElement("button", { "aria-label": "Stop", onClick: stopRun,
+                  className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 active:scale-95 shadow-lg"
+                }, "\u25A0 Stop"),
                 React.createElement("button", { "aria-label": "Clear Canvas",
                   onClick: handleClear,
                   className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition-all"
@@ -2464,11 +2608,11 @@
                       React.createElement("span", { className: "text-sm" }, done ? '✅' : active ? '🎯' : '⬜'),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("span", { className: "font-semibold" }, ch.title),
-                        active && React.createElement("p", { className: "text-[10px] text-indigo-300/70 mt-0.5" }, '💡 ' + ch.hint)
+                        active && React.createElement("p", { className: "text-[11px] text-indigo-300/70 mt-0.5" }, '💡 ' + ch.hint)
                       ),
                       React.createElement("span", {
-                        className: "text-[10px] px-1.5 py-0.5 rounded-full " +
-                          (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-400')
+                        className: "text-[11px] px-1.5 py-0.5 rounded-full " +
+                          (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-200')
                       }, ch.concept)
                     );
                   })
@@ -2486,7 +2630,7 @@
                 ),
                 // Camera Elevation
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-300 flex justify-between" },
                     React.createElement("span", null, "Elevation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotX) + "\u00b0")
                   ),
@@ -2500,7 +2644,7 @@
                 ),
                 // Camera Azimuth
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-300 flex justify-between" },
                     React.createElement("span", null, "Rotation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotZ) + "\u00b0")
                   ),
@@ -2514,7 +2658,7 @@
                 ),
                 // Zoom
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-300 flex justify-between" },
                     React.createElement("span", null, "Zoom"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, (cameraZoom * 100).toFixed(0) + "%")
                   ),
@@ -2531,12 +2675,12 @@
                   React.createElement("button", { "aria-label": "Grid",
                     onClick: function() { upd('show3DGrid', !show3DGrid); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
+                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
                   }, "\u{2B1C} Grid"),
                   React.createElement("button", { "aria-label": "Axes",
                     onClick: function() { upd('show3DAxes', !show3DAxes); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
+                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
                   }, "\u{1F4CD} Axes"),
                   React.createElement("button", { "aria-label": "Reset 3D camera view",
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
@@ -2558,7 +2702,7 @@
               ),
               // ── Animation Timeline ──
               timelineFrames.length > 0 && React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/40" },
-                React.createElement("h4", { className: "text-xs font-bold text-slate-400 mb-2 flex items-center gap-1" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-200 mb-2 flex items-center gap-1" },
                   React.createElement("span", null, "⏱️"), " Timeline (" + timelineFrames.length + " frames)"
                 ),
                 React.createElement("input", {
@@ -2571,7 +2715,7 @@
                   className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }
                 }),
-                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-500 mt-1" },
+                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-1" },
                   React.createElement("span", null, "Frame 0"),
                   React.createElement("span", { className: "text-indigo-400 font-bold" }, timelinePos >= 0 ? "Frame " + timelinePos : "—"),
                   React.createElement("span", null, "Frame " + (timelineFrames.length - 1))
@@ -2589,7 +2733,7 @@
                       key: badge.id,
                       title: badge.title + ': ' + badge.desc,
                       className: "flex items-center justify-center w-full aspect-square rounded-lg text-lg transition-all " +
-                        (earned ? "bg-amber-500/20 scale-100 cursor-default" : "bg-slate-700/30 grayscale opacity-30 cursor-help"),
+                        (earned ? "bg-amber-500/20 scale-100 cursor-default shadow-[0_0_10px_rgba(245,158,11,0.35)]" : "bg-slate-700/30 grayscale opacity-30 cursor-help"),
                       style: earned ? { animation: 'none' } : {}
                     }, badge.icon);
                   })
@@ -2600,8 +2744,8 @@
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("button", { "aria-label": "Toggle high contrast mode",
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
-                  className: "flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " +
-                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-400 hover:text-white")
+                  className: "flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " +
+                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-200 hover:text-white")
                 }, highContrastMode ? "◐ Standard Mode" : "◑ High Contrast")
               ),
               // ── AI Assistant Panel ──
@@ -2612,7 +2756,7 @@
                   ),
                   React.createElement("button", { "aria-label": "Close AI assistant panel",
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
-                    className: "text-slate-400 hover:text-white text-sm px-1"
+                    className: "text-slate-200 hover:text-white text-sm px-1"
                   }, "×")
                 ),
                 aiLoading ?
@@ -2629,31 +2773,31 @@
                 ),
                 React.createElement("div", { className: "grid gap-1", style: { gridTemplateColumns: '1fr 1fr' } },
                   // Turtle State
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "🐢 x: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.x))
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "🐢 y: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.y))
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "🧭 angle: ", React.createElement("span", { className: "text-amber-300 font-bold" }, Math.round(turtleState.angle) + "°")
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "✏️ pen: ", React.createElement("span", { className: turtleState.penDown ? "text-green-400 font-bold" : "text-red-400 font-bold" }, turtleState.penDown ? "down" : "up")
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "📐 lines: ", React.createElement("span", { className: "text-purple-300 font-bold" }, drawnLines.length)
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "⚡ step: ", React.createElement("span", { className: "text-orange-300 font-bold" }, stepIdx >= 0 ? stepIdx : "—")
                   )
                 ),
                 // User-defined variables
                 d._vars && Object.keys(d._vars).length > 0 && React.createElement("div", { className: "mt-2 border-t border-slate-600/30 pt-2" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider" }, "User Variables"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider" }, "User Variables"),
                   React.createElement("div", { className: "grid gap-1 mt-1", style: { gridTemplateColumns: '1fr 1fr' } },
                     Object.keys(d._vars || {}).filter(function(k) { return k.indexOf('__func_') !== 0; }).map(function(vk) {
-                      return React.createElement("div", { key: vk, className: "text-[10px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },
+                      return React.createElement("div", { key: vk, className: "text-[11px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },
                         "$" + vk + " = ", React.createElement("span", { className: "text-emerald-300 font-bold" }, String(d._vars[vk]))
                       );
                     })
