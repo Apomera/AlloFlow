@@ -6990,11 +6990,13 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       { regex: /([\u0590-\u05FF]{5,})/g, lang: 'he' }         // Hebrew
     ];
     langPatterns.forEach(function(lp) {
-      // zh shares the Han range with Japanese kanji; if the doc contains any kana it is Japanese,
-      // so skip zh (the ja pattern handles kana; kanji deferred to the VLM) rather than mis-tag Han. (lang-zh-ja)
-      if (lp.lang === 'zh' && /[\u3040-\u309F\u30A0-\u30FF]/.test(accessibleHtml)) return;
       accessibleHtml = accessibleHtml.replace(lp.regex, function(match, p1, offset) {
         var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
+        // zh shares the Han range with Japanese kanji. A Han run that is part of a JAPANESE passage
+        // has kana NEARBY; one in a CHINESE passage does not. Check a WINDOW around this run (not the
+        // whole doc — doc-wide wrongly stripped Chinese tagging from mixed zh+ja docs): kana near ->
+        // defer to the ja pass / VLM rather than mis-tag Han as Chinese. (lang-zh-ja / #9)
+        if (lp.lang === 'zh' && /[\u3040-\u309F\u30A0-\u30FF]/.test(accessibleHtml.substring(Math.max(0, offset - 60), offset + match.length + 60))) return match;
         // Skip if already tagged with this language
         if (new RegExp('lang=["\']' + lp.lang + '["\'][^>]*>[^<]*$', 'i').test(preceding)) return match;
         // Skip if inside <code>, <pre>, or <script> blocks (don't corrupt code examples)
