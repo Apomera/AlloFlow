@@ -6608,7 +6608,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <button onclick="printHtml()" style="padding:3px 8px;border-radius:6px;border:1px solid #86efac;background:transparent;color:#86efac;font-size:10px;font-weight:700;cursor:pointer" title="Print">🖨️</button>
                                 </div>
                               </div>
-                              <iframe id="after-frame"></iframe>
+                              <iframe id="after-frame" sandbox="allow-same-origin"></iframe>
                             </div>
                           </div>
                           <script>
@@ -6809,7 +6809,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                             var _b64 = "${(() => {
                               try {
-                                return btoa(unescape(encodeURIComponent(pdfFixResult.accessibleHtml || '')));
+                                // XSS hardening (2026-06-15): accessibleHtml is RAW model output written into
+                                // the (now sandboxed) after-frame. Strip active content at the source too —
+                                // defense-in-depth, mirrors doc_pipeline's _sanitizeHtmlForWrite. Keeps <style>.
+                                const _safeHtml = String(pdfFixResult.accessibleHtml || '')
+                                  .replace(/<script[\s\S]*?<\/script>/gi, '')
+                                  .replace(/<\/?(?:iframe|object|embed)\b[^>]*>/gi, '')
+                                  .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+                                  .replace(/(?:javascript|vbscript)\s*:/gi, '');
+                                return btoa(unescape(encodeURIComponent(_safeHtml)));
                               } catch (_) { return ''; }
                             })()}";
                             var html = '';
