@@ -13478,16 +13478,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           accessibleHtml = accessibleHtml.replace(/<\/h2>/, '</h1>');
           aiFixCount++;
         } else if (h1Count > 1) {
-          // Demote extra h1s to h2
-          let firstH1Found = false;
+          // Demote extra h1s to h2 — keep the FIRST h1 open/close pair, demote the rest.
+          // BUGFIX (audit #11, 2026-06-15): the close pass previously read the SAME flag the open
+          // pass had already set true, so every </h1> stayed </h1> while opens 2+ became <h2> —
+          // emitting mismatched <h2>…</h1>. Use independent ordinal counters (the batch path at
+          // ~6760 already does this) so the Nth open and Nth close move together.
+          let _h1OpenIdx = 0;
           accessibleHtml = accessibleHtml.replace(/<h1([^>]*)>/gi, (m, attrs) => {
-            if (!firstH1Found) { firstH1Found = true; return m; }
+            _h1OpenIdx++;
+            if (_h1OpenIdx === 1) return m;
             aiFixCount++;
             return `<h2${attrs}>`;
           });
+          let _h1CloseIdx = 0;
           accessibleHtml = accessibleHtml.replace(/<\/h1>/gi, () => {
-            if (firstH1Found) { return '</h1>'; } // keep first
-            return '</h2>';
+            _h1CloseIdx++;
+            return _h1CloseIdx === 1 ? '</h1>' : '</h2>';
           });
         }
 
