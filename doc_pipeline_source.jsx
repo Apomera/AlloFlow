@@ -12885,6 +12885,26 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             _pipeLog('PDF Fix', 'Chunk ' + (i + 1) + ': last-resort paragraph fallback preserved ' + _fallbackParas.length + ' paragraphs (' + chunkText.length + ' chars)');
             return _fallbackParas.map(p => ({ type: 'p', text: p }));
           }
+          // BUGFIX (audit #16, 2026-06-15): a truthy-but-unparseable chunk that also fails object
+          // recovery AND the direct-HTML fallback falls through to here WITHOUT throwing, so the
+          // catch above (with its chunkText / structureTextHeuristic recovery) never ran — the chunk
+          // dropped to zero blocks. Run the SAME pre-extracted-text preservation here so the non-throw
+          // and throw paths are symmetric and no page silently loses its content.
+          {
+            const _fbStart = Math.floor((i / transformChunks) * extractedText.length);
+            const _fbEnd = Math.floor(((i + 1) / transformChunks) * extractedText.length);
+            const _chunkText = extractedText.substring(_fbStart, _fbEnd);
+            const _hb = structureTextHeuristic(_chunkText, startPg, endPg);
+            if (_hb.length > 2) {
+              _pipeLog('PDF Fix', 'Chunk ' + (i + 1) + ': non-throw parse failure → heuristic fallback preserved ' + _hb.length + ' blocks');
+              return _hb;
+            }
+            const _paras = String(_chunkText || '').split(/\n\s*\n+/).map(p => p.trim()).filter(p => p.length > 0);
+            if (_paras.length > 0) {
+              _pipeLog('PDF Fix', 'Chunk ' + (i + 1) + ': non-throw parse failure → paragraph fallback preserved ' + _paras.length + ' paragraphs');
+              return _paras.map(p => ({ type: 'p', text: p }));
+            }
+          }
           return [];
         };
         // Launch chunks in batches of 5 to avoid rate limiting
