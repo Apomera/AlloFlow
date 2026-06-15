@@ -9191,6 +9191,12 @@ HTML section ${chunkNum}/${chunks.length}:
       { lang: 'hi', pattern: /([\u0900-\u097F][\u0900-\u097F\s,.!?;:'"()-]{2,})/g },
       { lang: 'el', pattern: /([\u0370-\u03FF][\u0370-\u03FF\s,.!?;:'"()-]{2,})/g },
       { lang: 'th', pattern: /([\u0E00-\u0E7F][\u0E00-\u0E7F\s,.!?;:'"()-]{2,})/g },
+      // Beat-Adobe \u00A73 (2026-06-14): AlloFlow refugee/EL-relevant scripts that map
+      // ~1:1 to a language, so the deterministic floor can tag them without a
+      // vision call (Latin-script language-of-parts still needs the VLM/LID pass).
+      { lang: 'bn', pattern: /([\u0980-\u09FF][\u0980-\u09FF\s,.!?;:'"()-]{1,})/g },
+      { lang: 'am', pattern: /([\u1200-\u137F][\u1200-\u137F\s,.!?;:'"()-]{1,})/g },
+      { lang: 'my', pattern: /([\u1000-\u109F][\u1000-\u109F\s,.!?;:'"()-]{1,})/g },
     ];
 
     // Only touch text inside visible content tags — skip text already inside <span lang="...">
