@@ -14,6 +14,8 @@
 // suite. This harness covers the logic + reporting layers, which is what runs headless.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 let pipeline;
@@ -135,6 +137,35 @@ describe('REAL generateAccessibilityReportHtml (Generator B, the conformance rep
   it('contains none of the prior overclaims', () => {
     expect(html).not.toContain('inter-rater reliability');
     expect(html).not.toContain("Cronbach's α (pragmatic hybrid)");
+  });
+});
+
+describe('REAL generateAuditReportHtml escapes the filename + AI fields (#10 XSS)', () => {
+  it('a malicious filename and AI summary appear only escaped — no live <img>/<script>', () => {
+    const data = {
+      score: 72,
+      summary: '</div><script>window.__pwned=1</script>',
+      verificationAudit: { issues: [{ issue: '<img src=x onerror=alert(1)> missing alt', wcag: '1.1.1' }] },
+    };
+    const html = pipeline.generateAuditReportHtml(data, '<img src=x onerror=alert(2)>.pdf');
+    // no executable injection survives
+    expect(html).not.toContain('<script>window.__pwned');
+    expect(html).not.toContain('<img src=x onerror');
+    // the escaped forms are present (so content isn't dropped, just neutralized)
+    expect(html).toContain('&lt;img src=x onerror=alert(2)&gt;.pdf'); // filename in <title> + body
+    expect(html).toContain('&lt;script&gt;window.__pwned');           // AI summary neutralized
+  });
+});
+
+describe('batch Compliance Dashboard escapes user/AI fields (#9 XSS, anti-drift)', () => {
+  const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+  it('the dashboard wraps filename, error, and violation strings in esc()', () => {
+    expect(viewSrc).toContain('esc(f.fileName)');     // chart-bar title attr + table cell
+    expect(viewSrc).toContain("esc(f.error || '')");  // status error
+    expect(viewSrc).toContain('esc(v)');              // AI-derived violation string
+    // and the raw (unescaped) sinks are gone
+    expect(viewSrc).not.toContain("title=\"' + f.fileName");
+    expect(viewSrc).not.toContain("'<span>' + v + '</span>");
   });
 });
 

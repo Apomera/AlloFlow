@@ -14610,6 +14610,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
   const generateAuditReportHtml = (auditData, fileName, isBeforeAfter = false) => {
     const d = auditData;
+    // Escape every user/AI-derived value before it lands in this report HTML (opened in a popup
+    // AND downloadable): the filename or an AI-summarized issue containing markup would otherwise
+    // run script in a same-origin window. (#10 XSS)
+    const esc = (x) => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const scoreColor = (s) => s >= 80 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626';
     const severityBadge = (sev, count) => `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;color:white;background:${sev === 'critical' ? '#dc2626' : sev === 'serious' ? '#ea580c' : sev === 'moderate' ? '#d97706' : sev === 'minor' ? '#2563eb' : '#16a34a'}">${sev.toUpperCase()} (${count})</span>`;
@@ -14636,10 +14640,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const display = pagesArr.length <= 8 ? pagesArr.join(', ') : (pagesArr.slice(0, 5).join(', ') + ', +' + (pagesArr.length - 5) + ' more');
         pagesLabel = `<div style="font-size:11px;color:#94a3b8;margin-top:4px">Page${pagesArr.length === 1 ? '' : 's'}: ${display}</div>`;
       }
-      return `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px;width:65%;word-wrap:break-word;overflow-wrap:break-word">${issueText}${pagesLabel}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;width:20%;font-family:monospace">${wcag || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;width:15%">${i.count > 1 ? i.count : ''}</td></tr>`;
+      return `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px;width:65%;word-wrap:break-word;overflow-wrap:break-word">${esc(issueText)}${pagesLabel}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;width:20%;font-family:monospace">${esc(wcag) || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;width:15%">${i.count > 1 ? i.count : ''}</td></tr>`;
     }).join('');
 
-    let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Audit Report - ${fileName}</title>
+    let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Audit Report - ${esc(fileName)}</title>
 <style>
 body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; color: #1e293b; }
 h1 { color: #1e3a5f; font-size: 1.5rem; border-bottom: 3px solid #2563eb; padding-bottom: 0.5rem; }
@@ -14664,7 +14668,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#64748b;font-size:13px">Document: <strong>${fileName}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#64748b;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -14680,7 +14684,7 @@ tr { page-break-inside: avoid; }
     } else {
       html += `<div class="score-num" style="color:${typeof score === 'number' ? scoreColor(score) : '#64748b'}">${score}<span style="font-size:1.2rem;opacity:0.6">/100</span></div>`;
     }
-    html += `<div style="font-size:14px;margin-top:8px;color:#475569">${d.summary || d.before?.audit?.summary || ''}</div></div>`;
+    html += `<div style="font-size:14px;margin-top:8px;color:#475569">${esc(d.summary || d.before?.audit?.summary || '')}</div></div>`;
 
     // Honest structural-vs-semantic split + content-integrity coverage
     const _structScore = isBeforeAfter ? (d.after?.axeCoreAudit?.score ?? d.after?.axeScore) : (d.axeCoreAudit?.score ?? d.axeScore);
@@ -14757,7 +14761,7 @@ tr { page-break-inside: avoid; }
             if (!wcag) { const m = (i.issue || '').match(/(\d+\.\d+\.\d+)/); if (m) wcag = m[1]; }
             let issueText = (i.issue || '').replace(/\s*\(?\s*(?:WCAG\s*)?\d+\.\d+\.\d+\s*\)?\s*$/gi, '').trim();
             if (issueText && !/[.!?)\]]$/.test(issueText)) issueText += '.';
-            html += `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px">${escHtml(issueText)}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;font-family:monospace">${wcag || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;font-size:12px;font-weight:bold;color:#d97706">${i.severity || 'review'}</td></tr>`;
+            html += `<tr><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:13px">${escHtml(issueText)}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b;text-align:center;font-family:monospace">${escHtml(wcag) || 'N/A'}</td><td style="padding:10px 12px;border:1px solid #e2e8f0;text-align:center;font-size:12px;font-weight:bold;color:#d97706">${i.severity || 'review'}</td></tr>`;
           });
           html += `</tbody></table>`;
         } else {

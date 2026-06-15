@@ -2568,6 +2568,7 @@ This is a rough estimate \u2014 actual cost varies with file complexity (scanned
       const done = queue.filter((f) => f.status === "done");
       const failed = queue.filter((f) => f.status === "failed");
       const date = (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      const esc = (x) => String(x == null ? "" : x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       const excellent = done.filter((f) => (f.result?.afterScore || 0) >= 90);
       const good = done.filter((f) => (f.result?.afterScore || 0) >= 70 && (f.result?.afterScore || 0) < 90);
       const needsWork = done.filter((f) => (f.result?.afterScore || 0) < 70);
@@ -2633,7 +2634,7 @@ tr:hover{background:#1e293b50}
       <div class="chart">${done.map((f) => {
         const s = f.result?.afterScore || 0;
         const color = s >= 90 ? "#4ade80" : s >= 70 ? "#fbbf24" : "#f87171";
-        return '<div class="chart-bar" style="height:' + Math.max(4, s) + "%;background:" + color + '" title="' + f.fileName + ": " + s + '/100"></div>';
+        return '<div class="chart-bar" style="height:' + Math.max(4, s) + "%;background:" + color + '" title="' + esc(f.fileName) + ": " + s + '/100"></div>';
       }).join("")}</div>
       <div style="font-size:10px;color:#64748b;margin-top:8px;text-align:center">Each bar = one document (height = score)</div>
     </div>
@@ -2661,12 +2662,12 @@ tr:hover{background:#1e293b50}
         const r = f.result;
         const after = r?.afterScore || 0;
         const cls = after >= 90 ? "excellent" : after >= 70 ? "good" : "needs-work";
-        return "<tr><td>" + (i + 1) + "</td><td>" + f.fileName + "</td><td>" + (r?.beforeScore ?? "\u2014") + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? "\u2014") + "</span></td><td>+" + (r ? r.afterScore - r.beforeScore : "\u2014") + "</td><td>" + (r?.autoFixPasses ?? "\u2014") + "</td><td>" + (f.status === "done" ? "\u2705" : "\u274C " + (f.error || "")) + "</td></tr>";
+        return "<tr><td>" + (i + 1) + "</td><td>" + esc(f.fileName) + "</td><td>" + (r?.beforeScore ?? "\u2014") + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? "\u2014") + "</span></td><td>+" + (r ? r.afterScore - r.beforeScore : "\u2014") + "</td><td>" + (r?.autoFixPasses ?? "\u2014") + "</td><td>" + (f.status === "done" ? "\u2705" : "\u274C " + esc(f.error || "")) + "</td></tr>";
       }).join("")}
   </tbody></table>
 </div>
 
-${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (Training Priorities)</h2>' + topViolations.map(([v, count]) => '<div class="violation-row"><span>' + v + '</span><span style="font-weight:800;color:#f87171">' + count + " docs</span></div>").join("") + '<p style="font-size:11px;color:#64748b;margin-top:12px">These violations appeared across multiple documents \u2014 addressing them through faculty training would have the highest impact.</p></div>' : ""}
+${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (Training Priorities)</h2>' + topViolations.map(([v, count]) => '<div class="violation-row"><span>' + esc(v) + '</span><span style="font-weight:800;color:#f87171">' + count + " docs</span></div>").join("") + '<p style="font-size:11px;color:#64748b;margin-top:12px">These violations appeared across multiple documents \u2014 addressing them through faculty training would have the highest impact.</p></div>' : ""}
 
 <div class="section">
   <h2>Compliance Summary</h2>
