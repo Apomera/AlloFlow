@@ -364,7 +364,12 @@ function _htmlToOdtContentXml(html) {
       body.push('<text:list text:style-name="' + (b.ordered ? "L_Number" : "L_Bullet") + '">' + (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + "</text:p></text:list-item>").join("") + "</text:list>");
     } else if (b.type === "table") {
       const cols = b.rows && b.rows[0] && b.rows[0].cells.length || 1;
-      body.push('<table:table table:name="Table1"><table:table-column table:number-columns-repeated="' + cols + '"/>' + (b.rows || []).map((r) => "<table:table-row>" + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + "</text:p></table:table-cell>").join("") + "</table:table-row>").join("") + "</table:table>");
+      const _odtRow = (r) => "<table:table-row>" + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + "</text:p></table:table-cell>").join("") + "</table:table-row>";
+      const _rows = b.rows || [];
+      let _hdr = 0;
+      while (_hdr < _rows.length && _rows[_hdr].header) _hdr++;
+      const _hdrXml = _hdr > 0 ? "<table:table-header-rows>" + _rows.slice(0, _hdr).map(_odtRow).join("") + "</table:table-header-rows>" : "";
+      body.push('<table:table table:name="Table1"><table:table-column table:number-columns-repeated="' + cols + '"/>' + _hdrXml + _rows.slice(_hdr).map(_odtRow).join("") + "</table:table>");
     } else if (b.type === "image") {
       if (b.alt) body.push('<text:p text:style-name="Standard">[' + _expXmlEsc(b.alt) + "]</text:p>");
     } else if (b.type === "pagebreak") {

@@ -343,9 +343,17 @@ function _htmlToOdtContentXml(html) {
         '</text:list>');
     } else if (b.type === 'table') {
       const cols = (b.rows && b.rows[0] && b.rows[0].cells.length) || 1;
+      const _odtRow = (r) => '<table:table-row>' + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>').join('') + '</table:table-row>';
+      const _rows = b.rows || [];
+      // ODF: wrap the leading header row(s) in <table:table-header-rows> so AT announces them as
+      // headers (audit #19 — every row used to serialize as a plain table-row, so DOCX/DTBook kept
+      // header semantics but ODT alone lost them). r.header is the spec's all-th/<thead> flag.
+      let _hdr = 0;
+      while (_hdr < _rows.length && _rows[_hdr].header) _hdr++;
+      const _hdrXml = _hdr > 0 ? '<table:table-header-rows>' + _rows.slice(0, _hdr).map(_odtRow).join('') + '</table:table-header-rows>' : '';
       body.push('<table:table table:name="Table1">' +
         '<table:table-column table:number-columns-repeated="' + cols + '"/>' +
-        (b.rows || []).map((r) => '<table:table-row>' + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>').join('') + '</table:table-row>').join('') +
+        _hdrXml + _rows.slice(_hdr).map(_odtRow).join('') +
         '</table:table>');
     } else if (b.type === 'image') {
       // ODT image embedding needs Pictures/ + draw:frame; degrade to alt text so

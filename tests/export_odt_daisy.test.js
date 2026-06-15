@@ -297,3 +297,20 @@ describe('loose text between blocks is preserved (audit #8 — container-text dr
     expect(xml).not.toMatch(/<text:p[^>]*>\s*<\/text:p>/); // no empty paragraph from whitespace
   });
 });
+
+describe('ODT table header semantics (audit #19)', () => {
+  it('wraps the leading header row in <table:table-header-rows>, body rows after', () => {
+    const xml = _htmlToOdtContentXml(wrap('<table><thead><tr><th>Name</th><th>Score</th></tr></thead><tbody><tr><td>Ada</td><td>9</td></tr></tbody></table>'));
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).toContain('<table:table-header-rows>');
+    const header = xml.slice(xml.indexOf('<table:table-header-rows>'), xml.indexOf('</table:table-header-rows>'));
+    expect(header).toContain('Name');
+    expect(header).toContain('Score');
+    expect(header).not.toContain('Ada'); // the data row is NOT inside the header wrapper
+  });
+  it('a header-less table emits no table-header-rows wrapper', () => {
+    const xml = _htmlToOdtContentXml(wrap('<table><tbody><tr><td>a</td><td>b</td></tr></tbody></table>'));
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).not.toContain('<table:table-header-rows>');
+  });
+});
