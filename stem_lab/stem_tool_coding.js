@@ -994,6 +994,81 @@
             upd('robotBlocks', robotBlocks.filter(function(_, i) { return i !== idx; }));
           }
 
+          // ── Robot tree ops by PATH (B4). path = [i] | [i,"children",j] |
+          //    [i,"elseChildren",j] | nested. Immutable; depth capped at 2 in the UI. ──
+          function robotRemoveAt(path) {
+            function rec(arr, p) {
+              if (p.length === 1) return arr.filter(function (_, i) { return i !== p[0]; });
+              return arr.map(function (b, i) {
+                if (i !== p[0]) return b;
+                var nb = Object.assign({}, b); var key = p[1];
+                nb[key] = rec(nb[key] || [], p.slice(2)); return nb;
+              });
+            }
+            upd('robotBlocks', rec(robotBlocks, path));
+          }
+          function robotAddChild(parentPath, key, type) {
+            var nbk = { type: type };
+            if (type === 'repeatR') { nbk.times = 3; nbk.children = []; }
+            if (type === 'ifWall' || type === 'ifGem') { nbk.children = []; nbk.elseChildren = []; }
+            function rec(arr, p) {
+              return arr.map(function (b, i) {
+                if (i !== p[0]) return b;
+                var nb = Object.assign({}, b);
+                if (p.length === 1) { nb[key] = (nb[key] || []).concat([nbk]); return nb; }
+                var ck = p[1]; nb[ck] = rec(nb[ck] || [], p.slice(2)); return nb;
+              });
+            }
+            upd('robotBlocks', rec(robotBlocks, parentPath));
+          }
+          function robotSetTimes(path, n) {
+            function rec(arr, p) {
+              return arr.map(function (b, i) {
+                if (i !== p[0]) return b;
+                var nb = Object.assign({}, b);
+                if (p.length === 1) { nb.times = n; return nb; }
+                var ck = p[1]; nb[ck] = rec(nb[ck] || [], p.slice(2)); return nb;
+              });
+            }
+            upd('robotBlocks', rec(robotBlocks, path));
+          }
+          var ROBOT_LEAF = ["moveForward", "turnRight", "turnLeft", "collectGem", "paintCell"];
+          function renderRobotNode(block, path, depth) {
+            var bdef = ROBOT_BLOCKS.find(function (rb) { return rb.type === block.type; });
+            var isLoop = block.type === 'repeatR' || block.type === 'whileNotGoal';
+            var isCond = block.type === 'ifWall' || block.type === 'ifGem';
+            var isControl = isLoop || isCond;
+            // conditionals may be added only as direct children of a top-level loop
+            var addTypes = (isLoop && depth === 0) ? ROBOT_LEAF.concat(["ifWall", "ifGem"]) : ROBOT_LEAF;
+            function addToolbox(key) {
+              return h("div", { className: "flex gap-1 flex-wrap mt-1" },
+                ROBOT_BLOCKS.filter(function (rb) { return addTypes.indexOf(rb.type) >= 0; }).map(function (rb) {
+                  return h("button", { "aria-label": "Add " + (key === "elseChildren" ? "else " : "") + rb.label, key: key + rb.type,
+                    onClick: function () { robotAddChild(path, key, rb.type); },
+                    className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
+                    style: { backgroundColor: rb.color + "80" } }, "+ " + rb.label.split(" ").slice(1).join(" "));
+                })
+              );
+            }
+            return h("div", { key: path.join("-") },
+              h("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : "var(--allo-stem-text-soft, #94a3b8)" } },
+                h("span", { className: "flex-1" }, bdef ? bdef.label : block.type),
+                block.type === 'repeatR' && h("input", { type: "number", min: 1, max: 20, value: block.times || 3, "aria-label": "Repeat count",
+                  onChange: function (e) { robotSetTimes(path, parseInt(e.target.value) || 3); },
+                  className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[11px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400" }),
+                h("button", { "aria-label": "Remove robot block", onClick: function () { robotRemoveAt(path); }, className: "text-white/60 hover:text-white text-xs px-1" }, "\u2715")
+              ),
+              isControl && depth < 2 && h("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + "60" : "#475569" } },
+                (block.children || []).map(function (child, ci) { return renderRobotNode(child, path.concat(["children", ci]), depth + 1); }),
+                addToolbox("children"),
+                isCond && h("div", null,
+                  h("div", { className: "text-[11px] font-bold text-slate-400 mt-1" }, "ELSE:"),
+                  (block.elseChildren || []).map(function (child, ci) { return renderRobotNode(child, path.concat(["elseChildren", ci]), depth + 1); }),
+                  addToolbox("elseChildren")
+                )
+              )
+            );
+          }
           function addRobotChildBlock(parentIdx, type, isElse) {
             var def = ROBOT_BLOCKS.find(function(b) { return b.type === type; });
             var newBlock = { type: type };
@@ -2218,70 +2293,7 @@
                   robotBlocks.length === 0 ?
                     React.createElement("p", { className: "text-[11px] text-slate-600 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
                     React.createElement("div", { className: "space-y-1" },
-                      robotBlocks.map(function(b, bi) {
-                        var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
-                        return React.createElement("div", { key: bi },
-                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                            React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
-                            b.type === 'repeatR' && React.createElement("input", {
-                              type: "number", min: 1, max: 20, value: b.times || 3,
-                              'aria-label': 'Repeat count',
-                              onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
-                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[11px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
-                            }),
-                            React.createElement("button", { "aria-label": "Remove robot block",
-                              onClick: function() { removeRobotBlock(bi); },
-                              className: "text-white/60 hover:text-white text-xs px-1"
-                            }, "\u2715")
-                          ),
-                          (b.type === 'repeatR' || b.type === 'ifWall' || b.type === 'ifGem' || b.type === 'whileNotGoal') &&
-                            React.createElement("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + '60' : '#475569' } },
-                              (b.children || []).map(function(child, ci) {
-                                var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
-                                  React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                  React.createElement("button", { "aria-label": "Remove child block", onClick: function() {
-                                    var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
-                                    upd('robotBlocks', updated);
-                                  }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
-                                );
-                              }),
-                              React.createElement("div", { className: "flex gap-1 flex-wrap" },
-                                ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                  return React.createElement("button", { "aria-label": "Add child command: " + rb.label,
-                                    key: rb.type,
-                                    onClick: function() { addRobotChildBlock(bi, rb.type, false); },
-                                    className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
-                                    style: { backgroundColor: rb.color + '80' }
-                                  }, "+ " + rb.label.split(' ').slice(1).join(' '));
-                                })
-                              ),
-                              (b.type === 'ifWall' || b.type === 'ifGem') && React.createElement("div", null,
-                                React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-1" }, "ELSE:"),
-                                (b.elseChildren || []).map(function(child, ci) {
-                                  var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color: 'var(--allo-stem-text-soft, #475569)' } },
-                                    React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-                                    React.createElement("button", { "aria-label": "Remove else block", onClick: function() {
-                                      var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
-                                      upd('robotBlocks', updated);
-                                    }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
-                                  );
-                                }),
-                                React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
-                                  ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-                                    return React.createElement("button", { "aria-label": "Add else block: " + rb.label,
-                                      key: 'e' + rb.type,
-                                      onClick: function() { addRobotChildBlock(bi, rb.type, true); },
-                                      className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
-                                      style: { backgroundColor: rb.color + '60' }
-                                    }, "+ " + rb.label.split(' ').slice(1).join(' '));
-                                  })
-                                )
-                              )
-                            )
-                        );
-                      })
+                      robotBlocks.map(function (b, bi) { return renderRobotNode(b, [bi], 0); })
                     )
                 )
               ),
