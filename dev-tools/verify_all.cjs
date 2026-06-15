@@ -139,6 +139,11 @@ const checks = [
     description: 'Every lang/*.js parses as JSON (catches corruption before deploy)',
   },
   {
+    name: 'Ctrl+K command palette i18n drift',
+    cmd: ['node', 'dev-tools/check_cmd_i18n.cjs', '--quiet'],
+    description: 'cmd_keys_en.json matches the source AND every lang pack has all cmd.*/palette.* keys — catches a new command silently regressing the palette to English-only. Fix: extract_cmd_keys.cjs then merge_cmd_keys.cjs.',
+  },
+  {
     name: 'Translation quality (i18n CI guard)',
     cmd: ['node', 'dev-tools/i18n/check_translation_quality.cjs', '--quiet'],
     description: 'Contraction stubs / compound stubs / Matter-calque / ASCII-density in non-Latin packs. Informational — promote to blocking after a future Spanglish sweep drives ascii-density to ~0.',

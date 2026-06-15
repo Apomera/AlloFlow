@@ -11,6 +11,8 @@ name: verify
 #                    * dead modules: files that don't parse / won't load
 #                      (platetectonics) — check_render_refs parse-gating
 #                    * corrupt lang packs (check_lang_json)
+#                    * Ctrl+K command palette regressing to English-only —
+#                      manifest stale or a pack missing keys (check_cmd_i18n)
 #                    * broken AlloModules registry / view-module props / icons
 #                  Make this a REQUIRED status check in branch protection to
 #                  truly block merges to main.

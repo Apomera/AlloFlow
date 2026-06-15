@@ -4,36 +4,20 @@
 // allo_commands_source.jsx, plus the dynamic palette.group.* / palette.ctx.* keys whose
 // English lives in the GROUP_LABEL_FALLBACK / CONTEXT_LABEL_FALLBACK maps.
 // Output: dev-tools/i18n/cmd_keys_en.json  { "cmd.open_stem_lab": "Open the STEM Lab", ... }
+//
+// Importable: require() returns { extractFromSource, SRC, OUT }. Run directly to (re)write OUT.
 const fs = require('fs');
 const path = require('path');
 
 const SRC = path.join(__dirname, '..', '..', 'allo_commands_source.jsx');
 const OUT = path.join(__dirname, 'cmd_keys_en.json');
-const src = fs.readFileSync(SRC, 'utf8');
 
-const out = {};
-
-// 1) Inline t('key','value') / t("key","value") fallbacks for cmd.* and palette.* literal keys.
-//    Two passes (one per value-quote style) so a value containing the other quote is safe.
-const patterns = [
-  /t\(\s*'((?:cmd|palette)\.[a-z0-9_.]+)'\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)/g,
-  /t\(\s*'((?:cmd|palette)\.[a-z0-9_.]+)'\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)/g,
-];
 const unescape = (s) => s
   .replace(/\\u2019/g, '’').replace(/\\u2026/g, '…')
   .replace(/\\u2192/g, '→').replace(/\\n/g, '\n')
   .replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-for (const re of patterns) {
-  let m;
-  while ((m = re.exec(src)) !== null) {
-    const key = m[1];
-    const val = unescape(m[2]);
-    if (!(key in out)) out[key] = val;
-  }
-}
 
-// 2) Dynamic palette.group.<g> and palette.ctx.<c> — English from the *_FALLBACK maps.
-function parseMap(name) {
+function parseMap(src, name) {
   const re = new RegExp('const ' + name + '\\s*=\\s*\\{([^}]*)\\}', 'm');
   const block = src.match(re);
   const map = {};
@@ -44,17 +28,38 @@ function parseMap(name) {
   }
   return map;
 }
-const groups = parseMap('GROUP_LABEL_FALLBACK');
-for (const g of Object.keys(groups)) out['palette.group.' + g] = groups[g];
-const ctx = parseMap('CONTEXT_LABEL_FALLBACK');
-for (const c of Object.keys(ctx)) out['palette.ctx.' + c] = ctx[c];
 
-// Stable sort by key for clean diffs.
-const sorted = {};
-for (const k of Object.keys(out).sort()) sorted[k] = out[k];
-fs.writeFileSync(OUT, JSON.stringify(sorted, null, 2) + '\n', 'utf8');
+// Returns a key-sorted { "cmd.x": "English", ... } object extracted from the source.
+function extractFromSource(srcPath) {
+  const src = fs.readFileSync(srcPath || SRC, 'utf8');
+  const out = {};
+  // 1) Inline t('key','value') / t("key","value") fallbacks for cmd.*/palette.* literal keys.
+  const patterns = [
+    /t\(\s*'((?:cmd|palette)\.[a-z0-9_.]+)'\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)/g,
+    /t\(\s*'((?:cmd|palette)\.[a-z0-9_.]+)'\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)/g,
+  ];
+  for (const re of patterns) {
+    let m;
+    while ((m = re.exec(src)) !== null) { if (!(m[1] in out)) out[m[1]] = unescape(m[2]); }
+  }
+  // 2) Dynamic palette.group.<g> / palette.ctx.<c> — English from the *_FALLBACK maps.
+  const groups = parseMap(src, 'GROUP_LABEL_FALLBACK');
+  for (const g of Object.keys(groups)) out['palette.group.' + g] = groups[g];
+  const ctx = parseMap(src, 'CONTEXT_LABEL_FALLBACK');
+  for (const c of Object.keys(ctx)) out['palette.ctx.' + c] = ctx[c];
+  const sorted = {};
+  for (const k of Object.keys(out).sort()) sorted[k] = out[k];
+  return sorted;
+}
 
-const cmdN = Object.keys(sorted).filter((k) => k.startsWith('cmd.')).length;
-const palN = Object.keys(sorted).filter((k) => k.startsWith('palette.')).length;
-console.log(`[extract_cmd_keys] ${Object.keys(sorted).length} keys -> ${path.relative(process.cwd(), OUT)}`);
-console.log(`  cmd.*: ${cmdN}   palette.*: ${palN}`);
+function writeManifest() {
+  const sorted = extractFromSource(SRC);
+  fs.writeFileSync(OUT, JSON.stringify(sorted, null, 2) + '\n', 'utf8');
+  const cmdN = Object.keys(sorted).filter((k) => k.startsWith('cmd.')).length;
+  const palN = Object.keys(sorted).filter((k) => k.startsWith('palette.')).length;
+  console.log(`[extract_cmd_keys] ${Object.keys(sorted).length} keys -> ${path.relative(process.cwd(), OUT)}`);
+  console.log(`  cmd.*: ${cmdN}   palette.*: ${palN}`);
+}
+
+module.exports = { extractFromSource, SRC, OUT };
+if (require.main === module) writeManifest();
