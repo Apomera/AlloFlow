@@ -11285,6 +11285,41 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   if (!window.__pdfPageCanvases) window.__pdfPageCanvases = {};
                   window.__pdfPageCanvases[pg] = canvas.toDataURL('image/png');
 
+                  // ── Solid-fill / near-uniform crop rejector (2026-06-14) ──
+                  // A complex table or vector "visual organizer" is often tagged as an
+                  // image but has NO paintImageXObject, so the crop math (or the blind
+                  // fallback band-crop below) lands on a flat background-fill region —
+                  // shipping a giant solid-colour block (the "it just looks all blue"
+                  // bug). Downscale the crop to 24×24 (averaging) and reject it if it's
+                  // mostly transparent OR >92% within a tight delta of its mean colour:
+                  // a real figure keeps colour variance at 24×24; a fill collapses to one
+                  // colour. Rejected crops fall through to the text placeholder (the
+                  // figure's description) instead of a meaningless coloured rectangle.
+                  const _cropIsNearUniform = (srcCanvas) => {
+                    try {
+                      const S = 24;
+                      const tiny = document.createElement('canvas'); tiny.width = S; tiny.height = S;
+                      const tctx = tiny.getContext('2d');
+                      tctx.drawImage(srcCanvas, 0, 0, S, S);
+                      const data = tctx.getImageData(0, 0, S, S).data;
+                      const total = data.length / 4;
+                      let count = 0, transparent = 0, sumR = 0, sumG = 0, sumB = 0;
+                      for (let i = 0; i < data.length; i += 4) {
+                        if (data[i + 3] < 16) { transparent++; continue; }
+                        sumR += data[i]; sumG += data[i + 1]; sumB += data[i + 2]; count++;
+                      }
+                      if (transparent / total > 0.9) return true;
+                      if (!count) return true;
+                      const mR = sumR / count, mG = sumG / count, mB = sumB / count;
+                      let near = 0;
+                      for (let i = 0; i < data.length; i += 4) {
+                        if (data[i + 3] < 16) continue;
+                        if (Math.abs(data[i] - mR) + Math.abs(data[i + 1] - mG) + Math.abs(data[i + 2] - mB) < 24) near++;
+                      }
+                      return near / count > 0.92;
+                    } catch (_) { return false; }
+                  };
+
                   if (imageOps.length > 0) {
                     // Find image positions from the transform matrices in the operator list
                     const imagePositions = [];
@@ -11318,10 +11353,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                           crop.width = Math.round(pos.w);
                           crop.height = Math.round(pos.h);
                           crop.getContext('2d').drawImage(canvas, Math.round(pos.x), Math.round(pos.y), Math.round(pos.w), Math.round(pos.h), 0, 0, crop.width, crop.height);
-                          const dataUrl = crop.toDataURL('image/png');
-                          extractedImages[img.idx].generatedSrc = dataUrl;
-                          extractedImages[img.idx].cropData = { page: pg, x: Math.round(pos.x), y: Math.round(pos.y), w: Math.round(pos.w), h: Math.round(pos.h), canvasW: canvas.width, canvasH: canvas.height };
-                          warnLog(`[PDF Fix] Cropped image from page ${pg}: ${Math.round(pos.w)}x${Math.round(pos.h)} at (${Math.round(pos.x)},${Math.round(pos.y)})`);
+                          if (_cropIsNearUniform(crop)) {
+                            // Solid-fill crop (a vector organizer's background, or a bad
+                            // transform landing off the real glyphs) — don't embed a blue
+                            // block; leave generatedSrc unset so it degrades to the text
+                            // placeholder (its description) downstream.
+                            warnLog(`[PDF Fix] Skipped near-uniform (solid-fill) crop on page ${pg} — degrading to text placeholder`);
+                          } else {
+                            const dataUrl = crop.toDataURL('image/png');
+                            extractedImages[img.idx].generatedSrc = dataUrl;
+                            extractedImages[img.idx].cropData = { page: pg, x: Math.round(pos.x), y: Math.round(pos.y), w: Math.round(pos.w), h: Math.round(pos.h), canvasW: canvas.width, canvasH: canvas.height };
+                            warnLog(`[PDF Fix] Cropped image from page ${pg}: ${Math.round(pos.w)}x${Math.round(pos.h)} at (${Math.round(pos.x)},${Math.round(pos.y)})`);
+                          }
                         } catch(cropErr) { warnLog(`[PDF Fix] Image crop failed:`, cropErr); }
                       }
                     }
@@ -11337,8 +11380,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       const crop = document.createElement('canvas');
                       crop.width = canvas.width; crop.height = h;
                       crop.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
-                      extractedImages[img.idx].generatedSrc = crop.toDataURL('image/jpeg', 0.85);
-                      warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (${pos})`);
+                      // The fallback is a blind position-guess (no XObject geometry), so it
+                      // is the most likely to land on a solid fill / wrong band — the prime
+                      // source of the "all blue" block and misplaced crops. Only keep it if
+                      // it actually captured a varied (image-like) region.
+                      if (_cropIsNearUniform(crop)) {
+                        warnLog(`[PDF Fix] Skipped near-uniform fallback crop on page ${pg} (${pos}) — degrading to text placeholder`);
+                      } else {
+                        extractedImages[img.idx].generatedSrc = crop.toDataURL('image/jpeg', 0.85);
+                        warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (${pos})`);
+                      }
                     }
                   }
                 } catch(pgErr) { _imageFailureCount++; warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr); }
