@@ -272,5 +272,9 @@
   "palette.nav": "ዳስስ",
   "palette.no_match": "የተዛመደ ትዕዛዝ የለም። የቦት ውይይቱ (እና በቅርቡ ድምፅ) ነፃ-ቅርጽ ጥያቄዎችን ይረዳል።",
   "palette.placeholder": "ትዕዛዝ ይተይቡ — “ትልቅ ጽሑፍ”፣ “educator hub”፣ “ይህን ገጽ አንብብ”…",
-  "palette.run": "አስኪድ"
+  "palette.run": "አስኪድ",
+  "cmd.set_ui_language": "የመገናኛ ገጽታ ቋንቋ ለውጥ",
+  "cmd.set_ui_language_done": "በራስጌው ላይ ወዳለው የቋንቋ መምረጫ መርቼዎታለሁ — ቋንቋዎን እዚያ ይምረጡ።",
+  "cmd.set_ui_language_hint": "በራስጌው ላይ ወዳለው የቋንቋ መምረጫ ይዝለሉ",
+  "cmd.set_ui_language_miss": "የመገናኛ ገጽታ ቋንቋ መምረጫው በላይኛው ምናሌ አሞሌ ላይ ይገኛል።"
 }

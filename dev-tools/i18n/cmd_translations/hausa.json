@@ -272,5 +272,9 @@
   "palette.nav": "kewaya",
   "palette.no_match": "Babu umarni mai dacewa. Hirar bot (kuma nan ba da jimawa ba murya) tana fahimtar buƙatu na 'yanci.",
   "palette.placeholder": "Rubuta umarni — “babban rubutu”, “cibiyar malamai”, “karanta wannan shafin”…",
-  "palette.run": "gudanar"
+  "palette.run": "gudanar",
+  "cmd.set_ui_language": "Canza yaren ƙatanga",
+  "cmd.set_ui_language_done": "Mun nuna maka mai zaɓen yare a saman shafin — zaɓi yarenka a wurin.",
+  "cmd.set_ui_language_hint": "Tsallaka zuwa mai zaɓen yare da ke saman shafin",
+  "cmd.set_ui_language_miss": "Mai zaɓen yaren ƙatanga yana cikin sandar menu na sama."
 }

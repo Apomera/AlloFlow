@@ -272,5 +272,9 @@
   "palette.nav": "mus taug",
   "palette.no_match": "Tsis muaj lus haujlwm phim. Kev sib tham bot (thiab tsis ntev no suab) nkag siab cov lus thov dawb.",
   "palette.placeholder": "Ntaus ib lo lus haujlwm — “ntawv loj dua”, “educator hub”, “nyeem nplooj no”…",
-  "palette.run": "ua"
+  "palette.run": "ua",
+  "cmd.set_ui_language": "Hloov cov lus ntawm lub vijtsam",
+  "cmd.set_ui_language_done": "Tau coj koj mus rau qhov xaiv lus nyob saum toj — xaiv koj hom lus ntawd.",
+  "cmd.set_ui_language_hint": "Mus ncaj rau qhov xaiv lus nyob saum toj",
+  "cmd.set_ui_language_miss": "Qhov xaiv cov lus ntawm lub vijtsam nyob ntawm txoj kab xaim saum toj."
 }

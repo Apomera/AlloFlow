@@ -272,5 +272,9 @@
   "palette.nav": "etetal",
   "palette.no_match": "Ejjeḷọk command ejjet. Chat in bot eo (im ṃōttan iien ainikien) ej meḷeḷe kajjitōk ko reanemkwōj.",
   "palette.placeholder": "Taip juon command — “leta eḷapḷọk”, “educator hub”, “riit peij in”…",
-  "palette.run": "kōṃṃan"
+  "palette.run": "kōṃṃan",
+  "cmd.set_ui_language": "Ukot kajin in interface eo",
+  "cmd.set_ui_language_done": "Iaar jitoñe eok ñan kein kālet kajin eo ilo bar eo ilōñ — kālet kajin eo am ijeṇ.",
+  "cmd.set_ui_language_hint": "Etal ñan kein kālet kajin eo ilo bar eo ilōñ",
+  "cmd.set_ui_language_miss": "Kein kālet kajin in interface eo ej pād ilo menu bar eo ilōñtata."
 }

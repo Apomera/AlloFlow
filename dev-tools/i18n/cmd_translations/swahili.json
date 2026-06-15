@@ -272,5 +272,9 @@
   "palette.nav": "nenda",
   "palette.no_match": "Hakuna amri inayolingana. Gumzo la roboti (na hivi karibuni sauti) huelewa maombi ya namna yoyote.",
   "palette.placeholder": "Andika amri — “maandishi makubwa”, “kitovu cha mwalimu”, “soma ukurasa huu”…",
-  "palette.run": "endesha"
+  "palette.run": "endesha",
+  "cmd.set_ui_language": "Badilisha lugha ya kiolesura",
+  "cmd.set_ui_language_done": "Nimekuelekeza kwenye kichagua-lugha kilicho kwenye kichwa cha ukurasa — chagua lugha yako hapo.",
+  "cmd.set_ui_language_hint": "Rukia hadi kichagua-lugha kilicho kwenye kichwa cha ukurasa",
+  "cmd.set_ui_language_miss": "Kichagua-lugha ya kiolesura kiko kwenye upau wa menyu wa juu."
 }

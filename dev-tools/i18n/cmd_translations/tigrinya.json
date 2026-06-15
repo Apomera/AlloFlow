@@ -272,5 +272,9 @@
   "palette.nav": "ምልሳስ",
   "palette.no_match": "ዝሰማማዕ ትእዛዝ የለን። ናይ ቦት ዕላል (ብቐረባ ድማ ድምጺ) ናጻ ጠለባት ይርዳእ።",
   "palette.placeholder": "ትእዛዝ ጽሓፍ — “ዓቢ ጽሑፍ”፣ “educator hub”፣ “ነዛ ገጽ ኣንብብ”…",
-  "palette.run": "ኣካይድ"
+  "palette.run": "ኣካይድ",
+  "cmd.set_ui_language": "ቋንቋ መተሓላለፊ ቀይር",
+  "cmd.set_ui_language_done": "ናብቲ ኣብ ላዕለዋይ መስመር ዘሎ መሐረዪ ቋንቋ መሪሕናካ — ቋንቋኻ ካብኡ ምረጽ።",
+  "cmd.set_ui_language_hint": "ናብቲ ኣብ ላዕለዋይ መስመር ዘሎ መሐረዪ ቋንቋ ዘል",
+  "cmd.set_ui_language_miss": "መሐረዪ ቋንቋ መተሓላለፊ ኣብቲ ላዕለዋይ መስመር ሜኑ ይርከብ።"
 }

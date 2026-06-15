@@ -12182,7 +12182,11 @@
     "zen_off_hint": "Hmaiawng kha ṭhanter",
     "zen_on": "Zen mode ah lut",
     "zen_on_done": "Zen mode a um — kir awkah Ctrl+K hreh i “exit zen” ṭuan.",
-    "zen_on_hint": "Sungh lawng hlah in zafa thup"
+    "zen_on_hint": "Sungh lawng hlah in zafa thup",
+    "set_ui_language": "Hmanhnak holh thlennak",
+    "set_ui_language_done": "A lu (header) i holh thimnak ah kan in hruai cang — cucaah nangmah holh kha cuka ah thim.",
+    "set_ui_language_hint": "A lu (header) i holh thimnak ah kal",
+    "set_ui_language_miss": "Hmanhnak holh thimnak cu a cunglei menu bar ah a um."
   },
   "palette": {
     "aria": "AlloFlow command palette",

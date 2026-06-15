@@ -12376,7 +12376,11 @@
     "zen_off_hint": "Zongisa interface",
     "zen_on": "Kota na mode zen",
     "zen_on_done": "Mode zen epɛlisami — fina Ctrl+K mpe sala “bima na zen” mpo na kozonga.",
-    "zen_on_hint": "Bomba nyonso longola makambo"
+    "zen_on_hint": "Bomba nyonso longola makambo",
+    "set_ui_language": "Bongola monɔkɔ ya etanda",
+    "set_ui_language_done": "Natindi yo na esika ya kopona monɔkɔ na likoló ya lokasa — pona monɔkɔ na yo wana.",
+    "set_ui_language_hint": "Kende na esika ya kopona monɔkɔ na likoló ya lokasa",
+    "set_ui_language_miss": "Esika ya kopona monɔkɔ ya etanda ezali na molɔngɔ ya menu ya likoló."
   },
   "palette": {
     "aria": "Palette ya mitindo ya AlloFlow",

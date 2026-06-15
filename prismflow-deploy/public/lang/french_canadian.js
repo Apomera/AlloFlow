@@ -12046,7 +12046,11 @@
     "zen_off_hint": "Faire revenir l’interface",
     "zen_on": "Activer le mode zen",
     "zen_on_done": "Mode zen activé — appuyez sur Ctrl+K et lancez « quitter zen » pour revenir.",
-    "zen_on_hint": "Masquer tout sauf le contenu"
+    "zen_on_hint": "Masquer tout sauf le contenu",
+    "set_ui_language": "Changer la langue de l'interface",
+    "set_ui_language_done": "Vous voilà dirigé vers le sélecteur de langue dans l'en-tête — choisissez-y votre langue.",
+    "set_ui_language_hint": "Accéder au sélecteur de langue dans l'en-tête",
+    "set_ui_language_miss": "Le sélecteur de langue de l'interface se trouve dans la barre de menus du haut."
   },
   "palette": {
     "aria": "Palette de commandes AlloFlow",

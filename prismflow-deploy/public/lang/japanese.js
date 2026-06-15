@@ -12236,7 +12236,11 @@
     "zen_off_hint": "インターフェースを元に戻す",
     "zen_on": "禅モードに入る",
     "zen_on_done": "禅モードがオンになりました — Ctrl+K を押して「禅を終了」を実行すると戻れます。",
-    "zen_on_hint": "内容以外をすべて隠す"
+    "zen_on_hint": "内容以外をすべて隠す",
+    "set_ui_language": "表示言語を変更",
+    "set_ui_language_done": "ヘッダーの言語選択メニューを表示しました — そこで言語を選んでください。",
+    "set_ui_language_hint": "ヘッダーの言語選択メニューに移動",
+    "set_ui_language_miss": "表示言語の選択メニューは上部のメニューバーにあります。"
   },
   "palette": {
     "aria": "AlloFlow コマンドパレット",

@@ -12376,7 +12376,11 @@
     "zen_off_hint": "Garura imiterere y’imbonerahamwe",
     "zen_on": "Injira mu buryo bwa zen",
     "zen_on_done": "Uburyo bwa zen bwafunguwe — kanda Ctrl+K maze ukore “exit zen” kugira ngo ugaruke.",
-    "zen_on_hint": "Hisha byose usigaze ibikubiyemo"
+    "zen_on_hint": "Hisha byose usigaze ibikubiyemo",
+    "set_ui_language": "Hindura ururimi rw'imbonerahamwe",
+    "set_ui_language_done": "Twakwerekeje ku gahitamo k'ururimi kari mu mutwe — hitamo ururimi rwawe aho.",
+    "set_ui_language_hint": "Simbukira ku gahitamo k'ururimi kari mu mutwe",
+    "set_ui_language_miss": "Agahitamo k'ururimi rw'imbonerahamwe kari mu murongo w'ibikubiyemo wo hejuru."
   },
   "palette": {
     "aria": "Urutonde rw’amategeko rwa AlloFlow",

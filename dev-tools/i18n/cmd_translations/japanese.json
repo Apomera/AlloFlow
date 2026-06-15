@@ -272,5 +272,9 @@
   "palette.nav": "移動",
   "palette.no_match": "一致するコマンドがありません。ボットチャット（まもなく音声も）は自由な形式のリクエストを理解します。",
   "palette.placeholder": "コマンドを入力 —「文字を大きく」「Educator Hub」「このページを読む」…",
-  "palette.run": "実行"
+  "palette.run": "実行",
+  "cmd.set_ui_language": "表示言語を変更",
+  "cmd.set_ui_language_done": "ヘッダーの言語選択メニューを表示しました — そこで言語を選んでください。",
+  "cmd.set_ui_language_hint": "ヘッダーの言語選択メニューに移動",
+  "cmd.set_ui_language_miss": "表示言語の選択メニューは上部のメニューバーにあります。"
 }

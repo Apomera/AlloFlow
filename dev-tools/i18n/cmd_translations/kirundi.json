@@ -272,5 +272,9 @@
   "palette.nav": "gendagenda",
   "palette.no_match": "Nta tegeko rihuye. Ikiganiro ca bot (n'ijwi vuba) bitahura ivyifuzo vy'uburyo bwose.",
   "palette.placeholder": "Andika itegeko — “inyandiko nini”, “ihuriro ry'abigisha”, “soma uru rupapuro”…",
-  "palette.run": "kora"
+  "palette.run": "kora",
+  "cmd.set_ui_language": "Hindura ururimi rw'imbonerahamwe",
+  "cmd.set_ui_language_done": "Ndakwerekeje ahatorerwa ururimi mu mutwe w'urupapuro — hitamwo ururimi rwawe ng'aho.",
+  "cmd.set_ui_language_hint": "Ja ahatorerwa ururimi mu mutwe w'urupapuro",
+  "cmd.set_ui_language_miss": "Ahatorerwa ururimi rw'imbonerahamwe haherereye ku murongo w'ibikubiyemwo wo hejuru."
 }

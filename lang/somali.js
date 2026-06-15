@@ -12247,7 +12247,11 @@
     "zen_off_hint": "Soo celi muuqaalka isticmaalaha",
     "zen_on": "Gal habka zen",
     "zen_on_done": "Habka zen waa shidan — riix Ctrl+K oo socodsii “exit zen” si aad ugu soo noqoto.",
-    "zen_on_hint": "Qari wax kasta marka laga reebo nuxurka"
+    "zen_on_hint": "Qari wax kasta marka laga reebo nuxurka",
+    "set_ui_language": "Beddel luqadda interfeyska",
+    "set_ui_language_done": "Waxaan ku tilmaamay doorashada luqadda ee madaxa — halkaas ka dooro luqaddaada.",
+    "set_ui_language_hint": "U bood doorashada luqadda ee madaxa",
+    "set_ui_language_miss": "Doorashada luqadda interfeyska waxay ku taallaa baarka liiska sare."
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",

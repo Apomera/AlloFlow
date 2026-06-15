@@ -12095,7 +12095,11 @@
     "zen_off_hint": "Đưa giao diện trở lại",
     "zen_on": "Vào chế độ thiền",
     "zen_on_done": "Chế độ thiền đã bật — nhấn Ctrl+K và chạy “thoát thiền” để quay lại.",
-    "zen_on_hint": "Ẩn mọi thứ trừ nội dung"
+    "zen_on_hint": "Ẩn mọi thứ trừ nội dung",
+    "set_ui_language": "Thay đổi ngôn ngữ giao diện",
+    "set_ui_language_done": "Đã chỉ bạn đến trình chọn ngôn ngữ ở thanh tiêu đề — hãy chọn ngôn ngữ của bạn tại đó.",
+    "set_ui_language_hint": "Chuyển đến trình chọn ngôn ngữ ở thanh tiêu đề",
+    "set_ui_language_miss": "Trình chọn ngôn ngữ giao diện nằm trên thanh menu trên cùng."
   },
   "palette": {
     "aria": "Bảng lệnh AlloFlow",

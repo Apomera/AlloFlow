@@ -272,5 +272,9 @@
   "palette.nav": "navegar",
   "palette.no_match": "Nenhum comando correspondente. O chat do bot (e em breve a voz) compreende pedidos em linguagem livre.",
   "palette.placeholder": "Escreva um comando — “texto maior”, “centro do educador”, “ler esta página”…",
-  "palette.run": "executar"
+  "palette.run": "executar",
+  "cmd.set_ui_language": "Mudar o idioma da interface",
+  "cmd.set_ui_language_done": "Indicámos-lhe o seletor de idiomas no cabeçalho — escolha aí o seu idioma.",
+  "cmd.set_ui_language_hint": "Ir para o seletor de idiomas no cabeçalho",
+  "cmd.set_ui_language_miss": "O seletor de idioma da interface está na barra de menus superior."
 }

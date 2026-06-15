@@ -12381,7 +12381,11 @@
     "zen_off_hint": "Mú ìbáṣepọ̀ padà wá",
     "zen_on": "Wọ ipò zen",
     "zen_on_done": "Ipò zen ti tàn — tẹ Ctrl+K kí o sì ṣe “jáde ní zen” láti padà wá.",
-    "zen_on_hint": "Fi gbogbo rẹ̀ pamọ́ kò àfi àkóónú"
+    "zen_on_hint": "Fi gbogbo rẹ̀ pamọ́ kò àfi àkóónú",
+    "set_ui_language": "Yí èdè wíwò padà",
+    "set_ui_language_done": "A ti tọ́ ọ sí ibi àyànfẹ́ èdè ní orí àkọlé — yan èdè rẹ níbẹ̀.",
+    "set_ui_language_hint": "Fò lọ sí ibi àyànfẹ́ èdè ní orí àkọlé",
+    "set_ui_language_miss": "Ibi àyànfẹ́ èdè wíwò wà ní orí àjà àkójọ òkè."
   },
   "palette": {
     "aria": "Pátákó àṣẹ AlloFlow",

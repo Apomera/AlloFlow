@@ -272,5 +272,9 @@
   "palette.nav": "navigasi",
   "palette.no_match": "Tidak ada perintah yang cocok. Obrolan bot (dan segera suara) memahami permintaan bebas.",
   "palette.placeholder": "Ketik perintah — “perbesar teks”, “educator hub”, “bacakan halaman ini”…",
-  "palette.run": "jalankan"
+  "palette.run": "jalankan",
+  "cmd.set_ui_language": "Ubah bahasa antarmuka",
+  "cmd.set_ui_language_done": "Mengarahkan Anda ke pemilih bahasa di header — pilih bahasa Anda di sana.",
+  "cmd.set_ui_language_hint": "Lompat ke pemilih bahasa di header",
+  "cmd.set_ui_language_miss": "Pemilih bahasa antarmuka ada di bilah menu atas."
 }

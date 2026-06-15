@@ -272,5 +272,9 @@
   "palette.nav": "导航",
   "palette.no_match": "没有匹配的命令。机器人对话（很快还有语音）可理解自由形式的请求。",
   "palette.placeholder": "输入命令 — “放大文字”、“教育者中心”、“朗读此页”…",
-  "palette.run": "运行"
+  "palette.run": "运行",
+  "cmd.set_ui_language": "更改界面语言",
+  "cmd.set_ui_language_done": "已为你指向页眉中的语言选择器——请在那里选择你的语言。",
+  "cmd.set_ui_language_hint": "跳转到页眉中的语言选择器",
+  "cmd.set_ui_language_miss": "界面语言选择器位于顶部菜单栏中。"
 }

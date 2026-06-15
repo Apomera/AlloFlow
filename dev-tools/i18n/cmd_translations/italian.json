@@ -272,5 +272,9 @@
   "palette.nav": "naviga",
   "palette.no_match": "Nessun comando corrispondente. La chat del bot (e presto la voce) comprende richieste in formato libero.",
   "palette.placeholder": "Digita un comando — “ingrandisci il testo”, “educator hub”, “leggi questa pagina”…",
-  "palette.run": "esegui"
+  "palette.run": "esegui",
+  "cmd.set_ui_language": "Cambia la lingua dell'interfaccia",
+  "cmd.set_ui_language_done": "Ti ho indirizzato al selettore della lingua nell'intestazione — scegli lì la tua lingua.",
+  "cmd.set_ui_language_hint": "Vai al selettore della lingua nell'intestazione",
+  "cmd.set_ui_language_miss": "Il selettore della lingua dell'interfaccia si trova nella barra dei menu in alto."
 }

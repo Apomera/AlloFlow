@@ -12188,7 +12188,11 @@
     "zen_off_hint": "Interface kha let chawh",
     "zen_on": "Zen mode i lut",
     "zen_on_done": "Zen mode a on — let chawh awkah Ctrl+K hndet law “exit zen” run.",
-    "zen_on_hint": "Content lawng si lo a vai thuhter"
+    "zen_on_hint": "Content lawng si lo a vai thuhter",
+    "set_ui_language": "Hmanhruainak ṭong thlennak",
+    "set_ui_language_done": "Lutu peng i a um ṭong thimnak ah kan thlahpi cang — cuka ah na ṭong thim ṭhan.",
+    "set_ui_language_hint": "Lutu peng i a um ṭong thimnak ah kal",
+    "set_ui_language_miss": "Hmanhruainak ṭong thimnak cu a lawng peng menu bar ah a um."
   },
   "palette": {
     "aria": "AlloFlow command palette",

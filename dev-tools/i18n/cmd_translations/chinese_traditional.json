@@ -272,5 +272,9 @@
   "palette.nav": "瀏覽",
   "palette.no_match": "找不到符合的指令。機器人對話（以及即將推出的語音）能理解自由輸入的需求。",
   "palette.placeholder": "輸入指令 —「放大文字」、「教育者中心」、「讀出這個頁面」…",
-  "palette.run": "執行"
+  "palette.run": "執行",
+  "cmd.set_ui_language": "變更介面語言",
+  "cmd.set_ui_language_done": "已為你指向標題列中的語言選擇器 — 請在那裡選擇你的語言。",
+  "cmd.set_ui_language_hint": "跳至標題列中的語言選擇器",
+  "cmd.set_ui_language_miss": "介面語言選擇器位於頂部選單列中。"
 }

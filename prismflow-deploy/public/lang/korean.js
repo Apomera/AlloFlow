@@ -12164,7 +12164,11 @@
     "zen_off_hint": "인터페이스를 다시 표시",
     "zen_on": "젠 모드 시작",
     "zen_on_done": "젠 모드가 켜졌습니다 — Ctrl+K를 눌러 “젠 종료”를 실행하면 돌아옵니다.",
-    "zen_on_hint": "콘텐츠를 제외한 모든 것을 숨기기"
+    "zen_on_hint": "콘텐츠를 제외한 모든 것을 숨기기",
+    "set_ui_language": "인터페이스 언어 변경",
+    "set_ui_language_done": "상단 헤더의 언어 선택기로 안내했습니다 — 거기에서 언어를 선택하세요.",
+    "set_ui_language_hint": "헤더의 언어 선택기로 이동",
+    "set_ui_language_miss": "인터페이스 언어 선택기는 상단 메뉴 막대에 있습니다."
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",

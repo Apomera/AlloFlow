@@ -272,5 +272,9 @@
   "palette.nav": "u soco",
   "palette.no_match": "Ma jiro amar u dhigma. Sheekada bot-ka (iyo dhowaan codka) waxay fahmaan codsiyo qaab-furan.",
   "palette.placeholder": "Qor amar — “qoraal weyn”, “xarunta macallinka”, “bogga ii akhri”…",
-  "palette.run": "socodsii"
+  "palette.run": "socodsii",
+  "cmd.set_ui_language": "Beddel luqadda interfeyska",
+  "cmd.set_ui_language_done": "Waxaan ku tilmaamay doorashada luqadda ee madaxa — halkaas ka dooro luqaddaada.",
+  "cmd.set_ui_language_hint": "U bood doorashada luqadda ee madaxa",
+  "cmd.set_ui_language_miss": "Doorashada luqadda interfeyska waxay ku taallaa baarka liiska sare."
 }

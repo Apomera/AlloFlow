@@ -12427,7 +12427,11 @@
     "zen_off_hint": "Readu interfața",
     "zen_on": "Intră în modul zen",
     "zen_on_done": "Modul zen este activat — apasă Ctrl+K și rulează „ieși din zen” pentru a reveni.",
-    "zen_on_hint": "Ascunde totul în afară de conținut"
+    "zen_on_hint": "Ascunde totul în afară de conținut",
+    "set_ui_language": "Schimbă limba interfeței",
+    "set_ui_language_done": "Te-am direcționat către selectorul de limbă din antet — alege-ți limba de acolo.",
+    "set_ui_language_hint": "Sari la selectorul de limbă din antet",
+    "set_ui_language_miss": "Selectorul pentru limba interfeței se află în bara de meniu de sus."
   },
   "palette": {
     "aria": "Paleta de comenzi AlloFlow",

@@ -272,5 +272,9 @@
   "palette.nav": "naviguer",
   "palette.no_match": "Aucune commande correspondante. Le chat du bot (et bientôt la voix) comprend les demandes formulées librement.",
   "palette.placeholder": "Tapez une commande — « texte plus grand », « espace enseignant », « lire cette page »…",
-  "palette.run": "exécuter"
+  "palette.run": "exécuter",
+  "cmd.set_ui_language": "Changer la langue de l'interface",
+  "cmd.set_ui_language_done": "Vous voilà dirigé vers le sélecteur de langue dans l'en-tête — choisissez-y votre langue.",
+  "cmd.set_ui_language_hint": "Accéder au sélecteur de langue dans l'en-tête",
+  "cmd.set_ui_language_miss": "Le sélecteur de langue de l'interface se trouve dans la barre de menu supérieure."
 }

@@ -12189,7 +12189,11 @@
     "zen_off_hint": "Kōjepḷaaktok interface eo",
     "zen_on": "Deḷọñ ilo zen mode",
     "zen_on_done": "Zen mode epeḷḷọk — kalbwin Ctrl+K im kōṃṃan “exit zen” ñan jepḷaaktok.",
-    "zen_on_hint": "Ṇooj aolep men ijello̧kun men ko ijin"
+    "zen_on_hint": "Ṇooj aolep men ijello̧kun men ko ijin",
+    "set_ui_language": "Ukot kajin in interface eo",
+    "set_ui_language_done": "Iaar jitoñe eok ñan kein kālet kajin eo ilo bar eo ilōñ — kālet kajin eo am ijeṇ.",
+    "set_ui_language_hint": "Etal ñan kein kālet kajin eo ilo bar eo ilōñ",
+    "set_ui_language_miss": "Kein kālet kajin in interface eo ej pād ilo menu bar eo ilōñtata."
   },
   "palette": {
     "aria": "AlloFlow command palette",

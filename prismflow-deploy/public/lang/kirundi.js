@@ -12373,7 +12373,11 @@
     "zen_off_hint": "Garukana imboneshakurabo",
     "zen_on": "Injira mu buryo bwa zen",
     "zen_on_done": "Uburyo bwa zen bwafunguwe — kanda Ctrl+K maze ukore “sohoka muri zen” kugira ugaruke.",
-    "zen_on_hint": "Nyegeza vyose kiretse ibirimo"
+    "zen_on_hint": "Nyegeza vyose kiretse ibirimo",
+    "set_ui_language": "Hindura ururimi rw'imbonerahamwe",
+    "set_ui_language_done": "Ndakwerekeje ahatorerwa ururimi mu mutwe w'urupapuro — hitamwo ururimi rwawe ng'aho.",
+    "set_ui_language_hint": "Ja ahatorerwa ururimi mu mutwe w'urupapuro",
+    "set_ui_language_miss": "Ahatorerwa ururimi rw'imbonerahamwe haherereye ku murongo w'ibikubiyemwo wo hejuru."
   },
   "palette": {
     "aria": "Urutonde rw'amategeko rwa AlloFlow",

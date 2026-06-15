@@ -12427,7 +12427,11 @@
     "zen_off_hint": "Rejesha kiolesura",
     "zen_on": "Ingia hali ya zen",
     "zen_on_done": "Hali ya zen imewashwa — bonyeza Ctrl+K na uendeshe “toka zen” ili kurudi.",
-    "zen_on_hint": "Ficha kila kitu isipokuwa maudhui"
+    "zen_on_hint": "Ficha kila kitu isipokuwa maudhui",
+    "set_ui_language": "Badilisha lugha ya kiolesura",
+    "set_ui_language_done": "Nimekuelekeza kwenye kichagua-lugha kilicho kwenye kichwa cha ukurasa — chagua lugha yako hapo.",
+    "set_ui_language_hint": "Rukia hadi kichagua-lugha kilicho kwenye kichwa cha ukurasa",
+    "set_ui_language_miss": "Kichagua-lugha ya kiolesura kiko kwenye upau wa menyu wa juu."
   },
   "palette": {
     "aria": "Paleti ya amri ya AlloFlow",

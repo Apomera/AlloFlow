@@ -272,5 +272,9 @@
   "palette.nav": "soco",
   "palette.no_match": "Amar u dhigma ma jiro. Sheekada bot-ka (codka dhowaanna) wuxuu fahmaa codsiyo bilaash ah.",
   "palette.placeholder": "Qor amar — “qoraal weyn”, “xarunta macallinka”, “akhri boggan”…",
-  "palette.run": "socodsii"
+  "palette.run": "socodsii",
+  "cmd.set_ui_language": "Bedel afka isticmaalka",
+  "cmd.set_ui_language_done": "Waxaan ku tilmaamay doorashada afka ee madaxa — halkaas ka dooro afkaaga.",
+  "cmd.set_ui_language_hint": "Booqo doorashada afka ee madaxa",
+  "cmd.set_ui_language_miss": "Doorashada afka isticmaalka waxay ku taal sharaxa menu ee sare."
 }

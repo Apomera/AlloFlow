@@ -12381,7 +12381,11 @@
     "zen_off_hint": "Weghachi interface ahụ",
     "zen_on": "Banye n'ụdị zen",
     "zen_on_done": "Ụdị zen agbanyela — pịa Ctrl+K ma mee “pụọ zen” iji laghachi.",
-    "zen_on_hint": "Zoo ihe niile ma e wezụga ọdịnaya"
+    "zen_on_hint": "Zoo ihe niile ma e wezụga ọdịnaya",
+    "set_ui_language": "Gbanwee asụsụ interface",
+    "set_ui_language_done": "Eziga m gị na nhọrọ asụsụ dị na isi mmalite ahụ — họrọ asụsụ gị ebe ahụ.",
+    "set_ui_language_hint": "Wụga na nhọrọ asụsụ dị na isi mmalite ahụ",
+    "set_ui_language_miss": "Nhọrọ asụsụ interface dị na elu ahịrị menu."
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",

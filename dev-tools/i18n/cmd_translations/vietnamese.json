@@ -272,5 +272,9 @@
   "palette.nav": "điều hướng",
   "palette.no_match": "Không có lệnh phù hợp. Trò chuyện với bot (và sắp tới là giọng nói) hiểu được các yêu cầu tự do.",
   "palette.placeholder": "Nhập một lệnh — “chữ to hơn”, “trung tâm giáo viên”, “đọc trang này”…",
-  "palette.run": "chạy"
+  "palette.run": "chạy",
+  "cmd.set_ui_language": "Thay đổi ngôn ngữ giao diện",
+  "cmd.set_ui_language_done": "Đã chỉ bạn đến trình chọn ngôn ngữ ở thanh tiêu đề — hãy chọn ngôn ngữ của bạn tại đó.",
+  "cmd.set_ui_language_hint": "Chuyển đến trình chọn ngôn ngữ ở thanh tiêu đề",
+  "cmd.set_ui_language_miss": "Trình chọn ngôn ngữ giao diện nằm trên thanh menu trên cùng."
 }

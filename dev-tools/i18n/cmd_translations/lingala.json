@@ -272,5 +272,9 @@
   "palette.nav": "tambola",
   "palette.no_match": "Motindo oyo ekokani te. Lisolo ya bot (mpe noki mongongo) esosolaka biloseni ya nzela nyonso.",
   "palette.placeholder": "Koma motindo — “makomi minene”, “educator hub”, “tángela ngai lokasa oyo”…",
-  "palette.run": "sala"
+  "palette.run": "sala",
+  "cmd.set_ui_language": "Bongola monɔkɔ ya etanda",
+  "cmd.set_ui_language_done": "Natindi yo na esika ya kopona monɔkɔ na likoló ya lokasa — pona monɔkɔ na yo wana.",
+  "cmd.set_ui_language_hint": "Kende na esika ya kopona monɔkɔ na likoló ya lokasa",
+  "cmd.set_ui_language_miss": "Esika ya kopona monɔkɔ ya etanda ezali na molɔngɔ ya menu ya likoló."
 }

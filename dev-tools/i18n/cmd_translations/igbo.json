@@ -272,5 +272,9 @@
   "palette.nav": "chọgharịa",
   "palette.no_match": "Ọ dịghị iwu dabara adaba. Mkparịta ụka bot (na n'oge na-adịghị anya, olu) na-aghọta arịrịọ enweghị usoro.",
   "palette.placeholder": "Pịnye iwu — “ederede buru ibu”, “educator hub”, “gụọ ibe a”…",
-  "palette.run": "gbaa"
+  "palette.run": "gbaa",
+  "cmd.set_ui_language": "Gbanwee asụsụ interface",
+  "cmd.set_ui_language_done": "Eziga m gị na nhọrọ asụsụ dị na isi mmalite ahụ — họrọ asụsụ gị ebe ahụ.",
+  "cmd.set_ui_language_hint": "Wụga na nhọrọ asụsụ dị na isi mmalite ahụ",
+  "cmd.set_ui_language_miss": "Nhọrọ asụsụ interface dị na elu ahịrị menu."
 }

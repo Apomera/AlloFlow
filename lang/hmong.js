@@ -12377,7 +12377,11 @@
     "zen_off_hint": "Coj lub interface rov los",
     "zen_on": "Nkag mus hom zen",
     "zen_on_done": "Hom zen qhib lawm — nias Ctrl+K thiab ua “tawm zen” los rov qab.",
-    "zen_on_hint": "Zais txhua yam tsuav nyob li cov ntsiab lus"
+    "zen_on_hint": "Zais txhua yam tsuav nyob li cov ntsiab lus",
+    "set_ui_language": "Hloov cov lus ntawm lub vijtsam",
+    "set_ui_language_done": "Tau coj koj mus rau qhov xaiv lus nyob saum toj — xaiv koj hom lus ntawd.",
+    "set_ui_language_hint": "Mus ncaj rau qhov xaiv lus nyob saum toj",
+    "set_ui_language_miss": "Qhov xaiv cov lus ntawm lub vijtsam nyob ntawm txoj kab xaim saum toj."
   },
   "palette": {
     "aria": "AlloFlow lub khob qhia haujlwm",

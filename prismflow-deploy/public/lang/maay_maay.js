@@ -12189,7 +12189,11 @@
     "zen_off_hint": "Soo celi muuqaalka",
     "zen_on": "Gal habka zen",
     "zen_on_done": "Habka zen waa shid — riix Ctrl+K oo socodsii “ka bax zen” si aad u soo noqoto.",
-    "zen_on_hint": "Qari wax walba qoraalka mooyaane"
+    "zen_on_hint": "Qari wax walba qoraalka mooyaane",
+    "set_ui_language": "Bedel afka isticmaalka",
+    "set_ui_language_done": "Waxaan ku tilmaamay doorashada afka ee madaxa — halkaas ka dooro afkaaga.",
+    "set_ui_language_hint": "Booqo doorashada afka ee madaxa",
+    "set_ui_language_miss": "Doorashada afka isticmaalka waxay ku taal sharaxa menu ee sare."
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",

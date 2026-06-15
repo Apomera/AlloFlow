@@ -12190,7 +12190,11 @@
     "zen_off_hint": "Dwok interface odok",
     "zen_on": "Donyo i kit me zen",
     "zen_on_done": "Kit me zen otye — dii Ctrl+K ki ti “wek zen” me dwogo.",
-    "zen_on_hint": "Kan jami weng ento jami matye"
+    "zen_on_hint": "Kan jami weng ento jami matye",
+    "set_ui_language": "Lok leb me wang pwiny",
+    "set_ui_language_done": "Watero in i ka yero leb i wic — yer leb mamegi kunyo.",
+    "set_ui_language_hint": "Cit i ka yero leb i wic",
+    "set_ui_language_miss": "Ka yero leb me wang pwiny tye i bar me menu malo."
   },
   "palette": {
     "aria": "Palette me cik me AlloFlow",

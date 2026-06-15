@@ -12224,7 +12224,11 @@
     "zen_off_hint": "Die Oberfläche zurückholen",
     "zen_on": "Zen-Modus aktivieren",
     "zen_on_done": "Zen-Modus an — drücke Ctrl+K und führe „Zen verlassen“ aus, um zurückzukehren.",
-    "zen_on_hint": "Alles außer dem Inhalt ausblenden"
+    "zen_on_hint": "Alles außer dem Inhalt ausblenden",
+    "set_ui_language": "Sprache der Benutzeroberfläche ändern",
+    "set_ui_language_done": "Wir haben dich zur Sprachauswahl in der Kopfzeile geführt — wähle dort deine Sprache.",
+    "set_ui_language_hint": "Zur Sprachauswahl in der Kopfzeile springen",
+    "set_ui_language_miss": "Die Sprachauswahl für die Benutzeroberfläche befindet sich in der oberen Menüleiste."
   },
   "palette": {
     "aria": "AlloFlow-Befehlspalette",

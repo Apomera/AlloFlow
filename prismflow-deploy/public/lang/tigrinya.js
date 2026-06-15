@@ -12373,7 +12373,11 @@
     "zen_off_hint": "ነቲ መተሓዋወሪ ተመለሶ",
     "zen_on": "ናብ ዘን ኩነታት እቶ",
     "zen_on_done": "ዘን ኩነታት ተኸፊቱ — ንምምላስ Ctrl+K ጠውቕን “exit zen” ኣካይድን።",
-    "zen_on_hint": "ብዘይካ ትሕዝቶ ኩሉ ሕባእ"
+    "zen_on_hint": "ብዘይካ ትሕዝቶ ኩሉ ሕባእ",
+    "set_ui_language": "ቋንቋ መተሓላለፊ ቀይር",
+    "set_ui_language_done": "ናብቲ ኣብ ላዕለዋይ መስመር ዘሎ መሐረዪ ቋንቋ መሪሕናካ — ቋንቋኻ ካብኡ ምረጽ።",
+    "set_ui_language_hint": "ናብቲ ኣብ ላዕለዋይ መስመር ዘሎ መሐረዪ ቋንቋ ዘል",
+    "set_ui_language_miss": "መሐረዪ ቋንቋ መተሓላለፊ ኣብቲ ላዕለዋይ መስመር ሜኑ ይርከብ።"
   },
   "palette": {
     "aria": "ናይ AlloFlow ናይ ትእዛዝ ፓለት",

@@ -272,5 +272,9 @@
   "palette.nav": "navighează",
   "palette.no_match": "Nicio comandă care să se potrivească. Conversația cu botul (și în curând vocea) înțelege cereri în formă liberă.",
   "palette.placeholder": "Scrie o comandă — „text mai mare”, „centru educatori”, „citește această pagină”…",
-  "palette.run": "rulează"
+  "palette.run": "rulează",
+  "cmd.set_ui_language": "Schimbă limba interfeței",
+  "cmd.set_ui_language_done": "Te-am direcționat către selectorul de limbă din antet — alege-ți limba de acolo.",
+  "cmd.set_ui_language_hint": "Sari la selectorul de limbă din antet",
+  "cmd.set_ui_language_miss": "Selectorul pentru limba interfeței se află în bara de meniu de sus."
 }

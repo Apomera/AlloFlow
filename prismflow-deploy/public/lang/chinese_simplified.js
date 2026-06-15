@@ -12038,7 +12038,11 @@
     "zen_off_hint": "恢复显示界面",
     "zen_on": "进入禅模式",
     "zen_on_done": "禅模式已开启 — 按 Ctrl+K 并运行“退出禅模式”即可返回。",
-    "zen_on_hint": "隐藏内容以外的所有部分"
+    "zen_on_hint": "隐藏内容以外的所有部分",
+    "set_ui_language": "更改界面语言",
+    "set_ui_language_done": "已为你指向页眉中的语言选择器——请在那里选择你的语言。",
+    "set_ui_language_hint": "跳转到页眉中的语言选择器",
+    "set_ui_language_miss": "界面语言选择器位于顶部菜单栏中。"
   },
   "palette": {
     "aria": "AlloFlow 命令面板",

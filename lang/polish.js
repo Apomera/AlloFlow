@@ -12449,7 +12449,11 @@
     "zen_off_hint": "Przywróć interfejs",
     "zen_on": "Włącz tryb zen",
     "zen_on_done": "Tryb zen włączony — naciśnij Ctrl+K i uruchom „wyjdź z zen”, aby wrócić.",
-    "zen_on_hint": "Ukryj wszystko poza zawartością"
+    "zen_on_hint": "Ukryj wszystko poza zawartością",
+    "set_ui_language": "Zmień język interfejsu",
+    "set_ui_language_done": "Wskazaliśmy Ci selektor języka w nagłówku — wybierz tam swój język.",
+    "set_ui_language_hint": "Przejdź do selektora języka w nagłówku",
+    "set_ui_language_miss": "Selektor języka interfejsu znajduje się na górnym pasku menu."
   },
   "palette": {
     "aria": "Paleta poleceń AlloFlow",

@@ -272,5 +272,9 @@
   "palette.nav": "mag-navigate",
   "palette.no_match": "Walang tugmang utos. Nauunawaan ng bot chat (at sa lalong madaling panahon, boses) ang mga malayang kahilingan.",
   "palette.placeholder": "Mag-type ng utos — “mas malaking teksto”, “educator hub”, “basahin ang pahinang ito”…",
-  "palette.run": "patakbuhin"
+  "palette.run": "patakbuhin",
+  "cmd.set_ui_language": "Baguhin ang wika ng interface",
+  "cmd.set_ui_language_done": "Dinala ka namin sa pampili ng wika sa header — piliin ang iyong wika doon.",
+  "cmd.set_ui_language_hint": "Tumalon sa pampili ng wika sa header",
+  "cmd.set_ui_language_miss": "Ang pampili ng wika ng interface ay nasa itaas na menu bar."
 }

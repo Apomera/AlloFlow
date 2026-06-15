@@ -272,5 +272,9 @@
   "palette.nav": "kalpi",
   "palette.no_match": "A tlukmi command a um lo. Bot chat (le a rauh ah aw) nih a thlengkhanmi requests a thei.",
   "palette.placeholder": "Command ttial — “ca tampi”, “educator hub”, “hi page rel”…",
-  "palette.run": "run"
+  "palette.run": "run",
+  "cmd.set_ui_language": "Hmanhruainak ṭong thlennak",
+  "cmd.set_ui_language_done": "Lutu peng i a um ṭong thimnak ah kan thlahpi cang — cuka ah na ṭong thim ṭhan.",
+  "cmd.set_ui_language_hint": "Lutu peng i a um ṭong thimnak ah kal",
+  "cmd.set_ui_language_miss": "Hmanhruainak ṭong thimnak cu a lawng peng menu bar ah a um."
 }

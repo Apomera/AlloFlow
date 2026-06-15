@@ -272,5 +272,9 @@
   "palette.nav": "navige",
   "palette.no_match": "Pa gen kòmand ki koresponn. Chat bot la (epi byento vwa) konprann demann lib.",
   "palette.placeholder": "Tape yon kòmand — “pi gwo tèks”, “sant edikatè”, “li paj sa a”…",
-  "palette.run": "fè l"
+  "palette.run": "fè l",
+  "cmd.set_ui_language": "Chanje lang entèfas la",
+  "cmd.set_ui_language_done": "Mwen voye ou nan chwazi lang ki nan tèt paj la — chwazi lang ou la a.",
+  "cmd.set_ui_language_hint": "Ale dirèkteman nan chwazi lang ki nan tèt paj la",
+  "cmd.set_ui_language_miss": "Chwazi lang entèfas la nan ba meni anwo a."
 }

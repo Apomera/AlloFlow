@@ -272,5 +272,9 @@
   "palette.nav": "nawiguj",
   "palette.no_match": "Brak pasującego polecenia. Czat z botem (a wkrótce głos) rozumie dowolne prośby.",
   "palette.placeholder": "Wpisz polecenie — „większy tekst”, „centrum nauczyciela”, „przeczytaj tę stronę”…",
-  "palette.run": "uruchom"
+  "palette.run": "uruchom",
+  "cmd.set_ui_language": "Zmień język interfejsu",
+  "cmd.set_ui_language_done": "Wskazaliśmy Ci selektor języka w nagłówku — wybierz tam swój język.",
+  "cmd.set_ui_language_hint": "Przejdź do selektora języka w nagłówku",
+  "cmd.set_ui_language_miss": "Selektor języka interfejsu znajduje się na górnym pasku menu."
 }

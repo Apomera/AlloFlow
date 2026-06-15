@@ -12427,7 +12427,11 @@
     "zen_off_hint": "Ibalik ang interface",
     "zen_on": "Pumasok sa zen mode",
     "zen_on_done": "Naka-on ang zen mode — pindutin ang Ctrl+K at patakbuhin ang “exit zen” para bumalik.",
-    "zen_on_hint": "Itago ang lahat maliban sa nilalaman"
+    "zen_on_hint": "Itago ang lahat maliban sa nilalaman",
+    "set_ui_language": "Baguhin ang wika ng interface",
+    "set_ui_language_done": "Dinala ka namin sa pampili ng wika sa header — piliin ang iyong wika doon.",
+    "set_ui_language_hint": "Tumalon sa pampili ng wika sa header",
+    "set_ui_language_miss": "Ang pampili ng wika ng interface ay nasa itaas na menu bar."
   },
   "palette": {
     "aria": "AlloFlow command palette",

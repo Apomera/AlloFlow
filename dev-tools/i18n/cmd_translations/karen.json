@@ -272,5 +272,9 @@
   "palette.nav": "လဲၤထွဲ",
   "palette.no_match": "တၢ်ပၢလၢအဘၣ်လိာ်တအိၣ်ဘၣ်. bot chat (ဒီးကလုၢ်ဖဲတယံာ်) နၢ်ပၢၢ်တၢ်ဃ့ထီၣ်လၢအလီၤဖျါ.",
   "palette.placeholder": "ကွဲးတၢ်ပၢ — “လံာ်မဲာ်ဒိၣ်ထီၣ်”, “educator hub”, “ဖးကဘျံးပၤအံၤ”…",
-  "palette.run": "မၤ"
+  "palette.run": "မၤ",
+  "cmd.set_ui_language": "ဆီတလဲကွၢ်ကျဲာ်ပှၤ ကိၢ်ကျဲာ်တၢ်ကတိၤ",
+  "cmd.set_ui_language_done": "ပဒုးနဲၣ်နၤ ဆူ တၢ်ဃုထၢကျိာ်လၢ ထီၣ်ဖီခိၣ် (header) လံ — ဃုထၢနကျိာ်ဖဲန့ၣ်တက့ၢ်.",
+  "cmd.set_ui_language_hint": "စံၣ်ဆူ တၢ်ဃုထၢကျိာ် လၢထီၣ်ဖီခိၣ် (header)",
+  "cmd.set_ui_language_miss": "တၢ်ဃုထၢ ကွၢ်ကျဲာ်ပှၤကျိာ် အိၣ်လၢ ထးကတၢၢ်တၢ်နဲၣ်ကျဲဘၣ်ပှၤ (top menu bar) န့ၣ်လီၤ."
 }

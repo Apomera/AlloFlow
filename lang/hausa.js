@@ -12435,7 +12435,11 @@
     "zen_off_hint": "Mayar da mu'amalar",
     "zen_on": "Shiga yanayin zen",
     "zen_on_done": "An kunna yanayin zen — danna Ctrl+K sannan gudanar da “fita zen” don komawa.",
-    "zen_on_hint": "Ɓoye komai sai abun ciki"
+    "zen_on_hint": "Ɓoye komai sai abun ciki",
+    "set_ui_language": "Canza yaren ƙatanga",
+    "set_ui_language_done": "Mun nuna maka mai zaɓen yare a saman shafin — zaɓi yarenka a wurin.",
+    "set_ui_language_hint": "Tsallaka zuwa mai zaɓen yare da ke saman shafin",
+    "set_ui_language_miss": "Mai zaɓen yaren ƙatanga yana cikin sandar menu na sama."
   },
   "palette": {
     "aria": "Panel ɗin umarni na AlloFlow",

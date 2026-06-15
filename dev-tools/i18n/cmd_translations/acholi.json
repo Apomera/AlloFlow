@@ -272,5 +272,9 @@
   "palette.nav": "wot",
   "palette.no_match": "Pe tye cik ma rwatte. Lok me bot (ki dwan oromo bino) niang kwac ma lengo.",
   "palette.placeholder": "Coo cik — “coc madit”, “educator hub”, “kwan pot man”…",
-  "palette.run": "tim"
+  "palette.run": "tim",
+  "cmd.set_ui_language": "Lok leb me wang pwiny",
+  "cmd.set_ui_language_done": "Watero in i ka yero leb i wic — yer leb mamegi kunyo.",
+  "cmd.set_ui_language_hint": "Cit i ka yero leb i wic",
+  "cmd.set_ui_language_miss": "Ka yero leb me wang pwiny tye i bar me menu malo."
 }

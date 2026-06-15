@@ -272,5 +272,9 @@
   "palette.nav": "navigieren",
   "palette.no_match": "Kein passender Befehl. Der Bot-Chat (und bald die Sprachsteuerung) versteht frei formulierte Anfragen.",
   "palette.placeholder": "Gib einen Befehl ein — „größerer Text“, „Educator Hub“, „diese Seite vorlesen“…",
-  "palette.run": "ausführen"
+  "palette.run": "ausführen",
+  "cmd.set_ui_language": "Sprache der Benutzeroberfläche ändern",
+  "cmd.set_ui_language_done": "Wir haben dich zur Sprachauswahl in der Kopfzeile geführt — wähle dort deine Sprache.",
+  "cmd.set_ui_language_hint": "Zur Sprachauswahl in der Kopfzeile springen",
+  "cmd.set_ui_language_miss": "Die Sprachauswahl für die Benutzeroberfläche befindet sich in der oberen Menüleiste."
 }

@@ -12381,7 +12381,11 @@
     "zen_off_hint": "Munculkan kembali antarmuka",
     "zen_on": "Masuk ke mode zen",
     "zen_on_done": "Mode zen aktif — tekan Ctrl+K dan jalankan “keluar zen” untuk kembali.",
-    "zen_on_hint": "Sembunyikan semuanya kecuali konten"
+    "zen_on_hint": "Sembunyikan semuanya kecuali konten",
+    "set_ui_language": "Ubah bahasa antarmuka",
+    "set_ui_language_done": "Mengarahkan Anda ke pemilih bahasa di header — pilih bahasa Anda di sana.",
+    "set_ui_language_hint": "Lompat ke pemilih bahasa di header",
+    "set_ui_language_miss": "Pemilih bahasa antarmuka ada di bilah menu atas."
   },
   "palette": {
     "aria": "Palet perintah AlloFlow",

@@ -12237,7 +12237,11 @@
     "zen_off_hint": "Interfaciem reduc",
     "zen_on": "Modum zen ingredere",
     "zen_on_done": "Modus zen activus — preme Ctrl+K et exsequere “exi zen” ut redeas.",
-    "zen_on_hint": "Omnia praeter contentum occulta"
+    "zen_on_hint": "Omnia praeter contentum occulta",
+    "set_ui_language": "Linguam interfaciei mutare",
+    "set_ui_language_done": "Ad linguae selectorem in capite te direxi — linguam tuam ibi elige.",
+    "set_ui_language_hint": "Ad linguae selectorem in capite saltare",
+    "set_ui_language_miss": "Selector linguae interfaciei in summa tabula menus est."
   },
   "palette": {
     "aria": "AlloFlow tabula mandatorum",

@@ -12092,7 +12092,11 @@
     "zen_off_hint": "讓介面重新顯示",
     "zen_on": "進入禪模式",
     "zen_on_done": "禪模式已開啟 — 按 Ctrl+K 並執行「離開禪模式」即可返回。",
-    "zen_on_hint": "隱藏內容以外的所有項目"
+    "zen_on_hint": "隱藏內容以外的所有項目",
+    "set_ui_language": "變更介面語言",
+    "set_ui_language_done": "已為你指向標題列中的語言選擇器 — 請在那裡選擇你的語言。",
+    "set_ui_language_hint": "跳至標題列中的語言選擇器",
+    "set_ui_language_miss": "介面語言選擇器位於頂部選單列中。"
   },
   "palette": {
     "aria": "AlloFlow 指令面板",

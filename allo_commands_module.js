@@ -355,6 +355,9 @@ function buildAlloCommands(ctx) {
       c.stopPipelineFix();
       return t("cmd.pipeline_stop_done", "Stopping after the current round.");
     } },
+    { id: "set_ui_language", icon: "\u{1F310}", roles: "all", label: t("cmd.set_ui_language", "Change the interface language"), aliases: ["interface language", "app language", "ui language", "menu language", "change interface language", "language of the app"], hint: t("cmd.set_ui_language_hint", "Jump to the language picker in the header"), run: (c) => {
+      return c.spotlightUiLanguage() ? t("cmd.set_ui_language_done", "Pointed you to the language picker in the header \u2014 choose your language there.") : t("cmd.set_ui_language_miss", "The interface-language picker is in the top menu bar.");
+    } },
     { id: "pipeline_new_doc", icon: "\u{1F195}", roles: "teacher", destructive: true, when: (c) => !!c.pipelineOpen, label: t("cmd.pipeline_new_doc", "Start over with a new document"), aliases: ["new document", "new pdf", "another document", "clear pipeline", "upload new"], hint: t("cmd.pipeline_new_doc_hint", "Clear this result and upload a new file"), run: (c) => {
       c.startNewPdfAudit();
       return t("cmd.pipeline_new_doc_done", "Cleared \u2014 upload a new document to begin.");
@@ -606,6 +609,7 @@ const CMD_GROUP = {
   line_spacing_less: "accessibility",
   open_study_timer: "accessibility",
   cycle_reading_theme: "display",
+  set_ui_language: "display",
   open_sel_hub: "tools",
   open_submission_inbox: "navigate",
   toggle_cloud_sync: "navigate",

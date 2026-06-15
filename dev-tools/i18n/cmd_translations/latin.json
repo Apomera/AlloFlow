@@ -272,5 +272,9 @@
   "palette.nav": "naviga",
   "palette.no_match": "Nullum mandatum congruens. Colloquium roboticum (et mox vox) postulationes liberas intellegit.",
   "palette.placeholder": "Mandatum scribe — “textus maior”, “centrum educatoris”, “lege hanc paginam”…",
-  "palette.run": "exsequere"
+  "palette.run": "exsequere",
+  "cmd.set_ui_language": "Linguam interfaciei mutare",
+  "cmd.set_ui_language_done": "Ad linguae selectorem in capite te direxi — linguam tuam ibi elige.",
+  "cmd.set_ui_language_hint": "Ad linguae selectorem in capite saltare",
+  "cmd.set_ui_language_miss": "Selector linguae interfaciei in summa tabula menus est."
 }

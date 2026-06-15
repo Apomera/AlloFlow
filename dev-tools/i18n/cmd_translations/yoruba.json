@@ -272,5 +272,9 @@
   "palette.nav": "rìnnà",
   "palette.no_match": "Kò sí àṣẹ tó bára mu. Ìfọ̀rọ̀wérọ̀ bọ́ọ̀tì (àti laìpẹ́ ohùn) lóye àwọn ìbéèrè aláìní-ìlànà.",
   "palette.placeholder": "Tẹ àṣẹ kan — “ọ̀rọ̀ títóbi”, “ibùdó olùkọ́”, “ka ojú-ìwé yìí”…",
-  "palette.run": "ṣiṣẹ́"
+  "palette.run": "ṣiṣẹ́",
+  "cmd.set_ui_language": "Yí èdè wíwò padà",
+  "cmd.set_ui_language_done": "A ti tọ́ ọ sí ibi àyànfẹ́ èdè ní orí àkọlé — yan èdè rẹ níbẹ̀.",
+  "cmd.set_ui_language_hint": "Fò lọ sí ibi àyànfẹ́ èdè ní orí àkọlé",
+  "cmd.set_ui_language_miss": "Ibi àyànfẹ́ èdè wíwò wà ní orí àjà àkójọ òkè."
 }

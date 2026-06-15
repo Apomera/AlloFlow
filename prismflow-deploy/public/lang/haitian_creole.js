@@ -12375,7 +12375,11 @@
     "zen_off_hint": "Fè entèfas la retounen",
     "zen_on": "Antre nan mòd zen",
     "zen_on_done": "Mòd zen aktive — peze Ctrl+K epi fè “sòti zen” pou retounen.",
-    "zen_on_hint": "Kache tout bagay sòf kontni an"
+    "zen_on_hint": "Kache tout bagay sòf kontni an",
+    "set_ui_language": "Chanje lang entèfas la",
+    "set_ui_language_done": "Mwen voye ou nan chwazi lang ki nan tèt paj la — chwazi lang ou la a.",
+    "set_ui_language_hint": "Ale dirèkteman nan chwazi lang ki nan tèt paj la",
+    "set_ui_language_miss": "Chwazi lang entèfas la nan ba meni anwo a."
   },
   "palette": {
     "aria": "Palèt kòmand AlloFlow",
