@@ -1863,6 +1863,36 @@ window.StemLab = window.StemLab || {
       }, segs);
     };
 
+    // Improper/negative-aware result renderer for the Operations tab.
+    // Plain drawBar() only draws `den` segments, so any improper result
+    // collapsed to a single full bar (7/4 looked identical to 4/4) and
+    // negatives showed magnitude with no sign. This renders whole bars
+    // plus a remainder bar (mixed-number style) and a leading minus.
+    var drawResultBars = function(numer, den, color) {
+      if (den <= 0) den = 1;
+      var neg = numer < 0;
+      var an = Math.abs(numer);
+      var wholes = Math.floor(an / den);
+      var rem = an - wholes * den;
+      var bars = [];
+      var shown = Math.min(wholes, 4);
+      for (var w = 0; w < shown; w++) {
+        bars.push(h('div', { key: 'rw' + w, style: { width: 60 } }, drawBar(den, den, color)));
+      }
+      if (wholes > 4) {
+        bars.push(h('span', { key: 'more', className: 'self-center text-[11px] font-bold text-slate-600 px-1' }, '+' + (wholes - 4) + ' more'));
+      }
+      if (rem > 0 || bars.length === 0) {
+        bars.push(h('div', { key: 'rem', style: { width: 60 } }, drawBar(rem, den, color)));
+      }
+      var label = (neg ? 'negative ' : '') + an + ' over ' + den + (wholes >= 1 ? ', equals ' + wholes + ' whole' + (wholes === 1 ? '' : 's') + (rem > 0 ? ' and ' + rem + ' of ' + den : '') : '');
+      return h('div', { className: 'flex gap-1 items-center flex-wrap justify-center' },
+        neg && h('span', { className: 'text-lg font-black text-red-600 self-center', 'aria-hidden': 'true' }, '\u2212'),
+        bars,
+        h('span', { className: 'sr-only' }, label)
+      );
+    };
+
     // ═══════════════════════════════════════════════════════════════
     // ═══ v3 VISUAL MODELS — Number Line, Area, Set, Length, Volume ═══
     // ═══════════════════════════════════════════════════════════════
@@ -2428,7 +2458,9 @@ window.StemLab = window.StemLab || {
         var db = pick([2, 3, 4, 6, 8]);
         var nb = randInt(1, db);
         var va = na / da, vb = nb / db;
-        while (Math.abs(va - vb) < 0.001) { nb = randInt(1, db); vb = nb / db; }
+        var _cTries = 0;
+        while ((Math.abs(va - vb) < 0.001 || na === nb) && _cTries < 40) { nb = randInt(1, db); vb = nb / db; _cTries++; }
+        if (na === nb || Math.abs(va - vb) < 0.001) { na = 1; da = 2; nb = 2; db = 3; va = na / da; vb = nb / db; }
         ch = { type: type, question: 'Which is larger: ' + na + '/' + da + ' or ' + nb + '/' + db + '? Enter the numerator of the larger fraction.', answer: va >= vb ? na : nb };
 
       } else if (type === 'simplify') {
@@ -2441,11 +2473,16 @@ window.StemLab = window.StemLab || {
 
       } else if (type === 'ordering') {
         var fracs = [];
-        for (var fi = 0; fi < 3; fi++) {
-          var fd = pick([2, 3, 4, 5, 6, 8]);
-          var fn = randInt(1, fd);
-          fracs.push({ n: fn, d: fd, val: fn / fd });
-        }
+        var _oTries = 0;
+        do {
+          fracs = [];
+          for (var fi = 0; fi < 3; fi++) {
+            var fd = pick([2, 3, 4, 5, 6, 8]);
+            var fn = randInt(1, fd);
+            fracs.push({ n: fn, d: fd, val: fn / fd });
+          }
+          _oTries++;
+        } while (_oTries < 60 && (Math.abs(fracs[0].val - fracs[1].val) < 0.001 || Math.abs(fracs[0].val - fracs[2].val) < 0.001 || Math.abs(fracs[1].val - fracs[2].val) < 0.001 || fracs[0].n === fracs[1].n || fracs[0].n === fracs[2].n || fracs[1].n === fracs[2].n));
         fracs.sort(function(a, b) { return a.val - b.val; });
         var shuffled = fracs.slice().sort(function() { return Math.random() - 0.5; });
         var smallest = fracs[0];
@@ -2908,7 +2945,7 @@ window.StemLab = window.StemLab || {
           ),
           // Result bar
           h('div', { className: 'mt-3 flex justify-center' },
-            opUndefined ? null : drawBar(Math.min(Math.abs(opSimplified[0]), opSimplified[1] * 2), opSimplified[1], '#22c55e')
+            opUndefined ? null : drawResultBars(opSimplified[0], opSimplified[1], '#22c55e')
           )
         ),
         // Area model (multiplication only)
