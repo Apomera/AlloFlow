@@ -5010,9 +5010,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _wm = _ctx.match(_wRe);
                                   const _beforeWords = _wm ? _norm(_ctx.slice(0, _wm.index)).split(' ').filter(Boolean).slice(-4) : [];
                                   const _afterWords = _wm ? _norm(_ctx.slice(_wm.index + it.word.length)).split(' ').filter(Boolean).slice(0, 4) : [];
+                                  // Use the live preview iframe when the modal is open; otherwise fall
+                                  // back to a DETACHED parse of accessibleHtml so the walkthrough works
+                                  // with the preview CLOSED (2026-06-15 review fix — it used to find
+                                  // "no match" for every word and disable Insert out of the box).
+                                  const _getReviewDoc = () => {
+                                    try { const live = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; if (live && live.body) return { doc: live, live: true }; } catch (_) {}
+                                    try { const html = (pdfFixResult && pdfFixResult.accessibleHtml) || ''; if (!html) return null; return { doc: new DOMParser().parseFromString(html, 'text/html'), live: false }; } catch (_) { return null; }
+                                  };
                                   const _findAnchor = () => {
                                     try {
-                                      const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+                                      const rd = _getReviewDoc();
+                                      const d = rd && rd.doc;
                                       if (!d || !d.body) return null;
                                       const useBefore = _beforeWords.length >= 2;
                                       const anchor = (useBefore ? _beforeWords : _afterWords).join(' ');
@@ -5022,7 +5031,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       while ((node = walker.nextNode())) {
                                         if (node.parentElement && node.parentElement.closest('section[data-content-recovery="true"]')) continue;
                                         const ni = _norm(node.textContent).indexOf(anchor);
-                                        if (ni !== -1) return { node, anchor, useBefore };
+                                        if (ni !== -1) return { node, anchor, useBefore, doc: d, live: rd.live };
                                       }
                                       return null;
                                     } catch (_) { return null; }
@@ -5030,19 +5039,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _anchorHit = _findAnchor();
                                   const _advance = (outcome) => {
                                     setRecoveryReviewOutcomes((p) => ({ ...p, [recoveryReviewIdx]: outcome }));
-                                    setRecoveryReviewIdx(recoveryReviewIdx + 1);
+                                    const _next = recoveryReviewIdx + 1;
+                                    setRecoveryReviewIdx(_next);
+                                    // Announce the next word for screen-reader / keyboard users — the card
+                                    // is role=group, so advancing otherwise gives no spoken feedback (review fix).
+                                    try { const _nx = _items[_next]; if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(_nx ? ('Word ' + (_next + 1) + ' of ' + _items.length + ', ' + _nx.word) : 'Content recovery review complete'); } catch (_) {}
                                   };
                                   const _doInsert = () => {
                                     try {
                                       const hit = _findAnchor();
                                       if (!hit) { addToast(t('toasts.recovery_anchor_gone') || 'The context anchor is no longer in the document — the word stays in the appendix.', 'info'); _advance('kept'); return; }
-                                      const d = pdfPreviewRef.current.contentDocument;
+                                      const d = hit.doc;
                                       // Insert the word right after (or before) its anchor inside
                                       // the matching text node, preserving original casing.
                                       const raw = hit.node.textContent;
                                       const nIdx = _norm(raw).indexOf(hit.anchor);
                                       // Map normalized index back: walk raw counting normalized chars.
                                       let rawPos = 0, normCount = 0;
+                                      // Skip leading whitespace WITHOUT counting it — _norm trims it, so
+                                      // counting it inserted the word one token early (2026-06-15 review fix).
+                                      while (rawPos < raw.length && /\s/.test(raw[rawPos])) rawPos++;
                                       const target = hit.useBefore ? nIdx + hit.anchor.length : nIdx;
                                       while (rawPos < raw.length && normCount < target) {
                                         if (/\s/.test(raw[rawPos])) { while (rawPos < raw.length && /\s/.test(raw[rawPos])) rawPos++; normCount++; }
@@ -5056,8 +5072,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         const ul = d.querySelector('section[data-content-recovery="true"] ul');
                                         if (ul && ul.children.length === 0) { const sec = d.querySelector('section[data-content-recovery="true"]'); if (sec) sec.remove(); }
                                       } catch (_) {}
-                                      // Persist: snapshot the edited iframe into accessibleHtml.
-                                      const h = getPdfPreviewHtml();
+                                      // Persist: snapshot the live iframe, or serialize the detached doc
+                                      // when the preview is closed — accessibleHtml is the source of truth.
+                                      let h = null;
+                                      if (hit.live) { h = getPdfPreviewHtml(); }
+                                      else { try { h = d.documentElement ? ('<!DOCTYPE html>\n' + d.documentElement.outerHTML) : null; } catch (_) { h = null; } }
                                       if (h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: h, _userEditedAt: Date.now() } : prev);
                                       try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
                                       addToast((t('toasts.recovery_word_inserted') || '📍 Inserted') + ' "' + it.word + '"', 'success');
