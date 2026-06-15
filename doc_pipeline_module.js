@@ -13541,8 +13541,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // gives the diff view something to compare against.
           try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
 
-          // If BOTH engines report 0 actionable issues, stop regardless of score
-          if (newAxeViolations === 0 && (!reVerify || !reVerify.issues || reVerify.issues.length === 0)) {
+          // If BOTH engines report 0 actionable issues, stop regardless of score.
+          // reVerify is null only when BOTH AI audits failed this pass (reScores empty) —
+          // in that case we have NO AI signal, so a null audit must NOT be read as
+          // "AI saw zero issues". Require a real AI result before claiming dual-clean;
+          // surface that AI verification was unavailable so an axe-only clean isn't
+          // silently attributed to dual verification. The loop falls through (bounded by
+          // maxFixPasses / stall guards / the target-score stop below). (vision-null-audit)
+          if (!reVerify) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (both engines failed) — axe ${newAxeViolations} violation(s); not treating as dual-clean`);
+            if (newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
+          } else if (newAxeViolations === 0 && (!reVerify.issues || reVerify.issues.length === 0)) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
             break;
           }
@@ -13894,7 +13903,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const _arFinalSet = _arSetOf(htmlToPlainText(accessibleHtml));
           // High-confidence missing = source token, >=3 chars, seen by BOTH OCR
           // engines, absent from the remediated final. De-duped (one ask per word;
-          // applyWordRestoration places every occurrence of a given word itself).
+          // applyWordRestoration conservatively splices ONE occurrence per word — its
+          // unique-context matcher refuses ambiguous spots, so repeat occurrences beyond
+          // the first are not re-inserted, by design, to avoid wrong-location splices).
           const _arSeen = new Set();
           const _arMissing = [];
           for (const raw of (_arSrc.match(/\S+/g) || [])) {

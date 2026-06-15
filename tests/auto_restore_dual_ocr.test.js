@@ -137,4 +137,17 @@ describe('applyWordRestoration — nothing is ever dropped', () => {
     expect(r.restored).toEqual([]);            // no real splice
     expect((r.artifacts || []).map(x => x.word.toLowerCase())).toContain('budget');
   });
+
+  it('restores only ONE occurrence of a repeated dropped word, even with two placeable spots (single-placement contract — recov-dedup-comment)', () => {
+    // 'approved' is dropped from BOTH of its source occurrences; both have a distinct,
+    // matchable context in the final. applyWordRestoration places exactly ONE (it breaks
+    // after the first successful splice per word), so the second 'team approved' spot stays
+    // empty. This pins the behavior the corrected comment now claims ("ONE occurrence per
+    // word"), correcting the old comment's false "places every occurrence" claim.
+    const html = wrap('<p>the board the annual plan with care and later the team the small request quickly</p>');
+    const source = 'the board approved the annual plan with care and later the team approved the small request quickly';
+    const r = applyWordRestoration(html, [{ word: 'approved' }], source);
+    expect(r.restored.filter(x => x.word.toLowerCase() === 'approved').length).toBe(1);
+    expect((htmlText(r.html).match(/approved/g) || []).length).toBe(1); // not 2 — only the first spot filled
+  });
 });
