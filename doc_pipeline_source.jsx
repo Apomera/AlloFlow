@@ -201,6 +201,45 @@ function _collapseExtraMains(html) {
   } catch (_) { return html; }
 }
 
+// STRICT heading-skip collapse: any skip of MORE THAN ONE level (h1→h3, h2→h4, …) is collapsed to
+// exactly +1 so the SR outline has no phantom missing level and axe heading-order passes. This is
+// the strict counterpart to the intentionally-lenient (skip-2-tolerant) fixHeadingHierarchy; it
+// runs once pre-loop (inline step 9) AND inside runDeterministicWcagFixes, so an AI fix pass that
+// re-introduces an h1→h3 skip can't ship it. Positional (open + its matching close; headings don't
+// nest, so the first </hN> after an open is that open's close). Returns {html, fixCount}. (#8)
+function _collapseHeadingSkipsStrict(htmlContent) {
+  // NB: assign-then-return (no `return {` at 2-space indent) — check_pipeline_integrity.js locates
+  // the factory export via the FIRST `\n  return {`, so a module-scope `return {` here would
+  // masquerade as it (same hazard as _validateTableGrid).
+  const _noop = { html: htmlContent, fixCount: 0 };
+  if (!htmlContent || typeof htmlContent !== 'string') return _noop;
+  const opens = [];
+  let m; const re = /<h([1-6])\b([^>]*)>/gi;
+  while ((m = re.exec(htmlContent)) !== null) opens.push({ pos: m.index, openLen: m[0].length, level: parseInt(m[1], 10) });
+  if (opens.length < 2) return _noop;
+  opens[0].newLevel = opens[0].level;
+  let prev = opens[0].level, fixCount = 0;
+  for (let i = 1; i < opens.length; i++) {
+    opens[i].newLevel = (opens[i].level > prev + 1) ? prev + 1 : opens[i].level;
+    if (opens[i].newLevel !== opens[i].level) fixCount++;
+    prev = opens[i].newLevel;
+  }
+  if (fixCount === 0) return _noop;
+  const edits = [];
+  for (const op of opens) {
+    if (op.newLevel === op.level) continue;
+    edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
+    const cm = '</h' + op.level + '>';
+    const ci = htmlContent.indexOf(cm, op.pos + op.openLen);
+    if (ci !== -1) edits.push({ pos: ci, oldStr: cm, newStr: '</h' + op.newLevel + '>' });
+  }
+  edits.sort((a, b) => b.pos - a.pos);
+  let result = htmlContent;
+  for (const e of edits) result = result.slice(0, e.pos) + e.newStr + result.slice(e.pos + e.oldStr.length);
+  const _out = { html: result, fixCount };
+  return _out;
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -6706,30 +6745,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     // Now each heading is rewritten by its OWN position (open + its matching
     // close); headings don't nest, so the first </hN> after an open is
     // unambiguously that open's close. Mirrors fixHeadingHierarchy's approach.
-    {
-      const _hOpens = [];
-      let _hm; const _hRe = /<h([1-6])\b([^>]*)>/gi;
-      while ((_hm = _hRe.exec(accessibleHtml)) !== null) _hOpens.push({ pos: _hm.index, openLen: _hm[0].length, level: parseInt(_hm[1], 10) });
-      if (_hOpens.length > 1) {
-        _hOpens[0].newLevel = _hOpens[0].level;
-        let _prev = _hOpens[0].level;
-        for (let hi = 1; hi < _hOpens.length; hi++) {
-          _hOpens[hi].newLevel = (_hOpens[hi].level > _prev + 1) ? _prev + 1 : _hOpens[hi].level;
-          _prev = _hOpens[hi].newLevel;
-        }
-        const _edits = [];
-        for (const op of _hOpens) {
-          if (op.newLevel === op.level) continue;
-          _edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
-          const _cm = '</h' + op.level + '>';
-          const _ci = accessibleHtml.indexOf(_cm, op.pos + op.openLen);
-          if (_ci !== -1) _edits.push({ pos: _ci, oldStr: _cm, newStr: '</h' + op.newLevel + '>' });
-          aiFixCount++;
-        }
-        _edits.sort((a, b) => b.pos - a.pos);
-        for (const e of _edits) accessibleHtml = accessibleHtml.slice(0, e.pos) + e.newStr + accessibleHtml.slice(e.pos + e.oldStr.length);
-      }
-    }
+    { const _hr = _collapseHeadingSkipsStrict(accessibleHtml); if (_hr.fixCount) { accessibleHtml = _hr.html; aiFixCount += _hr.fixCount; } } // (deduped into shared helper #8)
 
     // 10. Remove empty headings
     accessibleHtml = accessibleHtml.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, () => { aiFixCount++; return ''; });
@@ -9770,6 +9786,9 @@ HTML section ${chunkNum}/${chunks.length}:
     try { result = fixComplexTables(result).html; } catch (e) { warnLog('[Det WCAG] fixComplexTables failed:', e?.message); }
     try { result = fixLangSpans(result).html; } catch (e) { warnLog('[Det WCAG] fixLangSpans failed:', e?.message); }
     try { result = fixHeadingHierarchy(result).html; } catch (e) { warnLog('[Det WCAG] fixHeadingHierarchy failed:', e?.message); }
+    // Strict pass AFTER the lenient one so a skip the lenient fixer tolerates (h1→h3) — which an AI
+    // fix pass can re-introduce every loop iteration — is still collapsed before shipping. (#8)
+    try { result = _collapseHeadingSkipsStrict(result).html; } catch (e) { warnLog('[Det WCAG] strict heading collapse failed:', e?.message); }
     try { result = fixFormFieldAria(result).html; } catch (e) { warnLog('[Det WCAG] fixFormFieldAria failed:', e?.message); }
     try { result = fixButtonLinkLabels(result).html; } catch (e) { warnLog('[Det WCAG] fixButtonLinkLabels failed:', e?.message); }
     try { result = fixFigureSemantics(result).html; } catch (e) { warnLog('[Det WCAG] fixFigureSemantics failed:', e?.message); }
@@ -13436,30 +13455,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // the SR outline. Now each heading is rewritten by its OWN position
         // (open + matching close); headings don't nest so the first </hN> after
         // an open is that open's close. Mirrors fixHeadingHierarchy.
-        {
-          const _hOpens = [];
-          let _hm; const _hRe = /<h([1-6])\b([^>]*)>/gi;
-          while ((_hm = _hRe.exec(accessibleHtml)) !== null) _hOpens.push({ pos: _hm.index, openLen: _hm[0].length, level: parseInt(_hm[1], 10) });
-          if (_hOpens.length > 1) {
-            _hOpens[0].newLevel = _hOpens[0].level;
-            let _prev = _hOpens[0].level;
-            for (let hi = 1; hi < _hOpens.length; hi++) {
-              _hOpens[hi].newLevel = (_hOpens[hi].level > _prev + 1) ? _prev + 1 : _hOpens[hi].level;
-              _prev = _hOpens[hi].newLevel;
-            }
-            const _edits = [];
-            for (const op of _hOpens) {
-              if (op.newLevel === op.level) continue;
-              _edits.push({ pos: op.pos, oldStr: '<h' + op.level, newStr: '<h' + op.newLevel });
-              const _cm = '</h' + op.level + '>';
-              const _ci = accessibleHtml.indexOf(_cm, op.pos + op.openLen);
-              if (_ci !== -1) _edits.push({ pos: _ci, oldStr: _cm, newStr: '</h' + op.newLevel + '>' });
-              aiFixCount++;
-            }
-            _edits.sort((a, b) => b.pos - a.pos);
-            for (const e of _edits) accessibleHtml = accessibleHtml.slice(0, e.pos) + e.newStr + accessibleHtml.slice(e.pos + e.oldStr.length);
-          }
-        }
+        { const _hr = _collapseHeadingSkipsStrict(accessibleHtml); if (_hr.fixCount) { accessibleHtml = _hr.html; aiFixCount += _hr.fixCount; } } // (deduped into shared helper #8)
 
         // 10. Remove empty headings
         accessibleHtml = accessibleHtml.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, () => { aiFixCount++; return ''; });
