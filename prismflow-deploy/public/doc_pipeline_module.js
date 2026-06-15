@@ -27,12 +27,14 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 function _validateTableGrid(grid) {
   if (!grid || !Array.isArray(grid.rows) || grid.rows.length === 0) return { ok: false, reason: 'no-rows' };
   const pending = {}; // colIndex -> rows still occupied by a rowspan from above (incl. current)
+  const _rowHasInboundRowspan = {}; // rowIndex -> true when a rowspan from above covers >=1 col here
   let colCount = null;
   for (let r = 0; r < grid.rows.length; r++) {
     const cells = (grid.rows[r] && Array.isArray(grid.rows[r].cells)) ? grid.rows[r].cells : null;
     if (!cells) return { ok: false, reason: 'row-' + r + '-no-cells' };
     const occupied = {};
     for (const c in pending) { if (pending[c] > 0) occupied[c] = true; }
+    for (const c in occupied) { _rowHasInboundRowspan[r] = true; break; } // occupied here reflects ONLY inbound rowspans
     let col = 0, maxCol = 0;
     for (const cellRaw of cells) {
       const cell = cellRaw || {};
@@ -64,10 +66,13 @@ function _validateTableGrid(grid) {
     }
   }
   if (_hasHeader && !_hasScope) return { ok: false, reason: 'headers-without-scope' };
-  // 2. row-N-all-empty: a row whose every cell is empty after normalization — a
-  //    legitimate rowspan-continuation does NOT appear as explicit empty cells in
-  //    this grid model, so an all-empty row means Vision failed silently.
+  // 2. row-N-all-empty: a row whose every EXPLICIT cell is empty after normalization
+  //    means Vision failed silently — BUT only when the row is not (partly) covered by
+  //    an inbound rowspan. A rowspan-covered row legitimately supplies only its
+  //    uncovered columns as explicit cells (the covered columns carry real content
+  //    from above), so its remaining cells may be blank without the row being empty.
   for (let _ri = 0; _ri < grid.rows.length; _ri++) {
+    if (_rowHasInboundRowspan[_ri]) continue;
     const _rc = (grid.rows[_ri] && Array.isArray(grid.rows[_ri].cells)) ? grid.rows[_ri].cells : [];
     if (_rc.length >= 1 && _rc.every((c) => String((c && c.text) || '').replace(/\s+/g, ' ').trim() === '')) {
       return { ok: false, reason: 'row-' + _ri + '-all-empty' };
@@ -93,13 +98,16 @@ function _emitAccessibleTableHtml(grid, opts) {
   const headColor = opts.headColor || '#0f172a';
   const capText = ((opts.reconNote || '') + (grid.caption || '')).trim();
   const cap = capText ? '<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:' + (opts.reconAttr ? '#9333ea' : headColor) + '">' + esc(capText) + '</caption>' : '';
-  const cellHtml = function (cellRaw) {
+  const cellHtml = function (cellRaw, rowIdx) {
     const c = cellRaw || {};
     const isH = !!c.isHeader;
     const tag = isH ? 'th' : 'td';
     let attrs = '';
     if (isH) {
-      const sc = (['col', 'row', 'colgroup', 'rowgroup'].indexOf(c.scope) !== -1) ? c.scope : 'col';
+      // Explicit AI-declared scope wins; only the FALLBACK is geometry-aware — a header
+      // in grid row 0 labels its column (scope="col"), a header in any later row is a
+      // left-column row-header (scope="row"). Fixes wrong-axis SR reads. (tbl-scope-col0)
+      const sc = (['col', 'row', 'colgroup', 'rowgroup'].indexOf(c.scope) !== -1) ? c.scope : (rowIdx === 0 ? 'col' : 'row');
       attrs += ' scope="' + sc + '"';
     }
     const cs = Math.max(1, parseInt(c.colspan, 10) || 1); if (cs > 1) attrs += ' colspan="' + cs + '"';
@@ -109,12 +117,18 @@ function _emitAccessibleTableHtml(grid, opts) {
       : ' style="border:1px solid ' + border + ';padding:8px 12px"';
     return '<' + tag + attrs + style + '>' + esc(c.text) + '</' + tag + '>';
   };
-  const rowHtml = function (row) { return '<tr>' + ((row && row.cells) || []).map(cellHtml).join('') + '</tr>'; };
+  const rowHtml = function (row, rowIdx) { return '<tr>' + ((row && row.cells) || []).map(function (c) { return cellHtml(c, rowIdx); }).join('') + '</tr>'; };
   const rows = grid.rows;
-  const firstAllHeader = rows[0] && Array.isArray(rows[0].cells) && rows[0].cells.length > 0 && rows[0].cells.every(function (c) { return c && c.isHeader; });
+  const firstAllHeader = rows[0] && Array.isArray(rows[0].cells) && rows[0].cells.length > 0 && rows[0].cells.every(function (c) { return c && c.isHeader; })
+    // A row-0 cell that spans into body rows can't be hoisted into <thead> without HTML
+    // clamping its rowspan at the section boundary (column-shift); keep it in <tbody> as
+    // <th scope=...> instead — the header semantics still carry. (tbl-thead-rowspan)
+    && rows[0].cells.every(function (c) { return Math.max(1, parseInt(c && c.rowspan, 10) || 1) <= 1; });
   let thead = '', tbodyRows = rows;
-  if (firstAllHeader) { thead = '<thead>' + rowHtml(rows[0]) + '</thead>'; tbodyRows = rows.slice(1); }
-  const tbody = '<tbody>' + tbodyRows.map(rowHtml).join('') + '</tbody>';
+  if (firstAllHeader) { thead = '<thead>' + rowHtml(rows[0], 0) + '</thead>'; tbodyRows = rows.slice(1); }
+  // Pass the ABSOLUTE grid row index (tbodyRows is rows.slice(1) when row 0 was promoted,
+  // so offset by +1) so the scope fallback sees true geometry, not the slice index.
+  const tbody = '<tbody>' + tbodyRows.map(function (r, i) { return rowHtml(r, firstAllHeader ? i + 1 : i); }).join('') + '</tbody>';
   return '<table' + (opts.reconAttr ? ' data-allo-reconstructed="image"' : '') + ' style="width:100%;border-collapse:collapse;margin:1em 0">' + cap + thead + tbody + '</table>';
 }
 
@@ -11932,7 +11946,26 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                     reconAttr: _recon,
                   });
                 }
-                warnLog('[Table] grid failed span-consistency (' + _gv.reason + ') — reverting to flat headers/rows');
+                warnLog('[Table] grid failed span-consistency (' + _gv.reason + ') — flattening grid cells to a flat table (degraded, non-empty)');
+                // Render-time recovery: a grid that fails RE-validation here has no
+                // image to revert to (the original image is a separate sibling block
+                // already emitted), and this block carries NO headers/rows. Falling
+                // straight through would emit an EMPTY <table> (latent bug). Flatten the
+                // verbatim grid text into the flat headers/rows shape the path below
+                // consumes — degraded (scope/spans dropped) but readable and non-empty.
+                // Only synthesize when the flat shape is absent (preserve the documented
+                // grid+headers/rows backward-compat). (tbl-empty-table-latent)
+                if (!Array.isArray(block.headers) && !Array.isArray(block.rows)) {
+                  const _gr = block.grid.rows;
+                  const _cellTxt = (cells) => (Array.isArray(cells) ? cells : []).map(c => (c && c.text) || '');
+                  const _firstAllHeader = _gr[0] && Array.isArray(_gr[0].cells) && _gr[0].cells.length > 0 && _gr[0].cells.every(c => c && c.isHeader);
+                  if (_firstAllHeader) {
+                    block.headers = _cellTxt(_gr[0].cells);
+                    block.rows = _gr.slice(1).map(r => _cellTxt(r && r.cells));
+                  } else {
+                    block.rows = _gr.map(r => _cellTxt(r && r.cells));
+                  }
+                }
               }
               const cap = (block.caption || _recon) ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${_recon ? '#9333ea' : docStyle.headingColor}">`+sanitizeField(_reconNote + (block.caption || ''))+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];

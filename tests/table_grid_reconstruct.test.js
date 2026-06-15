@@ -83,6 +83,24 @@ describe('_validateTableGrid — span consistency', () => {
     expect(_validateTableGrid({ rows: [row(td('a'), td('b')), row(td('c'), td('d'))] }).ok).toBe(true);
     expect(_validateTableGrid({ rows: [row(th('A'), th('B')), row(td('x'), td(''))] }).ok).toBe(true);
   });
+
+  // tbl-empty-row (2026-06-15): the all-empty-row guard must NOT revert a row whose
+  // only explicit cells are blank because the rest of the row is covered by an
+  // inbound rowspan carrying real content from above.
+  it('accepts a blank row that is covered by an inbound rowspan (was wrongly reverted)', () => {
+    // col0 spans both rows ("Category A"); row 1 supplies only the uncovered col, blank.
+    const r = _validateTableGrid({ rows: [row(td('Category A', { rowspan: 2 }), td('x')), row(td(''))] });
+    expect(r.ok).toBe(true);
+    expect(r.cols).toBe(2);
+  });
+  it('accepts a multi-col partially-covered row whose uncovered cells are blank', () => {
+    const r = _validateTableGrid({ rows: [row(td('A', { rowspan: 2 }), td('B'), td('C')), row(td(''), td(''))] });
+    expect(r.ok).toBe(true);
+  });
+  it('still reverts an UNcovered all-empty row even when the grid has rowspans elsewhere (per-row skip)', () => {
+    const r = _validateTableGrid({ rows: [row(td('A', { rowspan: 2 }), td('B')), row(td('')), row(td(''), td(''))] });
+    expect(r).toEqual({ ok: false, reason: 'row-2-all-empty' });
+  });
 });
 
 describe('_emitAccessibleTableHtml', () => {
@@ -121,5 +139,43 @@ describe('_emitAccessibleTableHtml', () => {
   it('defaults an unknown scope to col', () => {
     const html = _emitAccessibleTableHtml({ rows: [row(th('H', { scope: 'bogus' }))] }, { sanitize: esc });
     expect(html).toContain('scope="col"');
+  });
+
+  // tbl-scope-col0 (2026-06-15): a scope-less header's FALLBACK is geometry-aware —
+  // row 0 → col (labels its column), any later row → row (left-column row header).
+  // Explicit AI-declared scope still wins verbatim.
+  it('infers scope="row" for a scope-less left-column header below row 0, scope="col" for the header row', () => {
+    const html = _emitAccessibleTableHtml(
+      { rows: [row(th('Name'), th('Age')), row({ text: 'Ada', isHeader: true }, td('36'))] },
+      { sanitize: esc }
+    );
+    expect(html).toMatch(/<thead><tr><th scope="col"[^>]*>Name</);
+    expect(html).toMatch(/<th scope="row"[^>]*>Ada</); // pre-fix this shipped scope="col" (wrong axis)
+  });
+  it('uses the ABSOLUTE grid row index when row 0 is not promoted (no +1 offset bug)', () => {
+    // first row is mixed (header + data) → not all-header → no thead, no slice offset
+    const html = _emitAccessibleTableHtml(
+      { rows: [row({ text: 'X', isHeader: true }, td('1')), row({ text: 'Y', isHeader: true }, td('2'))] },
+      { sanitize: esc }
+    );
+    expect(html).toMatch(/<th scope="col"[^>]*>X</); // grid row 0 → col
+    expect(html).toMatch(/<th scope="row"[^>]*>Y</); // grid row 1 → row
+  });
+
+  // tbl-thead-rowspan (2026-06-15): a row-0 header that spans into body rows must NOT
+  // be hoisted into <thead> (HTML clamps the rowspan at the section boundary →
+  // column-shift); keep the whole table in <tbody> as <th scope=...>.
+  it('does not promote a row-0 header with rowspan>1 into thead (avoids column-shift)', () => {
+    const html = _emitAccessibleTableHtml(
+      { rows: [row(th('Side', { rowspan: 2 }), th('Top')), row(td('x'))] },
+      { sanitize: esc }
+    );
+    expect(html).not.toContain('<thead>');
+    expect(html).toContain('rowspan="2"');
+    expect(html).toContain('<th'); // header semantics preserved via th scope
+  });
+  it('still promotes an all-header row 0 with NO rowspan into thead (no regression)', () => {
+    const html = _emitAccessibleTableHtml({ rows: [row(th('Name'), th('Age')), row(td('Ada'), td('36'))] }, { sanitize: esc });
+    expect(html).toContain('<thead>');
   });
 });
