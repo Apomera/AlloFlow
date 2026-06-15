@@ -1008,36 +1008,32 @@ async function _concatAudioBlobs(blobs) {
   if (!isWav) {
     return new Blob(blobs, { type: blobs[0].type || "audio/mpeg" });
   }
-  const pcms = [];
-  const rates = [];
-  for (let i = 0; i < blobs.length; i++) {
-    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
-    if (buf.length <= 44 || buf[0] !== 82 || buf[1] !== 73 || buf[2] !== 70 || buf[3] !== 70) continue;
-    let dataStart = 44;
-    let segRate = 0;
+  const _parsePcm = function(buf) {
+    if (buf.length <= 44 || buf[0] !== 82 || buf[1] !== 73 || buf[2] !== 70 || buf[3] !== 70) return null;
+    let dataStart = 44, rate = 0;
     for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
-      if (segRate === 0 && buf[j] === 102 && buf[j + 1] === 109 && buf[j + 2] === 116 && buf[j + 3] === 32) {
+      if (rate === 0 && buf[j] === 102 && buf[j + 1] === 109 && buf[j + 2] === 116 && buf[j + 3] === 32) {
         const o = j + 12;
-        segRate = buf[o] | buf[o + 1] << 8 | buf[o + 2] << 16 | buf[o + 3] << 24;
+        rate = buf[o] | buf[o + 1] << 8 | buf[o + 2] << 16 | buf[o + 3] << 24;
       }
       if (buf[j] === 100 && buf[j + 1] === 97 && buf[j + 2] === 116 && buf[j + 3] === 97) {
         dataStart = j + 8;
         break;
       }
     }
-    if (segRate > 0) rates.push(segRate);
-    pcms.push(buf.subarray(dataStart));
+    return { dataStart, len: buf.length - dataStart, rate };
+  };
+  const rates = [];
+  let total = 0, used = 0;
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
+    const m = _parsePcm(buf);
+    if (!m) continue;
+    if (m.rate > 0) rates.push(m.rate);
+    total += m.len;
+    used++;
   }
-  if (pcms.length === 0) return null;
-  const total = pcms.reduce(function(n, p) {
-    return n + p.length;
-  }, 0);
-  const pcm = new Uint8Array(total);
-  let off = 0;
-  for (let i = 0; i < pcms.length; i++) {
-    pcm.set(pcms[i], off);
-    off += pcms[i].length;
-  }
+  if (used === 0) return null;
   const sampleRate = rates[0] || 24e3, numCh = 1, bps = 16;
   if (rates.length > 1 && rates.some(function(r) {
     return r !== rates[0];
@@ -1048,13 +1044,13 @@ async function _concatAudioBlobs(blobs) {
     }
   }
   const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
-  const outBuf = new ArrayBuffer(44 + pcm.length);
+  const outBuf = new ArrayBuffer(44 + total);
   const dv = new DataView(outBuf);
   const ws = function(o, s) {
     for (let k = 0; k < s.length; k++) dv.setUint8(o + k, s.charCodeAt(k));
   };
   ws(0, "RIFF");
-  dv.setUint32(4, 36 + pcm.length, true);
+  dv.setUint32(4, 36 + total, true);
   ws(8, "WAVE");
   ws(12, "fmt ");
   dv.setUint32(16, 16, true);
@@ -1065,8 +1061,16 @@ async function _concatAudioBlobs(blobs) {
   dv.setUint16(32, blockAlign, true);
   dv.setUint16(34, bps, true);
   ws(36, "data");
-  dv.setUint32(40, pcm.length, true);
-  new Uint8Array(outBuf, 44).set(pcm);
+  dv.setUint32(40, total, true);
+  const outPcm = new Uint8Array(outBuf, 44);
+  let poff = 0;
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = new Uint8Array(await blobs[i].arrayBuffer());
+    const m = _parsePcm(buf);
+    if (!m) continue;
+    outPcm.set(buf.subarray(m.dataStart), poff);
+    poff += m.len;
+  }
   return new Blob([outBuf], { type: "audio/wav" });
 }
 function _deriveDocMeta(accessibleHtml, fileName) {

@@ -1167,29 +1167,32 @@ async function _concatAudioBlobs(blobs) {
     // Non-WAV (e.g. MP3 fallback): frame concatenation is valid; keep prior behavior.
     return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
   }
-  // WAV: strip each file to its PCM data chunk, then write a single canonical header.
-  const pcms = [];
-  const rates = [];
-  for (let i = 0; i < blobs.length; i++) {
-    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
-    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) continue; // skip non-RIFF
-    let dataStart = 44; // canonical header; scan for the 'data' chunk to be safe
-    let segRate = 0;
+  // WAV: two-pass single-allocation stitch (perf-audio-concat) — parse each segment's PCM
+  // extent WITHOUT retaining whole buffers (pass 1 sizes + collects rates; pass 2 re-reads
+  // and copies, releasing each buffer as it goes), collapsing the old ~3x peak (pcms[] +
+  // joined pcm + outBuf) to ~1x outBuf + one transient segment. Byte-identical output.
+  const _parsePcm = function (buf) {
+    if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return null; // non-RIFF
+    let dataStart = 44, rate = 0; // canonical header; scan for the 'fmt '/'data' chunks to be safe
     for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
-      // 'fmt ' chunk — sampleRate is the little-endian uint32 12 bytes into it
-      if (segRate === 0 && buf[j] === 0x66 && buf[j + 1] === 0x6d && buf[j + 2] === 0x74 && buf[j + 3] === 0x20) {
-        const o = j + 12; segRate = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24);
+      if (rate === 0 && buf[j] === 0x66 && buf[j + 1] === 0x6d && buf[j + 2] === 0x74 && buf[j + 3] === 0x20) { // 'fmt '
+        const o = j + 12; rate = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24);
       }
       if (buf[j] === 0x64 && buf[j + 1] === 0x61 && buf[j + 2] === 0x74 && buf[j + 3] === 0x61) { dataStart = j + 8; break; } // 'data'
     }
-    if (segRate > 0) rates.push(segRate);
-    pcms.push(buf.subarray(dataStart));
+    return { dataStart: dataStart, len: buf.length - dataStart, rate: rate };
+  };
+  // Pass 1 — size + collect rates; each buf falls out of scope per iteration (no retention).
+  const rates = [];
+  let total = 0, used = 0;
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
+    const m = _parsePcm(buf);
+    if (!m) continue;
+    if (m.rate > 0) rates.push(m.rate);
+    total += m.len; used++;
   }
-  if (pcms.length === 0) return null;
-  const total = pcms.reduce(function (n, p) { return n + p.length; }, 0);
-  const pcm = new Uint8Array(total);
-  let off = 0;
-  for (let i = 0; i < pcms.length; i++) { pcm.set(pcms[i], off); off += pcms[i].length; }
+  if (used === 0) return null;
   // Use the segments' ACTUAL sample rate (was hardcoded 24000 — wrong for the 22.05 kHz Piper
   // fallback, which then played the whole file ~8.8% fast/pitched-up). Mixed rates across
   // segments can't share one header correctly, so use the first and warn (rare: one TTS
@@ -1199,15 +1202,23 @@ async function _concatAudioBlobs(blobs) {
     try { (typeof warnLog === 'function' ? warnLog : console.warn)('[Audio] mixed WAV sample rates ' + JSON.stringify(rates) + ' — using ' + sampleRate + 'Hz; off-rate segments may play at the wrong speed.'); } catch (_) {}
   }
   const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
-  const outBuf = new ArrayBuffer(44 + pcm.length);
+  const outBuf = new ArrayBuffer(44 + total);
   const dv = new DataView(outBuf);
   const ws = function (o, s) { for (let k = 0; k < s.length; k++) dv.setUint8(o + k, s.charCodeAt(k)); };
-  ws(0, 'RIFF'); dv.setUint32(4, 36 + pcm.length, true); ws(8, 'WAVE');
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + total, true); ws(8, 'WAVE');
   ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, numCh, true);
   dv.setUint32(24, sampleRate, true); dv.setUint32(28, byteRate, true);
   dv.setUint16(32, blockAlign, true); dv.setUint16(34, bps, true);
-  ws(36, 'data'); dv.setUint32(40, pcm.length, true);
-  new Uint8Array(outBuf, 44).set(pcm);
+  ws(36, 'data'); dv.setUint32(40, total, true);
+  // Pass 2 — re-read each blob (immutable in-memory), copy its PCM into outBuf, release it.
+  const outPcm = new Uint8Array(outBuf, 44);
+  let poff = 0;
+  for (let i = 0; i < blobs.length; i++) {
+    const buf = new Uint8Array(await blobs[i].arrayBuffer());
+    const m = _parsePcm(buf);
+    if (!m) continue;
+    outPcm.set(buf.subarray(m.dataStart), poff); poff += m.len;
+  }
   return new Blob([outBuf], { type: 'audio/wav' });
 }
 
