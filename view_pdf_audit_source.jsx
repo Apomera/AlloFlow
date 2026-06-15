@@ -7336,8 +7336,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         📐 Save Structure as Template (for future documents)
                       </button>
 
-                      {/* Alternative Formats (matching Anthology Ally feature set) */}
-                      <details data-help-key="pdf_audit_alt_formats_summary" className="group">
+                      {/* Alternative Formats (matching Anthology Ally feature set).
+                          Open by default (2026-06-14) so ePub / Braille (BRF) / Plain
+                          text / Markdown are visible on the results screen instead of
+                          hidden behind a collapsed disclosure — Braille discoverability. */}
+                      <details data-help-key="pdf_audit_alt_formats_summary" className="group" open>
                         <summary className="text-[11px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
                           📑 {t('pdf_audit.alt_formats.heading') || 'Alternative Formats'} <span className="normal-case font-normal text-slate-500">{t('pdf_audit.alt_formats.list') || '— EPUB · Braille (BRF) · Plain text · Markdown'}</span> <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
