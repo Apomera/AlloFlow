@@ -227,3 +227,37 @@ describe('EPUB3 MO — blob-less segments (2026-06-15 P0: one failed TTS must no
     expect((_buildMoSmil(segs, [1, 2, 3], 'mp3').match(/<audio /g) || []).length).toBe(3);
   });
 });
+
+describe('EPUB/DAISY well-formedness + navigation (2026-06-15 third-review fixes)', () => {
+  it('#1 read-along body is WELL-FORMED XHTML even with void elements (<input>/<col>) + named entities', () => {
+    // pre-fix: innerHTML left <input>/<col> unclosed and &mdash; undefined in XML → epubcheck rejects
+    const { bodyHtml } = _collectMoSegments(wrap('<p>Section&mdash;A</p><input data-allo-field="x"><table><col/><tr><td>cell</td></tr></table>'));
+    const xhtml = '<html xmlns="http://www.w3.org/1999/xhtml"><body>' + bodyHtml + '</body></html>';
+    const { wellFormed, err } = parseXml(xhtml);
+    expect(wellFormed, err).toBe(true);   // the whole point: parses as application/xml
+    expect(bodyHtml).toContain('input');  // the fillable field survives (just self-closed)
+  });
+
+  it('#2 every DAISY NCX navPoint anchor resolves to a matching heading id in the DTBook', () => {
+    const html = wrap('<h1>Alpha</h1><p>x</p><h2>Beta</h2><p>y</p><h2>Gamma</h2>');
+    const ncx = _htmlToDaisyNcx(html, 'Doc');
+    const dtbook = _htmlToDtbookXml(html, 'en');
+    const anchors = [...ncx.matchAll(/dtbook\.xml#(h\d+)/g)].map((m) => m[1]);
+    expect(anchors.length).toBe(3);                         // one per heading
+    for (const a of anchors) expect(dtbook).toContain('id="' + a + '"'); // pre-fix: all dangling
+  });
+
+  it('#2 the injected title/Notes <h1> do NOT consume a heading id (counter stays aligned)', () => {
+    // content before any heading injects a title <h1>; it must not get id="h1" (the NCX skips it)
+    const html = wrap('<p>leading body</p><h1>Real First Heading</h1>');
+    const dtbook = _htmlToDtbookXml(html, 'en');
+    expect(dtbook).toMatch(/<h1 id="h1">Real First Heading<\/h1>/);
+  });
+
+  it('#4 DTBook renders image alt as a labelled paragraph, not an empty <imggroup>', () => {
+    const dtbook = _htmlToDtbookXml(wrap('<h1>T</h1><img alt="A bar chart of class scores"/><p>body</p>'), 'en');
+    expect(dtbook).not.toContain('<imggroup');                        // invalid content model removed
+    expect(dtbook).toContain('[Image: A bar chart of class scores]'); // alt preserved
+    expect(parseXml(dtbook).wellFormed).toBe(true);
+  });
+});

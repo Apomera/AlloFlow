@@ -381,6 +381,7 @@ function _htmlToDtbookXml(html, lang) {
   const title = _expXmlEsc(spec.title || "Document");
   const out = [];
   let depth = 0;
+  let headingSeq = 0;
   const ensureContentLevel = () => {
     if (depth === 0) {
       out.push("<level1>");
@@ -400,7 +401,7 @@ function _htmlToDtbookXml(html, lang) {
         out.push("<level" + depth + ">");
       }
       const _h = _expDtbookRuns(b.runs);
-      out.push("<h" + lvl + ">" + (_h || title) + "</h" + lvl + ">");
+      out.push("<h" + lvl + ' id="h' + ++headingSeq + '">' + (_h || title) + "</h" + lvl + ">");
     } else if (b.type === "paragraph") {
       ensureContentLevel();
       out.push("<p>" + _expDtbookRuns(b.runs) + "</p>");
@@ -415,7 +416,7 @@ function _htmlToDtbookXml(html, lang) {
       }).join("") + "</tr>").join("") + "</table>");
     } else if (b.type === "image") {
       ensureContentLevel();
-      if (b.alt) out.push("<p><imggroup><caption>" + _expXmlEsc(b.alt) + "</caption></imggroup></p>");
+      if (b.alt) out.push("<p>[Image: " + _expXmlEsc(b.alt) + "]</p>");
     }
   }
   while (depth > 0) {
@@ -487,7 +488,14 @@ function _collectMoSegments(html) {
     if (!el.getAttribute("id")) el.setAttribute("id", "mo" + i);
     segments.push({ id: el.getAttribute("id"), text });
   });
-  return { segments, bodyHtml: root.innerHTML, lang: doc.documentElement.getAttribute("lang") || "en" };
+  let bodyHtml;
+  try {
+    const _xs = new XMLSerializer();
+    bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join("").replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, "");
+  } catch (_) {
+    bodyHtml = root.innerHTML;
+  }
+  return { segments, bodyHtml, lang: doc.documentElement.getAttribute("lang") || "en" };
 }
 function _buildMoSmil(segments, durations, ext, hasAudio) {
   const _ext = ext || "mp3";
@@ -6081,7 +6089,13 @@ Return ONLY JSON:
   <spine><itemref idref="content"/></spine>
 </package>`;
       zip.file("OEBPS/content.opf", opf);
-      let xhtml = html.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
+      let xhtml;
+      try {
+        const _d = new DOMParser().parseFromString(html, "text/html");
+        xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, "");
+      } catch (_) {
+        xhtml = html.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
+      }
       if (!xhtml.includes("xmlns")) xhtml = xhtml.replace("<html", '<html xmlns="http://www.w3.org/1999/xhtml"');
       zip.file("OEBPS/content.xhtml", xhtml);
       const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];

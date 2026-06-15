@@ -400,6 +400,7 @@ function _htmlToDtbookXml(html, lang) {
   const title = _expXmlEsc(spec.title || 'Document');
   const out = [];
   let depth = 0;
+  let headingSeq = 0; // matches _htmlToDaisyNcx's per-heading index so navPoints resolve (#2)
   const ensureContentLevel = () => { if (depth === 0) { out.push('<level1>'); out.push('<h1>' + title + '</h1>'); depth = 1; } };
   for (const b of (spec.blocks || [])) {
     if (b.type === 'heading') {
@@ -407,7 +408,10 @@ function _htmlToDtbookXml(html, lang) {
       while (depth >= lvl) { out.push('</level' + depth + '>'); depth--; }
       while (depth < lvl) { depth++; out.push('<level' + depth + '>'); }
       const _h = _expDtbookRuns(b.runs);
-      out.push('<h' + lvl + '>' + (_h || title) + '</h' + lvl + '>');
+      // id="hN" so the NCX navPoint content src="dtbook.xml#hN" resolves (was a dangling anchor →
+      // every TOC jump landed at page 1). Counter increments ONLY here, matching the NCX which
+      // counts only spec.blocks headings — NOT the injected title/Notes <h1>. (#2)
+      out.push('<h' + lvl + ' id="h' + (++headingSeq) + '">' + (_h || title) + '</h' + lvl + '>');
     } else if (b.type === 'paragraph') {
       ensureContentLevel();
       out.push('<p>' + _expDtbookRuns(b.runs) + '</p>');
@@ -419,7 +423,10 @@ function _htmlToDtbookXml(html, lang) {
       out.push('<table>' + (b.rows || []).map((r) => '<tr>' + (r.cells || []).map((c) => { const tg = c.header ? 'th' : 'td'; return '<' + tg + '>' + _expDtbookRuns(c.runs) + '</' + tg + '>'; }).join('') + '</tr>').join('') + '</table>');
     } else if (b.type === 'image') {
       ensureContentLevel();
-      if (b.alt) out.push('<p><imggroup><caption>' + _expXmlEsc(b.alt) + '</caption></imggroup></p>');
+      // alt-only degrade as a plain labelled paragraph — a DTBook <imggroup> with no <img> child
+      // violates the 2005-3 content model (strict DAISY tools reject it), and no image bytes are
+      // packaged in the DAISY zip so a real <img src> would dangle. Mirrors the ODT/DOCX fallback. (#4)
+      if (b.alt) out.push('<p>[Image: ' + _expXmlEsc(b.alt) + ']</p>');
     }
   }
   while (depth > 0) { out.push('</level' + depth + '>'); depth--; }
@@ -537,7 +544,17 @@ function _collectMoSegments(html) {
     if (!el.getAttribute('id')) el.setAttribute('id', 'mo' + i);
     segments.push({ id: el.getAttribute('id'), text });
   });
-  return { segments, bodyHtml: root.innerHTML, lang: (doc.documentElement.getAttribute('lang') || 'en') };
+  // Serialize as XML, not innerHTML: the read-along content.xhtml is application/xhtml+xml and MUST
+  // be well-formed. innerHTML leaves void elements unclosed (<input data-allo-field>, <col>, <source>,
+  // …) and named entities (&mdash; &copy;) that are undefined in XML, so epubcheck / Apple Books /
+  // Thorium reject the WHOLE EPUB with a parse error — while the toast claims success. XMLSerializer
+  // self-closes void elements and emits literal chars; strip the per-child redundant xhtml xmlns. (#1)
+  let bodyHtml;
+  try {
+    const _xs = new XMLSerializer();
+    bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+  } catch (_) { bodyHtml = root.innerHTML; }
+  return { segments, bodyHtml, lang: (doc.documentElement.getAttribute('lang') || 'en') };
 }
 // SMIL overlay: one <par> per segment. Per-segment audio files, so each clip is
 // 0..duration of its own file. `ext` is the audio extension (mp3 by default;
@@ -7925,7 +7942,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
   <spine><itemref idref="content"/></spine>
 </package>`;
                             zip.file('OEBPS/content.opf', opf);
-                            let xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                            // Serialize the whole doc as XML so content.xhtml is well-formed: the
+                            // old hand-rolled regex only self-closed <br>/<hr>/<img> and missed
+                            // <input>/<col>/<source>/<wbr> + named entities, which epubcheck/Apple
+                            // Books reject. XMLSerializer handles all void elements + entities. (#1)
+                            let xhtml;
+                            try {
+                              const _d = new DOMParser().parseFromString(html, 'text/html');
+                              xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
+                            } catch (_) { xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;'); }
                             if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
                             zip.file('OEBPS/content.xhtml', xhtml);
                             const headings = [...html.matchAll(/<h([1-3])[^>]*id="([^"]*)"[^>]*>([^<]+)/gi)];
