@@ -330,6 +330,21 @@ window.StemLab = window.StemLab || {
     var wrong2 = parseFloat((gen.a * (0.2 + Math.random() * 0.5)).toFixed(decimals));
     var wrong3 = parseFloat((gen.a + (Math.random() > 0.5 ? 1 : -1) * (gen.a * 0.3 + 5)).toFixed(decimals));
     if (wrong2 <= 0) wrong2 = parseFloat((gen.a * 2.5).toFixed(decimals));
+    // Distractors must be positive and distinct from the correct answer AND each other, else a negative
+    // option could appear (~21% of questions) or a distractor within tolerance would score as correct
+    // (inflating XP). Repair any bad option with deterministic fallback multipliers.
+    var _qTol = 0.01;
+    var _qFallback = [2.5, 0.4, 1.7, 3.3, 0.6, 1.25];
+    var _qSeen = {}; _qSeen[gen.a.toFixed(decimals)] = true;
+    var _fixOpt = function (w) {
+      var fi = 0;
+      while ((!(w > 0) || Math.abs(w - gen.a) < _qTol || _qSeen[w.toFixed(decimals)]) && fi < _qFallback.length) {
+        w = parseFloat((gen.a * _qFallback[fi]).toFixed(decimals)); fi++;
+      }
+      _qSeen[w.toFixed(decimals)] = true;
+      return w;
+    };
+    wrong1 = _fixOpt(wrong1); wrong2 = _fixOpt(wrong2); wrong3 = _fixOpt(wrong3);
     var opts = [gen.a, wrong1, wrong2, wrong3].sort(function() { return Math.random() - 0.5; });
     return { text: gen.q, answer: gen.a, unit: gen.unit, formula: gen.formula, opts: opts, answered: false };
   }
@@ -576,7 +591,9 @@ window.StemLab = window.StemLab || {
           var hasOpenSwitch = mode === 'series' && components.some(function(c) { return c.type === 'switch' && !c.closed; });
 
           var totalR;
-          if (hasOpenSwitch) {
+          // An empty canvas is an OPEN circuit (no path): I = 0, R = infinite. Without this it fell
+          // through to the 0.001-ohm floor and reported ~9000 A / 81000 W on first open.
+          if (hasOpenSwitch || components.length === 0) {
             totalR = 1e9;
           } else if (mode === 'series') {
             totalR = components.reduce(function(s, c) { return s + getCompR(c); }, 0) || 0.001;
@@ -589,7 +606,7 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          var current = hasOpenSwitch ? 0 : voltage / totalR;
+          var current = (hasOpenSwitch || components.length === 0) ? 0 : voltage / totalR;
           var power = voltage * current;
           var isShort = components.length > 0 && totalR < 1 && !hasOpenSwitch;
           var isOpen = hasOpenSwitch;
@@ -1102,7 +1119,7 @@ window.StemLab = window.StemLab || {
                 }),
 
                 // Empty state
-                components.length === 0 && h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '12px', fontFamily: 'monospace', fontWeight: 'bold' } }, 'Add components below')
+                components.length === 0 && h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '12px', fontFamily: 'monospace', fontWeight: 'bold' } }, 'Add components below')
               ),
 
               // Transparent HTML5 canvas overlay for short circuit particles
@@ -1991,7 +2008,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Footer
-            h('p', { className: 'text-[9px] text-center text-slate-500 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
+            h('p', { className: 'text-[10px] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C Circuit Builder \u2022 Ohm\'s Law: V = IR \u2022 Power: P = IV')
           );
         };
       }
@@ -2840,7 +2857,7 @@ window.StemLab = window.StemLab || {
       ];
 
       var UNITS_CONSTANTS = [
-        { quantity: 'Charge (Q)', unit: 'coulomb (C)', notes: '1 C = 6.24×10¹⁸ electrons. AA battery delivers ~2 C/sec at 0.5 A.' },
+        { quantity: 'Charge (Q)', unit: 'coulomb (C)', notes: '1 C = 6.24×10¹⁸ electrons. AA battery delivers ~0.5 C/sec at 0.5 A.' },
         { quantity: 'Current (I)', unit: 'ampere (A)', notes: '1 A = 1 C/sec. Lethal current threshold: ~100 mA through chest.' },
         { quantity: 'Voltage (V)', unit: 'volt (V)', notes: '1 V = 1 J/C. AA: 1.5 V. Mains: 120/240 V. Tesla coil: kV-MV.' },
         { quantity: 'Resistance (R)', unit: 'ohm (Ω)', notes: '1 Ω = 1 V/A. Human skin (dry): ~100 kΩ. Wet: ~1 kΩ — much more dangerous.' },
