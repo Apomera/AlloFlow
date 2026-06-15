@@ -15,7 +15,7 @@ import { resetStemLab, loadTool, renderTool } from './helpers/stem_widgets_smoke
 // The quiz shuffles its options with Math.random(); freeze it so digests are stable.
 
 const FILE = 'stem_lab/stem_tool_brainatlas.js';
-const VIEWS = ['lateral', 'medial', 'superior', 'inferior', 'neurotransmitters', 'neuron', 'sleepStages', 'eegWaves', 'crossLateral'];
+const VIEWS = ['lateral', 'medial', 'superior', 'inferior', 'neurotransmitters', 'neuron', 'synapses', 'sleepStages', 'eegWaves', 'crossLateral'];
 
 function digest(html) {
   const count = (re) => (html.match(re) || []).length;
@@ -73,6 +73,15 @@ describe('brainAtlas render goldens', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ quizMode: true, quizIdx: 0 });
     expect(digest(html)).toMatchSnapshot();
+  });
+
+  it('synapses view: pruning + integrity-hedged neurodiversity content present', () => {
+    loadTool(FILE, 'brainAtlas');
+    const html = render({ view: 'synapses', selectedRegion: 'pruning' });
+    expect(html).toMatch(/use it or lose it/i);
+    expect(html).toMatch(/autism/i);
+    expect(html).toMatch(/Tang/);            // the cited evidence
+    expect(html).toMatch(/NOT diagnostic/i); // the integrity hedge
   });
 
   it('INTEGRITY: the felt-state disclaimer survives (the exemplar the review flagged)', () => {

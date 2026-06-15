@@ -289,6 +289,18 @@ var d = labToolData.brainAtlas || {};
               ]
 
             },
+            synapses: {
+              name: '\uD83D\uDD17 Synapse & Development', desc: 'How synapses form, get pruned, and mature across the lifespan', 
+              isSynapse: true,
+              regions: [
+                { id: 'synaptogenesis', name: 'Synaptogenesis (synapse formation)', x: 0.30, y: 0.30, w: 0.08, fn: 'Synapse formation. After birth the brain massively OVERPRODUCES synapses (exuberant synaptogenesis), reaching roughly twice adult density in early childhood. Timing differs by region: sensory and motor areas peak in the first 1-2 years, the prefrontal cortex peaks later (around ages 3-5). Driven by genetic programs plus early sensory and social experience.', conditions: 'Fragile X syndrome: failure of normal spine maturation leaves an excess of long, thin, immature dendritic spines.', damage: 'Too few synapses (early deprivation) limits the raw material that later experience can shape.' },
+                { id: 'pruning', name: 'Synaptic pruning', x: 0.50, y: 0.30, w: 0.08, fn: 'Experience-dependent elimination of weaker or unused synapses: a "use it or lose it" sculpting that makes circuits more efficient. Microglia and astrocytes physically engulf synapses, in part tagged by immune-complement proteins (C1q, C3). Sensory and motor circuits prune first (childhood); the prefrontal cortex prunes LAST, continuing into the mid-20s.', conditions: 'Atypical pruning is associated at the GROUP level with autism (evidence of REDUCED pruning and excess spines: Tang et al. 2014, mTOR/autophagy) and schizophrenia (evidence of EXCESSIVE adolescent pruning: Sekar et al. 2016, complement C4). These are real research associations, NOT diagnostic tests and NOT the whole cause.', damage: 'Too little pruning (excess noisy connections) or too much (loss of needed circuits) can both disrupt typical development.' },
+                { id: 'critical_periods', name: 'Critical & sensitive periods', x: 0.70, y: 0.30, w: 0.08, fn: 'Windows when a circuit is maximally plastic and shaped by experience. Vision has a well-defined critical period (ocular dominance: Hubel and Wiesel); native-language phonology is largely set in the first years. Most learning uses gentler SENSITIVE periods that stay partly open for life. Window closure is gated by maturation of inhibitory (PV+/GABA) circuits and perineuronal nets.', conditions: 'Untreated congenital cataract or strabismus during the visual critical period causes lasting amblyopia. Severe early deprivation has outsized, harder-to-reverse effects.', damage: 'Missing experience during a critical period produces deficits that later input only partly corrects.' },
+                { id: 'myelination_dev', name: 'Myelination (development)', x: 0.30, y: 0.55, w: 0.08, fn: 'Glial wrapping of axons (oligodendrocytes in the CNS) that speeds conduction up to ~100x through saltatory conduction. It proceeds back-to-front: sensory and motor tracts myelinate early, while prefrontal and association cortex myelinate LAST, continuing into the mid-to-late 20s. A major reason executive control keeps maturing through the teens and early 20s.', conditions: 'Multiple sclerosis (CNS demyelination); leukodystrophies; preterm white-matter injury (periventricular leukomalacia).', damage: 'Demyelination slows or blocks conduction, producing weakness, numbness, and fatigue.' },
+                { id: 'neuroplasticity', name: 'Neuroplasticity (lifelong)', x: 0.50, y: 0.55, w: 0.08, fn: 'The brain keeps rewiring throughout life: synapses strengthen and weaken (LTP/LTD), dendritic spines form and disappear, and the hippocampus shows limited new-neuron formation. Plasticity is real and lifelong, but BOUNDED: commercial "brain-training" usually shows gains on the trained task with little transfer to untrained skills.', conditions: 'Harnessed in stroke and injury rehabilitation (constraint-induced movement therapy). Maladaptive plasticity contributes to chronic pain and phantom-limb sensation.', damage: 'Reduced plasticity slows learning and recovery; runaway plasticity can entrench maladaptive circuits.' },
+                { id: 'adolescent_remodel', name: 'Adolescent remodeling', x: 0.70, y: 0.55, w: 0.08, fn: 'Adolescence is a second window of large-scale remodeling: prefrontal pruning and myelination plus changes in the dopamine system. The limbic/reward system matures EARLIER than prefrontal control, a normal developmental gap (not a deficit) linked to greater risk-taking, novelty-seeking, and sensitivity to peers. This is typical maturation, not damage.', conditions: 'Many psychiatric conditions first emerge in adolescence as these circuits remodel; this is an association, not a simple cause.' }
+              ]
+            },
             sleepStages: {
 
               name: '\u{1F4A4} Sleep Stages', desc: 'Hypnogram visualization \u2014 sleep architecture across a full night',
@@ -2694,6 +2706,37 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.restore();
 
+              } else if (currentView.isSynapse) {
+                // ── Synaptic density across the lifespan (Huttenlocher-style) ──
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                var mL = 64, mR = 28, mT = 70, mB = 66;
+                var pW = W - mL - mR, pH = H - mT - mB, x0 = mL, y0 = mT, yB = mT + pH;
+                ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('Synapse density across the lifespan', W / 2, 28);
+                ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif';
+                ctx.fillText('Overproduction in early childhood, then experience-dependent pruning', W / 2, 46);
+                var ageX = function (a) { var f = a <= 25 ? (a / 25) * 0.78 : 0.78 + ((a - 25) / 45) * 0.22; return x0 + f * pW; };
+                var densY = function (dn) { return yB - dn * pH; };
+                ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, yB); ctx.lineTo(x0 + pW, yB); ctx.stroke();
+                ctx.fillStyle = '#64748b'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+                [0, 1, 2, 5, 10, 15, 20, 25, 40, 70].forEach(function (a) { var x = ageX(a); ctx.beginPath(); ctx.moveTo(x, yB); ctx.lineTo(x, yB + 4); ctx.stroke(); ctx.fillText(a + (a === 70 ? '+' : ''), x, yB + 16); });
+                ctx.fillText('Age (years)', x0 + pW / 2, yB + 34);
+                ctx.save(); ctx.translate(18, y0 + pH / 2); ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center'; ctx.fillStyle = '#94a3b8'; ctx.fillText('Relative synapse density', 0, 0); ctx.restore();
+                var drawCurve = function (pts, color) { ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath(); pts.forEach(function (p, i) { var x = ageX(p[0]), y = densY(p[1]); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); };
+                drawCurve([[0, 0.32], [0.5, 0.86], [1, 1.0], [2, 0.96], [4, 0.82], [8, 0.66], [12, 0.6], [20, 0.58], [70, 0.55]], "#22d3ee");
+                drawCurve([[0, 0.26], [1, 0.62], [3, 0.92], [5, 1.0], [10, 0.9], [15, 0.8], [20, 0.7], [25, 0.62], [40, 0.6], [70, 0.58]], "#f59e0b");
+                ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillStyle = '#22c55e'; ctx.fillText('synaptogenesis', ageX(2), densY(1.06));
+                ctx.fillStyle = '#fb7185'; ctx.fillText('pruning', ageX(11), densY(0.97));
+                var advX = ageX(15);
+                ctx.strokeStyle = 'rgba(167,139,250,0.45)'; ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(advX, y0); ctx.lineTo(advX, yB); ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = '#a78bfa'; ctx.font = '9px sans-serif'; ctx.fillText('adolescence', advX, y0 - 4);
+                ctx.textAlign = 'left'; ctx.font = '11px sans-serif';
+                ctx.fillStyle = '#22d3ee'; ctx.fillRect(x0 + 12, y0 + 8, 16, 4); ctx.fillStyle = '#cbd5e1'; ctx.fillText('Sensory cortex (prunes early)', x0 + 34, y0 + 13);
+                ctx.fillStyle = '#f59e0b'; ctx.fillRect(x0 + 12, y0 + 26, 16, 4); ctx.fillStyle = '#cbd5e1'; ctx.fillText('Prefrontal cortex (prunes into the mid-20s)', x0 + 34, y0 + 31);
               } else if (currentView.isSleep) {
 
                 // ── Sleep Stages Hypnogram Animation ──
@@ -3257,7 +3300,7 @@ var d = labToolData.brainAtlas || {};
 
 
               // ── Enhanced Region Markers (anatomical views only) ──
-              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG)
+              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse)
               filtered.forEach(function (r) {
 
                 var px = r.x * W, py = r.y * H;
