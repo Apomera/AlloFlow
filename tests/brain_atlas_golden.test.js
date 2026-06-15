@@ -75,6 +75,15 @@ describe('brainAtlas render goldens', () => {
     expect(digest(html)).toMatchSnapshot();
   });
 
+  it('Patient Simulator is AI-gated: absent by default, present when AI is on', () => {
+    loadTool(FILE, 'brainAtlas');
+    const off = renderTool('brainAtlas', { brainAtlas: { view: 'stimulate' } });
+    expect(off).not.toMatch(/Patient Simulator/);
+    const on = renderTool('brainAtlas', { brainAtlas: { view: 'stimulate' } }, { aiHintsEnabled: true });
+    expect(on).toMatch(/Patient Simulator/);
+    expect(on).toMatch(/Stimulate the patient/);
+  });
+
   it('stimulate view: the predict panel renders the first Penfield scenario', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ view: 'stimulate', stimIdx: 0 });

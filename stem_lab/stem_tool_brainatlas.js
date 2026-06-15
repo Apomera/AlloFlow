@@ -3522,6 +3522,25 @@ var d = labToolData.brainAtlas || {};
             { target: 'the prefrontal association cortex', options: ['An immediate hand twitch', 'A loud ringing', 'Usually little or no obvious effect', 'A bright flash of light'], correctIdx: 2, note: 'Much of association cortex (including prefrontal) is electrically quiet: stimulation produces no dramatic response. Not every brain area maps to one obvious output.' }
           ];
           var VIEW_KEYS = Object.keys(VIEWS);
+          // Patient Simulator: an AI patient roleplays the real effect of a hidden
+          // stimulation; the student guesses the region. Grounded in STIM_SCENARIOS.
+          function startPatient() {
+            if (!aiHintsEnabled || typeof callGemini !== 'function') return;
+            var idx = (d.patientIdx || 0) % STIM_SCENARIOS.length;
+            var sc = STIM_SCENARIOS[idx];
+            var effect = sc.options[sc.correctIdx];
+            var opts = [];
+            for (var k = 1; k <= 3; k++) opts.push(STIM_SCENARIOS[(idx + k) % STIM_SCENARIOS.length].target);
+            opts.push(sc.target);
+            var rot = idx % 4; opts = opts.slice(rot).concat(opts.slice(0, rot));
+            upd('patientOpts', opts); upd('patientCorrect', sc.target); upd('patientGuess', null);
+            upd('patientLoading', true); upd('patientText', '');
+            var prompt = 'You are roleplaying a calm, cooperative patient in an awake brain-surgery TEACHING simulation for students. The surgeon just gently stimulated one spot, and the real effect you feel is: "' + effect + '". In 1 to 2 short sentences, IN CHARACTER as the patient, say out loud what you suddenly notice or do. Do NOT name any brain region, lobe, or medical term, and do NOT explain the science. Keep it calm, friendly, and suitable for children. Plain prose only.';
+            callGemini(prompt, false, false, 0.7).then(function (resp) {
+              upd('patientText', ((resp || '').trim()) || 'I feel something, but it is hard to put into words.');
+              upd('patientLoading', false);
+            }).catch(function () { upd('patientText', 'The simulator is not available right now.'); upd('patientLoading', false); });
+          }
           function onBrainKey(e) {
             var tgt = e.target || {};
             var tn = (tgt.tagName || '').toUpperCase();
@@ -4103,7 +4122,46 @@ var d = labToolData.brainAtlas || {};
                 })()
               ),
 
-              // \u2500\u2500\u2500 Detail panel (below canvas) \u2500\u2500\u2500
+              // --- Patient Simulator (AI; guess the region from behavior) ---
+              currentView.isStim && aiHintsEnabled && React.createElement("div", { className: "bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3 mt-3" },
+                React.createElement("div", { className: "flex items-center justify-between" },
+                  React.createElement("h4", { className: "font-black text-sky-800 text-sm" }, "\uD83E\uDDD1\u200D\u2695\uFE0F Patient Simulator (AI)"),
+                  React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700" }, "\u2B50 " + (d.patientScore || 0))
+                ),
+                React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, "A simulated patient (AI) reacts to a hidden stimulation. Read what they say, then guess which region was stimulated. The patient never names the region."),
+                (function () {
+                  var loading = !!d.patientLoading; var text = d.patientText || ""; var opts = d.patientOpts || []; var guess = d.patientGuess;
+                  var show = guess !== null && guess !== undefined;
+                  if (!text && !loading) { return React.createElement("button", { onClick: startPatient, className: "w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800" }, "\u26A1 Stimulate the patient"); }
+                  if (loading) { return React.createElement("p", { className: "text-xs text-sky-700 italic py-2" }, "\u23F3 The patient is responding..."); }
+                  return React.createElement("div", { className: "space-y-2" },
+                    React.createElement("div", { className: "rounded-lg bg-sky-50 border border-sky-200 p-3" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-sky-600 uppercase mb-0.5" }, "The patient says"),
+                      React.createElement("p", { className: "text-sm text-slate-800 italic" }, "\u201C" + text + "\u201D")
+                    ),
+                    React.createElement("p", { className: "text-xs text-slate-600 font-bold" }, "Which region was stimulated?"),
+                    React.createElement("div", { role: "radiogroup", "aria-label": "Guess the stimulated region", className: "grid grid-cols-1 gap-1.5" },
+                      opts.map(function (optTarget, oi) {
+                        var isCorrect = optTarget === d.patientCorrect; var wasChosen = show && guess.chosen === optTarget;
+                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
+                          onClick: function () { upd('patientGuess', { chosen: optTarget, correct: isCorrect }); if (isCorrect) upd('patientScore', (d.patientScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] font-medium border-2 transition-all " +
+                            (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 hover:border-sky-300 text-slate-600 hover:bg-sky-50')
+                        }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optTarget);
+                      })
+                    ),
+                    show && React.createElement('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (guess.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                      React.createElement('p', { className: 'font-black ' + (guess.correct ? 'text-green-800' : 'text-amber-800') }, guess.correct ? '\u2705 Correct!' : '\u274C The answer: ' + d.patientCorrect),
+                      React.createElement('p', { className: 'text-slate-700' }, ((STIM_SCENARIOS.filter(function (x) { return x.target === d.patientCorrect; })[0]) || {}).note || '')
+                    ),
+                    show && React.createElement('button', { 'aria-label': 'New patient',
+                      onClick: function () { upd('patientIdx', (d.patientIdx || 0) + 1); upd('patientText', ''); upd('patientGuess', null); upd('patientOpts', []); },
+                      className: 'w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800' }, 'New patient \u2192')
+                  );
+                })()
+              ),
+
+              // --- Detail panel (below canvas) ---
 
               d.quizMode ? (
 
