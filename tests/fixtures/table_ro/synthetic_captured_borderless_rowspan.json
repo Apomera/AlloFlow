@@ -1,0 +1,10 @@
+{
+  "name": "synthetic-captured-borderless-rowspan",
+  "kind": "table",
+  "mode": "captured",
+  "metric": "teds",
+  "source": "synthetic",
+  "note": "Stands in for a real captured vision reconstruction of a borderless table with a row-spanning header cell (the BAD_PDF_COMPLEX_TABLE case Adobe rejects). 'captured' here has one OCR-ish cell slip vs ground truth, so it scores high-but-below-1 — replace with a real Canvas capture + OmniDocBench ground truth.",
+  "groundTruth": "<table><tr><th scope=\"col\">Skill</th><th scope=\"col\">Beginning</th><th scope=\"col\">Proficient</th></tr><tr><th rowspan=\"2\" scope=\"row\">Reading</th><td>Decodes CVC words</td><td>Reads grade-level text</td></tr><tr><td>Needs prompting</td><td>Self-corrects</td></tr></table>",
+  "captured": "<table><tr><th scope=\"col\">Skill</th><th scope=\"col\">Beginning</th><th scope=\"col\">Proficient</th></tr><tr><th rowspan=\"2\" scope=\"row\">Reading</th><td>Decodes CVC word</td><td>Reads grade-level text</td></tr><tr><td>Needs prompting</td><td>Self-corrects</td></tr></table>"
+}
