@@ -18216,6 +18216,11 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     }
     const restored = [];
     const unplaceable = [];
+    // Words that turned out to be ALREADY PRESENT in the doc (count-diff artifacts,
+    // e.g. a de-hyphenated "co-operate"→"cooperate") are NOT real insertions —
+    // bucket them here so the "N words auto-restored" banner/metric can't be
+    // inflated by no-ops (2026-06-15 review fix). Nothing is spliced for these.
+    const artifacts = [];
     // Preserve any DOCTYPE prefix so serialization round-trips cleanly.
     const doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
     const doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
@@ -18329,7 +18334,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           return esc && new RegExp('\\b' + esc + '\\b').test(docText);
         });
         if (alreadyPresent) {
-          restored.push({ word: origWord, context: '(present in doc — count-diff artifact)' });
+          artifacts.push({ word: origWord, context: '(present in doc — count-diff artifact)' });
         } else {
           unplaceable.push({ word: origWord, context: contextSnippet, missingCount: entry.missingCount || 1 });
         }
@@ -18372,7 +18377,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     let outHtml;
     try { outHtml = doctypePrefix + (doc.documentElement ? doc.documentElement.outerHTML : html); }
     catch (e) { outHtml = html; }
-    return { html: outHtml, restored, unplaceable };
+    return { html: outHtml, restored, unplaceable, artifacts };
   };
 
   // ── Stage A: Gemini-targeted sentence re-insertion ──

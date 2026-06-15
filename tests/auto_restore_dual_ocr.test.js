@@ -114,11 +114,27 @@ describe('applyWordRestoration — nothing is ever dropped', () => {
     expect(htmlText(r.html)).toContain('Shawn'); // present SOMEWHERE — not dropped
   });
 
-  it('every input word ends up either restored inline or in the appendix', () => {
+  it('every input word ends up restored inline, in the appendix, OR an artifact', () => {
     const html = wrap('<p>the board the budget</p>');
     const missing = [{ word: 'approved' }, { word: 'unanimously' }, { word: 'Zphqx' }];
     const r = applyWordRestoration(html, missing, 'the board approved the budget unanimously Zphqx');
-    const accounted = new Set(r.restored.map(x => x.word.toLowerCase()).concat(r.unplaceable.map(x => x.word.toLowerCase())));
+    const accounted = new Set(
+      r.restored.map(x => x.word.toLowerCase())
+        .concat(r.unplaceable.map(x => x.word.toLowerCase()))
+        .concat((r.artifacts || []).map(x => x.word.toLowerCase()))
+    );
     for (const m of missing) expect(accounted.has(m.word.toLowerCase())).toBe(true);
+  });
+
+  it('count-diff artifacts (already-present words) are NOT counted as restored (2026-06-15)', () => {
+    // "budget" is already in the final HTML, but its SOURCE context ("review the
+    // annual…figures carefully") was rewritten away, so context-matching fails →
+    // it reaches the already-present guard. That's a count-diff no-op, not a real
+    // insertion: it must land in `artifacts`, never inflate `restored`, so the
+    // "N words auto-restored" banner can't fire on zero actual insertions.
+    const html = wrap('<p>the budget is shown</p>');
+    const r = applyWordRestoration(html, [{ word: 'budget' }], 'review the annual budget figures carefully');
+    expect(r.restored).toEqual([]);            // no real splice
+    expect((r.artifacts || []).map(x => x.word.toLowerCase())).toContain('budget');
   });
 });

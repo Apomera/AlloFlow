@@ -313,9 +313,15 @@ function _htmlToDocxSpec(html) {
 function _expXmlEsc(s) {
   return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
-function _odtRuns(runs) {
+function _odtRuns(runs, footnotes) {
   return (runs || []).map((r) => {
-    if (!r || r.footnoteId) return "";
+    if (!r) return "";
+    if (r.footnoteId != null) {
+      const _fnRuns = footnotes && footnotes[r.footnoteId] || [];
+      const _body = _odtRuns(_fnRuns) || _expXmlEsc(String(r.footnoteId));
+      const _fid = _expXmlEsc(String(r.footnoteId));
+      return '<text:note text:id="ftn' + _fid + '" text:note-class="footnote"><text:note-citation>' + _fid + '</text:note-citation><text:note-body><text:p text:style-name="Standard">' + _body + "</text:p></text:note-body></text:note>";
+    }
     if (r.br) return "<text:line-break/>";
     if (typeof r.text !== "string") return "";
     let t = _expXmlEsc(r.text);
@@ -333,14 +339,14 @@ function _htmlToOdtContentXml(html) {
   for (const b of spec.blocks || []) {
     if (b.type === "heading") {
       const lvl = Math.min(6, Math.max(1, b.level || 1));
-      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs) + "</text:h>");
+      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs, spec.footnotes) + "</text:h>");
     } else if (b.type === "paragraph") {
-      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs) + "</text:p>");
+      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs, spec.footnotes) + "</text:p>");
     } else if (b.type === "list") {
-      body.push('<text:list text:style-name="' + (b.ordered ? "L_Number" : "L_Bullet") + '">' + (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs) + "</text:p></text:list-item>").join("") + "</text:list>");
+      body.push('<text:list text:style-name="' + (b.ordered ? "L_Number" : "L_Bullet") + '">' + (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + "</text:p></text:list-item>").join("") + "</text:list>");
     } else if (b.type === "table") {
       const cols = b.rows && b.rows[0] && b.rows[0].cells.length || 1;
-      body.push('<table:table table:name="Table1"><table:table-column table:number-columns-repeated="' + cols + '"/>' + (b.rows || []).map((r) => "<table:table-row>" + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs) + "</text:p></table:table-cell>").join("") + "</table:table-row>").join("") + "</table:table>");
+      body.push('<table:table table:name="Table1"><table:table-column table:number-columns-repeated="' + cols + '"/>' + (b.rows || []).map((r) => "<table:table-row>" + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + "</text:p></table:table-cell>").join("") + "</table:table-row>").join("") + "</table:table>");
     } else if (b.type === "image") {
       if (b.alt) body.push('<text:p text:style-name="Standard">[' + _expXmlEsc(b.alt) + "]</text:p>");
     } else if (b.type === "pagebreak") {
@@ -353,7 +359,11 @@ const _ODT_MANIFEST_XML = '<?xml version="1.0" encoding="UTF-8"?>\n<manifest:man
 const _ODT_STYLES_XML = '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2"><office:styles><style:default-style style:family="paragraph"><style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/></style:default-style><style:style style:name="Standard" style:family="paragraph" style:class="text"/>' + ["1", "2", "3", "4", "5", "6"].map((n) => '<style:style style:name="Heading_20_' + n + '" style:display-name="Heading ' + n + '" style:family="paragraph" style:parent-style-name="Standard" style:class="text"><style:text-properties fo:font-weight="bold" fo:font-size="' + (20 - (n - 1) * 2) + 'pt"/></style:style>').join("") + "</office:styles></office:document-styles>";
 function _expDtbookRuns(runs) {
   return (runs || []).map((r) => {
-    if (!r || r.footnoteId) return "";
+    if (!r) return "";
+    if (r.footnoteId != null) {
+      const _fid = _expXmlEsc(String(r.footnoteId));
+      return '<noteref idref="dtbfn' + _fid + '">' + _fid + "</noteref>";
+    }
     if (r.br) return "<br/>";
     if (typeof r.text !== "string") return "";
     let t = _expXmlEsc(r.text);
@@ -411,6 +421,15 @@ function _htmlToDtbookXml(html, lang) {
   while (depth > 0) {
     out.push("</level" + depth + ">");
     depth--;
+  }
+  const _fnKeys = spec.footnotes ? Object.keys(spec.footnotes) : [];
+  if (_fnKeys.length) {
+    out.push("<level1><h1>Notes</h1>");
+    for (const _k of _fnKeys) {
+      const _fid = _expXmlEsc(String(_k));
+      out.push('<note id="dtbfn' + _fid + '"><p>' + (_expDtbookRuns(spec.footnotes[_k]) || "") + "</p></note>");
+    }
+    out.push("</level1>");
   }
   const bodyInner = out.join("\n") || "<level1><h1>" + title + "</h1></level1>";
   return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '">\n<head><meta name="dc:Title" content="' + title + '"/><meta name="dc:Language" content="' + _expXmlEsc(L) + '"/><meta name="dc:Publisher" content="AlloFlow"/><meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/><meta name="dtb:uid" content="alloflow-daisy-' + Date.now() + '"/></head>\n<book><bodymatter>' + bodyInner + "</bodymatter></book>\n</dtbook>";

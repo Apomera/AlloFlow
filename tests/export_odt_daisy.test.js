@@ -152,3 +152,28 @@ describe('EPUB3 Media Overlays — _collectMoSegments / _buildMoSmil / _buildMoO
     expect(opf).toContain('synchronizedAudioText');
   });
 });
+
+describe('ODT / DAISY footnotes (2026-06-15 — were silently dropped)', () => {
+  const fnHtml = wrap(
+    '<p>Body text<sup class="allo-fn-ref" data-fn-uid="a"><a href="#fn-a">1</a></sup>.</p>' +
+    '<section class="allo-footnotes"><hr/><ol>' +
+    '<li data-fn-uid="a"><span class="allo-fn-text">First note.</span> <a class="allo-fn-back">back</a></li>' +
+    '</ol></section>'
+  );
+
+  it('ODT renders a real inline text:note carrying the footnote body (not dropped)', () => {
+    const xml = _htmlToOdtContentXml(fnHtml);
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).toContain('<text:note');
+    expect(xml).toContain('text:note-class="footnote"');
+    expect(xml).toContain('First note');
+  });
+
+  it('DAISY renders a noteref + a <note> with the footnote body (not dropped)', () => {
+    const xml = _htmlToDtbookXml(fnHtml, 'en');
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect(xml).toContain('<noteref idref="dtbfn1">');
+    expect(xml).toContain('<note id="dtbfn1">');
+    expect(xml).toContain('First note');
+  });
+});

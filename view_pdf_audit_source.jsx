@@ -289,9 +289,17 @@ function _expXmlEsc(s) {
 
 // Serialize a spec run-array to ODF inline markup (nested text:spans so we only
 // need single-property styles, all defined in the automatic-styles below).
-function _odtRuns(runs) {
+function _odtRuns(runs, footnotes) {
   return (runs || []).map((r) => {
-    if (!r || r.footnoteId) return '';
+    if (!r) return '';
+    // Footnote anchor → a real ODF inline footnote (2026-06-15 fix: these used to
+    // return '' so ALL footnotes silently vanished from ODT). Body from spec.footnotes.
+    if (r.footnoteId != null) {
+      const _fnRuns = (footnotes && footnotes[r.footnoteId]) || [];
+      const _body = _odtRuns(_fnRuns) || _expXmlEsc(String(r.footnoteId));
+      const _fid = _expXmlEsc(String(r.footnoteId));
+      return '<text:note text:id="ftn' + _fid + '" text:note-class="footnote"><text:note-citation>' + _fid + '</text:note-citation><text:note-body><text:p text:style-name="Standard">' + _body + '</text:p></text:note-body></text:note>';
+    }
     if (r.br) return '<text:line-break/>';
     if (typeof r.text !== 'string') return '';
     let t = _expXmlEsc(r.text);
@@ -313,18 +321,18 @@ function _htmlToOdtContentXml(html) {
   for (const b of (spec.blocks || [])) {
     if (b.type === 'heading') {
       const lvl = Math.min(6, Math.max(1, b.level || 1));
-      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs) + '</text:h>');
+      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs, spec.footnotes) + '</text:h>');
     } else if (b.type === 'paragraph') {
-      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs) + '</text:p>');
+      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs, spec.footnotes) + '</text:p>');
     } else if (b.type === 'list') {
       body.push('<text:list text:style-name="' + (b.ordered ? 'L_Number' : 'L_Bullet') + '">' +
-        (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs) + '</text:p></text:list-item>').join('') +
+        (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + '</text:p></text:list-item>').join('') +
         '</text:list>');
     } else if (b.type === 'table') {
       const cols = (b.rows && b.rows[0] && b.rows[0].cells.length) || 1;
       body.push('<table:table table:name="Table1">' +
         '<table:table-column table:number-columns-repeated="' + cols + '"/>' +
-        (b.rows || []).map((r) => '<table:table-row>' + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs) + '</text:p></table:table-cell>').join('') + '</table:table-row>').join('') +
+        (b.rows || []).map((r) => '<table:table-row>' + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>').join('') + '</table:table-row>').join('') +
         '</table:table>');
     } else if (b.type === 'image') {
       // ODT image embedding needs Pictures/ + draw:frame; degrade to alt text so
@@ -370,7 +378,11 @@ const _ODT_STYLES_XML = '<?xml version="1.0" encoding="UTF-8"?>\n' +
 // containers DTBook requires from the flat heading sequence.
 function _expDtbookRuns(runs) {
   return (runs || []).map((r) => {
-    if (!r || r.footnoteId) return '';
+    if (!r) return '';
+    // Footnote anchor → DTBook noteref (paired with a <note> in the Notes level
+    // appended by _htmlToDtbookXml). 2026-06-15 fix: these returned '' so footnotes
+    // silently vanished from the DAISY export.
+    if (r.footnoteId != null) { const _fid = _expXmlEsc(String(r.footnoteId)); return '<noteref idref="dtbfn' + _fid + '">' + _fid + '</noteref>'; }
     if (r.br) return '<br/>';
     if (typeof r.text !== 'string') return '';
     let t = _expXmlEsc(r.text);
@@ -411,6 +423,17 @@ function _htmlToDtbookXml(html, lang) {
     }
   }
   while (depth > 0) { out.push('</level' + depth + '>'); depth--; }
+  // Footnotes → a DTBook "Notes" level (2026-06-15 fix): each inline noteref above
+  // pairs with a <note> here so footnote text survives the DAISY export.
+  const _fnKeys = spec.footnotes ? Object.keys(spec.footnotes) : [];
+  if (_fnKeys.length) {
+    out.push('<level1><h1>Notes</h1>');
+    for (const _k of _fnKeys) {
+      const _fid = _expXmlEsc(String(_k));
+      out.push('<note id="dtbfn' + _fid + '"><p>' + (_expDtbookRuns(spec.footnotes[_k]) || '') + '</p></note>');
+    }
+    out.push('</level1>');
+  }
   const bodyInner = out.join('\n') || ('<level1><h1>' + title + '</h1></level1>');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n' +
