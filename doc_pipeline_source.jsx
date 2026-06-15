@@ -18743,16 +18743,29 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     const wordPositions = {};
     srcWordsLc.forEach((w, i) => { if (w) { (wordPositions[w] = wordPositions[w] || []).push(i); } });
     const normalize = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ');
-    // Find the FIRST occurrence of `needle` in `textLc` that is unique — returns -1 if absent
-    // OR if it appears more than once (we refuse to guess between ambiguous matches).
-    const findUniqueContext = (textLc, contextWords) => {
+    // Resolve a DOC-WIDE UNIQUE anchor location. BUGFIX (audit #7, 2026-06-15): the old
+    // findUniqueContext checked uniqueness only WITHIN a single text node, and the caller accepted
+    // the FIRST node whose context matched — so an anchor that recurs across nodes spliced the word
+    // into the wrong one while reporting success. Mirror the manual path (view_pdf_audit ~5181):
+    // require a SPECIFIC anchor (>=12 chars) AND exactly ONE occurrence across ALL text nodes; else
+    // refuse (the word falls through to the recovery appendix rather than landing in a wrong place).
+    // place='after' → splice after the anchor (before-context); 'before' → splice at the anchor.
+    const findUniqueAnchorDocWide = (contextWords, place) => {
       const needle = contextWords.join(' ');
-      if (!needle || needle.length < 4) return -1;
-      const firstIdx = textLc.indexOf(needle);
-      if (firstIdx === -1) return -1;
-      const secondIdx = textLc.indexOf(needle, firstIdx + 1);
-      if (secondIdx !== -1) return -1;
-      return firstIdx;
+      if (!needle || needle.length < 12) return null;
+      let hitNode = null, hitIdx = -1, count = 0;
+      for (const node of textNodes) {
+        const textLc = normalize(node.nodeValue);
+        let from = 0, idx;
+        while ((idx = textLc.indexOf(needle, from)) !== -1) {
+          count++;
+          if (count > 1) return null; // ambiguous doc-wide — refuse to guess
+          hitNode = node; hitIdx = idx;
+          from = idx + needle.length;
+        }
+      }
+      if (count !== 1) return null;
+      return { node: hitNode, splicePoint: place === 'after' ? hitIdx + needle.length : hitIdx };
     };
     // Walk body text nodes, skipping elements where word insertion would be unsafe.
     const SKIP_PARENTS = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, FIGCAPTION: 1 };
@@ -18794,20 +18807,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         const beforeCtx = srcWordsLc.slice(winStart, pos).filter(Boolean);
         const afterCtx = srcWordsLc.slice(pos + 1, winEnd + 1).filter(Boolean);
         if (beforeCtx.length < 2 && afterCtx.length < 2) continue;
-        for (const node of textNodes) {
-          const nodeTextLc = normalize(node.nodeValue);
-          let splicePoint = -1;
-          if (beforeCtx.length >= 2) {
-            const idx = findUniqueContext(nodeTextLc, beforeCtx);
-            if (idx !== -1) splicePoint = idx + beforeCtx.join(' ').length;
-          }
-          if (splicePoint === -1 && afterCtx.length >= 2) {
-            const idx = findUniqueContext(nodeTextLc, afterCtx);
-            if (idx !== -1) splicePoint = idx;
-          }
-          if (splicePoint === -1) continue;
+        // Resolve ONE doc-wide-unique splice location (before-anchor first, then after-anchor).
+        let target = null;
+        if (beforeCtx.length >= 2) target = findUniqueAnchorDocWide(beforeCtx, 'after');
+        if (!target && afterCtx.length >= 2) target = findUniqueAnchorDocWide(afterCtx, 'before');
+        if (target) {
+          const node = target.node;
           const orig = node.nodeValue;
-          const origCursor = mapOffset(orig, splicePoint);
+          const origCursor = mapOffset(orig, target.splicePoint);
           const origWord = srcWordsRaw[pos] || targetWord;
           const needsLeadingSpace = origCursor > 0 && !/\s/.test(orig[origCursor - 1]);
           const needsTrailingSpace = origCursor < orig.length && !/\s/.test(orig[origCursor]);
@@ -18815,7 +18822,6 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           node.nodeValue = orig.slice(0, origCursor) + insert + orig.slice(origCursor);
           restored.push({ word: origWord, context: beforeCtx.concat([targetWord], afterCtx).join(' ') });
           placed = true;
-          break;
         }
         if (placed) break;
       }

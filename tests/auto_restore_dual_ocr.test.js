@@ -150,4 +150,24 @@ describe('applyWordRestoration — nothing is ever dropped', () => {
     expect(r.restored.filter(x => x.word.toLowerCase() === 'approved').length).toBe(1);
     expect((htmlText(r.html).match(/approved/g) || []).length).toBe(1); // not 2 — only the first spot filled
   });
+
+  it('refuses to splice when the context anchor recurs across NODES (doc-wide ambiguity → appendix, audit #7)', () => {
+    // "review the report" is the only viable anchor for "carefully" and it appears in TWO separate
+    // paragraphs. The old per-node check accepted the FIRST node → wrong-paragraph splice. Now it
+    // must refuse (doc-wide count > 1) and preserve the word in the appendix instead of guessing.
+    const html = wrap('<p>review the report now</p><p>review the report later</p>');
+    const r = applyWordRestoration(html, [{ word: 'carefully' }], 'review the report carefully today');
+    expect(r.restored).toEqual([]);                                   // not placed in either node
+    expect(r.unplaceable.map(x => x.word.toLowerCase())).toContain('carefully');
+    expect(htmlText(r.html)).toContain('carefully');                 // preserved in the appendix
+  });
+
+  it('rejects a too-short (<12 char) context anchor — raised floor (audit #7)', () => {
+    // Only short/generic anchors are available ("a b" / "the cat"); splicing on them risks a wrong
+    // location, so the word goes to the appendix rather than a low-confidence guess.
+    const html = wrap('<p>a b the cat sat</p>');
+    const r = applyWordRestoration(html, [{ word: 'big' }], 'a b big the cat');
+    expect(r.restored).toEqual([]);
+    expect(r.unplaceable.map(x => x.word.toLowerCase())).toContain('big');
+  });
 });
