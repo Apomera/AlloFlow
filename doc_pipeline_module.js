@@ -9976,6 +9976,30 @@ HTML section ${chunkNum}/${chunks.length}:
   const verifyChunkIntegrity = (originalChunk, fixedChunk) => {
     const originalText = extractPlainText(originalChunk);
     const fixedText = extractPlainText(fixedChunk);
+    // CJK/Thai have no inter-word spaces, so whitespace tokenization makes a whole paragraph ONE
+    // "word" — an a11y block reflow then collapses overlap to ~0 and FALSE-FAILS the gate despite
+    // 100% character preservation, silently keeping the un-remediated original (audit #26). For
+    // those scripts, compare on CHARACTERS (minus whitespace/punctuation) instead of words.
+    const _cjkThai = /[一-鿿぀-ゟ゠-ヿ가-힯฀-๿]/g;
+    const _cjkCount = (originalText.match(_cjkThai) || []).length;
+    const _nonWs = originalText.replace(/\s/g, '').length;
+    if (_nonWs > 0 && _cjkCount >= _nonWs * 0.3) {
+      const _chars = (t) => Array.from(t.toLowerCase().replace(/[\s\p{P}\p{S}]/gu, ''));
+      const oc = _chars(originalText), fc = _chars(fixedText);
+      if (oc.length === 0) return { passed: true, reason: 'empty-chunk', wordCountRatio: 1, overlapRatio: 1, originalWordCount: 0, fixedWordCount: 0 };
+      const lenRatio = fc.length / oc.length;
+      const fcSet = new Set(fc);
+      const overlap = oc.filter(c => fcSet.has(c)).length / oc.length;
+      const passed = lenRatio >= 0.80 && overlap >= 0.85;
+      return {
+        passed,
+        wordCountRatio: Math.round(lenRatio * 100) / 100,
+        overlapRatio: Math.round(overlap * 100) / 100,
+        originalWordCount: oc.length,
+        fixedWordCount: fc.length,
+        reason: !passed ? `Content loss (CJK/Thai char-level): ${Math.round((1 - overlap) * 100)}% chars missing, ${Math.round((1 - lenRatio) * 100)}% length reduction` : 'ok'
+      };
+    }
     const originalWords = originalText.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
     const fixedWords = fixedText.toLowerCase().split(/\s+/).filter(w => w.length >= 2);
     if (originalWords.length === 0) return { passed: true, reason: 'empty-chunk', wordCountRatio: 1, overlapRatio: 1, originalWordCount: 0, fixedWordCount: 0 };
