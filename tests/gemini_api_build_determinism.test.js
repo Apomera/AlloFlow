@@ -29,9 +29,15 @@ const expected =
   + src.trim() + '\n'
   + '})();\n';
 
+// EOL-insensitive: this test guards against a Babel-BLOATED re-print (the ~804-line form
+// vs the canonical 686-line raw-wrap), NOT against line endings. A Windows CI runner with
+// core.autocrlf=true checks the module out as CRLF (now also pinned LF by .gitattributes);
+// normalize both sides so an EOL difference can never masquerade as the drift this guards.
+const norm = (s) => s.replace(/\r\n/g, '\n');
+
 describe('gemini_api_module.js build determinism', () => {
   it('is the raw-wrapped source (NOT Babel-compiled) — guards the recurring drift', () => {
-    expect(mod).toBe(expected);
+    expect(norm(mod)).toBe(norm(expected));
   });
 
   it('source contains no JSX (so raw-wrap, not compileJsx, is correct)', () => {
