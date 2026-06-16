@@ -4798,6 +4798,8 @@ window.StemLab = window.StemLab || {
       var SERVICE_TARGET = 5;
       var UNIT_FOODS = [{ e: '🍕', n: 'pizza' }, { e: '🥧', n: 'pie' }, { e: '🎂', n: 'cake' }, { e: '🍩', n: 'donut' }, { e: '🫓', n: 'flatbread' }];
       var TRAY_FOODS = [{ e: '🥟', n: 'dumplings' }, { e: '🍪', n: 'cookies' }, { e: '🍤', n: 'shrimp' }, { e: '🧁', n: 'cupcakes' }, { e: '🍢', n: 'skewers' }];
+      var PR_FACES = ['\uD83E\uDDD1', '\uD83D\uDC69', '\uD83D\uDC68', '\uD83E\uDDD2', '\uD83D\uDC67', '\uD83D\uDC66'];
+      var MIXED_FOODS = [{ e: '\uD83E\uDD6A', n: 'subs' }, { e: '\uD83C\uDF5E', n: 'bread loaves' }, { e: '\uD83E\uDD56', n: 'baguettes' }, { e: '\uD83C\uDF55', n: 'pizzas' }, { e: '\uD83E\uDD67', n: 'pies' }];
       var POOLS = { 1: [2, 4], 2: [2, 4, 8], 3: [2, 3, 4, 6], 4: [2, 3, 4, 5, 6, 8], 5: [2, 3, 4, 5, 6, 8, 10, 12] };
       var TRAY_PROB = [0, 0, 0.25, 0.4, 0.5, 0.5];
       var newPid = function() { return 'pr' + Date.now() + Math.random().toString(36).slice(2, 5); };
@@ -4809,7 +4811,7 @@ window.StemLab = window.StemLab || {
           var mt = pick([2, 3, 4, 5]);
           var mq = pick([1, 2]);
           var mr = randInt(1, mt - 1);
-          return { id: newPid(), kind: 'mixed', table: mt, tray: mq * mt + mr, food: pick(TRAY_FOODS) };
+          return { id: newPid(), kind: 'mixed', table: mt, tray: mq * mt + mr, food: pick(MIXED_FOODS) };
         }
         var table = pick(POOLS[lv]);
         var isTray = Math.random() < TRAY_PROB[lv];
@@ -4841,9 +4843,11 @@ window.StemLab = window.StemLab || {
         if (correct) {
           var nServed = g.served + 1;
           var nCombo = g.combo + 1;
+          var comboMult = nCombo >= 6 ? 3 : nCombo >= 3 ? 2 : 1;
           var nBest = Math.max(g.bestCombo || 0, nCombo);
           var nTotal = (g.totalServed || 0) + 1;
           if (g.audioOn) sfxCorrect();
+          awardXP('fractionPlateRush', 3 * comboMult, 'fair share');
           var shareSR = a.kind === 'unit' ? ('one over ' + a.table) : a.kind === 'mixed' ? (toMixed(a.tray, a.table) + ' ' + a.food.n) : ((a.tray / a.table) + ' ' + a.food.n + ', which is one over ' + a.table + ' of the tray');
           announceToSR('Fair share! Each guest gets ' + shareSR + '. ' + nServed + ' of ' + SERVICE_TARGET + ' tables happy.');
           var badgeArgs = { correct: score.correct, streak: streak, typesUsed: Object.keys(challengeTypesUsed).length,
@@ -4858,8 +4862,9 @@ window.StemLab = window.StemLab || {
             addToast('🍽️ Service complete! Even Steven approves.', 'success');
             checkBadges(badgeArgs);
           } else {
-            var nDeck = (g.deck || []).slice(1).concat([genPlate(g.level)]);
-            save({ active: genPlate(g.level), deck: nDeck, input: 2, served: nServed, combo: nCombo,
+            var dq = (g.deck && g.deck.length) ? g.deck : [genPlate(g.level), genPlate(g.level)];
+            var nDeck = dq.slice(1).concat([genPlate(g.level)]);
+            save({ active: dq[0] || genPlate(g.level), deck: nDeck, input: 2, served: nServed, combo: nCombo,
               bestCombo: nBest, totalServed: nTotal, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
             if (g.audioOn) sfxNewChallenge();
             checkBadges(badgeArgs);
@@ -4880,6 +4885,7 @@ window.StemLab = window.StemLab || {
         if (v !== g.input) { save({ input: v, lastResult: null }); if (g.audioOn) sfxClick(); }
       };
       var setCuts = function(v) { v = Math.max(1, Math.min(12, parseInt(v) || 1)); save({ input: v, lastResult: null }); };
+      var showMe = function() { var aa = g.active; if (!aa) return; save({ input: aa.table, lastResult: null, lastCoach: 'Even Steven shows you: ' + aa.table + ' guests need ' + aa.table + ' equal shares, so each gets a fair piece.' }); if (g.audioOn) sfxClick(); announceToSR('Set to ' + aa.table + ' equal shares. Now press serve.'); };
       var toMenu = function() { save({ phase: 'menu', active: null }); };
       var toZen = function() { if (g.phase === 'play' && g.timed) save({ timed: false, holdFrozen: false }); };
       var toggle = function(key) { var p = {}; p[key] = !g[key]; save(p); if (g.audioOn || key === 'audioOn') sfxClick(); };
@@ -4901,7 +4907,8 @@ window.StemLab = window.StemLab || {
           save({ misses: (g.misses || 0) + 1, comboPaused: true,
             lastCoach: 'The plate came back around - take your time and share it equally.' });
           announceToSR('Plate came back around. Try again, no rush.');
-        }
+        },
+        onApproaching: function() { announceToSR('A plate is nearing the window. Serve it soon or it will loop back around.'); }
       };
 
       // ── helper: a comfort/accessibility row (shared by menu + in-game) ──
@@ -5054,7 +5061,7 @@ window.StemLab = window.StemLab || {
             var c2 = cv.getContext('2d');
             var W = cv.offsetWidth || 600, H = cv.offsetHeight || 96;
             cv.width = W * 2; cv.height = H * 2; c2.scale(2, 2);
-            cv._prActive = null; cv._prStart = performance.now(); cv._prMissed = null;
+            cv._prActive = null; cv._prStart = performance.now(); cv._prMissed = null; cv._prWarned = null;
             function frame(now) {
               if (!cv.isConnected) { cancelAnimationFrame(cv._prAnim); cv._prAnim = 0; return; }
               var L = window._prLive || {};
@@ -5070,16 +5077,17 @@ window.StemLab = window.StemLab || {
               c2.fillText('PASS', 32, H / 2 - 4); c2.fillText('WINDOW', 32, H / 2 + 8);
               var ac = L.active;
               if (ac) {
-                if (cv._prActive !== ac.id) { cv._prActive = ac.id; cv._prStart = now; }
+                if (cv._prActive !== ac.id) { cv._prActive = ac.id; cv._prStart = now; cv._prWarned = null; cv._prMissed = null; }
                 var moving = L.timed && L.phase === 'play' && !L.holdFrozen;
                 var limit = Math.max(3, 10 - (L.level || 1)) / (L.tempo || 1);
                 var p = moving ? Math.min(1, (now - cv._prStart) / 1000 / limit) : 0;
                 if (L.reducedMotion) p = Math.floor(p * 8) / 8;
+                if (moving && p >= 0.75 && cv._prWarned !== ac.id) { cv._prWarned = ac.id; if (typeof L.onApproaching === 'function') L.onApproaching(); }
                 if (moving && p >= 1) {
                   if (cv._prMissed !== ac.id && typeof L.onTimeout === 'function') { cv._prMissed = ac.id; L.onTimeout(); }
                   cv._prStart = now;
                 }
-                var x = (W - 110) - p * (W - 110 - 84) + 84;
+                var x = (W - 40) - p * (W - 40 - 84);
                 var cy = H * 0.42;
                 c2.font = '30px serif'; c2.textAlign = 'center';
                 c2.fillText((ac.food && ac.food.e) || '🍽️', x, cy);
@@ -5115,7 +5123,7 @@ window.StemLab = window.StemLab || {
         (!g.hideScore) && h('div', { className: 'flex items-center gap-2 flex-wrap bg-green-50 rounded-xl p-2 border border-green-200 text-sm' },
           h('span', { className: 'font-bold text-green-800' }, '😋 Happy tables: ' + g.served + '/' + SERVICE_TARGET),
           h('span', { className: 'text-green-300' }, '·'),
-          h('span', { className: 'font-bold text-amber-700' }, '🔥 Combo: ' + g.combo + (g.comboPaused ? ' (paused)' : '')),
+          h('span', { className: 'font-bold text-amber-700' }, '🔥 Combo: ' + g.combo + (g.combo >= 3 ? ' (x' + (g.combo >= 6 ? 3 : 2) + ')' : '') + (g.comboPaused ? ' (paused)' : '')),
           h('span', { className: 'text-green-300' }, '·'),
           h('span', { className: 'text-[11px] text-green-700' }, 'Level ' + g.level + ' · ' + (g.timed ? 'Timed' : 'Zen')),
           h('div', { className: 'ml-auto flex gap-1' },
@@ -5128,9 +5136,10 @@ window.StemLab = window.StemLab || {
         belt,
         // ticket
         h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-3 space-y-2 ' + (g.lastResult === 'ok' ? 'ring-2 ring-green-400' : g.lastResult === 'wrong' ? 'ring-2 ring-amber-400' : '') },
-          h('div', { className: 'flex items-center justify-center gap-2 bg-amber-50 rounded-lg p-1.5 border border-amber-200' },
+          h('div', { className: 'flex items-center justify-center gap-2 flex-wrap bg-amber-50 rounded-lg p-1.5 border border-amber-200' },
             h('span', { className: 'text-lg' }, '🎫'),
-            h('span', { className: 'font-bold text-amber-800 text-sm' }, 'Table ' + a.table + ' - split equally (' + a.table + ' guests)')
+            h('span', { className: 'font-bold text-amber-800 text-sm' }, 'Split equally for this table:'),
+            h('span', { className: 'text-xl leading-tight', 'aria-label': a.table + ' guests at the table' }, Array.apply(null, { length: a.table }).map(function(_, i) { return PR_FACES[i % PR_FACES.length]; }).join(''))
           ),
           h('div', { className: 'flex justify-center' }, dishVisual),
           // cuts stepper
@@ -5143,7 +5152,8 @@ window.StemLab = window.StemLab || {
               className: 'w-9 h-9 rounded-lg text-xl font-black bg-slate-100 text-slate-700 hover:bg-slate-200' }, '+')
           ),
           h('div', { className: 'text-center text-sm text-slate-700', role: 'status', 'aria-live': 'polite' }, readout),
-          h('div', { className: 'flex justify-center' },
+          h('div', { className: 'flex justify-center gap-2 items-center' },
+            h('button', { onClick: showMe, className: 'px-3 py-2.5 rounded-xl text-sm font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, 'Show me'),
             h('button', { onClick: serve, disabled: a.kind === 'tray' && !divides,
               className: 'px-8 py-2.5 rounded-xl text-base font-black bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-md disabled:opacity-40' }, 'SERVE 🍽️')
           ),
