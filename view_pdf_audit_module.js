@@ -547,14 +547,28 @@ function _collectMoSegments(html) {
   root.querySelectorAll(".allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], script, style, .allo-block-controls, .allo-block-remove").forEach((el) => el.remove());
   const SEL = "p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td";
   const segments = [];
-  let i = 0;
+  const _seen = /* @__PURE__ */ new Set();
+  const _usedIds = new Set(Array.from(root.querySelectorAll("[id]")).map((el) => el.getAttribute("id")).filter(Boolean));
+  let _uid = 0;
+  const _freshMoId = () => {
+    let _c;
+    do {
+      _uid++;
+      _c = "mo" + _uid;
+    } while (_seen.has(_c) || _usedIds.has(_c));
+    return _c;
+  };
   Array.from(root.querySelectorAll(SEL)).forEach((el) => {
     if (el.querySelector(SEL)) return;
     const text = (el.textContent || "").replace(/\s+/g, " ").trim();
     if (!text) return;
-    i++;
-    if (!el.getAttribute("id")) el.setAttribute("id", "mo" + i);
-    segments.push({ id: el.getAttribute("id"), text });
+    let _id = el.getAttribute("id");
+    if (!_id || _seen.has(_id)) {
+      _id = _freshMoId();
+      el.setAttribute("id", _id);
+    }
+    _seen.add(_id);
+    segments.push({ id: _id, text });
   });
   let bodyHtml;
   try {

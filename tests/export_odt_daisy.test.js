@@ -336,3 +336,22 @@ describe('nested lists preserve hierarchy (audit #24)', () => {
     expect(xml).toContain('one'); expect(xml).toContain('two');
   });
 });
+
+describe('read-along EPUB ids are unique (audit #25)', () => {
+  it('renames DUPLICATE ids so segments + serialized bodyHtml are unique', () => {
+    const { segments, bodyHtml } = _collectMoSegments('<body><p id="dup">first</p><p id="dup">second</p></body>');
+    const ids = segments.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length); // all segment ids unique
+    for (const id of ids) expect(bodyHtml).toContain('id="' + id + '"');
+    const bodyIds = bodyHtml.match(/\bid="[^"]+"/g) || [];
+    expect(new Set(bodyIds).size).toBe(bodyIds.length); // no duplicate id survives in the xhtml
+  });
+  it('a minted id avoids a pre-existing NON-segment id', () => {
+    const { segments } = _collectMoSegments('<body><div id="mo1"><p>only segment</p></div></body>');
+    expect(segments[0].id).not.toBe('mo1');
+  });
+  it('keeps unique existing ids untouched', () => {
+    const { segments } = _collectMoSegments('<body><p id="intro">x</p><p id="body">y</p></body>');
+    expect(segments.map((s) => s.id)).toEqual(['intro', 'body']);
+  });
+});

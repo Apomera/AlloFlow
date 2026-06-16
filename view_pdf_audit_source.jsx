@@ -579,14 +579,22 @@ function _collectMoSegments(html) {
   root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], script, style, .allo-block-controls, .allo-block-remove').forEach((el) => el.remove());
   const SEL = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td';
   const segments = [];
-  let i = 0;
+  // EPUB requires UNIQUE ids and the read-along SMIL references each segment by id. The AI HTML can
+  // carry DUPLICATE ids (a real epubcheck RSC-005 + ambiguous media-overlay), and upstream dedup runs
+  // BEFORE the AI passes, so AI-reintroduced dupes survive to here. Keep an id only if it's unique so
+  // far; otherwise mint a fresh id that collides with NO existing id (segment or not). (#25)
+  const _seen = new Set();
+  const _usedIds = new Set(Array.from(root.querySelectorAll('[id]')).map((el) => el.getAttribute('id')).filter(Boolean));
+  let _uid = 0;
+  const _freshMoId = () => { let _c; do { _uid++; _c = 'mo' + _uid; } while (_seen.has(_c) || _usedIds.has(_c)); return _c; };
   Array.from(root.querySelectorAll(SEL)).forEach((el) => {
     if (el.querySelector(SEL)) return; // only leaf blocks — don't double-speak a wrapper
     const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
     if (!text) return;
-    i++;
-    if (!el.getAttribute('id')) el.setAttribute('id', 'mo' + i);
-    segments.push({ id: el.getAttribute('id'), text });
+    let _id = el.getAttribute('id');
+    if (!_id || _seen.has(_id)) { _id = _freshMoId(); el.setAttribute('id', _id); }
+    _seen.add(_id);
+    segments.push({ id: _id, text });
   });
   // Serialize as XML, not innerHTML: the read-along content.xhtml is application/xhtml+xml and MUST
   // be well-formed. innerHTML leaves void elements unclosed (<input data-allo-field>, <col>, <source>,
