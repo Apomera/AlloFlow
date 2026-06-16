@@ -5154,12 +5154,20 @@ var createDocPipeline = function(deps) {
       for (const x of w) { if (x && typeof x.c === 'number') { sum += x.c; n++; } }
       return n ? sum / n : null;
     };
-    const pageCount = Math.max(tessPages.length, visionPages.length);
+    // Pair pages by ABSOLUTE pageNum, not array index (#20). Tesseract OCRs the whole doc (pageNum
+    // 1..N) while Vision covers only the selected range, so index-pairing mis-reconciled e.g. a
+    // page-1 transcript against a page-6 transcript on any partial range. Walk the union of pageNums.
+    const _byNum = new Map();
+    const _addPages = (arr, key) => { for (const p of (arr || [])) { if (!p || typeof p.pageNum !== 'number') continue; if (!_byNum.has(p.pageNum)) _byNum.set(p.pageNum, {}); _byNum.get(p.pageNum)[key] = p; } };
+    _addPages(tessPages, 't'); _addPages(visionPages, 'v');
+    const _nums = Array.from(_byNum.keys()).sort((a, b) => a - b);
     const merged = [];
     const disagreements = [];
-    for (let i = 0; i < pageCount; i++) {
-      const tText = (tessPages[i] && tessPages[i].text) || '';
-      const vText = (visionPages[i] && visionPages[i].text) || '';
+    for (const _pn of _nums) {
+      const _pair = _byNum.get(_pn);
+      const tPage = _pair.t || null, vPage = _pair.v || null;
+      const tText = (tPage && tPage.text) || '';
+      const vText = (vPage && vPage.text) || '';
       const tLen = tText.length, vLen = vText.length;
       const longest = Math.max(tLen, vLen);
       // Default: the longer text wins (more captured content); Tesseract wins ties (determinism).
@@ -5176,7 +5184,7 @@ var createDocPipeline = function(deps) {
         const _winLen = _winner === 'tesseract' ? tLen : vLen;
         const _altLen = _winner === 'tesseract' ? vLen : tLen;
         const _substantialAlt = _altLen >= _winLen * 0.5;       // don't drop >half the captured content
-        const _tConf = _meanConf(tessPages[i]);
+        const _tConf = _meanConf(tPage);
         const _extremeGarbage = _winJ >= 0.45 && _altJ < _winJ; // winner is mostly non-text → garbage even if longer
         const _clearlyWorse = _winJ >= 0.18 && _winJ >= _altJ * 1.6 && _substantialAlt; // absolutely + relatively junkier
         const _lowConfTess = _winner === 'tesseract' && _tConf != null && _tConf < 50 && _vJ <= _tJ && _substantialAlt;
@@ -5186,8 +5194,8 @@ var createDocPipeline = function(deps) {
       // Carry the Tesseract word boxes + page dims through reconciliation (Vision has
       // none). These are text+position PAIRS from Tesseract, used to draw a positioned
       // searchable layer — independent of which engine's TEXT won the length contest.
-      const _tp = tessPages[i] || {};
-      merged.push({ pageNum: i + 1, text: chosen.text, source: chosen.source,
+      const _tp = tPage || {};
+      merged.push({ pageNum: _pn, text: chosen.text, source: chosen.source,
         words: (Array.isArray(_tp.words) && _tp.words.length ? _tp.words : null),
         pageW: (typeof _tp.pageW === 'number' ? _tp.pageW : null),
         pageH: (typeof _tp.pageH === 'number' ? _tp.pageH : null) });
@@ -5197,7 +5205,7 @@ var createDocPipeline = function(deps) {
       // already handled by "longest wins" — not a content conflict, so it must not raise the
       // scary "engines disagree" flag on small scanned handouts. (ocr false-alarm)
       if (longest > 0 && tLen > 0 && vLen > 0 && (Math.abs(tLen - vLen) > Math.max(20, longest * 0.1))) {
-        disagreements.push({ pageNum: i + 1, tesseractChars: tLen, visionChars: vLen, tesseractText: tText, visionText: vText });
+        disagreements.push({ pageNum: _pn, tesseractChars: tLen, visionChars: vLen, tesseractText: tText, visionText: vText });
       }
     }
     return { pages: merged, disagreements, fullText: merged.map(p => p.text).filter(Boolean).join('\n\n') };
@@ -11748,7 +11756,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             for (let q = 0; q < pageCount; q++) {
               const from = q * per;
               const to = q === pageCount - 1 ? chunkLen : (q + 1) * per;
-              pagesOut.push({ pageNum: startPage + q + 1, text: chunkText.slice(from, to).trim() });
+              pagesOut.push({ pageNum: _rangeStart + startPage + q, text: chunkText.slice(from, to).trim() }); // ABSOLUTE page number (#20) — was range-relative, mis-aligning the reconcile
             }
           });
           return { fullText: chunks.join('\n\n---\n\n'), pages: pagesOut };
@@ -11785,8 +11793,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           warnLog('[OCR reconcile] parallel OCR failed:', reconErr && reconErr.message);
         }
 
-        // Reconcile per-page — take longer text, flag disagreements.
-        const rec = reconcileOcrPages(tessResult.pages || [], visionResult.pages || []);
+        // Reconcile per-page — take longer text, flag disagreements. Narrow Tesseract (which OCRs the
+        // WHOLE doc) to the selected range so it aligns with Vision's range-only pages — both now carry
+        // ABSOLUTE pageNum and reconcile pairs by pageNum, not array index (#20).
+        let _tessPagesForRec = tessResult.pages || [];
+        if (_pageRange && (_pageRange[0] || _pageRange[1])) {
+          const _rs = Math.max(1, _pageRange[0] || 1);
+          const _re = _pageRange[1] || Infinity;
+          _tessPagesForRec = _tessPagesForRec.filter(p => p && typeof p.pageNum === 'number' && p.pageNum >= _rs && p.pageNum <= _re);
+        }
+        const rec = reconcileOcrPages(_tessPagesForRec, visionResult.pages || []);
         extractedText = rec.fullText || tessResult.fullText || visionResult.fullText || '';
         // Stash both outputs + disagreement list on window globals for the fidelity panel.
         window.__lastOcrTesseractText = tessResult.fullText || '';
