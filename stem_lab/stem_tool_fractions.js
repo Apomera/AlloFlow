@@ -4793,7 +4793,7 @@ window.StemLab = window.StemLab || {
       var PR_DEFAULT = { phase: 'menu', timed: false, level: 1, served: 0, combo: 0, bestCombo: 0,
         comboPaused: false, misses: 0, totalServed: 0, active: null, deck: [], input: 2,
         lastCoach: '', lastResult: null, tempo: 1, reducedMotion: false, audioOn: true,
-        focusMode: false, hideScore: false, holdFrozen: false, lastTable: 4 };
+        focusMode: false, hideScore: false, holdFrozen: false, nameShare: false, chosen: null, lastTable: 4 };
       var g = Object.assign({}, PR_DEFAULT, _f.plateGame || {});
       var SERVICE_TARGET = 5;
       var UNIT_FOODS = [{ e: '🍕', n: 'pizza' }, { e: '🥧', n: 'pie' }, { e: '🎂', n: 'cake' }, { e: '🍩', n: 'donut' }, { e: '🫓', n: 'flatbread' }];
@@ -4830,7 +4830,7 @@ window.StemLab = window.StemLab || {
         var first = genPlate(g.level);
         upd({ plateGame: Object.assign({}, g, {
           phase: 'play', timed: !!timed, served: 0, combo: 0, comboPaused: false, misses: 0,
-          active: first, deck: [genPlate(g.level), genPlate(g.level)], input: 2, lastCoach: '',
+          active: first, deck: [genPlate(g.level), genPlate(g.level)], input: 2, chosen: null, lastCoach: '',
           lastResult: null, reducedMotion: g.reducedMotion || rm, lastTable: first.table }) });
         if (g.audioOn) sfxNewChallenge();
         announceToSR((timed ? 'Timed service' : 'Zen practice') + ' started. Table ' + first.table + ': split one ' + first.food.n + ' equally.');
@@ -4839,7 +4839,9 @@ window.StemLab = window.StemLab || {
       var serve = function() {
         var a = g.active;
         if (!a || g.phase !== 'play') return;
-        var correct = (g.input === a.table);
+        var partitionOk = (g.input === a.table);
+        var correctLabel = a.kind === 'mixed' ? toMixed(a.tray, a.table) : '1/' + a.table;
+        var correct = g.nameShare ? (partitionOk && g.chosen === correctLabel) : partitionOk;
         if (correct) {
           var nServed = g.served + 1;
           var nCombo = g.combo + 1;
@@ -4864,7 +4866,7 @@ window.StemLab = window.StemLab || {
           } else {
             var dq = (g.deck && g.deck.length) ? g.deck : [genPlate(g.level), genPlate(g.level)];
             var nDeck = dq.slice(1).concat([genPlate(g.level)]);
-            save({ active: dq[0] || genPlate(g.level), deck: nDeck, input: 2, served: nServed, combo: nCombo,
+            save({ active: dq[0] || genPlate(g.level), deck: nDeck, input: 2, chosen: null, served: nServed, combo: nCombo,
               bestCombo: nBest, totalServed: nTotal, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
             if (g.audioOn) sfxNewChallenge();
             checkBadges(badgeArgs);
@@ -4872,9 +4874,11 @@ window.StemLab = window.StemLab || {
         } else {
           if (g.audioOn) sfxWrong();
           var coach;
-          if (g.input <= 1) coach = "That's the whole dish - share it equally among all " + a.table + " guests, so each gets a smaller piece.";
-          else if (g.input < a.table) coach = "Not enough equal shares yet - " + a.table + " guests each need a fair piece, so make more cuts.";
-          else coach = "Too many shares - there are only " + a.table + " guests at this table.";
+          if (!partitionOk && g.input <= 1) coach = "That's the whole dish - share it equally among all " + a.table + " guests, so each gets a smaller piece.";
+          else if (!partitionOk && g.input < a.table) coach = "Not enough equal shares yet - " + a.table + " guests each need a fair piece, so make more cuts.";
+          else if (!partitionOk) coach = "Too many shares - there are only " + a.table + " guests at this table.";
+          else if (g.chosen == null) coach = "Good - " + a.table + " equal shares. Now pick how much ONE guest gets.";
+          else coach = "You made " + a.table + " equal shares, so each guest gets " + correctLabel + ". Look at a single piece.";
           announceToSR('Not fair yet. ' + coach);
           save({ misses: (g.misses || 0) + 1, comboPaused: true, lastResult: 'wrong', lastCoach: coach });
         }
@@ -4885,6 +4889,18 @@ window.StemLab = window.StemLab || {
         if (v !== g.input) { save({ input: v, lastResult: null }); if (g.audioOn) sfxClick(); }
       };
       var setCuts = function(v) { v = Math.max(1, Math.min(12, parseInt(v) || 1)); save({ input: v, lastResult: null }); };
+      var chooseShare = function(label) { save({ chosen: label, lastResult: null }); if (g.audioOn) sfxClick(); };
+      var makeShareChoices = function(p) {
+        var corr = p.kind === 'mixed' ? toMixed(p.tray, p.table) : '1/' + p.table;
+        var ds = p.kind === 'mixed'
+          ? ['1/' + p.table, p.table + '/' + p.tray, toMixed(p.tray + p.table, p.table)]
+          : ['' + p.table, p.table + '/1', '1/' + (p.table + 2)];
+        var out = [corr];
+        ds.forEach(function(d) { if (out.indexOf(d) === -1 && out.length < 4) out.push(d); });
+        ['2/1', '1/3', '3', '1/2', '2'].forEach(function(d) { if (out.length < 4 && out.indexOf(d) === -1) out.push(d); });
+        var rot = p.table % out.length;
+        return out.slice(rot).concat(out.slice(0, rot));
+      };
       var showMe = function() { var aa = g.active; if (!aa) return; save({ input: aa.table, lastResult: null, lastCoach: 'Even Steven shows you: ' + aa.table + ' guests need ' + aa.table + ' equal shares, so each gets a fair piece.' }); if (g.audioOn) sfxClick(); announceToSR('Set to ' + aa.table + ' equal shares. Now press serve.'); };
       var toMenu = function() { save({ phase: 'menu', active: null }); };
       var toZen = function() { if (g.phase === 'play' && g.timed) save({ timed: false, holdFrozen: false }); };
@@ -4941,10 +4957,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-center gap-2 justify-center text-[11px] text-green-700 pt-1' },
               'Level',
               [1, 2, 3, 4, 5].map(function(L) {
-                return h('button', { key: 'lv' + L, onClick: function() { save({ level: L }); },
+                return h('button', { key: 'lv' + L, onClick: function() { save({ level: L, nameShare: L >= 3 }); },
                   'aria-pressed': g.level === L,
                   className: 'w-7 h-7 rounded font-bold ' + (g.level === L ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, L);
               })
+            ),
+            h('div', { className: 'pt-1' },
+              toggleChip('nameShare', 'Name the share (produce the fraction)'),
+              h('p', { className: 'text-[10px] text-green-600 mt-0.5' }, 'On = pick the fraction each guest gets (best for Level 3+). Off = the share is shown for you.')
             )
           ),
           h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 space-y-2' },
@@ -5051,6 +5071,25 @@ window.StemLab = window.StemLab || {
               ' of the tray')
           : h('span', { className: 'text-amber-700 font-bold' }, 'Those groups are not equal - every guest must get the same.'));
 
+      var prCorrectLabel = a.kind === 'mixed' ? toMixed(a.tray, a.table) : '1/' + a.table;
+      var shareUI;
+      if (!g.nameShare) {
+        shareUI = h('div', { className: 'text-center text-sm text-slate-700', role: 'status', 'aria-live': 'polite' }, readout);
+      } else {
+        var prChoices = makeShareChoices(a);
+        shareUI = h('div', { className: 'text-center space-y-1' },
+          h('p', { className: 'text-sm font-bold text-slate-700' }, 'How much does each guest get?'),
+          h('div', { className: 'flex gap-2 justify-center flex-wrap' },
+            prChoices.map(function(c) {
+              var sel = g.chosen === c;
+              return h('button', { key: 'prc-' + c, onClick: function() { chooseShare(c); }, 'aria-pressed': sel,
+                className: 'px-3 py-2 rounded-lg font-mono font-bold text-base ' + (sel ? 'bg-green-600 text-white ring-2 ring-green-700' : 'bg-white text-green-700 border-2 border-green-300 hover:bg-green-50') }, c);
+            })
+          ),
+          (g.lastResult === 'ok' ? h('p', { className: 'text-[11px] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
+        );
+      }
+
       // belt canvas (timed only) — decorative + forgiving miss timer; aria-hidden
       var belt = g.timed ? h('div', { className: 'rounded-xl overflow-hidden border-2 border-green-200', style: { background: '#0f1f17', height: 96 }, 'aria-hidden': 'true' },
         h('canvas', {
@@ -5151,7 +5190,7 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() { adjust(1); }, 'aria-label': 'More shares',
               className: 'w-9 h-9 rounded-lg text-xl font-black bg-slate-100 text-slate-700 hover:bg-slate-200' }, '+')
           ),
-          h('div', { className: 'text-center text-sm text-slate-700', role: 'status', 'aria-live': 'polite' }, readout),
+          shareUI,
           h('div', { className: 'flex justify-center gap-2 items-center' },
             h('button', { onClick: showMe, className: 'px-3 py-2.5 rounded-xl text-sm font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, 'Show me'),
             h('button', { onClick: serve, disabled: a.kind === 'tray' && !divides,
