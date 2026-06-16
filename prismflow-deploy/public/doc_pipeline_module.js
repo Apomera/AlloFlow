@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -372,6 +372,63 @@ function _redactDocument(html, targets, opts) {
   const r = _redactDocHtml(html, targets, opts);
   const v = _redactionLeaks(r.html, targets);
   const _r = { html: r.html, count: r.count, redacted: r.redacted, clean: v.clean, leaks: v.leaks };
+  return _r;
+}
+
+// Cross-check AI audit issues against DETERMINISTIC ground truth and drop the false positives the AI
+// rubric produces on MECHANICAL checks it is unreliable at: contrast RATIOS (LLMs miscompute hex
+// math — e.g. it flagged #475569 on #f8fafc as failing when it is actually 7.24:1, passing AA *and*
+// AAA) and the PRESENCE of landmarks / h1 / skip-link / lang / title. Those phantom issues
+// contradicted this very audit's own deterministic structuralPasses, capped the score, AND stalled
+// the auto-fix loop on non-issues it cannot fix. CONSERVATIVE (over-suppression would ship a real
+// barrier with a clean score): drops ONLY an UNAMBIGUOUS total-absence claim about a tag that is
+// actually present (quality/semantic/hierarchy complaints excluded). Contrast (1.4.3) is NOT
+// suppressed — the only reliable contrast ground truth is axe's COMPUTED contrast, not the inline-
+// only fixContrastViolations. The AI keeps every SEMANTIC judgment. Pure. (assign-then-return.)
+function _suppressContradictedIssues(issues, html) {
+  if (!Array.isArray(issues) || issues.length === 0 || !html) { const _r0 = { kept: Array.isArray(issues) ? issues : [], suppressed: [] }; return _r0; }
+  // Presence is read from FUNCTIONAL markup only — strip comments / code / examples so a <main> shown
+  // in a code sample or merely MENTIONED in prose can't read as a real landmark (review F3).
+  const stripped = String(html)
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<(pre|code|script|style|template|textarea)\b[\s\S]*?<\/\1\s*>/gi, ' ');
+  const lc = stripped.toLowerCase();
+  const present = {
+    main: /<main[\s>]/.test(lc) || /role=["']main["']/.test(lc),
+    h1: /<h1[\s>]/.test(lc),
+    // Require a REAL skip anchor (<a href="#...">…skip…), not just the phrase in prose (review F7).
+    skip: /<a\b[^>]*href=["']#[^"']+["'][^>]*>[\s\S]{0,60}?skip[\s\S]{0,40}?<\/a\s*>/i.test(stripped) && /skip[\s-]*(?:to[\s-]*)?(?:content|main|nav)/i.test(stripped),
+    lang: /<html[^>]*\slang\s*=\s*["'][a-z]{2}/.test(lc),
+    title: /<title[\s>][^<]*[a-z0-9]/i.test(stripped),
+  };
+  // Words signalling the element EXISTS but is DEFECTIVE, or the issue is SEMANTIC / sub-element /
+  // hierarchy / reading-order — NEVER suppress these. The presence checks only judge EXISTENCE, so
+  // over-suppressing here would ship a real barrier with a clean score (review F2/F6/F10/F11/F12).
+  const QUALITY = /\b(empty|blank|invalid|valid|value|wrong|incorrect|mismatch(?:ed)?|multiple|more than one|second|two\s|duplicat\w+|redundant|out[\s-]?of[\s-]?order|reading[\s-]?order|hierarch\w+|level[\s-]?\d|level[\s-]?(?:skip|jump)|skip(?:ped|s)?[\s-]+(?:a |the |from |one )?(?:level|h[1-6])|h[2-6]\b|of[\s-]?parts|3\.1\.2|sub-?\w+|nested|placeholder|generic|non-?descriptive|not\s+descriptive|meaningful|same\s+text|broken|points?\s+to|target|not\s+unique|order\s+of)\b/i;
+  const _txt = (i) => (((typeof i === 'string') ? i : ((i && (i.issue || i.description || i.text)) || '')) + ' ' + ((i && i.wcag) || ''));
+  // The absence word must sit ADJACENT (<=40 chars) to the element keyword, in either order — so a
+  // sentence that merely mentions the element plus an unrelated absence word isn't a false positive.
+  const _absNear = (raw, kw) => new RegExp('(?:\\bno\\b|missing|lacks?|lacking|absent|without|not\\s+(?:present|wrapped|provided|defined|set|specified|included|identified))[^.;]{0,40}(?:' + kw + ')|(?:' + kw + ')[^.;]{0,40}(?:is|are|was|were)?\\s*(?:missing|absent|not\\s+(?:present|provided|set|defined|specified|included))', 'i');
+  const kept = [], suppressed = [];
+  for (const issue of issues) {
+    const raw = _txt(issue);
+    const t = raw.toLowerCase();
+    let drop = false;
+    // (a) UNAMBIGUOUS total-absence claim contradicted by deterministic PRESENCE (quality/semantic excluded).
+    if (!QUALITY.test(raw)) {
+      if (present.main && _absNear(raw, '<main>|\\bmain\\b\\s*(?:landmark|element|region)|primary content').test(raw)) drop = true;
+      else if (present.h1 && _absNear(raw, '\\bh1\\b|level[\\s-]*1\\s+heading|primary\\s+(?:heading|topic|title)').test(raw)) drop = true;
+      else if (present.skip && _absNear(raw, 'skip[\\s-]*(?:to[\\s-]*)?(?:content|nav|main)|skip\\s+link|skip\\s+navigation').test(raw)) drop = true;
+      else if (present.lang && /\b(?:html|document|page|primary)\b[^.;]{0,30}lang|lang[^.;]{0,30}\b(?:html|document|page)\b/i.test(raw) && _absNear(raw, '\\blang(?:uage)?\\b').test(raw)) drop = true;
+      else if (present.title && /(?:document|page|file|pdf|<title>)[^.;]{0,20}title|title[^.;]{0,20}(?:metadata|propert|<title>)/i.test(raw) && _absNear(raw, '\\btitle\\b').test(raw)) drop = true;
+    }
+    // NOTE: contrast (1.4.3) is deliberately NOT suppressed here. The only reliable contrast ground
+    // truth is axe-core's COMPUTED contrast (which sees class-based / <style>-block colors); the
+    // inline-only fixContrastViolations is blind to Tailwind-class contrast, so trusting it would drop
+    // REAL barriers (review). A false "has a contrast issue" is far safer than a false "it's fine".
+    if (drop) suppressed.push(issue); else kept.push(issue);
+  }
+  const _r = { kept: kept, suppressed: suppressed };
   return _r;
 }
 
@@ -7997,6 +8054,10 @@ Return ONLY JSON:
         const result = await callGemini(`You are a WCAG 2.1 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${sampleHtml}"""`, true);
         const parsed = parseAuditJson(result);
         if (parsed.issues && Array.isArray(parsed.issues)) {
+          // Drop AI false-positives the deterministic ground truth contradicts BEFORE scoring (2026-06-15).
+          const _fpS = _suppressContradictedIssues(parsed.issues, htmlContent);
+          if (_fpS.suppressed.length) { try { warnLog('[audit] suppressed ' + _fpS.suppressed.length + ' AI false-positive(s) contradicted by deterministic ground truth'); } catch (_) {} }
+          parsed.issues = _fpS.kept;
           const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
           // Pass credit: ratio of passes to total checks — more passes = more proportional credit
           const pc = (parsed.passes || []).length;
@@ -8127,7 +8188,7 @@ HTML section ${chunkNum}/${chunks.length}:
       });
       // Convert each issue's pages Set to a sorted array so downstream
       // consumers (the report renderer) get serializable data.
-      const mergedIssues = [...seenIssues.values()].map(iss => {
+      let mergedIssues = [...seenIssues.values()].map(iss => {
         const pagesArr = iss.pages ? [...iss.pages].sort((a, b) => a - b) : [];
         return { ...iss, pages: pagesArr };
       });
@@ -8164,6 +8225,13 @@ HTML section ${chunkNum}/${chunks.length}:
         }
       });
 
+      // FALSE-POSITIVE SUPPRESSION (2026-06-15): drop AI issues the deterministic ground truth
+      // contradicts (contrast that actually passes; landmarks/h1/skip-link/lang/title that ARE
+      // present) BEFORE scoring/returning, so the score and the "remaining issues" list are honest
+      // and the auto-fix loop is not stalled on phantom non-issues it cannot fix.
+      const _fpC = _suppressContradictedIssues(mergedIssues, htmlContent);
+      if (_fpC.suppressed.length) { try { warnLog('[Output Audit] suppressed ' + _fpC.suppressed.length + ' AI false-positive(s) contradicted by deterministic ground truth'); } catch (_) {} }
+      mergedIssues = _fpC.kept;
       const passCount = mergedPassList.length;
       // Score from merged deductions — each unique violation type counted ONCE
       const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0), 0);
@@ -24625,11 +24693,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
