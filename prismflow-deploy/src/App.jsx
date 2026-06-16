@@ -4395,7 +4395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '35685686';
+    var pluginCdnVersion = '9ae946af';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -19858,6 +19858,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       rerunPipelineFix: () => runAutoFixLoop(),      // default rounds; runAutoFixLoop has its own re-entry guard
       stopPipelineFix: () => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} try { addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); } catch (_) {} },
       pipelineFixRunning: pdfAutoContinueRunning,    // read-only signal: gates fix-again vs stop
+      // set_ui_language (2026-06-15): point at the EXISTING header language picker rather than
+      // blind-setting (there's no validated language list in scope, and setUiLanguage('') would
+      // reset to English). Targets the selector's stable data-help-key + reuses showSpotlight.
+      spotlightUiLanguage: () => {
+        try {
+          const el = document.querySelector('[data-help-key="ui_language_select"]');
+          if (!el) return false;
+          try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+          try { showSpotlight(el, '🌐 ' + (t('cmd.set_ui_language') || 'Interface language'), t('cmd.set_ui_language_hint') || 'Pick your language here.'); } catch (_) {}
+          return true;
+        } catch (_) { return false; }
+      },
     };
     _alloCmdCtxRef.current = ctx;
     return ctx;
