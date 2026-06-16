@@ -4793,7 +4793,7 @@ window.StemLab = window.StemLab || {
       var PR_DEFAULT = { phase: 'menu', timed: false, level: 1, served: 0, combo: 0, bestCombo: 0,
         comboPaused: false, misses: 0, totalServed: 0, active: null, deck: [], input: 2,
         lastCoach: '', lastResult: null, tempo: 1, reducedMotion: false, audioOn: true,
-        focusMode: false, hideScore: false, holdFrozen: false, nameShare: false, chosen: null, lastTable: 4 };
+        focusMode: false, hideScore: false, holdFrozen: false, nameShare: false, chosen: null, freeEntry: false, typed: '', log: {}, lastTable: 4 };
       var g = Object.assign({}, PR_DEFAULT, _f.plateGame || {});
       var SERVICE_TARGET = 5;
       var UNIT_FOODS = [{ e: '🍕', n: 'pizza' }, { e: '🥧', n: 'pie' }, { e: '🎂', n: 'cake' }, { e: '🍩', n: 'donut' }, { e: '🫓', n: 'flatbread' }];
@@ -4824,13 +4824,13 @@ window.StemLab = window.StemLab || {
 
       var save = function(patch) { upd({ plateGame: Object.assign({}, g, patch) }); };
 
-      var startGame = function(timed) {
+      var startGame = function(timed, freshLog) {
         var rm = false;
         try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) rm = true; } catch (e) {}
         var first = genPlate(g.level);
         upd({ plateGame: Object.assign({}, g, {
           phase: 'play', timed: !!timed, served: 0, combo: 0, comboPaused: false, misses: 0,
-          active: first, deck: [genPlate(g.level), genPlate(g.level)], input: 2, chosen: null, lastCoach: '',
+          active: first, deck: [genPlate(g.level), genPlate(g.level)], input: 2, chosen: null, typed: '', lastCoach: '', log: freshLog ? {} : (g.log || {}),
           lastResult: null, reducedMotion: g.reducedMotion || rm, lastTable: first.table }) });
         if (g.audioOn) sfxNewChallenge();
         announceToSR((timed ? 'Timed service' : 'Zen practice') + ' started. Table ' + first.table + ': split one ' + first.food.n + ' equally.');
@@ -4841,7 +4841,16 @@ window.StemLab = window.StemLab || {
         if (!a || g.phase !== 'play') return;
         var partitionOk = (g.input === a.table);
         var correctLabel = a.kind === 'mixed' ? toMixed(a.tray, a.table) : '1/' + a.table;
-        var correct = g.nameShare ? (partitionOk && g.chosen === correctLabel) : partitionOk;
+        var corN = a.kind === 'mixed' ? a.tray : 1, corD = a.table;
+        var produced = g.freeEntry ? parseShareEq(g.typed, corN, corD) : (g.chosen === correctLabel);
+        var correct = g.nameShare ? (partitionOk && produced) : partitionOk;
+        var nLog = Object.assign({}, g.log || {});
+        nLog.attempts = (nLog.attempts || 0) + 1;
+        if (correct) { nLog.correct = (nLog.correct || 0) + 1; nLog[a.kind] = (nLog[a.kind] || 0) + 1; }
+        else if (!partitionOk && g.input <= 1) nLog.gaveWhole = (nLog.gaveWhole || 0) + 1;
+        else if (!partitionOk && g.input < a.table) nLog.tooFew = (nLog.tooFew || 0) + 1;
+        else if (!partitionOk) nLog.tooMany = (nLog.tooMany || 0) + 1;
+        else nLog.namedWrong = (nLog.namedWrong || 0) + 1;
         if (correct) {
           var nServed = g.served + 1;
           var nCombo = g.combo + 1;
@@ -4858,7 +4867,7 @@ window.StemLab = window.StemLab || {
             aiAsked: _f.aiAsked || 0, platesServed: nTotal };
           if (nServed >= SERVICE_TARGET) {
             save({ phase: 'clear', served: nServed, combo: nCombo, bestCombo: nBest, totalServed: nTotal,
-              active: null, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
+              active: null, comboPaused: false, lastResult: 'ok', lastCoach: '', log: nLog, lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
             if (g.audioOn) sfxComplete();
             awardXP('fractionPlateRush', 40, 'service complete');
             addToast('🍽️ Service complete! Even Steven approves.', 'success');
@@ -4866,8 +4875,8 @@ window.StemLab = window.StemLab || {
           } else {
             var dq = (g.deck && g.deck.length) ? g.deck : [genPlate(g.level), genPlate(g.level)];
             var nDeck = dq.slice(1).concat([genPlate(g.level)]);
-            save({ active: dq[0] || genPlate(g.level), deck: nDeck, input: 2, chosen: null, served: nServed, combo: nCombo,
-              bestCombo: nBest, totalServed: nTotal, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
+            save({ active: dq[0] || genPlate(g.level), deck: nDeck, input: 2, chosen: null, typed: '', served: nServed, combo: nCombo,
+              bestCombo: nBest, totalServed: nTotal, comboPaused: false, lastResult: 'ok', lastCoach: '', log: nLog, lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
             if (g.audioOn) sfxNewChallenge();
             checkBadges(badgeArgs);
           }
@@ -4877,10 +4886,11 @@ window.StemLab = window.StemLab || {
           if (!partitionOk && g.input <= 1) coach = "That's the whole dish - share it equally among all " + a.table + " guests, so each gets a smaller piece.";
           else if (!partitionOk && g.input < a.table) coach = "Not enough equal shares yet - " + a.table + " guests each need a fair piece, so make more cuts.";
           else if (!partitionOk) coach = "Too many shares - there are only " + a.table + " guests at this table.";
+          else if (g.freeEntry) coach = g.typed ? ("Not quite - you made " + a.table + " equal shares, so each guest gets " + correctLabel + ".") : ("Good - " + a.table + " equal shares. Now TYPE how much one guest gets, like " + correctLabel + ".");
           else if (g.chosen == null) coach = "Good - " + a.table + " equal shares. Now pick how much ONE guest gets.";
           else coach = "You made " + a.table + " equal shares, so each guest gets " + correctLabel + ". Look at a single piece.";
           announceToSR('Not fair yet. ' + coach);
-          save({ misses: (g.misses || 0) + 1, comboPaused: true, lastResult: 'wrong', lastCoach: coach });
+          save({ misses: (g.misses || 0) + 1, comboPaused: true, lastResult: 'wrong', lastCoach: coach, log: nLog });
         }
       };
 
@@ -4890,6 +4900,22 @@ window.StemLab = window.StemLab || {
       };
       var setCuts = function(v) { v = Math.max(1, Math.min(12, parseInt(v) || 1)); save({ input: v, lastResult: null }); };
       var chooseShare = function(label) { save({ chosen: label, lastResult: null }); if (g.audioOn) sfxClick(); };
+      var setTyped = function(v) { save({ typed: v, lastResult: null }); };
+      var parseShareEq = function(str, cn, cd) {
+        if (!str) return false;
+        str = ('' + str).trim();
+        var n, d;
+        if (str.indexOf(' ') !== -1 && str.indexOf('/') !== -1) {
+          var sp = str.split(' '); var w = parseInt(sp[0], 10); var fr = (sp[1] || '').split('/');
+          var a2 = parseInt(fr[0], 10), b = parseInt(fr[1], 10);
+          if (isNaN(w) || isNaN(a2) || isNaN(b) || b === 0) return false;
+          n = w * b + a2; d = b;
+        } else if (str.indexOf('/') !== -1) {
+          var f2 = str.split('/'); n = parseInt(f2[0], 10); d = parseInt(f2[1], 10);
+          if (isNaN(n) || isNaN(d) || d === 0) return false;
+        } else { n = parseInt(str, 10); d = 1; if (isNaN(n)) return false; }
+        return n * cd === cn * d;
+      };
       var makeShareChoices = function(p) {
         var corr = p.kind === 'mixed' ? toMixed(p.tray, p.table) : '1/' + p.table;
         var ds = p.kind === 'mixed'
@@ -4949,22 +4975,30 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm text-green-700 max-w-md mx-auto' },
               'House rule: every guest at a table gets an EXACTLY equal plate. Divide each dish into the table\'s number of equal shares, then read off the fraction each guest gets.'),
             h('div', { className: 'flex flex-wrap gap-2 justify-center pt-1' },
-              h('button', { onClick: function() { startGame(false); },
+              h('button', { onClick: function() { startGame(false, true); },
                 className: 'px-5 py-3 rounded-xl text-base font-bold bg-green-600 text-white hover:bg-green-700 shadow-md' }, '▶ Cook (Zen - no timer)'),
-              h('button', { onClick: function() { startGame(true); },
+              h('button', { onClick: function() { startGame(true, true); },
                 className: 'px-4 py-3 rounded-xl text-sm font-bold bg-white text-green-700 border-2 border-green-300 hover:bg-green-50' }, '⏱ Timed Service')
             ),
             h('div', { className: 'flex items-center gap-2 justify-center text-[11px] text-green-700 pt-1' },
               'Level',
               [1, 2, 3, 4, 5].map(function(L) {
-                return h('button', { key: 'lv' + L, onClick: function() { save({ level: L, nameShare: L >= 3 }); },
+                return h('button', { key: 'lv' + L, onClick: function() { save({ level: L, nameShare: L >= 3, freeEntry: L >= 5 }); },
                   'aria-pressed': g.level === L,
                   className: 'w-7 h-7 rounded font-bold ' + (g.level === L ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, L);
               })
             ),
             h('div', { className: 'pt-1' },
-              toggleChip('nameShare', 'Name the share (produce the fraction)'),
-              h('p', { className: 'text-[10px] text-green-600 mt-0.5' }, 'On = pick the fraction each guest gets (best for Level 3+). Off = the share is shown for you.')
+              h('div', { className: 'flex items-center gap-1 justify-center' },
+                h('span', { className: 'text-[11px] font-bold text-green-700' }, 'Answer:'),
+                [['show', 'Show'], ['pick', 'Pick'], ['type', 'Type']].map(function(m) {
+                  var cur = g.freeEntry ? 'type' : g.nameShare ? 'pick' : 'show';
+                  return h('button', { key: 'am-' + m[0], 'aria-pressed': cur === m[0],
+                    onClick: function() { save({ nameShare: m[0] !== 'show', freeEntry: m[0] === 'type' }); },
+                    className: 'px-2 py-1 rounded text-[11px] font-bold ' + (cur === m[0] ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, m[1]);
+                })
+              ),
+              h('p', { className: 'text-[10px] text-green-600 mt-0.5' }, 'Show = read it; Pick = choose the fraction; Type = type it (hardest). Auto-set by level; change anytime.')
             )
           ),
           h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 space-y-2' },
@@ -5000,6 +5034,10 @@ window.StemLab = window.StemLab || {
           introTxt = 'The shares add back up to the whole:';
           closure = addParts.join(' + ') + ' = ' + T + '/' + T + ' = 1 whole' + (lastKind === 'tray' ? ' tray' : '');
         }
+        var lg = g.log || {};
+        var lgServed = (lg.unit || 0) + (lg.tray || 0) + (lg.mixed || 0);
+        var lgPct = lg.attempts ? Math.round((lg.correct || 0) / lg.attempts * 100) : 0;
+        var lgErrs = [['gave the whole', lg.gaveWhole || 0], ['too few shares', lg.tooFew || 0], ['too many shares', lg.tooMany || 0], ['named the share wrong', lg.namedWrong || 0]].filter(function(e) { return e[1] > 0; }).sort(function(x, y) { return y[1] - x[1]; });
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'bg-gradient-to-br from-amber-50 to-green-50 rounded-xl p-5 border-2 border-green-300 text-center space-y-2' },
             h('div', { className: 'text-5xl' }, '🧾'),
@@ -5012,6 +5050,13 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'font-bold text-green-700' }, '😋 Happy tables: ' + g.served),
               h('span', { className: 'font-bold text-amber-700' }, '🔥 Best combo: ' + (g.bestCombo || 0))
             ),
+            (lgServed > 0 ? h('div', { className: 'bg-white/70 rounded-lg border border-slate-200 p-2 text-left text-[11px] text-slate-700 space-y-0.5 max-w-sm mx-auto' },
+              h('p', { className: 'font-bold text-slate-800' }, '\uD83D\uDCCB Practice this sitting'),
+              h('p', null, 'Plates served: ' + lgServed + ' (' + (lg.unit || 0) + ' unit, ' + (lg.tray || 0) + ' tray, ' + (lg.mixed || 0) + ' mixed)'),
+              h('p', null, 'Fair serves: ' + (lg.correct || 0) + ' of ' + (lg.attempts || 0) + ' tries (' + lgPct + '%)'),
+              (lgErrs.length ? h('p', null, 'Most common stumble: ' + lgErrs[0][0] + ' (' + lgErrs[0][1] + ')') : h('p', { className: 'text-green-700' }, 'No stumbles - every serve was fair.')),
+              h('p', { className: 'text-[10px] text-slate-400 italic' }, 'A record of what was practiced, not a measure of ability.')
+            ) : null),
             h('div', { className: 'flex flex-wrap gap-2 justify-center pt-2' },
               h('button', { onClick: function() { save({ level: Math.min(5, (g.level || 1) + 1) }); startGame(g.timed); },
                 className: 'px-4 py-2 rounded-xl text-sm font-bold bg-green-600 text-white hover:bg-green-700' }, 'Next service (Level ' + Math.min(5, (g.level || 1) + 1) + ')'),
@@ -5075,7 +5120,7 @@ window.StemLab = window.StemLab || {
       var shareUI;
       if (!g.nameShare) {
         shareUI = h('div', { className: 'text-center text-sm text-slate-700', role: 'status', 'aria-live': 'polite' }, readout);
-      } else {
+      } else if (!g.freeEntry) {
         var prChoices = makeShareChoices(a);
         shareUI = h('div', { className: 'text-center space-y-1' },
           h('p', { className: 'text-sm font-bold text-slate-700' }, 'How much does each guest get?'),
@@ -5086,6 +5131,15 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-2 rounded-lg font-mono font-bold text-base ' + (sel ? 'bg-green-600 text-white ring-2 ring-green-700' : 'bg-white text-green-700 border-2 border-green-300 hover:bg-green-50') }, c);
             })
           ),
+          (g.lastResult === 'ok' ? h('p', { className: 'text-[11px] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
+        );
+      } else {
+        shareUI = h('div', { className: 'text-center space-y-1' },
+          h('p', { className: 'text-sm font-bold text-slate-700' }, 'Type how much each guest gets:'),
+          h('input', { type: 'text', value: g.typed || '', 'aria-label': 'Each guest gets', placeholder: a.kind === 'mixed' ? 'e.g. 1 1/4' : 'e.g. 1/' + a.table,
+            onChange: function(e) { setTyped(e.target.value); },
+            className: 'w-32 px-2 py-1.5 rounded-lg border-2 border-green-300 text-center text-base font-mono font-bold' }),
+          h('p', { className: 'text-[10px] text-slate-400' }, 'Any equal form counts - 2/8 is the same as 1/4.'),
           (g.lastResult === 'ok' ? h('p', { className: 'text-[11px] text-green-700 font-bold' }, 'Yes - each guest gets ' + prCorrectLabel + '.') : null)
         );
       }
@@ -5147,6 +5201,7 @@ window.StemLab = window.StemLab || {
       ) : null;
 
       var onKey = function(e) {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) { if (e.key === 'Enter') serve(); return; }
         var k = e.key;
         if (k === 'ArrowUp' || k === '+' || k === '=') { e.preventDefault(); adjust(1); }
         else if (k === 'ArrowDown' || k === '-' || k === '_') { e.preventDefault(); adjust(-1); }
