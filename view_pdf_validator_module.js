@@ -37,6 +37,7 @@
     var PDFArray = PDFLib.PDFArray;
     var PDFDict = PDFLib.PDFDict;
     var PDFRef = PDFLib.PDFRef;
+    var PDFNumber = PDFLib.PDFNumber; // audit #22: real class so an integer-MCID /K leaf passes instanceof
     var nm = function (n) { return PDFName.of(n); };
     var resolve = function (o) { return (o instanceof PDFRef) ? ctx.lookup(o) : o; };
     var elems = [];
@@ -69,7 +70,7 @@
         }
         for (var x = 0; x < items.length; x++) {
           var it = items[x];
-          if (it && typeof it === 'object' && it.value === undefined && it.constructor && it.constructor.name === 'PDFNumber') hasContent = true;
+          if (it instanceof PDFNumber) hasContent = true; // integer MCID = marked content on the page (audit #22: was a constructor-NAME duck-type that mis-classed under the minified bundle → false-FAIL orphan)
           else if (it instanceof PDFDict) {
             var t = it.get(nm('Type'));
             var ts = t ? String(t) : '';

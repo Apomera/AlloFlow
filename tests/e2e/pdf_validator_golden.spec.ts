@@ -166,3 +166,43 @@ test.describe('PdfValidator — TH /Scope discrimination (audit #10)', () => {
     expect(res.withScopeThWithScope).toBe(1);
   });
 });
+
+// Audit #22: the integer-MCID content check used `it.constructor.name === 'PDFNumber'`, which
+// mangles under the MINIFIED pdf-lib bundle (the one the host + this golden load) — so an
+// integer-MCID /K leaf was mis-classed as orphaned (false-FAIL). Now uses `instanceof PDFNumber`.
+test.describe('PdfValidator — integer-MCID leaf is content, not orphan (audit #22)', () => {
+  test('a leaf whose /K is an integer MCID is recognized as content under the minified bundle', async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.addScriptTag({ url: PDFLIB_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ path: VALIDATOR_PATH });
+    await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.PdfValidator), null, { timeout: 20000 });
+
+    const res = await page.evaluate(async () => {
+      const PDFLib = (window as any).PDFLib;
+      const { PDFDocument, PDFName, PDFNumber } = PDFLib;
+      const validate = (window as any).AlloModules.PdfValidator.validateExportedPdfBytes;
+      const doc = await PDFDocument.create();
+      doc.addPage();
+      const ctx = doc.context;
+      const leaf = ctx.obj({ Type: PDFName.of('StructElem'), S: PDFName.of('P'), K: PDFNumber.of(0) }); // direct integer MCID
+      const structRoot = ctx.obj({ Type: PDFName.of('StructTreeRoot'), K: leaf });
+      doc.catalog.set(PDFName.of('StructTreeRoot'), ctx.register(structRoot));
+      const r = await validate(await doc.save());
+      const ruleStatus = (name: string) => { const c = (r.checks || []).find((x: any) => x.rule === name); return c ? c.status : '(missing)'; };
+      return {
+        pdfNumberLoaded: typeof PDFNumber,
+        orphanCount: r.structureTally && r.structureTally.orphanedLeafCount,
+        leafCount: r.structureTally && r.structureTally.leafCount,
+        orphanRule: ruleStatus('No orphaned semantic leaves'),
+      };
+    });
+    await page.close();
+
+    expect(res.pdfNumberLoaded).toBe('function'); // PDFNumber really is on the (minified) bundle
+    expect(res.leafCount).toBe(1);
+    expect(res.orphanCount).toBe(0);              // the integer-MCID leaf is content, NOT orphaned
+    expect(res.orphanRule).toBe('pass');
+  });
+});
