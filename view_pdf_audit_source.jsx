@@ -328,6 +328,27 @@ function _odtRuns(runs, footnotes) {
 // content.xml for an ODT. Heading_20_N / Standard map to LibreOffice built-ins;
 // the bold/italic/sub/sup + list styles are declared as automatic-styles so the
 // file opens cleanly in LibreOffice / Word / Google Docs with no missing-style.
+
+// Rebuild a NESTED list from the flat spec items[] (each carrying it.level). The DOCX/PPTX builders
+// honor it.level via numbering/bullet indent, but the ODT + DTBook serializers used to emit every
+// item at the top level (audit #24). Shared so both stay consistent. itemOpen(it) returns the item's
+// OPEN markup INCLUDING its content but NOT its close, so a child list nests inside it before the close.
+function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listCloseTag) {
+  let out = '';
+  let depth = 0;
+  const open = [];
+  for (const it of (items || [])) {
+    const L = Math.max(1, (it.level || 0) + 1);
+    while (depth < L) { out += listOpenTag; depth++; open[depth] = false; }
+    while (depth > L) { if (open[depth]) { out += itemCloseTag; open[depth] = false; } out += listCloseTag; depth--; }
+    if (open[depth]) out += itemCloseTag;
+    out += itemOpen(it);
+    open[depth] = true;
+  }
+  while (depth > 0) { if (open[depth]) { out += itemCloseTag; open[depth] = false; } out += listCloseTag; depth--; }
+  return out;
+}
+
 function _htmlToOdtContentXml(html) {
   const spec = _htmlToDocxSpec(html);
   const body = [];
@@ -338,9 +359,10 @@ function _htmlToOdtContentXml(html) {
     } else if (b.type === 'paragraph') {
       body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs, spec.footnotes) + '</text:p>');
     } else if (b.type === 'list') {
-      body.push('<text:list text:style-name="' + (b.ordered ? 'L_Number' : 'L_Bullet') + '">' +
-        (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + '</text:p></text:list-item>').join('') +
-        '</text:list>');
+      body.push(_buildNestedListXml(b.items,
+        '<text:list text:style-name="' + (b.ordered ? 'L_Number' : 'L_Bullet') + '">',
+        (it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + '</text:p>',
+        '</text:list-item>', '</text:list>')); // nested by it.level (audit #24)
     } else if (b.type === 'table') {
       const cols = (b.rows && b.rows[0] && b.rows[0].cells.length) || 1;
       const _odtRow = (r) => '<table:table-row>' + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>').join('') + '</table:table-row>';
@@ -438,7 +460,8 @@ function _htmlToDtbookXml(html, lang) {
       out.push('<p>' + _expDtbookRuns(b.runs) + '</p>');
     } else if (b.type === 'list') {
       ensureContentLevel();
-      out.push('<list type="' + (b.ordered ? 'ol' : 'ul') + '">' + (b.items || []).map((it) => '<li>' + _expDtbookRuns(it.runs) + '</li>').join('') + '</list>');
+      out.push(_buildNestedListXml(b.items, '<list type="' + (b.ordered ? 'ol' : 'ul') + '">',
+        (it) => '<li>' + _expDtbookRuns(it.runs), '</li>', '</list>')); // nested by it.level (audit #24)
     } else if (b.type === 'table') {
       ensureContentLevel();
       out.push('<table>' + (b.rows || []).map((r) => '<tr>' + (r.cells || []).map((c) => { const tg = c.header ? 'th' : 'td'; return '<' + tg + '>' + _expDtbookRuns(c.runs) + '</' + tg + '>'; }).join('') + '</tr>').join('') + '</table>');

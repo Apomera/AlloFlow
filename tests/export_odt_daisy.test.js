@@ -314,3 +314,25 @@ describe('ODT table header semantics (audit #19)', () => {
     expect(xml).not.toContain('<table:table-header-rows>');
   });
 });
+
+describe('nested lists preserve hierarchy (audit #24)', () => {
+  const nestedHtml = '<ul><li>Parent A<ul><li>Child B</li></ul></li><li>Sibling C</li></ul>';
+  it('ODT nests a sub-list inside its parent list-item (not flattened to top level)', () => {
+    const xml = _htmlToOdtContentXml(wrap(nestedHtml));
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect((xml.match(/<text:list /g) || []).length).toBeGreaterThanOrEqual(2); // outer + nested
+    expect(xml).toMatch(/Parent A[\s\S]*?<text:list[\s\S]*?Child B[\s\S]*?<\/text:list>[\s\S]*?<\/text:list-item>/);
+    expect(xml).toContain('Sibling C');
+  });
+  it('DTBook nests a sub-list inside its parent <li>', () => {
+    const xml = _htmlToDtbookXml(wrap(nestedHtml));
+    expect(parseXml(xml).wellFormed).toBe(true);
+    expect((xml.match(/<list /g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(xml).toMatch(/Parent A[\s\S]*?<list[\s\S]*?Child B[\s\S]*?<\/list>[\s\S]*?<\/li>/);
+  });
+  it('a flat list still produces a single list (no spurious nesting)', () => {
+    const xml = _htmlToOdtContentXml(wrap('<ul><li>one</li><li>two</li></ul>'));
+    expect((xml.match(/<text:list /g) || []).length).toBe(1);
+    expect(xml).toContain('one'); expect(xml).toContain('two');
+  });
+});

@@ -351,6 +351,39 @@ function _odtRuns(runs, footnotes) {
     return t;
   }).join("");
 }
+function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listCloseTag) {
+  let out = "";
+  let depth = 0;
+  const open = [];
+  for (const it of items || []) {
+    const L = Math.max(1, (it.level || 0) + 1);
+    while (depth < L) {
+      out += listOpenTag;
+      depth++;
+      open[depth] = false;
+    }
+    while (depth > L) {
+      if (open[depth]) {
+        out += itemCloseTag;
+        open[depth] = false;
+      }
+      out += listCloseTag;
+      depth--;
+    }
+    if (open[depth]) out += itemCloseTag;
+    out += itemOpen(it);
+    open[depth] = true;
+  }
+  while (depth > 0) {
+    if (open[depth]) {
+      out += itemCloseTag;
+      open[depth] = false;
+    }
+    out += listCloseTag;
+    depth--;
+  }
+  return out;
+}
 function _htmlToOdtContentXml(html) {
   const spec = _htmlToDocxSpec(html);
   const body = [];
@@ -361,7 +394,13 @@ function _htmlToOdtContentXml(html) {
     } else if (b.type === "paragraph") {
       body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs, spec.footnotes) + "</text:p>");
     } else if (b.type === "list") {
-      body.push('<text:list text:style-name="' + (b.ordered ? "L_Number" : "L_Bullet") + '">' + (b.items || []).map((it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + "</text:p></text:list-item>").join("") + "</text:list>");
+      body.push(_buildNestedListXml(
+        b.items,
+        '<text:list text:style-name="' + (b.ordered ? "L_Number" : "L_Bullet") + '">',
+        (it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + "</text:p>",
+        "</text:list-item>",
+        "</text:list>"
+      ));
     } else if (b.type === "table") {
       const cols = b.rows && b.rows[0] && b.rows[0].cells.length || 1;
       const _odtRow = (r) => "<table:table-row>" + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + "</text:p></table:table-cell>").join("") + "</table:table-row>";
@@ -430,7 +469,13 @@ function _htmlToDtbookXml(html, lang) {
       out.push("<p>" + _expDtbookRuns(b.runs) + "</p>");
     } else if (b.type === "list") {
       ensureContentLevel();
-      out.push('<list type="' + (b.ordered ? "ol" : "ul") + '">' + (b.items || []).map((it) => "<li>" + _expDtbookRuns(it.runs) + "</li>").join("") + "</list>");
+      out.push(_buildNestedListXml(
+        b.items,
+        '<list type="' + (b.ordered ? "ol" : "ul") + '">',
+        (it) => "<li>" + _expDtbookRuns(it.runs),
+        "</li>",
+        "</list>"
+      ));
     } else if (b.type === "table") {
       ensureContentLevel();
       out.push("<table>" + (b.rows || []).map((r) => "<tr>" + (r.cells || []).map((c) => {
