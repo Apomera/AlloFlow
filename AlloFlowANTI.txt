@@ -15701,6 +15701,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       let lastViolations = Infinity;
       let lastScore = -1;
+      let lastDet = -1;
+      let lastIssues = Infinity;
       let stagnantRounds = 0;
       for (let round = 0; round < maxRounds; round++) {
         if (pdfAutoContinueAbortRef.current) break;
@@ -15713,13 +15715,29 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // axe-clean round feeds the AI-flagged issues to aiFixChunked
         // (mirroring fixAndVerifyPdf's internal pass loop).
         if (_vio === 0 && _aiIssues.length === 0) break;
-        // Run-until-target: progress = fewer violations OR better score;
-        // only TWO consecutive stagnant rounds stop early.
-        const _progressed = _vio < lastViolations || (cur.afterScore || 0) > lastScore;
+        // NOISE-AWARE PROGRESS (loop fix, 2026-06-15): the blended afterScore is half AI-rubric,
+        // which is run-to-run NOISY (SD ~5). Score-only progress let that noise fake a stall in the
+        // axe-clean phase (and oscillate the stall-counter). Count progress ONLY from reliable
+        // signals — fewer axe violations, a MEANINGFULLY higher deterministic score (±1 tolerance),
+        // or fewer AI-flagged issues; the noisy blend is deliberately NOT a progress signal. Two
+        // stalls still stop. _curDet = the PRIOR round's deterministic component: prefer the exact
+        // value stamped last round (_detScore), else min(axe, EqualAccess) from the audit OBJECTS that
+        // actually exist on a fresh fix (cur.axeAudit.score — guarded above — NOT a top-level
+        // cur.axeScore, which is undefined pre-loop → would fabricate 100 and revert every genuine
+        // round). Fall back to whichever engine is present, never to a fabricated 100. (review F1/F2/F3/F6/F9)
+        const _curAxe = (cur.axeAudit && typeof cur.axeAudit.score === 'number') ? cur.axeAudit.score : null;
+        const _curEa = (cur.secondEngineAudit && typeof cur.secondEngineAudit.score === 'number') ? cur.secondEngineAudit.score : null;
+        const _curDet = (typeof cur._detScore === 'number') ? cur._detScore
+          : ((_curAxe !== null) ? (_curEa !== null ? Math.min(_curAxe, _curEa) : _curAxe) : _curEa); // null when NEITHER engine scored — never a fabricated 100 (review #3)
+        // det progress only when the baseline is a real number; gate the AI-issue term to the axe-CLEAN
+        // branch so noisy AI enumeration in the violation branch can't reset the stall counter (review #2).
+        const _progressed = _vio < lastViolations || (typeof _curDet === 'number' && _curDet > (lastDet + 1)) || (_vio === 0 && _aiIssues.length < lastIssues);
         if (!_progressed) { stagnantRounds++; if (stagnantRounds >= 2) break; }
         else stagnantRounds = 0;
         lastViolations = _vio;
         lastScore = cur.afterScore || 0;
+        lastDet = _curDet;
+        lastIssues = _aiIssues.length;
         setPdfFixLoading(true);
         setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
         let result;
@@ -15727,7 +15745,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
         } else {
           const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).join('\n');
-          const _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
+          let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
+          // CONTRAST ROUTING (loop fix, 2026-06-15): a WCAG 1.4.3 contrast issue is a CSS/style
+          // problem the generic chunk rewriter rarely fixes — route it to the deterministic,
+          // background-aware contrast fixer (sanitizeStyleForWCAG -> fixContrastViolations) as the
+          // last word, so the axe-clean phase actually CLEARS AI-flagged contrast instead of
+          // spinning on it (axe couldn't compute it here, so autoFixAxeViolations never fired).
+          const _hasContrast = _aiIssues.some((i) => { const _s = (typeof i === 'string') ? i : (((i.wcag || '') + ' ' + (i.issue || i.description || ''))); return /1\.4\.3|contrast/i.test(_s); });
+          if (_hasContrast) { try { const _sr = sanitizeStyleForWCAG(_fixedHtml); if (_sr && _sr.html && _sr.fixCount > 0) _fixedHtml = _sr.html; } catch (_) {} }
           const _freshAxe = await runAxeAudit(_fixedHtml);
           result = { html: _fixedHtml, axe: _freshAxe, passes: 1 };
         }
@@ -15751,24 +15776,28 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         let _det = (result.axe && typeof result.axe.score === 'number') ? result.axe.score : null;
         if (_det !== null && _ea && typeof _ea.score === 'number') _det = Math.min(_det, _ea.score);
         const newScore = (_det !== null) ? Math.round((reVerify.score + _det) / 2) : reVerify.score;
-        // Sweep 2026-06-11 [2]: commit-or-revert per round — a round that
-        // made things WORSE is discarded instead of committed.
-        if (newScore < (cur.afterScore || 0)) {
-          warnLog('[AutoContinue] round ' + (round + 1) + ' regressed (' + newScore + ' < ' + (cur.afterScore || 0) + ') — reverting this round.');
-          // Reliability fix (2026-06-13): do NOT increment stagnantRounds here.
-          // The revert leaves `cur` unchanged, so the NEXT round's top-of-loop
-          // no-progress check (comparing against lastViolations/lastScore set
-          // this round) already counts this stall — exactly once. The old
-          // `stagnantRounds++` here DOUBLE-counted one regression (here + next
-          // round), so a single wobble abandoned the loop instead of allowing
-          // a recovery attempt. A regression now reverts and tries again; the
-          // loop still stops after two genuinely-consecutive stalls.
+        // NOISE-AWARE COMMIT-OR-REVERT (loop fix, 2026-06-15): the blended score is half AI-rubric
+        // (noisy), so reverting whenever newScore < prior threw away genuinely-improved rounds on a
+        // mere AI wobble and stalled the loop short of target. Revert ONLY on a REAL regression: the
+        // DETERMINISTIC component (axe ∧ EqualAccess — reproducible) dropped, OR the AI flagged
+        // strictly MORE issues than before. A blend dip with deterministic held and no new issues is
+        // noise — keep the round. (Content loss is gated INSIDE aiFixChunked, not here.)
+        const _detRegressed = (_det !== null) && (typeof _curDet === 'number') && _det < (_curDet - 1);
+        // Gate AI-issue count ONLY in the axe-CLEAN (AI-fix) branch — in the axe-violation branch the
+        // fix is deterministic, so AI-enumeration noise must not revert a legit axe fix (review F5).
+        const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
+        if (_detRegressed || _moreIssues) {
+          warnLog('[AutoContinue] round ' + (round + 1) + ' REAL regression (det ' + _det + ' vs ' + _curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ') — reverting this round.');
+          // Do NOT increment stagnantRounds here — the revert leaves `cur` unchanged, so the next
+          // round's top-of-loop no-progress check counts this stall exactly once (avoids the old
+          // double-count that abandoned the loop on a single wobble).
           continue;
         }
         const _newPlain = _plainTextOf(result.html);
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
+          _detScore: _det, // exact deterministic component for next round's revert/progress baseline (review F9)
           // Never let a FAILED re-verify null out the prior round's
           // verification (user report 2026-06-11) — carried forward above
           // via the !reVerify break; here reVerify is always present.
