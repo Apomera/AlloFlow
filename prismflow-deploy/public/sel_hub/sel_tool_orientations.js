@@ -260,11 +260,36 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
     care: 'You control how you show up in caring relationships. Structural conditions of care (who has to do it, who is paid) are not under individual control but ARE under collective political control.'
   };
 
+  // ── Worldview Compass axes (interpretive lenses, NOT measurements) ──
+  // Each placement below is [center, halfWidth] in 0..1; halfWidth = honest
+  // uncertainty (a wide blur = contested, or the axis does not really fit).
+  // These are one defensible reading and are meant to be argued with.
+  var AXES = [
+    { id: 'unit', label: 'Basic unit', left: 'The individual', right: 'The relationship / web', blurb: 'Where does this tradition locate the basic unit of reality and value: in the separate self, or in relationship and the web of connection?', caveat: 'Existentialism and Stoicism start from the individual; Ubuntu, Confucian ethics, Care ethics, and Indigenous relationality start from relationship and treat the isolated self as questionable.' },
+    { id: 'agency', label: 'Stance toward what is', left: 'Change / assert', right: 'Accept / align', blurb: 'Does the tradition lean toward actively changing circumstances and asserting will, or toward accepting and aligning with how things already are?', caveat: 'A spectrum, not a binary. Most traditions teach both at once (Stoicism: change what you can, accept what you cannot). A wide blur means the tradition genuinely holds both.' },
+    { id: 'ground', label: 'Ground of right action', left: 'Universal principle', right: 'Particular relationship', blurb: 'When deciding how to act, does the tradition appeal to universal principles and reasons, or to the particular people and relationships in front of you?', caveat: 'This contrast comes from WESTERN ethics (rule-based versus care-based) and fits some traditions awkwardly. Daoism and Zen would question the framing of deciding how to act in the first place.' },
+    { id: 'time', label: 'Shape of time', left: 'Linear / progress', right: 'Cyclical / seasonal', blurb: 'Is time imagined mainly as a line moving forward toward goals and progress, or as cycles, seasons, and return?', caveat: 'Several traditions are not centrally about time (Care ethics, Stoicism). A wide blur there means the axis does not really apply.' },
+    { id: 'knowing', label: 'How you know', left: 'Reason / argument', right: 'Direct experience / practice', blurb: 'Does the tradition reach truth mainly through reasoned argument and study, or through direct experience, practice, and ceremony?', caveat: 'Most traditions use both. Zen and Daoism lean hard toward direct experience beyond words; Stoicism leans toward reasoned argument.' },
+    { id: 'scope', label: 'Circle of concern', left: 'Human-centered', right: 'More-than-human / ecological', blurb: 'Whose flourishing counts: mainly humans, or also animals, land, ancestors, and future generations as genuine relations?', caveat: 'Indigenous relationality extends the circle furthest, into kinship with the more-than-human. Most Western traditions center humans, though all have ecological extensions today.' }
+  ];
+  var PLACEMENTS = {
+    daoism:         { unit: [0.45, 0.22], agency: [0.85, 0.12], ground: [0.55, 0.22], time: [0.85, 0.12], knowing: [0.80, 0.15], scope: [0.80, 0.15] },
+    zen:            { unit: [0.40, 0.22], agency: [0.78, 0.16], ground: [0.50, 0.22], time: [0.65, 0.20], knowing: [0.90, 0.08], scope: [0.60, 0.20] },
+    stoicism:       { unit: [0.25, 0.16], agency: [0.55, 0.22], ground: [0.20, 0.16], time: [0.50, 0.22], knowing: [0.25, 0.16], scope: [0.45, 0.22] },
+    existentialism: { unit: [0.15, 0.15], agency: [0.12, 0.14], ground: [0.35, 0.22], time: [0.22, 0.18], knowing: [0.40, 0.20], scope: [0.18, 0.16] },
+    confucian:      { unit: [0.80, 0.12], agency: [0.45, 0.18], ground: [0.85, 0.10], time: [0.62, 0.18], knowing: [0.45, 0.18], scope: [0.42, 0.20] },
+    ubuntu:         { unit: [0.90, 0.08], agency: [0.45, 0.20], ground: [0.82, 0.12], time: [0.60, 0.20], knowing: [0.65, 0.18], scope: [0.45, 0.20] },
+    indigenousRel:  { unit: [0.90, 0.10], agency: [0.55, 0.20], ground: [0.82, 0.13], time: [0.85, 0.12], knowing: [0.75, 0.15], scope: [0.92, 0.08] },
+    care:           { unit: [0.82, 0.12], agency: [0.42, 0.18], ground: [0.90, 0.08], time: [0.50, 0.22], knowing: [0.60, 0.18], scope: [0.38, 0.20] }
+  };
+
   function defaultState() {
     return {
       view: 'library',                    // 'library' | 'detail' | 'compare' | 'about'
       detailId: null,
-      compareId: null
+      compareId: null,
+      compassX: 'unit',
+      compassY: 'ground'
     };
   }
 
@@ -310,6 +335,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         var tabs = [
           { id: 'library', label: 'Traditions', icon: '📚' },
           { id: 'compare', label: 'Compare on a question', icon: '⚖' },
+          { id: 'compass', label: 'Compass', icon: '🧭' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
         return h('div', { role: 'tablist',
@@ -522,10 +548,78 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         );
       }
 
+      // ═══ WORLDVIEW COMPASS ═══
+      function renderCompass() {
+        var cx = d.compassX || 'unit', cy = d.compassY || 'ground';
+        function axisById(id) { for (var i = 0; i < AXES.length; i++) if (AXES[i].id === id) return AXES[i]; return AXES[0]; }
+        var aX = axisById(cx), aY = axisById(cy);
+        var W = 600, H = 440, mL = 76, mR = 30, mT = 44, mB = 74;
+        var pw = W - mL - mR, ph = H - mT - mB;
+        function px(v) { return mL + v * pw; }
+        function py(v) { return mT + (1 - v) * ph; }
+        function band(v, ax) { return v < 0.36 ? ax.left : v > 0.64 ? ax.right : 'in between'; }
+        function axisRow(side, current) {
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 6 } },
+            h('span', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', width: 64 } }, side + ' axis'),
+            AXES.map(function (ax) {
+              var active = ax.id === current;
+              return h('button', { key: ax.id, onClick: function () { var patch = {}; patch[side === 'X' ? 'compassX' : 'compassY'] = ax.id; setOR(patch); },
+                'aria-pressed': active,
+                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: active ? '#e9d5ff' : '#cbd5e1', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
+            })
+          );
+        }
+        var nodes = TRADITIONS.map(function (t) {
+          var p = PLACEMENTS[t.id]; if (!p) return null;
+          var vx = p[cx][0], vy = p[cy][0], hx = p[cx][1], hy = p[cy][1];
+          return h('g', { key: t.id, style: { cursor: 'pointer' }, onClick: function () { setOR({ view: 'detail', detailId: t.id }); } },
+            h('ellipse', { cx: px(vx), cy: py(vy), rx: Math.max(10, hx * pw), ry: Math.max(10, hy * ph), fill: t.color + '26', stroke: t.color, strokeWidth: 1.5 }),
+            h('text', { x: px(vx), y: py(vy) + 5, textAnchor: 'middle', fontSize: 16 }, t.icon),
+            h('text', { x: px(vx), y: py(vy) + 22, textAnchor: 'middle', fontSize: 9, fill: '#cbd5e1', fontWeight: 700 }, t.name.split(' (')[0].split(' ')[0])
+          );
+        }).filter(Boolean);
+        var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', style: { background: '#0b1220', borderRadius: 12, border: '1px solid #1e293b', maxWidth: 620, display: 'block' },
+          role: 'img', 'aria-label': 'Scatter of eight traditions. Horizontal axis: ' + aX.left + ' to ' + aX.right + '. Vertical axis: ' + aY.left + ' to ' + aY.right + '. Placements are interpretive; full positions are listed in text below the chart.' },
+          h('line', { x1: mL, y1: mT + ph, x2: mL + pw, y2: mT + ph, stroke: '#334155' }),
+          h('line', { x1: mL, y1: mT, x2: mL, y2: mT + ph, stroke: '#334155' }),
+          h('text', { x: mL, y: H - 30, fontSize: 11, fill: '#94a3b8' }, '◀ ' + aX.left),
+          h('text', { x: mL + pw, y: H - 30, textAnchor: 'end', fontSize: 11, fill: '#94a3b8' }, aX.right + ' ▶'),
+          h('text', { x: mL - 8, y: mT + 6, textAnchor: 'end', fontSize: 11, fill: '#94a3b8' }, aY.right + ' ▲'),
+          h('text', { x: mL - 8, y: mT + ph, textAnchor: 'end', fontSize: 11, fill: '#94a3b8' }, '▼ ' + aY.left),
+          nodes
+        );
+        function caveat(ax) {
+          return h('div', { style: { padding: '8px 11px', borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } },
+            h('b', { style: { color: '#c4b5fd' } }, ax.label + ': '), ax.left + ' ↔ ' + ax.right + '. ', h('span', { style: { fontStyle: 'italic', color: '#94a3b8' } }, ax.caveat));
+        }
+        return h('div', null,
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6 } },
+            '🧭 These placements are one interpretation, not measurements. Reasonable people place them differently, and some traditions resist an axis entirely. A wide blur is honest uncertainty, not vagueness. Use this to start an argument, not to settle one — and notice where YOU would move things.'),
+          axisRow('X', cx),
+          axisRow('Y', cy),
+          h('div', { style: { margin: '10px 0' } }, svg),
+          caveat(aX), caveat(aY),
+          h('div', { style: { marginTop: 6 } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', marginBottom: 6 } }, 'Where each tradition sits (open any for its full card + what it cannot do well):'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 6 } },
+              TRADITIONS.map(function (t) {
+                var p = PLACEMENTS[t.id]; if (!p) return null;
+                return h('button', { key: t.id, onClick: function () { setOR({ view: 'detail', detailId: t.id }); },
+                  style: { textAlign: 'left', padding: '7px 10px', borderRadius: 8, border: '1px solid ' + t.color + '55', background: '#0f172a', cursor: 'pointer', color: '#e2e8f0' } },
+                  h('div', { style: { fontSize: 12.5, fontWeight: 700 } }, t.icon + ' ' + t.name),
+                  h('div', { style: { fontSize: 10.5, color: '#94a3b8', marginTop: 2 } }, aX.label + ': ' + band(p[cx][0], aX) + '  ·  ' + aY.label + ': ' + band(p[cy][0], aY)));
+              }).filter(Boolean)
+            )
+          ),
+          softPointer()
+        );
+      }
+
       // ── Root ──
       var body;
       if (view === 'detail') body = renderLibrary();
       else if (view === 'compare') body = renderCompare();
+      else if (view === 'compass') body = renderCompass();
       else if (view === 'about') body = renderAbout();
       else body = renderLibrary();
 
