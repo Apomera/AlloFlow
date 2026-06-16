@@ -94,8 +94,11 @@ function _emitAccessibleTableHtml(grid, opts) {
   const border = opts.tableBorder || '#cbd5e1';
   const headBg = opts.tableBg || '#f1f5f9';
   const headColor = opts.headColor || '#0f172a';
-  const capText = ((opts.reconNote || '') + (grid.caption || '')).trim();
-  const cap = capText ? '<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:' + (opts.reconAttr ? '#9333ea' : headColor) + '">' + esc(capText) + '</caption>' : '';
+  // The "AI-reconstructed — verify" nudge lives in the results-panel review gate (keyed on the
+  // data-allo-reconstructed attribute below), NOT baked into the document caption — that inline text
+  // was leaking into the exported/saved file and read as unpolished (user report 2026-06-16).
+  const capText = (grid.caption || '').trim();
+  const cap = capText ? '<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:' + headColor + '">' + esc(capText) + '</caption>' : '';
   const cellHtml = function (cellRaw, rowIdx) {
     const c = cellRaw || {};
     const isH = !!c.isHeader;
@@ -12446,11 +12449,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
             case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
             case 'table': {
-              // Reconstructed-from-image tables carry a verify caption + a data-allo-reconstructed
-              // attribute so the user can spot AI-reconstructed structure and the review gate can
-              // find it (the original image is kept as a sibling for verification).
+              // Reconstructed-from-image tables carry a data-allo-reconstructed attribute so the
+              // results-panel review gate can list them for human verify/reject (the original image
+              // is kept as a sibling). The inline "AI-reconstructed" caption note was removed
+              // 2026-06-16 — it leaked into the exported/saved document and read as unpolished.
               const _recon = !!block._reconstructed;
-              const _reconNote = _recon ? '✨ AI-reconstructed from an image — please verify it matches the image shown below. ' : '';
               // Rich grid path (2026-06-14): when the vision pass filled a neutral
               // grid (per-cell colspan/rowspan/isHeader/scope), validate span
               // consistency and emit accessibility-grade HTML. On ANY validation
@@ -12464,7 +12467,6 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                     tableBorder: docStyle.tableBorder,
                     tableBg: docStyle.tableBg,
                     headColor: docStyle.headingColor,
-                    reconNote: _reconNote,
                     reconAttr: _recon,
                   });
                 }
@@ -12489,7 +12491,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   }
                 }
               }
-              const cap = (block.caption || _recon) ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${_recon ? '#9333ea' : docStyle.headingColor}">`+sanitizeField(_reconNote + (block.caption || ''))+`</caption>` : '';
+              const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+sanitizeField(block.caption)+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
               const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+sanitizeField(h)+`</th>`).join('')+`</tr></thead>` : '';
               const rowsArr = Array.isArray(block.rows) ? block.rows : [];

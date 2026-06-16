@@ -124,11 +124,14 @@ describe('_emitAccessibleTableHtml', () => {
     expect(html).toContain('rowspan="3"');
   });
 
-  it('renders a caption with the reconstruction note + data attribute', () => {
+  it('marks a reconstructed table with the data attribute but does NOT bake the verify note into the caption', () => {
+    // 2026-06-16: the inline "AI-reconstructed" caption note was removed (it leaked into exports);
+    // the verify nudge lives in the results-panel review gate, keyed on data-allo-reconstructed.
     const html = _emitAccessibleTableHtml({ caption: 'Scores', rows: [row(td('x'))] }, { sanitize: esc, reconNote: 'AI-reconstructed. ', reconAttr: true });
     expect(html).toContain('<caption');
-    expect(html).toContain('AI-reconstructed. Scores');
-    expect(html).toContain('data-allo-reconstructed="image"');
+    expect(html).toContain('>Scores</caption>'); // real caption only
+    expect(html).not.toContain('AI-reconstructed'); // note no longer in the document
+    expect(html).toContain('data-allo-reconstructed="image"'); // gate marker still present
   });
 
   it('escapes cell text', () => {

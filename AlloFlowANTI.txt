@@ -10536,6 +10536,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, []);
   useEffect(() => {
     try {
+      // The in-iframe "Pick extracted" handler reads window.__alloflowExtractedImages ||
+      // window.parent.__alloflowExtractedImages. Set it on BOTH the iframe contentWindow AND this
+      // (parent) window: the preview iframe reloads its srcdoc on re-render (a fresh contentWindow
+      // that loses the list), but this effect only re-runs on [extractedImagesList, pdfPreviewOpen]
+      // — so the parent-window copy is the reliable fallback that survives iframe reloads. Without
+      // it the picker showed nothing once the preview re-rendered (user report 2026-06-16).
+      if (typeof window !== 'undefined') window.__alloflowExtractedImages = extractedImagesList || [];
       const cw = pdfPreviewRef.current && pdfPreviewRef.current.contentWindow;
       if (cw) cw.__alloflowExtractedImages = extractedImagesList || [];
     } catch (_) {}
