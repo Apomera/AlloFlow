@@ -5156,7 +5156,7 @@ var createDocPipeline = function(deps) {
     // 1..N) while Vision covers only the selected range, so index-pairing mis-reconciled e.g. a
     // page-1 transcript against a page-6 transcript on any partial range. Walk the union of pageNums.
     const _byNum = new Map();
-    const _addPages = (arr, key) => { for (const p of (arr || [])) { if (!p || typeof p.pageNum !== 'number') continue; if (!_byNum.has(p.pageNum)) _byNum.set(p.pageNum, {}); _byNum.get(p.pageNum)[key] = p; } };
+    const _addPages = (arr, key) => { (arr || []).forEach((p, _idx) => { if (!p) return; const _n = (typeof p.pageNum === 'number') ? p.pageNum : (_idx + 1); if (!_byNum.has(_n)) _byNum.set(_n, {}); _byNum.get(_n)[key] = p; }); };
     _addPages(tessPages, 't'); _addPages(visionPages, 'v');
     const _nums = Array.from(_byNum.keys()).sort((a, b) => a - b);
     const merged = [];
