@@ -4804,6 +4804,13 @@ window.StemLab = window.StemLab || {
 
       var genPlate = function(level) {
         var lv = Math.min(5, Math.max(1, level || 1));
+        var mixedProb = [0, 0, 0, 0, 0.3, 0.4][lv] || 0;
+        if (Math.random() < mixedProb) {
+          var mt = pick([2, 3, 4, 5]);
+          var mq = pick([1, 2]);
+          var mr = randInt(1, mt - 1);
+          return { id: newPid(), kind: 'mixed', table: mt, tray: mq * mt + mr, food: pick(TRAY_FOODS) };
+        }
         var table = pick(POOLS[lv]);
         var isTray = Math.random() < TRAY_PROB[lv];
         if (isTray) {
@@ -4837,7 +4844,7 @@ window.StemLab = window.StemLab || {
           var nBest = Math.max(g.bestCombo || 0, nCombo);
           var nTotal = (g.totalServed || 0) + 1;
           if (g.audioOn) sfxCorrect();
-          var shareSR = a.kind === 'unit' ? ('one over ' + a.table) : ((a.tray / a.table) + ' ' + a.food.n + ', which is one over ' + a.table + ' of the tray');
+          var shareSR = a.kind === 'unit' ? ('one over ' + a.table) : a.kind === 'mixed' ? (toMixed(a.tray, a.table) + ' ' + a.food.n) : ((a.tray / a.table) + ' ' + a.food.n + ', which is one over ' + a.table + ' of the tray');
           announceToSR('Fair share! Each guest gets ' + shareSR + '. ' + nServed + ' of ' + SERVICE_TARGET + ' tables happy.');
           var badgeArgs = { correct: score.correct, streak: streak, typesUsed: Object.keys(challengeTypesUsed).length,
             equivSolved: _f.equivSolved || 0, simplifySolved: _f.simplifySolved || 0, convertCount: _f.convertCount || 0,
@@ -4845,7 +4852,7 @@ window.StemLab = window.StemLab || {
             aiAsked: _f.aiAsked || 0, platesServed: nTotal };
           if (nServed >= SERVICE_TARGET) {
             save({ phase: 'clear', served: nServed, combo: nCombo, bestCombo: nBest, totalServed: nTotal,
-              active: null, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table });
+              active: null, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
             if (g.audioOn) sfxComplete();
             awardXP('fractionPlateRush', 40, 'service complete');
             addToast('🍽️ Service complete! Even Steven approves.', 'success');
@@ -4853,7 +4860,7 @@ window.StemLab = window.StemLab || {
           } else {
             var nDeck = (g.deck || []).slice(1).concat([genPlate(g.level)]);
             save({ active: genPlate(g.level), deck: nDeck, input: 2, served: nServed, combo: nCombo,
-              bestCombo: nBest, totalServed: nTotal, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table });
+              bestCombo: nBest, totalServed: nTotal, comboPaused: false, lastResult: 'ok', lastCoach: '', lastTable: a.table, lastKind: a.kind, lastTray: a.tray });
             if (g.audioOn) sfxNewChallenge();
             checkBadges(badgeArgs);
           }
@@ -4954,15 +4961,25 @@ window.StemLab = window.StemLab || {
       // ════════════ SERVICE-CLEAR RECEIPT ════════════
       if (g.phase === 'clear') {
         var T = g.lastTable || 4;
-        var addParts = [];
-        for (var qi = 0; qi < T; qi++) addParts.push('1/' + T);
+        var lastKind = g.lastKind || 'unit';
+        var lastTray = g.lastTray || 0;
+        var introTxt, closure;
+        if (lastKind === 'mixed') {
+          introTxt = 'The order is shared out evenly, nothing left over:';
+          closure = 'Each of ' + T + ' guests got ' + toMixed(lastTray, T) + ', using all ' + lastTray + ' ' + (lastTray === 1 ? 'item' : 'items') + '.';
+        } else {
+          var addParts = [];
+          for (var qi = 0; qi < T; qi++) addParts.push('1/' + T);
+          introTxt = 'The shares add back up to the whole:';
+          closure = addParts.join(' + ') + ' = ' + T + '/' + T + ' = 1 whole' + (lastKind === 'tray' ? ' tray' : '');
+        }
         return h('div', { className: 'space-y-3' },
           h('div', { className: 'bg-gradient-to-br from-amber-50 to-green-50 rounded-xl p-5 border-2 border-green-300 text-center space-y-2' },
             h('div', { className: 'text-5xl' }, '🧾'),
             h('h4', { className: 'text-xl font-black text-green-800' }, 'Service complete - Even Steven approves!'),
             h('div', { className: 'bg-white rounded-lg border border-green-200 p-3 inline-block' },
-              h('p', { className: 'text-[11px] text-slate-500 mb-1' }, 'The shares add back up to the whole:'),
-              h('p', { className: 'text-base font-mono font-bold text-green-800' }, addParts.join(' + ') + ' = ' + T + '/' + T + ' = 1 whole')
+              h('p', { className: 'text-[11px] text-slate-500 mb-1' }, introTxt),
+              h('p', { className: 'text-base font-mono font-bold text-green-800' }, closure)
             ),
             h('div', { className: 'flex gap-4 justify-center text-sm pt-1' },
               h('span', { className: 'font-bold text-green-700' }, '😋 Happy tables: ' + g.served),
@@ -4995,6 +5012,19 @@ window.StemLab = window.StemLab || {
           drawPie(1, g.input, 170, '#16a34a'),
           h('p', { className: 'text-[11px] text-slate-500' }, '1 ' + a.food.n + ', cut into ' + g.input + ' equal shares')
         );
+      } else if (a.kind === 'mixed') {
+        var mWhole = Math.floor(a.tray / g.input);
+        var mRem = a.tray % g.input;
+        dishVisual = h('div', { className: 'flex flex-col items-center gap-1' },
+          h('div', { className: 'text-xl' }, Array.apply(null, { length: Math.min(a.tray, 12) }).map(function() { return a.food.e; }).join(' ')),
+          h('div', { className: 'flex items-center justify-center gap-2 flex-wrap' },
+            h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'each guest:'),
+            (mWhole > 0 ? h('span', { className: 'text-2xl' }, Array.apply(null, { length: mWhole }).map(function() { return a.food.e; }).join('')) : null),
+            (mRem > 0 ? h('span', { className: 'text-slate-500 font-bold' }, '+') : null),
+            (mRem > 0 ? drawPie(mRem, g.input, 64, '#16a34a') : null)
+          ),
+          h('p', { className: 'text-[11px] text-slate-500' }, a.tray + ' ' + a.food.n + ' shared equally among ' + g.input + ' guests')
+        );
       } else {
         dishVisual = h('div', { className: 'flex flex-col items-center gap-1' },
           h('div', { className: 'text-xl' }, Array.apply(null, { length: Math.min(a.tray, 12) }).map(function() { return a.food.e; }).join(' ')),
@@ -5005,6 +5035,8 @@ window.StemLab = window.StemLab || {
 
       var readout = a.kind === 'unit'
         ? h('span', null, 'Each guest gets ', h('b', { className: 'font-mono text-lg text-green-700' }, '1/' + g.input))
+        : a.kind === 'mixed'
+        ? h('span', null, 'Each guest gets ', h('b', { className: 'font-mono text-lg text-green-700' }, a.tray + '/' + g.input), ' = ', h('b', { className: 'font-mono text-lg text-emerald-700' }, toMixed(a.tray, g.input)), ' ' + a.food.n)
         : (divides
           ? h('span', null, 'Each guest gets ', h('b', { className: 'font-mono text-lg text-green-700' }, perItems + ' ' + a.food.n),
               ' = ', h('b', { className: 'font-mono text-green-700' }, perItems + '/' + a.tray),
