@@ -5901,7 +5901,9 @@ var createDocPipeline = function(deps) {
         const _escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
         const _figFor = (im) => im.skipped
           ? '<p><em>[Image from the source could not be embedded — ' + _escTxt(im.reason || 'unknown') + (im.alt ? '. Its description: ' + _escTxt(im.alt) : '') + ']</em></p>'
-          : '<figure><img src="' + im.src + '" alt="' + _escAttr(im.alt || '') + '">' + (im.alt ? '<figcaption>' + _escTxt(im.alt) + '</figcaption>' : '') + '</figure>';
+          // figcaption text is aria-hidden: it duplicates the <img alt> verbatim, so leaving it in
+          // the a11y tree makes screen readers announce the description twice (audit 2026-06-16).
+          : '<figure><img src="' + im.src + '" alt="' + _escAttr(im.alt || '') + '">' + (im.alt ? '<figcaption><span aria-hidden="true">' + _escTxt(im.alt) + '</span></figcaption>' : '') + '</figure>';
         const _mediaAll = (det && det.mediaImages) || [];
         const _paras = _txt.split('\n\n').filter(p => p.trim());
         const _htmlParts = _paras.map(p => '<p>' + p.replace(/</g, '&lt;') + '</p>');
@@ -6669,7 +6671,7 @@ STRUCTURAL ACCESSIBILITY:
 - ${totalChunks > 1 && !isFirst ? 'Continue the existing hierarchy (h2/h3/h4) — do NOT start a new <h1>' : '<!DOCTYPE html>, <html lang="en">, <head> with <meta charset="UTF-8">, meaningful <title>'}
 ${totalChunks > 1 && !isFirst ? '' : '- <meta name="viewport" content="width=device-width, initial-scale=1.0">\n- Skip-to-content link: <a href="#main-content" class="sr-only">Skip to main content</a>\n- <main id="main-content" role="main"> wrapping all content'}
 - <nav>, <header>, <footer>, <section> landmarks where appropriate
-- ${totalChunks > 1 && !isFirst ? 'Use h2/h3/h4 only — the h1 is in the first fragment' : 'Exactly ONE <h1>, with proper h2→h3→h4 hierarchy (no skipped levels)'}
+- ${totalChunks > 1 && !isFirst ? 'Use h2/h3/h4 only — the h1 is in the first fragment' : 'Exactly ONE <h1>, and it MUST be the document main/cover title (the first prominent title line, or a leading markdown # line) — render that title text as <h1>, never inside a styled <div> or <p>. Use <h2> for the first content section, then a proper h2→h3→h4 hierarchy (no skipped levels)'}
 
 TABLE ACCESSIBILITY:
 - <table> with <caption> describing the table's purpose
@@ -6678,6 +6680,7 @@ TABLE ACCESSIBILITY:
 - <tbody> wrapping data rows
 
 CONTENT QUALITY:
+- Map markdown heading markers to semantic tags: a leading "# " line → <h1> (the document title), "## " → <h2>, "### " → <h3> — never leave a title/heading as a styled <div> or bold <p>
 - Convert bullet characters (•, -, *) to semantic <ul>/<ol> lists
 - Convert [Image: description] markers to <figure> with <img alt="description"> and <figcaption>
 - Preserve all hyperlinks as <a href="..."> with descriptive link text
@@ -13352,7 +13355,7 @@ ${!hasSrc ? `<button type="button" data-allo-genai onclick="(function(b){b.disab
 ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#6d28d9;color:#ffffff;border:1px solid #4c1d95;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Adjust crop for this image"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>Adjust Crop</button>` : ''}
 </div>
 </div>
-<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em">${desc}${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose + '</em>' : ''}</figcaption>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${desc}</span>${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose + '</em>' : ''}</figcaption>
 </figure>` + _carriedOut;
           }
         });
