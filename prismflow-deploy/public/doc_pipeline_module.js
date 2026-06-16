@@ -3886,7 +3886,7 @@ var createDocPipeline = function(deps) {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
       const bytes = _b64ToBytes(base64);
-      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (text layer)');
       const pages = [];
       // 2026-06-08: per-page try/catch — a single-page parse error previously
       // threw all the way out of the loop, the outer catch returned
@@ -3897,8 +3897,8 @@ var createDocPipeline = function(deps) {
       const pageErrors = [];
       for (let p = 1; p <= pdf.numPages; p++) {
         try {
-          const page = await pdf.getPage(p);
-          const tc = await page.getTextContent();
+          const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
+          const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
           // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
           // This preserves reading order for single-column layouts and gives a reasonable fallback for multi-column
           const items = (tc.items || []).slice().sort((a, b) => {
@@ -4621,8 +4621,8 @@ var createDocPipeline = function(deps) {
   let _symbolRunsExcludedTotal = 0; // reset per createTaggedPdf run; reported in summary
   const _stage4_extractPdfjsItems = async (pdfjsDoc, pageIdx) => {
     try {
-      const page = await pdfjsDoc.getPage(pageIdx + 1);
-      const tc = await page.getTextContent();
+      const page = await _withTimeout(pdfjsDoc.getPage(pageIdx + 1), 30000, 'getPage (tagging) p' + (pageIdx + 1));
+      const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (tagging) p' + (pageIdx + 1));
       // Symbol-font runs are decorative marks, not text (2026-06-12,
       // approved): Wingdings/Symbol/Dingbats bullets decode as glyph soup
       // that can never match a tag-tree leaf — every office-made PDF's
@@ -5067,7 +5067,7 @@ var createDocPipeline = function(deps) {
       if (!window.pdfjsLib || !window.Tesseract) throw new Error('pdf.js or Tesseract unavailable');
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
       const bytes = _b64ToBytes(base64); // capped at _MAX_PDF_BYTES (was raw atob — uncapped OOM on low-RAM devices)
-      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (OCR)');
       const useLang = lang || 'eng';
       // 2026-06-08: per-page try/catch — a single page's OOM/canvas/recognize
       // failure previously bubbled to the outer catch and threw away ALL pages'
@@ -5084,7 +5084,7 @@ var createDocPipeline = function(deps) {
           canvas.width = viewport.width;
           canvas.height = viewport.height;
           const ctx = canvas.getContext('2d');
-          await page.render({ canvasContext: ctx, viewport }).promise;
+          await _withTimeout(page.render({ canvasContext: ctx, viewport }).promise, 45000, 'page.render (OCR p' + p + ')');
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
           // Tesseract.js v5 returns ONLY text by default; opt into the block/word
           // hierarchy (4th "output" arg) so we can place each word's invisible glyphs
@@ -5125,7 +5125,7 @@ var createDocPipeline = function(deps) {
       await ensureTesseractLoaded();
       if (!window.pdfjsLib || !window.Tesseract) return out;
       const bytes = _b64ToBytes(base64);
-      const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+      const pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (mixed-page OCR)');
       const useLang = lang || 'eng';
       for (let i = 0; i < pageNums.length; i++) {
         const p = pageNums[i];
@@ -5136,7 +5136,7 @@ var createDocPipeline = function(deps) {
           const canvas = document.createElement('canvas');
           canvas.width = viewport.width; canvas.height = viewport.height;
           const cctx = canvas.getContext('2d');
-          await page.render({ canvasContext: cctx, viewport }).promise;
+          await _withTimeout(page.render({ canvasContext: cctx, viewport }).promise, 45000, 'page.render (mixed-page OCR p' + p + ')');
           let result;
           try { result = await window.Tesseract.recognize(canvas, useLang, undefined, { blocks: true }); }
           catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
@@ -12005,7 +12005,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               }
               // Convert base64 PDF to Uint8Array (capped at _MAX_PDF_BYTES — was uncapped atob)
               const pdfBytes = _b64ToBytes(_base64);
-              const pdfDoc = await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;
+              const pdfDoc = await _withTimeout(window.pdfjsLib.getDocument({ data: pdfBytes }).promise, 60000, 'pdf.js getDocument (image extract)');
 
               // Group images by page for efficient rendering
               const pageGroups = {};
@@ -12029,7 +12029,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   if (pg < 1 || pg > pdfDoc.numPages) continue;
                   updateProgress(1, `Extracting images from page ${pg}...`);
                   const page = await pdfDoc.getPage(pg);
-                  const opList = await page.getOperatorList();
+                  const opList = await _withTimeout(page.getOperatorList(), 30000, 'getOperatorList p' + pg);
                   const OPS = window.pdfjsLib.OPS;
 
                   // Find paintImageXObject operations — these are actual images in the PDF
@@ -12047,7 +12047,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   canvas.width = viewport.width;
                   canvas.height = viewport.height;
                   const ctx2d = canvas.getContext('2d');
-                  await page.render({ canvasContext: ctx2d, viewport }).promise;
+                  await _withTimeout(page.render({ canvasContext: ctx2d, viewport }).promise, 45000, 'page.render p' + pg);
 
                   // Store full-page canvas for user re-cropping later
                   if (!window.__pdfPageCanvases) window.__pdfPageCanvases = {};
@@ -12193,10 +12193,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   if (extractedImages[imgI].generatedSrc) continue; // already extracted
                   try {
                     updateProgress(1, `Regenerating image ${imgI + 1} via AI...`);
-                    const imgUrl = await callImagen(
+                    const imgUrl = await _withTimeout(callImagen(
                       `Recreate this image for an educational document: ${extractedImages[imgI].description}. Clean, professional style. No text overlays.`,
                       300, 0.8
-                    );
+                    ), 90000, 'callImagen (image regen)'); // callImagen does a raw fetch with no per-request bound
                     if (imgUrl) { extractedImages[imgI].generatedSrc = imgUrl; extractedImages[imgI].isRegenerated = true; }
                     else { _imageFailureCount++; }
                   } catch(genErr) { _imageFailureCount++; }
@@ -16632,7 +16632,7 @@ tr { page-break-inside: avoid; }
         await ensurePakoLoaded();
         if (window.pdfjsLib) {
           const _srcBytes = originalPdfBytes instanceof Uint8Array ? originalPdfBytes : new Uint8Array(originalPdfBytes);
-          pdfjsDocForTagging = await window.pdfjsLib.getDocument({ data: _srcBytes.slice() }).promise;
+          pdfjsDocForTagging = await _withTimeout(window.pdfjsLib.getDocument({ data: _srcBytes.slice() }).promise, 60000, 'pdf.js getDocument (tagging)');
           // Pre-compute per-page items (only once) → detect artifacts. We
           // avoid re-extracting in each _stage4_tryWrapPage call by passing
           // the hash set down.
