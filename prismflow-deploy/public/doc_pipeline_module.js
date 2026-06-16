@@ -15135,12 +15135,23 @@ tr { page-break-inside: avoid; }
     }
 
     const hasChecks = checks.length > 0;
-    const conformanceColor = !hasChecks
+    let conformanceColor = !hasChecks
       ? '#64748b'
       : (checkSum.fail === 0 ? '#16a34a' : (checkSum.fail <= 2 ? '#d97706' : '#dc2626'));
-    const conformanceLabel = !hasChecks
+    let conformanceLabel = !hasChecks
       ? 'Awaiting Tagged PDF'
       : (checkSum.fail === 0 ? 'Conformant' : (checkSum.fail <= 2 ? 'Mostly Conformant' : 'Non-Conformant'));
+    // BYTE-VALIDATOR FLOOR (audit #18, 2026-06-15): the headline above is the IN-MEMORY HTML self-
+    // check. Reconcile it with the INDEPENDENT byte-level validator run on the SHIPPED bytes — if
+    // that says FAIL (e.g. a subtree dropped at save), the banner must not still read green
+    // "Conformant" while the lower byte-validation section says it failed (the credibility
+    // contradiction the report had). Only downgrades, never upgrades.
+    const _pevSum = opts && opts.postExportValidator && opts.postExportValidator.summary;
+    if (hasChecks && _pevSum && _pevSum.overall === 'FAIL' && conformanceLabel === 'Conformant') {
+      const _byteFail = typeof _pevSum.fail === 'number' ? _pevSum.fail : 3;
+      conformanceLabel = _byteFail > 2 ? 'Non-Conformant (shipped-file check)' : 'Mostly Conformant (shipped-file check)';
+      conformanceColor = _byteFail > 2 ? '#dc2626' : '#d97706';
+    }
 
     // Reliability block — pulled from auditResult
     const _reliabilityBlock = ar.auditorCount > 1 ? `
