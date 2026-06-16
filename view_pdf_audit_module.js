@@ -4501,8 +4501,9 @@ Return ONLY JSON:
             startNewPdfAudit();
           }
         },
-        className: "text-[11px] px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1",
-        title: t("pdf_audit.start_new_title") || "Clear this audit result and start fresh with a new PDF"
+        disabled: pdfFixLoading || pdfAutoContinueRunning,
+        className: "text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 " + (pdfFixLoading || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-slate-100"),
+        title: pdfFixLoading || pdfAutoContinueRunning ? t("pdf_audit.start_new_running_title") || "Remediation is still running \u2014 clearing now would lose this run. Click \u201CStop after this round\u201D first." : t("pdf_audit.start_new_title") || "Clear this audit result and start fresh with a new PDF"
       },
       "\u{1F5D1}\uFE0F ",
       t("pdf_audit.start_new_audit") || "Start New Audit"
@@ -4518,7 +4519,7 @@ Return ONLY JSON:
       setInputText(temp.textContent || temp.innerText || "");
       _closePdfAuditModal();
       addToast(t("toasts.reverse_door") || "\u2728 Document loaded as source material \u2014 generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.", "success");
-    }, className: "px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0", title: t("pdf_audit.whatnow.materials_title") || "Open the content tools with this document as the source \u2014 glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text." }, "\u2728 ", t("pdf_audit.whatnow.materials") || "Make learning materials")), (() => {
+    }, disabled: pdfFixLoading || pdfAutoContinueRunning, className: "px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 " + (pdfFixLoading || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-violet-700"), title: pdfFixLoading || pdfAutoContinueRunning ? t("pdf_audit.whatnow.materials_running_title") || "Remediation is still running \u2014 closing now would interrupt it. Click \u201CStop after this round\u201D first." : t("pdf_audit.whatnow.materials_title") || "Open the content tools with this document as the source \u2014 glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text." }, "\u2728 ", t("pdf_audit.whatnow.materials") || "Make learning materials")), (() => {
       const _n = ((pdfFixResult.accessibleHtml || "").match(/data-allo-kind="/g) || []).length;
       if (_n === 0) return null;
       if (imgReviewIdx === null) return /* @__PURE__ */ React.createElement("div", { className: "bg-violet-50/70 border border-violet-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap", "data-help-key": "pdf_audit_img_review_panel" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F916} ", _n === 1 ? t("pdf_audit.imgreview.one") || "AI looked at 1 image and described it." : t("pdf_audit.imgreview.many") || "AI looked at " + _n + " images and described them.", " ", t("pdf_audit.imgreview.pitch") || "Its descriptions are good but not infallible \u2014 a 30-second review catches what it got wrong."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -6578,7 +6579,7 @@ Return simplified text with # for headings, - for lists.`, false);
       setInputText(temp.textContent || temp.innerText || "");
       _closePdfAuditModal();
       addToast(t("toasts.content_loaded_generate_leveled_text"), "success");
-    }, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center" }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { id: "allo-export-audio", "data-help-key": "pdf_audit_audio_download_btn", onClick: () => {
+    }, disabled: pdfFixLoading || pdfAutoContinueRunning, className: "w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 transition-all flex items-center gap-2 justify-center " + (pdfFixLoading || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-violet-100"), title: pdfFixLoading || pdfAutoContinueRunning ? t("pdf_audit.whatnow.materials_running_title") || "Remediation is still running \u2014 closing now would interrupt it. Click \u201CStop after this round\u201D first." : void 0 }, "\u2728 Full Differentiation Pipeline"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-500" }, `Translations and simplifications stack \u2014 add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.`)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { id: "allo-export-audio", "data-help-key": "pdf_audit_audio_download_btn", onClick: () => {
       const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
       if (!fullText) {
         addToast(t("toasts.text_content_convert"), "error");

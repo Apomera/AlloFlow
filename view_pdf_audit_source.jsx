@@ -5849,8 +5849,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               startNewPdfAudit();
                             }
                           }}
-                          className="text-[11px] px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1"
-                          title={t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF'}
+                          disabled={pdfFixLoading || pdfAutoContinueRunning}
+                          className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
+                          title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run. Click “Stop after this round” first.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
                         >
                           🗑️ {t('pdf_audit.start_new_audit') || 'Start New Audit'}
                         </button>
@@ -5871,7 +5872,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast(t('toasts.reverse_door') || '✨ Document loaded as source material — generate a glossary, quiz, leveled text, or full lesson from it using the tools on the left.', 'success');
-                        }} className="px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0" title={t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.'}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
+                        }} disabled={pdfFixLoading || pdfAutoContinueRunning} className={'px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold shrink-0 ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-700')} title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : (t('pdf_audit.whatnow.materials_title') || 'Open the content tools with this document as the source — glossary, quiz, leveled text, lesson plan, games: everything generates from the same accessible text.')}>✨ {t('pdf_audit.whatnow.materials') || 'Make learning materials'}</button>
                       </div>
                       {/* Image-description reviewer (item 8b): entry + stepper. */}
                       {(() => {
@@ -8470,7 +8471,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast(t('toasts.content_loaded_generate_leveled_text'), 'success');
-                        }} className="w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center">
+                        }} disabled={pdfFixLoading || pdfAutoContinueRunning} className={'w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 transition-all flex items-center gap-2 justify-center ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-violet-100')} title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.whatnow.materials_running_title') || 'Remediation is still running — closing now would interrupt it. Click “Stop after this round” first.') : undefined}>
                           ✨ Full Differentiation Pipeline
                         </button>
 
