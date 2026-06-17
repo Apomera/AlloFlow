@@ -4766,6 +4766,20 @@
         }
         return ALL_ACTIVITIES.filter((a) => a.tier === "phonological");
       }, [includeOrthographic]);
+      // Skill-cluster grouping for the activity picker (UX). Maps each activity
+      // to a research-aligned cluster along the phonological-awareness continuum
+      // -> phonics -> spelling -> handwriting. Purely presentational; the
+      // orthographic-tier gating above is unchanged.
+      const ACTIVITY_GROUP_OF = {
+        syllable_counting: "pa_large", syllable_blending: "pa_large", rhyming: "pa_large", word_families: "pa_large",
+        counting: "pa_phoneme", segmentation: "pa_phoneme", isolation: "pa_phoneme", blending: "pa_phoneme", sound_sort: "pa_phoneme", manipulation: "pa_phoneme",
+        mapping: "phonics", orthography: "phonics",
+        spelling_bee: "spelling", word_scramble: "spelling", missing_letter: "spelling",
+        letter_tracing: "handwriting",
+      };
+      const ACTIVITY_GROUP_ORDER = ["pa_large", "pa_phoneme", "phonics", "spelling", "handwriting"];
+      const ACTIVITY_GROUP_LABELS = { pa_large: "Syllables & Rhyme", pa_phoneme: "Phonemes", phonics: "Phonics", spelling: "Spelling", handwriting: "Writing" };
+      const ACTIVITY_GROUP_FULL = { pa_large: "Sound awareness - larger units (syllables & rhyme)", pa_phoneme: "Phonemic awareness - individual sounds", phonics: "Phonics - sound to letter", spelling: "Spelling / encoding", handwriting: "Handwriting / letter formation" };
       const extractWords = React.useCallback((term) => {
         if (!term) return [];
         return term
@@ -14653,27 +14667,34 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 },
                 "\uD83C\uDFE0 Home Practice",
               ),
-              ACTIVITIES.map((activity) =>
+              ACTIVITY_GROUP_ORDER.flatMap((__g) => {
+                const __acts = ACTIVITIES.filter((a) => (ACTIVITY_GROUP_OF[a.id] || "pa_phoneme") === __g);
+                if (!__acts.length) return [];
+                return [
                   /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  key: activity.id,
-                  onClick: () => startActivity(activity.id),
-                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id ? "bg-violet-700 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
-                  title: activity.description,
-                },
+                    "span",
+                    {
+                      key: "wsgrp-" + __g,
+                      className: "text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap",
+                      title: ACTIVITY_GROUP_FULL[__g],
+                    },
+                    ACTIVITY_GROUP_LABELS[__g],
+                  ),
+                  ...__acts.map((activity) =>
                     /*#__PURE__*/ React.createElement(
-                  "span",
-                  null,
-                  activity.icon,
-                ),
-                    /*#__PURE__*/ React.createElement(
-                  "span",
-                  null,
-                  activity.label,
-                ),
-              ),
-              ),
+                      "button",
+                      {
+                        key: activity.id,
+                        onClick: () => startActivity(activity.id),
+                        className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id ? "bg-violet-700 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+                        title: activity.description,
+                      },
+                      /*#__PURE__*/ React.createElement("span", null, activity.icon),
+                      /*#__PURE__*/ React.createElement("span", null, activity.label),
+                    ),
+                  ),
+                ];
+              }),
               typeof callImagen === "function" &&
                 /*#__PURE__*/ React.createElement(
                 "button",

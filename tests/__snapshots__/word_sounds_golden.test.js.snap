@@ -1259,6 +1259,24 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -1275,33 +1293,18 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1471,6 +1474,24 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -1487,33 +1508,18 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1699,6 +1705,24 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -1715,33 +1739,18 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1892,6 +1901,24 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -1908,33 +1935,18 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2119,6 +2131,24 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -2135,33 +2165,18 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2333,6 +2348,24 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -2349,33 +2382,18 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2552,6 +2570,24 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -2568,33 +2604,18 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2863,6 +2884,24 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -2879,33 +2918,18 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3080,6 +3104,24 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -3096,33 +3138,18 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3302,6 +3329,24 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -3318,33 +3363,18 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3532,6 +3562,24 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -3548,33 +3596,18 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3737,6 +3770,24 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -3753,33 +3804,18 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3959,6 +3995,24 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -3975,33 +4029,18 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4178,6 +4217,24 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -4194,33 +4251,18 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4424,6 +4466,24 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -4440,33 +4500,18 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4637,6 +4682,24 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </div>
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
 <span>🔢</span>
 <span>word_sounds.activity_counting</span>
@@ -4653,33 +4716,18 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 <span>📦</span>
 <span>word_sounds.activity_segmentation</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
-<span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
 <span>✂️</span>
 <span>word_sounds.activity_manipulation</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
-<span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
-<span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
 <span>✍️</span>
 <span>word_sounds.activity_letter_tracing</span>
-</button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
-<span>🏠</span>
-<span>word_sounds.activity_word_families</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
