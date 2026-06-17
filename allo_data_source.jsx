@@ -54,6 +54,7 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.decoding_needs_image': 'Picture matching needs image generation (open in Canvas).',
     'word_sounds.decoding_preparing': 'Preparing pictures...',
     'word_sounds.decoding_choice_label': 'Picture choice',
+    'word_sounds.decoding_choice_of': 'Picture of {{word}}',
     'word_sounds.accuracy_by_difficulty': 'Accuracy by word difficulty',
     'word_sounds.band_cvc_easy': 'CVC / easy',
     'word_sounds.band_medium': 'Medium',

@@ -1308,7 +1308,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -1518,7 +1518,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -1744,7 +1744,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -1939,7 +1939,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2130,7 +2130,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2355,7 +2355,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2567,7 +2567,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -2784,7 +2784,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -3093,7 +3093,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -3308,7 +3308,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -3528,7 +3528,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -3756,7 +3756,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div class="flex flex-col items-center gap-5 p-4">
 <div class="text-center mb-6 relative">
 <button class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -3959,7 +3959,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4179,7 +4179,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4396,7 +4396,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4640,7 +4640,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
@@ -4851,7 +4851,7 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </div>
 </div>
 <div class="flex-1 overflow-y-auto p-6">
-<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none">
 <div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
 <div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
 <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>

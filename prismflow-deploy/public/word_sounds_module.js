@@ -1740,6 +1740,8 @@
       const sessionWordResults = React.useRef([]);
       const feedbackAudioRef = React.useRef(null);
       const instructionAudioRef = React.useRef(null);
+      const activityRegionRef = React.useRef(null);
+      const activityFocusInitedRef = React.useRef(false);
       const isolationPositionRef = React.useRef(null);
       const lastWordForIsolation = React.useRef(null);
       const lastWordForRhyming = React.useRef(null);
@@ -1904,7 +1906,7 @@
       // Mix of positions (initial deletion, final & medial substitution) so the
       // manipulated sound is not always at the start; 5 distractors each -> 6 options.
       const MANIPULATION_FALLBACKS = {
-        cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["hat", "bat", "mat", "rat", "sat"] },
+        cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["it", "on", "up", "an", "in"] },
         hat: { type: "substitution", instruction: "Say 'hat'. Now change the /t/ sound to /m/.", targetPhoneme: "t", answer: "ham", distractors: ["had", "hen", "jam", "ram", "map"] },
         dog: { type: "substitution", instruction: "Say 'dog'. Now change the /g/ sound to /t/.", targetPhoneme: "g", answer: "dot", distractors: ["dock", "dab", "dig", "den", "dim"] },
         stop: { type: "deletion", instruction: "Say 'stop'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "top", distractors: ["hop", "mop", "pop", "cop", "shop"] },
@@ -2146,6 +2148,17 @@
           console.log("[WS-DBG] WordSoundsModal UNMOUNTED");
         };
       }, []);
+      // A11y: when the activity changes, move focus to the freshly-mounted
+      // activity region so keyboard / screen-reader users land on the new task
+      // instead of being stranded on the picker. Skip the first mount so we
+      // don't fight the modal's own initial focus.
+      React.useEffect(() => {
+        if (!activityFocusInitedRef.current) { activityFocusInitedRef.current = true; return; }
+        const region = activityRegionRef.current;
+        if (region && typeof region.focus === "function") {
+          try { region.focus({ preventScroll: false }); } catch (e) { try { region.focus(); } catch (e2) {} }
+        }
+      }, [wordSoundsActivity]);
       React.useEffect(() => {
         console.log(
           `[WS-DBG] initialShowReviewPanel changed to: ${initialShowReviewPanel}`,
@@ -10499,26 +10512,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         });
                       }
                       setShowSessionComplete(true);
-                    } else if (isProbeMode) {
-                      debugLog("📊 Probe: Queue depleted. Ending probe.");
-                      if (probeStartTimeRef.current && onProbeComplete) {
-                        const elapsedMinutes = Math.max(
-                          (Date.now() - probeStartTimeRef.current) / 60000,
-                          0.01,
-                        );
-                        const itemsPerMin = Math.round(
-                          wordSoundsScore.correct / elapsedMinutes,
-                        );
-                        onProbeComplete({
-                          itemsPerMin,
-                          correct: wordSoundsScore.correct,
-                          total: wordSoundsScore.total,
-                          elapsed: Math.round(elapsedMinutes * 60),
-                          activity: wordSoundsActivity,
-                          byDifficulty: computeProbeByBand(),
-                        });
-                      }
-                      setShowSessionComplete(true);
                     } else {
                       debugLog(
                         "⚠️ Queue empty but goal not met. Forcing refill...",
@@ -13657,7 +13650,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // Pass the real words; checkAnswer scores correctness and (for
             // decoding) suppresses re-speaking the printed target.
             const dCheck = (w) => checkAnswer((w || ""), dWord);
-            const dLabel = ts("word_sounds.decoding_choice_label") || "Picture choice";
+            // Name each picture by what it depicts so the activity is operable
+            // with a screen reader (WCAG 1.1.1). AT-only: the generated images
+            // carry no visible text, so a sighted/low-vision learner still has
+            // to decode the printed word to choose; only a non-visual user gets
+            // the names, for whom the picture-match was otherwise impossible.
+            const dChoiceName = (w) => ts("word_sounds.decoding_choice_of", { word: w }) || ("Picture of " + (w || ""));
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.decoding_drag_prompt") || "Drag the picture onto the word, or tap the picture"),
               /*#__PURE__*/ React.createElement("div", { onDragOver: (e) => { e.preventDefault(); if (!decodeDragOver) setDecodeDragOver(true); }, onDragLeave: () => setDecodeDragOver(false), onDrop: (e) => { e.preventDefault(); setDecodeDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) dCheck(_dw); }, className: "text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors " + (decodeDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-400 text-slate-800") }, dWord),
@@ -13666,8 +13664,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 : !dAllReady
                   ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.decoding_preparing") || "Preparing pictures...")
                   : /*#__PURE__*/ React.createElement("div", { className: "grid grid-cols-2 gap-4 max-w-md w-full" },
-                      ...dChoices.map((w, i) => { const img = imgFor(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onDragEnd: () => setDecodeDragOver(false), onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": dLabel + " " + (i + 1) },
-                        /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: dLabel + " " + (i + 1), draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }));
+                      ...dChoices.map((w, i) => { const img = imgFor(w); const _cn = dChoiceName(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onDragEnd: () => setDecodeDragOver(false), onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": _cn },
+                        /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: _cn, draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }));
                       }),
                     ),
             );
@@ -15053,8 +15051,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "div",
               {
                 key: wordSoundsActivity,
+                ref: activityRegionRef,
+                tabIndex: -1,
                 className:
-                  "animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both",
+                  "animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both outline-none",
               },
               // ── Graphophonemic anchor strip (WCAG-aligned, Orton-Gillingham style) ──
               // Persists letter ↔ sound ↔ key-word ↔ sentence association across every
