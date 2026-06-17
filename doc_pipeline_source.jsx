@@ -512,6 +512,33 @@ function _resolveIssueLocator(location, normHaystack, fallbackPages) {
   };
   return _re;
 }
+
+// Apply a mutation to the element an axe-core "target" selector points at — the deterministic,
+// fail-SAFE alternative to ordinal "Nth-of-tag" targeting (Slice 3, 2026-06-16). axe attaches an
+// exact CSS-selector target to every violation node; resolving it against the CURRENT html means a
+// fix lands on the RIGHT element even after earlier fixes shifted element counts. The ordinal path
+// fails WRONG there (an earlier insert makes "the 5th <img>" point elsewhere); a selector MISS here
+// returns the html UNCHANGED (fail-safe) rather than mutating the wrong node. mutateFn(el, doc) does
+// the edit and may return false to decline (e.g. already-correct → no change). Pure; needs DOMParser
+// (browser / jsdom). `rawTarget` may be a string or axe's nested-frame array form.
+function _applyToAxeTarget(html, rawTarget, mutateFn) {
+  if (rawTarget == null || typeof DOMParser === 'undefined') return html;
+  var selector = Array.isArray(rawTarget)
+    ? (Array.isArray(rawTarget[rawTarget.length - 1]) ? rawTarget[rawTarget.length - 1].join(' ') : rawTarget.join(' '))
+    : String(rawTarget);
+  try {
+    var doc = new DOMParser().parseFromString(String(html), 'text/html');
+    var el = doc.querySelector(selector);
+    if (!el) return html;
+    var changed = mutateFn(el, doc);
+    if (changed === false) return html;
+    var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
+    return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+  } catch (e) {
+    return html;
+  }
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -2498,6 +2525,7 @@ var createDocPipeline = function(deps) {
     fix_alt_text: {
       category: 'CONTENT', wcag: '1.1.1', params: '{index, alt}',
       fn: function(html, p) {
+        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) { el.setAttribute('alt', (p.alt != null ? p.alt : 'Image')); });
         if (!p.index && p.index !== 0) return html;
         let idx = 0;
         return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
@@ -2522,6 +2550,11 @@ var createDocPipeline = function(deps) {
       category: 'CONTENT', wcag: '2.4.4', params: '{index, newText, force?}',
       fn: function(html, p) {
         if (!p.newText) return html;
+        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
+          var t = (el.textContent || '').trim().toLowerCase();
+          if (['click here','here','read more','more','link','learn more'].indexOf(t) === -1 && !p.force) return false;
+          el.textContent = p.newText;
+        });
         let idx = 0;
         return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
           if (idx++ !== (p.index || 0)) return m;
@@ -2598,6 +2631,10 @@ var createDocPipeline = function(deps) {
       category: 'FORM', wcag: '4.1.2', params: '{index, label}',
       fn: function(html, p) {
         if (!p.label) return html;
+        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
+          if ((el.textContent || '').trim() || el.getAttribute('aria-label')) return false; // already named
+          el.setAttribute('aria-label', p.label);
+        });
         let idx = 0;
         return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
           if (idx++ !== (p.index || 0)) return m;
@@ -2610,6 +2647,7 @@ var createDocPipeline = function(deps) {
       category: 'FORM', wcag: '2.4.1', params: '{index, title}',
       fn: function(html, p) {
         if (!p.title) return html;
+        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) { el.setAttribute('title', p.title); });
         let idx = 0;
         return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
           if (idx++ !== (p.index || 0)) return m;
@@ -2646,6 +2684,10 @@ var createDocPipeline = function(deps) {
     fix_remove_empty_heading: {
       category: 'STRUCTURE', wcag: '1.3.1', params: '{index}',
       fn: function(html, p) {
+        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
+          if ((el.textContent || '').trim()) return false; // not actually empty — don't remove
+          el.remove();
+        });
         let idx = 0;
         return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
           if (p.index !== undefined && idx++ !== p.index) return m;
@@ -2764,22 +2806,11 @@ var createDocPipeline = function(deps) {
           }
         }
         var newFg = rgbToHex(r,g,b);
-        // axe target can be nested (frames): [["sel1"], ["sel2"]] → use last frame's selector.
-        var rawTarget = p.target;
-        var selector = Array.isArray(rawTarget) ? (Array.isArray(rawTarget[rawTarget.length-1]) ? rawTarget[rawTarget.length-1].join(' ') : rawTarget.join(' ')) : String(rawTarget);
-        try {
-          var doc = new DOMParser().parseFromString(html, 'text/html');
-          var el = doc.querySelector(selector);
-          if (!el) return html;
+        return _applyToAxeTarget(html, p.target, function(el) {
           var existing = el.getAttribute('style') || '';
           var cleaned = existing.replace(/(?:^|;)\s*color\s*:\s*[^;]+/gi, '').replace(/^;+/, '').trim();
           el.setAttribute('style', (cleaned ? cleaned + ';' : '') + 'color:' + newFg);
-          var doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
-          var doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
-          return doctypePrefix + doc.documentElement.outerHTML;
-        } catch (e) {
-          return html;
-        }
+        });
       }
     },
     fix_image_decorative: {
@@ -10256,15 +10287,15 @@ HTML section ${chunkNum}/${chunks.length}:
         const tm = h.match(/title="([^"]{3,120})"/);
         const sm = h.match(/src="([^"]*?)([^/"]+?)(?:\.\w{2,5})?(?:[?#][^"]*)?"/);
         const stem = tm ? tm[1] : (sm && sm[2] && !/^data:|^[0-9a-f-]{8,}$/i.test(sm[2]) ? sm[2].replace(/[-_+.]+/g, ' ').trim() : '');
-        return { tool: 'fix_alt_text', params: { index: i, alt: stem ? ('Image: ' + stem.slice(0, 100) + ' (auto-named — needs description)') : 'Image (needs description)' } };
+        return { tool: 'fix_alt_text', params: { target: n.target, index: i, alt: stem ? ('Image: ' + stem.slice(0, 100) + ' (auto-named — needs description)') : 'Image (needs description)' } };
       }),
       'button-name':    (nodes) => nodes.map((n, i) => {
         const vm = (n.html || '').match(/(?:value|title|name)="([^"]{2,60})"/);
-        return { tool: 'fix_button_name', params: { index: i, label: vm ? vm[1] : 'Button (unlabeled — needs review)' } };
+        return { tool: 'fix_button_name', params: { target: n.target, index: i, label: vm ? vm[1] : 'Button (unlabeled — needs review)' } };
       }),
       'input-button-name': (nodes) => nodes.map((n, i) => {
         const vm = (n.html || '').match(/(?:value|title|name)="([^"]{2,60})"/);
-        return { tool: 'fix_button_name', params: { index: i, label: vm ? vm[1] : 'Button (unlabeled — needs review)' } };
+        return { tool: 'fix_button_name', params: { target: n.target, index: i, label: vm ? vm[1] : 'Button (unlabeled — needs review)' } };
       }),
       'link-name':      (nodes) => nodes.map((n, i) => {
         const hm = (n.html || '').match(/href="([^"]+)"/);
@@ -10277,10 +10308,10 @@ HTML section ${chunkNum}/${chunks.length}:
             label = label.replace(/^Link to : /, 'Link: ').replace(/^Link to $/, '');
           } catch (_) {}
         }
-        return { tool: 'fix_link_text', params: { index: i, newText: label || 'Link (destination unclear — needs review)', force: true } };
+        return { tool: 'fix_link_text', params: { target: n.target, index: i, newText: label || 'Link (destination unclear — needs review)', force: true } };
       }),
-      'frame-title':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_iframe_title', params: { index: i, title: 'Embedded content' } })),
-      'empty-heading':  (nodes) => nodes.map((n, i) => ({ tool: 'fix_remove_empty_heading', params: { index: i } })),
+      'frame-title':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_iframe_title', params: { target: n.target, index: i, title: 'Embedded content' } })),
+      'empty-heading':  (nodes) => nodes.map((n, i) => ({ tool: 'fix_remove_empty_heading', params: { target: n.target, index: i } })),
       'skip-link':      () => ({ tool: 'fix_skip_nav', params: {} }),
       'landmark-one-main': () => ({ tool: 'fix_add_landmark', params: { tag: 'main', label: 'Main content' } }),
       'color-contrast': (nodes) => nodes.map(n => {
@@ -10295,20 +10326,27 @@ HTML section ${chunkNum}/${chunks.length}:
     try {
       const allAxeViolations = [].concat(currentAxe.critical || [], currentAxe.serious || [], currentAxe.moderate || [], currentAxe.minor || []);
       let directFixCount = 0;
+      const _directives = [];
       for (const v of allAxeViolations) {
         const mapper = AXE_RULE_TO_TOOL[v.id];
         if (!mapper) continue;
         const nodes = v.nodeDetails || v.nodes || [];
         const directives = mapper(nodes) || [];
         const arr = Array.isArray(directives) ? directives : [directives];
-        for (const d of arr) {
-          if (!d || !d.tool || !SURGICAL_TOOL_REGISTRY[d.tool]) continue;
-          try {
-            currentHtml = SURGICAL_TOOL_REGISTRY[d.tool].fn(currentHtml, d.params || {});
-            directFixCount++;
-          } catch (e) {
-            warnLog('[AutoFix direct] tool ' + d.tool + ' threw:', e);
-          }
+        for (const d of arr) { if (d && d.tool && SURGICAL_TOOL_REGISTRY[d.tool]) _directives.push(d); }
+      }
+      // Apply ATTRIBUTE/text fixes first and ELEMENT-STRUCTURAL ones (remove/insert/wrap) LAST, so a
+      // positional axe selector (e.g. :nth-child) carried by a later directive resolves against an
+      // UNSHIFTED tree — a same-run removal/wrap would otherwise re-point it at the wrong element
+      // (adversarial review C: the residual fail-wrong vector once selectors replaced ordinals).
+      const _structuralLast = { fix_remove_empty_heading: 1, fix_add_landmark: 1, fix_skip_nav: 1 };
+      const _ordered = _directives.filter((d) => !_structuralLast[d.tool]).concat(_directives.filter((d) => _structuralLast[d.tool]));
+      for (const d of _ordered) {
+        try {
+          currentHtml = SURGICAL_TOOL_REGISTRY[d.tool].fn(currentHtml, d.params || {});
+          directFixCount++;
+        } catch (e) {
+          warnLog('[AutoFix direct] tool ' + d.tool + ' threw:', e);
         }
       }
       if (directFixCount > 0) {
