@@ -10,7 +10,7 @@
  *   badge in the bottom-right ONLY after at least one error is captured.
  * - Clicking the badge opens a modal with the captured log + metadata
  *   (URL, user agent, viewport size, timestamps).
- * - "Send to Aaron" pre-fills a Google Form with the report and opens it
+ * - "Send to Developers" pre-fills a Google Form with the report and opens it
  *   in a new tab so the user reviews before submitting (privacy-respecting
  *   — no silent fetch).
  *
@@ -87,15 +87,30 @@
 
   function record(level, message, stack, source, line, column) {
     if (shouldIgnore(message)) return;
+    var msg = String(message || '').slice(0, 2000);
+    // Coalesce a repeat of the most recent entry (same level + message) into a count rather than
+    // flooding the log, the badge, and the 50-slot buffer — e.g. a recurring 401 auth error that
+    // fires every few seconds. The first ts is kept; lastTs + count track the repeats so the
+    // report/panel show one line with "×N" instead of N identical rows.
+    var last = buffer.length ? buffer[buffer.length - 1] : null;
+    if (last && last.level === level && last.message === msg) {
+      last.count = (last.count || 1) + 1;
+      last.lastTs = new Date().toISOString();
+      persistBuffer();
+      updateBadge();
+      refreshPanelIfOpen();
+      return;
+    }
     var entry = {
       ts: new Date().toISOString(),
       level: level,                                    // 'error' | 'warn'
-      message: String(message || '').slice(0, 2000),
+      message: msg,
       stack: stack ? String(stack).slice(0, 2000) : '',
       source: source ? String(source).slice(0, 200) : '',
       line: line || 0,
       column: column || 0,
-      url: window.location.href.slice(0, 300)
+      url: window.location.href.slice(0, 300),
+      count: 1
     };
     buffer.push(entry);
     while (buffer.length > MAX_BUFFERED) buffer.shift();
@@ -167,7 +182,7 @@
     var errorsOnly = buffer.filter(function (e) { return e.level === 'error'; });
     var entriesToInclude = (errorsOnly.length === 0 ? buffer : errorsOnly).slice(-15);
     var what = entriesToInclude.map(function (e, i) {
-      var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + '\n' + e.message;
+      var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + (e.count > 1 ? ('  (repeated ×' + e.count + (e.lastTs ? ', last ' + e.lastTs : '') + ')') : '') + '\n' + e.message;
       if (e.source && e.line) head += '\n  at ' + e.source + ':' + e.line + ':' + e.column;
       if (e.stack) head += '\n' + e.stack;
       return head;
@@ -252,6 +267,7 @@
       '<span>' + e.level + '</span>' +
       '<span style="color:#64748b;font-weight:500;">#' + (idx + 1) + '</span>' +
       '<span style="color:#64748b;font-weight:500;">' + escapeHtml(e.ts) + '</span>' +
+      (e.count > 1 ? '<span style="background:' + color + ';color:#fff;font-weight:700;padding:1px 6px;border-radius:999px;">×' + e.count + '</span>' : '') +
       '</header>' +
       '<pre style="margin:0;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#1e293b;white-space:pre-wrap;word-break:break-word;">' +
       escapeHtml(e.message) + escapeHtml(loc) +
@@ -275,7 +291,7 @@
       '<header style="padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fafc;">' +
         '<div>' +
           '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">⚠ AlloFlow Error Reporter</h2>' +
-          '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to Aaron with one click.</p>' +
+          '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.</p>' +
         '</div>' +
         '<button id="aer-close" type="button" aria-label="Close error reporter" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
       '</header>' +
@@ -306,7 +322,7 @@
         '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;flex:1;min-width:200px;">' +
           'The form opens in a new tab pre-filled with this log. You can edit it before submitting.' +
         '</p>' +
-        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Aaron</button>' +
+        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
       '</footer>' +
     '</div>';
   }
