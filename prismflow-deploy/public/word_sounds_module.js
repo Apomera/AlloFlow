@@ -4751,7 +4751,9 @@
           icon: "✍️",
           description:
             ts("word_sounds.letter_tracing_desc") || "Trace the first letter",
-          tier: "phonological",
+          // Handwriting / letter-formation is orthographic, not phonological:
+          // keep it out of phonological-only sessions (the default).
+          tier: "orthographic",
         },
         {
           id: "word_families",
@@ -4891,6 +4893,20 @@
       }, []);
       const [showProbeResults, setShowProbeResults] = React.useState(false);
       const probeStartTimeRef = React.useRef(null);
+      // Per-word-difficulty accuracy for THIS probe (each history item is tagged
+      // with wordDifficulty at answer time). Shared by the live session-complete
+      // modal and the onProbeComplete payload so a difficulty shift between
+      // probes is visible rather than mistaken for a skill change.
+      const computeProbeByBand = React.useCallback(() => {
+        const _probeStart = probeStartTimeRef.current || 0;
+        const _byBand = { easy: { c: 0, t: 0 }, medium: { c: 0, t: 0 }, hard: { c: 0, t: 0 } };
+        (wordSoundsHistory || []).forEach((h) => {
+          if (!h || h.timestamp < _probeStart || h.activity !== wordSoundsActivity) return;
+          const _b = _byBand[h.wordDifficulty] ? h.wordDifficulty : "medium";
+          _byBand[_b].t++; if (h.correct) _byBand[_b].c++;
+        });
+        return _byBand;
+      }, [wordSoundsHistory, wordSoundsActivity]);
       const renderProbeResults = () => {
         const totalTime = probeStartTimeRef.current
           ? (Date.now() - probeStartTimeRef.current) / 1000
@@ -5228,17 +5244,20 @@
             w,
           ) || /(nd|ng|nk|nt|mp|ft|lt|pt|sk|sp|st)$/.test(w);
         const hasDigraph = /(ch|sh|th|wh|ph|ck|gh|kn|wr|mb|gn)/.test(w);
-        const hasSilentLetter =
-          /(kn|wr|mb|gn|gh)/.test(w) || (/e$/.test(w) && w.length > 3);
+        // True silent-letter clusters only. Final-e is NOT lumped here: regular
+        // CVCe (cake, bike, home) is a foundational early pattern, not a hard
+        // "silent letter" word, so it should not be penalized out of "easy".
+        const hasSilentLetter = /(kn|wr|mb|gn|gh)/.test(w);
         const isLong = w.length >= 7;
         const hasComplexVowel = /(oo|ee|ea|ou|ow|oi|oy|au|aw|ew|ie|ei)/.test(w);
         let complexity = 0;
         if (hasBlend) complexity += 2;
         if (hasDigraph) complexity += 2;
         if (hasSilentLetter) complexity += 1;
-        if (isLong) complexity += 2;
         if (hasComplexVowel) complexity += 1;
         if (isSimpleCVC || (isShortSimple && complexity === 0)) return "easy";
+        // isLong is the hard trigger on its own (7+ letters); it no longer also
+        // adds to complexity, so length is weighted once, not twice.
         if (complexity >= 4 || isLong) return "hard";
         return "medium";
       }, []);
@@ -6260,17 +6279,63 @@
         currentWordSoundsWord,
         callGemini,
       ]);
-      // Read & Match (decoding): printed word (NOT spoken) -> tap its picture.
-      // Distractor pictures reuse images already generated for other words;
-      // the target's is generated once (ungated - images ARE the activity).
+      // Read & Match distractors: same difficulty band + orthographic
+      // neighbors (shared rime/onset, equal length, or one grapheme apart),
+      // homophones excluded, backfilled from a decodable list so there are
+      // always >= 3 choices. This makes a correct answer require decoding the
+      // printed word rather than picture-elimination, so Read & Match works as
+      // a genuine decoding indicator, not a recognition game.
+      const DECODING_BACKFILL = ["cat", "dog", "sun", "map", "bed", "pig", "cup", "hat", "fish", "star", "tree", "frog", "duck", "book"];
+      const buildDecodingDistractors = (target) => {
+        const tgt = (target || "").toLowerCase();
+        const band = categorizeWordDifficulty(tgt);
+        const rime = tgt.length >= 2 ? tgt.slice(-2) : tgt;
+        const onset = tgt.charAt(0);
+        const editDist1 = (a, b) => {
+          if (Math.abs(a.length - b.length) > 1) return false;
+          let i = 0, j = 0, edits = 0;
+          while (i < a.length && j < b.length) {
+            if (a[i] === b[j]) { i++; j++; continue; }
+            if (++edits > 1) return false;
+            if (a.length > b.length) i++;
+            else if (a.length < b.length) j++;
+            else { i++; j++; }
+          }
+          return edits + (a.length - i) + (b.length - j) <= 1;
+        };
+        const isNeighbor = (w) =>
+          w.length === tgt.length ||
+          (w.length >= 2 && w.slice(-2) === rime) ||
+          (onset && w.charAt(0) === onset) ||
+          editDist1(w, tgt);
+        const all = [...new Set((wordPool || []).map((p) => p.word).filter(
+          (w) => w && w !== tgt && !isHomophone(tgt, w),
+        ))];
+        const sameBand = all.filter((w) => categorizeWordDifficulty(w) === band);
+        const ordered = [
+          ...fisherYatesShuffle(sameBand.filter(isNeighbor)),
+          ...fisherYatesShuffle(sameBand.filter((w) => !isNeighbor(w))),
+          ...fisherYatesShuffle(all.filter((w) => categorizeWordDifficulty(w) !== band)),
+        ];
+        const picked = [];
+        for (const w of ordered) { if (picked.length >= 3) break; if (picked.indexOf(w) === -1) picked.push(w); }
+        if (picked.length < 3) {
+          for (const w of fisherYatesShuffle(DECODING_BACKFILL)) {
+            if (picked.length >= 3) break;
+            if (w !== tgt && picked.indexOf(w) === -1 && !isHomophone(tgt, w)) picked.push(w);
+          }
+        }
+        return picked.slice(0, 3);
+      };
+      // Read & Match (decoding): printed word (NOT spoken) -> tap/drag its picture.
+      // The target's picture is generated once (ungated - images ARE the activity).
       React.useEffect(() => {
         if (wordSoundsActivity !== "decoding") return;
         const target = (currentWordSoundsWord || "").toLowerCase();
         if (!target) return;
         if (lastWordForDecoding.current === target) return;
         lastWordForDecoding.current = target;
-        const poolWords = [...new Set((wordPool || []).map((p) => p.word).filter((w) => w && w !== target))];
-        const distractors = fisherYatesShuffle(poolWords).slice(0, 3);
+        const distractors = buildDecodingDistractors(target);
         setDecodingChoices(fisherYatesShuffle([currentWordSoundsWord || target, ...distractors]));
         if (typeof callImagen === "function") {
           [currentWordSoundsWord || target, ...distractors].forEach((w) => {
@@ -8134,6 +8199,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             try {
               if (!isMountedRef.current) return;
               lastPlayedWord.current = playKey;
+              // Read & Match decodes a PRINTED word that must never be spoken,
+              // so do not auto-play it even when instructions are toggled off.
+              if (wordSoundsActivity === "decoding") return;
               if (wordSoundsActivity === "blending") {
                 await playBlending();
               } else {
@@ -8304,6 +8372,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setSegmentationErrors([]);
           setNextWordBuffer(null);
           lastPlayedWord.current = null;
+          // Read & Match: clear choices/highlight and the regen guard so a
+          // returning or repeated word always rebuilds its picture set.
+          setDecodingChoices([]);
+          setDecodeDragOver(false);
+          lastWordForDecoding.current = null;
           if (!forceWord) {
             const effectiveDiff = getEffectiveDifficulty();
             generateSessionQueue(activityId, effectiveDiff);
@@ -9315,7 +9388,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     tryAgainAudio.volume = 0.7;
                     tryAgainAudio.play().catch(() => { });
                     tryAgainAudio.onended = () => {
-                      if (isMountedRef.current && currentWordSoundsWord) {
+                      // Read & Match decodes a PRINTED word that is never spoken;
+                      // skip the re-speak so the modality stays read-only.
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding") {
                         setTimeout(
                           () => wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord),
                           300,
@@ -9324,7 +9399,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     };
                   } else {
                     setTimeout(() => {
-                      if (isMountedRef.current && currentWordSoundsWord)
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding")
                         wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord);
                     }, 800);
                   }
@@ -9358,13 +9433,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     almostAudio.volume = 0.7;
                     almostAudio.play().catch(() => { });
                     almostAudio.onended = () => {
-                      if (isMountedRef.current) {
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding") {
                         setTimeout(() => handleAudio(expectedAnswer), 300);
                       }
                     };
                   } else {
                     setTimeout(() => {
-                      if (isMountedRef.current) handleAudio(expectedAnswer);
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding") handleAudio(expectedAnswer);
                     }, 800);
                   }
                 } catch (e) {
@@ -9765,7 +9840,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 : ts("word_sounds.fb_nice_try") ||
                 `Nice try! The answer was "${expectedAnswer}".`,
             });
-            if (!isCorrect && expectedAnswer) {
+            if (!isCorrect && expectedAnswer && wordSoundsActivity !== "decoding") {
               setTimeout(() => {
                 if (isMountedRef.current) handleAudio(expectedAnswer);
               }, 600);
@@ -10344,6 +10419,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           total: wordSoundsScore.total,
                           elapsed: Math.round(elapsedMinutes * 60),
                           activity: wordSoundsActivity,
+                          byDifficulty: computeProbeByBand(),
                         });
                       }
                       setShowSessionComplete(true);
@@ -10363,6 +10439,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           total: wordSoundsScore.total,
                           elapsed: Math.round(elapsedMinutes * 60),
                           activity: wordSoundsActivity,
+                          byDifficulty: computeProbeByBand(),
                         });
                       }
                       setShowSessionComplete(true);
@@ -10382,6 +10459,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           total: wordSoundsScore.total,
                           elapsed: Math.round(elapsedMinutes * 60),
                           activity: wordSoundsActivity,
+                          byDifficulty: computeProbeByBand(),
                         });
                       }
                       setShowSessionComplete(true);
@@ -13516,17 +13594,26 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const imgFor = (w) => { const lc = (w || "").toLowerCase(); const pe = (wordPool || []).find((p) => p.word === lc); return optionImages[w] || optionImages[lc] || (pe && pe.image) || null; };
             const dSrc = (img) => (typeof img === "string" && (img.startsWith("data:") || img.startsWith("http"))) ? img : ("data:image/png;base64," + img);
             const dAnyImg = dChoices.some((w) => imgFor(w));
-            const dCheck = (w) => checkAnswer((w || "").toLowerCase() === dWord.toLowerCase() ? "correct" : "incorrect", "correct");
+            // Only reveal the grid when EVERY choice has its picture, so a card
+            // can never be picked out by "the one that already loaded" (which
+            // would let a child win without decoding the printed word).
+            const dAllReady = dChoices.length > 0 && dChoices.every((w) => imgFor(w));
+            // Pass the real words; checkAnswer scores correctness and (for
+            // decoding) suppresses re-speaking the printed target.
+            const dCheck = (w) => checkAnswer((w || ""), dWord);
+            const dLabel = ts("word_sounds.decoding_choice_label") || "Picture choice";
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
-              /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, "Drag the picture onto the word \u2014 or tap the picture"),
-              /*#__PURE__*/ React.createElement("div", { onDragOver: (e) => { e.preventDefault(); if (!decodeDragOver) setDecodeDragOver(true); }, onDragLeave: () => setDecodeDragOver(false), onDrop: (e) => { e.preventDefault(); setDecodeDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) dCheck(_dw); }, className: "text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors " + (decodeDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-300 text-slate-800") }, dWord),
+              /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.decoding_drag_prompt") || "Drag the picture onto the word, or tap the picture"),
+              /*#__PURE__*/ React.createElement("div", { onDragOver: (e) => { e.preventDefault(); if (!decodeDragOver) setDecodeDragOver(true); }, onDragLeave: () => setDecodeDragOver(false), onDrop: (e) => { e.preventDefault(); setDecodeDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) dCheck(_dw); }, className: "text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors " + (decodeDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-400 text-slate-800") }, dWord),
               (!dAnyImg && typeof callImagen !== "function")
-                ? /*#__PURE__*/ React.createElement("p", { className: "text-amber-600 text-sm font-semibold" }, "Picture matching needs image generation (open in Canvas).")
-                : /*#__PURE__*/ React.createElement("div", { className: "grid grid-cols-2 gap-4 max-w-md w-full" },
-                    ...dChoices.map((w, i) => { const img = imgFor(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": "Picture choice " + (i + 1) },
-                      img ? /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: "Picture choice " + (i + 1), draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }) : /*#__PURE__*/ React.createElement("span", { className: "text-slate-400 text-xs italic" }, "preparing picture\u2026"));
-                    }),
-                  ),
+                ? /*#__PURE__*/ React.createElement("p", { className: "text-amber-700 text-sm font-semibold" }, ts("word_sounds.decoding_needs_image") || "Picture matching needs image generation (open in Canvas).")
+                : !dAllReady
+                  ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.decoding_preparing") || "Preparing pictures...")
+                  : /*#__PURE__*/ React.createElement("div", { className: "grid grid-cols-2 gap-4 max-w-md w-full" },
+                      ...dChoices.map((w, i) => { const img = imgFor(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onDragEnd: () => setDecodeDragOver(false), onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": dLabel + " " + (i + 1) },
+                        /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: dLabel + " " + (i + 1), draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }));
+                      }),
+                    ),
             );
           }
           default:
@@ -13705,6 +13792,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ),
               ),
             ),
+            isProbeMode && (() => {
+              const _bb = computeProbeByBand();
+              const _tot = _bb.easy.t + _bb.medium.t + _bb.hard.t;
+              if (_tot === 0) return null;
+              const _pct = (b) => (_bb[b].t > 0 ? Math.round((_bb[b].c / _bb[b].t) * 100) : "");
+              return /*#__PURE__*/ React.createElement(
+                "div",
+                { className: "bg-white/10 backdrop-blur px-6 pb-5" },
+                /*#__PURE__*/ React.createElement(
+                  "div",
+                  { className: "bg-white/10 rounded-xl p-3 text-left" },
+                  /*#__PURE__*/ React.createElement("div", { className: "text-xs font-bold text-white/80 uppercase tracking-wider mb-1" }, ts("word_sounds.accuracy_by_difficulty") || "Accuracy by word difficulty"),
+                  ...["easy", "medium", "hard"].filter((b) => _bb[b].t > 0).map((b) =>
+                    /*#__PURE__*/ React.createElement("div", { key: "ssb-" + b, className: "flex justify-between text-sm text-white/90" },
+                      /*#__PURE__*/ React.createElement("span", { className: "capitalize" }, b === "easy" ? (ts("word_sounds.band_cvc_easy") || "CVC / easy") : (b === "hard" ? (ts("word_sounds.band_hard") || "Hard") : (ts("word_sounds.band_medium") || "Medium"))),
+                      /*#__PURE__*/ React.createElement("span", { className: "font-mono" }, _bb[b].c + "/" + _bb[b].t + " (" + _pct(b) + "%)"),
+                    ),
+                  ),
+                  /*#__PURE__*/ React.createElement("div", { className: "text-[10px] text-white/60 italic mt-1" }, ts("word_sounds.band_compare_caveat") || "Compare like with like: a shift in word difficulty (not a skill change) can move the overall number."),
+                ),
+              );
+            })(),
             sessionWordResults.current.length > 0 &&
               /*#__PURE__*/ React.createElement(
               "div",

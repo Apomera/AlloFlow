@@ -1301,11 +1301,6 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
 <span>AAC</span>
@@ -1515,11 +1510,6 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1747,11 +1737,6 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
 <span>AAC</span>
@@ -1793,13 +1778,9 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
 </div>
 <div class="flex flex-col items-center gap-5 p-4">
-<p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Drag the picture onto the word — or tap the picture</p>
-<div class="text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors border-slate-300 text-slate-800">cat</div>
-<div class="grid grid-cols-2 gap-4 max-w-md w-full">
-<button draggable="false" class="aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing" aria-label="Picture choice 1">
-<span class="text-slate-400 text-xs italic">preparing picture…</span>
-</button>
-</div>
+<p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">word_sounds.decoding_drag_prompt</p>
+<div class="text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors border-slate-400 text-slate-800">cat</div>
+<p class="text-slate-500 text-sm font-semibold italic">word_sounds.decoding_preparing</p>
 </div>
 </div>
 </div>
@@ -1950,11 +1931,6 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2146,11 +2122,6 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2377,11 +2348,6 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
 <span>AAC</span>
@@ -2593,11 +2559,6 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2815,11 +2776,6 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3130,11 +3086,6 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
 <span>AAC</span>
@@ -3349,11 +3300,6 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3574,11 +3520,6 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3808,11 +3749,6 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
 <span>AAC</span>
@@ -4015,11 +3951,6 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4241,11 +4172,6 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
 <span>AAC</span>
@@ -4462,11 +4388,6 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4712,11 +4633,6 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
 </button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
-</button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
 <span>AAC</span>
@@ -4927,11 +4843,6 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
 <span>🔊</span>
 <span>word_sounds.activity_sound_sort</span>
-</button>
-<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
-<span>✍️</span>
-<span>word_sounds.activity_letter_tracing</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
