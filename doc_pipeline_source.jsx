@@ -595,6 +595,39 @@ function _diffAxeForMiniAudit(beforeAxe, afterAxe) {
   return _out;
 }
 
+// Table semantic readback (2026-06-17): describe, in PLAIN LANGUAGE, the header→cell relationships a
+// screen reader will announce for the Nth table — the human-in-the-loop check the automated gates
+// (which only verify a VALID <th scope>, not the RIGHT one) cannot do. The table-refinement flow uses
+// it to confirm the MEANING of a structural edit before it's kept. Pure; needs DOMParser; assign-then-
+// return so check-pipeline-integrity.js can't mistake it for the factory export block.
+function _tableSemanticReadback(html, index) {
+  if (typeof DOMParser === 'undefined') { var _r0 = null; return _r0; }
+  try {
+    var doc = new DOMParser().parseFromString(String(html), 'text/html');
+    var t = doc.querySelectorAll('table')[index || 0];
+    if (!t) { var _r1 = null; return _r1; }
+    if ((t.getAttribute('role') || '').toLowerCase() === 'presentation') {
+      var _rl = { kind: 'layout', text: 'This table is now marked as LAYOUT (presentation): a screen reader will read its cells as plain text and will NOT announce any row or column headers. Keep this ONLY if it is not a real data table — otherwise its relationships are lost.' };
+      return _rl;
+    }
+    var colHeaders = [], rowHeaders = [];
+    var ths = t.querySelectorAll('th');
+    for (var i = 0; i < ths.length; i++) {
+      var sc = (ths[i].getAttribute('scope') || '').toLowerCase();
+      var txt = (ths[i].textContent || '').replace(/\s+/g, ' ').trim();
+      if (!txt) continue;
+      if (sc === 'row' || sc === 'rowgroup') rowHeaders.push(txt); else colHeaders.push(txt);
+    }
+    var _q = function(arr) { return arr.slice(0, 12).map(function(h) { return '“' + h + '”'; }).join(', ') + (arr.length > 12 ? ', …' : ''); };
+    var parts = [];
+    if (colHeaders.length) parts.push('Column headers (announced for every cell in their column): ' + _q(colHeaders) + '.');
+    if (rowHeaders.length) parts.push('Row headers (announced for every cell in their row): ' + _q(rowHeaders) + '.');
+    if (!parts.length) { var _rn = { kind: 'no-headers', text: 'This table has no marked headers — a screen reader will read its cells with no row/column context. If it is a data table, tell me which row or column is the header.' }; return _rn; }
+    var _rd = { kind: 'data', text: 'A screen reader will now announce this table as — ' + parts.join(' ') + ' Is that the right meaning?' };
+    return _rd;
+  } catch (e) { var _re = null; return _re; }
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -2673,6 +2706,59 @@ var createDocPipeline = function(deps) {
           });
           return '<table' + attrs + '>' + fixed + '</table>';
         });
+      }
+    },
+    // Table refinement (2026-06-17): promote the FIRST COLUMN (the first cell of every row) to
+    // <th scope="row">, for tables whose row labels live down the left edge. DOM-based (regex can't
+    // reliably pick "first cell per row"). Already-<th> first cells just gain scope="row".
+    fix_table_header_col: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index}',
+      fn: function(html, p) {
+        if (typeof DOMParser === 'undefined') return html;
+        try {
+          var doc = new DOMParser().parseFromString(String(html), 'text/html');
+          var t = doc.querySelectorAll('table')[p.index || 0];
+          if (!t) return html;
+          var rows = t.querySelectorAll('tr');
+          for (var i = 0; i < rows.length; i++) {
+            var first = rows[i].querySelector('td, th');
+            if (!first) continue;
+            if (first.tagName.toLowerCase() === 'td') {
+              var th = doc.createElement('th');
+              th.setAttribute('scope', 'row');
+              for (var a = 0; a < first.attributes.length; a++) th.setAttribute(first.attributes[a].name, first.attributes[a].value);
+              th.innerHTML = first.innerHTML;
+              first.parentNode.replaceChild(th, first);
+            } else { first.setAttribute('scope', 'row'); }
+          }
+          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
+          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+        } catch (e) { return html; }
+      }
+    },
+    // Mark a table as LAYOUT/presentation — removes it from the accessibility tree. GUARDED: this is
+    // the one op that REDUCES accessibility, so the caller pairs it with a loud semantic readback +
+    // accept/revert. Strips header semantics so an AT reads plain cells, not a data table with
+    // now-meaningless headers.
+    fix_table_mark_layout: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index}',
+      fn: function(html, p) {
+        if (typeof DOMParser === 'undefined') return html;
+        try {
+          var doc = new DOMParser().parseFromString(String(html), 'text/html');
+          var t = doc.querySelectorAll('table')[p.index || 0];
+          if (!t) return html;
+          t.setAttribute('role', 'presentation');
+          var ths = t.querySelectorAll('th');
+          for (var i = 0; i < ths.length; i++) {
+            var td = doc.createElement('td');
+            for (var a = 0; a < ths[i].attributes.length; a++) { if (ths[i].attributes[a].name !== 'scope') td.setAttribute(ths[i].attributes[a].name, ths[i].attributes[a].value); }
+            td.innerHTML = ths[i].innerHTML;
+            ths[i].parentNode.replaceChild(td, ths[i]);
+          }
+          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
+          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+        } catch (e) { return html; }
       }
     },
     fix_input_label: {
@@ -19175,6 +19261,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       '- fix_heading: {index: N, newLevel: "h2"}\n' +
       '- fix_link_text: {index: N, newText: "descriptive text"}\n' +
       '- fix_table_caption: {index: N, caption: "text"}\n' +
+      '- fix_table_header_row: {index: N}   (promote the first ROW to column headers — e.g. "row 1 is a header")\n' +
+      '- fix_table_header_col: {index: N}   (promote the first COLUMN to row headers — e.g. "the first column is a row label")\n' +
+      '- fix_th_scope: {index: N, scope: "col"|"row"}   (set a header cell\'s scope direction)\n' +
+      '- fix_table_mark_layout: {index: N}  (ONLY when the user explicitly says the table is LAYOUT, not data — this REMOVES it from the accessibility tree)\n' +
       '- fix_aria_label: {tag: "nav", index: N, label: "text"}\n' +
       '- fix_contrast: {oldColor: "#aaa", newColor: "#333"}\n' +
       '- fix_skip_nav: {} (no params)\n' +
@@ -19218,8 +19308,21 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         }
       }
 
+      // Table refinement (slice 1, 2026-06-17): if a TABLE structural op ran, surface the plain-
+      // language SEMANTIC READBACK so the user confirms the table's MEANING \u2014 which axe cannot verify
+      // (it only checks a valid <th scope>, never the RIGHT one) \u2014 before keeping it. The mini-audit's
+      // revert is the "reject" path, so this stays purely additive: keep or revert, never silent.
+      var tableReadback = null;
+      try {
+        var _tableTools = { fix_table_header_row: 1, fix_table_header_col: 1, fix_table_mark_layout: 1, fix_table_caption: 1, fix_th_scope: 1 };
+        var _tAct = (parsed.actions || []).filter(function(a) { return a && _tableTools[a.tool]; }).pop();
+        if (_tAct && resultHtml !== currentHtml) {
+          tableReadback = _tableSemanticReadback(resultHtml, (_tAct.params && _tAct.params.index) || 0);
+          if (tableReadback) onActivity({ text: '\uD83D\uDCCA ' + tableReadback.text, type: (tableReadback.kind === 'layout' ? 'error' : 'confirm'), time: ts() });
+        }
+      } catch (_) {}
       var cmdAudit = await _miniAuditFix(currentHtml, resultHtml, onActivity, ts);
-      return { type: 'command', html: resultHtml, interpretation: parsed.interpretation, miniAudit: cmdAudit };
+      return { type: 'command', html: resultHtml, interpretation: parsed.interpretation, miniAudit: cmdAudit, tableReadback: tableReadback };
     } catch (e) {
       onActivity({ text: '\u274C Could not interpret command: ' + (e.message || e), type: 'error', time: ts() });
       return { type: 'error', html: currentHtml, error: e.message };

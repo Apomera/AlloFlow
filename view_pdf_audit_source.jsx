@@ -8343,7 +8343,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // Snapshot the FULL before-HTML so a regressing fix can be reverted in one
                               // click (mini-audit, 2026-06-16) — mirrors the _preBionicHtml snapshot pattern.
                               const _preCmdHtml = pdfFixResult.accessibleHtml;
-                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null }));
+                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
                               if (result.score !== undefined) {
                                 setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                               }
@@ -8389,12 +8389,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             ⚠️ {t('pdf_audit.expert.mini_audit_regressed') || 'That fix introduced new accessibility issues:'} <span className="font-mono text-red-300">{pdfFixResult._lastMiniAudit.introduced.map(x => x.id).join(', ')}</span>. {t('pdf_audit.expert.mini_audit_revert_hint') || 'Revert to undo it, or keep it and fix those too.'}
                           </div>
                         )}
+                        {/* Table semantic readback (table-refinement slice 1): confirm the MEANING of a
+                            table edit in plain language — the human check axe can't do. Keep = right,
+                            Revert below = wrong. 'layout' is the one that REDUCES accessibility → red. */}
+                        {pdfFixResult._lastTableReadback && pdfFixResult._lastTableReadback.text && (
+                          <div className={'mt-1 px-2 py-1.5 rounded text-[11px] border ' + (pdfFixResult._lastTableReadback.kind === 'layout' ? 'bg-red-950/40 border-red-700/60 text-red-200' : 'bg-indigo-950/40 border-indigo-600/60 text-indigo-100')} role="status" aria-live="polite">
+                            📊 <span className="font-bold">{pdfFixResult._lastTableReadback.kind === 'layout' ? (t('pdf_audit.expert.table_readback_layout') || 'Table marked as layout') : (t('pdf_audit.expert.table_readback') || 'How this table now reads')}:</span> {pdfFixResult._lastTableReadback.text} <span className="opacity-80">{t('pdf_audit.expert.table_readback_hint') || 'Keep it if that’s right, or Revert below.'}</span>
+                          </div>
+                        )}
                         {/* Revert is hidden while a reading overlay (Bionic / Line Guide) is active, since
                             reverting past the command would also silently drop the overlay; it reappears
                             cleanly once the overlay is toggled off (its own snapshot handles that undo). */}
                         {pdfFixResult._preCmdHtml && !pdfFixResult._preBionicHtml && !pdfFixResult._preLineGuideHtml && (
                           <button type="button" onClick={() => {
-                            setPdfFixResult(p => (p && p._preCmdHtml) ? ({ ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null }) : p);
+                            setPdfFixResult(p => (p && p._preCmdHtml) ? ({ ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null, _lastTableReadback: null }) : p);
                             setAgentActivityLog(prev => [...prev, { text: '↩ Reverted last command', type: 'info', time: new Date().toLocaleTimeString() }]);
                             addToast(t('toasts.command_reverted') || 'Reverted the last command.', 'info');
                           }}

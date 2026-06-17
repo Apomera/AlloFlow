@@ -6522,7 +6522,7 @@ Return ONLY JSON:
           const _stripT = (h) => String(h || "").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
           const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
           const _preCmdHtml = pdfFixResult.accessibleHtml;
-          setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null }));
+          setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
           if (result.score !== void 0) {
             setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           }
@@ -6578,12 +6578,12 @@ Return ONLY JSON:
         title: t("pdf_audit.expert.see_changes_title") || "Open a word-level diff of exactly what your last command changed \u2014 reject any part to undo it"
       },
       "\u{1F4DD} See what the last command changed"
-    ), pdfFixResult._lastMiniAudit && pdfFixResult._lastMiniAudit.verdict === "regressed" && Array.isArray(pdfFixResult._lastMiniAudit.introduced) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 px-2 py-1.5 bg-red-950/40 border border-red-700/60 rounded text-[11px] text-red-200", role: "alert" }, "\u26A0\uFE0F ", t("pdf_audit.expert.mini_audit_regressed") || "That fix introduced new accessibility issues:", " ", /* @__PURE__ */ React.createElement("span", { className: "font-mono text-red-300" }, pdfFixResult._lastMiniAudit.introduced.map((x) => x.id).join(", ")), ". ", t("pdf_audit.expert.mini_audit_revert_hint") || "Revert to undo it, or keep it and fix those too."), pdfFixResult._preCmdHtml && !pdfFixResult._preBionicHtml && !pdfFixResult._preLineGuideHtml && /* @__PURE__ */ React.createElement(
+    ), pdfFixResult._lastMiniAudit && pdfFixResult._lastMiniAudit.verdict === "regressed" && Array.isArray(pdfFixResult._lastMiniAudit.introduced) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 px-2 py-1.5 bg-red-950/40 border border-red-700/60 rounded text-[11px] text-red-200", role: "alert" }, "\u26A0\uFE0F ", t("pdf_audit.expert.mini_audit_regressed") || "That fix introduced new accessibility issues:", " ", /* @__PURE__ */ React.createElement("span", { className: "font-mono text-red-300" }, pdfFixResult._lastMiniAudit.introduced.map((x) => x.id).join(", ")), ". ", t("pdf_audit.expert.mini_audit_revert_hint") || "Revert to undo it, or keep it and fix those too."), pdfFixResult._lastTableReadback && pdfFixResult._lastTableReadback.text && /* @__PURE__ */ React.createElement("div", { className: "mt-1 px-2 py-1.5 rounded text-[11px] border " + (pdfFixResult._lastTableReadback.kind === "layout" ? "bg-red-950/40 border-red-700/60 text-red-200" : "bg-indigo-950/40 border-indigo-600/60 text-indigo-100"), role: "status", "aria-live": "polite" }, "\u{1F4CA} ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, pdfFixResult._lastTableReadback.kind === "layout" ? t("pdf_audit.expert.table_readback_layout") || "Table marked as layout" : t("pdf_audit.expert.table_readback") || "How this table now reads", ":"), " ", pdfFixResult._lastTableReadback.text, " ", /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("pdf_audit.expert.table_readback_hint") || "Keep it if that\u2019s right, or Revert below.")), pdfFixResult._preCmdHtml && !pdfFixResult._preBionicHtml && !pdfFixResult._preLineGuideHtml && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: () => {
-          setPdfFixResult((p) => p && p._preCmdHtml ? { ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null } : p);
+          setPdfFixResult((p) => p && p._preCmdHtml ? { ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null, _lastTableReadback: null } : p);
           setAgentActivityLog((prev) => [...prev, { text: "\u21A9 Reverted last command", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           addToast(t("toasts.command_reverted") || "Reverted the last command.", "info");
         },

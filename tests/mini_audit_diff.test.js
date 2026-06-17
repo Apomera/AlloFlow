@@ -90,7 +90,8 @@ describe('anti-drift: the mini-audit is wired into the manual paths + UI', () =>
     expect(src).toContain('var d = _diffAxeForMiniAudit(beforeAxe, afterAxe);');
   });
   it('both manual fix paths (AI-interpreted + contrast) return miniAudit', () => {
-    expect(src).toContain('return { type: \'command\', html: resultHtml, interpretation: parsed.interpretation, miniAudit: cmdAudit }');
+    // the command path also returns tableReadback (table-refinement slice 1) — miniAudit unchanged
+    expect(src).toContain('miniAudit: cmdAudit, tableReadback: tableReadback }');
     expect(src).toContain('return { type: \'fix\', html: fixed, miniAudit: contrastAudit }');
   });
   it('fail-safe: a fix with no HTML change returns null (nothing to verify), axe failure returns ran:false', () => {
