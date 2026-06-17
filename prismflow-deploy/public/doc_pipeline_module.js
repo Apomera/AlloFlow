@@ -14623,20 +14623,50 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (_arMissing.length > 0) {
             const _arPreHtml = accessibleHtml;
             const _arResult = applyWordRestoration(accessibleHtml, _arMissing, _arSrc);
+            let _arHtml = (_arResult && _arResult.html) ? _arResult.html : accessibleHtml;
             const _arInline = (_arResult && _arResult.restored) ? _arResult.restored.length : 0;
-            const _arAppendix = (_arResult && _arResult.unplaceable) ? _arResult.unplaceable.length : 0;
-            if (_arResult && _arResult.html && (_arInline > 0 || _arAppendix > 0)) {
-              accessibleHtml = _arResult.html;
+            let _arUnplaceable = (_arResult && Array.isArray(_arResult.unplaceable)) ? _arResult.unplaceable.slice() : [];
+            let _sentRestored = 0;
+            // Sentence-restore fallback (#2, 2026-06-17, user-chosen). Before a word lands in the
+            // out-of-reading-order Content-recovery appendix, try to restore its WHOLE SOURCE SENTENCE
+            // at its natural spot — neighbor-sentence word-overlap anchoring is far less ambiguous than
+            // a single-word splice, so it recovers more content IN READING ORDER without loosening the
+            // strict single-word unique-anchor gate. Steps (nothing is ever lost): strip the word-only
+            // appendix → sentence-restore the residue (its own "Preserved source content" sink absorbs
+            // anchorless orphans, counted in restoredViaSentence) → re-appendix ONLY the words with no
+            // findable source sentence (stillMissing). Any throw falls back to the word-only result.
+            if (_arUnplaceable.length > 0 && typeof restoreSentencesDeterministic === 'function') {
+              try {
+                const _stripAppendix = (h) => String(h || '').replace(/<section\b[^>]*\bdata-content-recovery\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, '');
+                const _sentResult = restoreSentencesDeterministic(_stripAppendix(_arHtml), _arUnplaceable, _arSrc);
+                if (_sentResult && _sentResult.html) {
+                  _arHtml = _sentResult.html;
+                  _sentRestored = Array.isArray(_sentResult.restoredViaSentence) ? _sentResult.restoredViaSentence.length : 0;
+                  const _stillMissing = Array.isArray(_sentResult.stillMissing) ? _sentResult.stillMissing : [];
+                  if (_stillMissing.length > 0) {
+                    const _reAppx = applyWordRestoration(_arHtml, _stillMissing, _arSrc);
+                    if (_reAppx && _reAppx.html) { _arHtml = _reAppx.html; _arUnplaceable = Array.isArray(_reAppx.unplaceable) ? _reAppx.unplaceable : _stillMissing; }
+                    else { _arUnplaceable = _stillMissing; }
+                  } else {
+                    _arUnplaceable = [];
+                  }
+                }
+              } catch (_se) { warnLog('[AutoRestore] sentence-fallback non-fatal:', _se && _se.message); }
+            }
+            const _arAppendix = _arUnplaceable.length;
+            if (_arHtml && (_arInline > 0 || _sentRestored > 0 || _arAppendix > 0)) {
+              accessibleHtml = _arHtml;
               _autoRestore = {
                 mode: 'dual-ocr',
                 candidateCount: _arMissing.length,
                 restoredInline: _arInline,
+                restoredAsSentence: _sentRestored,
                 preservedInAppendix: _arAppendix,
-                words: (_arResult.restored || []).slice(0, 150).map(x => x.word)
-                  .concat((_arResult.unplaceable || []).slice(0, 150).map(x => x.word)).slice(0, 200),
+                words: ((_arResult && _arResult.restored) || []).slice(0, 150).map(x => x.word)
+                  .concat(_arUnplaceable.slice(0, 150).map(x => x.word)).slice(0, 200),
                 preRestoreHtml: _arPreHtml,
               };
-              warnLog('[AutoRestore] dual-OCR high-confidence: ' + _arInline + ' restored inline + ' + _arAppendix + ' to appendix, of ' + _arMissing.length + ' candidate word(s)');
+              warnLog('[AutoRestore] dual-OCR high-confidence: ' + _arInline + ' word + ' + _sentRestored + ' sentence restored inline + ' + _arAppendix + ' to appendix, of ' + _arMissing.length + ' candidate word(s)');
             }
           }
         }
