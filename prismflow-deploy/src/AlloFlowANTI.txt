@@ -4395,7 +4395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'e86d35b7';
+    var pluginCdnVersion = '5fa9b3c2';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10221,7 +10221,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setPendingPdfFile(null);
     setIsExtracting(false);
     setGenerationStep('');
-    setPdfAuditResult(null); // close modal; result survives in pdfFixResult
+    // Stash the audit object so the "Return to remediation" pill can re-mount the
+    // modal verbatim (the result already survives in pdfFixResult; this preserves the
+    // audit half of the view so re-entry renders identically, not from a thin summary).
+    if (pdfAuditResult && !pdfAuditResult._choosing) lastPdfAuditResultRef.current = pdfAuditResult;
+    setPdfAuditResult(null); // close modal; result survives in pdfFixResult (re-openable via the Return-to-remediation pill)
   };
   // Guarded close: if there's audit work that hasn't been saved as a Project,
   // prompt with Save / Discard / Cancel before letting the modal close.
@@ -10242,6 +10246,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _closePdfAuditModal();
   };
   const startNewPdfAudit = () => {
+    lastPdfAuditResultRef.current = null; // dropping the result — no re-entry pill for a cleared audit
     setPdfAuditResult(null);
     setPdfFixResult(null);
     setDiffChunks(null);
@@ -10504,6 +10509,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const pdfAutoContinueAbortRef = useRef(false);
   const pdfAutoContinueAbortCtrlRef = useRef(null);
   const pdfFixResultRef = useRef(null);
+  // Re-entry stash (2026-06-16): when the remediation modal closes, the result
+  // survives in pdfFixResult but the modal's render gate (pdfAuditResult) is nulled,
+  // stranding the work with no in-session door back. Capture the audit object on close
+  // so the floating "Return to remediation" pill can re-mount the modal verbatim.
+  const lastPdfAuditResultRef = useRef(null);
   const lastAutoSaveHashRef = useRef('');
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const [pdfPreviewTheme, setPdfPreviewTheme] = useState('professional');
@@ -10526,6 +10536,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, []);
   useEffect(() => {
     try {
+      // The in-iframe "Pick extracted" handler reads window.__alloflowExtractedImages ||
+      // window.parent.__alloflowExtractedImages. Set it on BOTH the iframe contentWindow AND this
+      // (parent) window: the preview iframe reloads its srcdoc on re-render (a fresh contentWindow
+      // that loses the list), but this effect only re-runs on [extractedImagesList, pdfPreviewOpen]
+      // — so the parent-window copy is the reliable fallback that survives iframe reloads. Without
+      // it the picker showed nothing once the preview re-rendered (user report 2026-06-16).
+      if (typeof window !== 'undefined') window.__alloflowExtractedImages = extractedImagesList || [];
       const cw = pdfPreviewRef.current && pdfPreviewRef.current.contentWindow;
       if (cw) cw.__alloflowExtractedImages = extractedImagesList || [];
     } catch (_) {}
@@ -27913,6 +27930,35 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <span>Return to Dynamic Assessment</span>
                 {typeof generatedContent.daItemIndex === 'number' && (
                     <span className="bg-violet-800 px-1.5 py-0.5 rounded text-[10px] font-black">item {generatedContent.daItemIndex + 1}</span>
+                )}
+            </button>
+        )}
+        {/* Floating "Return to remediation" pill (2026-06-16, user report: "if I
+            accidentally X out of the remediation modal I can't get back to it").
+            The remediated document is NOT lost — it survives in pdfFixResult (and
+            localStorage) — but the modal's render gate (pdfAuditResult) was nulled
+            on close, leaving the work unreachable in-session (the only door back was
+            re-importing a downloaded project file). This pill re-mounts the modal
+            against the still-in-memory result. Shown whenever a result exists but the
+            modal is closed. Mirrors the DA pill above; stacks above it when both show. */}
+        {pdfFixResult && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && (
+            <button
+                onClick={() => {
+                    const _restore = lastPdfAuditResultRef.current || {
+                        score: pdfFixResult.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
+                        passes: [], summary: 'Reopened remediation', pageCount: pdfFixResult.pageCount,
+                        hasSearchableText: true, hasImages: (pdfFixResult.imageCount || 0) > 0,
+                    };
+                    setPdfAuditResult(_restore);
+                }}
+                title={t('pdf_audit.return_pill_title') || 'Your remediated document is still here — nothing was lost. Click to reopen the accessibility results.'}
+                aria-label={t('pdf_audit.return_pill_aria') || 'Return to remediation results'}
+                className={`fixed ${(generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen) ? 'bottom-20' : 'bottom-4'} right-4 z-[1000] bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-full shadow-2xl border-2 border-emerald-300 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 animate-in slide-in-from-bottom-2 duration-300`}
+            >
+                <span className="text-base" aria-hidden="true">↩</span>
+                <span>{t('pdf_audit.return_pill') || 'Return to remediation'}</span>
+                {typeof pdfFixResult.afterScore === 'number' && (
+                    <span className="bg-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-black">{pdfFixResult.afterScore}/100</span>
                 )}
             </button>
         )}
