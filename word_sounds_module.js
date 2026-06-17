@@ -1439,6 +1439,40 @@
         const selectedDistractors = shuffleSeeded(filterByDifficulty(distractorsPool)).slice(0, distractorLimit);
         return { mode, targetChar: targetPhoneme, difficulty, options: selectedMatches, distractors: selectedDistractors };
       };
+      // Word Families: resolve the rime the SAME way for the instruction audio
+      // and the on-screen game (AI rime first, then RIME_FAMILIES, then -at), and
+      // prime it once per word so the two never disagree.
+      const wordFamilyRimeRef = React.useRef(null);
+      const resolveWordFamilyRime = (targetWordRaw, aiRimeData) => {
+        const targetWord = (targetWordRaw || '').toLowerCase();
+        let targetRime = null;
+        let familyMembers = [];
+        if (aiRimeData && aiRimeData.rime && aiRimeData.words && aiRimeData.words.length >= 3) {
+          targetRime = aiRimeData.rime.replace(/^-/, '');
+          familyMembers = aiRimeData.words.map((w) => w.toLowerCase().trim()).filter((w) => w && w !== targetWord);
+        }
+        if (!targetRime || familyMembers.length < 2) {
+          for (const [rime, members] of Object.entries(RIME_FAMILIES)) {
+            if (targetWord.endsWith(rime) && targetWord.length > rime.length) {
+              targetRime = rime;
+              familyMembers = members.filter((w) => w !== targetWord);
+              break;
+            }
+          }
+        }
+        if (!targetRime) {
+          const ending = targetWord.slice(-2);
+          if (RIME_FAMILIES[ending]) {
+            targetRime = ending;
+            familyMembers = RIME_FAMILIES[ending].filter((w) => w !== targetWord);
+          }
+        }
+        if (!targetRime) {
+          targetRime = 'at';
+          familyMembers = (RIME_FAMILIES['at'] || []).filter((w) => w !== targetWord);
+        }
+        return { rime: targetRime, members: familyMembers };
+      };
       const includeOrthographic = orthoSessionGoal > 0;
       const latestRequestedWord = React.useRef(null);
       const [isEditing, setIsEditing] = React.useState(false);
@@ -1471,6 +1505,8 @@
       const [isLoadingPhonemes, setIsLoadingPhonemes] = React.useState(false);
       const [phonemeError, setPhonemeError] = React.useState(null);
       const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
+      const isPlayingAudioRef = React.useRef(false);
+      React.useEffect(() => { isPlayingAudioRef.current = isPlayingAudio; }, [isPlayingAudio]);
       const [userAnswer, setUserAnswer] = React.useState("");
       const [showLetterHints, setShowLetterHints] = React.useState(false);
       React.useEffect(() => {
@@ -3909,6 +3945,15 @@
                   const playAllOptions = async () => {
                     const myRun = audioRunIdRef.current;
                     await new Promise((r) => setTimeout(r, 250));
+                    if (audioRunIdRef.current !== myRun) return;
+                    // Do not read options over still-playing instruction/target-word
+                    // audio (the target word is spoken as part of the item instructions).
+                    let _idleGuard = 0;
+                    while ((isPlayingAudioRef.current || currentActiveAudio.current) && _idleGuard < 6000) {
+                      if (audioRunIdRef.current !== myRun) return;
+                      await new Promise((r) => setTimeout(r, 100));
+                      _idleGuard += 100;
+                    }
                     if (audioRunIdRef.current !== myRun) return;
                     for (let i = 0; i < mixed_shuffled.length; i++) {
                       if (!isMountedRef.current || audioRunIdRef.current !== myRun) break;
@@ -8354,6 +8399,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 };
                 debugLog("📋 [Eager] Set sound sort options from preloaded:", targetWord);
               }
+              if (activityId === "word_families") {
+                const _wfr = resolveWordFamilyRime(targetWord, preloadedWord.rimeFamilyMembers);
+                wordFamilyRimeRef.current = { word: (targetWord || '').toLowerCase(), rime: _wfr.rime, members: _wfr.members };
+              }
             } else {
               debugLog(
                 "📦 Using local fallback for:",
@@ -8765,19 +8814,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             } else if (wordSoundsActivity === "word_families") {
               const targetWord = currentWordSoundsWord?.toLowerCase() || "";
-              let targetRime = "";
-              for (const rime of Object.keys(
-                typeof RIME_FAMILIES !== "undefined" ? RIME_FAMILIES : {},
-              )) {
-                if (
-                  targetWord.endsWith(rime) &&
-                  targetWord.length > rime.length
-                ) {
-                  targetRime = rime;
-                  break;
-                }
-              }
-              if (!targetRime) targetRime = targetWord.slice(-2);
+              const _wfPre = wordFamilyRimeRef.current;
+              const targetRime = (_wfPre && _wfPre.word === targetWord)
+                ? _wfPre.rime
+                : resolveWordFamilyRime(targetWord, wordSoundsPhonemes?.rimeFamilyMembers).rime;
               if (
                 typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
                 window.__ALLO_INSTRUCTION_AUDIO["inst_word_families"]
@@ -13317,54 +13357,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           case "word_families": {
             const targetWord = currentWordSoundsWord?.toLowerCase() || "";
             const aiRimeData = wordSoundsPhonemes?.rimeFamilyMembers;
-            let targetRime = null;
-            let familyMembers = [];
-            if (
-              aiRimeData &&
-              aiRimeData.rime &&
-              aiRimeData.words &&
-              aiRimeData.words.length >= 3
-            ) {
-              targetRime = aiRimeData.rime.replace(/^-/, "");
-              familyMembers = aiRimeData.words
-                .map((w) => w.toLowerCase().trim())
-                .filter((w) => w && w !== targetWord);
-              debugLog(
-                "🏠 Using AI-generated rime family:",
-                targetRime,
-                familyMembers,
-              );
-            }
-            if (!targetRime || familyMembers.length < 2) {
-              for (const [rime, members] of Object.entries(RIME_FAMILIES)) {
-                if (
-                  targetWord.endsWith(rime) &&
-                  targetWord.length > rime.length
-                ) {
-                  targetRime = rime;
-                  familyMembers = members.filter((w) => w !== targetWord);
-                  break;
-                }
-              }
-            }
-            if (!targetRime) {
-              const ending = targetWord.slice(-2);
-              if (RIME_FAMILIES[ending]) {
-                targetRime = ending;
-                familyMembers = RIME_FAMILIES[ending].filter(
-                  (w) => w !== targetWord,
-                );
-              }
-            }
-            if (!targetRime) {
-              targetRime = "at";
-              familyMembers = RIME_FAMILIES["at"].filter(
-                (w) => w !== targetWord,
-              );
-              warnLog(
-                `No rime family found for "${targetWord}", falling back to -at`,
-              );
-            }
+            const _wfPre = wordFamilyRimeRef.current;
+            const _wf = (_wfPre && _wfPre.word === targetWord) ? _wfPre : resolveWordFamilyRime(targetWord, aiRimeData);
+            let targetRime = _wf.rime;
+            let familyMembers = (_wf.members || []).slice();
             const rimeWordLen = targetWord.length;
             const rimeDifficulty =
               rimeWordLen <= 3 ? "easy" : rimeWordLen <= 4 ? "medium" : "hard";
