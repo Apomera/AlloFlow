@@ -6,8 +6,10 @@
 // the content-loss guard the rest of the pipeline relies on. _neutralizePromptFence breaks any run
 // of 3+ double-quotes / back-ticks with an (invisible) zero-width space so the untrusted text can no
 // longer reproduce the delimiter, WITHOUT substituting or dropping any character (fidelity).
-// Applied ONLY to judge prompts — transform prompts (whose output becomes the document) keep byte
-// fidelity and are protected against injected content loss by verifyChunkIntegrity instead.
+// Applied to judge prompts + the Tier-3 violation-line location HINTS (2026-06-16: document-derived
+// metadata that guides the fixer but never becomes output, so neutralizing it has no fidelity cost).
+// Transform prompts' actual CONTENT (whose output becomes the document) keeps byte fidelity and is
+// protected against injected content loss by verifyChunkIntegrity instead.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -84,8 +86,16 @@ describe('anti-drift: judge prompts are fence-hardened, transform prompts are NO
     expect(src.includes('function _neutralizePromptFence(s) {')).toBe(true);
   });
 
-  it('all 12 judge interpolation sites are wrapped (13 mentions = 1 def + 12 uses)', () => {
-    expect((src.match(/_neutralizePromptFence/g) || []).length).toBe(13);
+  it('all judge sites + the 2 Tier-3 location-hint sites are wrapped (15 mentions = 1 def + 12 judge + 2 hint)', () => {
+    expect((src.match(/_neutralizePromptFence/g) || []).length).toBe(15);
+  });
+
+  it('the Tier-3 violation-line location hints are neutralized (document-derived metadata, never echoed to output)', () => {
+    // These feed the surgical-diagnosis (judge) AND rewrite prompts as GUIDANCE — they are NOT the
+    // content being transformed, so neutralizing them carries no fidelity cost but defuses any fence
+    // run a malicious document's text could smuggle into the prompt via the resolved locator window.
+    expect(src.includes('_neutralizePromptFence(_win)')).toBe(true);
+    expect(src.includes('_neutralizePromptFence(String(i.location).substring(0, 80))')).toBe(true);
   });
 
   it('each judge site interpolates through the neutralizer', () => {
