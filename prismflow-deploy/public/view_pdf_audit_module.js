@@ -4612,7 +4612,17 @@ Return ONLY JSON:
         try {
           const el = document.getElementById(id);
           if (!el) {
-            addToast(t("pdf_audit.dashboard.section_unavailable") || "That section has nothing to show for this pass (its data didn\u2019t apply this round) \u2014 everything else is below.", "info");
+            const _names = { "allo-sec-verify": t("pdf_audit.dashboard.verify") || "Verification", "allo-sec-recovery": t("pdf_audit.dashboard.recovery") || "Recovery" };
+            const _nm = _names[id];
+            addToast(
+              _nm ? t("pdf_audit.dashboard.section_from_full_audit") || _nm + " is produced by a full audit \u2014 your latest pass was an incremental fix, so it wasn\u2019t regenerated. Run a fresh audit to refresh it; the rest of the results are below." : t("pdf_audit.dashboard.section_unavailable") || "That section has nothing to show for this pass \u2014 everything else is below.",
+              "info"
+            );
+            try {
+              const _fb = document.getElementById("allo-sec-downloads");
+              if (_fb) _fb.scrollIntoView({ behavior: "smooth", block: "start" });
+            } catch (_) {
+            }
             return;
           }
           if (el.tagName === "DETAILS") el.open = true;

@@ -5872,7 +5872,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           additions only, zero relocations). Chips scroll to section
                           anchors; details targets auto-open on jump. */}
                       {(() => {
-                        const _jump = (id) => { try { const el = document.getElementById(id); if (!el) { addToast(t('pdf_audit.dashboard.section_unavailable') || 'That section has nothing to show for this pass (its data didn’t apply this round) — everything else is below.', 'info'); return; } if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} };
+                        const _jump = (id) => {
+                          try {
+                            const el = document.getElementById(id);
+                            if (!el) {
+                              // Don't dead-end (#3, 2026-06-17). The Verification + Recovery reports are
+                              // produced by a FULL audit; an incremental Additional Sweep / Fix Remaining
+                              // (or the section-review flow) updates the document but doesn't regenerate
+                              // them, so the anchor isn't in the DOM. Explain honestly AND land the user on
+                              // the results that ARE present instead of leaving them on a bare toast.
+                              const _names = { 'allo-sec-verify': (t('pdf_audit.dashboard.verify') || 'Verification'), 'allo-sec-recovery': (t('pdf_audit.dashboard.recovery') || 'Recovery') };
+                              const _nm = _names[id];
+                              addToast(
+                                _nm
+                                  ? (t('pdf_audit.dashboard.section_from_full_audit') || (_nm + ' is produced by a full audit — your latest pass was an incremental fix, so it wasn’t regenerated. Run a fresh audit to refresh it; the rest of the results are below.'))
+                                  : (t('pdf_audit.dashboard.section_unavailable') || 'That section has nothing to show for this pass — everything else is below.'),
+                                'info'
+                              );
+                              try { const _fb = document.getElementById('allo-sec-downloads'); if (_fb) _fb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+                              return;
+                            }
+                            if (el.tagName === 'DETAILS') el.open = true;
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          } catch (_) {}
+                        };
                         const _vio = pdfFixResult.axeAudit ? (pdfFixResult.axeAudit.totalViolations || 0) : null;
                         const _chip = 'px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors whitespace-nowrap';
                         return (<>
