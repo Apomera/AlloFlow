@@ -5255,12 +5255,27 @@ var createDocPipeline = function(deps) {
         try {
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
           const page = await pdf.getPage(p);
-          const viewport = page.getViewport({ scale: 2.0 });
-          const canvas = document.createElement('canvas');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          const ctx = canvas.getContext('2d');
-          await _withTimeout(page.render({ canvasContext: ctx, viewport }).promise, 45000, 'page.render (OCR p' + p + ')');
+          // Render at 2x for OCR accuracy, bounded so a hung/slow render can't stall the pipeline.
+          // #4 fix (2026-06-17): the 45s timeout here used to SILENTLY BLANK a slow/large page (no
+          // text layer → "OCR arbitrarily skips that page"). Now a longer first budget AND, on
+          // timeout/failure, a single retry at a SMALLER scale — a page that hangs or is slow at 2x
+          // (huge canvas on a low-RAM device) usually renders fine at 1.25x, recovering a slightly
+          // lower-res OCR pass instead of dropping the page's text layer entirely. Still FULLY BOUNDED
+          // (every attempt is _withTimeout-wrapped → no unbounded await → the original hang fix holds).
+          let canvas = null, renderScale = 2.0;
+          for (const _sc of [2.0, 1.25]) {
+            const _vp = page.getViewport({ scale: _sc });
+            const _c = document.createElement('canvas');
+            _c.width = _vp.width; _c.height = _vp.height;
+            try {
+              await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 75000 : 40000, 'page.render (OCR p' + p + ' @' + _sc + 'x)');
+              canvas = _c; renderScale = _sc; break;
+            } catch (_rErr) {
+              try { _c.width = 0; _c.height = 0; } catch (_) {}
+              if (_sc >= 2) { try { warnLog('[Tesseract] page ' + p + ' render @2x failed (' + ((_rErr && _rErr.message) || _rErr) + ') — retrying @1.25x'); } catch (_) {} }
+              else throw _rErr; // both scales failed → fall to the per-page catch (recorded, not silent)
+            }
+          }
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
           // Tesseract.js v5 returns ONLY text by default; opt into the block/word
           // hierarchy (4th "output" arg) so we can place each word's invisible glyphs
@@ -5271,8 +5286,8 @@ var createDocPipeline = function(deps) {
           catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
           const data = (result && result.data) || {};
           const pageText = (data.text || '').trim();
-          const words = _collectOcrWords(data, 2.0); // normalize bboxes to PDF points (render scale 2×)
-          pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: viewport.width / 2.0, pageH: viewport.height / 2.0 });
+          const words = _collectOcrWords(data, renderScale); // normalize bboxes to PDF points (actual render scale)
+          pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: canvas.width / renderScale, pageH: canvas.height / renderScale });
           // Free the canvas so a 100-page scan doesn't balloon memory.
           canvas.width = 0; canvas.height = 0;
         } catch (pageErr) {
@@ -14954,6 +14969,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         autoRestore: _autoRestore,
         groundTruthCharCount: window.__lastGroundTruthCharCount || 0,
         groundTruthMethod: window.__lastGroundTruthMethod || null,
+        // Persist the OCR ground-truth page map (positioned word boxes) onto the RESULT, not just the
+        // transient window.__lastGroundTruthPageMap (reset at the start of every fix run @11706 and
+        // overwritten by the next document). Without this, a tagged PDF generated LATER — Compare's
+        // "Verify tagged", a re-download after another doc, a project restore — finds the global gone
+        // and produces a PDF with NO highlightable text layer (#4). createTaggedPdf already prefers
+        // fixResult.groundTruthPages over the global, so persisting it makes the layer survive every
+        // re-invocation. (Only present for the scanned/OCR path; null otherwise.)
+        groundTruthPages: (typeof window !== 'undefined' && Array.isArray(window.__lastGroundTruthPageMap)) ? window.__lastGroundTruthPageMap : null,
         verificationAudit: verification,
         axeAudit: axeResults,
         secondEngineAudit: eaResults,

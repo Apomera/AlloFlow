@@ -18,9 +18,12 @@ describe('pdf.js extraction/OCR awaits are timeboxed (anti-hang)', () => {
     expect(src).toContain("await _withTimeout(page.render({ canvasContext: ctx2d, viewport }).promise, 45000, 'page.render p' + pg)");
   });
 
-  it('the Tesseract OCR render path awaits are wrapped in _withTimeout', () => {
+  it('the Tesseract OCR render path awaits are wrapped in _withTimeout (with a bounded lower-scale retry)', () => {
     expect(src).toContain("await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (OCR)')");
-    expect(src).toContain("await _withTimeout(page.render({ canvasContext: ctx, viewport }).promise, 45000,");
+    // #4 (2026-06-17): the OCR render now tries 2x then retries at 1.25x — EACH attempt is still
+    // _withTimeout-wrapped (75s / 40s), so a slow/hung page is recovered at a smaller scale instead of
+    // silently blanked, and the await is never unbounded (the original hang fix still holds).
+    expect(src).toContain("await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 75000 : 40000,");
   });
 
   it('the mixed-page OCR render path awaits are wrapped in _withTimeout', () => {
