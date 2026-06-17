@@ -630,6 +630,37 @@ function _tableSemanticReadback(html, index) {
   } catch (e) { var _re = null; return _re; }
 }
 
+// Structure-aware table content-preservation gate (table refinement, 2026-06-17). The pipeline's
+// content gate is DOC-WIDE char count (coarse) — it can't tell a header-promotion (content preserved,
+// only tags changed) from an edit that scrambled or dropped cells. This compares the Nth table's CELL
+// TEXTS before vs after (multiset, span-collapsed) so a table edit can be PROVEN content-safe — visible
+// confidence now (the readback shows "✓ N cells preserved"), and the foundation a future merge/split/
+// AI slice can switch from report→BLOCK. Pure; DOMParser; assign-then-return for the integrity check.
+// Fail-OPEN on an unparseable table (checked:false) so a parse hiccup never blocks a legit edit — the
+// existing accept/revert stays the real safety net.
+function _tableContentPreserved(beforeHtml, afterHtml, index) {
+  var _cells = function(html) {
+    var out = [];
+    try {
+      var doc = new DOMParser().parseFromString(String(html), 'text/html');
+      var t = doc.querySelectorAll('table')[index || 0];
+      if (!t) return null;
+      var cs = t.querySelectorAll('td, th'); // <caption> excluded — it's metadata, not a cell
+      for (var i = 0; i < cs.length; i++) { var x = (cs[i].textContent || '').replace(/\s+/g, ' ').trim(); if (x) out.push(x); }
+    } catch (e) { return null; }
+    return out;
+  };
+  var b = _cells(beforeHtml), a = _cells(afterHtml);
+  if (b == null || a == null) { var _ru = { preserved: true, checked: false, reason: 'uncheckable' }; return _ru; }
+  var _bag = function(arr) { var m = {}; for (var i = 0; i < arr.length; i++) m[arr[i]] = (m[arr[i]] || 0) + 1; return m; };
+  var bb = _bag(b), ab = _bag(a), lost = [], added = [];
+  Object.keys(bb).forEach(function(k) { var d = bb[k] - (ab[k] || 0); for (var i = 0; i < d; i++) lost.push(k); });
+  Object.keys(ab).forEach(function(k) { var d = ab[k] - (bb[k] || 0); for (var i = 0; i < d; i++) added.push(k); });
+  var preserved = lost.length === 0 && added.length === 0;
+  var _r = { preserved: preserved, checked: true, beforeCount: b.length, afterCount: a.length, lost: lost.slice(0, 8), added: added.slice(0, 8), reason: preserved ? 'ok' : 'changed' };
+  return _r;
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -18954,7 +18985,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       const closePop = () => { try { if (pop) pop.remove(); } catch (_) {} pop = null; };
       const notify = () => { try { const w = idoc.defaultView; if (w && w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} };
       // Reuse the slice-1 string tools on the single table's HTML, then return the rebuilt table + readback.
-      const applyOp = (tableEl, op, arg) => {
+      const applyOp = (tableEl, op, arg, originalHtml) => {
         const wrapped = '<!DOCTYPE html><html><body>' + tableEl.outerHTML + '</body></html>';
         const reg = SURGICAL_TOOL_REGISTRY;
         let out = wrapped;
@@ -18966,7 +18997,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         } catch (_) { out = wrapped; }
         const tmp = idoc.createElement('div');
         tmp.innerHTML = String(out).replace(/^[\s\S]*?<body[^>]*>/i, '').replace(/<\/body>[\s\S]*$/i, '');
-        return { newTable: tmp.querySelector('table'), readback: _tableSemanticReadback(out, 0) };
+        // Structure-aware content check vs the ORIGINAL table (cell-level, not the coarse char gate).
+        const content = originalHtml ? _tableContentPreserved('<!DOCTYPE html><html><body>' + originalHtml + '</body></html>', out, 0) : null;
+        return { newTable: tmp.querySelector('table'), readback: _tableSemanticReadback(out, 0), content: content };
       };
       const openPop = (tableEl, anchorBtn) => {
         closePop();
@@ -18988,12 +19021,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             let arg = null;
             if (pair[1] === 'caption') { try { arg = (w.prompt && w.prompt('Caption text for this table:')) || ''; } catch (_) { arg = ''; } if (!arg) return; }
             if (_snapshot == null) _snapshot = _cur.outerHTML; // snapshot the ORIGINAL once
-            const res = applyOp(_cur, pair[1], arg);
+            const res = applyOp(_cur, pair[1], arg, _snapshot);
             if (res.newTable) { _cur.replaceWith(res.newTable); _cur = res.newTable; }
             if (res.readback) {
               readbackBox.style.display = 'block';
               readbackBox.style.color = res.readback.kind === 'layout' ? '#b91c1c' : '#3730a3';
-              readbackBox.textContent = '📊 ' + res.readback.text;
+              let _ctxt = '📊 ' + res.readback.text;
+              if (res.content && res.content.checked) _ctxt += (res.content.preserved ? '  ✓ All ' + res.content.afterCount + ' cells preserved.' : '  ⚠ Content changed (' + res.content.lost.length + ' lost) — Undo if wrong.');
+              readbackBox.textContent = _ctxt;
               actions.style.display = 'flex';
             }
           };
@@ -19407,8 +19442,19 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         var _tableTools = { fix_table_header_row: 1, fix_table_header_col: 1, fix_table_mark_layout: 1, fix_table_caption: 1, fix_th_scope: 1 };
         var _tAct = (parsed.actions || []).filter(function(a) { return a && _tableTools[a.tool]; }).pop();
         if (_tAct && resultHtml !== currentHtml) {
-          tableReadback = _tableSemanticReadback(resultHtml, (_tAct.params && _tAct.params.index) || 0);
-          if (tableReadback) onActivity({ text: '\uD83D\uDCCA ' + tableReadback.text, type: (tableReadback.kind === 'layout' ? 'error' : 'confirm'), time: ts() });
+          var _tIdx = (_tAct.params && _tAct.params.index) || 0;
+          tableReadback = _tableSemanticReadback(resultHtml, _tIdx);
+          if (tableReadback) {
+            // Structure-aware content check: prove the edit didn't drop/scramble any cell (the
+            // coarse doc-wide char gate can't see this). Visible confidence + merge/split foundation.
+            tableReadback.content = _tableContentPreserved(currentHtml, resultHtml, _tIdx);
+            onActivity({ text: '\uD83D\uDCCA ' + tableReadback.text, type: (tableReadback.kind === 'layout' ? 'error' : 'confirm'), time: ts() });
+            if (tableReadback.content && tableReadback.content.checked) {
+              onActivity(tableReadback.content.preserved
+                ? { text: '\u2713 Content preserved \u2014 all ' + tableReadback.content.afterCount + ' cell(s) intact.', type: 'score', time: ts() }
+                : { text: '\u26A0\uFE0F Table content CHANGED (' + tableReadback.content.lost.length + ' lost / ' + tableReadback.content.added.length + ' added) \u2014 review or Revert.', type: 'error', time: ts() });
+            }
+          }
         }
       } catch (_) {}
       var cmdAudit = await _miniAuditFix(currentHtml, resultHtml, onActivity, ts);

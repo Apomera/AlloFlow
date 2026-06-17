@@ -8395,6 +8395,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {pdfFixResult._lastTableReadback && pdfFixResult._lastTableReadback.text && (
                           <div className={'mt-1 px-2 py-1.5 rounded text-[11px] border ' + (pdfFixResult._lastTableReadback.kind === 'layout' ? 'bg-red-950/40 border-red-700/60 text-red-200' : 'bg-indigo-950/40 border-indigo-600/60 text-indigo-100')} role="status" aria-live="polite">
                             📊 <span className="font-bold">{pdfFixResult._lastTableReadback.kind === 'layout' ? (t('pdf_audit.expert.table_readback_layout') || 'Table marked as layout') : (t('pdf_audit.expert.table_readback') || 'How this table now reads')}:</span> {pdfFixResult._lastTableReadback.text} <span className="opacity-80">{t('pdf_audit.expert.table_readback_hint') || 'Keep it if that’s right, or Revert below.'}</span>
+                            {pdfFixResult._lastTableReadback.content && pdfFixResult._lastTableReadback.content.checked && (
+                              <div className={'mt-0.5 font-bold ' + (pdfFixResult._lastTableReadback.content.preserved ? 'text-emerald-300' : 'text-red-300')}>
+                                {pdfFixResult._lastTableReadback.content.preserved
+                                  ? ('✓ No content lost — all ' + pdfFixResult._lastTableReadback.content.afterCount + ' cells preserved.')
+                                  : ('⚠ Content changed: ' + pdfFixResult._lastTableReadback.content.lost.length + ' cell(s) lost, ' + pdfFixResult._lastTableReadback.content.added.length + ' added — review or Revert.')}
+                              </div>
+                            )}
                           </div>
                         )}
                         {/* Revert is hidden while a reading overlay (Bionic / Line Guide) is active, since

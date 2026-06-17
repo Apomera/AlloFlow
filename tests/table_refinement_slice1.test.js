@@ -88,7 +88,7 @@ describe('wiring: Workbench surfaces the readback, additive + revertible', () =>
     expect(src).toContain("'- fix_table_mark_layout: {index: N}");
   });
   it('processExpertCommand computes + returns tableReadback for a table op', () => {
-    expect(src).toContain('tableReadback = _tableSemanticReadback(resultHtml, (_tAct.params && _tAct.params.index) || 0)');
+    expect(src).toContain('tableReadback = _tableSemanticReadback(resultHtml, _tIdx)');
     expect(src).toContain('miniAudit: cmdAudit, tableReadback: tableReadback }');
   });
   it('the view renders the readback card and clears it on revert (so it stays keep-or-revert)', () => {

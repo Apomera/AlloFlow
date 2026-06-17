@@ -47,7 +47,7 @@ describe('#slice2 in-preview Refine-table affordance', () => {
   it('adds one Refine button per table + shows the semantic readback before Keep/Undo', () => {
     expect(src).toContain("btn.textContent = '🔧 Refine table'");
     expect(src).toContain('const tables = idoc.querySelectorAll(\'table\');');
-    expect(src).toContain("readbackBox.textContent = '📊 ' + res.readback.text");
+    expect(src).toContain("let _ctxt = '📊 ' + res.readback.text");
     expect(src).toContain("res.readback.kind === 'layout' ? '#b91c1c' : '#3730a3'"); // layout = red warning
   });
 });
