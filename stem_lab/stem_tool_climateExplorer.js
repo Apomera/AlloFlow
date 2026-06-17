@@ -2013,6 +2013,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
                 'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm today. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above pre-industrial. This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
             ),
+            // CL3: weather vs. climate — the sawtooth IS the teachable contrast
+            el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.22)', marginBottom: 12 } },
+              el('div', { style: { color: '#67e8f9', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '📏 Weather is not climate — you can see both in this curve'),
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
+                'The small up-and-down sawtooth is the seasons — Northern-Hemisphere plants pull CO₂ down each summer and release it each winter. That wiggle is like weather: short-term and noisy. The relentless climb underneath is climate: the decades-long trend. A cold winter, or even one cold year, is just a wiggle — it never reverses the trend. Climate is the long-term average of weather, usually measured over about 30 years.')
+            ),
             // Milestones list
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 10, marginBottom: 16 } },
               KEELING_MILESTONES.map(function(m) {
@@ -3988,9 +3994,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               stable:  { label: '🟢 Stable climate',  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Net forcing ≈ 0 W/m². Earth equilibrium.' },
               paradox: { label: '⚖️ Albedo paradox',  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Forcings partially offset. Climate slowly drifts.' }
             }[state];
-            return el('div', { style: { padding: 16, background: '#f8fafc', borderRadius: 12, border: '1px solid #cbd5e1' } },
-              el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#0891b2', margin: '0 0 6px 0' } }, '☀️ Radiative forcing discovery'),
-              el('p', { style: { fontSize: 12, color: '#475569', marginBottom: 10 } }, 'Sliders for albedo, cloud feedback, GHG forcing. Discrete 4-state climate regime. No score, no reveal.'),
+            return el('div', { style: { padding: 16, background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px solid rgba(148,163,184,0.2)' } },
+              el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9', margin: '0 0 6px 0' } }, '☀️ Radiative forcing discovery'),
+
+              // ── CL1: How the greenhouse effect actually works (mechanism + misconceptions) ──
+              el('div', { style: { background: 'rgba(8,15,30,0.35)', border: '1px solid rgba(34,211,238,0.2)', borderRadius: 10, padding: 12, marginBottom: 12 } },
+                el('p', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', margin: '0 0 8px 0' } }, '🌍 How the greenhouse effect actually works'),
+                el('svg', { viewBox: '0 0 320 160', width: '100%', style: { maxWidth: 380, display: 'block', margin: '0 auto 8px' }, role: 'img', 'aria-label': 'Energy-balance diagram: shortwave sunlight passes through the greenhouse-gas layer and warms the surface; the surface radiates infrared, some of which the gas layer absorbs and re-emits back downward, trapping heat.' },
+                  el('defs', null,
+                    el('marker', { id: 'fhSun', markerWidth: 7, markerHeight: 7, refX: 3, refY: 6, orient: 'auto' }, el('polygon', { points: '0,0 6,0 3,6', fill: '#facc15' })),
+                    el('marker', { id: 'fhIR', markerWidth: 7, markerHeight: 7, refX: 3, refY: 6, orient: 'auto' }, el('polygon', { points: '0,0 6,0 3,6', fill: '#fb923c' }))),
+                  el('rect', { x: 0, y: 0, width: 320, height: 160, fill: 'rgba(8,15,30,0.6)', rx: 8 }),
+                  el('rect', { x: 0, y: 44, width: 320, height: 28, fill: 'rgba(34,211,238,0.10)', stroke: 'rgba(34,211,238,0.4)' }),
+                  el('text', { x: 160, y: 62, fill: '#67e8f9', fontSize: 9, fontWeight: 700, textAnchor: 'middle' }, 'CO₂ · CH₄ · H₂O — greenhouse-gas layer'),
+                  el('rect', { x: 0, y: 140, width: 320, height: 20, fill: 'rgba(16,185,129,0.32)' }),
+                  el('text', { x: 160, y: 154, fill: '#d1fae5', fontSize: 9, fontWeight: 700, textAnchor: 'middle' }, 'Earth surface'),
+                  el('text', { x: 26, y: 18, fontSize: 15, textAnchor: 'middle' }, '☀️'),
+                  el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: '#facc15', strokeWidth: 2, markerEnd: 'url(#fhSun)' }),
+                  el('text', { x: 96, y: 36, fill: '#fde68a', fontSize: 8 }, 'sunlight passes through →'),
+                  el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: '#fb923c', strokeWidth: 2, markerEnd: 'url(#fhIR)' }),
+                  el('text', { x: 150, y: 100, fill: '#fdba74', fontSize: 8 }, 'some heat escapes'),
+                  el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: '#fb923c', strokeWidth: 2 }),
+                  el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '4 3', markerEnd: 'url(#fhIR)' }),
+                  el('text', { x: 262, y: 98, fill: '#fdba74', fontSize: 8 }, 'absorbed &'),
+                  el('text', { x: 262, y: 108, fill: '#fdba74', fontSize: 8 }, 're-emitted down')),
+                el('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, margin: '0 0 8px 0', fontStyle: 'italic' } }, 'Short-wave sunlight passes through the gases almost freely and warms the ground. The warm surface radiates long-wave infrared; greenhouse gases absorb it and re-radiate part back down. More gas → more re-radiation → a warmer surface. That is the GHG-forcing slider below.'),
+                el('div', { style: { display: 'grid', gap: 6 } },
+                  [{ m: 'It is NOT the ozone hole.', f: 'Ozone depletion (from CFCs) and the greenhouse effect are different problems. Healing the ozone layer does not stop CO₂ from trapping heat.' },
+                   { m: 'CO₂ does not block incoming sunlight.', f: 'Sunlight passes through it. CO₂ absorbs the OUTGOING infrared the warm surface emits — that is what traps heat.' },
+                   { m: 'The greenhouse effect itself is good.', f: 'Without it Earth would be about −18 °C. The problem is the ENHANCED effect: extra CO₂ from burning fossil fuels makes it too strong.' }].map(function (mc, i) {
+                    return el('div', { key: i, style: { background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 6, padding: '6px 8px' } },
+                      el('span', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5' } }, '✗ Myth: ' + mc.m + ' '),
+                      el('span', { style: { fontSize: 10.5, color: 'var(--allo-stem-text, #cbd5e1)' } }, mc.f));
+                  }))),
+
+              el('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Now experiment: sliders for albedo, cloud feedback, and GHG forcing drive a discrete 4-state climate regime. No score, no reveal.'),
               el('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
                 el('div', { style: { fontSize: 15, fontWeight: 900, color: sm.color } }, sm.label),
                 el('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
@@ -4001,7 +4039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                  { k: 'cloudFB', l: 'Cloud feedback (%)', mn: -50, mx: 50, st: 1 },
                  { k: 'ghg', l: 'GHG forcing (%)', mn: 0, mx: 100, st: 1 }].map(function(s) {
                   return el('div', { key: s.k },
-                    el('label', { htmlFor: 'fh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#0891b2', fontFamily: 'monospace' } }, iq[s.k])),
+                    el('label', { htmlFor: 'fh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, iq[s.k])),
                     el('input', { id: 'fh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                       style: { width: '100%' }, 'aria-label': s.l }));
@@ -4022,7 +4060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
               iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how albedo, cloud feedback, and GHGs jointly drive climate state.',
                 style: { width: '100%', minHeight: 60, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state climate marker; no temperature score; no reveal — by design.')
+              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Design note: discrete 4-state climate marker; no temperature score; no reveal — by design.')
             );
           })()
         )
