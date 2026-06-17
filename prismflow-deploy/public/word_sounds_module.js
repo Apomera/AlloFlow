@@ -1567,6 +1567,7 @@
       const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
       const [nextWordBuffer, setNextWordBuffer] = React.useState(null);
       const [decodingChoices, setDecodingChoices] = React.useState([]);
+      const [decodeDragOver, setDecodeDragOver] = React.useState(false);
       const lastWordForDecoding = React.useRef(null);
       const [isPrefetching, setIsPrefetching] = React.useState(false);
       const internalAudioCache = React.useRef(new Map());
@@ -13515,14 +13516,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const imgFor = (w) => { const lc = (w || "").toLowerCase(); const pe = (wordPool || []).find((p) => p.word === lc); return optionImages[w] || optionImages[lc] || (pe && pe.image) || null; };
             const dSrc = (img) => (typeof img === "string" && (img.startsWith("data:") || img.startsWith("http"))) ? img : ("data:image/png;base64," + img);
             const dAnyImg = dChoices.some((w) => imgFor(w));
+            const dCheck = (w) => checkAnswer((w || "").toLowerCase() === dWord.toLowerCase() ? "correct" : "incorrect", "correct");
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
-              /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, "Read the word, then tap its picture"),
-              /*#__PURE__*/ React.createElement("div", { className: "text-5xl font-black text-slate-800 tracking-wide capitalize" }, dWord),
+              /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, "Drag the picture onto the word \u2014 or tap the picture"),
+              /*#__PURE__*/ React.createElement("div", { onDragOver: (e) => { e.preventDefault(); if (!decodeDragOver) setDecodeDragOver(true); }, onDragLeave: () => setDecodeDragOver(false), onDrop: (e) => { e.preventDefault(); setDecodeDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) dCheck(_dw); }, className: "text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors " + (decodeDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-300 text-slate-800") }, dWord),
               (!dAnyImg && typeof callImagen !== "function")
                 ? /*#__PURE__*/ React.createElement("p", { className: "text-amber-600 text-sm font-semibold" }, "Picture matching needs image generation (open in Canvas).")
                 : /*#__PURE__*/ React.createElement("div", { className: "grid grid-cols-2 gap-4 max-w-md w-full" },
-                    ...dChoices.map((w, i) => { const img = imgFor(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, onClick: () => checkAnswer((w || "").toLowerCase() === dWord.toLowerCase() ? "correct" : "incorrect", "correct"), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2", "aria-label": "Picture choice " + (i + 1) },
-                      img ? /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: "Picture choice " + (i + 1), className: "w-full h-full object-contain rounded-xl" }) : /*#__PURE__*/ React.createElement("span", { className: "text-slate-400 text-xs italic" }, "preparing picture\u2026"));
+                    ...dChoices.map((w, i) => { const img = imgFor(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": "Picture choice " + (i + 1) },
+                      img ? /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: "Picture choice " + (i + 1), draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }) : /*#__PURE__*/ React.createElement("span", { className: "text-slate-400 text-xs italic" }, "preparing picture\u2026"));
                     }),
                   ),
             );
