@@ -14,6 +14,23 @@
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  // WCAG 4.1.3: announce dynamic outcomes to screen readers. Prefer the
+  // project-standard host announcer (it owns its own polite region); otherwise
+  // write to the dedicated region created above. Without this, correct/incorrect
+  // feedback was visual + audio chime only and never reached AT users.
+  function wsAnnounce(message) {
+    if (!message) return;
+    try {
+      if (typeof window !== 'undefined' && typeof window.alloAnnounce === 'function') {
+        window.alloAnnounce(String(message));
+        return;
+      }
+      if (typeof document !== 'undefined') {
+        var region = document.getElementById('allo-live-word-sounds');
+        if (region) { region.textContent = ''; region.textContent = String(message); }
+      }
+    } catch (e) { /* announcement is best-effort */ }
+  }
 
   // WCAG 2.1 AA: Accessibility CSS injection
   if (!document.getElementById('ws-a11y-css')) {
@@ -1595,8 +1612,10 @@
         };
         const instrKey = activityInstructionMap[wordSoundsActivity];
         if (!instrKey) return;
+        let instrCancelled = false;
         const playInstr = async () => {
           await new Promise((r) => setTimeout(r, 600));
+          if (instrCancelled) return;
           if (
             typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
             window.__ALLO_INSTRUCTION_AUDIO[instrKey]
@@ -1610,6 +1629,8 @@
               const audio = new Audio(
                 window.__ALLO_INSTRUCTION_AUDIO[instrKey],
               );
+              instructionAudioRef.current = audio;
+              if (instrCancelled) { try { audio.pause(); } catch (e) {} return; }
               audio.playbackRate = 0.95;
               await new Promise((res, rej) => {
                 audio.onended = res;
@@ -1654,6 +1675,13 @@
           }
         };
         playInstr();
+        return () => {
+          instrCancelled = true;
+          if (instructionAudioRef.current) {
+            try { instructionAudioRef.current.pause(); } catch (e) {}
+            instructionAudioRef.current = null;
+          }
+        };
       }, [wordSoundsActivity]);
       const audioCache = providedAudioCache || internalAudioCache;
       const ttsQueue = React.useRef(Promise.resolve());
@@ -1711,6 +1739,7 @@
       const submissionLockRef = React.useRef(false);
       const sessionWordResults = React.useRef([]);
       const feedbackAudioRef = React.useRef(null);
+      const instructionAudioRef = React.useRef(null);
       const isolationPositionRef = React.useRef(null);
       const lastWordForIsolation = React.useRef(null);
       const lastWordForRhyming = React.useRef(null);
@@ -2110,7 +2139,12 @@
         console.log(
           `[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: ${initialShowReviewPanel}, activity: ${wordSoundsActivity}`,
         );
-        return () => console.log("[WS-DBG] WordSoundsModal UNMOUNTED");
+        return () => {
+          // Flip the mount flag so the ~25 `if (isMountedRef.current)` guards on
+          // post-await / setTimeout setState actually fire after the modal closes.
+          isMountedRef.current = false;
+          console.log("[WS-DBG] WordSoundsModal UNMOUNTED");
+        };
       }, []);
       React.useEffect(() => {
         console.log(
@@ -2309,10 +2343,18 @@
             window.__ALLO_PHONEME_AUDIO_BANK[text]
           ) {
             debugLog("⚡ Playing internal bank audio for:", text);
+            if (currentActiveAudio.current) {
+              try { currentActiveAudio.current.pause(); currentActiveAudio.current.currentTime = 0; } catch (e) {}
+              currentActiveAudio.current = null;
+            }
             const audio = new Audio(window.__ALLO_PHONEME_AUDIO_BANK[text]);
+            // Register so an activity switch can stop it (was unmanaged -> bled
+            // into the next activity until it finished or hit the 5s timeout).
+            currentActiveAudio.current = audio;
+            audio.onpause = () => { if (currentActiveAudio.current === audio) currentActiveAudio.current = null; };
             if (playImmediately) {
               return new Promise((resolve) => {
-                audio.onended = () => resolve();
+                audio.onended = () => { if (currentActiveAudio.current === audio) currentActiveAudio.current = null; resolve(); };
                 audio.onerror = () => resolve();
                 setTimeout(resolve, 5000);
                 audio.play().catch((e) => {
@@ -8348,6 +8390,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               try { audio.pause(); } catch (e) { console.warn("[WordSounds] silent catch:", e); }
             });
           }
+          // Feedback + instruction clips are standalone Audio objects not in the
+          // maps above; stop them too so they don't bleed into the next activity.
+          if (feedbackAudioRef.current) {
+            try { feedbackAudioRef.current.pause(); } catch (e) {}
+            feedbackAudioRef.current = null;
+          }
+          if (instructionAudioRef.current) {
+            try { instructionAudioRef.current.pause(); } catch (e) {}
+            instructionAudioRef.current = null;
+          }
           setTimeout(() => { audioCancelledRef.current = false; }, 50);
           // === End audio cleanup ===
           setWordSoundsActivity(activityId);
@@ -9372,6 +9424,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ts("word_sounds.fb_try_again") ||
                     "Try again! Listen closely... 👂",
                 });
+                wsAnnounce(ts("word_sounds.sr_try_again") || "Try again");
                 try {
                   if (
                     typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
@@ -9832,14 +9885,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 }
               }
             }
+            const _resultMsg = isCorrect
+              ? ts("word_sounds.feedback_correct") + streakCelebration
+              : ts("word_sounds.fb_nice_try") ||
+              `Nice try! The answer was "${expectedAnswer}".`;
             setWordSoundsFeedback?.({
               isCorrect,
               streak: newStreak,
-              message: isCorrect
-                ? ts("word_sounds.feedback_correct") + streakCelebration
-                : ts("word_sounds.fb_nice_try") ||
-                `Nice try! The answer was "${expectedAnswer}".`,
+              message: _resultMsg,
             });
+            // Announce the same result text to screen readers (WCAG 4.1.3).
+            wsAnnounce(_resultMsg);
             if (!isCorrect && expectedAnswer && wordSoundsActivity !== "decoding") {
               setTimeout(() => {
                 if (isMountedRef.current) handleAudio(expectedAnswer);
@@ -13879,23 +13935,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       .map((r) => `  ${r.correct ? "\u2713" : "\u2717"} ${r.word}`)
                       .join("\n");
                     const summary =
-                      `Home Practice Summary \u2014 ${date}\n` +
-                      `Activity: ${actLabel}\n` +
-                      `Score: ${wordSoundsScore.correct}/${wordSoundsScore.total} (${accuracy}%)\n` +
-                      (wordLines ? `\nWords practiced:\n${wordLines}` : "");
+                      (ts("word_sounds.parent_summary_title", { date }) || `Home Practice Summary (${date})`) + "\n" +
+                      (ts("word_sounds.parent_summary_activity", { activity: actLabel }) || `Activity: ${actLabel}`) + "\n" +
+                      (ts("word_sounds.parent_summary_score", { correct: wordSoundsScore.correct, total: wordSoundsScore.total, pct: accuracy }) || `Score: ${wordSoundsScore.correct}/${wordSoundsScore.total} (${accuracy}%)`) +
+                      (wordLines ? "\n\n" + (ts("word_sounds.parent_summary_words") || "Words practiced:") + "\n" + wordLines : "");
                     navigator.clipboard
                       .writeText(summary)
                       .then(() =>
-                        addToast?.("\uD83D\uDCCB Summary copied! Paste it into a message for the teacher.", "success"),
+                        addToast?.("\uD83D\uDCCB " + (ts("word_sounds.parent_summary_copied") || "Summary copied! Paste it into a message for the teacher."), "success"),
                       )
                       .catch(() =>
-                        addToast?.("Copy failed \u2014 try long-pressing the summary.", "error"),
+                        addToast?.(ts("word_sounds.parent_summary_copy_failed") || "Copy failed, try long-pressing the summary.", "error"),
                       );
                   },
                   className:
                     "w-full py-4 bg-amber-400 text-amber-900 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform",
                 },
-                "\uD83D\uDCCB Copy Summary for Teacher",
+                "\uD83D\uDCCB " + (ts("word_sounds.parent_copy_button") || "Copy Summary for Teacher"),
               ),
               sessionWordResults.current.filter((r) => !r.correct).length > 0 &&
                 /*#__PURE__*/ React.createElement(
