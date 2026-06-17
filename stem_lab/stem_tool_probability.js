@@ -129,6 +129,10 @@ window.StemLab = window.StemLab || {
       // ── Tool body (probability) ──
       return (function() {
 var d = (labToolData.probability) || {};
+          // Default the experiment mode so the first render isn't a dead state (no active mode
+          // in the selector + a bare "?" result card). Idempotent per render: re-applies whenever
+          // the bucket has no mode yet, including before the user's first interaction.
+          if (!d.mode) d.mode = 'coin';
           // Sync persistent mute state to module flag read by probTone
           window._probabilityMuted = !!d.muted;
 
@@ -2410,47 +2414,35 @@ var d = (labToolData.probability) || {};
 
               ),
 
-              React.createElement("svg", { viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
-
-                React.createElement("line", { x1: 0, y1: 100 - convExpected, x2: 400, y2: 100 - convExpected, stroke: "#22c55e", strokeWidth: 1, strokeDasharray: "4 2" }),
-
-                React.createElement("text", { x: 2, y: 100 - convExpected - 3, fill: "#22c55e", style: { fontSize: '7px', fontWeight: 'bold' } }, convExpected.toFixed(0) + '% expected'),
-
-                React.createElement("polyline", {
-
-                  fill: "none", stroke: "#8b5cf6", strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px rgba(139,92,246,0.55))' },
-
-                  points: convHist.map(function (h, i) {
-
-                    var x = (i / Math.max(convHist.length - 1, 1)) * 400;
-
-                    var y = 100 - Math.min(h.pct, 100);
-
-                    return x + ',' + y;
-
-                  }).join(' ')
-
-                }),
-
-                convHist.slice(-5).map(function (h, i) {
-
-                  var idx = convHist.length - 5 + i;
-
-                  if (idx < 0) return null;
-
-                  var x = (idx / Math.max(convHist.length - 1, 1)) * 400;
-
-                  var y = 100 - Math.min(h.pct, 100);
-
-                  return React.createElement("circle", { key: i, cx: x, cy: y, r: 2.5, fill: "#8b5cf6" });
-
-                }),
-
-                React.createElement("line", { x1: 0, y1: 100, x2: 400, y2: 100, stroke: "#e2e8f0", strokeWidth: 1 }),
-
-                React.createElement("text", { x: 380, y: 97, fill: "#94a3b8", style: { fontSize: '7px' }, textAnchor: "end" }, d.trials + ' trials')
-
-              )
+              (function () {
+                // Auto-scale the y-window around the expected value so the Law of Large Numbers is
+                // visible even for low-probability outcomes — a d20's 5% or a two-dice 2.8% line used
+                // to hug the bottom of the fixed 0–100 axis. Center a band on the expected value and
+                // map [yLo, yHi] onto the SVG's 0–100 height.
+                var _pad = Math.max(convExpected * 1.2, 12);
+                var yLo = Math.max(0, convExpected - _pad);
+                var yHi = Math.min(100, convExpected + _pad);
+                var _span = (yHi - yLo) || 1;
+                var ymap = function (pct) { var c = Math.max(yLo, Math.min(yHi, pct)); return 100 - ((c - yLo) / _span) * 100; };
+                return React.createElement("svg", { viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
+                  React.createElement("line", { x1: 0, y1: ymap(convExpected), x2: 400, y2: ymap(convExpected), stroke: "#22c55e", strokeWidth: 1, strokeDasharray: "4 2" }),
+                  React.createElement("text", { x: 2, y: Math.max(8, ymap(convExpected) - 3), fill: "#22c55e", style: { fontSize: '7px', fontWeight: 'bold' } }, convExpected.toFixed(1) + '% expected'),
+                  React.createElement("polyline", {
+                    fill: "none", stroke: "#8b5cf6", strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px rgba(139,92,246,0.55))' },
+                    points: convHist.map(function (h, i) { var x = (i / Math.max(convHist.length - 1, 1)) * 400; return x + ',' + ymap(h.pct); }).join(' ')
+                  }),
+                  convHist.slice(-5).map(function (h, i) {
+                    var idx = convHist.length - 5 + i;
+                    if (idx < 0) return null;
+                    var x = (idx / Math.max(convHist.length - 1, 1)) * 400;
+                    return React.createElement("circle", { key: i, cx: x, cy: ymap(h.pct), r: 2.5, fill: "#8b5cf6" });
+                  }),
+                  React.createElement("text", { x: 2, y: 8, fill: "#94a3b8", style: { fontSize: '6px' } }, yHi.toFixed(0) + '%'),
+                  React.createElement("text", { x: 2, y: 99, fill: "#94a3b8", style: { fontSize: '6px' } }, yLo.toFixed(0) + '%'),
+                  React.createElement("line", { x1: 0, y1: 100, x2: 400, y2: 100, stroke: "#e2e8f0", strokeWidth: 1 }),
+                  React.createElement("text", { x: 380, y: 97, fill: "#94a3b8", style: { fontSize: '7px' }, textAnchor: "end" }, d.trials + ' trials')
+                );
+              })()
 
             ),
 
@@ -2540,7 +2532,12 @@ var d = (labToolData.probability) || {};
 
                       : d.trials < 500 ? 'At ' + d.trials + ' trials, you\'re witnessing the Central Limit Theorem in action! The sampling distribution of the mean approaches a normal (bell) curve shape, regardless of the underlying distribution. This is why statisticians love large samples.'
 
-                        : 'With ' + d.trials + '+ trials, you can calculate confidence intervals! The 95% confidence interval for the true probability is approximately observed% \u00B1 ' + (1.96 * Math.sqrt(0.25 / d.trials) * 100).toFixed(1) + '%. This is how pollsters predict elections and scientists validate hypotheses.'
+                        : (function () {
+                            var _mx = 0; for (var _k in counts) { if (counts[_k] > _mx) _mx = counts[_k]; }
+                            var _ph = (d.trials > 0 && _mx > 0) ? (_mx / d.trials) : 0.5;          // observed proportion p\u0302 of the most common outcome
+                            var _moe = 1.96 * Math.sqrt(_ph * (1 - _ph) / d.trials) * 100;          // margin scales with p\u0302(1\u2212p\u0302), NOT a fixed 0.25
+                            return 'With ' + d.trials + '+ trials you can find a 95% confidence interval. For the most common outcome (observed ' + (_ph * 100).toFixed(0) + '%), the true probability is within about \u00B1' + _moe.toFixed(1) + ' percentage points: 95% CI = p\u0302 \u00B1 1.96\u221A(p\u0302(1\u2212p\u0302)/n). The margin shrinks as trials grow and is widest near a 50/50 split \u2014 this is the \u201Cmargin of error\u201D pollsters report.';
+                          })()
 
               )
 
@@ -2548,7 +2545,7 @@ var d = (labToolData.probability) || {};
 
             // â”€â”€ Marble Bag: Theoretical vs Observed Comparison Histogram â”€â”€
 
-            d.mode === 'marbleBag' && d.trials >= 5 && React.createElement("div", { className: "rounded-xl p-4 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
+            ['coin', 'dice', 'dice2', 'spinner', 'sports', 'custom', 'marbleBag'].indexOf(d.mode) >= 0 && d.trials >= 5 && React.createElement("div", { className: "rounded-xl p-4 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
 
               React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-3", style: { color: _accent } }, "\uD83D\uDCCA Theoretical vs Observed Comparison"),
 
@@ -2596,7 +2593,7 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "flex-1" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " draws)"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-center mb-2", style: { color: isDark || isContrast ? '#86efac' : '#16a34a' } }, "\uD83D\uDD2C Observed (" + d.trials + " trials)"),
 
                   React.createElement("div", { className: "space-y-1.5" },
 

@@ -2038,7 +2038,7 @@ const d = labToolData.waterCycle || {};
                       '3-5': 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water. About 90% of evaporation comes from oceans.',
                       '6-8': 'Solar radiation provides thermal energy that increases water molecule kinetic energy until they escape the liquid surface as vapor. The rate depends on temperature, humidity, wind speed, and surface area. Oceans contribute ~90% of atmospheric moisture.',
                       '9-12': 'Evaporation is governed by the Clausius-Clapeyron relation: saturation vapor pressure increases ~7% per \u00B0C. The latent heat of vaporization is 2.45 MJ/kg at 20\u00B0C. Penman-Monteith equations model evapotranspiration using net radiation, soil heat flux, and aerodynamic resistance.' },
-              funFact: { 'K-2': 'If all the water in clouds fell at once, it would only cover the ground with a tiny layer  -  thinner than your thumb!',
+              funFact: { 'K-2': 'All the water floating in the sky as invisible vapor would only cover the ground about as deep as your fingertip  -  the sky holds just a tiny bit of Earth\'s water at one time!',
                          '3-5': 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!',
                          '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time  -  but that is only 0.001% of all water on Earth.',
                          '9-12': 'Global mean evaporation is ~1,200 mm/yr over oceans. The Bowen ratio (sensible/latent heat) determines partitioning of surface energy into evaporation vs heating.' } },
@@ -2093,6 +2093,17 @@ const d = labToolData.waterCycle || {};
           // Resolve grade-tiered content
           var selDesc = sel ? (typeof sel.desc === 'object' ? (sel.desc[gradeBand] || sel.desc['3-5']) : sel.desc) : '';
           var selFunFact = sel ? (typeof sel.funFact === 'object' ? (sel.funFact[gradeBand] || sel.funFact['3-5']) : sel.funFact) : '';
+          // Phase-change tag per stage — ties each process to the state change driving it (the
+          // core standards-level idea). "State:" where no phase change occurs (gravity/storage).
+          var STAGE_PHASE = {
+            evaporation:   '🔥→💨 Liquid → gas — absorbs heat energy (the sun powers this)',
+            condensation:  '💨→💧 Gas → liquid — releases the stored heat back to the air',
+            precipitation: '💧/❄ Liquid (rain) or solid (snow/hail) falls — gravity, not a phase change',
+            collection:    '💧 Liquid stored in oceans, lakes & rivers (and solid as ice)',
+            transpiration: '🌿→💨 Liquid → gas — water vapor exits the leaves',
+            infiltration:  '💧 Liquid soaking down into soil and rock — no phase change'
+          };
+          var selPhase = sel ? STAGE_PHASE[sel.id] : '';
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -2236,7 +2247,7 @@ const d = labToolData.waterCycle || {};
             // Science facts shown at each transition
             var JOURNEY_FACTS = {
               ocean:       'You are in the ocean! 97% of Earth\'s water is here. The sun heats you up...',
-              evaporating: 'Solar energy excites your molecules! At 100\u00B0C you become water vapor  -  invisible gas rising upward.',
+              evaporating: 'Solar energy gives some surface molecules enough speed to escape as invisible water vapor  -  no boiling needed! Evaporation happens at everyday temperatures, fastest when it is warm, sunny, and windy.',
               condensing:  'As you rise, temperature drops ~6.5\u00B0C per 1000m. You condense onto tiny dust particles to form a cloud droplet!',
               precipitating:'Cloud droplets collide and merge. When you reach ~0.5mm, gravity overcomes air resistance  -  you fall!',
               ground_choice:'You hit the ground! Water can take 3 paths from here. Where will you go?',
@@ -3045,6 +3056,13 @@ const d = labToolData.waterCycle || {};
 
 
 
+              // ── Active-stage emphasis ──
+              // The selected process's particles stay full strength while the others fade, so the
+              // animated diagram actually ISOLATES the stage the student chose instead of showing
+              // every process at once. Reads the same dataset.activeStage the label loop uses.
+              var _activeStage = canvasEl.dataset.activeStage || 'evaporation';
+              var _emph = function (id) { return _activeStage === id ? 1 : 0.25; };
+
               // ── Evaporation particles ──
 
               for (var epi = 0; epi < evapPs.length; epi++) {
@@ -3061,7 +3079,7 @@ const d = labToolData.waterCycle || {};
 
                 ctx.beginPath(); ctx.arc(ep.x * dpr, ep.y * dpr, ep.size * dpr, 0, Math.PI * 2);
 
-                var epAlpha = 0.2 + 0.2 * Math.sin(ep.phase);
+                var epAlpha = (0.2 + 0.2 * Math.sin(ep.phase)) * _emph('evaporation');
 
                 ctx.fillStyle = 'rgba(251,191,36,' + epAlpha + ')';
 
@@ -3087,7 +3105,7 @@ const d = labToolData.waterCycle || {};
 
                 ctx.beginPath(); ctx.arc(tp.x * dpr, tp.y * dpr, tp.size * dpr, 0, Math.PI * 2);
 
-                ctx.fillStyle = 'rgba(74,222,128,' + (0.2 + Math.sin(tp.phase) * 0.15) + ')';
+                ctx.fillStyle = 'rgba(74,222,128,' + ((0.2 + Math.sin(tp.phase) * 0.15) * _emph('transpiration')) + ')';
 
                 ctx.fill();
 
@@ -3113,7 +3131,7 @@ const d = labToolData.waterCycle || {};
 
                 }
 
-                ctx.strokeStyle = 'rgba(59,130,246,' + (0.3 + Math.sin(rr.phase + tick * 0.05) * 0.2) + ')';
+                ctx.strokeStyle = 'rgba(59,130,246,' + ((0.3 + Math.sin(rr.phase + tick * 0.05) * 0.2) * _emph('precipitation')) + ')';
 
                 ctx.lineWidth = 1.5 * dpr;
 
@@ -3165,7 +3183,7 @@ const d = labToolData.waterCycle || {};
 
                 ctx.beginPath(); ctx.arc(ip.x * dpr, ip.y * dpr, 1.5 * dpr, 0, Math.PI * 2);
 
-                ctx.fillStyle = 'rgba(59,130,246,0.2)';
+                ctx.fillStyle = 'rgba(59,130,246,' + (0.2 * _emph('infiltration')) + ')';
 
                 ctx.fill();
 
@@ -3851,6 +3869,7 @@ const d = labToolData.waterCycle || {};
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
+                  d.journeyState === 'complete' && React.createElement("p", { className: "text-[11px] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years."),
                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
                     React.createElement("button", { "aria-label": "Choose River Runoff path (shortcut: R)",
                       onClick: function() {
@@ -3939,6 +3958,8 @@ const d = labToolData.waterCycle || {};
 
               React.createElement("p", { className: "text-sm leading-relaxed mb-2 " + (isDark ? "text-slate-300" : "text-slate-600") }, selDesc),
 
+              selPhase && React.createElement("div", { className: "rounded-lg p-2 mb-2 border text-[11px] font-semibold " + (isDark ? "bg-cyan-950/40 border-cyan-900/50 text-cyan-200" : "bg-cyan-50 border-cyan-200 text-cyan-800") }, selPhase),
+
               selFunFact && React.createElement("div", { className: "rounded-lg p-2 border " + (isDark ? "bg-amber-950/40 border-amber-900/50 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-700") },
 
                 React.createElement("p", { className: "text-[11px]" }, "\uD83D\uDCA1 " + selFunFact)
@@ -3991,8 +4012,8 @@ const d = labToolData.waterCycle || {};
                 var evapRate = Math.max(0, (s2 * 0.5 + Math.max(0, t3) / 30) * (0.8 + w2 * 0.2));
                 var precipType = t3 < -5 ? '\u2744\uFE0F Snow' : t3 < 2 ? '\uD83E\uDEE7 Sleet' : t3 > 30 ? '\u26A1 Storm' : '\uD83C\uDF27 Rain';
                 var runoffPct = Math.min(95, Math.max(5, 30 + (t3 > 0 ? t3 * 0.8 : 0) + w2 * 8));
-                var gwRecharge = Math.max(2, 100 - runoffPct - evapRate * 15);
-                return React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+                var gwRecharge = Math.max(0, 100 - runoffPct); // true partition: of rain reaching the ground, runoff + infiltration = 100% (water is conserved, just redirected)
+                return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-4 gap-2" },
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
                     React.createElement("p", { className: "text-lg font-bold text-amber-500" }, (evapRate * 100).toFixed(0) + "%"),
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, "Evaporation")
@@ -4009,6 +4030,8 @@ const d = labToolData.waterCycle || {};
                     React.createElement("p", { className: "text-lg font-bold text-emerald-500" }, gwRecharge.toFixed(0) + "%"),
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, "GW Recharge")
                   )
+                  ),
+                  React.createElement("p", { className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "💧 Water is conserved — runoff + what soaks in ≈ 100% of the rain reaching the ground. None disappears; it just takes different paths back to the sea.")
                 );
               })()
             ),

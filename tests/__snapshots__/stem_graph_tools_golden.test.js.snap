@@ -123,12 +123,12 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for probability 1`] = `
 {
   "buttons": 31,
-  "circles": 0,
+  "circles": 1,
   "inputs": 4,
-  "lengthBucket": 67,
+  "lengthBucket": 69,
   "paths": 0,
-  "sha": "433817beff269655",
-  "svgs": 0,
+  "sha": "1dbedd28b928bf48",
+  "svgs": 1,
 }
 `;
 
