@@ -2105,6 +2105,44 @@ function PdfAuditView(props) {
     if (/focus|tab.*order/i.test(s)) return 'Bad focus order means tabbing through the page jumps around unpredictably — keyboard users can\'t complete forms or follow the reading order.';
     return null;
   };
+  // ── Per-issue locator UI (2026-06-16): turn a remaining issue's anchor into a routable action. ──
+  // Prefer the resolver's vetted-unique snippet (issue.locator.kind==='exact'); else the AI's raw
+  // location anchor; a document-level or page-only anchor has no precise spot in the HTML preview.
+  const _issueAnchor = (issue) => {
+    const loc = issue && issue.locator;
+    if (loc && loc.kind === 'exact' && loc.snippet) return String(loc.snippet);
+    const raw = issue && typeof issue.location === 'string' ? issue.location.trim() : '';
+    if (!raw || /^document$/i.test(raw) || /^page\s+\d+$/i.test(raw)) return '';
+    return raw;
+  };
+  // Click-to-jump: find the anchor's verbatim text in the LIVE preview (resolved against the current
+  // DOM, so it's correct even after edits) and scroll + highlight the element. Honest: no precise
+  // anchor → tell the user rather than guessing.
+  const _jumpToIssue = (issue) => {
+    const anchor = _issueAnchor(issue);
+    if (!anchor || anchor.length < 8) { addToast(t('pdf_audit.issue.no_jump') || 'No precise spot for this one — it’s document-level or couldn’t be pinpointed.', 'info'); return; }
+    const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+    if (!d || !d.body) { addToast(t('pdf_audit.issue.preview_gone') || 'Open the preview to jump to an issue.', 'info'); return; }
+    const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+    const needle = norm(anchor);
+    let found = null;
+    try {
+      const w = d.createTreeWalker(d.body, NodeFilter.SHOW_TEXT, null);
+      let node; while ((node = w.nextNode())) { if (norm(node.textContent).indexOf(needle) !== -1) { found = node.parentElement; break; } }
+      if (!found) { const blocks = d.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote,caption,a'); for (const b of blocks) { if (norm(b.textContent).indexOf(needle) !== -1) { found = b; break; } } }
+    } catch (_) {}
+    if (!found) { addToast(t('pdf_audit.issue.spot_moved') || 'Couldn’t find that spot in the current preview (the text may have changed).', 'info'); return; }
+    try { found.scrollIntoView({ behavior: 'smooth', block: 'center' }); const prev = found.style.outline; found.style.outline = '3px solid #d97706'; found.style.outlineOffset = '2px'; setTimeout(() => { try { found.style.outline = prev; found.style.outlineOffset = ''; } catch (_) {} }, 2500); } catch (_) {}
+  };
+  // Bridge to the Expert Workbench: prefill a targeted fix command (carrying the precise anchor when
+  // there is one), open + scroll to it. Mirrors the tag-inspector 🛠 bridge.
+  const _issueToWorkbench = (issue) => {
+    const anchor = _issueAnchor(issue);
+    const where = anchor ? (' at "' + anchor.slice(0, 60) + '"') : '';
+    try { setExpertCommandInput('Fix this WCAG ' + (issue.wcag || '') + ' issue' + where + ': ' + (issue.issue || '')); } catch (_) {}
+    try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
+    addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
+  };
   // Map a WCAG rule number to its W3C Understanding page slug.
   const _wcagUnderstandingUrl = (wcag) => {
     const map = {
@@ -6065,7 +6103,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Remaining Issues ({pdfFixResult.verificationAudit.issues.length})</div>
                               {pdfFixResult.verificationAudit.issues.map((issue, i) => (
-                                <div key={i} className="text-[11px] text-amber-800 mb-0.5">• {issue.issue} <span className="text-amber-500">({issue.wcag})</span></div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-amber-800 mb-1">
+                                  <span className="flex-1 leading-snug">• {issue.issue} <span className="text-amber-500">({issue.wcag})</span></span>
+                                  {_issueAnchor(issue) && (
+                                    <button onClick={() => _jumpToIssue(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + issue.issue}>🔎 {t('pdf_audit.issue.find') || 'Find'}</button>
+                                  )}
+                                  <button onClick={() => _issueToWorkbench(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + issue.issue}>🛠</button>
+                                </div>
                               ))}
                             </div>
                           )}
