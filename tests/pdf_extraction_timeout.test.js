@@ -49,6 +49,15 @@ describe('pdf.js extraction/OCR awaits are timeboxed (anti-hang)', () => {
     expect(src).toContain("await _withTimeout(callImagen(");
   });
 
+  it('the Unicode-font fetch in createTaggedPdf is AbortController-bounded (non-Latin scanned-doc hang)', () => {
+    // A raw fetch(_fontUrl) to the Noto CDN could hang ALL tagged-PDF generation for an Arabic/
+    // Pashto/CJK scanned doc. Now AbortController-bounded (cancels the connection, not just abandons
+    // it) so a hung CDN degrades that script's layer to Helvetica instead of hanging.
+    expect(src).toContain('await fetch(_fontUrl, { signal: _fc.signal })');
+    expect(src).toContain('setTimeout(() => { try { _fc.abort(); } catch (_) {} }, 25000)');
+    expect(src).not.toContain('const resp = await fetch(_fontUrl);'); // the raw form must be gone
+  });
+
   it('no RAW (un-timeboxed) form of the wrapped extraction awaits survives', () => {
     // these exact raw awaits were the hang — they must no longer appear bare
     expect(src).not.toContain('await window.pdfjsLib.getDocument({ data: pdfBytes }).promise;');

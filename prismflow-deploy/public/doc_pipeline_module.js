@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -16848,10 +16848,20 @@ tr { page-break-inside: avoid; }
       _unicodeFontCache[scriptKey] = null;
       try {
         if (!(await _ensureFontkit())) return null;
-        const resp = await fetch(_fontUrl);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const bytes = new Uint8Array(await resp.arrayBuffer());
-        _unicodeFontCache[scriptKey] = await doc.embedFont(bytes, { subset: true });
+        // Bound the font fetch+read so a hung/slow/blocked Noto CDN can't hang the WHOLE tagged-PDF
+        // generation for a NON-LATIN scanned doc (Arabic/Pashto/Dari/CJK…) — the same non-settling-
+        // await class as the other pipeline hang fixes. AbortController so the connection is actually
+        // CANCELLED on timeout (not abandoned + leaked); the signal also aborts a stalled
+        // arrayBuffer() body read. On timeout/failure the catch below degrades THIS script's OCR layer
+        // to Helvetica — tagging always COMPLETES rather than hanging.
+        const _fc = new AbortController();
+        const _fcTimer = setTimeout(() => { try { _fc.abort(); } catch (_) {} }, 25000);
+        try {
+          const resp = await fetch(_fontUrl, { signal: _fc.signal });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const bytes = new Uint8Array(await resp.arrayBuffer());
+          _unicodeFontCache[scriptKey] = await doc.embedFont(bytes, { subset: true });
+        } finally { clearTimeout(_fcTimer); }
       } catch (e) {
         try { warnLog('[createTaggedPdf] Unicode font (' + scriptKey + ') embed failed — OCR layer for this script falls back to Helvetica: ' + (e && e.message)); } catch(_) {}
         _unicodeFontCache[scriptKey] = null;
@@ -25032,11 +25042,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
