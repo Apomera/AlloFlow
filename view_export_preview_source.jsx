@@ -787,13 +787,39 @@ function ExportPreviewView(props) {
                         off += len;
                       }
                       if (!hit) { _locate(item, true); addToast(t('toasts.writing_spans_markup') || 'This suggestion spans formatting (a link or bold text) — fix it by hand at the highlighted spot.', 'info'); return; }
-                      const raw = hit.node.textContent;
-                      hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + (item.end - item.start));
+                      const _badLen = item.end - item.start;
+                      // Apply via the editable doc's insertText so the browser's NATIVE undo stack (and
+                      // the toolbar Undo) can reverse it — a raw textContent assignment is not recorded,
+                      // which is why Undo didn't work. Fall back to a direct write if execCommand can't run.
+                      let _ok = false;
+                      try {
+                        const _range = doc.createRange();
+                        _range.setStart(hit.node, hit.local);
+                        _range.setEnd(hit.node, hit.local + _badLen);
+                        const _sel = (doc.defaultView || window).getSelection();
+                        _sel.removeAllRanges(); _sel.addRange(_range);
+                        _ok = doc.execCommand('insertText', false, replacement);
+                      } catch (_) { _ok = false; }
+                      if (!_ok) { const raw = hit.node.textContent; hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen); }
                       try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
-                      setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
+                      // Drop the applied card AND keep the OTHER suggestions valid: the edit shifts later
+                      // offsets in the SAME block by (replacement − bad) length and invalidates overlaps —
+                      // without this, sibling cards' frozen offsets drifted and every later Apply false-
+                      // tripped the "text changed" guard (the reported bug).
+                      const _delta = replacement.length - _badLen;
+                      setWritingCheck((p) => {
+                        if (!p || !p.items) return p;
+                        const items = p.items.filter((x) => x !== item).map((x) => {
+                          if (x.blockIndex !== item.blockIndex || x.end <= item.start) return x;
+                          if (x.start >= item.end) return { ...x, start: x.start + _delta, end: x.end + _delta };
+                          return null; // overlaps the edit → offsets no longer valid
+                        }).filter(Boolean);
+                        return { ...p, items };
+                      });
                       addToast('✓ "' + item.bad + '" → "' + replacement + '"', 'success');
                     } catch (e) { addToast('Apply failed: ' + ((e && e.message) || 'error'), 'error'); }
                   };
+                  const _dismiss = (item) => { setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p); };
                   return (
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
@@ -801,6 +827,7 @@ function ExportPreviewView(props) {
                     {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check grammar (English)')}
                   </button>
                   <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the checker is a ~10 MB download on first use (checks are instant once loaded; the download may repeat in a fresh session). Spelling is underlined by your browser as you type.'}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 To fix a spelling underline, right-click the word in the preview — your browser lists corrections.'}</p>
                   {exportPreviewSource === 'remediation' && wc && (
                     <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This is a remediated document — its wording comes from the source PDF. Apply grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
                   )}
@@ -815,13 +842,12 @@ function ExportPreviewView(props) {
                             <span className="text-slate-700">{item.message}</span>
                             <span className="block text-slate-500 italic mt-0.5">{item.snippet}</span>
                           </button>
-                          {item.suggestions.length > 0 && (
-                            <div className="flex gap-1 mt-1 flex-wrap">
-                              {item.suggestions.map((s, si) => (
-                                <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
-                              ))}
-                            </div>
-                          )}
+                          <div className="flex gap-1 mt-1 flex-wrap items-center">
+                            {item.suggestions.map((s, si) => (
+                              <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
+                            ))}
+                            <button onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -89,13 +89,41 @@ function _validateTableGrid(grid) {
 // colgroup|rowgroup">, colspan/rowspan, a <caption>, and a leading all-header row
 // promoted to <thead>. `opts.sanitize` escapes cell text; `opts.tableBorder` /
 // `opts.tableBg` carry the doc palette; `opts.reconNote` / `opts.reconAttr` flag
-// AI-reconstructed tables for the review gate.
+// AI-reconstructed tables for the review gate. `opts.thColor` sets the header TEXT colour (paired
+// with a sampled original header fill in `opts.tableBg` so the reconstructed table keeps the original
+// look while staying accessible).
+
+// Given an AI-estimated header FILL colour, return { bg, fg } that preserve the hue but GUARANTEE the
+// header text meets WCAG AA (>=4.5:1): pick white or near-black text, then nudge the fill toward that
+// extreme until it passes. Lets a reconstructed table keep the original's visual character without
+// ever shipping an inaccessible header. Returns null on an unparseable colour (caller keeps the doc
+// palette). Pure.
+function _accessibleHeaderColors(hex) {
+  var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex == null ? '' : hex).trim());
+  if (!m) return null;
+  var h = m[1]; if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  var bg = [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  var _l = function (c) { var f = function (x) { x /= 255; return x <= 0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4); }; return 0.2126*f(c[0]) + 0.7152*f(c[1]) + 0.0722*f(c[2]); };
+  var _ratio = function (a, b) { var l1 = _l(a), l2 = _l(b); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
+  var _hex = function (c) { return '#' + c.map(function (x) { return Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0'); }).join(''); };
+  var useLight = _ratio(bg, [255,255,255]) >= _ratio(bg, [15,23,42]);
+  var fg = useLight ? [255,255,255] : [15,23,42];
+  for (var i = 0; i < 40 && _ratio(bg, fg) < 4.5; i++) {
+    if (useLight) bg = [bg[0]*0.9, bg[1]*0.9, bg[2]*0.9];
+    else bg = [bg[0]+(255-bg[0])*0.1, bg[1]+(255-bg[1])*0.1, bg[2]+(255-bg[2])*0.1];
+  }
+  // assign-then-return (module-scope rule): a literal `return {` at 2-space indent here would be
+  // mis-read by check-pipeline-integrity.js as the factory's export block.
+  var _r = { bg: _hex(bg), fg: _hex(fg) };
+  return _r;
+}
 function _emitAccessibleTableHtml(grid, opts) {
   opts = opts || {};
   const esc = typeof opts.sanitize === 'function' ? opts.sanitize : function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
   const border = opts.tableBorder || '#cbd5e1';
   const headBg = opts.tableBg || '#f1f5f9';
   const headColor = opts.headColor || '#0f172a';
+  const thColor = opts.thColor || ''; // header TEXT colour — set (with a non-default headBg) to keep AA contrast
   // The "AI-reconstructed — verify" nudge lives in the results-panel review gate (keyed on the
   // data-allo-reconstructed attribute below), NOT baked into the document caption — that inline text
   // was leaking into the exported/saved file and read as unpolished (user report 2026-06-16).
@@ -116,7 +144,7 @@ function _emitAccessibleTableHtml(grid, opts) {
     const cs = Math.max(1, parseInt(c.colspan, 10) || 1); if (cs > 1) attrs += ' colspan="' + cs + '"';
     const rs = Math.max(1, parseInt(c.rowspan, 10) || 1); if (rs > 1) attrs += ' rowspan="' + rs + '"';
     const style = isH
-      ? ' style="background:' + headBg + ';border:1px solid ' + border + ';padding:8px 12px;font-weight:bold;text-align:left"'
+      ? ' style="background:' + headBg + ';border:1px solid ' + border + ';padding:8px 12px;font-weight:bold;text-align:left' + (thColor ? ';color:' + thColor : '') + '"'
       : ' style="border:1px solid ' + border + ';padding:8px 12px"';
     return '<' + tag + attrs + style + '>' + esc(c.text) + '</' + tag + '>';
   };
@@ -2106,6 +2134,7 @@ var createDocPipeline = function(deps) {
       'Output a single JSON object with this EXACT shape:\n' +
       '{\n' +
       '  "caption": "<short caption, or empty>",\n' +
+      '  "headerFill": "<#rrggbb hex of the header row background fill colour, or empty if it has none>",\n' +
       '  "rows": [\n' +
       '    { "cells": [ { "text": "<verbatim cell text>", "isHeader": <true|false>, "scope": "<col|row|colgroup|rowgroup, only when isHeader>", "colspan": <int>, "rowspan": <int> } ] }\n' +
       '  ]\n' +
@@ -2115,6 +2144,7 @@ var createDocPipeline = function(deps) {
       '- isHeader:true with scope:"col" for a cell that labels a COLUMN (top row); scope:"row" for a cell that labels a ROW (left column). For a header that spans a GROUP of columns/rows (a merged header above sub-headers), use "colgroup"/"rowgroup". EVERY data cell must be reachable from at least one header — if the table has data, it needs headers with scope, or a screen-reader user cannot navigate it.\n' +
       '- Use colspan/rowspan ONLY for visibly merged cells; default each to 1. After expanding spans the grid MUST be rectangular — every row totals the same number of columns.\n' +
       '- Include EVERY cell, including empty ones as {"text":""}, so the grid stays aligned.\n' +
+      '- headerFill is COSMETIC: give your best #rrggbb estimate of the header row background colour if it has a distinct fill (else ""). NEVER let it change the transcribed cell TEXT — text accuracy matters, colour does not.\n' +
       '- Output ONLY the JSON object. No code fence. No commentary.\n' +
       '- If it is NOT actually a table (a photo, a single chart, decorative art, or you are unsure), output exactly: null';
     let raw;
@@ -2153,7 +2183,9 @@ var createDocPipeline = function(deps) {
     if (!v.ok) { _legendDiag({ phase: 'rich-table-invalid-grid', pageRange, reason: v.reason }); return null; } // REVERT — keep the image
     if (v.rows < 2 || v.cols < 2) { _legendDiag({ phase: 'rich-table-too-small', pageRange, cols: v.cols, rows: v.rows }); return null; }
     _legendDiag({ phase: 'rich-table-success', pageRange, cols: v.cols, rows: v.rows });
-    return { type: 'table', grid: grid, _reconstructed: true };
+    var _hf = (parsed && typeof parsed.headerFill === 'string') ? parsed.headerFill.trim() : '';
+    var _headerBg = /^#?[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(_hf) ? (_hf.charAt(0) === '#' ? _hf : '#' + _hf) : null;
+    return { type: 'table', grid: grid, _reconstructed: true, headerBg: _headerBg };
   };
 
   const detectAndRepairLegends = async (blocks, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
@@ -12572,11 +12604,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               if (block.grid && Array.isArray(block.grid.rows)) {
                 const _gv = _validateTableGrid(block.grid);
                 if (_gv.ok) {
+                  // Sampled-from-original header colour (when the vision pass estimated one): keep the
+                  // original's look but force the header TEXT to AA contrast on that fill (cosmetic only;
+                  // falls back to the doc palette when no/invalid colour).
+                  const _hdr = _accessibleHeaderColors(block.headerBg);
                   return _emitAccessibleTableHtml(block.grid, {
                     sanitize: sanitizeField,
                     tableBorder: docStyle.tableBorder,
-                    tableBg: docStyle.tableBg,
+                    tableBg: _hdr ? _hdr.bg : docStyle.tableBg,
                     headColor: docStyle.headingColor,
+                    thColor: _hdr ? _hdr.fg : undefined,
                     reconAttr: _recon,
                   });
                 }
