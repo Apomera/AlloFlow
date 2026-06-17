@@ -4135,44 +4135,48 @@ const d = labToolData.rockCycle || {};
 
               // ── Process arrow curves ──
 
-              PROCESSES.slice(0, 3).forEach(function (proc, i) {
-
+              // Render ALL 6 process edges — the 3 forward (canonical) cycle steps PLUS the 3
+              // "shortcut" reverse edges — so the diagram shows the rock cycle as the BRANCHING
+              // network it really is (any rock → any rock), not a one-way circle. Shortcuts arc the
+              // opposite way and are de-emphasized; every edge gets a direction arrowhead.
+              PROCESSES.forEach(function (proc, i) {
                 var fromN = nodes[proc.from];
-
                 var toN = nodes[proc.to];
-
-                var midX = (fromN.x + toN.x) / 2 + (toN.y - fromN.y) * 0.2;
-
-                var midY = (fromN.y + toN.y) / 2 - (toN.x - fromN.x) * 0.2;
-
+                var shortcut = i >= 3;
+                var bow = shortcut ? -0.34 : 0.2;
+                var midX = (fromN.x + toN.x) / 2 + (toN.y - fromN.y) * bow;
+                var midY = (fromN.y + toN.y) / 2 - (toN.x - fromN.x) * bow;
                 ctx.beginPath();
-
                 ctx.moveTo(fromN.x * dpr, fromN.y * dpr);
-
                 ctx.quadraticCurveTo(midX * dpr, midY * dpr, toN.x * dpr, toN.y * dpr);
-
-                ctx.strokeStyle = 'rgba(148,163,184,0.4)';
-
-                ctx.lineWidth = 1.5 * dpr;
-
+                ctx.strokeStyle = shortcut ? 'rgba(148,163,184,0.22)' : 'rgba(148,163,184,0.45)';
+                ctx.lineWidth = (shortcut ? 1 : 1.5) * dpr;
                 ctx.setLineDash([6, 4]);
-
                 ctx.stroke();
-
                 ctx.setLineDash([]);
-
-                var labelX = (fromN.x + midX + toN.x) / 3;
-
-                var labelY = (fromN.y + midY + toN.y) / 3;
-
-                ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
-
-                ctx.fillStyle = 'rgba(226,232,240,0.7)';
-
-                ctx.textAlign = 'center';
-
-                ctx.fillText(proc.label, labelX * dpr, labelY * dpr);
-
+                // Direction arrowhead at ~80% along the curve (just outside the destination node).
+                var tt = 0.8;
+                var bx = (1 - tt) * (1 - tt) * fromN.x + 2 * (1 - tt) * tt * midX + tt * tt * toN.x;
+                var by = (1 - tt) * (1 - tt) * fromN.y + 2 * (1 - tt) * tt * midY + tt * tt * toN.y;
+                var ang = Math.atan2(2 * (1 - tt) * (midY - fromN.y) + 2 * tt * (toN.y - midY), 2 * (1 - tt) * (midX - fromN.x) + 2 * tt * (toN.x - midX));
+                var ah = (shortcut ? 5 : 7) * dpr;
+                ctx.fillStyle = shortcut ? 'rgba(148,163,184,0.45)' : 'rgba(148,163,184,0.75)';
+                ctx.beginPath();
+                ctx.moveTo(bx * dpr, by * dpr);
+                ctx.lineTo(bx * dpr - ah * Math.cos(ang - 0.42), by * dpr - ah * Math.sin(ang - 0.42));
+                ctx.lineTo(bx * dpr - ah * Math.cos(ang + 0.42), by * dpr - ah * Math.sin(ang + 0.42));
+                ctx.closePath();
+                ctx.fill();
+                // Label only the 3 forward edges (the 3 shortcuts repeat the same process names and
+                // would clutter the small canvas).
+                if (!shortcut) {
+                  var labelX = (fromN.x + midX + toN.x) / 3;
+                  var labelY = (fromN.y + midY + toN.y) / 3;
+                  ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
+                  ctx.fillStyle = 'rgba(226,232,240,0.78)';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(proc.label, labelX * dpr, labelY * dpr);
+                }
               });
 
 
@@ -4550,6 +4554,19 @@ const d = labToolData.rockCycle || {};
 
             ),
 
+            // ── Branching-network + common-myths note ──
+            React.createElement("div", { className: "mt-3 p-3 rounded-lg border border-violet-200 bg-violet-50 text-[12px] text-violet-900 leading-relaxed" },
+              React.createElement("p", { className: "font-bold mb-1" }, "🔀 A branching network, not a one-way circle"),
+              React.createElement("p", { className: "mb-2" }, "ANY rock can become ANY other rock — the diagram's 6 arrows show every path. Which one happens depends on the process (the geological agent), not on a fixed order."),
+              React.createElement("p", { className: "font-bold mb-1" }, "⚠ Common myths"),
+              React.createElement("ul", { className: "list-disc pl-4 space-y-0.5" },
+                React.createElement("li", null, "“Rocks never change.” They change constantly — just over thousands to millions of years."),
+                React.createElement("li", null, "“The cycle only goes one way.” It can run in any direction (follow the arrows)."),
+                React.createElement("li", null, "“Soil is a rock.” Soil is weathered rock plus organic matter — not a rock itself."),
+                React.createElement("li", null, "“Lava and magma are the same.” Magma is molten rock UNDERGROUND; once it erupts it's lava.")
+              )
+            ),
+
             // Rock Transformation Machine
             React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
               React.createElement("p", { className: "text-xs font-black text-orange-700 mb-1 flex items-center gap-1.5" },
@@ -4616,18 +4633,26 @@ const d = labToolData.rockCycle || {};
                         upd("transformationProgress", p);
                         if (p >= 100) {
                           clearInterval(interval);
+                          // The geological AGENT determines the result TYPE (any rock can melt →
+                          // igneous, be heated/pressed → metamorphic, or weather → sedimentary) —
+                          // but the chosen STARTING ROCK now names a real, specific transformation,
+                          // so the dropdown actually matters and teaches the named pairings.
+                          var startingRock = d.startingRock || 'igneous';
                           var resultId = 'igneous';
                           var description = '';
 
                           if (agent === 'melting_cooling') {
                             resultId = 'igneous';
-                            description = "Extreme temperatures melted the rock into magma, which cooled and crystallized into a new IGNEOUS rock!";
+                            var mEx = startingRock === 'sedimentary' ? 'sandstone' : startingRock === 'metamorphic' ? 'gneiss' : 'older igneous rock';
+                            description = "Extreme heat (>800°C) melted the " + startingRock + " rock (e.g. " + mEx + ") into magma, which cooled and crystallized into a new IGNEOUS rock such as granite or basalt. Any rock can melt, so the result is always igneous.";
                           } else if (agent === 'heat_pressure') {
                             resultId = 'metamorphic';
-                            description = "Buried deep within the crust, intense heat and tectonic pressure recrystallized the rock's minerals, transforming it into a METAMORPHIC rock!";
+                            var hEx = startingRock === 'sedimentary' ? 'limestone → marble, or shale → slate' : startingRock === 'igneous' ? 'granite → gneiss' : 'slate → schist → gneiss (a higher grade)';
+                            description = "Buried deep, intense heat and pressure recrystallized the " + startingRock + " rock WITHOUT melting it — " + hEx + " — forming METAMORPHIC rock. Any rock can be metamorphosed.";
                           } else {
                             resultId = 'sedimentary';
-                            description = "Weathered by rain and wind, the rock shattered into tiny sediment grains, which washed into a basin, compacted, and cemented into a SEDIMENTARY rock!";
+                            var wEx = startingRock === 'igneous' ? 'granite → sand and clay' : startingRock === 'metamorphic' ? 'marble → sediment grains' : 'older sediment, broken down and re-deposited';
+                            description = "Weathering and erosion broke the " + startingRock + " rock into grains (" + wEx + "), which washed into a basin, then compacted and cemented into SEDIMENTARY rock. Any rock at the surface weathers into sediment.";
                           }
 
                           updMulti({

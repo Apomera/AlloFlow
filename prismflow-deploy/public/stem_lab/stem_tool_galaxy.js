@@ -1482,6 +1482,44 @@ if (!window._galaxyHasLoadedOnce) {
 
               ),
 
+              // ── Hubble tuning-fork classification (highlights the current galaxy type) ──
+              React.createElement("div", { className: "mb-3 p-2 rounded-lg border border-indigo-100 bg-white" },
+                React.createElement("p", { className: "text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, "Hubble Tuning Fork — classified by shape"),
+                (function () {
+                  var hl = { elliptical: { x: 78, y: 75 }, grandDesign: { x: 260, y: 40 }, barredSpiral: { x: 260, y: 112 }, irregular: { x: 338, y: 75 } }[galaxyType] || null;
+                  return React.createElement("svg", { viewBox: "0 0 360 150", className: "w-full", style: { maxHeight: '150px' }, role: "img", "aria-label": "Hubble tuning fork: ellipticals on the handle, spirals on the top prong, barred spirals on the bottom prong, with the current galaxy type highlighted" },
+                    React.createElement("path", { d: "M30 75 H120 M120 75 C150 75 170 52 200 40 H330 M120 75 C150 75 170 100 200 112 H330", fill: "none", stroke: "#94a3b8", strokeWidth: 2 }),
+                    React.createElement("ellipse", { cx: 45, cy: 75, rx: 9, ry: 9, fill: "#fca5a5" }),
+                    React.createElement("ellipse", { cx: 75, cy: 75, rx: 11, ry: 7, fill: "#fca5a5" }),
+                    React.createElement("ellipse", { cx: 105, cy: 75, rx: 13, ry: 5, fill: "#fca5a5" }),
+                    React.createElement("text", { x: 28, y: 97, fill: "#64748b", style: { fontSize: '8px', fontWeight: 'bold' } }, "Ellipticals E0–E7"),
+                    React.createElement("text", { x: 123, y: 70, fill: "#64748b", style: { fontSize: '7px' } }, "S0"),
+                    React.createElement("text", { x: 206, y: 28, fill: "#3b82f6", style: { fontSize: '8px', fontWeight: 'bold' } }, "Spirals  Sa Sb Sc"),
+                    React.createElement("circle", { cx: 230, cy: 40, r: 6, fill: "none", stroke: "#3b82f6", strokeWidth: 2 }),
+                    React.createElement("circle", { cx: 262, cy: 40, r: 7, fill: "none", stroke: "#3b82f6", strokeWidth: 1.5 }),
+                    React.createElement("circle", { cx: 296, cy: 40, r: 8, fill: "none", stroke: "#3b82f6", strokeWidth: 1 }),
+                    React.createElement("text", { x: 200, y: 134, fill: "#8b5cf6", style: { fontSize: '8px', fontWeight: 'bold' } }, "Barred  SBa SBb SBc"),
+                    React.createElement("ellipse", { cx: 262, cy: 112, rx: 9, ry: 5, fill: "none", stroke: "#8b5cf6", strokeWidth: 1.5 }),
+                    React.createElement("line", { x1: 252, y1: 112, x2: 272, y2: 112, stroke: "#8b5cf6", strokeWidth: 2 }),
+                    React.createElement("text", { x: 330, y: 97, fill: "#f59e0b", style: { fontSize: '8px', fontWeight: 'bold' } }, "Irr"),
+                    hl && React.createElement("circle", { cx: hl.x, cy: hl.y, r: 17, fill: "none", stroke: "#f43f5e", strokeWidth: 2.5 }),
+                    hl && React.createElement("text", { x: hl.x, y: hl.y - 20, fill: "#f43f5e", textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' } }, "you are here")
+                  );
+                })(),
+                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Edwin Hubble's 1936 scheme sorts galaxies by SHAPE — it is NOT a timeline. Galaxies do not evolve along the fork from one type to the next.")
+              ),
+
+              // ── Cosmic myth-busters ──
+              React.createElement("div", { className: "mb-3 p-2.5 rounded-lg border border-amber-200 bg-amber-50 text-[11px] text-amber-900 leading-relaxed" },
+                React.createElement("p", { className: "font-bold mb-1" }, "⚠ Cosmic myth-busters"),
+                React.createElement("ul", { className: "list-disc pl-4 space-y-0.5" },
+                  React.createElement("li", null, "This 3-D view is a MODEL — no spacecraft has ever photographed the Milky Way from outside. We live inside the disk, which is why we see it edge-on as a band of light across the night sky."),
+                  React.createElement("li", null, "A galaxy is NOT a solar system. Our entire solar system is just one of ~100–400 billion star systems in the Milky Way."),
+                  React.createElement("li", null, "Stars in a constellation only LOOK close together — they're often wildly different distances away, just along the same line of sight."),
+                  React.createElement("li", null, "Cosmic expansion stretches SPACE ITSELF — galaxies aren't flying outward through space, and there's no center. The Big Bang happened everywhere at once, not at one spot.")
+                )
+              ),
+
 
 
               // ── 3D Canvas ──
@@ -2010,6 +2048,14 @@ if (!window._galaxyHasLoadedOnce) {
                     var tick = 0;
 
                     function drawStar() {
+                      // Stop + clean up once the canvas leaves the DOM (leaving Star-Life mode or the
+                      // tool). Without this guard the rAF loop ran forever at 60fps against a detached
+                      // canvas, and the ResizeObserver was never disconnected.
+                      if (!cvEl.isConnected) {
+                        try { cancelAnimationFrame(cvEl._starLifeAnim); } catch (e) {}
+                        try { if (cvEl._starLifeRO) cvEl._starLifeRO.disconnect(); } catch (e) {}
+                        return;
+                      }
                       tick++;
                       ctx.clearRect(0, 0, W, H);
                       // Starfield background
@@ -2463,7 +2509,7 @@ if (!window._galaxyHasLoadedOnce) {
                       }
 
                       // ── Solar wind particles (emanating outward from star) ──
-                      if (stage === 'main_sequence' || stage === 'red_giant' || stage === 'blue_giant') {
+                      if (stage === 'main_sequence' || stage === 'red_giant' || stage === 'blue_supergiant') {
                         ctx.save(); ctx.globalAlpha = 0.15;
                         for (var swi = 0; swi < 12; swi++) {
                           var swAngle = (swi / 12) * Math.PI * 2 + tick * 0.003;
@@ -2506,6 +2552,7 @@ if (!window._galaxyHasLoadedOnce) {
                     });
 
                     ro.observe(cvEl);
+                    cvEl._starLifeRO = ro;
 
                   },
 
