@@ -6667,8 +6667,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             // toggle — same createTaggedPdf path as the download button.
                             window.__alloflowCompareGetTagged = async () => {
                               try {
-                                const freshBase64 = await ensurePdfBase64();
-                                if (!freshBase64) return { error: 'original PDF bytes unavailable — re-attach the file in the app' };
+                                // Never let a non-settling file-picker (ensurePdfBase64's fallback, whose
+                                // 'cancel' event is unreliable in the Canvas iframe) freeze the popup's
+                                // "Generating…" spinner forever — bound it. The fast path (bytes already
+                                // resident, the normal case) still resolves instantly.
+                                const freshBase64 = await Promise.race([
+                                  ensurePdfBase64(),
+                                  new Promise((r) => setTimeout(() => r(null), 30000)),
+                                ]);
+                                if (!freshBase64) return { error: 'original PDF bytes unavailable — re-attach the file in the app, then try again' };
                                 const okLib = await _ensurePdfLib();
                                 if (!okLib) return { error: 'PDF tagging library failed to load' };
                                 const binStr = atob(freshBase64);
@@ -6802,11 +6809,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               var st = _paneStatus('Rendering ' + label + '…');
                               _ensurePdfjs().then(function (pdfjs) {
                                 pdfjs.getDocument({ data: _b64ToBytes(b64) }).promise.then(function (doc) {
-                                  if (st) { try { st.remove(); } catch (_) {} }
+                                  // Render progressively at a lighter scale (1.0): rasterizing every page
+                                  // of a scanned IMAGE PDF is the entire reason Compare's tagged view felt
+                                  // far slower than the Downloads button (which never rasterizes). Keep a
+                                  // live "page N / M" status so it's visibly working, not stuck.
                                   (function renderPage(n) {
-                                    if (n > doc.numPages) return;
+                                    if (n > doc.numPages) { if (st) { try { st.remove(); } catch (_) {} } return; }
+                                    if (st) { try { st.textContent = 'Rendering ' + label + '… page ' + n + ' / ' + doc.numPages; } catch (_) {} }
                                     doc.getPage(n).then(function (page) {
-                                      var vp = page.getViewport({ scale: 1.25 });
+                                      var vp = page.getViewport({ scale: 1.0 });
                                       var c = document.createElement('canvas');
                                       c.width = vp.width; c.height = vp.height;
                                       c.style.cssText = 'display:block;margin:10px auto;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:96%;height:auto;background:white';
