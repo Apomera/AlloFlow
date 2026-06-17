@@ -4395,7 +4395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '5e74ec5f';
+    var pluginCdnVersion = 'f7b2f7bd';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10252,6 +10252,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setDiffChunks(null);
     setDiffSelection(null);
     setPdfFixLoading(false);
+    // Also stop + clear any in-flight auto-continue loop, so a reset can never strand the
+    // pdfAutoContinueRunning flag (a stranded flag leaves the results-panel buttons disabled).
+    try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
+    try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
+    pdfAutoContinueAbortCtrlRef.current = null;
+    setPdfAutoContinueRunning(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);
     setPendingPdfFile(null);
@@ -10508,6 +10514,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAutoContinueRunning, setPdfAutoContinueRunning] = useState(false);
   const pdfAutoContinueAbortRef = useRef(false);
   const pdfAutoContinueAbortCtrlRef = useRef(null);
+  // Dead-man switch (2026-06-17) mirroring the pdfFixLoading one above: if the auto-continue loop's
+  // flag ever stays true with NO step change for 12 min, it's stuck — a stranded flag would leave
+  // Start New Audit (and the other results buttons) permanently disabled. Clear it + abort the
+  // controller and warn. 12 min > a legit round (pdfFixStep updates per chunk/round during real work).
+  useEffect(() => {
+    if (!pdfAutoContinueRunning) return;
+    const stepAtStart = pdfFixStep;
+    const id = setTimeout(() => {
+      if (pdfFixStep === stepAtStart) {
+        warnLog('[PdfFix] Dead-man switch fired: pdfAutoContinueRunning stuck on "' + stepAtStart + '" for 12min — clearing.');
+        try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
+        try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
+        pdfAutoContinueAbortCtrlRef.current = null;
+        setPdfAutoContinueRunning(false);
+        if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset') || 'Auto-continue appeared stuck and was reset — your latest result is kept.', 'warning');
+      }
+    }, 12 * 60 * 1000);
+    return () => clearTimeout(id);
+  }, [pdfAutoContinueRunning, pdfFixStep]);
   const pdfFixResultRef = useRef(null);
   // Re-entry stash (2026-06-16): when the remediation modal closes, the result
   // survives in pdfFixResult but the modal's render gate (pdfAuditResult) is nulled,
