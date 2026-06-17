@@ -592,24 +592,26 @@ window.StemLab = window.StemLab || {
           var hasOpenSwitch = mode === 'series' && components.some(function(c) { return c.type === 'switch' && !c.closed; });
 
           var totalR;
+          // Ideal meters (voltmeter ~∞Ω, ammeter ~0Ω) are PROBES, not loads — they don't change the
+          // network (the explainer says as much). Excluding them prevents two shipped wrong answers:
+          // a voltmeter in series falsely choking the current to ~0, and an ammeter parallel branch
+          // (R≈0.001) falsely tripping a SHORT CIRCUIT. The network is built from real loads only.
+          var loadComps = components.filter(function(c) { return c.type !== 'ammeter' && c.type !== 'voltmeter'; });
+          var noLoadPath = loadComps.length === 0; // only meters on the canvas → no current path
           // An empty canvas is an OPEN circuit (no path): I = 0, R = infinite. Without this it fell
           // through to the 0.001-ohm floor and reported ~9000 A / 81000 W on first open.
-          if (hasOpenSwitch || components.length === 0) {
+          if (hasOpenSwitch || components.length === 0 || noLoadPath) {
             totalR = 1e9;
           } else if (mode === 'series') {
-            totalR = components.reduce(function(s, c) { return s + getCompR(c); }, 0) || 0.001;
+            totalR = loadComps.reduce(function(s, c) { return s + getCompR(c); }, 0) || 0.001;
           } else {
-            if (components.length > 0) {
-              var invSum = components.reduce(function(s, c) { return s + 1 / (getCompR(c) || 1); }, 0);
-              totalR = invSum > 0 ? 1 / invSum : 0.001;
-            } else {
-              totalR = 0.001;
-            }
+            var invSum = loadComps.reduce(function(s, c) { return s + 1 / (getCompR(c) || 1); }, 0);
+            totalR = invSum > 0 ? 1 / invSum : 0.001;
           }
 
-          var current = (hasOpenSwitch || components.length === 0) ? 0 : voltage / totalR;
+          var current = (hasOpenSwitch || components.length === 0 || noLoadPath) ? 0 : voltage / totalR;
           var power = voltage * current;
-          var isShort = components.length > 0 && totalR < 1 && !hasOpenSwitch;
+          var isShort = !noLoadPath && loadComps.length > 0 && totalR < 1 && !hasOpenSwitch;
           var isOpen = hasOpenSwitch;
 
           // Check short circuit badge
@@ -1397,6 +1399,20 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Per-component analysis table
             // ══════════════════════════════════════
+            components.length > 0 && !noLoadPath && h('div', { className: 'mt-3 bg-slate-900/40 border border-cyan-500/20 rounded-xl p-3 backdrop-blur-md' },
+              h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 Mental-model checks'),
+              h('ul', { className: 'space-y-1 text-[11px] text-slate-300 leading-snug list-disc list-inside marker:text-cyan-500' },
+                h('li', null, h('b', { className: 'text-cyan-300' }, 'Electrons crawl; the signal races. '), 'The glowing dots move fast for visibility, but real electrons drift at only about 0.1 mm/s. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.'),
+                mode === 'series'
+                  ? h('li', null, h('b', { className: 'text-cyan-300' }, 'Current is not used up. '), 'The very same ' + current.toFixed(3) + ' A flows through every component in series \u2014 an ammeter reads the same value before AND after each bulb. Energy gets spent along the way; charge does not.')
+                  : h('li', null, h('b', { className: 'text-cyan-300' }, 'A parallel branch LOWERS total resistance. '), 'Adding paths gives charge more ways to flow, so total current rises. Total R (' + (totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9') + ') is always smaller than the smallest single branch \u2014 counter-intuitive but true.'),
+                h('li', null, h('b', { className: 'text-cyan-300' }, 'The battery sets voltage, not current. '), 'It holds ' + voltage + ' V steady; the ' + current.toFixed(3) + ' A you read is whatever Ohm\'s law gives for the resistance you built. Lower the resistance and the current climbs \u2014 the battery does not "decide" the current.')
+              )
+            ),
+
+            // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+            // Per-component analysis table
+            // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
             components.length > 0 && h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
               h('p', { className: 'text-[11px] font-bold text-yellow-500 uppercase tracking-wider mb-2' }, '\u26A1 Per-Component Analysis'),
               h('div', { className: 'space-y-1.5' },
@@ -1446,7 +1462,7 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && components.length > 0 && mode === 'series' && current > 0.001 && h('div', { className: 'mt-4 bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-4 backdrop-blur-md' },
               h('p', { className: 'text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-2' }, '\u2696 Kirchhoff\'s Voltage Law (KVL) Verification'),
-              h('p', { className: 'text-xs text-slate-300 mb-2' }, 'The sum of voltage drops around any closed loop equals the source voltage.'),
+              h('p', { className: 'text-xs text-slate-300 mb-2' }, 'The sum of voltage drops around any closed loop equals the source voltage. The same current flows through every series component, so this isn\'t a lucky coincidence — Ohm\'s law forces it to balance.'),
               h('div', { className: 'space-y-1' },
                 components.map(function(comp, i) {
                   var compR = getCompR(comp);
@@ -1468,7 +1484,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-indigo-300' }, '\u2211 V_drops = ' + vSum.toFixed(2) + 'V'),
                       h('span', { className: 'text-indigo-400' }, '\u2248'),
                       h('span', { className: 'text-indigo-300' }, 'V_source = ' + voltage + 'V'),
-                      h('span', { className: Math.abs(vSum - voltage) < 0.1 ? 'text-emerald-400' : 'text-rose-400' }, Math.abs(vSum - voltage) < 0.1 ? '\u2705 Validated' : '\u26A0\uFE0F')
+                      h('span', { className: Math.abs(vSum - voltage) < 0.1 ? 'text-emerald-400' : 'text-rose-400' }, Math.abs(vSum - voltage) < 0.1 ? '\u2713 must balance: \u03A3V = I\u00D7\u03A3R = V' : '\u26A0\uFE0F')
                     );
                   })()
                 )
