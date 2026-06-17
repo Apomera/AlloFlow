@@ -2016,6 +2016,15 @@
                 cleanOptions = fisherYatesShuffle(filtered).slice(0, 4);
               }
             }
+            if (!cleanOptions) {
+              // Gemini unavailable: build tappable options locally (target + 3
+              // distinct multi-syllable distractors) so the activity is always
+              // playable with visible choices instead of falling back to mic-only.
+              const _tlc = String(word).trim().toLowerCase();
+              const _pool = ["rabbit","pencil","basket","window","monkey","garden","button","tiger","wagon","lemon","puppy","table","apple","kitten","dragon","robot","sunset","picnic"];
+              const _distract = fisherYatesShuffle(_pool).filter((w) => w !== _tlc && !isHomophone(_tlc, w)).slice(0, 3);
+              cleanOptions = fisherYatesShuffle([word, ..._distract]);
+            }
             const data = {
               syllables: result.syllables,
               count: result.syllables.length,
@@ -8146,15 +8155,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   setHighlightedSyllableIndex(null);
                   await new Promise((r) => setTimeout(r, 300));
                 }
-                // Play blending options
-                const opts = syllableDataRef.current?.blendingOptions || [];
-                for (let i = 0; i < opts.length; i++) {
-                  if (cancelled || audioCancelledRef.current) return;
-                  setHighlightedSyllableOptionIndex(i);
-                  await handleAudio(opts[i]);
-                  await new Promise((r) => setTimeout(r, 250));
-                }
-                setHighlightedSyllableOptionIndex(null);
+                // The answer OPTIONS are intentionally NOT read aloud here:
+                // reading them spoils the blend (the child would just match what
+                // they heard). The task is to blend the presented syllables and
+                // recognize the word. Only the syllables (the stimulus) are played.
               }
               if (wordSoundsActivity === "syllable_counting") {
                 const countWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
@@ -9060,21 +9064,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     await new Promise((r) => setTimeout(r, 350));
                   }
                   setHighlightedSyllableIndex(null);
-                  const opts = syllableDataRef.current.blendingOptions || [];
-                  if (opts.length) {
-                    await Promise.all(
-                      opts.map((o) => handleAudio(o, false).catch(() => {})),
-                    );
-                    if (cancelled) return;
-                    for (let i = 0; i < opts.length; i++) {
-                      if (cancelled) break;
-                      setHighlightedSyllableOptionIndex(i);
-                      await handleAudio(opts[i]);
-                      if (cancelled) return;
-                      await new Promise((r) => setTimeout(r, 350));
-                    }
-                    setHighlightedSyllableOptionIndex(null);
-                  }
+                  // Options intentionally NOT read aloud (same reason as the
+                  // syllable_blending note above): reading them spoils the blend.
+                  // Option audio loads on demand when the child taps an option.
                 }
               }
             }
