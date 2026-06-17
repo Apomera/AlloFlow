@@ -5911,18 +5911,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       })()}
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">✅ {t('pdf_audit.results.ready_heading') || 'Your accessible copy is ready'}</h4>
-                        <button
-                          onClick={() => {
-                            if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
-                              startNewPdfAudit();
-                            }
-                          }}
-                          disabled={pdfFixLoading || pdfAutoContinueRunning}
-                          className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + ((pdfFixLoading || pdfAutoContinueRunning) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
-                          title={(pdfFixLoading || pdfAutoContinueRunning) ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run. Click “Stop after this round” first.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
-                        >
-                          🗑️ {t('pdf_audit.start_new_audit') || 'Start New Audit'}
-                        </button>
+                        {/* While the auto-continue loop is grinding (legitimately, for minutes), this
+                            button used to just look dead. Make it an ACTIONABLE Stop instead — once the
+                            loop ends it reverts to Start New Audit. (Stop only sets the abort flag, so
+                            there's no reset-while-running resurrection race.) */}
+                        {pdfAutoContinueRunning ? (
+                          <button
+                            onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }}
+                            className="text-[11px] px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-400 rounded-md font-bold inline-flex items-center gap-1 hover:bg-amber-100"
+                            title={t('pdf_audit.stop_then_new_title') || 'Remediation is still improving the document. Stop it (keeps what’s done) — then this becomes “Start New Audit”.'}
+                          >
+                            ⏹ {t('pdf_audit.stop_running') || 'Stop (still working…)'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              if (window.confirm(t('pdf_audit.start_new_confirm') || 'Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
+                                startNewPdfAudit();
+                              }
+                            }}
+                            disabled={pdfFixLoading}
+                            className={'text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 ' + (pdfFixLoading ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100')}
+                            title={pdfFixLoading ? (t('pdf_audit.start_new_running_title') || 'Remediation is still running — clearing now would lose this run.') : (t('pdf_audit.start_new_title') || 'Clear this audit result and start fresh with a new PDF')}
+                          >
+                            {pdfFixLoading ? '⏳' : '🗑️'} {t('pdf_audit.start_new_audit') || 'Start New Audit'}
+                          </button>
+                        )}
                       </div>
                       {/* "What now?" strip (2026-06-12): 308 elements below — give
                           the first action explicitly. Additions-only. */}

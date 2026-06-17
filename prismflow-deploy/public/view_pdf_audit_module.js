@@ -4629,7 +4629,22 @@ Return ONLY JSON:
         }
         addToast(t("toasts.stopping_after_round") || "Stopping after the current round \u2014 what\u2019s done is kept.", "info");
       }, className: "px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0" }, "\u23F9 ", t("pdf_audit.running.stop") || "Stop after this round")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_dashboard_bar", className: "sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap", role: "navigation", "aria-label": t("pdf_audit.dashboard.aria") || "Remediation results overview and section navigation" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-emerald-800 whitespace-nowrap", title: t("pdf_audit.dashboard.score_title") || "Accessibility score: before \u2192 after" }, pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? "\u2013", " \u2192 ", pdfFixResult.afterScore ?? "\u2013", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "/100")), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold " + (_vio === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _vio === 0 ? t("pdf_audit.dashboard.zero_issues") || "0 issues" : _vio + " " + (t("pdf_audit.dashboard.issues_left") || "issues left")), /* @__PURE__ */ React.createElement("span", { className: "h-4 w-px bg-slate-300 mx-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-verify") }, "\u2705 ", t("pdf_audit.dashboard.verify") || "Verification"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-recovery") }, "\u{1FA79} ", t("pdf_audit.dashboard.recovery") || "Recovery"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-axe") }, "\u{1FA93} ", t("pdf_audit.dashboard.axe") || "Issues (axe)"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-downloads") }, "\u{1F4E5} ", t("pdf_audit.dashboard.downloads") || "Downloads"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-taginspect") }, "\u{1F50D} ", t("pdf_audit.dashboard.tags") || "Tag inspector"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-workbench") }, "\u{1F6E0} ", t("pdf_audit.dashboard.workbench") || "Workbench"), /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => _jump("allo-sec-changed") }, "\u{1F4CB} ", t("pdf_audit.dashboard.changed") || "What changed"), typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { className: _chip, onClick: () => startPipelineTour("results"), "data-help-ignore": "true", title: t("pdf_audit.tour.results_title") || "A 60-second guided walk through this screen \u2014 what to download, what the score means, where the reports live." }, "\u2728 ", t("pdf_audit.tour.results_cta") || "Tour")));
-    })(), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1" }, "\u2705 ", t("pdf_audit.results.ready_heading") || "Your accessible copy is ready"), /* @__PURE__ */ React.createElement(
+    })(), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1" }, "\u2705 ", t("pdf_audit.results.ready_heading") || "Your accessible copy is ready"), pdfAutoContinueRunning ? /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          try {
+            pdfAutoContinueAbortRef.current = true;
+          } catch (_) {
+          }
+          addToast(t("toasts.stopping_after_round") || "Stopping after the current round \u2014 what\u2019s done is kept.", "info");
+        },
+        className: "text-[11px] px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-400 rounded-md font-bold inline-flex items-center gap-1 hover:bg-amber-100",
+        title: t("pdf_audit.stop_then_new_title") || "Remediation is still improving the document. Stop it (keeps what\u2019s done) \u2014 then this becomes \u201CStart New Audit\u201D."
+      },
+      "\u23F9 ",
+      t("pdf_audit.stop_running") || "Stop (still working\u2026)"
+    ) : /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -4637,11 +4652,12 @@ Return ONLY JSON:
             startNewPdfAudit();
           }
         },
-        disabled: pdfFixLoading || pdfAutoContinueRunning,
-        className: "text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 " + (pdfFixLoading || pdfAutoContinueRunning ? "opacity-40 cursor-not-allowed" : "hover:bg-slate-100"),
-        title: pdfFixLoading || pdfAutoContinueRunning ? t("pdf_audit.start_new_running_title") || "Remediation is still running \u2014 clearing now would lose this run. Click \u201CStop after this round\u201D first." : t("pdf_audit.start_new_title") || "Clear this audit result and start fresh with a new PDF"
+        disabled: pdfFixLoading,
+        className: "text-[11px] px-2.5 py-1 bg-white text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1 " + (pdfFixLoading ? "opacity-40 cursor-not-allowed" : "hover:bg-slate-100"),
+        title: pdfFixLoading ? t("pdf_audit.start_new_running_title") || "Remediation is still running \u2014 clearing now would lose this run." : t("pdf_audit.start_new_title") || "Clear this audit result and start fresh with a new PDF"
       },
-      "\u{1F5D1}\uFE0F ",
+      pdfFixLoading ? "\u23F3" : "\u{1F5D1}\uFE0F",
+      " ",
       t("pdf_audit.start_new_audit") || "Start New Audit"
     )), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_results_whatnow", className: "bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap", role: "note" }, /* @__PURE__ */ React.createElement("span", { className: "font-black text-emerald-800" }, t("pdf_audit.whatnow.lead") || "What now?"), /* @__PURE__ */ React.createElement("span", null, _inputIsPdf ? t("pdf_audit.whatnow.pdf") || "1\uFE0F\u20E3 Scroll to Downloads and grab the Tagged PDF \u2014 that\u2019s your share-ready copy. 2\uFE0F\u20E3 Optional: open Compare to see before/after. 3\uFE0F\u20E3 Anything flagged below is optional polish." : t("pdf_audit.whatnow.office") || "1\uFE0F\u20E3 Scroll to Downloads and grab the Word file \u2014 that\u2019s your share-ready copy. 2\uFE0F\u20E3 Optional: open Compare to see before/after. 3\uFE0F\u20E3 Anything flagged below is optional polish."), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       try {

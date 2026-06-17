@@ -59,13 +59,18 @@ describe('host: result survives close and is re-openable in-session', () => {
 });
 
 describe('view: the two racy results-panel buttons are disabled while a run is active', () => {
-  it('source: "Start New Audit" carries the running-state disable guard', () => {
-    // unique marker = the running-state title key we added next to the disabled attr
-    expect(viewSrc).toContain("t('pdf_audit.start_new_running_title')");
-    // the guard expression matches the X button's existing guard
-    const idx = viewSrc.indexOf("t('pdf_audit.start_new_running_title')");
-    const around = viewSrc.slice(idx - 400, idx);
-    expect(around).toContain('disabled={pdfFixLoading || pdfAutoContinueRunning}');
+  it('source: "Start New Audit" cannot reset state mid-run — it becomes a Stop while the loop runs', () => {
+    // Updated design (#1, 2026-06-17): instead of a dead disabled button (which read as "broken"),
+    // the loop-running state renders an actionable Stop (abort ONLY — no reset-while-running race),
+    // and only the idle branch performs the destructive startNewPdfAudit reset. Same safety invariant
+    // (no mid-run teardown), better UX.
+    expect(viewSrc).toContain('{pdfAutoContinueRunning ? (');
+    const idx = viewSrc.indexOf('{pdfAutoContinueRunning ? (');
+    const branch = viewSrc.slice(idx, idx + 1400);
+    expect(branch).toContain('pdfAutoContinueAbortRef.current = true'); // running branch = Stop
+    expect(branch).toContain('startNewPdfAudit()');                     // idle branch = reset
+    expect(branch).toContain('disabled={pdfFixLoading}');               // reset still blocked during the initial fix
+    expect(viewSrc).toContain("t('pdf_audit.start_new_running_title')"); // idle-branch loading title retained
   });
 
   it('source: "Make learning materials" carries the running-state disable guard', () => {
