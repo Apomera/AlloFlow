@@ -598,6 +598,24 @@
       const ka = regularSoundKey(na);
       return ka !== na && ka === regularSoundKey(nb);
     };
+    // Rhyme Time variety: pick a RANDOM rhyming family member as the correct
+    // answer instead of always the same one, so it isn't predictable across
+    // items (mail/snail/trail/pale/scale rather than always 'mail'). The rime
+    // guard (candidates must share the known-good rhyme's spelling rime) means
+    // this can never turn a non-rhyme into the 'correct' answer.
+    const pickVariedRhyme = (family, knownGood, target) => {
+      if (!knownGood) return knownGood;
+      const kg = String(knownGood).toLowerCase();
+      const tgt = String(target || '').toLowerCase();
+      const rimeOf = (w) => { const s = String(w || '').toLowerCase(); return s.length >= 2 ? s.slice(-2) : s; };
+      const gr = rimeOf(kg);
+      const cands = (Array.isArray(family) ? family : [])
+        .map((w) => String(w || '').toLowerCase())
+        .filter((w) => w && w !== tgt && rimeOf(w) === gr);
+      if (kg !== tgt && cands.indexOf(kg) === -1) cands.push(kg);
+      if (cands.length === 0) return knownGood;
+      return cands[Math.floor(Math.random() * cands.length)];
+    };
     // ── PHONEME EQUIVALENCE ──
     // Find Sounds (isolation) presents a target phoneme audibly and asks the
     // child to pick the matching grapheme. If two answer choices SPELL the
@@ -4997,7 +5015,7 @@
                 fullTerm.toLowerCase() === word.toLowerCase() && term.syllables
                   ? term.syllables
                   : null,
-              rhymeWord: term.rhymeWord,
+              rhymeWord: pickVariedRhyme(term.familyMembers, term.rhymeWord, word),
               wordFamily: term.wordFamily,
               familyMembers: term.familyMembers,
               phonemeCount: term.phonemeCount,
@@ -5932,7 +5950,7 @@
                 fallbackPhonemes[fallbackPhonemes.length - 1] ||
                 wordLower[wordLower.length - 1] ||
                 "",
-              rhymeWord: rhymeDistractors[0] || "",
+              rhymeWord: pickVariedRhyme(rhymeDistractors, rhymeDistractors[0] || "", wordLower),
               rhymeDistractors: rhymeDistractors,
               blendingDistractors: blendingDistractors,
               familyEnding: "-" + rhymeEndingShort,
@@ -8101,9 +8119,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setSoundChips([]);
           setShowSessionComplete(false);
           sessionWordResults.current = [];
-          setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
-          if (setWordSoundsStreak) setWordSoundsStreak(0);
-          debugLog("🔄 Streak reset on activity change to:", activityId);
+          // Streak intentionally PERSISTS across activity changes: a correct
+          // run is not wiped just because the student switched activities. A
+          // wrong answer still resets it (see newStreak logic), and the auto-
+          // director still resets it explicitly when IT advances, so the
+          // adaptive director's behavior is unchanged.
+          debugLog("Streak preserved across activity change to:", activityId);
           setElkoninBoxes([]);
           setSegmentationErrors([]);
           setNextWordBuffer(null);
