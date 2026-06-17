@@ -2653,6 +2653,10 @@ var createDocPipeline = function(deps) {
       category: 'FORM', wcag: '3.3.2', params: '{index, label}',
       fn: function(html, p) {
         if (!p.label) return html;
+        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
+          if (el.getAttribute('aria-label')) return false; // already named
+          el.setAttribute('aria-label', p.label);
+        });
         let idx = 0;
         return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
           if (idx++ !== (p.index || 0)) return m;
@@ -10346,6 +10350,15 @@ HTML section ${chunkNum}/${chunks.length}:
       }),
       'frame-title':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_iframe_title', params: { target: n.target, index: i, title: 'Embedded content' } })),
       'empty-heading':  (nodes) => nodes.map((n, i) => ({ tool: 'fix_remove_empty_heading', params: { target: n.target, index: i } })),
+      // Form labels (3.3.2) — core for educational worksheets/quizzes. Honest deterministic name from
+      // the field's own attrs (like image-alt's filename stem), self-flagged "needs a label" so the AI
+      // verify re-flags it for a real one. Targets the exact element by axe selector (Slice 3).
+      'label':          (nodes) => nodes.map((n, i) => {
+        const lm = (n.html || '').match(/(?:placeholder|name|id|title)="([^"]{2,60})"/);
+        const lbl = lm ? lm[1].replace(/[-_+]+/g, ' ').trim() : '';
+        return { tool: 'fix_input_label', params: { target: n.target, index: i, label: lbl ? (lbl.slice(0, 60) + ' (auto-named — needs a clear label)') : 'Form field (needs a label)' } };
+      }),
+      'select-name':    (nodes) => nodes.map((n, i) => ({ tool: 'fix_input_label', params: { target: n.target, index: i, label: 'Dropdown (needs a label)' } })),
       'skip-link':      () => ({ tool: 'fix_skip_nav', params: {} }),
       'landmark-one-main': () => ({ tool: 'fix_add_landmark', params: { tag: 'main', label: 'Main content' } }),
       'color-contrast': (nodes) => nodes.map(n => {

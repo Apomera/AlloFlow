@@ -50,3 +50,34 @@ describe('anti-drift: jump + Workbench wired into the remaining-issues render', 
     expect(src).toContain("found.style.outline = '3px solid #d97706'");
   });
 });
+
+// Follow-up #1 (2026-06-16): the post-remediation axe "Issues" list gets the same Find/Workbench
+// actions — but axe carries an EXACT CSS-selector target (nodeDetails[0].target), so Find resolves
+// it directly with querySelector (more precise than the AI text-anchor search).
+describe('axe-list actions — _axeTarget selector resolution + wiring', () => {
+  const aStart = src.indexOf('const _axeTarget = (v) => {');
+  const aEnd = src.indexOf('\n  };', aStart);
+  if (aStart === -1 || aEnd === -1) throw new Error('extraction markers for _axeTarget missing');
+  const { _axeTarget } = new Function(src.slice(aStart, aEnd + 4) + '\n; return { _axeTarget };')();
+
+  it('reads the first node\'s selector, and unwraps axe\'s nested-frame array form (last selector)', () => {
+    expect(_axeTarget({ nodeDetails: [{ target: 'img.hero' }] })).toBe('img.hero');
+    expect(_axeTarget({ nodeDetails: [{ target: ['#main', 'img.hero'] }] })).toBe('#main img.hero');
+    expect(_axeTarget({ nodeDetails: [{ target: [['#frame', 'img.x']] }] })).toBe('#frame img.x');
+  });
+  it('returns "" when there is no node target (minor rules carry none) → no Find button', () => {
+    expect(_axeTarget({})).toBe('');
+    expect(_axeTarget({ nodeDetails: [] })).toBe('');
+    expect(_axeTarget({ nodeDetails: [{}] })).toBe('');
+  });
+  it('the axe jump uses querySelector against the live preview + an indigo highlight', () => {
+    expect(src).toContain('el = d.querySelector(sel)');
+    expect(src).toContain("el.style.outline = '3px solid #4f46e5'");
+    expect(src).toContain("'Fix this accessibility issue ('"); // workbench command carries id + selector
+  });
+  it('_axeActions is wired into all four severity rows (critical/serious/moderate/minor)', () => {
+    expect((src.match(/\{_axeActions\(v\)\}/g) || []).length).toBe(4);
+    // Find button is guarded so rows without a selector (minor) just show the Workbench action
+    expect(src).toContain('{_axeTarget(v) && <button onClick={() => _jumpToAxe(v)}');
+  });
+});

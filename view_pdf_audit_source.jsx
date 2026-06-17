@@ -2143,6 +2143,36 @@ function PdfAuditView(props) {
     try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
     addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
   };
+  // Same actions for an axe violation — its nodeDetails[0].target is an EXACT CSS selector (more
+  // precise than the AI text-anchor search), so Find resolves it directly against the live preview.
+  const _axeTarget = (v) => {
+    const nd = v && Array.isArray(v.nodeDetails) ? v.nodeDetails[0] : null;
+    const raw = nd && nd.target;
+    if (raw == null) return '';
+    return Array.isArray(raw) ? (Array.isArray(raw[raw.length - 1]) ? raw[raw.length - 1].join(' ') : raw.join(' ')) : String(raw);
+  };
+  const _jumpToAxe = (v) => {
+    const sel = _axeTarget(v);
+    if (!sel) { addToast(t('pdf_audit.issue.no_jump') || 'No precise spot for this one — it’s document-level or couldn’t be pinpointed.', 'info'); return; }
+    const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+    if (!d || !d.body) { addToast(t('pdf_audit.issue.preview_gone') || 'Open the preview to jump to an issue.', 'info'); return; }
+    let el = null; try { el = d.querySelector(sel); } catch (_) {}
+    if (!el) { addToast(t('pdf_audit.issue.spot_moved') || 'Couldn’t find that spot in the current preview (the text may have changed).', 'info'); return; }
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); const prev = el.style.outline; el.style.outline = '3px solid #4f46e5'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = prev; el.style.outlineOffset = ''; } catch (_) {} }, 2500); } catch (_) {}
+  };
+  const _axeToWorkbench = (v) => {
+    const sel = _axeTarget(v);
+    const where = sel ? (' at selector `' + sel.slice(0, 80) + '`') : '';
+    try { setExpertCommandInput('Fix this accessibility issue (' + (v.id || '') + (v.wcag ? ', WCAG ' + v.wcag : '') + ')' + where + ': ' + (v.description || '')); } catch (_) {}
+    try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
+    addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
+  };
+  const _axeActions = (v) => (
+    <span className="shrink-0 flex gap-1">
+      {_axeTarget(v) && <button onClick={() => _jumpToAxe(v)} className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 hover:bg-indigo-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + (v.description || v.id)}>🔎</button>}
+      <button onClick={() => _axeToWorkbench(v)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact selector)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + (v.description || v.id)}>🛠</button>
+    </span>
+  );
   // Map a WCAG rule number to its W3C Understanding page slug.
   const _wcagUnderstandingUrl = (wcag) => {
     const map = {
@@ -6151,7 +6181,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-red-50 rounded-lg p-2 border border-red-200">
                               <div className="text-[11px] font-bold text-red-600 uppercase mb-1">Critical ({pdfFixResult.axeAudit.critical.length})</div>
                               {pdfFixResult.axeAudit.critical.map((v, i) => (
-                                <div key={i} className="text-[11px] text-red-800 mb-0.5">🔴 {v.description} <span className="text-red-600">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-red-800 mb-1"><span className="flex-1 leading-snug">🔴 {v.description} <span className="text-red-600">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}
@@ -6159,7 +6189,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-orange-50 rounded-lg p-2 border border-orange-200">
                               <div className="text-[11px] font-bold text-orange-600 uppercase mb-1">Serious ({pdfFixResult.axeAudit.serious.length})</div>
                               {pdfFixResult.axeAudit.serious.map((v, i) => (
-                                <div key={i} className="text-[11px] text-orange-800 mb-0.5">🟠 {v.description} <span className="text-orange-700">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-orange-800 mb-1"><span className="flex-1 leading-snug">🟠 {v.description} <span className="text-orange-700">({v.id}, {v.nodes} element{v.nodes > 1 ? 's' : ''})</span></span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}
@@ -6167,7 +6197,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Moderate ({pdfFixResult.axeAudit.moderate.length})</div>
                               {pdfFixResult.axeAudit.moderate.map((v, i) => (
-                                <div key={i} className="text-[11px] text-amber-800 mb-0.5">🟡 {v.description} <span className="text-amber-700">({v.id})</span></div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-amber-800 mb-1"><span className="flex-1 leading-snug">🟡 {v.description} <span className="text-amber-700">({v.id})</span></span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}
@@ -6175,7 +6205,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="bg-slate-50 rounded-lg p-2 border border-slate-400">
                               <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Minor ({pdfFixResult.axeAudit.minor.length})</div>
                               {pdfFixResult.axeAudit.minor.map((v, i) => (
-                                <div key={i} className="text-[11px] text-slate-600 mb-0.5">⚪ {v.description}</div>
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-slate-600 mb-1"><span className="flex-1 leading-snug">⚪ {v.description}</span>{_axeActions(v)}</div>
                               ))}
                             </div>
                           )}

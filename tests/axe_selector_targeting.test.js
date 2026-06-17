@@ -80,3 +80,33 @@ describe('anti-drift: the axe-mapped tools + map use the selector path', () => {
     expect(src).toContain('_directives.filter((d) => !_structuralLast[d.tool]).concat(_directives.filter((d) => _structuralLast[d.tool]))');
   });
 });
+
+describe('form-label rules (3.3.2) joined the direct-map (follow-up #2, 2026-06-16)', () => {
+  it('label + select-name map to fix_input_label, threading the exact selector', () => {
+    for (const rule of ["'label':", "'select-name':"]) {
+      const i = src.indexOf(rule, src.indexOf('AXE_RULE_TO_TOOL'));
+      const body = src.slice(i, i + 320);
+      expect(body, `${rule} should map to fix_input_label`).toContain("tool: 'fix_input_label'");
+      expect(body, `${rule} should thread target: n.target`).toContain('target: n.target');
+    }
+  });
+
+  it('fix_input_label gained a selector branch (so it fixes select/textarea too, fail-safe)', () => {
+    const i = src.indexOf('fix_input_label: {');
+    const body = src.slice(i, i + 600);
+    expect(body).toMatch(/if \(p\.target != null\) return _applyToAxeTarget\(html, p\.target,/);
+    // the branch declines (returns false) when the field is already named — never clobbers a real label
+    expect(body).toContain("if (el.getAttribute('aria-label')) return false");
+  });
+
+  it("the selector branch adds an aria-label by selector, and declines when one already exists", () => {
+    const add = _applyToAxeTarget(
+      '<body><input class="q1" placeholder="answer"></body>', 'input.q1',
+      (el) => { if (el.getAttribute('aria-label')) return false; el.setAttribute('aria-label', 'Question 1 (needs a label)'); });
+    expect(parse(add).querySelector('input.q1').getAttribute('aria-label')).toBe('Question 1 (needs a label)');
+    const keep = '<body><select class="g" aria-label="Grade level"><option>K</option></select></body>';
+    const out = _applyToAxeTarget(keep, 'select.g',
+      (el) => { if (el.getAttribute('aria-label')) return false; el.setAttribute('aria-label', 'WRONG'); });
+    expect(out).toBe(keep); // already named → unchanged
+  });
+});
