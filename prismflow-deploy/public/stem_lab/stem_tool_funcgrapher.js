@@ -149,6 +149,9 @@ window.StemLab = window.StemLab || {
             if (ct === 'cubic') return ca * x * x * x + cb * x + cc;
             if (ct === 'exponential') return ca * Math.pow(Math.E, cb * x) + cc;
             if (ct === 'absolute') return ca * Math.abs(x + cb) + cc;
+            if (ct === 'sqrt') return ca * Math.sqrt(x + cb) + cc;
+            if (ct === 'log') return ca * Math.log(x + cb) + cc;
+            if (ct === 'rational') return ca / (x + cb) + cc;
             return ca * x + cb;
           } : null;
 
@@ -170,6 +173,12 @@ window.StemLab = window.StemLab || {
 
             if (d.type === 'absolute') return d.a * Math.abs(x + d.b) + d.c;
 
+            if (d.type === 'sqrt') return d.a * Math.sqrt(x + d.b) + d.c;   // domain x ≥ −b; NaN outside (auto-skipped)
+
+            if (d.type === 'log') return d.a * Math.log(x + d.b) + d.c;     // natural log; domain x > −b
+
+            if (d.type === 'rational') return d.a / (x + d.b) + d.c;        // vertical asymptote at x = −b
+
             return d.a * x + d.b;
 
           };
@@ -188,7 +197,11 @@ window.StemLab = window.StemLab || {
 
           // Generate curve points
 
-          const pts = [];
+          // Curve as break-aware SEGMENTS: any invalid/out-of-range sample ends the current
+          // segment so a discontinuity (e.g. a rational's vertical asymptote, or a domain edge of
+          // sqrt/log) does NOT draw a spurious connecting line. Each segment renders as its own polyline.
+          const segments = [];
+          var curSeg = null;
 
           const derivPts = [];
 
@@ -204,7 +217,7 @@ window.StemLab = window.StemLab || {
 
             var dy = evalDeriv(x);
 
-            if (y >= yR.yMin && y <= yR.yMax) pts.push(toSX(x) + ',' + toSY(y));
+            if (isFinite(y) && y >= yR.yMin && y <= yR.yMax) { if (!curSeg) { curSeg = []; segments.push(curSeg); } curSeg.push(toSX(x) + ',' + toSY(y)); } else { curSeg = null; }
 
             if (dy >= yR.yMin && dy <= yR.yMax) derivPts.push(toSX(x) + ',' + toSY(dy));
 
@@ -314,6 +327,18 @@ window.StemLab = window.StemLab || {
             var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
             var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
             eqStr += amp + '|' + inner + '|' + fmtConst(d.c, false);
+          } else if (d.type === 'sqrt') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += amp + '√(' + inner + ')' + fmtConst(d.c, false);
+          } else if (d.type === 'log') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += amp + 'ln(' + inner + ')' + fmtConst(d.c, false);
+          } else if (d.type === 'rational') {
+            var num = d.a === -1 ? '-1' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += num + '/(' + inner + ')' + fmtConst(d.c, false);
           }
 
           // Build comparison equation string
@@ -327,6 +352,9 @@ window.StemLab = window.StemLab || {
             else if (ct === 'cubic') { var p = fmtCoeff(ca, 'x\u00B3', true) + fmtCoeff(cb, 'x', ca === 0) + fmtConst(cc, ca === 0 && cb === 0); eqStr2 += p || '0'; }
             else if (ct === 'exponential') { eqStr2 += (ca === 1 ? '' : ca) + 'e^(' + (cb === 1 ? 'x' : cb + 'x') + ')' + fmtConst(cc, false); }
             else if (ct === 'absolute') { eqStr2 += (ca === 1 ? '' : ca) + '|' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + '|' + fmtConst(cc, false); }
+            else if (ct === 'sqrt') { eqStr2 += (ca === 1 ? '' : ca === -1 ? '-' : ca) + '√(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
+            else if (ct === 'log') { eqStr2 += (ca === 1 ? '' : ca === -1 ? '-' : ca) + 'ln(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
+            else if (ct === 'rational') { eqStr2 += (ca === -1 ? '-1' : ca) + '/(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
           }
 
           // ── Transformation labels ──
@@ -349,6 +377,20 @@ window.StemLab = window.StemLab || {
           if (d.b !== 0 && d.type === 'linear') {
             transformLabels.push({ text: 'y-intercept = ' + d.b, color: 'text-green-600 bg-green-50 border-green-200' });
           }
+          // Key-feature chips for the function families (domain restrictions + asymptotes + vertex)
+          if (d.type === 'quadratic' && d.a !== 0) {
+            transformLabels.push({ text: 'Vertex at x = ' + (-d.b / (2 * d.a)).toFixed(2), color: 'text-indigo-600 bg-indigo-50 border-indigo-200' });
+          }
+          if (d.type === 'sqrt') {
+            transformLabels.push({ text: 'Domain: x ≥ ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+          }
+          if (d.type === 'log') {
+            transformLabels.push({ text: 'Domain: x > ' + (-d.b) + ' · asymptote x = ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+          }
+          if (d.type === 'rational') {
+            transformLabels.push({ text: 'Vertical asymptote: x = ' + (-d.b), color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            transformLabels.push({ text: 'Horizontal asymptote: y = ' + d.c, color: 'text-rose-600 bg-rose-50 border-rose-200' });
+          }
 
 
 
@@ -366,7 +408,13 @@ window.StemLab = window.StemLab || {
 
             { id: 'exponential', label: t('stem.func_grapher.exponential'), emoji: '\uD83D\uDCC8' },
 
-            { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' }
+            { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' },
+
+            { id: 'sqrt', label: 'Square Root', emoji: '\u221A' },
+
+            { id: 'log', label: 'Logarithm', emoji: 'ln' },
+
+            { id: 'rational', label: 'Rational', emoji: '\u00F7' }
 
           ];
 
@@ -490,7 +538,8 @@ window.StemLab = window.StemLab || {
 
               // Main curve
 
-              pts.length > 1 && React.createElement("polyline", { points: pts.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(79,70,229,0.45))' } }),
+              d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "5 4", "aria-label": "vertical asymptote at x = " + (-d.b) }),
+              segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(79,70,229,0.45))' } }) : null; }),
 
               // Comparison curve (orange)
               d.compare && comparePts.length > 1 && React.createElement("polyline", { points: comparePts.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }),

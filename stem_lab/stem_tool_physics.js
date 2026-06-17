@@ -123,7 +123,7 @@ window.StemLab = window.StemLab || {
           if (!labToolData || !labToolData.physics) {
             setLabToolData(function(prev) {
               return Object.assign({}, prev, { physics: {
-                angle: 45, velocity: 25, gravity: 9.8, airResist: false,
+                angle: 45, velocity: 25, gravity: 9.8, mass: 1, airResist: false,
                 showLearn: false, showFlightData: false, showEnergy: false, showVectors: false,
                 challengeTier: 0, challengeActive: false, launchCount: 0, targetsHit: 0,
                 // Live "show your work" formulas panel
@@ -1694,18 +1694,24 @@ const d = labToolData.physics;
 
               // ── Energy bar (KE vs PE vs Drag Loss) ──
               if (ball && canvasEl.dataset.showEnergy === 'true') {
-                var mass = 1; // normalized
+                var mass = parseFloat(canvasEl.dataset.mass || 1);
+                var dragOn = canvasEl.dataset.airResist === 'true';
                 var KE = 0.5 * mass * ball.speed * ball.speed;
                 var PE = mass * ball.grav * Math.max(0, ball.mY);
                 var totalE = 0.5 * mass * (parseFloat(canvasEl.dataset.velocity || 25)) * (parseFloat(canvasEl.dataset.velocity || 25));
-                var dragLoss = Math.max(0, totalE - KE - PE);
+                // With NO drag, mechanical energy is conserved: KE + PE = totalE throughout the flight.
+                // Only attribute a red "Drag" segment when drag is actually ON — otherwise tiny Euler-
+                // integration drift used to render as a phantom red loss. Clamp totalE up to KE+PE so
+                // the bar never visually overflows from that drift.
+                var dragLoss = dragOn ? Math.max(0, totalE - KE - PE) : 0;
+                if (!dragOn) totalE = Math.max(totalE, KE + PE);
                 var ebX = (cW / dpr - 160) * dpr, ebY = (cH / dpr - 65) * dpr;
                 var ebW = 140 * dpr, ebH = 14 * dpr;
                 // Background
                 ctx.fillStyle = 'rgba(15,23,42,0.7)';
                 ctx.fillRect(ebX - 4 * dpr, ebY - 14 * dpr, ebW + 8 * dpr, ebH + 28 * dpr);
                 ctx.font = 'bold ' + (5 * dpr) + 'px sans-serif'; ctx.textAlign = 'left';
-                ctx.fillStyle = '#94a3b8'; ctx.fillText('Energy', ebX, ebY - 4 * dpr);
+                ctx.fillStyle = '#94a3b8'; ctx.fillText(dragOn ? 'Energy' : 'Energy (KE + PE conserved)', ebX, ebY - 4 * dpr);
                 // Stacked bar
                 var keW = totalE > 0 ? (KE / totalE) * ebW : 0;
                 var peW = totalE > 0 ? (PE / totalE) * ebW : 0;
@@ -1929,6 +1935,8 @@ const d = labToolData.physics;
                 "aria-label": "Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch",
 
                 "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
+
+                "data-mass": d.mass != null ? d.mass : 1,
 
                 "data-air-resist": d.airResist ? 'true' : 'false',
                 "data-show-vectors": d.showVectors ? 'true' : 'false',
@@ -2172,9 +2180,9 @@ const d = labToolData.physics;
 
             ),
 
-            React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
+            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
 
-              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }].map(function (s) {
+              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }, { k: 'mass', label: 'Mass (kg)', min: 1, max: 10, step: 1 }].map(function (s) {
                 var isLocked = d.targetMode && d.targetConstraint && (
                   (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
                   (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
@@ -2466,6 +2474,18 @@ const d = labToolData.physics;
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-sky-600" }, "\uD83C\uDF11 Gravity Varies: "),
                   "Different planets have different gravitational pull. Moon (1.6 m/s\u00B2) lets projectiles fly 6x farther than Earth (9.8 m/s\u00B2)! Try Jupiter for a challenge."
+                ),
+                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70 mt-1" },
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CA moving object needs a forward push.\u201D "),
+                  "Watch Vx \u2014 it never changes, and the Vectors view shows NO horizontal arrow. With no sideways force, the object keeps moving sideways on its own (Newton's 1st Law)."
+                ),
+                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CHeavier objects fall faster.\u201D "),
+                  "Drag the Mass slider \u2014 the trajectory does NOT change. In a vacuum every mass falls with the same g; mass only scales the energy bar, never the path."
+                ),
+                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
+                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 Myth: \u201CVelocity points where the force points.\u201D "),
+                  "At the very top of the arc the velocity is purely horizontal, yet gravity still points straight DOWN. A force changes motion \u2014 it doesn't have to point along it."
                 )
               )
             ),
