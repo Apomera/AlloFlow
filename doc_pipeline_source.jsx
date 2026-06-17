@@ -453,6 +453,65 @@ function _suppressContradictedIssues(issues, html) {
   return _r;
 }
 
+// Normalize HTML to matchable VISIBLE TEXT for the locator. BLOCK-level tags become a hard boundary
+// (U+0000 — NOT whitespace and NOT a line terminator, so an insignificant newline in the source HTML
+// can't be mistaken for a boundary, and it stays valid inside a regex literal) so an anchor can't
+// bridge two SEPARATE elements (e.g. two adjacent <td>s — adversarial review caught a phantom
+// cross-cell match); INLINE tags collapse to a space (so "<b>Clarifying</b> the" reads as "Clarifying
+// the"). Both tag regexes are LENGTH-BOUNDED so a pathological run of unescaped "<" can't trigger
+// catastrophic O(n^2) backtracking (review measured a ~57s main-thread block on 200k bare "<").
+// Callers normalize the haystack ONCE and pass the result to _resolveIssueLocator (never per-issue).
+function _normLocatorText(s) {
+  return String(s == null ? '' : s)
+    .replace(/<\/?(?:p|div|td|th|tr|li|h[1-6]|table|thead|tbody|tfoot|section|header|footer|nav|main|article|aside|ul|ol|dl|dt|dd|figure|figcaption|caption|blockquote|pre|br|hr)\b[^>]{0,200}>/gi, '\x00')
+    .replace(/<[^>]{0,400}>/g, ' ')
+    .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ')
+    .replace(/ ?\x00[\x00 ]*/g, '\x00')
+    .replace(/^\x00+|\x00+$/g, '')
+    .trim();
+}
+
+// Issue-locator resolver (2026-06-16). Turns an AI auditor's free-text "location" anchor into a
+// ROUTABLE pointer so a fix/UI can jump to the exact spot — WITHOUT ever guessing. `normHaystack`
+// MUST be pre-normalized visible text from _normLocatorText (callers do this ONCE). Tiers:
+//   exact   — the anchor is found verbatim in the visible text at EXACTLY ONE place; returns the
+//             snippet + a before/after window so the live preview can be searched and the fixer can
+//             be handed a focused context instead of the whole document.
+//   page    — a "page N" anchor, OR a text anchor matching 0 / >1 places (ambiguous) / <8 chars →
+//             fall back to the coarse page locator.
+//   document / none — document-wide, or no usable anchor.
+// SAFETY (the whole point): precision is claimed ONLY on an exactly-one match; zero/multiple degrade
+// to coarse, so the locator fails SAFE (loses precision) and never fails WRONG (points at the wrong
+// element). The needle carries no boundary char, so it can only match WITHIN one block segment — it
+// cannot bridge two elements.
+function _resolveIssueLocator(location, normHaystack, fallbackPages) {
+  const _pages = Array.isArray(fallbackPages) ? fallbackPages.slice() : [];
+  const _loc = (typeof location === 'string') ? location.trim() : '';
+  if (!_loc) { const _r0 = { kind: 'none', pages: _pages }; return _r0; }
+  if (/^document$/i.test(_loc)) { const _rd = { kind: 'document', pages: _pages }; return _rd; }
+  const _pm = _loc.match(/^page\s+(\d+)$/i);
+  if (_pm) { const _n = parseInt(_pm[1], 10); const _rp = { kind: 'page', pages: _pages.length ? _pages : [_n] }; return _rp; }
+  const _needleRaw = _normLocatorText(_loc).replace(/\x00/g, ' ').replace(/\s+/g, ' ').trim();
+  const _needle = _needleRaw.toLowerCase();
+  if (_needle.length < 8) { const _rs = { kind: 'page', pages: _pages, reason: 'anchor-too-short' }; return _rs; }
+  const _hay = String(normHaystack == null ? '' : normHaystack);
+  const _hayLc = _hay.toLowerCase();
+  let _count = 0, _first = -1, _idx = _hayLc.indexOf(_needle);
+  while (_idx !== -1) { _count++; if (_first === -1) _first = _idx; if (_count > 1) break; _idx = _hayLc.indexOf(_needle, _idx + 1); }
+  if (_count !== 1) { const _ra = { kind: 'page', pages: _pages, reason: _count === 0 ? 'not-found' : 'ambiguous' }; return _ra; }
+  const _WIN = 100;
+  const _clean = (x) => x.replace(/\x00/g, ' ').replace(/\s+/g, ' ').trim();
+  const _re = {
+    kind: 'exact',
+    snippet: _clean(_hay.substring(_first, _first + _needleRaw.length)),
+    textOffset: _first,
+    before: _clean(_hay.substring(Math.max(0, _first - _WIN), _first)),
+    after: _clean(_hay.substring(_first + _needleRaw.length, _first + _needleRaw.length + _WIN)),
+    pages: _pages,
+  };
+  return _re;
+}
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -8055,7 +8114,7 @@ AUDIT CHECKLIST:
 
 IMPORTANT: Calculate the score by starting at 100 and subtracting per the rubric above. Each unique violation deducts points ONCE regardless of how many times it appears. Do NOT estimate — count violations and calculate.
 
-LOCATION FIELD ("location"): For each issue, provide a short anchor (<80 chars) that identifies WHERE the violation occurs so remediation can target it. Prefer heading titles, unique phrases from the offending element, page numbers, or structural anchors ("first table", "footer"). Use "document" only for document-wide issues. Omit/null only if no meaningful anchor exists.
+LOCATION FIELD ("location"): For each issue, provide a short anchor (<80 chars) so remediation can find the EXACT spot. STRONGLY PREFER a VERBATIM snippet copied character-for-character from the offending element's actual visible text (6-12 words, NOT a paraphrase or description) — this lets a tool locate it by exact text search. Pick a snippet that is UNIQUE in the document. If the element has no quotable text (e.g. an unlabeled control or an icon), use its nearest preceding heading's verbatim text. Use a page number ("page 4") only when no text anchor applies, and "document" only for truly document-wide issues (e.g. missing lang). Omit/null only if no anchor is possible.
 
 Return ONLY JSON:
 {
@@ -8090,6 +8149,11 @@ Return ONLY JSON:
           const _fpS = _suppressContradictedIssues(parsed.issues, htmlContent);
           if (_fpS.suppressed.length) { try { warnLog('[audit] suppressed ' + _fpS.suppressed.length + ' AI false-positive(s) contradicted by deterministic ground truth'); } catch (_) {} }
           parsed.issues = _fpS.kept;
+          // Attach a routable locator to each remaining issue: resolve the AI's verbatim "location"
+          // anchor to an exact spot in THIS html (fail-safe — exactly-one match or degrade to coarse).
+          const _nh = _normLocatorText(htmlContent); // normalize the haystack ONCE, not per-issue (review: avoids O(n²))
+          parsed.issues.forEach((iss) => { try { iss.locator = _resolveIssueLocator(iss.location, _nh, iss.pages); } catch (_) {} });
+          try { const _ex = parsed.issues.filter((i) => i.locator && i.locator.kind === 'exact').length; warnLog('[audit] issue locators: ' + _ex + '/' + parsed.issues.length + ' resolved to an exact text anchor'); } catch (_) {}
           const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
           // Pass credit: ratio of passes to total checks — more passes = more proportional credit
           const pc = (parsed.passes || []).length;
@@ -8264,6 +8328,12 @@ HTML section ${chunkNum}/${chunks.length}:
       const _fpC = _suppressContradictedIssues(mergedIssues, htmlContent);
       if (_fpC.suppressed.length) { try { warnLog('[Output Audit] suppressed ' + _fpC.suppressed.length + ' AI false-positive(s) contradicted by deterministic ground truth'); } catch (_) {} }
       mergedIssues = _fpC.kept;
+      // Attach a routable locator to each remaining issue (see the single-doc branch). Resolves the
+      // AI's verbatim "location" anchor to an exact spot in the full html, fail-safe to the coarse
+      // page/chunk locator on a 0-or-multiple match — never points at the wrong element.
+      const _nhMerged = _normLocatorText(htmlContent); // normalize the haystack ONCE, not per-issue (review: avoids O(n²))
+      mergedIssues.forEach((iss) => { try { iss.locator = _resolveIssueLocator(iss.location, _nhMerged, iss.pages); } catch (_) {} });
+      try { const _ex = mergedIssues.filter((i) => i.locator && i.locator.kind === 'exact').length; warnLog('[Output Audit] issue locators: ' + _ex + '/' + mergedIssues.length + ' resolved to an exact text anchor'); } catch (_) {}
       const passCount = mergedPassList.length;
       // Score from merged deductions — each unique violation type counted ONCE
       const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0), 0);
