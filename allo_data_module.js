@@ -54,6 +54,7 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.find_which_sound': 'Find the {{position}} sound:',
     'word_sounds.blending_prompt': 'Blend these sounds together!',
     'word_sounds.syllable_blending_prompt': 'Blend these syllables into a word!',
+    'word_sounds.decoding_prompt': 'Read the word, then tap its picture!',
     'word_sounds.manipulation_prompt': 'Swap the sound to make a new word!',
     'word_sounds.play_sounds': 'Play Sounds',
     'word_sounds.type_word': 'Type the word you hear:',

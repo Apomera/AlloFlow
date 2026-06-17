@@ -1566,6 +1566,8 @@
       };
       const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
       const [nextWordBuffer, setNextWordBuffer] = React.useState(null);
+      const [decodingChoices, setDecodingChoices] = React.useState([]);
+      const lastWordForDecoding = React.useRef(null);
       const [isPrefetching, setIsPrefetching] = React.useState(false);
       const internalAudioCache = React.useRef(new Map());
       const audioInstances = React.useRef(new Map());
@@ -4759,6 +4761,13 @@
             "Build the word family house",
           tier: "phonological",
         },
+        {
+          id: "decoding",
+          label: ts("word_sounds.activity_decoding") || "Read & Match",
+          icon: "\uD83D\uDCD6",
+          description: ts("word_sounds.decoding_desc") || "Read the word and tap its picture",
+          tier: "orthographic",
+        },
       ];
       const ACTIVITIES = React.useMemo(() => {
         if (includeOrthographic) {
@@ -4775,7 +4784,7 @@
         counting: "pa_phoneme", segmentation: "pa_phoneme", isolation: "pa_phoneme", blending: "pa_phoneme", sound_sort: "pa_phoneme", manipulation: "pa_phoneme",
         mapping: "phonics", orthography: "phonics",
         spelling_bee: "spelling", word_scramble: "spelling", missing_letter: "spelling",
-        letter_tracing: "handwriting",
+        letter_tracing: "handwriting", decoding: "phonics",
       };
       const ACTIVITY_GROUP_ORDER = ["pa_large", "pa_phoneme", "phonics", "spelling", "handwriting"];
       const ACTIVITY_GROUP_LABELS = { pa_large: "Syllables & Rhyme", pa_phoneme: "Phonemes", phonics: "Phonics", spelling: "Spelling", handwriting: "Writing" };
@@ -6250,6 +6259,30 @@
         currentWordSoundsWord,
         callGemini,
       ]);
+      // Read & Match (decoding): printed word (NOT spoken) -> tap its picture.
+      // Distractor pictures reuse images already generated for other words;
+      // the target's is generated once (ungated - images ARE the activity).
+      React.useEffect(() => {
+        if (wordSoundsActivity !== "decoding") return;
+        const target = (currentWordSoundsWord || "").toLowerCase();
+        if (!target) return;
+        if (lastWordForDecoding.current === target) return;
+        lastWordForDecoding.current = target;
+        const poolWords = [...new Set((wordPool || []).map((p) => p.word).filter((w) => w && w !== target))];
+        const distractors = fisherYatesShuffle(poolWords).slice(0, 3);
+        setDecodingChoices(fisherYatesShuffle([currentWordSoundsWord || target, ...distractors]));
+        if (typeof callImagen === "function") {
+          [currentWordSoundsWord || target, ...distractors].forEach((w) => {
+            const lc = (w || "").toLowerCase();
+            if (!lc || optionImagesCache.current.has(w) || optionImagesCache.current.has(lc)) return;
+            const pe = (wordPool || []).find((p) => p.word === lc);
+            if (pe && pe.image) return;
+            callImagen(`Simple flat vector icon of "${w}", minimal educational illustration, white background, no text or labels`)
+              .then((img) => { if (img) { optionImagesCache.current.set(lc, img); setOptionImages((prev) => ({ ...prev, [lc]: img })); } })
+              .catch(() => {});
+          });
+        }
+      }, [wordSoundsActivity, currentWordSoundsWord, wordPool, callImagen]);
       const generateOrthographyDistractors = (word) => {
         if (!word || word.length < 2)
           return [`${word}s`, `${word}ed`, `un${word}`];
@@ -13474,6 +13507,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 showLetterHints: showLetterHints,
                 soundOnlyMode: !showWordText,
               }),
+            );
+          }
+          case "decoding": {
+            const dWord = currentWordSoundsWord || "";
+            const dChoices = (decodingChoices && decodingChoices.length) ? decodingChoices : [dWord];
+            const imgFor = (w) => { const lc = (w || "").toLowerCase(); const pe = (wordPool || []).find((p) => p.word === lc); return optionImages[w] || optionImages[lc] || (pe && pe.image) || null; };
+            const dSrc = (img) => (typeof img === "string" && (img.startsWith("data:") || img.startsWith("http"))) ? img : ("data:image/png;base64," + img);
+            const dAnyImg = dChoices.some((w) => imgFor(w));
+            return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
+              /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, "Read the word, then tap its picture"),
+              /*#__PURE__*/ React.createElement("div", { className: "text-5xl font-black text-slate-800 tracking-wide capitalize" }, dWord),
+              (!dAnyImg && typeof callImagen !== "function")
+                ? /*#__PURE__*/ React.createElement("p", { className: "text-amber-600 text-sm font-semibold" }, "Picture matching needs image generation (open in Canvas).")
+                : /*#__PURE__*/ React.createElement("div", { className: "grid grid-cols-2 gap-4 max-w-md w-full" },
+                    ...dChoices.map((w, i) => { const img = imgFor(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, onClick: () => checkAnswer((w || "").toLowerCase() === dWord.toLowerCase() ? "correct" : "incorrect", "correct"), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2", "aria-label": "Picture choice " + (i + 1) },
+                      img ? /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: "Picture choice " + (i + 1), className: "w-full h-full object-contain rounded-xl" }) : /*#__PURE__*/ React.createElement("span", { className: "text-slate-400 text-xs italic" }, "preparing picture\u2026"));
+                    }),
+                  ),
             );
           }
           default:

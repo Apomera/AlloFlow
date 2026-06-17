@@ -1603,6 +1603,210 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </div>"
 `;
 
+exports[`layer 2 — render behavior per activity > activity "decoding" renders identically (snapshot) 1`] = `
+"<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
+<div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
+<div class="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<svg width="48" height="48" viewBox="0 0 48 48" class="drop-shadow-lg transition-transform duration-500 ">
+<circle cx="24" cy="24" r="16" fill="#FBBF24" stroke="#F59E0B" stroke-width="2">
+</circle>
+<rect x="10" y="19" width="12" height="8" rx="2" fill="#1F2937">
+</rect>
+<rect x="26" y="19" width="12" height="8" rx="2" fill="#1F2937">
+</rect>
+<rect x="22" y="21" width="4" height="3" fill="#1F2937">
+</rect>
+<rect x="11" y="20" width="4" height="2" rx="1" fill="#4B5563" opacity="0.5">
+</rect>
+<rect x="27" y="20" width="4" height="2" rx="1" fill="#4B5563" opacity="0.5">
+</rect>
+<path d="M18 32 Q24 35 30 32" stroke="#B45309" stroke-width="2" fill="none" stroke-linecap="round">
+</path>
+<path d="M6 24 Q6 8 24 8 Q42 8 42 24" stroke="#1F2937" stroke-width="4" fill="none" stroke-linecap="round">
+</path>
+<ellipse cx="6" cy="26" rx="5" ry="7" fill="#374151">
+</ellipse>
+<ellipse cx="42" cy="26" rx="5" ry="7" fill="#374151">
+</ellipse>
+<ellipse cx="6" cy="26" rx="3" ry="5" fill="#4B5563">
+</ellipse>
+<ellipse cx="42" cy="26" rx="3" ry="5" fill="#4B5563">
+</ellipse>
+</svg>
+<div>
+<h2 class="text-xl font-bold">🔤 Word Sounds Studio</h2>
+<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+</div>
+</div>
+<button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
+<span class="lucide-icon" data-icon="Minimize">
+</span>
+</button>
+<button class="p-2 hover:bg-white/20 rounded-full transition-colors" aria-label="common.close">
+<span class="lucide-icon" data-icon="X">
+</span>
+</button>
+</div>
+<div class="flex items-center justify-between gap-4 mt-3 text-sm flex-wrap">
+<div class="flex items-center gap-2 flex-wrap">
+<div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+<span class="lucide-icon" data-icon="Trophy">
+</span>
+<span>2/5</span>
+</div>
+<div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
+<span class="lucide-icon" data-icon="Zap">
+</span>
+<span class="font-bold ">word_sounds.streak: 1</span>
+</div>
+<div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+<span>40% word_sounds.accuracy</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<span class="lucide-icon" data-icon="Edit2">
+</span>
+</button>
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<span class="lucide-icon" data-icon="MicOff">
+</span>
+</button>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<span>👂</span>
+<span class="hidden sm:inline">word_sounds.mode_sound</span>
+</button>
+<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
+<span>🤖</span>
+<span>Easy</span>
+<span style="font-size:10px;opacity:0.7">(Auto)</span>
+</div>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
+<span>🗣️</span>
+<span class="hidden sm:inline">Help</span>
+</button>
+<select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
+<option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
+<option value="sequential" class="text-slate-800">📝 Sequential</option>
+<option value="easy" class="text-slate-800">🟢 Easy</option>
+<option value="medium" class="text-slate-800">🟡 Medium</option>
+<option value="hard" class="text-slate-800">🔴 Hard</option>
+</select>
+<div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
+<span class="text-xs opacity-80">🐢</span>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<span class="text-xs opacity-80">🐇</span>
+<span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
+</div>
+</div>
+</div>
+</div>
+<div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
+<div class="flex gap-2 items-center">
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<span>🎵</span>
+<span>word_sounds.activity_rhyming</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_syllable_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<span>👏</span>
+<span>word_sounds.activity_syllable_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<span>🏠</span>
+<span>word_sounds.activity_word_families</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<span>🔢</span>
+<span>word_sounds.activity_counting</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<span>🎯</span>
+<span>word_sounds.activity_isolation</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<span>🔗</span>
+<span>word_sounds.activity_blending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<span>📦</span>
+<span>word_sounds.activity_segmentation</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<span>✂️</span>
+<span>word_sounds.activity_manipulation</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<span>🔊</span>
+<span>word_sounds.activity_sound_sort</span>
+</button>
+<span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Handwriting / letter formation">Writing</span>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.letter_tracing_desc">
+<span>✍️</span>
+<span>word_sounds.activity_letter_tracing</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
+<span>🖼️</span>
+<span>AAC</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-6">
+<div class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
+<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
+<span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
+<div class="flex items-center gap-1">
+<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
+<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
+</div>
+</div>
+<div class="flex items-stretch gap-4 p-4">
+<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
+<div class="font-black text-4xl text-amber-700 leading-none">C</div>
+<div class="h-px w-8 bg-amber-300 my-1">
+</div>
+<div class="font-black text-4xl text-amber-700 leading-none">c</div>
+</div>
+<div class="flex-1 flex flex-col gap-2 min-w-0">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-[11px] font-bold text-slate-700 uppercase">Key word:</span>
+<span class="text-base font-bold text-slate-800">cat</span>
+<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-200 hover:bg-amber-300 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
+</button>
+</div>
+<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
+<div class="text-[11px] text-slate-700 italic flex items-start gap-1">
+<span aria-hidden="true">📐</span>
+<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
+</div>
+</div>
+</div>
+<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[11px] text-slate-700">
+<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
+</div>
+<div class="flex flex-col items-center gap-5 p-4">
+<p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Read the word, then tap its picture</p>
+<div class="text-5xl font-black text-slate-800 tracking-wide capitalize">cat</div>
+<div class="grid grid-cols-2 gap-4 max-w-md w-full">
+<button class="aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2" aria-label="Picture choice 1">
+<span class="text-slate-400 text-xs italic">preparing picture…</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>"
+`;
+
 exports[`layer 2 — render behavior per activity > activity "isolation" renders identically (snapshot) 1`] = `
 "<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in" role="dialog" aria-modal="true" aria-label="Welcome to Word Sounds!">
 <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
