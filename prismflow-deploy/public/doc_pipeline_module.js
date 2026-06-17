@@ -12767,7 +12767,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // quotes inside msg.textContent would prematurely terminate the HTML attribute
               // and silently break the button. Use curly quotes (\u201C \u201D) around the
               // referenced button label — visually identical to the user, safe for HTML attrs.
-              const _pickHandler = `(function(btn){var c=document.getElementById('${_imgId}-container');if(!c)return;var list=(typeof window!=='undefined'&&(window.__alloflowExtractedImages||(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})()))||[];var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn})(c,img.src,img.description||'${_imgAltSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
+              const _pickHandler = `(function(btn){var c=document.getElementById('${_imgId}-container');if(!c)return;var _lL=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||null;var _pL=(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})();var list=(_pL&&_pL.length)?_pL:((_lL&&_lL.length)?_lL:(_pL||_lL||[]));var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn})(c,img.src,img.description||'${_imgAltSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
               // One-click removal (2026-06-11, user report: deleting a
               // placeholder required manual selection — not intuitive).
               return `<figure id="${_imgId}-figure" data-img-placeholder="true" style="position:relative;margin:1em 0">`
@@ -13542,7 +13542,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             const _dropHandler2 = `(function(c,ev){ev.preventDefault();c.style.borderColor='#cbd5e1';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn2})(c,d.src,d.alt||'${_altSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
             const _uploadHandler2 = `(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${imgId}-container');(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);})(this)`;
             // See note above on _pickHandler — same HTML-attribute-quote hazard applies here.
-            const _pickHandler2 = `(function(btn){var c=document.getElementById('${imgId}-container');if(!c)return;var list=(typeof window!=='undefined'&&(window.__alloflowExtractedImages||(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})()))||[];var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn2})(c,img.src,img.description||'${_altSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
+            const _pickHandler2 = `(function(btn){var c=document.getElementById('${imgId}-container');if(!c)return;var _lL=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||null;var _pL=(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})();var list=(_pL&&_pL.length)?_pL:((_lL&&_lL.length)?_lL:(_pL||_lL||[]));var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn2})(c,img.src,img.description||'${_altSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
             // If we have a regenerated image, show it; otherwise show placeholder with upload
             return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"${hasCropData ? ` data-crop="${cropJson}"` : ''} style="position:relative;margin:1em 0">
 ${hasSrc ? '' : `<button type="button" contenteditable="false" onclick="(function(){var f=document.getElementById('${imgId}-figure');if(f)f.remove();try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})()" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer">×</button>`}
@@ -18710,15 +18710,23 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         handle.style.top = (r.bottom + w.scrollY - 8) + 'px';
         if (badge) { badge.style.left = (r.left + w.scrollX + 4) + 'px'; badge.style.top = (r.top + w.scrollY + 4) + 'px'; }
       };
-      const pctOf = (img) => { const pw = (img.parentElement && img.parentElement.clientWidth) || 600; return Math.max(10, Math.min(100, Math.round((img.getBoundingClientRect().width / pw) * 100))); };
-      const apply = (img, pct) => {
-        pct = Math.max(10, Math.min(100, Math.round(pct)));
-        img.style.width = pct + '%';
+      // Pixel-anchored sizing (2026-06-17 fix): the old code expressed width as a PERCENT OF THE
+      // PARENT clamped to 100, so an image whose <figure> shrink-wraps it starts at ~100% and can
+      // only ever SHRINK (outward drag is also imperceptible — ~1/parentWidth of a percent per px).
+      // Anchoring to the image's OWN pixel width (1 drag-px = 1 image-px) makes grow and shrink
+      // symmetric; maxWidth:none lets it exceed its natural size; cap at the page width so it can't
+      // overflow the reading column.
+      const _maxPx = () => (idoc.body && idoc.body.clientWidth) || 2000;
+      const pxOf = (img) => Math.round(img.getBoundingClientRect().width);
+      const apply = (img, px) => {
+        px = Math.max(24, Math.min(_maxPx(), Math.round(px)));
+        img.style.maxWidth = 'none';
+        img.style.width = px + 'px';
         img.style.height = 'auto';
-        img.setAttribute('width', String(Math.round(pct * 6)));
-        if (badge) badge.textContent = pct + '%';
+        img.setAttribute('width', String(px));
+        if (badge) badge.textContent = px + ' px';
         place();
-        return pct;
+        return px;
       };
       const notify = () => { try { const w = idoc.defaultView; if (w && w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} };
       const select = (img) => {
@@ -18730,41 +18738,40 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         handle.setAttribute('role', 'slider');
         handle.setAttribute('tabindex', '0');
         handle.setAttribute('aria-label', 'Resize image: drag the corner handle, or press the arrow keys');
-        handle.setAttribute('aria-valuemin', '10');
-        handle.setAttribute('aria-valuemax', '100');
-        handle.setAttribute('aria-valuenow', String(pctOf(img)));
+        handle.setAttribute('aria-valuemin', '24');
+        handle.setAttribute('aria-valuemax', String(_maxPx()));
+        handle.setAttribute('aria-valuenow', String(pxOf(img)));
         badge = idoc.createElement('div');
         badge.className = 'allo-img-controls allo-resize-badge';
         badge.setAttribute('contenteditable', 'false');
         badge.setAttribute('aria-hidden', 'true');
-        badge.textContent = pctOf(img) + '%';
+        badge.textContent = pxOf(img) + ' px';
         idoc.body.appendChild(handle);
         idoc.body.appendChild(badge);
         place();
         handle.addEventListener('keydown', (ke) => {
           let d = 0;
-          if (ke.key === 'ArrowLeft' || ke.key === 'ArrowDown') d = -5;
-          else if (ke.key === 'ArrowRight' || ke.key === 'ArrowUp') d = 5;
+          if (ke.key === 'ArrowLeft' || ke.key === 'ArrowDown') d = -20;
+          else if (ke.key === 'ArrowRight' || ke.key === 'ArrowUp') d = 20;
           else if (ke.key === 'Escape') { clear(); return; }
           else return;
           ke.preventDefault();
           if (!target) return;
-          const np = apply(target, pctOf(target) + d);
+          const np = apply(target, pxOf(target) + d);
           handle.setAttribute('aria-valuenow', String(np));
           notify();
         });
         handle.addEventListener('pointerdown', (pe) => {
           pe.preventDefault(); pe.stopPropagation();
           if (!target) return;
-          const pw = (target.parentElement && target.parentElement.clientWidth) || 600;
-          drag = { x0: pe.clientX, w0: target.getBoundingClientRect().width, pw };
+          drag = { x0: pe.clientX, w0: target.getBoundingClientRect().width };
           try { handle.setPointerCapture(pe.pointerId); } catch (_) {}
         });
         handle.addEventListener('pointermove', (pe) => {
           if (!drag || !target) return;
-          apply(target, ((drag.w0 + (pe.clientX - drag.x0)) / drag.pw) * 100);
+          apply(target, drag.w0 + (pe.clientX - drag.x0));
         });
-        const end = () => { if (!drag) return; drag = null; if (handle && target) handle.setAttribute('aria-valuenow', String(pctOf(target))); notify(); };
+        const end = () => { if (!drag) return; drag = null; if (handle && target) handle.setAttribute('aria-valuenow', String(pxOf(target))); notify(); };
         handle.addEventListener('pointerup', end);
         handle.addEventListener('pointercancel', end);
       };
