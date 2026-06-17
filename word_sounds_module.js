@@ -1400,6 +1400,45 @@
         }
         return w.slice(-1);
       };
+      // Sound Sort: precomputed option set, primed during the eager preload so
+      // the activity opens instantly (parity with Blend/Rhyme) - no render flash.
+      const soundSortPreloadRef = React.useRef(null);
+      const computeSoundSortItem = (targetWordRaw, phonemesArr, aiSortData) => {
+        const targetWord = (targetWordRaw || '').toLowerCase();
+        if (!targetWord || targetWord.length < 2) return null;
+        const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const mode = wordSeed % 2 === 0 ? 'first' : 'last';
+        let targetPhoneme = (phonemesArr && phonemesArr.length > 0)
+          ? (mode === 'first' ? phonemesArr[0] : phonemesArr[phonemesArr.length - 1])
+          : (mode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord));
+        let aiMatches = [];
+        let aiMode = mode;
+        if (aiSortData && aiSortData.words && aiSortData.words.length >= 2) {
+          aiMatches = aiSortData.words.map((w) => w.toLowerCase().trim()).filter((w) => w && w !== targetWord);
+          if (aiSortData.position === 'first' || aiSortData.position === 'last') aiMode = aiSortData.position;
+          if (aiSortData.phoneme) targetPhoneme = aiSortData.phoneme;
+        }
+        const phonemeFor = (w) => aiMode === 'first' ? estimateFirstPhoneme(w.toLowerCase()) : estimateLastPhoneme(w.toLowerCase());
+        aiMatches = aiMatches.filter((w) => phonemeFor(w) === targetPhoneme);
+        const pool = SOUND_MATCH_POOL || ['bat', 'cat', 'dog', 'sit'];
+        const poolMatches = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; return phonemeFor(wc) === targetPhoneme; });
+        const matches = [...new Set([...aiMatches, ...poolMatches])];
+        const matchesLower = new Set(matches.map((w) => w.toLowerCase()));
+        const distractorsPool = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; if (matchesLower.has(wc)) return false; return phonemeFor(wc) !== targetPhoneme; });
+        const wordLen = targetWord.length;
+        const hasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
+        const difficulty = wordLen <= 3 && !hasBlend ? 'easy' : (wordLen <= 4 || hasBlend ? 'medium' : 'hard');
+        const matchLimit = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 5;
+        const distractorLimit = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 4 : 5;
+        const seededRandom = (seed) => { let s = seed; return () => { s = Math.sin(s) * 10000; return s - Math.floor(s); }; };
+        const rng = seededRandom(wordSeed);
+        const shuffleSeeded = (arr) => [...arr].sort(() => rng() - 0.5);
+        const filterByDifficulty = (words) => { if (difficulty === 'easy') return words.filter((w) => w.length <= 3); if (difficulty === 'medium') return words.filter((w) => w.length <= 4); return words; };
+        let selectedMatches = shuffleSeeded(filterByDifficulty(matches)).slice(0, matchLimit);
+        if (selectedMatches.length < 2) selectedMatches = shuffleSeeded(matches).slice(0, matchLimit);
+        const selectedDistractors = shuffleSeeded(filterByDifficulty(distractorsPool)).slice(0, distractorLimit);
+        return { mode, targetChar: targetPhoneme, difficulty, options: selectedMatches, distractors: selectedDistractors };
+      };
       const includeOrthographic = orthoSessionGoal > 0;
       const latestRequestedWord = React.useRef(null);
       const [isEditing, setIsEditing] = React.useState(false);
@@ -8308,6 +8347,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   targetWord,
                 );
               }
+              if (activityId === "sound_sort") {
+                soundSortPreloadRef.current = {
+                  word: (targetWord || '').toLowerCase(),
+                  item: computeSoundSortItem(targetWord, preloadedWord.phonemes, preloadedWord.soundSortMatches),
+                };
+                debugLog("📋 [Eager] Set sound sort options from preloaded:", targetWord);
+              }
             } else {
               debugLog(
                 "📦 Using local fallback for:",
@@ -12953,136 +12999,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           case "sound_sort": {
             const targetWord = (currentWordSoundsWord || "").toLowerCase();
             if (!targetWord || targetWord.length < 2) return null;
-            const wordSeed = targetWord
-              .split("")
-              .reduce((a, c) => a + c.charCodeAt(0), 0);
-            const mode = wordSeed % 2 === 0 ? "first" : "last";
-            let targetPhoneme = "";
-            if (
-              wordSoundsPhonemes &&
-              wordSoundsPhonemes.phonemes &&
-              wordSoundsPhonemes.phonemes.length > 0
-            ) {
-              targetPhoneme =
-                mode === "first"
-                  ? wordSoundsPhonemes.phonemes[0]
-                  : wordSoundsPhonemes.phonemes[
-                  wordSoundsPhonemes.phonemes.length - 1
-                  ];
-            } else {
-              targetPhoneme =
-                mode === "first"
-                  ? estimateFirstPhoneme(targetWord)
-                  : estimateLastPhoneme(targetWord);
-            }
-            const aiSortData = wordSoundsPhonemes?.soundSortMatches;
-            let aiMatches = [];
-            let aiMode = mode;
-            if (
-              aiSortData &&
-              aiSortData.words &&
-              aiSortData.words.length >= 2
-            ) {
-              aiMatches = aiSortData.words
-                .map((w) => w.toLowerCase().trim())
-                .filter((w) => w && w !== targetWord);
-              if (
-                aiSortData.position === "first" ||
-                aiSortData.position === "last"
-              ) {
-                aiMode = aiSortData.position;
-              }
-              if (aiSortData.phoneme) {
-                targetPhoneme = aiSortData.phoneme;
-              }
-              debugLog("🤖 Using AI-generated Sound Sort matches (unverified):", aiMatches);
-            }
-            // ── Phoneme-validate AI matches ──
-            // The AI sometimes hallucinates words that don't actually share the
-            // target phoneme (e.g. returning "pig" as a /s/-starting match).
-            // Previously those survived into the matches list while ALSO landing
-            // in the distractor pool — students would see the same word in both
-            // positions, or tap a "match" and get told it doesn't match. We now
-            // run every AI word through the same estimator the distractor side
-            // uses, dropping any that don't pass.
-            const phonemeFor = (w) =>
-              aiMode === "first"
-                ? estimateFirstPhoneme(w.toLowerCase())
-                : estimateLastPhoneme(w.toLowerCase());
-            const aiRejected = [];
-            aiMatches = aiMatches.filter((w) => {
-              const pass = phonemeFor(w) === targetPhoneme;
-              if (!pass) aiRejected.push(w);
-              return pass;
-            });
-            if (aiRejected.length > 0) {
-              warnLog(
-                "🧹 Dropping AI sound-sort words whose " + aiMode + " phoneme ≠ target '" + targetPhoneme + "':",
-                aiRejected,
-              );
-            }
-            const pool = SOUND_MATCH_POOL || ["bat", "cat", "dog", "sit"];
-            const poolMatches = pool.filter((w) => {
-              const wClean = w.toLowerCase();
-              if (wClean === targetWord) return false;
-              return phonemeFor(wClean) === targetPhoneme;
-            });
-            const matches = [...new Set([...aiMatches, ...poolMatches])];
-            // Build distractor pool from the pool + exclude matches so we never
-            // show the same word on both sides. (The old code passed a bogus
-            // second "comparator" arg to Array.prototype.filter — filter only
-            // takes one arg, so the comparator was silently ignored.)
-            const matchesLower = new Set(matches.map((w) => w.toLowerCase()));
-            const distractorsPool = pool.filter((w) => {
-              const wClean = w.toLowerCase();
-              if (wClean === targetWord) return false;
-              if (matchesLower.has(wClean)) return false;
-              return phonemeFor(wClean) !== targetPhoneme;
-            });
-            const wordLen = targetWord.length;
-            const hasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
-            const difficulty =
-              wordLen <= 3 && !hasBlend
-                ? "easy"
-                : wordLen <= 4 || hasBlend
-                  ? "medium"
-                  : "hard";
-            const matchLimit =
-              difficulty === "easy" ? 3 : difficulty === "medium" ? 4 : 5;
-            const distractorLimit =
-              difficulty === "easy" ? 2 : difficulty === "medium" ? 4 : 5;
-            const seededRandom = (seed) => {
-              let s = seed;
-              return () => {
-                s = Math.sin(s) * 10000;
-                return s - Math.floor(s);
-              };
-            };
-            const rng = seededRandom(wordSeed);
-            const shuffleSeeded = (arr) => {
-              return [...arr].sort(() => rng() - 0.5);
-            };
-            const filterByDifficulty = (words) => {
-              if (difficulty === "easy")
-                return words.filter((w) => w.length <= 3);
-              if (difficulty === "medium")
-                return words.filter((w) => w.length <= 4);
-              return words;
-            };
-            let selectedMatches = shuffleSeeded(
-              filterByDifficulty(matches),
-            ).slice(0, matchLimit);
-            if (selectedMatches.length < 2) {
-              selectedMatches = shuffleSeeded(matches).slice(0, matchLimit);
-            }
-            if (selectedMatches.length === 0) {
-              warnLog(
-                `No matches found for ${targetWord} (${mode}: ${targetPhoneme}) in pool.`,
-              );
-            }
-            const selectedDistractors = shuffleSeeded(
-              filterByDifficulty(distractorsPool),
-            ).slice(0, distractorLimit);
+            const _ssPre = soundSortPreloadRef.current;
+            const _ssItem = (_ssPre && _ssPre.word === targetWord && _ssPre.item)
+              ? _ssPre.item
+              : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches);
+            if (!_ssItem) return null;
+            const mode = _ssItem.mode;
+            const targetPhoneme = _ssItem.targetChar;
+            const difficulty = _ssItem.difficulty;
+            const selectedMatches = _ssItem.options;
+            const selectedDistractors = _ssItem.distractors;
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-4" },
