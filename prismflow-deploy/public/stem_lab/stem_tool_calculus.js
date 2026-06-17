@@ -1708,10 +1708,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var overUnderChecked = d.overUnderChecked || false;
 
         // Is the sum actually an over or underestimate?
-        // For Left Riemann + increasing function → underestimate
-        // Quick heuristic: compare evalF slope direction
+        // Left/Right Riemann sums only go CONSISTENTLY over or under when f is MONOTONIC on the
+        // interval. For this quadratic that means the vertex (x = -b/2a) lies OUTSIDE (xMin, xMax2).
+        // If the vertex is inside (e.g. the default preset -x²+4 on [-2,2]), the endpoint-slope rule
+        // is invalid — the curve rises then falls — so we report 'neither' instead of a wrong verdict.
+        var fVertex = fa !== 0 ? (-fb / (2 * fa)) : null;
+        var fMonotonic = (fa === 0) || fVertex <= xMin || fVertex >= xMax2;
         var fIsIncreasing = evalF(xMax2) > evalF(xMin);
-        var actualOverUnder = (mode === 'left' && fIsIncreasing) ? 'under'
+        var actualOverUnder = !fMonotonic ? 'neither'
+          : (mode === 'left' && fIsIncreasing) ? 'under'
           : (mode === 'left' && !fIsIncreasing) ? 'over'
           : (mode === 'right' && fIsIncreasing) ? 'over'
           : (mode === 'right' && !fIsIncreasing) ? 'under'
@@ -1860,9 +1865,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('line',{x1:toSX(0),y1:pad,x2:toSX(0),y2:H-pad,stroke:'#94a3b8',strokeWidth:1.5}),
             showRects && h('rect',{x:toSX(xMin),y:pad,width:Math.abs(toSX(xMax2)-toSX(xMin)),height:H-2*pad,fill:'none',stroke:'#ef4444',strokeWidth:1,strokeDasharray:'4 2'}),
             showRects && rects.map(function(r,i){
-              if(r.type==='trap'){var pts=toSX(r.x)+','+toSY(0)+' '+toSX(r.x)+','+toSY(r.hL)+' '+toSX(r.x+r.w)+','+toSY(r.hR)+' '+toSX(r.x+r.w)+','+toSY(0);return h('polygon',{key:i,points:pts,fill:'rgba(239,68,68,0.15)',stroke:'#ef4444',strokeWidth:0.8});}
+              if(r.type==='trap'){var pts=toSX(r.x)+','+toSY(0)+' '+toSX(r.x)+','+toSY(r.hL)+' '+toSX(r.x+r.w)+','+toSY(r.hR)+' '+toSX(r.x+r.w)+','+toSY(0);var tpos=(r.hL+r.hR)>=0;return h('polygon',{key:i,points:pts,fill:tpos?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:tpos?'#3b82f6':'#f97316',strokeWidth:0.8});}
               if(r.type==='simp'){var sp=[toSX(r.x)+','+toSY(0)];for(var sp2=0;sp2<=10;sp2++){var st=sp2/10,spx=r.x+st*r.w,spy=r.hL*(1-st)*(1-2*st)+4*r.hM*st*(1-st)+r.hR*st*(2*st-1);sp.push(toSX(spx)+','+toSY(spy));}sp.push(toSX(r.x+r.w)+','+toSY(0));return h('polygon',{key:i,points:sp.join(' '),fill:'rgba(168,85,247,0.15)',stroke:'#a855f7',strokeWidth:0.8});}
-              return h('rect',{key:i,x:toSX(r.x),y:r.h>=0?toSY(r.h):toSY(0),width:Math.abs(toSX(r.x+r.w)-toSX(r.x)),height:Math.abs(toSY(r.h)-toSY(0)),fill:'rgba(239,68,68,0.15)',stroke:'#ef4444',strokeWidth:0.8});
+              return h('rect',{key:i,x:toSX(r.x),y:r.h>=0?toSY(r.h):toSY(0),width:Math.abs(toSX(r.x+r.w)-toSX(r.x)),height:Math.abs(toSY(r.h)-toSY(0)),fill:r.h>=0?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:r.h>=0?'#3b82f6':'#f97316',strokeWidth:0.8});
             }),
             showTangent && dh > 0.05 && h('polyline',{points:secantPts,fill:'none',stroke:'#f59e0b',strokeWidth:1.5,strokeDasharray:'5 3'}),
             showTangent && h('polyline',{points:tangentPts,fill:'none',stroke:'#ef4444',strokeWidth:2,style:{filter:'drop-shadow(0 0 3px rgba(239,68,68,0.45))'}}),
@@ -1961,7 +1966,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 var isNeither = actualOverUnder === 'neither';
                 return h('div', { style:{animation:'calcPop 0.3s ease'}},
                   h('p', { className: 'text-sm font-bold mb-1 ' + (correct?'text-emerald-600':'text-red-600') },
-                    (correct?'\u2705 Correct! ':'❌ Not quite — ') + (isNeither ? 'Midpoint/Trapezoid/Simpson\u2019s don\u2019t always go one way.' : isOver ? 'It\u2019s an OVERestimate.' : 'It\u2019s an UNDERestimate.')
+                    (correct?'\u2705 Correct! ':'❌ Not quite — ') + (isNeither ? (((mode === 'left' || mode === 'right') && !fMonotonic) ? 'This curve rises then falls here, so left/right rectangles overshoot in one part and undershoot in the other; there is no single direction. Try an interval where it only rises or only falls.' : 'Midpoint/Trapezoid/Simpson\u2019s don\u2019t always go one way.') : isOver ? 'It\u2019s an OVERestimate.' : 'It\u2019s an UNDERestimate.')
                   ),
                   !isNeither && h('p', { className: 'text-xs text-slate-600' },
                     '\uD83D\uDCA1 ' + (mode==='left'
@@ -2040,7 +2045,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   mode==='trapezoid'?"\uD83D\uDCA1 Trapezoid error \u221D 1/n\u00B2. What does that mean when you double n?":
                   nRects<=5?"\uD83D\uDCA1 Only " + nRects + " rectangles. Predict: what happens to the error if you triple n?":
                   "\uD83D\uDCA1 At n=" + nRects + ": how many times larger is the error compared to n=50? Use the chart \u2192"
-                )
+                ),
+                // Net signed-area note \u2014 only surfaces when the curve crosses the x-axis (pairs with the blue/orange shading)
+                (function(){
+                  var below=false, above=false;
+                  for(var _s=0;_s<=24;_s++){ var _y=evalF(xMin+(xMax2-xMin)*_s/24); if(_y<-1e-9)below=true; if(_y>1e-9)above=true; }
+                  if(!(below&&above)) return null;
+                  return h('p',{className:'mt-2 text-[11px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1 leading-snug'},
+                    h('span',{className:'font-bold text-blue-600'},'Blue'),' area (above the axis) adds; ',
+                    h('span',{className:'font-bold text-orange-500'},'orange'),' area (below) subtracts. The integral is the NET signed area \u2014 not the total amount of region.');
+                })()
               ),
               h('div', { className: 'col-span-2 bg-slate-50 rounded-xl border p-2' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
@@ -2067,9 +2081,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('input', { type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-squared coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B2/2 + '),
                 h('input', { type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
-                h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x'),
+                h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x + C'),
                 h('button', {"aria-label":"Check", disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-600' }, 'Check')
               ),
+              h('p', { className: 'mt-1.5 text-[11px] text-cyan-600 italic' }, 'Every antiderivative also carries a constant + C \u2014 but it cancels in F('+xMax2+') \u2212 F('+xMin+'), so a definite integral never needs it.'),
               antiChecked && (function(){
                 var okA=Math.abs(parseFloat(antiA)-fa)<0.01, okB=Math.abs(parseFloat(antiB)-fb)<0.01, okC=Math.abs(parseFloat(antiC2)-fc)<0.01, all=okA&&okB&&okC;
                 return h('div', { className:'mt-2', style:{animation:'calcPop 0.3s ease'} },
@@ -2155,6 +2170,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // ── POWER RULE TRAINER ────────────────────────────────────────
+            h('div',{ className:'mt-3 bg-rose-50 rounded-xl border border-rose-200 p-3'},
+              h('p',{className:'text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-1'},'\u26A0\uFE0F Common mix-ups'),
+              h('ul',{className:'text-xs text-rose-800 space-y-1 list-disc list-inside'},
+                h('li',null, h('b',null,'f\u2032(x\u2080) is the SLOPE'),' \u2014 a single number, not the tangent line itself. The tangent is the line; the derivative is how steep it is.'),
+                h('li',null, h('b',null,'f\u2032(x) is a whole new function'),', not one value \u2014 it gives the slope at every x. Slide x\u2080 and watch it change.'),
+                h('li',null, 'A big ', h('b',null,'f(x)'),' value does NOT mean a big slope \u2014 at any peak or valley the curve is at an extreme yet f\u2032 = 0 (perfectly flat).')
+              )
+            ),
+
             h('div', { className: 'mt-3 bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[11px] font-bold text-emerald-700 uppercase tracking-wider' }, '\u270F\uFE0F Power Rule Practice'),
