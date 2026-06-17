@@ -4890,6 +4890,18 @@
         const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
         const itemsPerMin =
           totalTime > 0 ? Math.round((total / totalTime) * 60 * 10) / 10 : 0;
+        // Per-word-difficulty breakdown so a difficulty shift between probes
+        // is visible rather than mistaken for a skill change. Built from this
+        // probe's history items (each tagged with wordDifficulty at answer time).
+        const _probeStart = probeStartTimeRef.current || 0;
+        const _byBand = { easy: { c: 0, t: 0 }, medium: { c: 0, t: 0 }, hard: { c: 0, t: 0 } };
+        (wordSoundsHistory || []).forEach((h) => {
+          if (!h || h.timestamp < _probeStart || h.activity !== wordSoundsActivity) return;
+          const _b = _byBand[h.wordDifficulty] ? h.wordDifficulty : "medium";
+          _byBand[_b].t++; if (h.correct) _byBand[_b].c++;
+        });
+        const _bandPct = (b) => (_byBand[b].t > 0 ? Math.round((_byBand[b].c / _byBand[b].t) * 100) : "");
+        const _bandTotal = _byBand.easy.t + _byBand.medium.t + _byBand.hard.t;
         const probeCSV = () => {
           const headers = [
             "Date",
@@ -4900,6 +4912,7 @@
             "Accuracy %",
             "Items/Min",
             "Duration (s)",
+            "CVC/Easy %", "CVC/Easy n", "Medium %", "Medium n", "Hard %", "Hard n",
           ];
           const row = [
             new Date().toLocaleDateString(),
@@ -4910,6 +4923,7 @@
             accuracy,
             itemsPerMin,
             Math.round(totalTime),
+            _bandPct("easy"), _byBand.easy.t, _bandPct("medium"), _byBand.medium.t, _bandPct("hard"), _byBand.hard.t,
           ];
           const csv = headers.join(",") + "\n" + row.join(",");
           const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -5046,6 +5060,19 @@
                 ),
               ),
             ),
+            _bandTotal > 0 &&
+            /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-left" },
+              /*#__PURE__*/ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, "Accuracy by word difficulty"),
+              ...["easy", "medium", "hard"].filter((b) => _byBand[b].t > 0).map((b) =>
+                /*#__PURE__*/ React.createElement("div", { key: "bd-" + b, className: "flex justify-between text-sm text-slate-700" },
+                  /*#__PURE__*/ React.createElement("span", { className: "capitalize" }, b === "easy" ? "CVC / easy" : b),
+                  /*#__PURE__*/ React.createElement("span", { className: "font-mono" }, _byBand[b].c + "/" + _byBand[b].t + " (" + _bandPct(b) + "%)"),
+                ),
+              ),
+              /*#__PURE__*/ React.createElement("div", { className: "text-[10px] text-slate-400 italic mt-1" }, "Compare like with like: a shift in word difficulty (not a skill change) can move the overall number."),
+            ),
             /*#__PURE__*/ React.createElement(
               "div",
               { className: "text-xs text-slate-600 mb-4" },
@@ -5080,6 +5107,7 @@
                         accuracy,
                         itemsPerMin,
                         duration: totalTime,
+                        byDifficulty: { easy: { ..._byBand.easy }, medium: { ..._byBand.medium }, hard: { ..._byBand.hard } },
                       });
                     onClose();
                   },
@@ -9404,6 +9432,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 correct: isCorrect,
                 mode: showLetterHints ? "visual" : "sound_only",
                 difficulty: getEffectiveDifficulty(),
+                wordDifficulty: categorizeWordDifficulty(currentWordSoundsWord),
                 phonemes: wordSoundsPhonemes?.phonemes || [],
                 ...(opts && typeof opts.formationScore === "number"
                   ? { formationScore: opts.formationScore }
