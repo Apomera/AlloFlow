@@ -554,6 +554,15 @@
       ["which", "witch"],
       ["wood", "would"],
       ["your", "you're"],
+      ["bail", "bale"],
+      ["ball", "bawl"],
+      ["beat", "beet"],
+      ["knew", "new"],
+      ["pole", "poll"],
+      ["pray", "prey"],
+      ["rain", "reign", "rein"],
+      ["sole", "soul"],
+      ["tea", "tee"],
     ];
     // Build lookup: word -> cluster-index for O(1) homophone checks.
     const HOMOPHONE_INDEX = (function () {
@@ -566,6 +575,17 @@
       }
       return idx;
     })();
+    // Catches the regular single-syllable long-A rimes the curated list
+    // can't enumerate (bail/bale, mail/male, main/mane, plain/plane, ...).
+    // The onset must be vowel-free, which guarantees a single syllable, so
+    // this can never fire on words like 'captain' or 'private'; and within
+    // a single syllable ail/ale and ain/ane are always the same sound, so
+    // there are no false positives inside the pattern.
+    const regularSoundKey = (w) => {
+      const m = w.match(/^([^aeiou]+)(ail|ale|ain|ane)$/);
+      if (!m) return w;
+      return m[1] + (m[2] === 'ail' || m[2] === 'ale' ? '~AL' : '~AN');
+    };
     const isHomophone = (a, b) => {
       if (!a || !b) return false;
       const na = String(a).trim().toLowerCase();
@@ -574,7 +594,9 @@
       if (na === nb) return true; // same word counts as blocked too
       const ia = HOMOPHONE_INDEX[na];
       const ib = HOMOPHONE_INDEX[nb];
-      return ia !== undefined && ia === ib;
+      if (ia !== undefined && ia === ib) return true;
+      const ka = regularSoundKey(na);
+      return ka !== na && ka === regularSoundKey(nb);
     };
     // ── PHONEME EQUIVALENCE ──
     // Find Sounds (isolation) presents a target phoneme audibly and asks the
@@ -5888,12 +5910,13 @@
               write: ["right"],
             };
             for (const w of shuffled) {
-              const isHomophone =
-                homophonePairs[wordLower] &&
-                homophonePairs[wordLower].includes(w);
+              const isHp =
+                isHomophone(wordLower, w) ||
+                (homophonePairs[wordLower] &&
+                homophonePairs[wordLower].includes(w));
               if (
                 w !== wordLower &&
-                !isHomophone &&
+                !isHp &&
                 Math.abs(w.length - wordLower.length) <= 1 &&
                 blendingDistractors.length < 5
               ) {
@@ -6012,6 +6035,7 @@
                     (d) =>
                       d &&
                       d !== targetToCheck &&
+                      !isHomophone(targetToCheck, d) &&
                       !(
                         hpMap[targetToCheck] && hpMap[targetToCheck].includes(d)
                       ),
@@ -6417,7 +6441,7 @@ EXAMPLES:
                     const targetToCheck = targetWord.toLowerCase().trim();
                     let unique = [...new Set(
                       rawList.map(d => (d || "").toString().trim().toLowerCase())
-                        .filter(d => d && d !== targetToCheck && !(hpMap[targetToCheck] && hpMap[targetToCheck].includes(d)))
+                        .filter(d => d && d !== targetToCheck && !isHomophone(targetToCheck, d) && !(hpMap[targetToCheck] && hpMap[targetToCheck].includes(d)))
                     )];
                     if (unique.length < 5) {
                       const fallbacks = ["cat", "dog", "run", "sun", "big", "pig", "bug", "hop", "mad", "sip"];
