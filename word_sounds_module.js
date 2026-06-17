@@ -1624,6 +1624,10 @@
       const isolationStateRef = React.useRef(null);
       React.useEffect(() => { isolationStateRef.current = isolationState; }, [isolationState]);
       const audioCancelledRef = React.useRef(false);
+      // Monotonic token: bumped whenever in-progress read-aloud audio should stop
+      // (activity switch or answer submitted). Option-play loops capture it and
+      // bail when it changes, so audio never bleeds into the next activity/item.
+      const audioRunIdRef = React.useRef(0);
       const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0);
       const modalRef = React.useRef(null);
       const submissionLockRef = React.useRef(false);
@@ -3864,9 +3868,11 @@
                   setFoundWords([]);
                   setIsComplete(false);
                   const playAllOptions = async () => {
+                    const myRun = audioRunIdRef.current;
                     await new Promise((r) => setTimeout(r, 250));
+                    if (audioRunIdRef.current !== myRun) return;
                     for (let i = 0; i < mixed_shuffled.length; i++) {
-                      if (!isMountedRef.current) break;
+                      if (!isMountedRef.current || audioRunIdRef.current !== myRun) break;
                       setActiveIndex(i);
                       try {
                         await onPlayAudio(mixed_shuffled[i].text);
@@ -8096,6 +8102,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         ) => {
           // === Stop all ongoing audio immediately on activity switch ===
           audioCancelledRef.current = true;
+          audioRunIdRef.current++;
           if (currentActiveAudio.current) {
             currentActiveAudio.current.pause();
             currentActiveAudio.current.currentTime = 0;
@@ -9092,6 +9099,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             locked: submissionLockRef.current,
           });
           if (submissionLockRef.current) return;
+          audioRunIdRef.current++;
           try {
             const safeAnswer = (answer ?? "").toString().toLowerCase().trim();
             const safeExpected = (expectedAnswer ?? "")
@@ -12011,12 +12019,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "button",
                       {
                         onClick: async () => {
+                          const myRun = audioRunIdRef.current;
                           try {
                             for (
                               let i = 0;
                               i < blendingOptions.length;
                               i++
                             ) {
+                              if (audioRunIdRef.current !== myRun) break;
                               setPlayingOptionIndex(i);
                               await handleAudio(blendingOptions[i]);
                               await new Promise((r) =>
