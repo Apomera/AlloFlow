@@ -18934,6 +18934,93 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       idoc.defaultView.addEventListener('resize', place, { passive: true });
     } catch (_) {}
   };
+  // In-preview table refinement (slice 2, 2026-06-17): a "🔧 Refine table" affordance on each table
+  // so a teacher can fix a table IN PLACE (the deterministic ops + semantic readback from slice 1),
+  // instead of having to know to type a command into the Workbench. Runs in the PARENT context over
+  // the iframe's `idoc`, so it REUSES the slice-1 string tools (SURGICAL_TOOL_REGISTRY) + the readback
+  // (_tableSemanticReadback) — no logic duplication. Controls carry class 'allo-img-controls' so the
+  // same snapshot/export strip that removes the resize handles removes these too (never saved into the
+  // document). Purely additive + reversible: each table is snapshotted before the first op; Keep syncs
+  // via __alloflowOnPdfPreviewMutated, Undo restores the snapshot.
+  const _attachPreviewTableRefiner = (idoc) => {
+    try {
+      if (!idoc || !idoc.body || !idoc.defaultView || idoc.getElementById('allo-table-refine-style')) return;
+      const st = idoc.createElement('style');
+      st.id = 'allo-table-refine-style';
+      st.textContent = '.allo-table-refine-btn{display:inline-flex;align-items:center;gap:4px;margin:0 0 4px;padding:3px 9px;background:#4f46e5;color:#fff;border:none;border-radius:6px;font:700 11px system-ui;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}.allo-table-refine-pop{position:absolute;z-index:10000;background:#fff;border:1px solid #cbd5e1;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.28);padding:8px;width:290px;font:400 12px system-ui;color:#1e293b}.allo-tr-chip{display:block;width:100%;text-align:left;margin:2px 0;padding:5px 8px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;color:#1e293b;font:700 11px system-ui;cursor:pointer}.allo-tr-chip:hover{background:#e0e7ff;border-color:#4f46e5}';
+      idoc.head.appendChild(st);
+      const _wired = (typeof WeakSet !== 'undefined') ? new WeakSet() : null;
+      let pop = null;
+      const closePop = () => { try { if (pop) pop.remove(); } catch (_) {} pop = null; };
+      const notify = () => { try { const w = idoc.defaultView; if (w && w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} };
+      // Reuse the slice-1 string tools on the single table's HTML, then return the rebuilt table + readback.
+      const applyOp = (tableEl, op, arg) => {
+        const wrapped = '<!DOCTYPE html><html><body>' + tableEl.outerHTML + '</body></html>';
+        const reg = SURGICAL_TOOL_REGISTRY;
+        let out = wrapped;
+        try {
+          if (op === 'header_row') out = reg.fix_table_header_row.fn(wrapped, { index: 0 });
+          else if (op === 'header_col') out = reg.fix_table_header_col.fn(wrapped, { index: 0 });
+          else if (op === 'caption') out = reg.fix_table_caption.fn(wrapped, { index: 0, caption: arg || 'Table' });
+          else if (op === 'layout') out = reg.fix_table_mark_layout.fn(wrapped, { index: 0 });
+        } catch (_) { out = wrapped; }
+        const tmp = idoc.createElement('div');
+        tmp.innerHTML = String(out).replace(/^[\s\S]*?<body[^>]*>/i, '').replace(/<\/body>[\s\S]*$/i, '');
+        return { newTable: tmp.querySelector('table'), readback: _tableSemanticReadback(out, 0) };
+      };
+      const openPop = (tableEl, anchorBtn) => {
+        closePop();
+        const w = idoc.defaultView, r = anchorBtn.getBoundingClientRect();
+        pop = idoc.createElement('div');
+        pop.className = 'allo-img-controls allo-table-refine-pop';
+        pop.setAttribute('contenteditable', 'false');
+        pop.style.left = (r.left + w.scrollX) + 'px';
+        pop.style.top = (r.bottom + w.scrollY + 4) + 'px';
+        const title = idoc.createElement('div'); title.style.cssText = 'font-weight:700;margin-bottom:4px'; title.textContent = '🔧 Refine this table'; pop.appendChild(title);
+        const readbackBox = idoc.createElement('div'); readbackBox.style.cssText = 'margin-top:6px;font-size:11px;line-height:1.35;display:none';
+        const actions = idoc.createElement('div'); actions.style.cssText = 'margin-top:6px;display:none;gap:6px';
+        let _snapshot = null, _cur = tableEl;
+        const chips = [['Row 1 is the header', 'header_row'], ['First column is the header', 'header_col'], ['Add a caption…', 'caption'], ['This is layout, not data', 'layout']];
+        chips.forEach((pair) => {
+          const c = idoc.createElement('button'); c.type = 'button'; c.className = 'allo-tr-chip'; c.textContent = pair[0];
+          c.onclick = (e) => {
+            e.preventDefault(); e.stopPropagation();
+            let arg = null;
+            if (pair[1] === 'caption') { try { arg = (w.prompt && w.prompt('Caption text for this table:')) || ''; } catch (_) { arg = ''; } if (!arg) return; }
+            if (_snapshot == null) _snapshot = _cur.outerHTML; // snapshot the ORIGINAL once
+            const res = applyOp(_cur, pair[1], arg);
+            if (res.newTable) { _cur.replaceWith(res.newTable); _cur = res.newTable; }
+            if (res.readback) {
+              readbackBox.style.display = 'block';
+              readbackBox.style.color = res.readback.kind === 'layout' ? '#b91c1c' : '#3730a3';
+              readbackBox.textContent = '📊 ' + res.readback.text;
+              actions.style.display = 'flex';
+            }
+          };
+          pop.appendChild(c);
+        });
+        const keep = idoc.createElement('button'); keep.type = 'button'; keep.textContent = '✓ Keep'; keep.style.cssText = 'flex:1;padding:5px;background:#059669;color:#fff;border:none;border-radius:6px;font:700 11px system-ui;cursor:pointer';
+        keep.onclick = (e) => { e.preventDefault(); e.stopPropagation(); notify(); closePop(); };
+        const undo = idoc.createElement('button'); undo.type = 'button'; undo.textContent = '↩ Undo'; undo.style.cssText = 'flex:1;padding:5px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:6px;font:700 11px system-ui;cursor:pointer';
+        undo.onclick = (e) => { e.preventDefault(); e.stopPropagation(); if (_snapshot != null) { const t = idoc.createElement('div'); t.innerHTML = _snapshot; const orig = t.querySelector('table'); if (orig) _cur.replaceWith(orig); } closePop(); };
+        actions.appendChild(keep); actions.appendChild(undo);
+        pop.appendChild(readbackBox); pop.appendChild(actions);
+        idoc.body.appendChild(pop);
+      };
+      const tables = idoc.querySelectorAll('table');
+      for (let i = 0; i < tables.length; i++) {
+        const tbl = tables[i];
+        if (_wired && _wired.has(tbl)) continue; if (_wired) _wired.add(tbl);
+        const btn = idoc.createElement('button');
+        btn.type = 'button'; btn.className = 'allo-img-controls allo-table-refine-btn';
+        btn.setAttribute('contenteditable', 'false');
+        btn.textContent = '🔧 Refine table';
+        (function(t, b) { b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); openPop(t, b); }; })(tbl, btn);
+        if (tbl.parentNode) tbl.parentNode.insertBefore(btn, tbl);
+      }
+      idoc.addEventListener('click', (e) => { const t = e.target; if (pop && t && t.closest && !t.closest('.allo-table-refine-pop') && !t.closest('.allo-table-refine-btn')) closePop(); });
+    } catch (_) {}
+  };
   const updatePdfPreview = (overrideTheme, overrideFontSize, overrideA11y) => {
     if (!pdfPreviewRef.current || !pdfFixResult?.accessibleHtml) return;
     const iframe = pdfPreviewRef.current;
@@ -18958,7 +19045,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // 2026-06-11 [10]): after one outerHTML round-trip the sizer
           // buttons would be dead chrome anyway.
           const _liveClone = liveDoc.documentElement.cloneNode(true);
-          try { _liveClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
+          try { _liveClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style').forEach((el) => el.remove()); } catch (_) {}
           sourceHtml = '<!DOCTYPE html>\n' + _liveClone.outerHTML;
         }
       }
@@ -18983,6 +19070,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     setTimeout(() => {
       try { doc.designMode = 'on'; } catch(e) {}
       _attachPreviewImageResizer(doc);
+      _attachPreviewTableRefiner(doc);
                             // Auto-run lightweight a11y audit on preview load
                             var _ear = (_s && typeof _s === 'function') ? (_s().exportAuditResult) : (typeof exportAuditResult !== 'undefined' ? exportAuditResult : null);
                             if (!_ear) { setTimeout(async () => { try { setExportAuditLoading(true); const html = doc.documentElement.outerHTML; const [aiR, axeR] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html).catch(() => null)]); const combined = aiR || { score: 0, summary: '', issues: [], passes: [] }; if (axeR) { combined.axeViolations = axeR.totalViolations; combined.axePasses = axeR.totalPasses; } setExportAuditResult(combined); } catch(e) {} setExportAuditLoading(false); }, 500); }
@@ -20020,7 +20108,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     try { doc.designMode = 'off'; } catch(e) {}
     // Editor-only chrome (sizer bars, picker grids) never reaches exports.
     const _expClone = doc.documentElement.cloneNode(true);
-    try { _expClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
+    try { _expClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style').forEach((el) => el.remove()); } catch (_) {}
     const html = '<!DOCTYPE html>\n' + _expClone.outerHTML;
     try { doc.designMode = 'on'; } catch(e) {}
     return html;
