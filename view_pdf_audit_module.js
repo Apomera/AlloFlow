@@ -6488,12 +6488,17 @@ Return ONLY JSON:
         if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
           const _stripT = (h) => String(h || "").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
           const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
-          setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff }));
+          const _preCmdHtml = pdfFixResult.accessibleHtml;
+          setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null }));
           if (result.score !== void 0) {
             setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           }
-          console.info("[ExpertWorkbench] complete command=" + JSON.stringify(cmd) + " score=" + (result.score !== void 0 ? result.score : "n/a"));
-          addToast(t("toasts.command_applied"), "success");
+          console.info("[ExpertWorkbench] complete command=" + JSON.stringify(cmd) + " score=" + (result.score !== void 0 ? result.score : "n/a") + " miniAudit=" + (result.miniAudit ? result.miniAudit.verdict : "none"));
+          if (result.miniAudit && result.miniAudit.verdict === "regressed") {
+            addToast(t("toasts.command_applied_regressed") || "Applied, but it introduced new issues \u2014 review or revert below.", "error");
+          } else {
+            addToast(t("toasts.command_applied"), "success");
+          }
         } else {
           console.warn("[ExpertWorkbench] noop command=" + JSON.stringify(cmd) + " \u2014 no HTML changes");
           setAgentActivityLog((prev) => [...prev, { text: "\u2139 No changes applied", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
@@ -6540,6 +6545,20 @@ Return ONLY JSON:
         title: t("pdf_audit.expert.see_changes_title") || "Open a word-level diff of exactly what your last command changed \u2014 reject any part to undo it"
       },
       "\u{1F4DD} See what the last command changed"
+    ), pdfFixResult._lastMiniAudit && pdfFixResult._lastMiniAudit.verdict === "regressed" && Array.isArray(pdfFixResult._lastMiniAudit.introduced) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 px-2 py-1.5 bg-red-950/40 border border-red-700/60 rounded text-[11px] text-red-200", role: "alert" }, "\u26A0\uFE0F ", t("pdf_audit.expert.mini_audit_regressed") || "That fix introduced new accessibility issues:", " ", /* @__PURE__ */ React.createElement("span", { className: "font-mono text-red-300" }, pdfFixResult._lastMiniAudit.introduced.map((x) => x.id).join(", ")), ". ", t("pdf_audit.expert.mini_audit_revert_hint") || "Revert to undo it, or keep it and fix those too."), pdfFixResult._preCmdHtml && !pdfFixResult._preBionicHtml && !pdfFixResult._preLineGuideHtml && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setPdfFixResult((p) => p && p._preCmdHtml ? { ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null } : p);
+          setAgentActivityLog((prev) => [...prev, { text: "\u21A9 Reverted last command", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
+          addToast(t("toasts.command_reverted") || "Reverted the last command.", "info");
+        },
+        className: "mt-1 w-full px-2 py-1 bg-slate-700 text-amber-200 text-[11px] font-bold rounded border border-amber-700/50 hover:bg-slate-600 transition-colors",
+        title: t("pdf_audit.expert.revert_title") || "Undo the last command and restore the document to its state before it ran"
+      },
+      "\u21A9 ",
+      t("pdf_audit.expert.revert") || "Revert last command"
     ), agentActivityLog.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: (agentLogFullView ? "max-h-64" : "max-h-20") + " overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono", "aria-live": "polite", "aria-atomic": "true", "aria-label": t("pdf_audit.expert.log_aria") || "Agent activity log" }, (agentLogFullView ? agentActivityLog : agentActivityLog.slice(-6)).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1 " + (entry.type === "error" ? "text-red-400" : entry.type === "score" ? "text-cyan-300" : entry.type === "success" || entry.type === "complete" ? "text-green-400" : entry.type === "tool" ? "text-amber-300" : entry.type === "command" ? "text-purple-300" : "text-slate-400") }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 shrink-0" }, entry.time), /* @__PURE__ */ React.createElement("span", null, entry.text)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAgentLogFullView((v) => !v), className: "text-[10px] text-purple-300 hover:text-purple-200 underline" }, agentLogFullView ? "Show recent only" : `Show full log (${agentActivityLog.length})`), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setAgentActivityLog([]);
       console.info("[ExpertWorkbench] log cleared");

@@ -8292,12 +8292,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // open a word-level diff of just this command (not the whole remediation).
                               const _stripT = (h) => String(h || '').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
                               const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
-                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff }));
+                              // Snapshot the FULL before-HTML so a regressing fix can be reverted in one
+                              // click (mini-audit, 2026-06-16) — mirrors the _preBionicHtml snapshot pattern.
+                              const _preCmdHtml = pdfFixResult.accessibleHtml;
+                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null }));
                               if (result.score !== undefined) {
                                 setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                               }
-                              console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a'));
-                              addToast(t('toasts.command_applied'), 'success');
+                              console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a') + ' miniAudit=' + (result.miniAudit ? result.miniAudit.verdict : 'none'));
+                              if (result.miniAudit && result.miniAudit.verdict === 'regressed') {
+                                addToast((t('toasts.command_applied_regressed') || 'Applied, but it introduced new issues — review or revert below.'), 'error');
+                              } else {
+                                addToast(t('toasts.command_applied'), 'success');
+                              }
                             } else {
                               console.warn('[ExpertWorkbench] noop command=' + JSON.stringify(cmd) + ' — no HTML changes');
                               setAgentActivityLog(prev => [...prev, { text: 'ℹ No changes applied', type: 'info', time: new Date().toLocaleTimeString() }]);
@@ -8328,6 +8335,24 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             className="mt-1 w-full px-2 py-1 bg-slate-700 text-purple-200 text-[11px] font-bold rounded border border-purple-700/50 hover:bg-slate-600 transition-colors"
                             title={t('pdf_audit.expert.see_changes_title') || 'Open a word-level diff of exactly what your last command changed — reject any part to undo it'}
                           >📝 See what the last command changed</button>
+                        )}
+                        {pdfFixResult._lastMiniAudit && pdfFixResult._lastMiniAudit.verdict === 'regressed' && Array.isArray(pdfFixResult._lastMiniAudit.introduced) && (
+                          <div className="mt-1 px-2 py-1.5 bg-red-950/40 border border-red-700/60 rounded text-[11px] text-red-200" role="alert">
+                            ⚠️ {t('pdf_audit.expert.mini_audit_regressed') || 'That fix introduced new accessibility issues:'} <span className="font-mono text-red-300">{pdfFixResult._lastMiniAudit.introduced.map(x => x.id).join(', ')}</span>. {t('pdf_audit.expert.mini_audit_revert_hint') || 'Revert to undo it, or keep it and fix those too.'}
+                          </div>
+                        )}
+                        {/* Revert is hidden while a reading overlay (Bionic / Line Guide) is active, since
+                            reverting past the command would also silently drop the overlay; it reappears
+                            cleanly once the overlay is toggled off (its own snapshot handles that undo). */}
+                        {pdfFixResult._preCmdHtml && !pdfFixResult._preBionicHtml && !pdfFixResult._preLineGuideHtml && (
+                          <button type="button" onClick={() => {
+                            setPdfFixResult(p => (p && p._preCmdHtml) ? ({ ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null }) : p);
+                            setAgentActivityLog(prev => [...prev, { text: '↩ Reverted last command', type: 'info', time: new Date().toLocaleTimeString() }]);
+                            addToast(t('toasts.command_reverted') || 'Reverted the last command.', 'info');
+                          }}
+                            className="mt-1 w-full px-2 py-1 bg-slate-700 text-amber-200 text-[11px] font-bold rounded border border-amber-700/50 hover:bg-slate-600 transition-colors"
+                            title={t('pdf_audit.expert.revert_title') || 'Undo the last command and restore the document to its state before it ran'}
+                          >↩ {t('pdf_audit.expert.revert') || 'Revert last command'}</button>
                         )}
                         {agentActivityLog.length > 0 && (
                           <div>

@@ -567,6 +567,34 @@ function _applyToAxeTarget(html, rawTarget, mutateFn) {
   }
 }
 
+// Mini-audit diff (2026-06-16): given axe results BEFORE and AFTER a single Workbench fix, classify
+// what changed BY RULE — which rules improved (resolved) and which regressed (introduced) — so a
+// MANUAL fix can self-verify (did it fix the target? did it break anything?) the same way the
+// auto-loop's acceptOrRevertSubtreeFix does. Pure: takes two runAxeAudit results, returns a verdict.
+// 'regressed' wins over 'improved' (any new violation is the actionable signal → offer revert).
+function _diffAxeForMiniAudit(beforeAxe, afterAxe) {
+  var _byRule = function(axe) {
+    var m = {};
+    ['critical', 'serious', 'moderate', 'minor'].forEach(function(sev) {
+      (((axe && axe[sev]) || [])).forEach(function(v) {
+        if (!v || v.id == null) return;
+        if (!m[v.id]) m[v.id] = { id: v.id, description: v.description || v.id, wcag: v.wcag || '', count: 0 };
+        m[v.id].count += (typeof v.nodes === 'number' ? v.nodes : 1);
+      });
+    });
+    return m;
+  };
+  var b = _byRule(beforeAxe), a = _byRule(afterAxe);
+  var resolved = [], introduced = [];
+  Object.keys(b).forEach(function(id) { var af = a[id] ? a[id].count : 0; if (af < b[id].count) resolved.push({ id: id, description: b[id].description, wcag: b[id].wcag, delta: b[id].count - af }); });
+  Object.keys(a).forEach(function(id) { var bf = b[id] ? b[id].count : 0; if (a[id].count > bf) introduced.push({ id: id, description: a[id].description, wcag: a[id].wcag, delta: a[id].count - bf }); });
+  var beforeTotal = (beforeAxe && typeof beforeAxe.totalViolations === 'number') ? beforeAxe.totalViolations : Object.keys(b).reduce(function(s, k) { return s + b[k].count; }, 0);
+  var afterTotal = (afterAxe && typeof afterAxe.totalViolations === 'number') ? afterAxe.totalViolations : Object.keys(a).reduce(function(s, k) { return s + a[k].count; }, 0);
+  var verdict = introduced.length > 0 ? 'regressed' : ((resolved.length > 0 || afterTotal < beforeTotal) ? 'improved' : 'no-change');
+  var _out = { beforeTotal: beforeTotal, afterTotal: afterTotal, resolved: resolved, introduced: introduced, verdict: verdict };
+  return _out;
+}
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -19000,6 +19028,37 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
   // commands (audit/auto/score/contrast) bypass AI; everything else goes
   // through Gemini for interpretation → tool call planning → execution.
   // ═══════════════════════════════════════════════════════════════
+  // Self-verify a single manual Workbench fix: re-audit the affected document with axe (local, free)
+  // BEFORE vs AFTER and report whether the fix actually resolved violations and whether it introduced
+  // any new ones — the manual-path equivalent of the auto-loop's accept-or-revert discipline. Honest
+  // about its blind spot: axe verifies STRUCTURE, not MEANING, so a 'no-change' verdict says the
+  // change may be semantic (which axe can't confirm), not that nothing happened. Fail-safe: any axe
+  // failure → returns { ran:false } and the caller still applies the fix (just unverified).
+  const _miniAuditFix = async (beforeHtml, afterHtml, onActivity, ts) => {
+    if (!afterHtml || afterHtml === beforeHtml) return null; // nothing applied → nothing to verify
+    try { onActivity({ text: '🔍 Mini-audit: re-checking the change for fixes + regressions...', type: 'audit', time: ts() }); } catch (_) {}
+    var beforeAxe = null, afterAxe = null;
+    try {
+      var _pair = await Promise.all([runAxeAudit(beforeHtml), runAxeAudit(afterHtml)]);
+      beforeAxe = _pair[0]; afterAxe = _pair[1];
+    } catch (_) { beforeAxe = null; afterAxe = null; }
+    if (!beforeAxe || !afterAxe) {
+      try { onActivity({ text: 'ℹ️ Mini-audit unavailable (axe-core couldn’t run) — change applied but unverified.', type: 'info', time: ts() }); } catch (_) {}
+      var _na = { ran: false }; return _na;
+    }
+    var d = _diffAxeForMiniAudit(beforeAxe, afterAxe);
+    if (d.verdict === 'regressed') {
+      var _newN = d.introduced.reduce(function(s, x) { return s + x.delta; }, 0);
+      try { onActivity({ text: '⚠️ Applied, but it introduced ' + _newN + ' new issue' + (_newN === 1 ? '' : 's') + ' [' + d.introduced.map(function(x) { return x.id; }).join(', ') + '] — consider Revert.', type: 'error', time: ts() }); } catch (_) {}
+    } else if (d.verdict === 'improved') {
+      try { onActivity({ text: '✅ Verified: ' + (d.beforeTotal - d.afterTotal) + ' fewer violation' + ((d.beforeTotal - d.afterTotal) === 1 ? '' : 's') + (d.resolved.length ? ' (' + d.resolved.map(function(x) { return x.id; }).join(', ') + ')' : '') + ', no new issues.', type: 'score', time: ts() }); } catch (_) {}
+    } else {
+      try { onActivity({ text: 'ℹ️ Applied, but axe sees no violation change — the issue may be semantic (axe verifies structure, not meaning).', type: 'info', time: ts() }); } catch (_) {}
+    }
+    var _r = { ran: true, beforeTotal: d.beforeTotal, afterTotal: d.afterTotal, resolved: d.resolved, introduced: d.introduced, verdict: d.verdict };
+    return _r;
+  };
+
   const processExpertCommand = async (command, currentHtml, options) => {
     options = options || {};
     const surgicalTools = SHARED_SURGICAL_TOOLS;
@@ -19031,7 +19090,8 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     if (cmd === 'contrast' || cmd === 'fix contrast') {
       onActivity({ text: '\uD83C\uDFA8 Fixing color contrast violations...', type: 'fix', time: ts() });
       var fixed = typeof fixContrastViolations === 'function' ? fixContrastViolations(currentHtml) : currentHtml;
-      return { type: 'fix', html: fixed };
+      var contrastAudit = await _miniAuditFix(currentHtml, fixed, onActivity, ts);
+      return { type: 'fix', html: fixed, miniAudit: contrastAudit };
     }
 
     // AI-interpreted commands — free-form expert instructions.
@@ -19088,7 +19148,8 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         }
       }
 
-      return { type: 'command', html: resultHtml, interpretation: parsed.interpretation };
+      var cmdAudit = await _miniAuditFix(currentHtml, resultHtml, onActivity, ts);
+      return { type: 'command', html: resultHtml, interpretation: parsed.interpretation, miniAudit: cmdAudit };
     } catch (e) {
       onActivity({ text: '\u274C Could not interpret command: ' + (e.message || e), type: 'error', time: ts() });
       return { type: 'error', html: currentHtml, error: e.message };
