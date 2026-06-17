@@ -1790,17 +1790,26 @@
       }, [aacMode, isolationState, generateOptionImages]);
       // Small static table for the most common phonics words — guarantees a good
       // experience even without Gemini available.
+      // Mix of positions (initial deletion, final & medial substitution) so the
+      // manipulated sound is not always at the start; 5 distractors each -> 6 options.
       const MANIPULATION_FALLBACKS = {
-        cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["hat", "bat", "mat"] },
-        hat: { type: "deletion", instruction: "Say 'hat'. Now say it again, but leave out the /h/ sound.", targetPhoneme: "h", answer: "at", distractors: ["cat", "bat", "sat"] },
-        dog: { type: "substitution", instruction: "Say 'dog'. Now change the /d/ to /l/.", targetPhoneme: "d", answer: "log", distractors: ["fog", "hog", "bog"] },
-        stop: { type: "deletion", instruction: "Say 'stop'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "top", distractors: ["hop", "mop", "pop"] },
-        clap: { type: "deletion", instruction: "Say 'clap'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "lap", distractors: ["map", "tap", "cap"] },
-        train: { type: "deletion", instruction: "Say 'train'. Now say it again, but leave out the /t/ sound.", targetPhoneme: "t", answer: "rain", distractors: ["main", "gain", "pain"] },
-        plane: { type: "deletion", instruction: "Say 'plane'. Now say it again, but leave out the /p/ sound.", targetPhoneme: "p", answer: "lane", distractors: ["cane", "bane", "mane"] },
-        smile: { type: "deletion", instruction: "Say 'smile'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "mile", distractors: ["file", "pile", "tile"] },
-        black: { type: "deletion", instruction: "Say 'black'. Now say it again, but leave out the /b/ sound.", targetPhoneme: "b", answer: "lack", distractors: ["back", "hack", "pack"] },
-        flat: { type: "deletion", instruction: "Say 'flat'. Now say it again, but leave out the /f/ sound.", targetPhoneme: "f", answer: "lat", distractors: ["hat", "mat", "bat"] },
+        cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["hat", "bat", "mat", "rat", "sat"] },
+        hat: { type: "substitution", instruction: "Say 'hat'. Now change the /t/ sound to /m/.", targetPhoneme: "t", answer: "ham", distractors: ["had", "hen", "jam", "ram", "map"] },
+        dog: { type: "substitution", instruction: "Say 'dog'. Now change the /g/ sound to /t/.", targetPhoneme: "g", answer: "dot", distractors: ["dock", "dab", "dig", "den", "dim"] },
+        stop: { type: "deletion", instruction: "Say 'stop'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "top", distractors: ["hop", "mop", "pop", "cop", "shop"] },
+        clap: { type: "substitution", instruction: "Say 'clap'. Now change the /a/ sound to /i/.", targetPhoneme: "a", answer: "clip", distractors: ["club", "clay", "clam", "crab", "grip"] },
+        train: { type: "deletion", instruction: "Say 'train'. Now say it again, but leave out the /t/ sound.", targetPhoneme: "t", answer: "rain", distractors: ["main", "gain", "pain", "chain", "brain"] },
+        plane: { type: "deletion", instruction: "Say 'plane'. Now say it again, but leave out the /p/ sound.", targetPhoneme: "p", answer: "lane", distractors: ["cane", "bane", "mane", "vane", "crane"] },
+        smile: { type: "deletion", instruction: "Say 'smile'. Now say it again, but leave out the /s/ sound.", targetPhoneme: "s", answer: "mile", distractors: ["file", "pile", "tile", "mild", "wild"] },
+        black: { type: "deletion", instruction: "Say 'black'. Now say it again, but leave out the /b/ sound.", targetPhoneme: "b", answer: "lack", distractors: ["back", "hack", "pack", "rack", "sack"] },
+        flat: { type: "substitution", instruction: "Say 'flat'. Now change the /t/ sound to /g/.", targetPhoneme: "t", answer: "flag", distractors: ["flap", "flask", "flame", "flop", "flip"] },
+      };
+      // Top up an option set to 6 with generic short words (reliable 6 choices).
+      const MANIP_FILL = ["sit", "map", "bed", "pin", "mud", "fan", "log", "cup"];
+      const padManipOpts = (arr) => {
+        const out = (arr || []).filter(Boolean);
+        for (const f of MANIP_FILL) { if (out.length >= 6) break; if (out.indexOf(f) === -1) out.push(f); }
+        return out;
       };
       // Pure helper: generates a manipulation task without touching React state.
       // Used by fetchWordData (setup preload) AND the in-activity effect via the
@@ -1820,9 +1829,10 @@
               `You are a speech-language pathology educator creating a phoneme manipulation exercise.\n` +
               `Word: "${word}"\nPhonemes: ${phonemeStr}\n\n` +
               `Choose DELETION (remove one phoneme) OR SUBSTITUTION (swap one phoneme), whichever produces a common English word.\n` +
+              `IMPORTANT: Vary WHICH phoneme you manipulate - do NOT always pick the first sound. Prefer a MIDDLE (vowel) or FINAL sound when it yields a common word, so the exercise is not always about the beginning of the word.\n` +
               `Return ONLY valid JSON — no markdown, no explanation:\n` +
-              `{"type":"deletion","instruction":"Say '${word}'. Now say it again, but leave out the /k/ sound.","targetPhoneme":"k","answer":"at","distractors":["hat","bat","mat"]}\n\n` +
-              `Rules: answer and all distractors must be real common English words; instruction must be child-friendly; targetPhoneme in plain text without slashes.`;
+              `{"type":"substitution","instruction":"Say 'cap'. Now change the /a/ sound to /u/.","targetPhoneme":"a","answer":"cup","distractors":["cop","cab","can","cat","map"]}\n\n` +
+              `Rules: answer and all FIVE distractors must be real common English words, all different from the answer; instruction must be child-friendly; targetPhoneme in plain text without slashes. Provide exactly 5 distractors.`;
             try {
               const raw = await callGemini(prompt);
               const jsonMatch = (raw || "").match(/\{[\s\S]*?\}/);
@@ -1838,7 +1848,7 @@
               instruction: `Say '${word}'. Now say it again, but leave out the first sound.`,
               targetPhoneme: phonemes?.[0] || word[0],
               answer,
-              distractors: ["at", "on", "in"].filter((d) => d !== answer),
+              distractors: ["at", "on", "in", "up", "it", "an"].filter((d) => d !== answer).slice(0, 5),
             };
           }
           return result;
@@ -1854,10 +1864,7 @@
           try {
             const result = await generateManipulationTask(word, phonemes);
             if (!result) return;
-            const opts = fisherYatesShuffle([
-              result.answer,
-              ...(result.distractors || []).slice(0, 3),
-            ]);
+            const opts = fisherYatesShuffle(padManipOpts([result.answer, ...(result.distractors || []).slice(0, 5)]));
             setManipulationState(result);
             manipulationStateRef.current = result;
             setManipulationOptions(opts);
@@ -1989,10 +1996,7 @@
           Array.isArray(preloadedTask.distractors) &&
           preloadedTask.distractors.length > 0
         ) {
-          const opts = fisherYatesShuffle([
-            preloadedTask.answer,
-            ...preloadedTask.distractors.slice(0, 3),
-          ]);
+          const opts = fisherYatesShuffle(padManipOpts([preloadedTask.answer, ...preloadedTask.distractors.slice(0, 5)]));
           setManipulationState(preloadedTask);
           manipulationStateRef.current = preloadedTask;
           setManipulationOptions(opts);

@@ -48,6 +48,8 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.middle_sound_q': 'What is the {{position}} sound?',
     'word_sounds.find_which_sound': 'Find the {{position}} sound:',
     'word_sounds.blending_prompt': 'Blend these sounds together!',
+    'word_sounds.syllable_blending_prompt': 'Blend these syllables into a word!',
+    'word_sounds.manipulation_prompt': 'Swap the sound to make a new word!',
     'word_sounds.play_sounds': 'Play Sounds',
     'word_sounds.type_word': 'Type the word you hear:',
     'word_sounds.your_answer': 'Your answer...',
