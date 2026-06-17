@@ -133,7 +133,7 @@ window.StemLab = window.StemLab || {
     ],
     codominant: [
       { label: '\uD83E\uDE78 Blood Type (AB \u00D7 AB)', p1: ['A', 'B'], p2: ['A', 'B'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'A and B alleles are codominant - both expressed in AB blood type' },
-      { label: '\uD83E\uDE78 Blood (Ai \u00D7 Bi)', p1: ['A', 'i'], p2: ['B', 'i'], trait: 'Blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Carrier cross: possible A, B, AB, or O children' },
+      { label: '\uD83E\uDE78 Blood (AB \u00D7 Ai)', p1: ['A', 'B'], p2: ['A', 'i'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Type AB parent \u00D7 Type A carrier (A i): children are Type A, B, or AB \u2014 never O here' },
       { label: '\uD83D\uDC04 Roan Cattle (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' }
     ],
     sexLinked: [
@@ -1041,7 +1041,7 @@ window.StemLab = window.StemLab || {
     },
     {
       title: 'Inheritance Patterns', icon: '\uD83D\uDCCA',
-      k2: 'Some traits are "stronger" than others! If you get a "strong" (dominant) gene from one parent and a "weak" (recessive) gene from the other, you\'ll show the strong trait. That\'s why brown eyes are more common than blue eyes!',
+      k2: 'Each parent gives you one gene for a trait. When your two genes are different, the dominant one is the trait you SEE. But dominant does NOT mean stronger, better, or more common - it just means "the one that shows." The hidden (recessive) gene is still there and can show up in your own kids someday!',
       g35: 'Mendel discovered three laws: (1) Law of Dominance - one allele can mask another. (2) Law of Segregation - allele pairs separate during gamete formation. (3) Law of Independent Assortment - genes on different chromosomes sort independently. A Punnett square predicts offspring ratios: Bb \u00D7 Bb gives a 3:1 dominant:recessive ratio.',
       g68: 'Beyond simple dominance, inheritance patterns include: Incomplete dominance (red \u00D7 white = pink snapdragons), Codominance (AB blood type), Sex-linked (hemophilia on X chromosome), and Polygenic (height, skin color). Linked genes on the same chromosome violate independent assortment but recombination during crossing over creates new combinations. Pedigree charts trace traits through generations.',
       g912: 'Complex inheritance includes epistasis (gene interaction where one gene modifies another\'s expression), penetrance (% showing phenotype), and expressivity (degree of expression). Quantitative trait loci (QTL) analysis maps polygenic traits. Mitochondrial inheritance is maternal. Genomic imprinting means some genes are expressed only from the maternal or paternal copy. Genetic linkage and recombination frequencies are used to map gene positions on chromosomes.'
@@ -1339,8 +1339,29 @@ window.StemLab = window.StemLab || {
               return 'Blended';
             };
           } else if (inheritMode === 'codominant') {
+            // Two-codominant-allele systems (ABO's A/B, MN) need to be classified by allele
+            // IDENTITY, not by letter case: with both A and B uppercase, the old case-only test
+            // collapsed AA and BB into one "Dominant" class, so AB × AB wrongly read 2 Dominant
+            // instead of the true 1 Type-A : 2 Type-AB : 1 Type-B. We map the dominant-labelled
+            // allele and the recessive-labelled allele explicitly. Single-codominant-allele systems
+            // (Roan R/r, where the heterozygote is the blend) fall back to the case-based test.
+            var _coAll = [parent1[0], parent1[1], parent2[0], parent2[1]];
+            var _coUp = _coAll.filter(function(a) { return a === a.toUpperCase() && a !== 'Y'; });
+            var _coDistinct = _coUp.filter(function(a, i) { return _coUp.indexOf(a) === i; }).sort();
+            var coDomAllele = _coDistinct[0], coRecAllele = _coDistinct[1];
             phenotype = function(g) {
               if (isSexLinked) return 'Dominant';
+              if (_coDistinct.length >= 2) {
+                // true codominance between two expressed alleles (A/B, M/N); lowercase (incl. i) is null
+                var up0 = g[0] === g[0].toUpperCase(), up1 = g[1] === g[1].toUpperCase();
+                var hasD = (up0 && g[0] === coDomAllele) || (up1 && g[1] === coDomAllele);
+                var hasR = (up0 && g[0] === coRecAllele) || (up1 && g[1] === coRecAllele);
+                if (hasD && hasR) return 'Codominant';
+                if (hasD) return 'Dominant';
+                if (hasR) return 'Recessive';
+                return 'Recessive'; // neither codominant allele expressed (e.g. ii) → recessive class
+              }
+              // single codominant allele over a recessive one (Roan): heterozygote = the blend
               var upper = g[0].toUpperCase();
               if (g[0] === g[1] && g[0] === upper) return 'Dominant';
               if (g[0] === g[1]) return 'Recessive';
@@ -1896,9 +1917,14 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'mt-4 bg-slate-50 rounded-lg p-3 text-center' },
                 h('p', { className: 'text-sm font-bold text-slate-600' }, genotypeRatioStr),
                 h('p', { className: 'text-xs text-slate-600 mt-1' },
-                  blendCount > 0
-                    ? 'Phenotype: ' + domCount + '/4 Dominant, ' + blendCount + '/4 ' + (inheritMode === 'incomplete' ? 'Blended' : 'Codominant') + ', ' + recCount + '/4 Recessive'
-                    : 'Phenotype: ' + domCount + '/4 Dominant, ' + recCount + '/4 Recessive'
+                  (function() {
+                    var dL = activePreset && activePreset.domLabel ? activePreset.domLabel : 'Dominant';
+                    var rL = activePreset && activePreset.recLabel ? activePreset.recLabel : 'Recessive';
+                    var bL = activePreset && activePreset.blendLabel ? activePreset.blendLabel : (inheritMode === 'incomplete' ? 'Blended' : 'Codominant');
+                    return blendCount > 0
+                      ? 'Phenotype: ' + domCount + '/4 ' + dL + ', ' + blendCount + '/4 ' + bL + ', ' + recCount + '/4 ' + rL
+                      : 'Phenotype: ' + domCount + '/4 ' + dL + ', ' + recCount + '/4 ' + rL;
+                  })()
                 )
               ),
 
@@ -2022,6 +2048,16 @@ window.StemLab = window.StemLab || {
                   if (domCount === 1) return '\uD83D\uDCA1 Only 25% dominant. This is unusual - check your allele assignments!';
                   return '\uD83D\uDCA1 100% recessive. Both parents must be homozygous recessive (bb).';
                 })()
+              ),
+
+              // Misconception-buster card (cross is the default sub-tool, so this is gate-rendered)
+              !isDihybrid && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3' },
+                h('p', { className: 'text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1.5' }, '\u26A0\uFE0F Common genetics mix-ups'),
+                h('ul', { className: 'space-y-1.5 text-xs text-amber-900 list-disc list-inside marker:text-amber-500' },
+                  h('li', null, h('b', null, 'Dominant \u2260 stronger or more common. '), 'A dominant allele simply masks the recessive one when both are present. It is not "better," and it does not spread through a population over time \u2014 plenty of common traits are recessive.'),
+                  h('li', null, h('b', null, 'A 3:1 ratio is a probability, not a promise. '), 'Each child is an independent 75% / 25% outcome. A family of four can easily come out all-dominant or two-and-two \u2014 the same way four coin flips are not always exactly two heads.'),
+                  h('li', null, h('b', null, 'Codominance \u2260 blending. '), 'In codominance BOTH alleles show fully and separately (type-AB blood carries A and B markers). In incomplete dominance they blend to an in-between (red + white = pink).')
+                )
               ),
 
               // ═══════════════════════════════════════
