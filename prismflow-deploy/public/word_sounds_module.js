@@ -12144,6 +12144,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           /*#__PURE__*/ React.createElement(
                       "div",
                       {
+                        key: "blend-grid-" + (showLetterHints ? "phonics" : "soundsonly"),
                         className:
                           "grid grid-cols-2 gap-3 max-w-sm mx-auto",
                       },
