@@ -333,7 +333,15 @@ var molarityCalcV1 = d.molarityV1 != null ? d.molarityV1 : 10;
 var molarityCalcC2 = d.molarityC2 != null ? d.molarityC2 : 0.1;
 var accuracyLog = d.accuracyLog || [];
 
-// Determine active safety tip
+var maxVol = 50;
+
+var Veq = (preset.concAcid * preset.volAcid) / preset.concBase;
+
+var Kw = 1e-14;
+
+// Determine active safety tip. NOTE: Veq/maxVol/Kw are declared ABOVE this block on
+// purpose — they used to be declared just below it, and `var` hoisting left Veq
+// `undefined` here, so the halfEquiv / nearEquiv / overshot tips silently never fired.
 var activeTip = null;
 if (safetyChecked && labTab === 'titrate') {
   if (preset.redox && volumeAdded < 1) activeTip = safetyTips.redoxWarning;
@@ -346,12 +354,6 @@ if (safetyChecked && labTab === 'titrate') {
   else if (volumeAdded > Veq - 2 && volumeAdded < Veq + 0.5) activeTip = safetyTips.nearEquiv;
   else if (volumeAdded > Veq + 3) activeTip = safetyTips.overshot;
 }
-
-var maxVol = 50;
-
-var Veq = (preset.concAcid * preset.volAcid) / preset.concBase;
-
-var Kw = 1e-14;
 
 
 
@@ -474,22 +476,37 @@ function calcPH(vol) {
 
 // ── Indicator Color ──
 
-function getIndicatorColor(pH) {
-
-  if (indicatorId === 'universal') {
-
-    var hue = pH <= 7 ? (pH * 120 / 7) : (120 + (pH - 7) * 160 / 7);
-
-    return 'hsl(' + Math.round(hue) + ', 75%, 50%)';
-
+// Parse a hex or rgba() color into {r,g,b,a} and linearly interpolate two of them.
+// Real indicators change color CONTINUOUSLY across their ~2 pH-unit transition range,
+// so we blend colorLow→colorMid→colorHigh instead of snapping between three bands.
+function _parseColor(c) {
+  c = String(c).trim();
+  if (c.charAt(0) === '#') {
+    var hex = c.slice(1);
+    if (hex.length === 3) hex = hex.charAt(0) + hex.charAt(0) + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2);
+    return { r: parseInt(hex.slice(0, 2), 16), g: parseInt(hex.slice(2, 4), 16), b: parseInt(hex.slice(4, 6), 16), a: 1 };
   }
+  var m = c.match(/rgba?\(([^)]+)\)/);
+  if (m) { var p = m[1].split(',').map(function (x) { return parseFloat(x); }); return { r: p[0] || 0, g: p[1] || 0, b: p[2] || 0, a: p[3] == null ? 1 : p[3] }; }
+  return { r: 128, g: 128, b: 128, a: 1 };
+}
+function _lerpColor(c1, c2, t) {
+  var a = _parseColor(c1), b = _parseColor(c2);
+  t = Math.max(0, Math.min(1, t));
+  return 'rgba(' + Math.round(a.r + (b.r - a.r) * t) + ',' + Math.round(a.g + (b.g - a.g) * t) + ',' + Math.round(a.b + (b.b - a.b) * t) + ',' + (a.a + (b.a - a.a) * t).toFixed(3) + ')';
+}
 
+function getIndicatorColor(pH) {
+  if (indicatorId === 'universal') {
+    var hue = pH <= 7 ? (pH * 120 / 7) : (120 + (pH - 7) * 160 / 7);
+    return 'hsl(' + Math.round(hue) + ', 75%, 50%)';
+  }
   if (pH <= indicator.low) return indicator.colorLow;
-
   if (pH >= indicator.high) return indicator.colorHigh;
-
+  var mid = (indicator.low + indicator.high) / 2;
+  if (pH <= mid && mid > indicator.low) return _lerpColor(indicator.colorLow, indicator.colorMid, (pH - indicator.low) / (mid - indicator.low));
+  if (indicator.high > mid) return _lerpColor(indicator.colorMid, indicator.colorHigh, (pH - mid) / (indicator.high - mid));
   return indicator.colorMid;
-
 }
 
 
@@ -525,6 +542,22 @@ var equivPH = calcPH(Veq);
 var indicatorStatus = currentPH < indicator.low ? 'Before endpoint' :
 
   currentPH > indicator.high ? 'Past endpoint' : 'At endpoint';
+
+// ── Endpoint vs. equivalence (the single most important practical titration idea) ──
+// Does the chosen indicator's color-change range straddle the equivalence pH? If not, the
+// student stops at the wrong volume — "endpoint" (color change) ≠ "equivalence" (stoichiometric).
+// Only meaningful for the standard single-equivalence acid–base presets with a sharp endpoint.
+var indicatorAnalysisOn = indicatorId !== 'universal' && !preset.redox && !preset.backTitration && !preset.polyprotic;
+var equivInBand = equivPH >= indicator.low && equivPH <= indicator.high;
+var endpointVol = null; // volume where the indicator first changes color (pH enters its band)
+if (indicatorAnalysisOn) {
+  for (var _ci = 0; _ci < curveData.length; _ci++) {
+    if (curveData[_ci].pH >= indicator.low) { endpointVol = curveData[_ci].vol; break; }
+  }
+}
+var titrationErrorMl = (indicatorAnalysisOn && endpointVol != null) ? Math.abs(endpointVol - Veq) : 0;
+var titrationErrorPct = (indicatorAnalysisOn && Veq > 0) ? (titrationErrorMl / Veq * 100) : 0;
+var indicatorMismatch = indicatorAnalysisOn && !equivInBand;
 
 
 
@@ -1710,6 +1743,44 @@ return React.createElement("div", {
 
     })
 
+  ),
+
+
+
+  // ── Endpoint vs. equivalence coaching (does the chosen indicator actually mark equivalence?) ──
+  labTab === 'titrate' && indicatorAnalysisOn && React.createElement("div", {
+    className: "rounded-xl p-2.5 border text-[12px] leading-snug max-w-2xl mx-auto",
+    role: "status",
+    style: indicatorMismatch
+      ? { background: 'rgba(127,29,29,0.35)', borderColor: 'rgba(248,113,113,0.5)', color: '#fecaca' }
+      : { background: 'rgba(6,78,59,0.32)', borderColor: 'rgba(52,211,153,0.45)', color: '#bbf7d0' }
+  },
+    indicatorMismatch
+      ? [
+          React.createElement("span", { key: 'h', className: "font-black" }, '⚠ Endpoint ≠ equivalence. '),
+          indicator.label + ' changes color at pH ' + indicator.low + '–' + indicator.high +
+            ', but this titration reaches equivalence at pH ' + equivPH.toFixed(2) + '. ',
+          (endpointVol != null
+            ? ('You’d stop about ' + titrationErrorMl.toFixed(1) + ' mL ' + (endpointVol < Veq ? 'too early' : 'too late') +
+               ' (≈' + titrationErrorPct.toFixed(0) + '% error). ')
+            : 'This indicator barely changes color across this titration’s pH range. '),
+          React.createElement("span", { key: 'f', className: "font-bold" }, 'Pick an indicator whose range includes pH ' + equivPH.toFixed(1) + '.')
+        ]
+      : [
+          React.createElement("span", { key: 'h', className: "font-black" }, '✔ Good indicator choice. '),
+          indicator.label + '’s range (pH ' + indicator.low + '–' + indicator.high +
+            ') includes the equivalence pH (' + equivPH.toFixed(2) + '), so the color change marks equivalence accurately.'
+        ]
+  ),
+
+  // ── Redox honesty: this preset is NOT a pH titration ──
+  labTab === 'titrate' && preset.redox && React.createElement("div", {
+    className: "rounded-xl p-2.5 border text-[12px] leading-snug max-w-2xl mx-auto",
+    role: "status",
+    style: { background: 'rgba(112,26,117,0.30)', borderColor: 'rgba(217,70,239,0.5)', color: '#f5d0fe' }
+  },
+    React.createElement("span", { className: "font-black" }, '⚗ Redox titration — not a pH curve. '),
+    'The trace shows relative reaction progress, not pH — there is no pH meter here. The endpoint is the first faint, lasting pink from a tiny excess of MnO₄⁻ (it reacts purple → colorless until then). Read this endpoint by COLOR.'
   ),
 
 

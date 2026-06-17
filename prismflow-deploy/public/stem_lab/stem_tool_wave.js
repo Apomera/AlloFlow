@@ -141,7 +141,18 @@ const d = labToolData.wave;
 
           const canvasRef = function (canvasEl) {
 
-            if (!canvasEl) return;
+            if (!canvasEl) {
+              // React calls ref(null) on unmount. Tear down the previous canvas's animation
+              // loop (the draw() requestAnimationFrame chain otherwise only self-stops once the
+              // node is detached) and close any open AudioContext (the "Play Sound" oscillator
+              // would otherwise leak if you leave the tool mid-tone).
+              try {
+                var _prevCv = canvasRef._lastCanvas;
+                if (_prevCv && _prevCv._waveAnim) { cancelAnimationFrame(_prevCv._waveAnim); _prevCv._waveAnim = null; }
+              } catch (e) {}
+              try { if (d && d._audioCtx) { d._audioCtx.close(); d._audioCtx = null; } } catch (e) {}
+              return;
+            }
 
             if (canvasEl._waveInit) return;
 
@@ -1123,14 +1134,33 @@ const d = labToolData.wave;
                   ctx.stroke();
                 }
 
+                // Misconception-buster: highlight ONE tracer particle (gold) against a dashed
+                // marker at its equilibrium (rest) position, so students SEE it only jiggles
+                // back and forth in place \u2014 the wave travels right, but matter does not move with it.
+                var _trBaseX = (Math.floor(numParticles / 2) + 1) * particleSpacing;
+                var _trDisp = longAmp * Math.sin(2 * Math.PI * (_trBaseX / cW * freq - t * freq * 0.05));
+                var _trX = _trBaseX + _trDisp;
+                ctx.setLineDash([3 * dpr, 3 * dpr]);
+                ctx.strokeStyle = 'rgba(251,191,36,0.45)';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(_trBaseX, midY - 38 * dpr); ctx.lineTo(_trBaseX, midY + 38 * dpr); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 4 * dpr;
+                ctx.beginPath(); ctx.moveTo(_trX, midY - 32 * dpr); ctx.lineTo(_trX, midY + 32 * dpr); ctx.stroke();
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath(); ctx.arc(_trX, midY, 4 * dpr, 0, 2 * Math.PI); ctx.fill();
+
                 // Labels
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4, 4, 220 * dpr, 36 * dpr);
+                ctx.fillStyle = 'rgba(0,0,0,0.62)';
+                ctx.fillRect(4, 4, 372 * dpr, 50 * dpr);
                 ctx.fillStyle = '#60a5fa';
                 ctx.font = (7 * dpr) + 'px sans-serif';
                 ctx.fillText('Longitudinal Wave \u2014 Compression & Rarefaction', 8 * dpr, 14 * dpr);
                 ctx.fillStyle = '#f472b6';
                 ctx.fillText('\u223F Pressure wave (top) | Particles (center)', 8 * dpr, 26 * dpr);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText('\u25CF Gold particle jiggles in place \u2014 the wave moves right, matter does not.', 8 * dpr, 40 * dpr);
 
               } else if (currentMode === 'doppler') {
                 // ========== DOPPLER EFFECT MODE ==========
@@ -1202,7 +1232,7 @@ const d = labToolData.wave;
                 ctx.setLineDash([]);
                 ctx.beginPath();
                 for (var sx = 0; sx < cW; sx += 2) {
-                  var sv = amp * Math.sin(2 * Math.PI * (sx / cW * freq - t * freq * 0.05));
+                  var sv = amp * waveVal(2 * Math.PI * (sx / cW * freq - t * freq * 0.05), waveType);
                   if (showSecond) sv += amp2 * Math.sin(2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05));
                   var sy = midY_s * 0.5 + sv * midY_s * 0.35;
                   if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
@@ -1215,37 +1245,44 @@ const d = labToolData.wave;
                 ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
 
-                // Frequency domain bars (bottom half)
-                var maxFreqDisp = Math.max(freq * 3, 1000);
-                var freqBin = maxFreqDisp / barCount;
-                for (var bi = 0; bi < barCount; bi++) {
-                  var binCenterFreq = (bi + 0.5) * freqBin;
-                  // Calculate magnitude: peaks at fundamental frequencies
-                  var mag = 0;
-                  var spread = freqBin * 0.8;
-                  mag += amp * Math.exp(-Math.pow(binCenterFreq - freq, 2) / (2 * spread * spread));
-                  // Add harmonics
-                  mag += amp * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq * 2, 2) / (2 * spread * spread));
-                  mag += amp * 0.15 * Math.exp(-Math.pow(binCenterFreq - freq * 3, 2) / (2 * spread * spread));
-                  if (showSecond) {
-                    mag += amp2 * Math.exp(-Math.pow(binCenterFreq - freq2, 2) / (2 * spread * spread));
-                    mag += amp2 * 0.3 * Math.exp(-Math.pow(binCenterFreq - freq2 * 2, 2) / (2 * spread * spread));
+                // Frequency domain (bottom half): a REAL discrete Fourier transform of ONE period
+                // of the selected waveform, so the spectrum genuinely reflects timbre \u2014
+                // sine = one bar; square = odd harmonics (~1/n); sawtooth = all harmonics (~1/n);
+                // triangle = odd harmonics fading fast (~1/n\u00b2). (A steady tone has a STEADY
+                // spectrum, so unlike the old fake bars these don't jitter \u2014 that's correct.)
+                var NSAMP = 256, maxHarm = 12;
+                var harmMag = [], maxMag = 1e-6;
+                for (var hh = 1; hh <= maxHarm; hh++) {
+                  var dre = 0, dim = 0;
+                  for (var kk = 0; kk < NSAMP; kk++) {
+                    var ph = 2 * Math.PI * kk / NSAMP;
+                    var yk = waveVal(ph, waveType);
+                    dre += yk * Math.cos(hh * ph);
+                    dim += yk * Math.sin(hh * ph);
                   }
-                  // Animate with slight jitter
-                  mag *= (0.9 + 0.1 * Math.sin(t * 2 + bi));
-
-                  var barH = Math.min(midY_s - 20, mag * midY_s * 0.8);
-                  var barX = 20 + bi * barW;
-                  var barY = cH - 10 - barH;
-
-                  // Gradient color based on frequency
-                  var hue = (bi / barCount) * 270;
-                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.85)';
-                  ctx.fillRect(barX, barY, barW - 2, barH);
-
-                  // Glow cap
-                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.9)';
-                  ctx.fillRect(barX, barY, barW - 2, 3 * dpr);
+                  var hmag = 2 * Math.sqrt(dre * dre + dim * dim) / NSAMP; // Fourier amplitude of harmonic hh
+                  harmMag.push(hmag);
+                  if (hmag > maxMag) maxMag = hmag;
+                }
+                var maxFreqDisp = (maxHarm + 1) * freq;
+                var plotBottom = cH - 12, plotTop = midY_s + 8;
+                for (var hb = 1; hb <= maxHarm; hb++) {
+                  var rel = harmMag[hb - 1] / maxMag;
+                  if (rel < 0.012) continue; // omit negligible harmonics for a clean read
+                  var hx = 20 + (hb * freq / maxFreqDisp) * (cW - 40);
+                  var hBarH = rel * (plotBottom - plotTop);
+                  var hue = ((hb - 1) / maxHarm) * 270;
+                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.9)';
+                  ctx.fillRect(hx - 3 * dpr, plotBottom - hBarH, 6 * dpr, hBarH);
+                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.95)';
+                  ctx.fillRect(hx - 3 * dpr, plotBottom - hBarH, 6 * dpr, 3 * dpr);
+                  if (rel > 0.08) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                    ctx.font = (5 * dpr) + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(hb + 'f', hx, plotBottom - hBarH - 3 * dpr);
+                    ctx.textAlign = 'left';
+                  }
                 }
 
                 // Frequency axis labels
@@ -1257,13 +1294,19 @@ const d = labToolData.wave;
                 }
 
                 // Labels
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4, 4, 230 * dpr, 36 * dpr);
+                ctx.fillStyle = 'rgba(0,0,0,0.62)';
+                ctx.fillRect(4, 4, 340 * dpr, 50 * dpr);
                 ctx.fillStyle = '#60a5fa';
                 ctx.font = (7 * dpr) + 'px sans-serif';
-                ctx.fillText('Spectrum Analyzer \u2014 Time \u2192 Frequency Domain', 8 * dpr, 14 * dpr);
+                ctx.fillText('Spectrum \u2014 Time \u2192 Frequency (real harmonic analysis)', 8 * dpr, 14 * dpr);
                 ctx.fillStyle = '#c084fc';
-                ctx.fillText('Top: Waveform | Bottom: Frequency Spectrum (FFT)', 8 * dpr, 26 * dpr);
+                ctx.fillText('Top: ' + waveType + ' wave | Bottom: its true harmonic content', 8 * dpr, 26 * dpr);
+                ctx.fillStyle = '#34d399';
+                var _timbreNote = waveType === 'sine' ? 'Pure sine = ONE frequency, no harmonics.'
+                  : waveType === 'square' ? 'Square = odd harmonics (1f, 3f, 5f\u2026), ~1/n.'
+                  : waveType === 'triangle' ? 'Triangle = odd harmonics, fading fast (~1/n\u00b2).'
+                  : 'Sawtooth = ALL harmonics (1f, 2f, 3f\u2026), ~1/n.';
+                ctx.fillText('Timbre = harmonics: ' + _timbreNote, 8 * dpr, 40 * dpr);
 
               } else if (currentMode === 'reflection') {
                 // ========== REFLECTION / BOUNDARY MODE ==========
@@ -1739,7 +1782,7 @@ const d = labToolData.wave;
 
               }),
 
-              React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, (d.harmonic || 1) + " node" + ((d.harmonic || 1) > 1 ? 's' : '') + ", " + ((d.harmonic || 1) + 1) + " antinode" + ((d.harmonic || 1) > 0 ? 's' : ''))
+              React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, ((d.harmonic || 1) + 1) + " nodes, " + (d.harmonic || 1) + " antinode" + ((d.harmonic || 1) > 1 ? 's' : ''))
 
             ),
 
