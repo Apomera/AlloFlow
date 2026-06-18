@@ -13708,6 +13708,12 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           }
         };
 
+        // Protect image-placeholder figures (their giant inline on* handlers) from the polish + cleanup
+        // passes below — an AI rewrite or a cleanup regex corrupts the handler, which both leaks JS into
+        // visible text AND breaks the ×-remove / Pick-extracted / drag-drop buttons. Tokenize now, restore
+        // pristine after the cleanup (mirrors the surgical path's protection at 3413/3510). (2026-06-18)
+        const _phProtect = _stripImagePlaceholdersForAi(bodyContent);
+        bodyContent = _phProtect.html;
         // ── Polish passes: deterministic first, then AI with small chunks ──
         if (transformChunks > 1) {
           // Phase 1: Deterministic fixes (instant, free)
@@ -13845,6 +13851,9 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           .replace(/\\t/g, ' ') // literal \t → space
           .replace(/(<p>\s*<\/p>)+/g, ''); // remove empty paragraphs created by cleanup
       }
+      // Restore the protected image-placeholder figures PRISTINE — their inline ×-remove / Pick-extracted
+      // / drag-drop handlers survive the polish + cleanup intact, so the buttons work in the preview. (2026-06-18)
+      bodyContent = _restoreImagePlaceholdersForAi(bodyContent, _phProtect.map);
 
       // ── Insert extracted images using placeholder tokens (deferred real-image insertion) ──
       // Instead of embedding base64 data URLs directly, use stable placeholder tokens that survive

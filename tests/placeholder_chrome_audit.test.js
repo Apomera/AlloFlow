@@ -74,4 +74,12 @@ describe('wiring: both scoring paths audit the chrome-stripped, repaired documen
     expect(src).toContain('runAxeAudit(_reScoreHtml)');
     expect(src).toContain('runEqualAccessAudit(_reScoreHtml)');
   });
+  it('ROOT CAUSE: the polish + cleanup passes are bracketed with the placeholder strip/restore so the inline ×-remove / Pick-extracted / drop handlers are never corrupted', () => {
+    const fn = src.slice(src.indexOf('// ── Polish passes'), src.indexOf('// ── Insert extracted images using placeholder tokens'));
+    expect(src).toContain('const _phProtect = _stripImagePlaceholdersForAi(bodyContent);');
+    expect(src).toContain('bodyContent = _restoreImagePlaceholdersForAi(bodyContent, _phProtect.map);');
+    // the strip is BEFORE the polish, the restore is AFTER the cleanup (so both passes are covered)
+    expect(src.indexOf('const _phProtect = _stripImagePlaceholdersForAi(bodyContent);')).toBeLessThan(src.indexOf('// ── Polish passes'));
+    expect(src.indexOf('bodyContent = _restoreImagePlaceholdersForAi(bodyContent, _phProtect.map);')).toBeGreaterThan(src.indexOf('remove empty paragraphs created by cleanup'));
+  });
 });
