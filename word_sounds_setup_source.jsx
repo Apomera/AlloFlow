@@ -69,10 +69,16 @@
             word_families: { enabled: false, count: 5 },
             word_scramble: { enabled: false, count: 5 },
             manipulation: { enabled: false, count: 5 },
+            syllable_counting: { enabled: false, count: 5 },
+            syllable_blending: { enabled: false, count: 5 },
+            spelling_bee: { enabled: false, count: 5 },
+            missing_letter: { enabled: false, count: 5 },
+            decoding: { enabled: false, count: 5 },
         });
         const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
             'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
-            'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation'
+            'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation',
+            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding'
         ]);
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [imageTheme, setImageTheme] = React.useState('');
@@ -838,6 +844,11 @@
                                                     word_families: { id: 'word_families', label: 'Word Families', icon: Users },
                                                     word_scramble: { id: 'word_scramble', label: 'Word Scramble', icon: Shuffle },
                                                     manipulation: { id: 'manipulation', label: 'Sound Swap', icon: Shuffle },
+                                                    syllable_counting: { id: 'syllable_counting', label: 'Syllable Counting', icon: Calculator },
+                                                    syllable_blending: { id: 'syllable_blending', label: 'Syllable Blending', icon: GripHorizontal },
+                                                    spelling_bee: { id: 'spelling_bee', label: 'Spelling Bee', icon: Type },
+                                                    missing_letter: { id: 'missing_letter', label: 'Missing Letter', icon: Type },
+                                                    decoding: { id: 'decoding', label: 'Read & Match', icon: BookOpen },
                                                 };
                                                 const activity = activityDefs[actId];
                                                 return (
@@ -1319,6 +1330,15 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                 )}
                             </span>
                         )}
+                        {/* Fallback-phonemes banner: when Gemini word-processing failed, the word
+                            was split letter-by-letter (_fallbackUsed) instead of true phonemes
+                            (e.g. 'ship' -> [s,h,i,p] not [sh,i,p]). Surface it so the teacher does
+                            not score phonemic-awareness work on degraded data. Per-word Re-check fixes it. */}
+                        {!isLoading && preloadedWords.some(w => w && w._fallbackUsed) && (
+                            <span className="flex items-center gap-2 bg-amber-500/30 border border-amber-200/60 px-3 py-1 rounded-full text-xs">
+                                <span>⚠️ Phoneme data unavailable for {preloadedWords.filter(w => w && w._fallbackUsed).length} word{preloadedWords.filter(w => w && w._fallbackUsed).length === 1 ? '' : 's'} (letter-split fallback, review before use)</span>
+                            </span>
+                        )}
                     </p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
@@ -1518,6 +1538,12 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             )}
                                         </div>
                                         <span className="text-xl font-bold text-slate-800">{word.targetWord || word.word}</span>
+                                        {word._fallbackUsed && (
+                                            <span
+                                                className="text-[11px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-300"
+                                                title="Phoneme data could not be generated, so this word was split letter-by-letter. Expand and use Re-check to fix it before using it for assessment."
+                                            >⚠️ letter-split</span>
+                                        )}
                                         <select aria-label={t('common.selection')}
                                             value={word.difficulty || 'medium'}
                                             role="dialog" onClick={(e) => e.stopPropagation()}

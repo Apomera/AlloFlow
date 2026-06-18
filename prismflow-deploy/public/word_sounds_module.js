@@ -5596,6 +5596,13 @@
               if (isCorrect) {
                 updated[p].correct += 1;
               }
+              // Consumers (teacher_module, student_analytics) filter on v.accuracy,
+              // which was never written -> the "mastered phonemes" list was always
+              // empty. Compute it at write time so per-phoneme mastery is readable.
+              updated[p].accuracy =
+                updated[p].total > 0
+                  ? Math.round((updated[p].correct / updated[p].total) * 100)
+                  : 0;
             });
             return updated;
           });
@@ -9525,16 +9532,22 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 : wordSoundsScore.streak + 1
               : 0;
             if (isCorrect) {
-              setIsCelebrating(true);
               playSynthesizedSound("correct", newStreak);
-              // Visual celebrations — scale with streak!
-              wsSpawnConfetti(newStreak >= 5 ? 20 : newStreak >= 3 ? 15 : 8);
-              if (newStreak >= 3) wsSpawnStars(newStreak >= 5 ? 7 : 4);
-              wsSpawnXPFloat(newStreak >= 5 ? '🔥 +' + (5 + newStreak) + ' XP!' : newStreak >= 3 ? '⭐ +' + (5 + newStreak) + ' XP!' : '+5 XP', 50, 35);
-              if (window._alloHaptic) window._alloHaptic(newStreak >= 5 ? 'achieve' : 'correct');
-              setTimeout(() => {
-                if (isMountedRef.current) setIsCelebrating(false);
-              }, 2500);
+              // Honor the host's reduce-motion toggle: suppress the visual burst
+              // (confetti/stars/XP float/avatar bounce) and the haptic buzz for
+              // motion/sensory-sensitive learners, not just speed it up via CSS.
+              // The success chime + word/image reveal + feedback banner remain.
+              if (!disableAnimations) {
+                setIsCelebrating(true);
+                // Visual celebrations — scale with streak!
+                wsSpawnConfetti(newStreak >= 5 ? 20 : newStreak >= 3 ? 15 : 8);
+                if (newStreak >= 3) wsSpawnStars(newStreak >= 5 ? 7 : 4);
+                wsSpawnXPFloat(newStreak >= 5 ? '🔥 +' + (5 + newStreak) + ' XP!' : newStreak >= 3 ? '⭐ +' + (5 + newStreak) + ' XP!' : '+5 XP', 50, 35);
+                if (window._alloHaptic) window._alloHaptic(newStreak >= 5 ? 'achieve' : 'correct');
+                setTimeout(() => {
+                  if (isMountedRef.current) setIsCelebrating(false);
+                }, 2500);
+              }
               setShowWordText(true);
               if (setShowImageForCurrentWord) setShowImageForCurrentWord(true);
             }
@@ -13453,7 +13466,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               setDraggedItem(null);
             };
             const handleCountKeyDown = (e, num) => {
-              if (e.key === "Enter") {
+              // role="button" must activate on Space as well as Enter.
+              if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
                 e.preventDefault();
                 checkAnswer(num === 11 ? "11+" : num, expectedCount);
               }
@@ -13523,6 +13537,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   {
                     key: num,
                     draggable: true,
+                    role: "button",
                     onDragStart: (e) => handleDragStart(e, num, "number"),
                     onKeyDown: (e) => handleCountKeyDown(e, num),
                     tabIndex: 0,
@@ -13538,6 +13553,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "div",
                   {
                     draggable: true,
+                    role: "button",
                     onDragStart: (e) => handleDragStart(e, 11, "number"),
                     onKeyDown: (e) => handleCountKeyDown(e, 11),
                     tabIndex: 0,
@@ -15086,9 +15102,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               /*#__PURE__*/ React.createElement(
               "div",
               {
-                className: `mt-6 p-4 rounded-xl text-center font-bold animate-in slide-in-from-bottom-2 ${wordSoundsFeedback.isCorrect ? "bg-green-100 text-green-700 border-2 border-green-300" : "bg-red-100 text-red-700 border-2 border-red-300"}`,
+                className: `mt-6 p-4 rounded-xl text-center font-bold animate-in slide-in-from-bottom-2 ${(wordSoundsFeedback.isCorrect || wordSoundsFeedback.type === "correct" || wordSoundsFeedback.type === "success") ? "bg-green-100 text-green-700 border-2 border-green-300" : "bg-red-100 text-red-700 border-2 border-red-300"}`,
               },
-              wordSoundsFeedback.isCorrect ? "🎉 " : "💡 ",
+              (wordSoundsFeedback.isCorrect || wordSoundsFeedback.type === "correct" || wordSoundsFeedback.type === "success") ? "🎉 " : "💡 ",
               wordSoundsFeedback.message,
             ),
           ),
