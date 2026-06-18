@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -17327,6 +17327,12 @@ tr { page-break-inside: avoid; }
       .replace(/\u00A0/g, ' ')
       .match(/[^\x20-\xFF\n\r\t]/g) || []).length;
     let _ocrTotalChars = 0, _ocrDroppedChars = 0;
+    // ── Coverage safety net (2026-06-18) ── Mechanism-agnostic accounting so no scanned page
+    // silently ships with a missing text layer and we never overclaim. We track, across the
+    // scanned pages: how many had OCR text, how many actually got a text layer drawn, and how
+    // many came through with NO OCR text at all (OCR failed / blank). A page that has text but
+    // drew nothing (e.g. per-word path threw for every word) gets a guaranteed last-resort block.
+    let _ocrPagesWithText = 0, _ocrPagesDrew = 0, _ocrPagesEmpty = 0;
 
     // Stage 4 pdf.js doc load (text-layer PDFs only — scanned PDFs use the
     // Stage 3 single-MCID wrap because pdf.js on original bytes sees no text).
@@ -17391,6 +17397,8 @@ tr { page-break-inside: avoid; }
         const ocrText = (ocrEntry && (ocrEntry.text || ocrEntry.content || ocrEntry.fullText || '')) || '';
         if (ocrText && ocrText.trim()) {
           _ocrTotalChars += ocrText.length;
+          _ocrPagesWithText++;
+          let _pageDrewAny = false, _blockTried = false;
           const sz = page.getSize();
           const _scriptKey = _detectScript(ocrText);
           let _uniFont = null;
@@ -17405,6 +17413,29 @@ tr { page-break-inside: avoid; }
           const _dimsOK = !!(_ocrWords && typeof ocrEntry.pageH === 'number' && typeof ocrEntry.pageW === 'number'
             && sz && Math.abs(sz.height - ocrEntry.pageH) <= 2 && Math.abs(sz.width - ocrEntry.pageW) <= 2);
           const _perWord = !!(_ocrWords && _ocrWords.length && _ocrWords.length <= 8000 && _dimsOK && (!_rot || _rot % 360 === 0));
+          // Block-layer draw (single invisible top-left run) — used both as the no-word-boxes
+          // fallback AND as the guaranteed LAST RESORT when the per-word path drew nothing, so
+          // no scanned page with text ever ships without a searchable/SR text layer. countDrops
+          // is false on the last-resort call (the per-word path already tallied those drops).
+          const _drawBlockLayer = async (countDrops) => {
+            const _drawOpts = (font) => ({ x: 36, y: (sz && sz.height ? sz.height : 792) - 36, size: 1, font, opacity: 0, lineHeight: 1, maxWidth: (sz && sz.width ? sz.width : 612) - 72 });
+            if (_uniFont) {
+              try { page.drawText(ocrText, _drawOpts(_uniFont)); return true; }
+              catch (uniErr) {
+                if (countDrops) _ocrDroppedChars += _countNonWinAnsi(ocrText);
+                try { const helv = await _getHelv(); if (helv) { page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); return true; } } catch(_) {}
+                try { warnLog('[createTaggedPdf] unicode OCR draw failed p' + (pi+1) + ' — fell back to Helvetica: ' + (uniErr && uniErr.message)); } catch(_) {}
+                return false;
+              }
+            } else {
+              if (countDrops) _ocrDroppedChars += _countNonWinAnsi(ocrText);
+              try {
+                const helv = await _getHelv();
+                if (helv) { page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); return true; }
+              } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
+              return false;
+            }
+          };
           if (_perWord) {
             const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
             let _helvPW = null;
@@ -17462,31 +17493,28 @@ tr { page-break-inside: avoid; }
                   if (!_helvPW) _helvPW = await _getHelv();
                   if (_helvPW) page.drawText(_toWinAnsi(_c.text), { x: _c.x, y: _c.y, size: _c.size, font: _helvPW, opacity: 0 });
                 }
+                _pageDrewAny = true;
               } catch(_wErr) { if (_uniFont) _ocrDroppedChars += _countNonWinAnsi(_c.text); }
             }
           } else {
             // ── Block fallback (no word boxes / rotated / dim mismatch) ──
             // Single invisible run at top-left: searchable + SR-readable, not aligned.
-            const _drawOpts = (font) => ({ x: 36, y: (sz && sz.height ? sz.height : 792) - 36, size: 1, font, opacity: 0, lineHeight: 1, maxWidth: (sz && sz.width ? sz.width : 612) - 72 });
-            if (_uniFont) {
-              // The embedded Noto font encodes this script — draw the raw OCR text (no WinAnsi
-              // stripping), so the invisible layer carries the full non-Latin text. No drop tally.
-              try { page.drawText(ocrText, _drawOpts(_uniFont)); }
-              catch (uniErr) {
-                // A glyph the subset couldn't place — fall back so we never lose the whole layer.
-                _ocrDroppedChars += _countNonWinAnsi(ocrText);
-                try { const helv = await _getHelv(); if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); } catch(_) {}
-                try { warnLog('[createTaggedPdf] unicode OCR draw failed p' + (pi+1) + ' — fell back to Helvetica: ' + (uniErr && uniErr.message)); } catch(_) {}
-              }
-            } else {
-              // Latin-only (or no font for this script): existing Helvetica + WinAnsi path; tally drops.
-              _ocrDroppedChars += _countNonWinAnsi(ocrText);
-              try {
-                const helv = await _getHelv();
-                if (helv) page.drawText(_toWinAnsi(ocrText), _drawOpts(helv));
-              } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
-            }
+            _blockTried = true;
+            if (await _drawBlockLayer(true)) _pageDrewAny = true;
           }
+          // ── Safety net: a page that has OCR text but drew NOTHING (e.g. every per-word draw
+          // threw) still gets a guaranteed block layer, so no scanned page with text ships
+          // without a searchable/SR text layer. (false = don't double-tally the per-word drops.)
+          if (!_pageDrewAny && !_blockTried) { if (await _drawBlockLayer(false)) _pageDrewAny = true; }
+          // Did this page end up with a USABLE layer? Compute analytically: with a Unicode font
+          // every char is renderable; without one only WinAnsi chars survive (non-Latin → ~0).
+          const _pageStripped = ocrText.replace(/\s+/g, '');
+          const _pageRenderable = _uniFont ? _pageStripped.length : (_pageStripped.length - _countNonWinAnsi(ocrText));
+          if (_pageDrewAny && _pageRenderable >= Math.min(15, _pageStripped.length)) _ocrPagesDrew++;
+        } else {
+          // Scanned page with NO OCR text — blank page OR OCR failed to read it. Counted so the
+          // coverage summary can flag "M pages have no text layer" instead of silently dropping it.
+          _ocrPagesEmpty++;
         }
       }
       // ── Stage 4 attempt ── Per-block MCID wrapping with proper /H1, /P,
@@ -17575,6 +17603,20 @@ tr { page-break-inside: avoid; }
       if (_ocrDroppedChars >= 20 || _ocrCoveragePct < 95) {
         _ocrLayerNonLatinDropped = true;
         try { warnLog('[createTaggedPdf] WARNING: the scanned-PDF text layer is only ' + _ocrCoveragePct + '% covered — ' + _ocrDroppedChars + ' of ' + _ocrTotalChars + ' OCR characters are outside Latin-1 (non-Latin script: Arabic, CJK, Cyrillic, Devanagari, Ethiopic, etc.) and could not be embedded with the built-in Helvetica font. Screen readers will not read those passages. Embedding a Unicode font is required for full coverage of non-English scanned documents.'); } catch(_) {}
+      }
+    }
+    // ── Page-level coverage net ── Char coverage above misses whole pages that got NO text layer
+    // at all: pages OCR couldn't read (empty), or pages that had text but rendered ~nothing (a
+    // non-Latin page with no Unicode font). Surface those as a page count so the UI can warn and
+    // we never present a scanned doc as fully tagged when whole pages are unsearchable.
+    let _ocrPagesIncomplete = 0;
+    if (isScanned && _ocrPagesWithText > 0) {
+      _ocrPagesIncomplete = Math.max(0, _ocrPagesWithText - _ocrPagesDrew);
+      if (_ocrPagesIncomplete > 0 || _ocrPagesEmpty > 0) {
+        try { warnLog('[createTaggedPdf] Scanned text-layer coverage: ' + _ocrPagesDrew + '/' + _ocrPagesWithText + ' text pages got a usable layer'
+          + (_ocrPagesIncomplete > 0 ? ', ' + _ocrPagesIncomplete + ' page(s) had text but could not be embedded (likely non-Latin with no Unicode font)' : '')
+          + (_ocrPagesEmpty > 0 ? ', ' + _ocrPagesEmpty + ' page(s) produced no OCR text (blank or unreadable scan)' : '')
+          + '. These pages have no searchable/screen-reader text — re-scan at higher quality or embed a Unicode font for full coverage.'); } catch(_) {}
       }
     }
     // ── Stage 4b: born-digital per-leaf unification via RE-POINTING (2026-06-09) ──
@@ -19057,7 +19099,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       try { warnLog('[createTaggedPdf] post-export validator threw (non-fatal): ' + (_pevErr && _pevErr.message)); } catch (_) {}
       _postExportValidator = { error: (_pevErr && _pevErr.message) || 'validator threw' };
     }
-    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars, pagesWithText: _ocrPagesWithText, pagesCovered: _ocrPagesDrew, pagesIncomplete: _ocrPagesIncomplete, pagesEmpty: _ocrPagesEmpty }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
   };
 
   // Defense-in-depth for the print/preview windows: the body HTML is already
@@ -25733,11 +25775,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
