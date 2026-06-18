@@ -135,6 +135,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         case 'pause':
           playTone(500, 0.05, 'sine', 0.06);
           break;
+        case 'death':
+          // starvation/predation cue — a short falling tone (was missing → fell through to the neutral default blip)
+          playTone(330, 0.12, 'sawtooth', 0.07);
+          setTimeout(function() { playTone(196, 0.22, 'sawtooth', 0.06); }, 90);
+          break;
         default:
           playTone(440, 0.08, 'sine', 0.06);
       }
@@ -879,9 +884,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           if (data[i].prey > maxPrey) maxPrey = data[i].prey;
           if (data[i].pred > maxPred) maxPred = data[i].pred;
         }
-        var maxY = Math.max(maxPrey, maxPred, 10);
-        // Ensure carrying capacity line can be seen
-        if (carryingCapacity > maxY) maxY = carryingCapacity + 10;
+        // Scale to the DATA (with headroom) so the curves stay readable. The old code let a high
+        // carrying-capacity line push maxY up to K+10, squashing a crashed population into the bottom
+        // few % of the chart. Only expand to include K when it sits near the data; otherwise keep the
+        // data-scaled view and flag K as off the top.
+        var dataMax = Math.max(maxPrey, maxPred, 10);
+        var maxY = dataMax * 1.18;
+        var kVisible = carryingCapacity > 0 && carryingCapacity <= maxY;
+        if (carryingCapacity > maxY && carryingCapacity <= dataMax * 1.8) { maxY = carryingCapacity * 1.06; kVisible = true; }
         var sx = function(v) { return pad + (v / (data.length - 1)) * (W - 2 * pad); };
         var sy = function(v) { return H - pad - (v / maxY) * (H - 2 * pad); };
 
@@ -935,9 +945,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // Axes
           h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
           h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
-          // Carrying capacity dashed line
-          h('line', { x1: pad, y1: carryY, x2: W - pad, y2: carryY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,4', opacity: 0.7 }),
-          h('text', { x: W - pad + 2, y: carryY + 3, fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity),
+          // Carrying capacity dashed line — only when within the plotted range; the label is now
+          // right-anchored INSIDE the plot (it used to overflow past the viewBox at x = W - pad + 2)
+          kVisible && h('line', { x1: pad, y1: carryY, x2: W - pad, y2: carryY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,4', opacity: 0.7 }),
+          kVisible
+            ? h('text', { x: W - pad - 2, y: carryY - 3, textAnchor: 'end', fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity)
+            : h('text', { x: W - pad - 2, y: pad + 8, textAnchor: 'end', fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity + ' ↑'),
           // Areas
           h('polygon', { points: preyAreaPts, fill: 'url(#eco-prey-grad)' }),
           h('polygon', { points: predAreaPts, fill: 'url(#eco-pred-grad)' }),
@@ -964,8 +977,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           if (data[i].prey > maxPrey) maxPrey = data[i].prey;
           if (data[i].pred > maxPred) maxPred = data[i].pred;
         }
-        var sx = function(v) { return pad + (v / maxPrey) * (W - 2 * pad); };
-        var sy = function(v) { return H - pad - (v / maxPred) * (H - 2 * pad); };
+        // 10% headroom so a final point at the max isn't clipped by the axis edge (the r=5 end dot used to be half-cut)
+        var axPrey = maxPrey * 1.1, axPred = maxPred * 1.1;
+        var sx = function(v) { return pad + (v / axPrey) * (W - 2 * pad); };
+        var sy = function(v) { return H - pad - (v / axPred) * (H - 2 * pad); };
+
+        // gridlines (mirrors the population chart so the phase plane is readable, not a bare box)
+        var phaseGrid = [];
+        for (var pg = 1; pg <= 3; pg++) {
+          var gx = pad + pg * ((W - 2 * pad) / 4);
+          var gy = pad + pg * ((H - 2 * pad) / 4);
+          phaseGrid.push(h('line', { key: 'pgx' + pg, x1: gx, y1: pad, x2: gx, y2: H - pad, stroke: '#334155', strokeWidth: 0.4 }));
+          phaseGrid.push(h('line', { key: 'pgy' + pg, x1: pad, y1: gy, x2: W - pad, y2: gy, stroke: '#334155', strokeWidth: 0.4 }));
+        }
 
         var pts = '';
         for (var pi = 0; pi < data.length; pi++) {
@@ -989,6 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         return h('div', null,
           h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 } },
+            phaseGrid,
             // Axes
             h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
             h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -3253,8 +3278,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     if (hist[lpi].prey > maxPop) maxPop = hist[lpi].prey;
                     if (hist[lpi].pred > maxPop) maxPop = hist[lpi].pred;
                   }
-                  // Ensure carrying capacity visible
-                  if (carryingCapacity > maxPop) maxPop = carryingCapacity + 5;
+                  // Scale to the data (with headroom) so crashes stay readable; only fold in K when it's
+                  // near the data, otherwise flag it off the top (matches the analytical chart).
+                  var lDataMax = maxPop;
+                  maxPop = lDataMax * 1.18;
+                  var lKVisible = carryingCapacity > 0 && carryingCapacity <= maxPop;
+                  if (carryingCapacity > maxPop && carryingCapacity <= lDataMax * 1.8) { maxPop = carryingCapacity * 1.06; lKVisible = true; }
                   var lsx = function(i) { return pad + (i / (hist.length - 1)) * (W - 2 * pad); };
                   var lsy = function(v) { return H - pad - (v / maxPop) * (H - 2 * pad); };
                   var preyPts = '';
@@ -3282,9 +3311,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     // Axes
                     h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
                     h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
-                    // Carrying capacity dashed line
-                    h('line', { x1: pad, y1: kcLineY, x2: W - pad, y2: kcLineY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,4', opacity: 0.7 }),
-                    h('text', { x: W - pad + 2, y: kcLineY + 3, fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity),
+                    // Carrying capacity dashed line — drawn only when in range; label right-anchored inside the plot
+                    lKVisible && h('line', { x1: pad, y1: kcLineY, x2: W - pad, y2: kcLineY, stroke: '#f59e0b', strokeWidth: 1.5, strokeDasharray: '6,4', opacity: 0.7 }),
+                    lKVisible
+                      ? h('text', { x: W - pad - 2, y: kcLineY - 3, textAnchor: 'end', fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity)
+                      : h('text', { x: W - pad - 2, y: pad + 8, textAnchor: 'end', fill: '#f59e0b', fontSize: 7 }, 'K=' + carryingCapacity + ' ↑'),
                     // Areas
                     h('polygon', { points: preyAreaPts2, fill: 'url(#eco-live-prey)' }),
                     h('polygon', { points: predAreaPts2, fill: 'url(#eco-live-pred)' }),
