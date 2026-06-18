@@ -37,7 +37,50 @@ describe('caption timestamp formatting', () => {
     expect(I.secsToStamp(3661.25, '.')).toBe('01:01:01.250');
     expect(I.secsToStamp(0, ',')).toBe('00:00:00,000');
     expect(I.secsToStamp(2.9999, ',')).toBe('00:00:03,000'); // sub-ms rounds up cleanly, no 1000ms overflow
+    expect(I.secsToStamp(59.9999, ',')).toBe('00:01:00,000'); // carry cascades minute (no ss=60)
+    expect(I.secsToStamp(3599.9999, ',')).toBe('01:00:00,000'); // carry cascades hour
     expect(I.secsToStamp(-5, ',')).toBe('00:00:00,000');     // clamps negatives
+  });
+});
+
+describe('export hygiene (cleanSegs)', () => {
+  it('drops empty cues and never emits end<=start', () => {
+    const segs = [
+      { start: 0, end: 2, text: 'keep' },
+      { start: 2, end: 2.05, text: 'zero-ish' }, // widened to >= start+0.1
+      { start: 5, end: 4, text: 'reversed' },    // end<start -> normalized
+      { start: 6, end: 7, text: '   ' },          // empty -> dropped
+    ];
+    const cleaned = I.cleanSegs(segs);
+    expect(cleaned).toHaveLength(3);
+    expect(cleaned.every(s => s.end > s.start)).toBe(true);
+    // SRT renumbers sequentially after the drop
+    const srt = I.buildSrt(segs);
+    expect(srt).toContain('3\n');
+    expect(srt).not.toContain('4\n');
+    expect(srt).not.toContain('-->\n'); // no empty-body cue
+  });
+});
+
+describe('VTT import tolerates a header glued to cue #1', () => {
+  it('does not drop cue #1 when no blank line follows WEBVTT', () => {
+    const glued = 'WEBVTT\n00:00:01.000 --> 00:00:03.000\nHello';
+    const rt = I.parseTimecodeFile(glued);
+    expect(rt).toHaveLength(1);
+    expect(rt[0].text).toBe('Hello');
+    expect(rt[0].start).toBe(1);
+  });
+});
+
+describe('translation reply parsing is forgiving', () => {
+  it('parses a clean array, a fenced array, and falls back to lines', () => {
+    expect(I.parseJsonArrayLoose('["a","b","c"]', 3)).toEqual(['a', 'b', 'c']);
+    expect(I.parseJsonArrayLoose('```json\n["x","y"]\n```', 2)).toEqual(['x', 'y']);
+    // prose-wrapped array is recovered by the balanced-bracket scan
+    expect(I.parseJsonArrayLoose('Sure! Here you go: ["uno","dos"] hope it helps', 2)).toEqual(['uno', 'dos']);
+    // non-JSON line list salvages only when the count matches
+    expect(I.parseJsonArrayLoose('uno\ndos', 2)).toEqual(['uno', 'dos']);
+    expect(I.parseJsonArrayLoose('garbage with no array', 3)).toBeNull();
   });
 });
 

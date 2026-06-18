@@ -231,6 +231,10 @@
   // import/paste path survives even if the in-Canvas model load fails.
   var TRANSCRIBE_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/+esm';
   var TRANSCRIBE_MODEL = 'onnx-community/whisper-base.en'; // English narration (NotebookLM is English-only)
+  // Whisper's encoder is sensitive to quantization; keep it fp32 and only quantize the
+  // decoder. If a live smoke shows fp32 encoder weights are absent for this repo, fall
+  // back to { encoder_model: 'fp16', decoder_model_merged: 'q8' }. Keep device:'wasm'.
+  var TRANSCRIBE_DTYPE = { encoder_model: 'fp32', decoder_model_merged: 'q8' };
   var CAPTION_LANGS = ['Spanish', 'Arabic', 'Somali', 'Portuguese', 'Haitian Creole', 'Vietnamese', 'Chinese (Simplified)', 'French', 'Swahili', 'Kinyarwanda', 'Pashto', 'Dari', 'Ukrainian', 'Russian'];
 
   function round1(n) { return Math.round((n || 0) * 10) / 10; }
@@ -238,19 +242,33 @@
   function pad3(n) { n = Math.floor(n); return (n < 10 ? '00' : n < 100 ? '0' : '') + n; }
   function secsToStamp(t, sep) {
     if (!isFinite(t) || t < 0) t = 0;
-    var hh = Math.floor(t / 3600), mm = Math.floor((t % 3600) / 60), ss = Math.floor(t % 60);
-    var ms = Math.round((t - Math.floor(t)) * 1000);
-    if (ms >= 1000) { ms = 0; ss += 1; }
+    // Carry from integer milliseconds so a sub-ms-before-a-boundary never yields ss=60.
+    var total = Math.round(t * 1000);
+    var ms = total % 1000, s = (total - ms) / 1000;
+    var hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = Math.floor(s % 60);
     return pad2(hh) + ':' + pad2(mm) + ':' + pad2(ss) + sep + pad3(ms);
   }
+  // Drop empty cues (Whisper hallucinates text in silence) and never emit end<=start
+  // (some players reject reversed/zero-length cues). Applied in every export path.
+  function cleanSegs(segs) {
+    var out = [];
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i] || {}, txt = (s.text || '').trim();
+      if (!txt) continue;
+      var start = Math.max(0, s.start || 0);
+      var end = Math.max(typeof s.end === 'number' ? s.end : start, start + 0.1);
+      out.push({ start: start, end: end, text: txt });
+    }
+    return out;
+  }
   function buildSrt(segs) {
-    return segs.map(function (s, i) {
-      return (i + 1) + '\n' + secsToStamp(s.start, ',') + ' --> ' + secsToStamp(s.end, ',') + '\n' + (s.text || '').trim() + '\n';
+    return cleanSegs(segs).map(function (s, i) {
+      return (i + 1) + '\n' + secsToStamp(s.start, ',') + ' --> ' + secsToStamp(s.end, ',') + '\n' + s.text + '\n';
     }).join('\n');
   }
   function buildVtt(segs) {
-    return 'WEBVTT\n\n' + segs.map(function (s) {
-      return secsToStamp(s.start, '.') + ' --> ' + secsToStamp(s.end, '.') + '\n' + (s.text || '').trim();
+    return 'WEBVTT\n\n' + cleanSegs(segs).map(function (s) {
+      return secsToStamp(s.start, '.') + ' --> ' + secsToStamp(s.end, '.') + '\n' + s.text;
     }).join('\n\n') + '\n';
   }
   // Parse an imported .srt/.vtt back into editable segments (tolerant of ',' or '.').
@@ -262,7 +280,11 @@
     var blocks = norm.split(/\n\s*\n/);
     for (var b = 0; b < blocks.length; b++) {
       var blk = blocks[b].trim();
-      if (!blk || /^WEBVTT/i.test(blk)) continue;
+      if (!blk) continue;
+      // Strip a leading WEBVTT header / NOTE lines rather than skipping the whole
+      // block, so a header glued to cue #1 (no blank line after WEBVTT) keeps cue #1.
+      blk = blk.replace(/^WEBVTT[^\n]*\n?/i, '').replace(/^NOTE[^\n]*\n?/i, '').trim();
+      if (!blk) continue;
       var m = blk.match(re);
       if (!m) continue;
       var start = (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]) + (+m[4]) / Math.pow(10, m[4].length);
@@ -297,6 +319,28 @@
       setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (_) {} }, 1000);
     } catch (e) {}
   }
+  // Pull a string[] out of an AI reply that should be a JSON array but often arrives
+  // fenced, wrapped in prose, or with literal newlines inside strings. Tries: whole-text
+  // parse -> first balanced [...] (string-aware) -> line split (only if it matches n).
+  function parseJsonArrayLoose(text, n) {
+    if (!text) return null;
+    var t = String(text).replace(/```(?:json)?/gi, '').trim();
+    try { var a = JSON.parse(t); if (Array.isArray(a)) return a; } catch (_) {}
+    var i = t.indexOf('[');
+    if (i !== -1) {
+      var depth = 0, inStr = false, esc = false;
+      for (var j = i; j < t.length; j++) {
+        var ch = t[j];
+        if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; }
+        else if (ch === '"') inStr = true;
+        else if (ch === '[') depth++;
+        else if (ch === ']') { depth--; if (depth === 0) { try { var b = JSON.parse(t.slice(i, j + 1)); if (Array.isArray(b)) return b; } catch (_) {} break; } }
+      }
+    }
+    var lines = t.split('\n').map(function (x) { return x.replace(/^\s*[-*\d.]*\s*/, '').trim(); }).filter(function (x) { return x.length; });
+    if (n && lines.length === n) return lines;
+    return null;
+  }
   // Decode the file's audio track and resample to 16kHz mono Float32 (what Whisper wants).
   function extractPcm16k(file) {
     return new Promise(function (resolve, reject) {
@@ -310,16 +354,16 @@
           try {
             var targetRate = 16000;
             var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-            if (!OAC) { resolve({ pcm: new Float32Array(decoded.getChannelData(0)), duration: decoded.duration, rate: decoded.sampleRate }); try { ac.close(); } catch (_) {} return; }
+            if (!OAC) { try { ac.close(); } catch (_) {} reject(new Error('This browser cannot resample audio for transcription. Import a transcript or .srt instead.')); return; }
             var offline = new OAC(1, Math.max(1, Math.ceil(decoded.duration * targetRate)), targetRate);
             var srcNode = offline.createBufferSource();
             srcNode.buffer = decoded; srcNode.connect(offline.destination); srcNode.start(0);
             offline.startRendering().then(function (rendered) {
               resolve({ pcm: new Float32Array(rendered.getChannelData(0)), duration: decoded.duration, rate: targetRate });
               try { ac.close(); } catch (_) {}
-            }, function (err) { reject(err); });
-          } catch (e2) { reject(e2); }
-        }, function () { reject(new Error('Could not decode audio from this file. Try an MP4, M4A, or WAV.')); });
+            }, function (err) { try { ac.close(); } catch (_) {} reject(err); });
+          } catch (e2) { try { ac.close(); } catch (_) {} reject(e2); }
+        }, function () { try { ac.close(); } catch (_) {} reject(new Error('Could not decode audio from this file. Try an MP4, M4A, or WAV.')); });
       };
       reader.readAsArrayBuffer(file);
     });
@@ -336,7 +380,7 @@
           if (mod.env) { try { mod.env.allowLocalModels = false; } catch (_) {} }
           self.postMessage({ type: 'progress', stage: 'Downloading speech model (cached after first load)', pct: 0.08 });
           _asr = await pipeline('automatic-speech-recognition', data.modelId, {
-            dtype: data.dtype || 'q8',
+            dtype: data.dtype || { encoder_model: 'fp32', decoder_model_merged: 'q8' },
             device: 'wasm',
             progress_callback: (p) => {
               if (!p) return;
@@ -363,6 +407,15 @@
   var Transcriber = (function () {
     var worker = null, ready = false, initPromise = null, msgId = 0, onProg = null;
     var pending = {};
+    // Reject EVERY outstanding job and tear the worker down so the next load()
+    // rebuilds from scratch. Without this, one transient CDN/CSP hiccup leaves a
+    // rejected initPromise cached + a dead worker, bricking the feature for the
+    // whole session and (for in-flight jobs) hanging the spinner forever.
+    function teardown(msg) {
+      for (var k in pending) { if (pending[k] && pending[k].reject) { try { pending[k].reject(new Error(msg)); } catch (_) {} } delete pending[k]; }
+      try { if (worker) worker.terminate(); } catch (_) {}
+      worker = null; ready = false; initPromise = null;
+    }
     function ensureWorker() {
       if (worker) return;
       var blob = new Blob([TRANSCRIBE_WORKER_SOURCE], { type: 'application/javascript' });
@@ -372,11 +425,12 @@
         var d = ev.data || {};
         if (d.type === 'progress') { if (onProg) onProg(d); return; }
         if (d.type === 'ready') { ready = true; if (pending.__init__) { pending.__init__.resolve(true); delete pending.__init__; } return; }
-        if (d.type === 'init_error') { if (pending.__init__) { pending.__init__.reject(new Error(d.error)); delete pending.__init__; } return; }
+        if (d.type === 'init_error') { teardown(d.error || 'Speech model failed to load'); return; }
         if (d.type === 'result') { var p = pending[d.id]; if (p) { p.resolve({ text: d.text, chunks: d.chunks }); delete pending[d.id]; } return; }
         if (d.type === 'error') { var q = pending[d.id]; if (q) { q.reject(new Error(d.error)); delete pending[d.id]; } return; }
       };
-      worker.onerror = function (e) { if (pending.__init__) { pending.__init__.reject(new Error((e && e.message) || 'Speech worker failed to start')); delete pending.__init__; } };
+      worker.onerror = function (e) { teardown((e && e.message) || 'Speech worker crashed'); };
+      worker.onmessageerror = function () { teardown('Speech worker sent an unreadable message'); };
     }
     return {
       load: function (progressCb) {
@@ -384,15 +438,19 @@
         if (ready) return Promise.resolve(true);
         if (initPromise) return initPromise;
         ensureWorker();
-        initPromise = new Promise(function (resolve, reject) { pending.__init__ = { resolve: resolve, reject: reject }; });
-        worker.postMessage({ type: 'init', cdn: TRANSCRIBE_CDN, modelId: TRANSCRIBE_MODEL, dtype: 'q8' });
+        initPromise = new Promise(function (resolve, reject) {
+          var to = setTimeout(function () { if (pending.__init__) teardown('Speech model load timed out'); }, 90000);
+          pending.__init__ = { resolve: function (v) { clearTimeout(to); resolve(v); }, reject: function (e) { clearTimeout(to); reject(e); } };
+        });
+        worker.postMessage({ type: 'init', cdn: TRANSCRIBE_CDN, modelId: TRANSCRIBE_MODEL, dtype: TRANSCRIBE_DTYPE });
         return initPromise;
       },
       run: function (pcm) {
         ensureWorker();
         var id = 'm' + (++msgId);
         return new Promise(function (resolve, reject) {
-          pending[id] = { resolve: resolve, reject: reject };
+          var to = setTimeout(function () { if (pending[id]) teardown('Transcription timed out'); }, 600000);
+          pending[id] = { resolve: function (v) { clearTimeout(to); resolve(v); }, reject: function (e) { clearTimeout(to); reject(e); } };
           worker.postMessage({ type: 'transcribe', id: id, pcm: pcm }, [pcm.buffer]);
         });
       }
@@ -592,8 +650,7 @@
         + 'Return ONLY a JSON array of strings (the translations in order), nothing else.\n\nLINES:\n' + JSON.stringify(arr);
       Promise.resolve().then(function () { return callGemini(prompt, false, true); }).then(function (res) {
         var text = (typeof res === 'string') ? res : (res && res.text) ? res.text : '';
-        var parsed = null;
-        try { var m = text.match(/\[[\s\S]*\]/); if (m) parsed = JSON.parse(m[0]); } catch (_) { parsed = null; }
+        var parsed = parseJsonArrayLoose(text, segs.length);
         if (parsed && parsed.length === segs.length) {
           setTrSegs(segs.map(function (s, i) { return { id: s.id, start: s.start, end: s.end, text: String(parsed[i] || '').trim() }; }));
           if (addToast) addToast('Translated to ' + capLang + ' (AI draft, review before use)', 'success');
@@ -776,7 +833,7 @@
       ]),
       tbusy ? h('div', { key: 'prog', className: 'mt-2' }, [
         h('div', { key: 'bar', className: 'h-1.5 bg-slate-700 rounded overflow-hidden' }, h('div', { className: 'h-full bg-emerald-500 transition-all', style: { width: Math.round((tpct || 0) * 100) + '%' } })),
-        h('div', { key: 'st', className: 'text-xs text-slate-400 mt-1' }, tstatus || '')
+        h('div', { key: 'st', role: 'status', 'aria-live': 'polite', className: 'text-xs text-slate-400 mt-1' }, tstatus || '')
       ]) : null,
       terr ? h('div', { key: 'err', className: 'mt-2 text-xs text-rose-300' }, terr + ' ' + T('cs_cap_errhint', '(You can still import a transcript or .srt above and edit it here.)')) : null
     ]);
@@ -786,8 +843,8 @@
       h('div', { key: 'list' }, segs.map(function (s) {
         return h('div', { key: s.id, className: 'flex items-start gap-2 py-1 border-b border-slate-800' }, [
           h('div', { key: 'tc', className: 'flex flex-col gap-1 shrink-0' }, [
-            h('input', { key: 'st', type: 'number', step: '0.1', min: '0', value: round1(s.start), 'aria-label': 'Start seconds', onChange: function (e) { updateSeg(s.id, { start: parseFloat(e.target.value) || 0 }); }, className: 'w-16 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-slate-100' }),
-            h('input', { key: 'en', type: 'number', step: '0.1', min: '0', value: round1(s.end), 'aria-label': 'End seconds', onChange: function (e) { updateSeg(s.id, { end: parseFloat(e.target.value) || 0 }); }, className: 'w-16 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-slate-100' })
+            h('input', { key: 'st', type: 'number', step: '0.1', min: '0', value: round1(s.start), 'aria-label': 'Start seconds', onChange: function (e) { updateSeg(s.id, { start: Math.max(0, parseFloat(e.target.value) || 0) }); }, className: 'w-16 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-slate-100' }),
+            h('input', { key: 'en', type: 'number', step: '0.1', min: '0', value: round1(s.end), 'aria-label': 'End seconds', onChange: function (e) { updateSeg(s.id, { end: Math.max(0, parseFloat(e.target.value) || 0) }); }, className: 'w-16 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-slate-100' })
           ]),
           h('textarea', { key: 'tx', rows: 2, value: s.text, 'aria-label': 'Caption text', onChange: function (e) { updateSeg(s.id, { text: e.target.value }); }, className: 'flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-100' }),
           h('button', { key: 'rm', onClick: function () { removeSeg(s.id); }, 'aria-label': 'Remove caption line', className: 'text-slate-500 hover:text-rose-400 px-1 text-lg leading-none' }, '×')
@@ -808,6 +865,8 @@
         h('select', { key: 'sel', value: capLang, 'aria-label': 'Translation language', onChange: function (e) { setCapLang(e.target.value); setTrSegs(null); }, className: 'bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-100' }, CAPTION_LANGS.map(function (l) { return h('option', { key: l, value: l }, l); })),
         h('button', { key: 'go', onClick: translateCaptions, disabled: trBusy, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40' }, trBusy ? T('cs_cap_translating', 'Translating...') : T('cs_cap_dotranslate', 'Translate'))
       ]),
+      h('p', { key: 'priv', className: 'mt-2 text-xs text-amber-200/90' },
+        T('cs_cap_privacy', 'Privacy: transcription stays on your device, but translation sends the caption TEXT to Google for AI processing. Do not translate captions that contain student names or other identifying details.')),
       trSegs ? h('div', { key: 'out', className: 'mt-2' }, [
         h('div', { key: 'lab', className: 'flex items-center justify-between mb-1' }, [
           h('span', { key: 't', className: 'text-xs font-semibold text-emerald-300' }, capLang + ' ' + T('cs_cap_draftlabel', '(AI draft, review before use)')),
@@ -844,7 +903,8 @@
   // Pure, side-effect-free caption helpers exposed for tests.
   window.AlloModules.__cinematicStudioInternals = {
     buildSrt: buildSrt, buildVtt: buildVtt, parseTimecodeFile: parseTimecodeFile,
-    secsToStamp: secsToStamp, segmentsFromChunks: segmentsFromChunks
+    secsToStamp: secsToStamp, segmentsFromChunks: segmentsFromChunks,
+    cleanSegs: cleanSegs, parseJsonArrayLoose: parseJsonArrayLoose
   };
   console.log('[CinematicStudioModule] Cinematic Studio registered');
 })();
