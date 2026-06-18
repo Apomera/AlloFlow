@@ -4152,6 +4152,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showBrandProfileEditor, _setShowBrandProfileEditorRaw] = useState(false);
   const setShowBrandProfileEditor = React.useCallback((v) => { if (v && window.__alloLazyBrandProfileEditor) { try { window.__alloLazyBrandProfileEditor(); } catch(_) {} } _setShowBrandProfileEditorRaw(v); }, []);
   const [showReportWriter, setShowReportWriter] = useState(false);
+  const [showCinematicStudio, setShowCinematicStudio] = useState(false);
   const [isSymbolStudioOpen, _setIsSymbolStudioOpenRaw] = useState(false);
   const setIsSymbolStudioOpen = React.useCallback((v) => { if (v && window.__alloLazySymbolStudio) { try { window.__alloLazySymbolStudio(); } catch(_) {} } _setIsSymbolStudioOpenRaw(v); }, []);
   const [isAlloHavenOpen, _setIsAlloHavenOpenRaw] = useState(false);
@@ -4561,6 +4562,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js');
     loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js');
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js');
     loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
@@ -27806,7 +27808,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
@@ -27823,6 +27825,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     dashboardData: dashboardData || [],
                     exploreScore: exploreScore || 0
                 }
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="CinematicStudio" isOpen={showCinematicStudio} onClose={() => setShowCinematicStudio(false)} icon="🎬" displayName="Cinematic Studio" t={t}>
+            {(CinematicStudio) => React.createElement(CinematicStudio, {
+                onClose: () => setShowCinematicStudio(false),
+                callGemini: callGemini,
+                addToast,
+                t
             })}
         </CDNModuleGate>
 
