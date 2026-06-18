@@ -732,7 +732,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         // Header
         h('div', { className: 'flex items-center justify-between mb-3' },
           h('div', { className: 'flex items-center gap-2' },
-            h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1 rounded-lg hover:bg-slate-100 transition-colors', 'aria-label': 'Back to STEM Lab' },
+            h('button', { onClick: function() {
+                // Tear down the EVA WebGL loop + looping mission audio before leaving — neither stops itself
+                // on unmount, so exiting mid-EVA used to leak a forever-running render loop + ambient sound.
+                var evaCanvas = document.querySelector('[data-eva-canvas]');
+                if (evaCanvas && evaCanvas._evaCleanup) evaCanvas._evaCleanup();
+                if (typeof stopMissionAmbient === 'function') stopMissionAmbient();
+                setStemLabTool(null);
+              }, className: 'p-1 rounded-lg hover:bg-slate-100 transition-colors', 'aria-label': 'Back to STEM Lab' },
               h(ArrowLeft, { size: 18 })
             ),
             h('div', null,
@@ -2641,6 +2648,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var evaSampleCooldown = 0;
 
                     function animateEva() {
+                      // Stop + tear down if the EVA canvas left the DOM (tab switch / tool unmount). The loop
+                      // used to reschedule unconditionally → a forever-running WebGL render loop leaked if the
+                      // student left via the Back arrow instead of the "End EVA" button.
+                      if (!document.contains(canvasEl)) { if (canvasEl._evaCleanup) canvasEl._evaCleanup(); return; }
                       requestAnimationFrame(animateEva);
                       evaTick++;
 
@@ -3573,7 +3584,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // === H7b'' inquiry widget: orbital delta-V discovery ===
-        (function() {
+        // Gated to the briefing + mission-complete phases — this light-theme panel was rendering on EVERY
+        // phase, stacking a jarring light card beneath the dark immersive launch/orbit/EVA canvases.
+        (phase === 0 || phase >= 10) && (function() {
           var iq = d.deltaVHunt || { massRatio: 3, burnDur: 180, isp: 311, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
           function setIQ(patch) { upd('deltaVHunt', Object.assign({}, iq, patch)); }
           var g = 9.81;
