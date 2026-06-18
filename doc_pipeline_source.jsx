@@ -19105,7 +19105,19 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         place();
         return px;
       };
-      const notify = () => { try { const w = idoc.defaultView; if (w && w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} };
+      // DEBOUNCED (2026-06-18, "only one notch" bug): each resize step (arrow key / drag-end) used to
+      // notify the parent immediately, which re-renders the preview iframe and WIPES the resize handle
+      // (it's classed allo-img-controls and stripped from the synced snapshot), so the user could change
+      // size only ONE notch before having to re-click the image. Coalesce a burst of steps into a single
+      // re-render after the user pauses, so the handle survives consecutive adjustments.
+      let _notifyT = null;
+      const notify = () => {
+        try {
+          const w = idoc.defaultView; if (!w) return;
+          if (_notifyT) w.clearTimeout(_notifyT);
+          _notifyT = w.setTimeout(function () { try { if (w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} }, 600);
+        } catch (_) {}
+      };
       const select = (img) => {
         clear();
         target = img;

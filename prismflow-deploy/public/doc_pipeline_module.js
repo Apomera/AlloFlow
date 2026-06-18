@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -19107,7 +19107,19 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         place();
         return px;
       };
-      const notify = () => { try { const w = idoc.defaultView; if (w && w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} };
+      // DEBOUNCED (2026-06-18, "only one notch" bug): each resize step (arrow key / drag-end) used to
+      // notify the parent immediately, which re-renders the preview iframe and WIPES the resize handle
+      // (it's classed allo-img-controls and stripped from the synced snapshot), so the user could change
+      // size only ONE notch before having to re-click the image. Coalesce a burst of steps into a single
+      // re-render after the user pauses, so the handle survives consecutive adjustments.
+      let _notifyT = null;
+      const notify = () => {
+        try {
+          const w = idoc.defaultView; if (!w) return;
+          if (_notifyT) w.clearTimeout(_notifyT);
+          _notifyT = w.setTimeout(function () { try { if (w.parent && w.parent.__alloflowOnPdfPreviewMutated) w.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {} }, 600);
+        } catch (_) {}
+      };
       const select = (img) => {
         clear();
         target = img;
@@ -25600,11 +25612,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
