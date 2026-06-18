@@ -8,10 +8,16 @@ import React, { useState, useEffect, useRef } from 'react';
  * Reuses existing IPC: writeAIConfig, lmstudioStatus, setup.saveConfig,
  * remediation.launch, openExternal.
  */
+// Optional dev convenience: set to a Gemini API key to prefill the setup field.
+// Leave EMPTY for normal builds. Never commit a real key here.
+const DEV_GEMINI_API_KEY = '';
+
 export default function RemediationSetup() {
-  const [provider, setProvider] = useState(null); // 'llm-engine' | 'gemini' | 'nvidia'
-  const [geminiKey, setGeminiKey] = useState('');
-  const [nvidiaKey, setNvidiaKey] = useState('');
+  // Gemini is the cloud provider for the remediation edition: it ingests a whole
+  // multi-page PDF in one request with no per-image size limit. (NVIDIA NIM was
+  // removed — it rejected the large image payloads and rate-limited.)
+  const [provider, setProvider] = useState('gemini'); // 'llm-engine' | 'gemini'
+  const [geminiKey, setGeminiKey] = useState(DEV_GEMINI_API_KEY || '');
   const [lms, setLms] = useState(null); // { installed, running, models, ready }
   const [launching, setLaunching] = useState(false);
   const [error, setError] = useState('');
@@ -38,8 +44,7 @@ export default function RemediationSetup() {
 
   const canContinue =
     (provider === 'llm-engine' && lms?.ready) ||
-    (provider === 'gemini' && geminiKey.trim().length > 10) ||
-    (provider === 'nvidia' && nvidiaKey.trim().length > 10);
+    (provider === 'gemini' && geminiKey.trim().length > 10);
 
   const handleContinue = async () => {
     setError('');
@@ -48,10 +53,6 @@ export default function RemediationSetup() {
       // 1. Persist the AI provider + key
       const aiCfg = { aiProvider: provider };
       if (provider === 'gemini') aiCfg.geminiApiKey = geminiKey.trim();
-      if (provider === 'nvidia') {
-        aiCfg.nvidiaApiKey = nvidiaKey.trim();
-        aiCfg.nvidiaModel = 'meta/llama-3.3-70b-instruct';
-      }
       await window.alloAPI.writeAIConfig(aiCfg);
 
       // 2. Persist a minimal local deployment config so services auto-start next launch
@@ -114,9 +115,8 @@ export default function RemediationSetup() {
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {card('gemini', '✨', 'Google Gemini', 'Cloud vision model. Reads whole PDFs. Paste an API key.')}
           {card('llm-engine', '🖥️', 'LM Studio (local)', 'Runs models on this machine. Private, no API key.')}
-          {card('gemini', '✨', 'Google Gemini', 'Cloud vision model. Paste an API key.')}
-          {card('nvidia', '🟩', 'NVIDIA NIM', 'Cloud model. Paste an API key.')}
         </div>
 
         {/* Provider-specific detail */}
@@ -143,18 +143,6 @@ export default function RemediationSetup() {
             <input type="password" value={geminiKey} onChange={(e) => setGeminiKey(e.target.value)}
               placeholder="AIza…" style={inputStyle} />
             <button onClick={() => window.alloAPI.openExternal('https://aistudio.google.com/apikey')}
-              style={{ marginTop: '8px', background: 'none', border: 'none', color: '#6366f1', fontSize: '12.5px', cursor: 'pointer', padding: 0 }}>
-              Get a key →
-            </button>
-          </div>
-        )}
-
-        {provider === 'nvidia' && (
-          <div style={{ marginTop: '16px' }}>
-            <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>NVIDIA API key</label>
-            <input type="password" value={nvidiaKey} onChange={(e) => setNvidiaKey(e.target.value)}
-              placeholder="nvapi-…" style={inputStyle} />
-            <button onClick={() => window.alloAPI.openExternal('https://build.nvidia.com')}
               style={{ marginTop: '8px', background: 'none', border: 'none', color: '#6366f1', fontSize: '12.5px', cursor: 'pointer', padding: 0 }}>
               Get a key →
             </button>

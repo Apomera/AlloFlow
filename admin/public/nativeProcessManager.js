@@ -15,7 +15,7 @@ const { URL } = require('url');
 const crypto = require('crypto');
 const llamaStudioManager = require('./llamaStudioManager');
 
-const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
+const ALLOFLOW_DIR = process.env.ALLOFLOW_DIR || path.join(os.homedir(), '.alloflow');
 const BINARIES_DIR = path.join(ALLOFLOW_DIR, 'bin');
 const DATA_DIR = path.join(ALLOFLOW_DIR, 'data');
 

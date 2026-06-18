@@ -24,11 +24,14 @@ let _serverPort = 3730;
 // to this server instead (LM Studio sends no CORS headers).
 let _lmStudioUpstream = 'http://localhost:1234';
 
-const LOG_DIR            = path.join(os.homedir(), '.alloflow', 'logs');
-const LOCAL_CONFIG_FILE  = path.join(os.homedir(), '.alloflow', 'local_config.json');
-const AI_CONFIG_FILE     = path.join(os.homedir(), '.alloflow', 'ai_config.json');
-const GEMINI_TOKEN_FILE  = path.join(os.homedir(), '.alloflow', 'gemini_token.json');
-const COPILOT_TOKEN_FILE = path.join(os.homedir(), '.alloflow', 'copilot_token.json');
+// Edition-aware base dir — set by main.js (ALLOFLOW_DIR) so the remediation
+// edition reads/writes its own ~/.alloflow-remediation rather than the full app's.
+const ALLOFLOW_DIR       = process.env.ALLOFLOW_DIR || path.join(os.homedir(), '.alloflow');
+const LOG_DIR            = path.join(ALLOFLOW_DIR, 'logs');
+const LOCAL_CONFIG_FILE  = path.join(ALLOFLOW_DIR, 'local_config.json');
+const AI_CONFIG_FILE     = path.join(ALLOFLOW_DIR, 'ai_config.json');
+const GEMINI_TOKEN_FILE  = path.join(ALLOFLOW_DIR, 'gemini_token.json');
+const COPILOT_TOKEN_FILE = path.join(ALLOFLOW_DIR, 'copilot_token.json');
 
 const MIME_TYPES = {
     '.html': 'text/html; charset=utf-8',
@@ -98,7 +101,12 @@ function buildLocalConfigScript() {
             // without requiring the user to open Settings and click Save first.
             if (ai.nvidiaModel) cfg.nvidiaModel = ai.nvidiaModel;
             cfg.nvidiaTextModel = ai.nvidiaTextModel || 'meta/llama-3.3-70b-instruct';
-            cfg.nvidiaOmniModel = ai.nvidiaOmniModel || ai.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+            // Vision MUST resolve to a NON-reasoning multimodal model. The
+            // nemotron "…-reasoning" omni model thinks for 70s+ and truncates
+            // before emitting the audit JSON (finish_reason=length), so it never
+            // returns a usable result. llama-3.2-90b-vision answers directly.
+            // Do NOT fall back to ai.nvidiaModel (that's the text model).
+            cfg.nvidiaOmniModel = ai.nvidiaOmniModel || 'meta/llama-3.2-90b-vision-instruct';
             if (ai.nvidiaReasoningMode !== undefined) cfg.nvidiaReasoningMode = ai.nvidiaReasoningMode;
         }
     } catch (_) {}
@@ -626,27 +634,36 @@ async function handleGeminiNativeProxy(req, res, model, body) {
         console.log(`[localApp:ai-proxy] Model override: ${model} → ${safeModel}`);
     }
     try {
-        const upstream = await fetch(url, {
-            method: 'POST',
-            headers: geminiHeaders,
-            body: JSON.stringify(body),
-        });
-        const data = await upstream.json();
-        // If preferred model is overloaded, retry once with stable fallback
-        if (upstream.status === 503 && safeModel !== 'gemini-2.0-flash' && !isTTSModel) {
-            console.warn(`[localApp:ai-proxy] ${safeModel} returned 503, falling back to gemini-2.0-flash`);
-            const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-            try {
-                const fallback = await fetch(fallbackUrl, { method: 'POST', headers: geminiHeaders, body: JSON.stringify(body) });
-                const fallbackData = await fallback.json();
-                logAIProxy(`/api/gemini/proxy/gemini-2.0-flash(fallback)`, 'gemini', fallback.status, Date.now() - t0);
-                res.writeHead(fallback.status, { 'Content-Type': 'application/json' });
-                return res.end(JSON.stringify(fallbackData));
-            } catch (fbErr) {
-                console.error('[localApp:ai-proxy] Fallback also failed:', fbErr.message);
+        // Try the effective model, then fall back through known-good Flash models
+        // on 404 (model not available to this key/project) or 503 (overloaded).
+        // A given AI Studio project may lack one specific model id, so we resolve
+        // to whichever Flash model it actually has. Everything else (200/400/401/
+        // 403/429) is returned as-is so the client's retry/backoff handles it.
+        const candidates = isTTSModel
+            ? [safeModel]
+            : [...new Set([safeModel, 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash'])];
+        let upstream, data, usedModel = safeModel;
+        for (let i = 0; i < candidates.length; i++) {
+            usedModel = candidates[i];
+            const tryUrl = apiKey
+                ? `https://generativelanguage.googleapis.com/v1beta/models/${usedModel}:generateContent?key=${encodeURIComponent(apiKey)}`
+                : `https://generativelanguage.googleapis.com/v1beta/models/${usedModel}:generateContent`;
+            upstream = await fetch(tryUrl, { method: 'POST', headers: geminiHeaders, body: JSON.stringify(body) });
+            data = await upstream.json().catch(() => ({}));
+            if (upstream.status !== 404 && upstream.status !== 503) break;
+            if (i < candidates.length - 1) {
+                console.warn(`[localApp:ai-proxy] gemini model ${usedModel} → ${upstream.status}; trying ${candidates[i + 1]}`);
             }
         }
-        logAIProxy(`/api/gemini/proxy/${safeModel}`, 'gemini', upstream.status, Date.now() - t0);
+        if (usedModel !== safeModel) {
+            console.log(`[localApp:ai-proxy] Gemini model resolved: ${safeModel} → ${usedModel}`);
+        }
+        if (upstream.status >= 400) {
+            // Surface the upstream reason (model-not-found / API-not-enabled / key
+            // invalid) into the main log so failures are diagnosable.
+            console.error(`[localApp:ai-proxy] Gemini ${usedModel} HTTP ${upstream.status}: ${JSON.stringify(data).slice(0, 400)}`);
+        }
+        logAIProxy(`/api/gemini/proxy/${usedModel}`, 'gemini', upstream.status, Date.now() - t0);
         res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify(data));
     } catch (err) {
@@ -1091,7 +1108,7 @@ function startLocalAppServer(port, isPackaged) {
                 req.on('end', () => {
                     try {
                         const data = JSON.parse(body);
-                        const teachersFile = path.join(os.homedir(), '.alloflow', 'teachers.json');
+                        const teachersFile = path.join(ALLOFLOW_DIR, 'teachers.json');
                         let teachers = {};
                         if (fs.existsSync(teachersFile)) {
                             try { teachers = JSON.parse(fs.readFileSync(teachersFile, 'utf-8')); } catch {}
@@ -1115,7 +1132,7 @@ function startLocalAppServer(port, isPackaged) {
 
             // GET /api/teachers — list all synced teacher accounts + history
             if (urlPath === '/api/teachers' && req.method === 'GET') {
-                const teachersFile = path.join(os.homedir(), '.alloflow', 'teachers.json');
+                const teachersFile = path.join(ALLOFLOW_DIR, 'teachers.json');
                 let teachers = {};
                 if (fs.existsSync(teachersFile)) {
                     try { teachers = JSON.parse(fs.readFileSync(teachersFile, 'utf-8')); } catch {}
@@ -1127,7 +1144,7 @@ function startLocalAppServer(port, isPackaged) {
             // GET /api/teachers/:id — get one teacher's synced data
             if (urlPath.startsWith('/api/teachers/') && req.method === 'GET') {
                 const teacherId = decodeURIComponent(urlPath.slice('/api/teachers/'.length));
-                const teachersFile = path.join(os.homedir(), '.alloflow', 'teachers.json');
+                const teachersFile = path.join(ALLOFLOW_DIR, 'teachers.json');
                 let teachers = {};
                 if (fs.existsSync(teachersFile)) {
                     try { teachers = JSON.parse(fs.readFileSync(teachersFile, 'utf-8')); } catch {}

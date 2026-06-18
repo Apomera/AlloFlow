@@ -9,8 +9,7 @@
   ],
   "extraMetadata": {
     "main": "public/main.js",
-    "alloEdition": "remediation",
-    "version": "0.1.0"
+    "alloEdition": "remediation"
   },
   "extraResources": [
     {

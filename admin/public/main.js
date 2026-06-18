@@ -4,6 +4,23 @@ const fs = require('fs');
 const os = require('os');
 const http = require('http');
 const { randomBytes, createHash } = require('crypto');
+
+// ── Build edition + per-edition config directory ────────────────────────────
+// The remediation edition keeps its own config dir (~/.alloflow-remediation) so
+// it never reads from or overwrites a full AlloFlow install's ~/.alloflow.
+// Resolved here — before requiring the local service modules and before any
+// child process is spawned — and exported via ALLOFLOW_DIR so every module and
+// spawned process (localAppServer, nativeProcessManager, the SQLite backend)
+// resolves the same edition-specific path.
+const ALLO_EDITION = process.env.ALLO_EDITION || (() => {
+  try { return require('../package.json').alloEdition || 'full'; } catch { return 'full'; }
+})();
+const ALLOFLOW_DIR = path.join(
+  os.homedir(),
+  ALLO_EDITION === 'remediation' ? '.alloflow-remediation' : '.alloflow'
+);
+process.env.ALLOFLOW_DIR = ALLOFLOW_DIR;
+
 const nativePM = require('./nativeProcessManager');
 // Ollama manager removed — now using universal llm-engine (llama.cpp)
 const serviceUpdatesManager = require('./serviceUpdatesManager');
@@ -32,7 +49,7 @@ if (!gotTheLock) {
 }
 
 // ── Log streaming infrastructure ────────────────────────────────────────────
-const LOG_DIR = path.join(os.homedir(), '.alloflow', 'logs');
+const LOG_DIR = path.join(ALLOFLOW_DIR, 'logs');
 const logBuffers = {
   main: [],
   'llm-engine': [],
@@ -136,8 +153,7 @@ function stopServiceUpdateDetector() {
 
 
 
-// AlloFlow config directory and files
-const ALLOFLOW_DIR = path.join(os.homedir(), '.alloflow');
+// AlloFlow config directory and files (ALLOFLOW_DIR resolved above, edition-aware)
 const CONFIG_FILE = path.join(ALLOFLOW_DIR, 'config.json');
 const AI_CONFIG_FILE = path.join(ALLOFLOW_DIR, 'ai_config.json');
 const GEMINI_TOKEN_FILE = path.join(ALLOFLOW_DIR, 'gemini_token.json');
@@ -244,6 +260,42 @@ function isAiConfigured() {
     if (cfg.aiProvider === 'llm-engine') return true; // LM Studio detected/started separately
     return true;
   } catch { return false; }
+}
+
+// Optional dev convenience: set this to a Gemini API key to auto-seed the
+// remediation edition's config on first run (skips manual setup). Leave EMPTY
+// for normal builds — empty means the seed is skipped and the setup screen
+// prompts for a key. Never commit a real key here.
+const DEV_GEMINI_API_KEY = '';
+
+// Seed ai_config.json with the dev Gemini key on first run of the remediation
+// edition, when nothing is configured yet (never clobbers a real key the user
+// has already saved in-app or via setup). Gemini is the only cloud provider for
+// this edition — it ingests multi-page PDFs in one request.
+function seedDevConfigIfNeeded() {
+  try {
+    if (EDITION !== 'remediation') return;
+    if (!DEV_GEMINI_API_KEY) return;
+    let existing = {};
+    if (fs.existsSync(AI_CONFIG_FILE)) {
+      try { existing = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8')); } catch {}
+    }
+    // Already on a supported provider with a real config — leave it alone so we
+    // never clobber a key the user saved (in-app or via setup).
+    const onGemini = existing.aiProvider === 'gemini' && existing.geminiApiKey;
+    const onLmStudio = existing.aiProvider === 'llm-engine' || existing.aiProvider === 'lmstudio';
+    if (onGemini || onLmStudio) return;
+    // Otherwise (unconfigured, or a stale NVIDIA config — that provider was
+    // removed) seed/migrate to Gemini and strip the dead NVIDIA fields.
+    ensureAlloFlowDir();
+    const merged = { ...existing, aiProvider: 'gemini', geminiApiKey: DEV_GEMINI_API_KEY };
+    delete merged.nvidiaApiKey; delete merged.nvidiaModel;
+    delete merged.nvidiaOmniModel; delete merged.nvidiaTextModel;
+    fs.writeFileSync(AI_CONFIG_FILE, JSON.stringify(merged, null, 2), 'utf-8');
+    console.log('[dev] Seeded/migrated ai_config.json to dev Gemini key (remediation edition).');
+  } catch (err) {
+    console.warn('[dev] seedDevConfigIfNeeded failed:', err.message);
+  }
 }
 
 // Ensure AlloFlow directory exists
@@ -361,6 +413,7 @@ const createWindow = () => {
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html')}`;
 
+  seedDevConfigIfNeeded(); // seeds the dev Gemini key on first run if DEV_GEMINI_API_KEY is set
   let startURL = adminURL;
   if (EDITION === 'remediation' && isAiConfigured()) {
     startURL = `http://localhost:${getLocalAppPort()}/?mode=remediation`;
@@ -728,6 +781,62 @@ ipcMain.handle('remediation:launch', async () => {
   } catch (err) {
     console.error('[remediation:launch] Error:', err.message);
     return { success: false, error: err.message };
+  }
+});
+
+// Save a batch of remediated artifacts to a user-chosen local folder.
+// payload = { folderName?: string, files: [{ name, data, encoding:'base64'|'utf8' }] }
+// Opens a directory picker, creates a named subfolder, writes every file, and
+// returns { canceled } | { folder, saved } | { error }. This replaces the
+// browser blob-download path, which does not work in the packaged Electron app.
+ipcMain.handle('remediation:save-files', async (event, payload) => {
+  try {
+    const files = (payload && Array.isArray(payload.files)) ? payload.files : [];
+    if (files.length === 0) return { error: 'No files to save' };
+
+    const result = await dialog.showOpenDialog(mainWindow, {
+      defaultPath: os.homedir(),
+      properties: ['openDirectory', 'createDirectory'],
+      title: 'Choose where to save the remediated files',
+      buttonLabel: 'Save Here',
+    });
+    if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+    const rawName = (payload && payload.folderName) || 'AlloFlow_Remediated';
+    const folderName = String(rawName).replace(/[\\/:*?"<>|]/g, '_').slice(0, 120) || 'AlloFlow_Remediated';
+    const baseDir = path.join(result.filePaths[0], folderName);
+    fs.mkdirSync(baseDir, { recursive: true });
+
+    let saved = 0;
+    for (const f of files) {
+      if (!f || !f.name || typeof f.data !== 'string') continue;
+      const safe = String(f.name).replace(/[\\/:*?"<>|]/g, '_');
+      const dest = path.join(baseDir, safe);
+      const buf = f.encoding === 'utf8'
+        ? Buffer.from(f.data, 'utf8')
+        : Buffer.from(f.data, 'base64');
+      fs.writeFileSync(dest, buf);
+      saved++;
+    }
+
+    console.log(`[remediation:save-files] Wrote ${saved} file(s) to ${baseDir}`);
+    return { canceled: false, folder: baseDir, saved };
+  } catch (err) {
+    console.error('[remediation:save-files] Error:', err.message);
+    return { error: err.message };
+  }
+});
+
+// Reveal a saved file/folder in the OS file manager.
+ipcMain.handle('remediation:reveal-path', async (event, targetPath) => {
+  try {
+    if (typeof targetPath !== 'string' || !fs.existsSync(targetPath)) {
+      return { error: 'Path not found' };
+    }
+    shell.openPath(targetPath);
+    return { success: true };
+  } catch (err) {
+    return { error: err.message };
   }
 });
 

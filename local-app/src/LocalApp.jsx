@@ -14368,7 +14368,54 @@ Return only the corrected version of this exact text:`;
     setPdfBatchMode(true);
     setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
     try { document.body.classList.add('allo-remediation-only'); } catch {}
+    // Strip the full-app chrome so the standalone build shows ONLY the
+    // remediation screen: make the audit dialog's backdrop opaque (hiding the
+    // app shell behind it) and remove the decorative animated background.
+    try {
+      const STYLE_ID = 'allo-remediation-only-style';
+      if (!document.getElementById(STYLE_ID)) {
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = `
+          body.allo-remediation-only [aria-label="PDF Accessibility Audit"] {
+            background: #f1f5f9 !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+          }
+          body.allo-remediation-only .bg-dot-pattern,
+          body.allo-remediation-only .animate-float,
+          body.allo-remediation-only .animate-float-delayed { display: none !important; }
+        `;
+        document.head.appendChild(style);
+      }
+    } catch {}
   }, [_remediationMode]);
+  // Lock the user inside the remediation screen — the standalone build must never
+  // expose the full AlloFlow app. If anything closes the audit modal (a Cancel
+  // button, Escape, etc.), immediately re-assert the batch remediation screen.
+  useEffect(() => {
+    if (!_remediationMode) return;
+    if (pdfAuditResult) return;            // modal still open
+    // Audit/fix/batch in progress: the flow briefly nulls pdfAuditResult and shows
+    // a loading state — do NOT hijack it back to the home screen, or the user
+    // loses the running audit and never sees the result.
+    if (pdfAuditLoading || pdfFixLoading) return;
+    setPdfBatchMode(true);
+    setPdfFixResult(null);
+    setPdfFixLoading(false);
+    setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
+  }, [_remediationMode, pdfAuditResult, pdfAuditLoading, pdfFixLoading]);
+  // Return to the remediation "home" screen (the upload/choose view) — used by the
+  // Back buttons so a failed/finished audit doesn't strand the user or leak the full app.
+  const returnToRemediationMenu = React.useCallback(() => {
+    setPdfFixResult(null);
+    setPdfFixLoading(false);
+    setPendingPdfBase64(null);
+    setPendingPdfFile(null);
+    setPdfBatchMode(true);
+    try { setPdfWebMode && setPdfWebMode(false); } catch (_) {}
+    setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
+  }, []);
   const [pdfBatchProcessing, setPdfBatchProcessing] = useState(false);
   const [pdfBatchCurrentIndex, setPdfBatchCurrentIndex] = useState(-1);
   const [pdfBatchStep, setPdfBatchStep] = useState('');
@@ -18207,7 +18254,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     // NVIDIA path: translate Gemini inlineData format → OpenAI-compatible multimodal content array.
     // Routes to the omni model (nvidiaOmniModel) which supports image, audio, and video inputs.
     if (_aiProv === 'nvidia') {
-      const _omniModel = window.__alloLocalConfig?.nvidiaOmniModel || window.__alloLocalConfig?.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+      // Vision MUST use a NON-reasoning multimodal model. The nemotron
+      // "…-reasoning" omni model thinks for 70s+ and truncates before emitting
+      // the answer (finish_reason=length) → audits fail. llama-3.2-90b-vision
+      // answers directly. Never fall back to nvidiaModel (the text model).
+      const _omniModel = window.__alloLocalConfig?.nvidiaOmniModel || 'meta/llama-3.2-90b-vision-instruct';
       const _mime = mimeType || 'image/jpeg';
       let _content;
       if (_mime === 'application/pdf') {
@@ -18231,11 +18282,13 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         ];
       }
       const _isOmniReasoning = _omniModel.includes('reasoning') || _omniModel.includes('omni');
-      // '/no_think' disables Nemotron reasoning entirely — without it the model burns the whole
-      // token budget on reasoning_content and returns empty content (finish_reason=length).
-      // Verified: with /no_think the model answers instantly; the answer may arrive in
-      // reasoning_content instead of content, handled by the fallback below.
-      const _sysContent = (_isOmniReasoning ? '/no_think\n' : '')
+      // NVIDIA Nemotron reasoning models disable thinking via the system prompt
+      // "detailed thinking off" (NOT "/no_think", which is Qwen syntax and was
+      // ignored — the model then burned the entire token budget thinking and
+      // returned empty content with finish_reason=length). With thinking off it
+      // answers directly; the answer may still arrive in reasoning/reasoning_content
+      // (handled by the fallback below). Larger max_tokens leaves room to finish.
+      const _sysContent = (_isOmniReasoning ? 'detailed thinking off\n\n' : '')
         + 'You are an efficient document analyst. Respond with the final answer only.';
       const _nvPayload = {
         model: _omniModel,
@@ -18246,7 +18299,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             content: _content,
           },
         ],
-        max_tokens: 8192,
+        max_tokens: _isOmniReasoning ? 16384 : 8192,
         stream: false,
       };
       const _nvRes = await fetch(`${window.location.origin}/api/nvidia/proxy`, {
@@ -18386,7 +18439,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       throw new Error(_msg);
     }
 
-    const url = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/gemini-2.5-flash`;
+    // Route through the local Gemini proxy on this app's own origin (key injected server-side).
+    const url = `${window.location.origin}/api/gemini/proxy/gemini-2.5-flash`;
     const payload = {
       contents: [{
         parts: [
@@ -18396,12 +18450,27 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }],
       generationConfig: { maxOutputTokens: 8192 }
     };
+    // Serialize Gemini vision calls + retry on 429/503 so the audit's parallel
+    // auditors don't blow past the free-tier rate limit (~15 requests/min).
+    const _prevGemTurn = window.__geminiVisionQueue || Promise.resolve();
+    let _releaseGemTurn;
+    window.__geminiVisionQueue = new Promise(r => { _releaseGemTurn = r; });
+    await _prevGemTurn.catch(() => {});
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      let response;
+      const _maxAttempts = 5;
+      for (let _attempt = 1; ; _attempt++) {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if ((response.status !== 429 && response.status !== 503) || _attempt >= _maxAttempts) break;
+        const _ra = parseInt(response.headers.get('retry-after') || '', 10);
+        const _waitMs = Number.isFinite(_ra) ? _ra * 1000 : Math.min(30000, 1000 * Math.pow(2, _attempt)) + Math.floor(Math.random() * 500);
+        try { if (typeof setGenerationStep === 'function') setGenerationStep(`⏳ Gemini busy — retrying in ${Math.round(_waitMs / 1000)}s (attempt ${_attempt}/${_maxAttempts})`); } catch (_) {}
+        await new Promise(r => setTimeout(r, _waitMs));
+      }
       if (!response.ok) {
         const errText = await response.text().catch(() => 'Unknown error');
         throw new Error(`Vision API HTTP ${response.status}: ${errText.substring(0, 200)}`);
@@ -18434,6 +18503,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     } catch (err) {
       warnLog("Vision API Error", err);
       throw err;
+    } finally {
+      _releaseGemTurn();
     }
   };
   const fetchTTSBytes = useCallback((text, voiceName = "Puck", speed = 1) => {
@@ -20883,6 +20954,7 @@ Return ONLY valid JSON:
   const updatePdfPreview = _docPipeline ? _docPipeline.updatePdfPreview : () => {};
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
+  const buildBatchDashboardHtml = _docPipeline ? _docPipeline.buildBatchDashboardHtml : () => '';
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
   const parseAuditJson = _docPipeline ? _docPipeline.parseAuditJson : () => ({});
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
@@ -52352,7 +52424,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
             {pdfAuditResult?._choosing ? (
               <div className="p-8 text-center">
-                {/* ── Batch Mode Toggle ── */}
+                {/* ── Batch Mode Toggle (hidden in the focused remediation build —
+                       there the Scan Folder / Audit a Single PDF buttons are the entry points) ── */}
+                {!_remediationMode && (
                 <div className="flex justify-center mb-4">
                   <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
                     <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📄 Single PDF</button>
@@ -52360,6 +52434,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                     <button onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>🌐 Website / HTML</button>
                   </div>
                 </div>
+                )}
                 {pdfWebMode ? (
                   /* ═══ WEBSITE / HTML MODE ═══ */
                   <div className="text-left space-y-4">
@@ -52492,6 +52567,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                   <div className="text-left">
                     <h3 className="text-lg font-black text-slate-800 mb-3 text-center">📂 Batch PDF Remediation</h3>
 
+                    {/* In-app AI provider / API key editor (Electron remediation build) */}
+                    {window.alloAPI?.writeAIConfig && <RemediationApiKeyEditor onToast={addToast} />}
+
                     {/* Drag & Drop Zone */}
                     {!pdfBatchProcessing && !pdfBatchSummary && (
                       <div
@@ -52569,6 +52647,31 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                       </div>
                     )}
 
+                    {/* Single PDF (audit + remediate one file with the full results view) */}
+                    {!pdfBatchProcessing && !pdfBatchSummary && (
+                      <div className="mb-4 text-center">
+                        <input type="file" accept=".pdf,.docx,.pptx" className="hidden" id="single-pdf-input" onChange={(e) => {
+                          const file = (e.target.files || [])[0];
+                          e.target.value = '';
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            const base64 = (reader.result || '').toString().split(',')[1];
+                            if (!base64) { addToast('Could not read that file', 'error'); return; }
+                            setPendingPdfBase64(base64);
+                            setPendingPdfFile(file);
+                            setPdfBatchMode(false); // switch to the single-file audit flow
+                            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
+                          };
+                          reader.readAsDataURL(file);
+                        }} />
+                        <label htmlFor="single-pdf-input" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg inline-flex items-center gap-2 cursor-pointer">
+                          📄 Audit a Single PDF
+                        </label>
+                        <p className="text-xs text-slate-500 mt-2">Upload one document for a full audit with the detailed results view.</p>
+                      </div>
+                    )}
+
                     {/* File Queue */}
                     {pdfBatchQueue.length > 0 && !pdfBatchSummary && (
                       <div className="mb-4">
@@ -52633,136 +52736,13 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                       {pdfBatchSummary && (
                         <>
                           <button onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center gap-2">
-                            {'\ud83d\udce5'} Download All (ZIP)
+                            {window.alloAPI?.remediation?.saveFiles ? '\ud83d\udcc1 Save to Folder' : '\ud83d\udce5 Download All (ZIP)'}
                           </button>
                           <button onClick={() => { setPdfBatchQueue([]); setPdfBatchSummary(null); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">New Batch</button>
                           <button onClick={() => {
-                            const queue = pdfBatchQueue;
-                            const summary = pdfBatchSummary;
-                            const done = queue.filter(f => f.status === 'done');
-                            const failed = queue.filter(f => f.status === 'failed');
-                            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-                            // Categorize by score ranges
-                            const excellent = done.filter(f => (f.result?.afterScore || 0) >= 90);
-                            const good = done.filter(f => (f.result?.afterScore || 0) >= 70 && (f.result?.afterScore || 0) < 90);
-                            const needsWork = done.filter(f => (f.result?.afterScore || 0) < 70);
-
-                            // Common violations across all documents
-                            const allViolations = {};
-                            done.forEach(f => {
-                              const issues = f.result?.verificationAudit?.issues || [];
-                              issues.forEach(i => {
-                                const key = (i.wcag || 'unknown') + ': ' + (i.issue || '').substring(0, 60);
-                                allViolations[key] = (allViolations[key] || 0) + 1;
-                              });
-                            });
-                            const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
-
                             const win = window.open('', '_blank');
                             if (!win) { addToast('Pop-up blocked', 'error'); return; }
-                            win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Compliance Dashboard</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
-.header{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:24px 32px;display:flex;align-items:center;justify-content:space-between}
-.header h1{font-size:20px;font-weight:800;color:#fff}
-.header .date{font-size:12px;color:#a5b4fc}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 32px}
-.card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155}
-.card-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;margin-bottom:8px}
-.card-value{font-size:36px;font-weight:900}
-.card-sub{font-size:11px;color:#94a3b8;margin-top:4px}
-.section{padding:0 32px 24px}
-.section h2{font-size:14px;font-weight:800;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
-table{width:100%;border-collapse:collapse}
-th{background:#1e293b;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:2px solid #334155}
-td{padding:10px 12px;border-bottom:1px solid #1e293b;font-size:13px}
-tr:hover{background:#1e293b50}
-.score-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-weight:800;font-size:12px}
-.excellent{background:#16a34a20;color:#4ade80}
-.good{background:#d9770620;color:#fbbf24}
-.needs-work{background:#dc262620;color:#f87171}
-.bar{height:8px;border-radius:4px;transition:width 0.5s}
-.chart{display:flex;gap:4px;height:40px;align-items:end}
-.chart-bar{flex:1;border-radius:3px 3px 0 0;min-width:8px;transition:height 0.5s}
-.violation-row{display:flex;justify-content:space-between;padding:8px 12px;background:#1e293b;border-radius:8px;margin-bottom:4px;font-size:12px}
-.footer{padding:24px 32px;text-align:center;font-size:11px;color:#475569;border-top:1px solid #1e293b}
-@media print{body{background:white;color:#1e293b}.header{background:#4f46e5;-webkit-print-color-adjust:exact;print-color-adjust:exact}.card{border:1px solid #e2e8f0}th{background:#f1f5f9;color:#1e293b;-webkit-print-color-adjust:exact;print-color-adjust:exact}.violation-row{background:#f8fafc}}
-</style></head><body>
-<div class="header">
-  <div><h1>♿ Accessibility Compliance Dashboard</h1><div class="date">${date} · ${queue.length} documents analyzed · AlloFlow Pipeline</div></div>
-  <button onclick="window.print()" style="background:white;color:#4f46e5;border:none;padding:8px 16px;border-radius:8px;font-weight:bold;cursor:pointer">🖨️ Print</button>
-</div>
-
-<div class="grid">
-  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
-  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
-  <div class="card"><div class="card-title">Compliance Rate</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+</div></div>
-  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
-</div>
-
-<div class="section">
-  <h2>Score Distribution</h2>
-  <div style="display:flex;gap:24px;margin-bottom:16px">
-    <div style="flex:1;background:#1e293b;border-radius:12px;padding:16px;border:1px solid #334155">
-      <div class="chart">${done.map(f => {
-        const s = f.result?.afterScore || 0;
-        const color = s >= 90 ? '#4ade80' : s >= 70 ? '#fbbf24' : '#f87171';
-        return '<div class="chart-bar" style="height:' + Math.max(4, s) + '%;background:' + color + '" title="' + f.fileName + ': ' + s + '/100"></div>';
-      }).join('')}</div>
-      <div style="font-size:10px;color:#64748b;margin-top:8px;text-align:center">Each bar = one document (height = score)</div>
-    </div>
-    <div style="width:200px;display:flex;flex-direction:column;gap:8px">
-      <div style="background:#16a34a20;border:1px solid #16a34a40;border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:24px;font-weight:900;color:#4ade80">${excellent.length}</div>
-        <div style="font-size:10px;color:#4ade80;font-weight:700">EXCELLENT (90+)</div>
-      </div>
-      <div style="background:#d9770620;border:1px solid #d9770640;border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:24px;font-weight:900;color:#fbbf24">${good.length}</div>
-        <div style="font-size:10px;color:#fbbf24;font-weight:700">GOOD (70-89)</div>
-      </div>
-      <div style="background:#dc262620;border:1px solid #dc262640;border-radius:8px;padding:12px;text-align:center">
-        <div style="font-size:24px;font-weight:900;color:#f87171">${needsWork.length}</div>
-        <div style="font-size:10px;color:#f87171;font-weight:700">NEEDS WORK (<70)</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="section">
-  <h2>Document Details</h2>
-  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Status</th></tr></thead><tbody>
-  ${queue.map((f, i) => {
-    const r = f.result;
-    const after = r?.afterScore || 0;
-    const cls = after >= 90 ? 'excellent' : after >= 70 ? 'good' : 'needs-work';
-    return '<tr><td>' + (i+1) + '</td><td>' + f.fileName + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + (f.error || '')) + '</td></tr>';
-  }).join('')}
-  </tbody></table>
-</div>
-
-${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (Training Priorities)</h2>' +
-  topViolations.map(([v, count]) => '<div class="violation-row"><span>' + v + '</span><span style="font-weight:800;color:#f87171">' + count + ' docs</span></div>').join('') +
-  '<p style="font-size:11px;color:#64748b;margin-top:12px">These violations appeared across multiple documents — addressing them through faculty training would have the highest impact.</p></div>' : ''}
-
-<div class="section">
-  <h2>Compliance Summary</h2>
-  <div style="background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155">
-    <p style="font-size:13px;line-height:1.8;color:#cbd5e1">
-      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length/done.length*100) : 0}%) meet WCAG 2.1 Level AA compliance (score ≥ 90).
-      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's are' : ' is') + ' partially compliant (70-89) and may meet requirements with minor additional remediation.' : ''}
-      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's require' : ' requires') + ' significant remediation or expert review to meet compliance standards.' : ''}
-    </p>
-    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
-    <p style="font-size:11px;color:#64748b">Methodology: AI multi-auditor triangulation + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
-  </div>
-</div>
-
-<div class="footer">
-  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://github.com/Apomera/AlloFlow" style="color:#6366f1">AlloFlow</a>
-</div>
-</body></html>`);
+                            win.document.write(buildBatchDashboardHtml(pdfBatchQueue, pdfBatchSummary));
                             win.document.close();
                             addToast('📊 Dashboard opened', 'success');
                           }} className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
@@ -53003,9 +52983,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ Audit & Remediate
                   </button>
-                  <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-200">
+                  {!_remediationMode && <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-200">
                     <Sparkles size={16} /> Skip to Text Extraction
-                  </button>
+                  </button>}
                 </div>
                 <p className="text-[10px] text-slate-600 text-center mt-2">"Audit & Remediate" analyzes accessibility, fixes issues, and verifies with axe-core. "Text Extraction" extracts raw text for content generation.</p>
                 {pdfAuditResult?.pageCount > 0 && (
@@ -53052,7 +53032,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       e.target.value = '';
                     }} />
                   </label>
-                  <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">Cancel</button>
+                  <button onClick={_remediationMode ? returnToRemediationMenu : () => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="text-xs text-slate-600 hover:text-slate-600 font-bold">{_remediationMode ? '← Back' : 'Cancel'}</button>
                 </div>
               </div>
             ) : pdfAuditLoading ? (
@@ -53176,7 +53156,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <p className="text-xs text-slate-600 text-center">You can still proceed — Fix & Verify will transform the document and run a full audit afterward.</p>
                   <div className="flex gap-2 justify-center">
                     <button onClick={async () => { setPdfAuditResult(null); addToast('Retrying audit...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">🔄 Retry Audit</button>
-                    <button onClick={() => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button onClick={_remediationMode ? returnToRemediationMenu : () => { setPdfAuditResult(null); setPdfFixResult(null); setPdfFixLoading(false); setPendingPdfBase64(null); setPendingPdfFile(null); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">{_remediationMode ? '← Back' : 'Cancel'}</button>
                   </div>
                 </div>
               </div>
@@ -53776,9 +53756,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                       </div>
                     </div>
-                    <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title="Extract text for content generation">
+                    {!_remediationMode && <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title="Extract text for content generation">
                       Text Extract
-                    </button>
+                    </button>}
                   </div>
                   <p className="text-[10px] text-slate-600 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
 
@@ -57125,7 +57105,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
           )}
         </div>
       )}
-      {isBotVisible && (
+      {isBotVisible && !_remediationMode && (
           <AlloBot
             ref={alloBotRef}
             canPlayIntro={canPlayBotIntro}
@@ -58404,6 +58384,109 @@ function CanvasLoadingTips() {
       minHeight: '40px', transition: 'opacity 0.5s', lineHeight: 1.5
     }
   }, CANVAS_LOADING_TIPS[tipIdx]);
+}
+
+// ── In-app AI provider / API key editor (remediation edition) ───────────────
+// The standalone remediation build only shows the provider picker once, before
+// launch. This lets the user change the provider or update the API key from
+// inside the remediation screen. Writes ai_config.json via the Electron bridge;
+// the server-side proxy reads the key at request time, so a key change for the
+// same provider applies immediately. Switching providers reloads the screen so
+// the freshly-injected config (window.__alloLocalConfig) takes effect.
+function RemediationApiKeyEditor({ onToast }) {
+  const [open, setOpen] = React.useState(false);
+  const [provider, setProvider] = React.useState('gemini');
+  const [initialProvider, setInitialProvider] = React.useState('gemini');
+  const [keyVal, setKeyVal] = React.useState('');
+  const [hasExisting, setHasExisting] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
+
+  const load = React.useCallback(async () => {
+    try {
+      const cfg = await window.alloAPI.readAIConfig();
+      if (cfg) {
+        if (cfg.aiProvider) { setProvider(cfg.aiProvider); setInitialProvider(cfg.aiProvider); }
+        const existingKey = cfg.aiProvider === 'gemini' ? cfg.geminiApiKey : null;
+        setHasExisting(!!existingKey);
+      }
+    } catch (_) { /* ignore */ }
+    setLoaded(true);
+  }, []);
+
+  React.useEffect(() => { if (open && !loaded) load(); }, [open, loaded, load]);
+
+  const needsKey = provider === 'gemini';
+  const keyField = 'geminiApiKey';
+  const canSave = !saving && (!needsKey || keyVal.trim().length > 10 || hasExisting);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const payload = { aiProvider: provider };
+      if (needsKey && keyVal.trim()) payload[keyField] = keyVal.trim();
+      const res = await window.alloAPI.writeAIConfig(payload);
+      if (res && res.success === false) throw new Error(res.error || 'Save failed');
+      if (needsKey && keyVal.trim()) setHasExisting(true);
+      setKeyVal('');
+      const providerChanged = provider !== initialProvider;
+      onToast && onToast(providerChanged ? 'Provider saved — reloading…' : 'API key saved — applies to new requests.', 'success');
+      setInitialProvider(provider);
+      if (providerChanged && window.alloAPI.remediation && window.alloAPI.remediation.launch) {
+        setTimeout(() => { try { window.alloAPI.remediation.launch(); } catch (_) {} }, 700);
+      } else {
+        setOpen(false);
+      }
+    } catch (e) {
+      onToast && onToast('Could not save: ' + (e.message || e), 'error');
+    } finally { setSaving(false); }
+  };
+
+  if (!open) {
+    return (
+      <div className="flex justify-end mb-2">
+        <button onClick={() => setOpen(true)}
+          className="text-[11px] font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
+          title="Change AI provider or API key">
+          ⚙️ API Settings
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-left">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">⚙️ AI Provider & API Key</div>
+        <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 text-sm font-bold" aria-label="Close">✕</button>
+      </div>
+      <div className="space-y-2">
+        <div>
+          <label className="text-[10px] font-bold text-slate-500 uppercase">Provider</label>
+          <select value={provider} onChange={(e) => { setProvider(e.target.value); setKeyVal(''); setHasExisting(false); }}
+            className="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
+            <option value="gemini">Google Gemini (cloud)</option>
+            <option value="llm-engine">LM Studio (local, no key)</option>
+          </select>
+        </div>
+        {needsKey && (
+          <div>
+            <label className="text-[10px] font-bold text-slate-500 uppercase">Gemini API key</label>
+            <input type="password" value={keyVal} onChange={(e) => setKeyVal(e.target.value)}
+              placeholder={hasExisting ? '•••••••• (saved — type to replace)' : 'AIza…'}
+              className="w-full mt-1 px-2 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" autoComplete="off" />
+          </div>
+        )}
+        <div className="flex justify-end gap-2 pt-1">
+          <button onClick={() => setOpen(false)} className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200">Cancel</button>
+          <button onClick={save} disabled={!canSave}
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold text-white ${canSave ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-slate-300 cursor-not-allowed'}`}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function App() {

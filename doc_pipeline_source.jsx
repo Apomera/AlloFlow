@@ -6835,7 +6835,20 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       accessibleHtml += '\n' + remediationFooter;
     }
 
-    return { accessibleHtml, beforeScore, afterScore: finalScore, autoFixPasses, needsExpertReview, axeViolations: axeViolationCount, elapsed, docStyle: batchDocStyle };
+    return {
+      accessibleHtml, beforeScore, afterScore: finalScore, autoFixPasses, needsExpertReview,
+      axeViolations: axeViolationCount, elapsed, docStyle: batchDocStyle,
+      // ── Enriched per-file detail so the batch dashboard can render the same
+      // expansive breakdown the single-file flow shows (scores per engine,
+      // remaining issues, verified passes, axe-core rule list, doc stats). ──
+      verificationAudit: curVerification || null,
+      axeAudit: curAxeResults || null,
+      aiBeforeScore: beforeScore,
+      aiAfterScore: curVerification ? curVerification.score : null,
+      axeBeforeScore: batchAxeResults ? batchAxeResults.score : null,
+      axeAfterScore: curAxeResults ? curAxeResults.score : null,
+      pageCount,
+    };
   };
 
   const runPdfBatchRemediation = async (opts) => {
@@ -7058,14 +7071,224 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
   };
 
+  // ── Shared batch compliance dashboard builder ───────────────────────────────
+  // Produces the full dark-theme dashboard used by BOTH the in-app "Dashboard"
+  // button (window.open) and the saved batch_report.html artifact, so the rich
+  // report travels with the saved files. Adds an expansive per-document section
+  // (scores per engine, remaining issues, verified passes, axe-core rule list)
+  // mirroring the single-file results view, available for every file in the batch.
+  const buildBatchDashboardHtml = (queue, summary) => {
+    queue = queue || [];
+    const _esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const done = queue.filter(f => f.status === 'done');
+    const failed = queue.filter(f => f.status === 'failed');
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const excellent = done.filter(f => (f.result?.afterScore || 0) >= 90);
+    const good = done.filter(f => (f.result?.afterScore || 0) >= 70 && (f.result?.afterScore || 0) < 90);
+    const needsWork = done.filter(f => (f.result?.afterScore || 0) < 70);
+
+    const allViolations = {};
+    done.forEach(f => {
+      const issues = f.result?.verificationAudit?.issues || [];
+      issues.forEach(i => {
+        const key = (i.wcag || 'unknown') + ': ' + (i.issue || '').substring(0, 60);
+        allViolations[key] = (allViolations[key] || 0) + 1;
+      });
+    });
+    const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+    // Expansive per-document detail cards (collapsible <details>, no JS needed)
+    const _axeRuleList = (axe) => {
+      if (!axe) return '<div style="font-size:12px;color:#64748b">axe-core results not retained for this file.</div>';
+      const rules = [].concat(axe.critical || [], axe.serious || [], axe.moderate || [], axe.minor || []);
+      if (rules.length === 0) return '<div style="font-size:12px;color:#4ade80">✓ No axe-core violations</div>';
+      return rules.slice(0, 40).map(v =>
+        '<div class="axe-rule"><span class="axe-id">' + _esc(v.id || 'rule') + '</span> <span style="color:#cbd5e1">' + _esc(v.description || '') +
+        '</span> <span style="color:#64748b">(' + (v.nodes != null ? v.nodes : '?') + ' element' + (v.nodes === 1 ? '' : 's') + ')</span></div>'
+      ).join('');
+    };
+    const fileCards = done.map((f) => {
+      const r = f.result || {};
+      const after = r.afterScore ?? null;
+      const before = r.beforeScore ?? null;
+      const gain = (after != null && before != null) ? (after - before) : null;
+      const cls = (after || 0) >= 90 ? 'excellent' : (after || 0) >= 70 ? 'good' : 'needs-work';
+      const issues = r.verificationAudit?.issues || [];
+      const passes = r.verificationAudit?.passes || [];
+      return `<details class="filecard">
+        <summary>
+          <span class="fc-name">${_esc(f.fileName)}</span>
+          <span class="fc-right"><span class="score-badge ${cls}">${after ?? '—'}</span>${gain != null ? '<span class="fc-gain">' + (gain >= 0 ? '+' : '') + gain + '</span>' : ''}</span>
+        </summary>
+        <div class="fc-body">
+          <div class="fc-metrics">
+            <div class="fc-metric"><div class="fc-mv">${before ?? '—'} → ${after ?? '—'}</div><div class="fc-ml">Blended</div></div>
+            <div class="fc-metric"><div class="fc-mv">${r.aiBeforeScore ?? '—'} → ${r.aiAfterScore ?? '—'}</div><div class="fc-ml">AI rubric</div></div>
+            <div class="fc-metric"><div class="fc-mv">${r.axeBeforeScore ?? '—'} → ${r.axeAfterScore ?? '—'}</div><div class="fc-ml">axe-core</div></div>
+            <div class="fc-metric"><div class="fc-mv">${r.autoFixPasses ?? '—'}</div><div class="fc-ml">Fix passes</div></div>
+            <div class="fc-metric"><div class="fc-mv">${r.pageCount ?? '—'}</div><div class="fc-ml">Pages</div></div>
+            <div class="fc-metric"><div class="fc-mv">${r.elapsed != null ? r.elapsed + 's' : '—'}</div><div class="fc-ml">Time</div></div>
+          </div>
+          ${r.needsExpertReview ? '<div class="fc-flag">🧑‍🔬 Recommended for expert human review</div>' : ''}
+          ${r.verificationAudit?.summary ? '<p class="fc-summary">' + _esc(r.verificationAudit.summary) + '</p>' : ''}
+          <div class="fc-cols">
+            <div class="fc-col">
+              <h4>Remaining issues (${issues.length})</h4>
+              ${issues.length ? issues.slice(0, 30).map(it => '<div class="fc-issue">• ' + _esc(it.issue || '') + (it.wcag ? ' <span class="fc-wcag">' + _esc(it.wcag) + '</span>' : '') + '</div>').join('') : '<div class="fc-ok">✓ None flagged by the AI auditor</div>'}
+            </div>
+            <div class="fc-col">
+              <h4>Verified accessible (${passes.length})</h4>
+              ${passes.length ? passes.slice(0, 30).map(p => '<div class="fc-pass">✓ ' + _esc(p) + '</div>').join('') : '<div class="fc-muted">—</div>'}
+            </div>
+          </div>
+          <div class="fc-axe">
+            <h4>axe-core (Deque)${r.axeAudit?.version ? ' v' + _esc(r.axeAudit.version) : ''} — ${r.axeAudit?.totalViolations ?? 0} violation${(r.axeAudit?.totalViolations === 1) ? '' : 's'}</h4>
+            ${_axeRuleList(r.axeAudit)}
+          </div>
+        </div>
+      </details>`;
+    }).join('');
+
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Compliance Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:24px 32px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:20px;font-weight:800;color:#fff}
+.header .date{font-size:12px;color:#a5b4fc}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 32px}
+.card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155}
+.card-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700;margin-bottom:8px}
+.card-value{font-size:36px;font-weight:900}
+.card-sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.section{padding:0 32px 24px}
+.section h2{font-size:14px;font-weight:800;color:#a5b4fc;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse}
+th{background:#1e293b;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;border-bottom:2px solid #334155}
+td{padding:10px 12px;border-bottom:1px solid #1e293b;font-size:13px}
+tr:hover{background:#1e293b50}
+.score-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-weight:800;font-size:12px}
+.excellent{background:#16a34a20;color:#4ade80}
+.good{background:#d9770620;color:#fbbf24}
+.needs-work{background:#dc262620;color:#f87171}
+.chart{display:flex;gap:4px;height:40px;align-items:end}
+.chart-bar{flex:1;border-radius:3px 3px 0 0;min-width:8px;transition:height 0.5s}
+.violation-row{display:flex;justify-content:space-between;padding:8px 12px;background:#1e293b;border-radius:8px;margin-bottom:4px;font-size:12px}
+.filecard{background:#1e293b;border:1px solid #334155;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.filecard summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;font-weight:700;color:#e2e8f0}
+.filecard summary::-webkit-details-marker{display:none}
+.filecard summary:hover{background:#23304a}
+.filecard summary::before{content:'▶';color:#64748b;font-size:10px;margin-right:10px;transition:transform .2s}
+.filecard[open] summary::before{transform:rotate(90deg)}
+.fc-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-right{display:flex;align-items:center;gap:10px}
+.fc-gain{color:#4ade80;font-weight:800;font-size:12px}
+.fc-body{padding:0 18px 18px;border-top:1px solid #334155}
+.fc-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:16px 0}
+.fc-metric{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;text-align:center}
+.fc-mv{font-size:15px;font-weight:800;color:#e2e8f0}
+.fc-ml{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.fc-flag{background:#7c3aed20;border:1px solid #7c3aed40;color:#c4b5fd;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:10px}
+.fc-summary{font-size:13px;color:#cbd5e1;line-height:1.6;margin-bottom:12px}
+.fc-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}
+.fc-col h4,.fc-axe h4{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;font-weight:700;margin-bottom:8px}
+.fc-issue{font-size:12px;color:#fca5a5;margin-bottom:4px;line-height:1.4}
+.fc-wcag{color:#f87171;font-size:10px;opacity:.8}
+.fc-pass{font-size:12px;color:#86efac;margin-bottom:4px}
+.fc-ok{font-size:12px;color:#4ade80}
+.fc-muted{font-size:12px;color:#64748b}
+.fc-axe{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px}
+.axe-rule{font-size:12px;margin-bottom:5px;line-height:1.4}
+.axe-id{display:inline-block;background:#334155;color:#e2e8f0;border-radius:5px;padding:1px 7px;font-weight:700;font-size:11px}
+.footer{padding:24px 32px;text-align:center;font-size:11px;color:#475569;border-top:1px solid #1e293b}
+@media print{body{background:white;color:#1e293b}.header{background:#4f46e5;-webkit-print-color-adjust:exact;print-color-adjust:exact}.card,.filecard,.fc-metric,.fc-axe{border:1px solid #e2e8f0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}th{background:#f1f5f9;color:#1e293b}.violation-row{background:#f8fafc}.filecard{break-inside:avoid}.filecard summary::before{content:''}.fc-summary,.fc-mv{color:#1e293b}.fc-issue{color:#b91c1c}.fc-pass{color:#15803d}.axe-id{background:#e2e8f0;color:#1e293b}}
+</style></head><body>
+<div class="header">
+  <div><h1>♿ Accessibility Compliance Dashboard</h1><div class="date">${date} · ${queue.length} documents analyzed · AlloFlow Pipeline</div></div>
+  <button onclick="window.print()" style="background:white;color:#4f46e5;border:none;padding:8px 16px;border-radius:8px;font-weight:bold;cursor:pointer">🖨️ Print</button>
+</div>
+
+<div class="grid">
+  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
+  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter || 0) >= 80 ? '#4ade80' : (summary?.avgAfter || 0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
+  <div class="card"><div class="card-title">Compliance Rate</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+</div></div>
+  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert || 0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
+</div>
+
+<div class="section">
+  <h2>Score Distribution</h2>
+  <div style="display:flex;gap:24px;margin-bottom:16px">
+    <div style="flex:1;background:#1e293b;border-radius:12px;padding:16px;border:1px solid #334155">
+      <div class="chart">${done.map(f => {
+        const s = f.result?.afterScore || 0;
+        const color = s >= 90 ? '#4ade80' : s >= 70 ? '#fbbf24' : '#f87171';
+        return '<div class="chart-bar" style="height:' + Math.max(4, s) + '%;background:' + color + '" title="' + _esc(f.fileName) + ': ' + s + '/100"></div>';
+      }).join('')}</div>
+      <div style="font-size:10px;color:#64748b;margin-top:8px;text-align:center">Each bar = one document (height = score)</div>
+    </div>
+    <div style="width:200px;display:flex;flex-direction:column;gap:8px">
+      <div style="background:#16a34a20;border:1px solid #16a34a40;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#4ade80">${excellent.length}</div><div style="font-size:10px;color:#4ade80;font-weight:700">EXCELLENT (90+)</div></div>
+      <div style="background:#d9770620;border:1px solid #d9770640;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#fbbf24">${good.length}</div><div style="font-size:10px;color:#fbbf24;font-weight:700">GOOD (70-89)</div></div>
+      <div style="background:#dc262620;border:1px solid #dc262640;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:900;color:#f87171">${needsWork.length}</div><div style="font-size:10px;color:#f87171;font-weight:700">NEEDS WORK (&lt;70)</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Document Summary</h2>
+  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Status</th></tr></thead><tbody>
+  ${queue.map((f, i) => {
+    const r = f.result;
+    const after = r?.afterScore || 0;
+    const cls = after >= 90 ? 'excellent' : after >= 70 ? 'good' : 'needs-work';
+    return '<tr><td>' + (i + 1) + '</td><td>' + _esc(f.fileName) + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + _esc(f.error || '')) + '</td></tr>';
+  }).join('')}
+  </tbody></table>
+</div>
+
+<div class="section">
+  <h2>Per-Document Detailed Results</h2>
+  <p style="font-size:12px;color:#64748b;margin-bottom:12px">Click any document to expand its full accessibility breakdown — the same detail shown for a single-file remediation.</p>
+  ${fileCards || '<div style="font-size:13px;color:#64748b">No successfully remediated documents.</div>'}
+</div>
+
+${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (Training Priorities)</h2>' +
+  topViolations.map(([v, count]) => '<div class="violation-row"><span>' + _esc(v) + '</span><span style="font-weight:800;color:#f87171">' + count + ' docs</span></div>').join('') +
+  '<p style="font-size:11px;color:#64748b;margin-top:12px">These violations appeared across multiple documents — addressing them through faculty training would have the highest impact.</p></div>' : ''}
+
+<div class="section">
+  <h2>Compliance Summary</h2>
+  <div style="background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155">
+    <p style="font-size:13px;line-height:1.8;color:#cbd5e1">
+      Of <strong>${queue.length}</strong> documents analyzed, <strong>${excellent.length}</strong> (${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%) meet WCAG 2.1 Level AA compliance (score ≥ 90).
+      ${good.length > 0 ? '<strong>' + good.length + '</strong> document' + (good.length > 1 ? 's are' : ' is') + ' partially compliant (70-89) and may meet requirements with minor additional remediation.' : ''}
+      ${needsWork.length > 0 ? '<strong>' + needsWork.length + '</strong> document' + (needsWork.length > 1 ? 's require' : ' requires') + ' significant remediation or expert review to meet compliance standards.' : ''}
+    </p>
+    <p style="font-size:11px;color:#64748b;margin-top:12px">Standards: WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
+    <p style="font-size:11px;color:#64748b">Methodology: AI multi-auditor triangulation + axe-core (Deque) automated verification · 39 deterministic fixes + 17 surgical AI-diagnosed fixes + iterative AI remediation loop</p>
+  </div>
+</div>
+
+<div class="footer">
+  Generated by AlloFlow Accessibility Pipeline · ${date} · <a href="https://github.com/Apomera/AlloFlow" style="color:#6366f1">AlloFlow</a>
+</div>
+</body></html>`;
+  };
+
   const downloadBatchResults = async () => {
-    if (!window.JSZip) { addToast(t('toasts.zip_library_loaded'), 'error'); return; }
-    const zip = new window.JSZip();
+    // Two output paths: in the packaged Electron build, save the artifacts to a
+    // user-chosen local folder (blob downloads don't work there); on the web,
+    // fall back to a generated ZIP download. Both consume the same `entries`.
+    const canSaveToFolder = !!(window.alloAPI && window.alloAPI.remediation && window.alloAPI.remediation.saveFiles);
+    if (!canSaveToFolder && !window.JSZip) { addToast(t('toasts.zip_library_loaded'), 'error'); return; }
+    // entries: [{ name, content }] where content is a string (HTML/CSV/JSON) or Uint8Array (PDF)
+    const entries = [];
+    const addEntry = (name, content) => entries.push({ name, content });
     const results = pdfBatchQueue.filter(f => f.status === 'done');
 
     results.forEach(f => {
       const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
-      zip.file(`${safeName}_accessible.html`, f.result.accessibleHtml);
+      addEntry(`${safeName}_accessible.html`, f.result.accessibleHtml);
     });
 
     // ── Tagged PDFs (2026-06-11) ── Batch previously shipped only the
@@ -7094,7 +7317,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
             const _tsRt = _ts && _ts.roundTrip;
             if (!_tsBytes) { _taggedNotes.set(f.id, 'typeset failed (no bytes returned)'); continue; }
             if (_tsRt && _tsRt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (typeset failed post-save verification)'); continue; }
-            zip.file(`${safeName}_typeset_tagged.pdf`, _tsBytes);
+            addEntry(`${safeName}_typeset_tagged.pdf`, _tsBytes);
             _taggedCount++;
             const _tsS = _ts && _ts.summary;
             _taggedNotes.set(f.id, (_tsS && _tsS.uaDeclared ? 'yes (typeset, PDF/UA-1 declared)' : 'yes (typeset, declaration withheld)') + (_tsS && _tsS.unicodeTypesetWarning ? ' — some text needs the HTML export (' + _tsS.unicodeTypesetWarning.script + ')' : ''));
@@ -7112,7 +7335,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         const rt = tagged && tagged.roundTrip;
         if (!tBytes) { _taggedNotes.set(f.id, 'failed (no bytes returned)'); continue; }
         if (rt && rt.ok === false) { _taggedNotes.set(f.id, 'EXCLUDED (failed post-save structure verification)'); continue; }
-        zip.file(`${safeName}_tagged.pdf`, tBytes);
+        addEntry(`${safeName}_tagged.pdf`, tBytes);
         _taggedCount++;
         const s = tagged && tagged.summary;
         _taggedNotes.set(f.id, s && s.uaDeclared ? 'yes (PDF/UA-1 declared)' : 'yes (declaration withheld — partial linkage)');
@@ -7125,7 +7348,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       const r = f.result;
       csvRows.push(`"${f.fileName}",${r?.beforeScore || ''},${r?.afterScore || ''},${r ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},"${_taggedNotes.get(f.id) || ''}",${f.status}`);
     });
-    zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
+    addEntry('batch_accessibility_report.csv', csvRows.join('\n'));
 
     // Structured telemetry JSON for research validation
     const telemetry = {
@@ -7139,12 +7362,46 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, secondEngine: f.result.secondEngineAudit ? { engine: f.result.secondEngineAudit.engine, failViolations: f.result.secondEngineAudit.failViolations, potentialViolations: f.result.secondEngineAudit.potentialViolations, score: f.result.secondEngineAudit.score } : null, scoreIsBlended: !!f.result._scoreIsBlended, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
       })),
     };
-    zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
+    addEntry('telemetry.json', JSON.stringify(telemetry, null, 2));
 
-    const done = pdfBatchQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+f.fileName+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>+'+(r?(r.afterScore-r.beforeScore):'\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+tg+'</td><td>'+(f.status==='done'?'\u2705':'\u274c '+(f.error||''))+'</td></tr>';}).join('')}</tbody></table></body></html>`;
-    zip.file('batch_report.html', rptHtml);
+    // The saved/zipped report IS the full expansive dashboard (per-file detail
+    // included), so the rich view travels with the remediated files.
+    addEntry('batch_report.html', buildBatchDashboardHtml(pdfBatchQueue, pdfBatchSummary));
 
+    const _artifactNote = (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.');
+
+    // \u2500\u2500 Output: save to a local folder (Electron) or download a ZIP (web) \u2500\u2500
+    if (canSaveToFolder) {
+      // Convert each entry to { name, data, encoding } for the IPC save handler.
+      const _u8ToBase64 = (u8) => {
+        let bin = '';
+        const CH = 0x8000;
+        for (let i = 0; i < u8.length; i += CH) bin += String.fromCharCode.apply(null, u8.subarray(i, i + CH));
+        return btoa(bin);
+      };
+      const payloadFiles = entries.map(e => {
+        if (typeof e.content === 'string') return { name: e.name, data: e.content, encoding: 'utf8' };
+        const u8 = e.content instanceof Uint8Array ? e.content : new Uint8Array(e.content);
+        return { name: e.name, data: _u8ToBase64(u8), encoding: 'base64' };
+      });
+      const folderName = `AlloFlow_Remediated_${new Date().toISOString().slice(0, 10)}`;
+      let res;
+      try {
+        res = await window.alloAPI.remediation.saveFiles({ folderName, files: payloadFiles });
+      } catch (err) {
+        addToast('Could not save files: ' + (err?.message || err), 'error');
+        return;
+      }
+      if (!res || res.canceled) return;
+      if (res.error) { addToast('Save failed: ' + res.error, 'error'); return; }
+      addToast(`\ud83d\udcc1 Saved ${res.saved} file(s) to ${res.folder}` + (_taggedCount > 0 ? ` (incl. ${_taggedCount} tagged PDF)` : '') + _artifactNote, 'success');
+      try { window.alloAPI.remediation.revealPath && window.alloAPI.remediation.revealPath(res.folder); } catch (_) {}
+      return;
+    }
+
+    // Web fallback \u2014 bundle a ZIP and trigger a browser download.
+    const zip = new window.JSZip();
+    entries.forEach(e => zip.file(e.name, e.content));
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -7152,7 +7409,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     a.download = `alloflow_batch_remediation_${new Date().toISOString().slice(0,10)}.zip`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} remediated file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
+    addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} remediated file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + _artifactNote, 'success');
   };
 
 
@@ -23427,6 +23684,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     parseAuditJson: _wrap(parseAuditJson),
     remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
     downloadBatchResults: _wrapAsync(downloadBatchResults),
+    buildBatchDashboardHtml: _wrap(buildBatchDashboardHtml),
     // Tier 4: mid-batch resume — host inspects/clears persisted batch state
     loadResumableBatch: _loadActiveBatch,
     discardResumableBatch: _clearActiveBatch,

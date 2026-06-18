@@ -119,6 +119,12 @@ contextBridge.exposeInMainWorld('alloAPI', {
     readFileBase64: (filePath) => ipcRenderer.invoke('remediation:read-file-base64', filePath),
     // Navigate the app window to the focused remediation screen (after provider setup)
     launch: () => ipcRenderer.invoke('remediation:launch'),
+    // Save remediated artifacts to a user-chosen local folder.
+    // payload = { folderName?, files:[{name, data, encoding:'base64'|'utf8'}] }
+    // Returns { canceled } | { folder, saved } | { error }
+    saveFiles: (payload) => ipcRenderer.invoke('remediation:save-files', payload),
+    // Reveal a saved file/folder in the OS file manager
+    revealPath: (p) => ipcRenderer.invoke('remediation:reveal-path', p),
   },
 
   // ── Gemini OAuth (image generation via Google Sign-In) ──────────────────

@@ -36,7 +36,7 @@ const { randomUUID } = require('crypto');
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const PORT     = parseInt(process.env.SQLITE_PORT || '3747', 10);
-const DATA_DIR = process.env.DATA_DIR  || path.join(os.homedir(), '.alloflow');
+const DATA_DIR = process.env.DATA_DIR  || process.env.ALLOFLOW_DIR || path.join(os.homedir(), '.alloflow');
 const DB_FILE  = process.env.DB_FILE   || path.join(DATA_DIR, 'local.db');
 const JSON_FILE = process.env.JSON_DB_FILE || path.join(DATA_DIR, 'local-data.json');
 

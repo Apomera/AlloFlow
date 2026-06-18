@@ -109,7 +109,7 @@ async function start(port, isPackaged, dataDir) {
         throw new Error('[localBackend] Backend script not found: ' + scriptPath);
     }
 
-    const dbDir = dataDir || path.join(os.homedir(), '.alloflow');
+    const dbDir = dataDir || process.env.ALLOFLOW_DIR || path.join(os.homedir(), '.alloflow');
     fs.mkdirSync(dbDir, { recursive: true });
 
     return new Promise((resolve, reject) => {

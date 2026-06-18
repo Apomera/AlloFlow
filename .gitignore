@@ -176,3 +176,9 @@ admin/dist/
 local-app/build/
 .DS_Store
 **/.DS_Store
+
+# Generated at build time by build-remediation.js (deleted after build)
+admin/electron-builder.remediation.effective.json
+
+# Transient remediation build log
+remediation-build.log
