@@ -568,28 +568,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var freqAa = 2 * p * q;
         var freqaa = q * q;
 
-        // Step one generation forward applying enabled forces.
-        var stepGeneration = function() {
-          // Selection: aa is selected against by selCoef (homozygous-recessive disadvantage).
-          // Mean fitness w_bar = freqAA + freqAa + freqaa * (1 - selCoef).
-          var wAA = 1, wAa = 1, waa = 1 - selCoef;
-          var wBar = freqAA * wAA + freqAa * wAa + freqaa * waa;
-          if (wBar < 0.001) wBar = 0.001;
-          var newAA = freqAA * wAA / wBar;
-          var newAa = freqAa * wAa / wBar;
-          // Compute new p from genotype frequencies (random mating).
-          var newP = newAA + 0.5 * newAa;
-          // Mutation: A → a at rate mutRate (one-way for simplicity).
-          newP = newP * (1 - mutRate);
-          // Migration: assume influx of A = 0.5 (random outside population).
-          newP = newP * (1 - migRate) + 0.5 * migRate;
-          newP = clamp(newP, 0, 1);
-          setP(newP);
-          var nextGen = gen + 1;
-          setGen(nextGen);
-          var newQ = 1 - newP;
-          var snapshot = { gen: nextGen, p: newP, AA: newP * newP, Aa: 2 * newP * newQ, aa: newQ * newQ };
-          setHistory(history.concat([snapshot]).slice(-50));
+        // Step `times` generations forward applying enabled forces. The allele frequency is THREADED
+        // through each iteration: the old version read the stale closure p/freqAA every call, so the
+        // "Step 10" loop computed all 10 steps from the same starting p and collapsed to ~1 generation.
+        var stepGeneration = function(times) {
+          times = (typeof times === 'number' && times > 0) ? times : 1; // onClick passes an event → default to 1
+          var curP = p;
+          var snapshots = [];
+          for (var t = 0; t < times; t++) {
+            // Genotype freqs for THIS generation (random mating), recomputed from the running p.
+            var fAA = curP * curP, fAa = 2 * curP * (1 - curP), faa = (1 - curP) * (1 - curP);
+            // Selection: aa is selected against by selCoef. Mean fitness w_bar normalizes.
+            var wAA = 1, wAa = 1, waa = 1 - selCoef;
+            var wBar = fAA * wAA + fAa * wAa + faa * waa;
+            if (wBar < 0.001) wBar = 0.001;
+            var newAA = fAA * wAA / wBar;
+            var newAa = fAa * wAa / wBar;
+            var newP = newAA + 0.5 * newAa;       // new p from genotype frequencies
+            newP = newP * (1 - mutRate);            // mutation: A → a (one-way)
+            newP = newP * (1 - migRate) + 0.5 * migRate; // migration: influx of A = 0.5
+            newP = clamp(newP, 0, 1);
+            var nq = 1 - newP;
+            snapshots.push({ gen: gen + t + 1, p: newP, AA: newP * newP, Aa: 2 * newP * nq, aa: nq * nq });
+            curP = newP;
+          }
+          setP(curP);
+          setGen(gen + times);
+          setHistory(history.concat(snapshots).slice(-50));
         };
 
         var reset = function() {
@@ -718,7 +723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-6 py-3 rounded-xl font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg transition-colors'
               }, '⏭ Step 1 Generation'),
               h('button', {
-                onClick: function() { for (var i = 0; i < 10; i++) stepGeneration(); },
+                onClick: function() { stepGeneration(10); },
                 'aria-label': 'Advance ten generations',
                 className: 'px-6 py-3 rounded-xl font-bold bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg transition-colors'
               }, '⏭⏭ Step 10'),
@@ -870,6 +875,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
                 // Mid-line at p = 0.5
                 h('line', { x1: padL, y1: toY(0.5), x2: W - padR, y2: toY(0.5), stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4,4' }),
+                // Fixation lines at p=1 and p=0 — the key drift outcome (a lineage touching either is "fixed")
+                h('line', { x1: padL, y1: toY(1), x2: W - padR, y2: toY(1), stroke: '#f59e0b', strokeWidth: 1, opacity: 0.55 }),
+                h('line', { x1: padL, y1: toY(0), x2: W - padR, y2: toY(0), stroke: '#f59e0b', strokeWidth: 1, opacity: 0.55 }),
                 // Y labels
                 h('text', { x: 8, y: toY(1) + 4, fontSize: '10', fill: '#475569' }, 'p=1 (A fixed)'),
                 h('text', { x: 8, y: toY(0.5) + 4, fontSize: '10', fill: '#475569' }, '0.5'),
@@ -877,8 +885,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 // X labels
                 h('text', { x: padL, y: H - 8, fontSize: '10', fill: '#475569' }, 'gen 0'),
                 h('text', { x: W - padR - 32, y: H - 8, fontSize: '10', fill: '#475569' }, 'gen ' + generations),
-                // Lineage traces
-                trials.map(function(t, i) { return renderTrace(t, i); })
+                // Lineage traces (or an empty-state hint before the first run)
+                trials.length === 0
+                  ? h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fontSize: '13', fill: '#94a3b8', fontStyle: 'italic' }, 'Press Run to watch 5 lineages drift by chance')
+                  : trials.map(function(t, i) { return renderTrace(t, i); })
               )
             ),
             // Controls
@@ -4262,10 +4272,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var mutRef = useRef(mutSize);
         var autoRunRef = useRef(autoRun);
         var extinctRef = useRef(extinct);
+        var generationRef = useRef(generation); // mirror like the other sims — the long-lived RAF auto-run captured generation=0 → the counter (and child-gen ids) froze at 1
         temperatureRef.current = temperature;
         mutRef.current = mutSize;
         autoRunRef.current = autoRun;
         extinctRef.current = extinct;
+        generationRef.current = generation;
 
         var initPopulation = function() {
           var pop = [];
@@ -4317,7 +4329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           while (next.length < POP_CAP) {
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
             next.push({
-              id: 'c' + next.length + '_' + (generation + 1) + '_' + Math.random(),
+              id: 'c' + next.length + '_' + (generationRef.current + 1) + '_' + Math.random(),
               x: parent.x + (Math.random() - 0.5) * 24,
               y: parent.y + (Math.random() - 0.5) * 24,
               vx: (Math.random() - 0.5) * 14,
@@ -4329,9 +4341,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           popRef.current = next;
           var sum = 0; for (var k = 0; k < next.length; k++) sum += next[k].tolerance;
           var meanNext = sum / next.length;
-          var nextGen = generation + 1;
+          var nextGen = generationRef.current + 1;
           historyRef.current.push({ gen: nextGen, mean: meanNext, popSize: next.length, temp: temp, survivors: survivors.length });
           if (historyRef.current.length > 80) historyRef.current.shift();
+          generationRef.current = nextGen;
           setGeneration(nextGen);
         };
 
