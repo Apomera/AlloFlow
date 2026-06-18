@@ -78,12 +78,40 @@ describe('OVER-SUPPRESSION regressions — these real barriers MUST be kept', ()
   });
 });
 
+// Table-header phantom suppression (2026-06-18): the AI rubric flags "data table lacks <th>/scope" on
+// documents whose tables ARE correctly tagged — contradicting the deterministic VERIFIED-ACCESSIBLE
+// "TABLES highly accessible" pass. Suppress that claim ONLY when EVERY data table has a <th scope> (DOM
+// per-table, so a correct table can NEVER mask a genuinely broken one — the paramount over-suppression risk).
+const TABLE_OK = FULL.replace('<p>body</p>', '<table><caption>Q</caption><thead><tr><th scope="col">A</th><th scope="col">B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>');
+const TABLE_BROKEN = FULL.replace('<p>body</p>', '<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></table>');
+const TABLE_BOTH = FULL.replace('<p>body</p>', '<table><thead><tr><th scope="col">A</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table><table><tr><td>x</td><td>y</td></tr></table>');
+
+describe('table-header suppression — drops the contradicted claim ONLY when every data table is tagged', () => {
+  it('drops "data table lacks th and scope" when every table has <th scope>', () => {
+    expect(drops({ wcag: '1.3.1', issue: 'The data table lacks semantic header cells (th) and scope attributes.' }, TABLE_OK)).toBe(true);
+  });
+  it('KEEPS the claim when a data table genuinely has cells but no <th scope> (real barrier)', () => {
+    expect(keeps({ wcag: '1.3.1', issue: 'The data table lacks semantic header cells (th) and scope attributes.' }, TABLE_BROKEN)).toBe(true);
+  });
+  it('KEEPS the claim when ONE table is correct but ANOTHER is broken (a correct table must not mask a broken one)', () => {
+    expect(keeps({ wcag: '1.3.1', issue: 'A data table is missing th header cells and scope attributes.' }, TABLE_BOTH)).toBe(true);
+  });
+  it('does NOT suppress a non-table "missing header" (gated on the issue mentioning a table)', () => {
+    expect(keeps({ wcag: '1.3.1', issue: 'The page is missing a banner header region.' }, TABLE_OK)).toBe(true);
+  });
+  it('KEEPS a table QUALITY complaint (wrong scope direction) even when tables are tagged', () => {
+    expect(keeps({ wcag: '1.3.1', issue: 'The table header scope is incorrect — column headers use scope=row.' }, TABLE_OK)).toBe(true);
+  });
+});
+
 describe('anti-drift: presence-only suppression wired into both audit paths; contrast NOT plumbed', () => {
   it('helper is presence-only and both audit paths call it; no contrastClean plumbing remains', () => {
     expect(src).toContain('function _suppressContradictedIssues(issues, html) {');
     expect(src).toContain('_suppressContradictedIssues(parsed.issues, htmlContent)');
     expect(src).toContain('_suppressContradictedIssues(mergedIssues, htmlContent)');
     expect(src).toContain('const QUALITY ='); // quality/semantic exclusion guard exists
+    expect(src).toContain('present.tableHeaders = (function () {'); // DOM per-table header check
+    expect(src).toContain("present.tableHeaders && /\\btable\\b/i.test(raw)"); // table-gated drop branch
     expect(src).not.toContain('opts.contrastClean'); // the unsafe contrast branch is gone
     expect(src).not.toContain('_contrastCleanForAudit');
   });

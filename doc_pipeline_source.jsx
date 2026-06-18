@@ -443,7 +443,9 @@ function _neutralizePromptFence(s) {
 // Cross-check AI audit issues against DETERMINISTIC ground truth and drop the false positives the AI
 // rubric produces on MECHANICAL checks it is unreliable at: contrast RATIOS (LLMs miscompute hex
 // math — e.g. it flagged #475569 on #f8fafc as failing when it is actually 7.24:1, passing AA *and*
-// AAA) and the PRESENCE of landmarks / h1 / skip-link / lang / title. Those phantom issues
+// AAA), the PRESENCE of landmarks / h1 / skip-link / lang / title, and table-header (<th scope>) tagging
+// when EVERY data table is verifiably tagged (DOM-checked per-table, not a doc-wide existence regex — a
+// correct table must not mask a broken one). Those phantom issues
 // contradicted this very audit's own deterministic structuralPasses, capped the score, AND stalled
 // the auto-fix loop on non-issues it cannot fix. CONSERVATIVE (over-suppression would ship a real
 // barrier with a clean score): drops ONLY an UNAMBIGUOUS total-absence claim about a tag that is
@@ -466,6 +468,27 @@ function _suppressContradictedIssues(issues, html) {
     lang: /<html[^>]*\slang\s*=\s*["'][a-z]{2}/.test(lc),
     title: /<title[\s>][^<]*[a-z0-9]/i.test(stripped),
   };
+  // Table headers (2026-06-18): the AI rubric hallucinates "data table lacks <th>/scope" on documents whose
+  // tables are correctly tagged — directly contradicting the deterministic structuralPasses ("TABLES
+  // highly accessible …") that drive the VERIFIED-ACCESSIBLE checklist. Suppress that claim ONLY when
+  // EVERY data table genuinely has a <th scope>. CRUCIAL: this is a DOM per-table check, NOT a doc-wide
+  // "any <th scope> exists" regex — a correctly-tagged table-A must never mask a genuinely broken table-B
+  // (that would ship a real barrier with a clean score). Layout tables (role=presentation) are exempt;
+  // any non-layout table with body cells but no <th scope> ⇒ false ⇒ the claim is NOT suppressed.
+  present.tableHeaders = (function () {
+    try {
+      if (typeof DOMParser === 'undefined') return false;
+      var _td = new DOMParser().parseFromString(stripped, 'text/html');
+      var _tables = _td.querySelectorAll('table');
+      if (!_tables.length) return false;
+      for (var _ti = 0; _ti < _tables.length; _ti++) {
+        var _tb = _tables[_ti];
+        if ((_tb.getAttribute('role') || '').toLowerCase() === 'presentation') continue;
+        if (_tb.querySelector('td') && !_tb.querySelector('th[scope]')) return false;
+      }
+      return true;
+    } catch (_) { return false; }
+  })();
   // Words signalling the element EXISTS but is DEFECTIVE, or the issue is SEMANTIC / sub-element /
   // hierarchy / reading-order — NEVER suppress these. The presence checks only judge EXISTENCE, so
   // over-suppressing here would ship a real barrier with a clean score (review F2/F6/F10/F11/F12).
@@ -486,6 +509,9 @@ function _suppressContradictedIssues(issues, html) {
       else if (present.skip && _absNear(raw, 'skip[\\s-]*(?:to[\\s-]*)?(?:content|nav|main)|skip\\s+link|skip\\s+navigation').test(raw)) drop = true;
       else if (present.lang && /\b(?:html|document|page|primary)\b[^.;]{0,30}lang|lang[^.;]{0,30}\b(?:html|document|page)\b/i.test(raw) && _absNear(raw, '\\blang(?:uage)?\\b').test(raw)) drop = true;
       else if (present.title && /(?:document|page|file|pdf|<title>)[^.;]{0,20}title|title[^.;]{0,20}(?:metadata|propert|<title>)/i.test(raw) && _absNear(raw, '\\btitle\\b').test(raw)) drop = true;
+      // Table-header absence claim, but every data table verifiably HAS a <th scope> (present.tableHeaders).
+      // Gated on the issue actually being about a TABLE so a non-table "missing header" can't be caught.
+      else if (present.tableHeaders && /\btable\b/i.test(raw) && _absNear(raw, 'header\\s+cells?|\\(th\\)|scope\\s+attribute|\\bth\\b\\s+(?:cell|element|tag|attribute)').test(raw)) drop = true;
     }
     // NOTE: contrast (1.4.3) is deliberately NOT suppressed here. The only reliable contrast ground
     // truth is axe-core's COMPUTED contrast (which sees class-based / <style>-block colors); the
