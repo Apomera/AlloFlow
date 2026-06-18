@@ -4396,7 +4396,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'a5e69064';
+    var pluginCdnVersion = '2293bf24';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -27838,7 +27838,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 onClose: () => setShowCinematicStudio(false),
                 callGemini: callGemini,
                 addToast,
-                t
+                t,
+                sourceTopic: sourceTopic || ''
             })}
         </CDNModuleGate>
 
