@@ -4573,7 +4573,7 @@
         case 'print':      body = renderPrint(); break;
         case 'growthLab':  body = (function() {
           var iq = d.growthLab || { tempC: 30, pH: 7, oxygen: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          function setIQ(patch) { upd('growthLab', Object.assign({}, iq, patch)); }
+          function setIQ(patch) { upd({ growthLab: Object.assign({}, iq, patch) }); } // upd is patch-only — the old upd('growthLab', X) dropped X and made the whole tab a no-op
           var tempScore = (iq.tempC > 15 && iq.tempC < 45) ? 1 - Math.abs(iq.tempC - 37) / 30 : 0;
           var phScore = (iq.pH > 4 && iq.pH < 9) ? 1 - Math.abs(iq.pH - 7) / 5 : 0;
           var growth = tempScore * phScore * (iq.oxygen / 100);
@@ -4582,11 +4582,14 @@
           else if (growth < 0.25) state = 'slow';
           else if (growth < 0.6) state = 'normal';
           else state = 'optimal';
+          // Labels describe the CONDITION envelope (steady-state), not a culture's time-course. The old
+          // labels borrowed lag/log/death-phase names, which are stages of one growing culture over time.
+          // Card re-themed to the tool's dark surface (was light pastels with low-contrast #475569 text).
           var sm = {
-            noGrowth: { label: '⛔ No growth (death phase)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Conditions outside survival envelope.' },
-            slow:     { label: '🟡 Slow growth (lag phase)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Marginal conditions. Slow doubling.' },
-            normal:   { label: '🟢 Normal growth (log phase)', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Healthy growth. Exponential doubling.' },
-            optimal:  { label: '🚀 Optimal growth', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Peak conditions for this organism.' }
+            noGrowth: { label: '⛔ No growth', color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.45)', desc: 'Conditions are outside this microbe\'s survival envelope.' },
+            slow:     { label: '🟡 Slow growth', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.45)', desc: 'Marginal conditions — slow doubling.' },
+            normal:   { label: '🟢 Healthy growth', color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.45)', desc: 'Good conditions — steady exponential doubling.' },
+            optimal:  { label: '🚀 Optimal growth', color: '#a78bfa', bg: 'rgba(167,139,250,0.14)', border: 'rgba(167,139,250,0.5)', desc: 'Peak conditions for this organism.' }
           }[state];
           var H = React.createElement;
           return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
@@ -4595,7 +4598,7 @@
               H('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Sliders for temp, pH, oxygen. Discrete 4-state growth phase. No score, no reveal.'),
               H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                 H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
-                H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+                H('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, sm.desc)
               ),
               H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
                 [{ k: 'tempC', l: 'Temp (°C)', mn: 0, mx: 60, st: 1 },
