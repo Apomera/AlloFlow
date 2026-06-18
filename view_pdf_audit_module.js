@@ -948,6 +948,113 @@ function _audioReadyText(html) {
   return _preamble + (root.textContent || "").replace(/\s+/g, " ").replace(/\s+([.,;:!?])/g, "$1").replace(/([.!?])\s*\.+/g, "$1").replace(/\.{2,}/g, ".").trim();
 }
 const _DOC_MODE_CSS_BASE = '.prose,main{font-family:"Times New Roman",Times,Georgia,serif;font-size:12pt;line-height:2}.allo-references>.allo-ref-entry,.allo-references li,.allo-footnotes li{padding-left:2.5em;text-indent:-2.5em}.allo-references{margin-top:2em}.allo-footnotes{margin-top:2em}.allo-footnotes hr{border:none;border-top:1px solid #000;width:30%;margin:1em 0}.allo-fn-ref{font-size:0.7em;vertical-align:super;line-height:0}';
+const _READER_APP_CSS = `
+#allo-reader-bar{position:sticky;top:0;z-index:2147483646;background:#0f172a;color:#fff;font:14px/1.4 system-ui,-apple-system,sans-serif;padding:8px 12px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#allo-reader-bar label{display:inline-flex;align-items:center;gap:5px;font-weight:600;white-space:nowrap}
+#allo-reader-bar select,#allo-reader-bar input[type=range]{font:inherit;color:#0f172a;background:#fff;border-radius:6px;padding:2px 4px}
+#allo-reader-bar input[type=range]{accent-color:#2563eb;padding:0}
+#allo-reader-bar button{background:#1e293b;color:#fff;border:1px solid #475569;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer}
+#allo-reader-bar button:hover{background:#334155}
+#allo-reader-bar button:focus-visible,#allo-reader-bar select:focus-visible,#allo-reader-bar input:focus-visible{outline:3px solid #fde047;outline-offset:2px}
+#allo-reader-bar button[aria-pressed=true]{background:#2563eb;border-color:#60a5fa}
+#allo-reader-panel{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+#allo-reader-panel[hidden]{display:none}
+#allo-reader-ruler{position:fixed;left:0;width:100%;height:2.4em;background:rgba(250,204,21,.16);border-top:2px solid rgba(250,204,21,.65);border-bottom:2px solid rgba(250,204,21,.65);pointer-events:none;z-index:2147483645;display:none}
+html[data-allo-ruler="1"] #allo-reader-ruler{display:block}
+html[data-allo-theme="warm"] body{background:#fef3c7!important;color:#5c4033!important}
+html[data-allo-theme="sepia"] body{background:#f4ecd8!important;color:#5c4033!important}
+html[data-allo-theme="dark"] body{background:#1a1a2e!important;color:#e2e8f0!important}
+html[data-allo-theme="highContrast"] body{background:#000!important;color:#ff0!important}
+html[data-allo-theme="blue"] body{background:#d6eaf8!important;color:#1b2631!important}
+html[data-allo-theme="green"] body{background:#e8f5e9!important;color:#1b5e20!important}
+html[data-allo-theme="rose"] body{background:#fce4ec!important;color:#880e4f!important}
+html[data-allo-theme="dyslexia"] body{background:#faf8ef!important;color:#1e293b!important}
+@media print{#allo-reader-bar,#allo-reader-ruler{display:none!important}}
+`;
+const _READER_APP_BAR = `
+<div id="allo-reader-bar" lang="en" role="region" aria-label="Reading controls">
+<button type="button" id="allo-reader-toggle" aria-expanded="true" aria-controls="allo-reader-panel">&#9881;&#65039; Reading tools</button>
+<div id="allo-reader-panel">
+<label>Font <select id="allo-rd-font" aria-label="Font family"><option value="">Original</option><option value="system-ui, sans-serif">Sans-serif</option><option value="Georgia, 'Times New Roman', serif">Serif</option><option value="'OpenDyslexic','Comic Sans MS','Trebuchet MS',sans-serif">Dyslexia-friendly</option><option value="ui-monospace,'Courier New',monospace">Monospace</option></select></label>
+<label>Size <input type="range" id="allo-rd-size" min="12" max="28" step="1" aria-label="Text size"></label>
+<label>Line <input type="range" id="allo-rd-line" min="1" max="2.5" step="0.1" aria-label="Line spacing"></label>
+<label>Letter <input type="range" id="allo-rd-letter" min="0" max="0.2" step="0.01" aria-label="Letter spacing"></label>
+<label>Theme <select id="allo-rd-theme" aria-label="Reading theme"><option value="default">Default</option><option value="warm">Warm</option><option value="sepia">Sepia</option><option value="dark">Dark</option><option value="highContrast">High contrast</option><option value="blue">Blue</option><option value="green">Green</option><option value="rose">Rose</option><option value="dyslexia">Easy read</option></select></label>
+<button type="button" id="allo-rd-ruler" aria-pressed="false">Reading ruler</button>
+<span role="group" aria-label="Read aloud"><button type="button" id="allo-rd-play">&#9654; Read aloud</button><button type="button" id="allo-rd-stop">&#9209; Stop</button><label>Speed <input type="range" id="allo-rd-rate" min="0.5" max="1.5" step="0.1" value="1" aria-label="Reading speed"></label></span>
+<button type="button" id="allo-rd-reset">Reset</button>
+</div>
+</div>
+<div id="allo-reader-ruler" aria-hidden="true"></div>
+`;
+const _READER_APP_JS = `
+(function(){
+var d=document, root=d.documentElement, LS='allo-reader-prefs';
+function $(id){return d.getElementById(id);}
+var prefs={};
+try{prefs=JSON.parse(localStorage.getItem(LS)||'{}')||{};}catch(e){prefs={};}
+function save(){try{localStorage.setItem(LS,JSON.stringify(prefs));}catch(e){}}
+function apply(){
+var b=d.body;
+if(b){
+b.style.fontFamily=prefs.font||'';
+b.style.fontSize=prefs.size?prefs.size+'px':'';
+b.style.lineHeight=prefs.line?String(prefs.line):'';
+b.style.letterSpacing=prefs.letter?prefs.letter+'em':'';
+}
+if(prefs.theme&&prefs.theme!=='default')root.setAttribute('data-allo-theme',prefs.theme);else root.removeAttribute('data-allo-theme');
+if(prefs.ruler)root.setAttribute('data-allo-ruler','1');else root.removeAttribute('data-allo-ruler');
+if($('allo-rd-font'))$('allo-rd-font').value=prefs.font||'';
+if($('allo-rd-size'))$('allo-rd-size').value=prefs.size||16;
+if($('allo-rd-line'))$('allo-rd-line').value=prefs.line||1.5;
+if($('allo-rd-letter'))$('allo-rd-letter').value=prefs.letter||0;
+if($('allo-rd-theme'))$('allo-rd-theme').value=prefs.theme||'default';
+var rb=$('allo-rd-ruler');if(rb)rb.setAttribute('aria-pressed',prefs.ruler?'true':'false');
+}
+function on(id,ev,fn){var el=$(id);if(el)el.addEventListener(ev,fn);}
+on('allo-rd-font','change',function(e){prefs.font=e.target.value;save();apply();});
+on('allo-rd-size','input',function(e){prefs.size=parseInt(e.target.value,10);save();apply();});
+on('allo-rd-line','input',function(e){prefs.line=parseFloat(e.target.value);save();apply();});
+on('allo-rd-letter','input',function(e){prefs.letter=parseFloat(e.target.value);save();apply();});
+on('allo-rd-theme','change',function(e){prefs.theme=e.target.value;save();apply();});
+on('allo-rd-ruler','click',function(){prefs.ruler=!prefs.ruler;save();apply();});
+on('allo-rd-reset','click',function(){prefs={};save();apply();});
+on('allo-reader-toggle','click',function(){var p=$('allo-reader-panel'),t=$('allo-reader-toggle');if(!p||!t)return;if(p.hasAttribute('hidden')){p.removeAttribute('hidden');t.setAttribute('aria-expanded','true');}else{p.setAttribute('hidden','');t.setAttribute('aria-expanded','false');}});
+var ruler=$('allo-reader-ruler');
+d.addEventListener('mousemove',function(e){if(ruler&&root.getAttribute('data-allo-ruler')==='1')ruler.style.top=(e.clientY-ruler.offsetHeight/2)+'px';});
+var synth=window.speechSynthesis;
+function bodyText(){var b=d.body?d.body.cloneNode(true):null;if(!b)return '';var x=b.querySelector('#allo-reader-bar');if(x&&x.parentNode)x.parentNode.removeChild(x);var y=b.querySelector('#allo-reader-ruler');if(y&&y.parentNode)y.parentNode.removeChild(y);return (b.innerText||b.textContent||'').replace(/\\s+/g,' ').trim();}
+function speak(){if(!synth)return;synth.cancel();var txt=bodyText();if(!txt)return;var rate=$('allo-rd-rate');var r=rate?parseFloat(rate.value)||1:1;var parts=txt.match(/[^.!?]+[.!?]*\\s*/g)||[txt];var buf='',q=[];for(var i=0;i<parts.length;i++){buf+=parts[i];if(buf.length>180){q.push(buf);buf='';}}if(buf)q.push(buf);for(var j=0;j<q.length;j++){var u=new SpeechSynthesisUtterance(q[j]);u.rate=r;synth.speak(u);}}
+on('allo-rd-play','click',speak);
+on('allo-rd-stop','click',function(){if(synth)synth.cancel();});
+apply();
+})();
+`;
+function _wrapAsReaderApp(html, opts) {
+  try {
+    if (!html || typeof html !== "string") return html;
+    if (html.indexOf("allo-reader-bar") !== -1) return html;
+    const styleTag = '<style id="allo-reader-style">' + _READER_APP_CSS + "</style>";
+    const barHtml = _READER_APP_BAR;
+    const scriptTag = '<script id="allo-reader-script">' + _READER_APP_JS + "<\/script>";
+    let out = html;
+    if (/<\/head>/i.test(out)) out = out.replace(/<\/head>/i, function() {
+      return styleTag + "</head>";
+    });
+    else out = styleTag + out;
+    if (/<body[^>]*>/i.test(out)) out = out.replace(/<body[^>]*>/i, function(m) {
+      return m + barHtml;
+    });
+    else out = barHtml + out;
+    if (/<\/body>/i.test(out)) out = out.replace(/<\/body>/i, function() {
+      return scriptTag + "</body>";
+    });
+    else out = out + scriptTag;
+    return out;
+  } catch (e) {
+    return html;
+  }
+}
 const DOC_MODES = {
   standard: { id: "standard", label: "Standard", icon: "\u{1F4C4}", blurb: "Default document formatting \u2014 all blocks, no citation style applied.", academic: false, css: "" },
   apa: { id: "apa", label: "APA 7", icon: "\u{1F393}", blurb: "APA 7th edition: Times New Roman 12pt, double-spaced, centered bold title, hanging-indent References.", academic: true, refHeading: "References", citation: "(Author, Year)", css: _DOC_MODE_CSS_BASE + "main h1{text-align:center;font-weight:bold}main h2{font-weight:bold}" },
@@ -5821,7 +5928,7 @@ Return ONLY JSON:
       /* @__PURE__ */ React.createElement("option", { value: "highcontrast" }, "\u25D0 High Contrast"),
       /* @__PURE__ */ React.createElement("option", { value: "ai" }, "\u2728 AI: match my topic")
     ), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const blob = new Blob([pdfFixResult.accessibleHtml], { type: "text/html" });
+      const blob = new Blob([_wrapAsReaderApp(pdfFixResult.accessibleHtml)], { type: "text/html" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
