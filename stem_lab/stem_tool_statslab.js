@@ -4430,6 +4430,9 @@ window.StemLab = window.StemLab || {
       // Mean line
       h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 3' }),
       h('text', { x: sx(m), y: pad.t - 4, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, 'M=' + m.toFixed(1)),
+      // Median line — the gap between this and the mean reveals skew at a glance
+      h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: '#10b981', strokeWidth: 2, strokeDasharray: '2 3' }),
+      h('text', { x: sx(md), y: pad.t + 9, fill: '#10b981', fontSize: 9, textAnchor: 'middle' }, 'Mdn=' + md.toFixed(1)),
       // X axis ticks
       ticks.map(function(t, ti) {
         return h('g', { key: 'xt' + ti },
@@ -4556,8 +4559,8 @@ window.StemLab = window.StemLab || {
           h('line', { x1: cx - bw / 4, y1: sy(whiskerHigh), x2: cx + bw / 4, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.5 }),
           // Box
           h('rect', { x: cx - bw / 2, y: sy(q.q3), width: bw, height: sy(q.q1) - sy(q.q3), fill: color, opacity: 0.30, stroke: color, strokeWidth: 1.5 }),
-          // Median line
-          h('line', { x1: cx - bw / 2, y1: sy(q.median), x2: cx + bw / 2, y2: sy(q.median), stroke: '#fef3c7', strokeWidth: 2 }),
+          // Median line (quartiles() returns q2 as the median — q.median was undefined → NaN → the line never drew)
+          h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: '#fef3c7', strokeWidth: 2 }),
           // Mean dot
           h('circle', { cx: cx, cy: sy(mean(x)), r: 3, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1 }),
           // Outliers
@@ -4626,7 +4629,7 @@ window.StemLab = window.StemLab || {
     children.push(h('text', { key: 'yl', x: 12, y: H / 2, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, transform: 'rotate(-90 12 ' + (H / 2) + ')' }, yLabel));
     if (hasFit) {
       children.push(h('text', { key: 'fitnote', x: W - pad.r, y: pad.t + 4, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' },
-        'ŷ = ' + lr.intercept.toFixed(2) + ' + ' + lr.slope.toFixed(2) + 'x  (r=' + (lr.r != null ? lr.r.toFixed(2) : '?') + ')'
+        'ŷ = ' + lr.intercept.toFixed(2) + ' + ' + lr.slope.toFixed(2) + 'x  (r=' + (lr.r != null ? lr.r.toFixed(2) : '?') + ', r²=' + (lr.r != null ? (lr.r * lr.r).toFixed(2) : '?') + ')'
       ));
     }
     return h('svg', {
