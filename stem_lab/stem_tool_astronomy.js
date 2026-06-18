@@ -4404,9 +4404,10 @@
                 )
               ),
               h('circle', { cx: cx, cy: cy, r: sunR, fill: 'url(#sun-grad)' }),
-              // Moon (occulting disk)
-              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: '#1c1917' }),
-              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: 'none', stroke: '#475569', strokeWidth: 0.5 }),
+              // Moon (occulting disk) — fill lightened + rim strengthened so it stays visible against the
+              // black sky during ingress/egress (was #1c1917 on #000 with a 0.5px rim → invisible off-Sun)
+              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: '#2b2b33' }),
+              h('circle', { cx: cx + moonOffset, cy: cy, r: moonR, fill: 'none', stroke: '#64748b', strokeWidth: 1.5 }),
               // Phase markers
               h('text', { x: 20, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace' }, 'Coverage: ' + coveragePct + '%'),
               h('text', { x: 580, y: 340, fill: '#94a3b8', fontSize: 11, fontFamily: 'monospace', textAnchor: 'end' }, geometryType.toUpperCase()),
@@ -4422,8 +4423,11 @@
             var cx = 300, cy = 175;
             // Moon position (left-to-right traversal through Earth's shadow)
             var moonX = (phase / 100) * 500 + 50;
-            var moonInShadow = Math.abs(moonX - cx) < 80;
-            var moonInUmbra = Math.abs(moonX - cx) < 30;
+            // Thresholds now MATCH the drawn shadow radii below (penumbra r=100, umbra r=60) — they used
+            // to be 80/30, so the Moon read "PENUMBRAL"/"Not in eclipse" while sitting inside the drawn umbra.
+            var PENUMBRA_R = 100, UMBRA_R = 60;
+            var moonInShadow = Math.abs(moonX - cx) < PENUMBRA_R;
+            var moonInUmbra = Math.abs(moonX - cx) < UMBRA_R;
 
             return h('svg', {
               viewBox: '0 0 600 350',
@@ -4444,9 +4448,14 @@
                   h('stop', { offset: '100%', stopColor: '#1c1917', stopOpacity: 0 })
                 )
               ),
+              // Penumbra (outer, lighter) — its radius matches the PENUMBRAL threshold above
               h('circle', { cx: cx, cy: cy, r: 100, fill: 'url(#umbra-grad)' }),
-              h('circle', { cx: cx, cy: cy, r: 60, fill: 'none', stroke: '#dc2626', strokeWidth: 0.6, strokeDasharray: '3 3', opacity: 0.5 }),
-              h('text', { x: cx, y: cy - 105, fill: '#dc2626', fontSize: 10, textAnchor: 'middle' }, "Earth's umbra"),
+              h('circle', { cx: cx, cy: cy, r: 100, fill: 'none', stroke: '#64748b', strokeWidth: 0.6, strokeDasharray: '2 5', opacity: 0.5 }),
+              h('text', { x: cx + 70, y: cy - 78, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'penumbra'),
+              // Umbra (inner, darker) — its radius matches the TOTAL-eclipse threshold above
+              h('circle', { cx: cx, cy: cy, r: 60, fill: '#0c0a09', opacity: 0.6 }),
+              h('circle', { cx: cx, cy: cy, r: 60, fill: 'none', stroke: '#dc2626', strokeWidth: 0.8, strokeDasharray: '3 3', opacity: 0.6 }),
+              h('text', { x: cx, y: cy - 66, fill: '#dc2626', fontSize: 10, textAnchor: 'middle' }, "Earth's umbra"),
               // Moon
               h('defs', null,
                 h('radialGradient', { id: 'lunar-moon-grad', cx: '40%', cy: '40%' },
@@ -6508,9 +6517,9 @@
         // Classify into 4 stellar types based on T and L
         var category;
         if (iq.tempK < 4500 && iq.lumin < 1) category = 'redDwarf';
+        else if (iq.lumin >= 10000) category = 'supergiant'; // moved up: a cool, very-luminous star is a (red) supergiant — the old order classified it as a red giant
         else if (iq.tempK >= 4500 && iq.tempK < 7500 && iq.lumin >= 0.3 && iq.lumin < 10) category = 'sunLike';
         else if (iq.tempK < 5000 && iq.lumin >= 100) category = 'redGiant';
-        else if (iq.lumin >= 10000) category = 'supergiant';
         else category = 'mainSeq';
         var catMeta = {
           redDwarf:   { label: '🔴 Red dwarf',  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Cool, faint, low-mass. Most common stars in galaxy. Lifespan trillions of years.' },
