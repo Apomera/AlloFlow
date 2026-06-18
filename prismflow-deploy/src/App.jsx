@@ -4152,6 +4152,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showBrandProfileEditor, _setShowBrandProfileEditorRaw] = useState(false);
   const setShowBrandProfileEditor = React.useCallback((v) => { if (v && window.__alloLazyBrandProfileEditor) { try { window.__alloLazyBrandProfileEditor(); } catch(_) {} } _setShowBrandProfileEditorRaw(v); }, []);
   const [showReportWriter, setShowReportWriter] = useState(false);
+  const [showCinematicStudio, setShowCinematicStudio] = useState(false);
   const [isSymbolStudioOpen, _setIsSymbolStudioOpenRaw] = useState(false);
   const setIsSymbolStudioOpen = React.useCallback((v) => { if (v && window.__alloLazySymbolStudio) { try { window.__alloLazySymbolStudio(); } catch(_) {} } _setIsSymbolStudioOpenRaw(v); }, []);
   const [isAlloHavenOpen, _setIsAlloHavenOpenRaw] = useState(false);
@@ -4395,7 +4396,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '5856efd6';
+    var pluginCdnVersion = 'a5e69064';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4561,6 +4562,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js');
     loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js');
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js');
     loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
@@ -10598,9 +10600,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         // never reach accessibleHtml — they leaked into the HTML export,
         // the plain TTS text, and the final engine audits.
         const _clone = doc.documentElement.cloneNode(true);
-        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
+        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style').forEach((el) => el.remove()); } catch (_) {}
         const html = '<!DOCTYPE html>\n' + _clone.outerHTML;
-        setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html } : prev);
+        // A non-Workbench in-preview edit (image/table refine, designMode, etc.) just advanced
+        // accessibleHtml, so the Workbench "Revert last command" snapshot (_preCmdHtml) is now stale —
+        // reverting to it would silently DISCARD this edit. Invalidate it and its dependent panels
+        // atomically with the advance. Safe: this sync only fires on genuine iframe mutations (a Workbench
+        // command edits the HTML string and never fires this), so it can't wipe a just-set readback. DEFER-1.
+        setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html, ...(prev._preCmdHtml ? { _preCmdHtml: null, _lastCmdDiff: null, _lastMiniAudit: null, _lastTableReadback: null } : {}) } : prev);
       } catch (_) {}
     };
     const debounced = () => {
@@ -27806,7 +27813,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
@@ -27823,6 +27830,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     dashboardData: dashboardData || [],
                     exploreScore: exploreScore || 0
                 }
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="CinematicStudio" isOpen={showCinematicStudio} onClose={() => setShowCinematicStudio(false)} icon="🎬" displayName="Cinematic Studio" t={t}>
+            {(CinematicStudio) => React.createElement(CinematicStudio, {
+                onClose: () => setShowCinematicStudio(false),
+                callGemini: callGemini,
+                addToast,
+                t
             })}
         </CDNModuleGate>
 
