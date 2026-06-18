@@ -1389,6 +1389,89 @@ function _listReconstructedTables(html) {
   }
   return out;
 }
+function PdfDiagnosticsLog(props) {
+  const R = typeof window !== "undefined" && window.React ? window.React : null;
+  if (!R) return null;
+  const t = props && props.t || ((k) => k);
+  const addToast = props && props.addToast || function() {
+  };
+  const [open, setOpen] = R.useState(false);
+  const [warnOnly, setWarnOnly] = R.useState(true);
+  const [, setTick] = R.useState(0);
+  const scrollRef = R.useRef(null);
+  R.useEffect(() => {
+    if (!open) return void 0;
+    const id = setInterval(() => setTick((n) => n + 1), 1e3);
+    return () => clearInterval(id);
+  }, [open]);
+  const all = typeof window !== "undefined" && Array.isArray(window.__alloDiagLog) ? window.__alloDiagLog : [];
+  const rows = warnOnly ? all.filter((e) => e && e.level === "warn") : all;
+  R.useEffect(() => {
+    if (open && scrollRef.current) {
+      try {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      } catch (_) {
+      }
+    }
+  });
+  const _time = (e) => {
+    try {
+      return new Date(e.t).toLocaleTimeString();
+    } catch (_) {
+      return "";
+    }
+  };
+  const _copy = async () => {
+    const text = rows.map((e) => "[" + _time(e) + "] " + (e.level === "warn" ? "WARN " : "debug ") + e.msg).join("\n");
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
+      else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      addToast((t("pdf_audit.diag.copied") || "Diagnostics log copied") + " (" + rows.length + ")", "success");
+    } catch (_) {
+      addToast(t("pdf_audit.diag.copy_failed") || "Could not copy \u2014 select the text manually.", "error");
+    }
+  };
+  const _clear = () => {
+    try {
+      if (Array.isArray(window.__alloDiagLog)) window.__alloDiagLog.length = 0;
+    } catch (_) {
+    }
+    setTick((n) => n + 1);
+  };
+  if (!open) {
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setOpen(true),
+        className: "fixed bottom-4 right-4 z-[210] px-3 py-2 rounded-full shadow-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 flex items-center gap-1.5",
+        "aria-label": t("pdf_audit.diag.open_aria") || "Open pipeline diagnostics log",
+        title: t("pdf_audit.diag.open_title") || "Pipeline diagnostics log \u2014 view + copy the remediation log (works inside Canvas, no browser console needed)"
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F527}"),
+      /* @__PURE__ */ React.createElement("span", null, t("pdf_audit.diag.label") || "Log"),
+      all.length > 0 ? /* @__PURE__ */ React.createElement("span", { className: "ml-0.5 px-1.5 py-0.5 rounded-full bg-slate-600 text-[10px]" }, all.length) : null
+    );
+  }
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "fixed bottom-4 right-4 z-[210] w-[min(92vw,520px)] max-h-[60vh] flex flex-col rounded-xl shadow-2xl border border-slate-700 bg-slate-900 text-slate-100",
+      role: "region",
+      "aria-label": t("pdf_audit.diag.region_aria") || "Pipeline diagnostics log"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F527}"), t("pdf_audit.diag.title") || "Pipeline diagnostics"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-400" }, rows.length, warnOnly ? "" : "/" + all.length, " ", t("pdf_audit.diag.lines") || "lines"), /* @__PURE__ */ React.createElement("label", { className: "ml-auto flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: warnOnly, onChange: (e) => setWarnOnly(e.target.checked), className: "accent-amber-500" }), t("pdf_audit.diag.warn_only") || "Warnings only")),
+    /* @__PURE__ */ React.createElement("div", { ref: scrollRef, className: "flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words" }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-slate-500 italic" }, t("pdf_audit.diag.empty") || "No log entries yet \u2014 run a remediation and they will appear here live.") : rows.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: e.level === "warn" ? "text-amber-300" : "text-slate-400" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, _time(e)), " ", e.msg))),
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-t border-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _copy, className: "px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium" }, t("pdf_audit.diag.copy") || "Copy"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _clear, className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" }, t("pdf_audit.diag.clear") || "Clear"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen(false), className: "ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs", "aria-label": t("pdf_audit.diag.close_aria") || "Close diagnostics log" }, t("pdf_audit.diag.close") || "Close"))
+  );
+}
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS,
@@ -2505,6 +2588,7 @@ function PdfAuditView(props) {
         }
       }
     },
+    /* @__PURE__ */ React.createElement(PdfDiagnosticsLog, { t, addToast }),
     /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none" }, /* @__PURE__ */ React.createElement(
       "button",
       {

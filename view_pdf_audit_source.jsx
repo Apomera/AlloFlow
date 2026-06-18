@@ -1513,6 +1513,92 @@ function _listReconstructedTables(html) {
   return out;
 }
 
+// ── In-app pipeline diagnostics panel (2026-06-18) ──────────────────────────
+// Mirrors window.__alloDiagLog (the warnLog/debugLog ring buffer wired in
+// AlloFlowANTI.txt ~L494) into a floating, copyable panel. Inside Gemini Canvas
+// the app runs in a sandboxed iframe whose browser console the teacher can't
+// open, so this panel is the only way to SEE + COPY the pipeline's diagnostics
+// from a remediation run without switching to the billed Firebase deploy.
+// Self-contained (its own React hooks via window.React, its own t/addToast
+// props) so it adds nothing to PdfAuditView's host-supplied prop contract.
+function PdfDiagnosticsLog(props) {
+  const R = (typeof window !== 'undefined' && window.React) ? window.React : null;
+  if (!R) return null; // invariant across renders (window.React never toggles) → hook order stays stable
+  const t = (props && props.t) || ((k) => k);
+  const addToast = (props && props.addToast) || function () {};
+  const [open, setOpen] = R.useState(false);
+  const [warnOnly, setWarnOnly] = R.useState(true);
+  const [, setTick] = R.useState(0);
+  const scrollRef = R.useRef(null);
+  // While open, repaint ~1/s so new log lines from an in-flight run appear live.
+  R.useEffect(() => {
+    if (!open) return undefined;
+    const id = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [open]);
+  const all = (typeof window !== 'undefined' && Array.isArray(window.__alloDiagLog)) ? window.__alloDiagLog : [];
+  const rows = warnOnly ? all.filter((e) => e && e.level === 'warn') : all;
+  // Keep the newest line in view whenever the panel re-renders.
+  R.useEffect(() => {
+    if (open && scrollRef.current) { try { scrollRef.current.scrollTop = scrollRef.current.scrollHeight; } catch (_) {} }
+  });
+  const _time = (e) => { try { return new Date(e.t).toLocaleTimeString(); } catch (_) { return ''; } };
+  const _copy = async () => {
+    const text = rows.map((e) => '[' + _time(e) + '] ' + (e.level === 'warn' ? 'WARN ' : 'debug ') + e.msg).join('\n');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
+      else { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+      addToast((t('pdf_audit.diag.copied') || 'Diagnostics log copied') + ' (' + rows.length + ')', 'success');
+    } catch (_) { addToast(t('pdf_audit.diag.copy_failed') || 'Could not copy — select the text manually.', 'error'); }
+  };
+  const _clear = () => { try { if (Array.isArray(window.__alloDiagLog)) window.__alloDiagLog.length = 0; } catch (_) {} setTick((n) => n + 1); };
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="fixed bottom-4 right-4 z-[210] px-3 py-2 rounded-full shadow-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 flex items-center gap-1.5"
+        aria-label={t('pdf_audit.diag.open_aria') || 'Open pipeline diagnostics log'}
+        title={t('pdf_audit.diag.open_title') || 'Pipeline diagnostics log — view + copy the remediation log (works inside Canvas, no browser console needed)'}
+      >
+        <span aria-hidden="true">🔧</span>
+        <span>{t('pdf_audit.diag.label') || 'Log'}</span>
+        {all.length > 0 ? <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-slate-600 text-[10px]">{all.length}</span> : null}
+      </button>
+    );
+  }
+  return (
+    <div
+      className="fixed bottom-4 right-4 z-[210] w-[min(92vw,520px)] max-h-[60vh] flex flex-col rounded-xl shadow-2xl border border-slate-700 bg-slate-900 text-slate-100"
+      role="region"
+      aria-label={t('pdf_audit.diag.region_aria') || 'Pipeline diagnostics log'}
+    >
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700">
+        <span className="text-sm font-semibold flex items-center gap-1.5"><span aria-hidden="true">🔧</span>{t('pdf_audit.diag.title') || 'Pipeline diagnostics'}</span>
+        <span className="text-[11px] text-slate-400">{rows.length}{warnOnly ? '' : '/' + all.length} {t('pdf_audit.diag.lines') || 'lines'}</span>
+        <label className="ml-auto flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer select-none">
+          <input type="checkbox" checked={warnOnly} onChange={(e) => setWarnOnly(e.target.checked)} className="accent-amber-500" />
+          {t('pdf_audit.diag.warn_only') || 'Warnings only'}
+        </label>
+      </div>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words">
+        {rows.length === 0
+          ? <div className="text-slate-500 italic">{t('pdf_audit.diag.empty') || 'No log entries yet — run a remediation and they will appear here live.'}</div>
+          : rows.map((e, i) => (
+              <div key={i} className={e.level === 'warn' ? 'text-amber-300' : 'text-slate-400'}>
+                <span className="text-slate-600">{_time(e)}</span>{' '}{e.msg}
+              </div>
+            ))}
+      </div>
+      <div className="flex items-center gap-2 px-3 py-2 border-t border-slate-700">
+        <button type="button" onClick={_copy} className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium">{t('pdf_audit.diag.copy') || 'Copy'}</button>
+        <button type="button" onClick={_clear} className="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">{t('pdf_audit.diag.clear') || 'Clear'}</button>
+        <button type="button" onClick={() => setOpen(false)} className="ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" aria-label={t('pdf_audit.diag.close_aria') || 'Close diagnostics log'}>{t('pdf_audit.diag.close') || 'Close'}</button>
+      </div>
+    </div>
+  );
+}
+
 function PdfAuditView(props) {
   const {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
@@ -2349,6 +2435,9 @@ function PdfAuditView(props) {
           }}
           ref={(el) => { pdfModalRef.current = el; if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
         >
+          {/* Floating diagnostics log — fixed bottom-right, above the modal; lets the teacher see +
+              copy the pipeline's warnLog/debugLog output from inside Canvas (no browser console). */}
+          <PdfDiagnosticsLog t={t} addToast={addToast} />
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2 border-indigo-200">
             {/* Persistent close button — sticky so it stays visible when the modal content scrolls.
                 Disabled while remediation is mid-flight so users don't kill a running pipeline by accident. */}
