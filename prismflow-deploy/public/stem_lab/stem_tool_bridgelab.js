@@ -762,8 +762,12 @@
             (function() {
               var b0x = tx(0), bnx = tx(d.span), gy = ty(0);
               return [
+                // Pin support (fixed) at B0 — plain triangle
                 h('polygon', { key: 'sup0', points: (b0x - 8) + ',' + (gy + 12) + ' ' + (b0x + 8) + ',' + (gy + 12) + ' ' + b0x + ',' + (gy + 2), fill: '#94a3b8' }),
-                h('polygon', { key: 'supN', points: (bnx - 8) + ',' + (gy + 12) + ' ' + (bnx + 8) + ',' + (gy + 12) + ' ' + bnx + ',' + (gy + 2), fill: '#94a3b8' })
+                // Roller support at Bn — triangle sitting on rollers (free to move horizontally)
+                h('polygon', { key: 'supN', points: (bnx - 8) + ',' + (gy + 10) + ' ' + (bnx + 8) + ',' + (gy + 10) + ' ' + bnx + ',' + (gy + 2), fill: '#94a3b8' }),
+                h('circle', { key: 'supNr1', cx: bnx - 4, cy: gy + 13, r: 2.3, fill: '#94a3b8' }),
+                h('circle', { key: 'supNr2', cx: bnx + 4, cy: gy + 13, r: 2.3, fill: '#94a3b8' })
               ];
             })(),
             // Load indicators
@@ -798,15 +802,23 @@
 
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            'Warren truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
+            ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren') + ' truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
             h('strong', { style: { color: '#f87171' } }, 'Red = tension'), ', ',
             h('strong', { style: { color: '#7dd3fc' } }, 'blue = compression'),
             ', thickness shows magnitude. Forces calculated using the deep-beam approximation (real analysis would use method of joints or matrix structural analysis).'
           ),
 
           // SVG
-          h('div', { style: { padding: 12, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 14, overflowX: 'auto' } },
+          h('div', { style: { padding: 12, borderRadius: 12, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8, overflowX: 'auto' } },
             trussSvg()
+          ),
+
+          // Force-color legend (the colors were only described in prose above)
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', marginBottom: 14, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } }, h('span', { style: { width: 16, height: 4, borderRadius: 2, background: '#f87171', display: 'inline-block' } }), 'Tension'),
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } }, h('span', { style: { width: 16, height: 4, borderRadius: 2, background: '#7dd3fc', display: 'inline-block' } }), 'Compression'),
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } }, h('span', { style: { width: 16, height: 8, borderRadius: 2, background: '#94a3b8', display: 'inline-block' } }), 'Thicker = larger force'),
+            h('span', null, 'Supports: pin (left) ▲  ·  roller (right) ▲⊙')
           ),
 
           // Load mode toggle
@@ -4088,7 +4100,7 @@
       // hypothesis + opt-in open questions + self-mark. No scoring.
       // ──────────────────────────────────────────────────────────────
       function renderInquiry() {
-        var iq = d.inquiry || { spanM: 18, areaMm2: 1500, materialId: d.materialId || 'steel_a36', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = d.inquiry || { spanM: 18, areaMm2: 1500, materialId: d.materialId || 'steel', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd({ inquiry: Object.assign({}, iq, patch) }); }
         var mat = MATERIALS.find(function(m) { return m.id === iq.materialId; }) || MATERIALS[3];
         // Use existing analyzeTruss with this inquiry's spans
@@ -4146,7 +4158,7 @@
             // Log + reset
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 } },
               h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
-              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel_a36', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                 style: { padding: '4px 10px', background: '#0a1525', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, '↺ Reset'),
               (iq.log || []).length > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' observations logged')
             ),
