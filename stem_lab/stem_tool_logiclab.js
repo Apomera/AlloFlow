@@ -282,7 +282,12 @@ window.StemLab = window.StemLab || {
 
 
 
-          var parseExpr = function(tokens, pos) {
+          // Precedence-climbing parse so ¬ > ∧ > ∨/⊕ > → > ↔ (the CONN[op].prec fields were previously
+          // ignored, so "P ∨ Q ∧ R" wrongly parsed as "(P ∨ Q) ∧ R" instead of "P ∨ (Q ∧ R)").
+          // minPrec+1 on the right keeps binary operators left-associative (unchanged for same-operator chains).
+          var parseExpr = function(tokens, pos, minPrec) {
+
+            minPrec = minPrec || 0;
 
             var left = parseUnary(tokens, pos);
 
@@ -292,9 +297,13 @@ window.StemLab = window.StemLab || {
 
               if (!tok || !CONN[tok] || CONN[tok].unary) break;
 
+              var prec = CONN[tok].prec;
+
+              if (prec < minPrec) break;
+
               var op = tok;
 
-              var right = parseUnary(tokens, left.pos + 1);
+              var right = parseExpr(tokens, left.pos + 1, prec + 1);
 
               left = { node: { type: 'bin', op: op, left: left.node, right: right.node }, pos: right.pos };
 
@@ -2127,8 +2136,30 @@ window.StemLab = window.StemLab || {
                   React.createElement("svg", { width: "120", height: "80", viewBox: "0 0 120 80" },
                     React.createElement("line", { x1:"0",y1:isUnaryGate?"40":"25",x2:"35",y2:isUnaryGate?"40":"25",stroke:gateInputs.A?"#059669":"#dc2626",strokeWidth:"3" }),
                     !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?"#059669":"#dc2626",strokeWidth:"3" }),
-                    React.createElement("rect", { x:"35",y:"15",width:"55",height:"50",rx:"8",fill:"#7c3aed",stroke:"#5b21b6",strokeWidth:"2" }),
-                    React.createElement("text", { x:"62",y:"46",textAnchor:"middle",fill:"white",fontWeight:"900",fontSize:"12" }, gateType),
+                    (function() {
+                      // Distinct IEEE gate shapes (was a generic rounded rect with the name typed inside).
+                      var inverting = gateType === 'NOT' || gateType === 'NAND' || gateType === 'NOR' || gateType === 'XNOR';
+                      var base = (gateType === 'AND' || gateType === 'NAND') ? 'and'
+                               : (gateType === 'OR' || gateType === 'NOR') ? 'or'
+                               : (gateType === 'XOR' || gateType === 'XNOR') ? 'xor' : 'not';
+                      var fill = '#7c3aed', stroke = '#5b21b6';
+                      var bx = inverting ? 82 : 88; // right edge of the body (bubble sits just past it)
+                      var shapes = [];
+                      if (base === 'and') {
+                        var midx = bx - 25;
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 L' + midx + ',15 A25,25 0 0 1 ' + midx + ',65 L35,65 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                      } else if (base === 'or') {
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 Q52,40 35,65 Q60,63 ' + bx + ',40 Q60,17 35,15 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                      } else if (base === 'xor') {
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M39,15 Q56,40 39,65 Q64,63 ' + bx + ',40 Q64,17 39,15 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                        shapes.push(React.createElement('path', { key: 'x', d: 'M32,15 Q49,40 32,65', fill: 'none', stroke: stroke, strokeWidth: 2 }));
+                      } else {
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M38,16 L' + bx + ',40 L38,64 Z', fill: fill, stroke: stroke, strokeWidth: 2 }));
+                      }
+                      if (inverting) shapes.push(React.createElement('circle', { key: 'bub', cx: bx + 5, cy: 40, r: 4, fill: 'white', stroke: stroke, strokeWidth: 2 }));
+                      shapes.push(React.createElement('text', { key: 't', x: base === 'not' ? 52 : 58, y: 44, textAnchor: 'middle', fill: 'white', fontWeight: '900', fontSize: '9' }, gateType));
+                      return shapes;
+                    })(),
                     React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?"#059669":"#dc2626",strokeWidth:"3", style:{ filter: gateOutput ? 'drop-shadow(0 0 3px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } }),
                     React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?"#059669":"#dc2626", style:{ filter: gateOutput ? 'drop-shadow(0 0 4px rgba(16,185,129,0.8))' : 'none', transition: 'filter 0.2s' } })
                   ),
@@ -2376,7 +2407,7 @@ window.StemLab = window.StemLab || {
                       { name: 'NAND', sym: '\u22bc', fn: function(a,b){return !(a&&b);}, color: '#fb7185' }
                     ];
                     function drawTt() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); return; }
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); if (cvEl._ttRO) cvEl._ttRO.disconnect(); return; }
                       var t = (performance.now() - start) / 1000;
                       var blink = Math.floor((t * 0.5) % ops.length);
                       // Content only changes when `blink` flips (~every 2s); skip the
@@ -2472,6 +2503,7 @@ window.StemLab = window.StemLab || {
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
                       lastBlink = -1; // force a repaint at the new size
                     });
+                    cvEl._ttRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                     ro.observe(cvEl);
                   },
                   style: { width: '100%', height: '100%', display: 'block' }
