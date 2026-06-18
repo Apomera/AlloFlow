@@ -77,6 +77,26 @@ describe('fix_table_unmerge_cell — split a colspan cell back (text in first, r
     const before = wrap('<table><tr><td>a</td><td>b</td></tr></table>');
     expect(fix_table_unmerge_cell(before, { index: 0 })).toBe(before);
   });
+  // Regression (bug-hunt H1, 2026-06-17): a colspan+rowspan cell unmerge must propagate the rowspan to
+  // the fillers, or the rowspanned band gets a hole and every row below shifts left under the wrong
+  // headers. The fillers inherit the target's rowspan; the target keeps its own.
+  it('a colspan+rowspan unmerge gives the fillers the SAME rowspan (no hole → rows below stay aligned)', () => {
+    const before = wrap('<table><tr><th colspan="2" rowspan="2">Group</th><th>X</th></tr><tr><td>a</td></tr><tr><td>p</td><td>q</td><td>r</td></tr></table>');
+    const after = fix_table_unmerge_cell(before, { index: 0, rowIndex: 0, cellIndex: 0 });
+    const d = parse(after);
+    const r0 = d.querySelectorAll('tr')[0].querySelectorAll('th, td');
+    expect(r0.length).toBe(3);                          // Group → 2 cells + the X header
+    expect(r0[0].hasAttribute('colspan')).toBe(false);  // colspan removed
+    expect(r0[0].getAttribute('rowspan')).toBe('2');    // target keeps its rowspan
+    expect(r0[1].getAttribute('rowspan')).toBe('2');    // FILLER inherits rowspan (the fix)
+    expect(r0[1].textContent).toBe('');
+  });
+  it('a PURE colspan unmerge adds no rowspan to the fillers (unchanged behavior)', () => {
+    const before = wrap('<table><tr><th colspan="2">Two</th></tr></table>');
+    const after = fix_table_unmerge_cell(before, { index: 0, rowIndex: 0, cellIndex: 0 });
+    const cells = parse(after).querySelectorAll('tr')[0].querySelectorAll('th, td');
+    expect(cells[1].hasAttribute('rowspan')).toBe(false);
+  });
 });
 
 describe('wiring: merge/split registered + declared-op gate on both paths', () => {

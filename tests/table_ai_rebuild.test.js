@@ -131,6 +131,34 @@ describe('fix #3 — the rebuild validates grid geometry/scope before emitting',
   });
 });
 
+// ── Bug-hunt H2 (2026-06-17): the content gate compares CELL text only — it cannot see <caption>. A
+// rebuild that DROPPED the original caption would pass the "BLOCKING" gate with a false all-clear. The
+// fix re-injects the original caption when the AI grid omitted it (content-preserving). Functionally
+// prove the re-injection rule on the same grid the rebuild feeds the emitter, + source-assert the wiring.
+describe('H2 — a dropped <caption> is re-injected before emit (the gate is caption-blind)', () => {
+  // mirror of the re-injection rule: original caption survives when the AI grid omitted it
+  const reinject = (origCap, grid) => {
+    if (origCap && (!grid.caption || !String(grid.caption).trim())) grid.caption = origCap;
+    return grid;
+  };
+  it('an empty AI caption is replaced by the original; the emitted table keeps the caption text', () => {
+    const grid = reinject('Table 3: Sales', { caption: '', rows: [
+      { cells: [{ text: 'Quarter', isHeader: true, scope: 'col' }, { text: 'Sales', isHeader: true, scope: 'col' }] },
+      { cells: [{ text: 'Q1', isHeader: true, scope: 'row' }, { text: '10' }] },
+    ] });
+    expect(_emitAccessibleTableHtml(grid, {})).toContain('Table 3: Sales'); // no longer silently dropped
+  });
+  it('a non-empty AI caption is NOT overridden (the user may have asked to change it)', () => {
+    const grid = reinject('Old caption', { caption: 'New caption', rows: [{ cells: [{ text: 'A' }] }] });
+    expect(grid.caption).toBe('New caption');
+  });
+  it('source: the rebuild reads the original <caption> and re-injects only when the grid caption is empty', () => {
+    const fn = src.slice(src.indexOf('const rebuildTableWithAI'), src.indexOf('const processExpertCommand'));
+    expect(fn).toContain("var _origCapEl = table.querySelector('caption');");
+    expect(fn).toContain('if (_origCap && (!grid.caption || !String(grid.caption).trim())) grid.caption = _origCap;');
+  });
+});
+
 describe('fix #1 — honesty: the gate is reorder-blind, so placement is flagged not claimed correct', () => {
   it('the rebuild appends a placement caveat to the readback + softens the toast', () => {
     expect(src).toContain('confirm the values landed in the RIGHT cells in the preview before keeping');

@@ -2863,10 +2863,15 @@ var createDocPipeline = function(deps) {
           if (!target) return html;
           var n = parseInt(target.getAttribute('colspan') || '1', 10) || 1;
           if (n < 2) return html;
+          // If the cell ALSO spans rows, each split column must keep that rowspan or the rows below
+          // shift left under the wrong headers (the new fillers would leave holes in the rowspanned
+          // band). Propagate the target's rowspan to every filler; the target keeps its own.
+          var rs = parseInt(target.getAttribute('rowspan') || '1', 10) || 1;
           target.removeAttribute('colspan');
           var tag = target.tagName.toLowerCase();
           for (var k = 1; k < n; k++) {
             var empty = doc.createElement(tag);
+            if (rs > 1) empty.setAttribute('rowspan', String(rs));
             if (target.parentNode) target.parentNode.insertBefore(empty, target.nextSibling);
           }
           var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
@@ -12910,13 +12915,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   }
                 }
               }
-              const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+sanitizeField(block.caption)+`</caption>` : '';
+              // XSS: cell/header/caption text on a reconstructed-from-image table is vision output from
+              // an untrusted PDF; it is interpolated into element content here and later re-rendered via
+              // dangerouslySetInnerHTML (the recon-table mini-preview). sanitizeField only strips \n/\0 —
+              // it does NOT escape markup. Escape like the headings/lists above (attribute-less safe inline
+              // tags survive; every scripting vector is neutralized). The grid path stays on the esc()-ing
+              // _emitAccessibleTableHtml, so this only hardens the flat fallback (no double-escaping).
+              const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
-              const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+sanitizeField(h)+`</th>`).join('')+`</tr></thead>` : '';
+              const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+escapeTextField(sanitizeField(h))+`</th>`).join('')+`</tr></thead>` : '';
               const rowsArr = Array.isArray(block.rows) ? block.rows : [];
               const rows = rowsArr.map(row => {
-                if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+sanitizeField(row)+`</td></tr>`;
-                return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+sanitizeField(cell)+`</td>`).join('')+`</tr>`;
+                if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+escapeTextField(sanitizeField(row))+`</td></tr>`;
+                return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+escapeTextField(sanitizeField(cell))+`</td>`).join('')+`</tr>`;
               }).join('');
               return `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
@@ -12925,13 +12936,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // (color/symbol) with its label. SR users navigate <dl> as "term/definition"
               // pairs which is what a legend semantically IS — better than a flat table.
               // Sections (with optional <h4> heading) preserve any visible subgroupings.
-              const _legCap = block.caption ? `<figcaption style="font-weight:bold;color:${docStyle.headingColor};margin-bottom:0.5rem;font-size:1em">`+sanitizeField(block.caption)+`</figcaption>` : '';
-              const _legIntro = block.intro ? `<p style="margin:0 0 0.75rem;color:${docStyle.bodyColor};font-size:0.95em;line-height:1.6">`+sanitizeField(block.intro)+`</p>` : '';
+              const _legCap = block.caption ? `<figcaption style="font-weight:bold;color:${docStyle.headingColor};margin-bottom:0.5rem;font-size:1em">`+escapeTextField(sanitizeField(block.caption))+`</figcaption>` : '';
+              const _legIntro = block.intro ? `<p style="margin:0 0 0.75rem;color:${docStyle.bodyColor};font-size:0.95em;line-height:1.6">`+escapeTextField(sanitizeField(block.intro))+`</p>` : '';
               const _legSections = (Array.isArray(block.sections) ? block.sections : []).map(sec => {
-                const _heading = sec && sec.title ? `<h4 style="margin:1em 0 0.4em;color:${docStyle.headingColor};font-size:1em;font-weight:bold">`+sanitizeField(sec.title)+`</h4>` : '';
+                const _heading = sec && sec.title ? `<h4 style="margin:1em 0 0.4em;color:${docStyle.headingColor};font-size:1em;font-weight:bold">`+escapeTextField(sanitizeField(sec.title))+`</h4>` : '';
                 const _entries = (Array.isArray(sec && sec.entries) ? sec.entries : []).map(e => {
-                  const _marker = e && e.marker ? sanitizeField(e.marker) : '';
-                  const _label = e && e.label ? sanitizeField(e.label) : '';
+                  const _marker = e && e.marker ? escapeTextField(sanitizeField(e.marker)) : '';
+                  const _label = e && e.label ? escapeTextField(sanitizeField(e.label)) : '';
                   return `<dt style="font-weight:600;color:${docStyle.bodyColor};margin-top:0.4em">`+_marker+`</dt>`
                        + `<dd style="margin:0 0 0.4em 1.5em;color:${docStyle.bodyColor};line-height:1.5">`+_label+`</dd>`;
                 }).join('');
@@ -12946,7 +12957,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // downstream upgrades the src when a real extracted image is available.
               // Colors chosen for WCAG AA on the #f1f5f9 placeholder bg: #475569 caption (5.35:1),
               // #64748b border (3.92:1 — passes 1.4.11 non-text contrast).
-              const _imgDesc = (block.description || block.alt || 'Image').replace(/"/g, '&quot;');
+              // Raw description; escaped with escapeTextField at the element-content sink below (its only
+              // consumer). Vision-derived text is untrusted — see the table-path XSS note above.
+              const _imgDesc = (block.description || block.alt || 'Image');
               const _imgAltSafe = (block.description || block.alt || 'Image').replace(/"/g, '').replace(/'/g, '');
               const _imgId = 'pdf-img-ph-' + (block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : Math.random().toString(36).slice(2, 8));
               const _captionText = block.description || block.alt || '';
@@ -12987,14 +13000,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 + `<div id="${_imgId}-container" style="background:#f1f5f9;border:2px dashed #64748b;border-radius:8px;padding:1rem;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem" ondragover="${_dragOver}" ondragleave="${_dragLeave}" ondrop="${_dropHandler}">`
                 + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
                 + `<span style="font-size:13px;color:#334155;font-weight:600">Image placeholder</span>`
-                + `<span style="font-size:12px;color:#475569;max-width:90%">${_imgDesc.substring(0, 140)}${_imgDesc.length > 140 ? '…' : ''}</span>`
+                + `<span style="font-size:12px;color:#475569;max-width:90%">${escapeTextField(_imgDesc.substring(0, 140))}${_imgDesc.length > 140 ? '…' : ''}</span>`
                 + `<span style="font-size:11px;color:#64748b;font-style:italic">Drag an extracted image here, or:</span>`
                 + `<div style="display:flex;gap:6px;margin-top:0.25rem;flex-wrap:wrap;justify-content:center">`
                 + `<label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1d4ed8;color:#ffffff !important;border:1px solid #1e3a8a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="color:#ffffff !important">Upload image</span><input type="file" accept="image/*" style="display:none" onchange="${_uploadHandler}"></label>`
                 + `<button type="button" onclick="${_pickHandler}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick from extracted images"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>`
                 + `</div>`
                 + `</div>`
-                + (_captionText ? `<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5rem">${_captionText}</figcaption>` : '')
+                + (_captionText ? `<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5rem">${escapeTextField(_captionText)}</figcaption>` : '')
                 + `</figure>`;
             }
             case 'link': return `<a href="${safeHref(block.url)}" style="color:${docStyle.accentColor}">${escapeTextField(block.text)}</a>`;
@@ -19462,6 +19475,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       if (!r || !Array.isArray(r.cells) || r.cells.length === 0) return { rejected: true, reason: 'bad-grid', html: html };
       for (var j = 0; j < r.cells.length; j++) { if (!r.cells[j] || typeof r.cells[j].text !== 'string') return { rejected: true, reason: 'bad-grid', html: html }; }
     }
+    // The content gate below compares CELL text only — it cannot see <caption>. So a rebuild that
+    // DROPPED the original caption would pass the "BLOCKING" gate with a false all-clear. Re-inject the
+    // original caption when the AI grid omitted it (content-preserving; never overrides an AI caption).
+    try {
+      var _origCapEl = table.querySelector('caption');
+      var _origCap = _origCapEl ? (_origCapEl.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      if (_origCap && (!grid.caption || !String(grid.caption).trim())) grid.caption = _origCap;
+    } catch (_) {}
     // Geometry + accessibility validation (reuse the vision-pass validator): rejects overlapping /
     // inconsistent-width / rowspan-overflow grids and header-without-scope (the very thing this fixes).
     var _gv = _validateTableGrid(grid);
