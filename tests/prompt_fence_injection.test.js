@@ -86,8 +86,16 @@ describe('anti-drift: judge prompts are fence-hardened, transform prompts are NO
     expect(src.includes('function _neutralizePromptFence(s) {')).toBe(true);
   });
 
-  it('all judge sites + the 2 Tier-3 location-hint sites are wrapped (15 mentions = 1 def + 12 judge + 2 hint)', () => {
-    expect((src.match(/_neutralizePromptFence/g) || []).length).toBe(15);
+  it('all fence sites wrapped (17 mentions = 1 def + 12 judge + 2 Tier-3 hint + 2 AI-table-rebuild input)', () => {
+    expect((src.match(/_neutralizePromptFence/g) || []).length).toBe(17);
+  });
+
+  it('the AI table-rebuild fences its untrusted INPUTS (the instruction + the table HTML)', () => {
+    // The rebuild prompt feeds the untrusted user instruction + untrusted document table HTML to the
+    // model; both are fenced so a malicious document/instruction can't smuggle a fence break-out. The
+    // OUTPUT (a neutral grid) is parsed + gate-checked, not trusted verbatim.
+    expect(src.includes('_neutralizePromptFence(String(instruction')).toBe(true);
+    expect(src.includes('_neutralizePromptFence(originalTableHtml.slice(0, 8000))')).toBe(true);
   });
 
   it('the Tier-3 violation-line location hints are neutralized (document-derived metadata, never echoed to output)', () => {
