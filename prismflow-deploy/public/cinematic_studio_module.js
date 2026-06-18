@@ -726,12 +726,35 @@
     var _cerr = useState(''); var cErr = _cerr[0], setCErr = _cerr[1];
 
     var headingRef = useRef(null);
-    useEffect(function () { if (headingRef.current) { try { headingRef.current.focus(); } catch (_) {} } }, []);
+    var dialogRef = useRef(null);
+    var cancelRef = useRef(false);
+    var composeFocusRef = useRef(null);
+    // Focus the heading on open; restore focus to the opener (the launch card) on close.
     useEffect(function () {
-      function onKey(e) { if (e.key === 'Escape' && onClose) onClose(); }
+      var opener = (typeof document !== 'undefined') ? document.activeElement : null;
+      if (headingRef.current) { try { headingRef.current.focus(); } catch (_) {} }
+      return function () { if (opener && opener.focus) { try { opener.focus(); } catch (_) {} } };
+    }, []);
+    // Escape closes; a Tab focus-trap keeps focus inside the modal (honors aria-modal).
+    useEffect(function () {
+      function onKey(e) {
+        if (e.key === 'Escape') { if (onClose) onClose(); return; }
+        if (e.key !== 'Tab' || !dialogRef.current) return;
+        var f = dialogRef.current.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); try { last.focus(); } catch (_) {} }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); try { first.focus(); } catch (_) {} }
+      }
       if (typeof document !== 'undefined') document.addEventListener('keydown', onKey);
       return function () { if (typeof document !== 'undefined') document.removeEventListener('keydown', onKey); };
     }, [onClose]);
+    // Move focus to the new Compose stage block so keyboard/SR users follow the flow.
+    useEffect(function () {
+      if ((cStage === 'review' || cStage === 'done' || cStage === 'error') && composeFocusRef.current) {
+        try { composeFocusRef.current.focus(); } catch (_) {}
+      }
+    }, [cStage]);
 
     var preset = useMemo(function () { return findById(LESSON_TYPES, presetId); }, [presetId]);
     var assembled = useMemo(function () { return buildSteeringPrompt(fields, preset); }, [fields, preset]);
@@ -916,7 +939,7 @@
       }).then(function () { setCBusy(false); });
     }
     function updateOutlineScene(id, patch) { setCOutline(function (p) { return p ? { title: p.title, scenes: p.scenes.map(function (s) { return s.id === id ? Object.assign({}, s, patch) : s; }) } : p; }); }
-    function removeOutlineScene(id) { setCOutline(function (p) { return p ? { title: p.title, scenes: p.scenes.filter(function (s) { return s.id !== id; }) } : p; }); }
+    function removeOutlineScene(id) { setCOutline(function (p) { return p ? { title: p.title, scenes: p.scenes.filter(function (s) { return s.id !== id; }) } : p; }); announce('Scene removed'); }
     function moveOutlineScene(id, dir) {
       setCOutline(function (p) {
         if (!p) return p; var arr = p.scenes.slice();
@@ -924,15 +947,18 @@
         var j = i + dir; if (i < 0 || j < 0 || j >= arr.length) return p;
         var t = arr[i]; arr[i] = arr[j]; arr[j] = t; return { title: p.title, scenes: arr };
       });
+      announce('Scene moved ' + (dir < 0 ? 'up' : 'down'));
     }
     function runScenes() {
       if (!cOutline || !cOutline.scenes.length) return;
+      cancelRef.current = false;
       setCBusy(true); setCErr(''); setCStage('scripting');
       var specs = cOutline.scenes, total = specs.length, raw = [];
       announce('Writing ' + total + ' scenes');
       var chain = Promise.resolve();
       specs.forEach(function (spec, i) {
         chain = chain.then(function () {
+          if (cancelRef.current) throw new Error('__cancelled__');
           setCStatus('Stage 3: writing scene ' + (i + 1) + ' of ' + total);
           return stageScene(callGemini, cDoc, fields, spec, i, total).then(function (sc) { raw.push(sc); });
         });
@@ -947,10 +973,16 @@
         if (addToast) addToast('Storyboard ready: ' + sb.scenes.length + ' scenes. Review before use.', 'success');
         announce('Storyboard ready with ' + sb.scenes.length + ' scenes');
       }).catch(function (e) {
+        if (e && e.message === '__cancelled__') {
+          setCStage('review'); setCStatus(''); // keep the reviewed outline intact
+          if (addToast) addToast('Stopped. Your outline is kept; edit it and try again.', 'info'); announce('Scene generation stopped');
+          return;
+        }
         setCErr((e && e.message) || String(e)); setCStage('error');
         if (addToast) addToast((e && e.message) || 'Scene generation failed', 'error'); announce('Scene generation failed');
       }).then(function () { setCBusy(false); });
     }
+    function stopScenes() { cancelRef.current = true; setCStatus('Stopping...'); }
     function downloadStoryboard() {
       if (!cStoryboard) return;
       var name = (cStoryboard.sb.title || 'storyboard').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'storyboard';
@@ -986,8 +1018,12 @@
     ]);
 
     // ── honesty banner ──
-    var banner = h('div', { className: 'mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200' },
-      T('cs_banner', 'NotebookLM has no editor and no undo: you set a prompt, then regenerate the whole video (Ultra-only, about 20 per day). This tool helps you get the prompt right so you do not waste regenerations. It does not generate the video itself.'));
+    var bannerText = (tab === 'compose')
+      ? T('cs_banner_compose', 'Compose drafts a lesson-video STORYBOARD from your document. Every scene is grounded in your source and you review it before anything is final. Render the result into a video with Remotion.')
+      : (tab === 'captions')
+        ? T('cs_banner_captions', 'Add captions and translations to a video you already have (including a NotebookLM download). Transcription runs on your device; you edit before exporting.')
+        : T('cs_banner', 'NotebookLM has no editor and no undo: you set a prompt, then regenerate the whole video (Ultra-only, about 20 per day). The Build and Diagnose tabs help you get that prompt right so you do not waste regenerations.');
+    var banner = h('div', { className: 'mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200' }, bannerText);
 
     // ── tabs ──
     var tabs = h('div', { role: 'tablist', 'aria-label': 'Cinematic Studio sections', className: 'flex flex-wrap gap-2 mb-4' }, [
@@ -1048,6 +1084,7 @@
           h('button', { key: 'a', onClick: improvePrompt, disabled: busy, className: 'text-xs px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50' }, busy ? T('cs_refining', 'Refining...') : T('cs_improve', 'Improve with AI'))
         ])
       ]),
+      h('p', { key: 'priv', className: 'text-xs text-amber-200/80 mb-1' }, T('cs_ai_privacy', 'Copy keeps everything local. Improve with AI sends this text to Google -- do not include student names or identifying details.')),
       h('pre', { key: 'pre', className: 'whitespace-pre-wrap text-xs text-slate-200 bg-slate-900/70 border border-slate-700 rounded-lg p-3 max-h-48 overflow-auto' }, assembled),
       aiResult ? h('div', { key: 'ai', className: 'mt-3' }, [
         h('div', { key: 'l', className: 'flex items-center justify-between mb-1' }, [
@@ -1074,6 +1111,7 @@
       h('div', { key: 'n', className: 'mb-3' }, [label(T('cs_diag_notes', 'Anything else that was off?'), 'cs-dnotes'),
         h('textarea', { id: 'cs-dnotes', rows: 2, value: notes, onChange: function (e) { setNotes(e.target.value); }, className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' })]),
       h('button', { key: 'mk', onClick: makeRePrompt, disabled: reBusy, className: 'px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold disabled:opacity-50' }, reBusy ? T('cs_polishing', 'Polishing...') : T('cs_make_reprompt', 'Build revision prompt')),
+      h('p', { key: 'priv', className: 'text-xs text-amber-200/80 mt-2' }, T('cs_ai_privacy', 'Copy keeps everything local. Improve with AI sends this text to Google -- do not include student names or identifying details.')),
       rePrompt ? h('div', { key: 'out', className: 'mt-3' }, [
         h('div', { key: 'l', className: 'flex items-center justify-between mb-1' }, [
           h('span', { key: 't', className: 'text-sm font-semibold text-slate-200' }, T('cs_reprompt', 'Revision prompt')),
@@ -1181,6 +1219,12 @@
     var composeDoc = h('div', { className: 'rounded-lg border border-slate-700 bg-slate-800/50 p-3 mb-3' }, [
       label(T('cs_co_doc', 'Source document'), 'cs-co-doc'),
       h('textarea', { key: 'd', id: 'cs-co-doc', rows: 6, value: cDoc, onChange: function (e) { setCDoc(e.target.value); }, placeholder: 'Paste the lesson text, article, or notes the video should be based on...', className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' }),
+      h('div', { key: 'brief', className: 'grid grid-cols-3 gap-2 mt-2' }, [
+        h('div', { key: 'g' }, [h('label', { className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-grade' }, T('cs_co_grade', 'Grade band')), selectEl('cs-co-grade', fields.gradeBand, function (v) { setField('gradeBand', v); }, GRADE_BANDS)]),
+        h('div', { key: 'l' }, [h('label', { className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-len' }, T('cs_co_len', 'Length')), selectEl('cs-co-len', fields.length, function (v) { setField('length', v); }, LENGTHS)]),
+        h('div', { key: 't' }, [h('label', { className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-tone' }, T('cs_co_tone', 'Tone')), selectEl('cs-co-tone', fields.tone, function (v) { setField('tone', v); }, TONES)])
+      ]),
+      h('p', { key: 'bn', className: 'mt-1 text-xs text-slate-500' }, T('cs_co_briefnote', 'These (and topic / must-include) also come from the Build tab.')),
       h('p', { key: 'p', className: 'mt-2 text-xs text-amber-200/90' }, T('cs_co_privacy', 'Privacy: the document text is sent to Google to draft the storyboard. Do not paste student names or other identifying details; use de-identified or curriculum material.')),
       (cDoc.length > DOC_LIMIT) ? h('p', { key: 'tr', className: 'mt-1 text-xs text-rose-300' }, 'Only the first ' + DOC_LIMIT.toLocaleString() + ' characters will be used (' + cDoc.length.toLocaleString() + ' total). Split a long source into smaller documents so nothing important is dropped.') : null,
       h('label', { key: 'f', htmlFor: 'cs-co-ferpa', className: 'flex items-center gap-2 mt-2 text-sm text-slate-200' }, [
@@ -1191,12 +1235,18 @@
         (cBusy && cStage === 'outline') ? T('cs_co_drafting', 'Drafting outline...') : T('cs_co_generate', 'Draft storyboard outline'))
     ]);
 
-    var composeProgress = (cBusy && cStage === 'scripting') ? h('div', { className: 'mb-3' },
-      h('div', { key: 'st', role: 'status', 'aria-live': 'polite', className: 'text-xs text-slate-400' }, cStatus || 'Working...')) : null;
-    var composeError = (cStage === 'error' && cErr) ? h('div', { className: 'mb-3 text-xs text-rose-300', role: 'status', 'aria-live': 'polite' }, cErr) : null;
+    var composeProgress = (cBusy && cStage === 'scripting') ? h('div', { className: 'mb-3 flex items-center gap-3' }, [
+      h('div', { key: 'st', role: 'status', 'aria-live': 'polite', className: 'text-xs text-slate-400 flex-1' }, cStatus || 'Working...'),
+      h('button', { key: 'stop', onClick: stopScenes, className: 'text-xs px-3 py-1 rounded bg-rose-700 hover:bg-rose-600 text-white' }, T('cs_co_stop', 'Stop'))
+    ]) : null;
+    // Only show the standalone error line when there's no outline to fall back to.
+    var composeError = (cStage === 'error' && cErr && !cOutline) ? h('div', { className: 'mb-3 text-xs text-rose-300', role: 'status', 'aria-live': 'polite' }, cErr) : null;
 
-    var composeReview = (cStage === 'review' && cOutline) ? h('div', { className: 'rounded-lg border border-slate-700 bg-slate-900/60 p-3 mb-3' }, [
-      h('div', { key: 'h', className: 'text-sm font-semibold text-slate-100 mb-2' }, T('cs_co_review', 'Review the outline before scenes are written') + ' (' + cOutline.scenes.length + ')'),
+    // Render the reviewed outline on 'review' AND on 'error' (so a failed run never
+    // strands the teacher's edits) -- they can fix the outline and re-approve.
+    var composeReview = ((cStage === 'review' || cStage === 'error') && cOutline) ? h('div', { className: 'rounded-lg border border-slate-700 bg-slate-900/60 p-3 mb-3' }, [
+      h('div', { key: 'h', ref: composeFocusRef, tabIndex: -1, className: 'text-sm font-semibold text-slate-100 mb-2' }, T('cs_co_review', 'Review the outline before scenes are written') + ' (' + cOutline.scenes.length + ')'),
+      (cStage === 'error' && cErr) ? h('div', { key: 'er', className: 'mb-2 rounded border border-rose-500/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300' }, cErr + ' ' + T('cs_co_retryhint', 'Your outline is intact -- edit it and try Approve again.')) : null,
       h('div', { key: 'l', className: 'space-y-1 max-h-72 overflow-auto' }, cOutline.scenes.map(function (s, i) {
         return h('div', { key: s.id, className: 'flex items-start gap-2 py-1 border-b border-slate-800' }, [
           h('span', { key: 'n', className: 'text-xs text-slate-500 w-5 pt-1' }, (i + 1) + '.'),
@@ -1221,7 +1271,7 @@
     ]) : null;
 
     var composeDone = (cStage === 'done' && cStoryboard) ? h('div', { className: 'rounded-lg border border-slate-700 bg-slate-900/60 p-3' }, [
-      h('div', { key: 'h', className: 'flex flex-wrap items-center justify-between gap-2 mb-2' }, [
+      h('div', { key: 'h', ref: composeFocusRef, tabIndex: -1, className: 'flex flex-wrap items-center justify-between gap-2 mb-2' }, [
         h('span', { key: 't', className: 'text-sm font-semibold text-emerald-300' }, cStoryboard.sb.title + ' ' + T('cs_cap_draftlabel', '(AI draft, review before use)')),
         h('div', { key: 'b', className: 'flex gap-2' }, [
           h('button', { key: 'dl', onClick: downloadStoryboard, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white' }, T('cs_co_download', 'Download storyboard JSON')),
@@ -1247,7 +1297,7 @@
       h('p', { key: 'rn', className: 'mt-2 text-xs text-slate-500' }, T('cs_co_rendernote', 'This is the storyboard. Render it into a video with Remotion (free for individuals and nonprofits). In-app preview and one-click export are the next phase.'))
     ]) : null;
 
-    var showDocBlock = (cStage === 'idle' || cStage === 'outline' || cStage === 'error');
+    var showDocBlock = (cStage === 'idle' || cStage === 'outline' || (cStage === 'error' && !cOutline));
     var composeTab = h('div', { role: 'tabpanel' }, [composeIntro, showDocBlock ? composeDoc : null, composeProgress, composeError, composeReview, composeDone]);
 
     var body = tab === 'build' ? buildTab : (tab === 'diagnose' ? diagnoseTab : (tab === 'captions' ? captionsTab : (tab === 'compose' ? composeTab : guideTab)));
@@ -1257,6 +1307,7 @@
       role: 'dialog', 'aria-modal': 'true', 'aria-label': T('cs_title', 'Cinematic Studio'),
       onMouseDown: function (e) { if (e.target === e.currentTarget && onClose) onClose(); }
     }, h('div', {
+      ref: dialogRef,
       className: 'bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl p-4 sm:p-6 my-4'
     }, [header, banner, tabs, body]));
   }
