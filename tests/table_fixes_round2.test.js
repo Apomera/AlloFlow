@@ -96,7 +96,9 @@ describe('XSS-3 — _imgAltSafe / _altSafe strip backslash (no JS-string delimit
 describe('H2-1/H2-2 — caption re-injection is instruction-aware, sr-only-aware, direct-child only', () => {
   // mirror of the guard predicate in rebuildTableWithAI
   const reinject = (origCap, origIsSrOnly, instruction, gridCaption) => {
-    const wantsRemoval = /\b(?:remove|delete|drop|no)\b[\s\S]*\bcaption\b/i.test(String(instruction || ''));
+    const instr = String(instruction || '');
+    const wantsRemoval = /\b(?:remove|delete|drop|strip)\s+(?:the|this|its|that|a|an)?\s*caption\b/i.test(instr)
+      && !/\b(?:keep|retain|preserve|not|do\s*n['’]?t)\b[\s\S]*\bcaption\b/i.test(instr);
     const isPlaceholder = origIsSrOnly || /^Data table \d+$/.test(origCap);
     return !!(origCap && !wantsRemoval && !isPlaceholder && (!gridCaption || !String(gridCaption).trim()));
   };
@@ -105,6 +107,14 @@ describe('H2-1/H2-2 — caption re-injection is instruction-aware, sr-only-aware
   });
   it('does NOT re-inject when the instruction asked to remove the caption (H2-1a)', () => {
     expect(reinject('Quarterly Sales', false, 'rebuild and remove the caption', '')).toBe(false);
+    expect(reinject('Quarterly Sales', false, 'delete caption', '')).toBe(false);
+  });
+  it('round-3 (re-verify regression): benign "no"/"drop"/negated phrasing near "caption" still re-injects', () => {
+    // the old loose /\b(?:remove|delete|drop|no)\b[\s\S]*\bcaption\b/ false-positived on all of these,
+    // silently dropping a legitimate caption the user wanted KEPT.
+    expect(reinject('Quarterly Sales', false, 'rename the columns, no other changes — keep the caption', '')).toBe(true);
+    expect(reinject('Quarterly Sales', false, 'normalize the table, do not drop any caption', '')).toBe(true);
+    expect(reinject('Quarterly Sales', false, "don't remove the caption, just fix headers", '')).toBe(true);
   });
   it('does NOT resurrect the sr-only "Data table N" placeholder (H2-1b) — by text or by class', () => {
     expect(reinject('Data table 3', false, 'fix headers', '')).toBe(false);
@@ -114,10 +124,18 @@ describe('H2-1/H2-2 — caption re-injection is instruction-aware, sr-only-aware
     expect(reinject('Original', false, 'fix headers', 'AI chose this')).toBe(false);
   });
   it('source: the guards + the direct-child caption scan are present', () => {
-    expect(src).toContain('var _wantsRemoval = /\\b(?:remove|delete|drop|no)\\b[\\s\\S]*\\bcaption\\b/i.test(String(instruction || \'\'));');
+    expect(src).toContain("/\\b(?:remove|delete|drop|strip)\\s+(?:the|this|its|that|a|an)?\\s*caption\\b/i.test(_instr)"); // tightened verb-governs-caption
     expect(src).toContain("/^Data table \\d+$/.test(_origCap)");
     expect(src).toContain("if (table.children[_ci].tagName === 'CAPTION')"); // direct-child, not querySelector
     expect(src).not.toContain("var _origCapEl = table.querySelector('caption');"); // the descendant-scoped version is gone
+  });
+});
+
+// ── block.id attribute hardening (adjacent pre-existing sink found in re-verify) ──
+describe('block.id is constrained to an id-safe charset before the id="…" attribute', () => {
+  it('source: a raw JSON block.id can no longer break out of the id attribute', () => {
+    expect(src).toContain("const _safeId = block.id ? String(block.id).replace(/[^a-zA-Z0-9_-]/g, '') : '';");
+    expect(src).not.toContain('const id = block.id ? ` id="${block.id}"` : \'\';'); // the raw-interpolation version is gone
   });
 });
 

@@ -12908,7 +12908,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             const idMatch = block.text.match(/^id:\s*([a-z0-9-]+)/i);
             if (idMatch) { block.id = idMatch[1]; block.text = block.text.replace(idMatch[0], '').trim(); }
           }
-          const id = block.id ? ` id="${block.id}"` : '';
+          // XSS: block.id from AI JSON is interpolated into an id="…" attribute; constrain it to an
+          // id-safe charset (matches the [a-z0-9-] filter on the text-extraction path above) so a value
+          // like '"><img src=x onerror=…>' can't break out of the attribute.
+          const _safeId = block.id ? String(block.id).replace(/[^a-zA-Z0-9_-]/g, '') : '';
+          const id = _safeId ? ` id="${_safeId}"` : '';
           switch (block.type) {
             case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${escapeTextField(block.text)}</h1>`;
             case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${escapeTextField(block.text)}</h2>`;
@@ -19542,7 +19546,13 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       // disobey it), or (b) the original is the system sr-only placeholder (fixComplexTables injects
       // <caption class="sr-only">Data table N</caption>) — re-injecting it would resurrect screen-reader-
       // only text as a VISIBLE bold caption baked into the deliverable. H2-1.
-      var _wantsRemoval = /\b(?:remove|delete|drop|no)\b[\s\S]*\bcaption\b/i.test(String(instruction || ''));
+      var _instr = String(instruction || '');
+      // Explicit removal intent = a removal VERB directly governing "caption" — not the words "no"/"drop"
+      // floating anywhere before it (that false-positived on "no other changes, keep the caption" and "do
+      // not drop any caption", silently dropping a legit caption). Bias to content-preservation: a
+      // "keep/retain/preserve/not/don't … caption" cancels it.
+      var _wantsRemoval = /\b(?:remove|delete|drop|strip)\s+(?:the|this|its|that|a|an)?\s*caption\b/i.test(_instr)
+        && !/\b(?:keep|retain|preserve|not|do\s*n['’]?t)\b[\s\S]*\bcaption\b/i.test(_instr);
       var _isSrOnlyPlaceholder = !!(_origCapEl && _origCapEl.classList && _origCapEl.classList.contains('sr-only')) || /^Data table \d+$/.test(_origCap);
       if (_origCap && !_wantsRemoval && !_isSrOnlyPlaceholder && (!grid.caption || !String(grid.caption).trim())) grid.caption = _origCap;
     } catch (_) {}
