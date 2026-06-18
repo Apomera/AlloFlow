@@ -762,7 +762,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               { label: 'Right Ventricle', detail: 'Blood passes through the tricuspid valve into the right ventricle, which pumps it toward the lungs.', structure: 'heart' },
               { label: 'Pulmonary Arteries', detail: 'The right ventricle ejects blood through the pulmonary valve into the pulmonary arteries toward both lungs.', structure: 'pulm_art' },
               { label: 'Lung Capillaries', detail: 'In the alveolar capillaries, CO2 is released and O2 is picked up through the thin alveolar membrane.', structure: 'alveoli' },
-              { label: 'Pulmonary Veins', detail: 'Freshly oxygenated blood returns to the heart via four pulmonary veins, entering the left atrium.', structure: 'lungs' },
+              { label: 'Pulmonary Veins', detail: 'Freshly oxygenated blood returns to the heart via the four pulmonary veins.', structure: 'lungs' },
+              { label: 'Left Atrium', detail: 'The four pulmonary veins empty oxygenated blood into the left atrium, which fills and then pushes it through the mitral valve.', structure: 'heart' },
               { label: 'Left Ventricle', detail: 'Blood passes through the mitral valve into the muscular left ventricle, the strongest heart chamber.', structure: 'heart' },
               { label: 'Aorta', detail: 'The left ventricle powerfully ejects blood through the aortic valve into the aorta, the body\'s main highway.', structure: 'aorta' },
               { label: 'Body Tissues', detail: 'Arteries branch into arterioles and capillaries where O2 and nutrients are delivered and CO2/waste collected.', structure: 'femoral_a' },
@@ -1024,6 +1025,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var quizTypeCount = 4;
         var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
         var quizType = d.quizMode ? ((d.quizIdx || 0) % quizTypeCount) : 0;
+        // True/False (type 1): the statement used to ALWAYS claim the current system → answer was always
+        // "True" and trivially gameable. Alternate True/False deterministically by quizIdx; when it should
+        // be False, claim a system that does NOT actually contain this structure (handles multi-system
+        // organs like the pancreas/lungs that legitimately belong to more than one bucket).
+        var tfTrue = true, tfClaimSys = sys;
+        if (quizType === 1 && quizQ) {
+          tfTrue = ((d.quizIdx || 0) % 2) === 0;
+          if (!tfTrue) {
+            var _tfWrong = Object.keys(SYSTEMS).filter(function(k) {
+              return k !== sysKey && !SYSTEMS[k].structures.some(function(s) { return s.id === quizQ.id; });
+            });
+            if (_tfWrong.length) tfClaimSys = SYSTEMS[_tfWrong[(d.quizIdx || 0) % _tfWrong.length]];
+            else tfTrue = true;
+          }
+        }
         var quizOptions = d._quizOpts || [];
         if (quizQ && d._quizOptsFor !== (sysKey + '|' + d.quizIdx + '|' + quizType)) {
           var wrong = quizPool.filter(function(s) { return s.id !== quizQ.id; });
@@ -4564,7 +4580,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   background: 'linear-gradient(135deg,#fdfaf3 0%,#f8f1e6 60%,#f4ebdb 100%)',
                   boxShadow: '0 4px 16px rgba(15,23,42,0.06), 0 0 18px ' + sys.accent + '14, inset 0 1px 0 rgba(255,255,255,0.7)'
                 }
-              })
+              }),
+              // Blood-flow color legend — the circulatory canvas color-codes vessels but never said what the colors mean
+              sysKey === 'circulatory' && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', style: { maxWidth: 360 } },
+                h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#ef4444' } }), 'Oxygenated (arteries)'),
+                h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#3b82f6' } }), 'Deoxygenated (veins)'),
+                h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#fbbf24' } }), 'Coronary'),
+                h('span', { className: 'w-full text-[9px] italic text-slate-500' }, 'Exception: the pulmonary artery carries deoxygenated blood (blue), the pulmonary veins carry oxygenated blood (red).')
+              )
             ),
 
             // Tab-specific Right Panel
@@ -4588,7 +4611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, quizQ.fn.substring(0, 120) + (quizQ.fn.length > 120 ? '...' : ''))
                     ) : quizType === 1 ? h('div', null,
                       h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, 'True or False:'),
-                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, 'The ' + quizQ.name + ' belongs to the ' + sys.name + ' system.')
+                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, 'The ' + quizQ.name + ' belongs to the ' + tfClaimSys.name + ' system.')
                     ) : quizType === 2 ? h('div', null,
                       h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, 'Which body system contains this structure?'),
                       h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed font-bold' }, quizQ.name)
@@ -4599,7 +4622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('div', { className: 'grid grid-cols-1 gap-1.5' },
                       quizOptions.map(function(opt) {
                         var fb = d.quizFeedback;
-                        var correctId = quizType === 1 ? 'true' : (quizType === 2 ? sysKey : quizQ.id);
+                        var correctId = quizType === 1 ? (tfTrue ? 'true' : 'false') : (quizType === 2 ? sysKey : quizQ.id);
                         var isCorrect = opt.id === correctId;
                         var wasChosen = fb && fb.chosen === opt.id;
                         var showResult = fb !== null && fb !== undefined;
