@@ -1094,7 +1094,7 @@
       var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
       var benchRows = Object.keys(probesByType).map(function(type) {
         var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
-        var nt = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm';
+        var nt = normTypeFor(type);
         var interp = interpretProbeResult(nt, score, p.grade||'1', season);
         var tl = {orf:'ORF',nwf:'NWF',lnf:'LNF',math:'Math',fluency:'ORF',missing_number:'MN',quantity_discrimination:'QD'};
         return '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(tl[type]||type)+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.pctOfBenchmark||'--')+'%</td><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;color:'+interp.statusColor+';font-weight:700">'+interp.status+'</td></tr>';
@@ -1125,7 +1125,7 @@
         var scores = {};
         ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) {
           var p = latest[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
-          var nt = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm';
+          var nt = normTypeFor(type);
           scores[type] = { score: score, interp: interpretProbeResult(nt, score, p.grade||'1', season) };
         });
         return { name: name, tier: tier, scores: scores };
@@ -1164,6 +1164,20 @@
       nwf_cls: { 'K': { fall: 0, winter: 17, spring: 35 }, '1': { fall: 35, winter: 55, spring: 65 } },
       lnf: { 'K': { fall: 7, winter: 30, spring: 47 } },
       math_dcpm: { '1': { fall: 8, winter: 15, spring: 25 }, '2': { fall: 15, winter: 25, spring: 35 }, '3': { fall: 25, winter: 35, spring: 45 }, '4': { fall: 30, winter: 40, spring: 50 }, '5': { fall: 35, winter: 45, spring: 55 }, '6': { fall: 40, winter: 50, spring: 60 } }
+    };
+    // Map a probe's activity/type to its CBM norm table. CRITICAL for integrity:
+    // phonological-awareness measures (segmentation, blending, isolation, rhyming,
+    // spelling, syllable_*, etc.) have NO published CBM benchmark here, so they must
+    // fall through to their raw type (which has no CBM_NORMS entry) -> interpretProbeResult
+    // returns tier 0 "No norms available" instead of silently scoring a PA probe against
+    // MATH fact-fluency norms (which would produce a clinically misleading benchmark).
+    var normTypeFor = function(type) {
+      if (CBM_NORMS[type]) return type; // already a norm key (orf/nwf_cls/lnf/math_dcpm)
+      if (type === 'orf' || type === 'fluency') return 'orf';
+      if (type === 'nwf') return 'nwf_cls';
+      if (type === 'lnf') return 'lnf';
+      if (type === 'math' || type === 'missing_number' || type === 'quantity_discrimination' || type === 'dcpm') return 'math_dcpm';
+      return type; // PA / unknown -> no CBM norms -> tier 0 (accuracy-only)
     };
     var getSeason = function() { var m = new Date().getMonth(); if (m >= 7 && m <= 10) return 'fall'; if (m >= 11 || m <= 1) return 'winter'; return 'spring'; };
 
@@ -1219,7 +1233,7 @@
       else if (probeType === 'lnf') { primaryScore = results.correct; primaryLabel = 'Letters Named Correctly'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Accuracy</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.totalScored > 0 ? Math.round(results.correct / results.totalScored * 100) : 0) + '%</td></tr>'; }
       else if (probeType === 'orf') { primaryScore = results.wcpm; primaryLabel = 'Words Correct Per Minute (WCPM)'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Words Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.wordsAttempted + '</td></tr><tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Errors</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + results.errors + '</td></tr>'; }
       else { primaryScore = results.correct || 0; primaryLabel = 'Items Correct'; secondaryRows = '<tr><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px">Attempted</td><td style="padding:6px 12px;border:1px solid #e2e8f0;font-size:13px;font-weight:700;text-align:center">' + (results.total || 0) + '</td></tr>'; }
-      var normType = probeType === 'orf' ? 'orf' : probeType === 'nwf' ? 'nwf_cls' : probeType === 'lnf' ? 'lnf' : 'math_dcpm';
+      var normType = normTypeFor(probeType);
       var interp = interpretProbeResult(normType, primaryScore, grade, season);
       var recsHtml = interp.recommendations.length > 0 ? '<h3 style="font-size:14px;font-weight:700;color:#1e3a5f;margin:20px 0 8px;border-left:4px solid ' + interp.statusColor + ';padding-left:8px">Recommendations</h3><ul style="margin:0;padding-left:20px">' + interp.recommendations.map(function(r) { return '<li style="font-size:12px;color:#334155;margin:4px 0;line-height:1.5">' + r + '</li>'; }).join('') + '</ul>' : '';
       var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Probe Report - ' + probeLabel + '</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:0 auto;padding:2rem;color:#1e293b;line-height:1.6}h1{font-size:1.25rem;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:0.5rem;margin:0 0 4px}h2{font-size:1rem;color:#334155;margin:16px 0 8px}.meta{color:#64748b;font-size:12px;margin-bottom:16px}.score-box{text-align:center;padding:20px;border-radius:12px;margin:16px 0}.score-num{font-size:3rem;font-weight:900}.status-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:12px;margin-top:8px}table{width:100%;border-collapse:collapse;margin:8px 0}th{background:#f1f5f9;padding:6px 12px;border:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b;text-align:left}.sig-line{margin-top:24px;display:flex;gap:24px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:4px;font-size:11px;color:#64748b}.footer{margin-top:24px;padding-top:12px;border-top:2px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}@media print{body{padding:0.5in}}</style></head><body>' +
@@ -1316,7 +1330,7 @@
       var benchmarkRows = '', growthRows = '', interventionRows = '';
       var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
       var typeLabels = { orf: 'ORF (WCPM)', nwf: 'NWF (CLS)', lnf: 'LNF', math: 'Math (DCPM)', fluency: 'ORF (WCPM)', missing_number: 'Missing Number', quantity_discrimination: 'Quantity Disc.' };
-      Object.keys(probesByType).forEach(function(type) { var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm'; var interp = interpretProbeResult(normType, score, p.grade||'1', season); benchmarkRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(typeLabels[type]||type)+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+interp.statusColor+';font-weight:700">'+interp.status+'</span></td></tr>'; });
+      Object.keys(probesByType).forEach(function(type) { var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = normTypeFor(type); var interp = interpretProbeResult(normType, score, p.grade||'1', season); benchmarkRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(typeLabels[type]||type)+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px"><span style="color:'+interp.statusColor+';font-weight:700">'+interp.status+'</span></td></tr>'; });
       interventions.forEach(function(intv) { interventionRows += '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(intv.program||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.frequency||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(intv.minutes||'--')+' min</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(intv.startDate||'--')+'</td></tr>'; });
       var recommendation = tierResult.tier === 1 ? '<span style="color:#16a34a;font-weight:700">Continue Tier 1.</span> Reassess at next screening window.' : tierResult.tier === 2 ? '<span style="color:#d97706;font-weight:700">Tier 2 intervention needed.</span> Begin evidence-based program, monitor bi-weekly.' : '<span style="color:#dc2626;font-weight:700">Tier 3 intensive intervention.</span> Monitor weekly. Consider evaluation referral if insufficient growth.';
       var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>RTI Meeting Summary - ' + studentName + '</title><style>body{font-family:system-ui,sans-serif;max-width:750px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}.tier-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 10px;border:1px solid #e2e8f0;font-size:10px;text-transform:uppercase;color:#64748b;text-align:left}.rec-box{padding:10px 14px;border-radius:8px;margin:10px 0;font-size:12px}.sig-line{display:flex;gap:20px;margin-top:16px}.sig-line div{flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.4in}}</style></head><body>' +
@@ -1341,7 +1355,7 @@
         var name = s.nickname || s.name; var stats = s.stats || {}; var tier = classifyRTITier(stats);
         var studentProbes = (probeHistory && probeHistory[name]) || []; var latestByType = {};
         studentProbes.forEach(function(p) { var type = p.type || p.activity || 'unknown'; if (!latestByType[type] || new Date(p.date) > new Date(latestByType[type].date)) latestByType[type] = p; });
-        var scores = {}; ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) { var p = latestByType[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = (type==='orf'||type==='fluency')?'orf':type==='nwf'?'nwf_cls':type==='lnf'?'lnf':'math_dcpm'; scores[type] = { score: score, interp: interpretProbeResult(normType, score, p.grade||'1', season) }; });
+        var scores = {}; ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) { var p = latestByType[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0; var normType = normTypeFor(type); scores[type] = { score: score, interp: interpretProbeResult(normType, score, p.grade||'1', season) }; });
         return { name: name, tier: tier, scores: scores };
       });
       studentData.sort(function(a,b) { return b.tier.tier !== a.tier.tier ? b.tier.tier - a.tier.tier : a.name.localeCompare(b.name); });
@@ -6713,15 +6727,33 @@
           alignItems: 'center',
           gap: '4px'
         }
-      }, "\uD83C\uDFAF WCPM Goal Setting"), (() => {
+      }, "\uD83C\uDFAF Progress Goal Setting"), (() => {
         const studentGoal = rtiGoals[selectedStudent.name];
-        const fluencyData = selectedStudent.data?.fluencyAssessments?.map(a => ({
-          value: a.wcpm || 0,
-          date: a.timestamp || a.date
-        })) || [];
+        const goalMetric = (studentGoal && studentGoal.metric) || 'wcpm';
+        const METRIC_LABELS = { wcpm: 'WCPM (ORF)', nwf: 'NWF (CLS)', lnf: 'LNF', segmentation: 'Segmentation', blending: 'Blending', isolation: 'Isolation', rhyming: 'Rhyming', items_per_min: 'Items / min' };
+        const metricLabel = METRIC_LABELS[goalMetric] || goalMetric;
+        // Build the progress series for the chosen measure: WCPM from
+        // fluencyAssessments, every other measure from probeHistory (where Word
+        // Sounds / NWF / LNF probes land). The aimline + 4/6 decision rule below
+        // then work for ANY measure, so K-2 students monitored on NWF/segmentation
+        // (who can't do ORF yet) finally get a goal-line, not just ORF readers.
+        const fluencyData = (goalMetric === 'wcpm')
+          ? ((selectedStudent.data?.fluencyAssessments || []).map(a => ({ value: a.wcpm || 0, date: a.timestamp || a.date })))
+          : (((probeHistory && probeHistory[selectedStudent.name]) || [])
+              .filter(p => (p.type || p.activity) === goalMetric)
+              .map(p => ({ value: (goalMetric === 'nwf' ? (p.cls || 0) : (p.correct != null ? p.correct : (p.itemsPerMin || p.dcpm || 0))), date: p.date || p.timestamp })));
         const latestWCPM = fluencyData.length > 0 ? fluencyData[fluencyData.length - 1].value : 0;
         const aimline = studentGoal ? calculateAimline(studentGoal, fluencyData) : null;
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+          style: { marginBottom: '6px' }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: { fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }
+        }, "Measure"), /*#__PURE__*/React.createElement("select", {
+          id: `rti-metric-${selectedStudent.name}`,
+          defaultValue: goalMetric,
+          "aria-label": "Progress-monitoring measure",
+          style: { width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px', fontWeight: 600 }
+        }, Object.keys(METRIC_LABELS).map(function(mk) { return /*#__PURE__*/React.createElement("option", { key: mk, value: mk }, METRIC_LABELS[mk]); }))), /*#__PURE__*/React.createElement("div", {
           style: {
             display: 'grid',
             gridTemplateColumns: '1fr 1fr 1fr',
@@ -6798,12 +6830,13 @@
             const b = document.getElementById(`rti-baseline-${selectedStudent.name}`)?.value;
             const t2 = document.getElementById(`rti-target-${selectedStudent.name}`)?.value;
             const d = document.getElementById(`rti-date-${selectedStudent.name}`)?.value;
+            const m = document.getElementById(`rti-metric-${selectedStudent.name}`)?.value || 'wcpm';
             if (b && t2 && d) {
               saveRtiGoal(selectedStudent.name, {
                 baseline: parseInt(b),
                 target: parseInt(t2),
                 targetDate: d,
-                metric: 'wcpm',
+                metric: m,
                 baselineDate: new Date().toISOString()
               });
               addToast(t('toasts.rti_goal_saved') + selectedStudent.name, 'success');
@@ -6833,7 +6866,7 @@
             color: '#475569',
             marginBottom: '4px'
           }
-        }, "\uD83D\uDCC8 Aimline: ", studentGoal.baseline, " \u2192 ", studentGoal.target, " WCPM over ", aimline.totalWeeks, " weeks", aimline.slope > 0 && /*#__PURE__*/React.createElement("span", {
+        }, "\uD83D\uDCC8 Aimline: ", studentGoal.baseline, " \u2192 ", studentGoal.target, " ", metricLabel, " over ", aimline.totalWeeks, " weeks", aimline.slope > 0 && /*#__PURE__*/React.createElement("span", {
           style: {
             color: '#16a34a'
           }
@@ -7310,7 +7343,31 @@
     }, selectedStudent.data.wordSoundsState.badges.map((badge, bi) => /*#__PURE__*/React.createElement("span", {
       key: bi,
       className: "px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium"
-    }, typeof badge === 'string' ? badge : badge.name || '🏆')))), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
+    }, typeof badge === 'string' ? badge : badge.name || '🏆')))), (function() {
+      // Most-confused sound pairs (target -> chosen), captured by trackConfusion in
+      // Word Sounds. Diagnostic gold for an interventionist (b/d reversals, vowel/
+      // minimal-pair errors). Dormant until the session persists confusionPatterns.
+      var _ws = selectedStudent.data && selectedStudent.data.wordSoundsState;
+      var _cp = (_ws && _ws.confusionPatterns) || {};
+      var _pairs = Object.keys(_cp).filter(function(k){ return Number(_cp[k]) > 0; }).sort(function(a,b){ return Number(_cp[b]) - Number(_cp[a]); }).slice(0, 8);
+      if (!_pairs.length) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        className: "mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl"
+      }, /*#__PURE__*/React.createElement("h4", {
+        className: "font-bold text-rose-700 mb-1 flex items-center gap-2"
+      }, "🔀 ", t('class_analytics.confused_pairs') || "Most Confused Sounds"), /*#__PURE__*/React.createElement("p", {
+        className: "text-[11px] text-slate-600 mb-2"
+      }, t('class_analytics.confused_pairs_hint') || "Target → chosen, by frequency. Target minimal-pair contrasts the student mixes up."), /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-wrap gap-2"
+      }, _pairs.map(function(pair, ci) {
+        var parts = String(pair).split("->");
+        return /*#__PURE__*/React.createElement("span", {
+          key: ci,
+          className: "px-2 py-1 bg-white text-rose-700 rounded-full text-xs font-mono border border-rose-200",
+          title: "Target: " + (parts[0] || "?") + ", chose: " + (parts[1] || "?")
+        }, (parts[0] || "?") + " → " + (parts[1] || "?") + " ×" + _cp[pair]);
+      })));
+    })(), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_games",
       className: "mb-4 p-4 bg-violet-50 border border-violet-200 rounded-xl"
     }, /*#__PURE__*/React.createElement("h4", {

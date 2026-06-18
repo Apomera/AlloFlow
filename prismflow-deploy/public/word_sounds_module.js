@@ -9927,6 +9927,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 if (isMountedRef.current) handleAudio(expectedAnswer);
               }, 600);
             }
+            // Activity-agnostic spaced review: re-insert a missed word a few items
+            // deeper into the LIVE session queue (Leitner-style) so it resurfaces
+            // within this session even without a lesson plan, instead of only being
+            // recorded for end-of-session review. NEVER in probe mode (that would
+            // corrupt the timed CBM measure).
+            if (!isCorrect && currentWordSoundsWord && !isProbeMode) {
+              const _rActId = wordSoundsActivity || "segmentation";
+              const _rQueue = sessionQueueRef.current[_rActId] || [];
+              const _rLc = (currentWordSoundsWord || "").toLowerCase();
+              const _alreadyQueued = _rQueue.some((w) =>
+                (((w && (w.singleWord || w.fullTerm || w.word)) || w) || "").toString().toLowerCase() === _rLc,
+              );
+              if (!_alreadyQueued) {
+                const _at = Math.min(3, _rQueue.length);
+                const _rItem = { word: currentWordSoundsWord, singleWord: currentWordSoundsWord, fullTerm: currentWordSoundsWord, _revisit: true };
+                sessionQueueRef.current[_rActId] = [..._rQueue.slice(0, _at), _rItem, ..._rQueue.slice(_at)];
+              }
+            }
             setTimeout(
               () => {
                 submissionLockRef.current = false;
