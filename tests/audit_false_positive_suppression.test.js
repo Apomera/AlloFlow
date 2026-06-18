@@ -104,6 +104,33 @@ describe('table-header suppression — drops the contradicted claim ONLY when ev
   });
 });
 
+// Landmark-region phantom suppression (2026-06-18): the remediation pipeline INJECTS <nav role=navigation>,
+// <footer role=contentinfo>, and role=banner on headers (7387-7434/7631-7634), so a post-fix "missing
+// <header>/<nav>/<footer> landmarks" claim is a common phantom. Suppress it ONLY when EVERY landmark the
+// claim names is present (a combined claim with one genuinely-absent landmark stays — partial truth).
+const LM_ALL = '<html lang="en"><head><title>T</title></head><body><header role="banner">Site</header><nav role="navigation">Menu</nav><main><h1>X</h1></main><footer role="contentinfo">Foot</footer></body></html>';
+const LM_FOOTER_ONLY = '<html lang="en"><head><title>T</title></head><body><main><h1>X</h1></main><footer role="contentinfo">Foot</footer></body></html>';
+const LM_NONE = '<html lang="en"><head><title>T</title></head><body><main><h1>X</h1><p>y</p></main></body></html>';
+const LM_CLAIM = 'The document is missing structural landmark elements such as a header, nav, and footer to define layout regions.';
+
+describe('landmark-region suppression — drops only when EVERY named landmark is present', () => {
+  it('drops a combined "missing header/nav/footer landmarks" when all three are present', () => {
+    expect(drops({ wcag: '1.3.1', issue: LM_CLAIM }, LM_ALL)).toBe(true);
+  });
+  it('KEEPS the combined claim when one named landmark is genuinely absent (partial truth)', () => {
+    expect(keeps({ wcag: '1.3.1', issue: LM_CLAIM }, LM_FOOTER_ONLY)).toBe(true);
+  });
+  it('drops a single "lacks a contentinfo footer landmark" when the footer landmark is present', () => {
+    expect(drops({ wcag: '1.3.1', issue: 'The page lacks a contentinfo footer landmark region.' }, LM_FOOTER_ONLY)).toBe(true);
+  });
+  it('KEEPS "lacks a navigation landmark" when no nav exists', () => {
+    expect(keeps({ wcag: '1.3.1', issue: 'The page lacks a navigation landmark region.' }, LM_NONE)).toBe(true);
+  });
+  it('does NOT misread a TABLE-header absence as a banner landmark (real barrier kept)', () => {
+    expect(keeps({ wcag: '1.3.1', issue: 'The data table is missing header cells and scope attributes.' }, LM_ALL)).toBe(true);
+  });
+});
+
 describe('anti-drift: presence-only suppression wired into both audit paths; contrast NOT plumbed', () => {
   it('helper is presence-only and both audit paths call it; no contrastClean plumbing remains', () => {
     expect(src).toContain('function _suppressContradictedIssues(issues, html) {');
@@ -112,6 +139,10 @@ describe('anti-drift: presence-only suppression wired into both audit paths; con
     expect(src).toContain('const QUALITY ='); // quality/semantic exclusion guard exists
     expect(src).toContain('present.tableHeaders = (function () {'); // DOM per-table header check
     expect(src).toContain("present.tableHeaders && /\\btable\\b/i.test(raw)"); // table-gated drop branch
+    expect(src).toContain('banner: /role='); // landmark presence facts
+    expect(src).toContain('navigation: /role=');
+    expect(src).toContain('contentinfo: /role=');
+    expect(src).toContain('if (_lm.length && _lm.every(Boolean)) drop = true;'); // all-named-present landmark drop
     expect(src).not.toContain('opts.contrastClean'); // the unsafe contrast branch is gone
     expect(src).not.toContain('_contrastCleanForAudit');
   });

@@ -467,6 +467,14 @@ function _suppressContradictedIssues(issues, html) {
     skip: /<a\b[^>]*href=["']#[^"']+["'][^>]*>[\s\S]{0,60}?skip[\s\S]{0,40}?<\/a\s*>/i.test(stripped) && /skip[\s-]*(?:to[\s-]*)?(?:content|main|nav)/i.test(stripped),
     lang: /<html[^>]*\slang\s*=\s*["'][a-z]{2}/.test(lc),
     title: /<title[\s>][^<]*[a-z0-9]/i.test(stripped),
+    // Landmark regions (2026-06-18) — role is reliable post-remediation (the fixer injects
+    // role=banner/navigation/contentinfo at 7387-7434/7631-7634), the bare tag is a fallback. Used to
+    // suppress a "missing <header>/<nav>/<footer>" phantom ONLY when EVERY landmark the claim names is
+    // actually present (see the all-named-present drop branch — a combined claim with one genuinely
+    // absent landmark must NOT be dropped).
+    banner: /role=["']banner["']/.test(lc) || /<header[\s>]/.test(lc),
+    navigation: /role=["']navigation["']/.test(lc) || /<nav[\s>]/.test(lc),
+    contentinfo: /role=["']contentinfo["']/.test(lc) || /<footer[\s>]/.test(lc),
   };
   // Table headers (2026-06-18): the AI rubric hallucinates "data table lacks <th>/scope" on documents whose
   // tables are correctly tagged — directly contradicting the deterministic structuralPasses ("TABLES
@@ -512,6 +520,20 @@ function _suppressContradictedIssues(issues, html) {
       // Table-header absence claim, but every data table verifiably HAS a <th scope> (present.tableHeaders).
       // Gated on the issue actually being about a TABLE so a non-table "missing header" can't be caught.
       else if (present.tableHeaders && /\btable\b/i.test(raw) && _absNear(raw, 'header\\s+cells?|\\(th\\)|scope\\s+attribute|\\bth\\b\\s+(?:cell|element|tag|attribute)').test(raw)) drop = true;
+      // Landmark-region absence claim (banner/nav/contentinfo): drop ONLY when EVERY landmark the claim
+      // NAMES is present — a combined "missing header, nav, AND footer" stays if even one is genuinely
+      // absent (partial truth). The fixer injects these post-remediation, so they're common phantoms.
+      // Gated on explicit LANDMARK context + NOT a table claim, so "table HEADER cells missing" (a real
+      // barrier) can never be misread as "banner header present ⇒ drop".
+      else if (!/\btable\b/i.test(raw)
+               && (/\b(?:landmark|region|banner|navigation|contentinfo)\b/i.test(raw) || /<(?:header|nav|footer)>/i.test(raw))
+               && _absNear(raw, 'header|banner|nav(?:igation|bar)?|footer|contentinfo|landmark|region').test(raw)) {
+        var _lm = [];
+        if (/\b(?:header|banner)\b/i.test(raw)) _lm.push(present.banner);
+        if (/\bnav(?:igation|bar)?\b/i.test(raw)) _lm.push(present.navigation);
+        if (/\b(?:footer|contentinfo)\b/i.test(raw)) _lm.push(present.contentinfo);
+        if (_lm.length && _lm.every(Boolean)) drop = true;
+      }
     }
     // NOTE: contrast (1.4.3) is deliberately NOT suppressed here. The only reliable contrast ground
     // truth is axe-core's COMPUTED contrast (which sees class-based / <style>-block colors); the
