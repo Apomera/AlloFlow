@@ -492,8 +492,26 @@ let alloData = null; // Set after async init below
 const DATA_BACKEND = (typeof process !== 'undefined' && process.env?.REACT_APP_DATA_BACKEND) || 'auto';
 const POCKETBASE_URL = (typeof process !== 'undefined' && process.env?.REACT_APP_POCKETBASE_URL) || 'http://localhost:8090';
 const DEBUG_LOG = false;
-const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };
-const warnLog = (...args) => { console.warn(...args); };
+// ── In-app diagnostics buffer (2026-06-18) ── Inside Gemini Canvas the app runs in a sandboxed
+// iframe whose browser console the teacher can't open, so the pipeline's warnLog/debugLog
+// diagnostics (visible via F12 on the Firebase build) are invisible there. We mirror every log
+// line into a capped ring buffer on window so an in-app "Diagnostics log" panel can show + copy
+// them — letting Aaron debug a remediation run in Canvas (free) instead of the billed deploy.
+const __ALLO_LOG_MAX = 1000;
+const __alloDiagLog = (typeof window !== 'undefined') ? (window.__alloDiagLog = window.__alloDiagLog || []) : [];
+const __alloPushLog = (level, args) => {
+  try {
+    const msg = Array.prototype.map.call(args, (a) => {
+      if (a instanceof Error) return (a.message || 'Error') + (a.stack ? '\n' + a.stack : '');
+      if (a && typeof a === 'object') { try { return JSON.stringify(a); } catch (_) { return String(a); } }
+      return String(a);
+    }).join(' ');
+    __alloDiagLog.push({ t: Date.now(), level, msg });
+    if (__alloDiagLog.length > __ALLO_LOG_MAX) __alloDiagLog.splice(0, __alloDiagLog.length - __ALLO_LOG_MAX);
+  } catch (_) {}
+};
+const debugLog = (...args) => { __alloPushLog('debug', args); if (DEBUG_LOG) console.log(...args); };
+const warnLog = (...args) => { __alloPushLog('warn', args); console.warn(...args); };
 const _initAlloData = async () => {
     if (typeof initAlloData === 'function') {
         try {
@@ -4396,7 +4414,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '89d87200';
+    var pluginCdnVersion = 'ab81bd33';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
