@@ -865,8 +865,15 @@ window.StemLab = window.StemLab || {
       var canvasNarrate = ctx.canvasNarrate;
       var gradeBand = getGradeBand(ctx);
 
+      // ── Math helper (was referenced ~20× across the Outbreak campaign but never defined,
+      //    so every "End Week"/event/feedback handler threw ReferenceError: clamp is not defined) ──
+      function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
       // ── State helpers ──
       function upd(k, v) {
+        // Accept an object patch too: the Outbreak campaign calls upd({ outbreak: ... }), which the
+        // old two-arg form stored under the literal key "[object Object]" → state never persisted.
+        if (k && typeof k === 'object') { return updMulti(k); }
         ctx.setToolData(function(prev) {
           var copy = Object.assign({}, prev);
           var td = Object.assign({}, copy.epidemicSim || {});
@@ -1059,12 +1066,14 @@ window.StemLab = window.StemLab || {
         for (var dd = 0; dd <= maxDay; dd += 50) {
           gridChildren.push(h('text', { key: 'xt' + dd, x: xPos(dd), y: ht - 5, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'd' + dd));
         }
+        // y-axis title (rotated) — clarifies the axis is a share of the population
+        gridChildren.push(h('text', { key: 'ytitle', x: 11, y: padT + plotH / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 9, fontWeight: 'bold', transform: 'rotate(-90 11 ' + (padT + plotH / 2) + ')' }, '% of population'));
 
         // herd immunity line
         if (herdThresh > 0 && herdThresh < 100) {
           var herdY = yPos(100 - herdThresh);
           gridChildren.push(h('line', { key: 'herd', x1: padL, x2: w - padR, y1: herdY, y2: herdY, stroke: '#f59e0b', strokeWidth: 1, strokeDasharray: '4,3' }));
-          gridChildren.push(h('text', { key: 'herdt', x: w - padR - 2, y: herdY - 4, textAnchor: 'end', fill: '#f59e0b', fontSize: 8, fontWeight: 'bold' }, 'Herd Immunity'));
+          gridChildren.push(h('text', { key: 'herdt', x: w - padR - 2, y: herdY - 4, textAnchor: 'end', fill: '#f59e0b', fontSize: 8, fontWeight: 'bold' }, 'Herd immunity: S < ' + (100 - herdThresh).toFixed(0) + '%'));
         }
 
         // area fills + lines
@@ -1081,6 +1090,18 @@ window.StemLab = window.StemLab || {
           curves.push(h('path', { key: 'a' + comp, d: areaD, fill: compColors[comp], opacity: 0.1 }));
           curves.push(h('path', { key: 'l' + comp, d: pathD, fill: 'none', stroke: compColors[comp], strokeWidth: 2 }));
         });
+
+        // peak-infected marker — the headline number ("flatten the curve" is about THIS point)
+        if (compartments.indexOf('I') !== -1 && data.length > 1) {
+          var pkI = 0, pkDay = 0;
+          for (var pk = 0; pk < data.length; pk++) { if (data[pk].I > pkI) { pkI = data[pk].I; pkDay = data[pk].day; } }
+          if (pkI > 0.5) {
+            var pkx = xPos(pkDay), pky = yPos(pkI);
+            var pkLabelX = Math.max(padL + 32, Math.min(pkx, w - padR - 38));
+            curves.push(h('circle', { key: 'pkdot', cx: pkx, cy: pky, r: 3.5, fill: '#ef4444', stroke: 'white', strokeWidth: 1.5 }));
+            curves.push(h('text', { key: 'pktxt', x: pkLabelX, y: Math.max(pky - 8, padT + 9), textAnchor: 'middle', fill: '#dc2626', fontSize: 9, fontWeight: 'bold' }, 'Peak ' + pkI.toFixed(1) + '% · day ' + pkDay));
+          }
+        }
 
         // interactive hover overlay
         var hoverDay = d.hoverDay;
@@ -1661,7 +1682,7 @@ window.StemLab = window.StemLab || {
               { label: 'Peak Infected', value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#ef4444' },
               { label: 'Total Infected', value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)), color: '#f59e0b' },
               { label: 'Latent Period', value: latentPeriod + 'd', sub: '\u03C3 = ' + (1/latentPeriod).toFixed(3), color: '#f59e0b' },
-              { label: 'Herd Threshold', value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
+              { label: 'Herd Threshold', value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
             ].map(function(s) {
               return h('div', { key: s.label, className: glassCard + ' text-center' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
