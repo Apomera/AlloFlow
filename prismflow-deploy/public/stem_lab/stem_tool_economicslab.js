@@ -627,9 +627,23 @@ var d = labToolData || {};
 
               var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
 
-              var eqPx = gx + eqQ / 100 * gw;
+              var eqInRange = eqQ >= 0 && eqQ <= 100 && eqP >= 0 && eqP <= 100;
 
-              var eqPy = gy + (100 - eqP) / 100 * gh;
+              // Shade consumer (blue) & producer (red) surplus — the headline pedagogy that the text below
+              // describes but the graph never actually drew. Exact triangles since both curves are linear.
+              if (eqInRange) {
+                var _pxQ = function(q) { return gx + q / 100 * gw; };
+                var _pyP = function(p) { return gy + (100 - p) / 100 * gh; };
+                ctx.fillStyle = 'rgba(59,130,246,0.18)';
+                ctx.beginPath(); ctx.moveTo(_pxQ(0), _pyP(90 + sdDemandShift * 5)); ctx.lineTo(_pxQ(0), _pyP(eqP)); ctx.lineTo(_pxQ(eqQ), _pyP(eqP)); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = 'rgba(239,68,68,0.18)';
+                ctx.beginPath(); ctx.moveTo(_pxQ(0), _pyP(10 + sdSupplyShift * 5)); ctx.lineTo(_pxQ(0), _pyP(eqP)); ctx.lineTo(_pxQ(eqQ), _pyP(eqP)); ctx.closePath(); ctx.fill();
+              }
+
+              // Clamp the marker/labels to the plot box so extreme slider shifts don't draw them off-canvas
+              var eqPx = gx + Math.max(0, Math.min(100, eqQ)) / 100 * gw;
+
+              var eqPy = gy + (100 - Math.max(0, Math.min(100, eqP))) / 100 * gh;
 
               // Dashed lines to axes
 
@@ -658,6 +672,8 @@ var d = labToolData || {};
               ctx.fillText('P* = $' + eqP.toFixed(0), gx + 5, eqPy - 5);
 
               ctx.fillText('Q* = ' + eqQ.toFixed(0), eqPx - 10, gy + gh + 30);
+
+              if (!eqInRange) { ctx.fillStyle = '#fbbf24'; ctx.font = '10px Inter, system-ui'; ctx.fillText('Equilibrium is off the chart — reduce the shift sliders', gx + 5, gy + 14); }
 
               // Concept summary
 
