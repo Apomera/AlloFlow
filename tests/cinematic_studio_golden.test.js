@@ -235,3 +235,66 @@ describe('AI JSON-object parsing is forgiving', () => {
     expect(I.parseAiJsonObject('no json here')).toBeNull();
   });
 });
+
+// ── Wave 3 audit fixes (enhancement-audit wkjvvvxy8) ──
+describe('grounding is punctuation-robust + covers on-screen text', () => {
+  it('a smart-quoted anchor still grounds against a straight-quoted source (no false review)', () => {
+    const doc = "The teacher's guide says plants need light."; // straight apostrophe
+    const smart = 'The teacher’s guide says plants need light'; // curly apostrophe
+    expect(I.anchorIsGrounded(smart, I.normForMatch(doc))).toBe(true);
+  });
+  it('on-screen text (not just narration) must trace to the source', () => {
+    const doc = 'Water boils at 100 degrees Celsius at sea level.';
+    // empty narration, but fabricated bullets -> must be flagged, NOT a free pass
+    const sb = { scenes: [{ type: 'bulletList', narration: '', props: { heading: 'Facts', bullets: ['Water boils at 50 degrees', 'Ice is hot'] }, sourceAnchors: [], durationSec: 6 }] };
+    const v = I.validateStoryboard(sb, doc);
+    expect(v.scenes[0].grounded).toBe(false);
+    expect(v.warnings.some(w => /on-screen text/.test(w))).toBe(true);
+  });
+});
+
+describe('fabrication scan covers bullets/props, not just narration', () => {
+  it('flags a fabricated number in a bullet', () => {
+    const doc = 'The water cycle has evaporation and condensation.';
+    const sb = { scenes: [{ type: 'bulletList', narration: '', props: { heading: 'H', bullets: ['It rains 999 times a year'] }, durationSec: 6 }] };
+    expect(I.detectFabrication(sb, doc).some(f => f.value === '999')).toBe(true);
+  });
+});
+
+describe('swarm stage contract (callGemini empty = failure, never empty success)', () => {
+  const ok = (raw) => () => raw;            // sync stub
+  const okAsync = (raw) => async () => raw; // async stub
+  it('rejects on empty / whitespace / {text:""} / unparseable; resolves on valid JSON', async () => {
+    await expect(I.callSwarmStage(ok(''), 'S', 'p')).rejects.toThrow(/returned nothing/);
+    await expect(I.callSwarmStage(ok('   '), 'S', 'p')).rejects.toThrow(/returned nothing/);
+    await expect(I.callSwarmStage(ok({ text: '' }), 'S', 'p')).rejects.toThrow(/returned nothing/);
+    await expect(I.callSwarmStage(ok('totally not json'), 'S', 'p')).rejects.toThrow(/could not parse/);
+    await expect(I.callSwarmStage(null, 'S', 'p')).rejects.toThrow(/not available/);
+    await expect(I.callSwarmStage(okAsync('{"title":"x"}'), 'S', 'p')).resolves.toEqual({ title: 'x' });
+    // accepts {text: "<json>"} shape too
+    await expect(I.callSwarmStage(ok({ text: '{"n":2}' }), 'S', 'p')).resolves.toEqual({ n: 2 });
+  });
+  it('stageScene stamps the scene type + id from the spec', async () => {
+    const stub = () => '{"narration":"hi","props":{"body":"x"},"durationSec":6}';
+    const sc = await I.stageScene(stub, 'doc', { gradeBand: '35' }, { type: 'narratedText', narrationIntent: 'i' }, 0, 3);
+    expect(sc.type).toBe('narratedText');
+    expect(sc.id).toBe('s1');
+  });
+});
+
+describe('Wave-1 prompt builders (the actual product a teacher copies out)', () => {
+  const F = { topic: 'Volcanoes', gradeBand: '35', reading: 'plain', length: 'std', tone: 'curious', mustInclude: 'lava', mustAvoid: '', onScreenText: 'none', visualAccuracy: true, udl: true };
+  it('buildSteeringPrompt reflects topic, guardrails, and on-screen-text choice', () => {
+    const p = I.buildSteeringPrompt(F, null);
+    expect(p).toContain('Volcanoes');
+    expect(p).toMatch(/Visual accuracy is critical/);
+    expect(p).toMatch(/Minimize on-screen text/);
+    expect(p).toContain('lava');
+  });
+  it('buildRePrompt maps symptoms to fixes and appends must-haves on "missing"', () => {
+    const r = I.buildRePrompt('BASE', ['toolong', 'missing'], 'extra note', F);
+    expect(r).toMatch(/too long/i);
+    expect(r).toContain('extra note');
+    expect(r).toContain('Must-have points: lava');
+  });
+});

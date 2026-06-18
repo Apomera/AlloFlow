@@ -466,6 +466,10 @@
   // preview/export (Remotion Player + WebCodecs) is a later, smoke-gated phase.
   var STORYBOARD_FPS = 30;
   var MAX_TEXT_CHARS = 240, MAX_BULLETS = 6, MIN_SCENE_SEC = 2, MAX_SCENE_SEC = 30;
+  // The swarm sees only the first DOC_LIMIT chars; grounding MUST be checked against
+  // the SAME slice (never the full doc), or claims get "grounded" against text the
+  // model never saw, and the teacher is told nothing was truncated.
+  var DOC_LIMIT = 12000;
 
   // The fixed template catalog. The AI may ONLY choose these scene types; each
   // type's required props are validated. (Render components arrive in the preview phase.)
@@ -481,11 +485,38 @@
   };
   var TEMPLATE_TYPES = Object.keys(TEMPLATE_CATALOG);
 
-  function normForMatch(s) { return String(s || '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+  // Smart-punctuation regexes built from char codes (keeps this source ASCII-clean).
+  var _RE_SQUOTE = new RegExp('[' + String.fromCharCode(0x2018, 0x2019, 0x201A, 0x2032) + ']', 'g');
+  var _RE_DQUOTE = new RegExp('[' + String.fromCharCode(0x201C, 0x201D, 0x201E, 0x2033) + ']', 'g');
+  var _RE_DASH = new RegExp('[' + String.fromCharCode(0x2013, 0x2014) + ']', 'g');
+  var _RE_ELLIPSIS = new RegExp(String.fromCharCode(0x2026), 'g');
+  function normForMatch(s) {
+    // Normalize smart punctuation so a faithful verbatim quote is not falsely flagged
+    // just because Gemini smart-quoted its output vs the pasted source (or vice versa).
+    return String(s || '').toLowerCase()
+      .replace(_RE_SQUOTE, "'").replace(_RE_DQUOTE, '"')
+      .replace(_RE_DASH, '-').replace(_RE_ELLIPSIS, '...')
+      .replace(/\s+/g, ' ').trim();
+  }
   // A sourceAnchor is only real if its quote literally occurs in the document.
   function anchorIsGrounded(quote, normDoc) {
     var q = normForMatch(typeof quote === 'string' ? quote : (quote && quote.quote));
     return q.length >= 8 && normDoc.indexOf(q) !== -1;
+  }
+
+  // All student-readable text in a scene (narration + on-screen lines + every
+  // string/array prop value). Used by BOTH grounding and fabrication scanning.
+  function sceneReadableText(sc) {
+    var parts = [String((sc && sc.narration) || '')];
+    if (sc && Array.isArray(sc.onScreenText)) parts = parts.concat(sc.onScreenText);
+    if (sc && sc.props) {
+      for (var k in sc.props) {
+        var v = sc.props[k];
+        if (typeof v === 'string') parts.push(v);
+        else if (Array.isArray(v)) parts = parts.concat(v.filter(function (x) { return typeof x === 'string'; }));
+      }
+    }
+    return parts.join(' ');
   }
 
   // Pure, deterministic validation of a storyboard against the catalog + the source.
@@ -516,9 +547,11 @@
       if (!(dur >= MIN_SCENE_SEC && dur <= MAX_SCENE_SEC)) swarn.push('scene ' + (i + 1) + ' duration ' + dur + 's is out of range [' + MIN_SCENE_SEC + '-' + MAX_SCENE_SEC + ']');
       var anchors = Array.isArray(sc && sc.sourceAnchors) ? sc.sourceAnchors : [];
       var matched = anchors.filter(function (a) { return anchorIsGrounded(a, normDoc); }).length;
-      var hasNarration = !!(sc && String(sc.narration || '').trim());
-      var grounded = (spec && spec.noGroundNeeded) || matched > 0 || !hasNarration;
-      if (hasNarration && !grounded) swarn.push('scene ' + (i + 1) + ' narration is not traceable to the source (no matching quote); review');
+      // Ground against ALL student-readable text, not just narration -- on-screen
+      // bullets/captions/quotes are the higher-stakes channel and must trace too.
+      var hasContent = !!(sceneReadableText(sc).trim());
+      var grounded = (spec && spec.noGroundNeeded) || matched > 0 || !hasContent;
+      if (hasContent && !grounded) swarn.push('scene ' + (i + 1) + ' content (narration or on-screen text) is not traceable to the source (no matching quote); review');
       return { index: i, type: type, errors: serr, warnings: swarn, grounded: grounded, anchorsMatched: matched, anchorsTotal: anchors.length };
     });
     scenes.forEach(function (s) { errors = errors.concat(s.errors); warnings = warnings.concat(s.warnings); });
@@ -531,7 +564,7 @@
     var out = [], doc = String(sourceDoc || '');
     var docHasNum = {}; (doc.match(/\d+(?:[.,]\d+)?/g) || []).forEach(function (n) { docHasNum[n.replace(/,/g, '')] = true; });
     (sb && sb.scenes || []).forEach(function (sc, i) {
-      var txt = String((sc && sc.narration) || '');
+      var txt = sceneReadableText(sc); // narration + on-screen text + all props, not just narration
       (txt.match(/\d+(?:[.,]\d+)?/g) || []).forEach(function (n) { var k = n.replace(/,/g, ''); if (k.length >= 2 && !docHasNum[k]) out.push({ scene: i + 1, kind: 'number', value: k, note: 'number "' + k + '" is not in the source' }); });
       (txt.match(/https?:\/\/[^\s)]+/gi) || []).forEach(function (u) { if (doc.indexOf(u) === -1) out.push({ scene: i + 1, kind: 'url', value: u, note: 'link is not in the source' }); });
     });
@@ -624,7 +657,7 @@
       + 'Choose scene types ONLY from: ' + TEMPLATE_TYPES.join(', ') + '. '
       + 'Return ONLY JSON: {"title": string, "scenes": [{"type": one allowed type, "heading": short label, "narrationIntent": one sentence, "estDurationSec": number 3-20}]}. '
       + 'Use 5-10 scenes in a clear arc (open, build, close). Content scenes must be grounded in the document.\n\n'
-      + 'BRIEF:\n"""\n' + briefSummary(f) + '\n"""\n\nSOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, 12000) + '\n"""';
+      + 'BRIEF:\n"""\n' + briefSummary(f) + '\n"""\n\nSOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, DOC_LIMIT) + '\n"""';
     return callSwarmStage(callGemini, 'Stage 2 (outline)', prompt);
   }
   function stageScene(callGemini, doc, f, spec, idx, total) {
@@ -633,7 +666,7 @@
       + 'Scene type "' + spec.type + '". Intent: ' + (spec.narrationIntent || spec.heading || '') + '. '
       + 'EVERY fact in the narration must be supported by the source document. '
       + 'Return ONLY JSON: {"narration": string (1-3 grade-appropriate sentences), "onScreenText": [short lines], "props": ' + propHint(spec.type) + ', "sourceAnchors": [VERBATIM quotes copied exactly from the document that support the narration], "durationSec": number 3-20}.\n\n'
-      + 'SOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, 12000) + '\n"""';
+      + 'SOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, DOC_LIMIT) + '\n"""';
     return callSwarmStage(callGemini, 'Stage 3 (scene ' + (idx + 1) + ')', prompt).then(function (obj) {
       obj.type = spec.type; obj.id = 's' + (idx + 1); return obj;
     });
@@ -905,8 +938,11 @@
         });
       });
       chain.then(function () {
+        // Validate grounding ONLY against the slice the model actually saw (DOC_LIMIT),
+        // never the full doc -- else claims "ground" against text the model never read.
+        var docSeen = String(cDoc).slice(0, DOC_LIMIT);
         var sb = assembleStoryboard({ title: cOutline.title, gradeBand: fields.gradeBand, lang: 'en' }, raw);
-        setCStoryboard({ sb: sb, validation: validateStoryboard(sb, cDoc), fabrication: detectFabrication(sb, cDoc) });
+        setCStoryboard({ sb: sb, validation: validateStoryboard(sb, docSeen), fabrication: detectFabrication(sb, docSeen), truncated: cDoc.length > DOC_LIMIT });
         setCStage('done'); setCStatus('');
         if (addToast) addToast('Storyboard ready: ' + sb.scenes.length + ' scenes. Review before use.', 'success');
         announce('Storyboard ready with ' + sb.scenes.length + ' scenes');
@@ -1146,6 +1182,7 @@
       label(T('cs_co_doc', 'Source document'), 'cs-co-doc'),
       h('textarea', { key: 'd', id: 'cs-co-doc', rows: 6, value: cDoc, onChange: function (e) { setCDoc(e.target.value); }, placeholder: 'Paste the lesson text, article, or notes the video should be based on...', className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' }),
       h('p', { key: 'p', className: 'mt-2 text-xs text-amber-200/90' }, T('cs_co_privacy', 'Privacy: the document text is sent to Google to draft the storyboard. Do not paste student names or other identifying details; use de-identified or curriculum material.')),
+      (cDoc.length > DOC_LIMIT) ? h('p', { key: 'tr', className: 'mt-1 text-xs text-rose-300' }, 'Only the first ' + DOC_LIMIT.toLocaleString() + ' characters will be used (' + cDoc.length.toLocaleString() + ' total). Split a long source into smaller documents so nothing important is dropped.') : null,
       h('label', { key: 'f', htmlFor: 'cs-co-ferpa', className: 'flex items-center gap-2 mt-2 text-sm text-slate-200' }, [
         h('input', { key: 'c', id: 'cs-co-ferpa', type: 'checkbox', checked: cFerpa, onChange: function (e) { setCFerpa(e.target.checked); } }),
         T('cs_co_ferpa', 'I have removed student names and other identifying details.')
@@ -1191,7 +1228,7 @@
           h('button', { key: 're', onClick: resetCompose, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_co_new', 'New'))
         ])
       ]),
-      h('div', { key: 'meta', className: 'text-xs text-slate-400 mb-2' }, cStoryboard.sb.scenes.length + ' scenes, about ' + Math.round(cStoryboard.sb.totalDurationSec) + 's. ' + cStoryboard.validation.groundedCount + '/' + cStoryboard.validation.totalScenes + ' scenes grounded in the source.'),
+      h('div', { key: 'meta', className: 'text-xs text-slate-400 mb-2' }, cStoryboard.sb.scenes.length + ' scenes, about ' + Math.round(cStoryboard.sb.totalDurationSec) + 's. ' + cStoryboard.validation.groundedCount + '/' + cStoryboard.validation.totalScenes + ' scenes grounded in the source' + (cStoryboard.truncated ? ' (note: only the first ' + DOC_LIMIT.toLocaleString() + ' characters of the source were used).' : '.')),
       (cStoryboard.validation.warnings.length || cStoryboard.fabrication.length) ? h('div', { key: 'w', className: 'mb-2 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-200' }, [
         h('div', { key: 'wh', className: 'font-semibold' }, T('cs_co_flags', 'Review flags:')),
         h('ul', { key: 'wl', className: 'list-disc ml-4' },
@@ -1236,7 +1273,12 @@
     TEMPLATE_CATALOG: TEMPLATE_CATALOG, TEMPLATE_TYPES: TEMPLATE_TYPES,
     validateStoryboard: validateStoryboard, detectFabrication: detectFabrication,
     assembleStoryboard: assembleStoryboard, parseAiJsonObject: parseAiJsonObject,
-    anchorIsGrounded: anchorIsGrounded, normForMatch: normForMatch
+    anchorIsGrounded: anchorIsGrounded, normForMatch: normForMatch,
+    sceneReadableText: sceneReadableText, DOC_LIMIT: DOC_LIMIT,
+    // swarm + Wave-1 builders (callGemini is an injected arg -> stub-testable)
+    callSwarmStage: callSwarmStage, stageOutline: stageOutline, stageScene: stageScene,
+    briefSummary: briefSummary, propHint: propHint,
+    buildSteeringPrompt: buildSteeringPrompt, buildRePrompt: buildRePrompt
   };
   console.log('[CinematicStudioModule] Cinematic Studio registered');
 })();
