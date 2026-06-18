@@ -261,14 +261,26 @@
     }
     return out;
   }
+  // Greedy word-wrap a cue to ~maxChars per line so long captions stay in the safe area.
+  function wrapCueText(text, maxChars) {
+    var mc = maxChars || 42, words = String(text || '').trim().split(/\s+/), lines = [], cur = '';
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      if (!cur) cur = w;
+      else if ((cur + ' ' + w).length <= mc) cur += ' ' + w;
+      else { lines.push(cur); cur = w; }
+    }
+    if (cur) lines.push(cur);
+    return lines.join('\n');
+  }
   function buildSrt(segs) {
     return cleanSegs(segs).map(function (s, i) {
-      return (i + 1) + '\n' + secsToStamp(s.start, ',') + ' --> ' + secsToStamp(s.end, ',') + '\n' + s.text + '\n';
+      return (i + 1) + '\n' + secsToStamp(s.start, ',') + ' --> ' + secsToStamp(s.end, ',') + '\n' + wrapCueText(s.text) + '\n';
     }).join('\n');
   }
   function buildVtt(segs) {
     return 'WEBVTT\n\n' + cleanSegs(segs).map(function (s) {
-      return secsToStamp(s.start, '.') + ' --> ' + secsToStamp(s.end, '.') + '\n' + s.text;
+      return secsToStamp(s.start, '.') + ' --> ' + secsToStamp(s.end, '.') + '\n' + wrapCueText(s.text);
     }).join('\n\n') + '\n';
   }
   // Parse an imported .srt/.vtt back into editable segments (tolerant of ',' or '.').
@@ -927,10 +939,12 @@
       if (!callGemini) { if (addToast) addToast('AI is not available here', 'info'); return; }
       setCBusy(true); setCErr(''); setCStoryboard(null); setCStage('outline'); setCStatus('Stage 2: drafting the storyboard outline'); announce('Drafting storyboard outline');
       stageOutline(callGemini, cDoc, fields).then(function (o) {
-        var scenes = (o && Array.isArray(o.scenes) ? o.scenes : []).filter(function (s) { return s && TEMPLATE_CATALOG[s.type]; }).map(function (s, i) {
+        var proposed = (o && Array.isArray(o.scenes)) ? o.scenes : [];
+        var scenes = proposed.filter(function (s) { return s && TEMPLATE_CATALOG[s.type]; }).map(function (s, i) {
           return { id: 'o' + i, type: s.type, heading: String(s.heading || '').slice(0, 100), narrationIntent: String(s.narrationIntent || ''), estDurationSec: +s.estDurationSec || 6 };
         });
         if (!scenes.length) throw new Error('Stage 2 (outline): no valid scenes were proposed');
+        if (proposed.length > scenes.length && addToast) addToast((proposed.length - scenes.length) + ' proposed scene(s) used an unsupported layout and were dropped.', 'info');
         setCOutline({ title: String((o && o.title) || fields.topic || 'Lesson video'), scenes: scenes });
         setCStage('review'); setCStatus(''); announce(scenes.length + ' scenes proposed; review before generating');
       }).catch(function (e) {
@@ -1214,7 +1228,7 @@
 
     // ── COMPOSE tab (Wave 3: agentic document -> storyboard) ──
     var composeIntro = h('div', { className: 'mb-3 rounded-lg border border-fuchsia-500/40 bg-fuchsia-500/10 px-3 py-2 text-xs text-fuchsia-200' },
-      T('cs_co_intro', 'Turn a document into a lesson-video storyboard. An AI drafts scenes grounded in your document; you review and edit before anything is finalized. Visuals are built from fixed templates (no invented imagery). The result is an AI-draft storyboard you can render into a video with Remotion.'));
+      T('cs_co_intro', 'Turn a document into a lesson-video storyboard. An AI drafts scenes grounded in your document; you review and edit before anything is finalized. Visuals use fixed templates (no invented images), but the on-screen TEXT is AI-drafted, so review every scene. The result is an AI-draft storyboard you can render into a video with Remotion.'));
 
     var composeDoc = h('div', { className: 'rounded-lg border border-slate-700 bg-slate-800/50 p-3 mb-3' }, [
       label(T('cs_co_doc', 'Source document'), 'cs-co-doc'),
@@ -1319,7 +1333,7 @@
   window.AlloModules.__cinematicStudioInternals = {
     buildSrt: buildSrt, buildVtt: buildVtt, parseTimecodeFile: parseTimecodeFile,
     secsToStamp: secsToStamp, segmentsFromChunks: segmentsFromChunks,
-    cleanSegs: cleanSegs, parseJsonArrayLoose: parseJsonArrayLoose,
+    cleanSegs: cleanSegs, parseJsonArrayLoose: parseJsonArrayLoose, wrapCueText: wrapCueText,
     // Wave 3
     TEMPLATE_CATALOG: TEMPLATE_CATALOG, TEMPLATE_TYPES: TEMPLATE_TYPES,
     validateStoryboard: validateStoryboard, detectFabrication: detectFabrication,

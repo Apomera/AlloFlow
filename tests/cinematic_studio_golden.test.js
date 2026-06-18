@@ -261,6 +261,18 @@ describe('fabrication scan covers bullets/props, not just narration', () => {
   });
 });
 
+describe('caption line-wrapping keeps long cues in the safe area', () => {
+  it('wraps at word boundaries to ~42 chars and leaves short cues untouched', () => {
+    expect(I.wrapCueText('Hello world')).toBe('Hello world'); // short -> no wrap
+    const long = 'The mitochondria is the powerhouse of the cell and provides energy';
+    const wrapped = I.wrapCueText(long, 42);
+    expect(wrapped).toContain('\n');
+    wrapped.split('\n').forEach(line => expect(line.length).toBeLessThanOrEqual(42));
+    // wrapping is reversible by whitespace-join (so import round-trips)
+    expect(wrapped.replace(/\n/g, ' ')).toBe(long);
+  });
+});
+
 describe('swarm stage contract (callGemini empty = failure, never empty success)', () => {
   const ok = (raw) => () => raw;            // sync stub
   const okAsync = (raw) => async () => raw; // async stub
