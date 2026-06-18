@@ -12,7 +12,7 @@ import { resolve } from 'node:path';
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
-const gs = src.indexOf('function _tableContentPreserved(beforeHtml, afterHtml, index) {');
+const gs = src.indexOf('function _tableContentPreserved(beforeHtml, afterHtml, index, op) {');
 const ge = src.indexOf('\nvar createDocPipeline', gs);
 if (gs === -1 || ge === -1) throw new Error('gate extraction markers missing');
 const { _tableContentPreserved } = new Function(src.slice(gs, ge) + '\n; return { _tableContentPreserved };')();
@@ -79,11 +79,11 @@ describe('_tableContentPreserved — proves a table edit kept every cell', () =>
 
 describe('wiring: the content check is surfaced on both refinement paths', () => {
   it('Workbench: processExpertCommand attaches tableReadback.content', () => {
-    expect(src).toContain('tableReadback.content = _tableContentPreserved(currentHtml, resultHtml, _tIdx)');
+    expect(src).toContain('tableReadback.content = _tableContentPreserved(currentHtml, resultHtml, _tIdx, _tOp)');
     expect(src).toContain('all ' + "' + tableReadback.content.afterCount + '" + ' cell(s) intact.');
   });
   it('in-preview: applyOp computes + returns content vs the ORIGINAL snapshot', () => {
-    expect(src).toContain("content = originalHtml ? _tableContentPreserved('<!DOCTYPE html><html><body>' + originalHtml + '</body></html>', out, 0) : null");
+    expect(src).toContain("content = originalHtml ? _tableContentPreserved('<!DOCTYPE html><html><body>' + originalHtml + '</body></html>', out, 0, op === 'merge_row' ? 'merge' : null) : null");
     expect(src).toContain('const res = applyOp(_cur, pair[1], arg, _snapshot);');
   });
   it('view: the readback card shows the preserved/changed line', () => {

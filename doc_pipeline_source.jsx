@@ -636,7 +636,7 @@ function _tableSemanticReadback(html, index) {
 // AI slice can switch from report→BLOCK. Pure; DOMParser; assign-then-return for the integrity check.
 // Fail-OPEN on an unparseable table (checked:false) so a parse hiccup never blocks a legit edit — the
 // existing accept/revert stays the real safety net.
-function _tableContentPreserved(beforeHtml, afterHtml, index) {
+function _tableContentPreserved(beforeHtml, afterHtml, index, op) {
   var _cells = function(html) {
     var out = [];
     try {
@@ -650,6 +650,17 @@ function _tableContentPreserved(beforeHtml, afterHtml, index) {
   };
   var b = _cells(beforeHtml), a = _cells(afterHtml);
   if (b == null || a == null) { var _ru = { preserved: true, checked: false, reason: 'uncheckable' }; return _ru; }
+  if (op === 'merge') {
+    // Declared MERGE delta: cells were combined, so CELL-multiset equality won't hold — but a correct
+    // merge only CONCATENATES, so the WORD multiset is unchanged. Compare WORDS (robust enough to be a
+    // future BLOCKING gate: catches a dropped cell, and — unlike substring containment — never false-
+    // passes "10" hidden inside "100"). This is the report→block hook the spec called for, per op.
+    var _words = function(arr) { var m = {}; for (var i = 0; i < arr.length; i++) { var ws = arr[i].split(/\s+/); for (var j = 0; j < ws.length; j++) { var w = ws[j]; if (w) m[w] = (m[w] || 0) + 1; } } return m; };
+    var bw = _words(b), aw = _words(a), mlost = [];
+    Object.keys(bw).forEach(function(k) { var d = bw[k] - (aw[k] || 0); for (var z = 0; z < d; z++) mlost.push(k); });
+    var _rm = { preserved: mlost.length === 0, checked: true, beforeCount: b.length, afterCount: a.length, lost: mlost.slice(0, 8), added: [], reason: mlost.length === 0 ? 'ok-merged' : 'changed', op: 'merge' };
+    return _rm;
+  }
   var _bag = function(arr) { var m = {}; for (var i = 0; i < arr.length; i++) m[arr[i]] = (m[arr[i]] || 0) + 1; return m; };
   var bb = _bag(b), ab = _bag(a), lost = [], added = [];
   Object.keys(bb).forEach(function(k) { var d = bb[k] - (ab[k] || 0); for (var i = 0; i < d; i++) lost.push(k); });
@@ -2786,6 +2797,74 @@ var createDocPipeline = function(deps) {
             for (var a = 0; a < ths[i].attributes.length; a++) { if (ths[i].attributes[a].name !== 'scope') td.setAttribute(ths[i].attributes[a].name, ths[i].attributes[a].value); }
             td.innerHTML = ths[i].innerHTML;
             ths[i].parentNode.replaceChild(td, ths[i]);
+          }
+          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
+          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+        } catch (e) { return html; }
+      }
+    },
+    // Merge all cells in a row into ONE spanning cell (e.g. a title/section-header row that got split
+    // into separate cells). CONCATENATES the cell texts — nothing lost (the content gate validates by
+    // CONTAINMENT, op='merge'). A full-width header row becomes <th colspan scope="colgroup">.
+    fix_table_merge_row: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index, rowIndex}',
+      fn: function(html, p) {
+        if (typeof DOMParser === 'undefined') return html;
+        try {
+          var doc = new DOMParser().parseFromString(String(html), 'text/html');
+          var t = doc.querySelectorAll('table')[p.index || 0];
+          if (!t) return html;
+          var row = t.querySelectorAll('tr')[p.rowIndex || 0];
+          if (!row) return html;
+          var cells = row.querySelectorAll('td, th');
+          if (cells.length < 2) return html;
+          var span = 0, texts = [], anyTh = false;
+          for (var i = 0; i < cells.length; i++) {
+            span += parseInt(cells[i].getAttribute('colspan') || '1', 10) || 1;
+            var tx = (cells[i].textContent || '').replace(/\s+/g, ' ').trim();
+            if (tx) texts.push(tx);
+            if (cells[i].tagName.toLowerCase() === 'th') anyTh = true;
+          }
+          var merged = doc.createElement(anyTh ? 'th' : 'td');
+          if (span > 1) merged.setAttribute('colspan', String(span));
+          if (anyTh) merged.setAttribute('scope', 'colgroup');
+          merged.textContent = texts.join(' ');
+          while (row.firstChild) row.removeChild(row.firstChild);
+          row.appendChild(merged);
+          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
+          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+        } catch (e) { return html; }
+      }
+    },
+    // Unmerge (split) a column-spanning cell back into separate cells — text stays in the FIRST, the
+    // rest are empty (the honest behavior; auto-splitting combined text is ambiguous). Content-safe
+    // (text kept; empty cells don't count) → passes the default equality gate. Targets (rowIndex,
+    // cellIndex) or the first colspan>1 cell. (Rowspan split is deferred — it spans rows.)
+    fix_table_unmerge_cell: {
+      category: 'TABLE', wcag: '1.3.1', params: '{index, rowIndex?, cellIndex?}',
+      fn: function(html, p) {
+        if (typeof DOMParser === 'undefined') return html;
+        try {
+          var doc = new DOMParser().parseFromString(String(html), 'text/html');
+          var t = doc.querySelectorAll('table')[p.index || 0];
+          if (!t) return html;
+          var target = null;
+          if (p.rowIndex != null && p.cellIndex != null) {
+            var rw = t.querySelectorAll('tr')[p.rowIndex];
+            if (rw) target = rw.querySelectorAll('td, th')[p.cellIndex] || null;
+          }
+          if (!target) {
+            var spanning = t.querySelectorAll('td[colspan], th[colspan]');
+            for (var i = 0; i < spanning.length; i++) { if ((parseInt(spanning[i].getAttribute('colspan') || '1', 10) || 1) > 1) { target = spanning[i]; break; } }
+          }
+          if (!target) return html;
+          var n = parseInt(target.getAttribute('colspan') || '1', 10) || 1;
+          if (n < 2) return html;
+          target.removeAttribute('colspan');
+          var tag = target.tagName.toLowerCase();
+          for (var k = 1; k < n; k++) {
+            var empty = doc.createElement(tag);
+            if (target.parentNode) target.parentNode.insertBefore(empty, target.nextSibling);
           }
           var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
           return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
@@ -18992,11 +19071,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           else if (op === 'header_col') out = reg.fix_table_header_col.fn(wrapped, { index: 0 });
           else if (op === 'caption') out = reg.fix_table_caption.fn(wrapped, { index: 0, caption: arg || 'Table' });
           else if (op === 'layout') out = reg.fix_table_mark_layout.fn(wrapped, { index: 0 });
+          else if (op === 'merge_row') out = reg.fix_table_merge_row.fn(wrapped, { index: 0, rowIndex: 0 });
+          else if (op === 'unmerge') out = reg.fix_table_unmerge_cell.fn(wrapped, { index: 0 });
         } catch (_) { out = wrapped; }
         const tmp = idoc.createElement('div');
         tmp.innerHTML = String(out).replace(/^[\s\S]*?<body[^>]*>/i, '').replace(/<\/body>[\s\S]*$/i, '');
         // Structure-aware content check vs the ORIGINAL table (cell-level, not the coarse char gate).
-        const content = originalHtml ? _tableContentPreserved('<!DOCTYPE html><html><body>' + originalHtml + '</body></html>', out, 0) : null;
+        // 'merge_row' declares a MERGE delta so the gate validates by containment (cells combined).
+        const content = originalHtml ? _tableContentPreserved('<!DOCTYPE html><html><body>' + originalHtml + '</body></html>', out, 0, op === 'merge_row' ? 'merge' : null) : null;
         return { newTable: tmp.querySelector('table'), readback: _tableSemanticReadback(out, 0), content: content };
       };
       const openPop = (tableEl, anchorBtn) => {
@@ -19011,7 +19093,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         const readbackBox = idoc.createElement('div'); readbackBox.style.cssText = 'margin-top:6px;font-size:11px;line-height:1.35;display:none';
         const actions = idoc.createElement('div'); actions.style.cssText = 'margin-top:6px;display:none;gap:6px';
         let _snapshot = null, _cur = tableEl;
-        const chips = [['Row 1 is the header', 'header_row'], ['First column is the header', 'header_col'], ['Add a caption…', 'caption'], ['This is layout, not data', 'layout']];
+        const chips = [['Row 1 is the header', 'header_row'], ['First column is the header', 'header_col'], ['Merge the top row into one cell', 'merge_row'], ['Unmerge a merged cell', 'unmerge'], ['Add a caption…', 'caption'], ['This is layout, not data', 'layout']];
         chips.forEach((pair) => {
           const c = idoc.createElement('button'); c.type = 'button'; c.className = 'allo-tr-chip'; c.textContent = pair[0];
           c.onclick = (e) => {
@@ -19388,6 +19470,8 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       '- fix_table_header_col: {index: N}   (promote the first COLUMN to row headers — e.g. "the first column is a row label")\n' +
       '- fix_th_scope: {index: N, scope: "col"|"row"}   (set a header cell\'s scope direction)\n' +
       '- fix_table_mark_layout: {index: N}  (ONLY when the user explicitly says the table is LAYOUT, not data — this REMOVES it from the accessibility tree)\n' +
+      '- fix_table_merge_row: {index: N, rowIndex: R}   (merge all cells in a row into ONE spanning cell — e.g. a title/section row that was split into separate cells)\n' +
+      '- fix_table_unmerge_cell: {index: N, rowIndex: R, cellIndex: C}   (split a merged colspan cell back into separate cells; omit rowIndex/cellIndex to target the first merged cell)\n' +
       '- fix_aria_label: {tag: "nav", index: N, label: "text"}\n' +
       '- fix_contrast: {oldColor: "#aaa", newColor: "#333"}\n' +
       '- fix_skip_nav: {} (no params)\n' +
@@ -19437,15 +19521,16 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       // revert is the "reject" path, so this stays purely additive: keep or revert, never silent.
       var tableReadback = null;
       try {
-        var _tableTools = { fix_table_header_row: 1, fix_table_header_col: 1, fix_table_mark_layout: 1, fix_table_caption: 1, fix_th_scope: 1 };
+        var _tableTools = { fix_table_header_row: 1, fix_table_header_col: 1, fix_table_mark_layout: 1, fix_table_caption: 1, fix_th_scope: 1, fix_table_merge_row: 1, fix_table_unmerge_cell: 1 };
         var _tAct = (parsed.actions || []).filter(function(a) { return a && _tableTools[a.tool]; }).pop();
         if (_tAct && resultHtml !== currentHtml) {
           var _tIdx = (_tAct.params && _tAct.params.index) || 0;
+          var _tOp = _tAct.tool === 'fix_table_merge_row' ? 'merge' : null; // declared delta for the content gate
           tableReadback = _tableSemanticReadback(resultHtml, _tIdx);
           if (tableReadback) {
-            // Structure-aware content check: prove the edit didn't drop/scramble any cell (the
-            // coarse doc-wide char gate can't see this). Visible confidence + merge/split foundation.
-            tableReadback.content = _tableContentPreserved(currentHtml, resultHtml, _tIdx);
+            // Structure-aware content check: prove the edit didn't drop/scramble any cell (the coarse
+            // doc-wide char gate can't see this). 'merge' validates by containment (cells combined).
+            tableReadback.content = _tableContentPreserved(currentHtml, resultHtml, _tIdx, _tOp);
             onActivity({ text: '\uD83D\uDCCA ' + tableReadback.text, type: (tableReadback.kind === 'layout' ? 'error' : 'confirm'), time: ts() });
             if (tableReadback.content && tableReadback.content.checked) {
               onActivity(tableReadback.content.preserved
