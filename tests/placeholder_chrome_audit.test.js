@@ -45,6 +45,19 @@ describe('_repairLeakedImagePlaceholders — rebuilds ONLY corrupted placeholder
     const plain = wrap('<h1>Title</h1><p>body</p>');
     expect(_repairLeakedImagePlaceholders(plain)).toBe(plain);
   });
+  it('A1-HIGH regression: a CLEAN figure whose FIGCAPTION mentions handler-like prose is NOT destroyed', () => {
+    // a real educational caption can legitimately say "document.createElement" / "readAsDataURL"; the leak
+    // detection must look at LOOSE text nodes only, never figcaption/span prose.
+    const html = wrap('<figure data-img-placeholder="true"><div ondragover="a"><span>Image placeholder</span></div><figcaption>Figure 3: calling document.createElement to build a node, then readAsDataURL.</figcaption></figure>');
+    expect(_repairLeakedImagePlaceholders(html)).toBe(html);
+  });
+  it('A1-MED: a PARTIAL handler reflow (loose text OUTSIDE figcaption) is still repaired', () => {
+    const html = wrap('<figure data-img-placeholder="true"><div id="c"><span>desc</span></div>var f=document.getElementById("x-figure");if(f)f.remove();_cur=Math.max(25,_cur-25);<figcaption>desc</figcaption></figure>');
+    const out = _repairLeakedImagePlaceholders(html);
+    expect(out).not.toContain('getElementById');
+    expect(out).not.toContain('_cur=Math');
+    expect(out).toContain('desc');
+  });
 });
 
 describe('_stripChromeForAudit — scores the EXPORT-EQUIVALENT doc (no preview chrome)', () => {

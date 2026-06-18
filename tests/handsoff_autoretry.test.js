@@ -29,17 +29,25 @@ describe('hands-off auto-retry — Make Accessible retries bounded, progress-gat
     expect(onclick).toContain('_fixTries < _HANDSOFF_MAX');
     expect(onclick).toContain('_loopTries < _HANDSOFF_MAX');
   });
-  it('never re-runs a PERMANENT error (auth/quota/config) — re-running cannot help', () => {
+  it('never re-runs a PERMANENT error — auth/quota/config AND network/CDN hard-fails (offline, mirrors, timeouts)', () => {
     expect(onclick).toContain('_permanentErr');
     expect(onclick).toContain('!_permanentErr(_handsErr)');
     expect(onclick).toMatch(/quota|429|RECITATION/);
+    expect(onclick).toMatch(/network|offline|cdn|mirror|failed to|timeout/); // A3-MED: bail fast offline
+  });
+  it('honors the user STOP across the retry boundary (A3-HIGH — must not relaunch the loop after Stop)', () => {
+    expect(onclick).toContain('const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);');
+    expect(onclick).toContain('&& !_stopped()'); // in the while conditions
+    expect(onclick).toContain('if (_stopped()) break;'); // after the await
   });
   it('progress-gates the loop retry (stop the moment a retry stops improving) and resumes the loop', () => {
     expect(onclick).toContain('_s <= _prevScore');
     expect(onclick).toContain('await runAutoFixLoop(8)');
   });
-  it('gates on the RESULT ref (robust to the dead-man clearing loading flags) + autosaves at the end', () => {
-    expect(onclick).toContain('!pdfFixResultRef.current && _fixTries < _HANDSOFF_MAX');
+  it('captures the fix return value + polls for the result (A3-MED — no single-250ms ref-timing race) + autosaves', () => {
+    expect(onclick).toContain('_res = await fixAndVerifyPdf(');
+    expect(onclick).toContain('!(_res || pdfFixResultRef.current)'); // the poll condition
+    expect(onclick).toContain('while (!_res && _fixTries < _HANDSOFF_MAX'); // gates the fix re-run on the captured result
     expect(onclick).toContain('if (pdfFixResultRef.current && pdfAutoSaveProject) { saveProjectToFile(true); }');
   });
   it('posts a visible "retrying" note for each attempt', () => {

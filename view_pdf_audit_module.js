@@ -3054,32 +3054,37 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       await new Promise((res) => setTimeout(res, 250));
       addToast(t("toasts.make_accessible_fixing") || "\u2728 Audit done \u2014 remediating automatically (no clicks needed)\u2026", "info");
       const _HANDSOFF_MAX = 3;
-      const _permanentErr = (e) => /\b(quota|exceeded|429|api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block)\b/i.test(String(e && (e.message || e) || ""));
-      let _handsErr = null;
+      const _permanentErr = (e) => /\b(quota|exceeded|429|api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|network|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i.test(String(e && (e.message || e) || ""));
+      const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);
+      let _handsErr = null, _res = null;
       const _runFix = async () => {
         _handsErr = null;
         try {
-          await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || void 0 });
+          _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || void 0 });
         } catch (e) {
           _handsErr = e;
         }
-        await new Promise((res) => setTimeout(res, 250));
+        for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) {
+          await new Promise((res) => setTimeout(res, 200));
+        }
+        _res = _res || pdfFixResultRef.current;
       };
       await _runFix();
       let _fixTries = 0;
-      while (!pdfFixResultRef.current && _fixTries < _HANDSOFF_MAX && !_permanentErr(_handsErr)) {
+      while (!_res && _fixTries < _HANDSOFF_MAX && !_permanentErr(_handsErr) && !_stopped()) {
         _fixTries++;
         addToast("\u{1F501} " + (t("toasts.handsoff_retry_fix") || "Hands-off mode \u2014 the fix produced no result; retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
         await new Promise((res) => setTimeout(res, 1500 * _fixTries));
         await _runFix();
       }
-      let r = pdfFixResultRef.current;
+      let r = _res || pdfFixResultRef.current;
       if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) {
         addToast(t("toasts.auto_continue_no_axe") || "\u26A0 Auto-continue to target unavailable for this run \u2014 the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.", "warning");
       }
       let _loopTries = 0, _prevScore = -1;
-      while (r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX) {
+      while (r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped()) {
         await runAutoFixLoop(8);
+        if (_stopped()) break;
         r = pdfFixResultRef.current;
         const _s = r ? r.afterScore || 0 : 0;
         if (!r || _s >= pdfTargetScore || r.axeAudit && r.axeAudit.totalViolations === 0 || _s <= _prevScore) break;
@@ -4871,7 +4876,7 @@ Return ONLY JSON:
       const beforeDisplay = blendedBefore ?? "?";
       const afterDisplay = blendedAfter !== null ? blendedAfter : "?";
       const gain = blendedAfter !== null && blendedBefore !== null ? blendedAfter - blendedBefore : 0;
-      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedBefore || 0) < 50 ? "text-red-600" : (blendedBefore || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, beforeDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Before")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl text-slate-600" }, "\u2192"), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedAfter || 0) < 50 ? "text-red-600" : (blendedAfter || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, afterDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "After")), gain > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold" }, "+", gain)), /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "("), /* @__PURE__ */ React.createElement("span", { className: "text-purple-700 font-bold", title: t("pdf_audit.score.ai_rubric_label") || "AI Rubric (self-consistency)" }, "AI: ", initialAi ?? "?", "\u2192", afterAi ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "+"), /* @__PURE__ */ React.createElement("span", { className: "text-blue-700 font-bold", title: t("pdf_audit.score.det_label") || "Deterministic engines \u2014 the more conservative of axe-core / IBM Equal Access" }, "checks: ", initialAxe ?? "?", "\u2192", afterDet ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, ") / 2"))));
+      return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedBefore || 0) < 50 ? "text-red-600" : (blendedBefore || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, beforeDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Before")), /* @__PURE__ */ React.createElement("div", { className: "text-2xl text-slate-600" }, "\u2192"), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: `text-3xl font-black ${(blendedAfter || 0) < 50 ? "text-red-600" : (blendedAfter || 0) < 80 ? "text-amber-600" : "text-green-600"}` }, afterDisplay, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/100")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "After")), gain > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold" }, "+", gain)), /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "("), /* @__PURE__ */ React.createElement("span", { className: "text-purple-700 font-bold", title: t("pdf_audit.score.ai_rubric_label") || "AI Rubric (self-consistency)" }, "AI: ", initialAi ?? "?", "\u2192", afterAi ?? "?"), pdfFixResult._scoreIsBlended ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "+"), /* @__PURE__ */ React.createElement("span", { className: "text-blue-700 font-bold", title: t("pdf_audit.score.det_label") || "Deterministic engines \u2014 the more conservative of axe-core / IBM Equal Access" }, "checks: ", initialAxe ?? "?", "\u2192", afterDet ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, ") / 2")) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, ") ", "\u2014", " AI rubric only (automated checks unavailable)"))));
     })(), pdfFixResult.issueResolution && pdfFixResult.issueResolution.summary && pdfFixResult.issueResolution.summary.totalPre > 0 && (() => {
       const s = pdfFixResult.issueResolution.summary;
       const pct = s.totalPre > 0 ? Math.round(s.resolvedCount / s.totalPre * 100) : 0;

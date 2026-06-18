@@ -184,7 +184,27 @@ function _serializeDomEdit(originalHtml, doc) {
 // live preview. Two callers: (1) the leaked-handler repair below, and (2) the audit chrome-strip. The
 // editor chrome is preview-only UI; in a shipped/static document it is dead weight at best and, when an
 // AI text-pass corrupts a giant inline on* handler, the JS reflows into VISIBLE body text. (2026-06-18)
-var _PLACEHOLDER_HANDLER_SIG = /__alloflowOnPdfPreviewMutated|document\.createElement|allo-img-controls|\.cssText|readAsDataURL|function\s*\(\s*c\b/;
+// Narrow signature for the DESCRIPTION filter — markers that never appear in legit figcaption prose (so a
+// real caption like "calling document.createElement to build a node" is NOT discarded). The broad
+// _LEAK_TEXT_SIG below is only matched against LOOSE TEXT NODES, where any of these IS a reflowed handler.
+var _PLACEHOLDER_HANDLER_SIG = /__alloflowOnPdfPreviewMutated|readAsDataURL|\.cssText|function\s*\(\s*c\s*,/;
+var _LEAK_TEXT_SIG = /__alloflowOnPdfPreviewMutated|document\.(?:createElement|getElementById)|readAsDataURL|\.cssText|removeAttribute\(|function\s*\(\s*c\b|target\.(?:src|style|alt)|_cur\s*[-=<>+]/;
+// A leaked handler is loose JS reflowed as a DIRECT text-node child of the figure (or one of its <div>s),
+// NOT text inside a <figcaption>/<span>/<button> (legit prose). Checking ONLY loose text nodes is what
+// keeps a real caption that happens to mention "document.createElement" from being destroyed (A1-HIGH,
+// 2026-06-18) while still catching PARTIAL reflows that the figcaption-wide check missed (A1-MED).
+function _figHasLeakedHandlerText(fig) {
+  var scopes = [fig], divs = fig.querySelectorAll('div');
+  for (var d = 0; d < divs.length; d++) scopes.push(divs[d]);
+  for (var s = 0; s < scopes.length; s++) {
+    var kids = scopes[s].childNodes;
+    for (var k = 0; k < kids.length; k++) {
+      var node = kids[k];
+      if (node.nodeType === 3 && (node.nodeValue || '').trim().length > 15 && _LEAK_TEXT_SIG.test(node.nodeValue)) return true;
+    }
+  }
+  return false;
+}
 function _staticizePlaceholderFig(fig, doc) {
   var cap = fig.querySelector('figcaption');
   var desc = cap ? (cap.textContent || '') : '';
@@ -218,7 +238,7 @@ function _repairLeakedImagePlaceholders(html) {
   try {
     var doc = new DOMParser().parseFromString(String(html), 'text/html');
     var figs = doc.querySelectorAll('figure[data-img-placeholder]'), n = 0;
-    for (var i = 0; i < figs.length; i++) { if (_PLACEHOLDER_HANDLER_SIG.test(figs[i].textContent || '')) { _staticizePlaceholderFig(figs[i], doc); n++; } }
+    for (var i = 0; i < figs.length; i++) { if (_figHasLeakedHandlerText(figs[i])) { _staticizePlaceholderFig(figs[i], doc); n++; } }
     if (!n) return html;
     var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
     return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
@@ -13847,7 +13867,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
       if (bodyContent) {
         bodyContent = bodyContent.trim()
           .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '')
-          .replace(/^[\s\S]*?(<[a-zA-Z])/m, '$1') // strip any preamble before first HTML tag
+          .replace(/^[\s\S]*?(<[a-zA-Z]|__ALLOFLOW_IMG_FIGURE_)/m, '$1') // strip preamble before the first HTML tag OR protected placeholder token (A1-MED: don't delete a leading tokenized figure)
           .replace(/\\n\\n/g, '</p><p>') // literal \n\n → paragraph break
           .replace(/\\n/g, ' ') // literal \n → space
           .replace(/\\t/g, ' ') // literal \t → space
@@ -15289,7 +15309,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           let _reEa = null;
           try { _reEa = await runEqualAccessAudit(_reScoreHtml); } catch (_) { _reEa = null; }
           const _reEaOk = _reEa && typeof _reEa.score === 'number';
-          if (_reEaOk) eaResults = _reEa;
+          // Adopt ONLY the fresh EA; if the fresh EA re-audit failed, NULL the stale pre-recovery value so
+          // the UI's deterministic chip (min(axe, EA)) and the export report use the same axe-only number
+          // the re-blend below actually used — not a stale EA from before recovery. (A2-MED, 2026-06-18)
+          if (_reEaOk) eaResults = _reEa; else eaResults = null;
           const _reDet = _reAxeOk ? (_reEaOk ? Math.min(_reAxe.score, _reEa.score) : _reAxe.score) : null;
           const _reAi = verification ? verification.score : afterScore;
           if (_reAi !== null && _reAxeOk) {
@@ -15976,7 +15999,7 @@ tr { page-break-inside: avoid; }
           <div style="font-size:24px;font-weight:700;color:#475569">${fr.beforeScore}</div>
           <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">Pre-Remediation</div>
         </div>
-        <div style="font-size:14px;color:#16a34a;font-weight:700">+${fr.afterScore - fr.beforeScore} points</div>` : ''}
+        <div style="font-size:14px;color:${(fr.afterScore - fr.beforeScore) >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">${(fr.afterScore - fr.beforeScore) >= 0 ? '+' : ''}${fr.afterScore - fr.beforeScore} points</div>` : ''}
       </div>
       ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Composite score blends the AI rubric (${aiOnly}) with the more conservative deterministic engine — axe-core / IBM Equal Access (${axeOnly}) — at 50/50.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from AI rubric only.</p>'}
     `;

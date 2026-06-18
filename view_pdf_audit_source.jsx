@@ -3022,22 +3022,33 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // can't help) are never retried. Robust to the dead-man switches (we gate on the RESULT
                     // ref, not the loading flags). Each retry posts a visible note.
                     const _HANDSOFF_MAX = 3;
-                    const _permanentErr = (e) => /\b(quota|exceeded|429|api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block)\b/i.test(String((e && (e.message || e)) || ''));
-                    let _handsErr = null;
-                    const _runFix = async () => { _handsErr = null; try { await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined }); } catch (e) { _handsErr = e; /* fix surface shows its own errors */ } await new Promise((res) => setTimeout(res, 250)); };
+                    // Permanent failures re-running can't fix: auth/quota/config AND network/CDN hard-fails
+                    // (offline / blocked mirrors / load timeouts) — bail immediately rather than burn retries.
+                    const _permanentErr = (e) => /\b(quota|exceeded|429|api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|network|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i.test(String((e && (e.message || e)) || ''));
+                    const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current); // user pressed Stop
+                    let _handsErr = null, _res = null;
+                    // Capture the RETURN value (no 250ms ref-timing race) and fall back to the ref if the
+                    // pipeline doesn't return it.
+                    const _runFix = async () => { _handsErr = null; try { _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined }); } catch (e) { _handsErr = e; /* fix surface shows its own errors */ } for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) { await new Promise((res) => setTimeout(res, 200)); } _res = _res || pdfFixResultRef.current; };
                     await _runFix();
                     let _fixTries = 0;
-                    while (!pdfFixResultRef.current && _fixTries < _HANDSOFF_MAX && !_permanentErr(_handsErr)) {
+                    // (1) Re-run the whole fix only if it produced NO result — bounded, never for a permanent
+                    // error, never after the user pressed Stop.
+                    while (!_res && _fixTries < _HANDSOFF_MAX && !_permanentErr(_handsErr) && !_stopped()) {
                       _fixTries++;
                       addToast('🔁 ' + (t('toasts.handsoff_retry_fix') || 'Hands-off mode — the fix produced no result; retrying') + ' (' + _fixTries + '/' + _HANDSOFF_MAX + ')…', 'info');
                       await new Promise((res) => setTimeout(res, 1500 * _fixTries));
                       await _runFix();
                     }
-                    let r = pdfFixResultRef.current;
+                    let r = _res || pdfFixResultRef.current;
                     if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); }
+                    // (2) Resume the auto-continue loop while it KEEPS IMPROVING — bounded, progress-gated, and
+                    // STOP-AWARE: the user's Stop must be durable across the retry boundary (runAutoFixLoop
+                    // resets the abort flag at entry, so without these checks the wrapper would relaunch it).
                     let _loopTries = 0, _prevScore = -1;
-                    while (r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX) {
+                    while (r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped()) {
                       await runAutoFixLoop(8);
+                      if (_stopped()) break; // user pressed Stop during the loop — honor it, don't relaunch
                       r = pdfFixResultRef.current;
                       const _s = r ? (r.afterScore || 0) : 0;
                       if (!r || _s >= pdfTargetScore || (r.axeAudit && r.axeAudit.totalViolations === 0) || _s <= _prevScore) break; // done or plateaued
@@ -6227,9 +6238,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="inline-flex items-center gap-1">
                           <span className="text-slate-600">(</span>
                           <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric (self-consistency)'}>AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
+                          {/* Only show the "+ checks / 2" BLEND formula when a blend actually happened. When
+                              axe-core was unavailable the score is AI-only, so asserting a 50/50 EA blend
+                              that didn't occur was misleading (the formula didn't equal the headline). */}
+                          {pdfFixResult._scoreIsBlended ? (<>
                           <span className="text-slate-600">+</span>
                           <span className="text-blue-700 font-bold" title={t('pdf_audit.score.det_label') || 'Deterministic engines \u2014 the more conservative of axe-core / IBM Equal Access'}>checks: {initialAxe ?? '?'}{'\u2192'}{afterDet ?? '?'}</span>
                           <span className="text-slate-600">) / 2</span>
+                          </>) : (<span className="text-slate-600">) {'\u2014'} AI rubric only (automated checks unavailable)</span>)}
                         </div>
                       </div>
                       </>);
