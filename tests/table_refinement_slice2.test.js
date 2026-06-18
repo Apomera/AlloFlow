@@ -33,8 +33,10 @@ describe('#slice2 in-preview Refine-table affordance', () => {
   it('its controls are stripped from saved/exported HTML (classed allo-img-controls + style id in both strip lists)', () => {
     expect(src).toContain("btn.className = 'allo-img-controls allo-table-refine-btn'");
     expect(src).toContain("pop.className = 'allo-img-controls allo-table-refine-pop'");
-    // the <style> id is added to BOTH the snapshot-sync and export strip selectors
-    expect((src.match(/#allo-img-resize-style, #allo-table-refine-style'\)\.forEach\(\(el\) => el\.remove\(\)\)/g) || []).length).toBe(2);
+    // the <style> id is stripped on every iframe→accessibleHtml path: snapshot-sync, export, and the
+    // word-restoration clone (the 3rd was added 2026-06-17 — it read the iframe with no strip and baked
+    // the editor chrome into the restored HTML).
+    expect((src.match(/#allo-img-resize-style, #allo-table-refine-style'\)\.forEach\(\(el\) => el\.remove\(\)\)/g) || []).length).toBe(3);
   });
 
   it('is additive + reversible: snapshot before the first op, Keep syncs, Undo restores', () => {

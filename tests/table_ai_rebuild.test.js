@@ -152,10 +152,10 @@ describe('H2 — a dropped <caption> is re-injected before emit (the gate is cap
     const grid = reinject('Old caption', { caption: 'New caption', rows: [{ cells: [{ text: 'A' }] }] });
     expect(grid.caption).toBe('New caption');
   });
-  it('source: the rebuild reads the original <caption> and re-injects only when the grid caption is empty', () => {
+  it('source: the rebuild re-injects via a DIRECT-child caption scan, only when the grid caption is empty', () => {
     const fn = src.slice(src.indexOf('const rebuildTableWithAI'), src.indexOf('const processExpertCommand'));
-    expect(fn).toContain("var _origCapEl = table.querySelector('caption');");
-    expect(fn).toContain('if (_origCap && (!grid.caption || !String(grid.caption).trim())) grid.caption = _origCap;');
+    expect(fn).toContain("if (table.children[_ci].tagName === 'CAPTION')"); // direct-child, not descendant querySelector (H2-2)
+    expect(fn).toContain('!_wantsRemoval && !_isSrOnlyPlaceholder && (!grid.caption || !String(grid.caption).trim())) grid.caption = _origCap;');
   });
 });
 

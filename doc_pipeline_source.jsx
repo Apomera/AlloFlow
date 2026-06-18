@@ -161,6 +161,22 @@ function _emitAccessibleTableHtml(grid, opts) {
   return '<table' + (opts.reconAttr ? ' data-allo-reconstructed="image"' : '') + ' style="width:100%;border-collapse:collapse;margin:1em 0">' + cap + thead + tbody + '</table>';
 }
 
+// A surgical DOM table tool gets EITHER a full document OR a bare fragment chunk (the AutoFix / surgical
+// loops split large HTML on tag boundaries, so chunks index>0 have no <html>/<body>). Match the INPUT
+// shape on output: a fragment must NOT gain <html>/<head>/<body> chrome, or the loop's
+// `preamble + chunks.join() + postamble` reassembly nests a stray <body> mid-document — malformed, and
+// it mis-anchors the figure-recovery `replace('</body>')` splice. Full documents keep their DOCTYPE +
+// documentElement.outerHTML (the in-preview/full-doc callers, which already strip chrome, are unaffected).
+// (bug-hunt F1/F2, 2026-06-17)
+function _serializeDomEdit(originalHtml, doc) {
+  var src = String(originalHtml == null ? '' : originalHtml);
+  if (/<html[\s>]/i.test(src) || /<body[\s>]/i.test(src)) {
+    var dm = src.match(/^\s*<!DOCTYPE[^>]*>/i);
+    return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+  }
+  return doc.body ? doc.body.innerHTML : doc.documentElement.outerHTML;
+}
+
 // Sanitize an AI-parsed doc-style object before its color/font values are
 // interpolated into style="…" attributes (2026-06-15 security fix). Those values
 // render in the script-enabled preview iframe, so a prompt-injected PDF could
@@ -2693,12 +2709,15 @@ var createDocPipeline = function(deps) {
           if (['click here','here','read more','more','link','learn more'].indexOf(t) === -1 && !p.force) return false;
           el.textContent = p.newText;
         });
+        // XSS: p.newText is AI-proposed; escape markup before inserting (anchors can't nest, so the
+        // regex index path itself is safe — only the unescaped param was the risk).
+        var _lt = String(p.newText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let idx = 0;
         return html.replace(/<a([^>]*)>([\s\S]*?)<\/a>/gi, function(m, attrs, content) {
           if (idx++ !== (p.index || 0)) return m;
           var text = content.replace(/<[^>]*>/g, '').trim().toLowerCase();
           if (['click here','here','read more','more','link','learn more'].indexOf(text) !== -1 || p.force) {
-            return '<a' + attrs + '>' + p.newText + '</a>';
+            return '<a' + attrs + '>' + _lt + '</a>';
           }
           return m;
         });
@@ -2708,49 +2727,81 @@ var createDocPipeline = function(deps) {
       category: 'CONTENT', wcag: '1.3.1', params: '{index, caption}',
       fn: function(html, p) {
         if (!p.caption) return html;
+        // XSS: p.caption is AI-proposed; escape markup before inserting into the figcaption.
+        var _fc = String(p.caption).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let idx = 0;
         return html.replace(/<figure([^>]*)>([\s\S]*?)<\/figure>/gi, function(m, attrs, content) {
           if (idx++ !== (p.index || 0)) return m;
           if (/<figcaption/i.test(content)) return m;
-          return '<figure' + attrs + '>' + content + '<figcaption>' + p.caption + '</figcaption></figure>';
+          return '<figure' + attrs + '>' + content + '<figcaption>' + _fc + '</figcaption></figure>';
         });
       }
     },
+    // DOM-based (2026-06-17, bug-hunt fast-follow): the old regex matched <table…> / <th…> by GLOBAL
+    // index and a non-greedy …</table> stopped at the FIRST close tag — both corrupt NESTED tables (the
+    // index counts inner tables; the content truncates at the inner </table>) under a false-green gate.
+    // querySelectorAll('table')[index] + textContent also auto-escape the AI-proposed caption (was a
+    // latent XSS, same class as the recon-table sink). Mirrors fix_table_header_col / fix_table_mark_layout.
     fix_table_caption: {
       category: 'TABLE', wcag: '1.3.1', params: '{index, caption}',
       fn: function(html, p) {
         if (!p.caption) return html;
-        let idx = 0;
-        return html.replace(/<table([^>]*)>/gi, function(m, attrs) {
-          if (idx++ !== (p.index || 0)) return m;
-          return '<table' + attrs + '><caption>' + p.caption + '</caption>';
-        });
+        if (typeof DOMParser === 'undefined') return html;
+        try {
+          var doc = new DOMParser().parseFromString(String(html), 'text/html');
+          var t = doc.querySelectorAll('table')[p.index || 0];
+          if (!t) return html;
+          var cap = null; // DIRECT-child caption only (a nested table's caption must not be matched)
+          for (var ci = 0; ci < t.children.length; ci++) { if (t.children[ci].tagName === 'CAPTION') { cap = t.children[ci]; break; } }
+          if (!cap) { cap = doc.createElement('caption'); t.insertBefore(cap, t.firstChild); }
+          cap.textContent = String(p.caption); // textContent auto-escapes — no markup injection
+          return _serializeDomEdit(html, doc);
+        } catch (e) { return html; }
       }
     },
     fix_th_scope: {
       category: 'TABLE', wcag: '1.3.1', params: '{index?, scope}',
       fn: function(html, p) {
-        var scope = p.scope || 'col';
-        let idx = 0;
-        return html.replace(/<th(?![^>]*scope)([^>]*)>/gi, function(m, attrs) {
-          if (p.index !== undefined && idx++ !== p.index) return m;
-          return '<th scope="' + scope + '"' + attrs + '>';
-        });
+        if (typeof DOMParser === 'undefined') return html;
+        var scope = (['col', 'row', 'colgroup', 'rowgroup'].indexOf(p.scope) >= 0) ? p.scope : 'col'; // validate (no attr-breakout)
+        try {
+          var doc = new DOMParser().parseFromString(String(html), 'text/html');
+          var ths = [], all = doc.querySelectorAll('th'); // scope-less <th>, mirroring the old (?![^>]*scope)
+          for (var i = 0; i < all.length; i++) { if (!all[i].hasAttribute('scope')) ths.push(all[i]); }
+          if (p.index !== undefined && p.index !== null) { if (ths[p.index]) ths[p.index].setAttribute('scope', scope); }
+          else { for (var j = 0; j < ths.length; j++) ths[j].setAttribute('scope', scope); }
+          return _serializeDomEdit(html, doc);
+        } catch (e) { return html; }
       }
     },
     fix_table_header_row: {
       category: 'TABLE', wcag: '1.3.1', params: '{index}',
       fn: function(html, p) {
-        let idx = 0;
-        return html.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, function(m, attrs, content) {
-          if (idx++ !== (p.index || 0)) return m;
-          if (/<thead/i.test(content)) return m;
-          var fixed = content.replace(/<tr([^>]*)>([\s\S]*?)<\/tr>/i, function(row, rAttrs, cells) {
-            var headerCells = cells.replace(/<td([^>]*)>/gi, '<th scope="col"$1>').replace(/<\/td>/gi, '</th>');
-            return '<thead><tr' + rAttrs + '>' + headerCells + '</tr></thead>';
-          });
-          return '<table' + attrs + '>' + fixed + '</table>';
-        });
+        if (typeof DOMParser === 'undefined') return html;
+        try {
+          var doc = new DOMParser().parseFromString(String(html), 'text/html');
+          var t = doc.querySelectorAll('table')[p.index || 0];
+          if (!t) return html;
+          if (t.tHead) return html; // already has a header section
+          var firstRow = (t.rows && t.rows.length) ? t.rows[0] : null; // t.rows = THIS table's rows (nested-safe)
+          if (!firstRow) return html;
+          var cells = Array.prototype.slice.call(firstRow.cells || []);
+          for (var i = 0; i < cells.length; i++) {
+            var c = cells[i];
+            if (c.tagName.toLowerCase() === 'td') {
+              var th = doc.createElement('th');
+              th.setAttribute('scope', 'col');
+              for (var a = 0; a < c.attributes.length; a++) th.setAttribute(c.attributes[a].name, c.attributes[a].value);
+              th.innerHTML = c.innerHTML;
+              c.parentNode.replaceChild(th, c);
+            } else if (c.tagName.toLowerCase() === 'th' && !c.hasAttribute('scope')) {
+              c.setAttribute('scope', 'col');
+            }
+          }
+          var thead = t.createTHead(); // inserts an empty <thead> as the first child
+          thead.appendChild(firstRow); // move the (now-header) row into it — matches the old <thead> wrap
+          return _serializeDomEdit(html, doc);
+        } catch (e) { return html; }
       }
     },
     // Table refinement (2026-06-17): promote the FIRST COLUMN (the first cell of every row) to
@@ -2776,8 +2827,7 @@ var createDocPipeline = function(deps) {
               first.parentNode.replaceChild(th, first);
             } else { first.setAttribute('scope', 'row'); }
           }
-          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
-          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+          return _serializeDomEdit(html, doc);
         } catch (e) { return html; }
       }
     },
@@ -2801,8 +2851,7 @@ var createDocPipeline = function(deps) {
             td.innerHTML = ths[i].innerHTML;
             ths[i].parentNode.replaceChild(td, ths[i]);
           }
-          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
-          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+          return _serializeDomEdit(html, doc);
         } catch (e) { return html; }
       }
     },
@@ -2834,8 +2883,7 @@ var createDocPipeline = function(deps) {
           merged.textContent = texts.join(' ');
           while (row.firstChild) row.removeChild(row.firstChild);
           row.appendChild(merged);
-          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
-          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+          return _serializeDomEdit(html, doc);
         } catch (e) { return html; }
       }
     },
@@ -2874,8 +2922,7 @@ var createDocPipeline = function(deps) {
             if (rs > 1) empty.setAttribute('rowspan', String(rs));
             if (target.parentNode) target.parentNode.insertBefore(empty, target.nextSibling);
           }
-          var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
-          return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+          return _serializeDomEdit(html, doc);
         } catch (e) { return html; }
       }
     },
@@ -12885,8 +12932,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   // original's look but force the header TEXT to AA contrast on that fill (cosmetic only;
                   // falls back to the doc palette when no/invalid colour).
                   const _hdr = _accessibleHeaderColors(block.headerBg);
+                  // XSS: _emitAccessibleTableHtml's `esc` is whatever opts.sanitize is, applied to cell +
+                  // caption ELEMENT CONTENT. Passing the bare sanitizeField (which only strips \n/\0)
+                  // DISABLED escaping on this rich/grid reconstructed-table path — untrusted vision text
+                  // then reached the recon dangerouslySetInnerHTML sink raw. Escape like the flat path.
                   return _emitAccessibleTableHtml(block.grid, {
-                    sanitize: sanitizeField,
+                    sanitize: (v) => escapeTextField(sanitizeField(v)),
                     tableBorder: docStyle.tableBorder,
                     tableBg: _hdr ? _hdr.bg : docStyle.tableBg,
                     headColor: docStyle.headingColor,
@@ -12919,8 +12970,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // an untrusted PDF; it is interpolated into element content here and later re-rendered via
               // dangerouslySetInnerHTML (the recon-table mini-preview). sanitizeField only strips \n/\0 —
               // it does NOT escape markup. Escape like the headings/lists above (attribute-less safe inline
-              // tags survive; every scripting vector is neutralized). The grid path stays on the esc()-ing
-              // _emitAccessibleTableHtml, so this only hardens the flat fallback (no double-escaping).
+              // tags survive; every scripting vector is neutralized). The grid path is escaped too — it now
+              // passes an escaping sanitize closure to _emitAccessibleTableHtml (see the grid branch above).
               const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
               const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+escapeTextField(sanitizeField(h))+`</th>`).join('')+`</tr></thead>` : '';
@@ -12960,7 +13011,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // Raw description; escaped with escapeTextField at the element-content sink below (its only
               // consumer). Vision-derived text is untrusted — see the table-path XSS note above.
               const _imgDesc = (block.description || block.alt || 'Image');
-              const _imgAltSafe = (block.description || block.alt || 'Image').replace(/"/g, '').replace(/'/g, '');
+              const _imgAltSafe = (block.description || block.alt || 'Image').replace(/\\/g, '').replace(/"/g, '').replace(/'/g, ''); // strip backslash too (a trailing \ escapes the JS-string delimiter)
               const _imgId = 'pdf-img-ph-' + (block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : Math.random().toString(36).slice(2, 8));
               const _captionText = block.description || block.alt || '';
               // Drag-and-drop + pick-extracted support: handlers pull a dataURL from
@@ -13072,9 +13123,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 ? '0 1px 1px rgba(255,255,255,0.3)'
                 : '0 1px 2px rgba(0,0,0,0.3)';
               return `<div style="position:relative;background:${docStyle.headerBg};color:${_bText} !important;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
-                + (_bEyebrow ? '<div style="color:' + _bText + ' !important;font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin-bottom:10px;text-shadow:' + _shadowSm + '">' + _bEyebrow + '</div>' : '')
-                + (_bTitle ? '<div style="color:' + _bText + ' !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;text-shadow:' + _shadow + '">' + _bTitle + '</div>' : '')
-                + (_bSubtitle ? '<div style="color:' + _bText + ' !important;font-size:1.1em;font-weight:500;margin-top:10px;text-shadow:' + _shadowSm + '">' + _bSubtitle + '</div>' : '')
+                + (_bEyebrow ? '<div style="color:' + _bText + ' !important;font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin-bottom:10px;text-shadow:' + _shadowSm + '">' + escapeTextField(_bEyebrow) + '</div>' : '')
+                + (_bTitle ? '<div style="color:' + _bText + ' !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;text-shadow:' + _shadow + '">' + escapeTextField(_bTitle) + '</div>' : '')
+                + (_bSubtitle ? '<div style="color:' + _bText + ' !important;font-size:1.1em;font-weight:500;margin-top:10px;text-shadow:' + _shadowSm + '">' + escapeTextField(_bSubtitle) + '</div>' : '')
                 + `</div>`;
             }
             case 'rawhtml': {
@@ -13749,7 +13800,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               });
             }
             // Drag-drop + pick-extracted handlers (shared logic with renderJsonToHtml placeholder).
-            const _altSafe = desc.replace(/"/g, '').replace(/'/g, '');
+            const _altSafe = desc.replace(/\\/g, '').replace(/"/g, '').replace(/'/g, ''); // strip backslash too (a trailing \ escapes the JS-string delimiter)
             const _insertFn2 = `function(c, dataUrl, altText){`
               + `var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();`
               + `var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}`
@@ -18840,6 +18891,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
   // it into a real document. KEEPS <style> — the print document needs its own CSS.
   const _sanitizeHtmlForWrite = (html) => String(html || '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<\/?script\b[^>]*>/gi, '') // also kill an UNCLOSED <script src=…> (the paired strip above misses it)
     .replace(/<\/?(?:iframe|object|embed)\b[^>]*>/gi, '')
     .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
     .replace(/(?:javascript|vbscript)\s*:/gi, '');
@@ -19479,9 +19531,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // DROPPED the original caption would pass the "BLOCKING" gate with a false all-clear. Re-inject the
     // original caption when the AI grid omitted it (content-preserving; never overrides an AI caption).
     try {
-      var _origCapEl = table.querySelector('caption');
+      // Direct-child caption only — a nested table's caption must NOT be hoisted onto the outer table
+      // (mirrors fix_table_caption's discipline). H2-2.
+      var _origCapEl = null;
+      for (var _ci = 0; _ci < table.children.length; _ci++) { if (table.children[_ci].tagName === 'CAPTION') { _origCapEl = table.children[_ci]; break; } }
       var _origCap = _origCapEl ? (_origCapEl.textContent || '').replace(/\s+/g, ' ').trim() : '';
-      if (_origCap && (!grid.caption || !String(grid.caption).trim())) grid.caption = _origCap;
+      // Do NOT re-inject when (a) the instruction asks to REMOVE the caption (re-injection would silently
+      // disobey it), or (b) the original is the system sr-only placeholder (fixComplexTables injects
+      // <caption class="sr-only">Data table N</caption>) — re-injecting it would resurrect screen-reader-
+      // only text as a VISIBLE bold caption baked into the deliverable. H2-1.
+      var _wantsRemoval = /\b(?:remove|delete|drop|no)\b[\s\S]*\bcaption\b/i.test(String(instruction || ''));
+      var _isSrOnlyPlaceholder = !!(_origCapEl && _origCapEl.classList && _origCapEl.classList.contains('sr-only')) || /^Data table \d+$/.test(_origCap);
+      if (_origCap && !_wantsRemoval && !_isSrOnlyPlaceholder && (!grid.caption || !String(grid.caption).trim())) grid.caption = _origCap;
     } catch (_) {}
     // Geometry + accessibility validation (reuse the vision-pass validator): rejects overlapping /
     // inconsistent-width / rowspan-overflow grids and header-without-scope (the very thing this fixes).
@@ -20306,7 +20367,11 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           const d = pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document;
           if (d) {
             try { d.designMode = 'off'; } catch(_) {}
-            const h = '<!DOCTYPE html>\n' + d.documentElement.outerHTML;
+            // Strip editor-only chrome (resize bars, picker grids, the table-refine style) from a CLONE
+            // so it never bakes into the restored accessibleHtml — the iframe re-attaches it each render.
+            const _wrClone = d.documentElement.cloneNode(true);
+            try { _wrClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style').forEach((el) => el.remove()); } catch (_) {}
+            const h = '<!DOCTYPE html>\n' + _wrClone.outerHTML;
             try { d.designMode = 'on'; } catch(_) {}
             return h;
           }

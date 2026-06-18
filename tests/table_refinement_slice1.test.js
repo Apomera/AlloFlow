@@ -17,12 +17,14 @@ if (rbStart === -1 || rbEnd === -1) throw new Error('readback extraction markers
 const { _tableSemanticReadback } = new Function(src.slice(rbStart, rbEnd) + '\n; return { _tableSemanticReadback };')();
 
 // ── extract the two new surgical-tool fns from the registry ──
+// The DOM tools `return _serializeDomEdit(html, doc)`, so inject that module-scope helper into scope.
+const _helperSrc = src.slice(src.indexOf('function _serializeDomEdit(originalHtml, doc) {'), src.indexOf('\n// Sanitize an AI-parsed'));
 const toolFn = (name, nextMarker) => {
   const s = src.indexOf(name + ': {');
   const e = src.indexOf(nextMarker, s);
   if (s === -1 || e === -1) throw new Error('tool extraction markers missing for ' + name);
   const slice = src.slice(s, e).replace(/,\s*$/, '');
-  return new Function('return {' + slice + '};')()[name].fn;
+  return new Function(_helperSrc + '\nreturn {' + slice + '};')()[name].fn;
 };
 const fix_table_header_col = toolFn('fix_table_header_col', 'fix_table_mark_layout:');
 const fix_table_mark_layout = toolFn('fix_table_mark_layout', 'fix_input_label:');

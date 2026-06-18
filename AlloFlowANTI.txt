@@ -10600,9 +10600,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         // never reach accessibleHtml — they leaked into the HTML export,
         // the plain TTS text, and the final engine audits.
         const _clone = doc.documentElement.cloneNode(true);
-        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style').forEach((el) => el.remove()); } catch (_) {}
+        try { _clone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style').forEach((el) => el.remove()); } catch (_) {}
         const html = '<!DOCTYPE html>\n' + _clone.outerHTML;
-        setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html } : prev);
+        // A non-Workbench in-preview edit (image/table refine, designMode, etc.) just advanced
+        // accessibleHtml, so the Workbench "Revert last command" snapshot (_preCmdHtml) is now stale —
+        // reverting to it would silently DISCARD this edit. Invalidate it and its dependent panels
+        // atomically with the advance. Safe: this sync only fires on genuine iframe mutations (a Workbench
+        // command edits the HTML string and never fires this), so it can't wipe a just-set readback. DEFER-1.
+        setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: html, ...(prev._preCmdHtml ? { _preCmdHtml: null, _lastCmdDiff: null, _lastMiniAudit: null, _lastTableReadback: null } : {}) } : prev);
       } catch (_) {}
     };
     const debounced = () => {

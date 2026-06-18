@@ -18,10 +18,12 @@ if (gs === -1 || ge === -1) throw new Error('gate extraction markers missing');
 const { _tableContentPreserved } = new Function(src.slice(gs, ge) + '\n; return { _tableContentPreserved };')();
 
 // reuse the real deterministic tools to prove they PASS the gate
+// The DOM tools `return _serializeDomEdit(html, doc)`, so inject that module-scope helper into scope.
+const _helperSrc = src.slice(src.indexOf('function _serializeDomEdit(originalHtml, doc) {'), src.indexOf('\n// Sanitize an AI-parsed'));
 const toolFn = (name, nextMarker) => {
   const s = src.indexOf(name + ': {');
   const e = src.indexOf(nextMarker, s);
-  return new Function('return {' + src.slice(s, e).replace(/,\s*$/, '') + '};')()[name].fn;
+  return new Function(_helperSrc + '\nreturn {' + src.slice(s, e).replace(/,\s*$/, '') + '};')()[name].fn;
 };
 const fix_table_header_row = toolFn('fix_table_header_row', 'fix_table_header_col:');
 const fix_table_mark_layout = toolFn('fix_table_mark_layout', 'fix_input_label:');

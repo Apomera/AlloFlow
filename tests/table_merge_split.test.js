@@ -14,10 +14,12 @@ const gs = src.indexOf('function _tableContentPreserved(beforeHtml, afterHtml, i
 const ge = src.indexOf('\nvar createDocPipeline', gs);
 const { _tableContentPreserved } = new Function(src.slice(gs, ge) + '\n; return { _tableContentPreserved };')();
 
+// The DOM tools `return _serializeDomEdit(html, doc)`, so inject that module-scope helper into scope.
+const _helperSrc = src.slice(src.indexOf('function _serializeDomEdit(originalHtml, doc) {'), src.indexOf('\n// Sanitize an AI-parsed'));
 const toolFn = (name, nextMarker) => {
   const s = src.indexOf(name + ': {');
   const e = src.indexOf(nextMarker, s);
-  return new Function('return {' + src.slice(s, e).replace(/,\s*$/, '') + '};')()[name].fn;
+  return new Function(_helperSrc + '\nreturn {' + src.slice(s, e).replace(/,\s*$/, '') + '};')()[name].fn;
 };
 const fix_table_merge_row = toolFn('fix_table_merge_row', 'fix_table_unmerge_cell:');
 const fix_table_unmerge_cell = toolFn('fix_table_unmerge_cell', 'fix_input_label:');
