@@ -3014,13 +3014,38 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // Cosmetic settle only — the fix no longer depends on audit STATE (it gets auditResult below).
                     await new Promise((res) => setTimeout(res, 250));
                     addToast(t('toasts.make_accessible_fixing') || '✨ Audit done — remediating automatically (no clicks needed)…', 'info');
-                    try {
-                      await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined });
-                    } catch (_) { /* fix surface shows its own errors; chain continues to the check below */ }
-                    await new Promise((res) => setTimeout(res, 250));
-                    const r = pdfFixResultRef.current;
-                    const needsLoop = r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); }
-                    if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); }
+                    // ── Hands-off auto-retry (2026-06-18) ──
+                    // "Make Accessible" IS the unattended path, so don't stop at a single bail: (1) if the
+                    // fix produced NO result (a true pipeline failure), re-run it; (2) keep resuming the
+                    // auto-continue loop while it KEEPS IMPROVING. Both are bounded (max 3) + progress-gated
+                    // so a plateau can't loop forever, and PERMANENT errors (auth/quota/config — re-running
+                    // can't help) are never retried. Robust to the dead-man switches (we gate on the RESULT
+                    // ref, not the loading flags). Each retry posts a visible note.
+                    const _HANDSOFF_MAX = 3;
+                    const _permanentErr = (e) => /\b(quota|exceeded|429|api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block)\b/i.test(String((e && (e.message || e)) || ''));
+                    let _handsErr = null;
+                    const _runFix = async () => { _handsErr = null; try { await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined }); } catch (e) { _handsErr = e; /* fix surface shows its own errors */ } await new Promise((res) => setTimeout(res, 250)); };
+                    await _runFix();
+                    let _fixTries = 0;
+                    while (!pdfFixResultRef.current && _fixTries < _HANDSOFF_MAX && !_permanentErr(_handsErr)) {
+                      _fixTries++;
+                      addToast('🔁 ' + (t('toasts.handsoff_retry_fix') || 'Hands-off mode — the fix produced no result; retrying') + ' (' + _fixTries + '/' + _HANDSOFF_MAX + ')…', 'info');
+                      await new Promise((res) => setTimeout(res, 1500 * _fixTries));
+                      await _runFix();
+                    }
+                    let r = pdfFixResultRef.current;
+                    if (r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); }
+                    let _loopTries = 0, _prevScore = -1;
+                    while (r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX) {
+                      await runAutoFixLoop(8);
+                      r = pdfFixResultRef.current;
+                      const _s = r ? (r.afterScore || 0) : 0;
+                      if (!r || _s >= pdfTargetScore || (r.axeAudit && r.axeAudit.totalViolations === 0) || _s <= _prevScore) break; // done or plateaued
+                      _prevScore = _s; _loopTries++;
+                      addToast('🔁 ' + (t('toasts.handsoff_retry_loop') || 'Hands-off mode — below target; retrying the loop') + ' (' + _loopTries + '/' + _HANDSOFF_MAX + ', ' + _s + '/' + pdfTargetScore + ')…', 'info');
+                      await new Promise((res) => setTimeout(res, 1500 * _loopTries));
+                    }
+                    if (pdfFixResultRef.current && pdfAutoSaveProject) { saveProjectToFile(true); }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
                   </button>

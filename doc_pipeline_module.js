@@ -14498,6 +14498,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // by the target / zero-issue breaks below, so this can never run away.
         let consecutiveRegressions = 0;
         let stallCount = 0;
+        let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
           try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
@@ -14525,9 +14526,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             if (fixedHtml && fixedHtml !== accessibleHtml) {
               accessibleHtml = fixedHtml;
             }
+            _consecFixErrors = 0;
           } catch(fixErr) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1} AI fix failed:`, fixErr);
-            break;
+            // B18 (2026-06-18): a SINGLE (likely transient) chunk-fix error must NOT kill ALL remaining
+            // passes — skip this pass and let the next one retry. Only bail after 2 CONSECUTIVE failures
+            // (a persistent / quota error where re-running won't help). The next pass runs its own
+            // deterministic cleanup, and the loop's stall detector still bounds a no-progress run.
+            if (++_consecFixErrors >= 2) { warnLog('[Auto-fix] 2 consecutive AI fix failures — stopping the fix loop.'); break; }
+            continue;
           }
 
           // Deterministic cleanup after each AI fix pass — catches AI-introduced errors
