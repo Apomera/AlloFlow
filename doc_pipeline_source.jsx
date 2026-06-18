@@ -177,6 +177,67 @@ function _serializeDomEdit(originalHtml, doc) {
   return doc.body ? doc.body.innerHTML : doc.documentElement.outerHTML;
 }
 
+// Convert an INTERACTIVE image-placeholder <figure> (upload buttons, drop zone, on* handlers, the resize
+// bar) into a clean STATIC figure that preserves the description — for the AUDIT and EXPORT, never the
+// live preview. Two callers: (1) the leaked-handler repair below, and (2) the audit chrome-strip. The
+// editor chrome is preview-only UI; in a shipped/static document it is dead weight at best and, when an
+// AI text-pass corrupts a giant inline on* handler, the JS reflows into VISIBLE body text. (2026-06-18)
+var _PLACEHOLDER_HANDLER_SIG = /__alloflowOnPdfPreviewMutated|document\.createElement|allo-img-controls|\.cssText|readAsDataURL|function\s*\(\s*c\b/;
+function _staticizePlaceholderFig(fig, doc) {
+  var cap = fig.querySelector('figcaption');
+  var desc = cap ? (cap.textContent || '') : '';
+  if (!desc || _PLACEHOLDER_HANDLER_SIG.test(desc)) {
+    var best = '', nodes = fig.querySelectorAll('span, p, figcaption');
+    for (var i = 0; i < nodes.length; i++) {
+      var tx = (nodes[i].textContent || '');
+      if (tx.length > best.length && !_PLACEHOLDER_HANDLER_SIG.test(tx)
+          && tx.indexOf('Image placeholder') === -1 && tx.indexOf('Drag an') === -1
+          && tx.indexOf('Upload') === -1 && tx.indexOf('Pick extracted') === -1) best = tx;
+    }
+    desc = best;
+  }
+  desc = String(desc).replace(_PLACEHOLDER_HANDLER_SIG, '').replace(/\s+/g, ' ').trim();
+  var imgEl = fig.querySelector('img');
+  var keepImg = (imgEl && imgEl.getAttribute('src')) ? imgEl.getAttribute('src') : null;
+  while (fig.firstChild) fig.removeChild(fig.firstChild);
+  ['onclick', 'ondrop', 'ondragover', 'ondragleave', 'onchange', 'style', 'contenteditable'].forEach(function (a) { try { fig.removeAttribute(a); } catch (_) {} });
+  if (keepImg) { var ni = doc.createElement('img'); ni.setAttribute('src', keepImg); ni.setAttribute('alt', desc || 'Image'); ni.setAttribute('style', 'max-width:100%'); fig.appendChild(ni); }
+  fig.setAttribute('role', 'img');
+  if (desc) fig.setAttribute('aria-label', desc);
+  var nc = doc.createElement('figcaption');
+  nc.textContent = desc || 'Image';
+  fig.appendChild(nc);
+}
+// Backstop applied to the STORED accessibleHtml: rebuild ONLY the placeholders whose VISIBLE TEXT has
+// leaked a handler signature (an AI pass corrupted the inline on* attribute) into a clean static figure.
+// Uncorrupted placeholders keep their upload UI for the preview. Fixes the JS-in-the-PDF bug everywhere.
+function _repairLeakedImagePlaceholders(html) {
+  if (typeof DOMParser === 'undefined' || !html || html.indexOf('data-img-placeholder') === -1) return html;
+  try {
+    var doc = new DOMParser().parseFromString(String(html), 'text/html');
+    var figs = doc.querySelectorAll('figure[data-img-placeholder]'), n = 0;
+    for (var i = 0; i < figs.length; i++) { if (_PLACEHOLDER_HANDLER_SIG.test(figs[i].textContent || '')) { _staticizePlaceholderFig(figs[i], doc); n++; } }
+    if (!n) return html;
+    var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
+    return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+  } catch (_) { return html; }
+}
+// Applied to a TRANSIENT copy before the deterministic scoring audits: remove the editor chrome and
+// staticize ALL placeholders so axe/EA score the EXPORT-EQUIVALENT document. The chrome-free baseline
+// was audited without this UI, so leaving it in made the deterministic "checks" half appear to REGRESS.
+function _stripChromeForAudit(html) {
+  if (typeof DOMParser === 'undefined' || !html) return html;
+  try {
+    var doc = new DOMParser().parseFromString(String(html), 'text/html');
+    var chrome = doc.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style');
+    for (var c = 0; c < chrome.length; c++) chrome[c].remove();
+    var figs = doc.querySelectorAll('figure[data-img-placeholder]');
+    for (var i = 0; i < figs.length; i++) _staticizePlaceholderFig(figs[i], doc);
+    var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
+    return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
+  } catch (_) { return html; }
+}
+
 // Sanitize an AI-parsed doc-style object before its color/font values are
 // interpolated into style="…" attributes (2026-06-15 security fix). Those values
 // render in the script-enabled preview iframe, so a prompt-injected PDF could
@@ -14876,8 +14937,28 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // evidence than one engine alone, and disagreement should pull the
       // number DOWN, not average away. Fail-soft: EA unavailable → axe-only,
       // exactly the prior behavior, with the consensus fields saying so.
+      // ── Score the EXPORT-EQUIVALENT document (2026-06-18 regression fix) ──
+      // The live preview keeps interactive image-placeholder chrome (upload buttons / drop zones / on*
+      // handlers) that NEVER ships, but the chrome-free baseline was audited WITHOUT it — so the
+      // deterministic "checks" half was penalized for preview-only UI and the score could appear to
+      // REGRESS (e.g. 74→58). First repair any leaked-handler placeholders in the STORED html (fixes the
+      // JS-in-the-PDF bug in preview + export), then re-score axe + EA on a chrome-stripped copy so
+      // before/after is apples-to-apples.
+      accessibleHtml = _repairLeakedImagePlaceholders(accessibleHtml);
+      const _scoreHtml = _stripChromeForAudit(accessibleHtml);
+      try { const _cleanAxe = await runAxeAudit(_scoreHtml); if (_cleanAxe) axeResults = _cleanAxe; } catch (_) {}
       let eaResults = null;
-      try { eaResults = await runEqualAccessAudit(accessibleHtml); } catch (_) { eaResults = null; }
+      try { eaResults = await runEqualAccessAudit(_scoreHtml); } catch (_) { eaResults = null; }
+      // Detect a GENUINE deterministic regression (now that preview chrome is excluded): if the clean
+      // final axe still fails rules the baseline passed, surface WHICH rules rather than burying it.
+      try {
+        if (_auditResult && _auditResult._baselineAxeAudit && axeResults && typeof _diffAxeForMiniAudit === 'function') {
+          const _reg = _diffAxeForMiniAudit(_auditResult._baselineAxeAudit, axeResults);
+          if (_reg && _reg.verdict === 'regressed' && _reg.introduced && _reg.introduced.length) {
+            warnLog('[PDF Fix] Deterministic regression (preview chrome excluded) — newly failing axe rules vs baseline: ' + _reg.introduced.map(function (x) { return x.id; }).join(', '));
+          }
+        }
+      } catch (_) {}
 
       // Blend final score with the deterministic engines (same 50/50 AI+deterministic method as initial audit)
       let finalAfterScore = verification ? verification.score : afterScore;
@@ -15180,14 +15261,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _imageRecoveryInjected = accessibleHtml.indexOf('data-image-recovery="true"') !== -1;
       if (_autoRestore || _imageRecoveryInjected) {
         try {
-          const _reAxe = await runAxeAudit(accessibleHtml);
+          const _reScoreHtml = _stripChromeForAudit(_repairLeakedImagePlaceholders(accessibleHtml)); // apples-to-apples: exclude preview-only chrome
+          const _reAxe = await runAxeAudit(_reScoreHtml);
           // Base success on the FRESH re-audit, not the possibly-stale prior axeResults — else a
           // transient axe failure (null) would silently re-blend the AI score with the
           // PRE-recovery deterministic score. Only adopt fresh results; compute det from them. (#11)
           const _reAxeOk = _reAxe && typeof _reAxe.score === 'number';
           if (_reAxeOk) axeResults = _reAxe;
           let _reEa = null;
-          try { _reEa = await runEqualAccessAudit(accessibleHtml); } catch (_) { _reEa = null; }
+          try { _reEa = await runEqualAccessAudit(_reScoreHtml); } catch (_) { _reEa = null; }
           const _reEaOk = _reEa && typeof _reEa.score === 'number';
           if (_reEaOk) eaResults = _reEa;
           const _reDet = _reAxeOk ? (_reEaOk ? Math.min(_reAxe.score, _reEa.score) : _reAxe.score) : null;
