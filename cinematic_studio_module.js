@@ -224,13 +224,188 @@
     return lines.join('\n');
   }
 
+  // ─── Wave 2: captions / accessibility core ─────────────────────────────────
+  // On-device transcription (Whisper-ONNX via transformers.js) in an inline-blob
+  // module Worker, cloning the kokoro_tts_loader.js pattern. Everything below the
+  // worker (editor, .srt/.vtt, translation) works WITHOUT the model too, so an
+  // import/paste path survives even if the in-Canvas model load fails.
+  var TRANSCRIBE_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/+esm';
+  var TRANSCRIBE_MODEL = 'onnx-community/whisper-base.en'; // English narration (NotebookLM is English-only)
+  var CAPTION_LANGS = ['Spanish', 'Arabic', 'Somali', 'Portuguese', 'Haitian Creole', 'Vietnamese', 'Chinese (Simplified)', 'French', 'Swahili', 'Kinyarwanda', 'Pashto', 'Dari', 'Ukrainian', 'Russian'];
+
+  function round1(n) { return Math.round((n || 0) * 10) / 10; }
+  function pad2(n) { n = Math.floor(n); return (n < 10 ? '0' : '') + n; }
+  function pad3(n) { n = Math.floor(n); return (n < 10 ? '00' : n < 100 ? '0' : '') + n; }
+  function secsToStamp(t, sep) {
+    if (!isFinite(t) || t < 0) t = 0;
+    var hh = Math.floor(t / 3600), mm = Math.floor((t % 3600) / 60), ss = Math.floor(t % 60);
+    var ms = Math.round((t - Math.floor(t)) * 1000);
+    if (ms >= 1000) { ms = 0; ss += 1; }
+    return pad2(hh) + ':' + pad2(mm) + ':' + pad2(ss) + sep + pad3(ms);
+  }
+  function buildSrt(segs) {
+    return segs.map(function (s, i) {
+      return (i + 1) + '\n' + secsToStamp(s.start, ',') + ' --> ' + secsToStamp(s.end, ',') + '\n' + (s.text || '').trim() + '\n';
+    }).join('\n');
+  }
+  function buildVtt(segs) {
+    return 'WEBVTT\n\n' + segs.map(function (s) {
+      return secsToStamp(s.start, '.') + ' --> ' + secsToStamp(s.end, '.') + '\n' + (s.text || '').trim();
+    }).join('\n\n') + '\n';
+  }
+  // Parse an imported .srt/.vtt back into editable segments (tolerant of ',' or '.').
+  function parseTimecodeFile(text) {
+    var out = [];
+    if (!text) return out;
+    var norm = String(text).replace(/\r/g, '');
+    var re = /(\d{1,2}):(\d{2}):(\d{2})[.,](\d{1,3})\s*-->\s*(\d{1,2}):(\d{2}):(\d{2})[.,](\d{1,3})/;
+    var blocks = norm.split(/\n\s*\n/);
+    for (var b = 0; b < blocks.length; b++) {
+      var blk = blocks[b].trim();
+      if (!blk || /^WEBVTT/i.test(blk)) continue;
+      var m = blk.match(re);
+      if (!m) continue;
+      var start = (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]) + (+m[4]) / Math.pow(10, m[4].length);
+      var end = (+m[5]) * 3600 + (+m[6]) * 60 + (+m[7]) + (+m[8]) / Math.pow(10, m[8].length);
+      var lines = blk.split('\n');
+      var ti = -1;
+      for (var li = 0; li < lines.length; li++) { if (re.test(lines[li])) { ti = li; break; } }
+      var txt = lines.slice(ti + 1).join(' ').trim();
+      out.push({ id: uid(), start: start, end: end, text: txt });
+    }
+    return out;
+  }
+  function segmentsFromChunks(chunks, duration) {
+    var segs = [];
+    for (var i = 0; i < chunks.length; i++) {
+      var c = chunks[i] || {};
+      var ts = c.timestamp || [];
+      var start = (typeof ts[0] === 'number') ? ts[0] : (segs.length ? segs[segs.length - 1].end : 0);
+      var nextStart = (i + 1 < chunks.length && chunks[i + 1] && chunks[i + 1].timestamp && typeof chunks[i + 1].timestamp[0] === 'number') ? chunks[i + 1].timestamp[0] : null;
+      var end = (typeof ts[1] === 'number') ? ts[1] : (nextStart != null ? nextStart : (duration || start + 2));
+      segs.push({ id: uid(), start: start, end: end, text: (c.text || '').trim() });
+    }
+    return segs;
+  }
+  function downloadText(filename, text, mime) {
+    try {
+      var blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+    } catch (e) {}
+  }
+  // Decode the file's audio track and resample to 16kHz mono Float32 (what Whisper wants).
+  function extractPcm16k(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('Could not read the file')); };
+      reader.onload = function () {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) { reject(new Error('Web Audio is not supported in this browser')); return; }
+        var ac = new AC();
+        ac.decodeAudioData(reader.result, function (decoded) {
+          try {
+            var targetRate = 16000;
+            var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+            if (!OAC) { resolve({ pcm: new Float32Array(decoded.getChannelData(0)), duration: decoded.duration, rate: decoded.sampleRate }); try { ac.close(); } catch (_) {} return; }
+            var offline = new OAC(1, Math.max(1, Math.ceil(decoded.duration * targetRate)), targetRate);
+            var srcNode = offline.createBufferSource();
+            srcNode.buffer = decoded; srcNode.connect(offline.destination); srcNode.start(0);
+            offline.startRendering().then(function (rendered) {
+              resolve({ pcm: new Float32Array(rendered.getChannelData(0)), duration: decoded.duration, rate: targetRate });
+              try { ac.close(); } catch (_) {}
+            }, function (err) { reject(err); });
+          } catch (e2) { reject(e2); }
+        }, function () { reject(new Error('Could not decode audio from this file. Try an MP4, M4A, or WAV.')); });
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  var TRANSCRIBE_WORKER_SOURCE = `
+    let _asr = null;
+    self.onmessage = async ({ data }) => {
+      try {
+        if (data.type === 'init') {
+          self.postMessage({ type: 'progress', stage: 'Loading speech library', pct: 0.03 });
+          const mod = await import(data.cdn);
+          const pipeline = mod.pipeline;
+          if (mod.env) { try { mod.env.allowLocalModels = false; } catch (_) {} }
+          self.postMessage({ type: 'progress', stage: 'Downloading speech model (cached after first load)', pct: 0.08 });
+          _asr = await pipeline('automatic-speech-recognition', data.modelId, {
+            dtype: data.dtype || 'q8',
+            device: 'wasm',
+            progress_callback: (p) => {
+              if (!p) return;
+              if (typeof p.progress === 'number') self.postMessage({ type: 'progress', stage: 'Downloading speech model', pct: 0.08 + (p.progress / 100) * 0.85 });
+              else if (p.status === 'done') self.postMessage({ type: 'progress', stage: 'Loading model into memory', pct: 0.95 });
+            }
+          });
+          self.postMessage({ type: 'progress', stage: 'Ready', pct: 1.0 });
+          self.postMessage({ type: 'ready' });
+          return;
+        }
+        if (data.type === 'transcribe') {
+          if (!_asr) { self.postMessage({ type: 'error', id: data.id, error: 'Model not initialized' }); return; }
+          const out = await _asr(data.pcm, { return_timestamps: true, chunk_length_s: 30, stride_length_s: 5 });
+          self.postMessage({ type: 'result', id: data.id, text: (out && out.text) || '', chunks: (out && out.chunks) || [] });
+          return;
+        }
+      } catch (e) {
+        self.postMessage({ type: data.type === 'init' ? 'init_error' : 'error', id: data.id, error: (e && e.message) || String(e) });
+      }
+    };
+  `;
+
+  var Transcriber = (function () {
+    var worker = null, ready = false, initPromise = null, msgId = 0, onProg = null;
+    var pending = {};
+    function ensureWorker() {
+      if (worker) return;
+      var blob = new Blob([TRANSCRIBE_WORKER_SOURCE], { type: 'application/javascript' });
+      var url = URL.createObjectURL(blob);
+      worker = new Worker(url, { type: 'module' });
+      worker.onmessage = function (ev) {
+        var d = ev.data || {};
+        if (d.type === 'progress') { if (onProg) onProg(d); return; }
+        if (d.type === 'ready') { ready = true; if (pending.__init__) { pending.__init__.resolve(true); delete pending.__init__; } return; }
+        if (d.type === 'init_error') { if (pending.__init__) { pending.__init__.reject(new Error(d.error)); delete pending.__init__; } return; }
+        if (d.type === 'result') { var p = pending[d.id]; if (p) { p.resolve({ text: d.text, chunks: d.chunks }); delete pending[d.id]; } return; }
+        if (d.type === 'error') { var q = pending[d.id]; if (q) { q.reject(new Error(d.error)); delete pending[d.id]; } return; }
+      };
+      worker.onerror = function (e) { if (pending.__init__) { pending.__init__.reject(new Error((e && e.message) || 'Speech worker failed to start')); delete pending.__init__; } };
+    }
+    return {
+      load: function (progressCb) {
+        onProg = progressCb || null;
+        if (ready) return Promise.resolve(true);
+        if (initPromise) return initPromise;
+        ensureWorker();
+        initPromise = new Promise(function (resolve, reject) { pending.__init__ = { resolve: resolve, reject: reject }; });
+        worker.postMessage({ type: 'init', cdn: TRANSCRIBE_CDN, modelId: TRANSCRIBE_MODEL, dtype: 'q8' });
+        return initPromise;
+      },
+      run: function (pcm) {
+        ensureWorker();
+        var id = 'm' + (++msgId);
+        return new Promise(function (resolve, reject) {
+          pending[id] = { resolve: resolve, reject: reject };
+          worker.postMessage({ type: 'transcribe', id: id, pcm: pcm }, [pcm.buffer]);
+        });
+      }
+    };
+  })();
+
   // ─── Component ────────────────────────────────────────────────────────────
 
   function CinematicStudio(props) {
     var onClose = props.onClose, callGemini = props.callGemini, addToast = props.addToast;
     var T = makeT(props.t);
 
-    var _tab = useState('build'); var tab = _tab[0], setTab = _tab[1];
+    var _tab = useState(props.initialTab || 'build'); var tab = _tab[0], setTab = _tab[1];
     var _preset = useState('explainer'); var presetId = _preset[0], setPresetId = _preset[1];
 
     var initialFields = {
@@ -255,6 +430,17 @@
     var _notes = useState(''); var notes = _notes[0], setNotes = _notes[1];
     var _re = useState(''); var rePrompt = _re[0], setRePrompt = _re[1];
     var _reBusy = useState(false); var reBusy = _reBusy[0], setReBusy = _reBusy[1];
+
+    // Wave 2: captions / accessibility
+    var _vfile = useState(null); var vfile = _vfile[0], setVfile = _vfile[1];
+    var _segs = useState([]); var segs = _segs[0], setSegs = _segs[1];
+    var _tstatus = useState(''); var tstatus = _tstatus[0], setTstatus = _tstatus[1];
+    var _tpct = useState(0); var tpct = _tpct[0], setTpct = _tpct[1];
+    var _tbusy = useState(false); var tbusy = _tbusy[0], setTbusy = _tbusy[1];
+    var _terr = useState(''); var terr = _terr[0], setTerr = _terr[1];
+    var _capLang = useState('Spanish'); var capLang = _capLang[0], setCapLang = _capLang[1];
+    var _trBusy = useState(false); var trBusy = _trBusy[0], setTrBusy = _trBusy[1];
+    var _trSegs = useState(null); var trSegs = _trSegs[0], setTrSegs = _trSegs[1];
 
     var headingRef = useRef(null);
     useEffect(function () { if (headingRef.current) { try { headingRef.current.focus(); } catch (_) {} } }, []);
@@ -341,6 +527,93 @@
         .then(function () { setReBusy(false); });
     }
 
+    // ── Wave 2: caption handlers ──
+    function updateSeg(id, patch) {
+      setSegs(function (prev) { return prev.map(function (s) { return s.id === id ? Object.assign({}, s, patch) : s; }); });
+      setTrSegs(null);
+    }
+    function removeSeg(id) { setSegs(function (prev) { return prev.filter(function (s) { return s.id !== id; }); }); setTrSegs(null); }
+    function addBlankSeg() {
+      setSegs(function (prev) { var last = prev.length ? prev[prev.length - 1] : null; var start = last ? last.end : 0; return prev.concat([{ id: uid(), start: start, end: start + 3, text: '' }]); });
+      setTrSegs(null);
+    }
+    function onPickVideo(file) {
+      if (!file) return;
+      setVfile(file); setSegs([]); setTrSegs(null); setTerr(''); setTpct(0); setTstatus('');
+      announce('Loaded ' + file.name);
+    }
+    function runTranscribe() {
+      if (!vfile) { if (addToast) addToast('Choose a video or audio file first', 'info'); return; }
+      setTbusy(true); setTerr(''); setTpct(0); setTstatus('Reading audio'); announce('Transcription started');
+      var dur = 0;
+      extractPcm16k(vfile).then(function (res) {
+        dur = res.duration || 0;
+        setTstatus('Loading speech model (first run downloads it)');
+        return Transcriber.load(function (p) { if (p && typeof p.pct === 'number') setTpct(p.pct); if (p && p.stage) setTstatus(p.stage); }).then(function () {
+          setTstatus('Transcribing audio (' + Math.round(dur) + 's)');
+          return Transcriber.run(res.pcm);
+        });
+      }).then(function (out) {
+        var s = segmentsFromChunks((out && out.chunks) || [], dur);
+        if (!s.length && out && out.text) s = [{ id: uid(), start: 0, end: dur || 2, text: out.text.trim() }];
+        setSegs(s); setTstatus(''); setTpct(1);
+        if (addToast) addToast('Draft captions ready: ' + s.length + ' segments. Review before use.', 'success');
+        announce(s.length + ' caption segments ready for review');
+      }).catch(function (e) {
+        var msg = (e && e.message) || String(e);
+        setTerr(msg);
+        if (addToast) addToast('Transcription unavailable: ' + msg, 'error');
+        announce('Transcription failed: ' + msg);
+      }).then(function () { setTbusy(false); });
+    }
+    function onImportCaptions(file) {
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onerror = function () { if (addToast) addToast('Could not read the file', 'error'); };
+      reader.onload = function () {
+        var txt = String(reader.result || '');
+        var parsed = parseTimecodeFile(txt);
+        if (!parsed.length) {
+          var blocks = txt.split(/\n\s*\n/).map(function (b) { return b.trim(); }).filter(Boolean);
+          parsed = blocks.map(function (b, i) { return { id: uid(), start: i * 4, end: i * 4 + 4, text: b.replace(/\n/g, ' ') }; });
+        }
+        if (parsed.length) { setSegs(parsed); setTrSegs(null); if (addToast) addToast('Imported ' + parsed.length + ' segments', 'success'); announce('Imported ' + parsed.length + ' caption segments'); }
+        else if (addToast) addToast('Could not find captions or text in that file', 'error');
+      };
+      reader.readAsText(file);
+    }
+    function translateCaptions() {
+      if (!segs.length) { if (addToast) addToast('No captions to translate yet', 'info'); return; }
+      if (!callGemini) { if (addToast) addToast('AI translation is not available here', 'info'); return; }
+      setTrBusy(true); setTrSegs(null); announce('Translating captions to ' + capLang);
+      var arr = segs.map(function (s) { return s.text || ''; });
+      var prompt = 'Translate each caption line into ' + capLang + ' for a K-12 classroom audience. '
+        + 'Keep the SAME number of lines in the SAME order. Keep each line natural and concise so it works as a subtitle. '
+        + 'Return ONLY a JSON array of strings (the translations in order), nothing else.\n\nLINES:\n' + JSON.stringify(arr);
+      Promise.resolve().then(function () { return callGemini(prompt, false, true); }).then(function (res) {
+        var text = (typeof res === 'string') ? res : (res && res.text) ? res.text : '';
+        var parsed = null;
+        try { var m = text.match(/\[[\s\S]*\]/); if (m) parsed = JSON.parse(m[0]); } catch (_) { parsed = null; }
+        if (parsed && parsed.length === segs.length) {
+          setTrSegs(segs.map(function (s, i) { return { id: s.id, start: s.start, end: s.end, text: String(parsed[i] || '').trim() }; }));
+          if (addToast) addToast('Translated to ' + capLang + ' (AI draft, review before use)', 'success');
+          announce('Translated captions ready');
+        } else {
+          if (addToast) addToast('Translation did not line up; try again or translate fewer segments', 'error');
+          announce('Translation failed');
+        }
+      }).catch(function () { if (addToast) addToast('Translation failed', 'error'); }).then(function () { setTrBusy(false); });
+    }
+    function exportCaptions(kind, translated) {
+      var source = translated ? trSegs : segs;
+      if (!source || !source.length) { if (addToast) addToast('Nothing to export yet', 'info'); return; }
+      var base = (vfile && vfile.name ? vfile.name.replace(/\.[^.]+$/, '') : 'captions') + (translated ? '.' + capLang.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '');
+      if (kind === 'srt') downloadText(base + '.srt', buildSrt(source), 'text/plain;charset=utf-8');
+      else if (kind === 'vtt') downloadText(base + '.vtt', buildVtt(source), 'text/vtt;charset=utf-8');
+      else downloadText(base + '.txt', source.map(function (s) { return s.text; }).join('\n'), 'text/plain;charset=utf-8');
+      if (addToast) addToast('Exported ' + base + '.' + kind, 'success');
+    }
+
     // ── small render helpers ──
     function label(text, htmlFor) { return h('label', { className: 'block text-sm font-semibold text-slate-200 mb-1', htmlFor: htmlFor }, text); }
     function selectEl(id, value, onChange, options) {
@@ -376,6 +649,7 @@
     var tabs = h('div', { role: 'tablist', 'aria-label': 'Cinematic Studio sections', className: 'flex flex-wrap gap-2 mb-4' }, [
       h('button', { key: 'b', role: 'tab', 'aria-selected': tab === 'build', className: btn(tab === 'build'), onClick: function () { setTab('build'); } }, T('cs_tab_build', '1. Build a prompt')),
       h('button', { key: 'd', role: 'tab', 'aria-selected': tab === 'diagnose', className: btn(tab === 'diagnose'), onClick: function () { setTab('diagnose'); } }, T('cs_tab_diagnose', '2. Diagnose & re-prompt')),
+      h('button', { key: 'c', role: 'tab', 'aria-selected': tab === 'captions', className: btn(tab === 'captions'), onClick: function () { setTab('captions'); } }, T('cs_tab_captions', 'Captions & translate')),
       h('button', { key: 'g', role: 'tab', 'aria-selected': tab === 'guide', className: btn(tab === 'guide'), onClick: function () { setTab('guide'); } }, T('cs_tab_guide', 'Tips'))
     ]);
 
@@ -475,23 +749,102 @@
       guideItem('a', T('cs_g1_t', 'You cannot edit the video'), T('cs_g1_b', 'NotebookLM gives you a finished MP4. To change anything you must rewrite the steering prompt and regenerate the whole thing. That is why the prompt matters so much.')),
       guideItem('b', T('cs_g2_t', 'Regenerations are limited'), T('cs_g2_b', 'Cinematic videos are an AI Ultra feature with roughly 20 generations per day and can take many minutes each. Get the prompt close before you spend one.')),
       guideItem('c', T('cs_g3_t', 'Watch for made-up visuals'), T('cs_g3_b', 'The model can show inaccurate or invented images. Keep the visual-accuracy guardrail on, and if it happens, use the Diagnose tab to push back specifically.')),
-      guideItem('d', T('cs_g4_t', 'It narrates in English'), T('cs_g4_b', 'Narration is English-only today. For multilingual classrooms, plan to add translated captions afterward (an AlloFlow accessibility step that is coming) rather than expecting NotebookLM to translate.')),
+      guideItem('d', T('cs_g4_t', 'It narrates in English'), T('cs_g4_b', 'Narration is English-only today. For multilingual classrooms, use the Captions & translate tab here to transcribe the video and add translated captions in any of dozens of languages.')),
       guideItem('e', T('cs_g5_t', 'Shorter is usually better'), T('cs_g5_b', 'One clear idea in two focused minutes beats five rambling ones. Use the length setting and trim your must-include list.'))
     ]);
 
-    var body = tab === 'build' ? buildTab : (tab === 'diagnose' ? diagnoseTab : guideTab);
+    // ── CAPTIONS tab (Wave 2: accessibility core) ──
+    var capHonesty = h('div', { className: 'mb-3 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-xs text-sky-200' },
+      T('cs_cap_honesty', 'These are AI-DRAFT captions. Automatic transcription typically gets roughly 1 word in 7 to 20 wrong (worse with noise, accents, or jargon) and can invent text during silence. Always read and fix them before use, and do not treat them as compliant captions where a standard requires human-verified captioning.'));
+
+    var capSource = h('div', { className: 'rounded-lg border border-slate-700 bg-slate-800/50 p-3 mb-3' }, [
+      h('div', { key: 'r1', className: 'flex flex-wrap items-center gap-2 mb-2' }, [
+        h('label', { key: 'pick', className: 'text-xs px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer' }, [
+          T('cs_cap_pick', 'Choose video / audio'),
+          h('input', { key: 'in', type: 'file', accept: 'video/*,audio/*', style: { display: 'none' }, onChange: function (e) { onPickVideo(e.target.files && e.target.files[0]); } })
+        ]),
+        vfile ? h('span', { key: 'fn', className: 'text-xs text-slate-300 truncate max-w-[14rem]' }, vfile.name) : null,
+        h('button', { key: 'go', onClick: runTranscribe, disabled: tbusy || !vfile, className: 'text-xs px-3 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-40' }, tbusy ? T('cs_cap_working', 'Working...') : T('cs_cap_transcribe', 'Transcribe'))
+      ]),
+      h('div', { key: 'r2', className: 'flex flex-wrap items-center gap-2 text-xs text-slate-400' }, [
+        h('span', { key: 'or' }, T('cs_cap_or', 'or')),
+        h('label', { key: 'imp', className: 'px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100 cursor-pointer' }, [
+          T('cs_cap_import', 'Import .srt / .vtt / transcript'),
+          h('input', { key: 'in', type: 'file', accept: '.srt,.vtt,.txt,text/plain', style: { display: 'none' }, onChange: function (e) { onImportCaptions(e.target.files && e.target.files[0]); } })
+        ]),
+        h('button', { key: 'add', onClick: addBlankSeg, className: 'px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_cap_addseg', 'Add blank line'))
+      ]),
+      tbusy ? h('div', { key: 'prog', className: 'mt-2' }, [
+        h('div', { key: 'bar', className: 'h-1.5 bg-slate-700 rounded overflow-hidden' }, h('div', { className: 'h-full bg-emerald-500 transition-all', style: { width: Math.round((tpct || 0) * 100) + '%' } })),
+        h('div', { key: 'st', className: 'text-xs text-slate-400 mt-1' }, tstatus || '')
+      ]) : null,
+      terr ? h('div', { key: 'err', className: 'mt-2 text-xs text-rose-300' }, terr + ' ' + T('cs_cap_errhint', '(You can still import a transcript or .srt above and edit it here.)')) : null
+    ]);
+
+    var capEditor = segs.length ? h('div', { className: 'rounded-lg border border-slate-700 bg-slate-900/60 p-2 mb-3 max-h-72 overflow-auto' }, [
+      h('div', { key: 'hd', className: 'text-xs text-slate-400 mb-1 px-1' }, segs.length + ' ' + T('cs_cap_segcount', 'segments (start / end seconds, then text)')),
+      h('div', { key: 'list' }, segs.map(function (s) {
+        return h('div', { key: s.id, className: 'flex items-start gap-2 py-1 border-b border-slate-800' }, [
+          h('div', { key: 'tc', className: 'flex flex-col gap-1 shrink-0' }, [
+            h('input', { key: 'st', type: 'number', step: '0.1', min: '0', value: round1(s.start), 'aria-label': 'Start seconds', onChange: function (e) { updateSeg(s.id, { start: parseFloat(e.target.value) || 0 }); }, className: 'w-16 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-slate-100' }),
+            h('input', { key: 'en', type: 'number', step: '0.1', min: '0', value: round1(s.end), 'aria-label': 'End seconds', onChange: function (e) { updateSeg(s.id, { end: parseFloat(e.target.value) || 0 }); }, className: 'w-16 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-slate-100' })
+          ]),
+          h('textarea', { key: 'tx', rows: 2, value: s.text, 'aria-label': 'Caption text', onChange: function (e) { updateSeg(s.id, { text: e.target.value }); }, className: 'flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-100' }),
+          h('button', { key: 'rm', onClick: function () { removeSeg(s.id); }, 'aria-label': 'Remove caption line', className: 'text-slate-500 hover:text-rose-400 px-1 text-lg leading-none' }, '×')
+        ]);
+      }))
+    ]) : null;
+
+    var capExport = segs.length ? h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' }, [
+      h('span', { key: 'l', className: 'text-xs text-slate-400' }, T('cs_cap_export', 'Export:')),
+      h('button', { key: 'srt', onClick: function () { exportCaptions('srt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.srt'),
+      h('button', { key: 'vtt', onClick: function () { exportCaptions('vtt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.vtt'),
+      h('button', { key: 'txt', onClick: function () { exportCaptions('txt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_cap_transcript', 'transcript'))
+    ]) : null;
+
+    var capTranslate = segs.length ? h('div', { className: 'rounded-lg border border-slate-700 bg-slate-800/50 p-3' }, [
+      h('div', { key: 'row', className: 'flex flex-wrap items-center gap-2' }, [
+        h('span', { key: 'l', className: 'text-xs text-slate-300 font-semibold' }, T('cs_cap_translate', 'Translate captions to:')),
+        h('select', { key: 'sel', value: capLang, 'aria-label': 'Translation language', onChange: function (e) { setCapLang(e.target.value); setTrSegs(null); }, className: 'bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-100' }, CAPTION_LANGS.map(function (l) { return h('option', { key: l, value: l }, l); })),
+        h('button', { key: 'go', onClick: translateCaptions, disabled: trBusy, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40' }, trBusy ? T('cs_cap_translating', 'Translating...') : T('cs_cap_dotranslate', 'Translate'))
+      ]),
+      trSegs ? h('div', { key: 'out', className: 'mt-2' }, [
+        h('div', { key: 'lab', className: 'flex items-center justify-between mb-1' }, [
+          h('span', { key: 't', className: 'text-xs font-semibold text-emerald-300' }, capLang + ' ' + T('cs_cap_draftlabel', '(AI draft, review before use)')),
+          h('div', { key: 'b', className: 'flex gap-2' }, [
+            h('button', { key: 'srt', onClick: function () { exportCaptions('srt', true); }, className: 'text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.srt'),
+            h('button', { key: 'vtt', onClick: function () { exportCaptions('vtt', true); }, className: 'text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.vtt')
+          ])
+        ]),
+        h('div', { key: 'prev', className: 'max-h-40 overflow-auto text-xs text-slate-200 bg-slate-900/70 border border-slate-700 rounded p-2' }, trSegs.map(function (s) {
+          return h('div', { key: s.id, className: 'py-0.5' }, [h('span', { key: 'tc', className: 'text-slate-500 mr-2' }, secsToStamp(s.start, ',').slice(3, 8)), s.text]);
+        }))
+      ]) : null
+    ]) : null;
+
+    var captionsTab = h('div', { role: 'tabpanel' }, [
+      h('p', { key: 'i', className: 'text-sm text-slate-400 mb-3' }, T('cs_cap_intro', 'Download your NotebookLM video, then add captions and translations it cannot make on its own. Transcription runs on your device; translation uses AI.')),
+      capHonesty, capSource, capEditor, capExport, capTranslate
+    ]);
+
+    var body = tab === 'build' ? buildTab : (tab === 'diagnose' ? diagnoseTab : (tab === 'captions' ? captionsTab : guideTab));
 
     return h('div', {
       className: 'cs-root fixed inset-0 z-[60] bg-black/50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-auto',
       role: 'dialog', 'aria-modal': 'true', 'aria-label': T('cs_title', 'Cinematic Studio'),
       onMouseDown: function (e) { if (e.target === e.currentTarget && onClose) onClose(); }
     }, h('div', {
-      className: 'bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-3xl p-4 sm:p-6 my-4'
+      className: 'bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl p-4 sm:p-6 my-4'
     }, [header, banner, tabs, body]));
   }
 
   // ─── Module registration ───────────────────────────────────────────────────
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.CinematicStudio = CinematicStudio;
+  // Pure, side-effect-free caption helpers exposed for tests.
+  window.AlloModules.__cinematicStudioInternals = {
+    buildSrt: buildSrt, buildVtt: buildVtt, parseTimecodeFile: parseTimecodeFile,
+    secsToStamp: secsToStamp, segmentsFromChunks: segmentsFromChunks
+  };
   console.log('[CinematicStudioModule] Cinematic Studio registered');
 })();
