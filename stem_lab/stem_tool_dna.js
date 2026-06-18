@@ -124,7 +124,11 @@ window.StemLab = window.StemLab || {
   };
 
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
-  var DNA_TO_RNA = { 'A':'U', 'T':'A', 'G':'C', 'C':'G' };
+  var DNA_TO_RNA = { 'A':'U', 'T':'A', 'G':'C', 'C':'G' }; // template-strand → RNA (still used by the CRISPR gRNA readout)
+  // Coding-strand → mRNA (T→U only). The displayed sequence is the CODING strand (every preset starts with
+  // ATG), so transcription must NOT complement it — complementing destroyed the start codon, which left
+  // translation/protein/MW empty for every preset.
+  var CODING_TO_RNA = { 'A':'A', 'T':'U', 'G':'G', 'C':'C' };
   var BASE_COLORS = { 'A':'#ef4444', 'T':'#3b82f6', 'G':'#22c55e', 'C':'#f59e0b', 'U':'#a855f7' };
   var BASE_DARK_COLORS = { 'A':'#991b1b', 'T':'#1e3a8a', 'G':'#166534', 'C':'#9a3412', 'U':'#6b21a8' };
 
@@ -345,7 +349,7 @@ window.StemLab = window.StemLab || {
 
       // ═══ DERIVED VALUES ═══
       var complementStrand = dnaSeq.split('').map(function(b) { return BASE_COMPLEMENT[b] || 'N'; }).join('');
-      var fullMRNA = dnaSeq.split('').map(function(b) { return DNA_TO_RNA[b] || 'N'; }).join('');
+      var fullMRNA = dnaSeq.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join('');
 
       function translateMRNA(mrna) {
         var result = [];
@@ -545,7 +549,7 @@ window.StemLab = window.StemLab || {
             draw3DSphere(ctx2d, x, topY, baseW * 0.38, base);
 
             if (tab === 'transcribe' && i < currentAnimStep) {
-              var rnaBase = DNA_TO_RNA[base];
+              var rnaBase = CODING_TO_RNA[base] || base; // match the mRNA string (coding strand, T→U) — not the complement
               draw3DSphere(ctx2d, x, bottomY + 15, baseW * 0.38, rnaBase);
             } else {
               draw3DSphere(ctx2d, x, bottomY, baseW * 0.38, comp);
@@ -1840,7 +1844,7 @@ window.StemLab = window.StemLab || {
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
             h("div", { className: "flex items-center justify-between flex-wrap gap-2" },
-              h("h4", { className: "text-sm font-bold text-slate-700" }, "Template Strand (3'\u21925')"),
+              h("h4", { className: "text-sm font-bold text-slate-700" }, "Coding Strand (5'\u21923')"),
               h("div", { className: "flex gap-1 flex-wrap" },
                 h("button", { onClick: function() { updMulti({ dnaSequence: randomDNA(21), mRNA: '', protein: [], animStep: 0 }); announceToSR('Random sequence'); }, className: "px-2 py-1 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100" }, "\uD83C\uDFB2 Random"),
                 PRESETS.map(function(p) {
@@ -1927,7 +1931,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex justify-between text-xs text-slate-600 mb-2" }, h("span", null, animStep + "/" + dnaSeq.length), h("span", null, Math.round(animStep / dnaSeq.length * 100) + "%")),
             h("div", { className: "w-full bg-slate-100 rounded-full h-2" }, h("div", { className: "bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full h-2 transition-all", style: { width: (animStep / dnaSeq.length * 100) + '%' } })),
             mRNA && h("div", { className: "mt-3" }, h("span", { className: "text-xs font-bold text-violet-600" }, "mRNA: "), h("span", { className: "font-mono text-xs text-slate-700 break-all" }, mRNA)),
-            h("div", { className: "mt-2 text-[11px] text-slate-600 bg-slate-50 rounded-lg p-2" }, "\uD83D\uDCA1 RNA Polymerase reads template 3'\u21925', builds mRNA 5'\u21923'. T becomes U in RNA.")
+            h("div", { className: "mt-2 text-[11px] text-slate-600 bg-slate-50 rounded-lg p-2" }, "\uD83D\uDCA1 mRNA is a copy of the coding strand with U in place of T. (RNA Polymerase actually reads the complementary template strand 3'\u21925', which yields the same sequence as the coding strand.)")
           )
         ),
 
@@ -2708,8 +2712,8 @@ window.StemLab = window.StemLab || {
 
       // ── Reference data ──
       var BASE_PAIRS = [
-        { base: 'Adenine (A)', cat: 'Purine (2-ring)', pairs: 'Thymine (T) in DNA · Uracil (U) in RNA', bonds: '2 hydrogen bonds', icon: 'A', color: '#3b82f6', notes: 'One of the four DNA bases. Paired with T via 2 H-bonds — weaker than G-C.' },
-        { base: 'Thymine (T)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A)', bonds: '2 hydrogen bonds', icon: 'T', color: '#ef4444', notes: 'DNA only — replaced by uracil in RNA. Methyl group at C5 distinguishes it from U.' },
+        { base: 'Adenine (A)', cat: 'Purine (2-ring)', pairs: 'Thymine (T) in DNA · Uracil (U) in RNA', bonds: '2 hydrogen bonds', icon: 'A', color: '#ef4444', notes: 'One of the four DNA bases. Paired with T via 2 H-bonds — weaker than G-C.' },
+        { base: 'Thymine (T)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A)', bonds: '2 hydrogen bonds', icon: 'T', color: '#3b82f6', notes: 'DNA only — replaced by uracil in RNA. Methyl group at C5 distinguishes it from U.' },
         { base: 'Guanine (G)', cat: 'Purine (2-ring)', pairs: 'Cytosine (C)', bonds: '3 hydrogen bonds', icon: 'G', color: '#22c55e', notes: 'Stronger pairing than A-T due to 3 H-bonds. G-C rich regions are more thermally stable.' },
         { base: 'Cytosine (C)', cat: 'Pyrimidine (1-ring)', pairs: 'Guanine (G)', bonds: '3 hydrogen bonds', icon: 'C', color: '#f59e0b', notes: 'Pyrimidine. Subject to deamination → uracil (a major source of DNA damage).' },
         { base: 'Uracil (U)', cat: 'Pyrimidine (1-ring)', pairs: 'Adenine (A) in RNA', bonds: '2 hydrogen bonds', icon: 'U', color: '#a855f7', notes: 'RNA-only. Cheaper for cell to make than T; T more stable for genetic-info storage.' }
