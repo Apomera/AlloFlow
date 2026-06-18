@@ -140,7 +140,7 @@ describe('renders every tab without crashing', () => {
   const render = (tab) => ReactDOMServer.renderToString(
     React.createElement(CS, { onClose() {}, addToast() {}, t: null, callGemini: null, initialTab: tab })
   );
-  for (const tab of ['build', 'diagnose', 'captions', 'guide']) {
+  for (const tab of ['build', 'diagnose', 'captions', 'compose', 'guide']) {
     it('renders tab: ' + tab, () => {
       expect(render(tab).length).toBeGreaterThan(500);
     });
@@ -150,5 +150,88 @@ describe('renders every tab without crashing', () => {
     expect(html).toContain('AI-DRAFT captions');
     expect(html).toContain('Choose video');
     expect(html).toContain('Import .srt');
+  });
+  it('compose tab shows the source-doc input + FERPA gate', () => {
+    const html = render('compose');
+    expect(html).toContain('Source document');
+    expect(html).toContain('removed student names');
+  });
+});
+
+// ── Wave 3: agentic storyboard pure core ──
+describe('storyboard source-grounding (the load-bearing integrity check)', () => {
+  const DOC = 'Photosynthesis converts sunlight into chemical energy. Chlorophyll absorbs red and blue light. Plants release oxygen as a byproduct.';
+  it('an anchor must literally occur in the document', () => {
+    expect(I.anchorIsGrounded('Chlorophyll absorbs red and blue light', I.normForMatch(DOC))).toBe(true);
+    expect(I.anchorIsGrounded('Plants run on electricity', I.normForMatch(DOC))).toBe(false); // fabricated
+    expect(I.anchorIsGrounded('short', I.normForMatch(DOC))).toBe(false);                     // too short to count
+  });
+  it('a narrated scene with a real anchor is grounded; without one it is flagged', () => {
+    const sb = { scenes: [
+      { type: 'narratedText', narration: 'Chlorophyll absorbs red and blue light.', props: { body: 'x' }, sourceAnchors: ['Chlorophyll absorbs red and blue light'], durationSec: 6 },
+      { type: 'narratedText', narration: 'Photosynthesis happens at night.', props: { body: 'y' }, sourceAnchors: ['Photosynthesis happens at night'], durationSec: 6 },
+    ] };
+    const v = I.validateStoryboard(sb, DOC);
+    expect(v.scenes[0].grounded).toBe(true);
+    expect(v.scenes[1].grounded).toBe(false); // anchor not in the doc
+    expect(v.groundedCount).toBe(1);
+    expect(v.warnings.some(w => /not traceable/.test(w))).toBe(true);
+  });
+  it('title/divider/outro scenes need no grounding', () => {
+    const sb = { scenes: [{ type: 'titleCard', narration: '', props: { title: 'Photosynthesis' }, durationSec: 5 }] };
+    expect(I.validateStoryboard(sb, DOC).scenes[0].grounded).toBe(true);
+  });
+});
+
+describe('storyboard structural validation', () => {
+  it('rejects unknown scene types and missing required props', () => {
+    const v1 = I.validateStoryboard({ scenes: [{ type: 'hologram', props: {}, durationSec: 5 }] }, '');
+    expect(v1.ok).toBe(false);
+    expect(v1.errors.some(e => /unknown type/.test(e))).toBe(true);
+    const v2 = I.validateStoryboard({ scenes: [{ type: 'bulletList', props: { heading: 'H' }, durationSec: 5 }] }, '');
+    expect(v2.ok).toBe(false);
+    expect(v2.errors.some(e => /missing "bullets"/.test(e))).toBe(true);
+  });
+  it('warns on out-of-range duration; empty storyboard is not ok', () => {
+    const v = I.validateStoryboard({ scenes: [{ type: 'outro', props: { message: 'Bye' }, durationSec: 99 }] }, '');
+    expect(v.warnings.some(w => /out of range/.test(w))).toBe(true);
+    expect(I.validateStoryboard({ scenes: [] }, '').ok).toBe(false);
+  });
+  it('every catalog type declares its required props', () => {
+    for (const t of I.TEMPLATE_TYPES) {
+      expect(Array.isArray(I.TEMPLATE_CATALOG[t].requires)).toBe(true);
+      expect(I.TEMPLATE_CATALOG[t].requires.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('fabrication detection + assembly', () => {
+  it('flags a number in narration that is not in the source', () => {
+    const doc = 'The heart has four chambers.';
+    const sb = { scenes: [{ type: 'narratedText', narration: 'The heart beats 100000 times a day.', durationSec: 6 }] };
+    const fab = I.detectFabrication(sb, doc);
+    expect(fab.some(f => f.value === '100000')).toBe(true);
+    // a number that IS in the source is not flagged
+    expect(I.detectFabrication({ scenes: [{ type: 'narratedText', narration: 'It has four (4) chambers.', durationSec: 6 }] }, 'four 4 chambers').length).toBe(0);
+  });
+  it('assemble computes durationInFrames and clamps duration', () => {
+    const sb = I.assembleStoryboard({ title: 'T' }, [
+      { type: 'titleCard', props: { title: 'A' }, durationSec: 5 },
+      { type: 'outro', props: { message: 'B' }, durationSec: 999 }, // clamp to 30
+    ]);
+    expect(sb.fps).toBe(30);
+    expect(sb.scenes[0].durationInFrames).toBe(150);
+    expect(sb.scenes[1].durationSec).toBe(30);
+    expect(sb.kind).toBe('alloflow.storyboard');
+    expect(sb.disclaimer).toMatch(/AI draft/);
+  });
+});
+
+describe('AI JSON-object parsing is forgiving', () => {
+  it('parses clean, fenced, and prose-wrapped objects; null on garbage', () => {
+    expect(I.parseAiJsonObject('{"a":1}').a).toBe(1);
+    expect(I.parseAiJsonObject('```json\n{"a":2}\n```').a).toBe(2);
+    expect(I.parseAiJsonObject('Here you go: {"a":3} done').a).toBe(3);
+    expect(I.parseAiJsonObject('no json here')).toBeNull();
   });
 });
