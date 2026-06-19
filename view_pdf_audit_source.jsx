@@ -2212,6 +2212,12 @@ function PdfAuditView(props) {
   // decides via the inline panel (replaces a blocking window.confirm).
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
   const _taggedGateBytesRef = useRef(null);
+  // #5 content-fidelity download gate (2026-06-18): a SEVERE text-coverage shortfall (<80%) or a
+  // detected AI refusal means the document may have lost content; the tagged PDF would look
+  // complete but be missing text. Mirror the round-trip gate's opt-in pattern (bytes wait in a
+  // ref; the teacher chooses from a pinned panel) instead of silently handing over an incomplete doc.
+  const [fidelityGateIssue, setFidelityGateIssue] = useState(null);
+  const _fidelityGateBytesRef = useRef(null);
   // Live elapsed counter for the audit wait (honest-wait copy, 2026-06-12).
   const [auditElapsedSec, setAuditElapsedSec] = useState(0);
   useEffect(() => {
@@ -7596,6 +7602,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           </div>
                         )}
+                        {/* #5 Content-fidelity gate panel — severe content loss / refusal. Opt-in,
+                            never a hard block; the primary action is to REVIEW (the Diff), because
+                            "use Word instead" doesn't fix a content shortfall (same text loss). */}
+                        {fidelityGateIssue && (
+                          <div className="w-full mt-2 bg-orange-50 border-2 border-orange-400 rounded-xl p-3 text-xs text-orange-900" role="alert">
+                            <div className="font-black mb-1">⚠ {t('pdf_audit.fidelity_gate.heading') || 'Review the content before distributing this document'}</div>
+                            <p className="mb-2">{t('pdf_audit.fidelity_gate.body') || 'The remediated document may be missing source content'} — <span className="font-semibold">{fidelityGateIssue}</span>. {t('pdf_audit.fidelity_gate.body2') || 'A tagged PDF will look complete but could be missing text. Open the Diff to compare it against the original first.'}</p>
+                            <div className="flex gap-2 flex-wrap">
+                              <button onClick={() => { setFidelityGateIssue(null); try { setDiffViewOpen(true); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700">🔍 {t('pdf_audit.fidelity_gate.diff') || 'Open the Diff to review'}</button>
+                              <button onClick={() => { try { const g = _fidelityGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); addToast(t('toasts.fidelity_downloaded') || '⚠ Downloaded (filename marked) — verify the content against the source before distributing.', 'warning'); } } catch (_) {} setFidelityGateIssue(null); }} className="px-3 py-1.5 bg-white border border-orange-500 text-orange-800 rounded-lg font-bold hover:bg-orange-100">⬇ {t('pdf_audit.fidelity_gate.anyway') || 'Download anyway (I’ve reviewed)'}</button>
+                              <button onClick={() => setFidelityGateIssue(null)} className="px-3 py-1.5 text-orange-700 font-bold hover:text-red-600">✕ {t('pdf_audit.fidelity_gate.dismiss') || 'Dismiss'}</button>
+                            </div>
+                          </div>
+                        )}
                         {/* Pinned tagged-PDF report — stays until dismissed so the
                             teacher can actually read what happened (replaces the
                             unreadable toast cascade). */}
@@ -7672,6 +7692,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 });
                               }
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                              // ── #5 Content-fidelity gate ── A SEVERE shortfall (<80% of source text
+                              // preserved) or a detected AI refusal means the doc may be missing
+                              // content; a tagged PDF would look complete but be incomplete. Don't hand
+                              // it over silently — require an explicit "I've reviewed" opt-in. Threshold
+                              // is deliberately conservative (<80%, well below the 97% warn line) so a
+                              // borderline or false reading never blocks a good document.
+                              {
+                                const _covSev = (typeof pdfFixResult.integrityCoverage === 'number' && pdfFixResult.integrityCoverage < 80);
+                                const _refusalSev = Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.some(n => n && n.kind === 'refusal');
+                                if (_covSev || _refusalSev) {
+                                  const _why = _refusalSev
+                                    ? 'AI refusal/meta text was detected in the output'
+                                    : ('only ' + pdfFixResult.integrityCoverage + '% of the source text was preserved');
+                                  _fidelityGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-REVIEW-CONTENT.pdf' };
+                                  setFidelityGateIssue(_why);
+                                  addToast(t('toasts.fidelity_gate_pinned') || '⚠ This document may be missing source content — your options are pinned above the download buttons.', 'warning');
+                                  return;
+                                }
+                              }
                               // ── Gate the download on the post-save structural self-check ──
                               // createTaggedPdf re-parses the SHIPPED bytes; if the tag tree / MarkInfo /
                               // language didn't survive serialization (roundTrip.ok === false), do NOT

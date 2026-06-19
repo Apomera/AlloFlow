@@ -59,6 +59,20 @@ describe('#4 link preservation + #3 table preservation', () => {
   it('#3 does NOT fire when tables are preserved', () => {
     expect(_computeStructuralFidelityNotes(md(0, 1), '<table><tr><td>1</td></tr></table>').find((n) => n.kind === 'tables')).toBeFalsy();
   });
+  it('#3 cell-level: a table that SURVIVED but lost most of its rows/cells is flagged', () => {
+    // source: one 3-col table with 5 body rows (~18 cells); output: table present but only 2 cells
+    let s = '# Doc\n\n| A | B | C |\n| --- | --- | --- |\n';
+    for (let i = 0; i < 5; i++) s += `| ${i}a | ${i}b | ${i}c |\n`;
+    const notes = _computeStructuralFidelityNotes(s, '<table><tr><td>0a</td><td>0b</td></tr></table>');
+    expect(notes.find((n) => n.kind === 'tables' && /cell/.test(n.msg))).toBeTruthy();
+  });
+  it('#3 cell-level does NOT fire when the full table carried over', () => {
+    let s = '# Doc\n\n| A | B | C |\n| --- | --- | --- |\n';
+    let out = '<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody>';
+    for (let i = 0; i < 5; i++) { s += `| ${i}a | ${i}b | ${i}c |\n`; out += `<tr><td>${i}a</td><td>${i}b</td><td>${i}c</td></tr>`; }
+    out += '</tbody></table>';
+    expect(_computeStructuralFidelityNotes(s, out).find((n) => n.kind === 'tables')).toBeFalsy();
+  });
   it('clean document produces no notes', () => {
     expect(_computeStructuralFidelityNotes('# Title\n\nJust prose, no links or tables.', '<h1>Title</h1><p>Just prose, no links or tables.</p>')).toEqual([]);
   });
@@ -77,5 +91,16 @@ describe('pipeline + UI wiring (source-pinned)', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
     expect(view).toContain('pdfFixResult.fidelityLimited');
     expect(view).toContain('pdfFixResult.fidelityNotes.map');
+  });
+  it('#5 content-fidelity download gate — conservative <80% / refusal threshold, opt-in (never hard-block)', () => {
+    const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+    // gates the tagged-PDF download on a SEVERE shortfall or a refusal
+    expect(view).toContain('pdfFixResult.integrityCoverage < 80');
+    expect(view).toContain("n.kind === 'refusal'");
+    expect(view).toContain('setFidelityGateIssue(_why)');
+    // bytes wait in a ref; the panel offers Review-the-Diff + Download-anyway (opt-in, not a block)
+    expect(view).toContain('_fidelityGateBytesRef.current = {');
+    expect(view).toContain('setDiffViewOpen(true)');
+    expect(view).toMatch(/Download anyway/);
   });
 });

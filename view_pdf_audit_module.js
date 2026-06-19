@@ -2287,6 +2287,8 @@ function PdfAuditView(props) {
   };
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
   const _taggedGateBytesRef = useRef(null);
+  const [fidelityGateIssue, setFidelityGateIssue] = useState(null);
+  const _fidelityGateBytesRef = useRef(null);
   const [auditElapsedSec, setAuditElapsedSec] = useState(0);
   useEffect(() => {
     if (!pdfAuditLoading) {
@@ -5778,7 +5780,23 @@ Return ONLY JSON:
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (_) {
       }
-    }, className: "px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700" }, "\u{1F4DD} ", t("pdf_audit.gate.word_instead") || "Use the Word or HTML download instead"), /* @__PURE__ */ React.createElement("button", { onClick: () => setTaggedGateIssue(null), className: "px-3 py-1.5 text-amber-700 font-bold hover:text-red-600" }, "\u2715 ", t("pdf_audit.gate.dismiss") || "Dismiss"))), lastTaggedReport && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "w-full mt-2 bg-white border-2 border-indigo-300 rounded-xl p-3 text-xs relative shadow-md" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setLastTaggedReport(null), "aria-label": t("pdf_audit.tagged_report.close_aria") || "Dismiss tagged-PDF report", className: "absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold" }, "\u2715"), /* @__PURE__ */ React.createElement("div", { className: "font-black text-indigo-800 mb-1.5 pr-7" }, "\u{1F4C4} ", t("pdf_audit.tagged_report.heading") || "Tagged PDF report", " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 ", lastTaggedReport.file, " \xB7 ", lastTaggedReport.when)), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1", role: "list" }, lastTaggedReport.lines.map((l, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex gap-1.5 " + (l.tone === "success" ? "text-green-700" : l.tone === "warn" ? "text-amber-700" : l.tone === "error" ? "text-red-700" : "text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0", "aria-hidden": "true" }, l.tone === "success" ? "\u2713" : l.tone === "warn" ? "\u26A0" : l.tone === "error" ? "\u2717" : "\xB7"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, l.text)))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[10px] text-slate-500" }, t("pdf_audit.tagged_report.note") || "This panel stays until you dismiss it. The same details ship inside the Adobe-style A11y Report download.")), /* @__PURE__ */ React.createElement("p", { className: "w-full text-[11px] text-slate-600 mt-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.format_legend.lead") || "Which file?"), " ", t("pdf_audit.format_legend.body") || "\u{1F4C4} Tagged PDF \u2014 give this to students (looks identical to the original, works with screen readers). \u{1F4DD} Word \u2014 keep editing it. \u{1F4FD} PowerPoint \u2014 present it. \u{1F4C4} HTML \u2014 opens anywhere, no software needed."), _inputIsPdf ? /* @__PURE__ */ React.createElement(
+    }, className: "px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700" }, "\u{1F4DD} ", t("pdf_audit.gate.word_instead") || "Use the Word or HTML download instead"), /* @__PURE__ */ React.createElement("button", { onClick: () => setTaggedGateIssue(null), className: "px-3 py-1.5 text-amber-700 font-bold hover:text-red-600" }, "\u2715 ", t("pdf_audit.gate.dismiss") || "Dismiss"))), fidelityGateIssue && /* @__PURE__ */ React.createElement("div", { className: "w-full mt-2 bg-orange-50 border-2 border-orange-400 rounded-xl p-3 text-xs text-orange-900", role: "alert" }, /* @__PURE__ */ React.createElement("div", { className: "font-black mb-1" }, "\u26A0 ", t("pdf_audit.fidelity_gate.heading") || "Review the content before distributing this document"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("pdf_audit.fidelity_gate.body") || "The remediated document may be missing source content", " \u2014 ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, fidelityGateIssue), ". ", t("pdf_audit.fidelity_gate.body2") || "A tagged PDF will look complete but could be missing text. Open the Diff to compare it against the original first."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      setFidelityGateIssue(null);
+      try {
+        setDiffViewOpen(true);
+      } catch (_) {
+      }
+    }, className: "px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700" }, "\u{1F50D} ", t("pdf_audit.fidelity_gate.diff") || "Open the Diff to review"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      try {
+        const g2 = _fidelityGateBytesRef.current;
+        if (g2) {
+          safeDownloadBlob(new Blob([g2.bytes], { type: "application/pdf" }), g2.fileName);
+          addToast(t("toasts.fidelity_downloaded") || "\u26A0 Downloaded (filename marked) \u2014 verify the content against the source before distributing.", "warning");
+        }
+      } catch (_) {
+      }
+      setFidelityGateIssue(null);
+    }, className: "px-3 py-1.5 bg-white border border-orange-500 text-orange-800 rounded-lg font-bold hover:bg-orange-100" }, "\u2B07 ", t("pdf_audit.fidelity_gate.anyway") || "Download anyway (I\u2019ve reviewed)"), /* @__PURE__ */ React.createElement("button", { onClick: () => setFidelityGateIssue(null), className: "px-3 py-1.5 text-orange-700 font-bold hover:text-red-600" }, "\u2715 ", t("pdf_audit.fidelity_gate.dismiss") || "Dismiss"))), lastTaggedReport && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "w-full mt-2 bg-white border-2 border-indigo-300 rounded-xl p-3 text-xs relative shadow-md" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setLastTaggedReport(null), "aria-label": t("pdf_audit.tagged_report.close_aria") || "Dismiss tagged-PDF report", className: "absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold" }, "\u2715"), /* @__PURE__ */ React.createElement("div", { className: "font-black text-indigo-800 mb-1.5 pr-7" }, "\u{1F4C4} ", t("pdf_audit.tagged_report.heading") || "Tagged PDF report", " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "\u2014 ", lastTaggedReport.file, " \xB7 ", lastTaggedReport.when)), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1", role: "list" }, lastTaggedReport.lines.map((l, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex gap-1.5 " + (l.tone === "success" ? "text-green-700" : l.tone === "warn" ? "text-amber-700" : l.tone === "error" ? "text-red-700" : "text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0", "aria-hidden": "true" }, l.tone === "success" ? "\u2713" : l.tone === "warn" ? "\u26A0" : l.tone === "error" ? "\u2717" : "\xB7"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, l.text)))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[10px] text-slate-500" }, t("pdf_audit.tagged_report.note") || "This panel stays until you dismiss it. The same details ship inside the Adobe-style A11y Report download.")), /* @__PURE__ */ React.createElement("p", { className: "w-full text-[11px] text-slate-600 mt-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.format_legend.lead") || "Which file?"), " ", t("pdf_audit.format_legend.body") || "\u{1F4C4} Tagged PDF \u2014 give this to students (looks identical to the original, works with screen readers). \u{1F4DD} Word \u2014 keep editing it. \u{1F4FD} PowerPoint \u2014 present it. \u{1F4C4} HTML \u2014 opens anywhere, no software needed."), _inputIsPdf ? /* @__PURE__ */ React.createElement(
       "button",
       {
         id: "allo-tagged-pdf-btn",
@@ -5821,6 +5839,17 @@ Return ONLY JSON:
             if (!taggedBytes) {
               addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
               return;
+            }
+            {
+              const _covSev = typeof pdfFixResult.integrityCoverage === "number" && pdfFixResult.integrityCoverage < 80;
+              const _refusalSev = Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.some((n) => n && n.kind === "refusal");
+              if (_covSev || _refusalSev) {
+                const _why = _refusalSev ? "AI refusal/meta text was detected in the output" : "only " + pdfFixResult.integrityCoverage + "% of the source text was preserved";
+                _fidelityGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-REVIEW-CONTENT.pdf" };
+                setFidelityGateIssue(_why);
+                addToast(t("toasts.fidelity_gate_pinned") || "\u26A0 This document may be missing source content \u2014 your options are pinned above the download buttons.", "warning");
+                return;
+              }
             }
             if (roundTrip && roundTrip.ok === false) {
               const _rtFails = (roundTrip.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule);

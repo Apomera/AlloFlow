@@ -309,6 +309,22 @@ function _computeStructuralFidelityNotes(srcText, outHtml) {
   const _outTables = (_out.match(/<table[\s>]/gi) || []).length;
   if (_srcTables > 0 && _outTables < _srcTables) {
     notes.push({ kind: 'tables', msg: 'Tables: the source had ~' + _srcTables + ' table(s) but the output has ' + _outTables + ' — ' + (_srcTables - _outTables) + ' may have been collapsed or lost. Check the Diff.' });
+  } else if (_srcTables > 0 && _outTables >= _srcTables) {
+    // Cell-level (partial collapse): tables SURVIVED as elements but lost rows/columns inside —
+    // the table-count check above can't see that. Count markdown source cells (pipe-fields on
+    // non-divider table rows) vs output <td>/<th>. Conservative slack (<60% AND ≥6 source cells)
+    // so an irregular markdown table doesn't cry wolf. WARN only.
+    const _srcCells = _src.split('\n').reduce((acc, l) => {
+      const t = l.trim();
+      if (t.indexOf('|') === -1) return acc;
+      if (/-{3,}/.test(t) && /^[|:\-\s]+$/.test(t)) return acc; // divider row
+      const pipes = (t.match(/\|/g) || []).length;
+      return pipes >= 2 ? acc + (pipes - 1) : acc;
+    }, 0);
+    const _outCells = (_out.match(/<t[dh][\s>]/gi) || []).length;
+    if (_srcCells >= 6 && _outCells < Math.ceil(_srcCells * 0.6)) {
+      notes.push({ kind: 'tables', msg: 'Tables: the source had ~' + _srcCells + ' table cell(s) but the output has ' + _outCells + ' — a table may have lost rows or columns. Check the Diff.' });
+    }
   }
   // (#2) AI refusal / meta-text leaked into the shipped output.
   const _ref = _detectRefusalText(_out);
