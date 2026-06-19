@@ -5720,6 +5720,8 @@ var d = labToolData.dissection || {};
 
                   upd('guidedMode', false);
 
+                  upd('guidedComplete', true);
+
                   awardStemXP('dissection', 10, 'Completed guided tour');
 
                   if (addToast) addToast('\uD83C\uDF89 ' + 'Tour Complete!', 'success');
@@ -5818,7 +5820,7 @@ var d = labToolData.dissection || {};
                 return React.createElement("button", { "aria-label": "Select specimen: " + sp.name,
                   key: sk,
                   onClick: function () {
-                    upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null);
+                    upd('specimen', sk); upd('activeLayer', (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin')); upd('selectedOrgan', null); upd('specimensViewed', Object.assign({}, d.specimensViewed, (function(){ var o = {}; o[sk] = true; return o; })()));
                     if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
                   },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400')
@@ -5935,7 +5937,7 @@ var d = labToolData.dissection || {};
 
               React.createElement("button", { "aria-label": "Reset dissection view",
                 onClick: function () {
-                  upd('currentLayer', 0); upd('selectedOrgan', null); upd('exploredOrgans', {});
+                  upd('activeLayer', (spec.layers[0] || {}).id || 'skin'); upd('selectedOrgan', null); upd('exploredOrgans', {});
                   upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0);
                   upd('traceNervous', false); upd('showEndocrine', false);
                   upd('rulerMode', false); upd('annotateMode', false);
