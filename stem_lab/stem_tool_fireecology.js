@@ -655,11 +655,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       id: 'fireTriangle',
       name: 'The Fire Triangle',
       icon: '\u25B3',
-      description: 'Every fire requires three elements: heat (ignition source), fuel (organic material), and oxygen. Remove any one element and the fire goes out. Indigenous fire practitioners manipulate all three: choosing ignition timing (heat), managing fuel loads through regular burning (fuel), and burning when humidity/moisture reduces oxygen availability.',
+      description: 'Every fire requires three elements: heat (ignition source), fuel (organic material), and oxygen. Remove any one element and the fire goes out. Indigenous fire practitioners manipulate all three: choosing ignition timing (heat), managing fuel loads through regular burning (fuel), and burning in calm air to limit oxygen and spread (oxygen). High humidity also keeps a burn gentle — but by dampening the fuel, not by removing oxygen.',
       elements: [
         { name: 'Heat', icon: '\uD83C\uDF21\uFE0F', desc: 'Ignition temperature for wood is ~300\u00B0C (572\u00B0F). Indigenous practitioners use wind, slope, and time of day to control fire intensity.' },
         { name: 'Fuel', icon: '\uD83C\uDF3F', desc: 'Dead leaves, branches, grass, and woody debris. Fuel moisture content determines if fire will carry. Regular cultural burning keeps fuel loads LOW.' },
-        { name: 'Oxygen', icon: '\uD83D\uDCA8', desc: 'Wind provides oxygen and drives fire spread. Burning in calm conditions or when humidity is high (early morning, after light rain) keeps fire intensity low.' }
+        { name: 'Oxygen', icon: '\uD83D\uDCA8', desc: 'Wind supplies oxygen and drives fire spread, so burning in calm air keeps intensity low. (High humidity also lowers intensity \u2014 but by raising fuel moisture, not by changing oxygen.)' }
       ]
     },
     {
@@ -1721,7 +1721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderIndigenousTab() {
           if (selectedNation) {
             var nation = INDIGENOUS_FIRE_NATIONS.filter(function(n) { return n.id === selectedNation; })[0];
-            if (!nation) { upd('selectedNation', null); return null; }
+            if (!nation) { return null; } // (was upd(...) during render — a setState-in-render that risks a render loop; stale id self-heals on next action)
 
             // Track viewing
             if (!nationsViewed[nation.id]) {
@@ -1826,7 +1826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderEcosystemsTab() {
           if (selectedEcosystem) {
             var eco = FIRE_ECOSYSTEMS.filter(function(e) { return e.id === selectedEcosystem; })[0];
-            if (!eco) { upd('selectedEcosystem', null); return null; }
+            if (!eco) { return null; } // (removed setState-in-render upd)
 
             if (!ecosystemsViewed[eco.id]) {
               var ev = Object.assign({}, ecosystemsViewed);
@@ -2379,7 +2379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderScienceTab() {
           if (selectedScience) {
             var concept = FIRE_SCIENCE.filter(function(c) { return c.id === selectedScience; })[0];
-            if (!concept) { upd('selectedScience', null); return null; }
+            if (!concept) { return null; } // (removed setState-in-render upd)
 
             return h('div', null,
               h('button', { 'aria-label': 'Back to Concepts',
@@ -2724,7 +2724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         function renderCaseStudiesTab() {
           if (selectedCase) {
             var cs = CASE_STUDIES.filter(function(c) { return c.id === selectedCase; })[0];
-            if (!cs) { upd('selectedCase', null); return null; }
+            if (!cs) { return null; } // (removed setState-in-render upd)
 
             if (!casesViewed[cs.id]) {
               var cv = Object.assign({}, casesViewed);
