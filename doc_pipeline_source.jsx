@@ -17508,8 +17508,13 @@ tr { page-break-inside: avoid; }
     // 'docx-*', 'pptx-*', 'extracted-text*') are NOT scanned. (This previously
     // matched only the exact strings 'tesseract'/'vision', so the invisible OCR
     // layer never ran in production — the gate AND the page map were both unwired.)
-    const _gtm = (fixResult && fixResult.groundTruthMethod) ? String(fixResult.groundTruthMethod) : '';
-    const isScanned = /tesseract|vision|ocr/i.test(_gtm);
+    // Robust scanned-detection (2026-06-19): prefer the per-document fixResult.groundTruthMethod, but
+    // fall back to the window.__lastGroundTruthMethod global (mirroring the ocrPages fallback below) and
+    // honor an explicit fixResult.isScanned. The entire OCR-layer + tag path is gated on this flag, so a
+    // dropped/un-propagated method string would otherwise SILENTLY ship an image-only, untagged PDF.
+    // Born-digital is unaffected — its method ('pdfjs'/'extracted-text'/'docx-*') never matches.
+    const _gtm = String((fixResult && fixResult.groundTruthMethod) || (typeof window !== 'undefined' && window.__lastGroundTruthMethod) || '');
+    const isScanned = /tesseract|vision|ocr/i.test(_gtm) || !!(fixResult && fixResult.isScanned);
 
     // ── Tag-tree unify Slices 1+2: /K→MCR linkage for scanned PDFs (any page count) ──
     // Without this, every semantic leaf (H1, P, Figure, TH, TD, Link, …) has only

@@ -3194,7 +3194,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         if (!r || _s >= pdfTargetScore || r.axeAudit && r.axeAudit.totalViolations === 0 || _s <= _prevScore) break;
         _prevScore = _s;
         _loopTries++;
-        addToast("\u{1F501} " + (t("toasts.handsoff_retry_loop") || "Hands-off mode \u2014 below target; retrying the loop") + " (" + _loopTries + "/" + _HANDSOFF_MAX + ", " + _s + "/" + pdfTargetScore + ")\u2026", "info");
+        addToast("\u{1F501} " + (t("toasts.handsoff_retry_loop") || "Hands-off mode \u2014 below target; retrying the loop") + " (" + _loopTries + "/" + _HANDSOFF_MAX + ", " + _s + "/100, target " + pdfTargetScore + ")\u2026", "info");
         await new Promise((res) => setTimeout(res, 1500 * _loopTries));
       }
       if (pdfFixResultRef.current && pdfAutoSaveProject) {

@@ -3159,7 +3159,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       const _s = r ? (r.afterScore || 0) : 0;
                       if (!r || _s >= pdfTargetScore || (r.axeAudit && r.axeAudit.totalViolations === 0) || _s <= _prevScore) break; // done or plateaued
                       _prevScore = _s; _loopTries++;
-                      addToast('🔁 ' + (t('toasts.handsoff_retry_loop') || 'Hands-off mode — below target; retrying the loop') + ' (' + _loopTries + '/' + _HANDSOFF_MAX + ', ' + _s + '/' + pdfTargetScore + ')…', 'info');
+                      addToast('🔁 ' + (t('toasts.handsoff_retry_loop') || 'Hands-off mode — below target; retrying the loop') + ' (' + _loopTries + '/' + _HANDSOFF_MAX + ', ' + _s + '/100, target ' + pdfTargetScore + ')…', 'info');
                       await new Promise((res) => setTimeout(res, 1500 * _loopTries));
                     }
                     if (pdfFixResultRef.current && pdfAutoSaveProject) { saveProjectToFile(true); }

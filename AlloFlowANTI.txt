@@ -15825,7 +15825,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         lastDet = _curDet;
         lastIssues = _aiIssues.length;
         setPdfFixLoading(true);
-        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
+        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...');
         let result;
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
@@ -15928,7 +15928,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
           addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
         } else {
-          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')', 'success');
         }
       } else if (cur) {
         const _axeClean = cur.axeAudit && cur.axeAudit.totalViolations === 0;
