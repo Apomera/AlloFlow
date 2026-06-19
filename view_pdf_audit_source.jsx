@@ -1669,6 +1669,30 @@ function PdfAuditView(props) {
   // Tagged PDF download flow. Used by the Download Accessibility Report
   // button to assemble an Adobe-style compliance report.
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  // ── Independent veraPDF (ISO 14289-1) validation, in-browser via CheerpJ ──
+  // On-demand + explicit (the results-panel button below IS the opt-in): default-off,
+  // nothing downloads or runs until the user clicks. Runs in a CDN-hosted companion
+  // window (same pattern as PDF Compare) so it works from Canvas's sandboxed iframe;
+  // the user's PDF bytes never leave the browser. Warm-up-during-remediation (to hide
+  // the ~15s first-run boot) is a later optimization. See dev-tools/demo/verapdf_*.
+  const VERAPDF_VALIDATOR_URL = 'https://alloflow-cdn.pages.dev/verapdf/verapdf_validator.html';
+  const [veraPdfResult, setVeraPdfResult] = useState(null);   // {compliant, failedChecks, failedRules:[{clause,testNumber,message,count}]} | {error}
+  const [veraPdfBusy, setVeraPdfBusy] = useState(false);
+  const _lastTaggedBytesRef = useRef(null);                   // shipped tagged-PDF bytes, for on-demand veraPDF validation
+  const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
+    let win = null;
+    try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
+    if (!win) { reject(new Error('Popup blocked — allow pop-ups so AlloFlow can run veraPDF validation.')); return; }
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF timed out (the document may be too large for in-browser validation)')); } }, 600000);
+    function cleanup() { clearTimeout(timer); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) {
+      const d = (ev && ev.data) || {};
+      if (d.type === 'verapdf-ready') { try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) {} }
+      else if (d.type === 'verapdf-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
+    }
+    window.addEventListener('message', onMsg);
+  });
   // Human-readable tagged-PDF result lines, pinned in a dismissable panel.
   // Previously these were ~8 sequential toasts that auto-dismissed faster
   // than anyone could read them (user-testing finding 2026-06-10).
@@ -3544,6 +3568,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               const summary = (_result && _result.summary) || null;
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                              _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
                               // Parity with the main tagged-download path: never hand over
                               // a baseline file whose structure failed the post-save check.
                               const _blRoundTrip = (_result && _result.roundTrip) || null;
@@ -7703,6 +7728,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 });
                               }
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                              _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
                               // ── #5 Content-fidelity gate ── A SEVERE shortfall (<80% of source text
                               // preserved) or a detected AI refusal means the doc may be missing
                               // content; a tagged PDF would look complete but be incomplete. Don't hand
@@ -7834,6 +7860,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: 'en', subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
                               if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+                              _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
                               const _rt = (_result && _result.roundTrip) || null;
                               if (_rt && _rt.ok === false) {
                                 addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
@@ -8024,6 +8051,43 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </details>
                               );
                             })()}
+                            {/* Independent ISO 14289-1 validation via veraPDF, in-browser (CheerpJ).
+                                On-demand opt-in — nothing downloads until clicked (~25 MB one-time, then
+                                ~seconds for small docs; large docs may take minutes). Bytes never leave the browser. */}
+                            {lastTaggedValidation && _lastTaggedBytesRef.current && (
+                              <div className="mt-1 mx-2 px-3 py-2 text-xs border border-indigo-100 rounded-lg bg-indigo-50/40">
+                                <button type="button" disabled={veraPdfBusy} data-help-ignore="true"
+                                  onClick={async () => {
+                                    setVeraPdfBusy(true); setVeraPdfResult(null);
+                                    try { setVeraPdfResult(await runVeraPdfValidation(_lastTaggedBytesRef.current)); }
+                                    catch (e) { setVeraPdfResult({ error: String((e && e.message) || e) }); }
+                                    finally { setVeraPdfBusy(false); }
+                                  }}
+                                  className="font-bold text-indigo-700 hover:underline disabled:opacity-60 outline-none">
+                                  {veraPdfBusy
+                                    ? '⏳ ' + (t('pdf_audit.verapdf.running') || 'Validating with veraPDF… (first run downloads ~25 MB, ~15s)')
+                                    : '🔎 ' + (t('pdf_audit.verapdf.btn') || 'Independently validate with veraPDF (ISO 14289-1)')}
+                                </button>
+                                {veraPdfResult && veraPdfResult.error && (
+                                  <p className="text-amber-700 mt-1">{t('pdf_audit.verapdf.unavailable') || 'veraPDF validation unavailable'} ({veraPdfResult.error}) — {t('pdf_audit.verapdf.fallback') || 'rely on the self-check above and verify in PAC 2024.'}</p>
+                                )}
+                                {veraPdfResult && !veraPdfResult.error && (
+                                  <div className="mt-1">
+                                    <p className="font-bold">{veraPdfResult.compliant
+                                      ? '✅ ' + (t('pdf_audit.verapdf.pass') || 'Passes PDF/UA-1 (independently validated by veraPDF)')
+                                      : '❌ ' + ((veraPdfResult.failedRules ? veraPdfResult.failedRules.length : 0) + ' ' + (t('pdf_audit.verapdf.failed') || 'rule(s) failed (veraPDF)'))}</p>
+                                    {veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && (
+                                      <ul className="space-y-1 mt-1">
+                                        {veraPdfResult.failedRules.map((f, i) => (
+                                          <li key={i} className="text-red-700 leading-snug">ISO 14289-1 §{f.clause} (test {f.testNumber}): {f.message}{f.count > 1 ? ' ×' + f.count : ''}</li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                    <p className="text-[10px] text-slate-500 italic mt-1">{t('pdf_audit.verapdf.disclaimer') || 'Independent open-source validation — not a legal accessibility certificate; human review still recommended.'}</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             {/* Tier B — Re-run with restoration. Appears only when the post-export
                                 text-diff found RESIDUAL missing tokens. Sibling "Open Diff view"
                                 button below uses the EXISTING jsdiff word-level viewer (no new

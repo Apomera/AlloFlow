@@ -1662,6 +1662,55 @@ function PdfAuditView(props) {
   const _inputIsPdf = !!(pendingPdfFile && (pendingPdfFile.type === "application/pdf" || /\.pdf$/i.test(pendingPdfFile.name || "")) || typeof pendingPdfBase64 === "string" && pendingPdfBase64.slice(0, 5) === "JVBER");
   const [resumableBatch, setResumableBatch] = useState(null);
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
+  const VERAPDF_VALIDATOR_URL = "https://alloflow-cdn.pages.dev/verapdf/verapdf_validator.html";
+  const [veraPdfResult, setVeraPdfResult] = useState(null);
+  const [veraPdfBusy, setVeraPdfBusy] = useState(false);
+  const _lastTaggedBytesRef = useRef(null);
+  const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
+    let win = null;
+    try {
+      win = window.open(VERAPDF_VALIDATOR_URL, "alloflow-verapdf", "width=480,height=380");
+    } catch (e) {
+    }
+    if (!win) {
+      reject(new Error("Popup blocked \u2014 allow pop-ups so AlloFlow can run veraPDF validation."));
+      return;
+    }
+    let done = false;
+    const timer = setTimeout(() => {
+      if (!done) {
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(new Error("veraPDF timed out (the document may be too large for in-browser validation)"));
+      }
+    }, 6e5);
+    function cleanup() {
+      clearTimeout(timer);
+      window.removeEventListener("message", onMsg);
+    }
+    function onMsg(ev) {
+      const d = ev && ev.data || {};
+      if (d.type === "verapdf-ready") {
+        try {
+          win.postMessage({ type: "verapdf-validate", bytes }, "*");
+        } catch (e) {
+        }
+      } else if (d.type === "verapdf-result") {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        if (d.error) reject(new Error(d.error));
+        else resolve(d.result);
+      }
+    }
+    window.addEventListener("message", onMsg);
+  });
   const [lastTaggedReport, setLastTaggedReport] = useState(null);
   const [pptxThemeId, setPptxThemeId] = useState(() => {
     try {
@@ -3449,6 +3498,7 @@ Return ONLY JSON:
                 addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
                 return;
               }
+              _lastTaggedBytesRef.current = taggedBytes;
               const _blRoundTrip = _result && _result.roundTrip || null;
               if (_blRoundTrip && _blRoundTrip.ok === false) {
                 const _blFails = (_blRoundTrip.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule);
@@ -5859,6 +5909,7 @@ Return ONLY JSON:
               addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
               return;
             }
+            _lastTaggedBytesRef.current = taggedBytes;
             {
               const _covSev = typeof pdfFixResult.integrityCoverage === "number" && pdfFixResult.integrityCoverage < 80;
               const _refusalSev = Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.some((n) => n && n.kind === "refusal");
@@ -5971,6 +6022,7 @@ Return ONLY JSON:
               addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
               return;
             }
+            _lastTaggedBytesRef.current = taggedBytes;
             const _rt = _result && _result.roundTrip || null;
             if (_rt && _rt.ok === false) {
               addToast("\u26A0 " + (t("toasts.typeset_failed_check") || "The typeset tagged PDF failed its post-save structure check \u2014 use the Word or HTML download instead."), "error");
@@ -6150,7 +6202,27 @@ Return ONLY JSON:
       const _fail = _checks.filter((c) => c && c.status === "fail").length;
       const _warn = _checks.filter((c) => c && c.status === "warn").length;
       return /* @__PURE__ */ React.createElement("details", { className: "mt-1 mx-2 px-3 py-2 text-xs border border-emerald-100 rounded-lg bg-emerald-50/40" }, /* @__PURE__ */ React.createElement("summary", { "data-help-ignore": "true", className: "cursor-pointer font-bold text-slate-700 outline-none" }, "\u{1F50E} ", t("pdf_audit.selfcheck.title") || "PDF/UA-1 self-check (exported bytes)", " \u2014 ", _pass, "/", _checks.length, " ", t("pdf_audit.selfcheck.pass") || "rules pass", _fail ? ` \xB7 ${_fail} ${t("pdf_audit.selfcheck.failed") || "failed"}` : "", _warn ? ` \xB7 ${_warn} ${t("pdf_audit.selfcheck.warn") || "warn"}` : ""), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-1 mb-2" }, t("pdf_audit.selfcheck.note") || "AlloFlow's own PDF/UA-1 (ISO 14289-1) rules, re-parsed from the exported PDF bytes \u2014 a self-check, not certification. For an ISO verdict, validate in veraPDF or PAC 2024."), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, _checks.map((c, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex items-start gap-1.5 leading-snug" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, c.status === "pass" ? "\u2705" : c.status === "warn" ? "\u26A0\uFE0F" : "\u274C"), /* @__PURE__ */ React.createElement("span", { className: c.status === "fail" ? "text-red-700" : c.status === "warn" ? "text-amber-700" : "text-slate-600" }, /* @__PURE__ */ React.createElement("strong", null, c.rule || c.label || "Rule " + (i + 1)), c.detail ? " \u2014 " + c.detail : "")))));
-    })(), (() => {
+    })(), lastTaggedValidation && _lastTaggedBytesRef.current && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mx-2 px-3 py-2 text-xs border border-indigo-100 rounded-lg bg-indigo-50/40" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        disabled: veraPdfBusy,
+        "data-help-ignore": "true",
+        onClick: async () => {
+          setVeraPdfBusy(true);
+          setVeraPdfResult(null);
+          try {
+            setVeraPdfResult(await runVeraPdfValidation(_lastTaggedBytesRef.current));
+          } catch (e) {
+            setVeraPdfResult({ error: String(e && e.message || e) });
+          } finally {
+            setVeraPdfBusy(false);
+          }
+        },
+        className: "font-bold text-indigo-700 hover:underline disabled:opacity-60 outline-none"
+      },
+      veraPdfBusy ? "\u23F3 " + (t("pdf_audit.verapdf.running") || "Validating with veraPDF\u2026 (first run downloads ~25 MB, ~15s)") : "\u{1F50E} " + (t("pdf_audit.verapdf.btn") || "Independently validate with veraPDF (ISO 14289-1)")
+    ), veraPdfResult && veraPdfResult.error && /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 mt-1" }, t("pdf_audit.verapdf.unavailable") || "veraPDF validation unavailable", " (", veraPdfResult.error, ") \u2014 ", t("pdf_audit.verapdf.fallback") || "rely on the self-check above and verify in PAC 2024."), veraPdfResult && !veraPdfResult.error && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, veraPdfResult.compliant ? "\u2705 " + (t("pdf_audit.verapdf.pass") || "Passes PDF/UA-1 (independently validated by veraPDF)") : "\u274C " + ((veraPdfResult.failedRules ? veraPdfResult.failedRules.length : 0) + " " + (t("pdf_audit.verapdf.failed") || "rule(s) failed (veraPDF)"))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 mt-1" }, veraPdfResult.failedRules.map((f, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-red-700 leading-snug" }, "ISO 14289-1 \xA7", f.clause, " (test ", f.testNumber, "): ", f.message, f.count > 1 ? " \xD7" + f.count : ""))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-1" }, t("pdf_audit.verapdf.disclaimer") || "Independent open-source validation \u2014 not a legal accessibility certificate; human review still recommended."))), (() => {
       const td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
       const residual = td && typeof td.residualMissingCount === "number" ? td.residualMissingCount : null;
       if (!td || !residual || residual <= 0) return null;
