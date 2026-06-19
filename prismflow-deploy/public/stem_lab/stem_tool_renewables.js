@@ -1496,11 +1496,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       function awardBadge(id, label) {
         if (badges[id]) return;
-        var nextBadges = Object.assign({}, badges);
-        nextBadges[id] = { earned: new Date().toISOString(), label: label };
-        upd('badges', nextBadges);
-        addToast('🏅 Badge: ' + label);
-        rnAnnounce('Badge earned: ' + label);
+        // Defer the state write + toast out of render: awardBadge is called inline during render in
+        // ~14 views, and upd()/addToast() during render is a React anti-pattern (warns, extra pass).
+        // The synchronous guard above still prevents scheduling a duplicate for an already-earned badge.
+        setTimeout(function () {
+          var nextBadges = Object.assign({}, badges);
+          nextBadges[id] = { earned: new Date().toISOString(), label: label };
+          upd('badges', nextBadges);
+          addToast('🏅 Badge: ' + label);
+          rnAnnounce('Badge earned: ' + label);
+        }, 0);
       }
 
       function markVisited(modId) {
