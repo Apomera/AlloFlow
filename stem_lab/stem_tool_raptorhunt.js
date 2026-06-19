@@ -2891,7 +2891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   var ECOLOGY = {
     intro: 'Raptors are apex or mesopredators in nearly every terrestrial ecosystem. They occupy specific ecological niches + form complex food webs with prey, competitors, scavengers. Understanding raptor ecology means understanding the entire ecosystem they live in.',
     nicheConcepts: [
-      { name: 'Trophic level', def: 'Raptors are typically tertiary or quaternary consumers — eating herbivores, omnivores, or other carnivores. Carcass-eaters like vultures fill detritivore + decomposer roles too.' },
+      { name: 'Trophic level', def: 'Raptors are typically secondary or tertiary consumers — eating herbivores, omnivores, or other carnivores. A few large raptors that prey on other carnivores reach quaternary level. Carcass-eaters like vultures fill detritivore + decomposer roles too.' },
       { name: 'Top-down control', def: 'Raptor predation regulates prey populations. Removal of raptors causes prey populations to boom (mesopredator release effect).' },
       { name: 'Mesopredator release', def: 'When top predators (eagles, hawks) decline, mid-sized predators (foxes, raccoons, feral cats) expand + disproportionately impact ground-nesting birds.' },
       { name: 'Keystone species', def: 'Some raptors are keystones. The African crowned eagle in some forests is THE primary predator that maintains ecological balance.' },
@@ -10151,6 +10151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // ─── Cleanup hook ───
         canvasEl._rhCleanup = function() {
           cancelAnimationFrame(animId);
+          window.removeEventListener('resize', onResize);
           canvasEl.removeEventListener('keydown', onKeyDown);
           canvasEl.removeEventListener('keyup', onKeyUp);
           if (hud.parentElement) hud.parentElement.removeChild(hud);
@@ -20514,8 +20515,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources(),
           activeSection === 'strategyHunt' && (function() {
-            var iq = d._strategyHunt || { stealth: 50, speed: 50, ambush: 50, persistence: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-            function setIQ(patch) { setRH('_strategyHunt', Object.assign({}, iq, patch)); }
+            var iq = rh._strategyHunt || { stealth: 50, speed: 50, ambush: 50, persistence: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { setRH({ _strategyHunt: Object.assign({}, iq, patch) }); }
             var strat;
             if (iq.stealth > 70 && iq.ambush > 70) strat = 'ambush';
             else if (iq.speed > 70 && iq.persistence > 60) strat = 'pursuit';
