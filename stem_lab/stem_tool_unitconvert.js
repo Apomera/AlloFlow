@@ -94,14 +94,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         // ── CATEGORIES ──
         var CATEGORIES = {
-          length:      { label: '\uD83D\uDCCF Length',   units: { mm: 0.001, cm: 0.01, m: 1, km: 1000, 'in': 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.34 } },
-          weight:      { label: '\u2696\uFE0F Weight',   units: { mg: 0.001, g: 1, kg: 1000, oz: 28.3495, lb: 453.592, ton: 907185 } },
+          length:      { label: '\uD83D\uDCCF Length',   units: { mm: 0.001, cm: 0.01, m: 1, km: 1000, 'in': 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344 } },
+          weight:      { label: '\u2696\uFE0F Weight',   units: { mg: 0.001, g: 1, kg: 1000, oz: 28.349523, lb: 453.59237, ton: 907184.74 } },
           temperature: { label: '\uD83C\uDF21\uFE0F Temp', units: { '\u00B0C': 'C', '\u00B0F': 'F', K: 'K' } },
-          speed:       { label: '\uD83D\uDE80 Speed',    units: { 'm/s': 1, 'km/h': 0.27778, mph: 0.44704, knots: 0.51444 } },
-          volume:      { label: '\uD83E\uDDEA Volume',   units: { mL: 0.001, L: 1, gal: 3.78541, qt: 0.946353, cup: 0.236588, 'fl oz': 0.0295735 } },
+          speed:       { label: '\uD83D\uDE80 Speed',    units: { 'm/s': 1, 'km/h': 0.277778, mph: 0.44704, knots: 0.514444 } },
+          volume:      { label: '\uD83E\uDDEA Volume',   units: { mL: 0.001, L: 1, gal: 3.785411784, qt: 0.946352946, cup: 0.2365882365, 'fl oz': 0.0295735296 } },
           time:        { label: '\u23F0 Time',           units: { sec: 1, min: 60, hr: 3600, day: 86400, week: 604800, year: 31536000 } },
-          area:        { label: '\uD83D\uDDD2\uFE0F Area', units: { 'cm\u00B2': 0.0001, 'm\u00B2': 1, 'km\u00B2': 1000000, 'in\u00B2': 0.00064516, 'ft\u00B2': 0.092903, acre: 4046.86 } },
-          pressure:    { label: '\uD83D\uDCA8 Pressure', units: { Pa: 1, kPa: 1000, bar: 100000, psi: 6894.76, atm: 101325 } },
+          area:        { label: '\uD83D\uDDD2\uFE0F Area', units: { 'cm\u00B2': 0.0001, 'm\u00B2': 1, 'km\u00B2': 1000000, 'in\u00B2': 0.00064516, 'ft\u00B2': 0.09290304, acre: 4046.8564224 } },
+          pressure:    { label: '\uD83D\uDCA8 Pressure', units: { Pa: 1, kPa: 1000, bar: 100000, psi: 6894.757, atm: 101325 } },
           energy:      { label: '\u26A1 Energy',         units: { J: 1, kJ: 1000, cal: 4.184, kcal: 4184, Wh: 3600, kWh: 3600000 } },
         };
 
@@ -1076,7 +1076,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     { sym: 'T', name: 'tera', exp: 12, color: '#dc2626' }
                   ];
                   function drawMp() {
-                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._mpAnim); return; }
+                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._mpAnim); if (cvEl._mpRO) cvEl._mpRO.disconnect(); return; }
                     var t = (performance.now() - start) / 1000;
                     c2.fillStyle = '#0c1a2e';
                     c2.fillRect(0, 0, W, H);
@@ -1125,8 +1125,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   drawMp();
                   var ro = new ResizeObserver(function() {
                     W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                    cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative
                   });
+                  cvEl._mpRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                   ro.observe(cvEl);
                 },
                 style: { width: '100%', height: '100%', display: 'block' }
