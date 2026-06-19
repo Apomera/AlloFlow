@@ -747,6 +747,22 @@ var d = (labToolData.companionPlanting) || {};
 
             canvasEl.setAttribute('data-compare', compareMode ? '1' : '0');
 
+            // These six drive the season tint, day counter, and pest/weed/moisture/health canvas
+            // visuals; draw() reads them every frame but they were NEVER written — so the garden was
+            // permanently stuck at Spring / day 0 / moisture 60 / pest 0 / weed 0 / health 100.
+
+            canvasEl.setAttribute('data-season', seasonIndex);
+
+            canvasEl.setAttribute('data-day', day);
+
+            canvasEl.setAttribute('data-moisture', Math.round(moisture));
+
+            canvasEl.setAttribute('data-pest', Math.round(pestPressure));
+
+            canvasEl.setAttribute('data-weed', Math.round(weedCover));
+
+            canvasEl.setAttribute('data-health', Math.round(plantHealth));
+
 
 
             // Garden entities
@@ -1614,6 +1630,11 @@ var d = (labToolData.companionPlanting) || {};
 
 
             function draw() {
+
+              // Self-terminate if the canvas detached — this loop rescheduled unconditionally with no
+              // in-frame guard (unlike the drawCG/drawMicro loops), relying only on the React ref(null)
+              // path; this is the fail-safe if that path is ever missed.
+              if (!document.contains(canvasEl)) { cancelAnimationFrame(canvasEl._gardenAnim); return; }
 
               // Use time-based animation for smooth, frame-rate-independent motion
               var elapsed = (performance.now() - animStartTime) / 1000; // seconds (continuous float)
