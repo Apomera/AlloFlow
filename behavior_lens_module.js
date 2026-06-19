@@ -6023,7 +6023,10 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             { term: 'Operational Definition', affirming: 'Clear, Specific Description', def: 'A clear, observable, measurable description of a behavior. Example: "Hits peers with open or closed hand" NOT "is aggressive."', category: 'Core Concepts' },
             { term: 'Function of Behavior', affirming: 'Purpose or Unmet Need', def: 'The purpose a behavior serves: Attention, Escape/Avoidance, Access to Tangibles, or Sensory/Automatic reinforcement.', category: 'Core Concepts' },
             { term: 'FBA', affirming: 'Understanding the "Why"', def: 'Functional Behavior Assessment: A systematic process to determine WHY a behavior occurs (its function) using data collection and analysis.', category: 'Assessment' },
-            { term: 'BIP', affirming: 'Student Support Blueprint', def: 'Behavior Intervention Plan: A documented plan based on FBA findings that outlines strategies to address challenging behaviors.', category: 'Assessment' },
+            { term: 'BIP', affirming: 'Student Support Blueprint', def: 'Behavior Intervention Plan: A documented plan based on FBA findings that outlines strategies to address challenging behaviors. A strong BIP also documents how the student\'s assent will be sought and honored.', category: 'Assessment' },
+            { term: 'Assent', affirming: 'The Student\'s Willing "Yes"', def: 'The student\'s own affirmative agreement to take part — distinct from a parent or guardian\'s consent. Modern ABA ethics (BACB Ethics Code, 2022) expect practitioners to actively seek assent and to treat refusal as meaningful communication, not noncompliance.', category: 'Ethics' },
+            { term: 'Assent Withdrawal', affirming: 'Honoring a "No"', def: 'Signs — spoken or behavioral (pulling away, turning away, distress, leaving) — that a student no longer wants to continue. Best practice is to pause, honor the withdrawal, and adjust the task or environment rather than push through.', category: 'Ethics' },
+            { term: 'Stimming', affirming: 'Self-Regulatory Movement', def: 'Self-stimulatory behavior (hand-flapping, rocking, vocalizing, and the like) that usually serves a regulating, self-soothing, or joyful purpose. Neurodiversity-affirming practice protects stimming and does not target it for reduction unless it causes injury or blocks the student\'s own access — and even then teaches a safer alternative rather than suppressing it.', category: 'Ethics' },
             { term: 'Replacement Behavior', affirming: 'Self-Regulation Strategy', def: 'A socially appropriate behavior that serves the same function as the challenging behavior. Must be as efficient or more efficient.', category: 'Intervention' },
             { term: 'Prompt', affirming: 'Supportive Cue', def: 'An extra cue to help a student perform a behavior. Types: verbal, gestural, visual, model, physical. Fade prompts over time.', category: 'Intervention' },
             { term: 'Prompt Fading', affirming: 'Building Independence', def: 'Gradually reducing the level of help (prompts) to promote independence. Move from most-to-least or least-to-most.', category: 'Intervention' },
@@ -6096,6 +6099,10 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                     'aria-label': 'Search ABA terms',
                     className: 'w-full bg-white border border-slate-400 rounded-xl px-4 py-3 text-sm shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none'
                 }),
+                h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[11px] text-slate-600 leading-relaxed' },
+                    h('span', { className: 'font-bold text-slate-700' }, 'About the plain-language labels: '),
+                    'each term shows a plain-language name first and the clinical term in parentheses. The plain-language name is a communication aid — it does not make a procedure automatically affirming. Any strategy still has to be evaluated for assent, dignity, and the student\'s own interest.'
+                ),
                 categories.map(cat => {
                     const items = filtered.filter(g => g.category === cat);
                     if (items.length === 0) return null;
@@ -8294,7 +8301,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
                 id: 'sensory_stimulation',
                 title: '🌀 Sensory Self-Regulation',
                 desc: 'A 1st grader with repetitive motor behaviors during unstructured and low-stimulation times.',
-                backstory: 'This student engages in hand-flapping, spinning objects, and rocking. Behaviors increase during transitions and low-structure time but decrease significantly with sensory input (fidgets, movement breaks).',
+                backstory: 'This student engages in hand-flapping, spinning objects, and rocking. Behaviors increase during transitions and low-structure time but decrease significantly with sensory input (fidgets, movement breaks). Note: stimming like this is usually self-regulation, not a problem behavior — the goal is to understand and support the sensory need, never to eliminate the stim. Intervene only if it causes injury or blocks the student\'s own access to learning, and then teach a safer regulation option rather than suppressing it.',
                 entries: [
                     { id: 's1', timestamp: new Date(Date.now() - 10 * 86400000).toISOString(), behavior: 'Hand-flapping for extended period', antecedent: 'Waiting in line for lunch', consequence: 'No staff response', setting: 'Hallway, transition', intensity: 2, duration: '3 min', notes: '' },
                     { id: 's2', timestamp: new Date(Date.now() - 9 * 86400000).toISOString(), behavior: 'Spinning a pencil and watching it intently', antecedent: 'Free time after finishing worksheet early', consequence: 'Allowed to continue', setting: 'Math class, free time', intensity: 1, duration: '10 min', notes: '' },
@@ -8782,7 +8789,7 @@ Rules:
             { term: 'Treatment Integrity', affirming: 'Implementation Accuracy', def: 'The degree to which an intervention is implemented as designed. Measured by tracking whether each component of a BIP is carried out consistently. High integrity = reliable outcomes; low integrity = unreliable data.' },
             { term: 'Social Validity', affirming: 'Meaningful & Acceptable Goals', def: 'The extent to which intervention goals, procedures, and outcomes are considered acceptable and meaningful by the student, family, and community. Validated through pre/post surveys and stakeholder feedback.' },
             { term: 'Scatter Plot Analysis', affirming: 'Time-Based Pattern Detection', def: 'A data display that maps behavior occurrences across times of day and days of the week. Reveals temporal patterns (e.g., behavior peaks during 4th period) to guide antecedent modifications.' },
-            { term: 'Behavior Momentum', affirming: 'High-p Request Sequence', def: 'A strategy where a series of easy, high-probability (high-p) requests are given before a difficult, low-probability (low-p) request. The momentum of compliance from the easy requests increases the likelihood of compliance with the hard one.' },
+            { term: 'Behavior Momentum', affirming: 'High-p Request Sequence', def: 'A strategy where a series of easy, high-probability (high-p) requests are given before a difficult, low-probability (low-p) request, so early success eases the student into the harder one. Best practice: use only for tasks the student has assented to and that serve their interest — it should reduce friction toward a reasonable request, not override a valid refusal.' },
             { term: 'Shaping', affirming: 'Successive Approximations', def: 'The reinforcement of successive approximations toward a target behavior. Used when the desired behavior is not yet in the student\'s repertoire. Each step closer to the goal is reinforced until the full behavior is achieved.' },
             { term: 'BCBA / BCaBA / RBT', affirming: 'ABA Credential Tiers', def: 'Board Certified Behavior Analyst (BCBA) — master\'s-level credential for independent practice. BCaBA — bachelor\'s-level supervised analyst. Registered Behavior Technician (RBT) — paraprofessional who implements behavior plans under BCBA supervision.' },
             { term: 'Conditional Probability', affirming: 'Antecedent-Consequence Likelihood', def: 'The probability that a behavior will be followed by a specific consequence, OR that a given antecedent will precede the behavior. Used in functional analysis to identify maintaining variables. Values near 1.0 suggest strong contingency relationships.' },
@@ -12554,7 +12561,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🚀'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('Behavior Momentum Planner')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Build compliance momentum with high-probability request sequences'),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Ease into a harder, agreed-upon task with a few quick, easy wins first'),
                 studentName && h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, `For: ${studentName}`)
             ),
             // View tabs
@@ -12602,6 +12609,11 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                         h('p', null, '4. The rapid success builds "momentum" that carries into the harder task'),
                         h('p', { className: 'font-bold text-indigo-600 mt-1' }, '📚 Evidence: Cooper, Heron, & Heward (2020). Applied Behavior Analysis.')
                     )
+                ),
+                // Ethics + assent caveat — behavior momentum must not become coercion
+                h('div', { className: 'bg-amber-50 rounded-xl border border-amber-300 p-4 shadow-sm' },
+                    h('h4', { className: 'text-xs font-bold text-amber-800 mb-1' }, '⚖️ Use it ethically — with assent'),
+                    h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Behavior momentum should ease a student toward a task they have assented to and that is genuinely in their interest — not pressure them past a meaningful refusal. If a student keeps declining, treat that "no" as communication: revisit the antecedents, the demand itself, and whether it is necessary. Honor assent withdrawal, whether spoken or shown through behavior (pulling away, distress).')
                 )
             ),
             // Sequence view
@@ -25588,7 +25600,7 @@ Analyze this data and return ONLY valid JSON:
                     id: 'behaviormomentum',
                     icon: '🚀',
                     title: 'Behavior Momentum Planner',
-                    desc: 'Build compliance through high-probability request sequences — evidence-based ABA strategy with tracking',
+                    desc: 'Ease a student into a harder, assented-to task using high-probability request sequences — an evidence-based ABA strategy. Use only for goals in the student\'s interest; a sustained "no" is communication, not noncompliance',
                     color: 'indigo',
                     cat: 'intervention',
                 },
