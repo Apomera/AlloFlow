@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body>
+<pre id="out">opener starting…</pre>
+<script src="./verapdf_client.js"></script>
+<script>
+  const out = document.getElementById('out');
+  function log(m){ out.textContent += '\n' + m; console.log('[opener] ' + m); }
+  (async () => {
+    window.__done = null;
+    try {
+      const vera = createVeraPdfValidator({ validatorUrl: './verapdf_validator.html', mode: 'iframe', warmupTimeoutMs: 180000 });
+      log('warming up…'); await vera.warmUp(); log('ready.');
+      const buf = new Uint8Array(await (await fetch('./small.pdf')).arrayBuffer());
+      log('validating ' + buf.byteLength + ' bytes…');
+      const r = await vera.validate(buf, { timeoutMs: 120000 });
+      log('RESULT compliant=' + r.compliant + ' failedChecks=' + r.failedChecks + ' distinctRules=' + (r.failedRules ? r.failedRules.length : 0) + ' sizeWarn=' + r.sizeWarn);
+      window.__done = { ok: true, result: r };
+      vera.teardown();
+    } catch (e) { log('ERR ' + (e && e.message || e)); window.__done = { ok: false, err: String(e && e.message || e) }; }
+  })();
+</script></body></html>
