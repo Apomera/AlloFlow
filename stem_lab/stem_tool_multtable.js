@@ -1222,7 +1222,8 @@ window.StemLab = window.StemLab || {
                 onClick: function() {
                   var missed = getUniqueMissed(_mt.missed);
                   var pick = missed[Math.floor(Math.random() * missed.length)];
-                  setMultTableChallenge({ a: pick.a, b: pick.b });
+                  var pMode = quizMode === 'div' ? 'div' : (quizMode === 'mixed' ? (Math.random() < 0.5 ? 'mult' : 'div') : 'mult');
+                  setMultTableChallenge({ a: pick.a, b: pick.b, mode: pMode, divisor: pMode === 'div' ? (Math.random() < 0.5 ? pick.a : pick.b) : null });
                   setMultTableAnswer('');
                   setMultTableFeedback(null);
                   setHighlightCell(null);
@@ -1358,7 +1359,8 @@ window.StemLab = window.StemLab || {
                       onMouseEnter: function() { setMultTableHover({ r: r + 1, c: c + 1 }); },
                       onMouseLeave: function() { setMultTableHover(null); },
                       onClick: function() {
-                        setMultTableChallenge({ a: r + 1, b: c + 1 });
+                        var gMode = quizMode === 'div' ? 'div' : (quizMode === 'mixed' ? (Math.random() < 0.5 ? 'mult' : 'div') : 'mult');
+                        setMultTableChallenge({ a: r + 1, b: c + 1, mode: gMode, divisor: gMode === 'div' ? (Math.random() < 0.5 ? r + 1 : c + 1) : null });
                         setMultTableAnswer('');
                         setMultTableFeedback(null);
                         setHighlightCell(null);
