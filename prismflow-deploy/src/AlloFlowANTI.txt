@@ -4414,7 +4414,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'ab81bd33';
+    var pluginCdnVersion = '62e89513';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -15955,6 +15955,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       expertReviewReason: cur.expertReviewReason,
       integrityCoverage: cur.integrityCoverage,
       integrityWarning: cur.integrityWarning,
+      fidelityNotes: cur.fidelityNotes || [],
+      fidelityLimited: cur.fidelityLimited || false,
       sourceText: cur.sourceText,
       finalText: cur.finalText,
       extractedChars: cur.extractedChars,
@@ -24899,6 +24901,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 expertReviewReason: project.expertReviewReason || null,
                                 integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
                                 integrityWarning: project.integrityWarning || null,
+                                fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
+                                fidelityLimited: project.fidelityLimited || false,
                                 sourceText: project.sourceText || '', finalText: project.finalText || '',
                                 htmlChars: project.htmlChars || project.accessibleHtml.length,
                                 extractedChars: project.extractedChars || 0,
