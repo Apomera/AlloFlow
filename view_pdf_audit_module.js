@@ -1505,6 +1505,7 @@ function PdfAuditView(props) {
     agentLogFullView,
     applyWordRestorationInPlace,
     auditOutputAccessibility,
+    recomputeIssueResolution,
     autoFixAxeViolations,
     autoRestoreSummary,
     boringPalettePrompt,
@@ -6798,8 +6799,27 @@ Return ONLY JSON:
           const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
           const _preCmdHtml = pdfFixResult.accessibleHtml;
           setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
-          if (result.score !== void 0) {
-            setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
+          try {
+            setAgentActivityLog((prev) => [...prev, { text: "\u{1F50D} Re-auditing to refresh score + remaining-issues count\u2026", type: "audit", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
+            const [_wv, _wa] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
+            if (_wv && Number.isFinite(_wv.score)) {
+              const _wdet = _wa && typeof _wa.score === "number" ? _wa.score : null;
+              const _wscore = _wdet !== null ? Math.round((_wv.score + _wdet) / 2) : _wv.score;
+              setPdfFixResult((prev) => prev ? {
+                ...prev,
+                verificationAudit: _wv,
+                afterScore: _wscore,
+                _scoreIsBlended: _wdet !== null,
+                axeAudit: _wa || prev.axeAudit,
+                axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
+                issueResolution: typeof recomputeIssueResolution === "function" ? recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution : prev.issueResolution
+              } : prev);
+              setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Updated: " + _wscore + "/100 \xB7 " + (_wv.issues || []).length + " issue(s) remaining", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
+            } else if (result.score !== void 0) {
+              setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
+            }
+          } catch (_) {
+            if (result.score !== void 0) setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           }
           console.info("[ExpertWorkbench] complete command=" + JSON.stringify(cmd) + " score=" + (result.score !== void 0 ? result.score : "n/a") + " miniAudit=" + (result.miniAudit ? result.miniAudit.verdict : "none"));
           if (result.miniAudit && result.miniAudit.verdict === "regressed") {

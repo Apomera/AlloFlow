@@ -27383,7 +27383,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       )}
       {/* ── PDF Accessibility Audit Modal — extracted to view_pdf_audit_module.js (CDN) ── */}
       {(pdfAuditResult || pdfAuditLoading) && window.AlloModules && window.AlloModules.PdfAuditView && React.createElement(window.AlloModules.PdfAuditView, {
-          STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline,
+          STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,

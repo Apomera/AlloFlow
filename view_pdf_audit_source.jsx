@@ -1615,7 +1615,7 @@ function PdfAuditView(props) {
     STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit,
     _docPipeline, _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit,
     addToast, agentActivityLog, agentLogFullView, applyWordRestorationInPlace,
-    auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
+    auditOutputAccessibility, recomputeIssueResolution, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
     applyFormBlanks, callTTS, detectPdfBlankFields, overlayPdfFormFields, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
@@ -8664,8 +8664,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // click (mini-audit, 2026-06-16) — mirrors the _preBionicHtml snapshot pattern.
                               const _preCmdHtml = pdfFixResult.accessibleHtml;
                               setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
-                              if (result.score !== undefined) {
-                                setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
+                              // Re-audit + recompute so the headline score, "Remaining Issues" count, and the
+                              // Newly-Introduced list reflect THIS Workbench fix (the mini-audit only verifies
+                              // axe STRUCTURE; the panel was otherwise stale until a full re-run). The fix is
+                              // already applied above, so any re-audit failure is non-fatal — keep prior numbers.
+                              try {
+                                setAgentActivityLog(prev => [...prev, { text: '🔍 Re-auditing to refresh score + remaining-issues count…', type: 'audit', time: new Date().toLocaleTimeString() }]);
+                                const [_wv, _wa] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
+                                if (_wv && Number.isFinite(_wv.score)) {
+                                  const _wdet = (_wa && typeof _wa.score === 'number') ? _wa.score : null;
+                                  const _wscore = (_wdet !== null) ? Math.round((_wv.score + _wdet) / 2) : _wv.score;
+                                  setPdfFixResult(prev => prev ? ({ ...prev,
+                                    verificationAudit: _wv,
+                                    afterScore: _wscore,
+                                    _scoreIsBlended: _wdet !== null,
+                                    axeAudit: _wa || prev.axeAudit,
+                                    axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
+                                    issueResolution: (typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
+                                  }) : prev);
+                                  setAgentActivityLog(prev => [...prev, { text: '📊 Updated: ' + _wscore + '/100 · ' + ((_wv.issues || []).length) + ' issue(s) remaining', type: 'score', time: new Date().toLocaleTimeString() }]);
+                                } else if (result.score !== undefined) {
+                                  setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
+                                }
+                              } catch (_) {
+                                if (result.score !== undefined) setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                               }
                               console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a') + ' miniAudit=' + (result.miniAudit ? result.miniAudit.verdict : 'none'));
                               if (result.miniAudit && result.miniAudit.verdict === 'regressed') {
