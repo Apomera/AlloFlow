@@ -795,7 +795,7 @@ window.StemLab = window.StemLab || {
           sliderRow('Grid size', gridSize, 4, 12, 1, function(v) { upd('crystalSize', v); }),
           // Stats
           d.dopant !== 'none' && h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-            statBadge('Type', dopant.type + '-type', dopant.type === 'n' ? 'text-red-400' : 'text-blue-400'),
+            statBadge('Type', dopant.type + '-type', dopant.type === 'n' ? 'text-blue-400' : 'text-red-400'),
             statBadge('Valence e\u207B', String(dopant.valence)),
             statBadge('Majority', dopant.type === 'n' ? 'Electrons' : 'Holes'),
             statBadge('Minority', dopant.type === 'n' ? 'Holes' : 'Electrons')
@@ -2896,7 +2896,7 @@ window.StemLab = window.StemLab || {
               }
               cx.fillStyle = bitVal ? '#EF4444' : '#34D399';
               cx.font = 'bold 11px sans-serif';
-              cx.fillText('Stored: ' + (bitVal ? '0 (charged)' : '1 (erased)'), W / 2, fy + 55);
+              cx.fillText('Stored: ' + (bitVal ? '1 (charged)' : '0 (erased)'), W / 2, fy + 55);
               if (memType === 'nand') {
                 cx.fillStyle = '#94A3B8'; cx.font = '7px sans-serif';
                 cx.fillText('NAND: cells in series \u2192 ultra-dense', W / 2, fy - 45);
@@ -3673,19 +3673,20 @@ window.StemLab = window.StemLab || {
           else if (iq.conc < 6) state = 'light';
           else if (iq.conc < 11) state = 'moderate';
           else state = 'heavy';
+          // Dark-themed to match the rest of the tool (was a bright white card with light pastels on the dark lab)
           var sm = {
-            intrinsic: { label: '🔘 Intrinsic', color: '#64748b', bg: '#f1f5f9', border: '#cbd5e1', desc: 'Minimal dopant. Pure semiconductor — high resistivity.' },
-            light:     { label: '🟢 Lightly doped', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Some carriers introduced. Typical extrinsic regime.' },
-            moderate:  { label: '🟡 Moderately doped', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Strong conductivity, used in transistors.' },
-            heavy:     { label: '🔴 Heavily doped', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Approaching metallic behavior. Used for contacts.' }
+            intrinsic: { label: '🔘 Intrinsic', color: '#94a3b8', bg: 'rgba(148,163,184,0.12)', border: 'rgba(148,163,184,0.4)', desc: 'Minimal dopant. Pure semiconductor — high resistivity.' },
+            light:     { label: '🟢 Lightly doped', color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.4)', desc: 'Some carriers introduced. Typical extrinsic regime.' },
+            moderate:  { label: '🟡 Moderately doped', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.4)', desc: 'Strong conductivity, used in transistors.' },
+            heavy:     { label: '🔴 Heavily doped', color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.4)', desc: 'Approaching metallic behavior. Used for contacts.' }
           }[state];
-          return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
-            h('h3', { className: 'text-sm font-black text-amber-700' }, '⚗️ Doping discovery'),
-            h('p', { className: 'text-[12px] text-slate-700' }, 'Adjust dopant concentration, temperature, material. Discrete 4-band regime. No score, no reveal.'),
+          return h('div', { className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/40 shadow-sm space-y-3' },
+            h('h3', { className: 'text-sm font-black text-amber-300' }, '⚗️ Doping discovery'),
+            h('p', { className: 'text-[12px] text-slate-300' }, 'Adjust dopant concentration, temperature, material. Discrete 4-band regime. No score, no reveal.'),
             h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
               h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-              h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
-              h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Carriers ≈ ' + carrierConc.toExponential(1) + ' cm⁻³')
+              h('div', { className: 'text-[11px] text-slate-300 mt-1' }, sm.desc),
+              h('div', { className: 'text-[10px] text-slate-400 mt-1 font-mono' }, 'Carriers ≈ ' + carrierConc.toExponential(1) + ' cm⁻³')
             ),
             h('div', { className: 'flex gap-2' },
               ['Si', 'Ge', 'GaAs'].map(function(m) {
