@@ -854,9 +854,13 @@ window.StemLab = window.StemLab || {
             [0, 0, 0, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71],
 
             [0, 0, 0, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103]
+          ];
 
-          ,
-
+          // NOTE: the 15 compounds below were mistakenly pasted INTO PT_LAYOUT (after a
+          // stray comma), so Table mode's `PT_LAYOUT.flatMap(row => ... row.map(...))`
+          // hit plain objects → "row.map is not a function" → Table mode white-screened.
+          // They are real compounds, so keep them in their own array and fold into COMPOUNDS.
+          const PT_EXTRA_COMPOUNDS = [
             { name: 'Aspirin', formula: 'C₉H₈O₄', recipe: { C: 9, H: 8, O: 4 }, desc: 'Pain reliever & anti-inflammatory', emoji: '💊' },
             { name: 'Caffeine', formula: 'C₈H₁₀N₄O₂', recipe: { C: 8, H: 10, N: 4, O: 2 }, desc: 'The world\'s most popular stimulant', emoji: '☕' },
             { name: 'Citric Acid', formula: 'C₆H₈O₇', recipe: { C: 6, H: 8, O: 7 }, desc: 'Found in citrus fruits', emoji: '🍋' },
@@ -917,7 +921,7 @@ window.StemLab = window.StemLab || {
 
             { name: t('stem.periodic.silicon_dioxide'), formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: t('stem.periodic.sand_glass'), emoji: '\uD83C\uDFD6\uFE0F' },
 
-          ];
+          ].concat(PT_EXTRA_COMPOUNDS);
 
           const selectedEls = d.selectedElements || {};
 
@@ -2591,6 +2595,8 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(0, 1fr))', gap: '1px', minWidth: '600px' } },
 
                   PT_LAYOUT.flatMap((row, ri) => {
+
+                    if (!Array.isArray(row)) return [];
 
                     if (row.length === 0) return [React.createElement("div", { key: 'gap-' + ri, style: { gridColumn: 'span 18', height: '4px' } })];
 
