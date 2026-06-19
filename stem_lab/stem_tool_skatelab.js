@@ -1276,6 +1276,7 @@ window.StemLab = window.StemLab || {
       }
     }
     function step() {
+      if (!canvas || !canvas.isConnected) return; // stop rescheduling if the canvas detached (belt-and-suspenders vs a missed cleanup path)
       var state = { gapFt: 0, ghost: ghost, showEnergyBar: showEnergy, skater: skaterStyle };
       if (phase === 'descend') {
         // Drop in: arc from left lip to floor center. Compressed 0.45→0.2 for snappier playback.
@@ -1472,6 +1473,7 @@ window.StemLab = window.StemLab || {
       }
     }
     function step() {
+      if (!canvas || !canvas.isConnected) return; // stop rescheduling if the canvas detached (belt-and-suspenders vs a missed cleanup path)
       var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '', wind: sim.wind, ghost: ghost, showEnergyBar: showEnergyG, skater: skaterStyleG };
       if (phase === 'roll') {
         // Roll up the ramp (roll phase isn't slowed — only flight is).
