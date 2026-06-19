@@ -6938,6 +6938,11 @@ var d = labToolData.plateTectonics || {};
 
                 function drawEarth() {
 
+                  // Self-terminate when the timeline-tab canvas detaches. This loop had no in-frame
+                  // guard and no React teardown (it was started via setTimeout + getElementById), so
+                  // it ran forever after leaving the tab, walking detached DOM every frame.
+                  if (!canvas.isConnected) { if (canvas._geoAnim) cancelAnimationFrame(canvas._geoAnim); return; }
+
                   canvas._geoAnim = requestAnimationFrame(drawEarth);
 
                   tick += 0.5;
@@ -21378,7 +21383,7 @@ var d = labToolData.plateTectonics || {};
             simTab === 'boundaryHunt' && (function() {
               var h = React.createElement;
               var iq = d.boundaryHunt || { btype: 'convergent', force: 50, friction: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd('boundaryHunt', Object.assign({}, iq, patch)); }
+              function setIQ(patch) { upd({ boundaryHunt: Object.assign({}, iq, patch) }); }
               var stress = iq.force * (iq.friction / 100);
               var failure;
               if (iq.btype === 'convergent') failure = stress > 50 ? 'thrust' : 'stable';
@@ -21461,7 +21466,7 @@ var d = labToolData.plateTectonics || {};
                     c2.scale(2, 2);
                     var start = performance.now();
                     function drawTb() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._tbAnim); return; }
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._tbAnim); if (cvEl._tbRO) { cvEl._tbRO.disconnect(); cvEl._tbRO = null; } return; }
                       var t = (performance.now() - start) / 1000;
                       c2.fillStyle = '#1c1410';
                       c2.fillRect(0, 0, W, H);
@@ -21560,8 +21565,9 @@ var d = labToolData.plateTectonics || {};
                     drawTb();
                     var ro = new ResizeObserver(function() {
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
                     });
+                    cvEl._tbRO = ro;
                     ro.observe(cvEl);
                   },
                   style: { width: '100%', height: '100%', display: 'block' }
@@ -21584,7 +21590,7 @@ var d = labToolData.plateTectonics || {};
                     c2.scale(2, 2);
                     var start = performance.now();
                     function drawEq() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._eqAnim); return; }
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._eqAnim); if (cvEl._eqRO) { cvEl._eqRO.disconnect(); cvEl._eqRO = null; } return; }
                       var t = (performance.now() - start) / 1000;
                       c2.fillStyle = '#0a0410';
                       c2.fillRect(0, 0, W, H);
@@ -21637,8 +21643,9 @@ var d = labToolData.plateTectonics || {};
                     drawEq();
                     var ro = new ResizeObserver(function() {
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
                     });
+                    cvEl._eqRO = ro;
                     ro.observe(cvEl);
                   },
                   style: { width: '100%', height: '100%', display: 'block' }
