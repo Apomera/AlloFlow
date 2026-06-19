@@ -9536,9 +9536,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('text', { x: 60 + w + 4, y: y + 13, fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, n + '/5')
             );
           }),
-          h('text', { x: 60, y: 134, fill: '#64748b', fontSize: 8 }, '0'),
-          h('text', { x: 185, y: 134, fill: '#64748b', fontSize: 8 }, '↑ more parameters in tolerance →'),
-          h('text', { x: 295, y: 134, fill: '#64748b', fontSize: 8 }, '5')
+          h('text', { x: 60, y: 134, fill: '#94a3b8', fontSize: 10 }, '0'),
+          h('text', { x: 185, y: 134, fill: '#94a3b8', fontSize: 10 }, '↑ more parameters in tolerance →'),
+          h('text', { x: 295, y: 134, fill: '#94a3b8', fontSize: 10 }, '5')
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
           sliders.map(function(s) {
@@ -11029,7 +11029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, k.name),
             h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-              k.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 3 } }, s.substring(s.indexOf('.') + 2)); })),
+              k.steps.map(function(s, si) { var dot = s.indexOf('.'); return h('li', { key: si, style: { marginBottom: 3 } }, dot >= 0 ? s.substring(dot + 2) : s); })),
             h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '✓ Check: '), k.check));
         })));
     }
