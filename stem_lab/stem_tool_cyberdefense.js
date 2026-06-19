@@ -2617,7 +2617,7 @@
                   el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null }); upd('cluesFound', []); upd('phishAnswer', null); },
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\uD83D\uDD0D'), 'Investigation Mode'),
-                  el('button', { onClick: function() { setPhishMode('triage'); upd('cluesFound', []); upd('phishAnswer', null); upd('triageTimeLeft', 15); setTriageActive(true); },
+                  el('button', { onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, triageTimeLeft: 15 }); },
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
                   // AI Case Generator Button
@@ -3037,7 +3037,7 @@
                       else mapped = String.fromCharCode(90 - li);
                       return el('div', { key: li, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 22 } },
                         el('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, letter),
-                        el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #475569)' } }, '\u2193'),
+                        el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u2193'),
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#818cf8', fontFamily: 'monospace' } }, mapped)
                       );
                     })
@@ -5545,7 +5545,7 @@
                       el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
                     iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how detection, response, and training compose security posture.',
                       style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-                    el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state defense marker; no security score; no reveal — by design.')
+                    el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } }, 'Design note: discrete 4-state defense marker; no security score; no reveal — by design.')
                   )
                 );
               })()
