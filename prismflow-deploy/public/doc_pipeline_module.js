@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -5930,16 +5930,19 @@ var createDocPipeline = function(deps) {
           // (huge canvas on a low-RAM device) usually renders fine at 1.25x, recovering a slightly
           // lower-res OCR pass instead of dropping the page's text layer entirely. Still FULLY BOUNDED
           // (every attempt is _withTimeout-wrapped → no unbounded await → the original hang fix holds).
-          // Ladder: high-res first for OCR accuracy, but fall back FAST to lower scales with shorter
-          // budgets so a heavy scanned page (huge raster) recovers at lower res instead of burning a
-          // long timeout then dropping the page. Adds a final 1x rung — worst case ~80s vs the old
-          // ~115s, and far likelier to land a (lower-res) render than drop the page. (2026-06-19)
+          // Ladder: high-res first for OCR accuracy, falling to lower scales on timeout. CRITICAL: a
+          // SUCCESSFUL Tesseract render is what yields the per-WORD BOXES used to draw the POSITIONED
+          // searchable/screen-reader text layer. If every rung times out, the page has no boxes and the
+          // OCR text falls back to one top-left block (mispositioned — does NOT overlay the page). So the
+          // cheap final 1x rung gets the MOST GENEROUS budget: ~1/4 the pixels of 2x, it reliably renders
+          // even a heavy page → guaranteed word boxes (positioning) over raw speed. Word positions are
+          // scale-invariant (normalized by renderScale), so a 1x render still overlays correctly. (2026-06-19, fixes top-block regression)
           for (const _sc of [2.0, 1.25, 1.0]) {
             const _vp = page.getViewport({ scale: _sc });
             const _c = document.createElement('canvas');
             _c.width = _vp.width; _c.height = _vp.height;
             try {
-              await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 40000 : (_sc >= 1.25 ? 25000 : 15000), 'page.render (OCR p' + p + ' @' + _sc + 'x)');
+              await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000), 'page.render (OCR p' + p + ' @' + _sc + 'x)');
               canvas = _c; renderScale = _sc; break;
             } catch (_rErr) {
               try { _c.width = 0; _c.height = 0; } catch (_) {}
@@ -26180,11 +26183,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
