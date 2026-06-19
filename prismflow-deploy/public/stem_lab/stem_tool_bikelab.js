@@ -690,6 +690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             return;
           }
           var loop = function(ts) {
+            if (!canvasRef.current || !canvasRef.current.isConnected) { rafRef.current = null; return; } // stop if the canvas detached
             if (!lastTsRef.current) lastTsRef.current = ts;
             var dt = Math.min(0.05, (ts - lastTsRef.current) / 1000);
             lastTsRef.current = ts;
@@ -2559,6 +2560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         useEffect(function() {
           if (!running) { if (rafRef.current) cancelAnimationFrame(rafRef.current); return; }
           var loop = function(ts) {
+            if (!canvasRef.current || !canvasRef.current.isConnected) { rafRef.current = null; return; } // stop if the canvas detached
             if (!lastTsRef.current) lastTsRef.current = ts;
             var dt = Math.min(0.05, (ts - lastTsRef.current) / 1000);
             lastTsRef.current = ts;
@@ -3469,15 +3471,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       if (view === 'winterBike') return h(WinterBike);
       if (view === 'signalDrill') return h(SignalDrill);
       if (view === 'cadenceHunt') return h(function() {
-        var d = (toolData && toolData.bikeLab) || {};
+        // Use the tool's own ctx-bound d/upd. This view previously declared a local `d` from bare
+        // `toolData` and wrote via bare `setToolData` — both undefined here — so it threw on render.
         var iq = d.cadenceHunt || { rpm: 80, grade: 5, gear: 2.5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) {
-          setToolData(function(prev) {
-            var prior = (prev && prev.bikeLab) || {};
-            var st = Object.assign({}, prior.cadenceHunt || iq, patch);
-            return Object.assign({}, prev, { bikeLab: Object.assign({}, prior, { cadenceHunt: st }) });
-          });
-        }
+        function setIQ(patch) { upd('cadenceHunt', Object.assign({}, d.cadenceHunt || iq, patch)); }
         var speed = iq.rpm * 0.105 * iq.gear * 0.7;
         var powerNeeded = (iq.grade / 100) * 90 + speed * 0.4;
         var efficiency = iq.rpm >= 80 && iq.rpm <= 95 ? 'spinning' : (iq.rpm < 60 ? 'mashing' : (iq.rpm > 110 ? 'over' : 'mid'));
