@@ -5758,7 +5758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               if (pickedChoice) totalScore += pickedChoice.score;
             }
           });
-          var pct = Math.round((totalScore / maxScore) * 100);
+          var pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
           var grade = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
           var gradeColor = pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad;
           var completed = d.labsCompleted || [];
@@ -7611,7 +7611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'resources':  return renderResources();
         case 'engineHunt': return (function() {
           var iq = d.engineHunt || { advance: 20, overlap: 30, compression: 10, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          function setIQ(patch) { upd({ engineHunt: Object.assign({}, iq, patch) }); }
+          function setIQ(patch) { updMulti({ engineHunt: Object.assign({}, iq, patch) }); }
           var state;
           if (iq.compression > 11 && iq.advance > 30) state = 'knock';
           else if (iq.advance < 10 || iq.overlap > 50) state = 'misfire';
