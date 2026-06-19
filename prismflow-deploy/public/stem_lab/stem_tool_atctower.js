@@ -403,6 +403,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
       useEffect(function() {
         if (view !== 'playing' || !canvasRef.current) return;
+        // Remounting/restoring into a persisted 'playing' view loses the in-ref game state
+        // (gameRef resets to airport:null), so the loop's airport.runways access would throw
+        // and blank the tool. Recover to the menu so the player can start a fresh game.
+        if (!gameRef.current || !gameRef.current.airport) { upd('view', 'menu'); return; }
         var canvas = canvasRef.current;
         var gfx = canvas.getContext('2d');
 
@@ -1504,11 +1508,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
           if (key === 'h') {
             var hdgStr = prompt('Heading for ' + sel.callsign + '? (0-360)');
-            if (hdgStr) { sel.targetHeading = parseInt(hdgStr) % 360; game.messages.unshift({ text: '🧭 ' + sel.callsign + ' turn heading ' + sel.targetHeading + '°', time: game.time, color: '#fbbf24' }); playATCSound('select'); if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3; }
+            if (hdgStr) { var hVal = parseInt(hdgStr, 10); if (!isNaN(hVal)) { sel.targetHeading = ((hVal % 360) + 360) % 360; game.messages.unshift({ text: '🧭 ' + sel.callsign + ' turn heading ' + sel.targetHeading + '°', time: game.time, color: '#fbbf24' }); playATCSound('select'); if (tutorialRef.current.active && tutorialRef.current.step === 2) tutorialRef.current.step = 3; } }
           }
           if (key === 's') {
             var spdStr = prompt('Speed for ' + sel.callsign + '? (knots)');
-            if (spdStr) { sel.targetSpeed = parseInt(spdStr); game.messages.unshift({ text: '💨 ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' }); }
+            if (spdStr) { var sVal = parseInt(spdStr, 10); if (!isNaN(sVal)) { sel.targetSpeed = Math.max(0, sVal); game.messages.unshift({ text: '💨 ' + sel.callsign + ' speed ' + sel.targetSpeed + ' kts', time: game.time, color: '#22d3ee' }); } }
           }
           if (key === 'c') {
             if (sel.assignedRunway) {
@@ -1561,6 +1565,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           cancelAnimationFrame(animRef.current);
           canvas.removeEventListener('click', onClick);
           window.removeEventListener('keydown', onKey);
+          // Close the AudioContext on view-change/unmount — otherwise each game session leaks one
+          // and browsers cap concurrent contexts (~6), after which ATC audio silently dies.
+          try { var _a = atcAudioRef.current; if (_a && _a.ctx && _a.ctx.state !== 'closed') { _a.ctx.close(); _a.ctx = null; } } catch (e) {}
         };
       }, [view]);
 
