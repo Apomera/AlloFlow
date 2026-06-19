@@ -7311,7 +7311,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function takeProbeReading() {
       var temp = 18 + (Math.random() - 0.5) * 8; // 14-22
       var salinity = 26 + (Math.random() - 0.5) * 6;
-      var DO = 5 + Math.random() * 3;
+      // Dissolved O2 falls as water warms (warmer water holds less oxygen) — couple DO to temp so
+      // the probe stops contradicting the tool's own "warmer water holds less O2" lesson, and so the
+      // low-DO warning below is actually reachable (warm water now dips toward/under the 6 mg/L floor).
+      var DO = 9.5 - (temp - 14) * 0.45 + (Math.random() - 0.5) * 1.4;
       var pH = 7.7 + Math.random() * 0.4;
       var chl = 4 + Math.random() * 12;
       return {
@@ -7325,7 +7328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         warnings: (function() {
           var w = [];
           if (temp > 21) w.push('Temp high (>21°C) — mussel stress risk');
-          if (DO < 5) w.push('DO low (<5 mg/L) — monitor');
+          if (DO < 6) w.push('DO low (<6 mg/L) — below optimal for mussels, monitor');
           if (pH < 7.8) w.push('pH low (<7.8) — acidification window');
           if (chl > 25) w.push('Chl-a high — check DMR for HAB closures');
           return w;
