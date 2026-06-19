@@ -942,6 +942,10 @@ window.StemLab = window.StemLab || {
         var sid = sids[Math.floor(Math.random()*sids.length)];
         var valid = tmpls.filter(function(tp) {
           if (['faces','edges','vertices','eulerCheck'].indexOf(tp.type)>=0 && (sid==='sphere'||sid==='torus')) return false;
+          // Euler's V−E+F=2 holds only for convex POLYHEDRA — cone & cylinder have curved
+          // surfaces, so their face/edge/vertex counts are a teaching convention, not Euler's
+          // theorem. Don't quiz eulerCheck on them (it would reward a convention-dependent answer).
+          if (tp.type==='eulerCheck' && (sid==='cone'||sid==='cylinder')) return false;
           if (tp.type==='lateralArea' && (sid==='sphere'||sid==='torus')) return false;
           return true;
         });
@@ -1745,7 +1749,7 @@ window.StemLab = window.StemLab || {
                 )
               : h('canvas', { 
                   id: 'geo-sandbox-canvas',
-                  'aria-label': 'Interactive geology sandbox 3D visualization', tabIndex: 0,
+                  'aria-label': 'Interactive geometry sandbox 3D visualization', tabIndex: 0,
                   className: 'w-full h-full',
                   style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
                 }),
