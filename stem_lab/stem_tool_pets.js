@@ -3574,7 +3574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           why: '50–80 years. Macaws and large cockatoos genuinely outlive most owners. Estate planning + designated successor caregiver is essential. Most parrot rescues are full because owners died first or could no longer care for them.' },
         { id: 4, species: 'Galápagos tortoise', icon: '🐢', correct: 'b5',
           why: '100+ years. Lonesome George (last Pinta tortoise) lived ~100. Multi-generational commitment — typically passed down or rehomed multiple times. Most US owners cannot legally own one without permits; commonly seen at zoos.' },
-        { id: 5, species: 'Domestic ferret', icon: '🦡', correct: 'b2',
+        { id: 5, species: 'Domestic ferret', icon: '🐾', correct: 'b2',
           why: '6–10 years. Adrenal disease + insulinoma are common late-life problems; budget $300+/year for senior ferret vet bills. Banned in California and Hawaii.' },
         { id: 6, species: 'Average medium-size dog (~50 lb)', icon: '🐕', correct: 'b3',
           why: '10–14 years. Inverse size rule: small dogs (Yorkies, Chihuahuas) live 14–18; large dogs (Mastiffs, Great Danes) often 7–10. Genetics + cancer rates explain most of the gap.' },
@@ -4148,8 +4148,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var welfareVisited = d.welfareVisited || {};
       if (!welfareVisited[welfareSec]) {
         var nv = Object.assign({}, welfareVisited); nv[welfareSec] = true;
-        upd('welfareVisited', nv);
-        if (Object.keys(nv).length >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware');
+        // Deferred out of the render phase — calling upd()/awardBadge() during render risks a
+        // "cannot update while rendering" warning / extra render pass.
+        setTimeout(function() { upd('welfareVisited', nv); if (Object.keys(nv).length >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware'); }, 0);
       }
       var sectionTabs = h('div', { role: 'tablist', 'aria-label': 'Welfare topic',
         style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
