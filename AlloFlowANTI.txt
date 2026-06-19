@@ -4544,6 +4544,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
+    // Translation Feedback: lets multilingual users suggest a fix to a translated
+    // string, sent the same way as a bug report (pre-filled Google Form). Rides
+    // help-mode — when help-mode is on and a help string is opened, the help-click
+    // handler calls window.AlloModules.TranslationFeedback.offerFor(...) (guarded).
+    (function() {
+      const url = pluginCdnBase + 'translation_feedback_module.js?v=' + pluginCdnVersion;
+      const s = document.createElement('script');
+      s.src = url;
+      s.crossOrigin = 'anonymous';
+      s.onload = () => { console.log('[CDN] TranslationFeedback loaded'); };
+      s.onerror = () => {
+        console.warn('[CDN] TranslationFeedback CDN failed, trying raw fallback');
+        const fb = document.createElement('script');
+        fb.src = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/translation_feedback_module.js?v=' + Date.now();
+        document.head.appendChild(fb);
+      };
+      document.head.appendChild(s);
+    })();
     (function() {
       const url = pluginCdnBase + 'ai_backend_module.js?v=' + pluginCdnVersion;
       const s = document.createElement('script');
@@ -7142,6 +7160,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         const localizedHelp = (_rawHelp && _rawHelp !== 'help_mode.' + key) ? _rawHelp : '';
         const helpText = localizedHelp || _helpLookup(key);
         if (helpText) {
+            // Translation-feedback hook: offer a "suggest a better translation" pill for
+            // this string when help-mode is on. Fully guarded — no-op if the module isn't
+            // loaded; never alters the existing help-popover behavior below.
+            try {
+                if (currentUiLanguage && currentUiLanguage !== 'English' && window.AlloModules && window.AlloModules.TranslationFeedback) {
+                    window.AlloModules.TranslationFeedback.offerFor({ key: 'help_mode.' + key, current: helpText, language: currentUiLanguage });
+                }
+            } catch (_) {}
             const deriveTitle = (k) => {
                 const _rawTitle = t('help_mode.' + k + '_title', { defaultValue: '' });
                 if (_rawTitle && _rawTitle !== 'help_mode.' + k + '_title') return _rawTitle;
