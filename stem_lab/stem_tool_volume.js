@@ -409,9 +409,13 @@ window.StemLab = window.StemLab || {
           return Math.PI * rc * rc + Math.PI * rc * Math.sqrt(rc * rc + h * h);
         }
         if (s === 'pyramid') {
+          // base + 4 triangular faces. The two faces with base l use slant √(h²+(w/2)²); the two with
+          // base w use √(h²+(l/2)²). Lateral = 2·(½·l·slantW) + 2·(½·w·slantL) = l·slantW + w·slantL.
+          // (The old form used one slant × the full base perimeter, ~doubling the lateral area.)
           var base = l * w;
-          var slant = Math.sqrt(h * h + (Math.max(l, w) / 2) * (Math.max(l, w) / 2));
-          return base + 2 * l * slant + 2 * w * slant; // approximate
+          var slantW = Math.sqrt(h * h + (w / 2) * (w / 2));
+          var slantL = Math.sqrt(h * h + (l / 2) * (l / 2));
+          return base + l * slantW + w * slantL;
         }
         return 2 * (l * w + l * h + w * h);
       }
@@ -2146,7 +2150,7 @@ window.StemLab = window.StemLab || {
                 c2.scale(2, 2);
                 var start = performance.now();
                 function drawVol() {
-                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._volAnim); return; }
+                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._volAnim); if (cvEl._volRO) cvEl._volRO.disconnect(); return; }
                   var t = (performance.now() - start) / 1000;
                   c2.fillStyle = '#020210';
                   c2.fillRect(0, 0, W, H);
@@ -2282,8 +2286,10 @@ window.StemLab = window.StemLab || {
                 drawVol();
                 var ro = new ResizeObserver(function() {
                   W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                  cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H * 2;
+                  c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative
                 });
+                cvEl._volRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                 ro.observe(cvEl);
               },
               style: { width: '100%', height: '100%', display: 'block' }
