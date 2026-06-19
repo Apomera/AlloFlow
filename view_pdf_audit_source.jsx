@@ -3619,6 +3619,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             expertReviewReason: project.expertReviewReason || null,
                             integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
                             integrityWarning: project.integrityWarning || null,
+                            fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
+                            fidelityLimited: project.fidelityLimited || false,
                             sourceText: project.sourceText || '', finalText: project.finalText || '',
                             htmlChars: project.htmlChars || project.accessibleHtml.length,
                             extractedChars: project.extractedChars || 0,
@@ -6152,8 +6154,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
                             <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Accessibility score: before → after'}>
-                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span>
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
                             </span>
+                            {/* #1 score↔fidelity coupling — a high accessibility number must not read as
+                                "all good" when source content may not have carried over. */}
+                            {pdfFixResult.fidelityLimited && (
+                              <span
+                                className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 whitespace-nowrap"
+                                title={t('pdf_audit.dashboard.fidelity_limited_title') || 'This is an ACCESSIBILITY score only. Some source content may not have carried over' + (typeof pdfFixResult.integrityCoverage === 'number' ? ' (' + pdfFixResult.integrityCoverage + '% of source text preserved)' : '') + ' — verify content fidelity (review the Diff) before distributing.'}
+                              >
+                                {t('pdf_audit.dashboard.fidelity_limited') || '⚠ verify content'}
+                              </span>
+                            )}
                             {_vio !== null && (
                               <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (_vio === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
                                 {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'issues left')}
@@ -6817,6 +6829,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <p className="text-xs text-sky-800 leading-relaxed mt-1">
                                 {(t('pdf_audit.fidelity_review.body') || 'After accounting for de-hyphenation and whitespace cleanup, the remediated output still preserves {cov} of the source text. This is a content-fidelity check, not an accessibility barrier — some source text may not have carried over. Open the Diff view to compare the remediated text against the original, and keep the source PDF on hand to confirm nothing important was dropped.').replace('{cov}', cov != null ? cov + '%' : 'less than the full source')}
                               </p>
+                              {/* Structural fidelity nets (#2 refusal / #3 tables / #4 links) — the
+                                  specific, actionable losses the bulk char-coverage % can miss. */}
+                              {Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && (
+                                <ul className="mt-2 space-y-1">
+                                  {pdfFixResult.fidelityNotes.map((n, i) => (
+                                    <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : 'text-sky-800')}>
+                                      <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'tables' ? '▦' : '🔗'}</span>
+                                      <span>{n.msg}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                               <p className="text-[11px] text-sky-600 mt-2 italic">
                                 {t('pdf_audit.fidelity_review.note') || 'Coverage already excludes formatting-only changes (rejoined hyphens, collapsed spaces), so a shortfall here points to actual missing text worth a human glance — not a scoring artifact.'}
                               </p>

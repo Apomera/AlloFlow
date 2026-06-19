@@ -260,6 +260,64 @@ function _stripChromeForAudit(html) {
   } catch (_) { return html; }
 }
 
+// ── Structural fidelity nets (2026-06-18) ── These catch silent content losses the doc-wide
+// char-COVERAGE gate misses, because a dropped table or a single refusal sentence barely moves a
+// char count. All WARN-level: they flag for review (feeding the content-fidelity concern), never
+// block. Pure + side-effect-free so they're unit-testable.
+//
+// _detectRefusalText: scans the shipped HTML for AI refusal / meta-commentary that must never end
+// up inside a remediated document ("As an AI…", "I'm sorry, I can't…", "Here is the accessible
+// version…"). Uses STRONG, specific phrases (a real document almost never contains them) plus a
+// narrow first-200-char preamble check, to keep false positives low. Returns the matched phrase
+// or null. The worst-possible pilot demo is a PDF that literally reads "I'm sorry, I can't help
+// with that," and the char-coverage gate won't always catch a short refusal — this does.
+function _detectRefusalText(html) {
+  const text = String(html || '').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+  if (!text) return null;
+  const STRONG = [
+    /\bAs an AI(?:\s+language)?\s+model\b/i,
+    /\bI(?:'m| am)\s+(?:sorry|unable)\b[^.]{0,40}\b(?:can'?t|cannot|unable|assist|help|provide|comply|fulfill|process)\b/i,
+    /\bI\s+(?:can'?t|cannot|am unable to)\s+(?:help|assist|provide|comply|create|generate|fulfill|process|complete)\b/i,
+    /\bI\s+cannot\s+fulfill\s+(?:this|that|your)\s+request\b/i,
+    /\bI(?:'m| am)\s+just\s+an\s+AI\b/i,
+    /\bI\s+do(?:n'?t| not)\s+have\s+the\s+(?:ability|capability)\s+to\b/i,
+    /\bHere(?:'s| is)\s+the\s+(?:accessible|remediated|rewritten|converted|reformatted)\s+(?:version|document|html|content|text)\b/i,
+    /\bI\s+have\s+(?:converted|rewritten|reformatted|remediated|made)\s+(?:the|your|this)\s+(?:document|content|pdf|text)\b/i,
+  ];
+  for (let i = 0; i < STRONG.length; i++) { const m = text.match(STRONG[i]); if (m) return m[0]; }
+  // Chatty lead-in at the very start only (real documents don't open this way).
+  const pm = text.slice(0, 200).match(/^(?:Sure|Certainly|Of course|Absolutely|Got it|No problem)[,!:]?\s+(?:here|i|the|below|i'?ve)\b/i);
+  return pm ? pm[0] : null;
+}
+
+// _computeStructuralFidelityNotes: compares the SOURCE text (markdown from extraction) against the
+// remediated output HTML for dropped hyperlinks (#4), collapsed/lost tables (#3), and leaked
+// refusal text (#2). Returns an array of { kind, msg }. Heuristic + conservative (slack before it
+// fires) so it surfaces a real-loss signal without crying wolf.
+function _computeStructuralFidelityNotes(srcText, outHtml) {
+  const notes = [];
+  const _src = String(srcText || '');
+  const _out = String(outHtml || '');
+  // (#4) Links — markdown source links [text](url) (excluding ![images]) vs output <a href>.
+  const _srcLinks = (_src.match(/(?:^|[^!])\[[^\]\n]{1,200}\]\([^)\s]+\)/g) || []).length;
+  const _outLinks = (_out.match(/<a\s[^>]*\bhref\s*=/gi) || []).length;
+  if (_srcLinks >= 2 && _outLinks < _srcLinks && (_srcLinks - _outLinks) >= Math.max(2, Math.ceil(_srcLinks * 0.2))) {
+    notes.push({ kind: 'links', msg: 'Links: the source had ~' + _srcLinks + ' hyperlink(s) but the output has ' + _outLinks + ' — ' + (_srcLinks - _outLinks) + ' may have been dropped. Check the Diff.' });
+  }
+  // (#3) Tables — markdown table blocks (one divider row each) vs output <table>.
+  const _srcTables = _src.split('\n').filter((l) => { const t = l.trim(); return t.indexOf('|') !== -1 && /-{3,}/.test(t) && /^[|:\-\s]+$/.test(t); }).length;
+  const _outTables = (_out.match(/<table[\s>]/gi) || []).length;
+  if (_srcTables > 0 && _outTables < _srcTables) {
+    notes.push({ kind: 'tables', msg: 'Tables: the source had ~' + _srcTables + ' table(s) but the output has ' + _outTables + ' — ' + (_srcTables - _outTables) + ' may have been collapsed or lost. Check the Diff.' });
+  }
+  // (#2) AI refusal / meta-text leaked into the shipped output.
+  const _ref = _detectRefusalText(_out);
+  if (_ref) {
+    notes.push({ kind: 'refusal', msg: 'AI meta/refusal text found in the output ("' + _ref.slice(0, 60) + '") — this should not ship; re-run the remediation.' });
+  }
+  return notes;
+}
+
 // Sanitize an AI-parsed doc-style object before its color/font values are
 // interpolated into style="…" attributes (2026-06-15 security fix). Those values
 // render in the script-enabled preview iframe, so a prompt-injected PDF could
@@ -15178,6 +15236,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         warnLog('[Integrity] check failed (non-critical):', integrityErr?.message);
       }
 
+      // ── Structural fidelity nets (2026-06-18) ── The char-coverage gate above measures bulk text;
+      // these catch losses it barely registers: dropped hyperlinks, collapsed/lost tables, and AI
+      // refusal/meta text leaked into the shipped doc. WARN-level — they feed the same content-
+      // fidelity concern (review banner) + the diagnostics log, never block.
+      let _structuralFidelityNotes = [];
+      try {
+        _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml);
+        _structuralFidelityNotes.forEach((n) => warnLog('[Fidelity] ' + n.msg));
+      } catch (_sfErr) { warnLog('[Fidelity] structural net failed (non-critical): ' + (_sfErr && _sfErr.message)); }
+
       // ── Triage: flag documents that need expert remediation ──
       let axeViolations = axeResults ? axeResults.totalViolations : 0;       // let: re-audit after recovery mutations may reassign (recov-score-order)
       let axeCritical = axeResults ? axeResults.critical.length : 0;
@@ -15193,7 +15261,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // the score is genuinely rough (<50).
       const _accessibilityConcern = axeFailed || // axe-core failed entirely — can't verify
         (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
-      const _contentFidelityConcern = !!integrityWarning;
+      const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.length > 0;
       let needsExpertReview = _accessibilityConcern || _contentFidelityConcern;       // let: reassigned by the post-recovery re-audit (recov-score-order)
       let expertReviewReason = (_accessibilityConcern && _contentFidelityConcern) ? 'both'
         : _accessibilityConcern ? 'accessibility'
@@ -15395,6 +15463,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         accessibleHtml,
         integrityCoverage,
         integrityWarning,
+        // Structural fidelity nets (links/tables/refusal) — [{kind,msg}], drives the review banner.
+        fidelityNotes: _structuralFidelityNotes,
+        // #1 score↔fidelity coupling: when content fidelity is in question, the displayed
+        // accessibility score must carry a qualifier so a high number can't be read as "all good"
+        // on a doc that may have lost content. (<90% coverage OR any structural note.)
+        fidelityLimited: (integrityCoverage != null && integrityCoverage < 90) || _structuralFidelityNotes.length > 0,
         // 2026-06-07: strip ALLO_SECTION markers before persisting so the
         // user-visible Diff panel never shows marker substrings as content.
         sourceText: (extractedText || '').replace(_ALLO_MARKER_RE, ''),
