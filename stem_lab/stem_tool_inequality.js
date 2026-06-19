@@ -414,7 +414,7 @@ window.StemLab = window.StemLab || {
         var op = opRaw.replace('\u2264', '<=').replace('\u2265', '>=');
         steps.push({ text: 'Start: ' + raw, highlight: false });
         var rhs1 = c - b;
-        steps.push({ text: 'Subtract ' + (b > 0 ? b : '(' + b + ')') + ' from both sides:', highlight: false });
+        steps.push({ text: (b < 0 ? 'Add ' + (-b) + ' to both sides:' : 'Subtract ' + b + ' from both sides:'), highlight: false });
         steps.push({ text: (a === 1 ? '' : a === -1 ? '-' : a) + v + ' ' + op + ' ' + rhs1, highlight: true });
         if (a !== 1) {
           var flipOp = op;
@@ -716,6 +716,11 @@ window.StemLab = window.StemLab || {
             }
             boundaryEls.push(h('polygon', { key: 'shade', points: clipPts.join(' '), fill: 'rgba(217,70,239,0.12)' }));
             boundaryEls.push(h('line', { key: 'bline', x1: toGX(lx1), y1: toGY(ly1), x2: toGX(lx2), y2: toGY(ly2), stroke: '#d946ef', strokeWidth: 2.5, strokeDasharray: isDashed ? '6,4' : 'none' }));
+            // (0,0) test point — the side it lands on tells you which region to shade (at x=0 the line is y=ic)
+            var inc2d = op2d.includes('=');
+            var originSat = above ? (inc2d ? 0 >= ic : 0 > ic) : (inc2d ? 0 <= ic : 0 < ic);
+            boundaryEls.push(h('circle', { key: 'testpt', cx: toGX(0), cy: toGY(0), r: 5, fill: originSat ? '#22c55e' : '#ef4444', stroke: '#fff', strokeWidth: 1.5 }));
+            boundaryEls.push(h('text', { key: 'testlbl', x: toGX(0) + 8, y: toGY(0) - 6, fill: originSat ? '#16a34a' : '#dc2626', style: { fontSize: '9px', fontWeight: 'bold' } }, originSat ? '(0,0) ✓' : '(0,0) ✗'));
           }
           return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm', style: { maxWidth: 420 }, role: 'img', 'aria-label': '2D inequality graph' },
             gridLines, axLabels, boundaryEls,
