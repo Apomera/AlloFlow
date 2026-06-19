@@ -5782,24 +5782,41 @@
       }
 
       var content;
-      if (tab === 'explore') content = renderExplore();
-      else if (tab === 'timeline') content = renderTimeline();
-      else if (tab === 'deeptime') content = renderDeepTime();
-      else if (tab === 'sites') content = renderSites();
-      else if (tab === 'map') content = renderMap();
-      else if (tab === 'ecosystem') content = renderEcosystem();
-      else if (tab === 'compare') content = renderCompare();
-      else if (tab === 'dig') content = renderDig();
-      else if (tab === 'classify') content = renderClassify();
-      else if (tab === 'birds') content = renderBirds();
-      else if (tab === 'extinction') content = renderExtinction();
-      else if (tab === 'anatomy') content = renderAnatomy();
-      else if (tab === 'records') content = renderRecords();
-      else if (tab === 'quiz') content = renderQuiz();
-      else if (tab === 'notes') content = renderNotes();
-      else if (tab === 'glossary') content = renderGlossary();
-      else if (tab === 'classroom') content = renderClassroom();
-      else content = renderExplore();
+      // A single tab's render must NEVER blank the whole tool. The host's
+      // renderTool() wraps render() in try/catch and returns null on a throw —
+      // which paints an empty panel (the "white screen when selected" report).
+      // Most often the trigger is stale persisted state (a `selected`/index/
+      // filter saved by an older build) landing on a code path that didn't
+      // exist then. Guard the dispatch so a bad tab degrades to an in-panel
+      // notice — the tab bar and every other section stay usable, and the user
+      // gets a one-click way to reset the saved view back to safe defaults.
+      try {
+        if (tab === 'explore') content = renderExplore();
+        else if (tab === 'timeline') content = renderTimeline();
+        else if (tab === 'deeptime') content = renderDeepTime();
+        else if (tab === 'sites') content = renderSites();
+        else if (tab === 'map') content = renderMap();
+        else if (tab === 'ecosystem') content = renderEcosystem();
+        else if (tab === 'compare') content = renderCompare();
+        else if (tab === 'dig') content = renderDig();
+        else if (tab === 'classify') content = renderClassify();
+        else if (tab === 'birds') content = renderBirds();
+        else if (tab === 'extinction') content = renderExtinction();
+        else if (tab === 'anatomy') content = renderAnatomy();
+        else if (tab === 'records') content = renderRecords();
+        else if (tab === 'quiz') content = renderQuiz();
+        else if (tab === 'notes') content = renderNotes();
+        else if (tab === 'glossary') content = renderGlossary();
+        else if (tab === 'classroom') content = renderClassroom();
+        else content = renderExplore();
+      } catch (err) {
+        if (typeof console !== 'undefined' && console.error) { console.error('[DinoLab] section "' + tab + '" failed to render', err); }
+        content = el('div', { style: { padding: 20, color: T.text } },
+          el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 6 } }, '⚠️ This section could not open'),
+          el('div', { key: 'b', style: { fontSize: 13, color: T.soft, lineHeight: 1.55, marginBottom: 14, maxWidth: 520 } }, 'The "' + tab + '" view ran into an error, but the rest of Dino Lab still works — pick another section from the tabs above. If Dino Lab keeps opening to this message, reset the saved view to clear it.'),
+          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
+        );
+      }
 
       return el('div', { style: { minHeight: '100%', background: T.canvas, color: T.text } }, tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, content));
     }
