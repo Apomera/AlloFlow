@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AlloFlow · independent PDF/UA validator (veraPDF in-browser)</title>
+<!--
+  Self-contained companion-window component: runs veraPDF (Java) client-side via
+  CheerpJ to give an INDEPENDENT ISO 14289-1 (PDF/UA-1) verdict on a PDF — no
+  server, no data egress. Boots + warms up on load (pays the ~14s JIT/class-load
+  ONCE), then validates picked/posted PDFs in ~sub-second (small docs).
+
+  Two ways to drive it:
+   • standalone: open it, pick a PDF.
+   • integrated: AlloFlow opens it as a companion window (like PDF Compare),
+     waits for {type:'verapdf-ready'}, then postMessage({type:'verapdf-validate',
+     bytes:<ArrayBuffer/Uint8Array>}) and receives {type:'verapdf-result', result}.
+
+  PRODUCTION: host this page + the veraPDF jar on AlloFlow's CDN and set JAR_URL.
+  This file is ALSO the Canvas-gate test: open it from Gemini Canvas to confirm
+  CheerpJ boots in a Canvas-launched window (the one unconfirmed deployment risk).
+
+  Honest label: independent validation against ISO 14289-1 — NOT a legal
+  accessibility certificate (human review still needed for alt-text quality,
+  reading-order sense, etc.). Big docs can take minutes (size-gate in the host).
+-->
+<style>
+  body { font-family: system-ui, Segoe UI, Roboto, sans-serif; max-width: 760px; margin: 20px auto; padding: 0 16px; color: #0f172a; }
+  h2 { font-size: 18px; } #status { font-weight: 700; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; }
+  input[type=file] { margin: 12px 0; } ul { margin: 6px 0 0; padding-left: 20px; }
+  li { margin: 3px 0; font-size: 13px; } .pass { color: #15803d; } .fail { color: #b91c1c; }
+  .muted { color: #64748b; font-size: 12px; } #report { margin-top: 12px; }
+</style>
+</head>
+<body>
+<h2>Independent PDF/UA-1 validator <span class="muted">(veraPDF, in-browser)</span></h2>
+<p id="status">Booting…</p>
+<input type="file" id="pick" accept="application/pdf,.pdf" disabled />
+<div id="report"></div>
+<p class="muted">Runs entirely in your browser — nothing is uploaded. Independent check against ISO 14289-1; not a legal compliance certificate.</p>
+
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+<script>
+  // CheerpJ maps the web server root to /app/, so this is the jar's path UNDER
+  // /app (i.e. its URL path from the origin root). Jar at web-root → /app/verapdf-cli.jar;
+  // jar at /assets/foo.jar → /app/assets/foo.jar. NOT a relative './' web URL.
+  const JAR_URL = '/app/verapdf-cli.jar';
+
+  const $ = (id) => document.getElementById(id);
+  const setStatus = (m) => { $('status').textContent = m; };
+  let foundry, ua1, FileInputStream, ready = false;
+
+  // tiny throwaway PDF for warm-up (correct byte offsets via UTF-8 length)
+  function warmPdf() {
+    const enc = new TextEncoder();
+    const objs = { 1: '<< /Type /Catalog /Pages 2 0 R >>', 2: '<< /Type /Pages /Kids [3 0 R] /Count 1 >>', 3: '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>' };
+    let pdf = '%PDF-1.7\n'; const off = {};
+    for (let i = 1; i <= 3; i++) { off[i] = enc.encode(pdf).length; pdf += i + ' 0 obj\n' + objs[i] + '\nendobj\n'; }
+    const x = enc.encode(pdf).length;
+    pdf += 'xref\n0 4\n0000000000 65535 f \n';
+    for (let i = 1; i <= 3; i++) pdf += String(off[i]).padStart(10, '0') + ' 00000 n \n';
+    pdf += 'trailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n' + x + '\n%%EOF';
+    return enc.encode(pdf);
+  }
+
+  async function validatePath(path) {
+    const fis = await new FileInputStream(path);
+    const parser = await foundry.createParser(fis, ua1);
+    const validator = await foundry.createValidator(ua1, false); // logPassed=false → only failures listed
+    const result = await validator.validate(parser);
+    const compliant = await result.isCompliant();
+    const failures = [];
+    try {
+      const assertions = await result.getTestAssertions();
+      const it = await assertions.iterator();
+      while (await it.hasNext()) {
+        const a = await it.next();
+        const rid = await a.getRuleId();
+        failures.push({ clause: '' + (await rid.getClause()), testNumber: +(await rid.getTestNumber()), message: '' + (await a.getMessage()) });
+      }
+    } catch (e) { /* detailed list is best-effort over the bridge */ }
+    try { await parser.close(); } catch (e) {}
+    // group repeated check failures by rule (clause+test) so the UI shows distinct rules + occurrence counts
+    const byRule = new Map();
+    for (const f of failures) {
+      const k = f.clause + '|' + f.testNumber;
+      if (byRule.has(k)) byRule.get(k).count++;
+      else byRule.set(k, { clause: f.clause, testNumber: f.testNumber, message: f.message, count: 1 });
+    }
+    return { compliant: !!compliant, failedChecks: failures.length, failedRules: [...byRule.values()] };
+  }
+
+  async function validateBytes(bytes) {
+    cheerpOSAddStringFile('/str/input.pdf', bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+    return await validatePath('/str/input.pdf');
+  }
+
+  function render(r) {
+    $('report').innerHTML =
+      (r.compliant ? '<b class="pass">✅ PASSES PDF/UA-1</b>' : '<b class="fail">❌ FAILS PDF/UA-1</b>') +
+      ' — ' + r.failedRules.length + ' distinct rule(s), ' + r.failedChecks + ' check(s) failed' +
+      (r.failedRules.length ? '<ul>' + r.failedRules.map((f) => '<li>ISO 14289-1 §' + f.clause + ' (test ' + f.testNumber + '): ' + f.message + (f.count > 1 ? ' <span class="muted">×' + f.count + '</span>' : '') + '</li>').join('') + '</ul>' : '');
+  }
+
+  function announceReady() {
+    try { if (window.opener) window.opener.postMessage({ type: 'verapdf-ready' }, '*'); } catch (e) {}
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'verapdf-ready' }, '*'); } catch (e) {}
+  }
+
+  async function boot() {
+    try {
+      setStatus('Starting Java runtime…');
+      await cheerpjInit();
+      setStatus('Loading veraPDF…');
+      const lib = await cheerpjRunLibrary(JAR_URL);
+      const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
+      await Provider.initialise();
+      const Foundries = await lib.org.verapdf.pdfa.Foundries;
+      foundry = await Foundries.defaultInstance();
+      const PDFAFlavour = await lib.org.verapdf.pdfa.flavours.PDFAFlavour;
+      ua1 = await PDFAFlavour.fromString('ua1');
+      FileInputStream = await lib.java.io.FileInputStream;
+      setStatus('Warming up validator…');
+      cheerpOSAddStringFile('/str/warm.pdf', warmPdf());
+      await validatePath('/str/warm.pdf');
+      ready = true;
+      setStatus('✅ Validator ready. Pick a PDF (or it accepts bytes via postMessage).');
+      $('pick').disabled = false;
+      announceReady();
+    } catch (e) {
+      setStatus('❌ Boot failed: ' + (e && (e.message || e)));
+    }
+  }
+
+  $('pick').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    setStatus('Validating ' + f.name + '…');
+    const t = performance.now();
+    const r = await validateBytes(new Uint8Array(await f.arrayBuffer()));
+    render(r);
+    setStatus('Done in ' + Math.round(performance.now() - t) + 'ms.');
+    window.__lastResult = r; // for headless tests
+  });
+
+  window.addEventListener('message', async (ev) => {
+    const d = ev.data || {};
+    if (d.type === 'verapdf-validate' && d.bytes && ready) {
+      try {
+        const r = await validateBytes(d.bytes);
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', result: r }, '*');
+      } catch (e) {
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, '*');
+      }
+    }
+  });
+
+  boot();
+</script>
+</body>
+</html>
