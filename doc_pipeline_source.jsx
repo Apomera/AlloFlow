@@ -1013,27 +1013,112 @@ var createDocPipeline = function(deps) {
   // - Auto-logging: every API call logs entry (prompt size) and exit (response size, duration)
   var _rawCallGemini = deps.callGemini;
   var _rawCallGeminiVision = deps.callGeminiVision;
-  // Global concurrency gate for Gemini calls (2026-06-19). The Canvas Gemini proxy THROTTLES when the
-  // pipeline fans out 3-6 calls at once → transient 401/403s (classified 'auth') that used to fail the
-  // chunk + degrade the score. Capping in-flight calls keeps it under the throttle threshold; counter-
-  // intuitively this is FASTER end-to-end (it avoids the ~59s throttle-failures + the wasted re-audit
-  // passes). The gate wraps the WHOLE _withRetry chain so the per-call timeout never counts queue-wait.
+  // ── Adaptive Gemini throttle controller (2026-06-19, hardened) ──
+  // The Canvas Gemini proxy THROTTLES under SUSTAINED fan-out even at a flat cap of 3 — a long
+  // (~20-min) run storms with API_AUTH_FAILED and each dead chunk burns the full ~120s timeout
+  // before failing. A static cap isn't enough. So this is a CIRCUIT BREAKER: when canvas-auth
+  // failures cluster (≥ _GEMINI_STORM_TRIP in a row) we (a) drop the effective in-flight cap to 1
+  // and (b) impose a cooldown window so the proxy quota recovers, then restore to 3 after
+  // _GEMINI_RECOVER_HITS consecutive successes. Retries re-enter the gate (see _geminiCall), so a
+  // tripped breaker throttles RETRIES too. Counter-intuitively FASTER end-to-end (it trades a brief
+  // deliberate pause for avoiding the 120s timeout-failures + the wasted re-audit passes).
   var _GEMINI_MAX_CONCURRENT = 3;
+  var _GEMINI_STORM_MIN = 1;        // effective cap while throttled
+  var _GEMINI_STORM_TRIP = 2;       // consecutive canvas-auth failures that trip the breaker
+  var _GEMINI_COOLDOWN_MS = 12000;  // pause before NEW calls start once storming
+  var _GEMINI_RECOVER_HITS = 4;     // consecutive successes needed to restore full concurrency
+  var _GEMINI_AUTH_RETRIES = 3;     // canvas-throttle retries (exponential backoff) before giving up
+  var _geminiCap = _GEMINI_MAX_CONCURRENT;
   var _geminiInFlight = 0;
   var _geminiWaiters = [];
+  var _geminiAuthStreak = 0;        // consecutive canvas-auth failures
+  var _geminiOkStreak = 0;          // consecutive successes (drives recovery)
+  var _geminiCooldownUntil = 0;     // epoch ms; no NEW call starts before this
+  var _geminiCooldownTimer = null;
+  // Queue pump: start as many waiters as the CURRENT (possibly reduced) cap allows, and never
+  // during a cooldown. Replaces the old hand-off-on-release model, which couldn't shrink the cap.
+  var _geminiPump = function() {
+    var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+    if (_geminiCooldownUntil > now) {
+      if (!_geminiCooldownTimer) {
+        _geminiCooldownTimer = setTimeout(function() { _geminiCooldownTimer = null; _geminiPump(); }, (_geminiCooldownUntil - now) + 15);
+      }
+      return;
+    }
+    while (_geminiInFlight < _geminiCap && _geminiWaiters.length) {
+      _geminiInFlight++;
+      (_geminiWaiters.shift())();
+    }
+  };
   var _acquireGeminiSlot = function() {
-    if (_geminiInFlight < _GEMINI_MAX_CONCURRENT) { _geminiInFlight++; return Promise.resolve(); }
-    return new Promise(function(resolve) { _geminiWaiters.push(resolve); });
+    return new Promise(function(resolve) { _geminiWaiters.push(resolve); _geminiPump(); });
   };
   var _releaseGeminiSlot = function() {
-    var next = _geminiWaiters.shift();
-    if (next) { next(); } // hand the freed slot straight to the next waiter (in-flight count unchanged)
-    else { _geminiInFlight = Math.max(0, _geminiInFlight - 1); }
+    _geminiInFlight = Math.max(0, _geminiInFlight - 1);
+    _geminiPump();
   };
   var _geminiGate = function(fn) {
     return _acquireGeminiSlot().then(function() {
       return Promise.resolve().then(fn).finally(_releaseGeminiSlot);
     });
+  };
+  var _geminiNoteAuthFail = function() {
+    _geminiOkStreak = 0;
+    _geminiAuthStreak++;
+    if (_geminiAuthStreak >= _GEMINI_STORM_TRIP) {
+      if (_geminiCap !== _GEMINI_STORM_MIN) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_GEMINI_COOLDOWN_MS / 1000) + 's cooldown');
+      _geminiCap = _GEMINI_STORM_MIN;
+      _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _GEMINI_COOLDOWN_MS;
+      _pipelineStats.authThrottles = (_pipelineStats.authThrottles || 0) + 1;
+    }
+  };
+  var _geminiNoteSuccess = function() {
+    _geminiAuthStreak = 0;
+    if (_geminiCap < _GEMINI_MAX_CONCURRENT) {
+      _geminiOkStreak++;
+      if (_geminiOkStreak >= _GEMINI_RECOVER_HITS) {
+        _geminiCap = _GEMINI_MAX_CONCURRENT;
+        _geminiOkStreak = 0;
+        warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _GEMINI_MAX_CONCURRENT);
+        _geminiPump();
+      }
+    }
+  };
+  // Per-attempt gated call with breaker-aware retry. EACH attempt re-acquires a slot, so a tripped
+  // breaker (reduced cap + cooldown) also throttles the retries. Canvas-auth (transient 401/403)
+  // gets up to _GEMINI_AUTH_RETRIES exponential-backoff retries; other transient/timeout errors get
+  // one (parity with the prior _withRetry). Permanent errors (real auth/quota/config, RECITATION)
+  // never retry. The slot is held only during fn()+timeout, so queue-wait never counts toward it.
+  var _geminiCall = function(fn, initialMs, retryMs, label) {
+    var _attempt = function(n) {
+      var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
+      return _geminiGate(function() { return _withTimeout(fn(), timeoutMs, label + (n ? ' (retry ' + n + ')' : '')); }).then(function(res) {
+        _geminiNoteSuccess();
+        return res;
+      }).catch(function(err) {
+        var isTimeout = err && err.message && err.message.indexOf('Timeout') === 0;
+        var isRecitation = err && err.message && /RECITATION/i.test(err.message);
+        if (isRecitation) { warnLog('[Retry] ' + (label || 'API call') + ' failed (RECITATION) — skipping retry (content filter is deterministic)'); throw err; }
+        var isPermanent = err && (err.isAuth || err.isQuota || err.isConfig ||
+          (err.message && /API_(AUTH_FAILED|QUOTA_EXHAUSTED|MODEL_NOT_FOUND)/.test(err.message)));
+        // Canvas 401/403 is almost always a brief throttle, NOT a dead key — classifier flags it.
+        var _canvasAuthRetry = err && err.canvasTransientAuth && !err.isQuota && !err.isConfig;
+        if (isPermanent && _canvasAuthRetry) isPermanent = false;
+        if (isPermanent) { warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (err.message || 'permanent error') + ') — skipping retry (auth/quota/config errors do not change between calls)'); throw err; }
+        if (_canvasAuthRetry) {
+          _geminiNoteAuthFail(); // trip/escalate the breaker so this AND subsequent calls back off
+          if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — Canvas throttle persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
+          var _backoff = Math.min(20000, 2500 * Math.pow(2, n)); // 2.5s, 5s, 10s (capped 20s)
+          warnLog('[Retry] ' + (label || 'API call') + ' Canvas throttle — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
+          return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
+        }
+        // Generic timeout/transient: a single retry, as before.
+        if (n >= 1) throw err;
+        warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
+        return _attempt(n + 1);
+      });
+    };
+    return _attempt(0);
   };
   var callGemini = _rawCallGemini ? function() {
     var args = arguments;
@@ -1041,7 +1126,7 @@ var createDocPipeline = function(deps) {
     var callNum = ++_pipelineStats.apiCalls;
     _pipeLog('API→', 'callGemini #' + callNum + ' (' + Math.round(promptLen / 1000) + 'KB prompt)');
     var t0 = performance.now();
-    return _geminiGate(function() { return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 180000, 120000, 'callGemini'); }).then(function(result) {
+    return _geminiCall(function() { return _rawCallGemini.apply(null, args); }, 180000, 120000, 'callGemini').then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
@@ -1059,7 +1144,7 @@ var createDocPipeline = function(deps) {
     var callNum = ++_pipelineStats.visionCalls;
     _pipeLog('Vision→', 'callGeminiVision #' + callNum);
     var t0 = performance.now();
-    return _geminiGate(function() { return _withRetry(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 90000, 'callGeminiVision'); }).then(function(result) {
+    return _geminiCall(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 90000, 'callGeminiVision').then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
@@ -8790,7 +8875,7 @@ Return ONLY JSON:
       // Short documents: single audit pass
       if (htmlContent.length <= CHUNK_SIZE) {
         const sampleHtml = htmlContent;
-        const result = await callGemini(`You are a WCAG 2.1 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${_neutralizePromptFence(sampleHtml)}"""`, true);
+        const result = await callGemini(`You are a WCAG 2.1 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${_neutralizePromptFence(sampleHtml)}"""`, true, false, 0 /* temperature=0: deterministic, reproducible scoring */);
         const parsed = parseAuditJson(result);
         if (parsed.issues && Array.isArray(parsed.issues)) {
           // Drop AI false-positives the deterministic ground truth contradicts BEFORE scoring (2026-06-15).
@@ -8879,7 +8964,7 @@ ${AUDIT_RUBRIC_PROMPT}
 
 HTML section ${chunkNum}/${chunks.length}:
 """${_neutralizePromptFence(chunk)}"""`;
-          return callGemini(prompt, true).then(r => {
+          return callGemini(prompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */).then(r => {
             try { return parseAuditJson(r); } catch { return null; }
           }).catch(() => null);
         }));
@@ -11564,7 +11649,7 @@ HTML SECTION:
 ${_neutralizePromptFence(sampleHtml(cleaned, 9000))}
 """
 
-Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"], "passes": ["pass1", "pass2"]}`, true);
+Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"], "passes": ["pass1", "pass2"]}`, true, false, 0 /* temperature=0: deterministic scoring */);
 
                   try {
                     const aJson = JSON.parse(auditResult.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
@@ -12050,7 +12135,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         setStep(`Scoring chunk ${chunkIndex + 1}/${totalChunks}...`);
         let aiScore = scoreChunkLocally(cleaned);
         try {
-          const ar = await callGemini(`Score this HTML section 0-100 for WCAG 2.1 AA accessibility.\n\nHTML:\n"""\n${_neutralizePromptFence(sampleHtml(cleaned, 9000))}\n"""\n\nRespond ONLY JSON: {"score": NUMBER, "issues": [], "passes": []}`, true);
+          const ar = await callGemini(`Score this HTML section 0-100 for WCAG 2.1 AA accessibility.\n\nHTML:\n"""\n${_neutralizePromptFence(sampleHtml(cleaned, 9000))}\n"""\n\nRespond ONLY JSON: {"score": NUMBER, "issues": [], "passes": []}`, true, false, 0 /* temperature=0: deterministic scoring */);
           try {
             const aj = JSON.parse(ar.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
             if (typeof aj.score === 'number' && aj.score >= 0 && aj.score <= 100) {
@@ -13205,6 +13290,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${escapeTextField(block.text)}</h1>`;
             case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${escapeTextField(block.text)}</h2>`;
             case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em">${escapeTextField(block.text)}</h3>`;
+            // h4/h5/h6 (2026-06-19): the Vision pass legitimately emits deep headings (a single run logged
+            // 11 "unknown block type: h4 — salvaged"), which previously fell to the salvage path and were
+            // FLATTENED to plain text — destroying the heading hierarchy the doc actually has. Render them
+            // as real headings so the structure survives (the deterministic heading-skip pass still guards
+            // against illegal level jumps).
+            case 'h4': return `<h4${id} style="color:${docStyle.headingColor};font-size:1rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h4>`;
+            case 'h5': return `<h5${id} style="color:${docStyle.headingColor};font-size:0.95rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h5>`;
+            case 'h6': return `<h6${id} style="color:${docStyle.headingColor};font-size:0.9rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h6>`;
             case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${escapeTextField(block.text)}</p>`;
             case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
             case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
@@ -14779,6 +14872,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;
           autoFixPasses++;
 
+          // Partial-audit guard (HIGH #1, 2026-06-19): under a Canvas-throttle storm the chunked
+          // auditOutputAccessibility swallows failed chunks and scores ONLY the sections that
+          // returned — fewer sections → fewer violations found → an artificially HIGH score (a live
+          // run logged "2/3 sections returned (1 FAILED)" twice). A partial re-audit's AI score must
+          // therefore NOT be trusted to satisfy a stop or promote keep-best. Treat >20% audit-chunk
+          // loss on EITHER engine as non-authoritative for this pass's AI-driven gating. (axe runs on
+          // the FULL doc, so newAxeViolations stays trustworthy and still drives axe-only progress.)
+          const _auditCoverage = function(v) { return (v && v.chunksRequested) ? (v.chunksAudited || 0) / v.chunksRequested : 1; };
+          const _reCoverage = Math.min(_auditCoverage(reVerify1), _auditCoverage(reVerify2));
+          const _rePartial = _reCoverage < 0.8;
+          if (_rePartial) warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI audit was PARTIAL (${Math.round(_reCoverage * 100)}% section coverage — Canvas throttle); its score (${newAiScore}) is non-authoritative — not using it to stop the loop or promote best-so-far.`);
+
           // Regression guard: revert if BOTH scores got worse, OR if axe (structural
           // WCAG) regressed by more than a small noise tolerance even when the AI
           // rubric improved. Previously the AND-only check let a pass that traded a
@@ -14830,7 +14935,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // A within-tolerance DROP stays as the working state (exploration through the noisy AI
           // rubric) but must NOT overwrite a better bestHtml, or we'd ship the degraded version.
           // bestHtml is what the pipeline ships (restored after the loop).
-          const _passIsBest = (newAiScore > bestAiScore) || (newAxeViolations < bestAxeViolations && newAiScore >= bestAiScore - 5);
+          // Under a partial audit the AI score is inflated, so promote ONLY on a real axe gain
+          // (full-doc, reliable); otherwise use the normal AI-or-axe rule.
+          const _passIsBest = _rePartial
+            ? (newAxeViolations < bestAxeViolations)
+            : ((newAiScore > bestAiScore) || (newAxeViolations < bestAxeViolations && newAiScore >= bestAiScore - 5));
           if (_passIsBest) {
             bestHtml = accessibleHtml;
             bestAiScore = newAiScore;
@@ -14854,14 +14963,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (!reVerify) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (both engines failed) — axe ${newAxeViolations} violation(s); not treating as dual-clean`);
             if (newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
-          } else if (newAxeViolations === 0 && (!reVerify.issues || reVerify.issues.length === 0)) {
+          } else if (newAxeViolations === 0 && !_rePartial && (!reVerify.issues || reVerify.issues.length === 0)) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
             break;
           }
 
           // If BOTH engines are satisfied, stop
           const targetScore = pdfTargetScore || 90;
-          if (newAxeViolations === 0 && newAiScore >= targetScore) {
+          if (newAxeViolations === 0 && !_rePartial && newAiScore >= targetScore) {
             warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
             break;
           }
@@ -15087,7 +15196,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const finalAudit = await auditOutputAccessibility(accessibleHtml);
         if (finalAudit) {
           verification = finalAudit;
-          warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes`);
+          warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes` + (finalAudit._partialAudit ? ` — ⚠ PARTIAL (${finalAudit.chunksAudited}/${finalAudit.chunksRequested} sections audited under Canvas throttle; headline score covers audited content only — re-run for a full-coverage score)` : ''));
         }
       } catch(finalAuditErr) {
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);

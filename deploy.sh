@@ -152,6 +152,11 @@ fi
 # ── Step 3: Run build.js prod ──────────────────────────────────────
 echo ""
 echo "=== Step 3: Run build.js --mode=prod --force ==="
+# Capture the hash build.js will stamp into pluginCdnVersion. build.js uses
+# `git rev-parse --short HEAD` (build.js:1262) to set the CDN version, so this
+# is the value the deployed AlloFlowANTI.txt SHOULD carry. Step 10 asserts it.
+BUILD_HASH=$(git rev-parse --short HEAD)
+echo "  Expected pluginCdnVersion (from HEAD): @${BUILD_HASH}"
 node build.js --mode=prod --force
 echo "  ✓ build.js complete."
 
@@ -230,15 +235,142 @@ else
   echo "  To configure: git remote add backup https://codeberg.org/Pomera/AlloFlow-backup.git"
 fi
 
+# ── Step 10: Post-deploy verification ─────────────────────────────
+# The deploy is already live by now, so this step NEVER undoes anything — it
+# tells you whether the deploy is actually serving the bits you just built, and
+# surfaces issues you'd otherwise only find by hand-curling. Three checks:
+#   (1) Hash consistency  — root AlloFlowANTI.txt pluginCdnVersion == @BUILD_HASH
+#                            == the prismflow-deploy/src mirror, and is a real
+#                            commit. Catches build.js-didn't-rewrite / drift.   [HARD]
+#   (2) Firebase host      — https://prismflow-911fe.web.app → 200 + non-trivial.[HARD]
+#   (3) CDN modules        — alloflow-cdn.pages.dev key modules → 200 (HARD) and
+#                            md5 == local root module (FRESHNESS — soft warning,
+#                            Cloudflare Pages rebuilds async ~1-2 min after push).
+# HARD failures make the script exit 1 (so a "successful" deploy that didn't
+# actually land is loud). Skip with SKIP_POST_VERIFY=1 (e.g. offline re-deploys).
+PV_FAIL=0
+PV_WARN=0
+PV_DETAILS=""
+if [[ "${SKIP_POST_VERIFY:-0}" == "1" ]]; then
+  echo ""
+  echo "=== Step 10: Post-deploy verification (SKIPPED via SKIP_POST_VERIFY=1) ==="
+else
+  echo ""
+  echo "=== Step 10: Post-deploy verification ==="
+
+  FIREBASE_URL="https://prismflow-911fe.web.app"
+  CDN_BASE="https://alloflow-cdn.pages.dev"
+  # Modules most worth confirming reached the CDN (pipeline-critical first).
+  CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js)
+  CDN_RETRIES="${POST_VERIFY_CDN_RETRIES:-4}"   # freshness re-checks (Cloudflare lag)
+  CDN_WAIT="${POST_VERIFY_CDN_WAIT:-20}"        # seconds between freshness re-checks
+
+  pv_fail() { PV_FAIL=$((PV_FAIL+1)); PV_DETAILS="${PV_DETAILS}\n  ✗ $1"; printf "  \033[31m✗ %s\033[0m\n" "$1"; }
+  pv_warn() { PV_WARN=$((PV_WARN+1)); PV_DETAILS="${PV_DETAILS}\n  ⚠ $1"; printf "  \033[33m⚠ %s\033[0m\n" "$1"; }
+  pv_ok()   { printf "  \033[32m✓ %s\033[0m\n" "$1"; }
+
+  # ── Check 1: hash consistency (local, deterministic) ──
+  echo "  [1/3] Hash consistency…"
+  ROOT_VER=$(grep -m1 "var pluginCdnVersion = " AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
+  MIRROR_VER=$(grep -m1 "var pluginCdnVersion = " prismflow-deploy/src/AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
+  if [[ -z "${ROOT_VER:-}" ]]; then
+    pv_fail "could not read pluginCdnVersion from AlloFlowANTI.txt"
+  else
+    if [[ "$ROOT_VER" == "$BUILD_HASH" ]]; then
+      pv_ok "pluginCdnVersion @${ROOT_VER} matches the built hash"
+    else
+      pv_fail "pluginCdnVersion @${ROOT_VER} != built hash @${BUILD_HASH} (build.js may not have rewritten refs)"
+    fi
+    if [[ "$MIRROR_VER" == "$ROOT_VER" ]]; then
+      pv_ok "prismflow-deploy/src mirror agrees (@${MIRROR_VER})"
+    else
+      pv_fail "mirror pluginCdnVersion @${MIRROR_VER:-<empty>} != root @${ROOT_VER} (root/mirror drift)"
+    fi
+    if git cat-file -e "${ROOT_VER}^{commit}" 2>/dev/null; then
+      pv_ok "@${ROOT_VER} is a real commit in history"
+    else
+      pv_fail "@${ROOT_VER} is not a commit in this repo (garbage hash)"
+    fi
+  fi
+
+  # ── Check 2: Firebase host reachable ──
+  echo "  [2/3] Firebase host ($FIREBASE_URL)…"
+  FB_RESP=$(curl -s -o /dev/null -w "%{http_code} %{size_download}" "$FIREBASE_URL" 2>/dev/null || echo "000 0")
+  FB_CODE=${FB_RESP%% *}; FB_SIZE=${FB_RESP##* }
+  if [[ "$FB_CODE" == "200" && "${FB_SIZE:-0}" -gt 1000 ]]; then
+    pv_ok "host returned 200 (${FB_SIZE} bytes)"
+  else
+    pv_fail "host returned HTTP ${FB_CODE}, ${FB_SIZE} bytes (expected 200 + >1KB)"
+  fi
+
+  # ── Check 3: CDN modules reachable (HARD) + fresh (soft, retried) ──
+  echo "  [3/3] CDN modules ($CDN_BASE)…"
+  STALE=()
+  for mod in "${CDN_MODULES[@]}"; do
+    [[ -f "$mod" ]] || { pv_warn "local $mod missing — skipping CDN check"; continue; }
+    LOCAL_MD5=$(md5sum "$mod" | awk '{print $1}')
+    TMP=$(mktemp)
+    HCODE=$(curl -s -o "$TMP" -w "%{http_code}" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || echo "000")
+    if [[ "$HCODE" != "200" || ! -s "$TMP" ]]; then
+      pv_fail "$mod → HTTP ${HCODE} / empty (CDN unreachable or misconfigured)"
+      rm -f "$TMP"; continue
+    fi
+    CDN_MD5=$(md5sum "$TMP" | awk '{print $1}'); rm -f "$TMP"
+    if [[ "$CDN_MD5" == "$LOCAL_MD5" ]]; then
+      pv_ok "$mod reachable + fresh (md5 matches local)"
+    else
+      pv_ok "$mod reachable (200) — content not yet propagated"
+      STALE+=("$mod")
+    fi
+  done
+  # Retry only the stale ones — Cloudflare Pages builds async after the push.
+  attempt=0
+  while [[ ${#STALE[@]} -gt 0 && $attempt -lt $CDN_RETRIES ]]; do
+    attempt=$((attempt+1))
+    echo "  … ${#STALE[@]} module(s) still propagating; re-checking in ${CDN_WAIT}s (attempt ${attempt}/${CDN_RETRIES})"
+    sleep "$CDN_WAIT"
+    STILL=()
+    for mod in "${STALE[@]}"; do
+      LOCAL_MD5=$(md5sum "$mod" | awk '{print $1}')
+      TMP=$(mktemp)
+      curl -s -o "$TMP" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || true
+      CDN_MD5=$(md5sum "$TMP" | awk '{print $1}'); rm -f "$TMP"
+      if [[ "$CDN_MD5" == "$LOCAL_MD5" ]]; then
+        pv_ok "$mod now fresh (md5 matches local)"
+      else
+        STILL+=("$mod")
+      fi
+    done
+    STALE=("${STILL[@]}")
+  done
+  if [[ ${#STALE[@]} -gt 0 ]]; then
+    pv_warn "${#STALE[@]} module(s) still stale after ${CDN_RETRIES} retries: ${STALE[*]}"
+    echo "    (Cloudflare Pages can take a few min. Re-check later with:)"
+    echo "    for m in ${STALE[*]}; do curl -s \"$CDN_BASE/\$m\" | md5sum; md5sum \"\$m\"; done"
+  fi
+fi
+
 # ── Done ───────────────────────────────────────────────────────────
 HASH_FINAL=$(git rev-parse --short HEAD)
 echo ""
 echo "════════════════════════════════════════════"
-echo "  ✓ Deploy complete"
+if [[ $PV_FAIL -gt 0 ]]; then
+  echo "  ✗ Deploy ran, but post-deploy verification FAILED ($PV_FAIL issue(s))"
+elif [[ $PV_WARN -gt 0 ]]; then
+  echo "  ✓ Deploy complete (with $PV_WARN warning(s) — see above)"
+else
+  echo "  ✓ Deploy complete + verified"
+fi
 echo "════════════════════════════════════════════"
 echo ""
 echo "  Live URL:  https://prismflow-911fe.web.app"
 echo "  Hash:      @${HASH_FINAL}"
 echo "  GitHub:    https://github.com/Apomera/AlloFlow"
 echo "  Codeberg:  https://codeberg.org/Pomera/AlloFlow-backup"
+if [[ -n "$PV_DETAILS" ]]; then
+  printf "\n  Verification notes:%b\n" "$PV_DETAILS"
+fi
 echo ""
+if [[ $PV_FAIL -gt 0 ]]; then
+  exit 1
+fi

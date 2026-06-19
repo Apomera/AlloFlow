@@ -89,10 +89,15 @@ describe('wiring: both scoring paths audit the chrome-stripped, repaired documen
   });
   it('ROOT CAUSE: the polish + cleanup passes are bracketed with the placeholder strip/restore so the inline ×-remove / Pick-extracted / drop handlers are never corrupted', () => {
     const fn = src.slice(src.indexOf('// ── Polish passes'), src.indexOf('// ── Insert extracted images using placeholder tokens'));
-    expect(src).toContain('const _phProtect = _stripImagePlaceholdersForAi(bodyContent);');
+    // _phProtect is hoisted (let) to the fixAndVerifyPdf body so the recovery re-blend can
+    // reference it; the strip is a plain ASSIGNMENT (not a block-scoped `const` — that threw
+    // "_phProtect is not defined" and crashed every remediation run). Guard the hoist so the
+    // const-scoping bug can't silently come back.
+    expect(src).toContain('let _phProtect = { html: null, map: {} };');
+    expect(src).toContain('_phProtect = _stripImagePlaceholdersForAi(bodyContent);');
     expect(src).toContain('bodyContent = _restoreImagePlaceholdersForAi(bodyContent, _phProtect.map);');
     // the strip is BEFORE the polish, the restore is AFTER the cleanup (so both passes are covered)
-    expect(src.indexOf('const _phProtect = _stripImagePlaceholdersForAi(bodyContent);')).toBeLessThan(src.indexOf('// ── Polish passes'));
+    expect(src.indexOf('_phProtect = _stripImagePlaceholdersForAi(bodyContent);')).toBeLessThan(src.indexOf('// ── Polish passes'));
     expect(src.indexOf('bodyContent = _restoreImagePlaceholdersForAi(bodyContent, _phProtect.map);')).toBeGreaterThan(src.indexOf('remove empty paragraphs created by cleanup'));
   });
 });
