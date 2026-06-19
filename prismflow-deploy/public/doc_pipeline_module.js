@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -5574,7 +5574,6 @@ var createDocPipeline = function(deps) {
   // Lazy-load Tesseract.js from CDN. Zero cost until first call (scanned-PDF path only).
   // Tesseract gives deterministic client-side OCR — no hallucination, no server roundtrip —
   // which pairs with Vision OCR for a reconciled "both" pass on scanned PDFs.
-  let _tesseractLoadPromise = null;
   const ensureTesseractLoaded = async () => {
     const ok = await _loadCdnScript('tesseract', [
       'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
@@ -5690,6 +5689,44 @@ var createDocPipeline = function(deps) {
     } catch (e) { try { warnLog('[OCR lang detect] failed — falling back to eng: ' + (e && e.message)); } catch (_) {} return null; }
   };
 
+  // OCR recognize with bounded, self-healing attempts (Tesseract reliability, 2026-06-18).
+  // The original two-line form (recognize {blocks:true} → catch → plain) had NO timeout, so a
+  // worker/model-download that STALLS (never resolves) hung the page loop — the per-page
+  // try/catch only catches a THROW, not a hang. Here EVERY attempt is _withTimeout-bounded, and
+  // the chain also (a) retries a transient failure on the next attempt — the functional API
+  // spawns a fresh worker, so the WASM core + traineddata are genuinely re-fetched — and
+  // (b) falls back to the always-present English model when the requested language model is
+  // unavailable (404 / blocked), turning a whole-page failure into English OCR. Attempt order:
+  //   lang+{blocks} → lang(plain) → [eng+{blocks} → eng(plain), only if lang !== 'eng'].
+  // Eng-only docs get 2 attempts (no eng fallback to add); non-eng get 4 (the 2 lang attempts,
+  // then eng as a fallback). Tiered timeout: the FIRST attempt is generous (the ~10MB model may
+  // download here), later attempts are tighter (model is cached / a true hang is already
+  // established) so worst-case per-page latency is bounded (~120 + 3×60 = 300s, not 4×120s).
+  // Throws the last error ONLY if every attempt fails, so the caller's per-page catch records an
+  // empty page and continues exactly as before (no downstream behavior change on success).
+  const _OCR_RECOGNIZE_TIMEOUT_FIRST_MS = 120000; // 1st attempt: covers first-page model download + OCR on slow links
+  const _OCR_RECOGNIZE_TIMEOUT_NEXT_MS = 60000;   // later attempts: model cached / hang already established → tighter
+  const _ocrRecognize = async (canvas, lang, label) => {
+    if (!canvas) throw new Error('OCR recognize: canvas missing'); // can't happen at current call sites; clear error if it ever does
+    const useLang = lang || 'eng';
+    const attempts = [{ l: useLang, b: true }, { l: useLang, b: false }];
+    if (useLang !== 'eng') attempts.push({ l: 'eng', b: true }, { l: 'eng', b: false });
+    let lastErr = null;
+    for (let i = 0; i < attempts.length; i++) {
+      const a = attempts[i];
+      try {
+        const res = await _withTimeout(
+          window.Tesseract.recognize(canvas, a.l, undefined, a.b ? { blocks: true } : undefined),
+          i === 0 ? _OCR_RECOGNIZE_TIMEOUT_FIRST_MS : _OCR_RECOGNIZE_TIMEOUT_NEXT_MS,
+          'Tesseract.recognize (' + (label || '?') + ' lang=' + a.l + (a.b ? ' +blocks' : '') + ')'
+        );
+        if (i > 0) { try { warnLog('[Tesseract] recognize recovered on attempt ' + (i + 1) + '/' + attempts.length + ' (lang=' + a.l + ', ' + (label || '?') + ')'); } catch (_) {} }
+        return res;
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('Tesseract.recognize failed (all attempts exhausted)');
+  };
+
   const extractPdfTextTesseract = async (base64, onProgress, lang) => {
     try {
       await ensurePdfJsLoaded();
@@ -5706,9 +5743,10 @@ var createDocPipeline = function(deps) {
       const pages = [];
       const pageErrors = [];
       for (let p = 1; p <= pdf.numPages; p++) {
+        let canvas = null, renderScale = 2.0; // hoisted so the finally can free it on BOTH success and failure
         try {
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
-          const page = await pdf.getPage(p);
+          const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (OCR p' + p + ')'); // bound getPage too — pdf.js worker can stall
           // Render at 2x for OCR accuracy, bounded so a hung/slow render can't stall the pipeline.
           // #4 fix (2026-06-17): the 45s timeout here used to SILENTLY BLANK a slow/large page (no
           // text layer → "OCR arbitrarily skips that page"). Now a longer first budget AND, on
@@ -5716,7 +5754,6 @@ var createDocPipeline = function(deps) {
           // (huge canvas on a low-RAM device) usually renders fine at 1.25x, recovering a slightly
           // lower-res OCR pass instead of dropping the page's text layer entirely. Still FULLY BOUNDED
           // (every attempt is _withTimeout-wrapped → no unbounded await → the original hang fix holds).
-          let canvas = null, renderScale = 2.0;
           for (const _sc of [2.0, 1.25]) {
             const _vp = page.getViewport({ scale: _sc });
             const _c = document.createElement('canvas');
@@ -5731,24 +5768,23 @@ var createDocPipeline = function(deps) {
             }
           }
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
-          // Tesseract.js v5 returns ONLY text by default; opt into the block/word
-          // hierarchy (4th "output" arg) so we can place each word's invisible glyphs
-          // at its real position. Older signatures ignore the extra arg; if the call
-          // shape is rejected we retry the plain form so OCR never breaks.
-          let result;
-          try { result = await window.Tesseract.recognize(canvas, useLang, undefined, { blocks: true }); }
-          catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
+          // Bounded, self-healing OCR (see _ocrRecognize): timeout per attempt + transient
+          // retry + English fallback. v5 returns ONLY text by default; {blocks:true} opts into
+          // the word hierarchy that places each word's invisible glyphs at its real position.
+          const result = await _ocrRecognize(canvas, useLang, 'p' + p);
           const data = (result && result.data) || {};
           const pageText = (data.text || '').trim();
           const words = _collectOcrWords(data, renderScale); // normalize bboxes to PDF points (actual render scale)
           pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: canvas.width / renderScale, pageH: canvas.height / renderScale });
-          // Free the canvas so a 100-page scan doesn't balloon memory.
-          canvas.width = 0; canvas.height = 0;
         } catch (pageErr) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);
           pages.push({ pageNum: p, text: '', words: null, error: _pmsg });
           pageErrors.push({ pageNum: p, error: _pmsg });
           try { warnLog('[Tesseract] page ' + p + ' failed (' + (pdf.numPages - 1) + ' other pages still attempted): ' + _pmsg); } catch (_) {}
+        } finally {
+          // Free the canvas on BOTH success and failure — a mid-page render/recognize throw used to
+          // leak the 2x canvas (cleanup was success-path only). null if getPage failed pre-creation.
+          if (canvas) { try { canvas.width = 0; canvas.height = 0; } catch (_) {} }
         }
       }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
@@ -5775,20 +5811,19 @@ var createDocPipeline = function(deps) {
       for (let i = 0; i < pageNums.length; i++) {
         const p = pageNums[i];
         if (p < 1 || p > pdf.numPages) continue;
+        let canvas = null; // hoisted so the finally frees it on failure too (was success-path only → leak)
         try {
-          const page = await pdf.getPage(p);
+          const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (mixed-page OCR p' + p + ')'); // bound getPage — pdf.js worker can stall
           const viewport = page.getViewport({ scale: 2.0 });
-          const canvas = document.createElement('canvas');
+          canvas = document.createElement('canvas');
           canvas.width = viewport.width; canvas.height = viewport.height;
           const cctx = canvas.getContext('2d');
           await _withTimeout(page.render({ canvasContext: cctx, viewport }).promise, 45000, 'page.render (mixed-page OCR p' + p + ')');
-          let result;
-          try { result = await window.Tesseract.recognize(canvas, useLang, undefined, { blocks: true }); }
-          catch (_recErr) { result = await window.Tesseract.recognize(canvas, useLang); }
+          const result = await _ocrRecognize(canvas, useLang, 'mixed-p' + p);
           const txt = ((result && result.data && result.data.text) || '').trim();
           if (txt) out[p] = txt;
-          canvas.width = 0; canvas.height = 0; // free memory
         } catch (_pageErr) { try { warnLog('[Mixed-page OCR] page ' + p + ' failed: ' + (_pageErr && _pageErr.message)); } catch (_) {} }
+        finally { if (canvas) { try { canvas.width = 0; canvas.height = 0; } catch (_) {} } }
       }
     } catch (_e) { try { warnLog('[Mixed-page OCR] setup failed (keeping text-layer): ' + (_e && _e.message)); } catch (_) {} }
     return out;
@@ -25865,11 +25900,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

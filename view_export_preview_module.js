@@ -1234,7 +1234,34 @@ function ExportPreviewView(props) {
         "aria-label": "Execute command"
       },
       isAgentRunning ? "\u23F3" : "\u25B6"
-    )))), agentActivityLog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: (agentLogFullView ? "max-h-64" : "max-h-24") + " overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono", "aria-live": "polite", "aria-label": "Agent activity log" }, (agentLogFullView ? agentActivityLog : agentActivityLog.slice(-8)).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1 " + (entry.type === "error" ? "text-red-400" : entry.type === "score" ? "text-cyan-300" : entry.type === "success" || entry.type === "complete" ? "text-green-400" : entry.type === "tool" ? "text-amber-300" : entry.type === "command" ? "text-purple-300" : "text-slate-400") }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 shrink-0" }, entry.time), /* @__PURE__ */ React.createElement("span", null, entry.text))), isAgentRunning && /* @__PURE__ */ React.createElement("div", { className: "text-purple-400 animate-pulse" }, "\u23F3 Processing...")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-2 py-1 border-t border-slate-800" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAgentLogFullView((v) => !v), className: "text-[10px] text-purple-300 hover:text-purple-200 underline" }, agentLogFullView ? "Show recent only" : `Show full log (${agentActivityLog.length})`), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    )))), agentActivityLog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: (agentLogFullView ? "max-h-64" : "max-h-24") + " overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono", "aria-live": "polite", "aria-label": "Agent activity log" }, (agentLogFullView ? agentActivityLog : agentActivityLog.slice(-8)).map((entry, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-start gap-1 " + (entry.type === "error" ? "text-red-400" : entry.type === "score" ? "text-cyan-300" : entry.type === "success" || entry.type === "complete" ? "text-green-400" : entry.type === "tool" ? "text-amber-300" : entry.type === "command" ? "text-purple-300" : "text-slate-400") }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 shrink-0" }, entry.time), /* @__PURE__ */ React.createElement("span", null, entry.text))), isAgentRunning && /* @__PURE__ */ React.createElement("div", { className: "text-purple-400 animate-pulse" }, "\u23F3 Processing...")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 px-2 py-1 border-t border-slate-800" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAgentLogFullView((v) => !v), className: "text-[10px] text-purple-300 hover:text-purple-200 underline" }, agentLogFullView ? "Show recent only" : `Show full log (${agentActivityLog.length})`), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: async () => {
+      const text = agentActivityLog.map((e) => (e && e.time ? e.time + " " : "") + (e && e.text || "")).join("\n");
+      let ok = false;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          ok = true;
+        }
+      } catch (_) {
+        ok = false;
+      }
+      if (!ok) {
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+        } catch (_) {
+          ok = false;
+        }
+      }
+      addToast(ok ? "\u{1F4CB} Log copied (" + agentActivityLog.length + " events)" : "Could not copy \u2014 select the log text manually.", ok ? "success" : "error");
+    }, className: "text-[10px] text-cyan-300 hover:text-cyan-200 underline", title: "Copy the full agent/pipeline log to the clipboard" }, "\u{1F4CB} Copy log"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setAgentActivityLog([]);
       console.info("[ExpertWorkbench] log cleared");
     }, className: "text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto" }, "Clear"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-hidden bg-slate-100 p-4" }, /* @__PURE__ */ React.createElement(

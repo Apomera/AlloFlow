@@ -1545,11 +1545,16 @@ function PdfDiagnosticsLog(props) {
   const _time = (e) => { try { return new Date(e.t).toLocaleTimeString(); } catch (_) { return ''; } };
   const _copy = async () => {
     const text = rows.map((e) => '[' + _time(e) + '] ' + (e.level === 'warn' ? 'WARN ' : 'debug ') + e.msg).join('\n');
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
-      else { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-      addToast((t('pdf_audit.diag.copied') || 'Diagnostics log copied') + ' (' + rows.length + ')', 'success');
-    } catch (_) { addToast(t('pdf_audit.diag.copy_failed') || 'Could not copy — select the text manually.', 'error'); }
+    // Try the async Clipboard API, but FALL BACK to textarea+execCommand on REJECTION too — not
+    // only when the API is absent. In Gemini's sandboxed Canvas iframe clipboard.writeText can
+    // reject (NotAllowedError); the old `else`-gated fallback never ran in that case, so copy
+    // "failed" with no fallback. Now ANY clipboard failure drops to the execCommand path.
+    let ok = false;
+    try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; }
+    if (!ok) {
+      try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; }
+    }
+    addToast(ok ? ((t('pdf_audit.diag.copied') || 'Diagnostics log copied') + ' (' + rows.length + ')') : (t('pdf_audit.diag.copy_failed') || 'Could not copy — select the text manually.'), ok ? 'success' : 'error');
   };
   const _clear = () => { try { if (Array.isArray(window.__alloDiagLog)) window.__alloDiagLog.length = 0; } catch (_) {} setTick((n) => n + 1); };
   if (!open) {
@@ -8740,6 +8745,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
                                 {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
                               </button>
+                              <button type="button" onClick={async () => {
+                                const text = agentActivityLog.map(e => ((e && e.time ? e.time + ' ' : '') + ((e && e.text) || ''))).join('\n');
+                                let ok = false;
+                                try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; }
+                                if (!ok) { try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; } }
+                                addToast(ok ? ('📋 Log copied (' + agentActivityLog.length + ' events)') : 'Could not copy — select the log text manually.', ok ? 'success' : 'error');
+                              }} className="text-[10px] text-cyan-300 hover:text-cyan-200 underline" title="Copy the full agent/pipeline log to the clipboard">📋 Copy log</button>
                               <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>
                             </div>
                           </div>
