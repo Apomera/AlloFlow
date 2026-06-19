@@ -112,6 +112,164 @@ const SIGHT_WORD_PRESETS = new Proxy({}, {
   },
   has: (_, prop) => prop in (window.SIGHT_WORD_PRESETS || {})
 });
+const PHONEME_PACK_STORAGE_KEY = "allo_phoneme_voice_pack_v1";
+const PHONEME_PACK_GROUPS = {
+  "Consonants": ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "y", "z"],
+  "Digraphs": ["sh", "zh", "ch", "th", "wh", "ph", "ck", "ng", "q"],
+  "Short Vowels": ["a", "e", "i", "o", "u", "oo_short"],
+  "Long Vowels": ["ee", "oo", "ue", "aw", "ai", "ea", "oa"],
+  "Diphthongs": ["ay", "ie", "ow", "oy"],
+  "R-Controlled": ["ar", "er", "ir", "or", "ur", "air", "ear"]
+};
+const PHONEME_PACK_EXAMPLES = { b: "ball", c: "cat", d: "dog", f: "fish", g: "goat", h: "hat", j: "jam", k: "kite", l: "leg", m: "man", n: "net", p: "pig", r: "red", s: "sun", t: "top", v: "van", w: "win", y: "yes", z: "zip", sh: "ship", zh: "measure", ch: "chip", th: "thumb", wh: "whale", ph: "phone", ck: "duck", ng: "ring", q: "queen", a: "apple", e: "egg", i: "igloo", o: "octopus", u: "up", oo_short: "book", ee: "tree", oo: "moon", ue: "blue", aw: "paw", ai: "rain", ea: "leaf", oa: "boat", ay: "play", ie: "pie", ow: "cow", oy: "boy", ar: "car", er: "her", ir: "bird", or: "fork", ur: "fur", air: "chair", ear: "ear" };
+function loadPhonemeVoicePack() {
+  try {
+    const raw = localStorage.getItem(PHONEME_PACK_STORAGE_KEY);
+    if (!raw) return { name: "My Voice Pack", clips: {} };
+    const p = JSON.parse(raw);
+    return { name: p && p.name || "My Voice Pack", clips: p && p.clips && typeof p.clips === "object" ? p.clips : {} };
+  } catch (e) {
+    return { name: "My Voice Pack", clips: {} };
+  }
+}
+function applyPhonemeVoicePackToBank(clips) {
+  try {
+    if (!clips || !window.__ALLO_PHONEME_AUDIO_BANK) return 0;
+    let n = 0;
+    Object.keys(clips).forEach((k) => {
+      if (clips[k]) {
+        window.__ALLO_PHONEME_AUDIO_BANK[k] = clips[k];
+        n++;
+      }
+    });
+    return n;
+  } catch (e) {
+    return 0;
+  }
+}
+const PhonemeVoicePackEditor = ({ onClose, t }) => {
+  const T = (k, fb) => typeof t === "function" ? t(k, fb) : fb;
+  const [pack, setPack] = React.useState(() => loadPhonemeVoicePack());
+  const [recordingKey, setRecordingKey] = React.useState(null);
+  const [status, setStatus] = React.useState("");
+  const recorderRef = React.useRef(null);
+  const fileInputRef = React.useRef(null);
+  const clips = pack.clips || {};
+  const allKeys = Object.keys(PHONEME_PACK_GROUPS).reduce((acc, g) => acc.concat(PHONEME_PACK_GROUPS[g]), []);
+  const recordedCount = allKeys.filter((k) => clips[k]).length;
+  const stopRecording = () => {
+    try {
+      if (recorderRef.current) recorderRef.current.stop();
+    } catch (e) {
+    }
+  };
+  const startRecording = (key) => {
+    if (recordingKey) {
+      stopRecording();
+      return;
+    }
+    const voice = window.AlloFlowVoice;
+    if (!voice || typeof voice.recordAudioBlob !== "function") {
+      setStatus("\u{1F399}\uFE0F Recording needs the in-app microphone \u2014 open in Canvas.");
+      return;
+    }
+    const ctrl = voice.recordAudioBlob({ maxDurationMs: 4e3, preferredMimeType: "audio/webm;codecs=opus", onError: () => {
+      setStatus("Microphone access was blocked.");
+      setRecordingKey(null);
+      recorderRef.current = null;
+    } });
+    if (!ctrl || !ctrl.supported) {
+      setStatus("Recording is not supported in this browser.");
+      return;
+    }
+    recorderRef.current = ctrl;
+    setRecordingKey(key);
+    setStatus("\u25CF Recording /" + key + "/" + (PHONEME_PACK_EXAMPLES[key] ? " (like " + PHONEME_PACK_EXAMPLES[key] + ")" : "") + " \u2014 tap again to stop.");
+    ctrl.result.then((rec) => {
+      if (rec && rec.base64) {
+        setPack((prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: rec.base64 }) }));
+        setStatus("\u2713 Recorded /" + key + "/. Tap \u{1F50A} to hear it, then Save & Use.");
+      }
+      if (recorderRef.current === ctrl) recorderRef.current = null;
+      setRecordingKey(null);
+    }).catch(() => {
+      if (recorderRef.current === ctrl) recorderRef.current = null;
+      setRecordingKey(null);
+    });
+  };
+  const playClip = (key) => {
+    const d = clips[key];
+    if (!d) return;
+    try {
+      const a = new Audio(d);
+      a.play().catch(() => {
+      });
+    } catch (e) {
+    }
+  };
+  const clearClip = (key) => setPack((prev) => {
+    const c = Object.assign({}, prev.clips);
+    delete c[key];
+    return Object.assign({}, prev, { clips: c });
+  });
+  const persist = (next) => {
+    try {
+      localStorage.setItem(PHONEME_PACK_STORAGE_KEY, JSON.stringify({ version: 1, type: "alloPhonemePack", kind: "teacher-model", name: next.name, clips: next.clips }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+  const savePack = () => {
+    const applied = applyPhonemeVoicePackToBank(pack.clips);
+    const ok = persist(pack);
+    setStatus(ok ? "\u2705 Saved and active now (" + applied + " sounds). Word Sounds will use this voice." : "Active for this session (" + applied + " sounds), but the pack was too large for browser storage \u2014 use Export to keep it as a file.");
+  };
+  const exportPack = () => {
+    try {
+      const data = { version: 1, type: "alloPhonemePack", kind: "teacher-model", name: pack.name || "My Voice Pack", exportDate: (/* @__PURE__ */ new Date()).toISOString(), phonemes: pack.clips };
+      const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "phoneme_pack_" + String(pack.name || "voice").replace(/[^a-z0-9]+/gi, "_") + ".json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setStatus('\u2B07\uFE0F Exported "' + (pack.name || "My Voice Pack") + '".');
+    } catch (e) {
+      setStatus("Export failed.");
+    }
+  };
+  const importPack = (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        const incoming = data && (data.phonemes || data.clips) || null;
+        if (!incoming || typeof incoming !== "object") {
+          setStatus("That file is not a phoneme pack.");
+          return;
+        }
+        setPack((prev) => ({ name: data && data.name || prev.name, clips: Object.assign({}, prev.clips, incoming) }));
+        setStatus("\u{1F4E5} Imported " + Object.keys(incoming).length + " sounds. Tap Save & Use to apply them.");
+      } catch (err) {
+        setStatus("Could not read that file.");
+      }
+    };
+    reader.readAsText(file);
+    ev.target.value = "";
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4", role: "dialog", "aria-label": "Phoneme Voice Pack editor" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black flex items-center gap-2" }, "\u{1F399}\uFE0F ", T("word_sounds.voice_pack_title", "Voice Pack \u2014 record your own sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/80" }, recordedCount, " / ", allKeys.length, " ", T("word_sounds.voice_pack_recorded", "sounds recorded"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": "Close", className: "p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 bg-violet-50 border-b border-violet-100 text-xs text-slate-700" }, T("word_sounds.voice_pack_intro", 'Record each sound in your own voice: tap \u{1F399}\uFE0F, say the sound clipped ("/p/", not "puh"), then tap again to stop. The app plays your voice during blending, isolation and the anchor card. Empty sounds keep the default voice. Packs stay on this device; share one with the Export file.')), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-4 space-y-4" }, Object.keys(PHONEME_PACK_GROUPS).map((group) => /* @__PURE__ */ React.createElement("div", { key: group }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, group), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" }, PHONEME_PACK_GROUPS[group].map((key) => {
+    const has = !!clips[key];
+    const rec = recordingKey === key;
+    const label = key === "oo_short" ? "oo" : key;
+    return /* @__PURE__ */ React.createElement("div", { key, className: `flex items-center gap-2 rounded-xl border-2 px-2 py-1.5 ${has ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 leading-tight" }, "/", label, "/ ", has && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600" }, "\u2713")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 truncate" }, PHONEME_PACK_EXAMPLES[key] ? "like " + PHONEME_PACK_EXAMPLES[key] : "")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(key), "aria-label": rec ? "Stop recording " + label : "Record " + label, className: `w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? "bg-red-500 text-white animate-pulse" : "bg-violet-100 text-violet-700 hover:bg-violet-200"}` }, rec ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playClip(key), disabled: !has, "aria-label": "Play " + label, className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${has ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearClip(key), disabled: !has, "aria-label": "Clear " + label, className: `w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${has ? "text-rose-500 hover:bg-rose-50" : "text-slate-200 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
+  }))))), status ? /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100", role: "status", "aria-live": "polite" }, status) : null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.name, onChange: (e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value })), "aria-label": "Pack name", className: "flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold", placeholder: "Pack name" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePack, className: "px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors" }, T("word_sounds.voice_pack_save", "Save & Use")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportPack, className: "px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors" }, "\u2B07\uFE0F ", T("word_sounds.voice_pack_export", "Export")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current && fileInputRef.current.click(), className: "px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors" }, "\u{1F4E5} ", T("word_sounds.voice_pack_import", "Import")), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: "application/json,.json", onChange: importPack, className: "hidden", "aria-hidden": "true" }))));
+};
 const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage }) => {
   const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
   const [imageVisibilityMode, setImageVisibilityMode] = React.useState("smart");
@@ -198,6 +356,14 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   React.useEffect(() => {
     if (typeof loadProbeBanks === "function") {
       loadProbeBanks();
+    }
+  }, []);
+  const [showVoicePack, setShowVoicePack] = React.useState(false);
+  React.useEffect(() => {
+    try {
+      const saved = loadPhonemeVoicePack();
+      if (saved && saved.clips && Object.keys(saved.clips).length) applyPhonemeVoicePackToBank(saved.clips);
+    } catch (e) {
     }
   }, []);
   const [generatedCount, setGeneratedCount] = React.useState(0);
@@ -666,7 +832,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       },
       className: "w-full p-2 border rounded-lg text-center font-bold"
     }
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.syllable_range_hint") || "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.sources", "Active Sources")), /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: `p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? "bg-violet-50 border-violet-500" : "bg-white border-slate-200"}`, "data-help-key": "ws_gen_src_glossary", onClick: () => setIncludeGlossary((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? "bg-violet-600 border-violet-600" : "border-slate-300"}` }, includeGlossary && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-violet-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_glossary", "Glossary"), " (", glossaryTerms?.length || 0, ")"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeFamily ? "bg-pink-50 border-pink-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center gap-3 cursor-pointer", "data-help-key": "ws_gen_src_family", onClick: () => setIncludeFamily((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? "bg-pink-600 border-pink-600" : "border-slate-300"}` }, includeFamily && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(Layers, { size: 18, className: "text-pink-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_family", "Word Family"))), includeFamily && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.syllable_range_hint") || "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.voice_pack_section", "Voice")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowVoicePack(true), "data-help-key": "ws_gen_voice_pack", className: "w-full p-3 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors flex items-center gap-3 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-700 text-sm" }, t("word_sounds.voice_pack_cta", "Record your own sounds")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, t("word_sounds.voice_pack_cta_hint", "Use your voice for the phoneme bank (Orton-Gillingham)"))))), showVoicePack ? /* @__PURE__ */ React.createElement(PhonemeVoicePackEditor, { onClose: () => setShowVoicePack(false), t }) : null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.sources", "Active Sources")), /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: `p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? "bg-violet-50 border-violet-500" : "bg-white border-slate-200"}`, "data-help-key": "ws_gen_src_glossary", onClick: () => setIncludeGlossary((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? "bg-violet-600 border-violet-600" : "border-slate-300"}` }, includeGlossary && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-violet-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_glossary", "Glossary"), " (", glossaryTerms?.length || 0, ")"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeFamily ? "bg-pink-50 border-pink-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center gap-3 cursor-pointer", "data-help-key": "ws_gen_src_family", onClick: () => setIncludeFamily((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? "bg-pink-600 border-pink-600" : "border-slate-300"}` }, includeFamily && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(Layers, { size: 18, className: "text-pink-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_family", "Word Family"))), includeFamily && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),

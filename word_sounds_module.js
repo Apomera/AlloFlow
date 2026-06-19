@@ -2228,10 +2228,15 @@
       // sound in its keyword context (Jolly-Phonics style). Falls back to
       // attempting to play the phoneme directly if no key word is available.
       const handleAnchorPlay = React.useCallback((ipa, keyWord) => {
-        // The modal scope has no `onPlayAudio` (that's a child-view prop) — using
-        // it here threw ReferenceError on every render via the dep array. Use the
-        // in-scope `speakWord` prop instead, which also makes the OG corrective
-        // auto-play actually fire.
+        // The anchor button says "Hear the sound /p/", so play the PHONEME from
+        // the audio bank — handleAudio checks __ALLO_PHONEME_AUDIO_BANK first, so
+        // the child hears the real recorded /p/ clip (or a teacher's custom
+        // override) instead of regenerating the key word via TTS, which can fail
+        // or sound wrong. Fall back to speaking the key word only if there is no
+        // phoneme to play. (handleAudio is defined just below and is referenced
+        // here at call time; it is intentionally kept out of the dep array to
+        // avoid a temporal-dead-zone error when the dep array evaluates at render.)
+        if (ipa && typeof handleAudio === "function") { handleAudio(ipa); return; }
         const toSpeak = keyWord || ipa;
         if (toSpeak && typeof speakWord === "function") speakWord(toSpeak);
       }, [speakWord]);
