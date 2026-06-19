@@ -62,7 +62,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     color: 'slate',
     category: 'science',
     questHooks: [
-      { id: 'visit_all_planets', label: 'Visit all 9 planets', icon: '\uD83C\uDF0D', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 9; }, progress: function(d) { return (d.planetsVisited || []).length + '/9 planets'; } },
+      { id: 'visit_all_planets', label: 'Visit all 8 planets + Pluto', icon: '\uD83C\uDF0D', field: 'planetsVisited', check: function(d) { return (d.planetsVisited || []).length >= 9; }, progress: function(d) { return (d.planetsVisited || []).length + '/9 worlds'; } },
       { id: 'quiz_score_5', label: 'Score 5+ on the planet quiz', icon: '\uD83E\uDDE0', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 5; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/5'; } },
       { id: 'quiz_score_8', label: 'Score 8+ on the planet quiz', icon: '\uD83C\uDFC6', field: 'quiz.score', check: function(d) { return d.quiz && d.quiz.score >= 8; }, progress: function(d) { return (d.quiz ? d.quiz.score : 0) + '/8'; } },
       { id: 'deploy_rover', label: 'Deploy a rover or probe on any planet', icon: '\uD83D\uDE97', field: 'missionLog', check: function(d) { return (d.missionLog || []).length >= 1; }, progress: function(d) { return (d.missionLog || []).length > 0 ? 'Done' : 'Not yet'; } },
@@ -143,7 +143,7 @@ const d = labToolData.solarSystem || {};
           var CHALLENGES = [
             { id: 'first_planet', name: 'First Contact', desc: 'Select any planet', icon: '\uD83C\uDF1F', rp: 10, check: function() { return !!sel; } },
             { id: 'visit_3', name: 'Inner Planets', desc: 'Visit 3 different planets', icon: '\uD83D\uDE80', rp: 25, check: function() { return planetsVisited.length >= 3; } },
-            { id: 'visit_all', name: 'Grand Tour', desc: 'Visit all 9 planets', icon: '\uD83C\uDFC6', rp: 100, check: function() { return planetsVisited.length >= 9; } },
+            { id: 'visit_all', name: 'Grand Tour', desc: 'Visit all 8 planets + Pluto', icon: '\uD83C\uDFC6', rp: 100, check: function() { return planetsVisited.length >= 9; } },
             { id: 'gas_explorer', name: 'Gas Giant Explorer', desc: 'View the interior of a gas giant', icon: '\u2601', rp: 20, check: function() { return d.viewTab === 'interior' && sel && (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant'); } },
             { id: 'rover_deploy', name: 'Surface Ops', desc: 'Deploy a rover or probe', icon: '\uD83E\uDD16', rp: 20, check: function() { return d.viewTab === 'drone'; } },
             { id: 'quiz_ace', name: 'Quiz Master', desc: 'Score 5+ on planet quiz', icon: '\uD83C\uDF93', rp: 50, check: function() { return d.quiz && d.quiz.score >= 5; } },
@@ -740,7 +740,7 @@ const d = labToolData.solarSystem || {};
             { id: 'inner_planets', name: 'Inner Planets Study', tasks: ['Visit Mercury, Venus, Earth, and Mars', 'Collect 2 samples from each rocky planet', 'Answer: Why is Venus hotter than Mercury?', 'Write a journal entry comparing Earth and Mars'], gradeRange: '4-6' },
             { id: 'gas_giants', name: 'Gas Giant Expedition', tasks: ['Visit Jupiter, Saturn, Uranus, and Neptune', 'Descend through Jupiter\u2019s atmosphere', 'Compare wind speeds across all 4 gas/ice giants', 'Explore the Great Red Spot in drone mode'], gradeRange: '5-8' },
             { id: 'habitability', name: 'Search for Life', tasks: ['Read the Habitable Zone concept card', 'Compare Earth, Mars, and Venus using the comparison tool', 'Collect biosignature-related samples', 'Write: What makes a planet habitable?'], gradeRange: '6-8' },
-            { id: 'full_survey', name: 'Grand Tour Survey', tasks: ['Visit all 9 planets', 'Score 8+ on the quiz', 'Complete 3 navigation challenges', 'Write journal entries for 5 different planets', 'Export your progress report'], gradeRange: '6-8+' }
+            { id: 'full_survey', name: 'Grand Tour Survey', tasks: ['Visit all 8 planets + Pluto', 'Score 8+ on the quiz', 'Complete 3 navigation challenges', 'Write journal entries for 5 different planets', 'Export your progress report'], gradeRange: '6-8+' }
           ];
 
           // Hohmann transfer orbit data (delta-v in km/s from Earth)
@@ -777,13 +777,13 @@ const d = labToolData.solarSystem || {};
 
             { name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).', gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
 
-            { name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!', gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
+            { name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!', gravity: '2.53g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
 
             { name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
 
-            { name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.', gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
+            { name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.', gravity: '0.89g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
 
-            { name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.', gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
+            { name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.', gravity: '1.14g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
 
             { name: t('stem.solar_sys.pluto'), emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.', gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
 
@@ -5443,7 +5443,7 @@ const d = labToolData.solarSystem || {};
                 ref: canvasRef,
 
                 role: 'img',
-                'aria-label': 'Interactive 3D solar system model. ' + (sel ? 'Viewing ' + sel.name + '. ' + sel.fact : 'Showing all 9 planets orbiting the Sun. Click a planet to explore it.'),
+                'aria-label': 'Interactive 3D solar system model. ' + (sel ? 'Viewing ' + sel.name + '. ' + sel.fact : 'Showing the 8 planets and dwarf planet Pluto orbiting the Sun. Click a planet to explore it.'),
                 tabIndex: 0,
 
                 className: "solar3d-canvas w-full",
@@ -5495,7 +5495,7 @@ const d = labToolData.solarSystem || {};
 
                 }, "\uD83C\uDFE0 Reset"),
 
-                React.createElement("span", { className: "text-[11px] text-white/30 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, "Drag \u2022 Scroll \u2022 Click")
+                React.createElement("span", { className: "text-[11px] text-white/60 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, "Drag \u2022 Scroll \u2022 Click")
 
               )
 
@@ -11167,6 +11167,16 @@ const d = labToolData.solarSystem || {};
 
                         function animate3dV2() {
 
+                          // Self-terminate + tear down when the drone canvas detaches (tab switch /
+                          // planet change / Back). Previously the ref-null path bailed before calling
+                          // _droneCleanup, so this WebGL loop, its renderer, the fact/hazard/sound
+                          // intervals, and the doc mousemove listener all ran forever after leaving.
+                          if (!canvasEl.isConnected) {
+                            cancelAnimationFrame(animId3d);
+                            if (canvasEl._droneCleanup) { var _dcu = canvasEl._droneCleanup; canvasEl._droneCleanup = null; _dcu(); }
+                            return;
+                          }
+
                           animId3d = requestAnimationFrame(animate3dV2);
 
                           tick3d++;
@@ -13244,6 +13254,10 @@ const d = labToolData.solarSystem || {};
                         });
 
                         function drawKepler() {
+                          // Stop + allow clean restart when the Kepler panel is hidden — this loop
+                          // rescheduled unconditionally and was never cancelled (unlike its sibling
+                          // sky/Hohmann loops), so it kept running after the tab was switched away.
+                          if (!cv.isConnected) { cancelAnimationFrame(cv._keplerAnim); cv._keplerInit = false; return; }
                           kTick++;
                           kCtx.clearRect(0, 0, kW, kH);
                           // Read selected body or custom params
