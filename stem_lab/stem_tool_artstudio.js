@@ -2106,7 +2106,7 @@ const d = labToolData.artStudio || {};
 
                       }
 
-                      canvas._spiroAnim = requestAnimationFrame(drawStep);
+                      if (canvas.isConnected) canvas._spiroAnim = requestAnimationFrame(drawStep);
 
                     }
 
@@ -2266,7 +2266,7 @@ const d = labToolData.artStudio || {};
 
                     if (canvas.getAttribute('data-paused') === '1') {
 
-                      canvas._genAnim = requestAnimationFrame(animate);
+                      if (canvas.isConnected) canvas._genAnim = requestAnimationFrame(animate);
 
                       return;
 
@@ -2378,7 +2378,7 @@ const d = labToolData.artStudio || {};
 
                     }
 
-                    canvas._genAnim = requestAnimationFrame(animate);
+                    if (canvas.isConnected) canvas._genAnim = requestAnimationFrame(animate);
 
                   }
 
@@ -2601,7 +2601,7 @@ const d = labToolData.artStudio || {};
 
                     ctx.restore();
 
-                    canvas._spinAnim = requestAnimationFrame(animate);
+                    if (canvas.isConnected) canvas._spinAnim = requestAnimationFrame(animate);
 
                   }
 
@@ -2869,7 +2869,7 @@ const d = labToolData.artStudio || {};
 
                       }
 
-                      canvas._strAnim = requestAnimationFrame(drawStep);
+                      if (canvas.isConnected) canvas._strAnim = requestAnimationFrame(drawStep);
 
                     }
 
@@ -3937,7 +3937,7 @@ const d = labToolData.artStudio || {};
 
                         }
 
-                        if (si < total) canvas._fracAnim = requestAnimationFrame(drawSierpBatch);
+                        if (si < total && canvas.isConnected) canvas._fracAnim = requestAnimationFrame(drawSierpBatch);
 
                       }
 
@@ -4053,7 +4053,7 @@ const d = labToolData.artStudio || {};
 
                         rowsDone = endRow;
 
-                        if (rowsDone < H) canvas._fracAnim = requestAnimationFrame(renderChunk);
+                        if (rowsDone < H && canvas.isConnected) canvas._fracAnim = requestAnimationFrame(renderChunk);
 
                       }
 
@@ -5147,7 +5147,7 @@ const d = labToolData.artStudio || {};
 
                         rowsDone = endRow;
 
-                        if (rowsDone < H) canvas._stereoAnim = requestAnimationFrame(renderChunk);
+                        if (rowsDone < H && canvas.isConnected) canvas._stereoAnim = requestAnimationFrame(renderChunk);
 
                       }
 
@@ -6360,7 +6360,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83D\uDC53 Animated Stereogram Output"),
 
-                    d.stereoAnimHasFrames && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-200') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
+                    d.stereoAnimHasFrames && React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full " + (d.stereoAnimPlaying ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, d.stereoAnimPlaying ? '\u25B6 Playing' : '\u23F8 Paused')
 
                   ),
 
@@ -6782,7 +6782,7 @@ const d = labToolData.artStudio || {};
 
                       React.createElement("p", { className: "text-[11px] text-amber-600 italic" }, d.lifeChallengeMsg || ''),
 
-                      React.createElement("p", { className: "text-[11px] text-slate-200" }, 'Draw your pattern, then press \u25B6 Run to test!'),
+                      React.createElement("p", { className: "text-[11px] text-slate-600" }, 'Draw your pattern, then press \u25B6 Run to test!'),
 
                       (d.lifeChallenge === 'methuselah' || d.lifeChallenge === 'maxpop') && React.createElement("p", { className: "text-[11px] font-bold " + ((d.lifePop || 0) > 5 ? 'text-red-500' : 'text-green-600') }, 'Cells placed: ' + (d.lifePop || 0) + '/5')
 
@@ -6832,7 +6832,7 @@ const d = labToolData.artStudio || {};
 
                         ),
 
-                        React.createElement("p", { className: "text-[11px] italic mt-1 text-slate-200" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
+                        React.createElement("p", { className: "text-[11px] italic mt-1 text-slate-600" }, 'Use \uD83D\uDD2C X-Ray mode to see neighbor counts and understand why each cell lives or dies!')
 
                       ),
 
@@ -7652,7 +7652,7 @@ const d = labToolData.artStudio || {};
 
                         drawSparkline();
 
-                        canvas._lifeAnim = requestAnimationFrame(animate);
+                        if (canvas.isConnected) canvas._lifeAnim = requestAnimationFrame(animate);
 
                       }
 
