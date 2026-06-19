@@ -539,7 +539,7 @@ window.StemLab = window.StemLab || {
       // ── Regrouping ──
       // ══════════════════════════════════════════════════════════════
       var doRegroup = function(fromPlace, toPlace) {
-        if (b10[fromPlace] < 10 || b10[toPlace] >= 9) return;
+        if (b10[fromPlace] < 10) return; // 10 of a place always regroup into 1 of the next — the old `toPlace >= 9` clause wrongly blocked this (dead end at e.g. ones=20, tens=9)
         var newB10 = Object.assign({}, b10);
         newB10[fromPlace] = b10[fromPlace] - 10;
         newB10[toPlace] = b10[toPlace] + 1;
@@ -982,7 +982,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-end gap-2 flex-wrap justify-center', style: { minHeight: '60px' } },
                 renderBlock3D('#db2777', '#f472b6', 56, 56, b10.thousands, 10, 10),
                 b10.thousands > 0 && b10.hundreds > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
-                renderBlock3D('#2563eb', '#60a5fa', 48, 14, b10.hundreds, 10, 1),
+                renderBlock3D('#2563eb', '#60a5fa', 48, 48, b10.hundreds, 10, 10),
                 (b10.thousands > 0 || b10.hundreds > 0) && b10.tens > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
                 renderBlock3D('#059669', '#34d399', 10, 48, b10.tens, 1, 10),
                 (b10.thousands > 0 || b10.hundreds > 0 || b10.tens > 0) && b10.ones > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
@@ -996,7 +996,7 @@ window.StemLab = window.StemLab || {
             // Place value columns
             h('div', { className: 'grid grid-cols-4 gap-3' },
               placeCol('Thousands', '\u25A0', 'thousands', '#db2777', '#f472b6', 56, 56, 10, 10),
-              placeCol('Hundreds', '\u25AC', 'hundreds', '#2563eb', '#60a5fa', 48, 14, 10, 1),
+              placeCol('Hundreds', '\u25AC', 'hundreds', '#2563eb', '#60a5fa', 48, 48, 10, 10),
               placeCol('Tens', '\u2503', 'tens', '#059669', '#34d399', 10, 48, 1, 10),
               placeCol('Ones', '\u25AA', 'ones', '#ea580c', '#fb923c', 10, 10, 1, 1)
             ),
@@ -1004,13 +1004,13 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mt-1' },
               h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2 text-center' }, '\u21C4 Regroup / Ungroup'),
               h('div', { className: 'flex flex-wrap gap-2 justify-center' },
-                regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10 && b10.tens < 9, '#ea580c', '#059669'),
+                regroupBtn('10 \u25AA \u2192 1 \u2503', 'ones', 'tens', b10.ones >= 10, '#ea580c', '#059669'),
                 regroupBtn('1 \u2503 \u2192 10 \u25AA', 'tens', 'ones', b10.tens >= 1, '#059669', '#ea580c'),
                 h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
-                regroupBtn('10 \u2503 \u2192 1 \u25AC', 'tens', 'hundreds', b10.tens >= 10 && b10.hundreds < 9, '#059669', '#2563eb'),
+                regroupBtn('10 \u2503 \u2192 1 \u25AC', 'tens', 'hundreds', b10.tens >= 10, '#059669', '#2563eb'),
                 regroupBtn('1 \u25AC \u2192 10 \u2503', 'hundreds', 'tens', b10.hundreds >= 1, '#2563eb', '#059669'),
                 h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
-                regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10 && b10.thousands < 9, '#2563eb', '#db2777'),
+                regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10, '#2563eb', '#db2777'),
                 regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#db2777', '#2563eb')
               ),
               h('p', { className: 'text-[11px] text-violet-400 text-center mt-1.5 italic' }, '\uD83D\uDCA1 10 of one place value always equals 1 of the next!')
