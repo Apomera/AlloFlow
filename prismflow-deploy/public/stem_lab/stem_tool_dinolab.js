@@ -5348,7 +5348,7 @@
       function renderTimeline() {
         var spanTotal = 252 - 23;
         var rows = PERIODS.map(function (p) {
-          var members = DINOS.filter(function (dn) { return dn.period === p.id; });
+          var members = DINOS.filter(function (dn) { return dn.period === p.id && dn.group !== 'other'; }); // exclude the non-dinosaur foils (Pteranodon, Mosasaurus) — they were appearing as dinosaurs in the timeline
           var widthPct = Math.round(((p.myaHi - p.myaLo) / spanTotal) * 100);
           return el('div', { key: p.id, style: { marginBottom: 14 } },
             el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { width: 12, height: 12, borderRadius: 3, background: pColor(p.id), display: 'inline-block' } }), el('span', { style: { fontWeight: 800, fontSize: 15 } }, p.name), el('span', { style: { fontSize: 12, color: T.soft } }, p.myaHi + ' to ' + p.myaLo + ' million years ago')),
@@ -5710,6 +5710,7 @@
           { icon: '📈', title: 'Fast growth, warm bodies', text: 'Growth rings in dinosaur bones show many grew quickly and ran warm, more like birds and mammals than like modern reptiles.' }
         ];
         var feathered = DINOS.filter(function (dn) {
+          if (dn.group === 'other') return false; // never list the non-dino foils (Pteranodon's "wing" matched) on the "feathered dinosaurs" panel
           var s = (dn.blurb + ' ' + dn.traits.join(' ')).toLowerCase();
           return dn.clade === 'Avialae' || s.indexOf('feather') !== -1 || s.indexOf('plumage') !== -1 || s.indexOf('quill') !== -1 || s.indexOf('filament') !== -1 || s.indexOf('fuzz') !== -1 || s.indexOf('wing') !== -1;
         }).sort(function (a, b) { return a.common < b.common ? -1 : 1; });
