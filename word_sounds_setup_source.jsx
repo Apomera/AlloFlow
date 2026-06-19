@@ -37,6 +37,75 @@
         'R-Controlled': ['ar','er','ir','or','ur','air','ear'],
     };
     const PHONEME_PACK_EXAMPLES = { b:'ball', c:'cat', d:'dog', f:'fish', g:'goat', h:'hat', j:'jam', k:'kite', l:'leg', m:'man', n:'net', p:'pig', r:'red', s:'sun', t:'top', v:'van', w:'win', y:'yes', z:'zip', sh:'ship', zh:'measure', ch:'chip', th:'thumb', wh:'whale', ph:'phone', ck:'duck', ng:'ring', q:'queen', a:'apple', e:'egg', i:'igloo', o:'octopus', u:'up', oo_short:'book', ee:'tree', oo:'moon', ue:'blue', aw:'paw', ai:'rain', ea:'leaf', oa:'boat', ay:'play', ie:'pie', ow:'cow', oy:'boy', ar:'car', er:'her', ir:'bird', or:'fork', ur:'fur', air:'chair', ear:'ear' };
+    // Kid-friendly articulatory cues — turns each recording into a mini phonics
+    // lesson: how the mouth makes the sound, whether it is voiced ("buzzy") or
+    // unvoiced ("quiet"), and whether it is a continuant ("stretch it") or a stop
+    // ("quick"). This both teaches articulation AND helps produce a clean clip
+    // (clipped stop vs an added schwa, e.g. /p/ not "puh").
+    const PHONEME_PACK_CUES = {
+        b: 'Lips together, pop WITH voice — buzzy. Quick.',
+        c: 'Back of tongue up, quiet pop /k/. Quick.',
+        d: 'Tongue taps behind top teeth, with voice. Quick.',
+        f: 'Top teeth on bottom lip, push quiet air. Stretch it: fffff.',
+        g: 'Back of tongue up, with voice. Quick.',
+        h: 'Open mouth, just breathe out. Quiet.',
+        j: 'Like /d/ + /zh/ together (jam). Quick.',
+        k: 'Back of tongue up, quiet pop. Quick.',
+        l: 'Tongue tip up behind teeth, voice on. Stretch it: llll.',
+        m: 'Lips together, hum. Stretch it: mmmm.',
+        n: 'Tongue behind top teeth, hum. Stretch it: nnnn.',
+        p: 'Lips together, quiet pop — no voice. Quick.',
+        r: 'Tongue pulled back, lips a little round. Stretch it.',
+        s: 'Smile, tongue near teeth, hiss — no voice. Stretch it: sssss.',
+        t: 'Tongue taps behind top teeth, no voice. Quick.',
+        v: 'Top teeth on bottom lip + voice (buzz). Stretch it.',
+        w: 'Round your lips, then glide. Voice on.',
+        y: 'Tongue high, then glide (yes). Voice on.',
+        z: 'Like /s/ but buzzing. Stretch it: zzzz.',
+        sh: 'Lips rounded, push quiet air — "shhh". Stretch it.',
+        zh: 'Like /sh/ but WITH voice (treasure).',
+        ch: 'Like /t/ + /sh/ together (chip). Quick.',
+        th: 'Tongue tip between teeth, push air.',
+        wh: 'Round lips, blow (whale).',
+        ph: 'Same as /f/ — teeth on lip, push air.',
+        ck: 'Same as /k/ — back of tongue, quiet pop. Quick.',
+        ng: 'Back of tongue up, hum through your nose (ring).',
+        q: 'Usually /kw/ — quiet /k/, then round lips (queen).',
+        a: 'Open mouth, short /a/ (apple).',
+        e: 'Mouth a little open, short /e/ (egg).',
+        i: 'Small smile, short /i/ (igloo).',
+        o: 'Round mouth, short /o/ (octopus).',
+        u: 'Relaxed mouth, short /u/ (up).',
+        oo_short: 'Short /oo/ (book) — lips a little round.',
+        ee: 'Big smile, long /ee/ (tree). Stretch it.',
+        oo: 'Round lips, long /oo/ (moon). Stretch it.',
+        ue: 'Long /u/ (blue) — round lips.',
+        aw: 'Open round mouth /aw/ (paw).',
+        ai: 'Long /a/ (rain) — say the letter A.',
+        ea: 'Long /ee/ (leaf).',
+        oa: 'Long /o/ (boat) — say the letter O.',
+        ay: 'Long /a/ (play) — say the letter A.',
+        ie: 'Long /i/ (pie) — say the letter I.',
+        ow: 'Round, then open (cow).',
+        oy: 'Round, then smile (boy).',
+        ar: 'Open /ar/ (car).',
+        er: 'Tongue back, /er/ (her).',
+        ir: 'Same as /er/ (bird).',
+        or: 'Round /or/ (fork).',
+        ur: 'Same as /er/ (fur).',
+        air: 'Open /air/ (chair).',
+        ear: 'Long /ear/ (ear).',
+    };
+    // Show the example word with its target grapheme bolded (sound <-> symbol):
+    // /sh/ -> "ship", /a/ -> "cat". Falls back to plain text if the grapheme is
+    // not a literal substring of the example.
+    function renderExampleWithGrapheme(key, word) {
+        if (!word) return null;
+        const g = key === 'oo_short' ? 'oo' : key;
+        const idx = word.toLowerCase().indexOf(g.toLowerCase());
+        if (idx < 0) return <span>like {word}</span>;
+        return <span>like {word.slice(0, idx)}<b className="text-violet-700">{word.slice(idx, idx + g.length)}</b>{word.slice(idx + g.length)}</span>;
+    }
     function loadPhonemeVoicePack() {
         try {
             const raw = localStorage.getItem(PHONEME_PACK_STORAGE_KEY);
@@ -69,6 +138,7 @@
         const [status, setStatus] = React.useState('');
         const [aiCheckOn, setAiCheckOn] = React.useState(false);
         const [checks, setChecks] = React.useState({}); // { key: { state:'checking'|'done'|'error', match, clipped, note } }
+        const [selfChecks, setSelfChecks] = React.useState({}); // { key: 'good' | 'retry' } — the student's OWN judgment (metacognition; on-device only)
         const recorderRef = React.useRef(null);
         const fileInputRef = React.useRef(null);
         const clips = pack.clips || {};
@@ -118,7 +188,23 @@
             if (!ref) { setStatus('No model recording for /' + key + '/ in the default voice — record what you think it sounds like, or check a reference chart.'); return; }
             try { const a = new Audio(ref); a.play().catch(() => {}); } catch (e) {}
         };
-        const clearClip = (key) => { setPack((prev) => { const c = Object.assign({}, prev.clips); delete c[key]; return Object.assign({}, prev, { clips: c }); }); setChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); };
+        const playCompare = (key) => {
+            // Articulatory self-monitoring: play the MODEL, then the student's clip
+            // back-to-back, so they can hear the difference and judge their own.
+            const ref = phonemeReferenceClip(key);
+            const mine = clips[key];
+            if (!ref || !mine) return;
+            const lbl = key === 'oo_short' ? 'oo' : key;
+            setStatus('🔁 Listen: the model first, then your /' + lbl + '/.');
+            try {
+                const a = new Audio(ref);
+                const playMine = () => { try { const b = new Audio(mine); b.play().catch(() => {}); } catch (e) {} };
+                a.onended = playMine; a.onerror = playMine;
+                a.play().catch(playMine);
+            } catch (e) { try { const b = new Audio(mine); b.play().catch(() => {}); } catch (e2) {} }
+        };
+        const rateSelf = (key, val) => setSelfChecks((prev) => Object.assign({}, prev, { [key]: prev[key] === val ? null : val }));
+        const clearClip = (key) => { setPack((prev) => { const c = Object.assign({}, prev.clips); delete c[key]; return Object.assign({}, prev, { clips: c }); }); setChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); setSelfChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); };
         const persist = (next) => {
             try {
                 localStorage.setItem(PHONEME_PACK_STORAGE_KEY, JSON.stringify({ version: 1, type: 'alloPhonemePack', kind: next.kind || 'teacher-model', consent: !!next.consent, name: next.name, clips: next.clips }));
@@ -211,7 +297,17 @@
                                             <div key={key} className={`flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${has ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="font-black text-slate-800 leading-tight">/{label}/ {has && <span className="text-emerald-600">✓</span>}</div>
-                                                    <div className="text-[10px] text-slate-500 truncate">{PHONEME_PACK_EXAMPLES[key] ? 'like ' + PHONEME_PACK_EXAMPLES[key] : ''} {checkBadge(key)}</div>
+                                                    <div className="text-[10px] text-slate-500">{renderExampleWithGrapheme(key, PHONEME_PACK_EXAMPLES[key])}</div>
+                                                    {PHONEME_PACK_CUES[key] ? <div className="text-[10px] text-violet-500 leading-snug">{PHONEME_PACK_CUES[key]}</div> : null}
+                                                    {has ? (
+                                                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                                            {hasRef ? <button type="button" onClick={() => playCompare(key)} className="text-[10px] font-bold text-amber-700 hover:underline">🔁 compare</button> : null}
+                                                            <span className="text-[10px] text-slate-400">me:</span>
+                                                            <button type="button" onClick={() => rateSelf(key, 'good')} aria-label={'I think ' + label + ' sounds right'} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'good' ? '' : 'opacity-30'} hover:opacity-100`}>😀</button>
+                                                            <button type="button" onClick={() => rateSelf(key, 'retry')} aria-label={'I want to try ' + label + ' again'} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'retry' ? '' : 'opacity-30'} hover:opacity-100`}>🤔</button>
+                                                            {checkBadge(key)}
+                                                        </div>
+                                                    ) : null}
                                                 </div>
                                                 <button type="button" onClick={() => playReference(key)} disabled={!hasRef} aria-label={'Hear the model sound ' + label} title="Hear the model (default) sound" className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRef ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
                                                 <button type="button" onClick={() => startRecording(key)} disabled={!consentOk} aria-label={rec ? ('Stop recording ' + label) : ('Record ' + label)} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? 'bg-red-500 text-white animate-pulse' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{rec ? '⏹' : '🎙️'}</button>

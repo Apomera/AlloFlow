@@ -122,6 +122,67 @@ const PHONEME_PACK_GROUPS = {
   "R-Controlled": ["ar", "er", "ir", "or", "ur", "air", "ear"]
 };
 const PHONEME_PACK_EXAMPLES = { b: "ball", c: "cat", d: "dog", f: "fish", g: "goat", h: "hat", j: "jam", k: "kite", l: "leg", m: "man", n: "net", p: "pig", r: "red", s: "sun", t: "top", v: "van", w: "win", y: "yes", z: "zip", sh: "ship", zh: "measure", ch: "chip", th: "thumb", wh: "whale", ph: "phone", ck: "duck", ng: "ring", q: "queen", a: "apple", e: "egg", i: "igloo", o: "octopus", u: "up", oo_short: "book", ee: "tree", oo: "moon", ue: "blue", aw: "paw", ai: "rain", ea: "leaf", oa: "boat", ay: "play", ie: "pie", ow: "cow", oy: "boy", ar: "car", er: "her", ir: "bird", or: "fork", ur: "fur", air: "chair", ear: "ear" };
+const PHONEME_PACK_CUES = {
+  b: "Lips together, pop WITH voice \u2014 buzzy. Quick.",
+  c: "Back of tongue up, quiet pop /k/. Quick.",
+  d: "Tongue taps behind top teeth, with voice. Quick.",
+  f: "Top teeth on bottom lip, push quiet air. Stretch it: fffff.",
+  g: "Back of tongue up, with voice. Quick.",
+  h: "Open mouth, just breathe out. Quiet.",
+  j: "Like /d/ + /zh/ together (jam). Quick.",
+  k: "Back of tongue up, quiet pop. Quick.",
+  l: "Tongue tip up behind teeth, voice on. Stretch it: llll.",
+  m: "Lips together, hum. Stretch it: mmmm.",
+  n: "Tongue behind top teeth, hum. Stretch it: nnnn.",
+  p: "Lips together, quiet pop \u2014 no voice. Quick.",
+  r: "Tongue pulled back, lips a little round. Stretch it.",
+  s: "Smile, tongue near teeth, hiss \u2014 no voice. Stretch it: sssss.",
+  t: "Tongue taps behind top teeth, no voice. Quick.",
+  v: "Top teeth on bottom lip + voice (buzz). Stretch it.",
+  w: "Round your lips, then glide. Voice on.",
+  y: "Tongue high, then glide (yes). Voice on.",
+  z: "Like /s/ but buzzing. Stretch it: zzzz.",
+  sh: 'Lips rounded, push quiet air \u2014 "shhh". Stretch it.',
+  zh: "Like /sh/ but WITH voice (treasure).",
+  ch: "Like /t/ + /sh/ together (chip). Quick.",
+  th: "Tongue tip between teeth, push air.",
+  wh: "Round lips, blow (whale).",
+  ph: "Same as /f/ \u2014 teeth on lip, push air.",
+  ck: "Same as /k/ \u2014 back of tongue, quiet pop. Quick.",
+  ng: "Back of tongue up, hum through your nose (ring).",
+  q: "Usually /kw/ \u2014 quiet /k/, then round lips (queen).",
+  a: "Open mouth, short /a/ (apple).",
+  e: "Mouth a little open, short /e/ (egg).",
+  i: "Small smile, short /i/ (igloo).",
+  o: "Round mouth, short /o/ (octopus).",
+  u: "Relaxed mouth, short /u/ (up).",
+  oo_short: "Short /oo/ (book) \u2014 lips a little round.",
+  ee: "Big smile, long /ee/ (tree). Stretch it.",
+  oo: "Round lips, long /oo/ (moon). Stretch it.",
+  ue: "Long /u/ (blue) \u2014 round lips.",
+  aw: "Open round mouth /aw/ (paw).",
+  ai: "Long /a/ (rain) \u2014 say the letter A.",
+  ea: "Long /ee/ (leaf).",
+  oa: "Long /o/ (boat) \u2014 say the letter O.",
+  ay: "Long /a/ (play) \u2014 say the letter A.",
+  ie: "Long /i/ (pie) \u2014 say the letter I.",
+  ow: "Round, then open (cow).",
+  oy: "Round, then smile (boy).",
+  ar: "Open /ar/ (car).",
+  er: "Tongue back, /er/ (her).",
+  ir: "Same as /er/ (bird).",
+  or: "Round /or/ (fork).",
+  ur: "Same as /er/ (fur).",
+  air: "Open /air/ (chair).",
+  ear: "Long /ear/ (ear)."
+};
+function renderExampleWithGrapheme(key, word) {
+  if (!word) return null;
+  const g = key === "oo_short" ? "oo" : key;
+  const idx = word.toLowerCase().indexOf(g.toLowerCase());
+  if (idx < 0) return /* @__PURE__ */ React.createElement("span", null, "like ", word);
+  return /* @__PURE__ */ React.createElement("span", null, "like ", word.slice(0, idx), /* @__PURE__ */ React.createElement("b", { className: "text-violet-700" }, word.slice(idx, idx + g.length)), word.slice(idx + g.length));
+}
 function loadPhonemeVoicePack() {
   try {
     const raw = localStorage.getItem(PHONEME_PACK_STORAGE_KEY);
@@ -170,6 +231,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
   const [status, setStatus] = React.useState("");
   const [aiCheckOn, setAiCheckOn] = React.useState(false);
   const [checks, setChecks] = React.useState({});
+  const [selfChecks, setSelfChecks] = React.useState({});
   const recorderRef = React.useRef(null);
   const fileInputRef = React.useRef(null);
   const clips = pack.clips || {};
@@ -260,6 +322,35 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     } catch (e) {
     }
   };
+  const playCompare = (key) => {
+    const ref = phonemeReferenceClip(key);
+    const mine = clips[key];
+    if (!ref || !mine) return;
+    const lbl = key === "oo_short" ? "oo" : key;
+    setStatus("\u{1F501} Listen: the model first, then your /" + lbl + "/.");
+    try {
+      const a = new Audio(ref);
+      const playMine = () => {
+        try {
+          const b = new Audio(mine);
+          b.play().catch(() => {
+          });
+        } catch (e) {
+        }
+      };
+      a.onended = playMine;
+      a.onerror = playMine;
+      a.play().catch(playMine);
+    } catch (e) {
+      try {
+        const b = new Audio(mine);
+        b.play().catch(() => {
+        });
+      } catch (e2) {
+      }
+    }
+  };
+  const rateSelf = (key, val) => setSelfChecks((prev) => Object.assign({}, prev, { [key]: prev[key] === val ? null : val }));
   const clearClip = (key) => {
     setPack((prev) => {
       const c = Object.assign({}, prev.clips);
@@ -267,6 +358,11 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       return Object.assign({}, prev, { clips: c });
     });
     setChecks((prev) => {
+      const c = Object.assign({}, prev);
+      delete c[key];
+      return c;
+    });
+    setSelfChecks((prev) => {
       const c = Object.assign({}, prev);
       delete c[key];
       return c;
@@ -336,7 +432,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     const rec = recordingKey === key;
     const label = key === "oo_short" ? "oo" : key;
     const hasRef = !!phonemeReferenceClip(key);
-    return /* @__PURE__ */ React.createElement("div", { key, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${has ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 leading-tight" }, "/", label, "/ ", has && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600" }, "\u2713")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 truncate" }, PHONEME_PACK_EXAMPLES[key] ? "like " + PHONEME_PACK_EXAMPLES[key] : "", " ", checkBadge(key))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playReference(key), disabled: !hasRef, "aria-label": "Hear the model sound " + label, title: "Hear the model (default) sound", className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRef ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(key), disabled: !consentOk, "aria-label": rec ? "Stop recording " + label : "Record " + label, className: `w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? "bg-red-500 text-white animate-pulse" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, rec ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playClip(key), disabled: !has, "aria-label": "Play your recording of " + label, className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${has ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearClip(key), disabled: !has, "aria-label": "Clear " + label, className: `w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${has ? "text-rose-500 hover:bg-rose-50" : "text-slate-200 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
+    return /* @__PURE__ */ React.createElement("div", { key, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${has ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 leading-tight" }, "/", label, "/ ", has && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600" }, "\u2713")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500" }, renderExampleWithGrapheme(key, PHONEME_PACK_EXAMPLES[key])), PHONEME_PACK_CUES[key] ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-violet-500 leading-snug" }, PHONEME_PACK_CUES[key]) : null, has ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 flex-wrap" }, hasRef ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playCompare(key), className: "text-[10px] font-bold text-amber-700 hover:underline" }, "\u{1F501} compare") : null, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-400" }, "me:"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "good"), "aria-label": "I think " + label + " sounds right", className: `text-sm leading-none transition-opacity ${selfChecks[key] === "good" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F600}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "retry"), "aria-label": "I want to try " + label + " again", className: `text-sm leading-none transition-opacity ${selfChecks[key] === "retry" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F914}"), checkBadge(key)) : null), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playReference(key), disabled: !hasRef, "aria-label": "Hear the model sound " + label, title: "Hear the model (default) sound", className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRef ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(key), disabled: !consentOk, "aria-label": rec ? "Stop recording " + label : "Record " + label, className: `w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? "bg-red-500 text-white animate-pulse" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, rec ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playClip(key), disabled: !has, "aria-label": "Play your recording of " + label, className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${has ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearClip(key), disabled: !has, "aria-label": "Clear " + label, className: `w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${has ? "text-rose-500 hover:bg-rose-50" : "text-slate-200 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
   }))))), status ? /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100", role: "status", "aria-live": "polite" }, status) : null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.name, onChange: (e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value })), "aria-label": "Pack name", className: "flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold", placeholder: "Pack name" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePack, className: "px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors" }, T("word_sounds.voice_pack_save", "Save & Use")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportPack, className: "px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors" }, "\u2B07\uFE0F ", T("word_sounds.voice_pack_export", "Export")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current && fileInputRef.current.click(), className: "px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors" }, "\u{1F4E5} ", T("word_sounds.voice_pack_import", "Import")), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: "application/json,.json", onChange: importPack, className: "hidden", "aria-hidden": "true" }))));
 };
 const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage }) => {
