@@ -4414,7 +4414,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '28a91204';
+    var pluginCdnVersion = '83494f7c';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -9897,6 +9897,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAuditLoading, setPdfAuditLoading] = useState(false);
   const [pendingPdfBase64, setPendingPdfBase64] = useState(null);
   const [pendingPdfFile, setPendingPdfFile] = useState(null);
+  // Original PDF bytes survive a SOFT modal-close in this ref. The pendingPdfBase64 STATE is nulled on
+  // close (it gates the "no doc loaded" panel at the LMS-audit-URLs block), but the re-entry pill reopens
+  // the modal and Compare / re-remediate need the original bytes — they restore from this ref via
+  // ensurePdfBase64 instead of prompting to re-attach the file. Cleared by startNewPdfAudit (new doc).
+  const lastPdfBytesRef = useRef(null);
+  useEffect(() => { if (pendingPdfBase64) lastPdfBytesRef.current = pendingPdfBase64; }, [pendingPdfBase64]);
   const [pdfFixResult, setPdfFixResult] = useState(null);
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   // Three-way "save before closing?" dialog. Fires only when there is work to lose.
@@ -10281,12 +10287,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setPdfFixStep('');
     setPendingPdfBase64(null);
     setPendingPdfFile(null);
+    lastPdfBytesRef.current = null; // hard reset — drop the preserved original bytes too (new doc)
     setIsExtracting(false);
     setGenerationStep('');
   };
   const ensurePdfBase64 = React.useCallback(() => {
     return new Promise((resolve) => {
       if (pendingPdfBase64) { resolve(pendingPdfBase64); return; }
+      // Restore bytes preserved across a soft modal-close (re-entry pill) so Compare / re-remediate
+      // show before/after automatically — only fall through to the re-attach picker when we truly
+      // have nothing (e.g. a project JSON restored in a fresh session, which omits PDF bytes).
+      if (lastPdfBytesRef.current) { setPendingPdfBase64(lastPdfBytesRef.current); resolve(lastPdfBytesRef.current); return; }
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.pdf,application/pdf';
@@ -15704,6 +15715,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast(t('toasts.doc_pipeline_loading'), 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
+  // Recompute the Issue-Resolution lists (Resolved/Persisted/Newly-Introduced) after each follow-up
+  // round so fixed issues drop off instead of going stale. No-op fallback returns the prior object.
+  const recomputeIssueResolution = (_docPipeline && _docPipeline.recomputeIssueResolution) ? _docPipeline.recomputeIssueResolution : (prev) => (prev || null);
   const runAxeAudit = _docPipeline ? _docPipeline.runAxeAudit : async () => ({});
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
@@ -15814,7 +15828,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         lastDet = _curDet;
         lastIssues = _aiIssues.length;
         setPdfFixLoading(true);
-        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/' + pdfTargetScore + '...');
+        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...');
         let result;
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
@@ -15869,6 +15883,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           continue;
         }
         const _newPlain = _plainTextOf(result.html);
+        // Recompute Issue-Resolution against THIS round's fresh audit so fixed issues drop off the
+        // Newly-Introduced / Remaining lists (computed once in fixAndVerifyPdf, otherwise stale). The
+        // baseline (original pre-fix issues) rides on cur.issueResolution and is unchanged across rounds.
+        let _roundIR = cur.issueResolution;
+        try { const _r = recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
@@ -15877,6 +15896,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // verification (user report 2026-06-11) — carried forward above
           // via the !reVerify break; here reVerify is always present.
           verificationAudit: reVerify,
+          issueResolution: _roundIR,
           afterScore: newScore,
           _scoreIsBlended: _det !== null,
           axeScore: result.axe && typeof result.axe.score === 'number' ? result.axe.score : cur.axeScore,
@@ -15897,6 +15917,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           accessibleHtml: snapshot.accessibleHtml,
           axeAudit: snapshot.axeAudit,
           verificationAudit: snapshot.verificationAudit,
+          issueResolution: snapshot.issueResolution,
           afterScore: snapshot.afterScore,
           _scoreIsBlended: snapshot._scoreIsBlended,
           axeScore: snapshot.axeScore,
@@ -15917,7 +15938,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
           addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
         } else {
-          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/' + pdfTargetScore, 'success');
+          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')', 'success');
         }
       } else if (cur) {
         const _axeClean = cur.axeAudit && cur.axeAudit.totalViolations === 0;
@@ -15935,7 +15956,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
-  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, addToast, pdfAutoSaveProject]);
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, addToast, pdfAutoSaveProject]);
 
   const saveProjectToFile = React.useCallback((isAuto) => {
     const cur = pdfFixResultRef.current;
@@ -27362,7 +27383,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       )}
       {/* ── PDF Accessibility Audit Modal — extracted to view_pdf_audit_module.js (CDN) ── */}
       {(pdfAuditResult || pdfAuditLoading) && window.AlloModules && window.AlloModules.PdfAuditView && React.createElement(window.AlloModules.PdfAuditView, {
-          STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline,
+          STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
