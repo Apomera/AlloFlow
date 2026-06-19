@@ -273,9 +273,12 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var median = sorted.length > 0 ? (sorted.length % 2 ? sorted[Math.floor(sorted.length / 2)] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2) : 0;
 
-          var maxVal = Math.max.apply(null, values.concat([1]));
+          // Guard empty data WITHOUT poisoning real data: the old `values.concat([1])`/`concat([0])`
+          // forced minVal ≤ 0 (pinning the line/scatter Y-baseline to 0 for all-positive data) and
+          // maxVal ≥ 1. Only fall back to 1/0 when there's actually no data.
+          var maxVal = values.length ? Math.max.apply(null, values) : 1;
 
-          var minVal = Math.min.apply(null, values.concat([0]));
+          var minVal = values.length ? Math.min.apply(null, values) : 0;
 
           var stdDev = values.length > 0 ? Math.sqrt(values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0) / values.length) : 0;
 
@@ -361,7 +364,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var _accent = isDark || isContrast ? '#22d3ee' : '#0891b2';
 
-          var _muted = isDark || isContrast ? '#94a3b8' : '#94a3b8';
+          var _muted = isDark || isContrast ? '#94a3b8' : '#475569';
 
           var _btnBg = isDark || isContrast ? '#0891b2' : '#06b6d4';
 
