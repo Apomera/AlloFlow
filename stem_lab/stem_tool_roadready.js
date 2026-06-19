@@ -3228,16 +3228,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         useEffect(function() {
           startRef.current = Date.now();
           setShown(0);
+          var rafId = null;
+          var cancelled = false;
           var tick = function() {
+            if (cancelled) return; // stop touching state after unmount / target change
             var elapsed = Date.now() - startRef.current;
             var t = Math.min(1, elapsed / duration);
             // Ease-out cubic for a natural settle.
             var eased = 1 - Math.pow(1 - t, 3);
             setShown(eased * target);
-            if (t < 1) requestAnimationFrame(tick);
+            if (t < 1) rafId = requestAnimationFrame(tick);
             else setShown(target);
           };
-          requestAnimationFrame(tick);
+          rafId = requestAnimationFrame(tick);
+          return function() { cancelled = true; if (rafId) cancelAnimationFrame(rafId); };
         }, [target]);
         var decimals = props.decimals || 0;
         var formatted = decimals > 0 ? shown.toFixed(decimals) : Math.round(shown);
