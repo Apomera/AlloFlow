@@ -486,16 +486,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         var resultsRaw = useState({});
         var results = resultsRaw[0], setResults = resultsRaw[1];
         var done = qIdx >= questions.length;
-        if (done) {
-          var correct = Object.keys(results).filter(function(k) { return results[k] === true; }).length;
-          var pct = Math.round((correct / questions.length) * 100);
-          if (pct >= 80) {
-            // Award per-module badge once
-            useEffect(function() {
-              var bid = 'mod_' + modId;
-              if (!badges[bid]) awardBadge(bid, 'Module: ' + modId);
-            }, []);
+        var correct = Object.keys(results).filter(function(k) { return results[k] === true; }).length;
+        var pct = questions.length ? Math.round((correct / questions.length) * 100) : 0;
+        // Award the per-module mastery badge once on completion at ≥80%. This useEffect MUST be
+        // called unconditionally (Rules of Hooks): it was nested inside if(done){if(pct>=80){…}}, so
+        // the hook count dropped on Retry/Retake → React "rendered fewer hooks" crash.
+        useEffect(function() {
+          if (done && pct >= 80) {
+            var bid = 'mod_' + modId;
+            if (!badges[bid]) awardBadge(bid, 'Module: ' + modId);
           }
+        }, [done, pct]);
+        if (done) {
           return h('div', { style: { background: T.card, border: '1px solid ' + (pct >= 80 ? T.ok : T.warn), borderRadius: 12, padding: 14, marginTop: 12 } },
             h('div', { style: { fontSize: 14, fontWeight: 700, color: pct >= 80 ? T.ok : T.warn, marginBottom: 6 } },
               pct >= 80 ? '🏅 Mastery' : '📖 Review recommended'),
@@ -2071,12 +2073,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         // default to {} so the result page still renders without it.
         var picks = st.picks || {};
         var done = st.idx >= CUMULATIVE_QUESTIONS.length;
+        var pct = CUMULATIVE_QUESTIONS.length ? Math.round((st.score / CUMULATIVE_QUESTIONS.length) * 100) : 0;
+        var earned = pct >= 80;
+        // Unconditional useEffect (Rules of Hooks) — was nested inside if(done){if(earned&&…){…}},
+        // so the hook count dropped on Retake → React "rendered fewer hooks" crash.
+        useEffect(function() {
+          if (done && earned && !badges['cumulative_pass']) awardBadge('cumulative_pass', 'SwimLab Mastery');
+        }, [done, earned]);
         if (done) {
-          var pct = Math.round((st.score / CUMULATIVE_QUESTIONS.length) * 100);
-          var earned = pct >= 80;
-          if (earned && !badges['cumulative_pass']) {
-            useEffect(function() { awardBadge('cumulative_pass', 'SwimLab Mastery'); }, []);
-          }
           // Identify the missed questions, group by module so a student who
           // missed two PFD questions sees one "Review Why Life Jackets Work"
           // card rather than two separate ones.
