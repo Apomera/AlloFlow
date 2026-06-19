@@ -18490,12 +18490,17 @@
         var tierLabels = { beginner:'\uD83C\uDF31 Beginner', intermediate:'\u26A1 Intermediate', advanced:'\uD83D\uDE80 Advanced' };
 
         var checkBalance = function() {
-          var isCorrect = coeffs.every(function(c, i) { return c === preset.target[i]; });
+          // Accept any atom-conserving solution \u2014 this matches the balance scale + the per-element
+          // tally (both keyed on isBalanced). A balanced multiple IS balanced; previously Check
+          // demanded the exact hardcoded lowest-terms `target`, so e.g. 4,2,4 for water lit the scale
+          // green yet Check said "not balanced." Now affirm, and nudge toward lowest whole numbers.
+          var isCorrect = isBalanced;
+          var atLowest = coeffs.every(function(c, i) { return c === preset.target[i]; });
           if (isCorrect) {
             chemSound('correct');
             var newStreak = streak + 1;
             upd('streak', newStreak);
-            upd('feedback', { correct: true, msg: '\u2705 Balanced! ' + (newStreak > 1 ? '\uD83D\uDD25 ' + newStreak + ' in a row!' : 'Great job!') });
+            upd('feedback', { correct: true, msg: atLowest ? ('\u2705 Balanced! ' + (newStreak > 1 ? '\uD83D\uDD25 ' + newStreak + ' in a row!' : 'Great job!')) : '\u2705 Atoms balance! Now try the lowest whole-number coefficients.' });
             var speedTime = Infinity;
             if (d.timerActive && d.timerStart) speedTime = (Date.now() - d.timerStart) / 1000;
             var newBest = speedTime < ext.speedBest ? speedTime : ext.speedBest;
@@ -20518,10 +20523,15 @@
                   }
                   drawPt();
                   var ro = new ResizeObserver(function() {
+                    // Disconnect when the canvas detaches — otherwise a new ResizeObserver leaks on
+                    // every re-render of this always-mounted footer. Reset the transform before
+                    // re-scaling so DPR scaling can't accumulate.
+                    if (!cvEl.isConnected) { ro.disconnect(); cvEl._ptRO = null; return; }
                     W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                    cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                    cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
                     drawPt(); // repaint the static diagram at the new size
                   });
+                  cvEl._ptRO = ro;
                   ro.observe(cvEl);
                 },
                 style: { width: '100%', height: '100%', display: 'block' }
