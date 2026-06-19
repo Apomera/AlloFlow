@@ -229,12 +229,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             env.gain.setValueAtTime(0, now); env.gain.linearRampToValueAtTime(1, now + atk);
             env.gain.linearRampToValueAtTime(sus, now + atk + (d.decay || 0.1));
             var oscs = [];
+            var _ssDenom = Math.max(1, voices - 1); // voices===1 (possible from persisted state) would divide by zero
             for (var v = 0; v < voices; v++) {
               var osc = cx.createOscillator(); osc.type = 'sawtooth';
-              var detuneAmount = (v - (voices - 1) / 2) * (det * 2 / (voices - 1));
+              var detuneAmount = (v - (voices - 1) / 2) * (det * 2 / _ssDenom);
               osc.frequency.value = freq; osc.detune.value = detuneAmount;
               // Slight stereo spread via pan (if available)
-              var pan; try { pan = cx.createStereoPanner(); pan.pan.value = (v / (voices - 1)) * 2 - 1; } catch(e) { pan = cx.createGain(); pan.gain.value = 1; }
+              var pan; try { pan = cx.createStereoPanner(); pan.pan.value = (v / _ssDenom) * 2 - 1; } catch(e) { pan = cx.createGain(); pan.gain.value = 1; }
               osc.connect(pan); pan.connect(merger);
               osc.start(now); oscs.push(osc);
             }
@@ -1680,8 +1681,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             upd('seqPlaying', false);
             upd('seqCurrentStep', -1);
           }
-          // Clean up on unmount
-          React.useEffect(function () { return function () { stopSequencer(); }; }, []);
+          // Clean up on unmount — stop the metronome + arpeggiator intervals too (previously only
+          // the sequencer was stopped, so those setInterval loops leaked when leaving mid-play).
+          React.useEffect(function () { return function () { stopSequencer(); stopMetronome(); stopArpeggiator(); }; }, []);
           // Restart sequencer when BPM changes while playing (preserves step position)
           React.useEffect(function () {
             if (d.seqPlaying && _seqTimer.current) {
@@ -2049,8 +2051,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       style: { minWidth: '36px' }
                     },
                       isScaleNote && React.createElement("div", { className: "w-2 h-2 rounded-full mb-1 " + (isRoot ? 'bg-purple-600' : 'bg-purple-300') }),
-                      React.createElement("span", { className: "text-[11px] font-bold " + (isActive ? 'text-purple-700' : 'text-slate-200') }, key.note),
-                      React.createElement("span", { className: "text-[11px] text-slate-200" }, KEYBOARD_MAP && Object.keys(KEYBOARD_MAP).find(function (k) { return KEYBOARD_MAP[k] === key.semitone + (key.octave - (d.octave || 4)) * 12; }) || '')
+                      React.createElement("span", { className: "text-[11px] font-bold " + (isActive ? 'text-purple-700' : 'text-slate-600') }, key.note),
+                      React.createElement("span", { className: "text-[11px] text-slate-500" }, KEYBOARD_MAP && Object.keys(KEYBOARD_MAP).find(function (k) { return KEYBOARD_MAP[k] === key.semitone + (key.octave - (d.octave || 4)) * 12; }) || '')
                     );
                   })
                 )
@@ -2425,7 +2427,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var W = canvas.width = canvas.offsetWidth * 2;
                       var H = canvas.height = 200;
                       function drawMicViz() {
-                        if (!window._alloMicAnalyser) { canvas._micVizInit = false; return; }
+                        // Stop (don't reschedule) when the canvas detaches — the handle was never
+                        // stored, so without this the mic-viz rAF + analyser leaked on unmount.
+                        if (!canvas.isConnected || !window._alloMicAnalyser) { canvas._micVizInit = false; return; }
                         requestAnimationFrame(drawMicViz);
                         var analyser = window._alloMicAnalyser;
                         var bufLen = analyser.frequencyBinCount;
