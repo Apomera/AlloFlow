@@ -454,7 +454,7 @@ window.StemLab = window.StemLab || {
 
       // ═══ VIEW: DISTRIBUTIVE ═══
       var renderDistributive = function() {
-        var leftCols = Math.min(splitAt, cols);
+        var leftCols = Math.max(1, Math.min(splitAt, cols - 1)); // keep ≥1 column on each side (stale splitAt could exceed cols after shrinking)
         var rightCols = cols - leftCols;
         var leftCells = [];
         for (var i = 0; i < rows * leftCols; i++) {
@@ -485,7 +485,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'grid gap-1 sm:gap-2', style: { gridTemplateColumns: 'repeat(' + leftCols + ', minmax(0, 1fr))' } }, leftCells),
                 h('div', { className: 'text-sm font-bold text-blue-600 mt-1' }, '= ' + leftProduct)
               ),
-              h('div', { className: 'flex flex-col items-center justify-center self-stretch w-4 sm:w-8' },
+              rightCols > 0 && h('div', { className: 'flex flex-col items-center justify-center self-stretch w-4 sm:w-8' },
                 h('div', { className: 'w-px flex-1 bg-violet-300' }),
                 h('span', { className: 'text-violet-500 font-bold text-lg py-1' }, '+'),
                 h('div', { className: 'w-px flex-1 bg-violet-300' })
@@ -1038,7 +1038,7 @@ window.StemLab = window.StemLab || {
                 c2.scale(2, 2);
                 var start = performance.now();
                 function drawDp() {
-                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dpAnim); return; }
+                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dpAnim); if (cvEl._dpRO) cvEl._dpRO.disconnect(); return; }
                   var t = (performance.now() - start) / 1000;
                   c2.fillStyle = '#0f172a';
                   c2.fillRect(0, 0, W, H);
@@ -1112,8 +1112,10 @@ window.StemLab = window.StemLab || {
                 drawDp();
                 var ro = new ResizeObserver(function() {
                   W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                  cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H * 2;
+                  c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative
                 });
+                cvEl._dpRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                 ro.observe(cvEl);
               },
               style: { width: '100%', height: '100%', display: 'block' }
