@@ -1006,8 +1006,10 @@ window.StemLab = window.StemLab || {
               var prev = fdValue;
               var next = op === '+' ? prev + delta : prev - delta;
               var newMin = fdMin, newMax = fdMax;
-              if (next > newMax) newMax = Math.ceil(next * 2) / 2 + 0.0001 > Math.ceil(next) ? Math.ceil(next) : Math.ceil(next * 2) / 2;
-              if (next < newMin) newMin = Math.floor(next * 2) / 2;
+              // Extend the line with a little padding so the result doesn't sit exactly on the end arrow
+              // (the old condition was a garbled ternary that produced edge-hugging / wrong extents).
+              if (next > newMax) newMax = Math.ceil(next + 0.5);
+              if (next < newMin) newMin = Math.floor(next - 0.5);
               var prevR = Math.round(prev * 1000) / 1000;
               var nextR = Math.round(next * 1000) / 1000;
               var eqText = prevR + ' ' + op + ' ' + n + '/' + d + ' = ' + nextR;
@@ -1978,7 +1980,7 @@ window.StemLab = window.StemLab || {
                     c2.scale(2, 2);
                     var start = performance.now();
                     function drawNl() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._nlAnim); return; }
+                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._nlAnim); if (cvEl._nlRO) cvEl._nlRO.disconnect(); return; }
                       var t = (performance.now() - start) / 1000;
                       c2.fillStyle = '#020210';
                       c2.fillRect(0, 0, W, H);
@@ -2026,8 +2028,10 @@ window.StemLab = window.StemLab || {
                     drawNl();
                     var ro = new ResizeObserver(function() {
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      cvEl.width = W * 2; cvEl.height = H * 2;
+                      c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative, repeated resizes compounded the transform
                     });
+                    cvEl._nlRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                     ro.observe(cvEl);
                   },
                   style: { width: '100%', height: '100%', display: 'block' }
