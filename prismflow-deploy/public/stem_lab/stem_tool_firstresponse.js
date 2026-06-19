@@ -45,6 +45,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
       '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
       '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+      '}',
+      '@keyframes firstresponse-heartbeat {',
+      '  0%   { transform: scale(1); }',
+      '  15%  { transform: scale(1.22); }',
+      '  40%  { transform: scale(1); }',
+      '  100% { transform: scale(1); }',
       '}'
     ].join('');
     if (document.head) document.head.appendChild(st);
@@ -1183,8 +1189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 width: 160, height: 160, borderRadius: '50%',
                 background: 'radial-gradient(circle at 30% 30%, ' + T.accentHi + ', ' + T.accent + ')',
                 margin: '20px auto',
-                transform: 'scale(' + pulseScale().toFixed(3) + ')',
-                transition: 'transform 80ms ease-out',
+                animation: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'none' : ('firstresponse-heartbeat ' + (60000 / bpm).toFixed(0) + 'ms ease-in-out infinite'),
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 48, color: '#fff', fontWeight: 800,
                 boxShadow: '0 0 40px rgba(220,38,38,0.45)'
@@ -3059,7 +3064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           ),
           h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
             h('button', { 'data-fr-focusable': true,
-              onClick: function () { upd({ view: 'firstAction', faIdx: -1, faAnswered: false, faPick: null, faShown: [] }); },
+              onClick: function () { updMulti({ view: 'firstAction', faIdx: -1, faAnswered: false, faPick: null, faShown: [] }); },
               style: btnPrimary({ width: '100%', textAlign: 'center' })
             }, doneCount === 0 ? '🎯 Open First Action Sleuth to start'
               : doneCount === total ? '🏆 All mastered — re-attempt to reinforce reflex'
