@@ -519,6 +519,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         setCL(patch);
       }
 
+      // ── Canonical section map (single source of truth) ──
+      // One reorganized, consolidated list of every section, grouped into a dozen
+      // topic areas. Previously the nav (renderTabs) and the header badge kept
+      // SEPARATE tab lists that had drifted apart — and the nav had ORPHANED 13 of
+      // the richest interactive sections (Hunter/Evasion sims, Camouflage Lab,
+      // Bioluminescence, Body Plan, Jet Propulsion, Intelligence, Comparative
+      // Cognition, Research Methods, Conservation & Welfare, Through Time, Culture,
+      // Field Day) — fully built + dispatch-wired but unreachable from the tabs.
+      // This array is the only list now; renderHeader and renderTabs both read it,
+      // so they can never drift again. Every id here has a handler in the section
+      // dispatch at the bottom of render().
+      var TAB_GROUPS = [
+        { id: 'start', label: 'Start', color: '#c7d2fe', tabs: [
+          { id: 'hub', label: 'Hub', icon: '🐙' },
+          { id: 'field', label: 'Field Guide', icon: '📖' }
+        ] },
+        { id: 'sims', label: 'Simulations', color: '#a78bfa', tabs: [
+          { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
+          { id: 'evasion', label: 'Evasion Sim', icon: '🛡️' },
+          { id: 'day', label: 'Day in the Life', icon: '🌅' },
+          { id: 'camo', label: 'Camouflage Lab', icon: '🎨' },
+          { id: 'camoHunt', label: 'Camo Discovery', icon: '🔎' }
+        ] },
+        { id: 'activities', label: 'Activities', color: '#fda4af', tabs: [
+          { id: 'quiz', label: 'Quiz', icon: '✏️' },
+          { id: 'challenges', label: 'Challenges', icon: '🏅' },
+          { id: 'projects', label: 'Project Ideas', icon: '📐' },
+          { id: 'art', label: 'Art Projects', icon: '🎨' },
+          { id: 'home', label: 'At Home', icon: '🏠' },
+          { id: 'final', label: 'Final Reflections', icon: '🌅' },
+          { id: 'certs', label: 'Certificates', icon: '🎖️' }
+        ] },
+        { id: 'biology', label: 'Biology', color: '#86efac', tabs: [
+          { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
+          { id: 'skin', label: 'Skin Anatomy', icon: '🎨' },
+          { id: 'biolux', label: 'Bioluminescence', icon: '✨' },
+          { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
+          { id: 'lifecycle', label: 'Life Cycle', icon: '🥚' },
+          { id: 'defenseMech', label: 'Defenses', icon: '🛡' },
+          { id: 'ethogram', label: 'Behavior Ethogram', icon: '📐' },
+          { id: 'sounds', label: 'Ocean Sounds', icon: '🔊' },
+          { id: 'substrates', label: 'Substrates', icon: '🏖' },
+          { id: 'biomes', label: 'Special Biomes', icon: '🌍' },
+          { id: 'famousIndividuals', label: 'Famous Individuals', icon: '🌟' },
+          { id: 'compare', label: 'Comparisons', icon: '⚖' },
+          { id: 'deepDive', label: 'Species Deep Dives', icon: '🔍' },
+          { id: 'parasites', label: 'Parasites + Disease', icon: '🦠' },
+          { id: 'taxonomy', label: 'Taxonomy', icon: '🧬' },
+          { id: 'extreme', label: 'Extreme Biology', icon: '🌋' }
+        ] },
+        { id: 'cognition', label: 'Intelligence', color: '#f0abfc', tabs: [
+          { id: 'intel', label: 'Intelligence', icon: '💡' },
+          { id: 'compcog', label: 'Comparative Cognition', icon: '🧩' }
+        ] },
+        { id: 'evolution', label: 'Evolution & Time', color: '#fbbf24', tabs: [
+          { id: 'time', label: 'Through Time', icon: '🕰️' },
+          { id: 'timeline', label: 'Timeline', icon: '⏳' },
+          { id: 'evolution', label: 'Evolution Tree', icon: '🌳' },
+          { id: 'history', label: 'Historic Research', icon: '🔍' }
+        ] },
+        { id: 'science', label: 'Science', color: '#22d3ee', tabs: [
+          { id: 'methods', label: 'Research Methods', icon: '🔬' },
+          { id: 'scientists', label: 'Scientists', icon: '🔬' },
+          { id: 'discoveries', label: 'Recent Discoveries', icon: '🆕' },
+          { id: 'openQs', label: 'Open Questions', icon: '❓' },
+          { id: 'instruments', label: 'Instruments', icon: '⚙' },
+          { id: 'sampleData', label: 'Sample Data', icon: '📊' },
+          { id: 'revisions', label: 'Research Revisions', icon: '🔄' },
+          { id: 'debates', label: 'Scientific Debates', icon: '⚖' }
+        ] },
+        { id: 'conservation', label: 'Conservation & Ethics', color: '#34d399', tabs: [
+          { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
+          { id: 'conservationStatus', label: 'IUCN Status', icon: '🌿' },
+          { id: 'laws', label: 'Laws + Treaties', icon: '⚖' },
+          { id: 'dilemmas', label: 'Ethics Cases', icon: '⚖️' },
+          { id: 'policies', label: 'Policy Timeline', icon: '🏛' },
+          { id: 'sustain', label: 'Sustainability', icon: '🌱' }
+        ] },
+        { id: 'applications', label: 'Applications', color: '#f59e0b', tabs: [
+          { id: 'biomimicry', label: 'Biomimicry', icon: '🤖' },
+          { id: 'medical', label: 'Biomedical', icon: '💊' }
+        ] },
+        { id: 'culture', label: 'Culture', color: '#f472b6', tabs: [
+          { id: 'culture', label: 'Cephalopods in Culture', icon: '🎭' },
+          { id: 'cultural', label: 'Art & Depictions', icon: '🎨' },
+          { id: 'films', label: 'Films + Docs', icon: '🎬' },
+          { id: 'interviews', label: 'Interviews', icon: '🎙' },
+          { id: 'ted', label: 'TED Talks', icon: '🎤' },
+          { id: 'humor', label: 'Humor + Light', icon: '😀' }
+        ] },
+        { id: 'field', label: 'Field & Citizen Science', color: '#60a5fa', tabs: [
+          { id: 'fieldday', label: 'Field Day Guide', icon: '🤿' },
+          { id: 'divelocations', label: 'Where to Dive', icon: '🗺' },
+          { id: 'protocols', label: 'Field Protocols', icon: '📋' },
+          { id: 'fieldnotes', label: 'Field Notes', icon: '📔' },
+          { id: 'citsci', label: 'Citizen Science', icon: '🔬' },
+          { id: 'aquariums', label: 'Aquariums + Museums', icon: '🏛' }
+        ] },
+        { id: 'teaching', label: 'For Teachers', color: '#fb923c', tabs: [
+          { id: 'educator', label: 'Educator', icon: '👩‍🏫' },
+          { id: 'unit', label: '2-Week Unit', icon: '📅' },
+          { id: 'mini', label: '5-Min Mini-Lessons', icon: '⚡' },
+          { id: 'exam', label: 'Exam Prep', icon: '🎯' },
+          { id: 'assess', label: 'Assessment', icon: '✓' },
+          { id: 'differentiate', label: 'Differentiation', icon: '🔀' },
+          { id: 'discuss', label: 'Discussion Prompts', icon: '💬' },
+          { id: 'debateP', label: 'Debate Prompts', icon: '🎭' },
+          { id: 'essays', label: 'Essay Templates', icon: '✏' },
+          { id: 'crossDisc', label: 'Cross-disciplinary', icon: '🎨' },
+          { id: 'exemplars', label: 'Student Exemplars', icon: '✏' },
+          { id: 'parents', label: 'Parent Letters', icon: '✉' },
+          { id: 'eduGloss', label: 'Educator Glossary', icon: '📚' },
+          { id: 'reflections', label: 'Educator Reflections', icon: '🪞' },
+          { id: 'runReview', label: 'Run Review', icon: '📺' },
+          { id: 'memorable', label: 'Memorable Moments', icon: '✨' },
+          { id: 'pedagogy', label: 'Pedagogy', icon: '🎓' },
+          { id: 'wisdom', label: 'Teacher Wisdom', icon: '🦉' },
+          { id: 'careers', label: 'Careers', icon: '💼' }
+        ] },
+        { id: 'reference', label: 'Reference', color: '#94a3b8', tabs: [
+          { id: 'glossary', label: 'Glossary', icon: '📑' },
+          { id: 'vocabulary', label: 'Vocabulary', icon: '📝' },
+          { id: 'biblio', label: 'Bibliography', icon: '📚' },
+          { id: 'reading', label: 'Reading List', icon: '📖' },
+          { id: 'speciesDB', label: 'Species DB (50+)', icon: '🐙' },
+          { id: 'factspool', label: 'Facts Pool', icon: '💡' },
+          { id: 'misconceptions', label: 'Myth Busters', icon: '❌' },
+          { id: 'news', label: 'News + Headlines', icon: '📰' },
+          { id: 'researchOrgs', label: 'Research Orgs', icon: '🏛' },
+          { id: 'newsletters', label: 'Newsletters', icon: '📨' },
+          { id: 'records', label: 'World Records', icon: '🏆' },
+          { id: 'faq', label: 'FAQ', icon: '❓' },
+          { id: 'qanda', label: 'Q + A', icon: '💭' },
+          { id: 'deepDives', label: 'Topic Deep Dives', icon: '📔' },
+          { id: 'resources', label: 'Resources', icon: '🌐' }
+        ] }
+      ];
+      var TAB_SECTION_COUNT = TAB_GROUPS.reduce(function(n, g) { return n + g.tabs.length; }, 0);
+      function groupOfSection(sec) {
+        for (var i = 0; i < TAB_GROUPS.length; i++) {
+          for (var j = 0; j < TAB_GROUPS[i].tabs.length; j++) {
+            if (TAB_GROUPS[i].tabs[j].id === sec) return TAB_GROUPS[i];
+          }
+        }
+        return TAB_GROUPS[0];
+      }
+
       // ─── Atmospheric backdrop ───
       // Deep-ocean indigo + faint scale-pattern grain
       var clGrainSvg = (function() {
@@ -554,25 +701,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
       // ─── Hero header (matches Kitchen Lab / Printing Press pattern) ───
       function renderHeader() {
-        var TABS = [
-          { id: 'hub', label: 'Hub', icon: '🐙' },
-          { id: 'field', label: 'Field Guide', icon: '📖' },
-          { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
-          { id: 'evasion', label: 'Evasion Sim', icon: '🛡️' },
-          { id: 'day', label: 'Day in the Life', icon: '🌅' },
-          { id: 'camo', label: 'Camouflage', icon: '🎨' },
-          { id: 'biolux', label: 'Bioluminescence', icon: '✨' },
-          { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
-          { id: 'time', label: 'Through Time', icon: '🕰️' },
-          { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
-          { id: 'intel', label: 'Intelligence', icon: '💡' },
-          { id: 'methods', label: 'Research Methods', icon: '🔬' },
-          { id: 'compcog', label: 'Comparative Cognition', icon: '🧩' },
-          { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
-          { id: 'culture', label: 'Cephalopods in Culture', icon: '🎭' },
-          { id: 'fieldday', label: 'Field Day Guide', icon: '🤿' },
-          { id: 'resources', label: 'Resources', icon: '📚' }
-        ];
         return h('div', { style: { padding: '24px 20px 12px', borderBottom: '1px solid rgba(99,102,241,0.18)' } },
           h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' } },
             h('div', { 'aria-hidden': 'true',
@@ -585,149 +713,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '17 sections')),
+                  TAB_GROUPS.length + ' areas · ' + TAB_SECTION_COUNT + ' sections')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
       function renderTabs() {
-        // ── Tabs grouped by purpose so the 77-section bar reads as a navigable
-        // table-of-contents instead of an alphabet soup. Every tab ID is
-        // preserved — only the visual grouping changes. Each group renders
-        // with a small uppercase label, then its tabs in a flex cluster.
-        // Group order is the order students/teachers usually traverse:
-        // Start → Activities → Biology → Evolution → Science → Conservation
-        // → Applications → Culture → Field → Teaching → Reference.
-        var TAB_GROUPS = [
-          { id: 'start', label: 'Start',
-            color: '#c7d2fe',
-            tabs: [
-              { id: 'hub', label: 'Hub', icon: '🐙' },
-              { id: 'field', label: 'Field Guide', icon: '📖' }
-            ] },
-          { id: 'activities', label: 'Activities',
-            color: '#a78bfa',
-            tabs: [
-              { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
-              { id: 'quiz', label: 'Quiz', icon: '✏️' },
-              { id: 'challenges', label: 'Challenges', icon: '🏅' },
-              { id: 'projects', label: 'Project Ideas', icon: '📐' },
-              { id: 'art', label: 'Art Projects', icon: '🎨' },
-              { id: 'home', label: 'At Home', icon: '🏠' },
-              { id: 'final', label: 'Final Reflections', icon: '🌅' },
-              { id: 'certs', label: 'Certificates', icon: '🏅' },
-              { id: 'camoHunt', label: 'Camo discovery', icon: '🎨' }
-            ] },
-          { id: 'biology', label: 'Biology',
-            color: '#86efac',
-            tabs: [
-              { id: 'lifecycle', label: 'Life Cycle', icon: '🥚' },
-              { id: 'skin', label: 'Skin Anatomy', icon: '🎨' },
-              { id: 'defenseMech', label: 'Defenses', icon: '🛡' },
-              { id: 'ethogram', label: 'Behavior Ethogram', icon: '📐' },
-              { id: 'sounds', label: 'Ocean Sounds', icon: '🔊' },
-              { id: 'substrates', label: 'Substrates', icon: '🏖' },
-              { id: 'biomes', label: 'Special Biomes', icon: '🌍' },
-              { id: 'famousIndividuals', label: 'Famous Individuals', icon: '🌟' },
-              { id: 'compare', label: 'Comparisons', icon: '⚖' },
-              { id: 'deepDive', label: 'Species Deep Dives', icon: '🔍' },
-              { id: 'parasites', label: 'Parasites + Disease', icon: '🦠' },
-              { id: 'taxonomy', label: 'Taxonomy', icon: '🧬' },
-              { id: 'extreme', label: 'Extreme Biology', icon: '🌋' }
-            ] },
-          { id: 'evolution', label: 'Evolution & Time',
-            color: '#fbbf24',
-            tabs: [
-              { id: 'timeline', label: 'Timeline', icon: '⏳' },
-              { id: 'evolution', label: 'Evolution Tree', icon: '🌳' },
-              { id: 'history', label: 'Historic Research', icon: '🔍' }
-            ] },
-          { id: 'science', label: 'Science',
-            color: '#22d3ee',
-            tabs: [
-              { id: 'scientists', label: 'Scientists', icon: '🔬' },
-              { id: 'discoveries', label: 'Recent Discoveries', icon: '🆕' },
-              { id: 'openQs', label: 'Open Questions', icon: '❓' },
-              { id: 'instruments', label: 'Instruments', icon: '⚙' },
-              { id: 'sampleData', label: 'Sample Data', icon: '📊' },
-              { id: 'revisions', label: 'Research Revisions', icon: '🔄' },
-              { id: 'debates', label: 'Scientific Debates', icon: '⚖' }
-            ] },
-          { id: 'conservation', label: 'Conservation & Ethics',
-            color: '#34d399',
-            tabs: [
-              { id: 'conservationStatus', label: 'IUCN Status', icon: '🌿' },
-              { id: 'laws', label: 'Laws + Treaties', icon: '⚖' },
-              { id: 'dilemmas', label: 'Ethics Cases', icon: '⚖️' },
-              { id: 'policies', label: 'Policy Timeline', icon: '🏛' },
-              { id: 'sustain', label: 'Sustainability', icon: '🌱' }
-            ] },
-          { id: 'applications', label: 'Applications',
-            color: '#f59e0b',
-            tabs: [
-              { id: 'biomimicry', label: 'Biomimicry', icon: '🤖' },
-              { id: 'medical', label: 'Biomedical', icon: '💊' }
-            ] },
-          { id: 'culture', label: 'Culture',
-            color: '#f472b6',
-            tabs: [
-              { id: 'cultural', label: 'In Culture', icon: '🎨' },
-              { id: 'films', label: 'Films + Docs', icon: '🎬' },
-              { id: 'interviews', label: 'Interviews', icon: '🎙' },
-              { id: 'ted', label: 'TED Talks', icon: '🎤' },
-              { id: 'humor', label: 'Humor + Light', icon: '😀' }
-            ] },
-          { id: 'field', label: 'Field & Citizen Science',
-            color: '#60a5fa',
-            tabs: [
-              { id: 'divelocations', label: 'Where to Dive', icon: '🤿' },
-              { id: 'protocols', label: 'Field Protocols', icon: '📋' },
-              { id: 'fieldnotes', label: 'Field Notes', icon: '📔' },
-              { id: 'citsci', label: 'Citizen Science', icon: '🔬' },
-              { id: 'aquariums', label: 'Aquariums + Museums', icon: '🏛' }
-            ] },
-          { id: 'teaching', label: 'For Teachers',
-            color: '#fb923c',
-            tabs: [
-              { id: 'educator', label: 'Educator', icon: '👩‍🏫' },
-              { id: 'unit', label: '2-Week Unit', icon: '📅' },
-              { id: 'mini', label: '5-Min Mini-Lessons', icon: '⚡' },
-              { id: 'exam', label: 'Exam Prep', icon: '🎯' },
-              { id: 'assess', label: 'Assessment', icon: '✓' },
-              { id: 'differentiate', label: 'Differentiation', icon: '🔀' },
-              { id: 'discuss', label: 'Discussion Prompts', icon: '💬' },
-              { id: 'debateP', label: 'Debate Prompts', icon: '🎭' },
-              { id: 'essays', label: 'Essay Templates', icon: '✏' },
-              { id: 'crossDisc', label: 'Cross-disciplinary', icon: '🎨' },
-              { id: 'exemplars', label: 'Student Exemplars', icon: '✏' },
-              { id: 'parents', label: 'Parent Letters', icon: '✉' },
-              { id: 'eduGloss', label: 'Educator Glossary', icon: '📚' },
-              { id: 'reflections', label: 'Educator Reflections', icon: '🪞' },
-              { id: 'runReview', label: 'Run Review', icon: '📺' },
-              { id: 'memorable', label: 'Memorable Moments', icon: '✨' },
-              { id: 'pedagogy', label: 'Pedagogy', icon: '🎓' },
-              { id: 'wisdom', label: 'Teacher Wisdom', icon: '🦉' },
-              { id: 'careers', label: 'Careers', icon: '💼' }
-            ] },
-          { id: 'reference', label: 'Reference',
-            color: '#94a3b8',
-            tabs: [
-              { id: 'glossary', label: 'Glossary', icon: '📑' },
-              { id: 'vocabulary', label: 'Vocabulary', icon: '📝' },
-              { id: 'biblio', label: 'Bibliography', icon: '📚' },
-              { id: 'reading', label: 'Reading List', icon: '📖' },
-              { id: 'speciesDB', label: 'Species DB (50+)', icon: '🐙' },
-              { id: 'factspool', label: 'Facts Pool', icon: '💡' },
-              { id: 'misconceptions', label: 'Myth Busters', icon: '❌' },
-              { id: 'news', label: 'News + Headlines', icon: '📰' },
-              { id: 'researchOrgs', label: 'Research Orgs', icon: '🏛' },
-              { id: 'newsletters', label: 'Newsletters', icon: '📨' },
-              { id: 'records', label: 'World Records', icon: '🏆' },
-              { id: 'faq', label: 'FAQ', icon: '❓' },
-              { id: 'qanda', label: 'Q + A', icon: '💭' },
-              { id: 'deepDives', label: 'Topic Deep Dives', icon: '📔' },
-              { id: 'resources', label: 'Resources', icon: '🌐' }
-            ] }
-        ];
+        // ── Two-level navigation ──
+        // 91 sections in one flat bar was an unreadable wall. Now the top row is
+        // the dozen TOPIC AREAS (from the canonical TAB_GROUPS); selecting one
+        // reveals only that area's sections in the second row. The open area is
+        // derived from the active section (groupOfSection), so deep-links and
+        // in-content jumps always reveal the correct area — no separate state to
+        // drift. Clicking an area label lands on its first section.
+        var openGroup = groupOfSection(section);
+        function renderGroupBtn(g) {
+          var on = g.id === openGroup.id;
+          return h('button', { key: g.id, role: 'tab', 'aria-selected': on ? 'true' : 'false',
+            'aria-label': g.label + ' (' + g.tabs.length + ' section' + (g.tabs.length === 1 ? '' : 's') + ')',
+            onClick: function() { setSection(g.tabs[0].id); awardXP(1); },
+            style: {
+              padding: '7px 13px',
+              background: on ? g.color + '1f' : 'transparent',
+              color: on ? g.color : '#94a3b8',
+              border: '1px solid ' + (on ? g.color + '66' : 'rgba(99,102,241,0.18)'),
+              borderRadius: 9999,
+              fontSize: 11.5, fontWeight: 800, cursor: 'pointer',
+              letterSpacing: '0.01em',
+              transition: 'color 0.15s, background 0.15s'
+            }
+          }, g.label);
+        }
         function renderTab(t, accentColor) {
           var active = section === t.id;
           return h('button', { key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
@@ -745,21 +760,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             }
           }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label);
         }
-        return h('div', { role: 'tablist', 'aria-label': 'Cephalopod Lab sections',
-          style: { padding: '4px 16px 0', borderBottom: '1px solid rgba(99,102,241,0.25)', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 6 } },
-          TAB_GROUPS.map(function(g) {
-            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs',
-              style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', paddingBottom: 2 } },
-              h('span', {
-                style: {
-                  fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-                  color: g.color, minWidth: 92, paddingRight: 4, borderRight: '1px solid ' + g.color + '33',
-                  textAlign: 'right', flexShrink: 0
-                },
-                'aria-hidden': 'true'
-              }, g.label),
-              g.tabs.map(function(t) { return renderTab(t, g.color); }));
-          }));
+        return h('div', { style: { padding: '8px 16px 0', borderBottom: '1px solid rgba(99,102,241,0.25)', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 8 } },
+          // Row 1 — topic areas
+          h('div', { role: 'tablist', 'aria-label': 'Cephalopod Lab topic areas',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            TAB_GROUPS.map(renderGroupBtn)),
+          // Row 2 — sections within the open topic area
+          h('div', { role: 'tablist', 'aria-label': openGroup.label + ' sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center', paddingTop: 2 } },
+            h('span', { 'aria-hidden': 'true',
+              style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: openGroup.color, paddingRight: 6, marginRight: 2, borderRight: '1px solid ' + openGroup.color + '33', flexShrink: 0 } },
+              openGroup.label),
+            openGroup.tabs.map(function(t) { return renderTab(t, openGroup.color); })));
       }
 
       // ═══════════════════════════════════════════════════════
@@ -7859,7 +7872,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       //   Common Core ELA-Literacy.RST.6-8.4 (vocabulary in technical text)
       //
       // Each entry: { term, def, etymology?, related?, sources: [{ title, year, journal? }] }
-      var GLOSSARY = {
+      // Renamed from GLOSSARY → GLOSSARY_NGSS: a function-scoped `var GLOSSARY`
+      // here was hoisted to the top of render() and SHADOWED the module-level
+      // GLOSSARY array (file top), so renderResources' `GLOSSARY.filter(...)`
+      // threw "GLOSSARY.filter is not a function" → the Resources tab rendered
+      // null (white screen). This NGSS-aligned keyed object is consumed only by
+      // renderGlossary (Object.keys form); the distinct name unshadows the array.
+      var GLOSSARY_NGSS = {
         cephalopod: {
           term: 'Cephalopod',
           def: 'A class of marine mollusks (Cephalopoda) with bilateral symmetry, a prominent head, and a set of arms or tentacles modified from the molluscan foot. Includes octopuses, squid, cuttlefish, and nautiluses. About 800 living species.',
@@ -17525,8 +17544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // Reads from the GLOSSARY data table at file top.
       function renderGlossary() {
         var filter = (d.glossarySearch || '').toLowerCase().trim();
-        var entries = Object.keys(GLOSSARY).map(function(k) {
-          return Object.assign({ key: k }, GLOSSARY[k]);
+        var entries = Object.keys(GLOSSARY_NGSS).map(function(k) {
+          return Object.assign({ key: k }, GLOSSARY_NGSS[k]);
         }).filter(function(e) {
           if (!filter) return true;
           var hay = (e.term + ' ' + e.def + ' ' + (e.etymology || '') + ' ' + (e.related || []).join(' ')).toLowerCase();
@@ -17546,7 +17565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               style: { flex: 1, minWidth: 240, padding: '8px 10px', background: '#1c1410', color: '#fff', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, fontSize: 12 },
               'aria-label': 'Filter glossary entries',
             }),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, entries.length + ' of ' + Object.keys(GLOSSARY).length + ' shown')
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, entries.length + ' of ' + Object.keys(GLOSSARY_NGSS).length + ' shown')
           ),
           entries.length === 0 ? h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' }) },
             'No matching glossary entry. Try a broader term.'
@@ -17563,11 +17582,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 'Related: ',
                 entry.related.map(function(r, i) {
                   return h('span', { key: r },
-                    GLOSSARY[r] ? h('button', {
-                      onClick: function() { setCL({ glossarySearch: GLOSSARY[r].term }); },
+                    GLOSSARY_NGSS[r] ? h('button', {
+                      onClick: function() { setCL({ glossarySearch: GLOSSARY_NGSS[r].term }); },
                       style: { background: 'transparent', border: 'none', color: '#a78bfa', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: 11, marginRight: 6 },
-                      'aria-label': 'Jump to glossary entry: ' + GLOSSARY[r].term,
-                    }, GLOSSARY[r].term) : r,
+                      'aria-label': 'Jump to glossary entry: ' + GLOSSARY_NGSS[r].term,
+                    }, GLOSSARY_NGSS[r].term) : r,
                     i < entry.related.length - 1 ? ' · ' : ''
                   );
                 })
