@@ -322,7 +322,7 @@ var d = labToolData || {};
 
             ['IDN','Indonesia','Jakarta','Asia','South-Eastern Asia',-0.8,113.9,1904569],
 
-            ['IRN','Iran','Tehran','Asia','Southern Asia',32.4,53.7,1648195],
+            ['IRN','Iran','Tehran','Asia','Western Asia',32.4,53.7,1648195],
 
             ['IRQ','Iraq','Baghdad','Asia','Western Asia',33.2,43.7,438317],
 
@@ -1749,7 +1749,7 @@ var d = labToolData || {};
               geoTarget && React.createElement('div', { className: 'max-w-lg mx-auto' },
 
                 React.createElement('div', { className: 'text-center mb-3' },
-                  React.createElement('p', { className: 'text-xs text-slate-300 uppercase tracking-wide' }, 'Which continent is'),
+                  React.createElement('p', { className: 'text-xs text-slate-600 uppercase tracking-wide' }, 'Which continent is'),
                   React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, geoTarget.name + '?')
                 ),
 
@@ -1980,7 +1980,7 @@ var d = labToolData || {};
                     // Country label: always visible in browse; hidden in quiz until answered
                     (!isQuiz || revealed) && React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0'),
 
-                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-300 italic mt-2' }, 'Which country is this in?')
+                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-600 italic mt-2' }, 'Which country is this in?')
 
                   ),
 
