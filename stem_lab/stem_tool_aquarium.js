@@ -15352,18 +15352,25 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               if (newHour >= 24) { newHour = 0; newDay++; }
 
+              // newLog + tank are needed by the daily-reward/perfect-water block below, but were
+              // originally declared LATER (newLog ~L15398, tank ~L15528) — so this block read them
+              // before assignment (undefined) and threw on EVERY tick, freezing the whole sim.
+              // Declare them here (both are pure: a log clone + a tank lookup, no dependencies).
+              var newLog = _eventLog.slice();
+              var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+
               // ═══ DAILY COIN REWARD (when day advances) ═══
               if (newHour === 0) {
                 var _tankHealth = 0;
-                if (wc.ammonia < 0.5) _tankHealth += 25;
-                if (wc.nitrite < 0.3) _tankHealth += 25;
-                if (wc.nitrate < 40) _tankHealth += 25;
+                if (newChem.ammonia < 0.5) _tankHealth += 25;
+                if (newChem.nitrite < 0.3) _tankHealth += 25;
+                if (newChem.nitrate < 40) _tankHealth += 25;
                 var _avgH = 0; var _hKeys = Object.keys(_hungerLevels || {});
                 _hKeys.forEach(function (k) { _avgH += (_hungerLevels[k] || 50); });
                 if (_hKeys.length > 0) _avgH = _avgH / _hKeys.length;
                 if (_avgH < 70) _tankHealth += 25;
                 var _dc = _tankHealth >= 75 ? 3 : _tankHealth >= 50 ? 2 : _tankHealth >= 25 ? 1 : 0;
-                if (_finalTankFish.length > 0 && _dc > 0) {
+                if (_tankFish.length > 0 && _dc > 0) {
                   aq.coins = (aq.coins || 0) + _dc;
                   aq.totalCoinsEarned = (aq.totalCoinsEarned || 0) + _dc;
                   newLog.push({ tick: newTick, msg: '\uD83D\uDCB0 Daily: +' + _dc + ' coins (health ' + _tankHealth + '%)' });
@@ -15385,7 +15392,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 }
               }
               // Perfect water tracking
-              var _safe = wc.ammonia < 0.25 && wc.nitrite < 0.25 && wc.nitrate < 40 && Math.abs(wc.pH - tank.pH) < 0.5;
+              var _safe = newChem.ammonia < 0.25 && newChem.nitrite < 0.25 && newChem.nitrate < 40 && tank && Math.abs(newChem.pH - tank.pH) < 0.5;
               aq.perfectWaterTicks = _safe ? (aq.perfectWaterTicks || 0) + 1 : 0;
               if (aq.perfectWaterTicks >= 20 && !(aq.unlockedAchievements || {})['perfect_water']) {
                 aq.unlockedAchievements = Object.assign({}, aq.unlockedAchievements || {});
@@ -15395,7 +15402,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                 newLog.push({ tick: newTick, msg: '\uD83D\uDCA7 Achievement: Crystal Clear!' });
               }
 
-              var newLog = _eventLog.slice();
+              // newLog declared above (before the daily-reward block) — re-cloning here would
+              // discard the coin/achievement entries that block just pushed.
 
               // XP for maintaining healthy parameters
 
@@ -17031,10 +17039,10 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       // Status-tinted card background so red/amber/green
                       // reads at a glance without having to click each card.
-                      var cardBg = st === 'bad'  ? 'bg-rose-50 border-rose-300'
+                      var cardBg = st === 'danger'  ? 'bg-rose-50 border-rose-300'
                                  : st === 'warn' ? 'bg-amber-50 border-amber-300'
                                  :                 'bg-emerald-50 border-emerald-300';
-                      var activeBg = st === 'bad'  ? 'bg-rose-100 ring-2 ring-rose-400 shadow-lg'
+                      var activeBg = st === 'danger'  ? 'bg-rose-100 ring-2 ring-rose-400 shadow-lg'
                                    : st === 'warn' ? 'bg-amber-100 ring-2 ring-amber-400 shadow-lg'
                                    :                 'bg-white ring-2 ring-cyan-400 shadow-lg';
 
@@ -17136,7 +17144,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-200" }, "Nitrosomonas"),
+                    React.createElement("span", { className: "text-[11px] text-slate-600" }, "Nitrosomonas"),
 
                     React.createElement("span", null, " \u2192 "),
 
@@ -17144,13 +17152,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", null, " \u2192 "),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-200" }, "Nitrobacter"),
+                    React.createElement("span", { className: "text-[11px] text-slate-600" }, "Nitrobacter"),
 
                     React.createElement("span", null, " \u2192 "),
 
                     React.createElement("span", { className: "font-bold text-green-500" }, "NO\u2083"),
 
-                    React.createElement("span", { className: "ml-1 text-slate-200" }, "(Nitrogen Cycle)")
+                    React.createElement("span", { className: "ml-1 text-slate-600" }, "(Nitrogen Cycle)")
 
                   )
 
@@ -18251,7 +18259,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Fish Fed"),
+                        React.createElement("div", { className: "text-[11px] text-slate-600" }, "Fish Fed"),
 
                         React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
 
@@ -18259,7 +18267,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Hunger \u2193"),
+                        React.createElement("div", { className: "text-[11px] text-slate-600" }, "Hunger \u2193"),
 
                         React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
 
@@ -18267,7 +18275,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
 
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "NH\u2083 \u2191"),
+                        React.createElement("div", { className: "text-[11px] text-slate-600" }, "NH\u2083 \u2191"),
 
                         React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
 
