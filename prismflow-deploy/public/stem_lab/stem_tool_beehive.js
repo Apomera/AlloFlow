@@ -17694,7 +17694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex items-center gap-1' },
               // Sound toggle
               h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute sound effects' : 'Enable sound effects', title: soundOn ? 'Sound on' : 'Sound off',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, soundOn ? '🔊' : '🔇'),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600') }, soundOn ? '🔊' : '🔇'),
               // Quiz button
               h('button', { onClick: startQuiz, title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '🎓'),
@@ -18631,7 +18631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 lines.forEach(function(line) {
                   cCtx.beginPath();
                   for (var i = 0; i < hLen; i++) {
-                    var px = mx + (i / (hLen - 1)) * pw;
+                    var px = mx + (hLen > 1 ? (i / (hLen - 1)) : 0) * pw;
                     var val = history[i][line.key] || 0;
                     var py = my + ph - (Math.min(val, line.max) / line.max) * ph;
                     i === 0 ? cCtx.moveTo(px, py) : cCtx.lineTo(px, py);
