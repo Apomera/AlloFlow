@@ -501,23 +501,29 @@ window.StemLab = window.StemLab || {
       var startSpeedRound = function() {
         var target = targetAngles[Math.floor(Math.random() * targetAngles.length)];
         upd({ speedActive: true, speedScore: 0, speedTimeLeft: 30, speedTarget: { angle: target, type: classifyAngle(target) } });
-        // Timer countdown (uses setTimeout chain)
+        // Drive the countdown from a LOCAL counter + a window score mirror. The captured
+        // ctx.toolData is a per-render snapshot, so the old code read a STALE speedTimeLeft
+        // (always the pre-round value) \u2014 cur was 0 on the first tick, so the round ended after
+        // one second every time. Also track the timer id so the setTimeout chain can't leak or
+        // double-run across rounds / unmount.
+        window.__anglesSpeedScore = 0;
+        if (window.__anglesSpeedTimer) { clearTimeout(window.__anglesSpeedTimer); }
+        var timeLeft = 30;
         var countdown = function() {
-          upd('speedTimeLeft', (function() {
-            var cur = (ctx.toolData && ctx.toolData.protractor && ctx.toolData.protractor.speedTimeLeft) || 0;
-            if (cur <= 1) {
-              upd('speedActive', false);
-              var finalScore = (ctx.toolData && ctx.toolData.protractor && ctx.toolData.protractor.speedScore) || 0;
-              if (addToast) addToast('\u23F1\uFE0F Time\u2019s up! Score: ' + finalScore, 'info');
-              checkBadges({ speedScore: finalScore });
-              return 0;
-            }
-            if (soundEnabled) sfxTick();
-            setTimeout(countdown, 1000);
-            return cur - 1;
-          })());
+          timeLeft -= 1;
+          if (timeLeft <= 0) {
+            window.__anglesSpeedTimer = null;
+            var finalScore = window.__anglesSpeedScore || 0;
+            upd({ speedActive: false, speedTimeLeft: 0 });
+            if (addToast) addToast('\u23F1\uFE0F Time\u2019s up! Score: ' + finalScore, 'info');
+            checkBadges({ speedScore: finalScore });
+            return;
+          }
+          upd('speedTimeLeft', timeLeft);
+          if (soundEnabled) sfxTick();
+          window.__anglesSpeedTimer = setTimeout(countdown, 1000);
         };
-        setTimeout(countdown, 1000);
+        window.__anglesSpeedTimer = setTimeout(countdown, 1000);
       };
 
       var answerSpeed = function(cls) {
@@ -525,6 +531,7 @@ window.StemLab = window.StemLab || {
         var ok = cls === speedTarget.type;
         if (ok) {
           var newScore = speedScore + 1;
+          window.__anglesSpeedScore = newScore; // mirror for the countdown's final read (ctx.toolData is stale in its closure)
           var nextAngle = targetAngles[Math.floor(Math.random() * targetAngles.length)];
           upd({ speedScore: newScore, speedTarget: { angle: nextAngle, type: classifyAngle(nextAngle) } });
           if (soundEnabled) sfxCorrect();
