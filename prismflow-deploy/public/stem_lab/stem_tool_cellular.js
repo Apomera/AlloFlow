@@ -414,6 +414,10 @@
           }
         }
       }
+      // empty-state hint (only when no cells are alive; default seed has a glider so the golden is unaffected)
+      if (pop === 0) {
+        rects.push(h('text', { key: 'empty', x: W / 2, y: H / 2, textAnchor: 'middle', fill: C.sub, style: { fontSize: '13px', fontStyle: 'italic' } }, 'Click or drag to draw cells — or press Random'));
+      }
       // cursor
       rects.push(h('rect', {
         key: 'cursor', x: cursor[1] * PX, y: cursor[0] * PX, width: PX, height: PX,
@@ -539,6 +543,8 @@
         ),
         renderRuleTable(),
         renderCaDiagram(),
+        h('div', { style: { fontSize: '11px', color: C.sub, marginTop: '-4px', textAlign: 'center' } },
+          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · time runs downward (top row = start)'),
         h('div', null,
           h('div', { style: { fontSize: '12px', color: C.sub, fontWeight: 700, marginBottom: '6px' } }, 'Try a famous rule:'),
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
