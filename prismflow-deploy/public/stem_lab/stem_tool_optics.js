@@ -1265,7 +1265,7 @@
             children.push(h('text', {
               key: 'imglab', x: sx(imgX), y: imgY > 0 ? sy(imgY) - 8 : sy(imgY) + 14,
               fill: stroke, fontSize: 10, textAnchor: 'middle', fontWeight: 700
-            }, isVirtual ? 'Image (virtual)' : 'Image (real)'));
+            }, (isVirtual ? 'Image (virtual, ' : 'Image (real, ') + (m < 0 ? 'inverted)' : 'upright)')));
           }
           return children;
         })(),
@@ -2746,6 +2746,7 @@
       }, []);
 
       function upd(k, v) {
+        if (!_mounted.current) return; // no-op after unmount — the afterimage/quantum setTimeout loops fire async
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev);
           var patch;
