@@ -19451,6 +19451,11 @@ var d = labToolData.cell || {};
 
               window.removeEventListener('keyup', onKey);
 
+              // Disconnect the ResizeObserver here so EVERY unmount path frees it — the
+              // canvas ref-null teardown calls _cellSimCleanup but never touched the RO,
+              // orphaning an observer on the detached canvas.
+              if (canvasEl._cellSimRO) { canvasEl._cellSimRO.disconnect(); canvasEl._cellSimRO = null; }
+
             };
 
 
@@ -20403,7 +20408,7 @@ var d = labToolData.cell || {};
                           (d.quizFeedback
                             ? (isCorrect
                               ? "border-green-400 bg-green-50 text-green-700"
-                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-400"))
+                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-500"))
                             : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
 
                       }, opt);
@@ -20466,7 +20471,7 @@ var d = labToolData.cell || {};
                           (d.quizFeedback
                             ? (isCorrect
                               ? "border-green-400 bg-green-50 text-green-700"
-                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-400"))
+                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-500"))
                             : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
 
                       }, org.icon + " " + org.label);
