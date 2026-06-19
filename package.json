@@ -54,6 +54,7 @@
     "verify:lang-json": "node dev-tools/check_lang_json.cjs",
     "verify:cmd-i18n": "node dev-tools/check_cmd_i18n.cjs",
     "verify:spanglish": "node dev-tools/i18n/check_safety_string_spanglish.cjs",
+    "i18n:feedback": "node dev-tools/i18n/ingest_translation_feedback.cjs",
     "verify:iife-lazy": "node dev-tools/check_iife_lazy_lookup.cjs",
     "verify:dashes": "node dev-tools/check_em_en_dashes.cjs",
     "verify:security": "node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs && node dev-tools/check_xss_surface.cjs && node dev-tools/check_eval.cjs && node dev-tools/check_npm_audit.cjs && node dev-tools/check_lti_surface.cjs",
