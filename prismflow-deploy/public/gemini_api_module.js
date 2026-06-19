@@ -318,6 +318,10 @@ const createGeminiAPI = (deps) => {
         out.isQuota = cls.kind === 'quota';
         out.isAuth = cls.kind === 'auth';
         out.isConfig = cls.kind === 'config';
+        // In Canvas an 'auth' (401/403) is almost always a brief throttle/rate-limit, NOT a real key
+        // problem (the app injects the key — see the classifier's own note). Flag it so the pipeline's
+        // retry layer treats it as RETRYABLE (transient) rather than permanent. (2026-06-19)
+        out.canvasTransientAuth = (cls.kind === 'auth' && !!_isCanvasEnv);
         out.classification = cls;
         out.originalMessage = err && err.message;
         throw out;

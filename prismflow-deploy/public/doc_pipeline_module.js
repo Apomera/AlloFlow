@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -926,12 +926,20 @@ var createDocPipeline = function(deps) {
       // case the error was re-wrapped and lost the flags.
       var isPermanent = err && (err.isAuth || err.isQuota || err.isConfig ||
         (err.message && /API_(AUTH_FAILED|QUOTA_EXHAUSTED|MODEL_NOT_FOUND)/.test(err.message)));
+      // EXCEPTION (2026-06-19): in Canvas a 401/403 (classified 'auth') is almost always a brief
+      // throttle/rate-limit, NOT a real key problem — the classifier flags it canvasTransientAuth.
+      // Treat it as RETRYABLE (with a short backoff so the burst clears) instead of permanent, so the
+      // heavy fan-out's transient 401s recover instead of failing the chunk. Genuine quota/config stay
+      // permanent. Pairs with the concurrency gate, which should prevent most of these in the first place.
+      var _canvasAuthRetry = err && err.canvasTransientAuth && !err.isQuota && !err.isConfig;
+      if (isPermanent && _canvasAuthRetry) isPermanent = false;
       if (isPermanent) {
         warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (err.message || 'permanent error') + ') — skipping retry (auth/quota/config errors do not change between calls)');
         throw err;
       }
-      warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
-      return _withTimeout(fn(), retryMs || initialMs, label + ' (retry)');
+      var _retryDelayMs = _canvasAuthRetry ? 2500 : 0;
+      warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once' + (_retryDelayMs ? ' after ' + _retryDelayMs + 'ms (transient rate-limit)' : '') + '...');
+      return (_retryDelayMs ? new Promise(function(r) { setTimeout(r, _retryDelayMs); }) : Promise.resolve()).then(function() { return _withTimeout(fn(), retryMs || initialMs, label + ' (retry)'); });
     });
   };
 
@@ -1007,13 +1015,35 @@ var createDocPipeline = function(deps) {
   // - Auto-logging: every API call logs entry (prompt size) and exit (response size, duration)
   var _rawCallGemini = deps.callGemini;
   var _rawCallGeminiVision = deps.callGeminiVision;
+  // Global concurrency gate for Gemini calls (2026-06-19). The Canvas Gemini proxy THROTTLES when the
+  // pipeline fans out 3-6 calls at once → transient 401/403s (classified 'auth') that used to fail the
+  // chunk + degrade the score. Capping in-flight calls keeps it under the throttle threshold; counter-
+  // intuitively this is FASTER end-to-end (it avoids the ~59s throttle-failures + the wasted re-audit
+  // passes). The gate wraps the WHOLE _withRetry chain so the per-call timeout never counts queue-wait.
+  var _GEMINI_MAX_CONCURRENT = 3;
+  var _geminiInFlight = 0;
+  var _geminiWaiters = [];
+  var _acquireGeminiSlot = function() {
+    if (_geminiInFlight < _GEMINI_MAX_CONCURRENT) { _geminiInFlight++; return Promise.resolve(); }
+    return new Promise(function(resolve) { _geminiWaiters.push(resolve); });
+  };
+  var _releaseGeminiSlot = function() {
+    var next = _geminiWaiters.shift();
+    if (next) { next(); } // hand the freed slot straight to the next waiter (in-flight count unchanged)
+    else { _geminiInFlight = Math.max(0, _geminiInFlight - 1); }
+  };
+  var _geminiGate = function(fn) {
+    return _acquireGeminiSlot().then(function() {
+      return Promise.resolve().then(fn).finally(_releaseGeminiSlot);
+    });
+  };
   var callGemini = _rawCallGemini ? function() {
     var args = arguments;
     var promptLen = args[0] ? String(args[0]).length : 0;
     var callNum = ++_pipelineStats.apiCalls;
     _pipeLog('API→', 'callGemini #' + callNum + ' (' + Math.round(promptLen / 1000) + 'KB prompt)');
     var t0 = performance.now();
-    return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 180000, 120000, 'callGemini').then(function(result) {
+    return _geminiGate(function() { return _withRetry(function() { return _rawCallGemini.apply(null, args); }, 180000, 120000, 'callGemini'); }).then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
@@ -1031,7 +1061,7 @@ var createDocPipeline = function(deps) {
     var callNum = ++_pipelineStats.visionCalls;
     _pipeLog('Vision→', 'callGeminiVision #' + callNum);
     var t0 = performance.now();
-    return _withRetry(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 90000, 'callGeminiVision').then(function(result) {
+    return _geminiGate(function() { return _withRetry(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 90000, 'callGeminiVision'); }).then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
@@ -12752,16 +12782,32 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
                   // Strategy: render the page, then use page.getOperatorList to find image
                   // transforms (position/size), and crop exactly those regions from the rendered page
-                  const viewport = page.getViewport({ scale: 2 });
-                  const canvas = document.createElement('canvas');
-                  canvas.width = viewport.width;
-                  canvas.height = viewport.height;
-                  const ctx2d = canvas.getContext('2d');
-                  await _withTimeout(page.render({ canvasContext: ctx2d, viewport }).promise, 45000, 'page.render p' + pg);
+                  // Render at 1.5x (was 2x — ~44% less rasterization/encode/memory, still ample for
+                  // small accessibility figures); on a stall/timeout retry once at 1x. A page that
+                  // stalls at 1.5x (pdf.js render contention) usually renders fine at 1x, recovering
+                  // its images instead of dropping them after the timeout — mirrors the OCR render
+                  // retry. viewport + canvas track the scale that actually rendered, so the crop math
+                  // below (viewport.scale / canvas dims) stays consistent. (2026-06-19)
+                  let viewport = null, canvas = null;
+                  for (const _sc of [1.5, 1.0]) {
+                    const _vp = page.getViewport({ scale: _sc });
+                    const _c = document.createElement('canvas');
+                    _c.width = _vp.width; _c.height = _vp.height;
+                    try {
+                      await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 1.5 ? 30000 : 20000, 'page.render p' + pg + ' @' + _sc + 'x');
+                      viewport = _vp; canvas = _c; break;
+                    } catch (_rErr) {
+                      try { _c.width = 0; _c.height = 0; } catch (_) {}
+                      if (_sc <= 1.0) throw _rErr; // both scales failed → per-page catch (logs + degrades to text placeholder)
+                    }
+                  }
 
-                  // Store full-page canvas for user re-cropping later
+                  // Store the full-page canvas for in-session re-cropping. JPEG (was PNG): ~10x smaller
+                  // + far faster to encode → less synchronous main-thread cost + memory pressure that
+                  // feed the render stalls. The immediate crops below use the live lossless canvas, so
+                  // only the re-crop-UI cache is slightly lossy. (2026-06-19)
                   if (!window.__pdfPageCanvases) window.__pdfPageCanvases = {};
-                  window.__pdfPageCanvases[pg] = canvas.toDataURL('image/png');
+                  window.__pdfPageCanvases[pg] = canvas.toDataURL('image/jpeg', 0.82);
 
                   // ── Solid-fill / near-uniform crop rejector (2026-06-14) ──
                   // A complex table or vector "visual organizer" is often tagged as an
@@ -12889,8 +12935,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                     }
                   }
                   // Free the per-page render canvas now that crops + the dataURL are
-                  // done — releases the scale:2 backing store immediately instead of
-                  // waiting on GC (2026-06-15 review fix).
+                  // done — releases the render backing store (1.5x, or 1x on retry)
+                  // immediately instead of waiting on GC (2026-06-15 review fix).
                   try { canvas.width = 0; canvas.height = 0; } catch (_) {}
                 } catch(pgErr) { _imageFailureCount++; warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr); }
               }
@@ -25906,11 +25952,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
