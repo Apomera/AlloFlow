@@ -19316,7 +19316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               },
               disabled: pickedCount < 4,
               className: 'w-full px-5 py-3 rounded-xl font-bold focus:outline-none focus:ring-2 ring-emerald-400 ' +
-                (pickedCount >= 4 ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed')
+                (pickedCount >= 4 ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
             }, pickedCount >= 4 ? '📊 See my day' : 'Pick ' + (4 - pickedCount) + ' more meal' + (4 - pickedCount === 1 ? '' : 's'))
           )
         );
@@ -19612,10 +19612,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var iq = d.macroInquiry || { carbs: 50, protein: 20, fat: 30, fiber: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd('macroInquiry', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-        var total = iq.carbs + iq.protein + iq.fat;
-        var pC = total > 0 ? iq.carbs / total : 0.33;
-        var pP = total > 0 ? iq.protein / total : 0.33;
-        var pF = total > 0 ? iq.fat / total : 0.33;
+        var total = iq.carbs + iq.protein + iq.fat; // grams — for the "total macros" readout
+        // Macro split must be by ENERGY (kcal), not grams: the % labels, the DGA-AMDR state
+        // buckets, and the pie all describe calorie share. Fat is 9 kcal/g vs 4 for carb/protein,
+        // so a grams-based split understated fat's share and mislabeled the energy state.
+        var cKcal = iq.carbs * 4, pKcal = iq.protein * 4, fKcal = iq.fat * 9;
+        var totalKcal = cKcal + pKcal + fKcal;
+        var pC = totalKcal > 0 ? cKcal / totalKcal : 0.33;
+        var pP = totalKcal > 0 ? pKcal / totalKcal : 0.33;
+        var pF = totalKcal > 0 ? fKcal / totalKcal : 0.33;
         // satiety proxy: protein + fiber + fat dominate
         var satiety = pP * 100 * 1.5 + iq.fiber * 1.0 + pF * 100 * 0.7 + pC * 100 * 0.3;
         var fiberAdjGI = Math.max(0, Math.min(100, pC * 100 * 1.3 - iq.fiber * 1.4));
