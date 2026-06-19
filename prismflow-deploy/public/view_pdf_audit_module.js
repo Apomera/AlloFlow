@@ -1399,6 +1399,7 @@ function PdfDiagnosticsLog(props) {
   const [warnOnly, setWarnOnly] = R.useState(true);
   const [, setTick] = R.useState(0);
   const scrollRef = R.useRef(null);
+  const stickRef = R.useRef(true);
   R.useEffect(() => {
     if (!open) return void 0;
     const id = setInterval(() => setTick((n) => n + 1), 1e3);
@@ -1407,13 +1408,13 @@ function PdfDiagnosticsLog(props) {
   const all = typeof window !== "undefined" && Array.isArray(window.__alloDiagLog) ? window.__alloDiagLog : [];
   const rows = warnOnly ? all.filter((e) => e && e.level === "warn") : all;
   R.useEffect(() => {
-    if (open && scrollRef.current) {
+    if (open && stickRef.current && scrollRef.current) {
       try {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       } catch (_) {
       }
     }
-  });
+  }, [rows.length, open]);
   const _time = (e) => {
     try {
       return new Date(e.t).toLocaleTimeString();
@@ -1479,7 +1480,13 @@ function PdfDiagnosticsLog(props) {
       "aria-label": t("pdf_audit.diag.region_aria") || "Pipeline diagnostics log"
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F527}"), t("pdf_audit.diag.title") || "Pipeline diagnostics"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-400" }, rows.length, warnOnly ? "" : "/" + all.length, " ", t("pdf_audit.diag.lines") || "lines"), /* @__PURE__ */ React.createElement("label", { className: "ml-auto flex items-center gap-1 text-[11px] text-slate-300 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: warnOnly, onChange: (e) => setWarnOnly(e.target.checked), className: "accent-amber-500" }), t("pdf_audit.diag.warn_only") || "Warnings only")),
-    /* @__PURE__ */ React.createElement("div", { ref: scrollRef, className: "flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words" }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-slate-500 italic" }, t("pdf_audit.diag.empty") || "No log entries yet \u2014 run a remediation and they will appear here live.") : rows.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: e.level === "warn" ? "text-amber-300" : "text-slate-400" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, _time(e)), " ", e.msg))),
+    /* @__PURE__ */ React.createElement("div", { ref: scrollRef, onScroll: (e) => {
+      const el = e.currentTarget;
+      try {
+        stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
+      } catch (_) {
+      }
+    }, className: "flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words" }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-slate-500 italic" }, t("pdf_audit.diag.empty") || "No log entries yet \u2014 run a remediation and they will appear here live.") : rows.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: e.level === "warn" ? "text-amber-300" : "text-slate-400" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, _time(e)), " ", e.msg))),
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-t border-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _copy, className: "px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium" }, t("pdf_audit.diag.copy") || "Copy"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _clear, className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" }, t("pdf_audit.diag.clear") || "Clear"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen(false), className: "ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs", "aria-label": t("pdf_audit.diag.close_aria") || "Close diagnostics log" }, t("pdf_audit.diag.close") || "Close"))
   );
 }

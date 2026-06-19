@@ -1530,6 +1530,7 @@ function PdfDiagnosticsLog(props) {
   const [warnOnly, setWarnOnly] = R.useState(true);
   const [, setTick] = R.useState(0);
   const scrollRef = R.useRef(null);
+  const stickRef = R.useRef(true); // true = follow the live tail; flips false when the user scrolls up so new lines don't yank them back to the end
   // While open, repaint ~1/s so new log lines from an in-flight run appear live.
   R.useEffect(() => {
     if (!open) return undefined;
@@ -1538,10 +1539,13 @@ function PdfDiagnosticsLog(props) {
   }, [open]);
   const all = (typeof window !== 'undefined' && Array.isArray(window.__alloDiagLog)) ? window.__alloDiagLog : [];
   const rows = warnOnly ? all.filter((e) => e && e.level === 'warn') : all;
-  // Keep the newest line in view whenever the panel re-renders.
+  // Auto-scroll to the newest line ONLY when the user is already at the bottom (following the live
+  // tail). If they've scrolled up to read earlier entries, leave their position alone — otherwise
+  // the ~1/s repaint above yanks them back to the end every second (the reported "can't scroll
+  // back" bug). Gated on rows.length/open (new content or open) so a tick-only repaint never re-pins.
   R.useEffect(() => {
-    if (open && scrollRef.current) { try { scrollRef.current.scrollTop = scrollRef.current.scrollHeight; } catch (_) {} }
-  });
+    if (open && stickRef.current && scrollRef.current) { try { scrollRef.current.scrollTop = scrollRef.current.scrollHeight; } catch (_) {} }
+  }, [rows.length, open]);
   const _time = (e) => { try { return new Date(e.t).toLocaleTimeString(); } catch (_) { return ''; } };
   const _copy = async () => {
     const text = rows.map((e) => '[' + _time(e) + '] ' + (e.level === 'warn' ? 'WARN ' : 'debug ') + e.msg).join('\n');
@@ -1586,7 +1590,7 @@ function PdfDiagnosticsLog(props) {
           {t('pdf_audit.diag.warn_only') || 'Warnings only'}
         </label>
       </div>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words">
+      <div ref={scrollRef} onScroll={(e) => { const el = e.currentTarget; try { stickRef.current = (el.scrollHeight - el.scrollTop - el.clientHeight) < 48; } catch (_) {} }} className="flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words">
         {rows.length === 0
           ? <div className="text-slate-500 italic">{t('pdf_audit.diag.empty') || 'No log entries yet — run a remediation and they will appear here live.'}</div>
           : rows.map((e, i) => (

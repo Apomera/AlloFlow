@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -12996,6 +12996,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // deterministic code renders it into guaranteed-valid styled HTML.
       updateProgress(2, 'Analyzing document structure...');
       let bodyContent = '';
+      // Image-placeholder protect/restore state, HOISTED to bodyContent's scope. The protect runs
+      // inside the chunked-pipeline branch (~13844) but the restore runs out here in the parent
+      // scope (~13985) — a block-scoped `const _phProtect` there threw "_phProtect is not defined"
+      // and crashed EVERY remediation after the polish pass (2026-06-18 fix). Default empty map =
+      // no-op restore for any path that never tokenized placeholders.
+      let _phProtect = { html: null, map: {} };
 
       // ── Step 2a: Determine document styling ──
       // If user selected a preset theme (not "Match Original"), use the theme's colors directly
@@ -13843,7 +13849,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         // passes below — an AI rewrite or a cleanup regex corrupts the handler, which both leaks JS into
         // visible text AND breaks the ×-remove / Pick-extracted / drag-drop buttons. Tokenize now, restore
         // pristine after the cleanup (mirrors the surgical path's protection at 3413/3510). (2026-06-18)
-        const _phProtect = _stripImagePlaceholdersForAi(bodyContent);
+        _phProtect = _stripImagePlaceholdersForAi(bodyContent);
         bodyContent = _phProtect.html;
         // ── Polish passes: deterministic first, then AI with small chunks ──
         if (transformChunks > 1) {
@@ -25900,11 +25906,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
