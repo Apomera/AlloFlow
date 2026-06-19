@@ -2222,7 +2222,7 @@
     "define_target_behavior_first": "אנא הגדר תחילה התנהגות יעד",
     "ai_coding_complete": "קידוד AI הושלם: ",
     "ai_response_could_parsed_try": "לא ניתן לנתח את תגובת ה-AI — נסה שוב",
-    "processing_failed": "Processing failed:",
+    "processing_failed": "העיבוד נכשל: ",
     "failed_read_file": "קריאת הקובץ נכשלה",
     "second_ai_review_complete": "סקירת AI שנייה הושלמה: ",
     "second_ai_pass_could_parsed": "לא ניתן לנתח את מעבר ה-AI השני — נסה שוב",
@@ -2376,7 +2376,7 @@
     "tagged_pdf_failed": "Tagged PDF failed:",
     "accessible_html_downloaded": "HTML נגיש הורד",
     "audit_trail_downloaded_open_any": "מסלול הביקורת הורד — פתח בכל דפדפן כדי לאמת שלמות.",
-    "audit_trail_generation_failed": "Audit trail generation failed:",
+    "audit_trail_generation_failed": "יצירת נתיב הביקורת נכשלה: ",
     "invalid_project_file_2": "קובץ פרויקט לא תקין",
     "project_loaded_2": "📂 Project loaded:",
     "failed_load_project": "טעינת הפרויקט נכשלה: ",
@@ -2457,7 +2457,7 @@
     "running_axe_core_edited_content": "מפעיל axe-core על התוכן הערוך...",
     "preview_content_audit": "אין תוכן בתצוגה מקדימה לביקורת",
     "running_full_ai_re_audit": "מפעיל ביקורת AI מלאה מחדש...",
-    "re_audit_failed": "Re-audit failed:",
+    "re_audit_failed": "הביקורת החוזרת נכשלה: ",
     "saved_edited_html": "HTML ערוך נשמר",
     "refinement_unavailable": "שיפור תמונה אינו זמין.",
     "image_refined_success": "התמונה שופרה בהצלחה!",
@@ -10041,7 +10041,7 @@
       "upload_guide_desc": "השתמש במסמך/לוגו אחר",
       "no_branding": "⬜ ללא מיתוג",
       "no_branding_desc": "השתמש בלוח צבעים ברירת מחדל",
-      "tip": "טיפ: אם תבחר Style Seed ספציפי למטה (לא \"התאם למקור\"), הצבעים של אותו seed דורסים את בחירת המיתוג שלך."
+      "tip": "טיפ: אם תבחר Style Seed ספציפי למטה (לא \"התאם למקור\"), הצבעים של אותו seed דורסים את בחירת המיתוג שלך. כדי להשתמש בצבעי המותג שלך, שלב אותם עם ה-seed של התאם למקור."
     },
     "style": {
       "heading": "זרע סגנון",
@@ -10145,8 +10145,8 @@
     },
     "unavailable": {
       "title": "Audit לא זמין",
-      "body": "The בינה מלאכותית accessibility audit could not השלם. זה is usually caused by a temporary API issue, rate limiting, or a very large/מורכב PDF.",
-      "proceed_hint": "תוכל still proceed — Fix & Verify will transform the מסמכים and הפעל a full audit afterward."
+      "body": "ביקורת הנגישות של ה-AI לא הצליחה להסתיים. בדרך כלל הסיבה לכך היא תקלת API זמנית, הגבלת קצב, או PDF גדול/מורכב מאוד.",
+      "proceed_hint": "עדיין תוכל להמשיך — Fix & Verify יבצע טרנספורמציה של המסמך ויריץ ביקורת מלאה לאחר מכן."
     },
     "tabs": {
       "aria": "Audit הצג",
@@ -10205,16 +10205,16 @@
       "review_aria": "סקירת תיקון חי",
       "heading_short": "תיקון חי",
       "no_fixes_title": "זה מקטעים already meets WCAG accessibility תקנים — the pipeline made no changes because none were needed.",
-      "retried_title": "בינה מלאכותית had to retry זה מקטעים once after the ראשון attempt failed integrity or token-preservation checks.",
+      "retried_title": "ה-AI נאלץ לנסות מקטע זה שוב פעם אחת לאחר שהניסיון הראשון נכשל בבדיקות שלמות או שימור טוקנים.",
       "content_verified_title": "בינה מלאכותית תוכן-preservation check passed — the מקטעים's טקסט תוכן was preserved through the rewrite.",
-      "ai_skipped_long_title": "בינה מלאכותית rewrite failed or was rejected for זה מקטעים — only deterministic (rule-based) fixes were applied. The מקטעים is still יותר accessible than the original, just פחות so than successfully בינה מלאכותית-fixed מקטעים.",
+      "ai_skipped_long_title": "שכתוב ה-AI נכשל או נדחה עבור מקטע זה — רק תיקונים דטרמיניסטיים (מבוססי כללים) הוחלו. המקטע עדיין נגיש יותר מהמקור, רק פחות ממקטעים שתוקנו בהצלחה על ידי ה-AI.",
       "ai_skipped_rule_only": "בינה מלאכותית skipped · rule-based only",
       "review_heading": "סקירת תיקון חי",
       "review_subhead": "צפה each מקטעים get fixed in real time — reject or re-fix anything זה looks wrong",
       "progress_aria": "Live remediation התקדמות",
       "rule_based_title": "Rule-based (deterministic) regex fixes applied — always safe, no בינה מלאכותית involved",
       "targeted_title": "בינה מלאכותית-diagnosed targeted micro-fixes applied via deterministic כלים (תוכן-preserving)",
-      "ai_skipped_short_title": "בינה מלאכותית rewrite failed or was rejected for זה מקטעים — only rule-based fixes were applied. Still יותר accessible than the original.",
+      "ai_skipped_short_title": "שכתוב ה-AI נכשל או נדחה עבור מקטע זה — רק תיקונים מבוססי כללים הוחלו. עדיין נגיש יותר מהמקור.",
       "ai_skipped_short": "בינה מלאכותית skipped",
       "verified_title": "בינה מלאכותית verified תוכן preserved",
       "integrity_title": "מילים overlap integrity check passed",
@@ -10255,7 +10255,7 @@
       "alt_placeholder": "Describe זה תמונות for screen reader users...",
       "regen_title": "Regenerate זה תמונות via בינה מלאכותית using the stored description",
       "dropped_by_ai": "Dropped by בינה מלאכותית pass",
-      "regen_hint": "לחץ Regenerate to recreate an תמונות via בינה מלאכותית using its stored description, or השתמש העלה/Replace inside the figure in the preview."
+      "regen_hint": "לחץ על Regenerate כדי ליצור מחדש תמונה באמצעות AI תוך שימוש בתיאור השמור שלה, או השתמש בהעלאה/החלפה בתוך האיור בתצוגה המקדימה."
     },
     "integrity": {
       "verifying": "Verifying תוכן integrity…",
@@ -10275,7 +10275,7 @@
       "recovery_stages": "שלבי שחזור שיושמו",
       "ai_retry": "בינה מלאכותית retry",
       "ground_truth": "אמת בסיסית:",
-      "open_diff_title": "פתח the מילים-רמות diff הצג"
+      "open_diff_title": "פתח את תצוגת ההשוואה ברמת המילה"
     },
     "fidelity": {
       "heading": "Verify טקסט Fidelity",
@@ -10290,9 +10290,9 @@
       "text_extract_title": "חלץ טקסט for תוכן generation"
     },
     "resume": {
-      "heading": "Saved התקדמות Found"
+      "heading": "נמצאה התקדמות שמורה"
     },
-    "start_new_title": "Clear זה audit תוצאות and התחל fresh with a חדש PDF",
+    "start_new_title": "נקה תוצאת ביקורת זו והתחל מחדש עם PDF חדש",
     "wcag_report": {
       "coverage_note": "Coverage may be incomplete — זה הצג aggregates axe-core rules by WCAG SC. ידני review still נדרש for some criteria (e.g. semantic meaning, reading order, מורכב forms)."
     },
@@ -10304,7 +10304,7 @@
       "heading": "מסמכים מקטעים Map",
       "rule_based_title": "תיקונים מבוססי-כללים (דטרמיניסטיים) יושמו",
       "targeted_title": "בינה מלאכותית-diagnosed targeted micro-fixes",
-      "ai_skipped_title": "בינה מלאכותית rewrite was rejected — only rule-based fixes applied",
+      "ai_skipped_title": "שכתוב ה-AI נדחה — רק תיקונים מבוססי כללים הוחלו",
       "ai_skipped": "בינה מלאכותית skipped"
     },
     "expert_referral": {
@@ -10343,7 +10343,7 @@
       "save_close": "שמור & סגור"
     },
     "wordart": {
-      "text_placeholder": "Your מילים art טקסט...",
+      "text_placeholder": "טקסט אמנות המילים שלך...",
       "text_aria": "מילים art טקסט"
     },
     "a11y_inspect": {
@@ -10530,7 +10530,7 @@
       "sexlinked_xlinked": "מקושר-מין (מקושר-X)"
     },
     "circuit": {
-      "u2705_challenge_complete_you_hit": "\\u2705 אתגרים השלם! You hit",
+      "u2705_challenge_complete_you_hit": "\\u2705 האתגר הושלם! פגעת ב-",
       "ud83cudfaf_target": "\\uD83C\\uDFAF Target:",
       "mode": "מצב",
       "resistance": "התנגדות",
@@ -11452,16 +11452,16 @@
     },
     "dialog": {
       "title": "Accessibility מעבדה",
-      "subtitle": "Verify the תלמידים experience: preview, audit, הקשב, simulate.",
+      "subtitle": "אמת את חוויית התלמיד: תצוגה מקדימה, ביקורת, האזנה, סימולציה.",
       "close": "סגור",
       "close_aria": "סגור Accessibility מעבדה",
       "coming_soon": "יגיע בשלב עתידי",
       "tablist_aria": "מעבדה מקטעים"
     },
     "preview": {
-      "heading": "Preview a שיעורים as your תלמידים",
-      "select_intro": "בחר a נשמר שיעורים to preview with תלמידים accessibility הגדרות applied (font, size, contrast, קווים spacing). זה shows you what the תוכן looks like for תלמידים using accommodations.",
-      "no_lessons": "No נשמר שיעורים yet. הפק a שיעורים in מורים מצב ראשון, then come back to preview it.",
+      "heading": "צפה בתצוגה מקדימה של שיעור כפי שהתלמיד שלך רואה אותו",
+      "select_intro": "בחר שיעור שמור לתצוגה מקדימה עם הגדרות הנגישות של התלמיד מוחלות (גופן, גודל, ניגודיות, מרווח שורות). זה מראה לך כיצד נראה התוכן עבור תלמידים המשתמשים בהתאמות.",
+      "no_lessons": "אין עדיין שיעורים שמורים. צור תחילה שיעור במצב מורה, ואז חזור לכאן כדי לצפות בו בתצוגה מקדימה.",
       "untitled": "(ללא כותרת)",
       "back": "← Back to שיעורים list",
       "previewing_prefix": "Previewing:",
@@ -11473,14 +11473,14 @@
       "read_aloud": "🔊 קרא aloud",
       "read_aloud_unavailable": "קרא aloud is not זמין in זה build.",
       "read_aloud_empty": "Nothing to קרא in the current preview.",
-      "read_aloud_error": "Could not התחל קרא-aloud:",
-      "unmapped_theme_note": "Note: the app is currently using a reading נושאים (warm, blue, green, rose, or dyslexia overlay) זה is not represented in זה preview yet. החלף it in the main accessibility הגדרות to preview it accurately.",
+      "read_aloud_error": "לא ניתן היה להתחיל הקראה בקול: ",
+      "unmapped_theme_note": "הערה: האפליקציה משתמשת כעת בערכת נושא לקריאה (חמה, כחולה, ירוקה, ורודה, או שכבת דיסלקציה) שעדיין אינה מיוצגת בתצוגה מקדימה זו. החלף אותה בהגדרות הנגישות הראשיות כדי לצפות בה במדויק.",
       "pane_aria": "תלמידים preview pane",
       "apply_button": "החל הגדרות אלו על האפליקציה",
       "reset_button": "אפס to app defaults",
       "apply_explanation": "Applies the font, size, נושאים, קווים spacing, and letter spacing above to the live app for all תלמידים using זה device.",
       "apply_success": "Applied to the live app for all תלמידים using זה device.",
-      "apply_error": "Could not apply הגדרות:",
+      "apply_error": "לא ניתן היה להחיל את ההגדרות: ",
       "reset_success": "אפס to the live app's current הגדרות.",
       "tip": "טיפים: החלף the נושאים to High contrast and נסה Extra Large font to simulate low-vision usage. החלף the font to OpenDyslexic to simulate a dyslexia-ידידותי הצג."
     },
@@ -11503,11 +11503,11 @@
       "summary_no_label": "שמות חסרים",
       "tab_order_heading": "סדר Tab",
       "fakes_heading": "⚠ Fake כפתורים",
-      "fakes_help": "Elements with cursor:pointer זה look clickable but cannot be reached by keyboard. Common cause: a div with onClick instead of a real <button>. Fix: convert to <button>, OR הוסף tabindex=\"0\" + role=\"button\" + keyboard event handlers.",
+      "fakes_help": "רכיבים עם cursor:pointer שנראים ניתנים ללחיצה אך לא ניתן להגיע אליהם באמצעות המקלדת. סיבה נפוצה: div עם onClick במקום <button> אמיתי. תיקון: המר ל-<button>, או הוסף tabindex=\"0\" + role=\"button\" + מטפלי אירועי מקלדת.",
       "pos_heading": "⚠ tabindex חיובי",
       "pos_help": "Elements with tabindex > 0 break natural מסמכים tab order and confuse keyboard users. Fix: השתמש tabindex=\"0\" (ברירת מחדל order) or rely on ברירת מחדל focusability for כפתורים/links.",
       "no_label_heading": "🔴 שמות נגישים חסרים",
-      "no_label_help": "Focusable elements without טקסט, aria-label, aria-labelledby, or title. Screen reader users would hear only the tag name, e.g., \"כפתורים\" with no context. Fix: הוסף aria-label or גלוי טקסט.",
+      "no_label_help": "רכיבים הניתנים למיקוד ללא טקסט, aria-label, aria-labelledby, או title. משתמשי קורא מסך ישמעו רק את שם התגית, למשל \"button\" ללא הקשר. תיקון: הוסף aria-label או טקסט גלוי.",
       "tip": "טיפים: navigate the page behind the מעבדה using only Tab, Shift+Tab, הזן, and Esc. לחץ on any element name in the lists above to focus it (the page will scroll if needed)."
     },
     "audit": {
@@ -11518,11 +11518,11 @@
       "loading": "טוען axe-core...",
       "running": "מבצע ביקורת...",
       "last_run_prefix": "אחרון הפעל:",
-      "error_prefix": "Audit failed:",
+      "error_prefix": "הביקורת נכשלה: ",
       "error_suffix": ". Check your network connection (axe-core loads from cdn.jsdelivr.net) and נסה again.",
-      "error_toast_prefix": "Audit failed:",
+      "error_toast_prefix": "הביקורת נכשלה: ",
       "unknown_error": "unknown שגיאות",
-      "idle": "לחץ \"הפעל audit\" to scan the current הצג for WCAG 2.1 A and AA violations. The ראשון הפעל takes ~2 seconds to טען axe-core (~350 KB minified) from a CDN; subsequent runs are instant.",
+      "idle": "לחץ \"הפעל ביקורת\" כדי לסרוק את התצוגה הנוכחית לאיתור הפרות WCAG 2.1 A ו-AA. ההפעלה הראשונה נמשכת כ-2 שניות לטעינת axe-core (כ-350 KB ממוזער) מ-CDN; הפעלות עוקבות הן מיידיות.",
       "complete_prefix": "Audit השלם:",
       "complete_violations_middle": "violations across",
       "complete_elements_middle": "elements;",
@@ -11531,7 +11531,7 @@
       "summary_passes": "כללים שעברו",
       "summary_review": "דרושה סקירה",
       "summary_affected": "רכיבים מושפעים",
-      "no_violations": "✅ No WCAG 2.1 A/AA violations found in the current הצג by axe-core. (Note: automated audits catch ~30-50% of real accessibility issues. Combine with the keyboard tour, screen-reader preview, and ידני review.)",
+      "no_violations": "✅ לא נמצאו הפרות WCAG 2.1 A/AA בתצוגה הנוכחית על ידי axe-core. (הערה: ביקורות אוטומטיות מזהות כ-30-50% מבעיות הנגישות האמיתיות. שלב עם סיור המקלדת, תצוגה מקדימה של קורא המסך, וסקירה ידנית.)",
       "rule_singular": "כלל",
       "rule_plural": "כללים",
       "element_singular": "רכיב",
@@ -11539,7 +11539,7 @@
       "show_me": "הצג me",
       "learn_more": "למד יותר ↗",
       "affected_heading": "רכיבים מושפעים",
-      "tip": "טיפים: critical and serious issues are פתח by ברירת מחדל. לחץ \"הצג me\" on any rule to focus and highlight the ראשון affected element. axe-core covers ~30-50% of real accessibility issues; combine with the keyboard tour, screen-reader preview, and ידני review.",
+      "tip": "טיפ: בעיות קריטיות וחמורות פתוחות כברירת מחדל. לחץ \"הצג לי\" על כל כלל כדי למקד ולהדגיש את הרכיב המושפע הראשון. axe-core מכסה כ-30-50% מבעיות הנגישות האמיתיות; שלב עם סיור המקלדת, תצוגה מקדימה של קורא המסך, וסקירה ידנית.",
       "impact": {
         "critical_label": "קריטי",
         "serious_label": "חמור",
@@ -11553,11 +11553,11 @@
       "incomplete_heading": "Needs ידני review",
       "incomplete_help": "These rules could not be אוטומטית verified by axe-core. They commonly involve things like צבעים contrast on gradient backgrounds, scrolling regions, or צבעים meaning. A human needs to look and decide.",
       "rules": {
-        "color_contrast": "Some טקסט on זה page does not have enough contrast against its background. תלמידים with low vision (about 1 in 12 people) would have trouble reading it.",
+        "color_contrast": "לחלק מהטקסט בדף זה אין ניגודיות מספקת מול הרקע שלו. לתלמידים עם ראייה לקויה (בערך 1 מתוך 12 אנשים) יהיה קושי לקרוא אותו.",
         "color_contrast_enhanced": "Some טקסט does not meet the higher AAA contrast תקנים. AA-רמות תלמידים may still קרא it; AAA is the stricter target.",
         "image_alt": "Some תמונות do not have alt טקסט. תלמידים who השתמש screen readers (blind or low-vision תלמידים) will hear nothing or just a filename when זה תמונות appears.",
         "input_image_alt": "An תמונות כפתורים is missing alt טקסט. Screen reader users will not know what the כפתורים does.",
-        "button_name": "A כפתורים has no name a screen reader can announce. The תלמידים would hear only \"כפתורים\" with no context.",
+        "button_name": "לכפתור אין שם שקורא מסך יכול להכריז עליו. התלמיד ישמע רק \"button\" ללא הקשר.",
         "link_name": "A link has no טקסט or aria-label. Screen reader users will not know where it leads.",
         "label": "A form קלט has no label. תלמידים using screen readers or speech recognition will not know what to הזן.",
         "aria_required_attr": "An element has an ARIA role but is missing נדרש attributes. Screen reader users may get confusing or no מידע.",
@@ -11587,15 +11587,15 @@
     "screenreader": {
       "heading": "תצוגה מקדימה של הכרזת קורא מסך",
       "description": "בנה את רשימת מה שקורא מסך היה מכריז תוך תנועה דרך הדף בסדר הקריאה, ואז הקשב. כותרות, סימני דרך, קישורים, פקדי טפסים ותמונות עם טקסט חלופי נכללים. מודאל המעבדה עצמו לא נכלל. משתמש בסינתזת הדיבור המובנית בדפדפן (אותו סוג מנוע TTS שקוראי מסך אמיתיים משתמשים בו, כך שאיכות האודיו מייצגת את מה שתלמידים שומעים בפועל).",
-      "no_speech_warning": "Your browser does not expose the Web Speech API. נסה Chrome, Edge, or Firefox. The list will still build; you just will not hear the אודיו.",
+      "no_speech_warning": "הדפדפן שלך אינו חושף את Web Speech API. נסה Chrome, Edge, או Firefox. הרשימה עדיין תיבנה; אתה פשוט לא תשמע את השמע.",
       "build": "🔊 בנה תור הכרזות",
       "rescan": "סרוק דף מחדש",
       "play_all": "▶ שחק all",
       "stop": "⏹ עצור",
       "speed_label": "מהירות:",
       "speed_aria": "Playback מהירות",
-      "idle": "לחץ \"Build announcement queue\" to scan the page (excluding זה מעבדה) for everything a screen reader would announce: headings, landmarks, links, כפתורים, form controls, and תמונות with alt טקסט. תוכל then שחק the whole queue or any single פריטים.",
-      "empty": "No announceable elements found. The page might be empty, or the גלוי תוכן is all behind aria-hidden, or all the elements lack both a role and an accessible name. זה is itself a problem worth investigating.",
+      "idle": "לחץ \"בנה תור הכרזות\" כדי לסרוק את הדף (למעט מעבדה זו) עבור כל מה שקורא מסך יכריז עליו: כותרות, ציוני דרך, קישורים, כפתורים, פקדי טפסים, ותמונות עם טקסט חלופי. לאחר מכן תוכל להשמיע את כל התור או כל פריט בודד.",
+      "empty": "לא נמצאו רכיבים הניתנים להכרזה. ייתכן שהדף ריק, או שכל התוכן הגלוי נמצא מאחורי aria-hidden, או שלכל הרכיבים חסר גם role וגם שם נגיש. זוהי בעצמה בעיה שכדאי לחקור.",
       "queue_count_hint": "announcements queued. לחץ any פריטים to hear it. The element is highlighted on the page while it speaks.",
       "queue_built_prefix": "Built",
       "queue_built_suffix": "announcements (headings, landmarks, links, controls, and תמונות with alt טקסט).",
@@ -11603,13 +11603,13 @@
       "tts_unavailable": "Browser speech synthesis not זמין.",
       "play_one_title": "שחק זה announcement",
       "play_one_aria": "שחק announcement",
-      "tip": "טיפים: נסה playing the whole queue with your eyes closed. זה is a meaningful approximation of how a תלמידים using a screen reader navigates the page. If the announcements feel disorienting or דלג critical תוכן, זה is a problem to fix."
+      "tip": "טיפ: נסה להשמיע את כל התור בעיניים עצומות. זוהי קירוב משמעותי לאופן שבו תלמיד המשתמש בקורא מסך מנווט בדף. אם ההכרזות מרגישות מבלבלות או מדלגות על תוכן קריטי, זו בעיה שיש לתקן."
     },
     "simulators": {
       "heading": "סימולטורי מוגבלות",
       "description": "החלף a simulator to apply a CSS סנן to the page behind זה מעבדה. The מעבדה itself stays unfiltered so תוכל keep using these controls. לחץ a tile to הפעל; לחץ again to השבת. Only one simulator runs at a time.",
       "framing_strong": "Important framing:",
-      "framing_body": "simulators are imperfect approximations. They are useful for empathy-building and מהיר checks, NOT for verifying compliance. A protanopia סנן is NOT the same as protanopia. Real users have lived with their condition; you are seeing it for 60 seconds. השתמש simulators to surface obvious problems (צבעים-only מידע, low contrast, illegible טקסט), then מבחנים with real users when stakes matter.",
+      "framing_body": "סימולטורים הם קירובים לא מושלמים. הם שימושיים לבניית אמפתיה ולבדיקות מהירות, אך לא לאימות עמידה בדרישות. מסנן פרוטנופיה אינו זהה לפרוטנופיה. משתמשים אמיתיים חיים עם מצבם; אתה רואה אותו במשך 60 שניות. השתמש בסימולטורים כדי לחשוף בעיות ברורות (מידע מבוסס-צבע בלבד, ניגודיות נמוכה, טקסט לא קריא), ואז בדוק עם משתמשים אמיתיים כאשר הסיכון משמעותי.",
       "active_suffix": "· פעיל",
       "info_suffix": "· מידע",
       "blur_amount_label": "Blur amount:",
@@ -11617,7 +11617,7 @@
       "blur_amount_aria": "כמות טשטוש בפיקסלים",
       "stop": "עצור simulator",
       "motor_toast": "Motor impairment simulation: ראה the info כרטיסים.",
-      "tip": "טיפים: נסה the צבעים-blindness simulators on a שיעורים זה משתמש red/green to convey meaning (correct/incorrect, אזהרות/safe). If the meaning is lost in the simulation, the original design is failing תלמידים with זה condition. הוסף אייקונים, labels, or patterns alongside צבעים.",
+      "tip": "טיפ: נסה את סימולטורי עיוורון הצבעים על שיעור המשתמש באדום/ירוק כדי להעביר משמעות (נכון/לא נכון, אזהרה/בטוח). אם המשמעות אובדת בסימולציה, העיצוב המקורי מכשיל תלמידים עם מצב זה. הוסף אייקונים, תוויות, או דפוסים לצד הצבע.",
       "items": {
         "blur_label": "טשטוש לקויי ראייה",
         "blur_desc": "Approximates uncorrected low vision (חזותי acuity worse than 20/40). Roughly 4% of the population has uncorrected refractive שגיאות or other low-vision conditions; זה שתף is much higher among older adults and תלמידים with חזותי impairments.",
@@ -11643,17 +11643,17 @@
     "type_answer": "הקלד את תשובתך...",
     "type_guess": "הקלד את ניחושך ולחץ על Enter…",
     "experiment_title": "ניסויים title",
-    "research_question_q": "What שאלות is זה ניסויים trying to תשובות?",
+    "research_question_q": "על איזו שאלה ניסוי זה מנסה לענות?",
     "hypothesis_predict": "I predict זה...",
     "record_observations": "תעד תצפיות, מדידות או טבלאות נתונים...",
     "claim_evidence_reasoning": "Claim: ... Evidence: ... Reasoning: ...",
     "type_summary_after": "כתוב your summary here after the שיעורים...",
     "add_note": "הוסף note...",
-    "word_art_text_input": "Your מילים art טקסט...",
+    "word_art_text_input": "טקסט אמנות המילים שלך...",
     "describe_style_preset": "Describe a סגנונות or לחץ a preset above...",
     "icon_describe": "Describe the אייקונים (e.g., a microscope, a brain, etc.)",
-    "icon_refine_ai": "Refine אייקונים with בינה מלאכותית (e.g., צור it brighter)",
-    "edit_image_prompt": "ערוך תמונות: e.g. brighter צבעים, הוסף a border…",
+    "icon_refine_ai": "שכלל אייקון עם AI (לדוגמה, הפוך אותו לבהיר יותר)",
+    "edit_image_prompt": "ערוך תמונה: לדוגמה צבעים בהירים יותר, הוסף מסגרת…",
     "new_item_example": "חדש פריטים (e.g. photosynthesis)",
     "perspective_response": "I find the perspective of... יותר convincing because...",
     "doc_support_claim": "How do these מסמכים תמיכה or contradict זה claim?",
@@ -11662,7 +11662,7 @@
     "reflection_response": "כתוב your reflection here...",
     "audit_title_screen": "קצר title for screen readers",
     "describe_icon": "Describe the אייקונים (e.g., 'a ידידותי dragon doodle')",
-    "refine_icon": "Refine אייקונים with בינה מלאכותית (e.g., 'צור it blue', 'הוסף a gear')",
+    "refine_icon": "שכלל אייקון עם AI (לדוגמה, 'הפוך אותו לכחול', 'הוסף גלגל שיניים')",
     "chart_title": "תרשימים title",
     "lesson_title": "Today's שיעורים title",
     "cer_template": "Claim: ... Evidence: ... Reasoning: ...",
@@ -11674,7 +11674,7 @@
     "lingering_question": "What's one שאלות you still have after זה reading?",
     "add_a_term": "הוסף a מונחים...",
     "definition_optional": "הגדרות (אופציונלי)",
-    "custom_art_style": "Describe your מותאם אישית art סגנונות...",
+    "custom_art_style": "תאר את סגנון האמנות המותאם אישית שלך...",
     "type_your_language": "הקלד את שפתך (לדוגמה: סוואהילית, קריאולית האיטית, המונגית...)",
     "panel_narrator": "What's happening in זה לוחות? (narrator קול)",
     "who_speaker": "מי?",
@@ -11746,7 +11746,7 @@
     "remove_steps": "הסר שלבים",
     "step_by_step": "שלבים-by-שלבים הוראות",
     "remove_accordion": "הסר accordion",
-    "qa_pair": "שאלות and תשובות pair",
+    "qa_pair": "זוג שאלה ותשובה",
     "remove_qa": "הסר Q and A",
     "remove_definition": "הסר הגדרות",
     "pronunciation_audio": "Pronunciation אודיו",
