@@ -1949,7 +1949,7 @@ window.StemLab = window.StemLab || {
           elements.push(h('text', {
             key: 'hl-' + hh, x: xh, y: labelY,
             textAnchor: 'middle', fontSize: 9, fill: '#64748b'
-          }, (hh % 2 === 0 ? hh / 2 : hh + '/2')));
+          }, hh + '/2')); // hh is always odd here (even/whole marks skipped above)
         }
       }
 
@@ -11078,16 +11078,14 @@ window.StemLab = window.StemLab || {
           h('canvas', {
             ref: function(cvEl) {
               if (!cvEl) return;
-              if (cvEl._efAnim) return;
+              if (cvEl._efDone) return;
+              cvEl._efDone = true;
               var c2 = cvEl.getContext('2d');
               var W = cvEl.offsetWidth || 600;
               var H = cvEl.offsetHeight || 180;
               cvEl.width = W * 2; cvEl.height = H * 2;
               c2.scale(2, 2);
-              var start = performance.now();
               function drawEf() {
-                if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._efAnim); return; }
-                var t = (performance.now() - start) / 1000;
                 c2.fillStyle = '#020210';
                 c2.fillRect(0, 0, W, H);
                 var fracs = [
@@ -11126,13 +11124,18 @@ window.StemLab = window.StemLab || {
                 c2.fillRect(8, H - 14, W - 16, 12);
                 c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#f472b6'; c2.textAlign = 'center';
                 c2.fillText('Multiply numerator & denominator by same number \u2192 same value, different form', W / 2, H - 5);
-                cvEl._efAnim = requestAnimationFrame(drawEf);
+                // Static scene (no time/phase consumed) \u2014 draw once, not a 60fps loop.
               }
               drawEf();
               var ro = new ResizeObserver(function() {
+                // Disconnect on detach so this always-mounted banner's observer doesn't leak;
+                // reset the transform before re-scaling so DPR scaling can't accumulate.
+                if (!cvEl.isConnected) { ro.disconnect(); cvEl._efRO = null; return; }
                 W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
+                drawEf();
               });
+              cvEl._efRO = ro;
               ro.observe(cvEl);
             },
             style: { width: '100%', height: '100%', display: 'block' }
