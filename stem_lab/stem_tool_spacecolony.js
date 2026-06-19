@@ -485,6 +485,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           ];
           var seasonIndex2 = Math.floor((turn % 40) / 10); // 4 seasons × 10 turns each = 40-turn cycle
           var seasonCycle = { id: seasonDefs[seasonIndex2].id, index: seasonIndex2, turnsLeft: 10 - (turn % 10) };
+          // The active season drives the per-turn production/bonus effects below. Without this the
+          // Advance-Turn handler threw `ReferenceError: activeSeason is not defined` (it ran every turn),
+          // which aborted turn processing once any building existed.
+          var activeSeason = seasonDefs[seasonIndex2] || { effect: {} };
 
           // TTS helper — prefers Kokoro TTS when available, falls back to browser TTS
           function colonySpeak(text2, voice) {
@@ -1603,14 +1607,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       weather: wx ? wx.name : null,
                       terraform: newTf,
                       tfGain: tfGain,
-                      happiness: newHappy,
+                      happiness: (d.colonyHappiness || 70), // back-filled with the post-turn value below
                       population: settlers.length,
                       era: era,
                       events: []
                     };
                     if (wx) _turnSummary.events.push(wx.icon + ' ' + wx.name);
-                    if (newHappy < 30) _turnSummary.events.push('\uD83D\uDE21 Colony Unrest');
-                    if (newHappy > 80) _turnSummary.events.push('\u2728 Golden Age');
+                    // Happiness-driven event tags are appended in the back-fill below, once newHappy exists.
                     upd('turnSummary', _turnSummary);
                     // ══ Apply Fate Roll Effects ══
                     if (fateRoll) {
@@ -1808,6 +1811,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     if (avgMorale < 50) newHappy = Math.max(0, newHappy - 3);
                     if (wx) newHappy = Math.max(0, newHappy - 2);
                     upd('colonyHappiness', newHappy);
+                    // Back-fill the turn-summary happiness readout + unrest/golden-age tags now that
+                    // newHappy is known (the summary object is built earlier in this handler).
+                    if (_turnSummary) {
+                      _turnSummary.happiness = newHappy;
+                      if (newHappy < 30) _turnSummary.events.push('😡 Colony Unrest');
+                      else if (newHappy > 80) _turnSummary.events.push('✨ Golden Age');
+                    }
 
                     // Happiness affects production (Civ-style)
                     if (newHappy < 30) {
@@ -1877,10 +1887,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       }
                     }
 
-                    // Season bonuses
-                    if (activeSeason.effect.materialBonus) nr2.materials += activeSeason.effect.materialBonus;
-                    if (activeSeason.effect.energyBonus) nr2.energy += activeSeason.effect.energyBonus;
-                    if (activeSeason.effect.heal) settlers.forEach(function (s9) { s9.health = Math.min(100, s9.health + activeSeason.effect.heal); });
+                    // Season effects — apply the active season's per-turn resource deltas so each season
+                    // actually delivers what its description promises (Bloom +2 food, Dry +2 energy/-1 water,
+                    // Storm +3 science, Calm none). seasonDefs uses flat resource keys.
+                    var seasonEff = activeSeason.effect || {};
+                    if (seasonEff.food) nr2.food = Math.max(0, nr2.food + seasonEff.food);
+                    if (seasonEff.energy) nr2.energy = Math.max(0, nr2.energy + seasonEff.energy);
+                    if (seasonEff.water) nr2.water = Math.max(0, nr2.water + seasonEff.water);
+                    if (seasonEff.science) nr2.science = Math.max(0, nr2.science + seasonEff.science);
 
                     // Apply policy bonuses to resources
                     if (activePolicy) {
@@ -2027,7 +2041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               },
                 React.createElement('button', {
                   onClick: function () { upd('turnSummary', null); },
-                  className: 'absolute top-1 right-2 text-slate-600 hover:text-white text-sm', title: 'Dismiss'
+                  className: 'absolute top-1 right-2 text-slate-400 hover:text-white text-sm', title: 'Dismiss'
                 }, '\u2715'),
                 React.createElement('div', { className: 'text-[11px] font-bold text-indigo-300 mb-1.5' }, '\uD83D\uDCCB Turn ' + d.turnSummary.turn + ' Report'),
                 React.createElement('div', { className: 'grid grid-cols-5 gap-1 mb-1.5' },
@@ -2041,11 +2055,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     var val = rd[2]; var col = val > 0 ? '#4ade80' : val < 0 ? '#f87171' : '#94a3b8';
                     return React.createElement('div', { key: rd[1], className: 'text-center rounded-lg py-1', style: { backgroundColor: col + '15', border: '1px solid ' + col + '30' } },
                       React.createElement('div', { className: 'text-[11px]', style: { color: col } }, rd[0] + ' ' + (val > 0 ? '+' : '') + val),
-                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, rd[1])
+                      React.createElement('div', { className: 'text-[11px] text-slate-300' }, rd[1])
                     );
                   })
                 ),
-                React.createElement('div', { className: 'flex gap-2 text-[11px] text-slate-600 flex-wrap' },
+                React.createElement('div', { className: 'flex gap-2 text-[11px] text-slate-300 flex-wrap' },
                   d.turnSummary.tfGain > 0 && React.createElement('span', { className: 'text-emerald-400' }, '\uD83C\uDF0D +' + d.turnSummary.tfGain + '% terraform (' + d.turnSummary.terraform + '%)'),
                   React.createElement('span', null, '\uD83D\uDE42 ' + d.turnSummary.happiness + '%'),
                   React.createElement('span', null, '\uD83D\uDC65 ' + d.turnSummary.population),
