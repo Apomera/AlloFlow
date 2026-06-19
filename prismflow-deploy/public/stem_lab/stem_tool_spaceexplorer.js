@@ -1099,7 +1099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', { className: 'text-xl' }, tech.emoji),
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold ' + (owned ? 'text-green-300' : 'text-white') }, tech.name + (owned ? ' \u2705' : '')),
-                  h('p', { className: 'text-[11px] text-slate-600' }, tech.desc)
+                  h('p', { className: 'text-[11px] text-slate-400' }, tech.desc)
                 ),
                 !owned && h('button', {
                   disabled: !canBuy,
@@ -1109,7 +1109,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (addToast) addToast('\u26A1 ' + tech.name + ' unlocked!', 'success');
                     addXP(15);
                   },
-                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
+                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-400 cursor-not-allowed')
                 }, tech.cost + ' \uD83D\uDD2C')
               );
             })
@@ -1134,6 +1134,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   cvEl.width = W * 2; cvEl.height = H * 2; ctx2.scale(2, 2);
                   var tick = 0;
                   function draw() {
+                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._briefAnim); return; } // self-terminate if the canvas detached (fail-safe beyond the MutationObserver)
                     cvEl._briefAnim = requestAnimationFrame(draw);
                     tick++;
                     ctx2.fillStyle = '#020010'; ctx2.fillRect(0, 0, W, H);
@@ -1165,10 +1166,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('h4', { className: 'text-lg font-black text-white flex items-center gap-2' }, destination.emoji, ' Mission to ' + destination.name),
               h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, destination.desc),
               h('div', { className: 'grid grid-cols-2 gap-2 text-[11px]' },
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Gravity: '), h('span', { className: 'text-white font-bold' }, destination.gravity + ' m/s\u00B2')),
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Temp: '), h('span', { className: 'text-white font-bold' }, destination.temp)),
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Atmosphere: '), h('span', { className: 'text-white font-bold' }, destination.atmosphere)),
-                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-600' }, 'Travel: '), h('span', { className: 'text-white font-bold' }, destination.travelDays + ' days'))
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-400' }, 'Gravity: '), h('span', { className: 'text-white font-bold' }, destination.gravity + ' m/s\u00B2')),
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-400' }, 'Temp: '), h('span', { className: 'text-white font-bold' }, destination.temp)),
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-400' }, 'Atmosphere: '), h('span', { className: 'text-white font-bold' }, destination.atmosphere)),
+                h('div', { className: 'bg-white/5 rounded-lg p-2' }, h('span', { className: 'text-slate-400' }, 'Travel: '), h('span', { className: 'text-white font-bold' }, destination.travelDays + ' days'))
               ),
               h('div', { className: 'flex flex-wrap gap-1' },
                 destination.hazards.map(function(hz) {
@@ -1177,14 +1178,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
-                h('p', { className: 'text-[11px] text-slate-600 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+                h('p', { className: 'text-[11px] text-slate-400 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   crew.map(function(c) {
                     return h('div', { key: c.name, className: 'flex items-center gap-2 bg-white/5 rounded-lg p-2' },
                       h('span', { className: 'text-lg' }, c.emoji),
                       h('div', null,
                         h('p', { className: 'text-[11px] font-bold text-white' }, c.name),
-                        h('p', { className: 'text-[11px] text-slate-600' }, c.role),
+                        h('p', { className: 'text-[11px] text-slate-400' }, c.role),
                         h('p', { className: 'text-[11px] text-indigo-300 italic' }, '"' + c.quote + '"')
                       )
                     );
@@ -1646,7 +1647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 );
               })
             ),
-            h('p', { className: 'text-[11px] text-slate-600 mt-2 text-center', 'aria-hidden': 'true' },
+            h('p', { className: 'text-[11px] text-slate-400 mt-2 text-center', 'aria-hidden': 'true' },
               (unlockedTech.indexOf('ai_copilot') >= 0
                 ? 'AI Co-Pilot active — outcomes shown. Press 1, 2, or 3 to choose.'
                 : 'Press 1, 2, or 3 to choose')
@@ -1695,7 +1696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               missionLog.slice().reverse().map(function(entry, i) {
                 return h('div', { key: i, className: 'flex justify-between text-[11px]' },
                   h('span', { className: 'text-slate-300' }, entry.text),
-                  h('span', { className: 'text-slate-600 font-mono' }, entry.time)
+                  h('span', { className: 'text-slate-400 font-mono' }, entry.time)
                 );
               })
             )
@@ -1837,7 +1838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
             h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
             h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
-            h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Periapsis ≈ ' + perihelion.toFixed(2) + ' AU, Apoapsis ≈ ' + aphelion.toFixed(2) + ' AU')
+            h('div', { className: 'text-[10px] text-slate-400 mt-1 font-mono' }, 'Periapsis ≈ ' + perihelion.toFixed(2) + ' AU, Apoapsis ≈ ' + aphelion.toFixed(2) + ' AU')
           ),
           h('div', { className: 'grid grid-cols-3 gap-3' },
             [{ k: 'sma', l: 'Semi-major axis (AU)', mn: 0.4, mx: 10, st: 0.1 },
@@ -1871,7 +1872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       }
 
       // Fallback
-      return h('div', { className: 'text-center p-6 text-slate-600 text-xs' }, 'Loading Space Explorer...');
+      return h('div', { className: 'text-center p-6 text-slate-400 text-xs' }, 'Loading Space Explorer...');
     }
   });
 
