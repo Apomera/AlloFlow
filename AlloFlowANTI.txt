@@ -15715,6 +15715,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast(t('toasts.doc_pipeline_loading'), 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
+  // Recompute the Issue-Resolution lists (Resolved/Persisted/Newly-Introduced) after each follow-up
+  // round so fixed issues drop off instead of going stale. No-op fallback returns the prior object.
+  const recomputeIssueResolution = (_docPipeline && _docPipeline.recomputeIssueResolution) ? _docPipeline.recomputeIssueResolution : (prev) => (prev || null);
   const runAxeAudit = _docPipeline ? _docPipeline.runAxeAudit : async () => ({});
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
@@ -15880,6 +15883,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           continue;
         }
         const _newPlain = _plainTextOf(result.html);
+        // Recompute Issue-Resolution against THIS round's fresh audit so fixed issues drop off the
+        // Newly-Introduced / Remaining lists (computed once in fixAndVerifyPdf, otherwise stale). The
+        // baseline (original pre-fix issues) rides on cur.issueResolution and is unchanged across rounds.
+        let _roundIR = cur.issueResolution;
+        try { const _r = recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
@@ -15888,6 +15896,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // verification (user report 2026-06-11) — carried forward above
           // via the !reVerify break; here reVerify is always present.
           verificationAudit: reVerify,
+          issueResolution: _roundIR,
           afterScore: newScore,
           _scoreIsBlended: _det !== null,
           axeScore: result.axe && typeof result.axe.score === 'number' ? result.axe.score : cur.axeScore,
@@ -15908,6 +15917,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           accessibleHtml: snapshot.accessibleHtml,
           axeAudit: snapshot.axeAudit,
           verificationAudit: snapshot.verificationAudit,
+          issueResolution: snapshot.issueResolution,
           afterScore: snapshot.afterScore,
           _scoreIsBlended: snapshot._scoreIsBlended,
           axeScore: snapshot.axeScore,
@@ -15946,7 +15956,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
-  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, addToast, pdfAutoSaveProject]);
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, addToast, pdfAutoSaveProject]);
 
   const saveProjectToFile = React.useCallback((isAuto) => {
     const cur = pdfFixResultRef.current;

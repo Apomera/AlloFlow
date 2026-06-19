@@ -894,6 +894,55 @@ function _tableContentPreserved(beforeHtml, afterHtml, index, op) {
   return _r;
 }
 
+// ── Issue-resolution diff (shared, 2026-06-19) ───────────────────────────────
+// Diffs the pre-fix audit's issues against a verification audit → {resolved, persisted, introduced,
+// summary, baseline}. Extracted so a FOLLOW-UP pass (auto-continue, Fix-Remaining, Additional-Sweep)
+// can RECOMPUTE against a fresh verification — otherwise the "Newly Introduced" / "Remaining" lists
+// go stale, still showing issues a later pass already fixed. `baseline` is the flattened pre-fix
+// issues, carried on the result so the recompute needs only the new verification.
+var _flattenAuditIssues = function(audit) {
+  if (!audit) return [];
+  return []
+    .concat((audit.critical || []).map(function(i){ return Object.assign({}, i, { severity: 'critical' }); }))
+    .concat((audit.serious || audit.major || []).map(function(i){ return Object.assign({}, i, { severity: 'serious' }); }))
+    .concat((audit.moderate || []).map(function(i){ return Object.assign({}, i, { severity: 'moderate' }); }))
+    .concat((audit.minor || []).map(function(i){ return Object.assign({}, i, { severity: 'minor' }); }));
+};
+var _diffIssueResolution = function(preFlat, verification) {
+  if (!Array.isArray(preFlat) || !verification || !Array.isArray(verification.issues)) return null;
+  var _keyOf = function(s){ return (s || '').toLowerCase().substring(0, 40); };
+  var _postFlat = (verification.issues || []).map(function(i){ return Object.assign({}, i); });
+  var _postKeys = new Set(_postFlat.map(function(i){ return _keyOf(i.issue); }).filter(Boolean));
+  var _preKeys = new Set(preFlat.map(function(i){ return _keyOf(i.issue); }).filter(Boolean));
+  var _resolved = preFlat.filter(function(i){ var k = _keyOf(i.issue); return k && !_postKeys.has(k); });
+  var _persisted = preFlat.filter(function(i){ var k = _keyOf(i.issue); return k && _postKeys.has(k); });
+  var _introduced = _postFlat.filter(function(i){ var k = _keyOf(i.issue); return k && !_preKeys.has(k); });
+  var _bySev = function(arr, sev){ return arr.filter(function(i){ return (i.severity || '').toLowerCase() === sev; }).length; };
+  // NB: assigned-then-returned (not a bare `return {`) so check-pipeline-integrity.js's naive
+  // first-`\n  return {` scan still finds the FACTORY's export block below, not this helper's object.
+  var _ir = {
+    resolved: _resolved,
+    persisted: _persisted,
+    introduced: _introduced,
+    baseline: preFlat,
+    summary: {
+      resolvedCount: _resolved.length,
+      persistedCount: _persisted.length,
+      introducedCount: _introduced.length,
+      totalPre: preFlat.length,
+      resolvedBySeverity: { critical: _bySev(_resolved, 'critical'), serious: _bySev(_resolved, 'serious'), moderate: _bySev(_resolved, 'moderate'), minor: _bySev(_resolved, 'minor') },
+      persistedBySeverity: { critical: _bySev(_persisted, 'critical'), serious: _bySev(_persisted, 'serious'), moderate: _bySev(_persisted, 'moderate'), minor: _bySev(_persisted, 'minor') },
+    },
+  };
+  return _ir;
+};
+// Recompute after a follow-up pass: reuse the baseline captured on the prior result + the new audit.
+var _recomputeIssueResolution = function(prev, verification) {
+  var baseline = (prev && Array.isArray(prev.baseline)) ? prev.baseline : null;
+  if (!baseline) return prev || null; // no baseline (older result / no original audit) → keep as-is
+  return _diffIssueResolution(baseline, verification);
+};
+
 var createDocPipeline = function(deps) {
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
@@ -15688,45 +15737,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // code (lowercased + first 40 chars) so a "missing alt text" pre-fix and
       // a "missing alt text" post-fix match as the same issue even if wording
       // shifted slightly. Attached to result as `issueResolution` for UI.
-      let _issueResolution = null;
-      if (_auditResult && verification && Array.isArray(verification.issues)) {
-        const _keyOf = (s) => (s || '').toLowerCase().substring(0, 40);
-        const _preFlat = []
-          .concat((_auditResult.critical || []).map(i => ({ ...i, severity: 'critical' })))
-          .concat((_auditResult.serious || _auditResult.major || []).map(i => ({ ...i, severity: 'serious' })))
-          .concat((_auditResult.moderate || []).map(i => ({ ...i, severity: 'moderate' })))
-          .concat((_auditResult.minor || []).map(i => ({ ...i, severity: 'minor' })));
-        const _postFlat = (verification.issues || []).map(i => ({ ...i }));
-        const _postKeys = new Set(_postFlat.map(i => _keyOf(i.issue)).filter(Boolean));
-        const _preKeys = new Set(_preFlat.map(i => _keyOf(i.issue)).filter(Boolean));
-        const _resolved = _preFlat.filter(i => { const k = _keyOf(i.issue); return k && !_postKeys.has(k); });
-        const _persisted = _preFlat.filter(i => { const k = _keyOf(i.issue); return k && _postKeys.has(k); });
-        const _introduced = _postFlat.filter(i => { const k = _keyOf(i.issue); return k && !_preKeys.has(k); });
-        const _bySev = (arr, sev) => arr.filter(i => (i.severity || '').toLowerCase() === sev).length;
-        _issueResolution = {
-          resolved: _resolved,
-          persisted: _persisted,
-          introduced: _introduced,
-          summary: {
-            resolvedCount: _resolved.length,
-            persistedCount: _persisted.length,
-            introducedCount: _introduced.length,
-            totalPre: _preFlat.length,
-            resolvedBySeverity: {
-              critical: _bySev(_resolved, 'critical'),
-              serious: _bySev(_resolved, 'serious'),
-              moderate: _bySev(_resolved, 'moderate'),
-              minor: _bySev(_resolved, 'minor'),
-            },
-            persistedBySeverity: {
-              critical: _bySev(_persisted, 'critical'),
-              serious: _bySev(_persisted, 'serious'),
-              moderate: _bySev(_persisted, 'moderate'),
-              minor: _bySev(_persisted, 'minor'),
-            },
-          },
-        };
-      }
+      // Issue-resolution diff (extracted to module-level _diffIssueResolution so a follow-up pass can
+      // RECOMPUTE against a fresh audit — see _recomputeIssueResolution + runAutoFixLoop). The returned
+      // object carries `baseline` (the flattened pre-fix issues) for exactly that recompute.
+      let _issueResolution = (_auditResult && verification && Array.isArray(verification.issues))
+        ? _diffIssueResolution(_flattenAuditIssues(_auditResult), verification)
+        : null;
 
       // ── Store results ──
       // sourceText + finalText feed the "Diff view" button in the remediation UI so
@@ -26091,6 +26107,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     refixChunk: _wrapAsync(refixChunk),
     getChunkState: _wrap(getChunkState),
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
+    // Recompute the Resolved/Persisted/Newly-Introduced lists against a fresh audit after a follow-up
+    // pass, so they reflect the CURRENT doc instead of going stale (recompute-on-incremental-commit).
+    recomputeIssueResolution: _recomputeIssueResolution,
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     // Redaction infra (true removal + safety verify). Pure module-scope helpers; the UI flow
     // (select → confirm → redactDocument → block-if-not-clean) is wired separately. (redaction)
