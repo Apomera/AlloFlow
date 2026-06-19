@@ -1443,7 +1443,7 @@
         pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }),
         pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showFilter', !showFilter); }),
         pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }),
-        pillBtn('\uD83C\uDF2C\uFE0F Wind', false, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }),
+        pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }),
         el('button', { onClick: applyGravity, disabled: !blocks.length, title: 'Apply gravity (drop floating blocks)', style: { background: blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
         // Screenshot + Sound
         el('button', { onClick: takeScreenshot, title: 'Screenshot', style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
@@ -1827,7 +1827,7 @@
             el('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
             el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.6 } },
               el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y Redo'),
-              el('div', null, '1-9 Select shape \u2022 P/E/T Mode'),
+              el('div', null, '1-9 Select shape \u2022 P/E/A Mode (place/erase/paint)'),
               el('div', null, 'S Screenshot \u2022 G Gravity')
             )
           ),
