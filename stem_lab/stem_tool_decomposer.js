@@ -1087,6 +1087,7 @@
           var wasDecomposed = false;
 
           function draw() {
+            if (!canvas.isConnected) { cancelAnimationFrame(animId); canvas._dcAnimRunning = false; return; } // stop on tab-switch/unmount (was leaking)
             // Check for material change
             if (canvas.dataset.formula !== curFormula) {
               rebuildPositions();
@@ -2590,6 +2591,7 @@
                   var tick = 0;
 
                   function drawState() {
+                    if (!canvas.isConnected) { cancelAnimationFrame(canvas._stateAnimId); return; } // stop on tab-switch/unmount (was leaking)
                     tick++;
                     c2.clearRect(0, 0, cw, ch2);
 
@@ -2693,8 +2695,8 @@
                 ),
                 h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-2 text-center' },
                   h('div', { className: 'text-lg' }, '\uD83D\uDCA7'),
-                  h('div', { className: 'text-xs font-bold text-cyan-700' }, geo.shape || 'Shape'),
-                  h('div', { className: 'text-sm font-black text-cyan-900' }, geo.angle || '-')
+                  h('div', { className: 'text-xs font-bold text-cyan-700' }, 'Liquid Range'),
+                  h('div', { className: 'text-sm font-black text-cyan-900' }, (geo.mp !== null && geo.bp !== null) ? geo.mp + '\u2013' + geo.bp + '\u00B0C' : 'N/A')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-2 text-center' },
                   h('div', { className: 'text-lg' }, '\uD83D\uDD25'),
