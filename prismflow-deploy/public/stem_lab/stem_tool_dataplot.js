@@ -512,7 +512,7 @@ window.StemLab = window.StemLab || {
         chk('first_point', points.length >= 1);
         chk('ten_points', points.length >= 10);
         chk('fifty_points', points.length >= 50);
-        chk('strong_r2', n >= 2 && Math.abs(regR2) > 0.95);
+        chk('strong_r2', n >= 2 && Math.max(0, regR2) > 0.95);
         chk('quiz_5', (s.dpScore || dpScore) >= 5);
         chk('streak_5', (s.dpStreak || dpStreak) >= 5);
         chk('all_charts', Object.keys(s.chartsViewed || chartsViewed).length >= 7);
@@ -804,7 +804,7 @@ window.StemLab = window.StemLab || {
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
           h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCA Data Plotter'),
           h('span', { className: 'text-xs text-slate-600' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
-          n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
+          n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
           h('div', { className: 'ml-auto flex gap-1.5' },
             h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-600 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\u2328\uFE0F'),
@@ -947,8 +947,8 @@ window.StemLab = window.StemLab || {
                 var gy = yMin + gi * (yMax - yMin) / nt;
                 elems.push(h('line', { key: 'gv'+gi, x1: toSX(gx), y1: pad, x2: toSX(gx), y2: H-pad, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
                 elems.push(h('line', { key: 'gh'+gi, x1: pad, y1: toSY(gy), x2: W-pad, y2: toSY(gy), stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
-                elems.push(h('text', { key: 'xt'+gi, x: toSX(gx), y: H-pad+14, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '11px' } }, (Math.round(gx*10)/10).toString()));
-                elems.push(h('text', { key: 'yt'+gi, x: pad-5, y: toSY(gy)+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '11px' } }, (Math.round(gy*10)/10).toString()));
+                elems.push(h('text', { key: 'xt'+gi, x: toSX(gx), y: H-pad+14, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, (Math.round(gx*10)/10).toString()));
+                elems.push(h('text', { key: 'yt'+gi, x: pad-5, y: toSY(gy)+3, textAnchor: 'end', fill: '#64748b', style: { fontSize: '11px' } }, (Math.round(gy*10)/10).toString()));
               }
               return elems;
             })(),
@@ -1190,17 +1190,17 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'flex items-center gap-3 flex-wrap' },
               h('span', { className: 'text-xs font-mono text-slate-700' }, regEq),
-              h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
+              h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
               h('span', { className: 'text-[11px] text-slate-600' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
               n >= 3 && h('span', { className: 'text-[11px] font-bold text-indigo-500', title: 'Pearson r / Spearman \u03C1', onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
             ),
             // Correlation strength bar
             h('div', { className: 'flex items-center gap-2 mt-1.5' },
               h('div', { className: 'flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden' },
-                h('div', { style: { width: (Math.abs(regR2)*100) + '%', height: '100%', borderRadius: '9999px', backgroundColor: Math.abs(regR2) > 0.8 ? '#22c55e' : Math.abs(regR2) > 0.5 ? '#eab308' : Math.abs(regR2) > 0.3 ? '#f97316' : '#ef4444', transition: 'all 0.4s' } })
+                h('div', { style: { width: (Math.max(0, regR2)*100) + '%', height: '100%', borderRadius: '9999px', backgroundColor: Math.max(0, regR2) > 0.8 ? '#22c55e' : Math.max(0, regR2) > 0.5 ? '#eab308' : Math.max(0, regR2) > 0.3 ? '#f97316' : '#ef4444', transition: 'all 0.4s' } })
               ),
-              h('span', { className: 'text-[11px] font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') },
-                Math.abs(regR2) > 0.9 ? '\u2B50 Very Strong' : Math.abs(regR2) > 0.7 ? 'Strong' : Math.abs(regR2) > 0.5 ? 'Moderate' : Math.abs(regR2) > 0.3 ? 'Weak' : 'Very Weak'
+              h('span', { className: 'text-[11px] font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') },
+                Math.max(0, regR2) > 0.9 ? '\u2B50 Very Strong' : Math.max(0, regR2) > 0.7 ? 'Strong' : Math.max(0, regR2) > 0.5 ? 'Moderate' : Math.max(0, regR2) > 0.3 ? 'Weak' : 'Very Weak'
               )
             )
           ),
@@ -1557,9 +1557,9 @@ window.StemLab = window.StemLab || {
           n === 0 ? '\uD83D\uDCCA Click the chart to plot points, or load a dataset to get started! Try the Tools tab for data generation.'
             : n < 3 ? '\uD83D\uDCA1 Add more points to see regression analysis. At least 2 needed for a trend line!'
             : stepMode ? '\uD83D\uDC63 Step-through mode: press \u2192 or click Next to reveal one point at a time. Watch how R\u00B2 changes!'
-            : Math.abs(regR2) > 0.9 ? '\u2B50 Nearly perfect correlation! Toggle the 95% CI band (C key) to see the confidence interval.'
-            : Math.abs(regR2) > 0.7 ? '\uD83D\uDCC8 Strong trend! Try the Z-Score Calculator in Statistics to explore individual values.'
-            : Math.abs(regR2) < 0.3 ? '\uD83E\uDD14 Weak correlation. Check Spearman \u03C1 \u2014 there may be a non-linear monotonic trend!'
+            : Math.max(0, regR2) > 0.9 ? '\u2B50 Nearly perfect correlation! Toggle the 95% CI band (C key) to see the confidence interval.'
+            : Math.max(0, regR2) > 0.7 ? '\uD83D\uDCC8 Strong trend! Try the Z-Score Calculator in Statistics to explore individual values.'
+            : Math.max(0, regR2) < 0.3 ? '\uD83E\uDD14 Weak correlation. Check Spearman \u03C1 \u2014 there may be a non-linear monotonic trend!'
             : '\uD83D\uDCA1 Try Histogram mode and toggle Normal Curve to see how your data compares to a bell curve!'
         ),
 
