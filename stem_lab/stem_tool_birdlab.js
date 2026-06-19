@@ -2660,7 +2660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       identify: 'Wings outstretched, minimal wingbeats. Long pointed wings.' },
 
     { name: 'Diving (Falcons, Gannets, Kingfishers)',
-      pattern: 'Folded wings + tucked body. Falcons (Peregrines) stoop from height — reach 200+ mph. Gannets dive straight into water from 50+ ft. Kingfishers dive from perches.',
+      pattern: 'Folded wings + tucked body. Falcons (Peregrines) stoop from height — reach 240+ mph (~390 km/h). Gannets dive straight into water from 50+ ft. Kingfishers dive from perches.',
       species: 'Peregrine Falcon, Northern Gannet, Belted Kingfisher, Osprey',
       energy: 'Brief peak-energy effort. Body adapted (eyes, ears protected).',
       timing: 'Hunting.',
@@ -2859,7 +2859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       group: 'Large falcon', size: '15–20 in, 1.5 lb', wingspan: '~3.5 ft',
       voice: 'Wailing "wail" cry near nest.',
       diet: 'Medium-sized birds (ducks, pigeons, songbirds)',
-      hunting: 'Stoops from height at 200+ mph — fastest animal',
+      hunting: 'Stoops from height at 240+ mph — fastest animal',
       breeding: 'Cliff ledges; many urban Maine peregrines on buildings + bridges',
       maine_status: 'Recovered breeder — from 0 pairs (1960s) to 30+ pairs today',
       conservation: 'Listed Endangered to Recovered after DDT recovery + reintroduction. State Endangered listing reduced.' },
@@ -10774,7 +10774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         {
           id: 'cone', label: 'Cone (seed-cracker)',
           diet: 'Seeds — strong jaw muscles to crack hard shells',
-          examples: 'Northern Cardinal, House Finch, Black-capped Chickadee, sparrows',
+          examples: 'Northern Cardinal, House Finch, Evening Grosbeak, sparrows',
           svg: function(h) { return h('path', { d: 'M 0 10 L 20 8 L 20 12 Z', fill: '#3a3a3a' }); }
         },
         {
@@ -19986,15 +19986,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
       if (view === 'quotes') return h(QuotesView);
       if (view === 'wingHunt') return h(function() {
-        var d2 = (toolData && toolData.birdLab) || {};
-        var iq = d2.wingHunt || { wingArea: 4, mass: 500, ar: 8, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) {
-          setToolData(function(prev) {
-            var prior = (prev && prev.birdLab) || {};
-            var st = Object.assign({}, prior.wingHunt || iq, patch);
-            return Object.assign({}, prev, { birdLab: Object.assign({}, prior, { wingHunt: st }) });
-          });
-        }
+        // Use the tool's own d/upd (ctx-bound). This view previously referenced bare
+        // `toolData`/`setToolData`, which don't exist in scope — so it threw a ReferenceError
+        // and rendered blank (the registry try/catch swallowed it to null).
+        var iq = d.wingHunt || { wingArea: 4, mass: 500, ar: 8, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        function setIQ(patch) { upd('wingHunt', Object.assign({}, d.wingHunt || iq, patch)); }
         var wingLoading = iq.mass / iq.wingArea;
         var flightStyle;
         if (wingLoading < 25 && iq.ar > 10) flightStyle = 'soarer';
