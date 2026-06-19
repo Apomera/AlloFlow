@@ -3171,8 +3171,8 @@
               kids.push(h('table', { key: 'tbl', className: 'mt-2 text-xs border-collapse' },
                 h('thead', null, h('tr', null, tbl.columns.map(function (c, i) { return h('th', { key: 'th' + i, className: 'border px-2 py-0.5 text-left bg-slate-50' }, c); }))),
                 h('tbody', null, tbl.rows.map(function (r, i) {
-                  if (r.boundary) return h('tr', { key: 'tr' + i }, h('td', { colSpan: 4, className: 'border px-2 py-0.5 italic text-slate-500' }, r.label));
-                  if (r.reference) return h('tr', { key: 'tr' + i }, h('td', { colSpan: 4, className: 'border px-2 py-0.5', style: { color: '#0e7490' } }, r.label));
+                  if (r.boundary) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tbl.columns.length, className: 'border px-2 py-0.5 italic text-slate-500' }, r.label));
+                  if (r.reference) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tbl.columns.length, className: 'border px-2 py-0.5', style: { color: '#0e7490' } }, r.label));
                   return h('tr', { key: 'tr' + i },
                     h('td', { className: 'border px-2 py-0.5' }, String(r.x)),
                     h('td', { className: 'border px-2 py-0.5' }, String(r.y)),
