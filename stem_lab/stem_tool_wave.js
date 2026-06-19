@@ -2445,7 +2445,8 @@ const d = labToolData.wave;
             { id: 'polarization', label: 'Polarization', icon: '↕' },
             { id: 'doppler', label: 'Doppler effect', icon: '🚓' },
             { id: 'shockwaves', label: 'Shock waves', icon: '✈' },
-            { id: 'standingHunt', label: 'Standing-wave hunt', icon: '🎯' }
+            { id: 'standingHunt', label: 'Standing-wave hunt', icon: '🎯' },
+            { id: 'discoverWave', label: 'Discover f·λ=v', icon: '🔬' }
           ] },
           { id: 'sound', label: 'Sound & Music', color: 'amber', tabs: [
             { id: 'harmonics', label: 'Harmonics', icon: '🎵' },
@@ -2493,7 +2494,7 @@ const d = labToolData.wave;
             { id: 'famous', label: 'History', icon: '🕰' },
             { id: 'glossary', label: 'Glossary', icon: '📖' }
           ] }
-        , { id: 'discoverWave', label: 'Discover f·λ=v', icon: '🔬' }];
+        ];
         function renderBtn(s, accent) {
           var active = expSection === s.id;
           return React.createElement('button', {
@@ -2506,7 +2507,7 @@ const d = labToolData.wave;
           TAB_GROUPS.map(function(g) {
             return React.createElement('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
               React.createElement('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
-              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+              (g.tabs || []).map(function(s) { return renderBtn(s, g.color); })
             );
           })
         );
