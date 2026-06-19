@@ -178,7 +178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         { tok: ' Lyon',     pct: 1 },
         { tok: ' located',  pct: 1 }
       ],
-      note: 'Sharp distribution — the model has seen this fact thousands of times. Confidence is extremely high.'
+      note: 'Sharp distribution — the model has seen this pattern thousands of times. Confidence is extremely high.'
     },
     {
       context: 'My favorite color is',
@@ -3362,7 +3362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   h('div', { style: { background: '#f0fdf4', border: '2px solid #86efac', borderRadius: '10px', padding: '8px 10px' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: COLORS.good } },
                       h('span', null, '\u2713'), 'Sometimes RIGHT'),
-                    h('div', { style: { fontSize: '11px', color: COLORS.subtext, marginTop: '2px', lineHeight: 1.4 } }, 'Fact was in training data and the model retrieved the right pattern.')
+                    h('div', { style: { fontSize: '11px', color: COLORS.subtext, marginTop: '2px', lineHeight: 1.4 } }, 'The pattern was common in training data, so the model matched it (not a lookup — still prediction).')
                   ),
                   h('div', { style: { background: '#fef2f2', border: '2px solid #fecaca', borderRadius: '10px', padding: '8px 10px' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: COLORS.bad } },
@@ -4986,7 +4986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var errorsCount = passage.segments.filter(function(s) { return s.error; }).length;
 
         return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto' } },
-          topBar('4. Hallucination Spotter'),
+          topBar('5. Hallucination Spotter'),
           teacherNote('spotter'),
           h('p', { style: { fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5, marginTop: 0 } },
             'This passage is AI-generated, and ' + errorsCount + ' phrases are wrong. Click the phrases you think are hallucinated. When you\'re done, check your answers.'
@@ -5312,7 +5312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         }
 
         return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto' } },
-          topBar('5. When to Use AI — UDL rubric'),
+          topBar('6. When to Use AI — UDL rubric'),
           teacherNote('udl'),
           h('p', { style: { fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5, marginTop: 0 } },
             'The question is not "is AI good or bad" \u2014 it\'s "does AI REMOVE a barrier to the skill I\'m practicing, or does it REPLACE the skill itself?" ',
@@ -5740,7 +5740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           );
         }
         return h('div', { className: 'llm-lit-print-root', style: { padding: '20px', maxWidth: '960px', margin: '0 auto' } },
-          h('div', { className: 'llm-lit-no-print' }, topBar('6. Quick Reference')),
+          h('div', { className: 'llm-lit-no-print' }, topBar('7. Quick Reference')),
           h('div', { className: 'llm-lit-no-print' }, teacherNote('ref')),
           h('div', {
             className: 'llm-lit-no-print',
