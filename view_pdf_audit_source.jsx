@@ -7996,6 +7996,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             }} data-help-key="pdf_audit_view_adobe_report_btn" className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
                               🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% self-check)` : ''}
                             </button>
+                            {/* Inline per-rule PDF/UA-1 self-check on the SHIPPED bytes (2026-06-19). The per-rule
+                                detail was previously only in the downloadable Adobe report + transient gate messages;
+                                surface it here, always one click away. Honestly labeled — AlloFlow's own rules vs.
+                                the exported bytes, NOT ISO certification (prefer postExportValidator = the shipped
+                                file; fall back to the in-memory pdfUa1Checks). */}
+                            {(() => {
+                              const _pev = lastTaggedValidation && lastTaggedValidation.postExportValidator;
+                              const _checks = (_pev && Array.isArray(_pev.checks) && _pev.checks.length) ? _pev.checks
+                                : (lastTaggedValidation && lastTaggedValidation.pdfUa1Checks && Array.isArray(lastTaggedValidation.pdfUa1Checks.checks) ? lastTaggedValidation.pdfUa1Checks.checks : null);
+                              if (!_checks || !_checks.length) return null;
+                              const _pass = _checks.filter(c => c && c.status === 'pass').length;
+                              const _fail = _checks.filter(c => c && c.status === 'fail').length;
+                              const _warn = _checks.filter(c => c && c.status === 'warn').length;
+                              return (
+                                <details className="mt-1 mx-2 px-3 py-2 text-xs border border-emerald-100 rounded-lg bg-emerald-50/40">
+                                  <summary data-help-ignore="true" className="cursor-pointer font-bold text-slate-700 outline-none">🔎 {t('pdf_audit.selfcheck.title') || 'PDF/UA-1 self-check (exported bytes)'} — {_pass}/{_checks.length} {t('pdf_audit.selfcheck.pass') || 'rules pass'}{_fail ? ` · ${_fail} ${t('pdf_audit.selfcheck.failed') || 'failed'}` : ''}{_warn ? ` · ${_warn} ${t('pdf_audit.selfcheck.warn') || 'warn'}` : ''}</summary>
+                                  <p className="text-[10px] text-slate-500 italic mt-1 mb-2">{t('pdf_audit.selfcheck.note') || "AlloFlow's own PDF/UA-1 (ISO 14289-1) rules, re-parsed from the exported PDF bytes — a self-check, not certification. For an ISO verdict, validate in veraPDF or PAC 2024."}</p>
+                                  <ul className="space-y-1">
+                                    {_checks.map((c, i) => (
+                                      <li key={i} className="flex items-start gap-1.5 leading-snug">
+                                        <span aria-hidden="true">{c.status === 'pass' ? '✅' : c.status === 'warn' ? '⚠️' : '❌'}</span>
+                                        <span className={c.status === 'fail' ? 'text-red-700' : c.status === 'warn' ? 'text-amber-700' : 'text-slate-600'}><strong>{c.rule || c.label || ('Rule ' + (i + 1))}</strong>{c.detail ? ' — ' + c.detail : ''}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </details>
+                              );
+                            })()}
                             {/* Tier B — Re-run with restoration. Appears only when the post-export
                                 text-diff found RESIDUAL missing tokens. Sibling "Open Diff view"
                                 button below uses the EXISTING jsdiff word-level viewer (no new
