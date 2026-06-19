@@ -136,6 +136,84 @@ async function commitToGitHub(env, slug, content) {
   return { filename, filePath };
 }
 
+// ── Translation corrections (parallel to lesson submission; same GitHub-commit model) ──
+// Commits to translations/pending/<file>.json. The maintainer reviews + applies them to the
+// lang packs via dev-tools/i18n/ingest_translation_feedback.cjs (--apply). The app never reads
+// these back, so there's no public manifest — submit-only.
+
+async function commitJsonToGitHub(env, filePath, content, message) {
+  const owner = env.GITHUB_OWNER || 'Apomera';
+  const repo = env.GITHUB_REPO || 'AlloFlow';
+  const branch = env.GITHUB_BRANCH || 'main';
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+  const encodedContent = btoa(unescape(encodeURIComponent(content)));
+  const ghResp = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${env.GITHUB_PAT}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'AlloFlow-Catalog-Worker',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message, branch, content: encodedContent }),
+  });
+  if (!ghResp.ok) {
+    const errBody = await ghResp.text();
+    throw new Error(`GitHub commit failed (${ghResp.status}): ${errBody.slice(0, 500)}`);
+  }
+}
+
+function validateTranslation(p) {
+  if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
+  if (!p.language || typeof p.language !== 'string' || p.language.trim().length === 0) return 'language required.';
+  if (p.language.length > 60) return 'language too long (max 60 chars).';
+  if (!p.suggested || typeof p.suggested !== 'string' || p.suggested.trim().length === 0) return 'suggested translation required.';
+  if (p.suggested.length > 4000) return 'suggested too long (max 4000 chars).';
+  for (const f of ['key', 'current', 'english', 'note']) {
+    if (p[f] != null && (typeof p[f] !== 'string' || p[f].length > 4000)) return `${f} must be a string up to 4000 chars.`;
+  }
+  return null;
+}
+
+async function handleTranslationSubmit(request, env) {
+  if (!env.GITHUB_PAT) return jsonResponse({ ok: false, error: 'Server misconfigured: missing GITHUB_PAT secret.' }, 500);
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const rawBody = await request.text();
+  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  let p;
+  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  const err = validateTranslation(p);
+  if (err) return jsonResponse({ ok: false, error: err }, 400);
+
+  const piiFindings = scanForPii([p.suggested, p.current, p.note].filter(Boolean).join('\n'));
+  const record = {
+    schema_version: '1.0',
+    kind: 'translation_correction',
+    submitted_at: new Date().toISOString(),
+    language: p.language.trim(),
+    key: (p.key || '').trim(),
+    current: (p.current || '').trim(),
+    suggested: p.suggested.trim(),
+    english: (p.english || '').trim(),
+    note: (p.note || '').trim(),
+    pii_scan: { ran_server_side: true, findings: piiFindings },
+    submitter: {
+      ip_country: request.cf?.country || null,
+      user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
+    },
+  };
+  const base = slugify(p.language) + '-' + slugify(p.key || p.current).slice(0, 32);
+  const filePath = `translations/pending/${Date.now()}-${base}.json`;
+  try {
+    await commitJsonToGitHub(env, filePath, JSON.stringify(record, null, 2) + '\n', `Translation correction: ${record.language} ${record.key || ''}`.trim());
+  } catch (e) {
+    return jsonResponse({ ok: false, error: 'Could not commit to GitHub: ' + e.message }, 502);
+  }
+  return jsonResponse({ ok: true, language: record.language, key: record.key, pii_findings_count: piiFindings.length }, 201);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -148,8 +226,12 @@ export default {
       return jsonResponse({ ok: true });
     }
 
+    if (request.method === 'POST' && url.pathname === '/submitTranslation') {
+      return handleTranslationSubmit(request, env);
+    }
+
     if (request.method !== 'POST' || url.pathname !== '/submit') {
-      return jsonResponse({ ok: false, error: 'Use POST /submit' }, 405);
+      return jsonResponse({ ok: false, error: 'Use POST /submit or POST /submitTranslation' }, 405);
     }
 
     if (!env.GITHUB_PAT) {

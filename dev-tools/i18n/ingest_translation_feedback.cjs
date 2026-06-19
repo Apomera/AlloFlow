@@ -1,36 +1,36 @@
 #!/usr/bin/env node
-// ingest_translation_feedback.cjs — turn user-submitted translation corrections into reviewable patches.
+// ingest_translation_feedback.cjs — turn user-submitted translation corrections into reviewable
+// patches, then apply the accepted ones to lang/*. The "sent like a bug fix → validated → applied" loop.
 //
-// The in-app translation-feedback flow (translation_feedback_module.js) sends each suggestion through
-// the SAME Google Form as bug reports, with a machine-parseable block in the "What happened?" field:
+// TWO input sources (the in-app flow can use either backend):
+//   1. Cloudflare Worker → GitHub (preferred, matches the community-lesson flow): the worker's
+//      /submitTranslation route commits one record per correction to translations/pending/*.json
+//      (record: {language,key,current,suggested,english,note,submitter,pii_scan,...}). This tool
+//      reads that directory (default), validates, and on --apply writes accepted fixes into
+//      lang/<slug>.js and MOVES the applied record files to translations/applied/.
+//   2. Google Form CSV (fallback): pass a .csv export of the form's responses Sheet; the tool
+//      parses the [AlloFlow Translation Correction] blocks out of the cells.
 //
-//   [AlloFlow Translation Correction]
-//   language: Greek
-//   key: help_mode.pdf_audit_view_web_audit_btn
-//   current: <current value>
-//   suggested: <user's correction>
-//   english: <english source>
+// Validation (same guards the automated passes use): language→slug map, key exists in ui_strings,
+// placeholder/tag integrity, no-new-Spanglish, no-op detection. Accepted = all guards pass.
 //
-// This reads a CSV export of the form's responses Sheet, extracts those blocks, validates each against
-// the same guards the automated passes use (key exists, placeholder/tag integrity, no new Spanglish,
-// target-script sanity), and writes per-pack patch files + a triage report — exactly the "sent like a
-// bug fix" loop. It does NOT auto-write into lang/*; a human reviews the patch, then:
-//     node dev-tools/i18n/ingest_translation_feedback.cjs <responses.csv>            # triage (dry)
-//     node dev-tools/i18n/ingest_translation_feedback.cjs <responses.csv> --apply    # apply ACCEPTED only
-//
-// Patches land in dev-tools/i18n/feedback_patches/<slug>.json. Accepted = key resolved + all guards pass.
+// Usage:
+//   node dev-tools/i18n/ingest_translation_feedback.cjs                 # read translations/pending/ (dry)
+//   node dev-tools/i18n/ingest_translation_feedback.cjs --apply         # apply accepted + move to applied/
+//   node dev-tools/i18n/ingest_translation_feedback.cjs responses.csv   # CSV mode (dry)
+//   node dev-tools/i18n/ingest_translation_feedback.cjs <dir> [--apply]
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
-const csvPath = args.find(a => !a.startsWith('--'));
-if (!csvPath) { console.error('Usage: ingest_translation_feedback.cjs <responses.csv> [--apply]'); process.exit(2); }
+const inputArg = args.find(a => !a.startsWith('--'));
+const PENDING_DIR = path.join(ROOT, 'translations', 'pending');
+const APPLIED_DIR = path.join(ROOT, 'translations', 'applied');
 
-// ── language display-name → pack slug (extend as needed; unknown names are flagged, not guessed) ──
 const NAME_TO_SLUG = {
-  'english':null, // English is the source — corrections to English go to ui_strings.js (manual)
+  'english':null,
   'spanish':'spanish_latin_america','español':'spanish_latin_america','spanish (latin america)':'spanish_latin_america',
   'spanish (spain)':'spanish_castilian','castilian':'spanish_castilian',
   'french':'french','français':'french','french (canada)':'french_canadian',
@@ -53,58 +53,68 @@ const PH = s => (s.match(/\{[^}]+\}|<[^>]+>|%[sd]/g) || []).sort().join('|');
 const STRUCT = new Set('this that with cannot recovered both front back your existing imported letter sequence something decoration please smaller companion could would should been into their which while about these those available was were does did remind discarded empty supported unsupported missing lost denied allow'.split(' '));
 const markerCount = s => s.toLowerCase().split(/[^\p{L}]+/u).filter(Boolean).filter(t => STRUCT.has(t)).length;
 
-// ── minimal CSV parser (handles quotes + embedded newlines/commas) ──
 function parseCSV(text) {
   const rows = []; let row = [], field = '', q = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
+  for (let i = 0; i < text.length; i++) { const c = text[i];
     if (q) { if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; } else field += c; }
-    else { if (c === '"') q = true; else if (c === ',') { row.push(field); field = ''; } else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; } else if (c === '\r') { } else field += c; }
-  }
+    else { if (c === '"') q = true; else if (c === ',') { row.push(field); field = ''; } else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; } else if (c === '\r') {} else field += c; } }
   if (field.length || row.length) { row.push(field); rows.push(row); }
   return rows;
 }
-
 function parseBlock(cell) {
   if (!cell || cell.indexOf('[AlloFlow Translation Correction]') === -1) return null;
   const get = (label) => { const m = cell.match(new RegExp('^' + label + ':\\s*([\\s\\S]*?)(?=\\n[a-z]+:\\s|$)', 'm')); return m ? m[1].trim() : ''; };
   return { language: get('language'), key: get('key'), current: get('current'), suggested: get('suggested'), english: get('english') };
 }
 
-const raw = fs.readFileSync(csvPath, 'utf8');
-const rows = parseCSV(raw);
-const blocks = [];
-for (const r of rows) for (const cell of r) { const b = parseBlock(cell); if (b && b.suggested) { blocks.push(b); break; } }
+// ── load corrections from either a dir of JSON records or a CSV export ──
+let blocks = [];
+let mode;
+if (inputArg && inputArg.toLowerCase().endsWith('.csv')) {
+  mode = 'csv';
+  const rows = parseCSV(fs.readFileSync(inputArg, 'utf8'));
+  for (const r of rows) for (const cell of r) { const b = parseBlock(cell); if (b && b.suggested) { blocks.push(b); break; } }
+} else {
+  mode = 'dir';
+  const dir = inputArg || PENDING_DIR;
+  if (!fs.existsSync(dir)) { console.log('No corrections to ingest (' + path.relative(ROOT, dir) + ' not found / empty).'); process.exit(0); }
+  for (const f of fs.readdirSync(dir).filter(x => x.endsWith('.json'))) {
+    try { const r = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+      if (r && r.suggested) blocks.push({ language: r.language, key: r.key, current: r.current, suggested: r.suggested, english: r.english, _file: f, _dir: dir }); }
+    catch (e) { console.log('  (skipping unreadable ' + f + ': ' + e.message + ')'); }
+  }
+}
 
-const accepted = {}; // slug -> {key: suggested}
+const accepted = {};        // slug -> {key: suggested}
+const acceptedFiles = [];   // {file, dir} of records that were accepted (dir mode)
 const review = [];
 for (const b of blocks) {
   const langKey = (b.language || '').trim().toLowerCase();
   const slug = Object.prototype.hasOwnProperty.call(NAME_TO_SLUG, langKey) ? NAME_TO_SLUG[langKey] : undefined;
-  const rec = { ...b, slug };
-  if (slug === undefined) { rec.reason = 'unknown language "' + b.language + '" — add to NAME_TO_SLUG'; review.push(rec); continue; }
-  if (slug === null) { rec.reason = 'English source correction → edit ui_strings.js manually'; review.push(rec); continue; }
-  const langPath = path.join(ROOT, 'lang', slug + '.js');
-  if (!fs.existsSync(langPath)) { rec.reason = 'no lang/' + slug + '.js'; review.push(rec); continue; }
-  let key = b.key && b.key.indexOf('(') !== 0 ? b.key.trim() : '';
-  if (!key) { rec.reason = 'no key — match the "current" text to a key by hand'; review.push(rec); continue; }
-  if (en[key] === undefined) { rec.reason = 'key not in ui_strings.js: ' + key; review.push(rec); continue; }
-  if (PH(b.suggested) !== PH(en[key])) { rec.reason = 'placeholder/tag mismatch (expected ' + (PH(en[key]) || 'none') + ')'; review.push(rec); continue; }
-  if (b.suggested === en[key]) { rec.reason = 'suggestion equals English source (no-op?)'; review.push(rec); continue; }
-  if (markerCount(b.suggested) >= 2) { rec.reason = 'suggestion still contains English structural words'; review.push(rec); continue; }
-  // passed all guards
+  const rec = Object.assign({}, b);
+  const flag = (reason) => { rec.reason = reason; review.push(rec); };
+  if (slug === undefined) { flag('unknown language "' + b.language + '" — add to NAME_TO_SLUG'); continue; }
+  if (slug === null) { flag('English source correction → edit ui_strings.js manually'); continue; }
+  if (!fs.existsSync(path.join(ROOT, 'lang', slug + '.js'))) { flag('no lang/' + slug + '.js'); continue; }
+  const key = b.key && b.key.indexOf('(') !== 0 ? b.key.trim() : '';
+  if (!key) { flag('no key — match the "current" text to a key by hand'); continue; }
+  if (en[key] === undefined) { flag('key not in ui_strings.js: ' + key); continue; }
+  if (PH(b.suggested) !== PH(en[key])) { flag('placeholder/tag mismatch (expected ' + (PH(en[key]) || 'none') + ')'); continue; }
+  if (b.suggested === en[key]) { flag('suggestion equals English source (no-op?)'); continue; }
+  if (markerCount(b.suggested) >= 2) { flag('suggestion still contains English structural words'); continue; }
   (accepted[slug] = accepted[slug] || {})[key] = b.suggested;
+  if (b._file) acceptedFiles.push({ file: b._file, dir: b._dir });
 }
 
 const acceptCount = Object.values(accepted).reduce((a, o) => a + Object.keys(o).length, 0);
-console.log('=== Translation feedback ingest ===');
-console.log('blocks found: ' + blocks.length + '  |  accepted: ' + acceptCount + ' across ' + Object.keys(accepted).length + ' packs  |  needs review: ' + review.length);
+console.log('=== Translation feedback ingest (' + mode + ' mode) ===');
+console.log('corrections found: ' + blocks.length + '  |  accepted: ' + acceptCount + ' across ' + Object.keys(accepted).length + ' packs  |  needs review: ' + review.length);
 
 const OUT = path.join(__dirname, 'feedback_patches');
 if (acceptCount) {
   fs.mkdirSync(OUT, { recursive: true });
   for (const slug of Object.keys(accepted)) fs.writeFileSync(path.join(OUT, slug + '.json'), JSON.stringify(accepted[slug], null, 1));
-  console.log('\nACCEPTED patches written to dev-tools/i18n/feedback_patches/:');
+  console.log('\nACCEPTED patches → dev-tools/i18n/feedback_patches/:');
   for (const slug of Object.keys(accepted)) console.log('  ' + slug + ': ' + Object.keys(accepted[slug]).length + ' key(s)');
 }
 if (review.length) {
@@ -119,12 +129,16 @@ if (APPLY && acceptCount) {
   for (const slug of Object.keys(accepted)) {
     const langPath = path.join(ROOT, 'lang', slug + '.js');
     const pack = JSON.parse(fs.readFileSync(langPath, 'utf8'));
-    let n = 0;
-    for (const [k, v] of Object.entries(accepted[slug])) { setNested(pack, k, v); n++; applied++; }
+    for (const [k, v] of Object.entries(accepted[slug])) { setNested(pack, k, v); applied++; }
     fs.writeFileSync(langPath, JSON.stringify(pack, null, 2) + '\n');
-    console.log('  applied ' + n + ' → lang/' + slug + '.js');
+    console.log('  applied ' + Object.keys(accepted[slug]).length + ' → lang/' + slug + '.js');
   }
-  console.log('\nAPPLIED ' + applied + ' correction(s). Run: node dev-tools/check_lang_json.cjs && node dev-tools/i18n/check_safety_string_spanglish.cjs');
+  if (acceptedFiles.length) {
+    fs.mkdirSync(APPLIED_DIR, { recursive: true });
+    for (const a of acceptedFiles) { try { fs.renameSync(path.join(a.dir, a.file), path.join(APPLIED_DIR, a.file)); } catch (_) {} }
+    console.log('  moved ' + acceptedFiles.length + ' record(s) → translations/applied/');
+  }
+  console.log('\nAPPLIED ' + applied + ' correction(s). Next: node dev-tools/check_lang_json.cjs && node dev-tools/i18n/check_safety_string_spanglish.cjs, then commit lang/ + translations/.');
 } else if (acceptCount) {
-  console.log('\n(dry-run — review the patches, then re-run with --apply to write the ACCEPTED set)');
+  console.log('\n(dry-run — review the patches, then re-run with --apply to write accepted + archive records)');
 }

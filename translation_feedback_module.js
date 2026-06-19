@@ -40,6 +40,12 @@
   var ENTRY_STEPS   = '1969020676';  // Steps / notes — user's free-text reason + URL
   var ENTRY_BROWSER = '937961519';   // Browser & Device
 
+  // Primary submit path: the SAME Cloudflare Worker that accepts community lesson submissions
+  // (catalog/cloudflare-worker), new /submitTranslation route → commits to translations/pending/
+  // in the repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
+  // pre-filled Google Form so the user's input is never lost.
+  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitTranslation';
+
   var lastContext = null;   // {key, current, language}
   var pill = null, overlay = null;
   var pillHideTimer = null;
@@ -206,22 +212,50 @@
     $('allo-tfb-x').onclick = closeModal;
     $('allo-tfb-cancel').onclick = closeModal;
     overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    function showThanks(viaForm) {
+      panel.innerHTML =
+        '<div style="text-align:center;padding:12px">' +
+          '<div style="font-size:34px" aria-hidden="true">🌍</div>' +
+          '<h2 style="margin:8px 0;font:700 17px system-ui;color:#0f172a">Thank you!</h2>' +
+          '<p style="margin:0 0 16px;font:13px/1.5 system-ui;color:#475569">' +
+            (viaForm
+              ? 'Your suggestion opened in a form in a new tab — submit it there to send it for review.'
+              : 'Your ' + esc(lang) + ' suggestion was sent for review. Maintainers apply accepted fixes to the language pack.') +
+          '</p>' +
+          '<button id="allo-tfb-done" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
+        '</div>';
+      var done = panel.querySelector('#allo-tfb-done');
+      done.onclick = closeModal; done.focus();
+    }
+
     $('allo-tfb-send').onclick = function () {
-      var suggested = ($('allo-tfb-suggest').value || '').trim();
       var errEl = $('allo-tfb-err');
+      var suggested = ($('allo-tfb-suggest').value || '').trim();
       if (!suggested) { errEl.textContent = 'Please enter your suggested translation.'; errEl.style.display = 'block'; return; }
       var curEl = panel.querySelector('#allo-tfb-current');
-      var current = ctx.current || (curEl ? (curEl.value || '').trim() : '');
-      var url = buildFormUrl({
+      var payload = {
         language: ($('allo-tfb-lang').value || lang).trim(),
         key: ctx.key || '',
-        current: current,
+        current: ctx.current || (curEl ? (curEl.value || '').trim() : ''),
         suggested: suggested,
         english: english,
         note: ($('allo-tfb-note').value || '').trim()
-      });
-      try { window.open(url, '_blank', 'noopener'); } catch (_) { location.href = url; }
-      closeModal();
+      };
+      var sendBtn = $('allo-tfb-send');
+      sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';
+      var fellBack = false;
+      var fallbackToForm = function () {
+        if (fellBack) return; fellBack = true;
+        try { window.open(buildFormUrl(payload), '_blank', 'noopener'); } catch (_) { location.href = buildFormUrl(payload); }
+        showThanks(true);
+      };
+      try {
+        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
+          .then(function (res) { if (res.ok && res.j && res.j.ok) showThanks(false); else fallbackToForm(); })
+          .catch(function () { fallbackToForm(); });
+      } catch (_) { fallbackToForm(); }
     };
     var first = $('allo-tfb-suggest'); if (first) first.focus();
   }
