@@ -1084,6 +1084,7 @@ var createDocPipeline = function(deps) {
   var _geminiOkStreak = 0;          // consecutive successes (drives recovery)
   var _geminiCooldownUntil = 0;     // epoch ms; no NEW call starts before this
   var _geminiCooldownTimer = null;
+  var _geminiStormAnnounced = false; // user-facing "Canvas is rate-limiting" message emitted once per sustained storm
   // Queue pump: start as many waiters as the CURRENT (possibly reduced) cap allows, and never
   // during a cooldown. Replaces the old hand-off-on-release model, which couldn't shrink the cap.
   var _geminiPump = function() {
@@ -1115,10 +1116,20 @@ var createDocPipeline = function(deps) {
     _geminiOkStreak = 0;
     _geminiAuthStreak++;
     if (_geminiAuthStreak >= _GEMINI_STORM_TRIP) {
-      if (_geminiCap !== _GEMINI_STORM_MIN) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_GEMINI_COOLDOWN_MS / 1000) + 's cooldown');
+      // Escalate the cooldown as the storm PERSISTS (12s → up to 90s): stop hammering a throttled
+      // proxy so its quota window can recover. Each new call / retry waits the longer cooldown.
+      var _cd = Math.min(90000, _GEMINI_COOLDOWN_MS * (_geminiAuthStreak - _GEMINI_STORM_TRIP + 1));
+      if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown');
       _geminiCap = _GEMINI_STORM_MIN;
-      _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _GEMINI_COOLDOWN_MS;
+      _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       _pipelineStats.authThrottles = (_pipelineStats.authThrottles || 0) + 1;
+      // Surface a clear, honest message ONCE per sustained storm — this is a Canvas quota/rate-limit,
+      // not an AlloFlow bug; heavy/scanned docs (many calls) trip it sooner. _pipeLog also emits the
+      // canvas-visible 'alloflow:pipeline-warn' event (which the heartbeat watchdog + panel observe).
+      if (!_geminiStormAnnounced && _geminiAuthStreak >= _GEMINI_STORM_TRIP + 2) {
+        _geminiStormAnnounced = true;
+        _pipeLog('Throttle', 'Canvas is rate-limiting this account (a temporary quota throttle, not an AlloFlow error). Backing off — this run will be slow. Large or scanned documents hit this sooner; a smaller doc or waiting a few minutes helps.');
+      }
     }
   };
   var _geminiNoteSuccess = function() {
@@ -1128,6 +1139,7 @@ var createDocPipeline = function(deps) {
       if (_geminiOkStreak >= _GEMINI_RECOVER_HITS) {
         _geminiCap = _GEMINI_MAX_CONCURRENT;
         _geminiOkStreak = 0;
+        _geminiStormAnnounced = false; // ready to warn again if a NEW storm starts later
         warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _GEMINI_MAX_CONCURRENT);
         _geminiPump();
       }
@@ -5916,17 +5928,21 @@ var createDocPipeline = function(deps) {
           // (huge canvas on a low-RAM device) usually renders fine at 1.25x, recovering a slightly
           // lower-res OCR pass instead of dropping the page's text layer entirely. Still FULLY BOUNDED
           // (every attempt is _withTimeout-wrapped → no unbounded await → the original hang fix holds).
-          for (const _sc of [2.0, 1.25]) {
+          // Ladder: high-res first for OCR accuracy, but fall back FAST to lower scales with shorter
+          // budgets so a heavy scanned page (huge raster) recovers at lower res instead of burning a
+          // long timeout then dropping the page. Adds a final 1x rung — worst case ~80s vs the old
+          // ~115s, and far likelier to land a (lower-res) render than drop the page. (2026-06-19)
+          for (const _sc of [2.0, 1.25, 1.0]) {
             const _vp = page.getViewport({ scale: _sc });
             const _c = document.createElement('canvas');
             _c.width = _vp.width; _c.height = _vp.height;
             try {
-              await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 75000 : 40000, 'page.render (OCR p' + p + ' @' + _sc + 'x)');
+              await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 40000 : (_sc >= 1.25 ? 25000 : 15000), 'page.render (OCR p' + p + ' @' + _sc + 'x)');
               canvas = _c; renderScale = _sc; break;
             } catch (_rErr) {
               try { _c.width = 0; _c.height = 0; } catch (_) {}
-              if (_sc >= 2) { try { warnLog('[Tesseract] page ' + p + ' render @2x failed (' + ((_rErr && _rErr.message) || _rErr) + ') — retrying @1.25x'); } catch (_) {} }
-              else throw _rErr; // both scales failed → fall to the per-page catch (recorded, not silent)
+              if (_sc > 1.0) { try { warnLog('[Tesseract] page ' + p + ' render @' + _sc + 'x failed (' + ((_rErr && _rErr.message) || _rErr) + ') — retrying at a lower scale'); } catch (_) {} }
+              else throw _rErr; // all scales failed → fall to the per-page catch (recorded, not silent)
             }
           }
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
