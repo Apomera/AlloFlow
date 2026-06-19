@@ -539,11 +539,16 @@ window.StemLab = window.StemLab || {
         );
         if (v !== 0 && v % 2 === 0) {
           gridElements.push(
-            h('text', { key: 'xl' + gi, x: toSvg(v, 'x'), y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[11px] fill-slate-400' }, v),
-            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: toSvg(v, 'y') + 3, textAnchor: 'end', className: 'text-[11px] fill-slate-400' }, v)
+            h('text', { key: 'xl' + gi, x: toSvg(v, 'x'), y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[11px] fill-slate-600' }, v),
+            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: toSvg(v, 'y') + 3, textAnchor: 'end', className: 'text-[11px] fill-slate-600' }, v)
           );
         }
       }
+      // Axis name labels (x at the right end, y at the top) — the grid had numbered ticks but no axis names
+      gridElements.push(
+        h('text', { key: 'axname-x', x: gridW - 4, y: toSvg(0, 'y') - 6, textAnchor: 'end', className: 'text-xs font-bold fill-slate-600' }, 'x'),
+        h('text', { key: 'axname-y', x: toSvg(0, 'x') + 8, y: 12, textAnchor: 'start', className: 'text-xs font-bold fill-slate-600' }, 'y')
+      );
 
       // Connected lines with slope badges + equation labels
       var lineElements = gridLines.map(function(ln, li) {
