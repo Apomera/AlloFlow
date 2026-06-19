@@ -204,3 +204,35 @@ mostly false positives (feature names like "Word Sounds", placeholder examples
 like "Minecraft/K-pop/pixel art", accepted tech loanwords) plus a few unverifiable
 low-resource tooltips; the PPS cluster's intentional English passthrough on
 long-tail keys; and maay_maay (Finding 2, human decision).
+
+---
+
+## CONTENT-MODULE SWEEP (2026-06-19) — partial-translation residue cleared
+
+After the findings work, a scan of all content modules (adventure, quiz, a11y_lab,
+toasts, tour, tips, timeline, dashboard, games… excluding behavior_lens) found
+~8,116 keys that were PARTIALLY translated — English words left embedded in
+otherwise-native text (MT residue predating the Phase Y/Z sweeps), concentrated in
+non-Latin-script packs (greek 731, ukrainian 635, nepali 389, amharic 357, khmer
+356, hindi 315, tigrinya 300, tamil 292, burmese 284, punjabi 273, korean 183…).
+
+A chunked web-backed workflow (110 chunks @ ~90 keys) finished them: **5,791
+applied, ~1,690 correctly skipped as false positives** (brand/feature names,
+placeholder examples, idiom). Committed @bb4c77b1. Residue **8,119 → 2,746 (−66%)**.
+
+**The remaining ~2,746 are the irreducible floor — legitimate English kept-terms,
+not defects:** brand/feature names (Word Sounds Studio, AlloBot, FAB, Lumen),
+pedagogical proper nouns (Elkonin boxes, Venn, Ishikawa, RSVP, Bionic Reading,
+Dual Coding, Karaoke), standards/acronyms (UDL, TTS, ORF, WCPM, Tier 2/3, RTI,
+PowerPoint), and formatting markers (Pro Tip), with the surrounding prose fully
+translated. Pushing further would be over-translation (calquing proper nouns).
+
+Verification: check_lang_json 56/56; safety-spanglish guard 0; placeholder/tag/
+emoji/markdown integrity preserved (apply rejected only the known source-side
+{1F4CA} 📊 artifact). behavior_lens (903, own guard), PPS cluster (intentional
+passthrough), and maay_maay (Finding 2, human) remain out of scope by design.
+
+This is the cleanest the packs have been: machine-detectable partial-translation
+is now at the legitimate-kept-term floor. Further quality gains are native-speaker
+register/idiom judgment — which the proposed in-app translation-feedback channel
+(reusing error_reporter_module.js's Google-Form flow) is designed to capture.
