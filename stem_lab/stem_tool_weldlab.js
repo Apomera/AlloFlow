@@ -1171,8 +1171,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ctxC.fillText('Net HI: ' + live.net.toFixed(1) + ' kJ/in  ·  ' + (live.P === 'mig' ? 'MIG' : live.P === 'tig' ? 'TIG' : live.P === 'stick' ? 'Stick' : 'Oxy-Fuel'),
               W * 0.95, plateY0 - 6);
 
-            if (!_prefersReducedMotion) {
-              rafRef.current = requestAnimationFrame(draw);
+            if (!_prefersReducedMotion && canvas.isConnected) {
+              rafRef.current = requestAnimationFrame(draw); // don't reschedule against a detached canvas
             }
           }
 
