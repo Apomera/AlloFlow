@@ -157,12 +157,65 @@
     function parsePhonemePackJsonLoose(s) {
         try { if (!s) return null; const m = String(s).match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; } catch (e) { return null; }
     }
+    // Encode trimmed/normalized mono PCM as a small 16-bit WAV data URI. Browsers
+    // can't re-encode to opus in-page, but WAV plays fine via new Audio() and a
+    // trimmed phoneme is short, so size stays modest.
+    function encodePhonemeWav(data, start, outLen, sampleRate, gain) {
+        const dataSize = outLen * 2;
+        const ab = new ArrayBuffer(44 + dataSize);
+        const view = new DataView(ab);
+        const ws = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+        ws(0, 'RIFF'); view.setUint32(4, 36 + dataSize, true); ws(8, 'WAVE'); ws(12, 'fmt ');
+        view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+        ws(36, 'data'); view.setUint32(40, dataSize, true);
+        let off = 44;
+        for (let i = 0; i < outLen; i++) {
+            let s = data[start + i] * gain;
+            if (s > 1) s = 1; else if (s < -1) s = -1;
+            view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            off += 2;
+        }
+        let bin = ''; const bytes = new Uint8Array(ab); const CH = 0x8000;
+        for (let i = 0; i < bytes.length; i += CH) { bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH)); }
+        return 'data:audio/wav;base64,' + btoa(bin);
+    }
+    // Trim leading/trailing silence + normalize loudness so hand-recorded phonemes
+    // blend smoothly (no dead air or wildly different volumes). Fully on-device;
+    // returns the ORIGINAL clip unchanged if WebAudio/decoding is unavailable.
+    async function cleanPhonemeClip(dataUri) {
+        try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC || !dataUri || typeof fetch !== 'function') return dataUri;
+            const arr = await (await fetch(dataUri)).arrayBuffer();
+            const ctx = new AC();
+            let buf;
+            try { buf = await ctx.decodeAudioData(arr.slice(0)); } catch (e) { if (ctx.close) ctx.close(); return dataUri; }
+            const len = buf.length, chs = buf.numberOfChannels;
+            if (!len) { if (ctx.close) ctx.close(); return dataUri; }
+            const data = new Float32Array(len);
+            for (let c = 0; c < chs; c++) { const cd = buf.getChannelData(c); for (let i = 0; i < len; i++) data[i] += cd[i] / chs; }
+            let peak = 0; for (let i = 0; i < len; i++) { const a = data[i] < 0 ? -data[i] : data[i]; if (a > peak) peak = a; }
+            if (peak <= 0.0001) { if (ctx.close) ctx.close(); return dataUri; }
+            const thresh = Math.max(0.015, peak * 0.08);
+            let start = 0; while (start < len && (data[start] < 0 ? -data[start] : data[start]) < thresh) start++;
+            let end = len - 1; while (end > start && (data[end] < 0 ? -data[end] : data[end]) < thresh) end--;
+            if (end <= start) { if (ctx.close) ctx.close(); return dataUri; }
+            const pad = Math.floor(buf.sampleRate * 0.02);
+            start = Math.max(0, start - pad); end = Math.min(len - 1, end + pad);
+            const outLen = end - start + 1;
+            const wav = encodePhonemeWav(data, start, outLen, buf.sampleRate, 0.97 / peak);
+            if (ctx.close) ctx.close();
+            return (wav && wav.length > 64) ? wav : dataUri;
+        } catch (e) { return dataUri; }
+    }
     const PhonemeVoicePackEditor = ({ onClose, t }) => {
         const T = (k, fb) => (typeof t === 'function' ? t(k, fb) : fb);
         const [pack, setPack] = React.useState(() => loadPhonemeVoicePack());
         const [recordingKey, setRecordingKey] = React.useState(null);
         const [status, setStatus] = React.useState('');
         const [aiCheckOn, setAiCheckOn] = React.useState(false);
+        const [cleanOn, setCleanOn] = React.useState(true); // auto trim-silence + normalize on record
         const [checks, setChecks] = React.useState({}); // { key: { state:'checking'|'done'|'error', match, clipped, note } }
         const [selfChecks, setSelfChecks] = React.useState({}); // { key: 'good' | 'retry' } — the student's OWN judgment (metacognition; on-device only)
         const recorderRef = React.useRef(null);
@@ -180,7 +233,8 @@
             if (!aiAvailable || !dataUri) return;
             setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'checking' } }));
             const ex = PHONEME_PACK_EXAMPLES[key];
-            const prompt = 'You are a phonics articulation coach. The TARGET sound is the English phoneme /' + key + '/' + (ex ? ' as in "' + ex + '"' : '') + '. Listen to the short recording and judge ONLY the sound it contains. Reply with strict JSON and nothing else: {"match": true or false, "clipped": true or false, "note": "tip, 12 words max"}. "clipped" is true when the sound is produced cleanly with no added vowel (e.g. /p/ not "puh").';
+            const cue = PHONEME_PACK_CUES[key];
+            const prompt = 'You are a kind phonics articulation coach for a young child. The TARGET is the English phoneme /' + key + '/' + (ex ? ' as in "' + ex + '"' : '') + '.' + (cue ? ' A clean version: ' + cue : '') + ' Listen to the short recording and judge ONLY the sound it contains, against your knowledge of how that phoneme should sound. IGNORE the speaker\'s voice, age and accent — many correct voices are fine. Reply with strict JSON and nothing else: {"match": true or false, "clipped": true or false, "note": "one short, specific, encouraging fix the child can do, 12 words max"}. "clipped" is true when the sound is clean with no extra vowel (e.g. /p/ not "puh").';
             Promise.resolve().then(() => window.callGeminiAudio(prompt, dataUri, {})).then((resp) => {
                 const parsed = parsePhonemePackJsonLoose(resp);
                 if (parsed) setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: parsed.match, clipped: parsed.clipped, note: parsed.note || '' } }));
@@ -198,11 +252,14 @@
             recorderRef.current = ctrl;
             setRecordingKey(key);
             setStatus('● Recording /' + key + '/' + (PHONEME_PACK_EXAMPLES[key] ? ' (like ' + PHONEME_PACK_EXAMPLES[key] + ')' : '') + ' — tap again to stop.');
-            ctrl.result.then((rec) => {
+            ctrl.result.then(async (rec) => {
                 if (rec && rec.base64) {
-                    setPack((prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: rec.base64 }) }));
+                    let finalClip = rec.base64;
+                    if (cleanOn) { setStatus('✂️ Cleaning up /' + key + '/…'); try { finalClip = await cleanPhonemeClip(rec.base64); } catch (e) { finalClip = rec.base64; } }
+                    const clip = finalClip;
+                    setPack((prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
                     setStatus('✓ Recorded /' + key + '/. Tap 🔊 to hear it, then Save & Use.');
-                    if (aiCheckOn) runAiCheck(key, rec.base64);
+                    if (aiCheckOn) runAiCheck(key, clip);
                 }
                 if (recorderRef.current === ctrl) recorderRef.current = null;
                 setRecordingKey(null);
@@ -308,8 +365,11 @@
                             <button type="button" onClick={() => setKind('teacher-model')} className={`px-3 py-1.5 font-bold transition-colors ${!isStudent ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>🎓 Teacher model</button>
                             <button type="button" onClick={() => setKind('student-voice')} className={`px-3 py-1.5 font-bold transition-colors ${isStudent ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>🧒 Student voice</button>
                         </div>
-                        <label className={`inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? 'text-slate-700' : 'text-slate-300 cursor-not-allowed'}`} title={aiAvailable ? 'Sends each clip to Gemini to compare with the target sound' : 'AI check needs Canvas'}>
-                            <input type="checkbox" checked={aiCheckOn} disabled={!aiAvailable} onChange={(e) => setAiCheckOn(e.target.checked)} /> 🔎 {T('word_sounds.voice_pack_aicheck', 'Check sounds with AI')}
+                        <label className="inline-flex items-center gap-1.5 font-semibold text-slate-700 cursor-pointer" title="Trim silence and even out the volume after each recording, for cleaner blending">
+                            <input type="checkbox" checked={cleanOn} onChange={(e) => setCleanOn(e.target.checked)} /> ✂️ {T('word_sounds.voice_pack_clean', 'Auto-trim & level')}
+                        </label>
+                        <label className={`inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? 'text-slate-700' : 'text-slate-300 cursor-not-allowed'}`} title={aiAvailable ? 'Coach: judges each clip against the target sound (sends it to Gemini)' : 'AI coach needs Canvas'}>
+                            <input type="checkbox" checked={aiCheckOn} disabled={!aiAvailable} onChange={(e) => setAiCheckOn(e.target.checked)} /> 🎯 {T('word_sounds.voice_pack_aicheck', 'AI coach')}
                         </label>
                         {aiCheckOn ? <span className="text-[10px] text-amber-600">{T('word_sounds.voice_pack_aicheck_note', 'Each clip is sent to Gemini for analysis.')}</span> : null}
                     </div>
