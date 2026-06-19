@@ -17090,7 +17090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var sh = stallHornRef.current;
         if (stalling && !sh.active) {
           try {
-            if (!sh.ctx) sh.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (!sh.ctx || sh.ctx.state === 'closed') sh.ctx = new (window.AudioContext || window.webkitAudioContext)();
             if (sh.ctx.state === 'suspended') sh.ctx.resume();
             sh.osc = sh.ctx.createOscillator();
             sh.gain = sh.ctx.createGain();
@@ -20121,7 +20121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ACHIEVEMENTS.map(function(ach) {
                 var earned = !!earnedBadges[ach.id];
                 return h('div', { key: ach.id, title: ach.name + ': ' + ach.desc,
-                  style: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, background: earned ? '#1e3a5f' : '#0f172a', color: earned ? '#fbbf24' : '#64748b', border: '1px solid ' + (earned ? '#3b82f6' : '#334155'), cursor: 'default' }
+                  style: { padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, background: earned ? '#1e3a5f' : '#0f172a', color: earned ? '#fbbf24' : '#94a3b8', border: '1px solid ' + (earned ? '#3b82f6' : '#334155'), cursor: 'default' }
                 }, ach.icon + ' ' + (earned ? ach.name : '???'));
               })
             )
@@ -21253,7 +21253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 placeholder: 'Explain in your own words: what role do airspeed, altitude, and AoA each play?',
                 style: { width: '100%', minHeight: '80px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginTop: '6px' }, rows: 4 })
             ),
-            h('div', { style: { marginTop: '10px', padding: '8px', background: 'rgba(15,28,47,0.5)', borderRadius: '4px', fontSize: '10px', fontStyle: 'italic', color: '#64748b' } },
+            h('div', { style: { marginTop: '10px', padding: '8px', background: 'rgba(15,28,47,0.5)', borderRadius: '4px', fontSize: '10px', fontStyle: 'italic', color: '#94a3b8' } },
               'Design note: discrete 3-state stall indicator; no continuous score; no reveal — by design to discourage optimization-gaming.')
           )
         );
