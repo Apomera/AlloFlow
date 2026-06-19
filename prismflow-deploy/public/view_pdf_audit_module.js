@@ -1463,7 +1463,7 @@ function PdfDiagnosticsLog(props) {
       {
         type: "button",
         onClick: () => setOpen(true),
-        className: "fixed bottom-4 right-4 z-[210] px-3 py-2 rounded-full shadow-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 flex items-center gap-1.5",
+        className: "fixed bottom-20 left-4 z-[210] px-3 py-2 rounded-full shadow-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 flex items-center gap-1.5",
         "aria-label": t("pdf_audit.diag.open_aria") || "Open pipeline diagnostics log",
         title: t("pdf_audit.diag.open_title") || "Pipeline diagnostics log \u2014 view + copy the remediation log (works inside Canvas, no browser console needed)"
       },
@@ -1475,7 +1475,7 @@ function PdfDiagnosticsLog(props) {
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: "fixed bottom-4 right-4 z-[210] w-[min(92vw,520px)] max-h-[60vh] flex flex-col rounded-xl shadow-2xl border border-slate-700 bg-slate-900 text-slate-100",
+      className: "fixed bottom-20 left-4 z-[210] w-[min(92vw,520px)] max-h-[60vh] flex flex-col rounded-xl shadow-2xl border border-slate-700 bg-slate-900 text-slate-100",
       role: "region",
       "aria-label": t("pdf_audit.diag.region_aria") || "Pipeline diagnostics log"
     },
