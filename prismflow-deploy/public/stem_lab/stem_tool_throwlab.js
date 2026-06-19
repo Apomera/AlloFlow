@@ -5158,7 +5158,7 @@ window.StemLab = window.StemLab || {
             // === H7b'' inquiry widget: throw angle discovery ===
             (function() {
               var iq = d._throwHunt || { angle: 45, velocity: 30, spin: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd({ _throwHunt: Object.assign({}, iq, patch) }); }
+              function setIQ(patch) { upd('_throwHunt', Object.assign({}, iq, patch)); }
               var range = (iq.velocity * iq.velocity * Math.sin(iq.angle * Math.PI / 90)) / 9.8;
               var spinEffect = Math.abs(iq.spin) * 0.5;
               var state;
