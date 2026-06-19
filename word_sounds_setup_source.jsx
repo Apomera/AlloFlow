@@ -96,6 +96,32 @@
         air: 'Open /air/ (chair).',
         ear: 'Long /ear/ (ear).',
     };
+    // Decodable words for the "hear a word in your own voice" payoff: each maps
+    // to a sequence of phoneme KEYS (same keys as the bank), so a word unlocks
+    // once the student has recorded every sound in it, then plays blended from
+    // their own clips. Ordered easy (CVC) -> digraphs -> long vowels.
+    const PHONEME_PACK_WORDS = [
+        { word: 'cat', keys: ['c','a','t'] },
+        { word: 'dog', keys: ['d','o','g'] },
+        { word: 'sun', keys: ['s','u','n'] },
+        { word: 'pig', keys: ['p','i','g'] },
+        { word: 'hat', keys: ['h','a','t'] },
+        { word: 'map', keys: ['m','a','p'] },
+        { word: 'bed', keys: ['b','e','d'] },
+        { word: 'cup', keys: ['c','u','p'] },
+        { word: 'net', keys: ['n','e','t'] },
+        { word: 'jam', keys: ['j','a','m'] },
+        { word: 'van', keys: ['v','a','n'] },
+        { word: 'zip', keys: ['z','i','p'] },
+        { word: 'fish', keys: ['f','i','sh'] },
+        { word: 'ship', keys: ['sh','i','p'] },
+        { word: 'chip', keys: ['ch','i','p'] },
+        { word: 'duck', keys: ['d','u','ck'] },
+        { word: 'ring', keys: ['r','i','ng'] },
+        { word: 'moon', keys: ['m','oo','n'] },
+        { word: 'rain', keys: ['r','ai','n'] },
+        { word: 'boat', keys: ['b','oa','t'] },
+    ];
     // Show the example word with its target grapheme bolded (sound <-> symbol):
     // /sh/ -> "ship", /a/ -> "cat". Falls back to plain text if the grapheme is
     // not a literal substring of the example.
@@ -204,6 +230,22 @@
             } catch (e) { try { const b = new Audio(mine); b.play().catch(() => {}); } catch (e2) {} }
         };
         const rateSelf = (key, val) => setSelfChecks((prev) => Object.assign({}, prev, { [key]: prev[key] === val ? null : val }));
+        const wordReady = (w) => w.keys.every((k) => clips[k]);
+        const playWord = (w) => {
+            // The payoff: blend a real word from the student's OWN recorded clips.
+            // Teaches that words are made of sounds, in the most motivating way.
+            const seq = w.keys.map((k) => clips[k]);
+            if (seq.some((c) => !c)) { setStatus('Record every sound in "' + w.word + '" first.'); return; }
+            setStatus('🔊 Blending "' + w.word + '" in your voice...');
+            let i = 0;
+            const next = () => {
+                if (i >= seq.length) { setStatus('🎉 You built "' + w.word + '" with your own sounds!'); return; }
+                const clip = seq[i]; i++;
+                try { const a = new Audio(clip); a.onended = () => setTimeout(next, 240); a.onerror = () => setTimeout(next, 240); a.play().catch(() => setTimeout(next, 240)); }
+                catch (e) { setTimeout(next, 240); }
+            };
+            next();
+        };
         const clearClip = (key) => { setPack((prev) => { const c = Object.assign({}, prev.clips); delete c[key]; return Object.assign({}, prev, { clips: c }); }); setChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); setSelfChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); };
         const persist = (next) => {
             try {
@@ -284,6 +326,24 @@
                         </div>
                     ) : null}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        {(() => {
+                            const readyWords = PHONEME_PACK_WORDS.filter(wordReady);
+                            return (
+                                <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-3">
+                                    <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-0.5">🔊 {T('word_sounds.voice_pack_words_title', 'Hear a word in your voice')}</div>
+                                    <div className="text-[10px] text-slate-600 mb-2">{readyWords.length > 0 ? T('word_sounds.voice_pack_words_ready', 'Tap a word to hear it built from YOUR sounds.') : T('word_sounds.voice_pack_words_hint', 'Record the sounds in a word, then tap it to hear the whole word in your own voice.')} {readyWords.length > 0 ? ('(' + readyWords.length + '/' + PHONEME_PACK_WORDS.length + ')') : ''}</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {PHONEME_PACK_WORDS.map((w) => {
+                                            const ready = wordReady(w);
+                                            const missing = w.keys.filter((k) => !clips[k]).map((k) => '/' + (k === 'oo_short' ? 'oo' : k) + '/').join(' ');
+                                            return (
+                                                <button key={w.word} type="button" onClick={() => ready && playWord(w)} disabled={!ready} aria-label={ready ? ('Hear ' + w.word + ' in your voice') : (w.word + ' — still need ' + missing)} title={ready ? ('Hear "' + w.word + '" in your voice') : ('Record: ' + missing)} className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${ready ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white text-slate-400 border border-slate-200 cursor-not-allowed'}`}>{ready ? '🔊 ' : '🔒 '}{w.word}</button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                         {Object.keys(PHONEME_PACK_GROUPS).map((group) => (
                             <div key={group}>
                                 <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">{group}</div>

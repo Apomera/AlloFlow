@@ -176,6 +176,28 @@ const PHONEME_PACK_CUES = {
   air: "Open /air/ (chair).",
   ear: "Long /ear/ (ear)."
 };
+const PHONEME_PACK_WORDS = [
+  { word: "cat", keys: ["c", "a", "t"] },
+  { word: "dog", keys: ["d", "o", "g"] },
+  { word: "sun", keys: ["s", "u", "n"] },
+  { word: "pig", keys: ["p", "i", "g"] },
+  { word: "hat", keys: ["h", "a", "t"] },
+  { word: "map", keys: ["m", "a", "p"] },
+  { word: "bed", keys: ["b", "e", "d"] },
+  { word: "cup", keys: ["c", "u", "p"] },
+  { word: "net", keys: ["n", "e", "t"] },
+  { word: "jam", keys: ["j", "a", "m"] },
+  { word: "van", keys: ["v", "a", "n"] },
+  { word: "zip", keys: ["z", "i", "p"] },
+  { word: "fish", keys: ["f", "i", "sh"] },
+  { word: "ship", keys: ["sh", "i", "p"] },
+  { word: "chip", keys: ["ch", "i", "p"] },
+  { word: "duck", keys: ["d", "u", "ck"] },
+  { word: "ring", keys: ["r", "i", "ng"] },
+  { word: "moon", keys: ["m", "oo", "n"] },
+  { word: "rain", keys: ["r", "ai", "n"] },
+  { word: "boat", keys: ["b", "oa", "t"] }
+];
 function renderExampleWithGrapheme(key, word) {
   if (!word) return null;
   const g = key === "oo_short" ? "oo" : key;
@@ -351,6 +373,33 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     }
   };
   const rateSelf = (key, val) => setSelfChecks((prev) => Object.assign({}, prev, { [key]: prev[key] === val ? null : val }));
+  const wordReady = (w) => w.keys.every((k) => clips[k]);
+  const playWord = (w) => {
+    const seq = w.keys.map((k) => clips[k]);
+    if (seq.some((c) => !c)) {
+      setStatus('Record every sound in "' + w.word + '" first.');
+      return;
+    }
+    setStatus('\u{1F50A} Blending "' + w.word + '" in your voice...');
+    let i = 0;
+    const next = () => {
+      if (i >= seq.length) {
+        setStatus('\u{1F389} You built "' + w.word + '" with your own sounds!');
+        return;
+      }
+      const clip = seq[i];
+      i++;
+      try {
+        const a = new Audio(clip);
+        a.onended = () => setTimeout(next, 240);
+        a.onerror = () => setTimeout(next, 240);
+        a.play().catch(() => setTimeout(next, 240));
+      } catch (e) {
+        setTimeout(next, 240);
+      }
+    };
+    next();
+  };
   const clearClip = (key) => {
     setPack((prev) => {
       const c = Object.assign({}, prev.clips);
@@ -427,7 +476,14 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     const good = c.match === true && c.clipped !== false;
     return /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-semibold ${good ? "text-emerald-600" : "text-amber-600"}`, title: c.note || "" }, good ? "\u2713 sounds right" : "\u26A0 " + (c.note || "try again"));
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4", role: "dialog", "aria-label": "Phoneme Voice Pack editor" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black flex items-center gap-2" }, "\u{1F399}\uFE0F ", T("word_sounds.voice_pack_title", "Voice Pack \u2014 record your own sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/80" }, recordedCount, " / ", allKeys.length, " ", T("word_sounds.voice_pack_recorded", "sounds recorded"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": "Close", className: "p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2.5 border-b border-slate-200 flex items-center gap-3 flex-wrap text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-300 overflow-hidden", role: "group", "aria-label": "Pack type" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("teacher-model"), className: `px-3 py-1.5 font-bold transition-colors ${!isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F393} Teacher model"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("student-voice"), className: `px-3 py-1.5 font-bold transition-colors ${isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F9D2} Student voice")), /* @__PURE__ */ React.createElement("label", { className: `inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? "text-slate-700" : "text-slate-300 cursor-not-allowed"}`, title: aiAvailable ? "Sends each clip to Gemini to compare with the target sound" : "AI check needs Canvas" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: aiCheckOn, disabled: !aiAvailable, onChange: (e) => setAiCheckOn(e.target.checked) }), " \u{1F50E} ", T("word_sounds.voice_pack_aicheck", "Check sounds with AI")), aiCheckOn ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-amber-600" }, T("word_sounds.voice_pack_aicheck_note", "Each clip is sent to Gemini for analysis.")) : null), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 bg-violet-50 border-b border-violet-100 text-xs text-slate-700" }, isStudent ? T("word_sounds.voice_pack_intro_student", "The student records each sound in their own voice (great for ownership and articulation practice). Tap \u{1F442} to hear the model first, then \u{1F399}\uFE0F to record. Student voice is a confidential record: it stays on this device, and Export creates a CONFIDENTIAL file you control.") : T("word_sounds.voice_pack_intro", 'Record each sound in your own voice: tap \u{1F442} to hear the model, then \u{1F399}\uFE0F and say the sound clipped ("/p/", not "puh"). The app plays your voice during blending, isolation and the anchor card. Empty sounds keep the default voice.')), isStudent && !consentOk ? /* @__PURE__ */ React.createElement("div", { className: "mx-5 mt-3 p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, "\u26A0\uFE0F ", T("word_sounds.voice_pack_consent_title", "Recording a student voice")), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, T("word_sounds.voice_pack_consent_body", "A student's voice recording is a confidential, biometric-adjacent record. It stays on this device, is never uploaded by this tool (the AI check, if you turn it on, is the only thing that sends a clip out), and you can delete it any time. Confirm you have permission to record this student.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: giveConsent, className: "px-3 py-1.5 rounded-lg bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors" }, T("word_sounds.voice_pack_consent_ok", "I have permission \u2014 start recording"))) : null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-4 space-y-4" }, Object.keys(PHONEME_PACK_GROUPS).map((group) => /* @__PURE__ */ React.createElement("div", { key: group }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, group), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, PHONEME_PACK_GROUPS[group].map((key) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4", role: "dialog", "aria-label": "Phoneme Voice Pack editor" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black flex items-center gap-2" }, "\u{1F399}\uFE0F ", T("word_sounds.voice_pack_title", "Voice Pack \u2014 record your own sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/80" }, recordedCount, " / ", allKeys.length, " ", T("word_sounds.voice_pack_recorded", "sounds recorded"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": "Close", className: "p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2.5 border-b border-slate-200 flex items-center gap-3 flex-wrap text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-300 overflow-hidden", role: "group", "aria-label": "Pack type" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("teacher-model"), className: `px-3 py-1.5 font-bold transition-colors ${!isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F393} Teacher model"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("student-voice"), className: `px-3 py-1.5 font-bold transition-colors ${isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F9D2} Student voice")), /* @__PURE__ */ React.createElement("label", { className: `inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? "text-slate-700" : "text-slate-300 cursor-not-allowed"}`, title: aiAvailable ? "Sends each clip to Gemini to compare with the target sound" : "AI check needs Canvas" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: aiCheckOn, disabled: !aiAvailable, onChange: (e) => setAiCheckOn(e.target.checked) }), " \u{1F50E} ", T("word_sounds.voice_pack_aicheck", "Check sounds with AI")), aiCheckOn ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-amber-600" }, T("word_sounds.voice_pack_aicheck_note", "Each clip is sent to Gemini for analysis.")) : null), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 bg-violet-50 border-b border-violet-100 text-xs text-slate-700" }, isStudent ? T("word_sounds.voice_pack_intro_student", "The student records each sound in their own voice (great for ownership and articulation practice). Tap \u{1F442} to hear the model first, then \u{1F399}\uFE0F to record. Student voice is a confidential record: it stays on this device, and Export creates a CONFIDENTIAL file you control.") : T("word_sounds.voice_pack_intro", 'Record each sound in your own voice: tap \u{1F442} to hear the model, then \u{1F399}\uFE0F and say the sound clipped ("/p/", not "puh"). The app plays your voice during blending, isolation and the anchor card. Empty sounds keep the default voice.')), isStudent && !consentOk ? /* @__PURE__ */ React.createElement("div", { className: "mx-5 mt-3 p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, "\u26A0\uFE0F ", T("word_sounds.voice_pack_consent_title", "Recording a student voice")), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, T("word_sounds.voice_pack_consent_body", "A student's voice recording is a confidential, biometric-adjacent record. It stays on this device, is never uploaded by this tool (the AI check, if you turn it on, is the only thing that sends a clip out), and you can delete it any time. Confirm you have permission to record this student.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: giveConsent, className: "px-3 py-1.5 rounded-lg bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors" }, T("word_sounds.voice_pack_consent_ok", "I have permission \u2014 start recording"))) : null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-4 space-y-4" }, (() => {
+    const readyWords = PHONEME_PACK_WORDS.filter(wordReady);
+    return /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border-2 border-amber-200 bg-amber-50 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-0.5" }, "\u{1F50A} ", T("word_sounds.voice_pack_words_title", "Hear a word in your voice")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600 mb-2" }, readyWords.length > 0 ? T("word_sounds.voice_pack_words_ready", "Tap a word to hear it built from YOUR sounds.") : T("word_sounds.voice_pack_words_hint", "Record the sounds in a word, then tap it to hear the whole word in your own voice."), " ", readyWords.length > 0 ? "(" + readyWords.length + "/" + PHONEME_PACK_WORDS.length + ")" : ""), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, PHONEME_PACK_WORDS.map((w) => {
+      const ready = wordReady(w);
+      const missing = w.keys.filter((k) => !clips[k]).map((k) => "/" + (k === "oo_short" ? "oo" : k) + "/").join(" ");
+      return /* @__PURE__ */ React.createElement("button", { key: w.word, type: "button", onClick: () => ready && playWord(w), disabled: !ready, "aria-label": ready ? "Hear " + w.word + " in your voice" : w.word + " \u2014 still need " + missing, title: ready ? 'Hear "' + w.word + '" in your voice' : "Record: " + missing, className: `px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${ready ? "bg-violet-600 text-white hover:bg-violet-700" : "bg-white text-slate-400 border border-slate-200 cursor-not-allowed"}` }, ready ? "\u{1F50A} " : "\u{1F512} ", w.word);
+    })));
+  })(), Object.keys(PHONEME_PACK_GROUPS).map((group) => /* @__PURE__ */ React.createElement("div", { key: group }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, group), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, PHONEME_PACK_GROUPS[group].map((key) => {
     const has = !!clips[key];
     const rec = recordingKey === key;
     const label = key === "oo_short" ? "oo" : key;
