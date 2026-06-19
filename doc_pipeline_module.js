@@ -1065,7 +1065,7 @@ var createDocPipeline = function(deps) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
-      _pipeLog('Vision←', 'callGeminiVision #' + callNum + ' done (' + dur + 'ms, ' + Math.round(respLen / 1000) + 'KB response)');
+      _pipeLog('Vision←', 'callGeminiVision #' + callNum + ' done (' + dur + 'ms, ' + Math.round(respLen / 1000) + 'KB response)' + (respLen === 0 ? ' — ⚠ empty/0-byte response (likely a silent failure; caller falls back)' : ''));
       return result;
     }).catch(function(err) {
       var dur = Math.round(performance.now() - t0);
@@ -14790,11 +14790,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const AXE_TOL = 2;                                       // allow ±2 axe-violation noise
           const axeWorse = newAxeViolations > bestAxeViolations;
           const axeMuchWorse = newAxeViolations > bestAxeViolations + AXE_TOL;
+          const axeBetter = newAxeViolations < bestAxeViolations;
 
-          if ((aiWorse && axeWorse) || axeMuchWorse) {
+          // Revert if a big axe regression (always), OR the AI rubric dropped meaningfully WITHOUT
+          // fixing any axe/WCAG violation to justify it. (2026-06-19: the guard previously only
+          // reverted when axe ALSO worsened — so a pass that dropped the AI rubric 89→78 while axe
+          // stayed clean was ACCEPTED, letting the loop degrade a good doc on rubric noise and ship
+          // it. A pass that lowers the rubric is only worth keeping if it fixed a real axe violation.)
+          if (axeMuchWorse || (aiWorse && !axeBetter)) {
             const _why = axeMuchWorse && !aiWorse
               ? `introduced ${newAxeViolations - bestAxeViolations} new axe/WCAG violation(s) despite AI gains`
-              : 'both scores got worse';
+              : (aiWorse && !axeWorse ? `AI rubric dropped ${bestAiScore}→${newAiScore} without fixing any axe violation` : 'both scores got worse');
             // Revert this pass, but DON'T end the loop on a single stochastic dud — retry
             // from the last-good state (best*/axeResults/verification are untouched here, so
             // the next pass re-attempts the same remaining violations). Give up only after
@@ -14819,12 +14825,19 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // correct pattern in runAutonomousRemediation.
           const prevBestAiScore = bestAiScore;
           const prevBestAxeViolations = bestAxeViolations;
-          // Update best known state
           if (reVerify) verification = reVerify;
           if (reAxe) axeResults = reAxe;
-          bestHtml = accessibleHtml;
-          bestAiScore = newAiScore;
-          bestAxeViolations = newAxeViolations;
+          // Keep-best (2026-06-19): only promote this pass to the shipped "best" if it is genuinely
+          // at least as good — a higher AI score, or fewer axe violations without an AI regression.
+          // A within-tolerance DROP stays as the working state (exploration through the noisy AI
+          // rubric) but must NOT overwrite a better bestHtml, or we'd ship the degraded version.
+          // bestHtml is what the pipeline ships (restored after the loop).
+          const _passIsBest = (newAiScore > bestAiScore) || (newAxeViolations < bestAxeViolations && newAiScore >= bestAiScore - 5);
+          if (_passIsBest) {
+            bestHtml = accessibleHtml;
+            bestAiScore = newAiScore;
+            bestAxeViolations = newAxeViolations;
+          }
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
@@ -14877,6 +14890,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
         // Emit session complete for live UI
         try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
+      }
+
+      // Keep-best (2026-06-19): the loop's working `accessibleHtml` can have drifted to a within-
+      // tolerance-lower (or just-reverted) state, but bestHtml holds the highest-scoring verified
+      // version the loop produced. Ship THAT — the post-loop cleanup + content recovery + the final
+      // authoritative audit (~line 15063) then all operate on the best, so we never deliver a worse
+      // document than the loop achieved (this is the fix for "audited 89 but shipped 85"). No-op when
+      // the loop didn't run or no pass beat the baseline (bestHtml === accessibleHtml).
+      if (bestHtml && bestHtml !== accessibleHtml) {
+        warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ') instead of the loop\'s last working state.');
+        accessibleHtml = bestHtml;
       }
 
       // ── Diff-based semantic cleanup: compare final HTML against extractedText ground truth ──
@@ -15168,8 +15192,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         : null;
       let axeCoreFailed = false;
       if (finalAfterScore !== null && axeScoreAvailable) {
-        const blendedFinal = Math.round((finalAfterScore + deterministicScore) / 2);
-        warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + deterministic ${deterministicScore} (axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}) = ${blendedFinal}`);
+        // Blend the AI rubric with the deterministic WCAG engines. Default 50/50 — BUT when the doc is
+        // axe-CLEAN (0 violations) AND the deterministic score is strong (>=90), weight toward the
+        // deterministic signal (75/25). axe + EqualAccess are reliable, reproducible WCAG validators;
+        // the AI rubric is a noisy heuristic (±~20 run-to-run). A document that PASSES the real
+        // checkers shouldn't be dragged below target by rubric noise. This is an honesty call, not
+        // score-inflation: when the trustworthy measurement is strong, it should lead. (2026-06-19)
+        const _axeClean = !!(axeResults && axeResults.totalViolations === 0);
+        const _detStrong = deterministicScore >= 90;
+        let blendedFinal;
+        if (_axeClean && _detStrong) {
+          blendedFinal = Math.round(deterministicScore * 0.75 + finalAfterScore * 0.25);
+          warnLog(`[PDF Fix] Final blended score (deterministic-weighted 75/25 — axe-clean + deterministic ${deterministicScore}): AI ${finalAfterScore} + deterministic ${deterministicScore} = ${blendedFinal}`);
+        } else {
+          blendedFinal = Math.round((finalAfterScore + deterministicScore) / 2);
+          warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + deterministic ${deterministicScore} (axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}) = ${blendedFinal}`);
+        }
         finalAfterScore = blendedFinal;
       } else if (!axeScoreAvailable) {
         // Dual-engine guarantee is broken — surface this to the UI so the banner can warn users.
