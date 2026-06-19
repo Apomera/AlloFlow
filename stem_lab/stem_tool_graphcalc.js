@@ -488,8 +488,8 @@
           var H = canvas.offsetHeight || 420;
           canvas.width = W * dpr; canvas.height = H * dpr; c.scale(dpr, dpr);
 
-          function toPixelX(mx) { return (mx - win.xmin) / (win.xmax - win.xmin) * W; }
-          function toPixelY(my) { return H - (my - win.ymin) / (win.ymax - win.ymin) * H; }
+          function toPixelX(mx) { return (mx - win.xmin) / ((win.xmax - win.xmin) || 1) * W; }
+          function toPixelY(my) { return H - (my - win.ymin) / ((win.ymax - win.ymin) || 1) * H; }
           function toMathX(px) { return win.xmin + px / W * (win.xmax - win.xmin); }
           canvas._toMathX = toMathX;
 
@@ -526,15 +526,18 @@
               if (/sin|cos|tan/.test(expr)) usedTrig = true;
               var compiled = math.compile(expr);
               c.strokeStyle = fn.color; c.lineWidth = 2.5; if (fi === 0) { c.shadowColor = fn.color; c.shadowBlur = 9; } c.beginPath();
-              var started = false; var plotStep = xRange / W;
+              var started = false; var plotStep = xRange / W; var prevPpy = null;
               for (var mx = win.xmin; mx <= win.xmax; mx += plotStep) {
                 try {
                   var my = compiled.evaluate(Object.assign({ x: mx }, sA));
                   if (typeof my === 'number' && isFinite(my) && my >= win.ymin - yRange && my <= win.ymax + yRange) {
                     var ppx = toPixelX(mx); var ppy = toPixelY(my);
-                    if (!started) { c.moveTo(ppx, ppy); started = true; } else c.lineTo(ppx, ppy);
-                  } else started = false;
-                } catch (e) { started = false; }
+                    // Lift the pen at a discontinuity: a >1-canvas-height jump between samples is an
+                    // asymptote (tan x, 1/x) — drawing a lineTo across it produced a spurious vertical line.
+                    if (!started || (prevPpy !== null && Math.abs(ppy - prevPpy) > H)) { c.moveTo(ppx, ppy); started = true; } else c.lineTo(ppx, ppy);
+                    prevPpy = ppy;
+                  } else { started = false; prevPpy = null; }
+                } catch (e) { started = false; prevPpy = null; }
               }
               c.stroke(); c.shadowBlur = 0; graphCount++;
               c.fillStyle = fn.color; c.font = 'bold 11px system-ui'; c.textAlign = 'left';
