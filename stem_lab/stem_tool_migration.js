@@ -150,7 +150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // ── Formation physics constants ──
   var FORMATION_FACTS = [
     { title: 'Upwash Zone', text: 'When a bird flaps, it creates a downward push of air (downwash) directly behind it and an upward push (upwash) at roughly 30\u00B0 to either side of the wingtip. Trailing birds position themselves in this upwash zone to get free lift.' },
-    { title: 'Energy Savings', text: 'Research on pelicans (Weimerskirch et al., 2001) showed that birds in V-formation have lower heart rates and glide more often. Trailing birds save up to 65% of their energy compared to flying alone.' },
+    { title: 'Energy Savings', text: 'Research on pelicans (Weimerskirch et al., 2001) showed that birds in V-formation have lower heart rates and glide more often. Field studies suggest trailing birds save roughly 10–30% of their energy in real flocks; ~65% is a theoretical per-position maximum, not the typical saving.' },
     { title: 'Leader Rotation', text: 'Leading is exhausting \u2014 the front bird gets no upwash benefit and faces full air resistance. In nature, birds rotate leadership every few minutes. Each bird serves roughly equal time at the front.' },
     { title: 'Flap Timing', text: 'Birds in formation synchronize their wing beats with the bird ahead, adjusted by a phase delay. This maximizes the upwash capture. High-speed cameras show flap timing accuracy within 0.1 seconds.' },
     { title: 'Communication', text: 'Geese honk during flight to communicate position and encourage the leader. The V-shape also gives each bird an unobstructed view of the bird ahead, helping maintain spacing.' },
@@ -285,7 +285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var borderCol = isDark ? 'border-slate-700' : 'border-slate-200';
       var textPrimary = isDark ? 'text-white' : 'text-slate-900';
       var textSecondary = isDark ? 'text-slate-300' : 'text-slate-600';
-      var textMuted = isDark ? 'text-slate-200' : 'text-slate-200';
+      var textMuted = isDark ? 'text-slate-400' : 'text-slate-500'; // was 'text-slate-200' on both branches → ~1.6:1 on the light surface, failed WCAG AA
       var accent = 'text-sky-500';
       var accentBg = isDark ? 'bg-sky-900/40' : 'bg-sky-50';
       var btnPrimary = 'bg-sky-600 hover:bg-sky-700 text-white';
@@ -858,7 +858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83E\uDEBF How V-Formation Works'),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
               h('p', null, 'When a bird flaps its wings, it creates a rotating vortex of air off each wingtip. The air immediately behind and below the wingtip pushes ', h('strong', null, 'downward'), ' (downwash), but the air to the side pushes ', h('strong', null, 'upward'), ' (upwash).'),
-              h('p', null, 'By positioning themselves in the upwash zone \u2014 roughly 30\u00B0 behind and to the side of the bird ahead \u2014 trailing birds get a free boost of rising air. This reduces the energy needed to stay aloft by up to ', h('strong', null, '65%'), '.'),
+              h('p', null, 'By positioning themselves in the upwash zone \u2014 roughly 30\u00B0 behind and to the side of the bird ahead \u2014 trailing birds get a free boost of rising air. In real flocks this saves roughly ', h('strong', null, '10\u201330%'), ' of their energy (', h('strong', null, '~65%'), ' is a theoretical maximum).'),
               h('p', null, 'The leader gets no benefit and tires faster. When its energy drops below 30%, it falls back and another bird takes the lead. This is called ', h('strong', null, 'leader rotation'), '. In nature, every bird takes a turn at the front.'),
               h('p', null, h('em', null, 'Try dragging birds into different positions and watch how formation efficiency and energy savings change! Press V to auto-form, S to scatter.'))
             )
