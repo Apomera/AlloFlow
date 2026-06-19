@@ -630,11 +630,11 @@
             var leftText = sides[0] ? sides[0].trim() : '?';
             var rightText = sides[1] ? sides[1].trim() : '?';
 
-            // Determine tilt: if solved or no eq, level
+            // An equation's two sides are equal by definition, so the balance stays LEVEL —
+            // which is the whole point ("equations balance"). The old tilt was derived from each
+            // side's CHARACTER COUNT (e.g. "2x"=2 chars vs "100"=3), implying a fake imbalance
+            // that actively taught a misconception.
             var tilt = 0;
-            if (scaleEq && !scaleSolved) {
-              tilt = leftText.length > rightText.length ? -0.12 : (rightText.length > leftText.length ? 0.12 : 0);
-            }
 
             var cx = w / 2;
             var baseY = ht - 20;
@@ -710,11 +710,17 @@
             ),
             scaleEq && !scaleSolved ? h('div', null,
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Apply to Both Sides'),
-              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px' } },
+              h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px', alignItems: 'center' } },
+                // Inline numeric input instead of window.prompt() \u2014 prompt() is blocked in the
+                // sandboxed Gemini Canvas iframe (the primary surface), which silently dead-ended
+                // every balance operation. The op buttons read this value.
+                h('input', { type: 'number', 'aria-label': 'Value to apply to both sides', value: d.scaleOpVal != null ? d.scaleOpVal : '', placeholder: 'value',
+                  onChange: function(e) { upd('scaleOpVal', e.target.value); },
+                  style: { width: '74px', padding: '8px', borderRadius: '8px', border: '1px solid ' + BORDER, background: BG, color: TEXT, fontSize: '13px' } }),
                 [['Add', '+'], ['Subtract', '-'], ['Multiply', '\u00D7'], ['Divide', '\u00F7']].map(function(pair) {
-                  return h('button', { 'aria-label': 'Steps Applied:', key: pair[0], onClick: function() {
-                    var val = prompt(pair[0] + ' what value to both sides?');
-                    if (val) handleScaleOp(pair[0], val);
+                  return h('button', { 'aria-label': pair[0] + ' the entered value on both sides', key: pair[0], onClick: function() {
+                    var val = d.scaleOpVal;
+                    if (val != null && String(val).trim() !== '') handleScaleOp(pair[0], String(val).trim());
                   }, style: opBtnStyle }, pair[1] + ' ' + pair[0]);
                 })
               ),
@@ -796,7 +802,7 @@
           (function() {
             var TAB_META = {
               solve:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '🔍', title: 'Solve — algebra step-by-step',         hint: 'Linear, quadratic, factoring, system, simplify. AI shows every step + names the property used (distributive, combining like terms, FOIL). Common AP / SAT / Algebra-1 problems all reduce to ~8 transformations.' },
-              practice: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🎯', title: 'Practice — graded drills',             hint: 'Multi-difficulty problem sets. Each problem has step-grading: even if the final answer is wrong, you get credit for correct intermediate steps. Builds the habit of writing math, not just guessing.' },
+              practice: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🎯', title: 'Practice — graded drills',             hint: 'Multi-difficulty problem sets. The AI checks your answer and walks through the full worked solution so you can see exactly where your steps diverged. Builds the habit of writing math, not just guessing.' },
               builder:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '🧱', title: 'Builder — design your own equation',   hint: 'Pick variables + operations + target value; system generates an algebra problem matching your design. Useful for teachers building worksheets and for students reverse-engineering "what makes a problem hard."' },
               scale:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '⚖️', title: 'Scale — visual algebra balance',       hint: 'Drag weights onto a balance to model x + 3 = 7 visually. The single most useful intuition for early algebra — equations are scales, not blanks to fill in. Whatever you do to one side, do to the other.' },
               tutor:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🤖', title: 'Tutor — ask AI for help',              hint: 'Ask the tutor about any algebra concept or stuck-step. Tutor knows your grade band, recent attempts, and the active problem. Best for "why didn\'t my approach work?" questions.' }
