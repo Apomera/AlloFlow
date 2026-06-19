@@ -93,9 +93,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       descr: '40°F–140°F (4°C–60°C). Bacteria can double every 20 minutes. Food should not stay here for more than 2 hours total (1 hour if ambient is over 90°F).' };
     if (tempF < 165) return { zone: 'cooking', label: 'Cooking (most foods)', color: '#f59e0b', rate: -0.5,
       descr: '140°F–165°F (60°C–74°C). Above the danger zone — bacteria die over time. Hold above 140°F for safe service.' };
-    if (tempF < 212) return { zone: 'hot', label: 'Safe cook + hold', color: '#dc2626', rate: -1,
+    if (tempF < 212) return { zone: 'hot', label: 'Safe cook + hold', color: '#16a34a', rate: -1,
       descr: 'Above 165°F (74°C). Kills bacteria on contact. Most cooking happens here.' };
-    return { zone: 'boil', label: 'Boiling', color: '#ef4444', rate: -1,
+    return { zone: 'boil', label: 'Boiling', color: '#15803d', rate: -1,
       descr: 'Water boils at 212°F (100°C) at sea level. Boiling kills bacteria instantly but doesn\'t neutralize all toxins — sometimes the bacteria die but the poisons they made survive.' };
   }
 
@@ -2380,7 +2380,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // tracks max pan temp for the final judgement.
       function recipeTick() {
         setKL(function(prior) {
-          if (prior.recipePhase !== 'cooking') return {};
+          // Self-terminate the interval once cooking ends — otherwise the 500ms setInterval keeps
+          // firing (and the tick survives navigating away within the tool / unmount). Deferred so the
+          // clearInterval side-effect runs outside the state-updater.
+          if (prior.recipePhase !== 'cooking') { setTimeout(stopRecipeTick, 0); return {}; }
           var now = Date.now();
           var rec = RECIPES[prior.recipeActiveId];
           var simSpeed = (rec && rec.simSpeedMultiplier) || 1;
@@ -3219,7 +3222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // ─── Active cooking cockpit ───
       function renderRecipeCockpit() {
         var rec = RECIPES[d.recipeActiveId];
-        if (!rec) { abortRecipe(); return null; }
+        if (!rec) { setTimeout(abortRecipe, 0); return null; } // defer: abortRecipe calls setKL (no setState-in-render)
         var stepIdx = d.recipeCurrentStep || 0;
         var step = rec.steps[stepIdx] || rec.steps[0];
         var panTemp = Math.round(d.recipePanTempF || 70);
@@ -4037,7 +4040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       else if (section === 'resources') content = renderResources();
       else if (section === 'maillardHunt') content = (function() {
         var iq = d.maillardHunt || { tempF: 350, aminoPct: 50, sugarPct: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) { upd('maillardHunt', Object.assign({}, iq, patch)); }
+        function setIQ(patch) { setKL({ maillardHunt: Object.assign({}, iq, patch) }); }
         var reactivity = (iq.tempF > 280 ? (iq.tempF - 280) / 200 : 0) * (iq.aminoPct / 100) * (iq.sugarPct / 100);
         var state;
         if (reactivity < 0.05) state = 'noReact';
