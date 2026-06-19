@@ -14465,11 +14465,30 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
         if (allCorrections.size > 0) {
           let fixCount = 0;
+          // Apply each correction as a WHOLE-TOKEN replace (2026-06-19 fidelity fix). The old
+          // `accessibleHtml.split(c.wrong).join(c.right)` was a global, unanchored, unescaped
+          // substring rewrite: a short `wrong` fragment rewrote word INTERIORS document-wide —
+          // e.g. {wrong:"th",right:"though"} turned "health"→"healthough" and "although"→
+          // "althoughough" ("al"+"though"+"ough"), and self-embedding corrections duplicated
+          // ("first"→"first1st"). Guards: skip <3-char fragments, match only on Unicode letter/digit
+          // boundaries (punctuation neighbors still allowed, so "word." is still fixable) so a
+          // correction can never splice into the middle of a word, and skip whole-token match storms.
+          const _grEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           for (const [, c] of allCorrections) {
-            if (accessibleHtml.includes(c.wrong)) {
-              accessibleHtml = accessibleHtml.split(c.wrong).join(c.right);
-              fixCount++;
-            }
+            const w = c.wrong, r = c.right;
+            if (!w || w.length < 3) continue;                              // too short to apply safely
+            let _grRe;
+            try { _grRe = new RegExp('(?<![\\p{L}\\p{N}])' + _grEsc(w) + '(?![\\p{L}\\p{N}])', 'gu'); }
+            catch (_) { continue; }
+            const _grHits = accessibleHtml.match(_grRe);
+            if (!_grHits || _grHits.length === 0) continue;
+            // A targeted OCR/spelling fix should hit only a handful of sites; a whole-token match
+            // STORM means `wrong` is a common word the model over-flagged — skip rather than rewrite
+            // it document-wide. (Boundary-anchoring already stops the interior corruption like th→though;
+            // legit morphological fixes such as word→words still apply since they match few times.)
+            if (_grHits.length > 30) { warnLog('[Grammar] skipping over-broad correction "' + w + '" (' + _grHits.length + ' matches)'); continue; }
+            accessibleHtml = accessibleHtml.replace(_grRe, r);
+            fixCount++;
           }
           if (fixCount > 0) {
             warnLog(`[PDF Fix] Grammar/spelling: fixed ${fixCount}/${allCorrections.size} issues across ${grammarChunks.length} sections`);
@@ -15354,7 +15373,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const _arTess = (typeof window !== 'undefined' && window.__lastOcrTesseractText) || '';
         const _arVis = (typeof window !== 'undefined' && window.__lastOcrVisionText) || '';
         if (_arTess && _arVis && typeof applyWordRestoration === 'function') {
-          const _arNorm = (tk) => String(tk || '').toLowerCase().replace(/­/g, '').replace(/[^a-z0-9'-]/g, '');
+          // Normalize curly apostrophes/primes → straight, and Unicode hyphens → '-', BEFORE the
+          // keep-set strip (2026-06-19). Without this the test was ASYMMETRIC: the OCR source carries
+          // straight apostrophes (kept) but the remediated HTML carries CURLY ones (stripped), so a
+          // present word like "isn’t"/"Louise’s" normalized to "isnt"/"louises" and was judged MISSING
+          // → re-spliced adjacent to its existing copy ("isn't isn't", "Louise's Louise's").
+          const _arNorm = (tk) => String(tk || '').toLowerCase().replace(/[‘’ʼ′‵]/g, "'").replace(/[‐-―−]/g, '-').replace(/­/g, '').replace(/[^a-z0-9'-]/g, '');
           const _arSetOf = (s) => { const o = new Set(); for (const p of String(s || '').split(/\s+/)) { const n = _arNorm(p); if (n.length >= 2) o.add(n); } return o; };
           const _arSetT = _arSetOf(_arTess);
           const _arSetV = _arSetOf(_arVis);
@@ -20383,12 +20407,21 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           const orig = node.nodeValue;
           const origCursor = mapOffset(orig, target.splicePoint);
           const origWord = srcWordsRaw[pos] || targetWord;
-          const needsLeadingSpace = origCursor > 0 && !/\s/.test(orig[origCursor - 1]);
-          const needsTrailingSpace = origCursor < orig.length && !/\s/.test(orig[origCursor]);
-          const insert = (needsLeadingSpace ? ' ' : '') + origWord + (needsTrailingSpace ? ' ' : '');
-          node.nodeValue = orig.slice(0, origCursor) + insert + orig.slice(origCursor);
-          restored.push({ word: origWord, context: beforeCtx.concat([targetWord], afterCtx).join(' ') });
-          placed = true;
+          // Adjacency guard (2026-06-19): the candidate-missing test can mis-flag an ALREADY-present
+          // token (e.g. a curly-vs-straight apostrophe that slipped past _arNorm) as missing. If
+          // origWord already abuts this splice point, treat it as present and DON'T re-insert —
+          // otherwise we duplicate it ("isn't isn't", "Louise's Louise's", "Shawn's . Shawn's").
+          const _adjWin = orig.slice(Math.max(0, origCursor - origWord.length - 2), origCursor + origWord.length + 2).toLowerCase();
+          if (origWord && _adjWin.indexOf(origWord.toLowerCase()) !== -1) {
+            placed = true; // already present at the anchor — nothing to insert
+          } else {
+            const needsLeadingSpace = origCursor > 0 && !/\s/.test(orig[origCursor - 1]);
+            const needsTrailingSpace = origCursor < orig.length && !/\s/.test(orig[origCursor]);
+            const insert = (needsLeadingSpace ? ' ' : '') + origWord + (needsTrailingSpace ? ' ' : '');
+            node.nodeValue = orig.slice(0, origCursor) + insert + orig.slice(origCursor);
+            restored.push({ word: origWord, context: beforeCtx.concat([targetWord], afterCtx).join(' ') });
+            placed = true;
+          }
         }
         if (placed) break;
       }

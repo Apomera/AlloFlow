@@ -308,7 +308,10 @@ else
   STALE=()
   for mod in "${CDN_MODULES[@]}"; do
     [[ -f "$mod" ]] || { pv_warn "local $mod missing — skipping CDN check"; continue; }
-    LOCAL_MD5=$(md5sum "$mod" | awk '{print $1}')
+    # Compare against the COMMITTED module (what Cloudflare builds from), NOT the working tree —
+    # a generated module can re-drift locally (e.g. a duplicate registration block), which would
+    # make a genuinely-fresh CDN copy look "stale". HEAD is what was pushed, so it's the truth.
+    LOCAL_MD5=$(git show "HEAD:$mod" 2>/dev/null | md5sum | awk '{print $1}')
     TMP=$(mktemp)
     HCODE=$(curl -s -o "$TMP" -w "%{http_code}" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || echo "000")
     if [[ "$HCODE" != "200" || ! -s "$TMP" ]]; then
@@ -331,7 +334,10 @@ else
     sleep "$CDN_WAIT"
     STILL=()
     for mod in "${STALE[@]}"; do
-      LOCAL_MD5=$(md5sum "$mod" | awk '{print $1}')
+      # Compare against the COMMITTED module (what Cloudflare builds from), NOT the working tree —
+    # a generated module can re-drift locally (e.g. a duplicate registration block), which would
+    # make a genuinely-fresh CDN copy look "stale". HEAD is what was pushed, so it's the truth.
+    LOCAL_MD5=$(git show "HEAD:$mod" 2>/dev/null | md5sum | awk '{print $1}')
       TMP=$(mktemp)
       curl -s -o "$TMP" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || true
       CDN_MD5=$(md5sum "$TMP" | awk '{print $1}'); rm -f "$TMP"
@@ -346,7 +352,7 @@ else
   if [[ ${#STALE[@]} -gt 0 ]]; then
     pv_warn "${#STALE[@]} module(s) still stale after ${CDN_RETRIES} retries: ${STALE[*]}"
     echo "    (Cloudflare Pages can take a few min. Re-check later with:)"
-    echo "    for m in ${STALE[*]}; do curl -s \"$CDN_BASE/\$m\" | md5sum; md5sum \"\$m\"; done"
+    echo "    for m in ${STALE[*]}; do curl -s \"$CDN_BASE/\$m\" | md5sum; git show \"HEAD:\$m\" | md5sum; done"
   fi
 fi
 
