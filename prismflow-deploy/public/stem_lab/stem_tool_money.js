@@ -1440,7 +1440,8 @@ window.StemLab = window.StemLab || {
                   cents:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDE99', title: 'Common cents',           hint: 'Quick mental shortcuts: 25\u00a2 \u00d7 4 = $1, 10\u00a2 + 5\u00a2 + 1\u00a2 = 16\u00a2. Arithmetic with money is faster than the same arithmetic with abstract numbers because the unit is concrete.' },
                   word:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDCDD', title: 'Word problems',          hint: 'Translate the sentence to an equation BEFORE computing. "How much" = an unknown variable. "Total" = sum. "Each" or "per" = multiplication.' },
                   exchange: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83C\uDF0D', title: 'Currency exchange',      hint: 'Exchange rates change daily. Cards usually beat cash for travel \u2014 cash exchange shops mark up 5\u201310% over interbank rates.' },
-                  finance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDCB0', title: 'Personal finance',       hint: 'Compound interest: $100 at 7% \u00d7 30 yrs = $760. Pay credit-card statement balance in full each cycle = no interest. Carry a balance = APR roughly doubles your debt every 5 yrs.' }
+                  finance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDCB0', title: 'Personal finance',       hint: 'Compound interest: $100 at 7% \u00d7 30 yrs = $760. Pay credit-card statement balance in full each cycle = no interest. Carry a balance = APR roughly doubles your debt every 5 yrs.' },
+                  inquiry:  { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDD2C', title: 'Compound Interest Inquiry', hint: 'Vary the principal, rate, and time and watch how compound growth pulls ahead of the contributions alone. An open exploration \u2014 no score, no single right answer.' }
                 };
                 var meta = TAB_META[tab] || TAB_META.coins;
                 return React.createElement('div', {
@@ -3028,10 +3029,10 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "mb-4" },
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Progress"),
-                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-600" }, Math.min(100, Math.round(sgHave / sgTarget * 100)) + "%")
+                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-600" }, Math.min(100, Math.round(sgHave / Math.max(1, sgTarget) * 100)) + "%")
                     ),
                     React.createElement("div", { className: "h-4 bg-slate-100 rounded-full overflow-hidden" },
-                      React.createElement("div", { style: { width: Math.min(100, sgHave / sgTarget * 100) + '%', transition: 'width 0.3s' }, className: "h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full" })
+                      React.createElement("div", { style: { width: Math.min(100, sgHave / Math.max(1, sgTarget) * 100) + '%', transition: 'width 0.3s' }, className: "h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full" })
                     )
                   ),
                   // Results
@@ -3242,7 +3243,7 @@ window.StemLab = window.StemLab || {
                       var start = performance.now();
                       var lastBlink = -1;
                       function drawDb() {
-                        if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dbAnim); return; }
+                        if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dbAnim); if (cvEl._dbRO) cvEl._dbRO.disconnect(); return; }
                         var t = (performance.now() - start) / 1000;
                         var features = [
                           { color: '#fb7185', label: 'Microprinting' },
@@ -3305,9 +3306,11 @@ window.StemLab = window.StemLab || {
                       drawDb();
                       var ro = new ResizeObserver(function() {
                         W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                        cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                        cvEl.width = W * 2; cvEl.height = H * 2;
+                        c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative, repeated resizes blew up the transform
                         lastBlink = -1; // force a repaint at the new size
                       });
+                      cvEl._dbRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                       ro.observe(cvEl);
                     },
                     style: { width: '100%', height: '100%', display: 'block' }
