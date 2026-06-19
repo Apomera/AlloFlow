@@ -208,16 +208,16 @@ window.StemLab = window.StemLab || {
           // ═══ Keyboard Shortcuts ═══
           // Note: these execute on every render but are lightweight
           const SHORTCUTS = { '1': 'viewer', '2': 'creator', '3': 'build', '4': 'table', '5': 'reactions' };
-          if (typeof window !== 'undefined' && !window._molKbBound) {
-            window._molKbBound = true;
-            document.addEventListener('keydown', function(e) {
+          // Bound via useEffect (was a render-body global listener guarded by window._molKbBound that was
+          // NEVER removed — so Alt+1..5 kept mutating molecule state even after navigating to another tool).
+          useEffect(function() {
+            function onKey(e) {
               if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-              if (e.altKey && SHORTCUTS[e.key]) {
-                e.preventDefault();
-                upd('moleculeMode', SHORTCUTS[e.key]);
-              }
-            });
-          }
+              if (e.altKey && SHORTCUTS[e.key]) { e.preventDefault(); upd('moleculeMode', SHORTCUTS[e.key]); }
+            }
+            document.addEventListener('keydown', onKey);
+            return function() { document.removeEventListener('keydown', onKey); };
+          }, []);
           const aiQuestion = d.aiQuestion || '';
           const aiAnswer = d.aiAnswer || '';
           const aiLoading = d.aiLoading || false;
@@ -3234,11 +3234,16 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
           var cx = size/2, cy = size/2;
           var bondCount = geo.steric - geo.lone;
           var angles = [];
+          // Angles are clockwise-from-up screen degrees; trailing entries beyond the bond count become
+          // the lone pairs. The old map drew bent2 (water) at ~60° not 104.5°, had a no-op bent3 ternary
+          // (both branches identical → drawn as full trigonal), and sized arrays so lone pairs never showed.
           if (geo.id === 'linear' || geo.id === 'linear5') angles = [0, 180];
-          else if (geo.id === 'trigonal' || geo.id === 'bent3') angles = (geo.id === 'bent3' ? [90, 210, 330] : [90, 210, 330]);
-          else if (geo.id === 'bent2') angles = [120, 60];
-          else if (geo.id === 'tetrahedral' || geo.id === 'pyramidal') angles = [90, 210, 330, 30];
-          else if (geo.id === 'tbp' || geo.id === 'seesaw' || geo.id === 'tshape') angles = [90, 30, 150, 180, 0];
+          else if (geo.id === 'trigonal') angles = [0, 120, 240];
+          else if (geo.id === 'bent3') angles = [121.5, 238.5, 0]; // 2 bonds ~117° apart, lone pair on top
+          else if (geo.id === 'bent2') angles = [127.75, 232.25, 55, 305]; // 2 bonds ~104.5° apart, 2 lone pairs on top
+          else if (geo.id === 'tetrahedral') angles = [45, 135, 225, 315];
+          else if (geo.id === 'pyramidal') angles = [120, 180, 240, 0]; // 3-bond tripod + lone pair on top
+          else if (geo.id === 'tbp' || geo.id === 'seesaw' || geo.id === 'tshape') angles = [0, 180, 90, 210, 330]; // axial up/down + equatorial (lone pairs go equatorial)
           else if (geo.id === 'octahedral' || geo.id === 'sqpyramid' || geo.id === 'sqplane') angles = [0, 60, 120, 180, 240, 300];
           var bondsToShow = bondCount;
           return React.createElement('svg', { width: size, height: size, viewBox: '0 0 ' + size + ' ' + size, role: 'img', 'aria-label': geo.name + ' geometry' },
