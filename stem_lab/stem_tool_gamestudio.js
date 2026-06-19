@@ -1586,7 +1586,7 @@ window.StemLab = window.StemLab || {
                   results.map(function(r, ri) {
                     return h('div', {
                       key: ri,
-                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-200')
+                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-500')
                     },
                       h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ' +
                         (r.passed ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-500')
@@ -1781,8 +1781,8 @@ window.StemLab = window.StemLab || {
 
           // === H7b'' RICH inquiry widget: difficulty curve tuner ===
           gsTab === 'diffHunt' && (function() {
-            var iq = d._diffHunt || { enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-            function setIQ(patch) { upd('_diffHunt', Object.assign({}, iq, patch)); }
+            var iq = _gs._diffHunt || { enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd({ _diffHunt: Object.assign({}, iq, patch) }); }
             var diffScore = (iq.enemies / 10) * 2 + (iq.patrolSpeed / 100) * 1.5 + (iq.hazards / 100) * 1.8 - (iq.coins / 100) * 0.8 - (iq.health / 200);
             var state;
             if (diffScore < 1) state = 'veryEasy';
