@@ -105,6 +105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (a) T0 -= b / (2 * a);
     }
 
+    if (!isFinite(T0) || T0 <= 0) return -1;
     return sampleRate / T0;
   }
 
@@ -2276,6 +2277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               var sampleRate = audioCtx.sampleRate;
 
               function analyzeLoop() {
+                if (!analyserRef.current) return;
                 analyser.getFloatTimeDomainData(buf);
                 var rms = calculateRMS(buf);
                 var pitch = autoCorrelate(buf, sampleRate);
@@ -2992,12 +2994,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         span + ' semitones'))
                   ),
                   voiceType && h('div', { className: 'mt-3' },
-                    h('span', { className: subTextClass }, 'Voice Type: '),
+                    h('span', { className: subTextClass }, 'Closest range template: '),
                     h('span', {
                       className: 'font-bold text-sm',
                       style: { color: voiceType.color }
                     }, voiceType.type),
-                    h('span', { className: subTextClass + ' ml-2' }, '(' + voiceType.range + ')'))
+                    h('span', { className: subTextClass + ' ml-2' }, '(' + voiceType.range + ')'),
+                    h('div', { className: subTextClass + ' mt-1 text-xs italic' }, 'Estimated from your lowest note — true voice type also depends on comfortable range (tessitura) and timbre, not range alone.'))
                 ),
                 h('button', {
                   className: btnPrimary + ' mt-2',
