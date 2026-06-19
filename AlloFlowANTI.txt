@@ -9897,6 +9897,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAuditLoading, setPdfAuditLoading] = useState(false);
   const [pendingPdfBase64, setPendingPdfBase64] = useState(null);
   const [pendingPdfFile, setPendingPdfFile] = useState(null);
+  // Original PDF bytes survive a SOFT modal-close in this ref. The pendingPdfBase64 STATE is nulled on
+  // close (it gates the "no doc loaded" panel at the LMS-audit-URLs block), but the re-entry pill reopens
+  // the modal and Compare / re-remediate need the original bytes — they restore from this ref via
+  // ensurePdfBase64 instead of prompting to re-attach the file. Cleared by startNewPdfAudit (new doc).
+  const lastPdfBytesRef = useRef(null);
+  useEffect(() => { if (pendingPdfBase64) lastPdfBytesRef.current = pendingPdfBase64; }, [pendingPdfBase64]);
   const [pdfFixResult, setPdfFixResult] = useState(null);
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   // Three-way "save before closing?" dialog. Fires only when there is work to lose.
@@ -10281,12 +10287,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setPdfFixStep('');
     setPendingPdfBase64(null);
     setPendingPdfFile(null);
+    lastPdfBytesRef.current = null; // hard reset — drop the preserved original bytes too (new doc)
     setIsExtracting(false);
     setGenerationStep('');
   };
   const ensurePdfBase64 = React.useCallback(() => {
     return new Promise((resolve) => {
       if (pendingPdfBase64) { resolve(pendingPdfBase64); return; }
+      // Restore bytes preserved across a soft modal-close (re-entry pill) so Compare / re-remediate
+      // show before/after automatically — only fall through to the re-attach picker when we truly
+      // have nothing (e.g. a project JSON restored in a fresh session, which omits PDF bytes).
+      if (lastPdfBytesRef.current) { setPendingPdfBase64(lastPdfBytesRef.current); resolve(lastPdfBytesRef.current); return; }
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.pdf,application/pdf';
