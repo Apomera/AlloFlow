@@ -4414,7 +4414,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '04a47287';
+    var pluginCdnVersion = '4744d038';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -13172,7 +13172,15 @@ const parseTaggedContent = (text) => {
     debugLog: debugLog,
     warnLog: warnLog,
   };
-  const ai = AIProvider ? new AIProvider(_aiConfig) : _aiConfig;
+  // Memoized so AIProvider is built ONCE (per real config change), not on every render. _aiConfig is
+  // rebuilt each render (object literal + fresh localStorage parse), so constructing AIProvider here
+  // unconditionally re-ran the constructor on every render — hundreds of "[AIProvider] Initialized"
+  // log lines + the per-instance TTS cache / rate-limit state thrown away each time. Key on the inputs
+  // that actually change behavior; the injected helper fns are behavior-stable so they're excluded
+  // from deps. (2026-06-19)
+  const _aiConfigKey = _isCanvasEnv ? ('canvas|' + (apiKey || '')) : ('local|' + (apiKey || '') + '|' + JSON.stringify(_aiUserConfig || null));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const ai = React.useMemo(() => AIProvider ? new AIProvider(_aiConfig) : _aiConfig, [_aiConfigKey]);
 
   const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
