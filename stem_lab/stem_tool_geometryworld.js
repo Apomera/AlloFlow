@@ -4113,6 +4113,17 @@
           if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
           if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
           if (engine._dimTimer) clearTimeout(engine._dimTimer);
+          // Clear the auto-clear measurement timers, the collab position-sync interval + Firestore listener,
+          // and the typewriter timer that teardown previously missed (they kept firing after unmount / mid-collab).
+          if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
+          if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
+          if (engine._collabSyncTimer) clearTimeout(engine._collabSyncTimer);
+          if (engine._collabPosInterval) clearInterval(engine._collabPosInterval);
+          if (typeof collabUnsubscribe === 'function') { try { collabUnsubscribe(); } catch (e) {} }
+          if (typeof window !== 'undefined' && window._gwTypewriterTimer) { clearTimeout(window._gwTypewriterTimer); window._gwTypewriterTimer = null; }
+          // Dispose the angle / net / ruler measurement helper meshes (only _dimLines were disposed before)
+          var _dispGeo = function(o) { if (!o) return; if (Array.isArray(o)) { o.forEach(_dispGeo); return; } if (engine.scene) engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } };
+          _dispGeo(engine._angleHelpers); _dispGeo(engine._netHelpers); _dispGeo(engine._rulerLine); _dispGeo(engine._rulerLabel);
           // Dispose sky elements
           if (engine._sunSprite) engine.scene.remove(engine._sunSprite);
           if (engine._cloudPlane) engine.scene.remove(engine._cloudPlane);
@@ -6631,11 +6642,12 @@
               else if (Math.abs(iq.shear) > 30) state = 'skewed';
               else if (iq.scale < 0.9 || iq.scale > 1.1) state = 'scaled';
               else state = 'aligned';
+              // Dark-surface tokens — these were light pastel pills on the dark (#0f172a) HUD panel
               var sm = {
-                aligned:    { label: '🟢 Aligned (axes preserved)', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-                scaled:     { label: '🔵 Scaled (volume changed)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-                skewed:     { label: '🟠 Skewed (shape deformed)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-                degenerate: { label: '💀 Degenerate (volume → 0)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+                aligned:    { label: '🟢 Aligned (axes preserved)', color: '#6ee7b7', bg: 'rgba(110,231,183,0.12)', border: 'rgba(110,231,183,0.4)' },
+                scaled:     { label: '🔵 Scaled (volume changed)', color: '#67e8f9', bg: 'rgba(103,232,249,0.12)', border: 'rgba(103,232,249,0.4)' },
+                skewed:     { label: '🟠 Skewed (shape deformed)', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.4)' },
+                degenerate: { label: '💀 Degenerate (volume → 0)', color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.4)' }
               }[state];
               return el('div', { style: { position: 'absolute', top: 12, right: 12, zIndex: 30, background: '#0f172a', border: '1px solid #a78bfa', borderRadius: 8, padding: 10, color: '#e2e8f0', maxWidth: 280 } },
                 el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', margin: '0 0 4px 0' } }, '📐 Transform discovery'),
