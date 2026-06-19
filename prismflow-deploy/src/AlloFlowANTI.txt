@@ -4414,7 +4414,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'bf2e5eb9';
+    var pluginCdnVersion = '8c35cd0d';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -9938,17 +9938,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   useEffect(() => {
     if (!pdfFixLoading) return;
     const stepAtStart = pdfFixStep;
-    const id = setTimeout(() => {
-      if (pdfFixStep === stepAtStart) {
-        warnLog('[PdfFix] Dead-man switch fired: pdfFixLoading stuck on "' + stepAtStart + '" for 10min — clearing.');
-        setPdfFixLoading(false);
-        setPdfFixStep('');
-        if (typeof addToast === 'function') {
-          addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');
-        }
-      }
-    }, 10 * 60 * 1000);
-    return () => clearTimeout(id);
+    // Heartbeat-aware watchdog (2026-06-19): the pipeline fires 'alloflow:pipeline-warn' on EVERY
+    // step/API/Vision event, so reset the timer on any such activity and fire only after TRUE
+    // inactivity. The old "step string static for 10min" check falsely cleared the UI on slow-but-
+    // progressing runs under a Canvas rate-limit throttle — a single call can take many minutes while
+    // OTHER calls keep completing, so the step label sits unchanged though work IS advancing. 8 min
+    // of total pipeline silence = a real stall.
+    const IDLE_LIMIT = 8 * 60 * 1000;
+    let id;
+    const fire = () => {
+      warnLog('[PdfFix] Dead-man switch fired: no pipeline activity for ' + (IDLE_LIMIT / 60000) + 'min on "' + stepAtStart + '" — clearing.');
+      setPdfFixLoading(false);
+      setPdfFixStep('');
+      if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');
+    };
+    const arm = () => { clearTimeout(id); id = setTimeout(fire, IDLE_LIMIT); };
+    const onActivity = () => arm();
+    arm();
+    if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('alloflow:pipeline-warn', onActivity);
+    return () => { clearTimeout(id); if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('alloflow:pipeline-warn', onActivity); };
   }, [pdfFixLoading, pdfFixStep]);
   const [pdfAuditTab, setPdfAuditTab] = useState('results');
   const [diffViewOpen, setDiffViewOpen] = useState(false);
