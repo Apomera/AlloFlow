@@ -77,7 +77,7 @@ window.SelHub = window.SelHub || {
     ],
     high: [
       { id: 'kindness', icon: '\uD83D\uDC9C', title: 'Self-Kindness', color: '#a78bfa',
-        explain: 'Kristin Neff\u2019s research shows that self-compassion, not self-esteem, is the strongest predictor of emotional resilience. Self-esteem is contingent \u2014 it rises with success and crashes with failure. Self-compassion is unconditional: "I am worthy of kindness regardless of my performance." This isn\u2019t weakness. fMRI studies show self-compassion activates the care system (oxytocin, endorphins) while self-criticism activates the threat system (cortisol, adrenaline).',
+        explain: 'Kristin Neff\u2019s research shows that self-compassion, not self-esteem, is the strongest predictor of emotional resilience. Self-esteem is contingent \u2014 it rises with success and crashes with failure. Self-compassion is unconditional: "I am worthy of kindness regardless of my performance." This isn\u2019t weakness. Research links self-compassion with the soothing/care system and self-criticism with the threat system.',
         opposite: 'Self-judgment activates the amygdala\u2019s threat response. You\u2019re literally attacking yourself. Your brain can\u2019t distinguish between external and internal criticism \u2014 it responds to both with fight-or-flight.',
         practice: 'Neff\u2019s Self-Compassion Break: (1) "This is a moment of suffering" (mindfulness). (2) "Suffering is a part of life" (common humanity). (3) "May I be kind to myself" (self-kindness). Hand on heart. Breathe.' },
       { id: 'humanity', icon: '\uD83C\uDF0D', title: 'Common Humanity', color: '#60a5fa',

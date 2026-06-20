@@ -69,7 +69,7 @@ window.SelHub = window.SelHub || {
     high: [
       { id: 'target', icon: '\uD83D\uDC94', title: 'The Target', color: '#93c5fd',
         feels: ['chronic stress response', 'identity questioning', 'academic decline', 'social withdrawal', 'suicidal ideation in severe cases', 'complex PTSD symptoms'],
-        truth: 'Bullying is not a rite of passage. Longitudinal research shows that bullying victimization is associated with increased risk of depression, anxiety, and self-harm that persists into adulthood (Copeland et al., 2013). It literally rewires the stress response system.',
+        truth: 'Bullying is not a rite of passage. Longitudinal research shows that bullying victimization is associated with increased risk of depression, anxiety, and self-harm that persists into adulthood (Copeland et al., 2013). Over time it can have lasting effects on the stress-response system.',
         myth: 'Myth: "It builds character." Truth: Chronic stress doesn\u2019t build character \u2014 it depletes the neurobiological resources needed FOR character. Adversity that builds resilience is adversity with support. Bullying is adversity designed to isolate you from support.' },
       { id: 'bully', icon: '\uD83D\uDE1E', title: 'The One Who Bullies', color: '#fca5a5',
         feels: ['externalized pain', 'attachment disruption', 'performing a version of masculinity/power they were taught', 'fear of vulnerability equated with death', 'trapped in a role they may not want'],

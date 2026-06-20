@@ -112,7 +112,7 @@ window.SelHub = window.SelHub || {
       { cat: 'personal', text: 'Develop a morning/evening routine that supports my goals', hint: 'Routines reduce decision fatigue.' },
       { cat: 'personal', text: 'Create a personal brand (portfolio, LinkedIn, website)', hint: 'Start building your reputation now.' },
       { cat: 'health', text: 'Exercise 3+ times per week for 30+ minutes', hint: 'Exercise is the most underused antidepressant.' },
-      { cat: 'health', text: 'Practice one mindfulness technique daily for 2 weeks', hint: 'Meditation rewires your brain for resilience.' },
+      { cat: 'health', text: 'Practice one mindfulness technique daily for 2 weeks', hint: 'Regular mindfulness practice is linked with better stress resilience.' },
       { cat: 'health', text: 'Track sleep, water, and exercise for 30 days', hint: 'What gets measured gets managed.' },
       { cat: 'creative', text: 'Complete and share one creative project this month', hint: 'Shipping beats perfecting.' },
       { cat: 'creative', text: 'Start a blog, podcast, or YouTube channel about something I care about', hint: 'Your perspective is unique and valuable.' },
