@@ -1831,7 +1831,22 @@ const useTranslation = (targetLanguage, apiKey) => {
           }
           return undefined;
       }
-      if (params && typeof result === 'string') {
+      // Defensive: a key path can resolve to a STRING-GROUP OBJECT instead of a leaf string — e.g.
+      // a partial key ('pdf_audit.fidelity' rather than '...fidelity.heading'), or a lang pack where
+      // the i18n extractor mis-nested a leaf as its parent group ({heading, run_title, run_aria, ...}).
+      // Returning that object renders it as a React child and crashes the WHOLE app with "Objects are
+      // not valid as a React child". Never return a non-string: treat it as a miss so the caller's
+      // `|| 'English fallback'` (or React's render-nothing for undefined) supplies a safe value.
+      if (typeof result !== 'string') {
+          // Callers may OPT IN to the object/array via { returnObjects: true } (e.g.
+          // t('about.features_list', { returnObjects: true }) → then reads .items). Honor that.
+          if (params && params.returnObjects) return result;
+          if (typeof window !== 'undefined' && (window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1')) {
+              console.warn('[i18n] key resolved to a non-string (group) value — returning undefined:', keyString);
+          }
+          return undefined;
+      }
+      if (params) {
           Object.keys(params).forEach(key => {
               result = result.replace(`{${key}}`, params[key]);
           });
@@ -4424,7 +4439,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '296ead9e';
+    var pluginCdnVersion = '48461295';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -9197,7 +9212,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                         const gradeLevel = myProfile.gradeLevel || '5th Grade';
                         // Flag/endonym overrides for languages where the display name benefits from a flag or native script.
                         // The fallback ('🌐 ' + targetLang) handles every language in the manifest — this dict is just for known popular ones.
-                        const langNames = { 'English': '🇺🇸 English', 'Spanish': '🇪🇸 Español', 'Spanish (Latin America)': '🇪🇸 Español', 'Spanish (Castilian)': '🇪🇸 Español', 'French': '🇫🇷 Français', 'French (Canadian)': '🇨🇦 Français', 'Arabic': '🇸🇦 العربية', 'Somali': '🇸🇴 Soomaali', 'Vietnamese': '🇻🇳 Tiếng Việt', 'Portuguese': '🇧🇷 Português', 'Portuguese (Brazil)': '🇧🇷 Português', 'Portuguese (Angola)': '🇦🇴 Português', 'Mandarin': '🇨🇳 中文', 'Chinese (Simplified)': '🇨🇳 中文', 'Chinese (Traditional)': '🇹🇼 中文', 'Korean': '🇰🇷 한국어', 'Tagalog': '🇵🇭 Tagalog', 'Russian': '🇷🇺 Русский', 'Japanese': '🇯🇵 日本語', 'German': '🇩🇪 Deutsch', 'Italian': '🇮🇹 Italiano', 'Polish': '🇵🇱 Polski', 'Ukrainian': '🇺🇦 Українська', 'Hindi': '🇮🇳 हिन्दी', 'Bengali': '🇧🇩 বাংলা', 'Punjabi': '🇮🇳 ਪੰਜਾਬੀ', 'Tamil': '🇮🇳 தமிழ்', 'Urdu': '🇵🇰 اردو', 'Farsi': '🇮🇷 فارسی', 'Pashto': '🇦🇫 پښتو', 'Dari': '🇦🇫 دری', 'Hebrew': '🇮🇱 עברית', 'Greek': '🇬🇷 Ελληνικά', 'Latin': '🏛 Latīna', 'Indonesian': '🇮🇩 Indonesia', 'Malay': '🇲🇾 Melayu', 'Thai': '🇹🇭 ไทย', 'Lao': '🇱🇦 ລາວ', 'Khmer': '🇰🇭 ខ្មែរ', 'Burmese': '🇲🇲 မြန်မာ', 'Nepali': '🇳🇵 नेपाली', 'Swahili': '🇰🇪 Kiswahili', 'Hausa': '🇳🇬 Hausa', 'Yoruba': '🇳🇬 Yorùbá', 'Igbo': '🇳🇬 Igbo', 'Amharic': '🇪🇹 አማርኛ', 'Tigrinya': '🇪🇷 ትግርኛ', 'Haitian Creole': '🇭🇹 Kreyòl', 'Lingala': '🇨🇩 Lingála', 'Kinyarwanda': '🇷🇼 Kinyarwanda', 'Kirundi': '🇧🇮 Kirundi', 'Acholi': '🇺🇬 Acholi', 'Karen': '🇲🇲 Karen', 'Chin (Hakha)': '🇲🇲 Hakha', 'Chin (Falam)': '🇲🇲 Falam', 'Hmong': '🇱🇦 Hmoob', 'Mongolian': '🇲🇳 Монгол', 'Maay Maay': '🇸🇴 Af-Maay', 'Marshallese': '🇲🇭 Kajin M̧ajeļ' };
+                        const langNames = { 'English': '🇺🇸 English', 'Turkish': '🇹🇷 Türkçe', 'Spanish': '🇪🇸 Español', 'Spanish (Latin America)': '🇪🇸 Español', 'Spanish (Castilian)': '🇪🇸 Español', 'French': '🇫🇷 Français', 'French (Canadian)': '🇨🇦 Français', 'Arabic': '🇸🇦 العربية', 'Somali': '🇸🇴 Soomaali', 'Vietnamese': '🇻🇳 Tiếng Việt', 'Portuguese': '🇧🇷 Português', 'Portuguese (Brazil)': '🇧🇷 Português', 'Portuguese (Angola)': '🇦🇴 Português', 'Mandarin': '🇨🇳 中文', 'Chinese (Simplified)': '🇨🇳 中文', 'Chinese (Traditional)': '🇹🇼 中文', 'Korean': '🇰🇷 한국어', 'Tagalog': '🇵🇭 Tagalog', 'Russian': '🇷🇺 Русский', 'Japanese': '🇯🇵 日本語', 'German': '🇩🇪 Deutsch', 'Italian': '🇮🇹 Italiano', 'Polish': '🇵🇱 Polski', 'Ukrainian': '🇺🇦 Українська', 'Hindi': '🇮🇳 हिन्दी', 'Bengali': '🇧🇩 বাংলা', 'Punjabi': '🇮🇳 ਪੰਜਾਬੀ', 'Tamil': '🇮🇳 தமிழ்', 'Urdu': '🇵🇰 اردو', 'Farsi': '🇮🇷 فارسی', 'Pashto': '🇦🇫 پښتو', 'Dari': '🇦🇫 دری', 'Hebrew': '🇮🇱 עברית', 'Greek': '🇬🇷 Ελληνικά', 'Latin': '🏛 Latīna', 'Indonesian': '🇮🇩 Indonesia', 'Malay': '🇲🇾 Melayu', 'Thai': '🇹🇭 ไทย', 'Lao': '🇱🇦 ລາວ', 'Khmer': '🇰🇭 ខ្មែរ', 'Burmese': '🇲🇲 မြန်မာ', 'Nepali': '🇳🇵 नेपाली', 'Swahili': '🇰🇪 Kiswahili', 'Hausa': '🇳🇬 Hausa', 'Yoruba': '🇳🇬 Yorùbá', 'Igbo': '🇳🇬 Igbo', 'Amharic': '🇪🇹 አማርኛ', 'Tigrinya': '🇪🇷 ትግርኛ', 'Haitian Creole': '🇭🇹 Kreyòl', 'Lingala': '🇨🇩 Lingála', 'Kinyarwanda': '🇷🇼 Kinyarwanda', 'Kirundi': '🇧🇮 Kirundi', 'Acholi': '🇺🇬 Acholi', 'Karen': '🇲🇲 Karen', 'Chin (Hakha)': '🇲🇲 Hakha', 'Chin (Falam)': '🇲🇲 Falam', 'Hmong': '🇱🇦 Hmoob', 'Mongolian': '🇲🇳 Монгол', 'Maay Maay': '🇸🇴 Af-Maay', 'Marshallese': '🇲🇭 Kajin M̧ajeļ' };
                         (async () => {
                           try {
                             const prompt = bp.mode === 'translate'
@@ -16347,7 +16362,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   if (uCount > 0) parts.push(t('pdf_audit.in_recovery_appendix', { count: uCount }) || (uCount + ' in recovery appendix'));
                   if (dedupRemoved > 0) parts.push(t(dedupRemoved === 1 ? 'pdf_audit.duplicates_removed_one' : 'pdf_audit.duplicates_removed_other', { count: dedupRemoved }) || (dedupRemoved + ' duplicate' + (dedupRemoved === 1 ? '' : 's') + ' removed'));
                   const detail = parts.length > 0 ? ' · ' + parts.join(' · ') : '';
-                  const msg = t('pdf_audit.fidelity', { before: beforeFidelity, after: afterFidelity, detail }) || ('Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail);
+                  const msg = t('pdf_audit.fidelity_delta', { before: beforeFidelity, after: afterFidelity, detail }) || ('Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail); // renamed off 'pdf_audit.fidelity' — that key is now the fidelity-section GROUP (collision caused the React-child crash)
                   addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
                 }
               } catch (e) { /* non-blocking */ }
@@ -20885,15 +20900,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       opts = opts || {}; lessonSpec = lessonSpec || {};
       const _po = window.AlloModules && window.AlloModules.PhaseOHandlers;
       if (!_po || typeof _po.executeOneBlueprint !== 'function') throw new Error('blueprint engine unavailable');
-      let types = (Array.isArray(lessonSpec.suggestedResourceTypes) && lessonSpec.suggestedResourceTypes.length) ? lessonSpec.suggestedResourceTypes : ['analysis','glossary','lesson-plan'];
-      const blueprint = { recommendedResources: types, toolDirectives: types.reduce((a, tp) => { a[tp] = lessonSpec.focus || ''; return a; }, {}), globalSettings: {} };
+      let types = (Array.isArray(lessonSpec.suggestedResourceTypes) && lessonSpec.suggestedResourceTypes.length) ? lessonSpec.suggestedResourceTypes.slice() : ['analysis','glossary','lesson-plan'];
+      // teaching order: foundational analysis first, synthesizing lesson-plan last (stable sort)
+      types.sort((a, b) => { const rank = (tp) => (tp === 'analysis' ? 0 : (tp === 'lesson-plan' ? 2 : 1)); return rank(a) - rank(b); });
+      // ground every resource in the unit's enduring understandings (UbD backward design)
+      const _eu = (dna && Array.isArray(dna.desiredResults)) ? dna.desiredResults.filter(Boolean) : [];
+      const _lessonFocus = (lessonSpec.focus || '') + (_eu.length ? ' Unit enduring understandings: ' + _eu.join('; ') : '');
+      const blueprint = { recommendedResources: types, toolDirectives: types.reduce((a, tp) => { a[tp] = _lessonFocus; return a; }, {}), globalSettings: {} };
       const seedDna = {
           grade: (dna && dna.grade) || gradeLevel || '',
           topic: lessonSpec.title || (dna && dna.topic) || '',
           standard: (dna && dna.standard) || standardsInput || '',
           concepts: (dna && Array.isArray(dna.concepts)) ? dna.concepts.slice() : [],
           keyTerms: (dna && Array.isArray(dna.keyTerms)) ? dna.keyTerms.slice() : [],
-          visualContext: '', essentialQuestion: (dna && dna.essentialQuestion) || ''
+          visualContext: '', essentialQuestion: (dna && dna.essentialQuestion) || '',
+          desiredResults: (dna && Array.isArray(dna.desiredResults)) ? dna.desiredResults.slice() : []
       };
       let initialSourceText = inputText;
       const existingAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
