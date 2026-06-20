@@ -4758,7 +4758,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             workMin: workMin, task: task,
             startedAt: startedAt, completedAt: Date.now()
           };
-          setData({ sessions: sessions.concat([newSession]) });
+          // Preserve sibling keys: setData REPLACES the whole mytkFocus object,
+          // so a bare { sessions } write silently wiped the user's custom
+          // workMin/breakMin (Pomodoro durations reset to 25/5 on every session).
+          setData(Object.assign({}, data, { sessions: sessions.concat([newSession]) }));
           // play ding (if audio context available)
           try {
             var ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -4768,6 +4771,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
             o.connect(g); g.connect(ac.destination);
             o.start(); o.stop(ac.currentTime + 0.4);
+            // Close the context once the tone ends — otherwise every completed
+            // session leaks an AudioContext (Chrome caps ~6, then the ding dies).
+            o.onended = function() { try { ac.close(); } catch (e) {} };
           } catch (e) {}
           setPhase('break');
           setSecondsLeft(breakMin * 60);
@@ -7185,7 +7191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var m = getMap();
       if (!m) { setView('list'); return null; }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🕸', m.title, m.nodes.length + ' concepts · ' + m.edges.length + ' connections · click canvas to add', '#a855f7'),
+        tkSectionHeader('🕸', m.title, m.nodes.length + ' concepts · ' + m.edges.length + ' connections · use + Add concept', '#a855f7'),
         hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap' } },
           tkBtn('← All maps', function() { setView('list'); setActiveMap(null); setSelectedNode(null); setConnectFrom(null); }, 'ghost'),
           hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
