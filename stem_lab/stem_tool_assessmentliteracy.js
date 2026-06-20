@@ -218,7 +218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // ── Disability justice in cognitive testing ──
   var COG_JUSTICE = [
     { title: 'Eugenics origins', body: 'Early IQ tests (Goddard\'s Ellis Island translations of Binet, Terman\'s Stanford revisions) were used to justify immigration restriction, forced sterilization (Buck v. Bell 1927), and segregation. Modern tests have disavowed these uses but the historical shadow matters.' },
-    { title: 'Larry P. v. Riles (1979, amended 1986)', body: 'California federal court ruled IQ tests could not be used to place Black students in "educable mentally retarded" classes due to disparate impact and cultural bias. Still influences California psychoed practice.' },
+    { title: 'Larry P. v. Riles (1979, amended 1986)', body: 'California federal court ruled (1979) IQ tests could not be used to place Black students in "educable mentally retarded" classes due to disparate impact and cultural bias; upheld by the 9th Circuit in 1984 and expanded statewide in 1986. Still influences California psychoed practice.' },
     { title: 'Processing speed penalties', body: 'Timed subtests (Coding, Symbol Search) penalize students with ADHD, dyscalculia, slow processing, motor difficulties, and some neurodevelopmental conditions — often exaggerating functional impact.' },
     { title: 'Verbal loading', body: 'Heavy VCI weight disadvantages English Language Learners and students with language disorders. Full-scale scores may underestimate nonverbal reasoning ability.' },
     { title: 'ADA accommodations', body: 'Extended time, breaks, alternate response modes are reasonable accommodations under ADA. Yet standardized administration norms complicate interpretation — clinicians must report but not necessarily invalidate accommodated scores.' },
@@ -11129,22 +11129,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('div', { className: 'p-2 rounded bg-slate-900/60 text-center' },
               h('div', { className: 'text-xs text-slate-400 uppercase tracking-wider' }, 'Median pay'),
               h('div', { className: 'text-lg font-black text-emerald-300' }, '$' + (detailCareer.pay || 0).toLocaleString()),
-              h('div', { className: 'text-xs text-slate-500' }, 'BLS 2023 OOH')
+              h('div', { className: 'text-xs text-slate-400' }, 'BLS 2023 OOH')
             ),
             h('div', { className: 'p-2 rounded bg-slate-900/60 text-center' },
               h('div', { className: 'text-xs text-slate-400 uppercase tracking-wider' }, '10-yr growth'),
               h('div', { className: 'text-lg font-black', style: { color: dGrowthColor } }, ((detailCareer.growth || 0) > 0 ? '+' : '') + (detailCareer.growth || 0) + '%'),
-              h('div', { className: 'text-xs text-slate-500' }, '2022 \u2192 2032')
+              h('div', { className: 'text-xs text-slate-400' }, '2022 \u2192 2032')
             ),
             h('div', { className: 'p-2 rounded bg-slate-900/60 text-center' },
               h('div', { className: 'text-xs text-slate-400 uppercase tracking-wider' }, 'US workforce'),
               h('div', { className: 'text-lg font-black text-slate-100' }, detailCareer.workers ? (detailCareer.workers >= 1000 ? (detailCareer.workers / 1000).toFixed(1) + 'M' : detailCareer.workers + 'K') : '\u2014'),
-              h('div', { className: 'text-xs text-slate-500' }, 'BLS estimate')
+              h('div', { className: 'text-xs text-slate-400' }, 'BLS estimate')
             ),
             h('div', { className: 'p-2 rounded bg-slate-900/60 text-center' },
               h('div', { className: 'text-xs text-slate-400 uppercase tracking-wider' }, 'Holland code'),
               h('div', { className: 'text-lg font-black font-mono', style: { color: dcl.color } }, detailCareer.riasec),
-              h('div', { className: 'text-xs text-slate-500' }, detailCareer.riasec.split('').map(function(l) { return (RIASEC_TYPES[l] && RIASEC_TYPES[l].name.charAt(0)) || l; }).join(','))
+              h('div', { className: 'text-xs text-slate-400' }, detailCareer.riasec.split('').map(function(l) { return (RIASEC_TYPES[l] && RIASEC_TYPES[l].name.charAt(0)) || l; }).join(','))
             )
           )
         ),
@@ -11635,7 +11635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   var cl = CAREER_CLUSTERS[c.cluster] || { color: '#666' };
                   var us = uniqueSkillsByCareer[c.id] || [];
                   return h('td', { key: c.id, className: 'p-3 text-slate-100 align-top', style: { borderLeft: '2px solid ' + cl.color + '44' } },
-                    us.length === 0 ? h('span', { className: 'text-slate-500 italic' }, '(All skills are shared with another compared career.)') :
+                    us.length === 0 ? h('span', { className: 'text-slate-400 italic' }, '(All skills are shared with another compared career.)') :
                     h('div', { className: 'flex flex-wrap gap-1' },
                       us.map(function(sk, j) {
                         return h('span', { key: j, className: 'px-2 py-0.5 rounded-full text-xs bg-slate-700 text-slate-200' }, sk);
