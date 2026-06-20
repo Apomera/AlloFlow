@@ -3972,7 +3972,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="grid grid-cols-2 gap-2 mt-1">
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.ci95?.[0]}–{pdfAuditResult.ci95?.[1]}</div>
-                            <div className="text-[11px] text-slate-600 font-bold uppercase">95% Confidence Interval</div>
+                            <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.ci95_title') || 'Spread of repeated AI estimates across re-prompts (reproducibility) — NOT the measurement uncertainty of the document’s true accessibility'}>95% CI (re-prompt spread)</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
                             <div className="text-lg font-black text-indigo-700">{pdfAuditResult.scoreSD}</div>
@@ -3990,7 +3990,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                         </div>
                         <div className="text-[11px] text-indigo-600 space-y-0.5">
-                          <div>SEM: ±{pdfAuditResult.scoreSEM} | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
+                          <div className="italic text-slate-500 normal-case">{t('pdf_audit.reliability.basis_note') || 'These figures measure how consistently the AI auditors agreed with each other across re-prompts (reproducibility) — they are NOT the measurement uncertainty of the document’s true accessibility, and a tight range does not mean the score is correct.'}</div>
+                          <div>SEM: ±{pdfAuditResult.scoreSEM} <span className="text-slate-400">(re-prompt spread)</span> | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
                           <div>Individual scores: {pdfAuditResult.scores.join(', ')}</div>
                           <div>{pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
                         </div>
