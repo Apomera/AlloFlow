@@ -543,7 +543,7 @@ window.SelHub = window.SelHub || {
         { id: 'lying', name: 'Lying Down', change: 'Place a small stuffed animal on the belly and watch it rise and fall.' },
         { id: 'partner', name: 'Partner Practice', change: 'Sit back-to-back with a friend and feel each other breathe.' }
       ],
-      whyItWorks: 'Diaphragmatic breathing activates the vagus nerve and shifts the body into parasympathetic rest mode. It is the foundation of every other breath practice.',
+      whyItWorks: 'Slow diaphragmatic breathing is thought to increase vagal tone and support a parasympathetic (rest) shift. It is the foundation of every other breath practice.',
       research: 'Mindful Schools curriculum; Greater Good Science Center K-5 modules.'
     },
     {

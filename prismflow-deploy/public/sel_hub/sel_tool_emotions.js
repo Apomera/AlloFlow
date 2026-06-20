@@ -9346,7 +9346,7 @@ window.SelHub = window.SelHub || {
         headTilt: 'Nod/shake gestures vary (some cultures shake for yes)'
       },
       facsCodes: ['Universal core emotions per Ekman; display rules per Matsumoto'],
-      whatItSignals: 'Ekman\'s research found the SIX (later seven with contempt) basic emotions have universally-recognizable facial expressions across cultures. BUT display rules — when and how strongly to show emotion publicly — vary enormously. A neutral-looking face in a culture with strong suppression norms may hide deep feeling.',
+      whatItSignals: 'Ekman\'s research argued the SIX (later seven with contempt) basic emotions have widely-recognizable facial expressions across cultures — an influential but debated claim (cf. Barrett\'s constructed-emotion view). BUT display rules — when and how strongly to show emotion publicly — vary enormously. A neutral-looking face in a culture with strong suppression norms may hide deep feeling.',
       commonContexts: [
         'Cross-cultural classrooms',
         'International business contexts',

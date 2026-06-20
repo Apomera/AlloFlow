@@ -84,7 +84,7 @@ window.SelHub = window.SelHub || {
       desc: {
         elementary: 'Put your hand on your belly and feel it fill up like a balloon!',
         middle: 'Breathe deeply into your belly instead of your chest. Feel your diaphragm push down.',
-        high: 'Engage the diaphragm to activate the parasympathetic nervous system, slowing heart rate and reducing cortisol.'
+        high: 'Engage the diaphragm to support a parasympathetic (rest) shift — slow diaphragmatic breathing tends to slow heart rate and increase heart-rate variability; some studies also link it to lower cortisol.'
       },
       steps: {
         elementary: ['Put one hand on your chest and one on your belly', 'Breathe in slowly through your nose \u2014 feel your belly push out like a balloon', 'Breathe out slowly through your mouth \u2014 feel your belly go flat', 'Your chest hand should barely move!', 'Do this 5 times'],
