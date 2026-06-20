@@ -7998,11 +7998,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // missingTokens, missingTokenCount) so the renderer can surface a
                                 // "Text content diff" section when text was dropped at save.
                                 const roundTrip = cached && cached.roundTrip ? cached.roundTrip : null;
+                                // Independent ISO 14289-1 verdict (veraPDF), persisted onto lastTaggedValidation
+                                // when the user ran the in-browser validator. null if they didn't — the report
+                                // then notes that no independent validation was run (it does NOT imply conformance).
+                                const veraPdf = cached && cached.veraPdf ? cached.veraPdf : null;
                                 const html = _docPipeline.generateAccessibilityReportHtml(
                                   pdfFixResult,
                                   pdfAuditResult,
                                   checks,
-                                  { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator, roundTrip }
+                                  { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator, roundTrip, veraPdf }
                                 );
                                 const blob = new Blob([html], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);
@@ -8059,7 +8063,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <button type="button" disabled={veraPdfBusy} data-help-ignore="true"
                                   onClick={async () => {
                                     setVeraPdfBusy(true); setVeraPdfResult(null);
-                                    try { setVeraPdfResult(await runVeraPdfValidation(_lastTaggedBytesRef.current)); }
+                                    try {
+                                      const _vr = await runVeraPdfValidation(_lastTaggedBytesRef.current);
+                                      setVeraPdfResult(_vr);
+                                      // Persist the independent verdict onto lastTaggedValidation so it survives + flows
+                                      // into the downloadable report (it was previously transient UI-only state).
+                                      setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vr, veraPdfAt: new Date().toISOString() } : prev);
+                                    }
                                     catch (e) { setVeraPdfResult({ error: String((e && e.message) || e) }); }
                                     finally { setVeraPdfBusy(false); }
                                   }}

@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -16338,6 +16338,19 @@ tr { page-break-inside: avoid; }
       conformanceLabel = _byteFail > 2 ? 'Non-Conformant (shipped-file check)' : 'Mostly Conformant (shipped-file check)';
       conformanceColor = _byteFail > 2 ? '#dc2626' : '#d97706';
     }
+    // veraPDF FLOOR (2026-06-19): the INDEPENDENT ISO 14289-1 validator (veraPDF) is the authoritative
+    // signal — it catches exactly what the in-memory/byte self-checks miss (untagged content, non-
+    // embedded fonts). If the user ran it and it found failures, the headline must reflect that
+    // regardless of the HTML self-check. Only ever DOWNGRADES (never claims conformance we can't back).
+    const _vera = opts && opts.veraPdf;
+    if (_vera && _vera.compliant === false) {
+      const _vfail = (_vera.failedRules && _vera.failedRules.length) || 0;
+      conformanceLabel = 'Non-Conformant (veraPDF · ISO 14289-1' + (_vfail ? ', ' + _vfail + ' rule' + (_vfail === 1 ? '' : 's') + ' failed' : '') + ')';
+      conformanceColor = '#dc2626';
+    } else if (_vera && _vera.compliant === true && conformanceLabel.indexOf('Non-Conformant') === -1) {
+      conformanceLabel = 'Conformant (veraPDF · ISO 14289-1 verified)';
+      conformanceColor = '#16a34a';
+    }
 
     // Reliability block — pulled from auditResult
     const _reliabilityBlock = ar.auditorCount > 1 ? `
@@ -16371,7 +16384,8 @@ tr { page-break-inside: avoid; }
     const axeOnly = detAfter;
     const blendOk = fr._scoreIsBlended && aiAfter != null && detAfter != null;
     const _scoreBlock = `
-      <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Accessibility Score</h2>
+      <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Content Audit Score <span style="font-size:12px;font-weight:600;color:#64748b">(HTML reconstruction — not the tagged-PDF bytes)</span></h2>
+      <p style="font-size:11px;color:#64748b;margin:0 0 8px;font-style:italic">This score measures the remediated HTML/text content (AI rubric + axe-core run on a reconstruction). It is NOT a PDF/UA conformance verdict for the tagged PDF you export — see the PDF/UA Validation section for that.</p>
       <div style="display:flex;gap:16px;margin-bottom:12px;align-items:center">
         <div style="flex:0 0 auto;text-align:center;padding:16px 24px;background:#f1f5f9;border-radius:12px;border:2px solid #cbd5e1">
           <div style="font-size:36px;font-weight:900;color:${(fr.afterScore || 0) >= 80 ? '#16a34a' : (fr.afterScore || 0) >= 50 ? '#d97706' : '#dc2626'}">${fr.afterScore ?? '?'}</div>
@@ -16386,6 +16400,30 @@ tr { page-break-inside: avoid; }
       </div>
       ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Composite score blends the AI rubric (${aiOnly}) with the more conservative deterministic engine — axe-core / IBM Equal Access (${axeOnly}) — at 50/50.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from AI rubric only.</p>'}
     `;
+
+    // PDF/UA Validation section — the INDEPENDENT veraPDF (ISO 14289-1) verdict on the SHIPPED bytes,
+    // persisted from the in-browser validator. Authoritative PDF-level result, DISTINCT from the HTML
+    // content audit above. Absent = the user didn't run it (which does NOT imply conformance). (_vera
+    // is set in the conformance-floor block above.)
+    const _veraBlock = (() => {
+      const _h = '<h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">PDF/UA Validation <span style="font-size:12px;font-weight:600;color:#64748b">(independent · veraPDF / ISO 14289-1)</span></h2>';
+      if (!_vera) {
+        return _h + '<p style="font-size:13px;color:#475569;margin:0 0 8px">No independent veraPDF validation was run on this export. The content audit and self-checks above do NOT constitute an ISO 14289-1 conformance verdict. Run "Independently validate with veraPDF" in AlloFlow, or validate in <a href="https://verapdf.org/">veraPDF</a> / PAC 2024, before claiming conformance.</p>';
+      }
+      if (_vera.error) {
+        return _h + '<p style="font-size:13px;color:#d97706;margin:0 0 8px">veraPDF validation could not complete (' + _esc(_vera.error) + '). Validate externally in veraPDF / PAC 2024 before claiming conformance.</p>';
+      }
+      const _vfr = _vera.failedRules || [];
+      const _ok = _vera.compliant === true;
+      const _color = _ok ? '#16a34a' : '#dc2626';
+      const _bg = _ok ? '#dcfce7' : '#fee2e2';
+      const _label = _ok ? '✓ PASSES PDF/UA-1' : ('✕ ' + _vfr.length + ' rule' + (_vfr.length === 1 ? '' : 's') + ' failed');
+      const _rows = _vfr.map(f => '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;color:#dc2626;font-weight:700;white-space:nowrap">§' + _esc(f.clause) + ' t' + _esc(f.testNumber) + '</td><td style="padding:6px 10px;border:1px solid #e2e8f0">' + _esc(f.message) + (f.count > 1 ? ' <span style="color:#64748b">×' + f.count + '</span>' : '') + '</td></tr>').join('');
+      return _h +
+        '<p style="font-size:12px;color:#64748b;margin:0 0 10px;font-style:italic">Authoritative PDF-level verdict on the exported bytes, from the open-source reference validator (veraPDF). Independent of the content audit above — a high content score does not imply PDF/UA conformance. Not a legal accessibility certificate; human review (alt-text quality, reading order) still recommended.</p>' +
+        '<div style="margin:0 0 12px;padding:10px 16px;background:' + _bg + ';border:1px solid ' + _color + ';border-radius:6px;display:inline-block"><strong style="color:' + _color + ';font-size:14px">' + _label + '</strong></div>' +
+        (_rows ? '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px"><tbody>' + _rows + '</tbody></table>' : '');
+    })();
 
     // Issue resolution block
     const ir = fr.issueResolution;
@@ -16491,6 +16529,8 @@ tr { page-break-inside: avoid; }
     fr.integrityCoverage,
     opts.postExportValidator && opts.postExportValidator.summary
   )}
+
+  ${_veraBlock}
 
   ${(() => {
     // Post-export validator block — re-parses the EXPORTED bytes (not in-memory
@@ -26183,11 +26223,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

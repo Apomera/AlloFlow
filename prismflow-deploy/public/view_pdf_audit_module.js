@@ -6169,11 +6169,12 @@ Return ONLY JSON:
         const checks = cached && cached.pdfUa1Checks ? cached.pdfUa1Checks : null;
         const postExportValidator = cached && cached.postExportValidator ? cached.postExportValidator : null;
         const roundTrip = cached && cached.roundTrip ? cached.roundTrip : null;
+        const veraPdf = cached && cached.veraPdf ? cached.veraPdf : null;
         const html = _docPipeline.generateAccessibilityReportHtml(
           pdfFixResult,
           pdfAuditResult,
           checks,
-          { fileName: pendingPdfFile?.name || "document.pdf", postExportValidator, roundTrip }
+          { fileName: pendingPdfFile?.name || "document.pdf", postExportValidator, roundTrip, veraPdf }
         );
         const blob = new Blob([html], { type: "text/html" });
         const url = URL.createObjectURL(blob);
@@ -6212,7 +6213,9 @@ Return ONLY JSON:
           setVeraPdfBusy(true);
           setVeraPdfResult(null);
           try {
-            setVeraPdfResult(await runVeraPdfValidation(_lastTaggedBytesRef.current));
+            const _vr = await runVeraPdfValidation(_lastTaggedBytesRef.current);
+            setVeraPdfResult(_vr);
+            setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: _vr, veraPdfAt: (/* @__PURE__ */ new Date()).toISOString() } : prev);
           } catch (e) {
             setVeraPdfResult({ error: String(e && e.message || e) });
           } finally {
