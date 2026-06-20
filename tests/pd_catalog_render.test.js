@@ -117,3 +117,103 @@ describe('PdRunner (rendered directly with PdCore + the seed module)', () => {
     expect(html).toContain('Loading the PD engine');
   });
 });
+
+// ── AI authoring (generatePdModule + PdGenerate) ──
+function loadWithCore() {
+  const win = { React: React, AlloModules: {}, __alloPdIntent: false };
+  // eslint-disable-next-line no-new-func
+  new Function('window', 'module', PD_CORE_SRC)(win, { exports: {} });
+  // eslint-disable-next-line no-new-func
+  new Function('window', SRC)(win);
+  return { CC: win.AlloModules.CommunityCatalog, PdCore: win.AlloModules.PdCore };
+}
+
+function validModuleObj() {
+  return {
+    schema_version: 'pd-1.0', kind: 'pd_module',
+    metadata: { id: 'gen', title: 'Generated', topic: 'X', summary: 's', estMinutes: 15, audience: 'educator', license: 'CC-BY-SA-4.0' },
+    sections: [
+      { title: 'Learn', activities: [{ id: 'read-1', type: 'read', title: 'R', content: { body: 'b', keyPoints: ['a', 'b', 'c'] }, gate: { kind: 'none' } }] },
+      { title: 'Check', activities: [{ id: 'quiz-1', type: 'quiz', title: 'Q', gate: { kind: 'score', threshold: 0.75 }, content: { questions: [
+        { prompt: 'p1', options: ['a', 'b', 'c', 'd'], correctIndex: 0 },
+        { prompt: 'p2', options: ['a', 'b', 'c', 'd'], correctIndex: 1 },
+      ] } }] },
+      { title: 'Apply', activities: [{ id: 'reflect-1', type: 'reflect', title: 'A', content: { prompt: 'why' }, gate: { kind: 'none' } }] },
+    ],
+  };
+}
+const validJson = () => JSON.stringify(validModuleObj());
+function invalidJson() {
+  const o = validModuleObj();
+  delete o.sections[1].activities[0].content.questions[0].correctIndex; // quiz w/o answer key
+  return JSON.stringify(o);
+}
+
+describe('AI authoring — generatePdModule (mocked callGemini)', () => {
+  it('extractFirstJsonObject strips ```json fences and surrounding prose', () => {
+    const { CC } = loadWithCore();
+    expect(CC._extractFirstJsonObject('sure:\n```json\n{"a":1}\n```\ndone')).toEqual({ a: 1 });
+    expect(CC._extractFirstJsonObject('no json here')).toBeNull();
+  });
+
+  it('returns a validated module on the happy path (1 AI call)', async () => {
+    const { CC, PdCore } = loadWithCore();
+    let calls = 0;
+    const callAI = async () => { calls++; return validJson(); };
+    const res = await CC._generatePdModule({ topic: 'X' }, { callAI, getCore: () => PdCore });
+    expect(res.ok).toBe(true);
+    expect(res.module.kind).toBe('pd_module');
+    expect(calls).toBe(1);
+  });
+
+  it('handles fence-wrapped AI output', async () => {
+    const { CC, PdCore } = loadWithCore();
+    const callAI = async () => '```json\n' + validJson() + '\n```';
+    const res = await CC._generatePdModule({ topic: 'X' }, { callAI, getCore: () => PdCore });
+    expect(res.ok).toBe(true);
+  });
+
+  it('auto-repairs once when the first draft fails validation', async () => {
+    const { CC, PdCore } = loadWithCore();
+    let calls = 0;
+    const callAI = async () => { calls++; return calls === 1 ? invalidJson() : validJson(); };
+    const res = await CC._generatePdModule({ topic: 'X' }, { callAI, getCore: () => PdCore });
+    expect(res.ok).toBe(true);
+    expect(res.repaired).toBe(true);
+    expect(calls).toBe(2);
+  });
+
+  it('fails gracefully when both attempts are invalid', async () => {
+    const { CC, PdCore } = loadWithCore();
+    const callAI = async () => invalidJson();
+    const res = await CC._generatePdModule({ topic: 'X' }, { callAI, getCore: () => PdCore });
+    expect(res.ok).toBe(false);
+    expect(res.error).toMatch(/correctIndex|valid|score/i);
+  });
+
+  it('rejects an empty topic before calling the AI', async () => {
+    const { CC, PdCore } = loadWithCore();
+    let calls = 0;
+    await expect(
+      CC._generatePdModule({ topic: '   ' }, { callAI: async () => { calls++; return validJson(); }, getCore: () => PdCore })
+    ).rejects.toThrow(/topic/i);
+    expect(calls).toBe(0);
+  });
+
+  it('the prompt enforces evidence-based, anti-neuromyth, answer-keyed output', () => {
+    const { CC } = loadWithCore();
+    const prompt = CC._buildPdGenPrompt({ topic: 'Learning science', numQuestions: 3 });
+    expect(prompt).toMatch(/EVIDENCE-BASED/);
+    expect(prompt).toMatch(/neuromyth|learning styles/i);
+    expect(prompt).toMatch(/correctIndex/);
+  });
+
+  it('PdGenerate renders the form + an honest AI-review banner', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.PdGenerate, { addToast() {}, onBack() {}, onRun() {}, onUse() {} });
+    expect(html).toContain('Create a PD module with AI');
+    expect(html).toMatch(/Review and edit/);
+    expect(html).toContain('AI-assisted draft');
+    expect(html).toContain('Topic');
+  });
+});

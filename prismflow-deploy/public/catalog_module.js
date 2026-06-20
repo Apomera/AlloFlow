@@ -525,6 +525,81 @@
     );
   }
 
+  // ----- Professional Development: AI authoring (reuses window.callGemini) -----
+  // Pull the first JSON object out of an LLM response (handles ```json fences and
+  // surrounding prose) — the same extraction other AlloFlow AI tools use.
+  function extractFirstJsonObject(text) {
+    var raw = typeof text === 'string' ? text : (text && text.text ? text.text : String(text || ''));
+    raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    var start = raw.indexOf('{'), end = raw.lastIndexOf('}');
+    if (start < 0 || end <= start) return null;
+    try { return JSON.parse(raw.substring(start, end + 1)); } catch (_e) { return null; }
+  }
+
+  function buildPdGenPrompt(opts) {
+    opts = opts || {};
+    var topic = String(opts.topic || '').trim();
+    var audience = String(opts.audience || 'K-12 educators').trim();
+    var minutes = Math.max(5, Math.min(60, parseInt(opts.estMinutes, 10) || 15));
+    var n = Math.max(1, Math.min(8, parseInt(opts.numQuestions, 10) || 4));
+    var notes = String(opts.notes || '').trim();
+    var wantReflect = opts.includeReflection !== false;
+    return [
+      'You are an instructional designer creating a SHORT, self-paced professional-development (PD) module for ' + audience + '.',
+      'Topic: ' + topic + '.',
+      notes ? ('Author notes / learning objectives to honor: ' + notes) : '',
+      '',
+      'Return ONLY a JSON object (no prose, no markdown fences) matching EXACTLY this shape:',
+      '{',
+      '  "schema_version": "pd-1.0",',
+      '  "kind": "pd_module",',
+      '  "metadata": { "title": string, "topic": string, "summary": string (1-2 sentences), "estMinutes": ' + minutes + ', "audience": "educator", "license": "CC-BY-SA-4.0", "credit": "AI-assisted draft", "ai_generated": true },',
+      '  "sections": [',
+      '    { "title": "Learn", "activities": [ { "id": "read-1", "type": "read", "title": string, "content": { "body": string (2-4 short paragraphs separated by \\n\\n), "keyPoints": [string, string, string] }, "gate": { "kind": "none" } } ] },',
+      '    { "title": "Check your understanding", "activities": [ { "id": "quiz-1", "type": "quiz", "title": string, "content": { "questions": [ exactly ' + n + ' items, each { "prompt": string, "options": [string, string, string, string], "correctIndex": integer 0-3 pointing to the ONE correct option } ] }, "gate": { "kind": "score", "threshold": 0.75 } } ] }' + (wantReflect ? ',' : ''),
+      wantReflect ? '    { "title": "Apply it", "activities": [ { "id": "reflect-1", "type": "reflect", "title": string, "content": { "prompt": string asking the educator to apply this to their own practice }, "gate": { "kind": "none" } } ] }' : '',
+      '  ]',
+      '}',
+      '',
+      'Rules:',
+      '- Every quiz question MUST have exactly one correct option, and correctIndex MUST truly point to it.',
+      '- Be ACCURATE and EVIDENCE-BASED. If a claim is contested or a common neuromyth (e.g., "learning styles", left/right-brain learners, "we only use 10% of our brain"), do NOT present it as established fact — note its status or use the replicated alternative.',
+      '- Concise (~' + minutes + ' minutes of reading). No PII and no real student names.',
+      '- Output ONLY the JSON object.'
+    ].filter(Boolean).join('\n');
+  }
+
+  // Generate + validate a pd_module from a topic via the shared AI layer, with ONE
+  // auto-repair retry on schema failure. deps {callAI, getCore} are injectable for tests.
+  function generatePdModule(opts, deps) {
+    deps = deps || {};
+    var callAI = deps.callAI || (typeof window !== 'undefined' ? window.callGemini : null);
+    var getCore = deps.getCore || function () { return window.AlloModules && window.AlloModules.PdCore; };
+    if (typeof callAI !== 'function') return Promise.reject(new Error('AI is not available here (window.callGemini missing).'));
+    var Core = getCore();
+    if (!Core) return Promise.reject(new Error('The PD engine is still loading — try again in a moment.'));
+    if (!opts || !String(opts.topic || '').trim()) return Promise.reject(new Error('Enter a topic first.'));
+
+    function attempt(prompt) {
+      return Promise.resolve(callAI(prompt, true)).then(function (out) {
+        var parsed = extractFirstJsonObject(out);
+        var v = parsed ? Core.validatePdModule(parsed) : { ok: false, error: 'The AI did not return valid JSON.' };
+        return { v: v, parsed: parsed, out: out };
+      });
+    }
+
+    return attempt(buildPdGenPrompt(opts)).then(function (r1) {
+      if (r1.v.ok) return { ok: true, module: r1.v.module };
+      var repair = 'This PD module JSON is invalid: ' + r1.v.error +
+        '\nHere is the JSON:\n' + (r1.parsed ? JSON.stringify(r1.parsed) : String(r1.out || '').slice(0, 6000)) +
+        '\nReturn a corrected pd_module JSON that fixes ONLY that problem and still matches the required schema. Output ONLY the JSON object.';
+      return attempt(repair).then(function (r2) {
+        if (r2.v.ok) return { ok: true, module: r2.v.module, repaired: true };
+        return { ok: false, error: r2.v.error || 'Could not generate a valid module.' };
+      });
+    });
+  }
+
   // ----- Professional Development: activity views -----------------------------
   // Each view renders ONE activity and reports its raw interaction up via onRaw.
   // All scoring/gating/record logic lives in window.AlloModules.PdCore — these
@@ -706,7 +781,7 @@
 
   function PdSubmit(props) {
     var addToast = props.addToast;
-    var jsonText$ = useState(''); var jsonText = jsonText$[0], setJsonText = jsonText$[1];
+    var jsonText$ = useState(props.initialJson || ''); var jsonText = jsonText$[0], setJsonText = jsonText$[1];
     var credit$ = useState(''); var credit = credit$[0], setCredit = credit$[1];
     var aff$ = useState({ author_or_authorized: false, no_pii: false, license_agreed: false, age_eligible: false });
     var aff = aff$[0], setAff = aff$[1];
@@ -840,14 +915,112 @@
     );
   }
 
+  // ----- Professional Development: AI authoring panel -------------------------
+
+  function PdGenerate(props) {
+    var addToast = props.addToast;
+    var topic$ = useState(''); var topic = topic$[0], setTopic = topic$[1];
+    var audience$ = useState('K-12 educators'); var audience = audience$[0], setAudience = audience$[1];
+    var notes$ = useState(''); var notes = notes$[0], setNotes = notes$[1];
+    var nq$ = useState(4); var numQuestions = nq$[0], setNumQuestions = nq$[1];
+    var mins$ = useState(15); var estMinutes = mins$[0], setEstMinutes = mins$[1];
+    var reflect$ = useState(true); var includeReflection = reflect$[0], setIncludeReflection = reflect$[1];
+    var status$ = useState('idle'); var status = status$[0], setStatus = status$[1]; // idle|generating|done|error
+    var result$ = useState(null); var result = result$[0], setResult = result$[1];
+    var error$ = useState(''); var error = error$[0], setError = error$[1];
+
+    useEffect(function () { ensurePdCore().catch(function () {}); }, []);
+
+    var aiAvailable = typeof window !== 'undefined' && typeof window.callGemini === 'function';
+
+    function generate() {
+      if (!topic.trim() || status === 'generating') return;
+      setStatus('generating'); setError(''); setResult(null);
+      generatePdModule({ topic: topic, audience: audience, notes: notes, numQuestions: numQuestions, estMinutes: estMinutes, includeReflection: includeReflection })
+        .then(function (res) {
+          if (res.ok) {
+            setResult(res.module); setStatus('done');
+            if (res.repaired) addToast && addToast('Draft generated (auto-corrected one schema issue).', 'info');
+          } else { setError(res.error || 'Could not generate a module.'); setStatus('error'); }
+        })
+        .catch(function (err) { setError(err.message); setStatus('error'); });
+    }
+
+    var inputClass = 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white';
+    var labelClass = 'block text-xs font-semibold text-slate-700 mb-1';
+
+    return e('div', { className: 'flex flex-col gap-4' },
+      e('button', { onClick: props.onBack, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+      e('h3', { className: 'font-bold text-base text-slate-800' }, 'Create a PD module with AI'),
+      // Honesty banner — AI drafts can be wrong; review before use.
+      e('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800' },
+        'AI drafts can contain mistakes — especially quiz answer keys and any factual or research claims. ',
+        e('span', { className: 'font-semibold' }, 'Review and edit every module before assigning or publishing it.'),
+        ' Generated modules are marked as AI-assisted drafts.'),
+      !aiAvailable && e('div', { className: 'p-2 text-xs bg-red-50 border border-red-200 text-red-800 rounded' },
+        'AI generation is not available in this session. You can still author a module by hand via "Submit a module".'),
+      // Inputs
+      e('div', null,
+        e('label', { className: labelClass, htmlFor: 'pdg-topic' }, 'Topic *'),
+        e('input', { id: 'pdg-topic', type: 'text', maxLength: 160, className: inputClass, placeholder: 'e.g., Trauma-informed classroom routines', value: topic, onChange: function (ev) { setTopic(ev.target.value); } })
+      ),
+      e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+        e('div', null,
+          e('label', { className: labelClass, htmlFor: 'pdg-aud' }, 'Audience'),
+          e('input', { id: 'pdg-aud', type: 'text', maxLength: 80, className: inputClass, value: audience, onChange: function (ev) { setAudience(ev.target.value); } })
+        ),
+        e('div', { className: 'grid grid-cols-2 gap-3' },
+          e('div', null,
+            e('label', { className: labelClass, htmlFor: 'pdg-nq' }, 'Quiz questions'),
+            e('input', { id: 'pdg-nq', type: 'number', min: 1, max: 8, className: inputClass, value: numQuestions, onChange: function (ev) { setNumQuestions(parseInt(ev.target.value, 10) || 1); } })
+          ),
+          e('div', null,
+            e('label', { className: labelClass, htmlFor: 'pdg-min' }, 'Length (min)'),
+            e('input', { id: 'pdg-min', type: 'number', min: 5, max: 60, className: inputClass, value: estMinutes, onChange: function (ev) { setEstMinutes(parseInt(ev.target.value, 10) || 15); } })
+          )
+        )
+      ),
+      e('div', null,
+        e('label', { className: labelClass, htmlFor: 'pdg-notes' }, 'Learning objectives or notes ',
+          e('span', { className: 'font-normal text-slate-500' }, '(optional)')),
+        e('textarea', { id: 'pdg-notes', rows: 3, className: inputClass, placeholder: 'Anything the module must cover, a framework to ground it in, the grade band, etc.', value: notes, onChange: function (ev) { setNotes(ev.target.value); } })
+      ),
+      e('label', { className: 'flex items-center gap-2 text-xs text-slate-700 cursor-pointer' },
+        e('input', { type: 'checkbox', checked: includeReflection, onChange: function (ev) { setIncludeReflection(ev.target.checked); } }),
+        e('span', null, 'Include an "apply it" reflection at the end')
+      ),
+      e('button', {
+        onClick: generate,
+        disabled: !topic.trim() || status === 'generating' || !aiAvailable,
+        className: 'self-start px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed',
+      }, status === 'generating' ? 'Generating…' : (status === 'done' ? 'Regenerate' : '✨ Generate draft')),
+      status === 'error' && e('div', { className: 'p-2 text-xs bg-red-50 border border-red-200 text-red-800 rounded' }, error),
+      // Result preview + actions
+      status === 'done' && result && e('div', { className: 'border border-slate-200 rounded-lg p-4 flex flex-col gap-2 bg-slate-50' },
+        e('div', { className: 'flex flex-wrap items-center gap-2' },
+          e('h4', { className: 'font-bold text-slate-800 text-sm' }, (result.metadata && result.metadata.title) || 'Untitled module'),
+          e('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold' }, 'AI-assisted draft')
+        ),
+        result.metadata && result.metadata.summary && e('p', { className: 'text-xs text-slate-600' }, result.metadata.summary),
+        e('p', { className: 'text-xs text-slate-500' }, 'Review the content and answer keys, then preview, edit, or submit it.'),
+        e('div', { className: 'flex gap-2 flex-wrap pt-1' },
+          e('button', { onClick: function () { props.onRun && props.onRun(result); }, className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700' }, 'Preview / run'),
+          e('button', { onClick: function () { props.onUse && props.onUse(JSON.stringify(result, null, 2)); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Edit & submit'),
+          e('button', { onClick: function () { downloadJsonFile(result, ((result.metadata && result.metadata.id) || slugify((result.metadata && result.metadata.title) || 'pd-module')) + '-draft'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50' }, 'Download JSON')
+        )
+      )
+    );
+  }
+
   // ----- Professional Development: home (browse + start runner + submit) -------
 
   function PdHome(props) {
     var addToast = props.addToast;
     var s = useState({ status: 'loading', entries: [], error: null });
     var state = s[0], setState = s[1];
-    var run$ = useState(null); var run = run$[0], setRun = run$[1];          // { entry, module }
-    var sub$ = useState(false); var showSubmit = sub$[0], setShowSubmit = sub$[1];
+    var run$ = useState(null); var run = run$[0], setRun = run$[1];          // { entry?, module }
+    var view$ = useState('browse'); var view = view$[0], setView = view$[1];  // 'browse' | 'generate' | 'submit'
+    var prefill$ = useState(''); var prefill = prefill$[0], setPrefill = prefill$[1];
 
     useEffect(function () {
       var cancelled = false;
@@ -874,10 +1047,18 @@
     if (run) {
       return e(PdRunner, { module: run.module, addToast: addToast, learner: props.learner, onExit: function () { setRun(null); } });
     }
-    if (showSubmit) {
+    if (view === 'generate') {
+      return e(PdGenerate, {
+        addToast: addToast,
+        onBack: function () { setView('browse'); },
+        onRun: function (mod) { setRun({ module: mod }); },
+        onUse: function (json) { setPrefill(json); setView('submit'); },
+      });
+    }
+    if (view === 'submit') {
       return e('div', { className: 'flex flex-col gap-3' },
-        e('button', { onClick: function () { setShowSubmit(false); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
-        e(PdSubmit, { addToast: addToast })
+        e('button', { onClick: function () { setView('browse'); setPrefill(''); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+        e(PdSubmit, { addToast: addToast, initialJson: prefill })
       );
     }
 
@@ -885,10 +1066,16 @@
       e('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
         e('p', { className: 'text-sm text-slate-700 max-w-2xl' },
           'Short, self-paced professional-development modules — read, take a knowledge check, and reflect. Finishing one lets you download a self-paced completion record (JSON). This is a personal record of your work, not accredited contact hours.'),
-        e('button', {
-          onClick: function () { setShowSubmit(true); },
-          className: 'shrink-0 px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
-        }, 'Submit a module')
+        e('div', { className: 'shrink-0 flex gap-2' },
+          e('button', {
+            onClick: function () { setView('generate'); },
+            className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
+          }, '✨ Create with AI'),
+          e('button', {
+            onClick: function () { setPrefill(''); setView('submit'); },
+            className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
+          }, 'Submit a module')
+        )
       ),
       e('div', { className: 'text-sm text-slate-600' },
         state.status === 'loading' ? 'Loading PD library…' :
@@ -1000,6 +1187,10 @@
   CommunityCatalog.PdHome = PdHome;
   CommunityCatalog.PdRunner = PdRunner;
   CommunityCatalog.PdSubmit = PdSubmit;
+  CommunityCatalog.PdGenerate = PdGenerate;
+  CommunityCatalog._generatePdModule = generatePdModule;
+  CommunityCatalog._extractFirstJsonObject = extractFirstJsonObject;
+  CommunityCatalog._buildPdGenPrompt = buildPdGenPrompt;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.CommunityCatalog = CommunityCatalog;
