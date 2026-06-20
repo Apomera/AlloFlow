@@ -42,7 +42,7 @@ const server = http.createServer((req, res) => {
   const result = await page.evaluate(async (b64) => {
     const { PDFDocument, PDFName } = window.PDFLib;
     const doc = await PDFDocument.load(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
-    for (const k of ['ViewerPreferences', 'MarkInfo', 'Lang']) { try { doc.catalog.delete(PDFName.of(k)); } catch (_) {} }
+    for (const k of ['ViewerPreferences', 'MarkInfo', 'Lang', 'Metadata']) { try { doc.catalog.delete(PDFName.of(k)); } catch (_) {} }
     const damaged = await doc.save();
     return await window.__remediate(damaged, 5);
   }, b64);

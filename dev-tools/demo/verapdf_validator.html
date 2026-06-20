@@ -115,6 +115,23 @@
         if (f.clause === '7.1' && f.testNumber === 10) { ensure('ViewerPreferences').set(PDFName.of('DisplayDocTitle'), PDFBool.True); applied.push(id + ':DisplayDocTitle'); }
         else if (f.clause === '6.2' && f.testNumber === 1) { ensure('MarkInfo').set(PDFName.of('Marked'), PDFBool.True); applied.push(id + ':MarkInfo'); }
         else if ((f.clause === '7.2' || f.clause === '3.1') && !cat.lookup(PDFName.of('Lang'))) { cat.set(PDFName.of('Lang'), PDFString.of('en')); applied.push(id + ':Lang'); }
+        else if (f.clause === '7.1' && f.testNumber === 8 && !cat.lookup(PDFName.of('Metadata'))) {
+          // Metadata: add an UNCOMPRESSED XMP stream with the PDF/UA-1 declaration (pdfuaid:part=1)
+          // + dc:title (mirrors the doc title), the form veraPDF requires for §7.1 t8 + the UA claim.
+          let _t = 'Document'; try { _t = doc.getTitle() || 'Document'; } catch (_) {}
+          _t = String(_t).replace(/[<>&]/g, ' ');
+          const xmp = '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+            + '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+            + '<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">'
+            + '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">' + _t + '</rdf:li></rdf:Alt></dc:title>'
+            + '<pdfuaid:part>1</pdfuaid:part></rdf:Description></rdf:RDF></x:xmpmeta>\n<?xpacket end="w"?>';
+          const ms = doc.context.stream(xmp, { Type: PDFName.of('Metadata'), Subtype: PDFName.of('XML') });
+          cat.set(PDFName.of('Metadata'), doc.context.register(ms));
+          applied.push(id + ':Metadata/XMP+UA-claim');
+        }
+        else if (f.clause === '7.1' && f.testNumber === 7) { // document title (/Info /Title)
+          try { if (!doc.getTitle()) { doc.setTitle('Document'); applied.push(id + ':Title'); } } catch (_) {}
+        }
       } catch (e) {}
     }
     const out = await doc.save();
