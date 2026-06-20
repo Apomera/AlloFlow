@@ -94,6 +94,11 @@ const checks = [
     description: 'Undeclared identifiers in hook dep arrays of *_module.js (data/onPlayAudio/isEscaped render-crash class)',
   },
   {
+    name: 'Group-level t() calls (i18n group → React-child crash)',
+    cmd: ['node', 'dev-tools/scan_group_t_calls.cjs', '--quiet'],
+    description: 'A t("group.path") call without {returnObjects:true} returns an i18n GROUP OBJECT; rendering it crashes the whole app ("Objects are not valid as a React child") — the pdf_audit.fidelity key-collision regression (2026-06-20).',
+  },
+  {
     name: 'FERPA — discrepancyReport persistence gate',
     cmd: ['node', 'dev-tools/check_no_discrepancy_persistence.cjs'],
     description: 'discrepancyReport must NEVER appear as a property key in any object literal in report_writer_module.js (psycheck verifier state — render-only)',
