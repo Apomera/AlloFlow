@@ -748,6 +748,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         tab === 'learn' && h('div', { className: 'space-y-3' },
           h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, 'WCAG 2.1 AA has ', WCAG_CRITERIA.length, ' core criteria. Click any to learn more.'),
 
+          // ── Live contrast checker (real WCAG math, client-side) ──
+          // The tool's #1 taught concept (1.4.3) was prose-only, and the AI
+          // "score" can't truly measure contrast. This computes a REAL ratio
+          // from relative luminance — one honest, verifiable measurement.
+          (function() {
+            var ccFg = d.ccFg || '#717b8c', ccBg = d.ccBg || '#ffffff';
+            function _hexToRgb(hx) {
+              var m = /^#?([0-9a-f]{6})$/i.exec(hx || '');
+              if (!m) return [0, 0, 0];
+              var n = parseInt(m[1], 16);
+              return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+            }
+            function _lum(rgb) {
+              var c = rgb.map(function(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+              return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+            }
+            var l1 = _lum(_hexToRgb(ccFg)), l2 = _lum(_hexToRgb(ccBg));
+            var ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+            function chip(label, pass) {
+              return h('div', { className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (pass ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }, (pass ? '✅ ' : '❌ ') + label);
+            }
+            return h('div', { className: 'rounded-2xl border-2 border-teal-300 bg-white p-4 mb-3' },
+              h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🎨 Live contrast checker'),
+              h('p', { className: 'text-[11px] text-slate-600 mb-3' }, 'A REAL WCAG ratio computed in your browser from relative luminance — not an AI guess. Pick a text and a background color.'),
+              h('div', { className: 'flex flex-wrap items-center gap-4' },
+                h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, 'Text',
+                  h('input', { type: 'color', value: ccFg, 'aria-label': 'Text color', onChange: function(e) { upd('ccFg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
+                h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, 'Background',
+                  h('input', { type: 'color', value: ccBg, 'aria-label': 'Background color', onChange: function(e) { upd('ccBg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
+                h('div', { className: 'flex-1 min-w-[140px] rounded-lg border border-slate-300 px-3 py-2 text-center', style: { background: ccBg, color: ccFg } },
+                  h('div', { className: 'text-base font-bold' }, 'Sample text'),
+                  h('div', { className: 'text-[11px]' }, 'Large heading'))
+              ),
+              h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
+                h('div', { className: 'text-xl font-black text-slate-800' }, ratio.toFixed(2) + ':1'),
+                h('span', { className: 'text-[11px] text-slate-600 mr-1' }, 'contrast ratio'),
+                chip('AA normal (4.5)', ratio >= 4.5),
+                chip('AAA normal (7)', ratio >= 7),
+                chip('AA large (3)', ratio >= 3),
+                chip('AAA large (4.5)', ratio >= 4.5)
+              ),
+              h('p', { className: 'text-[10px] text-slate-600 mt-2' }, 'Large = 18pt+ (or 14pt+ bold). This is the exact math axe / WAVE / Lighthouse use.')
+            );
+          })(),
+
           WCAG_CRITERIA.map(function(criterion) {
             var isExpanded = selectedCriterion === criterion.id;
             return h('div', { key: criterion.id,
