@@ -6703,7 +6703,27 @@ Return ONLY JSON:
       } catch (err) {
         addToast(t("toasts.audit_trail_generation_failed") + (err?.message || "unknown"), "error");
       }
-    }, "data-help-key": "pdf_audit_view_audit_trail_signed_btn", className: "w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors border-t border-slate-100" }, "\u{1F4CE} Audit Trail (signed)")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_save_project_btn", onClick: () => {
+    }, "data-help-key": "pdf_audit_view_audit_trail_signed_btn", className: "w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors border-t border-slate-100" }, "\u{1F4CE} Audit Trail (signed)")))), (() => {
+      const _lowConf = typeof window !== "undefined" && Array.isArray(window.__lastOcrLowConfidencePages) ? window.__lastOcrLowConfidencePages : [];
+      const _lowPages = _lowConf.map((p) => p && p.pageNum).filter((n) => typeof n === "number");
+      const _reRun = async (force) => {
+        try {
+          window.__alloForceOcr = force;
+        } catch (_) {
+        }
+        const fb = await ensurePdfBase64();
+        if (!fb) {
+          try {
+            window.__alloForceOcr = null;
+          } catch (_) {
+          }
+          return;
+        }
+        if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name });
+        else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name });
+      };
+      return /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, _lowPages.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0 ", t("pdf_audit.low_conf_ocr") || "Low OCR confidence on", " page", _lowPages.length === 1 ? "" : "s", " ", _lowPages.slice(0, 8).join(", "), _lowPages.length > 8 ? "\u2026" : "", ". ", t("pdf_audit.low_conf_ocr_hint") || "The text may be misread."), /* @__PURE__ */ React.createElement("button", { onClick: () => _reRun({ pages: _lowPages }), disabled: pdfFixLoading, className: "ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0" }, "\u{1F504} Re-OCR ", _lowPages.length, " ", _lowPages.length === 1 ? t("pdf_audit.page") || "page" : t("pdf_audit.pages") || "pages")), /* @__PURE__ */ React.createElement("button", { onClick: () => _reRun("all"), disabled: pdfFixLoading, title: t("pdf_audit.rescan_ocr_tooltip") || "Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.", className: "w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40" }, "\u{1F504} ", t("pdf_audit.rescan_ocr") || "Re-scan with OCR (text looks wrong?)"));
+    })(), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_save_project_btn", onClick: () => {
       saveProjectToFile(false);
     }, className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F4BE} Save Project"), /* @__PURE__ */ React.createElement("label", { "data-help-key": "pdf_audit_view_load_project_btn", className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer" }, "\u{1F4C2} Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json,.alloflow.json", className: "hidden", onChange: (e) => {
       const file = e.target.files?.[0];

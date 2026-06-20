@@ -8503,6 +8503,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         </div>
                       </div>
+                      {/* Re-scan with OCR (2026-06-20): recovery when the extracted text looks wrong —
+                          a garbled embedded text layer (broken font encodings extract as gibberish) or
+                          low-confidence OCR. Forces a fresh re-OCR of the whole document, or just the
+                          low-confidence pages, ignoring the text layer + any saved/cached text. */}
+                      {(() => {
+                        const _lowConf = (typeof window !== 'undefined' && Array.isArray(window.__lastOcrLowConfidencePages)) ? window.__lastOcrLowConfidencePages : [];
+                        const _lowPages = _lowConf.map((p) => p && p.pageNum).filter((n) => typeof n === 'number');
+                        const _reRun = async (force) => {
+                          try { window.__alloForceOcr = force; } catch (_) {}
+                          const fb = await ensurePdfBase64();
+                          if (!fb) { try { window.__alloForceOcr = null; } catch (_) {} return; } // user cancelled re-attach
+                          if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name });
+                          else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name });
+                        };
+                        return (
+                          <div className="mb-2">
+                            {_lowPages.length > 0 && (
+                              <div className="mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap">
+                                <span>⚠ {t('pdf_audit.low_conf_ocr') || 'Low OCR confidence on'} page{_lowPages.length === 1 ? '' : 's'} {_lowPages.slice(0, 8).join(', ')}{_lowPages.length > 8 ? '…' : ''}. {t('pdf_audit.low_conf_ocr_hint') || 'The text may be misread.'}</span>
+                                <button onClick={() => _reRun({ pages: _lowPages })} disabled={pdfFixLoading} className="ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0">🔄 Re-OCR {_lowPages.length} {_lowPages.length === 1 ? (t('pdf_audit.page') || 'page') : (t('pdf_audit.pages') || 'pages')}</button>
+                              </div>
+                            )}
+                            <button onClick={() => _reRun('all')} disabled={pdfFixLoading} title={t('pdf_audit.rescan_ocr_tooltip') || 'Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.'} className="w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40">
+                              🔄 {t('pdf_audit.rescan_ocr') || 'Re-scan with OCR (text looks wrong?)'}
+                            </button>
+                          </div>
+                        );
+                      })()}
                       {/* Save / Load Project — manual button now delegates to the shared saveProjectToFile helper,
                           which also powers auto-save after the initial remediation + auto-continue loop. */}
                       <div className="flex gap-2">

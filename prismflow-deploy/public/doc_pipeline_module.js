@@ -12464,6 +12464,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
       window.__lastExtractEncrypted = false; // password-cause (2026-06-20): true when a password-protected PDF was detected, so the <20-char abort can name the real cause
       window.__lastIncompleteProject = null; // resumable-incomplete-project (2026-06-20): the catch refills this if a hard AI failure hits after extraction
+      // Force-OCR escape hatch (2026-06-20): the "Re-scan with OCR" button sets window.__alloForceOcr
+      // to 'all' (re-OCR the whole PDF, ignoring a garbage text layer or stale resume cache — the
+      // recovery path for broken-font PDFs that extract as gibberish) or {pages:[n,...]} (re-OCR just
+      // those, splicing them back over the text-layer result). Read + consume once so a later normal
+      // run is unaffected.
+      let _forceFullOcr = false, _forceOcrPages = null;
+      try {
+        const _fo = (typeof window !== 'undefined') ? window.__alloForceOcr : null;
+        if (_fo === 'all') _forceFullOcr = true;
+        else if (_fo && Array.isArray(_fo.pages) && _fo.pages.length) _forceOcrPages = _fo.pages.slice();
+        if (_fo != null && typeof window !== 'undefined') window.__alloForceOcr = null;
+      } catch (_forceErr) { /* flag read is best-effort */ }
       // Reset Vision-strip audit trail. Every conservative JSON-strip decision is
       // recorded here so the fidelity panel can show what was kept vs stripped.
       window.__lastVisionStripTrail = [];
@@ -12579,7 +12591,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         } else if (isPdf) {
           updateProgress(1, 'Extracting PDF text layer deterministically...');
           const det = await extractPdfTextDeterministic(_base64);
-          if (det && !det.isScanned && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan
+          if (det && !det.isScanned && !_forceFullOcr && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan. _forceFullOcr → reject the text layer so the OCR path below runs (broken-encoding recovery)
             // Multi-session: if a pageRange was specified, narrow the extracted pages to
             // [start, end]. Keeps the full per-page map for later reference but only feeds
             // the selected pages to the downstream remediation pipeline.
@@ -12650,6 +12662,36 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         warnLog('[Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
       }
 
+      // ── Per-page forced re-OCR (2026-06-20) ── "Re-OCR these pages" target: re-runs OCR on
+      // the user/low-confidence-selected pages and splices the result OVER the existing page text.
+      // The recovery path for a born-digital PDF where a FEW pages have a broken/garbled text layer
+      // (custom font encodings) while the rest are clean — re-OCR just the bad pages, keep the good
+      // ones. Only applies when we have a page map to splice into (full re-OCR above takes precedence
+      // and leaves no map; a fully-scanned doc has no text-layer map yet and runs the OCR path below).
+      // Mirrors the mixed-page rescue mechanism, just driven by an explicit page list. Fail-safe.
+      if (_forceOcrPages && extractedText && Array.isArray(window.__lastGroundTruthPageMap) && window.__lastGroundTruthPageMap.length) {
+        try {
+          const _pm = window.__lastGroundTruthPageMap;
+          updateProgress(1, `Re-OCRing ${_forceOcrPages.length} page(s) as requested...`);
+          const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
+          const _re = await _ocrSpecificPages(_base64, _forceOcrPages, _toTesseractLang(_ovr));
+          const _reNums = Object.keys(_re);
+          if (_reNums.length) {
+            _pm.forEach(pg => { if (pg && _re[pg.pageNum]) pg.text = _re[pg.pageNum]; });
+            const _merged = _pm.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
+            extractedText = _merged;
+            window.__lastGroundTruthCharCount = _merged.length;
+            window.__lastGroundTruthPageMap = _pm;
+            window.__lastGroundTruthMethod = (window.__lastGroundTruthMethod || 'pdfjs') + '+reocr';
+            updateProgress(1, `Re-OCR'd ${_reNums.length} page(s)`);
+            warnLog(`[ForceOCR] Re-OCR'd ${_reNums.length}/${_forceOcrPages.length} page(s) → ${_merged.length} chars`);
+            if (typeof addToast === 'function') addToast(`🔄 Re-OCR'd ${_reNums.length} page${_reNums.length === 1 ? '' : 's'} — review the Diff to confirm the text is correct.`, 'info');
+          } else {
+            warnLog('[ForceOCR] per-page re-OCR produced no text for the requested pages — keeping original');
+          }
+        } catch (_reErr) { warnLog('[ForceOCR] per-page re-OCR failed (keeping original): ' + (_reErr && _reErr.message)); }
+      }
+
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
 
@@ -12666,7 +12708,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       try {
         if ((!extractedText || extractedText.length <= 100) && typeof window !== 'undefined') {
           const _seed = window.__resumeExtractedText;
-          if (_seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
+          if (!_forceFullOcr && _seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
             extractedText = _seed.text;
             warnLog('[Resume] Reusing cached extracted text (' + extractedText.length + ' chars) from a saved project — skipping re-extraction/OCR');
             if (typeof addToast === 'function') addToast(t('toasts.resume_reused_cached_text') || 'Reused your saved text from the unfinished session — no re-scanning needed.', 'info');
@@ -12684,7 +12726,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // "Perfect accuracy" per user spec — losing zero words matters more than speed here,
         // so we do both engines and take the longer output per page. Disagreements are
         // stashed on window globals so the fidelity panel can surface them for review.
-        updateProgress(1, 'Scanned PDF detected — running Tesseract + Vision OCR in parallel...');
+        updateProgress(1, _forceFullOcr ? 'Re-scanning with OCR (Tesseract + Vision) as requested...' : 'Scanned PDF detected — running Tesseract + Vision OCR in parallel...');
         if (typeof addToast === 'function') addToast(t('toasts.running_tesseract_vision_ocr_maximum'), 'info');
 
         // Large-scan guard: a big scanned doc with NO page range fans out one OCR pass per
