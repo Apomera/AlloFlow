@@ -11698,6 +11698,7 @@ Return the fixed section content only — raw HTML, no JSON wrapping.`;
                 // so lower-confidence content-loss reports still block.
                 setPdfFixStep(`Verifying section ${chi + 1}/${bodyChunks.length} content integrity...`);
                 let aiVerified = true;
+                let aiVerifierRan = true; // honest-disclosure (2026-06-20): did the verifier produce a USABLE verdict? false on parse-fail-twice / throw — we still proceed (local check passed) but must NOT record the chunk as AI-verified.
                 let aiVerifyDetail = '';
                 const _origPlain = _neutralizePromptFence(extractPlainText(originalChunk).substring(0, 4000));
                 const _fixedPlain = _neutralizePromptFence(extractPlainText(cleaned).substring(0, 4000));
@@ -11742,12 +11743,12 @@ Respond with ONLY a JSON object (no markdown, no explanation):
                     // Second parse failure — do NOT claim verification. Surface and fall
                     // back to the local integrity check (which has already passed at this
                     // point). The chunk proceeds, but the warn is now visible.
-                    warnLog(`[AutoFix] Chunk ${chi + 1} verifier returned malformed JSON twice — falling back to local check only`);
-                    aiVerified = true; // intentional: local check passed; we won't block on verifier silence
+                    warnLog(`[AutoFix] Chunk ${chi + 1} verifier returned malformed JSON twice — proceeding on the (passed) local check, but NOT claiming AI-verification`);
+                    aiVerifierRan = false; // proceed (local integrity already passed) but record honestly that the AI verifier did not confirm
                   }
                 } catch(verifyErr) {
-                  warnLog(`[AutoFix] Chunk ${chi + 1} verification call threw, falling back to local check: ${verifyErr && verifyErr.message}`);
-                  aiVerified = true;
+                  warnLog(`[AutoFix] Chunk ${chi + 1} verification call threw, proceeding on the (passed) local check — NOT AI-verified: ${verifyErr && verifyErr.message}`);
+                  aiVerifierRan = false;
                 }
 
                 if (!aiVerified) continue; // Retry the fix
@@ -11784,7 +11785,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   warnLog(`[AutoFix] Chunk ${chi + 1} AI audit failed, using local score`);
                 }
 
-                accepted = { html: cleaned, score: aiScore, integrityCheck: integrity, aiVerified, wasRetried, usedOriginal: false, deterministicFixCount, surgicalFixCount };
+                accepted = { html: cleaned, score: aiScore, integrityCheck: integrity, aiVerified: aiVerified && aiVerifierRan, wasRetried, usedOriginal: false, deterministicFixCount, surgicalFixCount };
                 break; // Accept this chunk
               } catch (chunkErr) {
                 warnLog(`[AutoFix] Chunk ${chi + 1} attempt ${attempt + 1} error:`, chunkErr?.message);
@@ -12222,6 +12223,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // Rejection threshold lowered to confidence>40.
         setStep(`Verifying chunk ${chunkIndex + 1}/${totalChunks} content...`);
         let aiVerified = true;
+        let aiVerifierRan = true; // honest-disclosure (2026-06-20): false on verifier parse-fail-twice / throw — proceed on the local check but don't claim AI-verification
         const _origPlainR = extractPlainText(originalChunk).substring(0, 4000);
         const _fixedPlainR = extractPlainText(cleaned).substring(0, 4000);
         const _verifyPromptR = (strict) => `${strict ? 'CRITICAL: Return ONLY a JSON object on a single line: {"preserved":boolean,"missingContent":string,"confidence":number}. No prose, no code fences.\n\n' : ''}Compare ORIGINAL and FIXED HTML. Check all text is preserved (tags may differ).\n\nORIGINAL:\n"""\n${_origPlainR}\n"""\n\nFIXED:\n"""\n${_fixedPlainR}\n"""\n\nRespond ONLY JSON: {"preserved": true/false, "missingContent": "", "confidence": 0-100}`;
@@ -12245,10 +12247,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               continue;
             }
           } else {
-            warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} verifier returned malformed JSON twice — falling back to local check only`);
+            aiVerifierRan = false; // proceed on the (passed) local check, but don't claim AI-verification
+            warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} verifier returned malformed JSON twice — proceeding on local check, NOT AI-verified`);
           }
         } catch (e) {
-          warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} verification call threw — falling back to local check`);
+          aiVerifierRan = false;
+          warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} verification call threw — proceeding on local check, NOT AI-verified`);
         }
 
         // AI accessibility score
@@ -12264,7 +12268,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           } catch(e) { /* keep local */ }
         } catch(e) { /* keep local */ }
 
-        accepted = { html: cleaned, score: aiScore, integrityCheck: integrity, aiVerified, wasRetried: isRetry, usedOriginal: false, deterministicFixCount, surgicalFixCount };
+        accepted = { html: cleaned, score: aiScore, integrityCheck: integrity, aiVerified: aiVerified && aiVerifierRan, wasRetried: isRetry, usedOriginal: false, deterministicFixCount, surgicalFixCount };
         break;
       } catch(e) {
         warnLog(`[RefixChunk] Chunk ${chunkIndex + 1} attempt ${attempt + 1} error: ${e?.message}`);
