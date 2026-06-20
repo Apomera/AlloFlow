@@ -1360,7 +1360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-wider' }, '📋 Quests'),
                   (npcQuests[npcKey] || []).map(function(q) {
                     var isLocked = rapport < q.difficulty;
-                    return h('div', { key: q.id, className: 'flex items-center gap-1.5 text-[11px] ' + (q.isCompleted ? 'text-green-600' : isLocked ? 'text-slate-200' : 'text-slate-700') },
+                    return h('div', { key: q.id, className: 'flex items-center gap-1.5 text-[11px] ' + (q.isCompleted ? 'text-green-600' : isLocked ? 'text-slate-500' : 'text-slate-700') },
                       h('span', null, q.isCompleted ? '✅' : isLocked ? '🔒' : '⭕'),
                       h('span', { className: q.isCompleted ? 'line-through' : isLocked ? 'opacity-50' : 'font-medium' },
                         isLocked ? 'Requires rapport ' + q.difficulty + '%' : q.text
@@ -1386,7 +1386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   return h('span', { key: entry[0], className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (entry[1] >= max * 0.7 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600') }, entry[0] + ': ' + entry[1] + '/' + max);
                 })
               ),
-              actionResult.progressToward && h('div', { className: 'mt-2 text-[11px] font-bold ' + (actionResult.progressToward === 'resolved' ? 'text-green-600' : actionResult.progressToward === 'near-resolution' ? 'text-amber-600' : 'text-slate-200') },
+              actionResult.progressToward && h('div', { className: 'mt-2 text-[11px] font-bold ' + (actionResult.progressToward === 'resolved' ? 'text-green-600' : actionResult.progressToward === 'near-resolution' ? 'text-amber-600' : 'text-slate-500') },
                 '📊 Progress: ' + actionResult.progressToward.replace(/-/g, ' ')
               ),
               actionResult.selFeedback && h('p', { className: 'text-[11px] text-teal-600 mt-1 font-medium' }, '🤝 ' + actionResult.selFeedback)
@@ -1449,7 +1449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                           style: { width: ((item.durability || 0) / (item.maxDurability || 1) * 100) + '%' }
                         })
                       ),
-                      h('span', { className: 'text-[11px] text-slate-200' }, (item.durability || 0) + '/' + (item.maxDurability || 0))
+                      h('span', { className: 'text-[11px] text-slate-500' }, (item.durability || 0) + '/' + (item.maxDurability || 0))
                     )
                   ),
                   // Tooltip on hover
@@ -1458,12 +1458,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     h('div', { className: 'text-slate-600 mt-0.5' }, item.desc),
                     item.specialAbility && h('div', { className: 'text-violet-600 font-medium mt-0.5' }, '✨ ' + item.specialAbility),
                     item.battleBonus && h('div', { className: 'text-red-600 font-medium mt-0.5' }, '⚔️ ' + item.battleBonus),
-                    h('div', { className: 'font-medium mt-0.5 ' + ((item.durability || 0) <= 1 ? 'text-red-500' : 'text-slate-200') },
+                    h('div', { className: 'font-medium mt-0.5 ' + ((item.durability || 0) <= 1 ? 'text-red-500' : 'text-slate-500') },
                       '🔧 Durability: ' + (item.durability || 0) + '/' + (item.maxDurability || 0) +
                       ((item.durability || 0) <= 1 ? ' — about to break!' : '') +
                       ((item.maxDurability || 0) === 1 ? ' (single-use)' : '')
                     ),
-                    h('div', { className: 'text-slate-200 mt-0.5' }, 'Crafted at: ' + item.craftedAt)
+                    h('div', { className: 'text-slate-500 mt-0.5' }, 'Crafted at: ' + item.craftedAt)
                   )
                 );
               })
@@ -1525,7 +1525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-600') +
                   (structureCooldown > 0 ? ' opacity-40' : '')
               }, '🏗️ Build Structure' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : '')),
-              structureCooldown > 0 && h('span', { className: 'text-[11px] text-slate-200 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
+              structureCooldown > 0 && h('span', { className: 'text-[11px] text-slate-500 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
             ),
             // Active battle encounter card
             activeBattle && h('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-xl p-3 mb-2' },
@@ -1594,7 +1594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 className: 'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
                   (hwPenmanshipOn || hwTeacherPenmanship
                     ? 'bg-violet-100 border-violet-300 text-violet-700'
-                    : 'bg-slate-50 border-slate-200 text-slate-200 hover:border-violet-300 hover:text-violet-500')
+                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
               }, '✏️ Penmanship Tips ', hwPenmanshipOn || hwTeacherPenmanship ? 'ON' : 'OFF'),
               hwTeacherPenmanship && !hwPenmanshipOn && h('span', { className: 'text-[11px] text-violet-500 font-medium' }, '(teacher enabled)')
             ),
@@ -1626,7 +1626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               hwResult.penmanship.tips && h('p', { className: 'text-xs text-violet-600 font-medium' }, '💡 ' + hwResult.penmanship.tips),
               h('button', {
                 onClick: function() { upd('hwResult', null); },
-                className: 'text-[11px] text-slate-200 hover:text-slate-600 font-bold mt-1',
+                className: 'text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1',
                 'aria-label': 'Dismiss penmanship feedback'
               }, 'Dismiss')
             ),
@@ -1721,7 +1721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               actionLog.slice().reverse().map(function(entry, i) {
                 return h('div', { key: i, className: 'text-[11px] text-slate-600 flex items-start gap-2' },
                   h('span', { className: 'font-bold shrink-0', style: { color: getQualityTier(entry.score).color } }, entry.score),
-                  h('span', { className: 'text-slate-200' }, entry.room + ':'),
+                  h('span', { className: 'text-slate-500' }, entry.room + ':'),
                   h('span', { className: 'truncate' }, entry.text)
                 );
               })
