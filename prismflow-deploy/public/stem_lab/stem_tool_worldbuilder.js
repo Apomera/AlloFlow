@@ -1277,20 +1277,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             )
           ),
 
-          // World map (connected rooms)
+          // World map — SVG node-link graph of the WHOLE world (the rooms +
+          // their connections form a real graph). Circular auto-layout (rooms
+          // carry no coords); current room highlighted, visited ringed, and the
+          // current room's neighbors are click-to-travel. Replaces the flat
+          // button row that hid the spatial structure.
           h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
-            h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2' }, '🗺️ Connected Locations'),
-            h('div', { className: 'flex flex-wrap gap-2' },
-              room.connections.map(function(connId) {
-                var connRoom = world.rooms.find(function(r) { return r.id === connId; });
-                if (!connRoom) return null;
-                var visited = roomsVisited.indexOf(connId) >= 0;
-                return h('button', { 'aria-label': 'Move To Room', key: connId, onClick: function() { moveToRoom(connId); },
-                  className: 'px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all hover:scale-105 ' +
-                    (visited ? 'border-green-600 bg-green-50 text-green-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-600')
-                }, connRoom.emoji + ' ' + connRoom.name + (visited ? ' ✓' : ''));
-              })
-            )
+            h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2' }, '🗺️ World Map'),
+            (function() {
+              var rooms = world.rooms, N = rooms.length, W = 300, Hh = 220, cx = W / 2, cy = 100, R = Math.min(cx, cy) - 36;
+              var pos = {};
+              rooms.forEach(function(rm, i) {
+                var ang = (i / N) * Math.PI * 2 - Math.PI / 2;
+                pos[rm.id] = { x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang) };
+              });
+              var neighbors = room.connections || [];
+              var seen = {}, edges = [];
+              rooms.forEach(function(rm) {
+                (rm.connections || []).forEach(function(cid) {
+                  if (!pos[cid]) return;
+                  var key = rm.id < cid ? rm.id + '|' + cid : cid + '|' + rm.id;
+                  if (seen[key]) return; seen[key] = 1;
+                  var live = (rm.id === currentRoom || cid === currentRoom);
+                  edges.push(h('line', { key: key, x1: pos[rm.id].x, y1: pos[rm.id].y, x2: pos[cid].x, y2: pos[cid].y, stroke: live ? '#8b5cf6' : '#cbd5e1', strokeWidth: live ? 2.2 : 1.2, opacity: live ? 0.9 : 0.6 }));
+                });
+              });
+              return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 440, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'Map of ' + world.name + '. You are at ' + room.name + '.' },
+                edges,
+                rooms.map(function(rm) {
+                  var p = pos[rm.id], isCur = rm.id === currentRoom, isVisited = roomsVisited.indexOf(rm.id) >= 0, canGo = neighbors.indexOf(rm.id) >= 0;
+                  var fill = isCur ? '#ede9fe' : isVisited ? '#f0fdf4' : '#f8fafc';
+                  var stroke = isCur ? '#7c3aed' : isVisited ? '#16a34a' : '#cbd5e1';
+                  var bright = isVisited || isCur || canGo;
+                  return h('g', { key: rm.id,
+                    style: { cursor: canGo ? 'pointer' : 'default' },
+                    onClick: canGo ? function() { moveToRoom(rm.id); } : null,
+                    role: canGo ? 'button' : null,
+                    'aria-label': canGo ? ('Travel to ' + rm.name) : (rm.name + (isCur ? ' — you are here' : '')) },
+                    isCur ? h('circle', { cx: p.x, cy: p.y, r: 19, fill: 'none', stroke: '#7c3aed', strokeWidth: 1, opacity: 0.5 }) : null,
+                    h('circle', { cx: p.x, cy: p.y, r: 15, fill: fill, stroke: stroke, strokeWidth: isCur ? 3 : 1.8, opacity: bright ? 1 : 0.5 }),
+                    h('text', { x: p.x, y: p.y + 5, textAnchor: 'middle', fontSize: 15 }, rm.emoji),
+                    h('text', { x: p.x, y: p.y + 30, textAnchor: 'middle', fontSize: 8, fontWeight: isCur ? 800 : 600, fill: bright ? '#334155' : '#94a3b8' }, rm.name.length > 16 ? rm.name.slice(0, 15) + '…' : rm.name),
+                    (isVisited && !isCur) ? h('text', { x: p.x + 12, y: p.y - 9, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#16a34a' }, '✓') : null
+                  );
+                })
+              );
+            })(),
+            h('div', { className: 'text-[10px] text-slate-500 text-center mt-1' }, '🟣 you are here · ✓ visited · tap a connected location to travel')
           ),
 
           // NPCs in this room
