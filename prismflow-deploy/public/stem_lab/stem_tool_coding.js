@@ -2188,7 +2188,7 @@
                   })
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
-                  React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
+                  React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
                     "\uD83D\uDCA1 Drag commands into your program. Use If/While blocks for smart navigation!"
                   )
                 )
@@ -2298,7 +2298,7 @@
                       React.createElement("button", { onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "coding-robot-run-btn px-3 py-1 rounded text-[11px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-300 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
                       robotRunning && React.createElement("button", { "aria-label": "Stop", onClick: stopRun,
                         className: "px-3 py-1 rounded text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-all"
@@ -2306,7 +2306,7 @@
                     )
                   ),
                   robotBlocks.length === 0 ?
-                    React.createElement("p", { className: "text-[11px] text-slate-600 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
+                    React.createElement("p", { className: "text-[11px] text-slate-300 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
                     React.createElement("div", { className: "space-y-1" },
                       robotBlocks.map(function (b, bi) { return renderRobotNode(b, [bi], 0); })
                     )
@@ -2510,14 +2510,14 @@
                         // IF branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-fuchsia-400/50" },
                           React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
-                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
+                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-300 italic py-1" }, "No blocks yet"),
                           (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
                           renderQuickAdd(idx, false)
                         ),
                         // ELSE branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-slate-500/50 mt-1" },
-                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "✖ Else"),
-                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider" }, "✖ Else"),
+                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-300 italic py-1" }, "No blocks yet"),
                           (b.elseChildren || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, true); }),
                           renderQuickAdd(idx, true)
                         )
@@ -2709,12 +2709,12 @@
                   React.createElement("button", { "aria-label": "Grid",
                     onClick: function() { upd('show3DGrid', !show3DGrid); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
+                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-300")
                   }, "\u{2B1C} Grid"),
                   React.createElement("button", { "aria-label": "Axes",
                     onClick: function() { upd('show3DAxes', !show3DAxes); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
+                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-300")
                   }, "\u{1F4CD} Axes"),
                   React.createElement("button", { "aria-label": "Reset 3D camera view",
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
@@ -2749,7 +2749,7 @@
                   className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }
                 }),
-                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-1" },
+                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-300 mt-1" },
                   React.createElement("span", null, "Frame 0"),
                   React.createElement("span", { className: "text-indigo-400 font-bold" }, timelinePos >= 0 ? "Frame " + timelinePos : "—"),
                   React.createElement("span", null, "Frame " + (timelineFrames.length - 1))
