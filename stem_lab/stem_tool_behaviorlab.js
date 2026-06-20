@@ -2958,6 +2958,17 @@ dataRef.current = d;
 
             var tickRange = Math.max(endTick - startTick, 1);
 
+            // Response-count gridlines + tick labels — a cumulative record is
+            // read by its SLOPE (response rate); reference levels make the rate
+            // legible. Cosmetic only; the plotted data is unchanged.
+            ctx.font = '8px sans-serif'; ctx.textAlign = 'right';
+            for (var _gl = 1; _gl <= 4; _gl++) {
+              var _gc = maxCum * _gl / 4, _gy = (H - 25) - (_gc / maxCum) * plotH;
+              ctx.strokeStyle = 'rgba(71,85,105,0.3)'; ctx.lineWidth = 0.75;
+              ctx.beginPath(); ctx.moveTo(40, _gy); ctx.lineTo(W - 10, _gy); ctx.stroke();
+              ctx.fillStyle = '#64748b'; ctx.fillText(Math.round(_gc), 36, _gy + 3);
+            }
+
 
 
             ctx.beginPath();
