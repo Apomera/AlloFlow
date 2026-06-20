@@ -999,7 +999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   ];
 
   var PREVENTION_TIPS = [
-    { icon: '\uD83D\uDCA7', title: 'Stay Hydrated', tip: 'Drink 6\u20138 glasses of water daily. Your vocal folds need a thin layer of mucus to vibrate smoothly. Caffeine and alcohol are dehydrating \u2014 drink extra water to compensate.', priority: 'essential' },
+    { icon: '\uD83D\uDCA7', title: 'Stay Hydrated', tip: 'Stay well-hydrated through the day \u2014 let thirst and pale-yellow urine be your guide (the fixed "8 glasses a day" rule has no clear scientific basis). Your vocal folds need a thin layer of mucus to vibrate smoothly. Caffeine and alcohol are dehydrating \u2014 drink extra water to compensate.', priority: 'essential' },
     { icon: '\uD83C\uDFB5', title: 'Always Warm Up', tip: 'Never sing "cold." Start with gentle humming, lip trills, or sirens for 5\u201310 minutes before any singing. This increases blood flow to the vocal folds and reduces injury risk.', priority: 'essential' },
     { icon: '\uD83E\uDD2B', title: 'Rest Your Voice', tip: 'After heavy vocal use (concerts, long rehearsals, teaching all day), give your voice recovery time. Aim for 10 minutes of silence for every 1 hour of heavy use. Complete vocal rest days are important.', priority: 'essential' },
     { icon: '\u26D4', title: 'Never Sing Through Pain', tip: 'Pain is your body\'s alarm system. If singing hurts, stop immediately. Pushing through pain causes real tissue damage. Hoarseness lasting more than 2 weeks needs medical evaluation.', priority: 'critical' },

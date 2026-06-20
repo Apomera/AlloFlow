@@ -595,7 +595,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               scienceReward: 'Conduction transfers heat through direct contact between molecules. It works, but uses electrical power from your limited fuel cell supply \u2014 and fuel cells also generate your oxygen and drinking water!' },
             { label: 'Seal the vent and use backup waste bags', icon: '\uD83D\uDDC4\uFE0F',
               effects: { morale: -10 }, quality: 'poor', xp: 5,
-              scienceReward: 'Apollo astronauts (1969-1972) had NO toilet at all \u2014 they used adhesive collection bags for every bathroom visit. In zero gravity, this was extremely difficult and unpleasant. The modern $23 million Universal Waste Management System was designed to fix this, but as Artemis II proved, space plumbing is hard!' }
+              scienceReward: 'Apollo astronauts (1969-1972) had NO toilet at all \u2014 they used adhesive collection bags for every bathroom visit. In microgravity, this was extremely difficult and unpleasant. The modern $23 million Universal Waste Management System was designed to fix this, but as Artemis II proved, space plumbing is hard!' }
           ]
         },
         {
@@ -656,7 +656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           id: 'space_sickness', title: 'Space Adaptation Syndrome', emoji: '\uD83E\uDD22',
           phases: [2, 3], difficulty: ['tourist', 'pilot', 'commander'], probability: 0.5,
           historical: 'About 60-80% of astronauts experience Space Adaptation Syndrome (SAS) in the first 1-3 days. Senator Jake Garn\'s 1985 Shuttle flight was so severe that NASA informally named the unit of space sickness the "Garn" \u2014 1 Garn being the maximum possible nausea.',
-          scenario: 'A crew member is experiencing severe nausea and disorientation. In zero gravity, the inner ear sends confusing signals to the brain because "up" and "down" no longer exist. This affects their ability to work and could impact mission tasks.',
+          scenario: 'A crew member is experiencing severe nausea and disorientation. In microgravity, the inner ear sends confusing signals to the brain because "up" and "down" no longer exist. This affects their ability to work and could impact mission tasks.',
           stemConcepts: ['vestibular system', 'inner ear physiology', 'microgravity adaptation'],
           options: [
             { label: 'Administer anti-nausea medication and rest period', icon: '\uD83D\uDC8A',
@@ -664,7 +664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               scienceReward: 'The vestibular system in your inner ear uses fluid-filled semicircular canals to detect rotation and tiny calcium carbonate crystals (otoliths) to detect gravity. In microgravity, the otoliths float freely, sending signals that conflict with what your eyes see. Anti-nausea medication (like promethazine) blocks the brain\'s emetic center while the vestibular system adapts over 2-3 days.' },
             { label: 'Tough it out \u2014 keep working through the nausea', icon: '\uD83D\uDCAA',
               effects: { morale: -10 }, quality: 'poor', xp: 5,
-              scienceReward: 'Working through severe SAS is counterproductive and dangerous. In zero gravity, vomiting is a serious safety hazard \u2014 without gravity to direct it, vomit can be inhaled into the lungs (aspiration). Modern space medicine prioritizes crew health because a sick astronaut is an ineffective astronaut.' },
+              scienceReward: 'Working through severe SAS is counterproductive and dangerous. In microgravity, vomiting is a serious safety hazard \u2014 without gravity to direct it, vomit can be inhaled into the lungs (aspiration). Modern space medicine prioritizes crew health because a sick astronaut is an ineffective astronaut.' },
             { label: 'Reduce visual stimulation and close window shades', icon: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F',
               effects: { morale: 0 }, quality: 'adequate', xp: 10,
               scienceReward: 'Closing eyes or fixing gaze on a stable reference point reduces "sensory conflict" \u2014 the mismatch between what eyes see (floating objects) and what the inner ear feels (no gravity). This is similar to why reading in a car causes motion sickness: eyes say "still" but inner ear says "moving."' }

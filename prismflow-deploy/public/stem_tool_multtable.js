@@ -248,7 +248,7 @@ window.StemLab = window.StemLab || {
     { id: 'mathlete',      icon: '\uD83C\uDFC6', label: 'Mathlete',    desc: '50 correct in one session' },
     { id: 'trickyMaster',  icon: '\uD83E\uDDE9', label: 'Tricky Master', desc: '10 correct on Tricky 15 facts' },
     { id: 'patternFinder', icon: '\uD83D\uDD0D', label: 'Pattern Finder', desc: 'Explore 5+ patterns in the Patterns tab' },
-    { id: 'visualLearner', icon: '\uD83D\uDFE9', label: 'Visual Learner', desc: 'Explore 10 facts in the Visual tab' }
+    { id: 'visualLearner', icon: '\uD83D\uDFE9', label: 'Visual Explorer', desc: 'Explore 10 facts in the Visual tab' }
   ];
 
   window.StemLab.registerTool('multtable', {
@@ -1054,7 +1054,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
             h('button', { onClick: function() { extUpd({ showBadges: false }); },
-              className: 'text-xs text-slate-600 hover:text-slate-600'
+              className: 'text-xs text-slate-600 hover:text-slate-800'
             }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
@@ -1078,7 +1078,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
             h('button', { onClick: function() { extUpd({ showAI: false }); },
-              className: 'text-xs text-slate-600 hover:text-slate-600'
+              className: 'text-xs text-slate-600 hover:text-slate-800'
             }, '\u2715')
           ),
           _ext.aiLoading
@@ -1222,7 +1222,8 @@ window.StemLab = window.StemLab || {
                 onClick: function() {
                   var missed = getUniqueMissed(_mt.missed);
                   var pick = missed[Math.floor(Math.random() * missed.length)];
-                  setMultTableChallenge({ a: pick.a, b: pick.b });
+                  var pMode = quizMode === 'div' ? 'div' : (quizMode === 'mixed' ? (Math.random() < 0.5 ? 'mult' : 'div') : 'mult');
+                  setMultTableChallenge({ a: pick.a, b: pick.b, mode: pMode, divisor: pMode === 'div' ? (Math.random() < 0.5 ? pick.a : pick.b) : null });
                   setMultTableAnswer('');
                   setMultTableFeedback(null);
                   setHighlightCell(null);
@@ -1327,7 +1328,7 @@ window.StemLab = window.StemLab || {
         // ── 12×12 Grid ──
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto' },
           h('table', { className: 'border-collapse w-full text-center' },
-            h('caption', { className: 'sr-only' }, 'Try Again'), h('thead', null,
+            h('caption', { className: 'sr-only' }, '12 by 12 multiplication table'), h('thead', null,
               h('tr', null,
                 h('th', { scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-pink-400' }, '\u00D7'),
                 Array.from({ length: maxNum }).map(function(_, c) {
@@ -1358,7 +1359,8 @@ window.StemLab = window.StemLab || {
                       onMouseEnter: function() { setMultTableHover({ r: r + 1, c: c + 1 }); },
                       onMouseLeave: function() { setMultTableHover(null); },
                       onClick: function() {
-                        setMultTableChallenge({ a: r + 1, b: c + 1 });
+                        var gMode = quizMode === 'div' ? 'div' : (quizMode === 'mixed' ? (Math.random() < 0.5 ? 'mult' : 'div') : 'mult');
+                        setMultTableChallenge({ a: r + 1, b: c + 1, mode: gMode, divisor: gMode === 'div' ? (Math.random() < 0.5 ? r + 1 : c + 1) : null });
                         setMultTableAnswer('');
                         setMultTableFeedback(null);
                         setHighlightCell(null);
@@ -1500,9 +1502,60 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'text-[11px] text-slate-600 text-center' },
           h('span', { className: 'inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1' }), ' Perfect squares',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1' }), ' Hover cross',
-          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1' }), ' Selected',
+          h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-700 rounded mr-1' }), ' Selected',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-amber-400 border border-amber-500 rounded mr-1' }), ' Correct answer'
-        )
+        ),
+        // === H7b'' inquiry widget: fact mastery ===
+        (function() {
+          var iq = _ext._factHunt || { threshold: 80, factor: 6, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { extUpd({ _factHunt: Object.assign({}, iq, patch) }); }
+          var mock = iq.factor * 7;
+          var perf = Math.min(100, iq.factor * 10);
+          var state;
+          if (perf < 60) state = 'struggling';
+          else if (perf < iq.threshold) state = 'building';
+          else state = 'mastered';
+          var sm = {
+            struggling: { label: '🔴 Struggling (<60%)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+            building:   { label: '🟡 Building (60-' + (iq.threshold-1) + '%)', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            mastered:   { label: '🟢 Mastered (≥' + iq.threshold + '%)', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+          }[state];
+          return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-indigo-300 space-y-2' },
+            h('h3', { className: 'text-sm font-black text-indigo-700' }, '🎯 Fact mastery discovery'),
+            h('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for mastery threshold and selected factor. Discrete 3-state outcome. No score, no reveal.'),
+            h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+              h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
+              h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'Factor ' + iq.factor + ' simulated accuracy = ' + perf + '%')
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-2' },
+              [{ k: 'threshold', l: 'Mastery threshold %', mn: 60, mx: 100, st: 5 },
+               { k: 'factor', l: 'Factor', mn: 1, mx: 12, st: 1 }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'fm-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-indigo-700' }, iq[s.k])),
+                  h('input', { id: 'fm-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.threshold, f: iq.factor, p: perf, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ threshold: 80, factor: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does threshold change feedback for struggling learners?',
+              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
+              h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                h('li', null, 'What if mastery = 100%? What gets praised?'),
+                h('li', null, 'How does color-coding affect motivation?'))),
+            h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+              'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain mastery learning thresholds.',
+              className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+            h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.')
+          );
+        })()
         )  // end of Practice tab wrapper
       );
     }

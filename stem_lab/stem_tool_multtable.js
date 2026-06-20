@@ -248,7 +248,7 @@ window.StemLab = window.StemLab || {
     { id: 'mathlete',      icon: '\uD83C\uDFC6', label: 'Mathlete',    desc: '50 correct in one session' },
     { id: 'trickyMaster',  icon: '\uD83E\uDDE9', label: 'Tricky Master', desc: '10 correct on Tricky 15 facts' },
     { id: 'patternFinder', icon: '\uD83D\uDD0D', label: 'Pattern Finder', desc: 'Explore 5+ patterns in the Patterns tab' },
-    { id: 'visualLearner', icon: '\uD83D\uDFE9', label: 'Visual Learner', desc: 'Explore 10 facts in the Visual tab' }
+    { id: 'visualLearner', icon: '\uD83D\uDFE9', label: 'Visual Explorer', desc: 'Explore 10 facts in the Visual tab' }
   ];
 
   window.StemLab.registerTool('multtable', {
