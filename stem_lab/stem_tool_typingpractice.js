@@ -255,6 +255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     accommodations: {
       dyslexiaFont: false,
       largeKeys: false,
+      showKeyboard: true,      // finger-color on-screen keyboard, shown by default (no text enlargement, unlike largeKeys) — the core teaching surface
       highContrast: false,
       paceTargetWpm: null,     // null = no pace target (motor-planning-safe default)
       audioCues: false,
@@ -7949,7 +7950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // (redundant). Theme-voiced. Clears automatically when the
             // student moves past the stuck char.
             (function() {
-              if (state.accommodations.largeKeys) return null; // already visible on keyboard
+              if (state.accommodations.largeKeys || state.accommodations.showKeyboard) return null; // already visible on keyboard
               if (!targetStr || typed.length >= targetStr.length) return null;
               var expected = targetStr[typed.length];
               if (!expected || expected === ' ') return null;
@@ -8118,7 +8119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             })() : null,
 
             // On-screen keyboard (large-keys accommodation)
-            state.accommodations.largeKeys ? renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard) : null
+            (state.accommodations.largeKeys || state.accommodations.showKeyboard) ? renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard) : null
           );
         }
 
@@ -9496,10 +9497,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             h('div', { id: 'tp-s-toggles', style: { scrollMarginTop: '20px' } }),
             renderToggleRow('Dyslexia-friendly font', 'Switches to a font designed to reduce letter-confusion (b/d, p/q).', acc.dyslexiaFont, function() { toggle('dyslexiaFont'); }, palette),
-            renderToggleRow('Large-key visual keyboard', 'Shows an on-screen keyboard with finger-color coding and the next-key highlighted.', acc.largeKeys, function() { toggle('largeKeys'); }, palette),
-            // Focus-mode is a child toggle of largeKeys — only meaningful when
-            // the keyboard is shown. Hide it otherwise to reduce clutter.
-            acc.largeKeys ? renderToggleRow('Focus mode on keyboard', 'When the on-screen keyboard is on, heavily dims all keys except the next target. Same-finger keys stay slightly visible as a motor-planning hint.', acc.focusKeyboard, function() { toggle('focusKeyboard'); }, palette) : null,
+            renderToggleRow('On-screen keyboard', 'Shows a finger-color-coded keyboard with the next key highlighted (does not enlarge the drill text).', acc.showKeyboard, function() { toggle('showKeyboard'); }, palette),
+            renderToggleRow('Large-key visual keyboard', 'The same keyboard PLUS enlarged drill text and bigger keys.', acc.largeKeys, function() { toggle('largeKeys'); }, palette),
+            // Focus-mode is a child toggle of the keyboard — only meaningful when
+            // a keyboard is shown. Hide it otherwise to reduce clutter.
+            (acc.largeKeys || acc.showKeyboard) ? renderToggleRow('Focus mode on keyboard', 'When the on-screen keyboard is on, heavily dims all keys except the next target. Same-finger keys stay slightly visible as a motor-planning hint.', acc.focusKeyboard, function() { toggle('focusKeyboard'); }, palette) : null,
             renderToggleRow('High-contrast mode', 'Black / yellow / white palette with maximum contrast.', acc.highContrast, function() { toggle('highContrast'); }, palette),
             renderToggleRow('Audio cues', 'Soft chime on correct keypress, low tone on errors. Non-alarming.', acc.audioCues, function() { toggle('audioCues'); }, palette),
             renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports listening + reading practice and screen-free typing. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace'); }, palette),
@@ -13294,9 +13296,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var d2 = state || {};
             var iq = d2.tradeoffHunt || { targetWpm: 40, accFloor: 92, errPenalty: 5, momentum: 50, sessionLen: 60, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
             function setIQ(patch) {
-              setState(function(prev) {
-                return Object.assign({}, prev, { tradeoffHunt: Object.assign({}, prev.tradeoffHunt || iq, patch) });
-              });
+              // setState does NOT exist in this tool (ReferenceError). Route
+              // through the real updater. This whole tradeoffHunt branch is
+              // currently unreachable via the UI, so the crash was latent —
+              // fired only on imported/corrupted toolData with view:'tradeoffHunt'.
+              updMulti({ tradeoffHunt: Object.assign({}, (state.tradeoffHunt || iq), patch) });
             }
             // Compute predicted outcomes
             var effectiveWpm = iq.targetWpm * (iq.momentum / 100 + 0.5);
@@ -13326,7 +13330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var currentX = 20 + (iq.targetWpm / 100) * 280;
             var currentY = 130 - (iq.accFloor - 70) * 4;
             return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
-              h('button', { onClick: function() { setState(function(p) { return Object.assign({}, p, { view: 'menu' }); }); }, style: { padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #93c5fd', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
+              h('button', { onClick: function() { go('menu'); }, style: { padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #93c5fd', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
               h('div', { style: { padding: 16, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 12 } },
                 h('h3', { style: { fontSize: 16, fontWeight: 800, color: '#0c4a6e', margin: '0 0 6px 0' } }, '⚡ WPM-accuracy tradeoff discovery'),
                 h('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12 } },
