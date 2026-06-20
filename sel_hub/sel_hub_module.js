@@ -1489,6 +1489,48 @@
       );
 
       // \u2500\u2500 CHANGE 3: For-Educators modal \u2500\u2500
+      // SEL-PRIV-7: right-to-delete affordance — permanently clear all SEL data
+      // (journal entries, reflections, safety plan, streak, stations, progress)
+      // from this device. FERPA-positive; destructive, so confirm-gated.
+      var clearAllSelData = function() {
+        var ok = (typeof window !== 'undefined' && window.confirm)
+          ? window.confirm('Permanently delete ALL your SEL work on this device — journal entries, reflections, safety plan, streak, stations, and progress?\n\nThis cannot be undone.')
+          : false;
+        if (!ok) return;
+        // Remove every SEL-namespaced localStorage key (hub keys, legacy per-tool
+        // keys, and per-session crisiscompanion namespaced keys) via a scan so no
+        // variant is missed.
+        try {
+          var toRemove = [];
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && /^(alloflow_sel_|alloSel|crisisCompanion\.)/.test(k)) toRemove.push(k);
+          }
+          toRemove.forEach(function(k) { try { localStorage.removeItem(k); } catch (e) {} });
+        } catch (e) {}
+        // Reset in-memory hub state.
+        try { setSelToolData({}); } catch (e) {}
+        try { setSavedStations([]); } catch (e) {}
+        try { setQuestProgress({}); } catch (e) {}
+        try { setSelStreak({ count: 0, longest: 0, lastDate: null }); } catch (e) {}
+        try { setSelToolUsage({}); } catch (e) {}
+        try { setSelXp(0); } catch (e) {}
+        try { setSelSnapshots([]); } catch (e) {}
+        // Clear the window mirror slots so a subsequent host project-save does not
+        // re-serialize the deleted data back into the file.
+        try {
+          if (typeof window !== 'undefined') {
+            window.__alloflowSelToolData = {};
+            window.__alloflowSelEngagement = null;
+            window.__alloflowSelStations = null;
+            window.__alloflowSelProgress = null;
+          }
+        } catch (e) {}
+        setShowForEducators(false);
+        if (typeof addToast === 'function') addToast('Your SEL data has been cleared from this device.', 'success');
+        if (announceToSR) announceToSR('Your SEL data has been cleared from this device.');
+      };
+
       var forEducatorsModal = showForEducators && h('div', {
         role: 'dialog',
         'aria-modal': 'true',
@@ -1509,7 +1551,17 @@
             }, '\u2715')
           ),
           h('div', { style: { flex: 1, overflow: 'auto', padding: '16px 24px', fontSize: 13, color: _t.text } },
-            _selRenderMarkdown(React, FOR_EDUCATORS_MD)
+            _selRenderMarkdown(React, FOR_EDUCATORS_MD),
+            h('div', { style: { marginTop: 20, paddingTop: 16, borderTop: '1px solid ' + _t.border } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 800, color: _t.text } }, 'Data & privacy'),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, color: _t.textMuted, lineHeight: 1.5 } },
+                'SEL work (journal entries, reflections, safety plan, streak, stations, and progress) is stored on this device and can be included when a project file is saved. This permanently deletes all of it from this device.'),
+              h('button', {
+                onClick: clearAllSelData,
+                'aria-label': 'Clear all my SEL data from this device',
+                style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #dc2626', background: 'rgba(220,38,38,0.08)', color: '#dc2626', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+              }, '🗑️ Clear my SEL data')
+            )
           )
         )
       );
