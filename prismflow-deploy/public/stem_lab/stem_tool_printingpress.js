@@ -1751,11 +1751,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               // pressState changes so the CSS keyframe replays. Pure
               // atmosphere; aria-hidden so screen readers don't get spam.
               (function() {
+                // Keys MUST match the press state machine (clean→inking→inked→
+                // papered→pressed→revealed). The old 'pressing'/'printed' keys
+                // (copied from renderSetType's state machine) never matched here,
+                // so the *CHUNK* impression beat and *hiss* reveal beat — the
+                // press's climax — never rendered.
                 var labels = {
                   inking: { txt: '*tap tap*', color: '#a87a3a' },
                   papered: { txt: '*flap*', color: T.parchment },
-                  pressing: { txt: '*CHUNK*', color: T.accentHi },
-                  printed: { txt: '*hiss...*', color: T.muted }
+                  pressed: { txt: '*CHUNK*', color: T.accentHi },
+                  revealed: { txt: '*hiss...*', color: T.muted }
                 };
                 var lab = labels[pressState];
                 if (!lab) return null;
@@ -1770,7 +1775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     fontFamily: 'Georgia, "Times New Roman", serif',
                     fontStyle: 'italic',
                     fontWeight: 700,
-                    fontSize: pressState === 'pressing' ? 22 : 16,
+                    fontSize: pressState === 'pressed' ? 22 : 16,
                     textShadow: '0 2px 6px rgba(0,0,0,0.7)',
                     zIndex: 4,
                     letterSpacing: '0.04em'
@@ -2275,7 +2280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           keyPointBlock(
             'The screw press is one of the six classical simple machines. It trades distance for force.',
             [
-              { k: 'Mechanical advantage formula', v: 'MA = (2 × π × bar length) ÷ (pitch of the screw thread). For Gutenberg-era presses, MA was roughly 15:1 to 30:1 — a printer applying ~30 lb of pull at the bar generated 450 to 900 lb of pressure on the platen.' },
+              { k: 'Mechanical advantage formula', v: 'MA = (2 × π × bar length) ÷ (pitch of the screw thread). The EFFECTIVE MA of a Gutenberg-era press (after thread friction) was roughly 15:1 to 30:1 — the ideal screw geometry gives far more, but friction in a hand-cut wooden thread eats most of it — a printer applying ~30 lb of pull at the bar generated 450 to 900 lb of pressure on the platen.' },
               { k: 'Why a screw and not a lever?', v: 'A lever needs a long throw and a fulcrum at a fixed position. A screw converts continuous rotation into linear motion in a compact vertical space. It also self-holds — the friction in the threads keeps the platen down without you having to keep pulling.' },
               { k: 'Why the platen is heavy and flat', v: 'Mass distributes pressure evenly across the type forme. Uneven pressure means uneven inking, which means an unreadable print. Platen flatness was a craftsmanship metric: master printers had platens machined flat to thousandths of an inch.' },
               { k: 'The "kiss"', v: 'A perfect impression presses just hard enough to transfer ink, not hard enough to dent the paper. Too soft = pale print. Too hard = embossed (you can feel the letter on the back of the page). Modern letterpress fans call good pressure "kiss impression" and bad pressure "deboss."' }
@@ -2290,12 +2295,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             prompt: 'A 1450 print shop has a screw press with a 60 cm bar and 5 mm screw pitch. The journeyman pulls with about 15 kg of force. Approximately how much force lands on the platen?',
             choices: [
               'About 15 kg (no multiplication)',
-              'About 1,100 kg (~1.1 tonnes — the screw gives roughly 75:1 mechanical advantage here)',
+              'About 1,100 kg (~1.1 tonnes — after friction the EFFECTIVE advantage is roughly 75:1 here)',
               'About 60 kg',
               'About 300 kg'
             ],
             correct: 1,
-            explain: 'MA = (2 × π × 60 cm) ÷ 0.5 cm ≈ 754. With 15 kg of pull, that\'s ~11,000 N or ~1.1 tonnes of platen force. (Real friction losses reduced this in practice, but the order of magnitude is correct. The screw is a force multiplier on the order of 100×.)'
+            explain: 'MA = (2 × π × 60 cm) ÷ 0.5 cm ≈ 754. That is the IDEAL advantage — frictionless, 15 kg of pull would give ~110,000 N (~11 tonnes). But a hand-cut wooden screw loses most of that to thread friction, so the realistic EFFECTIVE platen force is on the order of ~1 tonne — still a roughly 75x multiplier on the printer\'s pull.)'
           }),
           scenarioCard('pressMechanism', 1, {
             prompt: 'A printer pulls the bar but the print comes out faint and patchy on the right side. What is the most likely cause?',
