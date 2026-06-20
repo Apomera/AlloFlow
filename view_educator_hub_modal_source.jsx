@@ -147,7 +147,7 @@ function EducatorHubModal(props) {
 
   return (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
-          <div data-help-key="educator_hub_modal_panel" className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
+          <div data-help-key="educator_hub_modal_panel" className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
