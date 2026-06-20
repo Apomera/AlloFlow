@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -18016,7 +18016,10 @@ tr { page-break-inside: avoid; }
             // SCANNED: the first _origContentCount streams are the page IMAGE → mark /Artifact; the
             // appended streams are the OCR text layer → tag as real /P content (MCID 0). An image
             // lumped into a /P is veraPDF §7.1 "content neither Artifact nor tagged"; this separates them.
-            newArr = [_mkCS('/Artifact BDC\n')];
+            // /Artifact BMC (not BDC): a bare artifact has no property list, so use Begin-Marked-
+            // Content; "/Artifact BDC" is malformed (BDC expects a properties operand) — veraPDF
+            // tolerates it but logs a SEVERE "undefined property /Artifact". (2026-06-19)
+            newArr = [_mkCS('/Artifact BMC\n')];
             for (let k = 0; k < _origContentCount; k++) newArr.push(_contentRefs[k]);
             newArr.push(_mkCS(' EMC\n'), _mkCS('/P <</MCID 0>> BDC\n'));
             for (let k = _origContentCount; k < _contentRefs.length; k++) newArr.push(_contentRefs[k]);
@@ -26252,11 +26255,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

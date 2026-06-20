@@ -113,5 +113,15 @@ for (const ln of LINES) {
       console.log('  FAIL §' + r.clause + ' t' + r.testNumber + ' [' + r.failedChecks + ' checks] ' + r.description.slice(0, 64));
       if (ch.context) console.log('       ctx: ' + String(ch.context).slice(0, 90));
     }
-  } catch (e) { console.log('veraPDF run error: ' + String(e.message || e).slice(0, 300)); }
+    // ── Regression GATE ── A scanned doc tagged by createTaggedPdf MUST stay PDF/UA-1 compliant.
+    // Exit non-zero on any failed rule so this can run as a pre-deploy guard against silently
+    // re-breaking the scanned-tagging fix (image→/Artifact + embedded font + MCID-indexed ParentTree).
+    // Run before deploying any createTaggedPdf change:  node dev-tools/demo/scanned_tag_harness.cjs
+    if (d.failedRules === 0 && d.failedChecks === 0) {
+      console.log('\n✅ GATE PASS — scanned tagged PDF is PDF/UA-1 compliant (0 failures, ' + d.passedRules + ' rules passed).');
+      process.exit(0);
+    }
+    console.log('\n❌ GATE FAIL — scanned tagging REGRESSED: ' + d.failedRules + ' rule(s) / ' + d.failedChecks + ' check(s) failed (see above).');
+    process.exit(1);
+  } catch (e) { console.log('veraPDF run error: ' + String(e.message || e).slice(0, 300)); process.exit(2); }
 })();
