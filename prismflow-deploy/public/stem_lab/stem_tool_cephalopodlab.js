@@ -14022,6 +14022,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               else obj.material.dispose();
             }
           });
+          // Dispose the CanvasTextures explicitly — scene.traverse disposes
+          // geometry + material but NOT material.map, so the sand + caustics
+          // textures leaked GPU memory on every Dive / Dive-Again.
+          try { sandTex.dispose(); } catch (e) {}
+          try { causticsTex.dispose(); } catch (e) {}
           try{ if(renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
           renderer.dispose();
           canvasEl._clInit = false;
