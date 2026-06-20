@@ -300,6 +300,18 @@ describe('certificate + completion history', () => {
     expect(html).toContain('window.print()');
   });
 
+  it('buildPdPathCertificateHtml lists the path modules + honest framing (escaped)', () => {
+    const { CC } = loadWithCore();
+    const path = { slug: 'p', title: 'My <Path>' };
+    const rows = [{ title: 'Mod A', completedAt: '2026-06-20T00:00:00Z' }, { title: 'Mod B', completedAt: '2026-06-21' }];
+    const html = CC._buildPdPathCertificateHtml(path, rows, 'Pat', '2026-06-22T00:00:00Z');
+    expect(html).toContain('Self-paced learning path');
+    expect(html).toContain('My &lt;Path&gt;');                 // title escaped
+    expect(html).toContain('Mod A');
+    expect(html).toContain('Mod B');
+    expect(html).toMatch(/NOT accredited/i);
+  });
+
   it('recordPdCompletion + loadPdHistory round-trip and de-dupe by moduleId', () => {
     const { CC } = loadWithCore();
     try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}

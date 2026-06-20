@@ -737,24 +737,67 @@
       '<div class="btn"><button onclick="window.print()">Print / Save as PDF</button></div>' +
       '</div></body></html>';
   }
-  function printPdCertificate(mod, results, learner, addToast) {
-    var Core = window.AlloModules && window.AlloModules.PdCore;
-    if (!Core) return;
-    var ev = Core.evaluateModule(mod, results);
-    var html = buildPdCertificateHtml(mod, ev, (learner && learner.name) || '', new Date().toISOString());
+  // Open printable HTML in a new window; if pop-ups are blocked (Canvas sandbox),
+  // download it as an .html file instead.
+  function openOrDownloadHtml(html, filename, addToast) {
     var w = null;
     try { w = window.open('', '_blank'); } catch (_e) { w = null; }
     if (w && w.document) {
       try { w.document.open(); w.document.write(html); w.document.close(); return; } catch (_e2) { /* fall through to download */ }
     }
-    // Pop-up blocked (e.g., the Canvas sandbox) → download the certificate HTML instead.
     try {
       var blob = new Blob([html], { type: 'text/html' });
       var url = URL.createObjectURL(blob);
-      var a = document.createElement('a'); a.href = url; a.download = pdModuleId(mod) + '-certificate.html';
+      var a = document.createElement('a'); a.href = url; a.download = filename + '.html';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       addToast && addToast('Pop-up blocked — downloaded the certificate as an HTML file you can open and print.', 'info');
     } catch (_e3) { addToast && addToast('Could not open the certificate.', 'error'); }
+  }
+  function printPdCertificate(mod, results, learner, addToast) {
+    var Core = window.AlloModules && window.AlloModules.PdCore;
+    if (!Core) return;
+    var ev = Core.evaluateModule(mod, results);
+    openOrDownloadHtml(buildPdCertificateHtml(mod, ev, (learner && learner.name) || '', new Date().toISOString()), pdModuleId(mod) + '-certificate', addToast);
+  }
+  function buildPdPathCertificateHtml(path, rows, learnerName, nowISO) {
+    var title = escapeHtml((path && path.title) || 'Learning path');
+    var date = escapeHtml(String(nowISO || '').slice(0, 10));
+    var who = escapeHtml(learnerName || '');
+    var items = (rows || []).map(function (r) {
+      return '<li>' + escapeHtml(r.title) + (r.completedAt ? (' <span class="d">— ' + escapeHtml(String(r.completedAt).slice(0, 10)) + '</span>') : '') + '</li>';
+    }).join('');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>PD Path Certificate — ' + title + '</title><style>' +
+      'body{font-family:Georgia,"Times New Roman",serif;color:#0f172a;margin:0;padding:40px;background:#f1f5f9}' +
+      '.cert{max-width:760px;margin:0 auto;background:#fff;border:3px double #6366f1;border-radius:16px;padding:48px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.08)}' +
+      'h1{font-size:13px;letter-spacing:4px;text-transform:uppercase;color:#6366f1;margin:0 0 4px}' +
+      '.sub{color:#64748b;font-size:13px;margin-bottom:18px}' +
+      '.who{font-size:20px;margin:14px 0}.who strong{font-size:24px}' +
+      'h2{font-size:26px;margin:10px 0 4px;color:#1e293b}.meta{color:#475569;font-size:14px;margin:6px 0}' +
+      '.modules{text-align:left;max-width:520px;margin:18px auto 0}.modules .ml{font-size:12px;font-weight:bold;color:#475569;margin-bottom:4px}' +
+      '.modules ul{margin:0;padding-left:20px}.modules li{font-size:14px;margin:3px 0}.modules .d{color:#64748b;font-size:12px}' +
+      '.disc{margin-top:26px;font-size:11px;color:#64748b;font-style:italic;line-height:1.5}' +
+      '.btn{margin-top:24px}.btn button{padding:10px 18px;font-size:14px;border:1px solid #6366f1;background:#6366f1;color:#fff;border-radius:8px;cursor:pointer}' +
+      '@media print{.btn{display:none}body{background:#fff;padding:0}.cert{border:none;box-shadow:none}}</style></head><body>' +
+      '<div class="cert" role="document">' +
+      '<h1>Certificate of Completion</h1><div class="sub">Self-paced learning path</div>' +
+      (who ? ('<div class="who">Awarded to <strong>' + who + '</strong></div>') : '') +
+      '<h2>' + title + '</h2><div class="meta">Completed ' + date + '</div>' +
+      '<div class="modules"><div class="ml">Modules completed:</div><ul>' + items + '</ul></div>' +
+      '<div class="disc">This is a self-paced record generated on the learner\'s own device. ' +
+      'It is NOT accredited contact hours, continuing-education units, or a verified credential.</div>' +
+      '<div class="btn"><button onclick="window.print()">Print / Save as PDF</button></div>' +
+      '</div></body></html>';
+  }
+  function printPdPathCertificate(path, entries, learner, addToast) {
+    var hist = loadPdHistory();
+    var rows = ((path && path.moduleSlugs) || []).map(function (sl) {
+      var h = hist.filter(function (x) { return x && x.moduleId === sl; })[0];
+      var en = (entries || []).filter(function (x) { return x && x.slug === sl; })[0];
+      return { title: (en && en.title) || (h && h.moduleTitle) || sl, completedAt: h && h.completedAt };
+    });
+    openOrDownloadHtml(buildPdPathCertificateHtml(path, rows, (learner && learner.name) || '', new Date().toISOString()), slugify((path && path.slug) || 'pd-path') + '-certificate', addToast);
   }
 
   // ----- Professional Development: activity views -----------------------------
@@ -1536,7 +1579,11 @@
           e('h3', { className: 'font-bold text-base text-slate-800' }, (apProg.complete ? '🎓 ' : '') + (ap.title || 'Learning path')),
           ap.summary && e('p', { className: 'text-sm text-slate-600 mt-1' }, ap.summary),
           e('p', { className: 'text-xs mt-1 ' + (apProg.complete ? 'text-emerald-700 font-semibold' : 'text-slate-500') },
-            apProg.complete ? ('Path complete — all ' + apProg.total + ' modules done') : (apProg.done + ' of ' + apProg.total + ' modules complete'))
+            apProg.complete ? ('Path complete — all ' + apProg.total + ' modules done') : (apProg.done + ' of ' + apProg.total + ' modules complete')),
+          apProg.complete && e('button', {
+            onClick: function () { printPdPathCertificate(ap, state.entries, props.learner, addToast); },
+            className: 'mt-2 px-3 py-1.5 text-xs font-semibold border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50',
+          }, 'Print path certificate')
         ),
         e('ol', { className: 'flex flex-col gap-2' },
           apModules.map(function (en, i) {
@@ -1780,6 +1827,7 @@
   CommunityCatalog._extractFirstJsonObject = extractFirstJsonObject;
   CommunityCatalog._buildPdGenPrompt = buildPdGenPrompt;
   CommunityCatalog._buildPdCertificateHtml = buildPdCertificateHtml;
+  CommunityCatalog._buildPdPathCertificateHtml = buildPdPathCertificateHtml;
   CommunityCatalog._loadPdHistory = loadPdHistory;
   CommunityCatalog._recordPdCompletion = recordPdCompletion;
   CommunityCatalog._importPdHistory = importPdHistory;
