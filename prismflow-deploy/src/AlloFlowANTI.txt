@@ -322,6 +322,16 @@ function _upgradeGeminiAPI() {
         // can call them without taking a direct dependency on the factory.
         window.listAvailableGeminiModels = api.listAvailableModels;
         window.probeGeminiModelHealth = api.probeModelHealth;
+        // One-shot, non-blocking boot health probe: detect a dead/renamed DEFAULT model up front
+        // (e.g. gemini-3-flash-preview removed) so the user gets an honest banner instead of every
+        // document failing mid-run. The probe surfaces a banner itself on auth/quota/config; runs
+        // still recover via the now-genuinely-different fallback. Fire-and-forget — never blocks boot.
+        if (!window.__alloModelProbeFired && api.probeModelHealth) {
+            window.__alloModelProbeFired = true;
+            Promise.resolve().then(() => api.probeModelHealth(GEMINI_MODELS.default))
+                .then((r) => { if (r && r.kind && r.kind !== 'ok' && r.kind !== 'skipped') warnLog('[GeminiAPI] boot model probe — default ' + GEMINI_MODELS.default + ': ' + r.kind); })
+                .catch(() => {});
+        }
     }
     console.log('[GeminiAPI] Monolith shim upgraded from CDN module.');
 }
@@ -956,7 +966,7 @@ const _isCanvasEnv = (() => {
 const GEMINI_MODELS = {
   default: _isCanvasEnv ? 'gemini-3-flash-preview' : 'gemini-3-flash-preview',
   image: _isCanvasEnv ? 'gemini-2.5-flash-image-preview' : 'gemini-3.1-flash-image-preview',
-  fallback: _isCanvasEnv ? 'gemini-3-flash-preview' : 'gemini-3-flash-preview',
+  fallback: 'gemini-2.5-flash-lite', // genuinely DIFFERENT from default so the callGemini/callGeminiVision fallback (gemini_api_module ~400/594, gated on fallback!==default) ACTUALLY activates when gemini-3-flash-preview is unavailable/404 — was identical to default = dead code = every doc failed if the one model went down
   flash: _isCanvasEnv ? 'gemini-3-flash-preview' : 'gemini-3-flash-preview',
   tts: 'gemini-2.5-flash-preview-tts',
   safety: 'gemini-2.5-flash-lite',
@@ -970,7 +980,7 @@ if (typeof window !== 'undefined') {
 
 const _CANVAS_MODELS = {
   default: 'gemini-3-flash-preview',
-  fallback: 'gemini-3-flash-preview',
+  fallback: 'gemini-2.5-flash-lite', // genuinely different from default so the fallback path actually activates
   flash: 'gemini-3-flash-preview',
   image: 'gemini-2.5-flash-image-preview',
   imagen: 'imagen-4.0-generate-001',
@@ -981,7 +991,7 @@ const _CANVAS_MODELS = {
 };
 const _DEPLOY_MODELS = {
   default: 'gemini-3-flash-preview',
-  fallback: 'gemini-3-flash-preview',
+  fallback: 'gemini-2.5-flash-lite', // genuinely different from default so the fallback path actually activates
   flash: 'gemini-3-flash-preview',
   image: 'gemini-3.1-flash-image-preview',
   imagen: 'imagen-4.0-generate-001',
@@ -4414,7 +4424,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'dc0191d2';
+    var pluginCdnVersion = '296ead9e';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
