@@ -114,6 +114,12 @@ window.StemLab = window.StemLab || {
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
       var gradeLevel = ctx.gradeLevel;
+      // Grade band (k2/g35/g68/g912) from the student profile; unknown -> k2 (most restrictive),
+      // matching the anatomy sibling. Clinical/disease content (microbial diseases incl. STIs and
+      // death-toll figures, plus clinical organism encyclopedia entries) is shown only to grades
+      // 6-8 and 9-12 and hidden for K-2 and 3-5 (content-appropriateness gate).
+      var cellGradeBand = (function () { var g = parseInt(ctx.gradeLevel, 10); if (isNaN(g) || g <= 2) return 'k2'; if (g <= 5) return 'g35'; if (g <= 8) return 'g68'; return 'g912'; })();
+      var cellBandAllowsClinical = (cellGradeBand === 'g68' || cellGradeBand === 'g912');
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
@@ -122,7 +128,7 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (cell) ──
       return (function() {
-var d = labToolData.cell;
+var d = labToolData.cell || {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -137,11 +143,18 @@ var d = labToolData.cell;
 
       // ── Sound Effects (Web Audio) ──
       // ── Cell Biology Audio System (singleton context) ──
-      var _cellAC = null;
+      // Bug-fix note: this was previously `var _cellAC = null;` —
+      // declared inside render(), so React re-renders would reset the
+      // "singleton" to null. Each re-trigger (button click after any
+      // unrelated state change) would then create a NEW AudioContext,
+      // orphaning the old one. Browsers cap AudioContexts at ~6 per
+      // page; this leaked them. Backing with useRef preserves the
+      // context across render cycles like a true singleton should.
+      var _cellACRef = React.useRef(null);
       function getCellAC() {
-        if (!_cellAC) { try { _cellAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
-        if (_cellAC && _cellAC.state === 'suspended') { try { _cellAC.resume(); } catch(e) {} }
-        return _cellAC;
+        if (!_cellACRef.current) { try { _cellACRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+        if (_cellACRef.current && _cellACRef.current.state === 'suspended') { try { _cellACRef.current.resume(); } catch(e) {} }
+        return _cellACRef.current;
       }
       function cellTone(freq, dur, type, vol) {
         var ac = getCellAC(); if (!ac) return;
@@ -203,9 +216,15 @@ var d = labToolData.cell;
       };
 
       // ── Ambient petri dish soundscape ──
-      var _cellAmbient = null;
+      // Same useRef pattern as _cellACRef above — was `var _cellAmbient
+      // = null;` which got reset on every render, so startCellAmbient
+      // would happily spin up a brand-new ambient loop (with a fresh
+      // setInterval) on top of the old one whenever the user re-clicked
+      // after a re-render. Result: overlapping ambient noise + leaked
+      // intervals + leaked audio nodes. The ref persists across renders.
+      var _cellAmbientRef = React.useRef(null);
       function startCellAmbient() {
-        if (_cellAmbient) return;
+        if (_cellAmbientRef.current) return;
         var ac = getCellAC(); if (!ac) return;
         try {
           var bufSize = ac.sampleRate * 2;
@@ -218,22 +237,27 @@ var d = labToolData.cell;
           master.gain.linearRampToValueAtTime(0.006, ac.currentTime + 2);
           src.connect(filt); filt.connect(master); master.connect(ac.destination);
           src.start();
-          _cellAmbient = { src: src, master: master };
+          var ambient = { src: src, master: master, filter: filt };
           // Random microscopic bubbles
-          _cellAmbient._interval = setInterval(function() {
+          ambient._interval = setInterval(function() {
             if (Math.random() > 0.6) {
               cellTone(1200 + Math.random() * 800, 0.02, 'sine', 0.02);
             }
           }, 2000 + Math.random() * 3000);
+          _cellAmbientRef.current = ambient;
         } catch(e) {}
       }
       function stopCellAmbient() {
-        if (_cellAmbient) {
-          try { var ac = getCellAC(); if (ac) _cellAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
-          if (_cellAmbient._interval) clearInterval(_cellAmbient._interval);
-          var nodes = _cellAmbient;
-          setTimeout(function() { try { nodes.src.stop(); } catch(e) {} }, 600);
-          _cellAmbient = null;
+        var ambient = _cellAmbientRef.current;
+        if (ambient) {
+          try { var ac = getCellAC(); if (ac) ambient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
+          if (ambient._interval) clearInterval(ambient._interval);
+          setTimeout(function() {
+            try { if (ambient.src) { ambient.src.stop(); ambient.src.disconnect(); } } catch(e) {}
+            try { if (ambient.filter) ambient.filter.disconnect(); } catch(e) {}
+            try { if (ambient.master) ambient.master.disconnect(); } catch(e) {}
+          }, 600);
+          _cellAmbientRef.current = null;
         }
       }
 
@@ -575,6 +599,7 @@ var d = labToolData.cell;
               cellType: "Prokaryote",
               size: "5-50 μm",
               description: "Flexible spiral bacterium. Includes Treponema pallidum (syphilis), Borrelia burgdorferi (Lyme disease).",
+              mature: true,
               habitat: "Various - some pathogenic",
               feeding: "Variable",
               reproduction: "Binary fission",
@@ -808,14 +833,14 @@ var d = labToolData.cell;
             },
             {
               id: 33,
-              name: "Brachiosauris embryo cell",
-              kingdom: "Mammalian cell",
+              name: "Generic Animal Cell",
+              kingdom: "Animal Cell",
               cellType: "Eukaryote",
               size: "10-50 μm",
-              description: "Generic mammalian cell with nucleus + organelles. Includes ER, Golgi, mitochondria.",
+              description: "Generic animal cell with a nucleus and organelles. Includes ER, Golgi, and mitochondria.",
               habitat: "Tissue + culture",
               feeding: "Glucose + amino acids",
-              reproduction: "Mitosis + meiosis",
+              reproduction: "Mitosis",
               movement: "Variable",
               discovered: "Cell theory 1838",
               relevance: "Foundation of cell biology"
@@ -883,6 +908,7 @@ var d = labToolData.cell;
               cellType: "Eukaryote",
               size: "10-20 μm",
               description: "Flagellated parasite. T. vaginalis causes urogenital infections.",
+              mature: true,
               habitat: "Human + cattle hosts",
               feeding: "Mucus + cells",
               reproduction: "Binary fission",
@@ -953,6 +979,7 @@ var d = labToolData.cell;
               cellType: "Prokaryote",
               size: "2-5 μm",
               description: "Spiral bacterium living in stomach. Causes ulcers + linked to gastric cancer. Nobel 2005.",
+              mature: true,
               habitat: "Human stomach",
               feeding: "Mucus + cells",
               reproduction: "Binary fission",
@@ -1121,6 +1148,7 @@ var d = labToolData.cell;
               cellType: "Eukaryote",
               size: "50 μm (length)",
               description: "Mobile reproductive cell. Carries haploid male DNA. Powered by mitochondria.",
+              mature: true,
               habitat: "Reproductive tract",
               feeding: "Glucose",
               reproduction: "Spermatogenesis from precursors",
@@ -1135,6 +1163,7 @@ var d = labToolData.cell;
               cellType: "Eukaryote",
               size: "100-200 μm",
               description: "Largest human cell. Contains haploid female DNA + cytoplasmic resources for early embryo.",
+              mature: true,
               habitat: "Ovary",
               feeding: "Stored yolk",
               reproduction: "Oogenesis",
@@ -16535,9 +16564,9 @@ var d = labToolData.cell;
 
             if (!canvasEl) {
 
-              if (canvasRefCb._lastCanvas && canvasRefCb._lastCanvas._cellSimAnim) {
+              if (canvasRefCb._lastCanvas && canvasRefCb._lastCanvas._cellSimCleanup) {
 
-                cancelAnimationFrame(canvasRefCb._lastCanvas._cellSimAnim);
+                canvasRefCb._lastCanvas._cellSimCleanup();
 
                 canvasRefCb._lastCanvas._cellSimInit = false;
 
@@ -18751,7 +18780,7 @@ var d = labToolData.cell;
 
               vigGrad.addColorStop(0.85, 'rgba(0,0,0,0.08)');
 
-              vigGrad.addColorStop(1, 'rgba(0,0,0,0.2)');
+              vigGrad.addColorStop(1, 'rgba(0,0,0,0.28)');
 
               cctx.fillStyle = vigGrad; cctx.fillRect(0, 0, W, HH);
 
@@ -19070,6 +19099,7 @@ var d = labToolData.cell;
             canvasEl._cellSimAlive = true;
 
             function loop() {
+              if (!canvasEl.isConnected) { canvasEl._cellSimAlive = false; if (animId) cancelAnimationFrame(animId); return; }
 
               if (!canvasEl._cellSimAlive) return; // stop loop if killed
 
@@ -19276,6 +19306,17 @@ var d = labToolData.cell;
             canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; };
 
             canvasEl._cellSimSetPaused = function (p) { canvasEl._cellSimPaused = p; };
+            // Canvas organism-click -> React state + SR announce. Was a dead wire: _onSelect was
+            // called on click (19261) but never assigned, so canvas clicks updated only the glow,
+            // never d.selectedOrganism / the info card, and were silent to AT. upd is functional
+            // (reads prev), so this stale-closure assignment accumulates into live state correctly.
+            canvasEl._onSelect = function (id) {
+              upd('selectedOrganism', id);
+              if (id && typeof announceToSR === 'function') {
+                var od = (typeof ORGANISMS !== 'undefined' && ORGANISMS) ? ORGANISMS.find(function (o) { return o.id === id; }) : null;
+                announceToSR('Selected ' + (od && od.name ? od.name : id));
+              }
+            };
 
             canvasEl._cellSimSetSpeed = function (s) { speedMultiplier = Math.max(1, Math.min(5, Math.round(s))); };
 
@@ -19411,6 +19452,11 @@ var d = labToolData.cell;
 
               window.removeEventListener('keyup', onKey);
 
+              // Disconnect the ResizeObserver here so EVERY unmount path frees it — the
+              // canvas ref-null teardown calls _cellSimCleanup but never touched the RO,
+              // orphaning an observer on the detached canvas.
+              if (canvasEl._cellSimRO) { canvasEl._cellSimRO.disconnect(); canvasEl._cellSimRO = null; }
+
             };
 
 
@@ -19504,6 +19550,8 @@ var d = labToolData.cell;
                 var activeCat = CELL_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
                 var searchTerm = (d._cellSearch || '').toLowerCase();
                 var allModes = ['observe','play','quiz','encyclopedia','filter','compare','history','biologists','lab','disease','ecology','glossary','finale'];
+                // Grade gate: hide the Diseases mode (STIs, death tolls) from K-2 and 3-5.
+                if (!cellBandAllowsClinical) { CELL_CATEGORIES.forEach(function(c) { c.modes = c.modes.filter(function(m) { return m !== 'disease'; }); }); allModes = allModes.filter(function(m) { return m !== 'disease'; }); }
                 var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
 
                 function setMode(m) {
@@ -19527,16 +19575,16 @@ var d = labToolData.cell;
                 els.push(React.createElement('div', { key: 'top', className: 'flex flex-wrap items-center gap-2 w-full mb-2' },
                   React.createElement('button', {
                     onClick: function() { setCat(null); upd('_cellPicked', false); },
-                    className: 'px-3 py-1 rounded-lg text-xs font-bold ' + (atHub ? 'bg-green-700 text-white' : 'bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300')
+                    className: 'px-3 py-1 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1 ' + (atHub ? 'bg-green-700 text-white' : 'bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300')
                   }, '🏠 Hub'),
-                  activeCat && !atHub && React.createElement('span', { className: 'text-xs text-slate-400' }, '/'),
+                  activeCat && !atHub && React.createElement('span', { className: 'text-xs text-slate-500' }, '/'),
                   activeCat && !atHub && React.createElement('span', { className: 'px-2 py-1 rounded-lg text-xs font-bold bg-slate-50 text-green-700 border border-green-200' }, activeCat.icon + ' ' + activeCat.label),
                   React.createElement('input', {
                     type: 'text',
                     placeholder: 'Search modes...',
                     value: d._cellSearch || '',
                     onChange: function(e) { upd('_cellSearch', e.target.value); upd('_cellCategory', null); },
-                    className: 'ml-auto px-2 py-1 text-xs border border-slate-300 rounded'
+                    className: 'ml-auto px-2 py-1 text-xs border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600'
                   })
                 ));
 
@@ -19548,6 +19596,7 @@ var d = labToolData.cell;
                       : searchResults.map(function(m) {
                           return React.createElement('button', {
                             key: m,
+                            'aria-current': d.mode === m ? 'true' : undefined,
                             onClick: function() { setMode(m); upd('_cellSearch', ''); },
                             className: 'px-2 py-1 rounded text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-green-50 hover:border-green-500'
                           }, CELL_MODE_LABELS[m] || m);
@@ -19580,6 +19629,7 @@ var d = labToolData.cell;
                       var isActive = d.mode === m;
                       return React.createElement('button', {
                         key: m,
+                        'aria-current': isActive ? 'true' : undefined,
                         onClick: function() { setMode(m); },
                         className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
                           (isActive
@@ -19611,12 +19661,12 @@ var d = labToolData.cell;
                   return React.createElement('div', {
                     key: chal.id,
                     className: 'p-2 rounded-lg border flex flex-col items-center justify-between text-center transition-all ' +
-                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400'),
+                      (isDone ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-600'),
                     title: chal.desc
                   },
                     React.createElement('span', { className: 'text-lg mb-1' }, chal.icon),
                     React.createElement('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
-                    React.createElement('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-500') },
+                    React.createElement('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600') },
                       isDone ? 'Done' : 'Locked'
                     )
                   );
@@ -19707,7 +19757,7 @@ var d = labToolData.cell;
 
                 (d.simSpeed || 1) + "x",
 
-                React.createElement("button", { "aria-label": "Play", onClick: function () { var p = !d.paused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { "aria-label": d.paused ? "Play simulation" : "Pause simulation", "aria-pressed": !d.paused, onClick: function () { var p = !d.paused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
 
               ),
 
@@ -19751,6 +19801,8 @@ var d = labToolData.cell;
 
                 return React.createElement("div", {
 
+                  role: "dialog", "aria-modal": "true", "aria-labelledby": "cell-playinstr-title", tabIndex: -1,
+                  onKeyDown: function (e) { if (e.key === 'Escape') { e.stopPropagation(); upd("showPlayInstructions", false); } },
                   className: "absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30",
 
                   style: { animation: 'fadeIn 0.3s ease-out' }
@@ -19765,7 +19817,7 @@ var d = labToolData.cell;
 
                       React.createElement("div", { className: "text-3xl mb-1" }, org.icon),
 
-                      React.createElement("h3", { className: "text-white font-black text-base" }, "Playing as " + org.label),
+                      React.createElement("h3", { id: "cell-playinstr-title", className: "text-white font-black text-base" }, "Playing as " + org.label),
 
                       React.createElement("p", { className: "text-white/80 text-[11px] mt-0.5" }, org.desc)
 
@@ -19839,7 +19891,7 @@ var d = labToolData.cell;
 
                     React.createElement("div", { className: "px-5 pb-4" },
 
-                      React.createElement("button", { "aria-label": "Got it Let's Go!",
+                      React.createElement("button", { "aria-label": "Got it Let's Go!", autoFocus: true,
 
                         onClick: function () { upd("showPlayInstructions", false); },
 
@@ -20024,6 +20076,7 @@ var d = labToolData.cell;
                     }
 
                     upd("selectedOrganism", d.selectedOrganism === org.id ? null : org.id);
+                    if (typeof announceToSR === 'function' && d.selectedOrganism !== org.id) announceToSR('Selected ' + (org.name || org.label || org.id));
 
                     var cv = document.querySelector('[data-cell-sim-canvas]');
 
@@ -20039,7 +20092,8 @@ var d = labToolData.cell;
 
                   },
 
-                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "border-" + org.color.replace('#', '') + " bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
+                  "aria-pressed": d.selectedOrganism === org.id,
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
 
                   style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color } : {}
 
@@ -20083,7 +20137,7 @@ var d = labToolData.cell;
 
                       cv._onXP = function (xp, label) {
 
-                        upd("xpEarned", (d.xpEarned || 0) + xp);
+                        setLabToolData(function (prev) { var c = prev.cell || {}; return Object.assign({}, prev, { cell: Object.assign({}, c, { xpEarned: (c.xpEarned || 0) + xp }) }); });
 
                         if (typeof addToast === 'function') addToast("+" + xp + " XP: " + label + "!", "success");
 
@@ -20109,6 +20163,7 @@ var d = labToolData.cell;
                         cellSound('photosynthesis');
                       };
                       cv._onOrganelleClick = function (name) {
+                        if (typeof announceToSR === 'function') announceToSR(name + ' organelle');
                         var clicks = ext.organellesClicked.slice();
                         if (clicks.indexOf(name) === -1) clicks.push(name);
                         updExtAndBadge({ organellesClicked: clicks });
@@ -20290,7 +20345,7 @@ var d = labToolData.cell;
 
                     React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
 
-                    React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                    React.createElement("span", { className: "font-bold text-amber-700" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
 
                   )
 
@@ -20317,12 +20372,13 @@ var d = labToolData.cell;
 
                           upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Incorrect." });
                           upd("_selectedOption", idx);
+                          if (typeof announceToSR === 'function') announceToSR(correct ? 'Correct!' : 'Incorrect.');
 
                           if (correct) {
 
                             upd("quizScore", (d.quizScore || 0) + 1);
                             upd("quizStreak", (d.quizStreak || 0) + 1);
-                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz', 10, 'Cell quiz correct');
+                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz_' + (d.quizIdx || 0), 10, 'Cell quiz correct');
 
                             cellSound('correct');
                             if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
@@ -20353,7 +20409,7 @@ var d = labToolData.cell;
                           (d.quizFeedback
                             ? (isCorrect
                               ? "border-green-400 bg-green-50 text-green-700"
-                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-400"))
+                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-500"))
                             : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
 
                       }, opt);
@@ -20379,12 +20435,13 @@ var d = labToolData.cell;
 
                           upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Incorrect." });
                           upd("_selectedOption", org.id);
+                          if (typeof announceToSR === 'function') announceToSR(correct ? 'Correct!' : 'Incorrect.');
 
                           if (correct) {
 
                             upd("quizScore", (d.quizScore || 0) + 1);
                             upd("quizStreak", (d.quizStreak || 0) + 1);
-                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz', 10, 'Cell quiz correct');
+                            if (typeof awardStemXP === 'function') awardStemXP('cell_quiz_' + (d.quizIdx || 0), 10, 'Cell quiz correct');
 
                             cellSound('correct');
                             if ((d.quizStreak || 0) + 1 >= 3) cellSound('streak');
@@ -20415,7 +20472,7 @@ var d = labToolData.cell;
                           (d.quizFeedback
                             ? (isCorrect
                               ? "border-green-400 bg-green-50 text-green-700"
-                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-400"))
+                              : (isSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-500"))
                             : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
 
                       }, org.icon + " " + org.label);
@@ -20424,7 +20481,7 @@ var d = labToolData.cell;
 
                   ),
 
-                d.quizFeedback && React.createElement("div", { className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 animate-pulse" : "border-red-200") },
+                d.quizFeedback && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 animate-pulse" : "border-red-200") },
 
                   React.createElement("p", { className: "font-bold text-sm " + (d.quizFeedback.correct ? "text-green-700" : "text-red-600") }, d.quizFeedback.msg),
 
@@ -20480,7 +20537,7 @@ var d = labToolData.cell;
             d._cellShowBadges && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83C\uDFC5 Badges (" + ext.badges.length + "/" + Object.keys(cellBadges).length + ")"),
-                React.createElement("button", { onClick: function () { upd('_cellShowBadges', false); }, className: "text-amber-400 hover:text-amber-600" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": "Close badges", onClick: function () { upd('_cellShowBadges', false); }, className: "text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 Object.keys(cellBadges).map(function (key) {
@@ -20501,7 +20558,7 @@ var d = labToolData.cell;
             d._cellShowAI && React.createElement("div", { className: "mt-3 bg-blue-50 rounded-xl border-2 border-blue-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-blue-700" }, "\uD83E\uDD16 AI Biology Tutor"),
-                React.createElement("button", { onClick: function () { upd('_cellShowAI', false); }, className: "text-blue-400 hover:text-blue-600" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { "aria-label": "Close AI tutor", onClick: function () { upd('_cellShowAI', false); }, className: "text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
@@ -20513,7 +20570,7 @@ var d = labToolData.cell;
                 }),
                 React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
               ),
-              d._cellAIResp && React.createElement("div", { className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
+              d._cellAIResp && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
             ),
 
 
@@ -20522,8 +20579,8 @@ var d = labToolData.cell;
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
-              React.createElement("button", { "aria-label": "AI Tutor", onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700 hover:bg-blue-200") }, "\uD83E\uDD16 AI Tutor"),
+              React.createElement("button", { "aria-label": "Toggle badges panel", "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              React.createElement("button", { "aria-label": "AI Tutor", "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700 hover:bg-blue-200") }, "\uD83E\uDD16 AI Tutor"),
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
@@ -20565,6 +20622,7 @@ var d = labToolData.cell;
               var filterK = d._encyclopediaFilter || 'all';
               var search = d._encyclopediaSearch || '';
               var filtered = ORGANISM_DB.filter(function(o) {
+                if (o.mature && !cellBandAllowsClinical) return false;
                 if (filterK !== 'all' && o.kingdom !== filterK) return false;
                 if (search && o.name.toLowerCase().indexOf(search.toLowerCase()) === -1 && o.description.toLowerCase().indexOf(search.toLowerCase()) === -1) return false;
                 return true;
@@ -20581,7 +20639,7 @@ var d = labToolData.cell;
                   React.createElement('h3', { className: 'text-base font-bold text-green-700 flex items-center gap-1.5' }, '📚 Organism Encyclopedia'),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-full' }, filtered.length + ' organisms')
                 ),
-                React.createElement('input', { type: 'text', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded' }),
+                React.createElement('input', { type: 'text', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
                 React.createElement('div', { className: 'flex flex-wrap gap-1' },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
@@ -20615,7 +20673,7 @@ var d = labToolData.cell;
                         style: { width: percentage + '%' }
                       })
                     ),
-                    React.createElement('div', { className: 'flex justify-between text-[8px] text-slate-400 font-mono mt-0.5' },
+                    React.createElement('div', { className: 'flex justify-between text-[8px] text-slate-600 font-mono mt-0.5' },
                       React.createElement('span', null, '1 μm (Bacteria)'),
                       React.createElement('span', null, '100 μm (Protist)'),
                       React.createElement('span', null, '1000 μm (Water Bear)')
@@ -20780,7 +20838,7 @@ var d = labToolData.cell;
                     return React.createElement('div', { key: k, className: 'p-2.5 rounded-xl border transition-all ' + (isDifferent ? 'bg-amber-50/50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200') },
                       React.createElement('div', { className: 'flex justify-between items-center mb-1' },
                         React.createElement('span', { className: 'text-[9px] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
-                        isDifferent && React.createElement('span', { className: 'text-[8px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.2 rounded' }, 'Difference')
+                        isDifferent && React.createElement('span', { className: 'text-[8px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded' }, 'Difference')
                       ),
                       React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-xs' },
                         React.createElement('div', { className: 'text-slate-700 leading-normal' },
@@ -20884,7 +20942,7 @@ var d = labToolData.cell;
             // ═══════════════════════════════════════════════════════════
             // DISEASE MODE
             // ═══════════════════════════════════════════════════════════
-            d.mode === 'disease' && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-rose-300 p-4 space-y-2' },
+            d.mode === 'disease' && cellBandAllowsClinical && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-rose-300 p-4 space-y-2' },
               React.createElement('h3', { className: 'text-base font-bold text-rose-700' }, 'Microbial Diseases'),
               MICROBIAL_DISEASES.map(function(disease) {
                 return React.createElement('div', { key: disease.id, className: 'bg-rose-50 border border-rose-200 rounded p-2 text-xs' },
@@ -20937,10 +20995,85 @@ var d = labToolData.cell;
             // FINALE MODE
             // ═══════════════════════════════════════════════════════════
             d.mode === 'finale' && React.createElement('div', { className: 'mt-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl border-2 border-amber-400 p-6 text-center' },
-              React.createElement('div', { className: 'text-6xl mb-2' }, 'Goal!'),
+              React.createElement('div', { className: 'text-6xl mb-2' }, '🎆'),
               React.createElement('h3', { className: 'text-2xl font-bold text-amber-800 mb-2' }, 'Cell Master Achievement'),
               React.createElement('p', { className: 'text-sm text-amber-700 italic' }, 'You explored a microscopic universe of life.')
             ),
+
+            // === H7b'' inquiry widget: osmosis discovery ===
+            d.mode === 'osmoHunt' && (function() {
+              var h = React.createElement;
+              var iq = d._osmoHunt || { inside: 50, outside: 50, perm: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_osmoHunt', Object.assign({}, iq, patch)); }
+              var concDiff = iq.outside - iq.inside;
+              var permFactor = iq.perm / 100;
+              var flow = concDiff * permFactor;
+              var state;
+              if (Math.abs(flow) < 5) state = 'isotonic';
+              else if (flow > 0) state = 'plasmolysis';
+              else state = 'lysis';
+              var stateMeta = {
+                isotonic:    { label: '🟢 Isotonic — equilibrium', color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: 'Equal solute concentration outside and in. No net water flow. Cell stable.' },
+                plasmolysis: { label: '🟠 Plasmolysis — water exits cell', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Hypertonic external solution. Water leaves cell, membrane pulls from wall.' },
+                lysis:       { label: '💥 Lysis — water floods cell',     color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Hypotonic external solution. Water enters cell. Animal cell would burst; plant cell turgid.' }
+              }[state];
+              function logObs() {
+                setIQ({ log: (iq.log || []).concat([{ i: iq.inside, o: iq.outside, p: iq.perm, st: state }]).slice(-8) });
+              }
+              return h('div', { className: 'mt-4 bg-white rounded-xl border-2 border-cyan-300 p-4 space-y-3' },
+                h('h3', { className: 'text-sm font-black text-cyan-700' }, '💧 Osmosis discovery'),
+                h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
+                  'Adjust solute concentration inside the cell, outside, and membrane permeability. Widget shows one of three discrete states. No score, no reveal — sweep and notice.'),
+                h('div', { className: 'p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                  h('div', { className: 'text-base font-black', style: { color: stateMeta.color } }, stateMeta.label),
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-3' },
+                  [
+                    { key: 'inside',  label: 'Inside conc (mOsm)',  val: iq.inside },
+                    { key: 'outside', label: 'Outside conc (mOsm)', val: iq.outside },
+                    { key: 'perm',    label: 'Membrane perm (%)',   val: iq.perm }
+                  ].map(function(s) {
+                    return h('div', { key: s.key },
+                      h('label', { htmlFor: 'oh-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
+                        s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
+                      h('input', { id: 'oh-' + s.key, type: 'range', min: 0, max: 200, step: 1, value: s.val,
+                        onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.label }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ inside: 50, outside: 50, perm: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+                  (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+                ),
+                (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['inside', 'outside', 'perm', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('tbody', null, iq.log.map(function(o, idx) {
+                    return h('tr', { key: 'lr' + idx },
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.i),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.o),
+                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p),
+                      h('td', { className: 'px-1 border border-slate-200' }, o.st));
+                  }))
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis (free text): Does permeability matter when concentrations are equal?',
+                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+                  h('ul', { className: 'list-disc pl-5 space-y-1' },
+                    h('li', null, 'Set inside = outside. Change permeability. Anything happen?'),
+                    h('li', null, 'Find two settings producing isotonic. What do they share?'),
+                    h('li', null, 'Why do plant cells survive lysis but animal cells burst? Investigate.'))),
+                h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
+                  h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                    'I understand — explain in own words'),
+                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how concentration gradient and membrane permeability jointly drive osmosis.',
+                    className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state osmosis marker; no membrane-integrity score; no reveal — by design.')
+              );
+            })(),
 
             // ── Vocabulary Concept Flashcard Overlay (Modal) ──
             (function() {
@@ -20951,19 +21084,22 @@ var d = labToolData.cell;
               var isStudied = d._studiedVocab && d._studiedVocab[termKey];
 
               return React.createElement('div', {
+                role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cell-flashcard-title', tabIndex: -1,
+                onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); upd('_studyConcept', null); } },
                 className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200'
               },
                 React.createElement('div', {
                   className: 'bg-white rounded-2xl border-2 border-emerald-500 max-w-sm w-full p-6 shadow-2xl relative animate-in zoom-in-95 duration-200'
                 },
                   React.createElement('button', {
+                    autoFocus: true,
                     onClick: function() { upd('_studyConcept', null); },
-                    className: 'absolute top-3 right-3 text-slate-400 hover:text-slate-600 font-bold p-1 rounded-lg hover:bg-slate-100',
+                    className: 'absolute top-3 right-3 text-slate-600 hover:text-slate-900 font-bold p-1 rounded-lg hover:bg-slate-100',
                     'aria-label': 'Close flashcard'
                   }, '✕'),
                   React.createElement('div', { className: 'text-center' },
                     React.createElement('span', { className: 'text-4xl mb-3 inline-block' }, '📇'),
-                    React.createElement('h4', { className: 'text-lg font-bold text-emerald-800 mb-2' }, vocabInfo.term),
+                    React.createElement('h4', { id: 'cell-flashcard-title', className: 'text-lg font-bold text-emerald-800 mb-2' }, vocabInfo.term),
                     React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
                       vocabInfo.def
                     ),

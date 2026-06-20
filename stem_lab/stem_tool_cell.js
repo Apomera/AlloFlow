@@ -19099,6 +19099,7 @@ var d = labToolData.cell || {};
             canvasEl._cellSimAlive = true;
 
             function loop() {
+              if (!canvasEl.isConnected) { canvasEl._cellSimAlive = false; if (animId) cancelAnimationFrame(animId); return; }
 
               if (!canvasEl._cellSimAlive) return; // stop loop if killed
 

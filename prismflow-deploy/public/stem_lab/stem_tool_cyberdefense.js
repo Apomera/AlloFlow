@@ -4585,7 +4585,7 @@
                             el('span', { style: { fontSize: 15, filter: earned ? 'none' : 'grayscale(1)' } }, a.icon),
                             el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#94a3b8', flex: 1 } }, a.label)
                           ),
-                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#94a3b8', lineHeight: 1.3 } }, a.desc),
+                          el('div', { style: { fontSize: 10, color: earned ? '#cbd5e1' : '#94a3b8', lineHeight: 1.3 } }, a.desc),
                           !earned && prog && el('div', { style: { marginTop: 5 } },
                             el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, marginBottom: 2 } },
                               el('span', null, prog.label),
