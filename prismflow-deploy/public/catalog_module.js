@@ -180,6 +180,10 @@
         s.onerror = function () { reject(new Error('Could not load the PD engine (pd_core_module.js).')); };
         document.head.appendChild(s);
       } catch (err) { reject(err); }
+    }).catch(function (err) {
+      // Don't cache a rejected promise — clear it so a later action can retry.
+      _pdCorePromise = null;
+      throw err;
     });
     return _pdCorePromise;
   }
@@ -517,7 +521,7 @@
         e('button', {
           onClick: handleSubmit,
           disabled: !canSubmit,
-          className: 'w-full px-4 py-2.5 text-sm font-bold bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed',
+          className: 'w-full px-4 py-2.5 text-sm font-bold bg-emerald-700 text-white rounded-md hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed',
         }, status.stage === 'submitting' ? 'Submitting...' : 'Submit for review'),
         status.stage === 'success' && e('div', { className: 'mt-2 p-2 text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 rounded' }, status.message),
         status.stage === 'error' && e('div', { className: 'mt-2 p-2 text-xs bg-red-50 border border-red-200 text-red-800 rounded' }, status.message)
@@ -531,9 +535,29 @@
   function extractFirstJsonObject(text) {
     var raw = typeof text === 'string' ? text : (text && text.text ? text.text : String(text || ''));
     raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    var start = raw.indexOf('{'), end = raw.lastIndexOf('}');
-    if (start < 0 || end <= start) return null;
-    try { return JSON.parse(raw.substring(start, end + 1)); } catch (_e) { return null; }
+    // Try each '{' as a start and scan for its balanced close (respecting string
+    // literals/escapes), so prose containing a stray '{' before the real object
+    // can't make the naive first-{/last-} slice fail.
+    for (var i = 0; i < raw.length; i++) {
+      if (raw.charAt(i) !== '{') continue;
+      var depth = 0, inStr = false, esc = false;
+      for (var j = i; j < raw.length; j++) {
+        var ch = raw.charAt(j);
+        if (inStr) {
+          if (esc) { esc = false; }
+          else if (ch === '\\') { esc = true; }
+          else if (ch === '"') { inStr = false; }
+        } else if (ch === '"') { inStr = true; }
+        else if (ch === '{') { depth++; }
+        else if (ch === '}') {
+          depth--;
+          if (depth === 0) {
+            try { return JSON.parse(raw.substring(i, j + 1)); } catch (_e) { break; } // try next '{'
+          }
+        }
+      }
+    }
+    return null;
   }
 
   function buildPdGenPrompt(opts) {
@@ -544,6 +568,7 @@
     var n = Math.max(1, Math.min(8, parseInt(opts.numQuestions, 10) || 4));
     var notes = String(opts.notes || '').trim();
     var wantReflect = opts.includeReflection !== false;
+    var wantSim = !!opts.includeSim;
     return [
       'You are an instructional designer creating a SHORT, self-paced professional-development (PD) module for ' + audience + '.',
       'Topic: ' + topic + '.',
@@ -556,7 +581,8 @@
       '  "metadata": { "title": string, "topic": string, "summary": string (1-2 sentences), "estMinutes": ' + minutes + ', "audience": "educator", "license": "CC-BY-SA-4.0", "credit": "AI-assisted draft", "ai_generated": true },',
       '  "sections": [',
       '    { "title": "Learn", "activities": [ { "id": "read-1", "type": "read", "title": string, "content": { "body": string (2-4 short paragraphs separated by \\n\\n), "keyPoints": [string, string, string] }, "gate": { "kind": "none" } } ] },',
-      '    { "title": "Check your understanding", "activities": [ { "id": "quiz-1", "type": "quiz", "title": string, "content": { "questions": [ exactly ' + n + ' items, each { "prompt": string, "options": [string, string, string, string], "correctIndex": integer 0-3 pointing to the ONE correct option } ] }, "gate": { "kind": "score", "threshold": 0.75 } } ] }' + (wantReflect ? ',' : ''),
+      '    { "title": "Check your understanding", "activities": [ { "id": "quiz-1", "type": "quiz", "title": string, "content": { "questions": [ exactly ' + n + ' items, each { "prompt": string, "options": [string, string, string, string], "correctIndex": integer 0-3 pointing to the ONE correct option } ] }, "gate": { "kind": "score", "threshold": 0.75 } } ] }' + ((wantSim || wantReflect) ? ',' : ''),
+      wantSim ? '    { "title": "Practice", "activities": [ { "id": "sim-1", "type": "sim", "title": string, "content": { "scenario": string (a realistic, concrete classroom scenario for the educator to respond to in writing), "rubric": string (what a strong response demonstrates) }, "gate": { "kind": "none" } } ] }' + (wantReflect ? ',' : '') : '',
       wantReflect ? '    { "title": "Apply it", "activities": [ { "id": "reflect-1", "type": "reflect", "title": string, "content": { "prompt": string asking the educator to apply this to their own practice }, "gate": { "kind": "none" } } ] }' : '',
       '  ]',
       '}',
@@ -564,6 +590,7 @@
       'Rules:',
       '- Every quiz question MUST have exactly one correct option, and correctIndex MUST truly point to it.',
       '- Be ACCURATE and EVIDENCE-BASED. If a claim is contested or a common neuromyth (e.g., "learning styles", left/right-brain learners, "we only use 10% of our brain"), do NOT present it as established fact — note its status or use the replicated alternative.',
+      wantSim ? '- If a Practice (sim) section is included, the scenario must be realistic and self-contained, and the sim gate MUST be "none" (it is formative).' : '',
       '- Concise (~' + minutes + ' minutes of reading). No PII and no real student names.',
       '- Output ONLY the JSON object.'
     ].filter(Boolean).join('\n');
@@ -580,6 +607,12 @@
     if (!Core) return Promise.reject(new Error('The PD engine is still loading — try again in a moment.'));
     if (!opts || !String(opts.topic || '').trim()) return Promise.reject(new Error('Enter a topic first.'));
 
+    // Defensively mark provenance — never trust the model to have set it.
+    function stampAi(mod) {
+      if (mod && mod.metadata) { mod.metadata.ai_generated = true; mod.metadata.credit = 'AI-assisted draft'; }
+      return mod;
+    }
+
     function attempt(prompt) {
       return Promise.resolve(callAI(prompt, true)).then(function (out) {
         var parsed = extractFirstJsonObject(out);
@@ -589,12 +622,12 @@
     }
 
     return attempt(buildPdGenPrompt(opts)).then(function (r1) {
-      if (r1.v.ok) return { ok: true, module: r1.v.module };
+      if (r1.v.ok) return { ok: true, module: stampAi(r1.v.module) };
       var repair = 'This PD module JSON is invalid: ' + r1.v.error +
         '\nHere is the JSON:\n' + (r1.parsed ? JSON.stringify(r1.parsed) : String(r1.out || '').slice(0, 6000)) +
         '\nReturn a corrected pd_module JSON that fixes ONLY that problem and still matches the required schema. Output ONLY the JSON object.';
       return attempt(repair).then(function (r2) {
-        if (r2.v.ok) return { ok: true, module: r2.v.module, repaired: true };
+        if (r2.v.ok) return { ok: true, module: stampAi(r2.v.module), repaired: true };
         return { ok: false, error: r2.v.error || 'Could not generate a valid module.' };
       });
     });
@@ -605,6 +638,18 @@
   var PD_HISTORY_KEY = 'alloflow_pd_history';
   function pdModuleId(mod) {
     return (mod && mod.metadata && mod.metadata.id) || slugify((mod && mod.metadata && mod.metadata.title) || 'module');
+  }
+  // A lightweight content fingerprint (activity ids/types + quiz length) so saved
+  // progress can be invalidated if the module's structure changed since it was saved
+  // (otherwise index-based quiz answers could be mis-scored against new questions).
+  function pdFingerprint(mod) {
+    var parts = [];
+    ((mod && mod.sections) || []).forEach(function (sec) {
+      ((sec && sec.activities) || []).forEach(function (a) {
+        parts.push((a.id || '') + ':' + (a.type || '') + ':' + (((a.content && a.content.questions) || []).length));
+      });
+    });
+    return parts.join('|');
   }
   function loadPdProgress(mod) {
     try { var raw = localStorage.getItem(PD_PROGRESS_PREFIX + pdModuleId(mod)); return raw ? JSON.parse(raw) : null; } catch (_e) { return null; }
@@ -721,14 +766,17 @@
     var passed = norm && norm.score >= threshold - 1e-9;
     return e('div', { className: 'flex flex-col gap-4' },
       qs.map(function (q, qi) {
+        var labelId = act.id + '-q' + qi + '-label';
         return e('div', { key: qi, className: 'flex flex-col gap-1' },
-          e('div', { className: 'text-sm font-semibold text-slate-800' }, (qi + 1) + '. ' + q.prompt),
-          (q.options || []).map(function (opt, oi) {
-            return e('label', { key: oi, className: 'flex items-center gap-2 text-sm text-slate-700 cursor-pointer' },
-              e('input', { type: 'radio', name: act.id + '-q' + qi, checked: answers[qi] === oi, disabled: submitted, onChange: function () { pick(qi, oi); } }),
-              e('span', null, opt)
-            );
-          })
+          e('div', { id: labelId, className: 'text-sm font-semibold text-slate-800' }, (qi + 1) + '. ' + q.prompt),
+          e('div', { role: 'radiogroup', 'aria-labelledby': labelId, className: 'flex flex-col gap-1' },
+            (q.options || []).map(function (opt, oi) {
+              return e('label', { key: oi, className: 'flex items-center gap-2 text-sm text-slate-700 cursor-pointer' },
+                e('input', { type: 'radio', name: act.id + '-q' + qi, checked: answers[qi] === oi, disabled: submitted, onChange: function () { pick(qi, oi); } }),
+                e('span', null, opt)
+              );
+            })
+          )
         );
       }),
       !submitted && e('button', {
@@ -736,10 +784,10 @@
         onClick: function () { props.onRaw({ answers: answers, submitted: true }); },
         className: 'self-start px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded disabled:opacity-40 disabled:cursor-not-allowed',
       }, 'Submit answers'),
-      submitted && norm && e('div', { className: 'text-sm font-semibold ' + (passed ? 'text-emerald-700' : 'text-amber-700') },
+      submitted && norm && e('div', { className: 'text-sm font-semibold ' + (passed ? 'text-emerald-700' : 'text-amber-700'), role: 'status', 'aria-live': 'polite' },
         'Score: ' + Math.round(norm.score * 100) + '% — ' + (passed ? 'passed' : 'need ' + Math.round(threshold * 100) + '% to continue')),
       submitted && !passed && e('button', {
-        onClick: function () { props.onRaw({ answers: [], submitted: false }); },
+        onClick: function () { props.onRaw({ answers: answers, submitted: false }); },
         className: 'self-start px-3 py-1 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50',
       }, 'Try again')
     );
@@ -748,9 +796,12 @@
   function ReflectActivity(props) {
     var c = (props.activity && props.activity.content) || {};
     var text = (props.raw && props.raw.text) || '';
+    var fid = ((props.activity && props.activity.id) || 'reflect') + '-reflect';
     return e('div', { className: 'flex flex-col gap-2' },
       c.prompt && e('p', { className: 'text-sm text-slate-600' }, c.prompt),
+      e('label', { className: 'block text-xs font-semibold text-slate-700', htmlFor: fid }, 'Your response'),
       e('textarea', {
+        id: fid,
         rows: 6,
         value: text,
         onChange: function (ev) { props.onRaw({ text: ev.target.value }); },
@@ -822,20 +873,34 @@
     var err$ = useState(''); var err = err$[0], setErr = err$[1];
     var aiAvailable = typeof window !== 'undefined' && typeof window.callGemini === 'function';
     var score = (typeof raw.masteryScore === 'number') ? raw.masteryScore : null;
-    var threshold = (act.gate && typeof act.gate.threshold === 'number') ? act.gate.threshold : null;
-    var passed = (threshold != null && score != null) ? (score / 100 >= threshold - 1e-9) : null;
 
     function submit() {
       if (!response.trim() || status === 'scoring') return;
-      if (!aiAvailable) { props.onRaw({ response: response }); setErr('AI feedback is not available in this session — your response was recorded.'); setStatus('error'); return; }
+      // Non-scored paths must clear any prior score so an edited/unscored response
+      // can never inherit a stale masteryScore (the gate reads raw.masteryScore).
+      if (!aiAvailable) { props.onRaw({ response: response, masteryScore: null, feedback: '' }); setErr('AI feedback is not available in this session — your response was recorded.'); setStatus('error'); return; }
       setStatus('scoring'); setErr('');
       Promise.resolve(window.callGemini(buildSimScorePrompt(c, response), true)).then(function (out) {
         var parsed = extractFirstJsonObject(out) || {};
-        var ms = Math.max(0, Math.min(100, parseInt(parsed.masteryScore, 10) || 0));
+        var msNum = parseInt(parsed.masteryScore, 10);
+        if (!isFinite(msNum)) {
+          // Empty / non-JSON / score-less reply: do NOT record a fake 0.
+          props.onRaw({ response: response, masteryScore: null, feedback: '' });
+          setErr('The AI did not return usable feedback — your response was recorded. You can try again.');
+          setStatus('error');
+          return;
+        }
+        var ms = Math.max(0, Math.min(100, msNum));
         var fb = String(parsed.feedback || '').slice(0, 2000);
         props.onRaw({ response: response, masteryScore: ms, feedback: fb });
         setStatus('done');
-      }).catch(function (e) { props.onRaw({ response: response }); setErr((e && e.message) || 'Scoring failed.'); setStatus('error'); });
+      }).catch(function (e) { props.onRaw({ response: response, masteryScore: null, feedback: '' }); setErr((e && e.message) || 'Scoring failed.'); setStatus('error'); });
+    }
+
+    function onEdit(val) {
+      setResponse(val);
+      // Editing after a score invalidates it — drop the stale score/feedback + display.
+      if (typeof raw.masteryScore === 'number') { props.onRaw({ response: val, masteryScore: null, feedback: '' }); setStatus('idle'); }
     }
 
     return e('div', { className: 'flex flex-col gap-3' },
@@ -843,21 +908,21 @@
       e('label', { className: 'block text-xs font-semibold text-slate-700', htmlFor: act.id + '-resp' }, 'Your response'),
       e('textarea', {
         id: act.id + '-resp', rows: 5, value: response,
-        onChange: function (ev) { setResponse(ev.target.value); },
+        onChange: function (ev) { onEdit(ev.target.value); },
         className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
         placeholder: 'Write how you would respond…',
       }),
+      e('div', { className: 'text-xs text-slate-600' }, 'Your response is sent to an AI service for formative feedback. Don’t include student names or other personal information.'),
       e('button', {
         onClick: submit,
         disabled: !response.trim() || status === 'scoring',
         className: 'self-start px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded disabled:opacity-40 disabled:cursor-not-allowed',
       }, status === 'scoring' ? 'Getting feedback…' : (score != null ? 'Resubmit for feedback' : 'Get AI feedback')),
-      status === 'error' && e('div', { className: 'text-xs text-amber-700' }, err),
-      score != null && e('div', { className: 'p-3 bg-sky-50 border border-sky-200 rounded flex flex-col gap-1' },
-        e('div', { className: 'text-sm font-semibold ' + (passed === false ? 'text-amber-700' : 'text-slate-800') },
-          'Formative score: ' + score + ' / 100' + (threshold != null ? (passed ? ' — meets the bar' : ' — aim for ' + Math.round(threshold * 100) + '+') : '')),
+      status === 'error' && e('div', { className: 'text-xs text-amber-700', role: 'status', 'aria-live': 'polite' }, err),
+      score != null && e('div', { className: 'p-3 bg-sky-50 border border-sky-200 rounded flex flex-col gap-1', role: 'status', 'aria-live': 'polite' },
+        e('div', { className: 'text-sm font-semibold text-slate-800' }, 'Formative score: ' + score + ' / 100'),
         raw.feedback && e('div', { className: 'text-sm text-slate-700 whitespace-pre-wrap' }, raw.feedback),
-        e('div', { className: 'text-[11px] text-slate-500 italic' }, 'AI-generated formative feedback — a rough estimate to prompt reflection, not a definitive assessment.')
+        e('div', { className: 'text-[11px] text-slate-600 italic' }, 'AI-generated formative feedback — a rough estimate to prompt reflection, not a definitive assessment.')
       )
     );
   }
@@ -876,7 +941,12 @@
       return out;
     }, [mod]);
     // Resume from any saved progress for this module.
-    var saved = useMemo(function () { return loadPdProgress(mod); }, [mod]);
+    var saved = useMemo(function () {
+      var s = loadPdProgress(mod);
+      // Discard saved answers if the module's structure changed since they were saved.
+      if (s && s.fp && s.fp !== pdFingerprint(mod)) return null;
+      return s;
+    }, [mod]);
     var idx$ = useState(function () { return (saved && typeof saved.idx === 'number' && saved.idx < steps.length) ? saved.idx : 0; });
     var idx = idx$[0], setIdx = idx$[1];
     var raw$ = useState(function () { return (saved && saved.rawById && typeof saved.rawById === 'object') ? saved.rawById : {}; });
@@ -886,11 +956,12 @@
     var resumed$ = useState(!!(saved && (saved.idx > 0 || saved.done || (saved.rawById && Object.keys(saved.rawById).length > 0))));
     var resumed = resumed$[0], setResumed = resumed$[1];
     var headingRef = React.useRef ? React.useRef(null) : { current: null };
+    var name$ = useState((props.learner && props.learner.name) || ''); var learnerName = name$[0], setLearnerName = name$[1];
 
     // Persist progress as the learner moves through the module.
     useEffect(function () {
       if (!Core) return;
-      savePdProgress(mod, { idx: idx, rawById: rawById, done: done, savedAt: new Date().toISOString() });
+      savePdProgress(mod, { idx: idx, rawById: rawById, done: done, fp: pdFingerprint(mod), savedAt: new Date().toISOString() });
     }, [idx, rawById, done, mod, Core]);
 
     // Move focus to the activity heading on each step (keyboard / screen-reader users).
@@ -938,17 +1009,22 @@
         e('p', { className: 'text-sm text-slate-700' }, 'Activities passed: ' + ev.passed + ' / ' + ev.total),
         e('div', { className: 'p-3 bg-sky-50 border border-sky-200 rounded text-xs text-slate-700' },
           'This is a self-paced completion record generated on your device — a personal record of your work, not accredited contact hours or a verified credential.'),
+        ev.complete && e('div', { className: 'w-full max-w-sm' },
+          e('label', { className: 'block text-xs font-semibold text-slate-700 mb-1', htmlFor: 'pd-learner-name' }, 'Name for your record / certificate ',
+            e('span', { className: 'font-normal text-slate-500' }, '(optional)')),
+          e('input', { id: 'pd-learner-name', type: 'text', maxLength: 80, value: learnerName, onChange: function (ev2) { setLearnerName(ev2.target.value); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', placeholder: 'e.g., your name' })
+        ),
         e('div', { className: 'flex gap-2 flex-wrap' },
           ev.complete && e('button', {
             onClick: function () {
-              var rec = Core.buildCompletionRecord(mod, resultsById(), props.learner || { name: null }, new Date().toISOString());
+              var rec = Core.buildCompletionRecord(mod, resultsById(), { name: learnerName.trim() || null }, new Date().toISOString());
               downloadJsonFile(rec, pdModuleId(mod) + '-completion');
               addToast && addToast('Completion record downloaded.', 'success');
             },
-            className: 'px-4 py-2 text-sm font-bold bg-emerald-600 text-white rounded-md hover:bg-emerald-700',
+            className: 'px-4 py-2 text-sm font-bold bg-emerald-700 text-white rounded-md hover:bg-emerald-800',
           }, 'Download completion record (JSON)'),
           ev.complete && typeof props.onCertificate === 'function' && e('button', {
-            onClick: function () { props.onCertificate(mod, resultsById()); },
+            onClick: function () { props.onCertificate(mod, resultsById(), { name: learnerName.trim() || null }); },
             className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50',
           }, 'Print certificate'),
           e('button', {
@@ -1012,8 +1088,10 @@
           className: 'px-3 py-1.5 text-sm font-semibold border border-slate-300 text-slate-700 rounded disabled:opacity-40',
         }, 'Back'),
         e('div', { className: 'flex items-center gap-3' },
-          !canNext && e('span', { id: 'pd-gate-hint', className: 'text-xs text-slate-500', 'aria-live': 'polite' },
-            gate.reason === 'incomplete' ? 'Finish this activity to continue.' : 'Reach the passing score to continue.'),
+          // Persistent live region (always mounted; text toggles) so the gate
+          // reason is announced reliably when "Next" is disabled.
+          e('span', { id: 'pd-gate-hint', className: 'text-xs text-slate-500', 'aria-live': 'polite' },
+            !canNext ? (gate.reason === 'incomplete' ? 'Finish this activity to continue.' : 'Reach the passing score to continue.') : ''),
           e('button', {
             onClick: function () { if (!canNext) return; if (isLast) setDone(true); else setIdx(idx + 1); },
             disabled: !canNext,
@@ -1034,6 +1112,7 @@
     var aff$ = useState({ author_or_authorized: false, no_pii: false, license_agreed: false, age_eligible: false });
     var aff = aff$[0], setAff = aff$[1];
     var scan$ = useState({ ran: false, findings: [] }); var scan = scan$[0], setScan = scan$[1];
+    var piiAck$ = useState(false); var piiAck = piiAck$[0], setPiiAck = piiAck$[1];
     var status$ = useState({ stage: 'idle', message: '' }); var status = status$[0], setStatus = status$[1];
     var core$ = useState(!!(window.AlloModules && window.AlloModules.PdCore)); var coreReady = core$[0], setCoreReady = core$[1];
 
@@ -1050,16 +1129,18 @@
     }, [jsonText, coreReady]);
 
     var allAffsChecked = aff.author_or_authorized && aff.no_pii && aff.license_agreed && aff.age_eligible;
-    var canSubmit = validation.ok && scan.ran && allAffsChecked && status.stage !== 'submitting';
+    // If the PII scan flagged anything, submission is blocked until the author
+    // explicitly confirms they've reviewed it (the scan is non-blocking otherwise).
+    var canSubmit = validation.ok && scan.ran && allAffsChecked && (scan.findings.length === 0 || piiAck) && status.stage !== 'submitting';
 
     function handleFileUpload(ev) {
       var f = ev.target.files && ev.target.files[0];
       if (!f) return;
       var reader = new FileReader();
-      reader.onload = function () { setJsonText(String(reader.result || '')); setScan({ ran: false, findings: [] }); };
+      reader.onload = function () { setJsonText(String(reader.result || '')); setScan({ ran: false, findings: [] }); setPiiAck(false); };
       reader.readAsText(f);
     }
-    function handleScan() { setScan({ ran: true, findings: scanForPii(jsonText) }); }
+    function handleScan() { setPiiAck(false); setScan({ ran: true, findings: scanForPii(jsonText) }); }
     function handleSubmit() {
       if (!canSubmit) return;
       setStatus({ stage: 'submitting', message: '' });
@@ -1123,6 +1204,10 @@
                       f.type + ': ' + f.count + ' match' + (f.count !== 1 ? 'es' : '') +
                       ' (e.g., ' + f.samples.map(function (s) { return JSON.stringify(s); }).join(', ') + ')');
                   })
+                ),
+                e('label', { className: 'flex items-start gap-2 mt-2 text-amber-800 cursor-pointer' },
+                  e('input', { type: 'checkbox', className: 'mt-0.5', checked: piiAck, onChange: function (ev) { setPiiAck(ev.target.checked); } }),
+                  e('span', null, 'I have reviewed the flagged items and removed any student PII (these may be false positives).')
                 )
               )
         )
@@ -1155,7 +1240,7 @@
         e('button', {
           onClick: handleSubmit,
           disabled: !canSubmit,
-          className: 'w-full px-4 py-2.5 text-sm font-bold bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed',
+          className: 'w-full px-4 py-2.5 text-sm font-bold bg-emerald-700 text-white rounded-md hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed',
         }, status.stage === 'submitting' ? 'Submitting…' : 'Submit for review'),
         status.stage === 'success' && e('div', { className: 'mt-2 p-2 text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 rounded' }, status.message),
         status.stage === 'error' && e('div', { className: 'mt-2 p-2 text-xs bg-red-50 border border-red-200 text-red-800 rounded' }, status.message)
@@ -1173,6 +1258,7 @@
     var nq$ = useState(4); var numQuestions = nq$[0], setNumQuestions = nq$[1];
     var mins$ = useState(15); var estMinutes = mins$[0], setEstMinutes = mins$[1];
     var reflect$ = useState(true); var includeReflection = reflect$[0], setIncludeReflection = reflect$[1];
+    var sim$ = useState(false); var includeSim = sim$[0], setIncludeSim = sim$[1];
     var status$ = useState('idle'); var status = status$[0], setStatus = status$[1]; // idle|generating|done|error
     var result$ = useState(null); var result = result$[0], setResult = result$[1];
     var error$ = useState(''); var error = error$[0], setError = error$[1];
@@ -1184,7 +1270,7 @@
     function generate() {
       if (!topic.trim() || status === 'generating') return;
       setStatus('generating'); setError(''); setResult(null);
-      generatePdModule({ topic: topic, audience: audience, notes: notes, numQuestions: numQuestions, estMinutes: estMinutes, includeReflection: includeReflection })
+      generatePdModule({ topic: topic, audience: audience, notes: notes, numQuestions: numQuestions, estMinutes: estMinutes, includeReflection: includeReflection, includeSim: includeSim })
         .then(function (res) {
           if (res.ok) {
             setResult(res.module); setStatus('done');
@@ -1237,6 +1323,10 @@
         e('input', { type: 'checkbox', checked: includeReflection, onChange: function (ev) { setIncludeReflection(ev.target.checked); } }),
         e('span', null, 'Include an "apply it" reflection at the end')
       ),
+      e('label', { className: 'flex items-center gap-2 text-xs text-slate-700 cursor-pointer' },
+        e('input', { type: 'checkbox', checked: includeSim, onChange: function (ev) { setIncludeSim(ev.target.checked); } }),
+        e('span', null, 'Include a scenario practice with formative AI feedback (sim)')
+      ),
       e('button', {
         onClick: generate,
         disabled: !topic.trim() || status === 'generating' || !aiAvailable,
@@ -1277,7 +1367,13 @@
       ensurePdCore().catch(function () {}); // warm the engine; browse doesn't need it
       fetch(PD_MANIFEST_URL + '?t=' + Date.now())
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function (data) { if (cancelled) return; setState({ status: 'ok', entries: Array.isArray(data.entries) ? data.entries : [], error: null }); })
+        .then(function (data) {
+          if (cancelled) return;
+          var raw = Array.isArray(data.entries) ? data.entries : [];
+          var seen = {}, entries = [];
+          raw.forEach(function (en) { var id = en.slug || slugify(en.title || ''); if (id && seen[id]) return; if (id) seen[id] = true; entries.push(en); });
+          setState({ status: 'ok', entries: entries, error: null });
+        })
         .catch(function (err) { if (cancelled) return; setState({ status: 'error', entries: [], error: err.message }); });
       return function () { cancelled = true; };
     }, []);
@@ -1302,7 +1398,7 @@
       return e(PdRunner, {
         module: run.module, addToast: addToast, learner: props.learner,
         onExit: function () { setRun(null); setHistTick(function (n) { return n + 1; }); },
-        onCertificate: function (mod, results) { printPdCertificate(mod, results, props.learner, addToast); },
+        onCertificate: function (mod, results, learner) { printPdCertificate(mod, results, learner || props.learner, addToast); },
       });
     }
     if (view === 'generate') {
@@ -1457,6 +1553,8 @@
 
     var tab$ = useState(prefill ? 'submit' : (readPdIntent() ? 'pd' : 'browse'));
     var tab = tab$[0], setTab = tab$[1];
+    var dialogRef = React.useRef ? React.useRef(null) : { current: null };
+    useEffect(function () { var el = dialogRef.current; if (el && el.focus) { try { el.focus(); } catch (_e) { /* no-op */ } } }, []);
 
     var initialJson = prefill && prefill.payload ? JSON.stringify(prefill.payload, null, 2) :
                       prefill && prefill.lesson_payload ? JSON.stringify(prefill.lesson_payload, null, 2) : '';
@@ -1475,7 +1573,11 @@
       className: modalClass,
       onClick: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); },
     },
-      e('div', { className: contentClass, role: 'dialog', 'aria-label': 'Community Catalog' },
+      e('div', {
+        className: contentClass, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Community Catalog',
+        tabIndex: -1, ref: dialogRef,
+        onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); } },
+      },
         // Header
         e('div', { className: headerClass },
           e('div', { className: 'flex items-center gap-3' },
@@ -1486,9 +1588,11 @@
             )
           ),
           e('div', { className: 'flex items-center gap-2' },
-            e('button', { className: tabBtn(tab === 'browse'), onClick: function () { setTab('browse'); } }, 'Browse'),
-            e('button', { className: tabBtn(tab === 'submit'), onClick: function () { setTab('submit'); } }, 'Submit'),
-            e('button', { className: tabBtn(tab === 'pd'), onClick: function () { setTab('pd'); } }, 'Professional Development'),
+            e('div', { role: 'tablist', 'aria-label': 'Catalog sections', className: 'flex items-center gap-2' },
+              e('button', { role: 'tab', id: 'pd-tab-browse', 'aria-selected': tab === 'browse', className: tabBtn(tab === 'browse'), onClick: function () { setTab('browse'); } }, 'Browse'),
+              e('button', { role: 'tab', id: 'pd-tab-submit', 'aria-selected': tab === 'submit', className: tabBtn(tab === 'submit'), onClick: function () { setTab('submit'); } }, 'Submit'),
+              e('button', { role: 'tab', id: 'pd-tab-pd', 'aria-selected': tab === 'pd', className: tabBtn(tab === 'pd'), onClick: function () { setTab('pd'); } }, 'Professional Development')
+            ),
             e('button', {
               className: 'ml-3 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900',
               onClick: props.onClose,
@@ -1497,7 +1601,7 @@
           )
         ),
         // Body
-        e('div', { className: bodyClass },
+        e('div', { className: bodyClass, role: 'tabpanel', id: 'pd-tabpanel', 'aria-labelledby': tab === 'pd' ? 'pd-tab-pd' : (tab === 'browse' ? 'pd-tab-browse' : 'pd-tab-submit') },
           tab === 'pd'
             ? e(PdHome, { addToast: props.addToast })
             : tab === 'browse'

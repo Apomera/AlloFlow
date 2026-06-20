@@ -28,8 +28,11 @@
   // Activity types understood by the runner. 'sim' is an AI-assessed scenario
   // (formative masteryScore 0..100); wired in the runner, not the AI generator.
   var ACTIVITY_TYPES = ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim'];
-  // Types that actually produce a 0..1 score (so a 'score' gate is meaningful).
-  var SCORABLE_TYPES = ['quiz', 'sim'];
+  // Types whose objective score may GATE advancement. 'sim' is deliberately
+  // excluded: its masteryScore is an AI-self-reported, fuzzy FORMATIVE estimate,
+  // so it must never block a learner (and could strand them) — sim is always
+  // none-gated and completes on a written response.
+  var SCORABLE_TYPES = ['quiz'];
 
   function isNum(n) { return typeof n === 'number' && !isNaN(n); }
 

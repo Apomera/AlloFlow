@@ -126,3 +126,26 @@ describe('worker GET /pdSubmissions (token-gated reader)', () => {
     expect(j.submissions[0].kind).toBe('pd_submission');
   });
 });
+
+describe('worker /submitPd structural summary (non-blocking)', () => {
+  it('records structure_check.ok=true for a clean module', async () => {
+    const env = { PD_SUBMISSIONS: fakeKv() };
+    await postPd(validPayload(), env);
+    const key = Object.keys(env.PD_SUBMISSIONS.store)[0];
+    const rec = JSON.parse(env.PD_SUBMISSIONS.store[key].v);
+    expect(rec.structure_check.ok).toBe(true);
+    expect(rec.structure_check.issues).toEqual([]);
+  });
+
+  it('flags (but does not reject) a quiz without an answer key', async () => {
+    const env = { PD_SUBMISSIONS: fakeKv() };
+    const p = validPayload();
+    p.pd_module.sections.push({ title: 'Q', activities: [{ id: 'q1', type: 'quiz', title: 'Q', content: { questions: [{ prompt: 'p', options: ['a', 'b'] }] } }] });
+    const res = await postPd(p, env);
+    expect(res.status).toBe(201); // shallow validator still accepts; structure_check annotates
+    const key = Object.keys(env.PD_SUBMISSIONS.store)[0];
+    const rec = JSON.parse(env.PD_SUBMISSIONS.store[key].v);
+    expect(rec.structure_check.ok).toBe(false);
+    expect(rec.structure_check.issues.join(' ')).toMatch(/correctIndex/);
+  });
+});

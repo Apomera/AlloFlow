@@ -338,3 +338,34 @@ describe('runner resume + home history (render)', () => {
     }
   });
 });
+
+describe('review fixes (PdSubmit, JSON extraction, AI provenance)', () => {
+  it('PdSubmit renders the private-review framing and validates pasted JSON', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.PdSubmit, { addToast() {}, initialJson: validJson() });
+    expect(html).toMatch(/privately/i);
+    expect(html).toContain('Scan for PII');
+    expect(html).toContain('Schema check: OK');
+    expect(html).toContain('Submit for review');
+  });
+
+  it('extractFirstJsonObject skips a stray brace in prose before the JSON', () => {
+    const { CC } = loadWithCore();
+    expect(CC._extractFirstJsonObject('Use {placeholders} like so:\n```json\n{"a":2}\n```')).toEqual({ a: 2 });
+  });
+
+  it('generatePdModule stamps AI provenance on the result', async () => {
+    const { CC, PdCore } = loadWithCore();
+    const res = await CC._generatePdModule({ topic: 'X' }, { callAI: async () => validJson(), getCore: () => PdCore });
+    expect(res.ok).toBe(true);
+    expect(res.module.metadata.ai_generated).toBe(true);
+    expect(res.module.metadata.credit).toBe('AI-assisted draft');
+  });
+
+  it('SimActivity shows the AI/PII disclosure', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.SimActivity, { activity: { id: 's1', type: 'sim', title: 'T', content: { scenario: 'S' } }, raw: {}, onRaw() {} });
+    expect(html).toMatch(/sent to an AI service/i);
+    expect(html).toMatch(/personal information/i);
+  });
+});

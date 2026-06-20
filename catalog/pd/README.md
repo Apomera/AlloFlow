@@ -61,8 +61,13 @@ Every activity needs `id` (unique), `type`, `title`, and a `gate`.
 | `quiz`      | `{ questions: [{ prompt, options:[…≥2], correctIndex }] }`        | all questions answered         | **yes**  |
 | `reflect`   | `{ prompt }`                                                      | non-empty response            | no       |
 | `checklist` | `{ items: [string, …] }`                                          | ≥ 1 item checked              | no       |
+| `sim`       | `{ scenario, rubric? }`                                           | AI returns a formative masteryScore — or, if AI is unavailable, on a written response | no¹ |
 
-> `sim` is reserved (Adventure-mode simulation) but not yet wired.
+> ¹ `sim` is an **AI-assessed scenario**: the learner writes a response and the
+> shared AI returns a *formative* `masteryScore` (0–100) + feedback. That score
+> is informational only and **must never gate** advancement (`gate.kind` must be
+> `none`); a score gate on a `sim` is rejected by `validatePdModule`. If AI is
+> unavailable, a written response still completes the activity.
 
 ### Gates (advance/“Next” is blocked until the gate passes)
 

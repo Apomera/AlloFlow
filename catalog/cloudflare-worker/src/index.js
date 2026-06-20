@@ -259,6 +259,37 @@ function validatePd(p) {
   return null;
 }
 
+// Non-blocking deeper structural check (mirrors the client validator's spirit) so a
+// maintainer can quickly see whether a stored submission is publish-ready. The real
+// gate is the client-side PdCore.validatePdModule + human review; this only annotates.
+function pdStructureIssues(m) {
+  const issues = [];
+  const KNOWN = ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim'];
+  const ids = {};
+  (Array.isArray(m.sections) ? m.sections : []).forEach((sec, si) => {
+    const acts = (sec && Array.isArray(sec.activities)) ? sec.activities : [];
+    if (!acts.length) issues.push(`section ${si + 1} has no activities`);
+    acts.forEach((a) => {
+      if (!a || typeof a.id !== 'string' || !a.id) { issues.push('an activity is missing an id'); return; }
+      if (ids[a.id]) issues.push(`duplicate activity id: ${a.id}`); else ids[a.id] = true;
+      if (KNOWN.indexOf(a.type) === -1) issues.push(`${a.id}: unknown type "${a.type}"`);
+      if (a.type === 'quiz') {
+        const qs = (a.content && a.content.questions) || [];
+        if (!Array.isArray(qs) || !qs.length) issues.push(`${a.id}: quiz has no questions`);
+        else qs.forEach((q, qi) => {
+          if (!Array.isArray(q.options) || q.options.length < 2) issues.push(`${a.id} q${qi + 1}: needs >=2 options`);
+          else if (!(q.correctIndex >= 0 && q.correctIndex < q.options.length)) issues.push(`${a.id} q${qi + 1}: invalid correctIndex`);
+        });
+      }
+      if (a.type === 'video' && !(a.content && a.content.url)) issues.push(`${a.id}: video needs content.url`);
+      if (a.type === 'checklist' && !(a.content && Array.isArray(a.content.items) && a.content.items.length)) issues.push(`${a.id}: checklist needs content.items`);
+      if (a.type === 'sim' && !(a.content && a.content.scenario)) issues.push(`${a.id}: sim needs content.scenario`);
+      if (a.gate && a.gate.kind === 'score' && a.type !== 'quiz') issues.push(`${a.id}: score gate only valid on quiz`);
+    });
+  });
+  return issues;
+}
+
 async function handlePdSubmit(request, env) {
   if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing PD_SUBMISSIONS KV binding.' }, 500);
   const contentType = request.headers.get('Content-Type') || '';
@@ -271,6 +302,7 @@ async function handlePdSubmit(request, env) {
   if (err) return jsonResponse({ ok: false, error: err }, 400);
 
   const piiFindings = scanForPii(JSON.stringify(p.pd_module));
+  const structIssues = pdStructureIssues(p.pd_module);
   const submittedAt = new Date().toISOString();
   const title = p.pd_module.metadata.title.trim();
   const slug = slugify(title);
@@ -284,6 +316,7 @@ async function handlePdSubmit(request, env) {
     license: (p.pd_module.metadata.license || 'CC-BY-SA-4.0'),
     affirmations: p.affirmations,
     pii_scan: { ran_server_side: true, findings: piiFindings },
+    structure_check: { ok: structIssues.length === 0, issues: structIssues.slice(0, 50) },
     submitter: {
       ip_country: request.cf?.country || null,
       user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),

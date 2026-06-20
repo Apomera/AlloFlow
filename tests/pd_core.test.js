@@ -266,10 +266,10 @@ describe('sim activity type (AI-assessed scenario)', () => {
     expect(v.error).toMatch(/scenario/);
   });
 
-  it('allows a score gate on sim (it is scorable)', () => {
+  it('rejects a score gate on sim (formative-only — never gates advancement)', () => {
     const v = PD.validatePdModule(moduleWith(simAct({ kind: 'score', threshold: 0.7 })));
-    expect(v.ok).toBe(true);
-    expect(v.stats.gated).toBe(1);
+    expect(v.ok).toBe(false);
+    expect(v.error).toMatch(/produces no score/i);
   });
 
   it('normalizes masteryScore (0..100) to a 0..1 score and completes', () => {

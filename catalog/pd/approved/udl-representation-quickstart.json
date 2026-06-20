@@ -27,10 +27,15 @@
               "Three guidelines: Perception; Language & Symbols; Comprehension."
             ],
             "links": [
-              { "label": "CAST UDL Guidelines", "url": "https://udlguidelines.cast.org/" }
+              {
+                "label": "CAST UDL Guidelines",
+                "url": "https://udlguidelines.cast.org/"
+              }
             ]
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -45,42 +50,50 @@
             "questions": [
               {
                 "prompt": "The three UDL principles each map to a brain network. Multiple Means of Representation addresses the ___ of learning.",
-                "options": ["the WHAT (recognition networks)", "the HOW (strategic networks)", "the WHY (affective networks)", "none of these"],
-                "correctIndex": 0
+                "options": [
+                  "the HOW (strategic networks)",
+                  "the WHAT (recognition networks)",
+                  "the WHY (affective networks)",
+                  "none of these"
+                ],
+                "correctIndex": 1
               },
               {
                 "prompt": "Which best describes Multiple Means of Representation?",
                 "options": [
-                  "Presenting information in more than one format so every learner has multiple entry points",
                   "Identifying each student's 'learning style' and teaching them only in that modality",
                   "Letting students choose how they show what they know",
+                  "Presenting information in more than one format so every learner has multiple entry points",
                   "Rewarding students for staying on task"
                 ],
-                "correctIndex": 0
+                "correctIndex": 2
               },
               {
                 "prompt": "Which is an example of Multiple Means of Representation?",
                 "options": [
-                  "Providing a captioned video AND a text transcript of the same content",
                   "Offering a choice between a poster or an essay to demonstrate learning",
                   "Using a token economy to increase participation",
-                  "Giving a student extra time on a test"
+                  "Giving a student extra time on a test",
+                  "Providing a captioned video AND a text transcript of the same content"
                 ],
-                "correctIndex": 0
+                "correctIndex": 3
               },
               {
                 "prompt": "Representation is sometimes confused with the 'learning styles' idea. The evidence-based stance is:",
                 "options": [
-                  "Matching instruction to a preferred 'style' is not supported by research — provide multiple representations for ALL learners",
                   "Visual learners should only be taught with visuals",
+                  "Matching instruction to a preferred 'style' is not supported by research — provide multiple representations for ALL learners",
                   "Auditory learners learn best by listening only",
                   "Learning styles are settled science"
                 ],
-                "correctIndex": 0
+                "correctIndex": 1
               }
             ]
           },
-          "gate": { "kind": "score", "threshold": 0.75 }
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
         }
       ]
     },
@@ -94,7 +107,9 @@
           "content": {
             "prompt": "Name one lesson you will teach in the next two weeks. Identify TWO additional ways you could represent the key content (for example: a labeled diagram, a vocabulary pre-teach, a captioned video plus transcript, or a worked example). Write them here."
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     }

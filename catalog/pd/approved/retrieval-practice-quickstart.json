@@ -27,10 +27,15 @@
               "Keep it low-/no-stakes and spaced over time."
             ],
             "links": [
-              { "label": "Retrieval practice overview (retrievalpractice.org)", "url": "https://www.retrievalpractice.org/" }
+              {
+                "label": "Retrieval practice overview (retrievalpractice.org)",
+                "url": "https://www.retrievalpractice.org/"
+              }
             ]
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -46,46 +51,49 @@
               {
                 "prompt": "The 'testing effect' (retrieval practice) is best described as:",
                 "options": [
-                  "Recalling information from memory strengthens later retention more than re-reading it",
                   "Re-reading highlighted notes is the most efficient way to study",
+                  "Recalling information from memory strengthens later retention more than re-reading it",
                   "Frequent graded tests mainly serve accountability",
                   "Matching instruction to each student's learning style"
                 ],
-                "correctIndex": 0
+                "correctIndex": 1
               },
               {
                 "prompt": "Which is the strongest example of retrieval practice?",
                 "options": [
-                  "A brief, closed-notes 'brain dump' where students write everything they remember",
                   "Re-reading the chapter and highlighting key sentences",
                   "Watching a recap video of the lesson",
+                  "A brief, closed-notes 'brain dump' where students write everything they remember",
                   "Copying the teacher's notes neatly"
                 ],
-                "correctIndex": 0
+                "correctIndex": 2
               },
               {
                 "prompt": "To get the memory benefit while keeping anxiety low, retrieval practice should usually be:",
                 "options": [
-                  "Low- or no-stakes (ungraded or lightly weighted)",
                   "High-stakes and infrequent",
                   "Replaced by re-reading for struggling students",
-                  "Saved only for the end-of-year exam"
+                  "Saved only for the end-of-year exam",
+                  "Low- or no-stakes (ungraded or lightly weighted)"
                 ],
-                "correctIndex": 0
+                "correctIndex": 3
               },
               {
                 "prompt": "Spacing retrieval practice across days and weeks (instead of cramming it) tends to:",
                 "options": [
-                  "Improve long-term retention",
                   "Harm long-term retention",
+                  "Improve long-term retention",
                   "Make no measurable difference",
                   "Help only the highest-achieving students"
                 ],
-                "correctIndex": 0
+                "correctIndex": 1
               }
             ]
           },
-          "gate": { "kind": "score", "threshold": 0.75 }
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
         }
       ]
     },
@@ -104,7 +112,9 @@
               "Have students close their notes and explain a concept from memory before reviewing it."
             ]
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     },
@@ -118,7 +128,9 @@
           "content": {
             "prompt": "Name one lesson you will teach in the next two weeks. Which ONE retrieval routine will you add, and at what moment in the lesson? Write it here."
           },
-          "gate": { "kind": "none" }
+          "gate": {
+            "kind": "none"
+          }
         }
       ]
     }
