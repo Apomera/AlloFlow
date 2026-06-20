@@ -3043,6 +3043,7 @@ return React.createElement("div", {
             }
             drawTt();
             var ro = new ResizeObserver(function() {
+              if (!cvEl.isConnected) { ro.disconnect(); return; }
               W = cvEl.offsetWidth; H = cvEl.offsetHeight;
               cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
             });

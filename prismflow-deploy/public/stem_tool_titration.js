@@ -333,7 +333,15 @@ var molarityCalcV1 = d.molarityV1 != null ? d.molarityV1 : 10;
 var molarityCalcC2 = d.molarityC2 != null ? d.molarityC2 : 0.1;
 var accuracyLog = d.accuracyLog || [];
 
-// Determine active safety tip
+var maxVol = 50;
+
+var Veq = (preset.concAcid * preset.volAcid) / preset.concBase;
+
+var Kw = 1e-14;
+
+// Determine active safety tip. NOTE: Veq/maxVol/Kw are declared ABOVE this block on
+// purpose — they used to be declared just below it, and `var` hoisting left Veq
+// `undefined` here, so the halfEquiv / nearEquiv / overshot tips silently never fired.
 var activeTip = null;
 if (safetyChecked && labTab === 'titrate') {
   if (preset.redox && volumeAdded < 1) activeTip = safetyTips.redoxWarning;
@@ -346,12 +354,6 @@ if (safetyChecked && labTab === 'titrate') {
   else if (volumeAdded > Veq - 2 && volumeAdded < Veq + 0.5) activeTip = safetyTips.nearEquiv;
   else if (volumeAdded > Veq + 3) activeTip = safetyTips.overshot;
 }
-
-var maxVol = 50;
-
-var Veq = (preset.concAcid * preset.volAcid) / preset.concBase;
-
-var Kw = 1e-14;
 
 
 
@@ -474,22 +476,37 @@ function calcPH(vol) {
 
 // ── Indicator Color ──
 
-function getIndicatorColor(pH) {
-
-  if (indicatorId === 'universal') {
-
-    var hue = pH <= 7 ? (pH * 120 / 7) : (120 + (pH - 7) * 160 / 7);
-
-    return 'hsl(' + Math.round(hue) + ', 75%, 50%)';
-
+// Parse a hex or rgba() color into {r,g,b,a} and linearly interpolate two of them.
+// Real indicators change color CONTINUOUSLY across their ~2 pH-unit transition range,
+// so we blend colorLow→colorMid→colorHigh instead of snapping between three bands.
+function _parseColor(c) {
+  c = String(c).trim();
+  if (c.charAt(0) === '#') {
+    var hex = c.slice(1);
+    if (hex.length === 3) hex = hex.charAt(0) + hex.charAt(0) + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2);
+    return { r: parseInt(hex.slice(0, 2), 16), g: parseInt(hex.slice(2, 4), 16), b: parseInt(hex.slice(4, 6), 16), a: 1 };
   }
+  var m = c.match(/rgba?\(([^)]+)\)/);
+  if (m) { var p = m[1].split(',').map(function (x) { return parseFloat(x); }); return { r: p[0] || 0, g: p[1] || 0, b: p[2] || 0, a: p[3] == null ? 1 : p[3] }; }
+  return { r: 128, g: 128, b: 128, a: 1 };
+}
+function _lerpColor(c1, c2, t) {
+  var a = _parseColor(c1), b = _parseColor(c2);
+  t = Math.max(0, Math.min(1, t));
+  return 'rgba(' + Math.round(a.r + (b.r - a.r) * t) + ',' + Math.round(a.g + (b.g - a.g) * t) + ',' + Math.round(a.b + (b.b - a.b) * t) + ',' + (a.a + (b.a - a.a) * t).toFixed(3) + ')';
+}
 
+function getIndicatorColor(pH) {
+  if (indicatorId === 'universal') {
+    var hue = pH <= 7 ? (pH * 120 / 7) : (120 + (pH - 7) * 160 / 7);
+    return 'hsl(' + Math.round(hue) + ', 75%, 50%)';
+  }
   if (pH <= indicator.low) return indicator.colorLow;
-
   if (pH >= indicator.high) return indicator.colorHigh;
-
+  var mid = (indicator.low + indicator.high) / 2;
+  if (pH <= mid && mid > indicator.low) return _lerpColor(indicator.colorLow, indicator.colorMid, (pH - indicator.low) / (mid - indicator.low));
+  if (indicator.high > mid) return _lerpColor(indicator.colorMid, indicator.colorHigh, (pH - mid) / (indicator.high - mid));
   return indicator.colorMid;
-
 }
 
 
@@ -525,6 +542,22 @@ var equivPH = calcPH(Veq);
 var indicatorStatus = currentPH < indicator.low ? 'Before endpoint' :
 
   currentPH > indicator.high ? 'Past endpoint' : 'At endpoint';
+
+// ── Endpoint vs. equivalence (the single most important practical titration idea) ──
+// Does the chosen indicator's color-change range straddle the equivalence pH? If not, the
+// student stops at the wrong volume — "endpoint" (color change) ≠ "equivalence" (stoichiometric).
+// Only meaningful for the standard single-equivalence acid–base presets with a sharp endpoint.
+var indicatorAnalysisOn = indicatorId !== 'universal' && !preset.redox && !preset.backTitration && !preset.polyprotic;
+var equivInBand = equivPH >= indicator.low && equivPH <= indicator.high;
+var endpointVol = null; // volume where the indicator first changes color (pH enters its band)
+if (indicatorAnalysisOn) {
+  for (var _ci = 0; _ci < curveData.length; _ci++) {
+    if (curveData[_ci].pH >= indicator.low) { endpointVol = curveData[_ci].vol; break; }
+  }
+}
+var titrationErrorMl = (indicatorAnalysisOn && endpointVol != null) ? Math.abs(endpointVol - Veq) : 0;
+var titrationErrorPct = (indicatorAnalysisOn && Veq > 0) ? (titrationErrorMl / Veq * 100) : 0;
+var indicatorMismatch = indicatorAnalysisOn && !equivInBand;
 
 
 
@@ -653,7 +686,12 @@ if (!safetyChecked) {
   var chemsComplete = presChems.length > 0 && presChems.every(function(c) { return chemsReviewed[c]; });
 
   var drillForPreset = { 'sa_sb':0, 'wa_sb':2, 'sa_wb':3, 'wa_wb':4, 'poly_h3po4':0, 'redox_kmno4':1, 'back_antacid':2 };
-  var drillIdx = drillForPreset[presetId] != null ? drillForPreset[presetId] : 0;
+  // Clamp drillIdx to a valid range — guards against incidentScenarios shrinking
+  // in a future edit, or drillForPreset holding a stale index for a preset.
+  var rawDrillIdx = drillForPreset[presetId] != null ? drillForPreset[presetId] : 0;
+  var drillIdx = (incidentScenarios.length > 0)
+    ? Math.max(0, Math.min(rawDrillIdx, incidentScenarios.length - 1))
+    : 0;
   var drillScenario = incidentScenarios[drillIdx];
   var drillComplete = drillResult !== null;
 
@@ -1365,7 +1403,11 @@ if (!safetyChecked) {
 
           // Result feedback
           drillResult && (function() {
-            var selected = drillScenario.options.find(function(o) { return o.id === drillAnswer; });
+            var dsOpts = (drillScenario && drillScenario.options) || [];
+            var selected = dsOpts.find(function(o) { return o.id === drillAnswer; });
+            // Predicate-based lookup (not findById) — guarded so a scenario with no
+            // correct-flagged option won't crash the render.
+            var correctOpt = dsOpts.find(function(o) { return o.correct; });
             var isTimeout = drillResult === 'timeout';
             var isCorrect = drillResult === 'correct';
             return React.createElement("div", {
@@ -1383,15 +1425,15 @@ if (!safetyChecked) {
               ),
               !isTimeout && selected && React.createElement("p", { style: { fontSize:'11px', color:'rgba(255,255,255,0.6)', lineHeight:'1.5' } }, selected.feedback),
               isTimeout && React.createElement("p", { style: { fontSize:'11px', color:'rgba(255,255,255,0.6)', lineHeight:'1.5' } },
-                "The correct response was: " + drillScenario.options.find(function(o) { return o.correct; }).label),
-              !isCorrect && React.createElement("div", {
+                "The correct response was: " + (correctOpt ? correctOpt.label : '(no correct option defined)')),
+              !isCorrect && correctOpt && React.createElement("div", {
                 style: { marginTop:'8px', padding:'8px', borderRadius:'8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)' }
               },
                 React.createElement("div", { style: { fontSize:'10px', fontWeight:800, color:'#34d399', marginBottom:'4px' } }, "\u2705 Correct response:"),
                 React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.6)' } },
-                  drillScenario.options.find(function(o) { return o.correct; }).label),
+                  correctOpt.label),
                 React.createElement("div", { style: { fontSize:'10px', color:'rgba(255,255,255,0.5)', marginTop:'4px' } },
-                  drillScenario.options.find(function(o) { return o.correct; }).feedback)
+                  correctOpt.feedback)
               )
             );
           })()
@@ -1438,14 +1480,14 @@ if (!safetyChecked) {
 }
 
 // ── Keyboard shortcuts (WCAG 2.1.1): 1-5 switch tabs, E explain, Esc back ──
-var _TITR_TABS = ['titrate', 'challenge', 'incidents', 'equipment', 'molarity'];
-var _TITR_TAB_LABELS = { titrate: 'Titrate', challenge: 'Challenge', incidents: 'Safety Drills', equipment: 'Equipment', molarity: 'Dilution Calc' };
+var _TITR_TABS = ['titrate', 'challenge', 'incidents', 'equipment', 'molarity', 'buffers'];
+var _TITR_TAB_LABELS = { titrate: 'Titrate', challenge: 'Challenge', incidents: 'Safety Drills', equipment: 'Equipment', molarity: 'Dilution Calc', buffers: 'Buffers' };
 function onTitrKey(e) {
   var tgt = e.target || {};
   var tn = (tgt.tagName || '').toUpperCase();
   if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
   var k = e.key;
-  if (k >= '1' && k <= '5') {
+  if (k >= '1' && k <= '6') {
     var idx = parseInt(k, 10) - 1;
     if (_TITR_TABS[idx]) {
       e.preventDefault();
@@ -1595,7 +1637,8 @@ return React.createElement("div", {
       { id: 'challenge', label: '\uD83C\uDFC6 Challenge', color: '#f59e0b' },
       { id: 'incidents', label: '\uD83D\uDEA8 Safety Drills', color: '#ef4444' },
       { id: 'equipment', label: '\uD83D\uDD2C Equipment', color: '#22c55e' },
-      { id: 'molarity', label: '\uD83E\uDDEE Dilution Calc', color: '#a78bfa' }
+      { id: 'molarity', label: '\uD83E\uDDEE Dilution Calc', color: '#a78bfa' },
+      { id: 'buffers', label: '\uD83D\uDEE1\uFE0F Buffers', color: '#0891b2' }
     ].map(function(tab) {
       var active = labTab === tab.id;
       return React.createElement("button", { "aria-label": "Switch to " + tab.label + " tab",
@@ -1617,7 +1660,8 @@ return React.createElement("div", {
       challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded titrations',           hint: 'Match real-world unknowns by titrating to within \u00b10.05 mL of theoretical. Tracks accuracy + speed; AP Chem-aligned scoring.' },
       incidents:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: 'Safety drills \u2014 what could go wrong',     hint: 'Burette explodes, acid-burns spill, indicator added too early. Practice the right response sequence before it matters in a real lab.' },
       equipment:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: 'Equipment \u2014 burette, flask, pipette',     hint: 'Burette tolerance 0.05 mL; volumetric flask 0.10 mL; pipette 0.02 mL. Precision class A vs B doubles tolerance. Calibration matters more than students realize.' },
-      molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082',     hint: 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.' }
+      molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082',     hint: 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.' },
+      buffers:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE1\uFE0F', title: 'Buffer discovery \u2014 when does a buffer hold?', hint: 'Adjust acid strength, [A\u207B]/[HA] ratio, starting pH. Discrete outcome: good buffer or poor buffer (after 20% more acid added). No score, no reveal \u2014 just sweep and observe.' }
     };
     var meta = TAB_META[labTab] || TAB_META.titrate;
     return React.createElement('div', {
@@ -1699,6 +1743,44 @@ return React.createElement("div", {
 
     })
 
+  ),
+
+
+
+  // ── Endpoint vs. equivalence coaching (does the chosen indicator actually mark equivalence?) ──
+  labTab === 'titrate' && indicatorAnalysisOn && React.createElement("div", {
+    className: "rounded-xl p-2.5 border text-[12px] leading-snug max-w-2xl mx-auto",
+    role: "status",
+    style: indicatorMismatch
+      ? { background: 'rgba(127,29,29,0.35)', borderColor: 'rgba(248,113,113,0.5)', color: '#fecaca' }
+      : { background: 'rgba(6,78,59,0.32)', borderColor: 'rgba(52,211,153,0.45)', color: '#bbf7d0' }
+  },
+    indicatorMismatch
+      ? [
+          React.createElement("span", { key: 'h', className: "font-black" }, '⚠ Endpoint ≠ equivalence. '),
+          indicator.label + ' changes color at pH ' + indicator.low + '–' + indicator.high +
+            ', but this titration reaches equivalence at pH ' + equivPH.toFixed(2) + '. ',
+          (endpointVol != null
+            ? ('You’d stop about ' + titrationErrorMl.toFixed(1) + ' mL ' + (endpointVol < Veq ? 'too early' : 'too late') +
+               ' (≈' + titrationErrorPct.toFixed(0) + '% error). ')
+            : 'This indicator barely changes color across this titration’s pH range. '),
+          React.createElement("span", { key: 'f', className: "font-bold" }, 'Pick an indicator whose range includes pH ' + equivPH.toFixed(1) + '.')
+        ]
+      : [
+          React.createElement("span", { key: 'h', className: "font-black" }, '✔ Good indicator choice. '),
+          indicator.label + '’s range (pH ' + indicator.low + '–' + indicator.high +
+            ') includes the equivalence pH (' + equivPH.toFixed(2) + '), so the color change marks equivalence accurately.'
+        ]
+  ),
+
+  // ── Redox honesty: this preset is NOT a pH titration ──
+  labTab === 'titrate' && preset.redox && React.createElement("div", {
+    className: "rounded-xl p-2.5 border text-[12px] leading-snug max-w-2xl mx-auto",
+    role: "status",
+    style: { background: 'rgba(112,26,117,0.30)', borderColor: 'rgba(217,70,239,0.5)', color: '#f5d0fe' }
+  },
+    React.createElement("span", { className: "font-black" }, '⚗ Redox titration — not a pH curve. '),
+    'The trace shows relative reaction progress, not pH — there is no pH meter here. The endpoint is the first faint, lasting pink from a tiny excess of MnO₄⁻ (it reacts purple → colorless until then). Read this endpoint by COLOR.'
   ),
 
 
@@ -1821,7 +1903,8 @@ return React.createElement("div", {
           // Meniscus line
           React.createElement("div", {
             style: { position: 'absolute', top: liquidH + 'px', left: '2px', right: '2px', height: '3px',
-              background: 'rgba(56,189,248,0.8)', borderRadius: '0 0 50% 50%', transition: 'top 0.3s ease' }
+              background: 'rgba(56,189,248,0.8)', borderRadius: '0 0 50% 50%', transition: 'top 0.3s ease',
+              boxShadow: '0 0 4px rgba(56,189,248,0.6)' }
           }),
           // Glass shine
           React.createElement("div", {
@@ -1882,8 +1965,8 @@ return React.createElement("div", {
           // Flask liquid fill with gradient
           React.createElement("defs", null,
             React.createElement("linearGradient", { id: "flaskLiquid", x1: "0", y1: "0", x2: "0", y2: "1" },
-              React.createElement("stop", { offset: "0%", stopColor: currentColor, stopOpacity: "0.5" }),
-              React.createElement("stop", { offset: "100%", stopColor: currentColor, stopOpacity: "0.85" })
+              React.createElement("stop", { offset: "0%", stopColor: currentColor, stopOpacity: "0.5", style: { transition: 'stop-color 0.5s ease' } }),
+              React.createElement("stop", { offset: "100%", stopColor: currentColor, stopOpacity: "0.85", style: { transition: 'stop-color 0.5s ease' } })
             )
           ),
           React.createElement("path", {
@@ -2960,6 +3043,7 @@ return React.createElement("div", {
             }
             drawTt();
             var ro = new ResizeObserver(function() {
+              if (!cvEl.isConnected) { ro.disconnect(); return; }
               W = cvEl.offsetWidth; H = cvEl.offsetHeight;
               cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
             });
@@ -2970,7 +3054,117 @@ return React.createElement("div", {
       )
     )
 
-  )
+  ),
+
+  // ══════════════════════════════════════════════
+  // BUFFER DISCOVERY TAB (Cycle 17 — H7b'' validated)
+  // ══════════════════════════════════════════════
+  labTab === 'buffers' && (function() {
+    var bf = (typeof d !== 'undefined' && d && d.buffers) ? d.buffers : { ka: 1e-5, ratio: 1.0, startPH: 4.74, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+    function setBF(patch) { if (typeof upd === 'function') upd('buffers', Object.assign({}, bf, patch)); }
+    // Henderson-Hasselbalch: pH = pKa + log([A-]/[HA]) — buffer best near pKa with 0.1<ratio<10
+    var pKa = -Math.log10(bf.ka);
+    var pHcurrent = pKa + Math.log10(bf.ratio);
+    // Add 20% more acid: HA increases by 20% of total, A- decreases by same. Recalc.
+    var totalConc = 1.0;
+    var ha = totalConc / (1 + bf.ratio);
+    var aMinus = totalConc - ha;
+    var deltaAcid = 0.2 * totalConc;
+    var newHA = ha + deltaAcid;
+    var newAMinus = Math.max(0.001, aMinus - deltaAcid);
+    var pHafter = pKa + Math.log10(newAMinus / newHA);
+    var pHshift = Math.abs(pHafter - pHcurrent);
+    // Discrete outcome: good buffer (<1.0 unit shift), poor buffer (>=1.0 unit shift)
+    var isGood = pHshift < 1.0;
+    var outcomeMeta = isGood
+      ? { label: '🛡️ GOOD BUFFER', desc: 'pH shifted only ' + pHshift.toFixed(2) + ' units after 20% more acid. Buffer is holding.', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+      : { label: '💥 POOR BUFFER', desc: 'pH shifted ' + pHshift.toFixed(2) + ' units — buffer overwhelmed. Use different conditions.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' };
+    function logObs() {
+      var obs = { pKa: parseFloat(pKa.toFixed(2)), ratio: parseFloat(bf.ratio.toFixed(2)), pH: parseFloat(pHcurrent.toFixed(2)), shift: parseFloat(pHshift.toFixed(2)), good: isGood };
+      setBF({ log: (bf.log || []).concat([obs]).slice(-8) });
+    }
+    return React.createElement('div', { className: 'rounded-2xl p-5 border space-y-4', style: Object.assign({}, glass, { background: 'rgba(3,30,40,0.85)', borderColor: 'rgba(8,145,178,0.3)' }) },
+      React.createElement('h3', { className: 'text-sm font-black text-cyan-400 mb-1' }, '🛡️ Buffer strength discovery'),
+      React.createElement('p', { className: 'text-[12px] text-slate-300 mb-3 leading-relaxed' },
+        'Three sliders: weak acid strength (Ka), buffer ratio [A⁻]/[HA], and starting pH. The simulation tells you whether the buffer HOLDS or FAILS after adding 20% more acid (discrete outcome — no numeric "buffer score"). Sweep the sliders. Log observations. Type what you discover about what makes a good buffer.'),
+      React.createElement('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
+        React.createElement('div', { className: 'text-base font-black mb-1', style: { color: outcomeMeta.color } }, outcomeMeta.label),
+        React.createElement('div', { className: 'text-[11px] text-slate-700' }, outcomeMeta.desc)
+      ),
+      React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+        [
+          { key: 'ka', label: 'Acid strength (pKa)', val: pKa, displayVal: pKa.toFixed(2), min: 2, max: 12, step: 0.1, onChange: function(v) { setBF({ ka: Math.pow(10, -v) }); } },
+          { key: 'ratio', label: '[A⁻]/[HA] ratio', val: bf.ratio, displayVal: bf.ratio.toFixed(2), min: 0.05, max: 20, step: 0.05, onChange: function(v) { setBF({ ratio: v }); } },
+          { key: 'startPH', label: 'Starting pH (display only)', val: pHcurrent, displayVal: pHcurrent.toFixed(2), min: 0, max: 14, step: 0.1, onChange: function(v) {}, readOnly: true }
+        ].map(function(s) {
+          return React.createElement('div', { key: s.key },
+            React.createElement('label', { htmlFor: 'bf-' + s.key, className: 'block text-[11px] font-bold text-slate-300 mb-1' },
+              s.label + ': ', React.createElement('span', { className: 'font-mono text-cyan-400' }, s.displayVal)),
+            React.createElement('input', { id: 'bf-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, disabled: s.readOnly,
+              onChange: function(e) { s.onChange(parseFloat(e.target.value)); },
+              className: 'w-full', 'aria-label': s.label }));
+        })
+      ),
+      React.createElement('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
+        React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-[11px] font-bold text-slate-200 border border-slate-600' }, '📋 Log observation'),
+        React.createElement('button', { onClick: function() { setBF({ ka: 1e-5, ratio: 1.0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+          className: 'px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-300 border border-slate-600' }, '↺ Reset'),
+        (bf.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-400 italic' }, (bf.log || []).length + ' observations logged')
+      ),
+      (bf.log || []).length > 0 && React.createElement('div', { className: 'mb-3 overflow-x-auto' },
+        React.createElement('table', { className: 'text-[10px] w-full border-collapse text-slate-300' },
+          React.createElement('thead', null, React.createElement('tr', { className: 'bg-slate-800' },
+            ['pKa', '[A⁻]/[HA]', 'starting pH', 'pH shift', 'outcome'].map(function(c, i) {
+              return React.createElement('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-700 text-left' }, c);
+            }))),
+          React.createElement('tbody', null, bf.log.map(function(o, idx) {
+            var rowBg = o.good ? 'rgba(16,185,129,0.10)' : 'rgba(220,38,38,0.10)';
+            return React.createElement('tr', { key: 'lr' + idx, style: { background: rowBg } },
+              React.createElement('td', { className: 'px-2 py-1 border border-slate-700 font-mono' }, o.pKa),
+              React.createElement('td', { className: 'px-2 py-1 border border-slate-700 font-mono' }, o.ratio),
+              React.createElement('td', { className: 'px-2 py-1 border border-slate-700 font-mono' }, o.pH),
+              React.createElement('td', { className: 'px-2 py-1 border border-slate-700 font-mono' }, o.shift),
+              React.createElement('td', { className: 'px-2 py-1 border border-slate-700' }, o.good ? 'GOOD' : 'POOR'));
+          })))
+      ),
+      React.createElement('div', { className: 'mb-3' },
+        React.createElement('label', { htmlFor: 'bf-hypo', className: 'block text-[11px] font-bold text-slate-300 mb-1' },
+          'Your hypothesis (free text — no right answer):'),
+        React.createElement('textarea', { id: 'bf-hypo', value: bf.hypothesis || '',
+          onChange: function(e) { setBF({ hypothesis: e.target.value }); },
+          placeholder: 'What single condition makes the difference between GOOD and POOR? Does ratio matter more than pKa? Does the starting pH matter at all? Type your own theory.',
+          className: 'w-full text-[12px] border border-slate-600 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 3 })
+      ),
+      React.createElement('div', { className: 'mb-3' },
+        !bf.stuckRevealed && React.createElement('button', { onClick: function() { setBF({ stuckRevealed: true }); },
+          className: 'px-2 py-1 rounded bg-amber-900/30 hover:bg-amber-800/40 text-[11px] font-bold text-amber-300 border border-amber-700' },
+          '🤔 I\'m stuck — show me questions to think about (no answers)'),
+        bf.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-300 leading-relaxed' },
+          React.createElement('div', { className: 'font-bold text-amber-300 mb-1' }, 'Open questions — investigate by manipulating:'),
+          React.createElement('ul', { className: 'list-disc pl-5 space-y-1' },
+            React.createElement('li', null, 'Fix ratio at 1.0. Sweep pKa from 2 to 12. Are some pKa values just inherently better buffers? Why might that be?'),
+            React.createElement('li', null, 'Set pKa = 4.74 (acetic acid). Sweep ratio from 0.05 to 20. At which ratios does the buffer hold? Is there a symmetric "good band"?'),
+            React.createElement('li', null, 'Find one GOOD buffer. Then change ONE slider until it becomes POOR. Which single change was most efficient?'),
+            React.createElement('li', null, 'Log 4-5 GOOD buffers with different pKa values. What do their starting pH values have in common with their pKa?'),
+            React.createElement('li', null, 'In real biochemistry, blood is buffered at pH 7.4 — what pKa would be ideal for that buffer system? Investigate by looking up phosphate and bicarbonate buffers.')),
+          React.createElement('div', { className: 'text-[10px] italic text-amber-400 mt-2' }, 'No answers will be revealed. Investigate.'))
+      ),
+      React.createElement('div', { className: 'p-3 rounded bg-emerald-900/20 border border-emerald-700' },
+        React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+          React.createElement('input', { type: 'checkbox', id: 'bf-und', checked: !!bf.understood, onChange: function(e) { setBF({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+          React.createElement('label', { htmlFor: 'bf-und', className: 'text-[12px] font-bold text-emerald-300 cursor-pointer' },
+            'I think I understand the trade-offs — let me explain them in my own words')),
+        bf.understood && React.createElement('textarea', { value: bf.explanation || '',
+          onChange: function(e) { setBF({ explanation: e.target.value }); },
+          placeholder: 'Explain in your own words: what is the relationship between pKa, ratio, and starting pH? What single condition (or combination) makes a buffer hold against more acid? Why does ratio range matter?',
+          className: 'w-full text-[12px] border border-emerald-700 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 4 }),
+        bf.understood && (bf.explanation || '').trim().length >= 40 && React.createElement('div', { className: 'mt-2 text-[10px] italic text-emerald-400' },
+          '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
+      ),
+      React.createElement('div', { className: 'mt-3 p-2 rounded bg-slate-900 border border-slate-700 text-[10px] italic text-slate-400' },
+        'Design note: no buffer-capacity score, no reveal button, no quiz validation. Outcome is shown as a discrete 2-state marker (GOOD / POOR), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.')
+    );
+  })()
 
 );
   }

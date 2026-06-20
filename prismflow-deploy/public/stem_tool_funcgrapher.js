@@ -149,6 +149,9 @@ window.StemLab = window.StemLab || {
             if (ct === 'cubic') return ca * x * x * x + cb * x + cc;
             if (ct === 'exponential') return ca * Math.pow(Math.E, cb * x) + cc;
             if (ct === 'absolute') return ca * Math.abs(x + cb) + cc;
+            if (ct === 'sqrt') return ca * Math.sqrt(x + cb) + cc;
+            if (ct === 'log') return ca * Math.log(x + cb) + cc;
+            if (ct === 'rational') return ca / (x + cb) + cc;
             return ca * x + cb;
           } : null;
 
@@ -170,6 +173,12 @@ window.StemLab = window.StemLab || {
 
             if (d.type === 'absolute') return d.a * Math.abs(x + d.b) + d.c;
 
+            if (d.type === 'sqrt') return d.a * Math.sqrt(x + d.b) + d.c;   // domain x ≥ −b; NaN outside (auto-skipped)
+
+            if (d.type === 'log') return d.a * Math.log(x + d.b) + d.c;     // natural log; domain x > −b
+
+            if (d.type === 'rational') return d.a / (x + d.b) + d.c;        // vertical asymptote at x = −b
+
             return d.a * x + d.b;
 
           };
@@ -188,7 +197,11 @@ window.StemLab = window.StemLab || {
 
           // Generate curve points
 
-          const pts = [];
+          // Curve as break-aware SEGMENTS: any invalid/out-of-range sample ends the current
+          // segment so a discontinuity (e.g. a rational's vertical asymptote, or a domain edge of
+          // sqrt/log) does NOT draw a spurious connecting line. Each segment renders as its own polyline.
+          const segments = [];
+          var curSeg = null;
 
           const derivPts = [];
 
@@ -204,7 +217,7 @@ window.StemLab = window.StemLab || {
 
             var dy = evalDeriv(x);
 
-            if (y >= yR.yMin && y <= yR.yMax) pts.push(toSX(x) + ',' + toSY(y));
+            if (isFinite(y) && y >= yR.yMin && y <= yR.yMax) { if (!curSeg) { curSeg = []; segments.push(curSeg); } curSeg.push(toSX(x) + ',' + toSY(y)); } else { curSeg = null; }
 
             if (dy >= yR.yMin && dy <= yR.yMax) derivPts.push(toSX(x) + ',' + toSY(dy));
 
@@ -314,6 +327,18 @@ window.StemLab = window.StemLab || {
             var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
             var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
             eqStr += amp + '|' + inner + '|' + fmtConst(d.c, false);
+          } else if (d.type === 'sqrt') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += amp + '√(' + inner + ')' + fmtConst(d.c, false);
+          } else if (d.type === 'log') {
+            var amp = d.a === 1 ? '' : d.a === -1 ? '-' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += amp + 'ln(' + inner + ')' + fmtConst(d.c, false);
+          } else if (d.type === 'rational') {
+            var num = d.a === -1 ? '-1' : '' + d.a;
+            var inner = d.b === 0 ? 'x' : d.b > 0 ? 'x + ' + d.b : 'x - ' + Math.abs(d.b);
+            eqStr += num + '/(' + inner + ')' + fmtConst(d.c, false);
           }
 
           // Build comparison equation string
@@ -327,6 +352,9 @@ window.StemLab = window.StemLab || {
             else if (ct === 'cubic') { var p = fmtCoeff(ca, 'x\u00B3', true) + fmtCoeff(cb, 'x', ca === 0) + fmtConst(cc, ca === 0 && cb === 0); eqStr2 += p || '0'; }
             else if (ct === 'exponential') { eqStr2 += (ca === 1 ? '' : ca) + 'e^(' + (cb === 1 ? 'x' : cb + 'x') + ')' + fmtConst(cc, false); }
             else if (ct === 'absolute') { eqStr2 += (ca === 1 ? '' : ca) + '|' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + '|' + fmtConst(cc, false); }
+            else if (ct === 'sqrt') { eqStr2 += (ca === 1 ? '' : ca === -1 ? '-' : ca) + '√(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
+            else if (ct === 'log') { eqStr2 += (ca === 1 ? '' : ca === -1 ? '-' : ca) + 'ln(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
+            else if (ct === 'rational') { eqStr2 += (ca === -1 ? '-1' : ca) + '/(' + (cb === 0 ? 'x' : cb > 0 ? 'x + ' + cb : 'x - ' + Math.abs(cb)) + ')' + fmtConst(cc, false); }
           }
 
           // ── Transformation labels ──
@@ -349,6 +377,20 @@ window.StemLab = window.StemLab || {
           if (d.b !== 0 && d.type === 'linear') {
             transformLabels.push({ text: 'y-intercept = ' + d.b, color: 'text-green-600 bg-green-50 border-green-200' });
           }
+          // Key-feature chips for the function families (domain restrictions + asymptotes + vertex)
+          if (d.type === 'quadratic' && d.a !== 0) {
+            transformLabels.push({ text: 'Vertex at x = ' + (-d.b / (2 * d.a)).toFixed(2), color: 'text-indigo-600 bg-indigo-50 border-indigo-200' });
+          }
+          if (d.type === 'sqrt') {
+            transformLabels.push({ text: 'Domain: x ≥ ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+          }
+          if (d.type === 'log') {
+            transformLabels.push({ text: 'Domain: x > ' + (-d.b) + ' · asymptote x = ' + (-d.b), color: 'text-amber-600 bg-amber-50 border-amber-200' });
+          }
+          if (d.type === 'rational') {
+            transformLabels.push({ text: 'Vertical asymptote: x = ' + (-d.b), color: 'text-rose-600 bg-rose-50 border-rose-200' });
+            transformLabels.push({ text: 'Horizontal asymptote: y = ' + d.c, color: 'text-rose-600 bg-rose-50 border-rose-200' });
+          }
 
 
 
@@ -366,7 +408,13 @@ window.StemLab = window.StemLab || {
 
             { id: 'exponential', label: t('stem.func_grapher.exponential'), emoji: '\uD83D\uDCC8' },
 
-            { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' }
+            { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' },
+
+            { id: 'sqrt', label: 'Square Root', emoji: '\u221A' },
+
+            { id: 'log', label: 'Logarithm', emoji: 'ln' },
+
+            { id: 'rational', label: 'Rational', emoji: '\u00F7' }
 
           ];
 
@@ -490,7 +538,8 @@ window.StemLab = window.StemLab || {
 
               // Main curve
 
-              pts.length > 1 && React.createElement("polyline", { points: pts.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5 }),
+              d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "5 4", "aria-label": "vertical asymptote at x = " + (-d.b) }),
+              segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(79,70,229,0.45))' } }) : null; }),
 
               // Comparison curve (orange)
               d.compare && comparePts.length > 1 && React.createElement("polyline", { points: comparePts.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }),
@@ -1038,7 +1087,7 @@ window.StemLab = window.StemLab || {
 
                     return React.createElement("button", { key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
-                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-' + cm.color + '-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-600', violet: 'bg-violet-600', red: 'bg-red-600', emerald: 'bg-emerald-600' }[cm.color]) || 'bg-indigo-600') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                     }, cm.label);
 
@@ -1112,7 +1161,7 @@ window.StemLab = window.StemLab || {
 
                         }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
 
-                      }, challengeMode === 'name' ? opt : 'x = ' + opt);
+                      }, challengeMode === 'name' ? opt : (challengeMode === 'yint' ? 'y = ' + opt : 'x = ' + opt));
 
                     })
 
@@ -1190,7 +1239,7 @@ window.StemLab = window.StemLab || {
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
               );
             })(),
 
@@ -1252,20 +1301,76 @@ window.StemLab = window.StemLab || {
                         c2.font = 'bold 9px sans-serif'; c2.fillStyle = fn.color; c2.textAlign = 'center';
                         c2.fillText(fn.name, ox, oy + cellH * 0.45);
                       });
-                      cvEl._fzAnim = requestAnimationFrame(drawFz);
                     }
+                    cvEl._fzAnim = 1;
                     drawFz();
                     var ro = new ResizeObserver(function() {
+                      if (!cvEl.isConnected) { ro.disconnect(); return; }
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2); drawFz();
                     });
                     ro.observe(cvEl);
                   },
                   style: { width: '100%', height: '100%', display: 'block' }
                 })
               )
-            )
-
+            ),
+            // === H7b'' inquiry widget: wave parameter discovery ===
+            (function() {
+              var iq = d._waveHunt || { amp: 1, freq: 1, phase: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              function setIQ(patch) { upd('_waveHunt', Object.assign({}, iq, patch)); }
+              var ampS = iq.amp > 1.5 ? 'tall' : (iq.amp < 0.5 ? 'short' : 'med');
+              var freqS = iq.freq > 2 ? 'fast' : (iq.freq < 0.5 ? 'slow' : 'med');
+              var state;
+              if (ampS === 'tall' && freqS === 'fast') state = 'tallFast';
+              else if (ampS === 'tall') state = 'tall';
+              else if (freqS === 'fast') state = 'fast';
+              else if (ampS === 'short') state = 'short';
+              else state = 'normal';
+              var sm = {
+                tallFast: { label: '🌊 Tall + Fast (intense)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+                tall:     { label: '🗻 Tall wave', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+                fast:     { label: '⚡ Fast cycle', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+                short:    { label: '〰️ Short wave', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
+                normal:   { label: '🟢 Standard', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+              }[state];
+              return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-violet-300 space-y-2' },
+                h('h3', { className: 'text-sm font-black text-violet-700' }, '🌊 Wave parameter discovery'),
+                h('p', { className: 'text-[11px] text-slate-700' }, 'Sliders for amplitude, frequency, phase. Discrete 5-state classification. No score, no reveal.'),
+                h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+                  h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
+                  h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'y = ' + iq.amp + ' sin(' + iq.freq + 'x + ' + iq.phase.toFixed(2) + ')')
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-2' },
+                  [{ k: 'amp', l: 'amplitude', mn: -3, mx: 3, st: 0.1 },
+                   { k: 'freq', l: 'frequency', mn: 0.1, mx: 3, st: 0.1 },
+                   { k: 'phase', l: 'phase', mn: -3.14, mx: 3.14, st: 0.1 }].map(function(s) {
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'wa-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
+                      h('input', { id: 'wa-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
+                        className: 'w-full', 'aria-label': s.l }));
+                  })
+                ),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amp, f: iq.freq, p: iq.phase.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does phase shift affect the visible wave?',
+                  className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
+                  h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                    h('li', null, 'Find two settings that produce visually identical waves.'),
+                    h('li', null, 'What does negative amplitude do?'))),
+                h('label', { className: 'flex items-center gap-1 text-[10px] font-bold text-emerald-800 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+                  'I understand — explain in own words'),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how each parameter shapes a sine wave.',
+                  className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+                h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 5-state marker; no wave score; no reveal — by design.')
+              );
+            })()
           )
       })();
     }

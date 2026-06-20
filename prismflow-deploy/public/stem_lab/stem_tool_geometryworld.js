@@ -3824,6 +3824,7 @@
 
         // Handle resize
         var ro = new ResizeObserver(function() {
+          if (!container.isConnected) { ro.disconnect(); return; }
           if (!container.clientWidth) return;
           engine.camera.aspect = container.clientWidth / container.clientHeight;
           engine.camera.updateProjectionMatrix();

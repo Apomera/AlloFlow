@@ -1305,6 +1305,7 @@ window.StemLab = window.StemLab || {
                     cvEl._fzAnim = 1;
                     drawFz();
                     var ro = new ResizeObserver(function() {
+                      if (!cvEl.isConnected) { ro.disconnect(); return; }
                       W = cvEl.offsetWidth; H = cvEl.offsetHeight;
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2); drawFz();
                     });
