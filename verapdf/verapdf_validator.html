@@ -46,10 +46,11 @@
   // /app (i.e. its URL path from the origin root). Jar at web-root → /app/verapdf-cli.jar;
   // jar at /assets/foo.jar → /app/assets/foo.jar. NOT a relative './' web URL.
   const JAR_URL = '/app/verapdf/verapdf-cli.jar';
+  const PDFBOX_JAR_URL = '/app/verapdf/pdfbox-app.jar'; // co-loaded for PDFBox structural repairs (Plan A)
 
   const $ = (id) => document.getElementById(id);
   const setStatus = (m) => { $('status').textContent = m; };
-  let foundry, ua1, FileInputStream, ready = false;
+  let foundry, ua1, FileInputStream, ready = false, _lib = null;
 
   // tiny throwaway PDF for warm-up (correct byte offsets via UTF-8 length)
   function warmPdf() {
@@ -138,6 +139,62 @@
     return { bytes: out, applied: [...new Set(applied)] };
   }
 
+  // ── PDFBox structural fallback (Plan A: PDFBox co-loaded at boot) ──
+  // Fixes the STRUCTURAL rules pdf-lib can't: 7.1t3 (content neither Artifact nor tagged),
+  // 7.1t11 (no StructTreeRoot). Writes bytes to the CheerpJ FS, repairs with PDFBox's low-level
+  // API, reads bytes back via Java Base64. INTEGRITY: gated to FULLY-UNTAGGED docs (no
+  // StructTreeRoot) so it never corrupts real tagging; the 7.1t3 /Artifact entry discloses for review.
+  async function _applyStructuralRepairs(bytes, failedRules) {
+    if (!_lib) return { bytes: bytes, applied: [] };
+    const has = (c, t) => failedRules.some((f) => f.clause === c && f.testNumber === t);
+    const needScaffold = has('7.1', 11); // StructTreeRoot missing → safe to add a skeleton (MarkInfo alone is pdf-lib's job, never triggers this)
+    // Artifact-wrap ONLY for fully-untagged docs (no StructTreeRoot = no real tagging to corrupt);
+    // a partially-tagged page that fails 7.1t3 needs MANUAL tagging — auto-wrapping it as Artifact would hide real content.
+    const needArtifact = has('7.1', 3) && needScaffold;
+    if (!needArtifact && !needScaffold) return { bytes: bytes, applied: [] };
+    const L = _lib, pb = L.org.apache.pdfbox;
+    const COSName = await pb.cos.COSName, COSArray = await pb.cos.COSArray, COSBoolean = await pb.cos.COSBoolean, COSDictionary = await pb.cos.COSDictionary;
+    const Loader = await pb.Loader, File = await L.java.io.File;
+    cheerpOSAddStringFile('/str/struct_in.pdf', bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+    const doc = await Loader.loadPDF(await new File('/str/struct_in.pdf'));
+    const applied = [];
+    try {
+      if (needArtifact) { // R-A: wrap each page's content as /Artifact
+        const PDPageContentStream = await pb.pdmodel.PDPageContentStream;
+        const AppendMode = await pb.pdmodel['PDPageContentStream$AppendMode']; // nested enum → $ binary name
+        const PREPEND = await AppendMode.PREPEND, APPEND = await AppendMode.APPEND;
+        const ARTIFACT = await COSName.getPDFName('Artifact');
+        const n = await doc.getNumberOfPages();
+        for (let i = 0; i < n; i++) {
+          const page = await doc.getPage(i);
+          const a = await new PDPageContentStream(doc, page, PREPEND, false, false); await a.beginMarkedContent(ARTIFACT); await a.close();
+          const b = await new PDPageContentStream(doc, page, APPEND, false, false); await b.endMarkedContent(); await b.close();
+        }
+        applied.push('§7.1t3:content→/Artifact (REVIEW: treated residual content as decorative)');
+      }
+      if (needScaffold) { // R-B: StructTreeRoot + /Document elem + empty ParentTree + MarkInfo
+        const cat = await doc.getDocumentCatalog();
+        const PDStructureTreeRoot = await pb.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
+        const PDStructureElement = await pb.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+        const str = await new PDStructureTreeRoot();
+        const docEl = await new PDStructureElement('Document', null);
+        await str.appendKid(docEl); await docEl.setParent(str);
+        const pt = await new COSDictionary(); await pt.setItem(await COSName.getPDFName('Nums'), await new COSArray());
+        await (await str.getCOSObject()).setItem(await COSName.getPDFName('ParentTree'), pt);
+        await cat.setStructureTreeRoot(str);
+        const mk = await new COSDictionary(); await mk.setItem(await COSName.getPDFName('Marked'), await COSBoolean.getBoolean(true));
+        await (await cat.getCOSObject()).setItem(await COSName.getPDFName('MarkInfo'), mk);
+        applied.push('§7.1t11:StructTreeRoot+/Document+ParentTree+MarkInfo');
+      }
+      await doc.save('/files/struct_out.pdf');
+      await doc.close();
+      const Files = await L.java.nio.file.Files, Base64 = await L.java.util.Base64;
+      const rb = await Files.readAllBytes(await (await new File('/files/struct_out.pdf')).toPath());
+      const b64 = await (await Base64.getEncoder()).encodeToString(rb);
+      return { bytes: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)), applied: applied };
+    } catch (e) { try { await doc.close(); } catch (_) {} throw e; }
+  }
+
   async function remediate(bytes, maxIters) {
     maxIters = maxIters || 5;
     let cur = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
@@ -148,9 +205,15 @@
       log.push(step);
       if (verdict.compliant) break;
       const rep = await _applyRepairs(cur, verdict.failedRules);
-      step.applied = rep.applied;
-      if (!rep.applied.length) break; // no recipe for the remaining rules — stop (ship best-effort)
+      step.applied = rep.applied.slice();
       cur = rep.bytes;
+      // structural fallback (PDFBox, co-loaded) for rules pdf-lib can't fix: 7.1t3 content-marking, 7.1t11 StructTreeRoot
+      const structRules = verdict.failedRules.filter((f) => f.clause === '7.1' && (f.testNumber === 3 || f.testNumber === 11)); // only the rules pdf-lib can't fix; MarkInfo (6.2t1) is pdf-lib's
+      if (structRules.length && _lib) {
+        try { const sr = await _applyStructuralRepairs(cur, verdict.failedRules); if (sr.applied.length) { cur = sr.bytes; step.applied = step.applied.concat(sr.applied); } }
+        catch (e) { step.structError = String(e && (e.message || e)); }
+      }
+      if (!step.applied.length) break; // nothing more is fixable — stop (ship best-effort)
     }
     let b = ''; for (let i = 0; i < cur.length; i += 8192) b += String.fromCharCode.apply(null, cur.subarray(i, i + 8192));
     return { compliant: !!(verdict && verdict.compliant), verdict: verdict, log: log, repairedB64: btoa(b) };
@@ -173,8 +236,14 @@
     try {
       setStatus('Starting Java runtime…');
       await cheerpjInit();
-      setStatus('Loading veraPDF…');
-      const lib = await cheerpjRunLibrary(JAR_URL);
+      // Co-load PDFBox for structural repairs ONLY if its jar is actually reachable — otherwise boot
+      // veraPDF-only so a missing/un-hosted jar can never break basic validation (CheerpJ allows one
+      // library thread, so the classpath is decided ONCE here). _lib gates the structural fallback.
+      let classpath = JAR_URL, pdfboxOk = false;
+      try { const r = await fetch(PDFBOX_JAR_URL.replace(/^\/app/, ''), { method: 'HEAD' }); if (r && r.ok) { classpath += ':' + PDFBOX_JAR_URL; pdfboxOk = true; } } catch (e) {}
+      setStatus(pdfboxOk ? 'Loading veraPDF + PDFBox…' : 'Loading veraPDF…');
+      const lib = await cheerpjRunLibrary(classpath);
+      if (pdfboxOk) _lib = lib; // enable the PDFBox structural fallback only when its jar loaded
       const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
       await Provider.initialise();
       const Foundries = await lib.org.verapdf.pdfa.Foundries;
