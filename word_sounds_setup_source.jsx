@@ -149,6 +149,48 @@
             return n;
         } catch (e) { return 0; }
     }
+    // Instruction + reinforcer SLOTS for the Voice Pack. Each slot is ONE friendly
+    // thing to record; recording it overrides a whole group of underlying
+    // __ALLO_INSTRUCTION_AUDIO keys at once — so a personalized cheer plays
+    // consistently even though the reinforcer playback otherwise randomizes across
+    // a pool of fb_* clips. Same swappable-bank pattern as the phoneme pack.
+    const PHONEME_PACK_CHEERS = [
+        { id: 'cheer_correct', label: 'Correct! cheer', hint: 'Plays on most right answers (e.g. "Great job!")', keys: ['fb_great_job', 'fb_nice', 'fb_keep_going', 'fb_way_to_go', 'fb_perfect', 'fb_correct', 'fb_you_got_it'] },
+        { id: 'cheer_streak', label: 'Hot-streak cheer', hint: 'For 5+ right in a row', keys: ['fb_on_fire', 'fb_excellent', 'fb_wow'] },
+        { id: 'cheer_levelup', label: 'Level-up cheer', hint: 'When they reach a new level', keys: ['fb_amazing'] },
+        { id: 'cheer_tryagain', label: 'Try-again (gentle)', hint: 'Encouragement after a miss', keys: ['fb_try_again_listen', 'fb_almost'] },
+    ];
+    const PHONEME_PACK_INSTRS = [
+        { id: 'how_many_sounds', label: 'How many sounds? (Counting)', keys: ['how_many_sounds'] },
+        { id: 'listen_to_sounds', label: 'Listen & blend (Blending)', keys: ['listen_to_sounds'] },
+        { id: 'break_the_word', label: 'Break it down (Segmentation)', keys: ['break_the_word'] },
+        { id: 'which_word_rhymes', label: 'Which word rhymes? (Rhyme Time)', keys: ['which_word_rhymes'] },
+        { id: 'trace_the_letter', label: 'Trace the letter', keys: ['trace_the_letter'] },
+        { id: 'match_sounds_to_letters', label: 'Match sounds to letters (Mapping)', keys: ['match_sounds_to_letters'] },
+        { id: 'spell_the_word', label: 'Spell the word', keys: ['spell_the_word'] },
+        { id: 'sort_the_sounds', label: 'Sort the sounds (Sound Sort)', keys: ['sort_the_sounds'] },
+        { id: 'find_word_family', label: 'Find the word family', keys: ['find_word_family'] },
+        { id: 'unscramble_the_word', label: 'Unscramble the word', keys: ['unscramble_the_word'] },
+        { id: 'find_missing_letter', label: 'Find the missing letter', keys: ['find_missing_letter'] },
+    ];
+    const INSTR_SLOT_KEYS = (function () { const m = {}; PHONEME_PACK_CHEERS.concat(PHONEME_PACK_INSTRS).forEach((s) => { m[s.id] = s.keys; }); return m; })();
+    function applyInstrToBank(instr) {
+        try {
+            if (!instr || !window.__ALLO_INSTRUCTION_AUDIO) return 0;
+            let n = 0;
+            Object.keys(instr).forEach((slot) => {
+                const clip = instr[slot]; if (!clip) return;
+                const keys = INSTR_SLOT_KEYS[slot] || [slot];
+                keys.forEach((k) => { window.__ALLO_INSTRUCTION_AUDIO[k] = clip; n++; });
+            });
+            return n;
+        } catch (e) { return 0; }
+    }
+    function instrReferenceClip(slot) {
+        // The DEFAULT recording for a slot, from the raw instruction bank (original
+        // even after an override), so the user can hear it before recording.
+        try { const keys = INSTR_SLOT_KEYS[slot] || [slot]; return (typeof window.getAudio === 'function') ? window.getAudio('instructions', keys[0]) : null; } catch (e) { return null; }
+    }
     // ── Voice Pack LIBRARY (Phase 1): manage several named packs on one device.
     // Each pack carries an optional studentName/studentId slot so a later phase
     // can bind packs to the class roster without a data-model change.
@@ -163,6 +205,7 @@
             kind: p.kind === 'student-voice' ? 'student-voice' : 'teacher-model',
             consent: p.consent === true,
             clips: (p.clips && typeof p.clips === 'object') ? p.clips : {},
+            instr: (p.instr && typeof p.instr === 'object') ? p.instr : {}, // instruction + reinforcer overrides, keyed by slot id
             history: (p.history && typeof p.history === 'object') ? p.history : {},
             studentName: typeof p.studentName === 'string' ? p.studentName : '',
             studentId: p.studentId || null,
@@ -274,6 +317,7 @@
         const [checks, setChecks] = React.useState({}); // { key: { state:'checking'|'done'|'error', match, clipped, note } }
         const [selfChecks, setSelfChecks] = React.useState({}); // { key: 'good' | 'retry' } — the student's OWN judgment (metacognition; on-device only)
         const [view, setView] = React.useState('record'); // 'record' | 'progress'
+        const [category, setCategory] = React.useState('sounds'); // 'sounds' | 'cheers' | 'instructions'
         const recorderRef = React.useRef(null);
         const fileInputRef = React.useRef(null);
         const clips = pack.clips || {};
@@ -335,30 +379,41 @@
             }).catch(() => setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'error', note: 'AI check failed.' } })));
         };
         const stopRecording = () => { try { if (recorderRef.current) recorderRef.current.stop(); } catch (e) {} };
-        const startRecording = (key) => {
+        const startRecording = (key, opts) => {
+            opts = opts || {};
+            const isInstr = !!opts.instr; // recording a cheer / instruction (writes pack.instr), not a phoneme
             if (!consentOk) { setStatus('Confirm consent below before recording a student voice.'); return; }
             if (recordingKey) { stopRecording(); return; }
             const voice = window.AlloFlowVoice;
             if (!voice || typeof voice.recordAudioBlob !== 'function') { setStatus('🎙️ Recording needs the in-app microphone — open in Canvas.'); return; }
-            const ctrl = voice.recordAudioBlob({ maxDurationMs: 4000, preferredMimeType: 'audio/webm;codecs=opus', onError: () => { setStatus('Microphone access was blocked.'); setRecordingKey(null); recorderRef.current = null; } });
+            const ctrl = voice.recordAudioBlob({ maxDurationMs: isInstr ? 8000 : 4000, preferredMimeType: 'audio/webm;codecs=opus', onError: () => { setStatus('Microphone access was blocked.'); setRecordingKey(null); recorderRef.current = null; } });
             if (!ctrl || !ctrl.supported) { setStatus('Recording is not supported in this browser.'); return; }
             recorderRef.current = ctrl;
             setRecordingKey(key);
-            setStatus('● Recording /' + key + '/' + (PHONEME_PACK_EXAMPLES[key] ? ' (like ' + PHONEME_PACK_EXAMPLES[key] + ')' : '') + ' — tap again to stop.');
+            setStatus('● Recording ' + (opts.label || ('/' + key + '/' + (PHONEME_PACK_EXAMPLES[key] ? ' (like ' + PHONEME_PACK_EXAMPLES[key] + ')' : ''))) + ' — tap again to stop.');
             ctrl.result.then(async (rec) => {
                 if (rec && rec.base64) {
                     let finalClip = rec.base64;
-                    if (cleanOn) { setStatus('✂️ Cleaning up /' + key + '/…'); try { finalClip = await cleanPhonemeClip(rec.base64); } catch (e) { finalClip = rec.base64; } }
+                    if (cleanOn) { setStatus('✂️ Cleaning up…'); try { finalClip = await cleanPhonemeClip(rec.base64); } catch (e) { finalClip = rec.base64; } }
                     const clip = finalClip;
-                    setPack((prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
-                    setStatus('✓ Recorded /' + key + '/. Tap 🔊 to hear it, then Save & Use.');
-                    logAttempt(key);
-                    if (aiCheckOn) runAiCheck(key, clip);
+                    if (isInstr) {
+                        setPack((prev) => Object.assign({}, prev, { instr: Object.assign({}, prev.instr, { [key]: clip }) }));
+                        setStatus('✓ Recorded ' + (opts.label || key) + '. Tap 🔊 to hear it, then Save & Use.');
+                    } else {
+                        setPack((prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
+                        setStatus('✓ Recorded /' + key + '/. Tap 🔊 to hear it, then Save & Use.');
+                        logAttempt(key);
+                        if (aiCheckOn) runAiCheck(key, clip);
+                    }
                 }
                 if (recorderRef.current === ctrl) recorderRef.current = null;
                 setRecordingKey(null);
             }).catch(() => { if (recorderRef.current === ctrl) recorderRef.current = null; setRecordingKey(null); });
         };
+        const instr = pack.instr || {};
+        const playInstrClip = (slot) => { const d = instr[slot]; if (!d) return; try { new Audio(d).play().catch(() => {}); } catch (e) {} };
+        const clearInstrClip = (slot) => setPack((prev) => { const c = Object.assign({}, prev.instr); delete c[slot]; return Object.assign({}, prev, { instr: c }); });
+        const playInstrReference = (slot) => { const ref = instrReferenceClip(slot); if (!ref) { setStatus('No default recording to preview for this one.'); return; } try { new Audio(ref).play().catch(() => {}); } catch (e) {} };
         const playClip = (key) => { const d = clips[key]; if (!d) return; try { const a = new Audio(d); a.play().catch(() => {}); } catch (e) {} };
         const playReference = (key) => {
             const ref = phonemeReferenceClip(key);
@@ -403,12 +458,14 @@
         };
         const savePack = () => {
             const applied = applyPhonemeVoicePackToBank(pack.clips);
+            const appliedInstr = Object.keys(pack.instr || {}).length ? applyInstrToBank(pack.instr) > 0 : false;
             const ok = persist();
-            setStatus(ok ? ('✅ Saved and active now (' + applied + ' sounds). Word Sounds will use this voice.') : ('Active for this session (' + applied + ' sounds), but the pack was too large for browser storage — use Export to keep it as a file.'));
+            const extra = appliedInstr ? ' + your cheers/instructions' : '';
+            setStatus(ok ? ('✅ Saved and active now (' + applied + ' sounds' + extra + '). Word Sounds will use this voice.') : ('Active for this session (' + applied + ' sounds), but the pack was too large for browser storage — use Export to keep it as a file.'));
         };
         const exportPack = () => {
             try {
-                const data = { version: 1, type: 'alloPhonemePack', kind: kind, name: pack.name || 'My Voice Pack', studentName: pack.studentName || '', studentId: pack.studentId || null, exportDate: new Date().toISOString(), phonemes: pack.clips, history: pack.history || {} };
+                const data = { version: 1, type: 'alloPhonemePack', kind: kind, name: pack.name || 'My Voice Pack', studentName: pack.studentName || '', studentId: pack.studentId || null, exportDate: new Date().toISOString(), phonemes: pack.clips, instr: pack.instr || {}, history: pack.history || {} };
                 const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -428,7 +485,7 @@
                     const incoming = (data && (data.phonemes || data.clips)) || null;
                     if (!incoming || typeof incoming !== 'object') { setStatus('That file is not a phoneme pack.'); return; }
                     const id = genPhonemePackId();
-                    setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: (data && data.name) || 'Imported Pack', kind: (data && data.kind === 'student-voice') ? 'student-voice' : 'teacher-model', consent: false, clips: incoming, history: (data && data.history && typeof data.history === 'object') ? data.history : {}, studentName: (data && data.studentName) || '' })]) }));
+                    setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: (data && data.name) || 'Imported Pack', kind: (data && data.kind === 'student-voice') ? 'student-voice' : 'teacher-model', consent: false, clips: incoming, instr: (data && data.instr && typeof data.instr === 'object') ? data.instr : {}, history: (data && data.history && typeof data.history === 'object') ? data.history : {}, studentName: (data && data.studentName) || '' })]) }));
                     setChecks({}); setSelfChecks({});
                     setStatus('📥 Imported as a new pack (' + Object.keys(incoming).length + ' sounds). Tap Save & Use to apply.');
                 } catch (err) { setStatus('Could not read that file.'); }
@@ -521,6 +578,13 @@
                             );
                         })() : (
                         <div className="space-y-4">
+                        <div className="flex gap-1 flex-wrap">
+                            <button type="button" onClick={() => setCategory('sounds')} className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${category === 'sounds' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>🔤 {T('word_sounds.voice_pack_cat_sounds', 'Sounds')}</button>
+                            <button type="button" onClick={() => setCategory('cheers')} className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${category === 'cheers' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>🎉 {T('word_sounds.voice_pack_cat_cheers', 'Cheers')}</button>
+                            <button type="button" onClick={() => setCategory('instructions')} className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${category === 'instructions' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>💬 {T('word_sounds.voice_pack_cat_instr', 'Instructions')}</button>
+                        </div>
+                        {category === 'sounds' ? (
+                        <div className="space-y-4">
                         {(() => {
                             const readyWords = PHONEME_PACK_WORDS.filter(wordReady);
                             return (
@@ -574,6 +638,29 @@
                                 </div>
                             </div>
                         ))}
+                        </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="text-[10px] text-slate-500 leading-snug">{category === 'cheers' ? T('word_sounds.voice_pack_cheers_intro', "Record praise in your (or a parent's) voice — the app plays it when the student gets things right, as a personalized reinforcer. Tap 👂 to hear the default first.") : T('word_sounds.voice_pack_instr_intro', 'Record the task directions in your own voice, clear and unhurried. Empty ones keep the default narration. Tap 👂 to hear the default first.')}</div>
+                                {(category === 'cheers' ? PHONEME_PACK_CHEERS : PHONEME_PACK_INSTRS).map((slot) => {
+                                    const hasI = !!instr[slot.id];
+                                    const recI = recordingKey === slot.id;
+                                    const hasRefI = !!instrReferenceClip(slot.id);
+                                    return (
+                                        <div key={slot.id} className={`flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${hasI ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-bold text-slate-800 text-sm leading-tight">{slot.label} {hasI && <span className="text-emerald-600">✓</span>}</div>
+                                                {slot.hint ? <div className="text-[10px] text-slate-500 leading-snug">{slot.hint}</div> : null}
+                                            </div>
+                                            <button type="button" onClick={() => playInstrReference(slot.id)} disabled={!hasRefI} aria-label={'Hear the default for ' + slot.label} title="Hear the default" className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRefI ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
+                                            <button type="button" onClick={() => startRecording(slot.id, { instr: true, label: slot.label })} disabled={!consentOk} aria-label={recI ? ('Stop recording ' + slot.label) : ('Record ' + slot.label)} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? 'bg-red-500 text-white animate-pulse' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{recI ? '⏹' : '🎙️'}</button>
+                                            <button type="button" onClick={() => playInstrClip(slot.id)} disabled={!hasI} aria-label={'Play your recording of ' + slot.label} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasI ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>🔊</button>
+                                            <button type="button" onClick={() => clearInstrClip(slot.id)} disabled={!hasI} aria-label={'Clear ' + slot.label} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${hasI ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-200 cursor-not-allowed'}`}>🗑️</button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                         </div>
                         )}
                     </div>
@@ -670,8 +757,12 @@
         // its defaults on each page load). No-op when no pack is saved.
         React.useEffect(() => {
             try {
-                const savedClips = getActiveVoicePackClips();
-                if (savedClips && Object.keys(savedClips).length) applyPhonemeVoicePackToBank(savedClips);
+                const _lib = loadVoicePackLibrary();
+                const _active = _lib.packs.find((p) => p.id === _lib.activeId) || _lib.packs[0];
+                if (_active) {
+                    if (_active.clips && Object.keys(_active.clips).length) applyPhonemeVoicePackToBank(_active.clips);
+                    if (_active.instr && Object.keys(_active.instr).length) applyInstrToBank(_active.instr);
+                }
             } catch (e) {}
         }, []);
         const [generatedCount, setGeneratedCount] = React.useState(0);
