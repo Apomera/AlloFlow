@@ -187,6 +187,28 @@
   // ── Completion record (Tier-1, honestly labelled, upgrade-ready) ───────────
   // nowISO is passed in (not read from the clock) so the record is deterministic
   // and testable, and so the same builder works at Tier 2/3 server issuance.
+  // Capture the learner's actual written work so the record is a real portfolio
+  // (their reflections, the actions they committed to, and any scenario response),
+  // not just pass/fail. Reads each activity's raw interaction from resultsById.
+  function collectResponses(mod, resultsById) {
+    var out = [];
+    (mod.sections || []).forEach(function (sec) {
+      (sec.activities || []).forEach(function (act) {
+        var raw = (resultsById[act.id] && resultsById[act.id].raw) || {};
+        if (act.type === 'reflect' && typeof raw.text === 'string' && raw.text.trim()) {
+          out.push({ activityId: act.id, type: 'reflect', title: act.title, response: raw.text.trim() });
+        } else if (act.type === 'checklist' && Array.isArray(raw.checked)) {
+          var items = (act.content && act.content.items) || [];
+          var chosen = items.filter(function (_it, i) { return !!raw.checked[i]; });
+          if (chosen.length) out.push({ activityId: act.id, type: 'checklist', title: act.title, response: chosen });
+        } else if (act.type === 'sim' && (typeof raw.response === 'string' && raw.response.trim() || isNum(raw.masteryScore))) {
+          out.push({ activityId: act.id, type: 'sim', title: act.title, response: (raw.response || '').trim(), masteryScore: isNum(raw.masteryScore) ? raw.masteryScore : null, feedback: raw.feedback || '' });
+        }
+      });
+    });
+    return out;
+  }
+
   function buildCompletionRecord(mod, resultsById, learner, nowISO) {
     var ev = evaluateModule(mod, resultsById);
     return {
@@ -198,6 +220,9 @@
       completedAt: nowISO || null,
       complete: ev.complete,
       perActivity: ev.perActivity.map(function (p) { return { activityId: p.activityId, type: p.type, score: p.score, passed: p.passed }; }),
+      // The learner's own written work (reflections, committed actions, scenario
+      // responses) — makes the downloaded record a portfolio artifact.
+      responses: collectResponses(mod, resultsById),
       // Honest trust framing — this is NOT an accredited credential. A Tier-2
       // server issuer or Tier-4 (MAIER/UMaine) re-issues from this same record.
       issuer: { kind: 'self-paced', verified: false, note: 'Self-paced completion record generated on-device — not an accredited credential or verified contact hours.' }

@@ -180,6 +180,28 @@ describe('evaluateModule + buildCompletionRecord', () => {
     expect(rec.issuer.note).toMatch(/not an accredited credential/i);
     expect(rec.perActivity).toHaveLength(3);
   });
+
+  it('captures learner responses (reflection / commitments / sim) as a portfolio', () => {
+    const mod = {
+      schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'm', title: 'M' },
+      sections: [{ title: 'S', activities: [
+        { id: 'r', type: 'reflect', title: 'Reflect', content: { prompt: '?' }, gate: { kind: 'none' } },
+        { id: 'c', type: 'checklist', title: 'Commit', content: { items: ['A', 'B', 'C'] }, gate: { kind: 'none' } },
+        { id: 's', type: 'sim', title: 'Scenario', content: { scenario: 'x' }, gate: { kind: 'none' } },
+      ] }],
+    };
+    const r = {
+      r: PD.normalizeResult(mod.sections[0].activities[0], { text: 'my reflection' }),
+      c: PD.normalizeResult(mod.sections[0].activities[1], { checked: [true, false, true] }),
+      s: PD.normalizeResult(mod.sections[0].activities[2], { response: 'my response', masteryScore: 70, feedback: 'good' }),
+    };
+    const rec = PD.buildCompletionRecord(mod, r, { name: 'Pat' }, '2026-06-20T00:00:00.000Z');
+    const byType = {}; rec.responses.forEach((x) => { byType[x.type] = x; });
+    expect(byType.reflect.response).toBe('my reflection');
+    expect(byType.checklist.response).toEqual(['A', 'C']);   // only checked items
+    expect(byType.sim.response).toBe('my response');
+    expect(byType.sim.masteryScore).toBe(70);
+  });
 });
 
 describe('shipped PD catalog', () => {
