@@ -22874,6 +22874,10 @@ window.SelHub = window.SelHub || {
                   var isDone = i < activityStep;
                   var isCurrent = i === activityStep;
                   return h('div', {                     key: i,
+                    role: isCurrent ? 'button' : undefined,
+                    tabIndex: isCurrent ? 0 : undefined,
+                    'aria-disabled': isCurrent ? undefined : true,
+                    onKeyDown: isCurrent ? function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } } : undefined,
                     onClick: function() {
                       if (i === activityStep) {
                         upd('activityStep', activityStep + 1);
@@ -23346,6 +23350,10 @@ window.SelHub = window.SelHub || {
                   var isStepDone = i < movementStep;
                   var isCurrent = i === movementStep;
                   return h('div', {                     key: i,
+                    role: isCurrent ? 'button' : undefined,
+                    tabIndex: isCurrent ? 0 : undefined,
+                    'aria-disabled': isCurrent ? undefined : true,
+                    onKeyDown: isCurrent ? function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } } : undefined,
                     onClick: function() {
                       if (i === movementStep) {
                         var nextStep = movementStep + 1;
@@ -23653,6 +23661,10 @@ window.SelHub = window.SelHub || {
                     var isStepDone = i < techStep;
                     var isCurrent = i === techStep;
                     return h('div', {                       key: i,
+                      role: isCurrent ? 'button' : undefined,
+                      tabIndex: isCurrent ? 0 : undefined,
+                      'aria-disabled': isCurrent ? undefined : true,
+                      onKeyDown: isCurrent ? function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } } : undefined,
                       onClick: function() {
                         if (i === techStep) {
                           var next = techStep + 1;
