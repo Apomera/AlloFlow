@@ -2803,12 +2803,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var doseRef = useRef(doseStrength);
         var mutRef = useRef(mutRate);
         var autoRunRef2 = useRef(autoRun);
+        var tickRef = useRef(tick);
+        var historyRef = useRef(history);
         // Mirror state into refs every render so the long-lived RAF closure
         // sees the latest values without re-mounting.
         antibioticRef.current = antibiotic;
         doseRef.current = doseStrength;
         mutRef.current = mutRate;
         autoRunRef2.current = autoRun;
+        tickRef.current = tick;
+        historyRef.current = history;
 
         var initPopulation = function() {
           var pop = [];
@@ -2872,10 +2876,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             });
           }
           bacteriaRef.current = next;
-          var t = tick + 1;
+          // Read tick + history from the REFS (not the captured render values) so
+          // the long-lived auto-run RAF closure advances correctly instead of
+          // always appending to the stale initial snapshot (tick stuck at 1).
+          var t = tickRef.current + 1;
           var resistantCount = next.filter(function(b) { return b.r > 0.5; }).length;
-          setTick(t);
-          setHistory(history.concat([{ tick: t, pop: next.length, resistant: resistantCount, anti: antiOn }]).slice(-80));
+          tickRef.current = t; setTick(t);
+          var newHist = historyRef.current.concat([{ tick: t, pop: next.length, resistant: resistantCount, anti: antiOn }]).slice(-80);
+          historyRef.current = newHist; setHistory(newHist);
           if (next.length === 0) setAutoRun(false); // population extinct
         };
 
