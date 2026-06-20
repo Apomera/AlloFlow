@@ -2444,6 +2444,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               h('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
               h('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
             ),
+            // Efficiency-vs-stroke-rate curve: efficiency = length·0.5 + kick·0.3 − |rate−50|·0.4,
+            // a tent peaking at rate ≈ 50. Holding length+kick at the current sliders, sweep rate so
+            // the optimum is visible — the "faster isn't better; lengthen the pull" insight made visual.
+            (function() {
+              var L = iq.length, K = iq.kick;
+              var effAt = function(r) { return L * 0.5 + K * 0.3 - Math.abs(r - 50) * 0.4; };
+              var W = 300, Hc = 110, padL = 26, padR = 10, padT = 14, padB = 22;
+              var maxE = L * 0.5 + K * 0.3, minE = maxE - 20, span = Math.max(1, maxE - minE);
+              var px = function(r) { return padL + (r / 100) * (W - padL - padR); };
+              var py = function(e) { return padT + (1 - (e - minE) / span) * (Hc - padT - padB); };
+              var pts = [];
+              for (var r = 0; r <= 100; r += 5) pts.push(px(r).toFixed(1) + ',' + py(effAt(r)).toFixed(1));
+              var curE = effAt(iq.rate);
+              return h('svg', { viewBox: '0 0 ' + W + ' ' + Hc, width: '100%', style: { maxWidth: 340, display: 'block', margin: '0 auto 10px', background: '#0b1220', borderRadius: 8, border: '1px solid rgba(8,145,178,0.35)' }, role: 'img', 'aria-label': 'Efficiency versus stroke rate. With your current length and kick, efficiency peaks at a moderate stroke rate near 50, not at the fastest rate.' },
+                h('line', { x1: padL, y1: padT, x2: padL, y2: Hc - padB, stroke: '#334155', strokeWidth: 1 }),
+                h('line', { x1: padL, y1: Hc - padB, x2: W - padR, y2: Hc - padB, stroke: '#334155', strokeWidth: 1 }),
+                h('line', { x1: px(50), y1: padT, x2: px(50), y2: Hc - padB, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }),
+                h('text', { x: px(50), y: padT - 4, fill: '#22c55e', fontSize: 8, textAnchor: 'middle' }, 'optimal rate'),
+                h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#67e8f9', strokeWidth: 2 }),
+                h('circle', { cx: px(iq.rate), cy: py(curE), r: 4, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
+                h('text', { x: px(iq.rate), y: py(curE) - 7, fill: '#fbbf24', fontSize: 8, textAnchor: 'middle', fontWeight: 'bold' }, 'you'),
+                h('text', { x: (padL + W - padR) / 2, y: Hc - 5, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'Stroke rate →'),
+                h('text', { x: 4, y: padT + 4, fill: '#94a3b8', fontSize: 8 }, 'eff')
+              );
+            })(),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
               [{ k: 'rate', l: 'Stroke rate' }, { k: 'length', l: 'Length per stroke' }, { k: 'kick', l: 'Kick intensity' }].map(function(s) {
                 return h('div', { key: s.k },

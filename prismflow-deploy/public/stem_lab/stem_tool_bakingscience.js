@@ -1226,6 +1226,29 @@
                 })
               )
             ),
+            // Reaction-temperature scale: where the current oven temp sits relative to the key
+            // baking-chemistry thresholds (steam, Maillard browning, caramelization, burn).
+            (function() {
+              var lo = 32, hi = 450, W = 320, H = 60, x0 = 10, x1 = 310, yBar = 30, hBar = 10;
+              var sx = function(f) { return x0 + (Math.max(lo, Math.min(hi, f)) - lo) / (hi - lo) * (x1 - x0); };
+              var marks = [{ f: 212, label: 'Steam' }, { f: 310, label: 'Maillard' }, { f: 340, label: 'Caramel' }, { f: 400, label: 'Burn' }];
+              return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', className: 'mt-3', role: 'img', 'aria-label': 'Reaction temperature scale. Current oven temperature ' + formatTemp(temp) + '. Thresholds: steam at ' + formatTemp(212) + ', Maillard browning at ' + formatTemp(310) + ', caramelization at ' + formatTemp(340) + ', burn at ' + formatTemp(400) + '.' },
+                h('defs', null,
+                  h('linearGradient', { id: 'bakeTempGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#38bdf8' }),
+                    h('stop', { offset: '45%', stopColor: '#fbbf24' }),
+                    h('stop', { offset: '78%', stopColor: '#f97316' }),
+                    h('stop', { offset: '100%', stopColor: '#dc2626' }))),
+                h('rect', { x: x0, y: yBar, width: x1 - x0, height: hBar, rx: 5, fill: 'url(#bakeTempGrad)' }),
+                marks.map(function(m) {
+                  return h('g', { key: m.f },
+                    h('line', { x1: sx(m.f), y1: yBar - 3, x2: sx(m.f), y2: yBar + hBar + 3, stroke: '#fff', strokeWidth: 1.5, opacity: 0.85 }),
+                    h('text', { x: sx(m.f), y: yBar - 5, textAnchor: 'middle', fontSize: 8, fill: '#fed7aa', fontWeight: 700 }, m.label));
+                }),
+                h('polygon', { points: (sx(temp) - 4) + ',' + (yBar + hBar + 4) + ' ' + (sx(temp) + 4) + ',' + (yBar + hBar + 4) + ' ' + sx(temp) + ',' + (yBar + hBar + 10), fill: '#fff' }),
+                h('text', { x: Math.max(x0 + 12, Math.min(x1 - 12, sx(temp))), y: H - 3, textAnchor: 'middle', fontSize: 9, fill: '#fff', fontWeight: 800 }, formatTemp(temp))
+              );
+            })(),
             // Current + next event
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4' },
               latest ? h('div', { className: 'rounded-2xl bg-white border-2 border-rose-200 p-4' },

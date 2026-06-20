@@ -2782,6 +2782,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 r.note);
             })
           ),
+          // Capacity-factor bar chart — the renewables-literacy crux: nameplate MW is misleading;
+          // what matters is the fraction of that nameplate actually delivered over a year. Typical
+          // values (consistent with the cf column ranges above; sources cited in the table footer).
+          (function() {
+            var CF = [
+              { icon: '☀️', name: 'Solar PV', cf: 23, color: '#fbbf24' },
+              { icon: '🌬️', name: 'Wind', cf: 35, color: '#38bdf8' },
+              { icon: '🌊', name: 'Hydro', cf: 40, color: '#22d3ee' },
+              { icon: '🌋', name: 'Geothermal', cf: 74, color: '#f97316' },
+              { icon: '🔥', name: 'Gas (combined-cycle)', cf: 57, color: '#94a3b8' },
+              { icon: '⚛️', name: 'Nuclear', cf: 93, color: '#a78bfa' }
+            ];
+            var W = 290, rowH = 20, padT = 8, barX = 120, barW = 150;
+            var Hh = padT + CF.length * rowH + 4;
+            var sx = function(p) { return (p / 100) * barW; };
+            return h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 2 } }, 'Capacity factor — typical % of nameplate actually delivered'),
+              h('div', { style: { fontSize: 10, color: T.muted, marginBottom: 6, lineHeight: 1.45 } }, 'A 1 MW solar farm and a 1 MW nuclear plant have the same nameplate — but very different annual output. This is why nameplate MW alone is misleading.'),
+              h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Capacity factor by source: ' + CF.map(function(s) { return s.name + ' ' + s.cf + '%'; }).join(', ') + '.' },
+                CF.map(function(s, i) {
+                  var y = padT + i * rowH;
+                  return h('g', { key: s.name },
+                    h('text', { x: 2, y: y + 11, fontSize: 9, fill: T.text }, s.icon + ' ' + s.name),
+                    h('rect', { x: barX, y: y + 2, width: barW, height: 11, rx: 3, fill: 'rgba(148,163,184,0.18)' }),
+                    h('rect', { x: barX, y: y + 2, width: sx(s.cf), height: 11, rx: 3, fill: s.color }),
+                    h('text', { x: barX + sx(s.cf) + 4, y: y + 11, fontSize: 9, fontWeight: 700, fill: T.text }, s.cf + '%'));
+                })
+              )
+            );
+          })(),
           footer()
         );
       }

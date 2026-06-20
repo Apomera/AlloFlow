@@ -19650,6 +19650,30 @@ var d = (labToolData && labToolData._aquarium) || {};
                   ),
                   // Right column \u2014 diagnosis + scenarios
                   React.createElement('div', { className: 'lg:col-span-5 space-y-3' },
+                    // Nitrogen-cycle STAGE indicator — reads the current ammonia/nitrite/nitrate and shows
+                    // where THIS tank sits in the cycle (the core fishkeeping concept). The static
+                    // NH3->NO2->NO3 diagram elsewhere explains the path; this shows your position on it.
+                    (function () {
+                      var amm = +params.ammonia || 0, ni = +params.nitrite || 0, na = +params.nitrate || 0;
+                      var stageIdx = (amm < 0.25 && ni < 0.25 && na >= 5) ? 3 : (ni >= 0.25 ? 2 : (amm >= 0.25 ? 1 : 0));
+                      var STAGES = [
+                        { k: 'Fresh', color: '#64748b', desc: 'New water, no ammonia source yet — cycling has not begun.' },
+                        { k: 'NH₃ spike', color: '#dc2626', desc: 'Ammonia is rising (toxic). Nitrosomonas bacteria begin converting it to nitrite.' },
+                        { k: 'NO₂⁻ spike', color: '#ea580c', desc: 'Nitrite is rising (also toxic). Nitrobacter/Nitrospira convert it to nitrate.' },
+                        { k: 'Cycled', color: '#16a34a', desc: 'Ammonia & nitrite ≈ 0, nitrate present — bacteria established. Safe; keep nitrate down with water changes.' }
+                      ];
+                      return React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
+                        React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, '— Nitrogen cycle stage'),
+                        React.createElement('div', { className: 'flex items-center gap-1 mb-2 flex-wrap' },
+                          STAGES.map(function (s, i) {
+                            return React.createElement(React.Fragment, { key: s.k },
+                              i > 0 && React.createElement('span', { className: 'text-slate-300 text-[10px]' }, '→'),
+                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-400 bg-slate-100'), style: i === stageIdx ? { background: s.color } : {} }, s.k));
+                          })
+                        ),
+                        React.createElement('p', { className: 'text-[11px] text-slate-700 leading-snug' }, STAGES[stageIdx].desc)
+                      );
+                    })(),
                     // Diagnosis
                     React.createElement('div', { className: 'rounded-2xl border-2 border-violet-300 bg-white p-3' },
                       React.createElement('h4', { className: 'text-[12px] font-extrabold text-violet-900 uppercase tracking-wide mb-2' }, '\u2014 Live Diagnosis'),

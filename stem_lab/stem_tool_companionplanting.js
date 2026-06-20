@@ -3855,6 +3855,26 @@ var d = (labToolData.companionPlanting) || {};
                       sp.pollinator && h('span', { className: 'bg-purple-50 text-purple-700 px-2 py-0.5 rounded' }, '🐝 Attracts pollinators'),
                       sp.regen && h('span', { className: 'bg-teal-50 text-teal-700 px-2 py-0.5 rounded' }, '♻️ Regenerative'),
                       sp.native && h('span', { className: 'bg-green-50 text-green-700 px-2 py-0.5 rounded' }, '🏔️ Native species')),
+                    companions.length > 0 && (function() {
+                      var sorted = companions.slice().sort(function(a, b) { return b.bonus - a.bonus; });
+                      var maxMag = Math.max.apply(null, sorted.map(function(c) { return Math.abs(c.bonus); }).concat([10]));
+                      var W = 240, rowH = 18, cx = 116, half = 94, padT = 16, Hh = padT + sorted.length * rowH + 4;
+                      return h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', style: { maxWidth: 300 }, role: 'img', 'aria-label': 'Companion strength for ' + sp.label + '. Green bars to the right are helpful neighbors, red bars to the left are plants to keep apart; longer bars mean a stronger effect.' },
+                        h('text', { x: cx - 4, y: 10, textAnchor: 'end', fontSize: 8, fill: '#dc2626', fontWeight: 700 }, '← keep apart'),
+                        h('text', { x: cx + 4, y: 10, textAnchor: 'start', fontSize: 8, fill: '#059669', fontWeight: 700 }, 'good neighbor →'),
+                        h('line', { x1: cx, y1: padT - 2, x2: cx, y2: Hh - 2, stroke: '#cbd5e1', strokeWidth: 1 }),
+                        sorted.map(function(c, i) {
+                          var other = c.a === cgSelectedPlant ? c.b : c.a;
+                          var om = CG_PLANTS[other];
+                          var y = padT + i * rowH;
+                          var w = Math.abs(c.bonus) / maxMag * half;
+                          var pos = c.bonus > 0;
+                          return h('g', { key: other },
+                            h('rect', { x: pos ? cx : cx - w, y: y + 3, width: w, height: 10, rx: 2, fill: pos ? '#34d399' : '#f87171' }),
+                            h('text', { x: pos ? cx + w + 3 : cx - w - 3, y: y + 12, textAnchor: pos ? 'start' : 'end', fontSize: 9, fill: '#475569' }, (om ? om.emoji : '') + ' ' + (c.bonus > 0 ? '+' : '') + c.bonus));
+                        })
+                      );
+                    })(),
                     friends.length > 0 && h('div', { className: 'text-[11px]' },
                       h('span', { className: 'font-bold text-emerald-700' }, '✅ Good neighbors: '),
                       friends.map(function(f) { var other = f.a === cgSelectedPlant ? f.b : f.a; return CG_PLANTS[other] ? CG_PLANTS[other].emoji + ' ' + CG_PLANTS[other].label : other; }).join(', ')),
