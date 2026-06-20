@@ -15,6 +15,32 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 var _alloIssueWeight = function (count) { return Math.min(3, 1 + Math.log2(Math.max(1, Math.floor(Number(count) || 1)))); };
 var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, iss) { return s + base * _alloIssueWeight(iss && iss.count); }, 0); };
 
+// ── Numeric/value-fidelity helper (2026-06-20) ──────────────────────────────
+// Extract a MULTISET (Map: normalized-token → count) of number-like tokens so the integrity gate can
+// detect when remediation silently CHANGES or DROPS a value — a swapped score, date, or percentage in
+// an assessment report, the worst case for this tool. The word-SET integrity check structurally cannot
+// catch this (47% vs 74% share no digits but the word set still overlaps). Normalizes thousands-commas
+// so pure reformatting (1,000 ↔ 1000) doesn't false-flag; keeps decimals; skips single-digit tokens
+// (list markers, "page 1") which are noisy and rarely a real datum. Multiset = reflow-robust (catches
+// substitution + drops); pure transposition of equal values is a known blind spot (phase-2: table cells).
+var _extractNumericTokens = function (text) {
+  var m = String(text || '').match(/\d[\d,]*(?:\.\d+)?/g) || [];
+  var counts = new Map();
+  for (var i = 0; i < m.length; i++) {
+    var norm = m[i].replace(/,/g, '');
+    if (norm.replace(/\./g, '').length < 2) continue; // skip single digits (list markers / "page 1")
+    counts.set(norm, (counts.get(norm) || 0) + 1);
+  }
+  return counts;
+};
+// Returns source numeric tokens whose count DROPPED in the output (a value not preserved). Added/extra
+// output numbers (alt text, "Table 1") are intentionally NOT flagged — only LOST source values matter.
+var _numericFidelityLosses = function (srcText, outText) {
+  var src = _extractNumericTokens(srcText), out = _extractNumericTokens(outText), lost = [];
+  src.forEach(function (cnt, val) { if ((out.get(val) || 0) < cnt) lost.push(val); });
+  return lost;
+};
+
 // Factory: returns all pipeline functions bound to provided deps
 // State access: functions read window.__docPipelineState (updated every render by monolith)
 // This avoids stale closures — each function call reads fresh state from the window ref.
@@ -15581,6 +15607,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             addToast(`✅ Content integrity: ${integrityCoverage}% coverage verified`, 'success');
           }
         }
+        // P1 value-fidelity (2026-06-20): the char-coverage gate above is BULK — a swapped or dropped
+        // NUMBER barely moves the char count and slips under 97%, and the word-SET integrity check can't
+        // see it (47% vs 74% overlap as word sets). Compare the numeric-token MULTISET (source vs final
+        // output) so a changed score/date/% surfaces with the specific values. Runs on the FINAL assembled
+        // output → covers BOTH the transform and fix paths. WARN (not block) — formatting can move tokens.
+        try {
+          const _lostVals = _numericFidelityLosses(_srcRaw, htmlToPlainText(_finalForIntegrity));
+          if (_lostVals.length) {
+            const _vsample = _lostVals.slice(0, 8).join(', ') + (_lostVals.length > 8 ? ', …' : '');
+            const _valWarn = _lostVals.length + ' source numeric value(s) not found unchanged in the output (' + _vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.';
+            integrityWarning = integrityWarning ? (integrityWarning + ' ' + _valWarn) : _valWarn;
+            if (!_silentMode) addToast('⚠ ' + _valWarn, 'warning');
+            warnLog('[Integrity] VALUE-FIDELITY — ' + _valWarn);
+          }
+        } catch (_valErr) { warnLog('[Integrity] value-fidelity check failed (non-critical): ' + (_valErr && _valErr.message)); }
       } catch (integrityErr) {
         warnLog('[Integrity] check failed (non-critical):', integrityErr?.message);
       }
