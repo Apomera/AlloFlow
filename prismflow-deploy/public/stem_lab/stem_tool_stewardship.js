@@ -1667,24 +1667,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 return h('div', { key: i, style: { flex: 1, height: 4, borderRadius: 2, background: i < step ? scenario.color : (i === step ? '#fbbf24' : '#334155'), transition: 'background 0.3s' } });
               })
             ),
-            // Entity strip
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6, marginBottom: 14, padding: 10, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
-              scenario.entities.map(function(ent) {
-                var v = (st.entities && st.entities[ent.id] != null) ? st.entities[ent.id] : ent.init;
-                var inverted = scenario.entityInverted && scenario.entityInverted[ent.id];
-                var displayV = Math.round(v);
-                var barColor = (inverted ? (100 - v) : v) >= 60 ? '#86efac' : (inverted ? (100 - v) : v) >= 30 ? '#fbbf24' : '#dc2626';
-                return h('div', { key: ent.id },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
-                    h('span', { style: { fontSize: 14 } }, ent.icon),
-                    h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700, flex: 1 } }, ent.name),
-                    h('span', { style: { fontSize: 11, color: barColor, fontWeight: 800 } }, displayV)
-                  ),
-                  h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
-                    h('div', { style: { width: v + '%', height: '100%', background: barColor, transition: 'width 0.5s' } })
-                  )
+            // ── Cascade Map (node-link SYSTEM view; replaces the flat bars) ──
+            // The tool's whole thesis is "keystone -> cascade", but it had no
+            // systems diagram. Hub = the decision point; each entity is a node
+            // with a health ring. After a choice, THAT decision's effects light
+            // the spokes green/red and drop +N/-N deltas on the parts it moved —
+            // the cascade made literal. The NEXT choice's effects stay hidden
+            // (you still choose from the labels), preserving predict-then-see.
+            h('div', { style: { marginBottom: 14, padding: 10, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+              (function() {
+                var ents = scenario.entities, N = ents.length, W = 330, Hh = 210, cx = W / 2, cy = Hh / 2, R = Math.min(cx, cy) - 34;
+                var lastEntry = (st.decisionLog && st.decisionLog.length) ? st.decisionLog[st.decisionLog.length - 1] : null;
+                var lastFx = null;
+                if (lastEntry) {
+                  var dec = scenario.decisions[lastEntry.step];
+                  var optn = dec && dec.options.filter(function(o) { return o.id === lastEntry.optionId; })[0];
+                  lastFx = optn && optn.effects;
+                }
+                var nodes = ents.map(function(ent, i) {
+                  var ang = (i / N) * Math.PI * 2 - Math.PI / 2;
+                  var v = (st.entities && st.entities[ent.id] != null) ? st.entities[ent.id] : ent.init;
+                  var inv = scenario.entityInverted && scenario.entityInverted[ent.id];
+                  var hv = inv ? (100 - v) : v;
+                  var col = hv >= 60 ? '#86efac' : hv >= 30 ? '#fbbf24' : '#dc2626';
+                  return { ent: ent, x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), v: Math.round(v), col: col, d: lastFx ? (lastFx[ent.id] || 0) : 0 };
+                });
+                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 470, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
+                  nodes.map(function(nd, i) {
+                    var ec = nd.d > 0 ? '#22c55e' : nd.d < 0 ? '#dc2626' : '#334155';
+                    var ew = nd.d !== 0 ? Math.min(5, 1 + Math.abs(nd.d) / 6) : 1;
+                    return h('line', { key: 'e' + i, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, opacity: nd.d !== 0 ? 0.85 : 0.5 });
+                  }),
+                  h('circle', { cx: cx, cy: cy, r: 16, fill: 'rgba(15,23,42,0.95)', stroke: scenario.color, strokeWidth: 2 }),
+                  h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 15 }, scenario.icon),
+                  nodes.map(function(nd, i) {
+                    return h('g', { key: 'n' + i },
+                      h('text', { x: nd.x, y: nd.y - 20, textAnchor: 'middle', fontSize: 7.5, fontWeight: 600, fill: '#cbd5e1' }, nd.ent.name.length > 14 ? nd.ent.name.slice(0, 13) + '…' : nd.ent.name),
+                      h('circle', { cx: nd.x, cy: nd.y, r: 16, fill: 'rgba(15,23,42,0.95)', stroke: nd.col, strokeWidth: 2.5 }),
+                      h('text', { x: nd.x, y: nd.y + 5, textAnchor: 'middle', fontSize: 13 }, nd.ent.icon),
+                      h('text', { x: nd.x, y: nd.y + 27, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: nd.col }, '' + nd.v),
+                      nd.d !== 0 ? h('text', { x: nd.x + 17, y: nd.y - 9, textAnchor: 'start', fontSize: 9.5, fontWeight: 800, fill: nd.d > 0 ? '#86efac' : '#fca5a5' }, (nd.d > 0 ? '+' : '') + nd.d) : null
+                    );
+                  })
                 );
-              })
+              })(),
+              h('div', { style: { fontSize: 9.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 4, lineHeight: 1.4 } }, 'each ring is one part of the system (🟢 healthy · 🟡 stressed · 🔴 critical). After a choice, lit spokes + ±deltas show how it rippled through.')
             ),
             // Decision prompt
             h('div', {
