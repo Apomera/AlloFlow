@@ -28140,9 +28140,11 @@ window.SelHub = window.SelHub || {
                   };
               matchFn().then(function(result) {
                 upd({ matcherResult: result.response, matcherLoading: false, _matcherTier: result.tier || 0 });
+                if (announceToSR) announceToSR('Coping recommendations are ready below.'); // async AI reply was silent to screen readers
                 if (soundEnabled) sfxCorrect();
               }).catch(function() {
                 upd({ matcherResult: 'I couldn\'t match strategies right now. Try browsing the Library tab and picking what feels right!', matcherLoading: false, _matcherTier: 0 });
+                if (announceToSR) announceToSR('Could not match strategies right now — try the Library tab.');
               });
             },
             disabled: matcherLoading,
