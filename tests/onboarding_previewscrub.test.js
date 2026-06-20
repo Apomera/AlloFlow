@@ -31,14 +31,22 @@ describe('previewScrub (FERPA PII scrub)', () => {
     expect(r.scrubbed).not.toContain('jane.doe@school.org');
   });
 
-  it('redacts a possessive student name at high risk', () => {
-    // NOTE: possessive_name matches lowercase "my|the|our|this" (no /i flag), so this
-    // exercises the path the detector actually handles. (A sentence-initial "My student
-    // Lisa…" is currently NOT caught — a real gap flagged separately, not asserted here.)
-    const r = OB.previewScrub('my student Lisa is struggling');
-    expect(r.riskLevel).toBe('high');
-    expect(r.scrubbed).toContain('[STUDENT]');
-    expect(r.scrubbed).not.toContain('Lisa');
+  it('redacts a possessive student name at high risk (determiner is case-insensitive)', () => {
+    // possessive_name matches the determiner case-insensitively, so BOTH a mid-sentence
+    // "my student …" and a sentence-initial "My student …" are caught. (The [A-Z] name
+    // capture stays case-sensitive, so "my student is here" is NOT a false positive.)
+    for (const input of ['my student Lisa is struggling', 'My student Lisa is struggling']) {
+      const r = OB.previewScrub(input);
+      expect(r.riskLevel).toBe('high');
+      expect(r.scrubbed).toContain('[STUDENT]');
+      expect(r.scrubbed).not.toContain('Lisa');
+    }
+  });
+
+  it('does not false-positive on "my student" without a capitalized name', () => {
+    const r = OB.previewScrub('my student is doing fine today');
+    expect(r.riskLevel).toBe('none');
+    expect(r.flags).toEqual([]);
   });
 
   it('redacts a role+name (Ms Garcia) at high risk', () => {

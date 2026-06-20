@@ -636,7 +636,7 @@
     { id: 'dob_contextual',   re: /\b(?:dob|d\.o\.b\.?|date\s+of\s+birth|birthday|born(?:\s+on)?|birthdate|age)\s*[:\-]?\s*(?:\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{2,4})/gi, token: '[DOB]', risk: 'high' },
     { id: 'long_digits',      re: /\b\d{7,}\b/g,                                                                                       token: '[ID]',      risk: 'high' },
     { id: 'role_name',        re: /\b(?:Ms|Mr|Mrs|Mx|Dr|Coach|Teacher|Para|SLP|OT|PT|BCBA|Counselor|Principal|Mom|Dad|Mother|Father|Grandma|Grandpa|Auntie?|Uncle)\.?\s+[A-Z][a-z'\-]{1,20}\b/g, token: '[STUDENT]', risk: 'high' },
-    { id: 'possessive_name',  re: /\b(?:my|the|our|this)\s+(?:student|kid|kiddo|child|learner|client|case)(?:'s|s'|s)?\s+(?:named\s+)?([A-Z][a-z'\-]{1,20})\b/g, token: 'my student [STUDENT]', risk: 'high' },
+    { id: 'possessive_name',  re: /\b(?:[Mm]y|[Tt]he|[Oo]ur|[Tt]his)\s+(?:student|kid|kiddo|child|learner|client|case)(?:'s|s'|s)?\s+(?:named\s+)?([A-Z][a-z'\-]{1,20})\b/g, token: 'my student [STUDENT]', risk: 'high' },
     { id: 'capitalized_pair', re: /\b[A-Z][a-z'’]{1,20}\s+[A-Z][a-z'’\-]{1,20}\b/g,                                          token: '[STUDENT]', risk: 'low'  },
   ];
 
