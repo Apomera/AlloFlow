@@ -4921,7 +4921,7 @@ window.SelHub = window.SelHub || {
         'Wanting to apologize for nerves — do not; just begin.'
       ],
       pairsWithScripts: ['box_breathing_4_4_4_4', 'social_anxiety_reset', 'grounding_5_senses'],
-      research: 'Power-pose and arrival rituals reduce cortisol and improve presentation performance (Cuddy et al., 2012; Brooks, 2014).'
+      research: 'Arrival rituals and confident posture may help some people feel more prepared before speaking; any benefit is likely psychological. The original "power pose" hormone claims (lower cortisol) did not replicate (Ranehill et al., 2015), and reappraising nerves as excitement has some support (Brooks, 2014).'
     },
     {
       id: 'school_homework_start',
