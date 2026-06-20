@@ -2214,6 +2214,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             drawProsodyCurve(pitchCanvasRef.current, pitchHistory, isDark, modelCurve);
             drawPacingGauge(pacingCanvasRef.current, currentWpm, gradeLevel, isDark);
             var volResult = drawVolumeMeter(volumeCanvasRef.current, currentDb, volumeHistory, isDark);
+            // Persist the session-best volume steadiness — drawVolumeMeter
+            // returns it but it was never recorded, so the "Best Steadiness"
+            // stat + report line stayed 0. Functional MAX-update so concurrent
+            // frames can't regress it; the snapshot guard avoids a per-frame write.
+            if (volResult && volResult.steadinessScore > (d.bestSteadiness || 0)) {
+              setLabToolData(function(prev) {
+                var od = prev.oratory || {};
+                if (volResult.steadinessScore <= (od.bestSteadiness || 0)) return prev;
+                return Object.assign({}, prev, { oratory: Object.assign({}, od, { bestSteadiness: volResult.steadinessScore }) });
+              });
+            }
             drawPauseIndicator(pauseCanvasRef.current, isPaused, pauseDuration, pauseRatio, isDark);
 
             // Enhancement 3: Vowel space rendering
