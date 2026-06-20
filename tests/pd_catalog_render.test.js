@@ -339,6 +339,28 @@ describe('runner resume + home history (render)', () => {
   });
 });
 
+describe('quiz formative feedback', () => {
+  const quizAct = {
+    id: 'q', type: 'quiz', title: 'Q', gate: { kind: 'score', threshold: 0.5 },
+    content: { questions: [{ prompt: 'Capital of France?', options: ['Lyon', 'Paris', 'Nice'], correctIndex: 1, explanation: 'Paris is the capital.' }] },
+  };
+
+  it('marks correct/incorrect and shows the explanation after submit', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.QuizActivity, { activity: quizAct, raw: { answers: [0], submitted: true }, onRaw() {} });
+    expect(html).toContain('✓');                              // correct option marked
+    expect(html).toContain('✗');                              // wrong pick marked
+    expect(html).toContain('Why: Paris is the capital.');     // per-question explanation
+  });
+
+  it('does not reveal the answer key before submit', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.QuizActivity, { activity: quizAct, raw: {}, onRaw() {} });
+    expect(html).not.toContain('✓');
+    expect(html).not.toContain('Why:');
+  });
+});
+
 describe('review fixes (PdSubmit, JSON extraction, AI provenance)', () => {
   it('PdSubmit renders the private-review framing and validates pasted JSON', () => {
     const { CC } = loadWithCore();

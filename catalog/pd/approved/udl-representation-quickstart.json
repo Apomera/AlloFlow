@@ -56,7 +56,8 @@
                   "the WHY (affective networks)",
                   "none of these"
                 ],
-                "correctIndex": 1
+                "correctIndex": 1,
+                "explanation": "Representation is the \"what\" of learning — it maps to the brain’s recognition networks."
               },
               {
                 "prompt": "Which best describes Multiple Means of Representation?",
@@ -66,7 +67,8 @@
                   "Presenting information in more than one format so every learner has multiple entry points",
                   "Rewarding students for staying on task"
                 ],
-                "correctIndex": 2
+                "correctIndex": 2,
+                "explanation": "Representation gives every learner multiple formats of the same content — not one format matched to a \"style.\""
               },
               {
                 "prompt": "Which is an example of Multiple Means of Representation?",
@@ -76,7 +78,8 @@
                   "Giving a student extra time on a test",
                   "Providing a captioned video AND a text transcript of the same content"
                 ],
-                "correctIndex": 3
+                "correctIndex": 3,
+                "explanation": "Offering the same content in multiple formats (caption + transcript) is Representation; a choice of product is Action & Expression."
               },
               {
                 "prompt": "Representation is sometimes confused with the 'learning styles' idea. The evidence-based stance is:",
@@ -86,7 +89,8 @@
                   "Auditory learners learn best by listening only",
                   "Learning styles are settled science"
                 ],
-                "correctIndex": 1
+                "correctIndex": 1,
+                "explanation": "The \"learning styles\" matching hypothesis is not supported by research; provide multiple representations for everyone."
               }
             ]
           },

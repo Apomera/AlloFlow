@@ -56,7 +56,8 @@
                   "Frequent graded tests mainly serve accountability",
                   "Matching instruction to each student's learning style"
                 ],
-                "correctIndex": 1
+                "correctIndex": 1,
+                "explanation": "Retrieving from memory strengthens later retention more than restudying the same material."
               },
               {
                 "prompt": "Which is the strongest example of retrieval practice?",
@@ -66,7 +67,8 @@
                   "A brief, closed-notes 'brain dump' where students write everything they remember",
                   "Copying the teacher's notes neatly"
                 ],
-                "correctIndex": 2
+                "correctIndex": 2,
+                "explanation": "A closed-notes brain dump requires active recall; re-reading and watching are passive review."
               },
               {
                 "prompt": "To get the memory benefit while keeping anxiety low, retrieval practice should usually be:",
@@ -76,7 +78,8 @@
                   "Saved only for the end-of-year exam",
                   "Low- or no-stakes (ungraded or lightly weighted)"
                 ],
-                "correctIndex": 3
+                "correctIndex": 3,
+                "explanation": "Low-/no-stakes practice keeps the memory benefit while minimizing test anxiety."
               },
               {
                 "prompt": "Spacing retrieval practice across days and weeks (instead of cramming it) tends to:",
@@ -86,7 +89,8 @@
                   "Make no measurable difference",
                   "Help only the highest-achieving students"
                 ],
-                "correctIndex": 1
+                "correctIndex": 1,
+                "explanation": "Spacing retrieval over time improves long-term retention compared with cramming."
               }
             ]
           },

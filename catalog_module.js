@@ -581,7 +581,7 @@
       '  "metadata": { "title": string, "topic": string, "summary": string (1-2 sentences), "estMinutes": ' + minutes + ', "audience": "educator", "license": "CC-BY-SA-4.0", "credit": "AI-assisted draft", "ai_generated": true },',
       '  "sections": [',
       '    { "title": "Learn", "activities": [ { "id": "read-1", "type": "read", "title": string, "content": { "body": string (2-4 short paragraphs separated by \\n\\n), "keyPoints": [string, string, string] }, "gate": { "kind": "none" } } ] },',
-      '    { "title": "Check your understanding", "activities": [ { "id": "quiz-1", "type": "quiz", "title": string, "content": { "questions": [ exactly ' + n + ' items, each { "prompt": string, "options": [string, string, string, string], "correctIndex": integer 0-3 pointing to the ONE correct option } ] }, "gate": { "kind": "score", "threshold": 0.75 } } ] }' + ((wantSim || wantReflect) ? ',' : ''),
+      '    { "title": "Check your understanding", "activities": [ { "id": "quiz-1", "type": "quiz", "title": string, "content": { "questions": [ exactly ' + n + ' items, each { "prompt": string, "options": [string, string, string, string], "correctIndex": integer 0-3 pointing to the ONE correct option, "explanation": string (one sentence on why the correct option is right) } ] }, "gate": { "kind": "score", "threshold": 0.75 } } ] }' + ((wantSim || wantReflect) ? ',' : ''),
       wantSim ? '    { "title": "Practice", "activities": [ { "id": "sim-1", "type": "sim", "title": string, "content": { "scenario": string (a realistic, concrete classroom scenario for the educator to respond to in writing), "rubric": string (what a strong response demonstrates) }, "gate": { "kind": "none" } } ] }' + (wantReflect ? ',' : '') : '',
       wantReflect ? '    { "title": "Apply it", "activities": [ { "id": "reflect-1", "type": "reflect", "title": string, "content": { "prompt": string asking the educator to apply this to their own practice }, "gate": { "kind": "none" } } ] }' : '',
       '  ]',
@@ -767,16 +767,25 @@
     return e('div', { className: 'flex flex-col gap-4' },
       qs.map(function (q, qi) {
         var labelId = act.id + '-q' + qi + '-label';
+        var chosen = answers[qi];
         return e('div', { key: qi, className: 'flex flex-col gap-1' },
           e('div', { id: labelId, className: 'text-sm font-semibold text-slate-800' }, (qi + 1) + '. ' + q.prompt),
           e('div', { role: 'radiogroup', 'aria-labelledby': labelId, className: 'flex flex-col gap-1' },
             (q.options || []).map(function (opt, oi) {
-              return e('label', { key: oi, className: 'flex items-center gap-2 text-sm text-slate-700 cursor-pointer' },
-                e('input', { type: 'radio', name: act.id + '-q' + qi, checked: answers[qi] === oi, disabled: submitted, onChange: function () { pick(qi, oi); } }),
-                e('span', null, opt)
+              // After submit, mark the correct option (✓) and any wrong pick (✗).
+              var mark = '', cls = 'flex items-center gap-2 text-sm cursor-pointer ';
+              if (submitted) {
+                if (oi === q.correctIndex) { cls += 'text-emerald-700 font-semibold'; mark = ' ✓'; }
+                else if (oi === chosen) { cls += 'text-red-700'; mark = ' ✗'; }
+                else { cls += 'text-slate-500'; }
+              } else { cls += 'text-slate-700'; }
+              return e('label', { key: oi, className: cls },
+                e('input', { type: 'radio', name: act.id + '-q' + qi, checked: chosen === oi, disabled: submitted, onChange: function () { pick(qi, oi); } }),
+                e('span', null, opt + mark)
               );
             })
-          )
+          ),
+          submitted && q.explanation && e('div', { className: 'text-xs text-slate-600 mt-0.5 pl-6' }, 'Why: ' + q.explanation)
         );
       }),
       !submitted && e('button', {
@@ -1621,6 +1630,9 @@
   CommunityCatalog.PdRunner = PdRunner;
   CommunityCatalog.PdSubmit = PdSubmit;
   CommunityCatalog.PdGenerate = PdGenerate;
+  CommunityCatalog.ReadActivity = ReadActivity;
+  CommunityCatalog.QuizActivity = QuizActivity;
+  CommunityCatalog.ReflectActivity = ReflectActivity;
   CommunityCatalog.VideoActivity = VideoActivity;
   CommunityCatalog.ChecklistActivity = ChecklistActivity;
   CommunityCatalog.SimActivity = SimActivity;

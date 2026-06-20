@@ -58,7 +58,7 @@ Every activity needs `id` (unique), `type`, `title`, and a `gate`.
 |-------------|------------------------------------------------------------------|-------------------------------|----------|
 | `read`      | `{ body, keyPoints?: [], links?: [{label,url}] }`                | learner acknowledges          | no       |
 | `video`     | `{ url, body? }`                                                  | learner marks "watched"       | no       |
-| `quiz`      | `{ questions: [{ prompt, options:[…≥2], correctIndex }] }`        | all questions answered         | **yes**  |
+| `quiz`      | `{ questions: [{ prompt, options:[…≥2], correctIndex, explanation? }] }` | all questions answered         | **yes**  |
 | `reflect`   | `{ prompt }`                                                      | non-empty response            | no       |
 | `checklist` | `{ items: [string, …] }`                                          | ≥ 1 item checked              | no       |
 | `sim`       | `{ scenario, rubric? }`                                           | AI returns a formative masteryScore — or, if AI is unavailable, on a written response | no¹ |
