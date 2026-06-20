@@ -9029,6 +9029,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           backBtn('cognitive', null, 'Cognitive menu'),
           h('h2', { className: 'text-2xl font-black text-cyan-200 mb-2' }, '\u2696\uFE0F Disability Justice & History'),
           h('p', { className: 'text-xs text-slate-300 mb-4' }, 'Cognitive testing has been used both to support and to harm disabled, minoritized, and immigrant populations. A literate consumer of assessment — clinical or lay — knows this history and its ongoing implications.'),
+          // ── The historical shadow as a TIMELINE (the prose cards below don't
+          // make the arc legible at a glance). Color codes harm vs protection;
+          // the stacked left-borders form a spine from the eugenics era to the
+          // protective rulings. Dates verified. ──
+          (function() {
+            var EV = [
+              { y: 1908, t: 'Binet scale translated at Ellis Island for immigrant screening', tone: 'harm', icon: '🛂' },
+              { y: 1916, t: 'Stanford–Binet standardized (Terman)', tone: 'origin', icon: '📊' },
+              { y: 1927, t: 'Buck v. Bell: forced sterilization upheld', tone: 'harm', icon: '⚖️' },
+              { y: 1979, t: 'Larry P. v. Riles: IQ-based EMR placement barred (CA)', tone: 'protect', icon: '🛡️' },
+              { y: 1990, t: 'Americans with Disabilities Act', tone: 'protect', icon: '♿' },
+              { y: 2002, t: 'Atkins v. Virginia: bars executing the intellectually disabled', tone: 'protect', icon: '⚖️' }
+            ];
+            var toneCol = { harm: '#fb7185', origin: '#fcd34d', protect: '#6ee7b7' };
+            return h('div', { className: 'mb-4 rounded-xl bg-slate-900/50 border border-slate-700 p-3', role: 'img', 'aria-label': 'Timeline: 1908 Ellis Island Binet translations, 1916 Stanford-Binet, 1927 Buck v. Bell, 1979 Larry P. v. Riles, 1990 ADA, 2002 Atkins v. Virginia.' },
+              h('div', { className: 'text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2' }, '🕰️ The historical shadow'),
+              EV.map(function(e, i) {
+                var col = toneCol[e.tone];
+                return h('div', { key: i, className: 'flex items-baseline gap-2 py-1', style: { borderLeft: '2px solid ' + col, paddingLeft: 10, marginLeft: 4 } },
+                  h('span', { style: { fontSize: 13, fontWeight: 900, color: col, minWidth: 38, flexShrink: 0 } }, e.y),
+                  h('span', { className: 'text-xs text-slate-200 leading-snug' }, e.icon + ' ' + e.t)
+                );
+              }),
+              h('div', { className: 'flex flex-wrap gap-3 mt-2 pl-3 text-[9px]' },
+                h('span', { style: { color: '#fb7185', fontWeight: 700 } }, '● harm'),
+                h('span', { style: { color: '#fcd34d', fontWeight: 700 } }, '● origin'),
+                h('span', { style: { color: '#6ee7b7', fontWeight: 700 } }, '● protection'))
+            );
+          })(),
           COG_JUSTICE.map(function(j, i) {
             return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-rose-500/30' },
               h('h3', { className: 'text-sm font-black text-rose-200 mb-2' }, j.title),
