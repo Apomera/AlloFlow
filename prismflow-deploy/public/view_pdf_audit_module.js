@@ -3639,8 +3639,49 @@ Return ONLY JSON:
       reader.onload = (ev) => {
         try {
           const project = JSON.parse(ev.target.result);
-          if (!project.accessibleHtml || !project.version) {
+          if (!project.version || !project.accessibleHtml && !project.incomplete) {
             addToast(t("toasts.valid_alloflow_project_file"), "error");
+            return;
+          }
+          if (project.incomplete) {
+            if (project.pdfBase64 && typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64);
+            setPendingPdfFile({ name: project.fileName || "resumed-project.pdf" });
+            if (project.auditResult) {
+              setPdfAuditResult(project.auditResult);
+            } else {
+              setPdfAuditResult({
+                score: 0,
+                scores: [],
+                critical: [],
+                major: [],
+                minor: [],
+                passes: [],
+                summary: "Resumed from an unfinished session",
+                pageCount: project.pageCount || 1,
+                hasSearchableText: true,
+                hasImages: false
+              });
+            }
+            if (project.extractedText && typeof setInputText === "function") setInputText(project.extractedText);
+            setPdfFixResult(null);
+            try {
+              if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
+              const _pp = project.prefs || {};
+              if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+              if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+              if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+              if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+              if (_pp.builderFont) {
+                try {
+                  localStorage.setItem("allo_selected_font", _pp.builderFont);
+                } catch (_) {
+                }
+              }
+            } catch (_) {
+            }
+            const _why = project.failureReason === "auth" ? "an API key / permission problem" : project.failureReason === "quota" ? "a usage or quota limit" : project.failureReason === "network" ? "a dropped connection" : "an AI-service hiccup";
+            addToast("\u{1F4C2} Resumed \u201C" + (project.fileName || "project") + "\u201D \u2014 it stopped last time due to " + _why + ". Your extracted text is restored; click Make Accessible to finish" + (project.pdfBase64 ? "" : " (re-upload the original file first \u2014 its bytes weren\u2019t saved)") + ".", "success");
+            e.target.value = "";
             return;
           }
           setPdfAuditResult({
@@ -6667,6 +6708,11 @@ Return ONLY JSON:
       reader.onload = (ev) => {
         try {
           const project = JSON.parse(ev.target.result);
+          if (project && project.incomplete && project.version) {
+            addToast(t("toasts.incomplete_use_continue") || "This is an unfinished project. Close this and use \u201CContinue a previous session\u201D on the start screen to pick up where it stopped (no re-scanning needed).", "info");
+            e.target.value = "";
+            return;
+          }
           if (!project.accessibleHtml || !project.version) {
             addToast(t("toasts.invalid_project_file_2"), "error");
             return;

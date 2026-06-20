@@ -12439,6 +12439,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       if (_silentMode) { _onProgress(step, msg); } else { setPdfFixStep(msg); }
     };
 
+    // Hoisted out of the try so the catch can save an in-progress "project" when a
+    // hard AI failure (auth/quota/network) hits AFTER extraction — the expensive
+    // OCR/text-layer work is banked, so the teacher can finish later instead of
+    // losing it. (resumable-incomplete-project 2026-06-20)
+    let extractedText = '';
     try {
       const issueList = []
         .concat((_auditResult?.critical || []).map(i => '🔴 ' + i.issue))
@@ -12450,7 +12455,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // ── Step 1: Extract ALL text content from PDF (chunked for long docs) ──
       _pipeStepStart(1);
       updateProgress(1, 'Reading document content...');
-      let extractedText = '';
+      extractedText = '';
       // Reset ground-truth state for this run
       window.__lastGroundTruthCharCount = 0;
       window.__lastGroundTruthPageMap = null;
@@ -12458,6 +12463,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
       window.__lastExtractEncrypted = false; // password-cause (2026-06-20): true when a password-protected PDF was detected, so the <20-char abort can name the real cause
+      window.__lastIncompleteProject = null; // resumable-incomplete-project (2026-06-20): the catch refills this if a hard AI failure hits after extraction
       // Reset Vision-strip audit trail. Every conservative JSON-strip decision is
       // recorded here so the fidelity panel can show what was kept vs stripped.
       window.__lastVisionStripTrail = [];
@@ -16056,6 +16062,33 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch(logErr) { /* non-blocking */ }
     } catch (err) {
       warnLog('[PDF Fix] Error:', err);
+      // Resumable incomplete project (2026-06-20): if extraction already produced
+      // usable text before the failure, bank it so the host can save a .alloflow.json
+      // the teacher can "Continue a previous session" from — instead of scrapping the
+      // expensive OCR/text-layer work. The host wrapper reads this global after the
+      // call and writes the file + shows an honest explanation. Single-file UI only
+      // (batch has its own per-file handling); needs real text to be worth resuming.
+      try {
+        if (!_silentMode && typeof extractedText === 'string' && extractedText.trim().length >= 50) {
+          const _msg = (err && err.message) ? String(err.message) : String(err || '');
+          const _reason = /401|api[ _-]?key|unauthor|permission[ _-]?denied|forbidden/i.test(_msg) ? 'auth'
+            : /429|quota|rate[ _-]?limit|resource[ _-]?exhausted/i.test(_msg) ? 'quota'
+            : /network|fetch|timeout|getaddr|ENOTFOUND|failed to fetch|offline/i.test(_msg) ? 'network'
+            : 'other';
+          const _st = (typeof _pipelineStats === 'object' && _pipelineStats) ? _pipelineStats : {};
+          window.__lastIncompleteProject = {
+            incomplete: true,
+            extractedText: extractedText,
+            base64: _base64 || null,
+            fileName: _fileName || 'document.pdf',
+            auditResult: _auditResult || null,
+            failureReason: _reason,
+            failStage: _st.lastOpenStepLabel || null,
+            failMessage: _msg.slice(0, 200),
+            savedAt: new Date().toISOString(),
+          };
+        }
+      } catch (_capErr) { /* capture is best-effort — never mask the original error */ }
       if (_silentMode) throw err; // Let batch caller handle it
       setPdfFixLoading(false);
       setPdfFixStep('');
