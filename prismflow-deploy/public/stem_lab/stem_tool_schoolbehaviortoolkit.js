@@ -1520,6 +1520,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         return h('div', null,
           panelHeader('🏫 PBIS — Three Tiers of Support',
             'Positive Behavioral Interventions and Supports is the school-wide framework that holds individual ABA work inside a system. Most school psychs spend ~80% of their time inside this framework — not in 1-on-1 ABA.'),
+          // ── The field's iconic PBIS pyramid, AREA-proportional to the 80/15/5
+          // split (for a triangle, cumulative area from the apex scales as the
+          // height-fraction squared, so the band boundaries are at sqrt of the
+          // cumulative percentages). Labels use a white fill + dark halo so they
+          // stay legible on red, yellow, AND green bands.
+          (function() {
+            var W = 230, H = 172, apexY = 8, baseY = 152, cx = W / 2, halfBase = 100, hgt = baseY - apexY;
+            function lvl(f) { return { y: apexY + hgt * f, lx: cx - halfBase * f, rx: cx + halfBase * f }; }
+            var a = lvl(Math.sqrt(0.05)), b = lvl(Math.sqrt(0.20));
+            var labelStyle = { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2.4, strokeLinejoin: 'round' };
+            var bands = [
+              { poly: cx + ',' + apexY + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.lx.toFixed(1) + ',' + a.y.toFixed(1), fill: '#ef4444', label: 'Tier 3 · ~5% · intensive', ly: apexY + (a.y - apexY) * 0.62, fs: 7 },
+              { poly: a.lx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + a.rx.toFixed(1) + ',' + a.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.lx.toFixed(1) + ',' + b.y.toFixed(1), fill: '#fbbf24', label: 'Tier 2 · ~15% · targeted', ly: (a.y + b.y) / 2 + 3, fs: 8.5 },
+              { poly: b.lx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + b.rx.toFixed(1) + ',' + b.y.toFixed(1) + ' ' + (cx + halfBase) + ',' + baseY + ' ' + (cx - halfBase) + ',' + baseY, fill: '#22c55e', label: 'Tier 1 · ~80% · universal (all students)', ly: (b.y + baseY) / 2 + 3, fs: 9 }
+            ];
+            return h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 12 } },
+              h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 320 }, role: 'img', 'aria-label': 'PBIS pyramid: Tier 1 universal supports for ~80% of students, Tier 2 targeted for ~15%, Tier 3 intensive for ~5%.' },
+                bands.map(function(bd, i) {
+                  return h('g', { key: i },
+                    h('polygon', { points: bd.poly, fill: bd.fill, stroke: '#0f172a', strokeWidth: 1.5, opacity: 0.94 }),
+                    h('text', { x: cx, y: bd.ly, textAnchor: 'middle', fill: '#ffffff', fontSize: bd.fs, fontWeight: 800, style: labelStyle }, bd.label)
+                  );
+                }),
+                h('text', { x: cx, y: H - 3, textAnchor: 'middle', fill: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 7.5, fontStyle: 'italic' }, 'bands are area-proportional to the ~80 / 15 / 5 split')
+              )
+            );
+          })(),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             PBIS_TIERS.map(function(pt) {
               return h('div', { key: 'pbis-' + pt.tier,
