@@ -120,6 +120,14 @@
       await doc.close();
       log('PDFBox saved structurally-repaired doc');
 
+      // prove FS→JS readback (production needs the repaired bytes back in JS to hand to AlloFlow):
+      // read /files via Java + Base64-encode to a String — marshals cleanly, no slow byte bridging
+      const Files = await lib.java.nio.file.Files;
+      const Base64 = await lib.java.util.Base64;
+      const rbytes = await Files.readAllBytes(await (await new File('/files/structural_repaired.pdf')).toPath());
+      const rb64 = await (await Base64.getEncoder()).encodeToString(rbytes);
+      log('FS→JS readback OK: ' + rb64.length + ' b64 chars, header=' + atob(rb64.slice(0, 8)).slice(0, 5));
+
       const after = await validate('/files/structural_repaired.pdf');
       log('after structural repair → veraPDF: compliant=' + after.compliant + ' | remaining: ' + (after.rules.join(', ') || 'none'));
 
