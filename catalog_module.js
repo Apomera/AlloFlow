@@ -1106,7 +1106,7 @@
         e('div', {
           className: 'h-1.5 w-full bg-slate-200 rounded-full overflow-hidden',
           role: 'progressbar', 'aria-valuenow': completedCount, 'aria-valuemin': 0, 'aria-valuemax': steps.length, 'aria-label': 'Module progress',
-        }, e('div', { className: 'h-full bg-indigo-600 rounded-full transition-all', style: { width: pct + '%' } }))
+        }, e('div', { className: 'h-full bg-indigo-600 rounded-full transition-all motion-reduce:transition-none', style: { width: pct + '%' } }))
       ),
       resumed && e('div', { className: 'text-xs text-slate-500 -mt-1' }, 'Resumed where you left off.'),
       // Body
@@ -1398,6 +1398,7 @@
     var filters$ = useState({ search: '', topic: '' }); var filters = filters$[0], setFilters = filters$[1];
     var histTick$ = useState(0); var setHistTick = histTick$[1]; // bump to refresh history-derived UI
     var activePath$ = useState(null); var activePath = activePath$[0], setActivePath = activePath$[1];
+    var reload$ = useState(0); var reloadTick = reload$[0], setReloadTick = reload$[1]; // bump to re-fetch the manifest
 
     useEffect(function () {
       var cancelled = false;
@@ -1413,7 +1414,7 @@
         })
         .catch(function (err) { if (cancelled) return; setState({ status: 'error', entries: [], paths: [], error: err.message }); });
       return function () { cancelled = true; };
-    }, []);
+    }, [reloadTick]);
 
     function startModule(entry) {
       ensurePdCore().then(function (Core) {
@@ -1454,6 +1455,15 @@
     }
     if (view === 'history') {
       var hist = loadPdHistory();
+      // Summary stats across the learner's completed modules.
+      var histTopics = {}; var histMinutes = 0;
+      hist.forEach(function (h) {
+        if (h && h.topic) histTopics[h.topic] = true;
+        var en = (state.entries || []).filter(function (x) { return x.slug === h.moduleId; })[0];
+        if (en && typeof en.estMinutes === 'number') histMinutes += en.estMinutes;
+      });
+      var histTopicCount = Object.keys(histTopics).length;
+      var pathsComplete = (state.paths || []).filter(function (p) { return pdPathProgress(p, function (sl) { return isPdCompleted(sl); }).complete; }).length;
       return e('div', { className: 'flex flex-col gap-3' },
         e('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
           e('button', { onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
@@ -1486,6 +1496,16 @@
         ),
         e('h3', { className: 'font-bold text-base text-slate-800' }, 'My learning'),
         e('p', { className: 'text-xs text-slate-500' }, 'Your completion history is stored only on this device. Use Export to keep a copy (this sandbox may not remember it next session) and Import to restore it.'),
+        hist.length > 0 && e('div', { className: 'flex flex-wrap gap-2' },
+          [
+            { label: hist.length + ' module' + (hist.length !== 1 ? 's' : '') + ' completed' },
+            histMinutes > 0 && { label: '~' + histMinutes + ' min of learning' },
+            histTopicCount > 0 && { label: histTopicCount + ' topic' + (histTopicCount !== 1 ? 's' : '') },
+            pathsComplete > 0 && { label: pathsComplete + ' path' + (pathsComplete !== 1 ? 's' : '') + ' complete' },
+          ].filter(Boolean).map(function (chip, i) {
+            return e('span', { key: i, className: 'text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-semibold' }, chip.label);
+          })
+        ),
         hist.length === 0
           ? e('p', { className: 'text-sm text-slate-600' }, 'No completed modules yet. Finish a module and it will appear here.')
           : e('div', { className: 'flex flex-col gap-2' },
@@ -1607,7 +1627,12 @@
       ),
       e('div', { className: 'text-sm text-slate-600' },
         state.status === 'loading' ? 'Loading PD library…' :
-        state.status === 'error' ? e('span', { className: 'text-red-600' }, 'Could not load PD library: ' + state.error) :
+        state.status === 'error' ? e('span', { className: 'text-red-600' },
+          'Could not load PD library: ' + state.error + ' ',
+          e('button', {
+            onClick: function () { setState({ status: 'loading', entries: [], paths: [], error: null }); setReloadTick(function (n) { return n + 1; }); },
+            className: 'ml-1 font-semibold text-indigo-700 hover:underline',
+          }, 'Retry')) :
         state.entries.length === 0 ? 'No PD modules published yet. Create one with AI or submit one for review.' :
         visible.length + ' of ' + state.entries.length + ' module' + (state.entries.length !== 1 ? 's' : '')
       ),
