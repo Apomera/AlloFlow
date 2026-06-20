@@ -95,7 +95,7 @@ window.SelHub = window.SelHub || {
     },
     {
       id: 'belly', name: 'Belly Breathing', emoji: '\uD83C\uDF08', color: '#22c55e',
-      desc: { elementary: 'Fill your belly like a balloon, then let it slowly go flat!', middle: 'Deep diaphragmatic breathing — your belly moves, not your chest.', high: 'Diaphragmatic breathing increases tidal volume and stimulates the vagus nerve.' },
+      desc: { elementary: 'Fill your belly like a balloon, then let it slowly go flat!', middle: 'Deep diaphragmatic breathing — your belly moves, not your chest.', high: 'Diaphragmatic breathing increases tidal volume and is thought to stimulate the vagus nerve.' },
       inhale: 4, hold: 1, exhale: 6, holdOut: 1, cycles: 5
     },
     {
@@ -577,7 +577,7 @@ window.SelHub = window.SelHub || {
         { id: 'shorter', name: '3-3-3-3', change: 'Reduce to three seconds per side if four feels long.' },
         { id: 'longer', name: '5-5-5-5', change: 'Extend to five seconds when comfortable.' }
       ],
-      whyItWorks: 'Equal-ratio breathing with breath-holds raises CO2 tolerance and activates vagal tone, reducing cortisol and steadying heart-rate variability.',
+      whyItWorks: 'Equal-ratio breathing with breath-holds raises CO2 tolerance and is thought to support vagal tone, steadying heart-rate variability.',
       research: 'Used in US military tactical breathing protocols; Jerath et al. 2015 on slow breathing and ANS regulation.'
     },
     {
@@ -702,14 +702,14 @@ window.SelHub = window.SelHub || {
         { type: 'invitation', text: 'Continue for six more rounds at your own pace.' },
         { type: 'pause', durationSec: 90 },
         { type: 'instruction', text: 'Let your hands rest in your lap. Stay still for a moment.', pauseSec: 5 },
-        { type: 'reflection', text: 'The vibration stimulates the vagus nerve through your inner ear. Many feel calm spread quickly.' },
+        { type: 'reflection', text: 'The vibration is thought to stimulate the vagus nerve through your inner ear. Many feel calm spread quickly.' },
         { type: 'close', text: 'Open your eyes when ready. The hum is portable. You can do it silently in your throat anywhere.' }
       ],
       variations: [
         { id: 'silent', name: 'Silent Bee', change: 'Hum internally without sound, useful in classrooms.' },
         { id: 'eyes_closed', name: 'Eyes-Closed Deep Bee', change: 'Add eye covering with palms for deeper sensory rest.' }
       ],
-      whyItWorks: 'The humming vibration produces nitric oxide in the nasal sinuses, which improves blood flow, and stimulates the auricular branch of the vagus nerve.',
+      whyItWorks: 'The humming vibration produces nitric oxide in the nasal sinuses, which improves blood flow, and is thought to stimulate the auricular branch of the vagus nerve.',
       research: 'Kuppusamy et al. 2018; traditional pranayama in Hatha Yoga Pradipika.'
     },
     {
@@ -1259,7 +1259,7 @@ window.SelHub = window.SelHub || {
         { id: 'wheelchair', name: 'Wheelchair', change: 'Adjust by lengthening through the spine; the principles are the same.' },
         { id: 'standing', name: 'Standing', change: 'Adapt while standing in line or waiting.' }
       ],
-      whyItWorks: 'Upright posture increases vagal tone and confidence-related hormones; slumping is associated with lower mood and recall.',
+      whyItWorks: 'Upright, open posture may help you feel more alert and confident; slumped posture has been associated with lower mood and recall in some studies.',
       research: 'Wilkes et al. 2017 posture and depression; Amy Cuddy power posture critiques and replications.'
     },
     {
@@ -2517,7 +2517,7 @@ window.SelHub = window.SelHub || {
       variations: [
         { id: 'silent', name: 'Silent Toning', change: 'Imagine the sound inside if you cannot make it out loud.' }
       ],
-      whyItWorks: 'Vocalization activates the vagus nerve through the larynx and pharynx, stimulating parasympathetic response.',
+      whyItWorks: 'Vocalization is thought to stimulate the vagus nerve through the larynx and pharynx, stimulating parasympathetic response.',
       research: 'Polyvagal theory (Porges); vocal toning research in music therapy.'
     },
     {
@@ -3451,7 +3451,7 @@ window.SelHub = window.SelHub || {
       variations: [
         { id: 'silent_bee', name: 'Silent Bee', change: 'Hum silently in your throat for quiet classrooms.' }
       ],
-      whyItWorks: 'Humming on the exhale stimulates the vagus nerve via auditory canal vibration, calming young learners quickly.',
+      whyItWorks: 'Humming on the exhale is thought to stimulate the vagus nerve via auditory canal vibration, calming young learners quickly.',
       research: 'Bhramari pranayama; Kuppusamy et al. 2018.'
     },
     {
@@ -3890,7 +3890,7 @@ window.SelHub = window.SelHub || {
       variations: [
         { id: 'with_massage', name: 'Massage', change: 'Add small circles with fingertips on the jaw muscles.' }
       ],
-      whyItWorks: 'Jaw relaxation supports vagal tone via the trigeminal nerve and reduces tension headaches.',
+      whyItWorks: 'Jaw relaxation may support vagal tone via the trigeminal nerve and reduces tension headaches.',
       research: 'TMJ self-care literature; somatic relaxation traditions.'
     },
     {
@@ -4341,7 +4341,7 @@ window.SelHub = window.SelHub || {
         'Singing in the shower habit — keep singing; mindful singing counts too.'
       ],
       pairsWithScripts: ['body_scan_full', 'sensory_awareness_5_4_3_2_1', 'water_meditation'],
-      research: 'Warm water immersion activates vagal tone (heart-rate variability) and reduces cortisol (Norup et al., 2018).'
+      research: 'Warm water immersion may support vagal tone (heart-rate variability) and reduces cortisol (Norup et al., 2018).'
     },
     {
       id: 'morning_getting_dressed',
@@ -5560,7 +5560,7 @@ window.SelHub = window.SelHub || {
         'The warmth descending through your chest.',
         'How a hot drink slows you down naturally.'
       ],
-      whyItHelps: 'Warm beverages activate vagal tone and parasympathetic response. The slow sipping pace forces a built-in pause.',
+      whyItHelps: 'Warm beverages may support vagal tone and a parasympathetic response. The slow sipping pace forces a built-in pause.',
       whenItHelpsMost: 'After a stressful day, on cold mornings, or when you want a calming break.',
       obstacles: [
         'Microwaving in a rush — still works; sip slowly.',
@@ -12828,7 +12828,7 @@ window.SelHub = window.SelHub || {
         'End in silence for thirty seconds.'
       ],
       whatItDoes: 'Engages the voice and breath in gratitude, which amplifies the felt sense beyond silent thought.',
-      whyItWorks: 'Vocal expression engages the vagus nerve via the laryngeal pathway, which has measurable parasympathetic effects (Porges, 2011).',
+      whyItWorks: 'Vocal expression is thought to engage the vagus nerve via the laryngeal pathway, which has measurable parasympathetic effects (Porges, 2011).',
       bestFrequency: 'weekly',
       variations: [
         'Sung version with a simple two-note melody.',
