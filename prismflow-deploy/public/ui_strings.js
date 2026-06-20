@@ -934,6 +934,42 @@
     "text_condensing": "Condensing text..."
   },
   "toasts": {
+    "focus_streak": "{flames} {minutes}-minute focus streak! Keep it up!",
+    "streak_saved": "Welcome back! Your {minutes}-min streak was saved.",
+    "points_awarded": "Points awarded!",
+    "welcome_name": "Welcome, {name}!",
+    "element_not_found": "Element not found: {id}",
+    "overlay_set": "Overlay: {mode}",
+    "synced_resource": "Synced: {title}",
+    "group_resource": "Group Resource: {title}",
+    "preset_saved": "Preset \"{name}\" saved!",
+    "translated_resources": "Successfully translated {count} resources!",
+    "bingo_cards_count": "Generated {count} Bingo cards!",
+    "sound_enabled": "Sound Enabled",
+    "sound_muted": "Sound Muted",
+    "democracy_mode_on": "Democracy Mode Enabled: Class Voting ON",
+    "democracy_mode_off": "Democracy Mode Disabled: Solo Play",
+    "resource_moved_up": "Moved {title} up",
+    "resource_moved_down": "Moved {title} down",
+    "panels_regenerated": "{count} panels regenerated!",
+    "settings_undone": "Undone: {label}. Settings restored. (Generated resources are not affected.)",
+    "concept_added": "Added concept: {text}",
+    "resource_not_found_history": "Resource not found in history (it may have been deleted).",
+    "lesson_not_found": "Lesson not found in this unit.",
+    "probe_complete": "Probe complete: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Settings Updated: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Tone: {value}",
+    "change_length": "Length: ~{value} words",
+    "change_language": "Language: {value}",
+    "change_interest": "Added Interest: {value}",
+    "backup_saved": "💾 A backup of this session was saved to your Downloads (a project file). Nothing to do with it now — if you ever need to come back, \"Load Project\" brings everything back.",
+    "backup_saved_score": " (score {score})",
+    "project_saved_multi_one": "💾 Project saved ({count} range) — load it later to continue",
+    "project_saved_multi_other": "💾 Project saved ({count} ranges) — load it later to continue",
+    "project_saved": "💾 Project saved — load it later to continue editing",
+    "search_result_desc": "Google Search Result: {title}",
+    "link_url_prompt": "Enter link URL:",
     "copied": "Text copied to clipboard!",
     "draft_restored": "Restored previous draft",
     "level_up": "Level Up! You are now Level {level}!",
@@ -1727,7 +1763,14 @@
     "cancel_transcription": "Cancel Transcription",
     "chunk_info": "Audio is split into 5-minute chunks for processing",
     "chunk_progress": "Chunk {current} of {total}",
-    "audio_only_error": "Currently only audio files (MP3, WAV, etc.) are supported for chunked transcription."
+    "audio_only_error": "Currently only audio files (MP3, WAV, etc.) are supported for chunked transcription.",
+    "starting": "Starting..."
+  },
+  "voice_engine": {
+    "preparing": "Preparing voice engine...",
+    "downloading_model": "Downloading voice model",
+    "loading_memory": "Loading into memory",
+    "loading_model_memory": "Loading voice model into memory"
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -1833,7 +1876,8 @@
     "open_storyforge_aria": "Open StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based Questions",
-    "open_stem_lab_explore_aria": "Open STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Open STEM Lab Explore",
+    "stem_lab_explore": "Explore"
   },
   "history": {
     "load_project": "Load Project",
@@ -4247,6 +4291,25 @@
     "remediation_banner_body": "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."
   },
   "pdf_audit": {
+    "reattach_mismatch": "Re-attached PDF differs from the audited one{detail}. Proceeding anyway — results may be inconsistent with the original audit.",
+    "reattach_name_detail": " (name: \"{new}\" vs \"{old}\")",
+    "reattach_size_detail": " (size: {new} vs {old} bytes)",
+    "audit_failed_kept": "{label}: audit failed — kept previous version.",
+    "score_dropped_kept": "{label}: score would have dropped ({prev} → {next}{axe}). Kept previous version.",
+    "axe_only_comparison": ", axe-only comparison",
+    "axe_only_committed": "{label}: AI verification unavailable — committed with the deterministic axe-core score only.",
+    "fidelity": "Fidelity: {before}% → {after}%{detail}",
+    "reinserted_ai": "{count} reinserted (AI)",
+    "reinserted_sentence": "{count} reinserted (sentence)",
+    "reinserted_fuzzy": "{count} reinserted (fuzzy)",
+    "in_recovery_appendix": "{count} in recovery appendix",
+    "duplicates_removed_one": "{count} duplicate removed",
+    "duplicates_removed_other": "{count} duplicates removed",
+    "auto_continue_round": "Auto-continue round {round}/{max}: {detail}, score {score}/100 (target {target})...",
+    "violation_one": "{count} violation",
+    "violation_other": "{count} violations",
+    "ai_issue_one": "{count} AI-flagged issue",
+    "ai_issue_other": "{count} AI-flagged issues",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "Start New Audit",
     "apply_and_export": "Apply & Export",
@@ -4740,6 +4803,7 @@
     }
   },
   "concept_sort": {
+    "explanation_unavailable": "Couldn't generate an explanation right now. Try again in a moment.",
     "title": "Concept Sort",
     "subtitle": "Drag cards into the correct category.",
     "instructions": "Drag items to the correct section.",
@@ -5209,6 +5273,11 @@
     "admin_report_title": "Admin Report & Recommendations",
     "activities_header": "Activities & Practice",
     "no_activities": "No interactive activities found.",
+    "skill_check": "Skill Check",
+    "desc_skill_check": "Verify your mastery against standards.",
+    "desc_parent": "See how this matches school goals",
+    "desc_6dim": "Audits curriculum across 6 dimensions",
+    "desc_5dim": "Audits curriculum across 5 dimensions (add standards for full audit)",
     "notifications": {
       "no_standard_error": "Please add at least one target standard in the settings.",
       "analysis_complete": "Analysis complete.",
@@ -5429,7 +5498,34 @@
     "plan_hook": "Hook",
     "plan_independent": "Independent Practice",
     "col_image": "Image",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Stop",
+    "expand_header": "Expand header",
+    "collapse_header": "Collapse header to give content more space",
+    "collapse_header_short": "Collapse header",
+    "step_x_of_y": "Step {current} of {total}",
+    "english_translation": "English Translation",
+    "source_references": "Source Text References",
+    "activity_probe": "{activity} Probe",
+    "word_sounds_count": "Word Sounds ({count} words)",
+    "quick_practice_mode": "Quick Practice Mode",
+    "new_option": "New Option",
+    "meta_lesson_extensions": "Lesson Extensions",
+    "title_extension_ideas": "Extension Ideas",
+    "meta_full_chat_log": "Full Chat Log",
+    "title_udl_consultation_log": "UDL Consultation Log",
+    "meta_actionable_steps": "Actionable Steps (AI Summary)",
+    "title_differentiation_strategy": "Differentiation Strategy",
+    "meta_udl_guide_advice": "UDL Guide Advice",
+    "title_stem_assessment": "STEM Assessment",
+    "title_explore_challenge": "Explore Challenge",
+    "title_fluency_maze": "🏰 Fluency Maze",
+    "title_storyforge_config": "📖 StoryForge Assignment",
+    "title_storyforge_submission": "📖 Story Submission",
+    "title_poettree_config": "🌳 PoetTree Assignment",
+    "title_poettree_submission": "🌳 Poem Submission",
+    "title_litlab_config": "🎭 LitLab Assignment",
+    "title_litlab_submission": "🎭 Performance Submission"
   },
   "persona": {
     "title": "Interview Mode",
@@ -7761,6 +7857,9 @@
   },
   "status_steps": {
     "initializing": "Initializing AI...",
+    "preparing_translation": "Preparing translation to {lang}...",
+    "translating_item": "Translating {current}/{total}: {title}...",
+    "generating_panel": "Generating panel {current}/{total}...",
     "extracting_vocab": "Extracting vocabulary & definitions...",
     "generating_icons": "Generating term icons...",
     "refining_icons": "Creating icons & refining visuals...",
@@ -9085,7 +9184,8 @@
     "loading_resources": "Loading resources...",
     "preparing_workspace": "Preparing your workspace...",
     "almost_ready": "Almost ready...",
-    "loading_screen_aria": "AlloFlow loading screen"
+    "loading_screen_aria": "AlloFlow loading screen",
+    "preparing_environment": "Preparing your learning environment..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -10734,7 +10834,12 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser."
+    "audit_queue_help": "Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.",
+    "queued_one": "{count} document queued from LMS",
+    "queued_other": "{count} documents queued from LMS",
+    "fetching": "Fetching {name}...",
+    "loaded_ready": "{name} loaded — ready for audit",
+    "fetch_failed": "Failed to fetch {name}: {error}. The file may require LMS authentication."
   },
   "annotation": {
     "undo_tooltip": "Undo last annotation ({count} available) — Ctrl/Cmd+Z",
@@ -10754,7 +10859,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visual Support from your teacher"
+    "teacher_modal_aria": "Visual Support from your teacher",
+    "now": "NOW",
+    "read_aloud": "Read Aloud"
   },
   "canvas_settings": {
     "title": "Advanced Settings",
@@ -10771,7 +10878,28 @@
     "read_all_button": "Read All",
     "stop_button": "Stop",
     "focus_narration_label": "Keyboard Focus Narration",
-    "focus_narration_on_hint": "Tab to hear controls"
+    "focus_narration_on_hint": "Tab to hear controls",
+    "reading": "Reading...",
+    "item_aria": "Click to hear: {text}",
+    "footer_stats": "{count} items · Click any item to hear it · Tab narration {state}",
+    "narration_on": "ON",
+    "narration_off": "OFF"
+  },
+  "voice_control": {
+    "listening": "Listening — say “stop listening” to finish",
+    "stop_aria": "Stop voice control"
+  },
+  "dynamic_assessment": {
+    "return_title": "This resource was generated by Dynamic Assessment. Click to reopen the DA module.",
+    "return_aria": "Return to Dynamic Assessment",
+    "return_label": "Return to Dynamic Assessment",
+    "item_badge": "item {num}"
+  },
+  "story_gallery": {
+    "title": "Story Gallery",
+    "byline": "By {author} · {words} words · {used}/{total} vocab",
+    "student": "Student",
+    "score": "Score: {score}"
   },
   "teacher": {
     "local_only": "Local only",

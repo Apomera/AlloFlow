@@ -4414,7 +4414,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = 'de75ab94';
+    var pluginCdnVersion = '1e022a4e';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -5014,7 +5014,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           try {
             await window._kokoroTTS.init((progress) => {
               if (onProgress) onProgress(progress);
-              setKokoroLoadState({ loading: true, stage: progress.stage || (progress.pct < 0.95 ? 'Downloading voice model' : 'Loading into memory'), pct: progress.pct });
+              setKokoroLoadState({ loading: true, stage: progress.stage || (progress.pct < 0.95 ? (t('voice_engine.downloading_model') || 'Downloading voice model') : (t('voice_engine.loading_memory') || 'Loading into memory')), pct: progress.pct });
             });
             setKokoroLoadState(null);
             return true;
@@ -5047,7 +5047,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, []);
   const [kokoroLoadState, setKokoroLoadState] = useState(
     (!_isCanvasEnv && !(typeof window !== 'undefined' && (window.location.search.includes('disableTtsLoader=true') || window._disableTtsLoader)))
-      ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
+      ? { loading: true, stage: t('voice_engine.preparing') || 'Preparing voice engine...', pct: 0 } : null
   );
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
   const setShowKokoroOfferModal = React.useCallback((v) => { if (v && window.__alloLazyKokoroOfferModal) { try { window.__alloLazyKokoroOfferModal(); } catch(_) {} } _setShowKokoroOfferModalRaw(v); }, []);
@@ -5058,7 +5058,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!k) return;
       if (k.ready) { setKokoroLoadState(null); clearInterval(poll); return; }
       const pct = k.progress;
-      if (pct > 0) setKokoroLoadState({ loading: true, stage: pct < 0.95 ? 'Downloading voice model' : 'Loading voice model into memory', pct });
+      if (pct > 0) setKokoroLoadState({ loading: true, stage: pct < 0.95 ? (t('voice_engine.downloading_model') || 'Downloading voice model') : (t('voice_engine.loading_model_memory') || 'Loading voice model into memory'), pct });
     }, 300);
     return () => clearInterval(poll);
   }, []);
@@ -6291,7 +6291,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           const newLongest = Math.max(newStreak, prev.longestStreak);
           if (STREAK_MILESTONES.includes(newStreak)) {
             const flames = newStreak <= 5 ? "\u{1F525}" : newStreak <= 10 ? "\u{1F525}\u{1F525}" : newStreak <= 20 ? "\u{1F525}\u{1F525}\u{1F525}" : "\u{1F525}\u{1F525}\u{1F525}\u{1F525}";
-            if (typeof addToast === "function") addToast(`${flames} ${newStreak}-minute focus streak! Keep it up!`, "success");
+            if (typeof addToast === "function") addToast(t('toasts.focus_streak', { flames, minutes: newStreak }) || `${flames} ${newStreak}-minute focus streak! Keep it up!`, "success");
           }
           return { ...prev, currentStreak: newStreak, longestStreak: newLongest, focusedMs: prev.focusedMs + 60000, engagedMinutes: updatedEngaged, idleMinutes: updatedIdle };
         });
@@ -6311,7 +6311,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           const awayMinutes = Math.round(awayMs / 60000);
           const resetStreak = awayMs > 30000;
           if (resetStreak && prev.currentStreak >= 3 && typeof addToast === "function") {
-            addToast(`Welcome back! Your ${prev.currentStreak}-min streak was saved.`, "info");
+            addToast(t('toasts.streak_saved', { minutes: prev.currentStreak }) || `Welcome back! Your ${prev.currentStreak}-min streak was saved.`, "info");
           }
           return {
             ...prev,
@@ -6513,7 +6513,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setTimeout(() => setScoreAnimation({ teamId: null, points: 0 }), 1000);
       playSound('correct');
       closeReviewModal(true);
-      addToast(`Points awarded!`, "success");
+      addToast(t('toasts.points_awarded') || `Points awarded!`, "success");
   };
   const handleManualScore = (teamId, delta) => {
       setGameTeams(prev => prev.map(t => t.id === teamId ? { ...t, score: Math.max(0, t.score + delta) } : t));
@@ -7025,7 +7025,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           preferences: prev.preferences || null
       }));
       setShowStudentEntry(false);
-      addToast(`Welcome, ${name}!`, "success");
+      addToast(t('toasts.welcome_name', { name }) || `Welcome, ${name}!`, "success");
       if (mode === 'load') {
           setTimeout(() => {
               if (projectFileInputRef.current) {
@@ -7521,7 +7521,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   setRunTour(true);
               }, 600);
           } else {
-              addToast(`Element not found: ${elementId}`, "error");
+              addToast(t('toasts.element_not_found', { id: elementId }) || `Element not found: ${elementId}`, "error");
           }
       }, delay);
   };
@@ -7751,7 +7751,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const nextMode = modes[nextIndex];
       setColorOverlay(nextMode);
       if (nextMode !== 'none') {
-          addToast(`Overlay: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1)}`, 'info');
+          addToast(t('toasts.overlay_set', { mode: nextMode.charAt(0).toUpperCase() + nextMode.slice(1) }) || `Overlay: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1)}`, 'info');
       } else {
           addToast(t('toasts.overlay_disabled'), 'info');
       }
@@ -7773,7 +7773,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
-  const [generationStep, setGenerationStep] = useState('Processing...');
+  const [generationStep, setGenerationStep] = useState(t('common.processing') || 'Processing...');
   const [error, setError] = useState(null);
   const [helpfulHint, setHelpfulHint] = useState('');
   const [isGeneratingExtension, setIsGeneratingExtension] = useState(false);
@@ -9303,7 +9303,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                       audioRef.current.pause();
                                       setIsPlaying(false);
                                   }
-                                  addToast(`Synced: ${target.title || getDefaultTitle(target.type)}`, "info");
+                                  addToast(t('toasts.synced_resource', { title: target.title || getDefaultTitle(target.type) }) || `Synced: ${target.title || getDefaultTitle(target.type)}`, "info");
                               }
                           }
                       }
@@ -9321,7 +9321,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                   audioRef.current.pause();
                                   setIsPlaying(false);
                               }
-                              addToast(`Group Resource: ${target.title || getDefaultTitle(target.type)}`, "info");
+                              addToast(t('toasts.group_resource', { title: target.title || getDefaultTitle(target.type) }) || `Group Resource: ${target.title || getDefaultTitle(target.type)}`, "info");
                           }
                       }
                   }
@@ -10346,10 +10346,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const nameMismatch = file.name !== pendingPdfFile.name;
           const sizeMismatch = file.size !== pendingPdfFile.size;
           if (nameMismatch || sizeMismatch) {
-            const msg = 'Re-attached PDF differs from the audited one' +
+            const _mmName = nameMismatch ? (t('pdf_audit.reattach_name_detail', { new: file.name, old: pendingPdfFile.name }) || (' (name: "' + file.name + '" vs "' + pendingPdfFile.name + '")')) : '';
+            const _mmSize = sizeMismatch ? (t('pdf_audit.reattach_size_detail', { new: file.size, old: pendingPdfFile.size }) || (' (size: ' + file.size + ' vs ' + pendingPdfFile.size + ' bytes)')) : '';
+            const msg = t('pdf_audit.reattach_mismatch', { detail: _mmName + _mmSize }) || ('Re-attached PDF differs from the audited one' +
               (nameMismatch ? ' (name: "' + file.name + '" vs "' + pendingPdfFile.name + '")' : '') +
               (sizeMismatch ? ' (size: ' + file.size + ' vs ' + pendingPdfFile.size + ' bytes)' : '') +
-              '. Proceeding anyway — results may be inconsistent with the original audit.';
+              '. Proceeding anyway — results may be inconsistent with the original audit.');
             addToast(msg, 'warning');
           }
         }
@@ -10433,14 +10435,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       setPdfFixResult(p => ({ ...p, ...(extras?.preserveOnRevert || {}) }));
       addToast(
         newBlended == null
-          ? `${label}: audit failed — kept previous version.`
-          : `${label}: score would have dropped (${prevScore} → ${newBlended}${axeOnly ? ', axe-only comparison' : ''}). Kept previous version.`,
+          ? (t('pdf_audit.audit_failed_kept', { label }) || `${label}: audit failed — kept previous version.`)
+          : (t('pdf_audit.score_dropped_kept', { label, prev: prevScore, next: newBlended, axe: axeOnly ? (t('pdf_audit.axe_only_comparison') || ', axe-only comparison') : '' }) || `${label}: score would have dropped (${prevScore} → ${newBlended}${axeOnly ? ', axe-only comparison' : ''}). Kept previous version.`),
         'warning'
       );
       return false;
     }
     if (axeOnly) {
-      addToast(`${label}: AI verification unavailable — committed with the deterministic axe-core score only.`, 'info');
+      addToast(t('pdf_audit.axe_only_committed', { label }) || `${label}: AI verification unavailable — committed with the deterministic axe-core score only.`, 'info');
     }
     setPdfFixResult(p => ({
       ...p,
@@ -10823,7 +10825,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     };
     setExportPresets(updated);
     try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); } catch {}
-    addToast && addToast(`Preset "${name}" saved!`, 'success');
+    addToast && addToast(t('toasts.preset_saved', { name }) || `Preset "${name}" saved!`, 'success');
   };
   const deleteExportPreset = (key) => {
     const updated = { ...exportPresets };
@@ -12730,7 +12732,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           </div>
           <div className="relative mt-2 ps-4 border-s-4 border-indigo-300 bg-slate-50 p-4 rounded-e-xl">
              <div className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block">
-               English Translation
+               {t('output.english_translation') || 'English Translation'}
              </div>
              {/* De-italicized 2026-04: whole-block italics on a multi-paragraph body
                  hurt readability. The uppercase label above already marks the block. */}
@@ -12778,7 +12780,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return (
               <div className={`mt-6 p-5 rounded-xl border border-indigo-200 bg-indigo-50/50 ${className}`}>
                   <div className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 pb-2 border-b border-indigo-200">
-                      Source Text References
+                      {t('output.source_references') || 'Source Text References'}
                   </div>
                   <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
                       {referencesText.replace(/^#{1,6}\s*[^\n]+\n+/, '')}
@@ -12789,7 +12791,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       return (
           <div className={`mt-6 p-5 rounded-xl border border-indigo-200 bg-indigo-50/50 ${className}`}>
               <div className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 pb-2 border-b border-indigo-200">
-                  Source Text References
+                  {t('output.source_references') || 'Source Text References'}
               </div>
               <ol className="list-decimal list-inside space-y-2 text-sm text-slate-700 leading-relaxed marker:text-indigo-500 marker:font-bold">
                   {items.map((item, i) => (
@@ -13529,7 +13531,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         return;
     }
     setIsProcessing(true);
-    setGenerationStep(`Preparing translation to ${targetTranslationLang}...`);
+    setGenerationStep(t('status_steps.preparing_translation', { lang: targetTranslationLang }) || `Preparing translation to ${targetTranslationLang}...`);
     setIsTranslateModalOpen(false);
     addToast(t('toasts.translation_started'), "info");
     try {
@@ -13543,7 +13545,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         const newItems = [];
         for (let i = 0; i < itemsToProcess.length; i++) {
             const item = itemsToProcess[i];
-            setGenerationStep(`Translating ${i+1}/${itemsToProcess.length}: ${item.title || item.type}...`);
+            setGenerationStep(t('status_steps.translating_item', { current: i+1, total: itemsToProcess.length, title: item.title || item.type }) || `Translating ${i+1}/${itemsToProcess.length}: ${item.title || item.type}...`);
             setProcessingProgress({ current: i + 1, total: itemsToProcess.length });
             const translatedItem = await translateResourceItem(item, targetTranslationLang);
             const newItem = {
@@ -13560,7 +13562,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             setGeneratedContent({ type: newItem.type, data: newItem.data, id: newItem.id });
             setActiveView(newItem.type);
         }
-        addToast(`Successfully translated ${newItems.length} resources!`, "success");
+        addToast(t('toasts.translated_resources', { count: newItems.length }) || `Successfully translated ${newItems.length} resources!`, "success");
     } catch (e) {
         warnLog("Unhandled error:", e);
         addToast(t('toasts.translation_interrupted'), "error");
@@ -13669,11 +13671,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       const changes = [];
       if (params.format) {
           setTextFormat(params.format);
-          changes.push(`Format: ${params.format}`);
+          changes.push(t('toasts.change_format', { value: params.format }) || `Format: ${params.format}`);
       }
       if (params.tone) {
           setSourceTone(params.tone);
-          changes.push(`Tone: ${params.tone}`);
+          changes.push(t('toasts.change_tone', { value: params.tone }) || `Tone: ${params.tone}`);
       }
       if (params.length) {
           const _rawLen = String(params.length).trim().toLowerCase();
@@ -13685,7 +13687,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           }
           if (_mappedLen) {
               setSourceLength(_mappedLen);
-              changes.push(`Length: ~${_mappedLen} words`);
+              changes.push(t('toasts.change_length', { value: _mappedLen }) || `Length: ~${_mappedLen} words`);
           }
       }
       if (params.language) {
@@ -13694,17 +13696,17 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               if (!prev.includes(params.language)) return [...prev, params.language];
               return prev;
           });
-          changes.push(`Language: ${params.language}`);
+          changes.push(t('toasts.change_language', { value: params.language }) || `Language: ${params.language}`);
       }
       if (params.interest) {
           setStudentInterests(prev => {
               if (!prev.includes(params.interest)) return [...prev, params.interest];
               return prev;
           });
-          changes.push(`Added Interest: ${params.interest}`);
+          changes.push(t('toasts.change_interest', { value: params.interest }) || `Added Interest: ${params.interest}`);
       }
       if (changes.length > 0) {
-          addToast(`Settings Updated: ${changes.join(', ')}`, "success");
+          addToast(t('toasts.settings_updated', { changes: changes.join(', ') }) || `Settings Updated: ${changes.join(', ')}`, "success");
       }
   };
   const applyAIConfig = (config) => {
@@ -14069,7 +14071,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               calledTerms: [],
               currentCall: null
           });
-          addToast(`Generated ${bingoSettings.cardCount} Bingo cards!`, "success");
+          addToast(t('toasts.bingo_cards_count', { count: bingoSettings.cardCount }) || `Generated ${bingoSettings.cardCount} Bingo cards!`, "success");
       }
   };
   const generateWordSearch = (targetLang = wordSearchLang) => {
@@ -14248,7 +14250,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                 .map(chunk => ({
                     url: chunk.web.uri,
                     title: chunk.web.title,
-                    description: `Google Search Result: ${chunk.web.title}`
+                    description: t('toasts.search_result_desc', { title: chunk.web.title }) || `Google Search Result: ${chunk.web.title}`
                 }));
           }
           const uniqueOptions = Array.from(
@@ -15041,7 +15043,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       console.log('[ArtDirector] Executing plan:', plan.layout, panels.length, 'panels');
       const imagePromises = panels.map(async (panel, idx) => {
           try {
-              setGenerationStep(`Generating panel ${idx + 1}/${panels.length}...`);
+              setGenerationStep(t('status_steps.generating_panel', { current: idx + 1, total: panels.length }) || `Generating panel ${idx + 1}/${panels.length}...`);
               // Process-animation panels: text-to-image anchor, then image-to-image
               // chain, then encode to GIF. Falls back to static path on failure so
               // a single broken animation doesn't take down the whole visual plan.
@@ -15862,7 +15864,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         lastDet = _curDet;
         lastIssues = _aiIssues.length;
         setPdfFixLoading(true);
-        setPdfFixStep('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...');
+        const _acDetail = _vio > 0
+          ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
+          : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : '')));
+        setPdfFixStep(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
         let result;
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
@@ -16065,10 +16070,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // teachers wondered what they were supposed to DO with the .json that
       // just appeared in Downloads. It's a backup; say so.
       const msg = isAuto
-        ? ('💾 A backup of this session was saved to your Downloads (a project file). Nothing to do with it now — if you ever need to come back, "Load Project" brings everything back.' + (cur.afterScore ? ' (score ' + cur.afterScore + ')' : ''))
+        ? ((t('toasts.backup_saved') || '💾 A backup of this session was saved to your Downloads (a project file). Nothing to do with it now — if you ever need to come back, "Load Project" brings everything back.') + (cur.afterScore ? (t('toasts.backup_saved_score', { score: cur.afterScore }) || (' (score ' + cur.afterScore + ')')) : ''))
         : (project.multiSession
-            ? '💾 Project saved (' + rangeCount + ' range' + (rangeCount === 1 ? '' : 's') + ') — load it later to continue'
-            : '💾 Project saved — load it later to continue editing');
+            ? (t(rangeCount === 1 ? 'toasts.project_saved_multi_one' : 'toasts.project_saved_multi_other', { count: rangeCount }) || ('💾 Project saved (' + rangeCount + ' range' + (rangeCount === 1 ? '' : 's') + ') — load it later to continue'))
+            : (t('toasts.project_saved') || '💾 Project saved — load it later to continue editing'));
       addToast(msg, 'success');
       return true;
     } catch (e) { return false; }
@@ -16326,13 +16331,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   const dedupRemoved = _dedupRemovedCount;
                   const dedupFlagged = (dedupResult.highlighted || []).length;
                   const parts = [];
-                  if (stageCounts.retry > 0) parts.push(stageCounts.retry + ' reinserted (AI)');
-                  if (stageCounts.sentence > 0) parts.push(stageCounts.sentence + ' reinserted (sentence)');
-                  if (fuzzyCount > 0) parts.push(fuzzyCount + ' reinserted (fuzzy)');
-                  if (uCount > 0) parts.push(uCount + ' in recovery appendix');
-                  if (dedupRemoved > 0) parts.push(dedupRemoved + ' duplicate' + (dedupRemoved === 1 ? '' : 's') + ' removed');
+                  if (stageCounts.retry > 0) parts.push(t('pdf_audit.reinserted_ai', { count: stageCounts.retry }) || (stageCounts.retry + ' reinserted (AI)'));
+                  if (stageCounts.sentence > 0) parts.push(t('pdf_audit.reinserted_sentence', { count: stageCounts.sentence }) || (stageCounts.sentence + ' reinserted (sentence)'));
+                  if (fuzzyCount > 0) parts.push(t('pdf_audit.reinserted_fuzzy', { count: fuzzyCount }) || (fuzzyCount + ' reinserted (fuzzy)'));
+                  if (uCount > 0) parts.push(t('pdf_audit.in_recovery_appendix', { count: uCount }) || (uCount + ' in recovery appendix'));
+                  if (dedupRemoved > 0) parts.push(t(dedupRemoved === 1 ? 'pdf_audit.duplicates_removed_one' : 'pdf_audit.duplicates_removed_other', { count: dedupRemoved }) || (dedupRemoved + ' duplicate' + (dedupRemoved === 1 ? '' : 's') + ' removed'));
                   const detail = parts.length > 0 ? ' · ' + parts.join(' · ') : '';
-                  const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail;
+                  const msg = t('pdf_audit.fidelity', { before: beforeFidelity, after: afterFidelity, detail }) || ('Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail);
                   addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
                 }
               } catch (e) { /* non-blocking */ }
@@ -16960,7 +16965,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
           else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
           else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
-          else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt('Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+          else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt(t('toasts.link_url_prompt') || 'Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
           else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
           else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
         }
@@ -17670,24 +17675,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'brainstorm': return t('brainstorm.title');
           case 'sentence-frames': return t('scaffolds.title');
           case 'adventure': return t('adventure.title');
-           case 'stem-assessment': return 'STEM Assessment';
-      case 'explore-challenge': return `🎯 ${item.label || 'Explore Challenge'}`;
+           case 'stem-assessment': return t('output.title_stem_assessment') || 'STEM Assessment';
+      case 'explore-challenge': return `🎯 ${item.label || (t('output.title_explore_challenge') || 'Explore Challenge')}`;
           case 'alignment-report': return t('alignment.title');
           case 'timeline': return t('timeline.title');
           case 'concept-sort': return t('concept_sort.title');
           case 'math': return t('math.title');
-          case 'math-fluency-maze': return '🏰 Fluency Maze';
+          case 'math-fluency-maze': return t('output.title_fluency_maze') || '🏰 Fluency Maze';
           case 'lesson-plan': return t('lesson_plan.title');
           case 'gemini-bridge': return t('sidebar.tool_bridge');
           case 'persona': return t('persona.title');
           case 'word-sounds': return t('output.word_sounds_studio') || 'Word Sounds Studio';
-          case 'dbq': return '📜 Document Analysis (DBQ)';
-          case 'storyforge-config': return '📖 StoryForge Assignment';
-          case 'storyforge-submission': return '📖 Story Submission';
-          case 'poettree-config': return '🌳 PoetTree Assignment';
-          case 'poettree-submission': return '🌳 Poem Submission';
-          case 'litlab-config': return '🎭 LitLab Assignment';
-          case 'litlab-submission': return '🎭 Performance Submission';
+          case 'dbq': return '📜 ' + (t('common.dbq_title') || 'Document Analysis (DBQ)');
+          case 'storyforge-config': return t('output.title_storyforge_config') || '📖 StoryForge Assignment';
+          case 'storyforge-submission': return t('output.title_storyforge_submission') || '📖 Story Submission';
+          case 'poettree-config': return t('output.title_poettree_config') || '🌳 PoetTree Assignment';
+          case 'poettree-submission': return t('output.title_poettree_submission') || '🌳 Poem Submission';
+          case 'litlab-config': return t('output.title_litlab_config') || '🎭 LitLab Assignment';
+          case 'litlab-submission': return t('output.title_litlab_submission') || '🎭 Performance Submission';
           default: return t('common.resource') || 'Resource';
       }
   };
@@ -17980,7 +17985,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setSoundEnabled(prev => {
           const newState = !prev;
           if (addToastRef.current) {
-              addToastRef.current(newState ? "Sound Enabled" : "Sound Muted", "info");
+              addToastRef.current(newState ? (t('toasts.sound_enabled') || "Sound Enabled") : (t('toasts.sound_muted') || "Sound Muted"), "info");
           }
           return newState;
       });
@@ -18068,8 +18073,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           type: 'udl-advice',
           data: hint.text,
-          meta: "Lesson Extensions",
-          title: "Extension Ideas",
+          meta: t('output.meta_lesson_extensions') || "Lesson Extensions",
+          title: t('output.title_extension_ideas') || "Extension Ideas",
           timestamp: new Date(),
           config: {}
       };
@@ -18722,7 +18727,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
       try {
         await updateDoc(sessionRef, { 'democracy.isActive': newState });
-        addToast(newState ? "Democracy Mode Enabled: Class Voting ON" : "Democracy Mode Disabled: Solo Play", "info");
+        addToast(newState ? (t('toasts.democracy_mode_on') || "Democracy Mode Enabled: Class Voting ON") : (t('toasts.democracy_mode_off') || "Democracy Mode Disabled: Solo Play"), "info");
       } catch(e) {
           warnLog("Failed to toggle democracy mode", e);
           addToast(t('toasts.mode_toggle_failed'), "error");
@@ -18745,7 +18750,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setEditingOptionsBuffer(newOptions);
   };
   const handleAddOptionSlot = () => {
-      setEditingOptionsBuffer(prev => [...prev, "New Option"]);
+      setEditingOptionsBuffer(prev => [...prev, t('output.new_option') || "New Option"]);
   };
   const handleRemoveOptionSlot = (index) => {
       setEditingOptionsBuffer(prev => prev.filter((_, i) => i !== index));
@@ -19086,11 +19091,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     if (direction === 'up' && index > 0) {
       movedItemTitle = newHistory[index].title || "Item";
       [newHistory[index], newHistory[index - 1]] = [newHistory[index - 1], newHistory[index]];
-      addToast(`Moved ${movedItemTitle} up`, "info");
+      addToast(t('toasts.resource_moved_up', { title: movedItemTitle }) || `Moved ${movedItemTitle} up`, "info");
     } else if (direction === 'down' && index < newHistory.length - 1) {
       movedItemTitle = newHistory[index].title || "Item";
       [newHistory[index], newHistory[index + 1]] = [newHistory[index + 1], newHistory[index]];
-      addToast(`Moved ${movedItemTitle} down`, "info");
+      addToast(t('toasts.resource_moved_down', { title: movedItemTitle }) || `Moved ${movedItemTitle} down`, "info");
     }
     setHistory(newHistory);
   };
@@ -19119,7 +19124,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             };
             setGeneratedContent(updatedContent);
             setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
-            addToast(`${executedPlan.panels.length} panels regenerated!`, "success");
+            addToast(t('toasts.panels_regenerated', { count: executedPlan.panels.length }) || `${executedPlan.panels.length} panels regenerated!`, "success");
         } else {
             const imageBase64 = await callImagen(generatedContent?.data.prompt, targetWidth, targetQual);
             const updatedContent = {
@@ -19771,7 +19776,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setVoiceVolume(s.voiceVolume);
           setSelectedVoice(s.selectedVoice);
           lastIntentSnapshotRef.current = null;
-          addToast(`Undone: ${snap.label}. Settings restored. (Generated resources are not affected.)`, "success");
+          addToast(t('toasts.settings_undone', { label: snap.label }) || `Undone: ${snap.label}. Settings restored. (Generated resources are not affected.)`, "success");
           return true;
       } catch (e) {
           warnLog("restoreIntentSnapshot failed", e);
@@ -20703,8 +20708,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           type: 'udl-advice',
           data: chatLog,
-          meta: "Full Chat Log",
-          title: "UDL Consultation Log",
+          meta: t('output.meta_full_chat_log') || "Full Chat Log",
+          title: t('output.title_udl_consultation_log') || "UDL Consultation Log",
           timestamp: new Date(),
           config: {}
       };
@@ -20731,8 +20736,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
              type: 'udl-advice',
              data: finalData,
-             meta: "Actionable Steps (AI Summary)",
-             title: "Differentiation Strategy",
+             meta: t('output.meta_actionable_steps') || "Actionable Steps (AI Summary)",
+             title: t('output.title_differentiation_strategy') || "Differentiation Strategy",
              timestamp: new Date(),
              config: {}
          };
@@ -20748,8 +20753,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
              type: 'udl-advice',
              data: finalData,
-             meta: "UDL Guide Advice",
-             title: "Differentiation Strategy",
+             meta: t('output.meta_udl_guide_advice') || "UDL Guide Advice",
+             title: t('output.title_differentiation_strategy') || "Differentiation Strategy",
              timestamp: new Date(),
              config: {}
          };
@@ -21640,7 +21645,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
     setMapAddInput('');
-    addToast(`Added concept: ${text}`, "success");
+    addToast(t('toasts.concept_added', { text }) || `Added concept: ${text}`, "success");
   };
   const handleRemoveFromMapList = (index) => {
     if (!generatedContent || generatedContent.type !== 'outline') return;
@@ -22599,7 +22604,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           return (result || '').trim();
       } catch (e) {
           warnLog("Explain concept sort item failed", e);
-          return "Couldn't generate an explanation right now. Try again in a moment.";
+          return t('concept_sort.explanation_unavailable') || "Couldn't generate an explanation right now. Try again in a moment.";
       }
   }, [gradeLevel, callGemini]);
   const handleMoveToUnit = (itemId, targetUnitId) => {
@@ -23805,7 +23810,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               AlloFlow
             </h1>
             <p style={{ color: '#475569', fontSize: '14px', margin: '0 0 32px' }}>
-              Preparing your learning environment...
+              {t('splash.preparing_environment') || 'Preparing your learning environment...'}
             </p>
             <div style={{
               width: '100%', height: '6px', borderRadius: '3px',
@@ -23880,8 +23885,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {lmsAuditUrls.length > 0 && !pendingPdfBase64 && (
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 z-[500]">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-bold text-sm">♿ {lmsAuditUrls.length} document{lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS</span>
-            <button onClick={() => setLmsAuditUrls([])} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors">Dismiss</button>
+            <span className="font-bold text-sm">♿ {t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', { count: lmsAuditUrls.length }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`}</span>
+            <button onClick={() => setLmsAuditUrls([])} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors">{t('lms.dismiss_button') || 'Dismiss'}</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {lmsAuditUrls.map((url, i) => {
@@ -23889,7 +23894,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               return (
                 <button key={i} onClick={async () => {
                   try {
-                    addToast(`Fetching ${name}...`, 'info');
+                    addToast(t('lms.fetching', { name }) || `Fetching ${name}...`, 'info');
                     const resp = await fetch(url);
                     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                     const blob = await resp.blob();
@@ -23900,11 +23905,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       setPendingPdfFile({ name, size: blob.size });
                       setPdfAuditResult({ _choosing: true, fileName: name, fileSize: blob.size });
                       setLmsAuditUrls(prev => prev.filter((_, idx) => idx !== i));
-                      addToast(`${name} loaded — ready for audit`, 'success');
+                      addToast(t('lms.loaded_ready', { name }) || `${name} loaded — ready for audit`, 'success');
                     };
                     reader.readAsDataURL(blob);
                   } catch (err) {
-                    addToast(`Failed to fetch ${name}: ${err.message}. The file may require LMS authentication.`, 'error');
+                    addToast(t('lms.fetch_failed', { name, error: err.message }) || `Failed to fetch ${name}: ${err.message}. The file may require LMS authentication.`, 'error');
                   }
                 }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5">
                   <span className="bg-white/20 px-1 py-0.5 rounded text-[11px] font-bold">{name.split('.').pop()?.toUpperCase() || 'FILE'}</span>
@@ -25379,7 +25384,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm"
                     aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}
                   >
-                    🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
+                    🧪 <span className="group-hover:tracking-wide transition-all">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
                   </button>
                 </div>
                 {/* ── MathPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
@@ -25542,10 +25547,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-700 group-hover:from-teal-600 group-hover:to-emerald-600 flex items-center gap-2">
                             {isProcessing && activeView === 'alignment-report' ? <RefreshCw className="animate-spin text-teal-600" size={18} /> : <ShieldCheck size={18} className="text-emerald-500 fill-emerald-100" />}
-                            {isIndependentMode ? "Skill Check" : t(isParentMode ? 'sidebar.tool_alignment_parent' : 'sidebar.tool_alignment')}
+                            {isIndependentMode ? (t('alignment.skill_check') || "Skill Check") : t(isParentMode ? 'sidebar.tool_alignment_parent' : 'sidebar.tool_alignment')}
                         </span>
                         <span className="text-[11px] text-slate-600 block mt-0.5">
-                            {standardsInput ? (isIndependentMode ? "Verify your mastery against standards." : (isParentMode ? "See how this matches school goals" : "Audits curriculum across 6 dimensions")) : "Audits curriculum across 5 dimensions (add standards for full audit)"}
+                            {standardsInput ? (isIndependentMode ? (t('alignment.desc_skill_check') || "Verify your mastery against standards.") : (isParentMode ? (t('alignment.desc_parent') || "See how this matches school goals") : (t('alignment.desc_6dim') || "Audits curriculum across 6 dimensions"))) : (t('alignment.desc_5dim') || "Audits curriculum across 5 dimensions (add standards for full audit)")}
                         </span>
                     </div>
                     <ArrowRight size={16} className="text-teal-700 group-hover:text-teal-600" />
@@ -25650,7 +25655,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         title={t('audio_player.stop')}
                         aria-label={t('audio_player.stop')}
                     >
-                        <StopCircle size={16} className="fill-current" /> Stop
+                        <StopCircle size={16} className="fill-current" /> {t('output.stop') || 'Stop'}
                     </button>
                 </div>
             </div>
@@ -25677,7 +25682,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 activeView === 'math' ? <><Calculator className="text-blue-600" size={20} /> {t('math.title')}</> :
                 activeView === 'image' ? <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</> :
                 activeView === 'dbq' ? <><FileText className="text-amber-700" size={20} /> 📜 {t('common.dbq_title') || 'Document Analysis (DBQ)'}</> :
-                activeView === 'word-sounds' ? <><Sparkles className="text-violet-600" size={20} /> {isProbeMode ? `${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe` : (t('output.word_sounds_studio') || 'Word Sounds Studio')}</> :
+                activeView === 'word-sounds' ? <><Sparkles className="text-violet-600" size={20} /> {isProbeMode ? (t('output.activity_probe', { activity: (probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1) }) || `${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe`) : (t('output.word_sounds_studio') || 'Word Sounds Studio')}</> :
                 activeView === 'word-sounds-generator' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds Studio'}</> :
                 activeView === 'gemini-bridge' ? <><Terminal className="text-slate-600" size={20} /> {t('common.gemini_bridge') || 'Gemini Bridge'}</> :
                 generatedContent?.type ? <><FileText className="text-slate-600" size={20} /> {getDefaultTitle(generatedContent.type)}</> :
@@ -25762,7 +25767,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
                             className="group flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all hover:shadow-sm cursor-pointer ms-1"
                             aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEM Lab Explore'}>
-                            🧪 <span className="group-hover:tracking-wide transition-all">Explore</span>
+                            🧪 <span className="group-hover:tracking-wide transition-all">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
                         </span>
                     )}
                     </div>
@@ -25772,8 +25777,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <button
                     onClick={() => setIsOutputHeaderCollapsed(p => !p)}
                     className="p-1.5 rounded-md hover:bg-slate-200 text-slate-600 transition-colors"
-                    title={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header to give content more space'}
-                    aria-label={isOutputHeaderCollapsed ? 'Expand header' : 'Collapse header'}
+                    title={isOutputHeaderCollapsed ? (t('output.expand_header') || 'Expand header') : (t('output.collapse_header') || 'Collapse header to give content more space')}
+                    aria-label={isOutputHeaderCollapsed ? (t('output.expand_header') || 'Expand header') : (t('output.collapse_header_short') || 'Collapse header')}
                     aria-expanded={!isOutputHeaderCollapsed}
                 >
                     {isOutputHeaderCollapsed ? <ChevronDown size={16}/> : <ChevronUp size={16}/>}
@@ -25963,7 +25968,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         </div>
                         {processingProgress.total > 0 && (
                              <div className="flex justify-between w-full text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                                 <span>Step {processingProgress.current} of {processingProgress.total}</span>
+                                 <span>{t('output.step_x_of_y', { current: processingProgress.current, total: processingProgress.total }) || `Step ${processingProgress.current} of ${processingProgress.total}`}</span>
                                  <span>{Math.round((processingProgress.current / processingProgress.total) * 100)}%</span>
                              </div>
                         )}
@@ -26101,7 +26106,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     };
                                     setLatestProbeResult(fullResult);
                                     if (probeTargetStudent) saveProbeResult(probeTargetStudent, fullResult);
-                                    addToast(`Probe complete: ${results.correct}/${results.total} (${results.accuracy}%)`, 'success');
+                                    addToast(t('toasts.probe_complete', { correct: results.correct, total: results.total, accuracy: results.accuracy }) || `Probe complete: ${results.correct}/${results.total} (${results.accuracy}%)`, 'success');
                                     if (screenerSession && screenerSession.status === 'running') {
                                         const updatedResults = [...screenerSession.results, fullResult];
                                         if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {
@@ -26121,7 +26126,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 <div className="text-4xl mb-3">⚙️</div>
                                 <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds' }) || 'Loading Word Sounds...'}</p>
                                 <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
-                                <button onClick={() => { setIsWordSoundsMode(false); setActiveView('input'); }} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300">Close</button>
+                                <button onClick={() => { setIsWordSoundsMode(false); setActiveView('input'); }} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300">{t('common.close') || 'Close'}</button>
                             </div>
                         </div>
                     );
@@ -26830,12 +26835,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                    const wordSoundsResource = {
                        id: resourceId,
                        type: 'word-sounds',
-                       title: `Word Sounds (${words.length} words)`,
+                       title: t('output.word_sounds_count', { count: words.length }) || `Word Sounds (${words.length} words)`,
                        data: words,
                        timestamp: Date.now(),
                        lessonPlanSequence: sequence || [],
                        lessonPlanConfig: lessonPlanConfig || null,
-                       configSummary: configSummary || 'Quick Practice Mode',
+                       configSummary: configSummary || (t('output.quick_practice_mode') || 'Quick Practice Mode'),
                    };
                    setGeneratedContent(wordSoundsResource);
                    setHistory(prev => [wordSoundsResource, ...prev]);
@@ -27177,17 +27182,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         <div style={{position:'fixed',bottom:80,right:16,zIndex:9990,maxWidth:360}}>
           <div style={{background:'white',borderRadius:16,boxShadow:'0 8px 30px rgba(0,0,0,0.15)',border:'2px solid #c4b5fd',overflow:'hidden'}}>
             <div style={{background:'linear-gradient(135deg,#7c3aed,#a78bfa)',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <span style={{color:'white',fontWeight:900,fontSize:13}}>📖 Story Gallery ({storyForgeSubmissions.length})</span>
-              <button onClick={() => setStoryForgeSubmissions([])} style={{color:'white',background:'rgba(255,255,255,0.2)',border:'none',borderRadius:8,padding:'2px 8px',fontSize:11,fontWeight:700,cursor:'pointer'}}>Clear</button>
+              <span style={{color:'white',fontWeight:900,fontSize:13}}>📖 {t('story_gallery.title') || 'Story Gallery'} ({storyForgeSubmissions.length})</span>
+              <button onClick={() => setStoryForgeSubmissions([])} style={{color:'white',background:'rgba(255,255,255,0.2)',border:'none',borderRadius:8,padding:'2px 8px',fontSize:11,fontWeight:700,cursor:'pointer'}}>{t('common.clear') || 'Clear'}</button>
             </div>
             <div style={{maxHeight:300,overflowY:'auto',padding:8}}>
               {storyForgeSubmissions.map((sub, si) => (
                 <div key={si} style={{display:'flex',gap:8,padding:8,borderBottom:'1px solid #f1f5f9',alignItems:'flex-start'}}>
                   {sub.coverArt && <img src={sub.coverArt} style={{width:48,height:48,borderRadius:8,objectFit:'cover',border:'2px solid #e2e8f0'}} alt="" />}
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:800,fontSize:12,color:'#1e293b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.title || 'Untitled'}</div>
-                    <div style={{fontSize:10,color:'#64748b'}}>By {sub.author || 'Student'} · {sub.wordCount || 0} words · {sub.vocabUsed || 0}/{sub.vocabTotal || 0} vocab</div>
-                    {sub.gradingScore && <div style={{fontSize:10,color:'#7c3aed',fontWeight:700}}>Score: {sub.gradingScore}</div>}
+                    <div style={{fontWeight:800,fontSize:12,color:'#1e293b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.title || (t('common.untitled') || 'Untitled')}</div>
+                    <div style={{fontSize:10,color:'#64748b'}}>{t('story_gallery.byline', { author: sub.author || (t('story_gallery.student') || 'Student'), words: sub.wordCount || 0, used: sub.vocabUsed || 0, total: sub.vocabTotal || 0 }) || `By ${sub.author || 'Student'} · ${sub.wordCount || 0} words · ${sub.vocabUsed || 0}/${sub.vocabTotal || 0} vocab`}</div>
+                    {sub.gradingScore && <div style={{fontSize:10,color:'#7c3aed',fontWeight:700}}>{t('story_gallery.score', { score: sub.gradingScore }) || `Score: ${sub.gradingScore}`}</div>}
                     {sub.preview && <div style={{fontSize:10,color: '#475569',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{sub.preview}</div>}
                   </div>
                 </div>
@@ -27208,7 +27213,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div onClick={(e) => e.stopPropagation()} style={{background:'linear-gradient(145deg,rgba(255,255,255,0.99),rgba(248,250,252,0.97))',borderRadius:'20px',padding:'0',maxWidth:'680px',width:'94vw',maxHeight:'88vh',overflowY:'auto',boxShadow:'0 25px 60px rgba(0,0,0,0.2)',border:'1px solid rgba(99,102,241,0.15)'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'18px 22px 14px',borderBottom:'1px solid rgba(99,102,241,0.12)'}}>
                 <h2 style={{margin:0,fontSize:'17px',fontWeight:800,color:'#4f46e5',display:'flex',alignItems:'center',gap:'8px'}}>
-                  <span style={{fontSize:'22px'}}>🖼️</span> {_vsp.title || 'Visual Support from your teacher'}
+                  <span style={{fontSize:'22px'}}>🖼️</span> {_vsp.title || (t('visual_support.teacher_modal_aria') || 'Visual Support from your teacher')}
                 </h2>
                 <button onClick={() => setVisualSupportsPayload(null)} style={{background:'rgba(0,0,0,0.05)',border:'none',borderRadius:'10px',width:'32px',height:'32px',cursor:'pointer',fontSize:'15px',display:'flex',alignItems:'center',justifyContent:'center',color:'#64748b'}}>✕</button>
               </div>
@@ -27239,7 +27244,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       const _isNow = ii === (_vsp.nowIndex||0);
                       return (
                         <div key={ii} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',borderRadius:'12px',background:_isNow?'rgba(99,102,241,0.08)':'rgba(0,0,0,0.02)',border:`1px solid ${_isNow?'rgba(99,102,241,0.25)':'rgba(0,0,0,0.06)'}`}}>
-                          {_isNow && <span style={{fontSize:'12px',fontWeight:700,color:'#4f46e5',background:'#eef2ff',padding:'2px 7px',borderRadius:'6px',flexShrink:0}}>NOW</span>}
+                          {_isNow && <span style={{fontSize:'12px',fontWeight:700,color:'#4f46e5',background:'#eef2ff',padding:'2px 7px',borderRadius:'6px',flexShrink:0}}>{t('visual_support.now') || 'NOW'}</span>}
                           {!_isNow && <span style={{width:'20px',height:'20px',borderRadius:'50%',background:'rgba(0,0,0,0.08)',display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'11px',color: '#475569',fontWeight:700,flexShrink:0}}>{ii+1}</span>}
                           {item.image && <img src={item.image} alt={item.label} style={{width:'40px',height:'40px',objectFit:'contain',borderRadius:'6px',background:'white',border:'1px solid rgba(0,0,0,0.08)'}} />}
                           <span style={{fontSize:'14px',fontWeight:600,color:'#1e293b'}}>{item.label}</span>
@@ -27250,8 +27255,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 )}
               </div>
               <div style={{padding:'0 22px 18px',display:'flex',justifyContent:'center'}}>
-                <button onClick={() => { const _txt = (_vsp.words||_vsp.items||[]).map(w => typeof w==='object'?(w.word||w.label):w).join(', '); handleAudio(_txt).catch(()=>{}); }} style={{background:'rgba(99,102,241,0.08)',border:'1px solid rgba(99,102,241,0.2)',color:'#4f46e5',padding:'8px 18px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',marginRight:'8px'}}>🔊 Read Aloud</button>
-                <button onClick={() => setVisualSupportsPayload(null)} style={{background:'rgba(0,0,0,0.05)',border:'1px solid rgba(0,0,0,0.1)',color:'#64748b',padding:'8px 18px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s'}}>Close</button>
+                <button onClick={() => { const _txt = (_vsp.words||_vsp.items||[]).map(w => typeof w==='object'?(w.word||w.label):w).join(', '); handleAudio(_txt).catch(()=>{}); }} style={{background:'rgba(99,102,241,0.08)',border:'1px solid rgba(99,102,241,0.2)',color:'#4f46e5',padding:'8px 18px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',marginRight:'8px'}}>🔊 {t('visual_support.read_aloud') || 'Read Aloud'}</button>
+                <button onClick={() => setVisualSupportsPayload(null)} style={{background:'rgba(0,0,0,0.05)',border:'1px solid rgba(0,0,0,0.1)',color:'#64748b',padding:'8px 18px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s'}}>{t('common.close') || 'Close'}</button>
               </div>
             </div>
           </div>
@@ -27464,7 +27469,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             if (!pendingLargeFile) return;
             setIsLargeFileProcessing(true);
             setLargeFileProgress(0);
-            setLargeFileStatus('Starting...');
+            setLargeFileStatus(t('large_file.starting') || 'Starting...');
             try {
                 const fileType = LargeFileHandler.getFileType(pendingLargeFile);
                 const processMethod = fileType === 'video'
@@ -27781,8 +27786,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {alloVoiceActive && (
         <div role="status" aria-live="polite" className="fixed bottom-24 left-4 z-[11500] flex items-center gap-2 px-3 py-2 bg-rose-600 text-white rounded-full shadow-xl text-xs font-bold no-print">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-white animate-ping" aria-hidden="true"></span>
-          🎙️ Listening — say “stop listening” to finish
-          <button onClick={() => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} }} className="ml-1 px-2 py-0.5 bg-white/20 border border-white/50 rounded-full hover:bg-white/30" aria-label="Stop voice control">⏹</button>
+          🎙️ {t('voice_control.listening') || 'Listening — say “stop listening” to finish'}
+          <button onClick={() => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} }} className="ml-1 px-2 py-0.5 bg-white/20 border border-white/50 rounded-full hover:bg-white/30" aria-label={t('voice_control.stop_aria') || 'Stop voice control'}>⏹</button>
         </div>
       )}
       {isBotVisible && (
@@ -28049,14 +28054,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         {generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen && (
             <button
                 onClick={() => setIsDynamicAssessmentOpen(true)}
-                title="This resource was generated by Dynamic Assessment. Click to reopen the DA module."
-                aria-label="Return to Dynamic Assessment"
+                title={t('dynamic_assessment.return_title') || 'This resource was generated by Dynamic Assessment. Click to reopen the DA module.'}
+                aria-label={t('dynamic_assessment.return_aria') || 'Return to Dynamic Assessment'}
                 className="fixed bottom-4 right-4 z-[1000] bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-full shadow-2xl border-2 border-violet-300 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 animate-in slide-in-from-bottom-2 duration-300"
             >
                 <span className="text-base">🔬</span>
-                <span>Return to Dynamic Assessment</span>
+                <span>{t('dynamic_assessment.return_label') || 'Return to Dynamic Assessment'}</span>
                 {typeof generatedContent.daItemIndex === 'number' && (
-                    <span className="bg-violet-800 px-1.5 py-0.5 rounded text-[10px] font-black">item {generatedContent.daItemIndex + 1}</span>
+                    <span className="bg-violet-800 px-1.5 py-0.5 rounded text-[10px] font-black">{t('dynamic_assessment.item_badge', { num: generatedContent.daItemIndex + 1 }) || `item ${generatedContent.daItemIndex + 1}`}</span>
                 )}
             </button>
         )}
@@ -28411,7 +28416,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             onOpenResource: (resourceId) => {
                                 const item = (Array.isArray(history) ? history : []).find(h => h && h.id === resourceId);
                                 if (!item) {
-                                    addToast('Resource not found in history (it may have been deleted).', 'info');
+                                    addToast(t('toasts.resource_not_found_history') || 'Resource not found in history (it may have been deleted).', 'info');
                                     return;
                                 }
                                 setIsDynamicAssessmentOpen(false);
@@ -28560,7 +28565,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 history: Array.isArray(history) ? history : [],
                 currentLesson: generatedContent || null,
                 inLiveSession: !!(isTeacherMode && activeSessionCode),
-                onOpenLesson: (item) => { if (!item || !item.id) { addToast('Lesson not found in this unit.', 'info'); return; } setShowMindMap(false); setThroughlineSeedUnitId(null); setTimeout(() => { handleRestoreView(item); }, 50); },
+                onOpenLesson: (item) => { if (!item || !item.id) { addToast(t('toasts.lesson_not_found') || 'Lesson not found in this unit.', 'info'); return; } setShowMindMap(false); setThroughlineSeedUnitId(null); setTimeout(() => { handleRestoreView(item); }, 50); },
                 units: Array.isArray(units) ? units : [],
                 seedUnitId: throughlineSeedUnitId,
                 onProposeUnit,
@@ -28654,7 +28659,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               rtpReadingRef.current = true;
               rtpStopRef.current = false;
               const btn = document.getElementById('rtp-read-all-btn');
-              if (btn) { btn.textContent = '\u25B6 Reading...'; btn.style.background = '#16a34a'; }
+              if (btn) { btn.textContent = '\u25B6 ' + (t('read_this_page.reading') || 'Reading...'); btn.style.background = '#16a34a'; }
               for (let i = 0; i < items.length; i++) {
                   if (rtpStopRef.current) break;
                   const itemEls = document.querySelectorAll('[data-rtp-idx]');
@@ -28678,7 +28683,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   if (!rtpStopRef.current) await new Promise(r => setTimeout(r, 300));
               }
               rtpReadingRef.current = false;
-              if (btn) { btn.textContent = '\u25B6 Read All'; btn.style.background = '#7c3aed'; }
+              if (btn) { btn.textContent = '\u25B6 ' + (t('read_this_page.read_all_button') || 'Read All'); btn.style.background = '#7c3aed'; }
               document.querySelectorAll('[data-rtp-idx]').forEach(el => el.style.background = 'none');
           };
           const handleStop = () => {
@@ -28687,7 +28692,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               if (rtpCurrentAudioRef.current) { try { rtpCurrentAudioRef.current.pause(); } catch(_) {} rtpCurrentAudioRef.current = null; }
               if ('speechSynthesis' in window) window.speechSynthesis.cancel();
               const btn = document.getElementById('rtp-read-all-btn');
-              if (btn) { btn.textContent = '\u25B6 Read All'; btn.style.background = '#7c3aed'; }
+              if (btn) { btn.textContent = '\u25B6 ' + (t('read_this_page.read_all_button') || 'Read All'); btn.style.background = '#7c3aed'; }
               document.querySelectorAll('[data-rtp-idx]').forEach(el => el.style.background = 'none');
           };
           const handleItemClick = (idx) => {
@@ -28758,7 +28763,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               className="px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-white/5"
                               style={{ color: typeColors[item.type] || '#94a3b8', lineHeight: 1.5 }}
                               role="button" tabIndex={0}
-                              aria-label={`Click to hear: ${item.text.substring(0, 80)}`}
+                              aria-label={t('read_this_page.item_aria', { text: item.text.substring(0, 80) }) || `Click to hear: ${item.text.substring(0, 80)}`}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(idx); } }}
                           >
                               <span className="me-1">{typeIcons[item.type] || '\u{1F50A}'}</span>
@@ -28768,7 +28773,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   </div>
                   {/* Footer Stats */}
                   <div className="px-3 py-2 text-[11px] text-slate-600 border-t" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
-                      {items.length} items &middot; Click any item to hear it &middot; Tab narration {focusNarrationEnabled ? 'ON' : 'OFF'}
+                      {t('read_this_page.footer_stats', { count: items.length, state: focusNarrationEnabled ? (t('read_this_page.narration_on') || 'ON') : (t('read_this_page.narration_off') || 'OFF') }) || `${items.length} items · Click any item to hear it · Tab narration ${focusNarrationEnabled ? 'ON' : 'OFF'}`}
                   </div>
               </div>
           );
