@@ -935,6 +935,47 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard },
             h('span', { className: 'px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-lg text-[11px] font-bold' }, 'Scenario ' + (dlScenario + 1) + '/' + DL_SCENARIOS.length + ': ' + dlCurrent.title),
             h('p', { className: 'text-xs text-slate-700 mt-2 leading-relaxed' }, dlCurrent.desc),
+            // FLAGSHIP: SHOW the chart trick (same data, two framings, side by
+            // side) instead of only describing it — the core visual a data-
+            // literacy tab was missing. Chart-based scenarios only; the reasoning
+            // fallacies (ice cream, percentage, survivor CEOs) stay text.
+            (function() {
+              var INK = '#334155', MUT = '#64748b';
+              if (dlScenario === 0) { // Truncated Y-axis: "crime rate" 970 vs 990
+                var mkBars = function(y0, y1) {
+                  var W = 120, H = 96, padL = 28, padB = 16, vals = [970, 990], cols = ['#6366f1', '#ef4444'];
+                  var sy = function(v) { return 8 + (H - padB - 8) * (1 - (v - y0) / (y1 - y0)); };
+                  return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 150 }, 'aria-hidden': 'true' },
+                    h('line', { x1: padL, y1: 8, x2: padL, y2: H - padB, stroke: MUT, strokeWidth: 1 }),
+                    h('line', { x1: padL, y1: H - padB, x2: W - 4, y2: H - padB, stroke: MUT, strokeWidth: 1 }),
+                    h('text', { x: padL - 3, y: H - padB, fontSize: 7, fill: MUT, textAnchor: 'end' }, '' + y0),
+                    h('text', { x: padL - 3, y: 12, fontSize: 7, fill: MUT, textAnchor: 'end' }, '' + y1),
+                    vals.map(function(v, i) { return h('rect', { key: i, x: padL + 10 + i * 44, y: sy(v), width: 30, height: (H - padB) - sy(v), fill: cols[i], rx: 2 }); }),
+                    h('text', { x: padL + 25, y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, '2023'),
+                    h('text', { x: padL + 69, y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, '2024'));
+                };
+                return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, '😱 Y-axis starts at 950'), mkBars(950, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, 'Looks like a HUGE jump')),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, '✅ Y-axis starts at 0'), mkBars(0, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, 'Same data — barely +2%')));
+              }
+              if (dlScenario === 2) { // Vanishing baseline: $3M(2022) -> $1M(2023) -> $2M(2024)
+                var mkLine = function(pts) {
+                  var W = 130, H = 96, padL = 22, padB = 16, maxV = 3.5, n = pts.length;
+                  var px = function(i) { return padL + (W - padL - 6) * (n === 1 ? 0.5 : i / (n - 1)); };
+                  var py = function(v) { return 8 + (H - padB - 8) * (1 - v / maxV); };
+                  return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 160 }, 'aria-hidden': 'true' },
+                    h('line', { x1: padL, y1: 8, x2: padL, y2: H - padB, stroke: MUT, strokeWidth: 1 }),
+                    h('line', { x1: padL, y1: H - padB, x2: W - 4, y2: H - padB, stroke: MUT, strokeWidth: 1 }),
+                    h('polyline', { points: pts.map(function(p, i) { return px(i) + ',' + py(p[1]); }).join(' '), fill: 'none', stroke: '#6366f1', strokeWidth: 2 }),
+                    pts.map(function(p, i) { return h('circle', { key: i, cx: px(i), cy: py(p[1]), r: 2.5, fill: '#4338ca' }); }),
+                    pts.map(function(p, i) { return h('text', { key: 't' + i, x: px(i), y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, p[0]); }));
+                };
+                return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, '😱 Cherry-picked window'), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, '"Revenue DOUBLED!"')),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, '✅ Full history'), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, 'Down from $3M — not "doubled"')));
+              }
+              return null;
+            })(),
             h('p', { className: 'text-xs font-bold text-slate-600 mt-3 mb-2' }, dlCurrent.question),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               dlCurrent.options.map(function(opt, oi) {
