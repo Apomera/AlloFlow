@@ -952,7 +952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
     },
     outbreak: {
       title: 'Trust feedback is the universal currency of public health',
-      text: 'You have now coordinated outbreak response in Maine, Mumbai during dengue monsoon, AND Liberia during the 2014 Ebola epidemic. Different pathogens, different scales (4 demographics vs 20 million vs national survival), different baseline trust. Universal lesson: in every single case, the cultural-partnership intervention beat the cultural-suppression intervention. Mumbai\'s SEWA partnership beat top-down landlord fines. Liberia\'s Safe-and-Dignified-Burial partnership with chiefs and traditional healers beat the burial-ban + military approach. Maine\'s community-health-worker model outperforms top-down mandates. The pattern is so strong it should be called Frieden\'s Law: the technical intervention is downstream of the cultural partnership.'
+      text: 'You have now coordinated outbreak response in Maine, Mumbai during dengue monsoon, AND Liberia during the 2014 Ebola epidemic. Different pathogens, different scales (4 demographics vs 20 million vs national survival), different baseline trust. Universal lesson: in every single case, the cultural-partnership intervention beat the cultural-suppression intervention. Mumbai\'s SEWA partnership beat top-down landlord fines. Liberia\'s Safe-and-Dignified-Burial partnership with chiefs and traditional healers beat the burial-ban + military approach. Maine\'s community-health-worker model outperforms top-down mandates. The pattern is so consistent it\'s worth holding as a working rule of thumb (a point CDC\'s Tom Frieden has argued): the technical intervention is downstream of the cultural partnership.'
     },
     watershed: {
       title: 'Watersheds are restored by Indigenous-led organising, not by engineering alone',
@@ -1450,7 +1450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           },
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Final outcome'),
             h('div', { style: { fontSize: 18, fontWeight: 800, color: outcome.color || '#0f172a' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
-            h('p', { style: { margin: '6px 0 0', color: '#94a3b8', fontSize: 13, lineHeight: 1.55 } }, outcome.desc || '')
+            h('p', { style: { margin: '6px 0 0', color: '#475569', fontSize: 13, lineHeight: 1.55 } }, outcome.desc || '')
           ) : null,
 
           // Campaign metadata
@@ -1490,7 +1490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Campaign Log'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               eventHighlights.map(function(eh, i) {
-                return h('div', { key: i, style: { padding: '6px 10px', background: '#f8fafc', borderLeft: '3px solid ' + c.color, borderRadius: 4, fontSize: 12, color: '#94a3b8' } },
+                return h('div', { key: i, style: { padding: '6px 10px', background: '#f8fafc', borderLeft: '3px solid ' + c.color, borderRadius: 4, fontSize: 12, color: '#334155' } },
                   h('strong', null, eh.label + ': '),
                   eh.event,
                   eh.cascades && eh.cascades.length > 0 ? h('div', { style: { marginTop: 2, fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } },
