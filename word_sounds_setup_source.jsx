@@ -143,9 +143,18 @@
     }
     function applyPhonemeVoicePackToBank(clips) {
         try {
-            if (!clips || !window.__ALLO_PHONEME_AUDIO_BANK) return 0;
+            if (!window.__ALLO_PHONEME_AUDIO_BANK) return 0;
+            clips = clips || {};
+            // Authoritative: for every canonical phoneme key, set the custom clip OR
+            // revert to the default. Reverting (vs only writing customs) is what makes
+            // a CLEARED sound stop playing. Guard: only revert when a default actually
+            // exists, so we never wipe the bank before audio_bank.json has loaded.
+            const allKeys = Object.keys(PHONEME_PACK_GROUPS).reduce((a, g) => a.concat(PHONEME_PACK_GROUPS[g]), []);
             let n = 0;
-            Object.keys(clips).forEach((k) => { if (clips[k]) { window.__ALLO_PHONEME_AUDIO_BANK[k] = clips[k]; n++; } });
+            allKeys.forEach((k) => {
+                if (clips[k]) { window.__ALLO_PHONEME_AUDIO_BANK[k] = clips[k]; n++; }
+                else { try { const d = (typeof window.getAudio === 'function') ? window.getAudio('phonemes', k) : null; if (d) window.__ALLO_PHONEME_AUDIO_BANK[k] = d; } catch (e) {} }
+            });
             return n;
         } catch (e) { return 0; }
     }
@@ -176,12 +185,17 @@
     const INSTR_SLOT_KEYS = (function () { const m = {}; PHONEME_PACK_CHEERS.concat(PHONEME_PACK_INSTRS).forEach((s) => { m[s.id] = s.keys; }); return m; })();
     function applyInstrToBank(instr) {
         try {
-            if (!instr || !window.__ALLO_INSTRUCTION_AUDIO) return 0;
+            if (!window.__ALLO_INSTRUCTION_AUDIO) return 0;
+            instr = instr || {};
+            // Authoritative (same as the phoneme bank): a cleared cheer/instruction
+            // slot reverts its keys to the default, only when a default exists.
             let n = 0;
-            Object.keys(instr).forEach((slot) => {
-                const clip = instr[slot]; if (!clip) return;
-                const keys = INSTR_SLOT_KEYS[slot] || [slot];
-                keys.forEach((k) => { window.__ALLO_INSTRUCTION_AUDIO[k] = clip; n++; });
+            Object.keys(INSTR_SLOT_KEYS).forEach((slot) => {
+                const clip = instr[slot];
+                INSTR_SLOT_KEYS[slot].forEach((k) => {
+                    if (clip) { window.__ALLO_INSTRUCTION_AUDIO[k] = clip; n++; }
+                    else { try { const d = (typeof window.getAudio === 'function') ? window.getAudio('instructions', k) : null; if (d) window.__ALLO_INSTRUCTION_AUDIO[k] = d; } catch (e) {} }
+                });
             });
             return n;
         } catch (e) { return 0; }
@@ -330,7 +344,15 @@
         const setKind = (k) => setPack((prev) => Object.assign({}, prev, { kind: k }));
         const giveConsent = () => setPack((prev) => Object.assign({}, prev, { consent: true }));
         const setStudentName = (name) => setPack((prev) => Object.assign({}, prev, { studentName: name }));
-        const selectPack = (id) => { setLib((prev) => Object.assign({}, prev, { activeId: id })); setChecks({}); setSelfChecks({}); setStatus(''); setView('record'); };
+        const selectPack = (id) => {
+            setLib((prev) => Object.assign({}, prev, { activeId: id }));
+            // Apply the selected pack to the live bank now, so switching a pack
+            // immediately changes the voice (instead of only on Save).
+            const target = lib.packs.find((p) => p.id === id);
+            if (target) { applyPhonemeVoicePackToBank(target.clips); applyInstrToBank(target.instr); }
+            setChecks({}); setSelfChecks({}); setView('record');
+            setStatus(target ? ('Switched to "' + (target.name || 'pack') + '" — this voice is active now.') : '');
+        };
         const newPack = () => { const id = genPhonemePackId(); setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: 'New Pack' })]) })); setChecks({}); setSelfChecks({}); setStatus('New pack created. Name it, pick Teacher or Student, then record.'); setView('record'); };
         const deletePack = () => {
             if (lib.packs.length <= 1) { setStatus('Keep at least one pack. Clear individual sounds with 🗑️ instead.'); return; }

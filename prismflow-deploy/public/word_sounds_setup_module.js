@@ -218,12 +218,20 @@ function loadPhonemeVoicePack() {
 }
 function applyPhonemeVoicePackToBank(clips) {
   try {
-    if (!clips || !window.__ALLO_PHONEME_AUDIO_BANK) return 0;
+    if (!window.__ALLO_PHONEME_AUDIO_BANK) return 0;
+    clips = clips || {};
+    const allKeys = Object.keys(PHONEME_PACK_GROUPS).reduce((a, g) => a.concat(PHONEME_PACK_GROUPS[g]), []);
     let n = 0;
-    Object.keys(clips).forEach((k) => {
+    allKeys.forEach((k) => {
       if (clips[k]) {
         window.__ALLO_PHONEME_AUDIO_BANK[k] = clips[k];
         n++;
+      } else {
+        try {
+          const d = typeof window.getAudio === "function" ? window.getAudio("phonemes", k) : null;
+          if (d) window.__ALLO_PHONEME_AUDIO_BANK[k] = d;
+        } catch (e) {
+        }
       }
     });
     return n;
@@ -259,15 +267,22 @@ const INSTR_SLOT_KEYS = (function() {
 })();
 function applyInstrToBank(instr) {
   try {
-    if (!instr || !window.__ALLO_INSTRUCTION_AUDIO) return 0;
+    if (!window.__ALLO_INSTRUCTION_AUDIO) return 0;
+    instr = instr || {};
     let n = 0;
-    Object.keys(instr).forEach((slot) => {
+    Object.keys(INSTR_SLOT_KEYS).forEach((slot) => {
       const clip = instr[slot];
-      if (!clip) return;
-      const keys = INSTR_SLOT_KEYS[slot] || [slot];
-      keys.forEach((k) => {
-        window.__ALLO_INSTRUCTION_AUDIO[k] = clip;
-        n++;
+      INSTR_SLOT_KEYS[slot].forEach((k) => {
+        if (clip) {
+          window.__ALLO_INSTRUCTION_AUDIO[k] = clip;
+          n++;
+        } else {
+          try {
+            const d = typeof window.getAudio === "function" ? window.getAudio("instructions", k) : null;
+            if (d) window.__ALLO_INSTRUCTION_AUDIO[k] = d;
+          } catch (e) {
+          }
+        }
       });
     });
     return n;
@@ -467,10 +482,15 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
   const setStudentName = (name) => setPack((prev) => Object.assign({}, prev, { studentName: name }));
   const selectPack = (id) => {
     setLib((prev) => Object.assign({}, prev, { activeId: id }));
+    const target = lib.packs.find((p) => p.id === id);
+    if (target) {
+      applyPhonemeVoicePackToBank(target.clips);
+      applyInstrToBank(target.instr);
+    }
     setChecks({});
     setSelfChecks({});
-    setStatus("");
     setView("record");
+    setStatus(target ? 'Switched to "' + (target.name || "pack") + '" \u2014 this voice is active now.' : "");
   };
   const newPack = () => {
     const id = genPhonemePackId();
