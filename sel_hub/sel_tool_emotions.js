@@ -18242,7 +18242,7 @@ window.SelHub = window.SelHub || {
             // Answer options
             quizDef && !quizRevealed && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               quizOptions.map(function(opt) {
-                return h('button', { 'aria-label': 'Toggle sound',
+                return h('button', {
                   key: opt,
                   onClick: function() {
                     var correct = opt === quizWord;
@@ -18317,7 +18317,7 @@ window.SelHub = window.SelHub || {
           wheelMode === 'explore' && !selectedFamily && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxWidth: 400, margin: '0 auto 20px' } },
             EMOTION_FAMILIES.map(function(fam) {
               var explored = exploredFamilies[fam.id];
-              return h('button', { 'aria-label': 'Toggle sound',
+              return h('button', {
                 key: fam.id,
                 onClick: function() {
                   upd('selectedFamily', fam.id);
@@ -18373,7 +18373,7 @@ window.SelHub = window.SelHub || {
                       gridColumn: isExpanded ? '1 / -1' : 'auto'
                     }
                   },
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         var newExpanded = isExpanded ? null : feeling.word;
                         upd('expandedFeeling', newExpanded);
@@ -18478,7 +18478,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 feelings.map(function(f) {
                   var isSel = checkinFeeling === f.word;
-                  return h('button', { 'aria-label': 'Toggle sound',
+                  return h('button', {
                     key: f.word,
                     onClick: function() { upd('checkinFeeling', f.word); if (soundEnabled) sfxClick(); },
                     style: {
@@ -18599,7 +18599,7 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            h('button', { 'aria-label': 'Toggle sound',
+            h('button', {
               onClick: function() {
                 var newViewed = Object.assign({}, bodyMapViewed);
                 newViewed[checkinFamily] = true;
@@ -18674,7 +18674,7 @@ window.SelHub = window.SelHub || {
             !faceRevealed
               ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 300, margin: '0 auto' } },
                   challenge.options.map(function(opt) {
-                    return h('button', { 'aria-label': 'Toggle sound',
+                    return h('button', {
                       key: opt,
                       onClick: function() {
                         var correct = opt === challenge.emotion;
@@ -18755,7 +18755,7 @@ window.SelHub = window.SelHub || {
             !bodyLangRevealed
               ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, maxWidth: 300, margin: '0 auto' } },
                   blChallenge.options.map(function(opt) {
-                    return h('button', { 'aria-label': 'Toggle sound',
+                    return h('button', {
                       key: opt,
                       onClick: function() {
                         var correct = opt === blChallenge.emotion;
@@ -19092,7 +19092,7 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
-              callGemini && journalDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
+              callGemini && journalDraft.trim().length > 10 && h('button', {
                 onClick: function() {
                   upd('journalAiLoading', true);
                   // Pre-flight regex gate: if journal draft contains a critical
@@ -19505,7 +19505,7 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: 14, fontWeight: 700, color: P.text, marginBottom: 8 } },
                   (fam1 ? fam1.label : mixEmotion1) + ' + ' + (fam2 ? fam2.label : mixEmotion2)
                 ),
-                !mixAiCustom && !mixAiLoading && callGemini && h('button', { 'aria-label': 'Toggle sound',
+                !mixAiCustom && !mixAiLoading && callGemini && h('button', {
                   onClick: function() {
                     upd('mixAiLoading', true);
                     var prompt = 'You are an emotion scientist explaining to a ' + band + ' school student. When the emotions ' + (fam1 ? fam1.label : mixEmotion1) + ' and ' + (fam2 ? fam2.label : mixEmotion2) + ' combine, what complex feeling results? Give a creative name (2-3 words), then explain in 2 sentences what it feels like. ' +
@@ -19648,6 +19648,13 @@ if (activeTab === 'plutchik') {
           stroke: stroke,
           strokeWidth: isSel ? 3 : (isHov ? 2 : 1),
           style: { cursor: 'pointer', transition: 'all 0.2s' },
+          tabIndex: 0,
+          role: 'button',
+          'aria-label': (p[tierName] && p[tierName].name ? p[tierName].name + ', ' : '') + p.moderate.name + ' family, ' + tierName + ' intensity',
+          'aria-pressed': isSel ? 'true' : 'false',
+          onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
+          onFocus: function() { upd({ pwHover: { primary: p.id, intensity: tierName } }); },
+          onBlur: function() { upd({ pwHover: null }); },
           onClick: function() {
             upd({ pwSel: { primary: p.id, intensity: tierName } });
             if (soundEnabled) sfxClick();
