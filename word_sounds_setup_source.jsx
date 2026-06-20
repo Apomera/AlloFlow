@@ -322,7 +322,16 @@
         } catch (e) { return dataUri; }
     }
     const PhonemeVoicePackEditor = ({ onClose, t }) => {
-        const T = (k, fb) => (typeof t === 'function' ? t(k, fb) : fb);
+        // Resolve an i18n key to its (possibly translated) string, falling back to
+        // the English `fb`, then interpolate {token} placeholders locally — the host
+        // `t(key, fallback)` only knows key+fallback, so params are filled in here
+        // (same {brace} convention the rest of Word Sounds uses).
+        const T = (k, fb, params) => {
+            let s = (typeof t === 'function' ? t(k, fb) : fb);
+            if (s == null) s = fb;
+            if (params) { s = String(s); Object.keys(params).forEach((p) => { s = s.split('{' + p + '}').join(params[p]); }); }
+            return s;
+        };
         const [lib, setLib] = React.useState(() => loadVoicePackLibrary());
         // `pack` = the active library entry; `setPack` mutates just that entry so
         // every existing setPack((prev) => ...) call keeps working unchanged.
@@ -404,12 +413,12 @@
             const target = lib.packs.find((p) => p.id === id);
             if (target) { applyPhonemeVoicePackToBank(target.clips); applyInstrToBank(target.instr); }
             setChecks({}); setSelfChecks({}); setView('record'); setAiCheckOn(false);
-            setStatus(target ? ('Switched to "' + (target.name || 'pack') + '". This voice is active now.') : '');
+            setStatus(target ? T('word_sounds.voice_pack_msg_switched', 'Switched to "{name}". This voice is active now.', { name: (target.name || 'pack') }) : '');
         };
-        const newPack = () => { const id = genPhonemePackId(); setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: 'New Pack' })]) })); setChecks({}); setSelfChecks({}); setStatus('New pack created. Name it, pick Teacher or Student, then record.'); setView('record'); };
+        const newPack = () => { const id = genPhonemePackId(); setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: 'New Pack' })]) })); setChecks({}); setSelfChecks({}); setStatus(T('word_sounds.voice_pack_msg_new', 'New pack created. Name it, pick Teacher or Student, then record.')); setView('record'); };
         const deletePack = () => {
-            if (lib.packs.length <= 1) { setStatus('Keep at least one pack. Clear individual sounds with 🗑️ instead.'); return; }
-            if (typeof window !== 'undefined' && !window.confirm('Delete pack "' + (pack.name || '') + '"? Its recordings and progress log will be gone.')) return;
+            if (lib.packs.length <= 1) { setStatus(T('word_sounds.voice_pack_msg_keep_one', 'Keep at least one pack. Clear individual sounds with 🗑️ instead.')); return; }
+            if (typeof window !== 'undefined' && !window.confirm(T('word_sounds.voice_pack_confirm_delete', 'Delete pack "{name}"? Its recordings and progress log will be gone.', { name: (pack.name || '') }))) return;
             setLib((prev) => {
                 const rest = prev.packs.filter((p) => p.id !== prev.activeId);
                 const packs = rest.length ? rest : [normalizePhonemePack({ id: genPhonemePackId(), name: 'My Voice Pack' })];
@@ -459,27 +468,27 @@
         const startRecording = (key, opts) => {
             opts = opts || {};
             const isInstr = !!opts.instr; // recording a cheer / instruction (writes pack.instr), not a phoneme
-            if (!consentOk) { setStatus('Confirm consent below before recording a student voice.'); return; }
+            if (!consentOk) { setStatus(T('word_sounds.voice_pack_msg_consent_first', 'Confirm consent below before recording a student voice.')); return; }
             if (recordingKey) { stopRecording(); return; }
             const targetId = lib.activeId; // the pack this clip belongs to, even if the user switches mid-record
             const voice = window.AlloFlowVoice;
-            if (!voice || typeof voice.recordAudioBlob !== 'function') { setStatus('🎙️ Recording needs the in-app microphone. Open in Canvas.'); return; }
-            const ctrl = voice.recordAudioBlob({ maxDurationMs: isInstr ? 8000 : 4000, preferredMimeType: 'audio/webm;codecs=opus', onError: () => { setStatus('Microphone access was blocked.'); setRecordingKey(null); recorderRef.current = null; } });
-            if (!ctrl || !ctrl.supported) { try { if (ctrl && ctrl.result && typeof ctrl.result.catch === 'function') ctrl.result.catch(() => {}); } catch (e) {} setStatus('Recording is not supported in this browser.'); return; }
+            if (!voice || typeof voice.recordAudioBlob !== 'function') { setStatus(T('word_sounds.voice_pack_msg_need_mic', '🎙️ Recording needs the in-app microphone. Open in Canvas.')); return; }
+            const ctrl = voice.recordAudioBlob({ maxDurationMs: isInstr ? 8000 : 4000, preferredMimeType: 'audio/webm;codecs=opus', onError: () => { setStatus(T('word_sounds.voice_pack_msg_mic_blocked', 'Microphone access was blocked.')); setRecordingKey(null); recorderRef.current = null; } });
+            if (!ctrl || !ctrl.supported) { try { if (ctrl && ctrl.result && typeof ctrl.result.catch === 'function') ctrl.result.catch(() => {}); } catch (e) {} setStatus(T('word_sounds.voice_pack_msg_unsupported', 'Recording is not supported in this browser.')); return; }
             recorderRef.current = ctrl;
             setRecordingKey(key);
-            setStatus('● Recording ' + (opts.label || ('/' + key + '/' + (PHONEME_PACK_EXAMPLES[key] ? ' (like ' + PHONEME_PACK_EXAMPLES[key] + ')' : ''))) + '. Tap again to stop.');
+            setStatus(T('word_sounds.voice_pack_msg_recording', '● Recording {what}. Tap again to stop.', { what: (opts.label || ('/' + key + '/' + (PHONEME_PACK_EXAMPLES[key] ? ' (like ' + PHONEME_PACK_EXAMPLES[key] + ')' : ''))) }));
             ctrl.result.then(async (rec) => {
                 if (rec && rec.base64) {
                     let finalClip = rec.base64;
-                    if (cleanOn) { setStatus('✂️ Cleaning up…'); try { finalClip = await cleanPhonemeClip(rec.base64); } catch (e) { finalClip = rec.base64; } }
+                    if (cleanOn) { setStatus(T('word_sounds.voice_pack_msg_cleaning', '✂️ Cleaning up…')); try { finalClip = await cleanPhonemeClip(rec.base64); } catch (e) { finalClip = rec.base64; } }
                     const clip = finalClip;
                     if (isInstr) {
                         setPackById(targetId, (prev) => Object.assign({}, prev, { instr: Object.assign({}, prev.instr, { [key]: clip }) }));
-                        setStatus('✓ Recorded ' + (opts.label || key) + '. Tap 🔊 to hear it, then Save & Use.');
+                        setStatus(T('word_sounds.voice_pack_msg_recorded', '✓ Recorded {what}. Tap 🔊 to hear it, then Save & Use.', { what: (opts.label || key) }));
                     } else {
                         setPackById(targetId, (prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
-                        setStatus('✓ Recorded /' + key + '/. Tap 🔊 to hear it, then Save & Use.');
+                        setStatus(T('word_sounds.voice_pack_msg_recorded_sound', '✓ Recorded /{key}/. Tap 🔊 to hear it, then Save & Use.', { key: key }));
                         logAttempt(key, targetId);
                         if (aiCheckOn) runAiCheck(key, clip, targetId);
                     }
@@ -491,11 +500,11 @@
         const instr = pack.instr || {};
         const playInstrClip = (slot) => { const d = instr[slot]; if (!d) return; playPreview(d); };
         const clearInstrClip = (slot) => setPack((prev) => { const c = Object.assign({}, prev.instr); delete c[slot]; return Object.assign({}, prev, { instr: c }); });
-        const playInstrReference = (slot) => { const ref = instrReferenceClip(slot); if (!ref) { setStatus('No default recording to preview for this one.'); return; } playPreview(ref); };
+        const playInstrReference = (slot) => { const ref = instrReferenceClip(slot); if (!ref) { setStatus(T('word_sounds.voice_pack_msg_no_default_preview', 'No default recording to preview for this one.')); return; } playPreview(ref); };
         const playClip = (key) => { const d = clips[key]; if (!d) return; playPreview(d); };
         const playReference = (key) => {
             const ref = phonemeReferenceClip(key);
-            if (!ref) { setStatus('No model recording for /' + key + '/ in the default voice. Record what you think it sounds like, or check a reference chart.'); return; }
+            if (!ref) { setStatus(T('word_sounds.voice_pack_msg_no_model', 'No model recording for /{key}/ in the default voice. Record what you think it sounds like, or check a reference chart.', { key: key })); return; }
             playPreview(ref);
         };
         const playCompare = (key) => {
@@ -505,7 +514,7 @@
             const mine = clips[key];
             if (!ref || !mine) return;
             const lbl = key === 'oo_short' ? 'oo' : key;
-            setStatus('🔁 Listen: the model first, then your /' + lbl + '/.');
+            setStatus(T('word_sounds.voice_pack_msg_listen_compare', '🔁 Listen: the model first, then your /{lbl}/.', { lbl: lbl }));
             const playMine = () => { playPreview(mine); };
             const a = playPreview(ref);
             if (a) { a.onended = playMine; a.onerror = playMine; } else { playMine(); }
@@ -516,11 +525,11 @@
             // The payoff: blend a real word from the student's OWN recorded clips.
             // Teaches that words are made of sounds, in the most motivating way.
             const seq = w.keys.map((k) => clips[k]);
-            if (seq.some((c) => !c)) { setStatus('Record every sound in "' + w.word + '" first.'); return; }
-            setStatus('🔊 Blending "' + w.word + '" in your voice...');
+            if (seq.some((c) => !c)) { setStatus(T('word_sounds.voice_pack_msg_record_all', 'Record every sound in "{word}" first.', { word: w.word })); return; }
+            setStatus(T('word_sounds.voice_pack_msg_blending', '🔊 Blending "{word}" in your voice...', { word: w.word }));
             let i = 0;
             const next = () => {
-                if (i >= seq.length) { setStatus('🎉 You built "' + w.word + '" with your own sounds!'); return; }
+                if (i >= seq.length) { setStatus(T('word_sounds.voice_pack_msg_built', '🎉 You built "{word}" with your own sounds!', { word: w.word })); return; }
                 const clip = seq[i]; i++;
                 const a = playPreview(clip);
                 if (a) { a.onended = () => setTimeout(next, 240); a.onerror = () => setTimeout(next, 240); }
@@ -550,8 +559,10 @@
             // (or null → TTS), not stay overridden from a previous Save.
             const appliedInstr = applyInstrToBank(pack.instr || {}) > 0;
             const ok = persist();
-            const extra = appliedInstr ? ' + your cheers/instructions' : '';
-            setStatus(ok ? ('✅ Saved and active now (' + applied + ' sounds' + extra + '). Word Sounds will use this voice.') : ('Active for this session (' + applied + ' sounds), but the pack was too large for browser storage. Use Export to keep it as a file.'));
+            const extra = appliedInstr ? T('word_sounds.voice_pack_msg_save_extra', ' + your cheers/instructions') : '';
+            setStatus(ok
+                ? T('word_sounds.voice_pack_msg_saved', '✅ Saved and active now ({count} sounds{extra}). Word Sounds will use this voice.', { count: applied, extra: extra })
+                : T('word_sounds.voice_pack_msg_saved_session', 'Active for this session ({count} sounds), but the pack was too large for browser storage. Use Export to keep it as a file.', { count: applied }));
         };
         const exportPack = () => {
             try {
@@ -562,8 +573,10 @@
                 const safe = String(pack.name || 'voice').replace(/[^a-z0-9]+/gi, '_');
                 a.href = url; a.download = 'phoneme_pack_' + (isStudent ? 'CONFIDENTIAL_' : '') + safe + '.json';
                 document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                setStatus('⬇️ Exported "' + (pack.name || 'My Voice Pack') + '"' + (isStudent ? ' (confidential student voice).' : '.'));
-            } catch (e) { setStatus('Export failed.'); }
+                setStatus(isStudent
+                    ? T('word_sounds.voice_pack_msg_exported_student', '⬇️ Exported "{name}" (confidential student voice).', { name: (pack.name || 'My Voice Pack') })
+                    : T('word_sounds.voice_pack_msg_exported', '⬇️ Exported "{name}".', { name: (pack.name || 'My Voice Pack') }));
+            } catch (e) { setStatus(T('word_sounds.voice_pack_msg_export_fail', 'Export failed.')); }
         };
         const importPack = (ev) => {
             const file = ev.target.files && ev.target.files[0];
@@ -573,7 +586,7 @@
                 try {
                     const data = JSON.parse(e.target.result);
                     const incoming = (data && (data.phonemes || data.clips)) || null;
-                    if (!incoming || typeof incoming !== 'object') { setStatus('That file is not a phoneme pack.'); return; }
+                    if (!incoming || typeof incoming !== 'object') { setStatus(T('word_sounds.voice_pack_msg_not_pack', 'That file is not a phoneme pack.')); return; }
                     // Keep only string clip values (audio data URIs) — guard against a
                     // tampered/corrupt file injecting objects or non-string junk.
                     const sanitizeClips = (o) => { const out = {}; if (o && typeof o === 'object') Object.keys(o).forEach((k) => { if (typeof o[k] === 'string' && o[k]) out[k] = o[k]; }); return out; };
@@ -582,8 +595,8 @@
                     const id = genPhonemePackId();
                     setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: (data && data.name) || 'Imported Pack', kind: (data && data.kind === 'student-voice') ? 'student-voice' : 'teacher-model', consent: false, clips: safeClips, instr: safeInstr, history: (data && data.history && typeof data.history === 'object') ? data.history : {}, studentName: (data && typeof data.studentName === 'string') ? data.studentName : '', studentId: (data && data.studentId) || null })]) }));
                     setChecks({}); setSelfChecks({});
-                    setStatus('📥 Imported as a new pack (' + Object.keys(safeClips).length + ' sounds). Tap Save & Use to apply.');
-                } catch (err) { setStatus('Could not read that file.'); }
+                    setStatus(T('word_sounds.voice_pack_msg_imported', '📥 Imported as a new pack ({count} sounds). Tap Save & Use to apply.', { count: Object.keys(safeClips).length }));
+                } catch (err) { setStatus(T('word_sounds.voice_pack_msg_read_fail', 'Could not read that file.')); }
             };
             reader.readAsText(file);
             ev.target.value = '';
@@ -593,36 +606,36 @@
             if (!c) return null;
             if (c.state === 'checking') return <span className="text-[10px] text-slate-400 italic">checking…</span>;
             const good = c.match === true && c.clipped !== false;
-            return <span className={`text-[10px] font-semibold ${good ? 'text-emerald-600' : 'text-amber-600'}`} title={c.note || ''}>{good ? '✓ sounds right' : ('⚠ ' + (c.note || 'try again'))}</span>;
+            return <span className={`text-[10px] font-semibold ${good ? 'text-emerald-600' : 'text-amber-600'}`} title={c.note || ''}>{good ? T('word_sounds.voice_pack_sounds_right', '✓ sounds right') : ('⚠ ' + (c.note || T('word_sounds.voice_pack_try_again', 'try again')))}</span>;
         };
         return (
-            <div ref={modalRootRef} tabIndex={-1} className="fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 outline-none" role="dialog" aria-modal="true" aria-label="Phoneme Voice Pack editor">
+            <div ref={modalRootRef} tabIndex={-1} className="fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 outline-none" role="dialog" aria-modal="true" aria-label={T('word_sounds.voice_pack_dialog_label', 'Phoneme Voice Pack editor')}>
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
                     <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white">
                         <div>
                             <h2 className="text-lg font-black flex items-center gap-2">🎙️ {T('word_sounds.voice_pack_title', 'Voice Pack: record your own sounds')}</h2>
                             <p className="text-xs text-white/80">{recordedCount} / {allKeys.length} {T('word_sounds.voice_pack_recorded', 'sounds recorded')}</p>
                         </div>
-                        <button type="button" onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none">✕</button>
+                        <button type="button" onClick={onClose} aria-label={T('word_sounds.voice_pack_close', 'Close')} className="p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none">✕</button>
                     </div>
                     <div className="px-5 py-2 border-b border-slate-200 flex items-center gap-2 flex-wrap text-xs bg-slate-50">
                         <span className="font-bold text-slate-500 uppercase tracking-wider">{T('word_sounds.voice_pack_pack_label', 'Pack')}</span>
-                        <select value={lib.activeId} onChange={(e) => selectPack(e.target.value)} aria-label="Active pack" className="border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold bg-white max-w-[180px]">
+                        <select value={lib.activeId} onChange={(e) => selectPack(e.target.value)} aria-label={T('word_sounds.voice_pack_active_pack', 'Active pack')} className="border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold bg-white max-w-[180px]">
                             {lib.packs.map((p) => <option key={p.id} value={p.id}>{(p.kind === 'student-voice' ? '🧒 ' : '🎓 ') + (p.name || 'Untitled') + (p.studentName ? ': ' + p.studentName : '')}</option>)}
                         </select>
                         <button type="button" onClick={newPack} className="px-2 py-1 rounded-lg bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100">➕ {T('word_sounds.voice_pack_new', 'New')}</button>
                         <button type="button" onClick={deletePack} disabled={lib.packs.length <= 1} className={`px-2 py-1 rounded-lg border font-bold ${lib.packs.length <= 1 ? 'text-slate-300 border-slate-200 cursor-not-allowed' : 'text-rose-600 border-rose-200 hover:bg-rose-50'}`}>🗑️ {T('word_sounds.voice_pack_delete', 'Delete')}</button>
-                        {isStudent ? <input type="text" value={pack.studentName || ''} onChange={(e) => setStudentName(e.target.value)} placeholder={T('word_sounds.voice_pack_student_name', 'Student name (optional)')} aria-label="Student name" className="border border-slate-300 rounded-lg px-2 py-1 text-xs ml-auto min-w-[120px]" /> : null}
+                        {isStudent ? <input type="text" value={pack.studentName || ''} onChange={(e) => setStudentName(e.target.value)} placeholder={T('word_sounds.voice_pack_student_name', 'Student name (optional)')} aria-label={T('word_sounds.voice_pack_student_name_label', 'Student name')} className="border border-slate-300 rounded-lg px-2 py-1 text-xs ml-auto min-w-[120px]" /> : null}
                     </div>
                     <div className="px-5 py-2.5 border-b border-slate-200 flex items-center gap-3 flex-wrap text-xs">
-                        <div className="inline-flex rounded-lg border border-slate-300 overflow-hidden" role="group" aria-label="Pack type">
-                            <button type="button" onClick={() => setKind('teacher-model')} className={`px-3 py-1.5 font-bold transition-colors ${!isStudent ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>🎓 Teacher model</button>
-                            <button type="button" onClick={() => setKind('student-voice')} className={`px-3 py-1.5 font-bold transition-colors ${isStudent ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>🧒 Student voice</button>
+                        <div className="inline-flex rounded-lg border border-slate-300 overflow-hidden" role="group" aria-label={T('word_sounds.voice_pack_type_label', 'Pack type')}>
+                            <button type="button" onClick={() => setKind('teacher-model')} className={`px-3 py-1.5 font-bold transition-colors ${!isStudent ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>🎓 {T('word_sounds.voice_pack_kind_teacher', 'Teacher model')}</button>
+                            <button type="button" onClick={() => setKind('student-voice')} className={`px-3 py-1.5 font-bold transition-colors ${isStudent ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>🧒 {T('word_sounds.voice_pack_kind_student', 'Student voice')}</button>
                         </div>
-                        <label className="inline-flex items-center gap-1.5 font-semibold text-slate-700 cursor-pointer" title="Trim silence and even out the volume after each recording, for cleaner blending">
+                        <label className="inline-flex items-center gap-1.5 font-semibold text-slate-700 cursor-pointer" title={T('word_sounds.voice_pack_clean_title', 'Trim silence and even out the volume after each recording, for cleaner blending')}>
                             <input type="checkbox" checked={cleanOn} onChange={(e) => setCleanOn(e.target.checked)} /> ✂️ {T('word_sounds.voice_pack_clean', 'Auto-trim & level')}
                         </label>
-                        <label className={`inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? 'text-slate-700' : 'text-slate-300 cursor-not-allowed'}`} title={aiAvailable ? 'Coach: judges each clip against the target sound (sends it to Gemini)' : 'AI coach needs Canvas'}>
+                        <label className={`inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? 'text-slate-700' : 'text-slate-300 cursor-not-allowed'}`} title={aiAvailable ? T('word_sounds.voice_pack_aicheck_title', 'Coach: judges each clip against the target sound (sends it to Gemini)') : T('word_sounds.voice_pack_aicheck_needs_canvas', 'AI coach needs Canvas')}>
                             <input type="checkbox" checked={aiCheckOn} disabled={!aiAvailable} onChange={(e) => setAiCheckOn(e.target.checked)} /> 🎯 {T('word_sounds.voice_pack_aicheck', 'AI coach')}
                         </label>
                         {aiCheckOn ? <span className="text-[10px] text-amber-600">{T('word_sounds.voice_pack_aicheck_note', 'Each clip is sent to Gemini for analysis.')}</span> : null}
@@ -691,7 +704,7 @@
                                             const ready = wordReady(w);
                                             const missing = w.keys.filter((k) => !clips[k]).map((k) => '/' + (k === 'oo_short' ? 'oo' : k) + '/').join(' ');
                                             return (
-                                                <button key={w.word} type="button" onClick={() => ready && playWord(w)} disabled={!ready} aria-label={ready ? ('Hear ' + w.word + ' in your voice') : (w.word + ': still need ' + missing)} title={ready ? ('Hear "' + w.word + '" in your voice') : ('Record: ' + missing)} className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${ready ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white text-slate-400 border border-slate-200 cursor-not-allowed'}`}>{ready ? '🔊 ' : '🔒 '}{w.word}</button>
+                                                <button key={w.word} type="button" onClick={() => ready && playWord(w)} disabled={!ready} aria-label={ready ? T('word_sounds.voice_pack_word_hear', 'Hear {word} in your voice', { word: w.word }) : T('word_sounds.voice_pack_word_need', '{word}: still need {missing}', { word: w.word, missing: missing })} title={ready ? T('word_sounds.voice_pack_word_hear_title', 'Hear "{word}" in your voice', { word: w.word }) : T('word_sounds.voice_pack_word_record', 'Record: {missing}', { missing: missing })} className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${ready ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white text-slate-400 border border-slate-200 cursor-not-allowed'}`}>{ready ? '🔊 ' : '🔒 '}{w.word}</button>
                                             );
                                         })}
                                     </div>
@@ -715,18 +728,18 @@
                                                     {PHONEME_PACK_CUES[key] ? <div className="text-[10px] text-violet-500 leading-snug">{PHONEME_PACK_CUES[key]}</div> : null}
                                                     {has ? (
                                                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                                            {hasRef ? <button type="button" onClick={() => playCompare(key)} className="text-[10px] font-bold text-amber-700 hover:underline">🔁 compare</button> : null}
-                                                            <span className="text-[10px] text-slate-400">me:</span>
-                                                            <button type="button" onClick={() => rateSelf(key, 'good')} aria-label={'I think ' + label + ' sounds right'} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'good' ? '' : 'opacity-30'} hover:opacity-100`}>😀</button>
-                                                            <button type="button" onClick={() => rateSelf(key, 'retry')} aria-label={'I want to try ' + label + ' again'} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'retry' ? '' : 'opacity-30'} hover:opacity-100`}>🤔</button>
+                                                            {hasRef ? <button type="button" onClick={() => playCompare(key)} className="text-[10px] font-bold text-amber-700 hover:underline">🔁 {T('word_sounds.voice_pack_compare', 'compare')}</button> : null}
+                                                            <span className="text-[10px] text-slate-400">{T('word_sounds.voice_pack_me', 'me:')}</span>
+                                                            <button type="button" onClick={() => rateSelf(key, 'good')} aria-label={T('word_sounds.voice_pack_self_good', 'I think {label} sounds right', { label: label })} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'good' ? '' : 'opacity-30'} hover:opacity-100`}>😀</button>
+                                                            <button type="button" onClick={() => rateSelf(key, 'retry')} aria-label={T('word_sounds.voice_pack_self_retry', 'I want to try {label} again', { label: label })} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'retry' ? '' : 'opacity-30'} hover:opacity-100`}>🤔</button>
                                                             {checkBadge(key)}
                                                         </div>
                                                     ) : null}
                                                 </div>
-                                                <button type="button" onClick={() => playReference(key)} disabled={!hasRef} aria-label={'Hear the model sound ' + label} title="Hear the model (default) sound" className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRef ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
-                                                <button type="button" onClick={() => startRecording(key)} disabled={!consentOk} aria-label={rec ? ('Stop recording ' + label) : ('Record ' + label)} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? 'bg-red-500 text-white animate-pulse' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{rec ? '⏹' : '🎙️'}</button>
-                                                <button type="button" onClick={() => playClip(key)} disabled={!has} aria-label={'Play your recording of ' + label} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${has ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>🔊</button>
-                                                <button type="button" onClick={() => clearClip(key)} disabled={!has} aria-label={'Clear ' + label} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${has ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-200 cursor-not-allowed'}`}>🗑️</button>
+                                                <button type="button" onClick={() => playReference(key)} disabled={!hasRef} aria-label={T('word_sounds.voice_pack_hear_model', 'Hear the model sound {label}', { label: label })} title={T('word_sounds.voice_pack_hear_model_title', 'Hear the model (default) sound')} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRef ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
+                                                <button type="button" onClick={() => startRecording(key)} disabled={!consentOk} aria-label={rec ? T('word_sounds.voice_pack_stop_recording', 'Stop recording {label}', { label: label }) : T('word_sounds.voice_pack_record', 'Record {label}', { label: label })} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? 'bg-red-500 text-white animate-pulse' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{rec ? '⏹' : '🎙️'}</button>
+                                                <button type="button" onClick={() => playClip(key)} disabled={!has} aria-label={T('word_sounds.voice_pack_play_recording', 'Play your recording of {label}', { label: label })} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${has ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>🔊</button>
+                                                <button type="button" onClick={() => clearClip(key)} disabled={!has} aria-label={T('word_sounds.voice_pack_clear', 'Clear {label}', { label: label })} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${has ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-200 cursor-not-allowed'}`}>🗑️</button>
                                             </div>
                                         );
                                     })}
@@ -747,10 +760,10 @@
                                                 <div className="font-bold text-slate-800 text-sm leading-tight">{slot.label} {hasI && <span className="text-emerald-600">✓</span>}</div>
                                                 {slot.hint ? <div className="text-[10px] text-slate-500 leading-snug">{slot.hint}</div> : null}
                                             </div>
-                                            <button type="button" onClick={() => playInstrReference(slot.id)} disabled={!hasRefI} aria-label={'Hear the default for ' + slot.label} title="Hear the default" className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRefI ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
-                                            <button type="button" onClick={() => startRecording(slot.id, { instr: true, label: slot.label })} disabled={!consentOk} aria-label={recI ? ('Stop recording ' + slot.label) : ('Record ' + slot.label)} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? 'bg-red-500 text-white animate-pulse' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{recI ? '⏹' : '🎙️'}</button>
-                                            <button type="button" onClick={() => playInstrClip(slot.id)} disabled={!hasI} aria-label={'Play your recording of ' + slot.label} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasI ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>🔊</button>
-                                            <button type="button" onClick={() => clearInstrClip(slot.id)} disabled={!hasI} aria-label={'Clear ' + slot.label} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${hasI ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-200 cursor-not-allowed'}`}>🗑️</button>
+                                            <button type="button" onClick={() => playInstrReference(slot.id)} disabled={!hasRefI} aria-label={T('word_sounds.voice_pack_hear_default_for', 'Hear the default for {label}', { label: slot.label })} title={T('word_sounds.voice_pack_hear_default', 'Hear the default')} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRefI ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
+                                            <button type="button" onClick={() => startRecording(slot.id, { instr: true, label: slot.label })} disabled={!consentOk} aria-label={recI ? T('word_sounds.voice_pack_stop_recording', 'Stop recording {label}', { label: slot.label }) : T('word_sounds.voice_pack_record', 'Record {label}', { label: slot.label })} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? 'bg-red-500 text-white animate-pulse' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{recI ? '⏹' : '🎙️'}</button>
+                                            <button type="button" onClick={() => playInstrClip(slot.id)} disabled={!hasI} aria-label={T('word_sounds.voice_pack_play_recording', 'Play your recording of {label}', { label: slot.label })} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasI ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>🔊</button>
+                                            <button type="button" onClick={() => clearInstrClip(slot.id)} disabled={!hasI} aria-label={T('word_sounds.voice_pack_clear', 'Clear {label}', { label: slot.label })} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${hasI ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-200 cursor-not-allowed'}`}>🗑️</button>
                                         </div>
                                     );
                                 })}
@@ -761,7 +774,7 @@
                     </div>
                     {status ? <div className="px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100" role="status" aria-live="polite">{status}</div> : null}
                     <div className="flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap">
-                        <input type="text" value={pack.name} onChange={(e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value }))} aria-label="Pack name" className="flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold" placeholder="Pack name" />
+                        <input type="text" value={pack.name} onChange={(e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value }))} aria-label={T('word_sounds.voice_pack_name_label', 'Pack name')} className="flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold" placeholder={T('word_sounds.voice_pack_name_label', 'Pack name')} />
                         <button type="button" onClick={savePack} className="px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors">{T('word_sounds.voice_pack_save', 'Save & Use')}</button>
                         <button type="button" onClick={exportPack} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors">⬇️ {T('word_sounds.voice_pack_export', 'Export')}</button>
                         <button type="button" onClick={() => fileInputRef.current && fileInputRef.current.click()} className="px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors">📥 {T('word_sounds.voice_pack_import', 'Import')}</button>
