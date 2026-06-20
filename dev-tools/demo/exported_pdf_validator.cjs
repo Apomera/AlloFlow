@@ -141,24 +141,51 @@ async function validatePdf(filepath) {
   // a FontDescriptor with at least one FontFile* entry. PDF/UA requires fonts
   // be embedded so the document renders correctly even when the system is
   // missing the font (otherwise content can substitute and break SR reading).
+  // Font embedding walk — collect EVERY font dict, not just page-level /Font: also nested
+  // form-XObject Resources, and Type0 DESCENDANT FontDescriptors (a composite font's
+  // descriptor lives on its CIDFont, not the Type0 dict). The old walk read only page /Font
+  // and checked FontDescriptor on the top font → missed XObject fonts and miscounted
+  // Type0/Type3, diverging from veraPDF §7.21.4.1. (2026-06-19 parity — keep in lockstep
+  // with view_pdf_validator_module.js)
   let fontsTotal = 0, fontsEmbedded = 0;
-  try {
-    for (const page of pages) {
-      const resources = resolve(page.node.get(nm('Resources')));
-      if (!resources || !resources.get) continue;
-      const fontDict = resolve(resources.get(nm('Font')));
-      if (!fontDict || !fontDict.entries) continue;
-      for (const [, fontRef] of fontDict.entries()) {
-        const font = resolve(fontRef);
-        if (!font || !font.get) continue;
-        fontsTotal++;
-        const fd = resolve(font.get(nm('FontDescriptor')));
-        if (fd && fd.get) {
-          const hasFile = fd.get(nm('FontFile')) || fd.get(nm('FontFile2')) || fd.get(nm('FontFile3'));
-          if (hasFile) fontsEmbedded++;
-        }
-      }
+  const _seenFont = (typeof WeakSet === 'function') ? new WeakSet() : null;
+  const _fontEmbedded = (font) => {
+    if (!font || !font.get) return false;
+    const sub = String(font.get(nm('Subtype')) || '');
+    if (sub === '/Type3') return true; // glyphs are CharProcs content streams — embedded by definition
+    let fd = resolve(font.get(nm('FontDescriptor')));
+    if (!fd && sub === '/Type0') {
+      const desc = resolve(font.get(nm('DescendantFonts')));
+      const cid = desc && desc.get ? resolve(desc.get(0)) : null;
+      if (cid && cid.get) fd = resolve(cid.get(nm('FontDescriptor')));
     }
+    if (fd && fd.get) return !!(fd.get(nm('FontFile')) || fd.get(nm('FontFile2')) || fd.get(nm('FontFile3')));
+    return false;
+  };
+  const _walkFonts = (resources, depth) => {
+    if (!resources || !resources.get || depth > 4) return;
+    const fontDict = resolve(resources.get(nm('Font')));
+    if (fontDict && fontDict.entries) {
+      try { for (const [, fontRef] of fontDict.entries()) {
+        const f = resolve(fontRef);
+        if (!f || !f.get) continue;
+        if (_seenFont) { if (_seenFont.has(f)) continue; _seenFont.add(f); }
+        fontsTotal++; if (_fontEmbedded(f)) fontsEmbedded++;
+      } } catch (_) {}
+    }
+    const xobj = resolve(resources.get(nm('XObject')));
+    if (xobj && xobj.entries) {
+      try { for (const [, xref] of xobj.entries()) {
+        const xo = resolve(xref);
+        const xdict = xo && xo.dict ? xo.dict : (xo && xo.get ? xo : null);
+        if (xdict && xdict.get && String(xdict.get(nm('Subtype')) || '') === '/Form') {
+          _walkFonts(resolve(xdict.get(nm('Resources'))), depth + 1);
+        }
+      } } catch (_) {}
+    }
+  };
+  try {
+    for (const page of pages) _walkFonts(resolve(page.node.get(nm('Resources'))), 0);
   } catch (_) { /* font-walk is best-effort */ }
 
   // Walk the structure tree
@@ -193,6 +220,11 @@ async function validatePdf(filepath) {
   passOrFail('All page fonts embedded (no SR-breaking substitution)',
     fontsTotal === 0 || fontsEmbedded === fontsTotal,
     fontsEmbedded + '/' + fontsTotal + ' fonts embedded');
+  // §7.1/§7.2 coverage honesty (2026-06-19 parity): structure-level self-check does NOT parse
+  // page content streams, so it cannot confirm every operator is marked /Artifact or tagged with a
+  // reachable MCID — the gap veraPDF caught on scanned docs. Surfaced as WARN, never a silent pass.
+  checks.push({ rule: 'Content marking & MCID reachability (§7.1, §7.2)', status: 'warn',
+    detail: 'Not verified here — this self-check does not parse page content streams. Run veraPDF to confirm content is marked /Artifact or tagged with a reachable MCID (the scanned-PDF gap).' });
   // Outline (bookmarks) — not strict PDF/UA-1 requirement but a major navigation
   // aid for multi-page docs. Soft check: report presence, don't fail multi-page
   // docs that lack one (we don't have authoritative "should have bookmarks" rule).
@@ -263,7 +295,7 @@ function renderReport(r) {
   lines.push('  By role:      ' + Object.entries(r.structureTally.byRole).map(([k, v]) => k + '×' + v).join(' '));
   lines.push('');
   for (const c of r.checks) {
-    const mark = c.status === 'pass' ? '✓' : '✗';
+    const mark = c.status === 'pass' ? '✓' : (c.status === 'warn' ? '⚠' : '✗');
     lines.push('  ' + mark + ' ' + pad(c.rule, 56) + (c.detail ? ' (' + c.detail + ')' : ''));
   }
   lines.push('');

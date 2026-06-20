@@ -179,28 +179,52 @@
     var docTitle = null;
     try { docTitle = typeof doc.getTitle === 'function' ? (doc.getTitle() || null) : null; } catch (_) { docTitle = null; }
 
-    // Font embedding walk.
+    // Font embedding walk — collect EVERY font dict, not just page-level /Font:
+    // also nested form-XObject Resources, and Type0 DESCENDANT FontDescriptors (a
+    // composite font's descriptor lives on its CIDFont, not the Type0 dict). The old
+    // walk read only page /Font and checked FontDescriptor on the top font, so it (a)
+    // missed fonts inside form XObjects and (b) miscounted Type0/Type3 — the exact
+    // §7.21.4.1 divergence from veraPDF (pass-while-veraPDF-fails). (2026-06-19 parity)
     var fontsTotal = 0, fontsEmbedded = 0;
+    var _seenFont = (typeof WeakSet === 'function') ? new WeakSet() : null;
+    function _fontEmbedded(font) {
+      if (!font || !font.get) return false;
+      var sub = String(font.get(nm('Subtype')) || '');
+      if (sub === '/Type3') return true; // glyphs are CharProcs content streams — embedded by definition
+      var fd = resolve(font.get(nm('FontDescriptor')));
+      if (!fd && sub === '/Type0') {
+        var desc = resolve(font.get(nm('DescendantFonts')));
+        var cid = desc && desc.get ? resolve(desc.get(0)) : null;
+        if (cid && cid.get) fd = resolve(cid.get(nm('FontDescriptor')));
+      }
+      if (fd && fd.get) return !!(fd.get(nm('FontFile')) || fd.get(nm('FontFile2')) || fd.get(nm('FontFile3')));
+      return false;
+    }
+    function _walkFonts(resources, depth) {
+      if (!resources || !resources.get || depth > 4) return;
+      var fontDict = resolve(resources.get(nm('Font')));
+      if (fontDict && fontDict.entries) {
+        try { for (var fp of fontDict.entries()) {
+          var f = resolve(fp[1]);
+          if (!f || !f.get) continue;
+          if (_seenFont) { if (_seenFont.has(f)) continue; _seenFont.add(f); }
+          fontsTotal++; if (_fontEmbedded(f)) fontsEmbedded++;
+        } } catch (_) {}
+      }
+      var xobj = resolve(resources.get(nm('XObject')));
+      if (xobj && xobj.entries) {
+        try { for (var xp of xobj.entries()) {
+          var xo = resolve(xp[1]);
+          var xdict = xo && xo.dict ? xo.dict : (xo && xo.get ? xo : null);
+          if (xdict && xdict.get && String(xdict.get(nm('Subtype')) || '') === '/Form') {
+            _walkFonts(resolve(xdict.get(nm('Resources'))), depth + 1);
+          }
+        } } catch (_) {}
+      }
+    }
     try {
       for (var p = 0; p < pages.length; p++) {
-        var page = pages[p];
-        var resources = resolve(page.node.get(nm('Resources')));
-        if (!resources || !resources.get) continue;
-        var fontDict = resolve(resources.get(nm('Font')));
-        if (!fontDict || !fontDict.entries) continue;
-        var entriesArr = [];
-        try { for (var entryPair of fontDict.entries()) entriesArr.push(entryPair); } catch (_) {}
-        for (var ei = 0; ei < entriesArr.length; ei++) {
-          var fontRef = entriesArr[ei][1];
-          var font = resolve(fontRef);
-          if (!font || !font.get) continue;
-          fontsTotal++;
-          var fd = resolve(font.get(nm('FontDescriptor')));
-          if (fd && fd.get) {
-            var hasFile = fd.get(nm('FontFile')) || fd.get(nm('FontFile2')) || fd.get(nm('FontFile3'));
-            if (hasFile) fontsEmbedded++;
-          }
-        }
+        _walkFonts(resolve(pages[p].node.get(nm('Resources'))), 0);
       }
     } catch (_) { /* best-effort */ }
 
@@ -301,6 +325,13 @@
         : (uaDeclaredInXmp
           ? 'declared, ' + orphanedLeaves.length + ' orphaned leaves' + (orphanedLeaves.length > 0 ? ' — CLAIM NOT BACKED' : ' (backed)')
           : 'declaration withheld (' + orphanedLeaves.length + ' orphaned leaves) — honest posture'));
+    // §7.1/§7.2 coverage honesty (2026-06-19 parity): this self-check validates the STRUCTURE TREE +
+    // key dictionary properties, but does NOT parse page content streams to confirm every operator is
+    // marked /Artifact or tagged with a reachable MCID. That is exactly the gap the independent veraPDF
+    // validator caught on scanned docs (§7.1 test 3 ×100). Surface it as WARN — never a silent pass —
+    // so a green self-check is not mistaken for full PDF/UA-1 conformance.
+    checks.push({ rule: 'Content marking & MCID reachability (§7.1, §7.2)', status: 'warn',
+      detail: 'Not verified here — this self-check does not parse page content streams. Run the independent veraPDF validation to confirm every content operator is marked /Artifact or tagged with a reachable MCID (the scanned-PDF gap).' });
 
     var passCount = checks.filter(function (c) { return c.status === 'pass'; }).length;
     var failCount = checks.filter(function (c) { return c.status === 'fail'; }).length;

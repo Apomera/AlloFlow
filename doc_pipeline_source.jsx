@@ -16547,8 +16547,8 @@ tr { page-break-inside: avoid; }
     const ovColor = overall === 'PASS' ? '#16a34a' : (failN <= 2 ? '#d97706' : '#dc2626');
     const ovBg = overall === 'PASS' ? '#dcfce7' : (failN <= 2 ? '#fef3c7' : '#fee2e2');
     const rows = c.map(ch => {
-      const mark = ch.status === 'pass' ? '✓' : '✗';
-      const color = ch.status === 'pass' ? '#16a34a' : '#dc2626';
+      const mark = ch.status === 'pass' ? '✓' : (ch.status === 'warn' ? '⚠' : '✗');
+      const color = ch.status === 'pass' ? '#16a34a' : (ch.status === 'warn' ? '#d97706' : '#dc2626');
       return `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;color:${color};font-weight:700;width:24px;text-align:center">${mark}</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${_esc(ch.rule)}</td><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:11px;color:#64748b">${_esc(ch.detail || '')}</td></tr>`;
     }).join('');
     return `
