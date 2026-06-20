@@ -347,3 +347,27 @@ describe('credential canonicalization + payload (Tier-2)', () => {
     expect(PD.canonicalize(p)).toBe(PD.canonicalize(JSON.parse(JSON.stringify(p))));
   });
 });
+
+describe('collectResponses branches (portfolio edge cases)', () => {
+  function modWith(act) { return { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { id: 'm', title: 'M' }, sections: [{ title: 'S', activities: [act] }] }; }
+  function recFor(act, raw) { var r = {}; r[act.id] = PD.normalizeResult(act, raw); return PD.buildCompletionRecord(modWith(act), r, { name: 'x' }, 'T'); }
+
+  it('checklist with no items checked is omitted from responses', () => {
+    const act = { id: 'c', type: 'checklist', title: 'C', content: { items: ['A', 'B'] }, gate: { kind: 'none' } };
+    expect(recFor(act, { checked: [false, false] }).responses).toEqual([]);
+  });
+
+  it('sim with only an AI score (no written response) is still captured', () => {
+    const act = { id: 's', type: 'sim', title: 'S', content: { scenario: 'x' }, gate: { kind: 'none' } };
+    const r = recFor(act, { masteryScore: 60, feedback: 'fb' }).responses;
+    expect(r).toHaveLength(1);
+    expect(r[0].type).toBe('sim');
+    expect(r[0].masteryScore).toBe(60);
+    expect(r[0].response).toBe('');
+  });
+
+  it('reflect with whitespace-only text is omitted', () => {
+    const act = { id: 'r', type: 'reflect', title: 'R', content: { prompt: '?' }, gate: { kind: 'none' } };
+    expect(recFor(act, { text: '   ' }).responses).toEqual([]);
+  });
+});

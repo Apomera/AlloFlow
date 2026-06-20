@@ -210,3 +210,41 @@ describe('worker Tier-2 credentials (/issuePd, /verifyPd, /pdIssuerKey)', () => 
     expect(ok).toBe(true); // proves worker-sign + pd_core-canonicalize + WebCrypto-verify all agree
   });
 });
+
+describe('worker Tier-2 trust boundary', () => {
+  let KEYS;
+  beforeAll(async () => {
+    const kp = await globalThis.crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+    KEYS = { privB64: Buffer.from(await globalThis.crypto.subtle.exportKey('pkcs8', kp.privateKey)).toString('base64'), pubB64: Buffer.from(await globalThis.crypto.subtle.exportKey('spki', kp.publicKey)).toString('base64') };
+  });
+  const env = () => ({ PD_ISSUER_PRIVATE_KEY: KEYS.privB64, PD_ISSUER_PUBLIC_KEY: KEYS.pubB64 });
+  const rec = (t) => ({ complete: true, moduleId: 'm', moduleTitle: t || 'M', perActivity: [{ passed: true }] });
+  const post = (path, body, e) => worker.fetch(new Request('https://w.test' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), e);
+
+  it('a signature swapped from a different payload does not verify (no forgery)', async () => {
+    const e1 = env();
+    const A = (await (await post('/issuePd', { record: rec('A') }, e1)).json()).credential;
+    const B = (await (await post('/issuePd', { record: rec('B') }, e1)).json()).credential;
+    A.signature = B.signature;
+    expect((await (await post('/verifyPd', { credential: A }, e1)).json()).valid).toBe(false);
+  });
+
+  it('the embedded public_key_spki_b64 is IGNORED — verification uses the server-trusted key', async () => {
+    const e1 = env();
+    const A = (await (await post('/issuePd', { record: rec('A') }, e1)).json()).credential;
+    A.public_key_spki_b64 = 'AAAA'; // attacker swaps the embedded key
+    expect((await (await post('/verifyPd', { credential: A }, e1)).json()).valid).toBe(true);
+  });
+
+  it('a credential does not verify against a DIFFERENT issuer key', async () => {
+    const A = (await (await post('/issuePd', { record: rec('A') }, env())).json()).credential;
+    const kp2 = await globalThis.crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+    const e2 = { PD_ISSUER_PUBLIC_KEY: Buffer.from(await globalThis.crypto.subtle.exportKey('spki', kp2.publicKey)).toString('base64') };
+    expect((await (await post('/verifyPd', { credential: A }, e2)).json()).valid).toBe(false);
+  });
+
+  it('rejects an oversized body via the byte-length guard', async () => {
+    const big = { record: { complete: true, moduleId: 'm', note: 'x'.repeat(1_100_000) } };
+    expect((await post('/issuePd', big, env())).status).toBe(413);
+  });
+});

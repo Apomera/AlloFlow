@@ -260,7 +260,7 @@
   // without the JSON-LD stack. Deterministic: pass issuanceDate (nowISO) in.
   function buildCredentialPayload(record, issuerName, nowISO) {
     record = record || {};
-    var per = record.perActivity || [];
+    var per = Array.isArray(record.perActivity) ? record.perActivity : [];
     return {
       schema_version: CREDENTIAL_SCHEMA_VERSION,
       type: 'PdCompletionAttestation',

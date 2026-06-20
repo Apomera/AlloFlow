@@ -794,13 +794,16 @@
       '<div class="btn"><button onclick="window.print()">Print / Save as PDF</button></div>' +
       '</div></body></html>';
   }
-  function printPdPathCertificate(path, entries, learner, addToast) {
-    var hist = loadPdHistory();
-    var rows = ((path && path.moduleSlugs) || []).map(function (sl) {
-      var h = hist.filter(function (x) { return x && x.moduleId === sl; })[0];
+  // Pure (dependency-injected) row builder so it can be unit-tested without localStorage.
+  function pdPathCertificateRows(path, entries, history) {
+    return ((path && path.moduleSlugs) || []).map(function (sl) {
+      var h = (history || []).filter(function (x) { return x && x.moduleId === sl; })[0];
       var en = (entries || []).filter(function (x) { return x && x.slug === sl; })[0];
       return { title: (en && en.title) || (h && h.moduleTitle) || sl, completedAt: h && h.completedAt };
     });
+  }
+  function printPdPathCertificate(path, entries, learner, addToast) {
+    var rows = pdPathCertificateRows(path, entries, loadPdHistory());
     openOrDownloadHtml(buildPdPathCertificateHtml(path, rows, (learner && learner.name) || '', new Date().toISOString()), slugify((path && path.slug) || 'pd-path') + '-certificate', addToast);
   }
 
@@ -831,8 +834,13 @@
     var Core = window.AlloModules && window.AlloModules.PdCore;
     function serverVerify() {
       return fetch(PD_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: credential }) })
-        .then(function (r) { return r.json(); })
-        .then(function (j) { return { valid: !!(j && j.valid), method: 'server' }; })
+        .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+        .then(function (res) {
+          // Only a clean {valid:boolean} response is a real verdict; otherwise (e.g.
+          // 501 issuer-disabled) report "couldn't check", not "invalid/tampered".
+          if (res.body && typeof res.body.valid === 'boolean') return { valid: res.body.valid, method: 'server' };
+          return { valid: false, error: (res.body && res.body.error) || ('verification unavailable (HTTP ' + res.status + ')') };
+        })
         .catch(function (err) { return { valid: false, error: 'Could not verify: ' + err.message }; });
     }
     var canSubtle = typeof window !== 'undefined' && window.crypto && window.crypto.subtle && Core && typeof Core.canonicalize === 'function';
@@ -877,8 +885,16 @@
     var threshold = (act.gate && typeof act.gate.threshold === 'number') ? act.gate.threshold : 0.8;
     var Core = window.AlloModules && window.AlloModules.PdCore;
     var norm = (submitted && Core) ? Core.normalizeResult(act, { answers: answers }) : null;
-    var allAnswered = qs.length > 0 && answers.length === qs.length && answers.indexOf(undefined) === -1 && answers.indexOf(null) === -1;
-    function pick(qi, oi) { var next = answers.slice(); next[qi] = oi; props.onRaw({ answers: next, submitted: false }); }
+    // Hole-safe: iterate every index (a sparse array from out-of-order answering
+    // would make indexOf skip holes and wrongly enable Submit). Matches how
+    // normalizeResult counts answered questions (typeof answers[i] === 'number').
+    var allAnswered = qs.length > 0 && qs.every(function (_q, i) { return typeof answers[i] === 'number'; });
+    function pick(qi, oi) {
+      var next = answers.slice();
+      for (var i = 0; i < qs.length; i++) { if (typeof next[i] !== 'number') next[i] = null; } // no sparse holes
+      next[qi] = oi;
+      props.onRaw({ answers: next, submitted: false });
+    }
     var passed = norm && norm.score >= threshold - 1e-9;
     return e('div', { className: 'flex flex-col gap-4' },
       qs.map(function (q, qi) {
@@ -1156,13 +1172,13 @@
             onClick: function () {
               var rec = Core.buildCompletionRecord(mod, resultsById(), { name: learnerName.trim() || null }, new Date().toISOString());
               requestPdCredential(rec).then(function (res) {
-                if (res.ok) { downloadJsonFile(res.credential, pdModuleId(mod) + '-credential'); addToast && addToast('Verified credential issued and downloaded.', 'success'); }
-                else if (res.disabled) { addToast && addToast('Verified credentials aren’t enabled on this instance — your self-paced record still works.', 'info'); }
-                else { addToast && addToast('Could not issue a credential: ' + res.error, 'error'); }
+                if (res.ok) { downloadJsonFile(res.credential, pdModuleId(mod) + '-credential'); addToast && addToast('Issuer-signed attestation downloaded.', 'success'); }
+                else if (res.disabled) { addToast && addToast('Issuer signing isn’t enabled on this instance — your self-paced record still works.', 'info'); }
+                else { addToast && addToast('Could not sign an attestation: ' + res.error, 'error'); }
               });
             },
             className: 'px-4 py-2 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded-md hover:bg-indigo-50',
-          }, 'Get verified credential'),
+          }, 'Get signed attestation'),
           e('button', {
             onClick: function () { startOver(); },
             className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
@@ -1171,7 +1187,9 @@
             onClick: props.onExit,
             className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
           }, 'Back to PD library')
-        )
+        ),
+        ev.complete && e('p', { className: 'text-[11px] text-slate-500 max-w-prose' },
+          'A signed attestation is issuer-signed and tamper-evident — it confirms this record was issued here and is unaltered. It does not certify proctored or accredited completion.')
       );
     }
 
@@ -1499,6 +1517,8 @@
     var histTick$ = useState(0); var setHistTick = histTick$[1]; // bump to refresh history-derived UI
     var activePath$ = useState(null); var activePath = activePath$[0], setActivePath = activePath$[1];
     var reload$ = useState(0); var reloadTick = reload$[0], setReloadTick = reload$[1]; // bump to re-fetch the manifest
+    var importRef = React.useRef ? React.useRef(null) : { current: null };
+    var verifyRef = React.useRef ? React.useRef(null) : { current: null };
 
     useEffect(function () {
       var cancelled = false;
@@ -1572,42 +1592,40 @@
               onClick: function () { exportPdHistory(); addToast && addToast('Exported your PD history.', 'success'); },
               className: 'text-xs font-semibold text-indigo-700 hover:underline',
             }, 'Export'),
-            e('label', { className: 'text-xs font-semibold text-indigo-700 hover:underline cursor-pointer' }, 'Import',
-              e('input', {
-                type: 'file', accept: 'application/json,.json', className: 'hidden',
-                onChange: function (ev) {
-                  var f = ev.target.files && ev.target.files[0]; if (!f) return;
-                  var reader = new FileReader();
-                  reader.onload = function () {
-                    var res; try { res = importPdHistory(JSON.parse(String(reader.result || ''))); } catch (e) { res = { ok: false, error: 'Could not read that file.' }; }
-                    if (res.ok) { setHistTick(function (n) { return n + 1; }); addToast && addToast('Imported — ' + res.count + ' module' + (res.count !== 1 ? 's' : '') + ' in your history.', 'success'); }
-                    else { addToast && addToast(res.error || 'Import failed.', 'error'); }
-                  };
-                  reader.readAsText(f);
-                  ev.target.value = '';
-                },
-              })
-            ),
-            e('label', { className: 'text-xs font-semibold text-indigo-700 hover:underline cursor-pointer' }, 'Verify credential',
-              e('input', {
-                type: 'file', accept: 'application/json,.json', className: 'hidden',
-                onChange: function (ev) {
-                  var f = ev.target.files && ev.target.files[0]; if (!f) return;
-                  var reader = new FileReader();
-                  reader.onload = function () {
-                    var cred; try { var p = JSON.parse(String(reader.result || '')); cred = (p && p.credential) ? p.credential : p; } catch (e) { addToast && addToast('Could not read that file.', 'error'); return; }
-                    verifyPdCredential(cred).then(function (res) {
-                      if (res.valid) {
-                        var s = (cred.payload && cred.payload.credentialSubject) || {};
-                        addToast && addToast('✓ Valid credential — ' + (s.moduleTitle || s.moduleId || 'module') + ' (issued ' + String((cred.payload && cred.payload.issuanceDate) || '').slice(0, 10) + ', verified ' + (res.method || '') + ').', 'success');
-                      } else { addToast && addToast('✗ Could not verify this credential' + (res.error ? (': ' + res.error) : ' — it may be altered or from a different issuer.'), 'error'); }
-                    });
-                  };
-                  reader.readAsText(f);
-                  ev.target.value = '';
-                },
-              })
-            ),
+            e('button', { type: 'button', onClick: function () { if (importRef.current) importRef.current.click(); }, className: 'text-xs font-semibold text-indigo-700 hover:underline' }, 'Import'),
+            e('input', {
+              ref: importRef, type: 'file', accept: 'application/json,.json', className: 'hidden', tabIndex: -1, 'aria-hidden': 'true',
+              onChange: function (ev) {
+                var f = ev.target.files && ev.target.files[0]; if (!f) return;
+                var reader = new FileReader();
+                reader.onload = function () {
+                  var res; try { res = importPdHistory(JSON.parse(String(reader.result || ''))); } catch (e) { res = { ok: false, error: 'Could not read that file.' }; }
+                  if (res.ok) { setHistTick(function (n) { return n + 1; }); addToast && addToast('Imported — ' + res.count + ' module' + (res.count !== 1 ? 's' : '') + ' in your history.', 'success'); }
+                  else { addToast && addToast(res.error || 'Import failed.', 'error'); }
+                };
+                reader.readAsText(f);
+                ev.target.value = '';
+              },
+            }),
+            e('button', { type: 'button', onClick: function () { if (verifyRef.current) verifyRef.current.click(); }, className: 'text-xs font-semibold text-indigo-700 hover:underline' }, 'Verify credential'),
+            e('input', {
+              ref: verifyRef, type: 'file', accept: 'application/json,.json', className: 'hidden', tabIndex: -1, 'aria-hidden': 'true',
+              onChange: function (ev) {
+                var f = ev.target.files && ev.target.files[0]; if (!f) return;
+                var reader = new FileReader();
+                reader.onload = function () {
+                  var cred; try { var p = JSON.parse(String(reader.result || '')); cred = (p && p.credential) ? p.credential : p; } catch (e) { addToast && addToast('Could not read that file.', 'error'); return; }
+                  verifyPdCredential(cred).then(function (res) {
+                    if (res.valid) {
+                      var s = (cred.payload && cred.payload.credentialSubject) || {};
+                      addToast && addToast('✓ Signature valid — "' + (s.moduleTitle || s.moduleId || 'module') + '" was issued by this issuer on ' + String((cred.payload && cred.payload.issuanceDate) || '').slice(0, 10) + ' and is unaltered (' + (res.method || '') + ' check). This confirms issuance + integrity, not proctored completion.', 'success');
+                    } else { addToast && addToast(res.error ? ('Could not verify: ' + res.error) : '✗ Signature did not verify — this credential may be altered or from a different issuer.', 'error'); }
+                  });
+                };
+                reader.readAsText(f);
+                ev.target.value = '';
+              },
+            }),
             hist.length > 0 && e('button', {
               onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast('Cleared your local PD history.', 'info'); },
               className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
@@ -1616,14 +1634,14 @@
         ),
         e('h3', { className: 'font-bold text-base text-slate-800' }, 'My learning'),
         e('p', { className: 'text-xs text-slate-500' }, 'Your completion history is stored only on this device. Use Export to keep a copy (this sandbox may not remember it next session) and Import to restore it.'),
-        hist.length > 0 && e('div', { className: 'flex flex-wrap gap-2' },
+        hist.length > 0 && e('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Learning summary' },
           [
             { label: hist.length + ' module' + (hist.length !== 1 ? 's' : '') + ' completed' },
             histMinutes > 0 && { label: '~' + histMinutes + ' min of learning' },
             histTopicCount > 0 && { label: histTopicCount + ' topic' + (histTopicCount !== 1 ? 's' : '') },
             pathsComplete > 0 && { label: pathsComplete + ' path' + (pathsComplete !== 1 ? 's' : '') + ' complete' },
           ].filter(Boolean).map(function (chip, i) {
-            return e('span', { key: i, className: 'text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-semibold' }, chip.label);
+            return e('span', { key: i, role: 'listitem', className: 'text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-semibold' }, chip.label);
           })
         ),
         hist.length === 0
@@ -1719,10 +1737,10 @@
       ),
       state.status === 'ok' && (state.paths || []).length > 0 && e('div', { className: 'flex flex-col gap-2' },
         e('h3', { className: 'text-sm font-bold text-slate-700' }, 'Learning paths'),
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3', role: 'list', 'aria-label': 'Learning paths' },
           (state.paths || []).map(function (pth) {
             var pr = pdPathProgress(pth, function (sl) { return isPdCompleted(sl); });
-            return e('div', { key: pth.slug, className: 'bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 rounded-lg p-4 flex flex-col gap-2' },
+            return e('div', { key: pth.slug, role: 'listitem', className: 'bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 rounded-lg p-4 flex flex-col gap-2' },
               e('div', { className: 'flex items-start justify-between gap-2' },
                 e('h4', { className: 'font-bold text-slate-800 text-sm' }, pth.title || '(untitled path)'),
                 pr.complete && e('span', { className: 'shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold' }, '✓ Complete')
@@ -1846,8 +1864,13 @@
           if (!f.length) return;
           var first = f[0], last = f[f.length - 1];
           var active = (typeof document !== 'undefined') ? document.activeElement : null;
-          if (ev.shiftKey) { if (active === first || active === root) { ev.preventDefault(); last.focus(); } }
-          else if (active === last) { ev.preventDefault(); first.focus(); }
+          // If focus has escaped the dialog (or sits on the dialog root), pull it back in.
+          if (!active || active === root || !(root.contains && root.contains(active))) {
+            ev.preventDefault(); (ev.shiftKey ? last : first).focus(); return;
+          }
+          // Wrap at the boundaries; intra-dialog Tab is left to the browser.
+          if (ev.shiftKey && active === first) { ev.preventDefault(); last.focus(); }
+          else if (!ev.shiftKey && active === last) { ev.preventDefault(); first.focus(); }
         },
       },
         // Header
@@ -1905,6 +1928,7 @@
   CommunityCatalog._buildPdGenPrompt = buildPdGenPrompt;
   CommunityCatalog._buildPdCertificateHtml = buildPdCertificateHtml;
   CommunityCatalog._buildPdPathCertificateHtml = buildPdPathCertificateHtml;
+  CommunityCatalog._pdPathCertificateRows = pdPathCertificateRows;
   CommunityCatalog._requestPdCredential = requestPdCredential;
   CommunityCatalog._verifyPdCredential = verifyPdCredential;
   CommunityCatalog._loadPdHistory = loadPdHistory;

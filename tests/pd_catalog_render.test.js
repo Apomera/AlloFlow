@@ -12,7 +12,7 @@
 // assert on to prove tab routing. (Interaction-level gating is covered by
 // tests/pd_core.test.js.)
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -414,6 +414,19 @@ describe('quiz formative feedback', () => {
     expect(html).not.toContain('✓');
     expect(html).not.toContain('Why:');
   });
+
+  it('keeps Submit disabled when answers are sparse (out-of-order answering)', () => {
+    const { CC } = loadWithCore();
+    const q3 = { id: 'q', type: 'quiz', title: 'Q', gate: { kind: 'score', threshold: 0.5 }, content: { questions: [
+      { prompt: 'a', options: ['x', 'y'], correctIndex: 0 }, { prompt: 'b', options: ['x', 'y'], correctIndex: 0 }, { prompt: 'c', options: ['x', 'y'], correctIndex: 0 },
+    ] } };
+    const sparse = []; sparse[2] = 0; // only the LAST question answered → array has holes
+    // Match the real disabled="" ATTRIBUTE (not the Tailwind "disabled:" class variant).
+    const partial = render(CC.QuizActivity, { activity: q3, raw: { answers: sparse, submitted: false }, onRaw() {} });
+    expect(partial).toMatch(/disabled=""[^>]*>Submit answers<\/button>/);
+    const all = render(CC.QuizActivity, { activity: q3, raw: { answers: [0, 0, 0], submitted: false }, onRaw() {} });
+    expect(all).not.toMatch(/disabled=""[^>]*>Submit answers<\/button>/); // enabled
+  });
 });
 
 describe('review fixes (PdSubmit, JSON extraction, AI provenance)', () => {
@@ -444,5 +457,76 @@ describe('review fixes (PdSubmit, JSON extraction, AI provenance)', () => {
     const html = render(CC.SimActivity, { activity: { id: 's1', type: 'sim', title: 'T', content: { scenario: 'S' } }, raw: {}, onRaw() {} });
     expect(html).toMatch(/sent to an AI service/i);
     expect(html).toMatch(/personal information/i);
+  });
+});
+
+describe('path-certificate rows + import edge cases', () => {
+  it('pdPathCertificateRows resolves titles (entry > history > slug) + completion dates', () => {
+    const { CC } = loadWithCore();
+    const path = { moduleSlugs: ['a', 'b', 'gone'] };
+    const entries = [{ slug: 'a', title: 'Module A' }];
+    const history = [{ moduleId: 'a', moduleTitle: 'A (hist)', completedAt: '2026-06-20' }, { moduleId: 'b', moduleTitle: 'Module B', completedAt: '2026-06-21' }];
+    const rows = CC._pdPathCertificateRows(path, entries, history);
+    expect(rows.map((r) => r.title)).toEqual(['Module A', 'Module B', 'gone']); // entry title wins, then history, then slug
+    expect(rows[0].completedAt).toBe('2026-06-20');
+    expect(rows[2].completedAt).toBeFalsy();
+  });
+
+  it('importPdHistory keeps the existing entry on an equal timestamp and filters malformed entries', () => {
+    const { CC } = loadWithCore();
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+    CC._recordPdCompletion({ moduleId: 'a', moduleTitle: 'A orig', complete: true, completedAt: '2026-06-20' });
+    const res = CC._importPdHistory({ entries: [
+      { moduleId: 'a', moduleTitle: 'A same-day', complete: true, completedAt: '2026-06-20' }, // equal ts → keep existing
+      { moduleId: 'b', complete: false, completedAt: '2026-06-21' },                            // not complete → filtered
+      { complete: true, completedAt: '2026-06-22' },                                            // no moduleId → filtered
+      null,                                                                                     // junk → filtered
+    ] });
+    expect(res.ok).toBe(true);
+    const h = CC._loadPdHistory();
+    expect(h).toHaveLength(1);
+    expect(h[0].moduleTitle).toBe('A orig');
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+  });
+});
+
+describe('credential client orchestration (mocked fetch)', () => {
+  let origFetch;
+  beforeAll(() => { origFetch = globalThis.fetch; });
+  afterAll(() => { globalThis.fetch = origFetch; });
+  function stubFetch(map) {
+    globalThis.fetch = (url, opts) => { const r = map(String(url), opts); return Promise.resolve({ status: r.status, ok: r.status < 400, json: () => Promise.resolve(r.body) }); };
+  }
+
+  it('requestPdCredential returns the credential on 201', async () => {
+    const { CC } = loadWithCore();
+    stubFetch(() => ({ status: 201, body: { ok: true, credential: { payload: {}, signature: 'sig' } } }));
+    const r = await CC._requestPdCredential({ complete: true });
+    expect(r.ok).toBe(true);
+    expect(r.credential.signature).toBe('sig');
+  });
+
+  it('requestPdCredential flags disabled on 501', async () => {
+    const { CC } = loadWithCore();
+    stubFetch(() => ({ status: 501, body: { ok: false, error: 'disabled' } }));
+    const r = await CC._requestPdCredential({ complete: true });
+    expect(r.ok).toBe(false);
+    expect(r.disabled).toBe(true);
+  });
+
+  it('verifyPdCredential uses the server fallback when WebCrypto is absent', async () => {
+    const { CC } = loadWithCore(); // sandbox window has no crypto.subtle → server path
+    stubFetch((url) => (url.indexOf('/verifyPd') !== -1 ? { status: 200, body: { ok: true, valid: true } } : { status: 404, body: {} }));
+    const r = await CC._verifyPdCredential({ payload: { a: 1 }, signature: 'x' });
+    expect(r.valid).toBe(true);
+    expect(r.method).toBe('server');
+  });
+
+  it('verifyPdCredential reports "could not check" (not "invalid") when the server returns no verdict', async () => {
+    const { CC } = loadWithCore();
+    stubFetch(() => ({ status: 501, body: { ok: false, error: 'No issuer public key configured.' } }));
+    const r = await CC._verifyPdCredential({ payload: {}, signature: 'x' });
+    expect(r.valid).toBe(false);
+    expect(r.error).toMatch(/issuer public key|HTTP 501/i);
   });
 });

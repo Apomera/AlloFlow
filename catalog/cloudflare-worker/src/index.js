@@ -28,6 +28,13 @@
  */
 
 const MAX_BODY_BYTES = 1_048_576; // 1 MB
+// Guard on actual UTF-8 byte length (String.length is UTF-16 code units, so a
+// multibyte body could otherwise slip past the size cap). byteLen >= str.length,
+// so the cheap length check is a sound early-reject.
+function bodyTooLarge(rawBody) {
+  if (rawBody.length > MAX_BODY_BYTES) return true;
+  return new TextEncoder().encode(rawBody).length > MAX_BODY_BYTES;
+}
 
 // Same PII patterns the in-canvas form uses. Defense in depth, not a substitute
 // for the manual review at approval time.
@@ -189,7 +196,7 @@ async function handleTranslationSubmit(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const rawBody = await request.text();
-  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   const err = validateTranslation(p);
@@ -298,7 +305,7 @@ async function handlePdSubmit(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const rawBody = await request.text();
-  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   const err = validatePd(p);
@@ -343,7 +350,7 @@ async function handleBugSubmit(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const rawBody = await request.text();
-  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   const err = validateBug(p);
@@ -424,7 +431,7 @@ function pdCanonicalize(v) {
 }
 function pdBuildCredentialPayload(record, issuerName, nowISO) {
   record = record || {};
-  const per = record.perActivity || [];
+  const per = Array.isArray(record.perActivity) ? record.perActivity : [];
   return {
     schema_version: 'pd-credential-1.0',
     type: 'PdCompletionAttestation',
@@ -454,7 +461,7 @@ async function handlePdIssue(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const rawBody = await request.text();
-  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
   try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   const rec = p && p.record;
@@ -492,7 +499,7 @@ async function handlePdVerify(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const rawBody = await request.text();
-  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let cred;
   try { const p = JSON.parse(rawBody); cred = (p && p.credential) || p; } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
   if (!cred || !cred.payload || !cred.signature) return jsonResponse({ ok: false, error: 'credential {payload, signature} required.' }, 400);
@@ -565,7 +572,7 @@ export default {
     }
 
     const rawBody = await request.text();
-    if (rawBody.length > MAX_BODY_BYTES) {
+    if (bodyTooLarge(rawBody)) {
       return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
     }
 
