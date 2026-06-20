@@ -1190,6 +1190,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'flex items-center gap-3 flex-wrap' },
               h('span', { className: 'text-xs font-mono text-slate-700' }, regEq),
+              h('span', { className: 'text-[11px] font-bold text-slate-500', title: 'Sample size — interpret R² with n in mind' }, 'n = ' + n),
               h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
               h('span', { className: 'text-[11px] text-slate-600' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
               n >= 3 && h('span', { className: 'text-[11px] font-bold text-indigo-500', title: 'Pearson r / Spearman \u03C1', onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
