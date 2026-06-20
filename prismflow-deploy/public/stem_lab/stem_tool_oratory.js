@@ -233,6 +233,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       return;
     }
 
+    // ── Pitch-range band: shade the speaker's min->max pitch range so the CORE
+    // prosody lesson — vary your pitch, don't be monotone — is visible. A wide
+    // band = lively delivery; a thin band = monotone ("flat — vary more").
+    (function() {
+      var lo = Infinity, hi = -Infinity;
+      for (var ri = 0; ri < pitchHistory.length; ri++) {
+        var v = pitchHistory[ri];
+        if (v > 0) { if (v < lo) lo = v; if (v > hi) hi = v; }
+      }
+      if (!isFinite(lo) || hi <= lo) return;
+      var yLo = H - ((Math.min(Math.max(lo, minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
+      var yHi = H - ((Math.min(Math.max(hi, minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
+      var rangeHz = Math.round(hi - lo), wide = rangeHz >= 55;
+      ctx2d.fillStyle = wide ? (isDark ? 'rgba(52,211,153,0.13)' : 'rgba(16,185,129,0.12)') : (isDark ? 'rgba(251,191,36,0.13)' : 'rgba(245,158,11,0.12)');
+      ctx2d.fillRect(0, yHi, W, yLo - yHi);
+      ctx2d.strokeStyle = wide ? (isDark ? 'rgba(52,211,153,0.5)' : 'rgba(16,185,129,0.45)') : (isDark ? 'rgba(251,191,36,0.5)' : 'rgba(245,158,11,0.45)');
+      ctx2d.setLineDash([3, 3]); ctx2d.lineWidth = 1; ctx2d.beginPath();
+      ctx2d.moveTo(0, yHi); ctx2d.lineTo(W, yHi); ctx2d.moveTo(0, yLo); ctx2d.lineTo(W, yLo); ctx2d.stroke();
+      ctx2d.setLineDash([]);
+      ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left';
+      ctx2d.fillStyle = wide ? (isDark ? '#6ee7b7' : '#059669') : (isDark ? '#fcd34d' : '#b45309');
+      ctx2d.fillText('range ' + rangeHz + ' Hz · ' + (wide ? 'lively' : 'flat — vary more'), 6, H - 6);
+    })();
+
     ctx2d.beginPath();
     ctx2d.lineWidth = 2.5;
     var started = false;
