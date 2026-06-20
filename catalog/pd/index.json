@@ -36,5 +36,17 @@
       "audience": "educator",
       "path": "catalog/pd/approved/actionable-feedback-quickstart.json"
     }
+  ],
+  "paths": [
+    {
+      "slug": "evidence-based-teaching-essentials",
+      "title": "Evidence-Based Teaching Essentials",
+      "summary": "A short curated sequence on practices with strong research support: retrieval practice, actionable feedback, and UDL representation.",
+      "moduleSlugs": [
+        "retrieval-practice-quickstart",
+        "actionable-feedback-quickstart",
+        "udl-representation-quickstart"
+      ]
+    }
   ]
 }

@@ -77,6 +77,26 @@ Every activity needs `id` (unique), `type`, `title`, and a `gate`.
   non-scorable type, or a quiz question without a valid `correctIndex`, is
   rejected by `validatePdModule` (so a module can never be uncompletable).
 
+## Learning paths (curated sequences)
+
+`index.json` may include an optional `paths` array that groups modules into a
+recommended order (a mini-curriculum). The app shows these under "Learning paths"
+with per-path progress, and marks a path complete when every module in it is done.
+
+```jsonc
+"paths": [
+  {
+    "slug": "evidence-based-teaching-essentials",
+    "title": "Evidence-Based Teaching Essentials",
+    "summary": "Short curated sequence …",
+    "moduleSlugs": ["retrieval-practice-quickstart", "actionable-feedback-quickstart", "udl-representation-quickstart"]
+  }
+]
+```
+
+Each `moduleSlugs` entry must match a published entry's `slug`. Paths are purely a
+presentation layer over completion history — they add no new storage or gating.
+
 ## Authoring
 
 - **By hand:** write a `pd_module` JSON (copy a file in `approved/`), then submit

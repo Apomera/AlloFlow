@@ -676,6 +676,13 @@
   function isPdCompleted(moduleId) {
     return loadPdHistory().some(function (h) { return h && h.moduleId === moduleId && h.complete; });
   }
+  // Learning-path progress: how many of a path's modules are completed.
+  function pdPathProgress(path, isDone) {
+    var slugs = (path && path.moduleSlugs) || [];
+    var done = 0;
+    slugs.forEach(function (s) { if (isDone(s)) done++; });
+    return { done: done, total: slugs.length, complete: slugs.length > 0 && done === slugs.length };
+  }
   // Export/import the local history — important because the Canvas sandbox does not
   // persist localStorage across sessions, so a learner can save + restore their record.
   function exportPdHistory() {
@@ -1383,13 +1390,14 @@
 
   function PdHome(props) {
     var addToast = props.addToast;
-    var s = useState({ status: 'loading', entries: [], error: null });
+    var s = useState({ status: 'loading', entries: [], paths: [], error: null });
     var state = s[0], setState = s[1];
     var run$ = useState(null); var run = run$[0], setRun = run$[1];          // { entry?, module }
-    var view$ = useState('browse'); var view = view$[0], setView = view$[1];  // 'browse' | 'generate' | 'submit' | 'history'
+    var view$ = useState('browse'); var view = view$[0], setView = view$[1];  // 'browse' | 'generate' | 'submit' | 'history' | 'path'
     var prefill$ = useState(''); var prefill = prefill$[0], setPrefill = prefill$[1];
     var filters$ = useState({ search: '', topic: '' }); var filters = filters$[0], setFilters = filters$[1];
     var histTick$ = useState(0); var setHistTick = histTick$[1]; // bump to refresh history-derived UI
+    var activePath$ = useState(null); var activePath = activePath$[0], setActivePath = activePath$[1];
 
     useEffect(function () {
       var cancelled = false;
@@ -1401,9 +1409,9 @@
           var raw = Array.isArray(data.entries) ? data.entries : [];
           var seen = {}, entries = [];
           raw.forEach(function (en) { var id = en.slug || slugify(en.title || ''); if (id && seen[id]) return; if (id) seen[id] = true; entries.push(en); });
-          setState({ status: 'ok', entries: entries, error: null });
+          setState({ status: 'ok', entries: entries, paths: Array.isArray(data.paths) ? data.paths : [], error: null });
         })
-        .catch(function (err) { if (cancelled) return; setState({ status: 'error', entries: [], error: err.message }); });
+        .catch(function (err) { if (cancelled) return; setState({ status: 'error', entries: [], paths: [], error: err.message }); });
       return function () { cancelled = true; };
     }, []);
 
@@ -1496,6 +1504,39 @@
             )
       );
     }
+    if (view === 'path' && activePath) {
+      var ap = activePath;
+      var apProg = pdPathProgress(ap, function (sl) { return isPdCompleted(sl); });
+      var apModules = (ap.moduleSlugs || []).map(function (sl) {
+        return (state.entries || []).filter(function (en) { return en.slug === sl; })[0] || { slug: sl, title: sl, _missing: true };
+      });
+      return e('div', { className: 'flex flex-col gap-3' },
+        e('button', { onClick: function () { setView('browse'); setActivePath(null); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+        e('div', null,
+          e('h3', { className: 'font-bold text-base text-slate-800' }, (apProg.complete ? '🎓 ' : '') + (ap.title || 'Learning path')),
+          ap.summary && e('p', { className: 'text-sm text-slate-600 mt-1' }, ap.summary),
+          e('p', { className: 'text-xs mt-1 ' + (apProg.complete ? 'text-emerald-700 font-semibold' : 'text-slate-500') },
+            apProg.complete ? ('Path complete — all ' + apProg.total + ' modules done') : (apProg.done + ' of ' + apProg.total + ' modules complete'))
+        ),
+        e('ol', { className: 'flex flex-col gap-2' },
+          apModules.map(function (en, i) {
+            var done = !en._missing && isPdCompleted(en.slug);
+            return e('li', { key: en.slug || i, className: 'bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between gap-3 flex-wrap' },
+              e('div', null,
+                e('div', { className: 'font-semibold text-sm text-slate-800' }, (done ? '✓ ' : (i + 1) + '. ') + (en.title || en.slug)),
+                en._missing
+                  ? e('div', { className: 'text-xs text-amber-700' }, 'This module is not in the catalog yet.')
+                  : (en.summary && e('div', { className: 'text-xs text-slate-500' }, en.summary))
+              ),
+              !en._missing && e('button', {
+                onClick: function () { startModule(en); },
+                className: 'px-3 py-1.5 text-xs font-semibold rounded ' + (done ? 'border border-indigo-600 text-indigo-700 hover:bg-indigo-50' : 'bg-indigo-600 text-white hover:bg-indigo-700'),
+              }, done ? 'Review' : 'Start')
+            );
+          })
+        )
+      );
+    }
 
     // Browse (default) — derive topic options + apply filters
     var topics = (function () {
@@ -1530,6 +1571,25 @@
             onClick: function () { setPrefill(''); setView('submit'); },
             className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
           }, 'Submit a module')
+        )
+      ),
+      state.status === 'ok' && (state.paths || []).length > 0 && e('div', { className: 'flex flex-col gap-2' },
+        e('h3', { className: 'text-sm font-bold text-slate-700' }, 'Learning paths'),
+        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+          (state.paths || []).map(function (pth) {
+            var pr = pdPathProgress(pth, function (sl) { return isPdCompleted(sl); });
+            return e('div', { key: pth.slug, className: 'bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-200 rounded-lg p-4 flex flex-col gap-2' },
+              e('div', { className: 'flex items-start justify-between gap-2' },
+                e('h4', { className: 'font-bold text-slate-800 text-sm' }, pth.title || '(untitled path)'),
+                pr.complete && e('span', { className: 'shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold' }, '✓ Complete')
+              ),
+              pth.summary && e('p', { className: 'text-xs text-slate-600' }, pth.summary),
+              e('div', { className: 'text-xs text-slate-500' }, pr.done + ' / ' + pr.total + ' modules complete'),
+              e('div', { className: 'mt-auto pt-1' },
+                e('button', { onClick: function () { setActivePath(pth); setView('path'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'View path')
+              )
+            );
+          })
         )
       ),
       state.status === 'ok' && state.entries.length > 0 && e('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200' },
@@ -1686,6 +1746,7 @@
   CommunityCatalog._loadPdHistory = loadPdHistory;
   CommunityCatalog._recordPdCompletion = recordPdCompletion;
   CommunityCatalog._importPdHistory = importPdHistory;
+  CommunityCatalog._pdPathProgress = pdPathProgress;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.CommunityCatalog = CommunityCatalog;

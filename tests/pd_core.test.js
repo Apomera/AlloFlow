@@ -194,6 +194,17 @@ describe('shipped PD catalog', () => {
     }
   });
 
+  it('manifest learning paths reference real, published module slugs', () => {
+    const manifest = readJson('catalog/pd/index.json');
+    const slugs = {};
+    (manifest.entries || []).forEach((e) => { slugs[e.slug] = true; });
+    (manifest.paths || []).forEach((p) => {
+      expect(Array.isArray(p.moduleSlugs)).toBe(true);
+      expect(p.moduleSlugs.length).toBeGreaterThan(0);
+      p.moduleSlugs.forEach((s) => { expect(slugs[s], `${p.slug} -> ${s}`).toBe(true); });
+    });
+  });
+
   it('the seed UDL module is gated and completable end-to-end', () => {
     const seed = readJson('catalog/pd/approved/udl-representation-quickstart.json');
     const v = PD.validatePdModule(seed);

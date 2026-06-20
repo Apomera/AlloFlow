@@ -339,6 +339,19 @@ describe('runner resume + home history (render)', () => {
   });
 });
 
+describe('learning paths', () => {
+  it('pdPathProgress counts completed modules and detects completion', () => {
+    const { CC } = loadWithCore();
+    const path = { slug: 'p', moduleSlugs: ['a', 'b', 'c'] };
+    const pr = CC._pdPathProgress(path, (s) => ({ a: true, c: true })[s] || false);
+    expect(pr.total).toBe(3);
+    expect(pr.done).toBe(2);
+    expect(pr.complete).toBe(false);
+    expect(CC._pdPathProgress(path, () => true).complete).toBe(true);
+    expect(CC._pdPathProgress({ moduleSlugs: [] }, () => true).complete).toBe(false); // empty path is not "complete"
+  });
+});
+
 describe('My learning export/import', () => {
   it('importPdHistory merges + dedups by moduleId, keeping the most recent', () => {
     const { CC } = loadWithCore();
