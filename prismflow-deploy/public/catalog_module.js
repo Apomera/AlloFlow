@@ -609,6 +609,9 @@
   function loadPdProgress(mod) {
     try { var raw = localStorage.getItem(PD_PROGRESS_PREFIX + pdModuleId(mod)); return raw ? JSON.parse(raw) : null; } catch (_e) { return null; }
   }
+  function loadPdProgressById(id) {
+    try { var raw = localStorage.getItem(PD_PROGRESS_PREFIX + id); return raw ? JSON.parse(raw) : null; } catch (_e) { return null; }
+  }
   function savePdProgress(mod, state) {
     try { localStorage.setItem(PD_PROGRESS_PREFIX + pdModuleId(mod), JSON.stringify(state)); } catch (_e) { /* quota/sandbox */ }
   }
@@ -788,6 +791,77 @@
     );
   }
 
+  // Build the rubric-scoring prompt for an AI-assessed scenario (sim) activity.
+  function buildSimScorePrompt(content, response) {
+    var scenario = String((content && content.scenario) || '');
+    var rubric = String((content && content.rubric) || 'Accuracy, practicality, empathy, and alignment with evidence-based practice.');
+    return [
+      'You are a supportive professional-development coach giving FORMATIVE feedback on an educator\'s response to a practice scenario. Be encouraging, specific, and honest.',
+      '',
+      'SCENARIO:',
+      scenario,
+      '',
+      'WHAT A STRONG RESPONSE SHOWS (rubric):',
+      rubric,
+      '',
+      'EDUCATOR\'S RESPONSE:',
+      response,
+      '',
+      'Return ONLY JSON: { "masteryScore": integer 0-100, "feedback": string }.',
+      '- masteryScore: a rough, holistic, formative estimate of how well the response meets the rubric (NOT a grade).',
+      '- feedback: 2-4 plain, kind, concrete sentences — name a genuine strength, then the single most useful improvement.'
+    ].join('\n');
+  }
+
+  function SimActivity(props) {
+    var act = props.activity;
+    var c = (act && act.content) || {};
+    var raw = props.raw || {};
+    var resp$ = useState(raw.response || ''); var response = resp$[0], setResponse = resp$[1];
+    var st$ = useState(typeof raw.masteryScore === 'number' ? 'done' : 'idle'); var status = st$[0], setStatus = st$[1];
+    var err$ = useState(''); var err = err$[0], setErr = err$[1];
+    var aiAvailable = typeof window !== 'undefined' && typeof window.callGemini === 'function';
+    var score = (typeof raw.masteryScore === 'number') ? raw.masteryScore : null;
+    var threshold = (act.gate && typeof act.gate.threshold === 'number') ? act.gate.threshold : null;
+    var passed = (threshold != null && score != null) ? (score / 100 >= threshold - 1e-9) : null;
+
+    function submit() {
+      if (!response.trim() || status === 'scoring') return;
+      if (!aiAvailable) { props.onRaw({ response: response }); setErr('AI feedback is not available in this session — your response was recorded.'); setStatus('error'); return; }
+      setStatus('scoring'); setErr('');
+      Promise.resolve(window.callGemini(buildSimScorePrompt(c, response), true)).then(function (out) {
+        var parsed = extractFirstJsonObject(out) || {};
+        var ms = Math.max(0, Math.min(100, parseInt(parsed.masteryScore, 10) || 0));
+        var fb = String(parsed.feedback || '').slice(0, 2000);
+        props.onRaw({ response: response, masteryScore: ms, feedback: fb });
+        setStatus('done');
+      }).catch(function (e) { props.onRaw({ response: response }); setErr((e && e.message) || 'Scoring failed.'); setStatus('error'); });
+    }
+
+    return e('div', { className: 'flex flex-col gap-3' },
+      c.scenario && e('div', { className: 'p-3 bg-slate-50 border border-slate-200 rounded text-sm text-slate-700 whitespace-pre-wrap' }, c.scenario),
+      e('label', { className: 'block text-xs font-semibold text-slate-700', htmlFor: act.id + '-resp' }, 'Your response'),
+      e('textarea', {
+        id: act.id + '-resp', rows: 5, value: response,
+        onChange: function (ev) { setResponse(ev.target.value); },
+        className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
+        placeholder: 'Write how you would respond…',
+      }),
+      e('button', {
+        onClick: submit,
+        disabled: !response.trim() || status === 'scoring',
+        className: 'self-start px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded disabled:opacity-40 disabled:cursor-not-allowed',
+      }, status === 'scoring' ? 'Getting feedback…' : (score != null ? 'Resubmit for feedback' : 'Get AI feedback')),
+      status === 'error' && e('div', { className: 'text-xs text-amber-700' }, err),
+      score != null && e('div', { className: 'p-3 bg-sky-50 border border-sky-200 rounded flex flex-col gap-1' },
+        e('div', { className: 'text-sm font-semibold ' + (passed === false ? 'text-amber-700' : 'text-slate-800') },
+          'Formative score: ' + score + ' / 100' + (threshold != null ? (passed ? ' — meets the bar' : ' — aim for ' + Math.round(threshold * 100) + '+') : '')),
+        raw.feedback && e('div', { className: 'text-sm text-slate-700 whitespace-pre-wrap' }, raw.feedback),
+        e('div', { className: 'text-[11px] text-slate-500 italic' }, 'AI-generated formative feedback — a rough estimate to prompt reflection, not a definitive assessment.')
+      )
+    );
+  }
+
   // ----- Professional Development: module runner ------------------------------
 
   function PdRunner(props) {
@@ -901,7 +975,8 @@
       : act.type === 'quiz' ? QuizActivity
         : act.type === 'reflect' ? ReflectActivity
           : act.type === 'video' ? VideoActivity
-            : act.type === 'checklist' ? ChecklistActivity : null;
+            : act.type === 'checklist' ? ChecklistActivity
+              : act.type === 'sim' ? SimActivity : null;
 
     return e('div', { className: 'flex flex-col gap-4' },
       // Header + progress
@@ -1332,13 +1407,17 @@
       e('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
         visible.map(function (entry) {
           var doneBadge = entryCompleted(entry);
+          var prog = doneBadge ? null : (loadPdProgressById(entry.slug) || loadPdProgressById(slugify(entry.title || '')));
+          var inProgress = !!(prog && !prog.done && ((prog.idx > 0) || (prog.rawById && Object.keys(prog.rawById).length > 0)));
           return e('div', {
             key: entry.slug || entry.path,
             className: 'bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2 shadow-sm',
           },
             e('div', { className: 'flex items-start justify-between gap-2' },
               e('h3', { className: 'font-bold text-slate-800 text-base' }, entry.title || '(untitled)'),
-              doneBadge && e('span', { className: 'shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold' }, '✓ Completed')
+              doneBadge
+                ? e('span', { className: 'shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold' }, '✓ Completed')
+                : (inProgress && e('span', { className: 'shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold' }, 'In progress'))
             ),
             e('div', { className: 'flex flex-wrap gap-1' },
               entry.topic && e('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-semibold' }, entry.topic),
@@ -1351,7 +1430,7 @@
               e('button', {
                 onClick: function () { startModule(entry); },
                 className: 'w-full px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
-              }, doneBadge ? 'Review again' : 'Start')
+              }, doneBadge ? 'Review again' : (inProgress ? 'Resume' : 'Start'))
             )
           );
         })
@@ -1440,6 +1519,8 @@
   CommunityCatalog.PdGenerate = PdGenerate;
   CommunityCatalog.VideoActivity = VideoActivity;
   CommunityCatalog.ChecklistActivity = ChecklistActivity;
+  CommunityCatalog.SimActivity = SimActivity;
+  CommunityCatalog._buildSimScorePrompt = buildSimScorePrompt;
   CommunityCatalog._generatePdModule = generatePdModule;
   CommunityCatalog._extractFirstJsonObject = extractFirstJsonObject;
   CommunityCatalog._buildPdGenPrompt = buildPdGenPrompt;

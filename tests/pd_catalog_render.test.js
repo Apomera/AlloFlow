@@ -254,6 +254,39 @@ describe('video + checklist runner views', () => {
   });
 });
 
+describe('sim activity (AI-assessed scenario)', () => {
+  const simModule = {
+    schema_version: 'pd-1.0', kind: 'pd_module',
+    metadata: { id: 's', title: 'S Module' },
+    sections: [{ title: 'Practice', activities: [{ id: 's1', type: 'sim', title: 'Try it', content: { scenario: 'A student needs help.', rubric: 'empathy' }, gate: { kind: 'none' } }] }],
+  };
+
+  it('SimActivity renders the scenario + response box + AI-feedback button', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.SimActivity, { activity: simModule.sections[0].activities[0], raw: {}, onRaw() {} });
+    expect(html).toContain('A student needs help.');
+    expect(html).toContain('Your response');
+    expect(html).toMatch(/AI feedback/);
+  });
+
+  it('buildSimScorePrompt asks for a formative masteryScore + feedback JSON', () => {
+    const { CC } = loadWithCore();
+    const p = CC._buildSimScorePrompt({ scenario: 'SCN', rubric: 'RUB' }, 'my response');
+    expect(p).toContain('SCN');
+    expect(p).toContain('RUB');
+    expect(p).toMatch(/masteryScore/);
+    expect(p).toMatch(/feedback/);
+    expect(p).toMatch(/FORMATIVE/i);
+  });
+
+  it('PdRunner renders a sim module step', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.PdRunner, { module: simModule, addToast() {}, onExit() {} });
+    expect(html).toContain('S Module');
+    expect(html).toContain('A student needs help.');
+  });
+});
+
 describe('certificate + completion history', () => {
   it('buildPdCertificateHtml renders a print-ready, honestly-labelled certificate (escaped)', () => {
     const { CC } = loadWithCore();

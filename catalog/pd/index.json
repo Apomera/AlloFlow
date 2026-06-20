@@ -24,6 +24,17 @@
       "license": "CC-BY-SA-4.0",
       "audience": "educator",
       "path": "catalog/pd/approved/retrieval-practice-quickstart.json"
+    },
+    {
+      "slug": "actionable-feedback-quickstart",
+      "title": "Giving Actionable Feedback to Students",
+      "topic": "Feedback",
+      "summary": "A ~12-minute module on specific, actionable feedback — read the principles, then practice rewriting feedback in a scenario with formative AI coaching.",
+      "estMinutes": 12,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/actionable-feedback-quickstart.json"
     }
   ]
 }

@@ -253,3 +253,33 @@ describe('video + checklist activity types', () => {
     expect(PD.normalizeResult(a, { checked: [false, true, false] }).completed).toBe(true);
   });
 });
+
+describe('sim activity type (AI-assessed scenario)', () => {
+  function simAct(gate) { return { id: 's', type: 'sim', title: 'Scenario', content: { scenario: 'A student is upset.', rubric: 'empathy' }, gate: gate || { kind: 'none' } }; }
+  function moduleWith(act) { return { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { title: 'T' }, sections: [{ title: 'S', activities: [act] }] }; }
+
+  it('validates a sim with a scenario and rejects one without', () => {
+    expect(PD.validatePdModule(moduleWith(simAct())).ok).toBe(true);
+    const bad = moduleWith(simAct()); delete bad.sections[0].activities[0].content.scenario;
+    const v = PD.validatePdModule(bad);
+    expect(v.ok).toBe(false);
+    expect(v.error).toMatch(/scenario/);
+  });
+
+  it('allows a score gate on sim (it is scorable)', () => {
+    const v = PD.validatePdModule(moduleWith(simAct({ kind: 'score', threshold: 0.7 })));
+    expect(v.ok).toBe(true);
+    expect(v.stats.gated).toBe(1);
+  });
+
+  it('normalizes masteryScore (0..100) to a 0..1 score and completes', () => {
+    const r = PD.normalizeResult(simAct(), { masteryScore: 80, response: 'x' });
+    expect(r.completed).toBe(true);
+    expect(r.score).toBeCloseTo(0.8, 5);
+  });
+
+  it('completes on a written response when AI score is absent (offline-safe)', () => {
+    expect(PD.normalizeResult(simAct(), { response: 'my answer' }).completed).toBe(true);
+    expect(PD.normalizeResult(simAct(), {}).completed).toBe(false);
+  });
+});

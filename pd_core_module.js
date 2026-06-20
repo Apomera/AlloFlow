@@ -25,8 +25,8 @@
   var COMPLETION_SCHEMA_VERSION = 'pd-completion-1.0';
   var DEFAULT_THRESHOLD = 0.8;
 
-  // Activity types understood by the runner. 'sim' (Adventure-mode simulation)
-  // is defined for forward-compat but not yet wired into the runner/generator.
+  // Activity types understood by the runner. 'sim' is an AI-assessed scenario
+  // (formative masteryScore 0..100); wired in the runner, not the AI generator.
   var ACTIVITY_TYPES = ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim'];
   // Types that actually produce a 0..1 score (so a 'score' gate is meaningful).
   var SCORABLE_TYPES = ['quiz', 'sim'];
@@ -85,6 +85,9 @@
         if (act.type === 'checklist' && !(act.content && Array.isArray(act.content.items) && act.content.items.length > 0)) {
           return { ok: false, error: 'Checklist ' + act.id + ' needs content.items (a non-empty array).' };
         }
+        if (act.type === 'sim' && !(act.content && typeof act.content.scenario === 'string' && act.content.scenario)) {
+          return { ok: false, error: 'Sim ' + act.id + ' needs a content.scenario.' };
+        }
 
         var gate = act.gate || { kind: 'none' };
         if (gate.kind && gate.kind !== 'none' && gate.kind !== 'score') {
@@ -130,9 +133,12 @@
       out.completed = qs.length > 0 && answered === qs.length;
       out.score = qs.length > 0 ? (correct / qs.length) : null;
     } else if (type === 'sim') {
-      // Adventure-mode mastery is 0..100 and AI-self-reported; treat as a
-      // FORMATIVE score only (never a high-stakes measurement).
+      // AI-assessed scenario: masteryScore (0..100, AI-self-reported) is a
+      // FORMATIVE estimate only — never a high-stakes measurement. Completes on a
+      // score, or (if AI is unavailable) on a written response, so a none-gated
+      // sim is never uncompletable offline.
       if (isNum(raw.masteryScore)) { out.score = Math.max(0, Math.min(1, raw.masteryScore / 100)); out.completed = true; }
+      else if (typeof raw.response === 'string' && raw.response.trim().length > 0) { out.completed = true; }
     } else if (type === 'video') {
       out.completed = !!raw.watched;
     } else if (type === 'checklist') {
