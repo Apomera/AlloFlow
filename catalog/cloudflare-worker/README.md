@@ -145,3 +145,23 @@ Read reports either with the CLI (`wrangler kv key list --binding BUG_REPORTS`,
 `GET /bugs?token=<ADMIN_TOKEN>&limit=50` (returns newest-first JSON). KV reports persist until
 manually purged; periodically delete handled ones (and remember KV is private but still contains PII —
 treat accordingly). Smoke test for all routes: `npm test`.
+
+### `POST /submitPd` → Cloudflare KV (PRIVATE)
+Professional-development module submissions from the in-app PD catalogue (Educator Hub → Community
+Catalog → Professional Development → "Submit a module"). Validates `{pd_module, credit?, affirmations}`
+(shallow: `kind==="pd_module"`, `metadata.title`, ≥1 section, all four affirmations true — the deep
+schema check lives in `pd_core_module.js` client-side and is re-checked at review time), PII-rescans the
+serialized module, and stores the record in the **private** `PD_SUBMISSIONS` KV namespace — **NOT**
+GitHub, since educator-authored content can reference student/classroom detail and this repo is public.
+One-time setup:
+
+```
+wrangler kv namespace create PD_SUBMISSIONS    # paste the printed id into wrangler.toml
+wrangler deploy
+```
+
+Until the namespace id is set, `/submitPd` returns HTTP 500 (fail-closed, never silent data loss).
+Review submissions with `wrangler kv key list --binding PD_SUBMISSIONS` /
+`wrangler kv key get --binding PD_SUBMISSIONS <id>`; to publish an approved one, save its `pd_module`
+to `catalog/pd/approved/<slug>.json`, add an entry to `catalog/pd/index.json`, and push. Smoke test for
+all routes: `npm test`.

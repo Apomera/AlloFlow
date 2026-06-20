@@ -19,6 +19,15 @@ GITHUB_BRANCH = "main"
 binding = "BUG_REPORTS"
 id = "REPLACE_WITH_KV_NAMESPACE_ID"
 
+# Private KV store for PD module submissions (POST /submitPd). Educator-authored
+# PD modules are staged here for manual review, NOT committed to the public repo.
+# One-time setup:
+#   npx wrangler kv namespace create PD_SUBMISSIONS
+# then paste the printed id below. Until then, /submitPd returns 500 (fail-closed).
+[[kv_namespaces]]
+binding = "PD_SUBMISSIONS"
+id = "REPLACE_WITH_PD_KV_NAMESPACE_ID"
+
 # Limits applied at the Worker level. Submission max size is also enforced
 # inside the handler; this is a backstop.
 [limits]

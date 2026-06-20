@@ -283,6 +283,16 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons from the AlloFlow community, or submit your own for review'}</p>
                 </div>
               </button>
+              {/* Professional Development (2026-06-19): opens the Community Catalog modal straight to
+                  its PD tab via a one-shot intent flag the catalog module reads itself — so this reuses
+                  the existing setIsCommunityCatalogOpen prop and needs no new host wiring. */}
+              <button data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1" role="img" aria-label={t('educator_hub.graduation_emoji_aria') || 'graduation cap'}>🎓</span>
+                <div>
+                  <h3 className="font-bold text-sky-800">{t('educator_hub.professional_dev_title') || 'Professional Development'}</h3>
+                  <p className="text-xs text-sky-700 mt-1">{t('educator_hub.professional_dev_desc') || 'Short, self-paced PD modules — learn, take a knowledge check, and download a completion record'}</p>
+                </div>
+              </button>
               {/* Demoted to a quiet footer row (maintainer feedback 2026-06-10:
                   it's developer-focused — keep it findable, not billboard-sized). */}
               <div data-help-key="educator_hub_platform_check_card" className="col-span-full flex flex-col gap-2">

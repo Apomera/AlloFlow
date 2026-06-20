@@ -14,9 +14,13 @@
  *   GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH
  *
  * Endpoints:
- *   POST /submit        accept a submission
- *   OPTIONS /submit     CORS preflight
- *   GET  /healthz       liveness probe
+ *   POST /submit            accept a lesson submission (-> public GitHub pending/)
+ *   POST /submitTranslation accept a translation correction (-> public GitHub pending/)
+ *   POST /submitBug         accept a bug report (-> PRIVATE BUG_REPORTS KV)
+ *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
+ *   GET  /bugs              token-gated bug-report reader
+ *   OPTIONS *               CORS preflight
+ *   GET  /healthz           liveness probe
  */
 
 const MAX_BODY_BYTES = 1_048_576; // 1 MB
@@ -232,6 +236,71 @@ function validateBug(p) {
   return null;
 }
 
+// ── PD module submissions → Cloudflare KV (PRIVATE, not GitHub) ──
+// PD modules are educator-authored and may reference student/classroom detail, so
+// like bug reports they are staged in PRIVATE KV (PD_SUBMISSIONS), NOT committed to
+// the public repo. Shallow validation only — the deep schema check lives in
+// pd_core_module.js (client-side) and is repeated by the maintainer at review time.
+
+function validatePd(p) {
+  if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
+  const m = p.pd_module;
+  if (!m || typeof m !== 'object') return 'pd_module missing or not an object.';
+  if (m.kind !== 'pd_module') return 'pd_module.kind must be "pd_module".';
+  if (!m.metadata || typeof m.metadata !== 'object' || !m.metadata.title || typeof m.metadata.title !== 'string' || !m.metadata.title.trim()) return 'pd_module.metadata.title required.';
+  if (m.metadata.title.length > 200) return 'pd_module.metadata.title too long (max 200 chars).';
+  if (!Array.isArray(m.sections) || m.sections.length === 0) return 'pd_module needs at least one section.';
+  if (p.credit != null && (typeof p.credit !== 'string' || p.credit.length > 80)) return 'credit must be a string up to 80 chars.';
+  if (!p.affirmations || typeof p.affirmations !== 'object') return 'affirmations missing or not an object.';
+  for (const key of ['author_or_authorized', 'no_pii', 'license_agreed', 'age_eligible']) {
+    if (p.affirmations[key] !== true) return `affirmation "${key}" must be true.`;
+  }
+  return null;
+}
+
+async function handlePdSubmit(request, env) {
+  if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing PD_SUBMISSIONS KV binding.' }, 500);
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const rawBody = await request.text();
+  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  let p;
+  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  const err = validatePd(p);
+  if (err) return jsonResponse({ ok: false, error: err }, 400);
+
+  const piiFindings = scanForPii(JSON.stringify(p.pd_module));
+  const submittedAt = new Date().toISOString();
+  const title = p.pd_module.metadata.title.trim();
+  const slug = slugify(title);
+  const record = {
+    schema_version: '1.0',
+    kind: 'pd_submission',
+    submitted_at: submittedAt,
+    title: title,
+    topic: (p.pd_module.metadata.topic || '').slice(0, 80),
+    credit: (p.credit || p.pd_module.metadata.credit || '').slice(0, 80),
+    license: (p.pd_module.metadata.license || 'CC-BY-SA-4.0'),
+    affirmations: p.affirmations,
+    pii_scan: { ran_server_side: true, findings: piiFindings },
+    submitter: {
+      ip_country: request.cf?.country || null,
+      user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
+    },
+    pd_module: p.pd_module,
+  };
+  // Time-sortable key (13-digit epoch) + slug, mirroring the bug key scheme. No TTL.
+  const id = `pd:${Date.now()}:${slug}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+  try {
+    await env.PD_SUBMISSIONS.put(id, JSON.stringify(record), {
+      metadata: { submitted_at: submittedAt, title: title, pii: piiFindings.length > 0, country: record.submitter.ip_country },
+    });
+  } catch (e) {
+    return jsonResponse({ ok: false, error: 'Could not store submission: ' + e.message }, 502);
+  }
+  return jsonResponse({ ok: true, id, slug, pii_findings_count: piiFindings.length }, 201);
+}
+
 async function handleBugSubmit(request, env) {
   if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing BUG_REPORTS KV binding.' }, 500);
   const contentType = request.headers.get('Content-Type') || '';
@@ -305,12 +374,16 @@ export default {
       return handleBugSubmit(request, env);
     }
 
+    if (request.method === 'POST' && url.pathname === '/submitPd') {
+      return handlePdSubmit(request, env);
+    }
+
     if (request.method === 'GET' && url.pathname === '/bugs') {
       return handleBugList(request, env, url);
     }
 
     if (request.method !== 'POST' || url.pathname !== '/submit') {
-      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, or /submitBug' }, 405);
+      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitBug, or /submitPd' }, 405);
     }
 
     if (!env.GITHUB_PAT) {
