@@ -3369,6 +3369,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 ),
                 h('div', { className: 'ml-auto text-[10px] text-slate-300' }, 'Faster + correct = critical!')
               ),
+              // Surface whether THIS question was AI-generated (tracked as
+              // pendingCast.aiSourced) — a hallucinated answer key would reward
+              // a wrong fact, so the student/teacher should know which questions
+              // to trust. Static, hand-authored questions show no badge.
+              pendingCast.aiSourced ? h('div', { className: 'flex items-start gap-1.5 mb-2 px-2 py-1 rounded-lg', style: { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.4)' } },
+                h('span', { 'aria-hidden': 'true' }, '⚠️'),
+                h('span', { className: 'text-[10px] font-semibold leading-snug', style: { color: '#b45309' } }, 'AI-generated question — the marked answer could be wrong. If it looks off, tell your teacher.')
+              ) : null,
               h('p', { className: 'text-sm font-semibold text-slate-800 mb-3', role: 'group', 'aria-label': 'Challenge prompt' }, c.prompt),
               // ── Confidence calibration (optional, metacognitive) ──
               // Three quick buttons. Picking one is optional — answer is always
