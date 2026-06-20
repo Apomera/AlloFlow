@@ -1684,12 +1684,16 @@ function PdfAuditView(props) {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
     if (!win) { reject(new Error('Popup blocked — allow pop-ups so AlloFlow can run veraPDF validation.')); return; }
-    let done = false;
+    let done = false, gotReady = false;
     const timer = setTimeout(() => { if (!done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF timed out (the document may be too large for in-browser validation)')); } }, 600000);
-    function cleanup() { clearTimeout(timer); window.removeEventListener('message', onMsg); }
+    // Fail fast if the validator never signals ready (boot/CDN failure) — otherwise a dead popup hangs the full 10 min.
+    const readyTimer = setTimeout(() => { if (!gotReady && !done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF validator did not start (check your connection / allow pop-ups).')); } }, 90000);
+    // Fail fast if the user closes the validation window mid-run.
+    const closePoll = setInterval(() => { if (!done && win.closed) { cleanup(); reject(new Error('veraPDF validation window was closed before it finished.')); } }, 1000);
+    function cleanup() { clearTimeout(timer); clearTimeout(readyTimer); clearInterval(closePoll); window.removeEventListener('message', onMsg); }
     function onMsg(ev) {
       const d = (ev && ev.data) || {};
-      if (d.type === 'verapdf-ready') { try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) {} }
+      if (d.type === 'verapdf-ready') { gotReady = true; clearTimeout(readyTimer); try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) {} }
       else if (d.type === 'verapdf-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
     }
     window.addEventListener('message', onMsg);
@@ -1700,12 +1704,16 @@ function PdfAuditView(props) {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
     if (!win) { reject(new Error('Popup blocked — allow pop-ups so AlloFlow can run veraPDF remediation.')); return; }
-    let done = false;
+    let done = false, gotReady = false;
     const timer = setTimeout(() => { if (!done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF remediation timed out')); } }, 600000);
-    function cleanup() { clearTimeout(timer); window.removeEventListener('message', onMsg); }
+    // Fail fast if the validator never signals ready (boot/CDN failure) — otherwise a dead popup hangs the full 10 min.
+    const readyTimer = setTimeout(() => { if (!gotReady && !done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF validator did not start (check your connection / allow pop-ups).')); } }, 90000);
+    // Fail fast if the user closes the window mid-run.
+    const closePoll = setInterval(() => { if (!done && win.closed) { cleanup(); reject(new Error('veraPDF remediation window was closed before it finished.')); } }, 1000);
+    function cleanup() { clearTimeout(timer); clearTimeout(readyTimer); clearInterval(closePoll); window.removeEventListener('message', onMsg); }
     function onMsg(ev) {
       const d = (ev && ev.data) || {};
-      if (d.type === 'verapdf-ready') { try { win.postMessage({ type: 'verapdf-remediate', bytes: bytes, maxIters: 5 }, '*'); } catch (e) {} }
+      if (d.type === 'verapdf-ready') { gotReady = true; clearTimeout(readyTimer); try { win.postMessage({ type: 'verapdf-remediate', bytes: bytes, maxIters: 5 }, '*'); } catch (e) {} }
       else if (d.type === 'verapdf-remediate-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
     }
     window.addEventListener('message', onMsg);

@@ -6105,10 +6105,11 @@ var createDocPipeline = function(deps) {
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
     s.setAttribute('data-docpipe-mammoth', 'true');
-    document.head.appendChild(s);
     await new Promise((resolve, reject) => {
       const wait = setInterval(() => { if (window.mammoth) { clearInterval(wait); resolve(); } }, 100);
+      s.onerror = () => { clearInterval(wait); try { s.remove(); } catch (_) {} reject(new Error('mammoth load failed (CDN unreachable)')); }; // fail fast, not a 10s stall
       setTimeout(() => { clearInterval(wait); reject(new Error('mammoth load timeout')); }, 10000);
+      document.head.appendChild(s); // append AFTER onerror is attached so a fast 404 can't race past it
     });
   };
 
@@ -6125,10 +6126,11 @@ var createDocPipeline = function(deps) {
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
     s.setAttribute('data-docpipe-jszip', 'true');
-    document.head.appendChild(s);
     await new Promise((resolve, reject) => {
       const wait = setInterval(() => { if (window.JSZip) { clearInterval(wait); resolve(); } }, 100);
+      s.onerror = () => { clearInterval(wait); try { s.remove(); } catch (_) {} reject(new Error('jszip load failed (CDN unreachable)')); }; // fail fast, not a 10s stall
       setTimeout(() => { clearInterval(wait); reject(new Error('jszip load timeout')); }, 10000);
+      document.head.appendChild(s); // append AFTER onerror is attached so a fast 404 can't race past it
     });
   };
 
