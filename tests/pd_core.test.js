@@ -211,3 +211,45 @@ describe('shipped PD catalog', () => {
     expect(PD.evaluateModule(seed, resultsById).complete).toBe(true);
   });
 });
+
+describe('video + checklist activity types', () => {
+  function videoAct() { return { id: 'v', type: 'video', title: 'Watch', content: { url: 'https://example.org/v', body: 'desc' }, gate: { kind: 'none' } }; }
+  function checklistAct() { return { id: 'c', type: 'checklist', title: 'Commit', content: { items: ['Try A', 'Try B', 'Try C'] }, gate: { kind: 'none' } }; }
+
+  function moduleWith(act) {
+    return { schema_version: 'pd-1.0', kind: 'pd_module', metadata: { title: 'T' }, sections: [{ title: 'S', activities: [act] }] };
+  }
+
+  it('validates a video activity and rejects one without a url', () => {
+    expect(PD.validatePdModule(moduleWith(videoAct())).ok).toBe(true);
+    const bad = moduleWith(videoAct()); delete bad.sections[0].activities[0].content.url;
+    const v = PD.validatePdModule(bad);
+    expect(v.ok).toBe(false);
+    expect(v.error).toMatch(/content\.url/);
+  });
+
+  it('validates a checklist activity and rejects one without items', () => {
+    expect(PD.validatePdModule(moduleWith(checklistAct())).ok).toBe(true);
+    const bad = moduleWith(checklistAct()); bad.sections[0].activities[0].content.items = [];
+    expect(PD.validatePdModule(bad).ok).toBe(false);
+  });
+
+  it('rejects a score gate on video/checklist (non-scorable)', () => {
+    const m = moduleWith(videoAct()); m.sections[0].activities[0].gate = { kind: 'score', threshold: 0.8 };
+    expect(PD.validatePdModule(m).ok).toBe(false);
+  });
+
+  it('video completes only when watched; gate then passes', () => {
+    const a = videoAct();
+    expect(PD.normalizeResult(a, {}).completed).toBe(false);
+    const done = PD.normalizeResult(a, { watched: true });
+    expect(done.completed).toBe(true);
+    expect(PD.evaluateGate(a, done).passed).toBe(true);
+  });
+
+  it('checklist completes when at least one item is checked', () => {
+    const a = checklistAct();
+    expect(PD.normalizeResult(a, { checked: [false, false, false] }).completed).toBe(false);
+    expect(PD.normalizeResult(a, { checked: [false, true, false] }).completed).toBe(true);
+  });
+});

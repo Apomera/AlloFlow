@@ -600,6 +600,88 @@
     });
   }
 
+  // ----- Professional Development: progress + completion history (localStorage) -
+  var PD_PROGRESS_PREFIX = 'alloflow_pd_progress::';
+  var PD_HISTORY_KEY = 'alloflow_pd_history';
+  function pdModuleId(mod) {
+    return (mod && mod.metadata && mod.metadata.id) || slugify((mod && mod.metadata && mod.metadata.title) || 'module');
+  }
+  function loadPdProgress(mod) {
+    try { var raw = localStorage.getItem(PD_PROGRESS_PREFIX + pdModuleId(mod)); return raw ? JSON.parse(raw) : null; } catch (_e) { return null; }
+  }
+  function savePdProgress(mod, state) {
+    try { localStorage.setItem(PD_PROGRESS_PREFIX + pdModuleId(mod), JSON.stringify(state)); } catch (_e) { /* quota/sandbox */ }
+  }
+  function clearPdProgress(mod) {
+    try { localStorage.removeItem(PD_PROGRESS_PREFIX + pdModuleId(mod)); } catch (_e) { /* no-op */ }
+  }
+  function loadPdHistory() {
+    try { var raw = localStorage.getItem(PD_HISTORY_KEY); var arr = raw ? JSON.parse(raw) : []; return Array.isArray(arr) ? arr : []; } catch (_e) { return []; }
+  }
+  function recordPdCompletion(entry) {
+    try {
+      var hist = loadPdHistory().filter(function (h) { return h && h.moduleId !== entry.moduleId; });
+      hist.unshift(entry);
+      localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(hist.slice(0, 200)));
+    } catch (_e) { /* no-op */ }
+  }
+  function isPdCompleted(moduleId) {
+    return loadPdHistory().some(function (h) { return h && h.moduleId === moduleId && h.complete; });
+  }
+
+  // ----- Professional Development: printable certificate ----------------------
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function buildPdCertificateHtml(mod, ev, learnerName, nowISO) {
+    var title = escapeHtml(mod.metadata && mod.metadata.title);
+    var topic = escapeHtml((mod.metadata && mod.metadata.topic) || '');
+    var date = escapeHtml(String(nowISO || '').slice(0, 10));
+    var who = escapeHtml(learnerName || '');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>PD Certificate — ' + title + '</title><style>' +
+      'body{font-family:Georgia,"Times New Roman",serif;color:#0f172a;margin:0;padding:40px;background:#f1f5f9}' +
+      '.cert{max-width:760px;margin:0 auto;background:#fff;border:3px double #6366f1;border-radius:16px;padding:48px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.08)}' +
+      'h1{font-size:13px;letter-spacing:4px;text-transform:uppercase;color:#6366f1;margin:0 0 4px}' +
+      '.sub{color:#64748b;font-size:13px;margin-bottom:18px}' +
+      '.who{font-size:20px;margin:14px 0}.who strong{font-size:24px}' +
+      'h2{font-size:26px;margin:10px 0 4px;color:#1e293b}.meta{color:#475569;font-size:14px;margin:6px 0}' +
+      '.disc{margin-top:26px;font-size:11px;color:#64748b;font-style:italic;line-height:1.5}' +
+      '.btn{margin-top:24px}.btn button{padding:10px 18px;font-size:14px;border:1px solid #6366f1;background:#6366f1;color:#fff;border-radius:8px;cursor:pointer}' +
+      '@media print{.btn{display:none}body{background:#fff;padding:0}.cert{border:none;box-shadow:none}}</style></head><body>' +
+      '<div class="cert" role="document">' +
+      '<h1>Certificate of Completion</h1><div class="sub">Self-paced professional development</div>' +
+      (who ? ('<div class="who">Awarded to <strong>' + who + '</strong></div>') : '') +
+      '<h2>' + title + '</h2>' + (topic ? ('<div class="meta">Topic: ' + topic + '</div>') : '') +
+      '<div class="meta">Completed ' + date + ' &middot; ' + ev.passed + ' of ' + ev.total + ' activities passed</div>' +
+      '<div class="disc">This is a self-paced completion record generated on the learner\'s own device. ' +
+      'It is NOT accredited contact hours, continuing-education units, or a verified credential.</div>' +
+      '<div class="btn"><button onclick="window.print()">Print / Save as PDF</button></div>' +
+      '</div></body></html>';
+  }
+  function printPdCertificate(mod, results, learner, addToast) {
+    var Core = window.AlloModules && window.AlloModules.PdCore;
+    if (!Core) return;
+    var ev = Core.evaluateModule(mod, results);
+    var html = buildPdCertificateHtml(mod, ev, (learner && learner.name) || '', new Date().toISOString());
+    var w = null;
+    try { w = window.open('', '_blank'); } catch (_e) { w = null; }
+    if (w && w.document) {
+      try { w.document.open(); w.document.write(html); w.document.close(); return; } catch (_e2) { /* fall through to download */ }
+    }
+    // Pop-up blocked (e.g., the Canvas sandbox) → download the certificate HTML instead.
+    try {
+      var blob = new Blob([html], { type: 'text/html' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = pdModuleId(mod) + '-certificate.html';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      addToast && addToast('Pop-up blocked — downloaded the certificate as an HTML file you can open and print.', 'info');
+    } catch (_e3) { addToast && addToast('Could not open the certificate.', 'error'); }
+  }
+
   // ----- Professional Development: activity views -----------------------------
   // Each view renders ONE activity and reports its raw interaction up via onRaw.
   // All scoring/gating/record logic lives in window.AlloModules.PdCore — these
@@ -675,6 +757,37 @@
     );
   }
 
+  function VideoActivity(props) {
+    var c = (props.activity && props.activity.content) || {};
+    var watched = !!(props.raw && props.raw.watched);
+    return e('div', { className: 'flex flex-col gap-3' },
+      c.body && e('p', { className: 'text-sm text-slate-700 whitespace-pre-wrap' }, c.body),
+      c.url && e('a', {
+        href: c.url, target: '_blank', rel: 'noopener noreferrer',
+        className: 'inline-flex items-center gap-1 self-start px-3 py-1.5 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
+      }, '▶ Watch the video', e('span', { 'aria-hidden': 'true' }, ' ↗')),
+      e('label', { className: 'flex items-center gap-2 text-sm text-slate-700 cursor-pointer mt-1' },
+        e('input', { type: 'checkbox', checked: watched, onChange: function (ev) { props.onRaw({ watched: ev.target.checked }); } }),
+        e('span', null, "I've watched this")
+      )
+    );
+  }
+
+  function ChecklistActivity(props) {
+    var items = (props.activity && props.activity.content && props.activity.content.items) || [];
+    var checked = (props.raw && props.raw.checked) || [];
+    function toggle(i, val) { var next = items.map(function (_x, j) { return j === i ? val : !!checked[j]; }); props.onRaw({ checked: next }); }
+    return e('div', { className: 'flex flex-col gap-2' },
+      e('p', { className: 'text-xs text-slate-500' }, 'Choose at least one action you will commit to.'),
+      items.map(function (item, i) {
+        return e('label', { key: i, className: 'flex items-start gap-2 text-sm text-slate-700 cursor-pointer' },
+          e('input', { type: 'checkbox', className: 'mt-0.5', checked: !!checked[i], onChange: function (ev) { toggle(i, ev.target.checked); } }),
+          e('span', null, item)
+        );
+      })
+    );
+  }
+
   // ----- Professional Development: module runner ------------------------------
 
   function PdRunner(props) {
@@ -688,9 +801,44 @@
       });
       return out;
     }, [mod]);
-    var idx$ = useState(0); var idx = idx$[0], setIdx = idx$[1];
-    var raw$ = useState({}); var rawById = raw$[0], setRawById = raw$[1];
-    var done$ = useState(false); var done = done$[0], setDone = done$[1];
+    // Resume from any saved progress for this module.
+    var saved = useMemo(function () { return loadPdProgress(mod); }, [mod]);
+    var idx$ = useState(function () { return (saved && typeof saved.idx === 'number' && saved.idx < steps.length) ? saved.idx : 0; });
+    var idx = idx$[0], setIdx = idx$[1];
+    var raw$ = useState(function () { return (saved && saved.rawById && typeof saved.rawById === 'object') ? saved.rawById : {}; });
+    var rawById = raw$[0], setRawById = raw$[1];
+    var done$ = useState(function () { return !!(saved && saved.done); });
+    var done = done$[0], setDone = done$[1];
+    var resumed$ = useState(!!(saved && (saved.idx > 0 || saved.done || (saved.rawById && Object.keys(saved.rawById).length > 0))));
+    var resumed = resumed$[0], setResumed = resumed$[1];
+    var headingRef = React.useRef ? React.useRef(null) : { current: null };
+
+    // Persist progress as the learner moves through the module.
+    useEffect(function () {
+      if (!Core) return;
+      savePdProgress(mod, { idx: idx, rawById: rawById, done: done, savedAt: new Date().toISOString() });
+    }, [idx, rawById, done, mod, Core]);
+
+    // Move focus to the activity heading on each step (keyboard / screen-reader users).
+    useEffect(function () {
+      if (headingRef.current && headingRef.current.focus) { try { headingRef.current.focus(); } catch (_e) { /* no-op */ } }
+    }, [idx, done]);
+
+    // On completion, record it to the local "My learning" history (once) + clear progress.
+    useEffect(function () {
+      if (!Core || !done) return;
+      var evc = Core.evaluateModule(mod, resultsById());
+      if (evc.complete) {
+        recordPdCompletion({
+          moduleId: pdModuleId(mod),
+          moduleTitle: mod.metadata && mod.metadata.title,
+          topic: mod.metadata && mod.metadata.topic,
+          completedAt: new Date().toISOString(),
+          passed: evc.passed, total: evc.total, complete: true,
+        });
+        clearPdProgress(mod);
+      }
+    }, [done, mod, Core]);
 
     if (!Core) return e('div', { className: 'p-6 text-center text-sm text-slate-600' }, 'Loading the PD engine…');
 
@@ -706,11 +854,12 @@
       steps.forEach(function (st) { r[st.act.id] = Core.normalizeResult(st.act, rawById[st.act.id] || {}); });
       return r;
     }
+    function startOver() { clearPdProgress(mod); setRawById({}); setIdx(0); setDone(false); setResumed(false); }
 
     if (done) {
       var ev = Core.evaluateModule(mod, resultsById());
       return e('div', { className: 'flex flex-col gap-4 items-start' },
-        e('h3', { className: 'font-bold text-lg text-slate-800' }, ev.complete ? 'Module complete 🎓' : 'Module summary'),
+        e('h3', { ref: headingRef, tabIndex: -1, className: 'font-bold text-lg text-slate-800 outline-none' }, ev.complete ? 'Module complete 🎓' : 'Module summary'),
         e('p', { className: 'text-sm text-slate-600' }, mod.metadata.title),
         e('p', { className: 'text-sm text-slate-700' }, 'Activities passed: ' + ev.passed + ' / ' + ev.total),
         e('div', { className: 'p-3 bg-sky-50 border border-sky-200 rounded text-xs text-slate-700' },
@@ -719,11 +868,19 @@
           ev.complete && e('button', {
             onClick: function () {
               var rec = Core.buildCompletionRecord(mod, resultsById(), props.learner || { name: null }, new Date().toISOString());
-              downloadJsonFile(rec, ((mod.metadata && mod.metadata.id) || 'pd') + '-completion');
+              downloadJsonFile(rec, pdModuleId(mod) + '-completion');
               addToast && addToast('Completion record downloaded.', 'success');
             },
             className: 'px-4 py-2 text-sm font-bold bg-emerald-600 text-white rounded-md hover:bg-emerald-700',
           }, 'Download completion record (JSON)'),
+          ev.complete && typeof props.onCertificate === 'function' && e('button', {
+            onClick: function () { props.onCertificate(mod, resultsById()); },
+            className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50',
+          }, 'Print certificate'),
+          e('button', {
+            onClick: function () { startOver(); },
+            className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
+          }, 'Review again'),
           e('button', {
             onClick: props.onExit,
             className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
@@ -737,22 +894,37 @@
     var gate = Core.evaluateGate(act, curResult);
     var canNext = gate.passed;
     var isLast = idx === steps.length - 1;
+    var completedCount = 0;
+    steps.forEach(function (st) { if (Core.evaluateGate(st.act, Core.normalizeResult(st.act, rawById[st.act.id] || {})).passed) completedCount++; });
+    var pct = steps.length ? Math.round((completedCount / steps.length) * 100) : 0;
     var ActView = act.type === 'read' ? ReadActivity
       : act.type === 'quiz' ? QuizActivity
-        : act.type === 'reflect' ? ReflectActivity : null;
+        : act.type === 'reflect' ? ReflectActivity
+          : act.type === 'video' ? VideoActivity
+            : act.type === 'checklist' ? ChecklistActivity : null;
 
     return e('div', { className: 'flex flex-col gap-4' },
-      // Header
-      e('div', { className: 'flex items-center justify-between gap-3 border-b border-slate-200 pb-3' },
-        e('div', null,
-          e('h3', { className: 'font-bold text-base text-slate-800' }, mod.metadata.title),
-          e('p', { className: 'text-xs text-slate-500' }, cur.sec.title + ' · ' + (idx + 1) + ' / ' + steps.length)
+      // Header + progress
+      e('div', { className: 'flex flex-col gap-2 border-b border-slate-200 pb-3' },
+        e('div', { className: 'flex items-center justify-between gap-3' },
+          e('div', null,
+            e('h3', { className: 'font-bold text-base text-slate-800' }, mod.metadata.title),
+            e('p', { className: 'text-xs text-slate-500' }, cur.sec.title + ' · step ' + (idx + 1) + ' of ' + steps.length)
+          ),
+          e('div', { className: 'flex items-center gap-3' },
+            resumed && e('button', { onClick: function () { startOver(); }, className: 'text-xs font-semibold text-slate-500 hover:text-slate-800 underline decoration-dotted' }, 'Start over'),
+            e('button', { onClick: props.onExit, className: 'text-sm font-semibold text-slate-600 hover:text-slate-900', 'aria-label': 'Exit module' }, 'Exit')
+          )
         ),
-        e('button', { onClick: props.onExit, className: 'text-sm font-semibold text-slate-600 hover:text-slate-900', 'aria-label': 'Exit module' }, 'Exit')
+        e('div', {
+          className: 'h-1.5 w-full bg-slate-200 rounded-full overflow-hidden',
+          role: 'progressbar', 'aria-valuenow': completedCount, 'aria-valuemin': 0, 'aria-valuemax': steps.length, 'aria-label': 'Module progress',
+        }, e('div', { className: 'h-full bg-indigo-600 rounded-full transition-all', style: { width: pct + '%' } }))
       ),
+      resumed && e('div', { className: 'text-xs text-slate-500 -mt-1' }, 'Resumed where you left off.'),
       // Body
       e('div', { className: 'flex flex-col gap-3' },
-        e('h4', { className: 'font-semibold text-sm text-slate-800' }, act.title),
+        e('h4', { ref: headingRef, tabIndex: -1, className: 'font-semibold text-sm text-slate-800 outline-none' }, act.title),
         ActView
           ? e(ActView, { activity: act, raw: rawById[act.id] || {}, onRaw: function (patch) { setRaw(act.id, patch); } })
           : e('p', { className: 'text-sm text-slate-500' }, 'This activity type is not supported yet.')
@@ -765,7 +937,7 @@
           className: 'px-3 py-1.5 text-sm font-semibold border border-slate-300 text-slate-700 rounded disabled:opacity-40',
         }, 'Back'),
         e('div', { className: 'flex items-center gap-3' },
-          !canNext && e('span', { className: 'text-xs text-slate-500' },
+          !canNext && e('span', { className: 'text-xs text-slate-500', 'aria-live': 'polite' },
             gate.reason === 'incomplete' ? 'Finish this activity to continue.' : 'Reach the passing score to continue.'),
           e('button', {
             onClick: function () { if (!canNext) return; if (isLast) setDone(true); else setIdx(idx + 1); },
@@ -1019,8 +1191,10 @@
     var s = useState({ status: 'loading', entries: [], error: null });
     var state = s[0], setState = s[1];
     var run$ = useState(null); var run = run$[0], setRun = run$[1];          // { entry?, module }
-    var view$ = useState('browse'); var view = view$[0], setView = view$[1];  // 'browse' | 'generate' | 'submit'
+    var view$ = useState('browse'); var view = view$[0], setView = view$[1];  // 'browse' | 'generate' | 'submit' | 'history'
     var prefill$ = useState(''); var prefill = prefill$[0], setPrefill = prefill$[1];
+    var filters$ = useState({ search: '', topic: '' }); var filters = filters$[0], setFilters = filters$[1];
+    var histTick$ = useState(0); var setHistTick = histTick$[1]; // bump to refresh history-derived UI
 
     useEffect(function () {
       var cancelled = false;
@@ -1044,8 +1218,16 @@
       }).catch(function (err) { addToast && addToast('Could not start module: ' + err.message, 'error'); });
     }
 
+    function entryCompleted(entry) {
+      return isPdCompleted(entry.slug) || isPdCompleted(slugify(entry.title || ''));
+    }
+
     if (run) {
-      return e(PdRunner, { module: run.module, addToast: addToast, learner: props.learner, onExit: function () { setRun(null); } });
+      return e(PdRunner, {
+        module: run.module, addToast: addToast, learner: props.learner,
+        onExit: function () { setRun(null); setHistTick(function (n) { return n + 1; }); },
+        onCertificate: function (mod, results) { printPdCertificate(mod, results, props.learner, addToast); },
+      });
     }
     if (view === 'generate') {
       return e(PdGenerate, {
@@ -1061,12 +1243,62 @@
         e(PdSubmit, { addToast: addToast, initialJson: prefill })
       );
     }
+    if (view === 'history') {
+      var hist = loadPdHistory();
+      return e('div', { className: 'flex flex-col gap-3' },
+        e('div', { className: 'flex items-center justify-between gap-3' },
+          e('button', { onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+          hist.length > 0 && e('button', {
+            onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast('Cleared your local PD history.', 'info'); },
+            className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
+          }, 'Clear history')
+        ),
+        e('h3', { className: 'font-bold text-base text-slate-800' }, 'My learning'),
+        e('p', { className: 'text-xs text-slate-500' }, 'Your completion history is stored only on this device.'),
+        hist.length === 0
+          ? e('p', { className: 'text-sm text-slate-600' }, 'No completed modules yet. Finish a module and it will appear here.')
+          : e('div', { className: 'flex flex-col gap-2' },
+              hist.map(function (h, i) {
+                var match = (state.entries || []).filter(function (en) { return en.slug === h.moduleId || slugify(en.title || '') === h.moduleId; })[0];
+                return e('div', { key: h.moduleId || i, className: 'bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between gap-3 flex-wrap' },
+                  e('div', null,
+                    e('div', { className: 'font-semibold text-sm text-slate-800' }, '✓ ' + (h.moduleTitle || h.moduleId)),
+                    e('div', { className: 'text-xs text-slate-500' },
+                      (h.topic ? (h.topic + ' · ') : '') + 'completed ' + String(h.completedAt || '').slice(0, 10) +
+                      (typeof h.passed === 'number' ? (' · ' + h.passed + '/' + h.total + ' passed') : ''))
+                  ),
+                  match && e('button', { onClick: function () { startModule(match); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Review again')
+                );
+              })
+            )
+      );
+    }
+
+    // Browse (default) — derive topic options + apply filters
+    var topics = (function () {
+      var seen = {}; var out = [];
+      (state.entries || []).forEach(function (en) { if (en.topic && !seen[en.topic]) { seen[en.topic] = true; out.push(en.topic); } });
+      return out;
+    })();
+    var visible = (state.entries || []).filter(function (en) {
+      if (filters.topic && en.topic !== filters.topic) return false;
+      if (filters.search) {
+        var hay = ((en.title || '') + ' ' + (en.summary || '') + ' ' + (en.topic || '')).toLowerCase();
+        if (hay.indexOf(filters.search.toLowerCase()) === -1) return false;
+      }
+      return true;
+    });
+    var completedCount = loadPdHistory().filter(function (h) { return h && h.complete; }).length;
 
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
         e('p', { className: 'text-sm text-slate-700 max-w-2xl' },
-          'Short, self-paced professional-development modules — read, take a knowledge check, and reflect. Finishing one lets you download a self-paced completion record (JSON). This is a personal record of your work, not accredited contact hours.'),
-        e('div', { className: 'shrink-0 flex gap-2' },
+          'Short, self-paced professional-development modules — read, take a knowledge check, and reflect. Finishing one lets you download a self-paced completion record (JSON) or print a certificate. This is a personal record of your work, not accredited contact hours.'),
+        e('div', { className: 'shrink-0 flex gap-2 flex-wrap' },
+          completedCount > 0 && e('button', {
+            onClick: function () { setView('history'); },
+            className: 'px-3 py-1.5 text-xs font-semibold border border-emerald-600 text-emerald-700 rounded hover:bg-emerald-50',
+          }, 'My learning (' + completedCount + ')'),
           e('button', {
             onClick: function () { setView('generate'); },
             className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
@@ -1077,19 +1309,36 @@
           }, 'Submit a module')
         )
       ),
+      state.status === 'ok' && state.entries.length > 0 && e('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200' },
+        e('div', { className: 'sm:col-span-2' },
+          e('label', { className: 'block text-xs font-semibold text-slate-600 mb-1', htmlFor: 'pd-search' }, 'Search'),
+          e('input', { id: 'pd-search', type: 'text', placeholder: 'title, topic, summary…', className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', value: filters.search, onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); } })
+        ),
+        e('div', null,
+          e('label', { className: 'block text-xs font-semibold text-slate-600 mb-1', htmlFor: 'pd-topic' }, 'Topic'),
+          e('select', { id: 'pd-topic', className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', value: filters.topic, onChange: function (ev) { setFilters(Object.assign({}, filters, { topic: ev.target.value })); } },
+            e('option', { value: '' }, 'All topics'),
+            topics.map(function (tp) { return e('option', { key: tp, value: tp }, tp); })
+          )
+        )
+      ),
       e('div', { className: 'text-sm text-slate-600' },
         state.status === 'loading' ? 'Loading PD library…' :
         state.status === 'error' ? e('span', { className: 'text-red-600' }, 'Could not load PD library: ' + state.error) :
-        state.entries.length === 0 ? 'No PD modules published yet. Submit one for review via "Submit a module".' :
-        state.entries.length + ' module' + (state.entries.length !== 1 ? 's' : '')
+        state.entries.length === 0 ? 'No PD modules published yet. Create one with AI or submit one for review.' :
+        visible.length + ' of ' + state.entries.length + ' module' + (state.entries.length !== 1 ? 's' : '')
       ),
       e('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
-        state.entries.map(function (entry) {
+        visible.map(function (entry) {
+          var doneBadge = entryCompleted(entry);
           return e('div', {
             key: entry.slug || entry.path,
             className: 'bg-white border border-slate-200 rounded-lg p-4 flex flex-col gap-2 shadow-sm',
           },
-            e('h3', { className: 'font-bold text-slate-800 text-base' }, entry.title || '(untitled)'),
+            e('div', { className: 'flex items-start justify-between gap-2' },
+              e('h3', { className: 'font-bold text-slate-800 text-base' }, entry.title || '(untitled)'),
+              doneBadge && e('span', { className: 'shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold' }, '✓ Completed')
+            ),
             e('div', { className: 'flex flex-wrap gap-1' },
               entry.topic && e('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-semibold' }, entry.topic),
               entry.estMinutes && e('span', { className: 'text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700' }, '~' + entry.estMinutes + ' min')
@@ -1101,7 +1350,7 @@
               e('button', {
                 onClick: function () { startModule(entry); },
                 className: 'w-full px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
-              }, 'Start')
+              }, doneBadge ? 'Review again' : 'Start')
             )
           );
         })
@@ -1188,9 +1437,14 @@
   CommunityCatalog.PdRunner = PdRunner;
   CommunityCatalog.PdSubmit = PdSubmit;
   CommunityCatalog.PdGenerate = PdGenerate;
+  CommunityCatalog.VideoActivity = VideoActivity;
+  CommunityCatalog.ChecklistActivity = ChecklistActivity;
   CommunityCatalog._generatePdModule = generatePdModule;
   CommunityCatalog._extractFirstJsonObject = extractFirstJsonObject;
   CommunityCatalog._buildPdGenPrompt = buildPdGenPrompt;
+  CommunityCatalog._buildPdCertificateHtml = buildPdCertificateHtml;
+  CommunityCatalog._loadPdHistory = loadPdHistory;
+  CommunityCatalog._recordPdCompletion = recordPdCompletion;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.CommunityCatalog = CommunityCatalog;

@@ -104,7 +104,8 @@ describe('PdRunner (rendered directly with PdCore + the seed module)', () => {
     expect(typeof CC.PdRunner).toBe('function');
     const html = render(CC.PdRunner, { module: SEED, addToast() {}, onExit() {} });
     expect(html).toContain(SEED.metadata.title);                 // header title
-    expect(html).toContain('1 / 3');                              // progress (3 activities)
+    expect(html).toContain('step 1 of 3');                       // progress (3 activities)
+    expect(html).toContain('progressbar');                       // a11y progress bar
     expect(html).toContain('read this');                         // first activity is a read (acknowledge)
     expect(html).toContain('Next');
     // The read gate is unmet on first render, so the hint shows.
@@ -215,5 +216,64 @@ describe('AI authoring — generatePdModule (mocked callGemini)', () => {
     expect(html).toMatch(/Review and edit/);
     expect(html).toContain('AI-assisted draft');
     expect(html).toContain('Topic');
+  });
+});
+
+describe('video + checklist runner views', () => {
+  const vcModule = {
+    schema_version: 'pd-1.0', kind: 'pd_module',
+    metadata: { id: 'vc', title: 'VC Module', topic: 'T' },
+    sections: [
+      { title: 'Watch', activities: [{ id: 'v1', type: 'video', title: 'Watch it', content: { url: 'https://example.org/v', body: 'a clip' }, gate: { kind: 'none' } }] },
+      { title: 'Commit', activities: [{ id: 'c1', type: 'checklist', title: 'Commit', content: { items: ['Try A', 'Try B'] }, gate: { kind: 'none' } }] },
+    ],
+  };
+
+  it('VideoActivity renders a watch link + an acknowledge control', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.VideoActivity, { activity: vcModule.sections[0].activities[0], raw: {}, onRaw() {} });
+    expect(html).toContain('Watch the video');
+    expect(html).toContain('https://example.org/v');
+    expect(html).toContain('watched this');
+  });
+
+  it('ChecklistActivity renders each item as a checkbox', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.ChecklistActivity, { activity: vcModule.sections[1].activities[0], raw: {}, onRaw() {} });
+    expect(html).toContain('Try A');
+    expect(html).toContain('Try B');
+    expect(html).toContain('commit to');
+  });
+
+  it('PdRunner renders a video-first module with progress + the video view', () => {
+    const { CC } = loadWithCore();
+    const html = render(CC.PdRunner, { module: vcModule, addToast() {}, onExit() {} });
+    expect(html).toContain('VC Module');
+    expect(html).toContain('step 1 of 2');
+    expect(html).toContain('Watch the video');
+  });
+});
+
+describe('certificate + completion history', () => {
+  it('buildPdCertificateHtml renders a print-ready, honestly-labelled certificate (escaped)', () => {
+    const { CC } = loadWithCore();
+    const mod = { metadata: { title: 'Safe <b>Title</b>', topic: 'UDL' } };
+    const html = CC._buildPdCertificateHtml(mod, { passed: 3, total: 3 }, 'Pat O\'Neil', '2026-06-20T12:00:00.000Z');
+    expect(html).toContain('Certificate of Completion');
+    expect(html).toContain('Safe &lt;b&gt;Title&lt;/b&gt;');         // title escaped
+    expect(html).toContain('Pat O&#39;Neil');                         // name escaped
+    expect(html).toContain('3 of 3 activities passed');
+    expect(html).toMatch(/NOT accredited/i);
+    expect(html).toContain('window.print()');
+  });
+
+  it('recordPdCompletion + loadPdHistory round-trip and de-dupe by moduleId', () => {
+    const { CC } = loadWithCore();
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+    CC._recordPdCompletion({ moduleId: 'm1', moduleTitle: 'M1', complete: true, completedAt: '2026-06-20', passed: 2, total: 2 });
+    CC._recordPdCompletion({ moduleId: 'm1', moduleTitle: 'M1 (retake)', complete: true, completedAt: '2026-06-21', passed: 2, total: 2 });
+    const hist = CC._loadPdHistory();
+    expect(hist.filter((h) => h.moduleId === 'm1')).toHaveLength(1); // de-duped
+    expect(hist[0].moduleTitle).toBe('M1 (retake)');                  // newest kept
   });
 });
