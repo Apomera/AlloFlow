@@ -676,6 +676,26 @@
   function isPdCompleted(moduleId) {
     return loadPdHistory().some(function (h) { return h && h.moduleId === moduleId && h.complete; });
   }
+  // Export/import the local history — important because the Canvas sandbox does not
+  // persist localStorage across sessions, so a learner can save + restore their record.
+  function exportPdHistory() {
+    downloadJsonFile({ schema_version: 'pd-history-1.0', kind: 'pd_history', exported_at: new Date().toISOString(), entries: loadPdHistory() }, 'my-pd-learning');
+  }
+  function importPdHistory(parsed) {
+    var incoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.entries) ? parsed.entries : null);
+    if (!incoming) return { ok: false, error: 'That file is not a PD history export.' };
+    var byId = {};
+    loadPdHistory().forEach(function (h) { if (h && h.moduleId) byId[h.moduleId] = h; });
+    incoming.forEach(function (h) {
+      if (!h || !h.moduleId || !h.complete) return;
+      var prev = byId[h.moduleId];
+      if (!prev || String(h.completedAt || '') > String(prev.completedAt || '')) byId[h.moduleId] = h; // keep the most recent
+    });
+    var merged = Object.keys(byId).map(function (k) { return byId[k]; })
+      .sort(function (a, b) { return String(b.completedAt || '').localeCompare(String(a.completedAt || '')); });
+    try { localStorage.setItem(PD_HISTORY_KEY, JSON.stringify(merged.slice(0, 200))); } catch (_e) { return { ok: false, error: 'Could not save imported history.' }; }
+    return { ok: true, count: merged.length };
+  }
 
   // ----- Professional Development: printable certificate ----------------------
   function escapeHtml(s) {
@@ -1427,15 +1447,37 @@
     if (view === 'history') {
       var hist = loadPdHistory();
       return e('div', { className: 'flex flex-col gap-3' },
-        e('div', { className: 'flex items-center justify-between gap-3' },
+        e('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
           e('button', { onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
-          hist.length > 0 && e('button', {
-            onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast('Cleared your local PD history.', 'info'); },
-            className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
-          }, 'Clear history')
+          e('div', { className: 'flex items-center gap-3 flex-wrap' },
+            hist.length > 0 && e('button', {
+              onClick: function () { exportPdHistory(); addToast && addToast('Exported your PD history.', 'success'); },
+              className: 'text-xs font-semibold text-indigo-700 hover:underline',
+            }, 'Export'),
+            e('label', { className: 'text-xs font-semibold text-indigo-700 hover:underline cursor-pointer' }, 'Import',
+              e('input', {
+                type: 'file', accept: 'application/json,.json', className: 'hidden',
+                onChange: function (ev) {
+                  var f = ev.target.files && ev.target.files[0]; if (!f) return;
+                  var reader = new FileReader();
+                  reader.onload = function () {
+                    var res; try { res = importPdHistory(JSON.parse(String(reader.result || ''))); } catch (e) { res = { ok: false, error: 'Could not read that file.' }; }
+                    if (res.ok) { setHistTick(function (n) { return n + 1; }); addToast && addToast('Imported — ' + res.count + ' module' + (res.count !== 1 ? 's' : '') + ' in your history.', 'success'); }
+                    else { addToast && addToast(res.error || 'Import failed.', 'error'); }
+                  };
+                  reader.readAsText(f);
+                  ev.target.value = '';
+                },
+              })
+            ),
+            hist.length > 0 && e('button', {
+              onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast('Cleared your local PD history.', 'info'); },
+              className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
+            }, 'Clear history')
+          )
         ),
         e('h3', { className: 'font-bold text-base text-slate-800' }, 'My learning'),
-        e('p', { className: 'text-xs text-slate-500' }, 'Your completion history is stored only on this device.'),
+        e('p', { className: 'text-xs text-slate-500' }, 'Your completion history is stored only on this device. Use Export to keep a copy (this sandbox may not remember it next session) and Import to restore it.'),
         hist.length === 0
           ? e('p', { className: 'text-sm text-slate-600' }, 'No completed modules yet. Finish a module and it will appear here.')
           : e('div', { className: 'flex flex-col gap-2' },
@@ -1643,6 +1685,7 @@
   CommunityCatalog._buildPdCertificateHtml = buildPdCertificateHtml;
   CommunityCatalog._loadPdHistory = loadPdHistory;
   CommunityCatalog._recordPdCompletion = recordPdCompletion;
+  CommunityCatalog._importPdHistory = importPdHistory;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.CommunityCatalog = CommunityCatalog;

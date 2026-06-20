@@ -339,6 +339,30 @@ describe('runner resume + home history (render)', () => {
   });
 });
 
+describe('My learning export/import', () => {
+  it('importPdHistory merges + dedups by moduleId, keeping the most recent', () => {
+    const { CC } = loadWithCore();
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+    CC._recordPdCompletion({ moduleId: 'a', moduleTitle: 'A', complete: true, completedAt: '2026-06-20' });
+    const res = CC._importPdHistory({ entries: [
+      { moduleId: 'a', moduleTitle: 'A v2', complete: true, completedAt: '2026-06-25' }, // newer → replaces
+      { moduleId: 'b', moduleTitle: 'B', complete: true, completedAt: '2026-06-21' },     // new
+      { moduleId: 'c', complete: false },                                                 // ignored (not complete)
+    ] });
+    expect(res.ok).toBe(true);
+    const hist = CC._loadPdHistory();
+    expect(hist.length).toBe(2);
+    expect(hist.find((h) => h.moduleId === 'a').moduleTitle).toBe('A v2');
+    expect(hist.find((h) => h.moduleId === 'b')).toBeTruthy();
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+  });
+
+  it('rejects a file that is not a PD history export', () => {
+    const { CC } = loadWithCore();
+    expect(CC._importPdHistory({ foo: 1 }).ok).toBe(false);
+  });
+});
+
 describe('quiz formative feedback', () => {
   const quizAct = {
     id: 'q', type: 'quiz', title: 'Q', gate: { kind: 'score', threshold: 0.5 },
