@@ -193,9 +193,12 @@ window.StemLab = window.StemLab || {
   }
   function getHotHand(streak) {
     if (!streak || streak < 2) return null;
-    if (streak === 2) return { emoji: '🟧', label: 'Warming up', color: '#fb923c' };
-    if (streak <= 4) return { emoji: '🔥', label: "He's heating up!", color: '#ef4444' };
-    return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
+    // bg/text are theme-INDEPENDENT (solid pill) so the streak label stays
+    // AA-readable on both light and dark host surfaces. color = accent used
+    // for the border + the on-field ember tint.
+    if (streak === 2) return { emoji: '🟧', label: 'Warming up', color: '#fb923c', bg: '#7c2d12', text: '#fed7aa' };
+    if (streak <= 4) return { emoji: '🔥', label: "He's heating up!", color: '#ef4444', bg: '#7f1d1d', text: '#fecaca' };
+    return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626', bg: '#7f1d1d', text: '#fee2e2' };
   }
 
   // ── Engagement layer: Personal Bests ──
@@ -1845,7 +1848,7 @@ window.StemLab = window.StemLab || {
             }
           }});
         });
-        return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading PlayLab…');
+        return h('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text, #334155)' } }, 'Loading PlayLab…');
       }
       var d = labToolData.playlab;
       var upd = function(key, val) {
@@ -2990,6 +2993,12 @@ window.StemLab = window.StemLab || {
         if ('imageSmoothingQuality' in gfx) gfx.imageSmoothingQuality = 'high';
         var W = canvas._plLogicalW;
         var H = canvas._plLogicalH;
+        // PL: "Hot Hand" momentum made visible ON THE FIELD. When the student
+        // is on a 3+ completion streak ("ON FIRE"), the ball's motion trail
+        // burns ember-orange and a warm vignette frames the field — so the
+        // HUD streak label pays off as on-field juice, not just a text pill.
+        var _hotStreak = (d.drillStats || {}).hotStreak || 0;
+        var _onFire = _hotStreak >= 3;
         gfx.clearRect(0, 0, W, H);
         // Field is rendered HORIZONTALLY: x (yards) maps to canvas x (px),
         // y (yards across the field) maps to canvas y. End zone left, defense right.
@@ -3395,7 +3404,8 @@ window.StemLab = window.StemLab || {
               var tpos = _ballAt(trailT);
               var alpha = (1 - ti / 9) * 0.55;
               var trad = 4 - ti * 0.35;
-              gfx.fillStyle = 'rgba(254,226,182,' + alpha.toFixed(2) + ')';
+              // ON FIRE → ember-orange trail; otherwise the default warm cream.
+              gfx.fillStyle = (_onFire ? 'rgba(251,146,60,' : 'rgba(254,226,182,') + alpha.toFixed(2) + ')';
               gfx.beginPath();
               gfx.arc(tpos.px, tpos.py, Math.max(1.2, trad), 0, Math.PI * 2);
               gfx.fill();
@@ -3407,8 +3417,8 @@ window.StemLab = window.StemLab || {
             // Draw the football — small brown ellipse (warm glow matching
             // the amber arc guide so the leading edge pops over the trail)
             gfx.save();
-            gfx.shadowColor = 'rgba(251,191,36,0.85)';
-            gfx.shadowBlur = 10;
+            gfx.shadowColor = _onFire ? 'rgba(239,68,68,0.95)' : 'rgba(251,191,36,0.85)';
+            gfx.shadowBlur = _onFire ? 14 : 10;
             gfx.fillStyle = '#7c2d12';
             gfx.beginPath();
             gfx.ellipse(bpx, bpy, 5, 3, 0, 0, Math.PI * 2);
@@ -3481,10 +3491,24 @@ window.StemLab = window.StemLab || {
           gfx.fillText('EPA: ' + epaSign + dEPA.toFixed(2) + '  (pre ' + epaResult.preEP.toFixed(1) + ' → post ' + epaResult.postEP.toFixed(1) + ')',
                        W / 2, marginT + fieldPxH / 2 + 44);
         }
+        // ── "ON FIRE" warm vignette ──
+        // Ember frame around the field on a 3+ streak. Pulses subtly with
+        // runT during an active play, steady otherwise. Drawn last so it
+        // overlays the field edges but leaves the central outcome banner clear.
+        if (_onFire) {
+          var _emberPulse = d.runActive ? (0.42 + 0.26 * Math.abs(Math.sin((runT || 0) * 3))) : 0.5;
+          gfx.save();
+          gfx.lineWidth = _hotStreak >= 5 ? 6 : 4;
+          gfx.strokeStyle = 'rgba(239,68,68,' + _emberPulse.toFixed(2) + ')';
+          gfx.shadowColor = 'rgba(251,146,60,0.9)';
+          gfx.shadowBlur = 16;
+          gfx.strokeRect(gfx.lineWidth / 2, gfx.lineWidth / 2, W - gfx.lineWidth, H - gfx.lineWidth);
+          gfx.restore();
+        }
       }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen,
           d.customPositions, d.runActive, d.runT, d.runOutcome,
           d.sport, d.formationId, d.conceptId, d.shapeId, d.showXG,
-          d.down, d.yardsToGoal]);
+          d.down, d.yardsToGoal, d.drillStats]);
 
       // ── UI ──
       function pillBtn(label, sel, onClick, opts) {
@@ -3938,12 +3962,12 @@ window.StemLab = window.StemLab || {
             style: {
               marginBottom: 12, padding: '6px 10px', borderRadius: 6,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-              background: hot ? 'rgba(220,38,38,0.10)' : 'rgba(167,139,250,0.10)',
+              background: hot ? hot.bg : 'rgba(167,139,250,0.10)',
               border: '1px solid ' + (hot ? hot.color : '#a78bfa'),
               fontSize: 12
             }
           },
-            hot ? h('span', { style: { color: hot.color, fontWeight: 700 } },
+            hot ? h('span', { style: { color: hot.text, fontWeight: 700 } },
               hot.emoji + ' ' + hot.label + ' (streak: ' + d.drillStats.hotStreak + ')'
             ) : h('span', { style: { color: '#a78bfa', fontStyle: 'italic' } },
               '🎙️ ' + pickHypePhrase()
