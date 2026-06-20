@@ -2,6 +2,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
@@ -69,6 +70,7 @@
     "@babel/cli": "^7.28.6",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
     "@playwright/test": "^1.60.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "diff": "^9.0.0",
     "eslint-scope": "^9.1.2",
     "jsdom": "^29.1.0",
