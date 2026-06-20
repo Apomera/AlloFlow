@@ -55,6 +55,10 @@
   var PD_MANIFEST_URL = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/catalog/pd/index.json';
   var PD_ENTRY_BASE_URL = ENTRY_BASE_URL; // PD entry.path is repo-relative, like lessons
   var PD_WORKER_URL = WORKER_URL.replace(/\/submit$/, '/submitPd');
+  // Tier-2 (optional) verified-credential endpoints on the same worker host.
+  var PD_ISSUE_URL = WORKER_URL.replace(/\/submit$/, '/issuePd');
+  var PD_VERIFY_URL = WORKER_URL.replace(/\/submit$/, '/verifyPd');
+  var PD_ISSUER_KEY_URL = WORKER_URL.replace(/\/submit$/, '/pdIssuerKey');
   var PD_INTENT_KEY = 'alloflow_pd_intent';
   var PD_CORE_FALLBACK_URL = 'https://alloflow-cdn.pages.dev/pd_core_module.js';
 
@@ -800,6 +804,48 @@
     openOrDownloadHtml(buildPdPathCertificateHtml(path, rows, (learner && learner.name) || '', new Date().toISOString()), slugify((path && path.slug) || 'pd-path') + '-certificate', addToast);
   }
 
+  // ----- Professional Development: verified credentials (Tier-2, optional) ----
+  function _b64ToBuf(b64) {
+    var bin = atob(String(b64 || '').replace(/\s+/g, ''));
+    var u = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u.buffer;
+  }
+  // Ask the issuer to sign a COMPLETED record. Resolves {ok, credential} or
+  // {ok:false, error, disabled?}. disabled (501) just means this instance hasn't
+  // enabled verified credentials — the Tier-1 self-paced record still works.
+  function requestPdCredential(record) {
+    return fetch(PD_ISSUE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ record: record }) })
+      .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+      .then(function (res) {
+        if (res.body && res.body.ok && res.body.credential) return { ok: true, credential: res.body.credential };
+        return { ok: false, disabled: res.status === 501, error: (res.body && res.body.error) || ('HTTP ' + res.status) };
+      })
+      .catch(function (err) { return { ok: false, error: 'Network error: ' + err.message }; });
+  }
+  // Verify a credential. Prefers client-side WebCrypto (trusting the public key
+  // fetched from /pdIssuerKey — never the one embedded in the credential), falling
+  // back to the worker /verifyPd when the browser lacks Ed25519. → {valid, method}.
+  function verifyPdCredential(credential) {
+    if (!credential || !credential.payload || !credential.signature) return Promise.resolve({ valid: false, error: 'Not a PD credential.' });
+    var Core = window.AlloModules && window.AlloModules.PdCore;
+    function serverVerify() {
+      return fetch(PD_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: credential }) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { return { valid: !!(j && j.valid), method: 'server' }; })
+        .catch(function (err) { return { valid: false, error: 'Could not verify: ' + err.message }; });
+    }
+    var canSubtle = typeof window !== 'undefined' && window.crypto && window.crypto.subtle && Core && typeof Core.canonicalize === 'function';
+    if (!canSubtle) return serverVerify();
+    return fetch(PD_ISSUER_KEY_URL).then(function (r) { return r.json(); }).then(function (k) {
+      if (!k || !k.public_key_spki_b64) throw new Error('no issuer key');
+      return window.crypto.subtle.importKey('spki', _b64ToBuf(k.public_key_spki_b64), { name: 'Ed25519' }, false, ['verify']).then(function (pub) {
+        return window.crypto.subtle.verify({ name: 'Ed25519' }, pub, _b64ToBuf(credential.signature), new TextEncoder().encode(Core.canonicalize(credential.payload)));
+      });
+    }).then(function (valid) { return { valid: !!valid, method: 'client' }; })
+      .catch(function () { return serverVerify(); });
+  }
+
   // ----- Professional Development: activity views -----------------------------
   // Each view renders ONE activity and reports its raw interaction up via onRaw.
   // All scoring/gating/record logic lives in window.AlloModules.PdCore — these
@@ -1106,6 +1152,17 @@
             onClick: function () { props.onCertificate(mod, resultsById(), { name: learnerName.trim() || null }); },
             className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50',
           }, 'Print certificate'),
+          ev.complete && e('button', {
+            onClick: function () {
+              var rec = Core.buildCompletionRecord(mod, resultsById(), { name: learnerName.trim() || null }, new Date().toISOString());
+              requestPdCredential(rec).then(function (res) {
+                if (res.ok) { downloadJsonFile(res.credential, pdModuleId(mod) + '-credential'); addToast && addToast('Verified credential issued and downloaded.', 'success'); }
+                else if (res.disabled) { addToast && addToast('Verified credentials aren’t enabled on this instance — your self-paced record still works.', 'info'); }
+                else { addToast && addToast('Could not issue a credential: ' + res.error, 'error'); }
+              });
+            },
+            className: 'px-4 py-2 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded-md hover:bg-indigo-50',
+          }, 'Get verified credential'),
           e('button', {
             onClick: function () { startOver(); },
             className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
@@ -1531,6 +1588,26 @@
                 },
               })
             ),
+            e('label', { className: 'text-xs font-semibold text-indigo-700 hover:underline cursor-pointer' }, 'Verify credential',
+              e('input', {
+                type: 'file', accept: 'application/json,.json', className: 'hidden',
+                onChange: function (ev) {
+                  var f = ev.target.files && ev.target.files[0]; if (!f) return;
+                  var reader = new FileReader();
+                  reader.onload = function () {
+                    var cred; try { var p = JSON.parse(String(reader.result || '')); cred = (p && p.credential) ? p.credential : p; } catch (e) { addToast && addToast('Could not read that file.', 'error'); return; }
+                    verifyPdCredential(cred).then(function (res) {
+                      if (res.valid) {
+                        var s = (cred.payload && cred.payload.credentialSubject) || {};
+                        addToast && addToast('✓ Valid credential — ' + (s.moduleTitle || s.moduleId || 'module') + ' (issued ' + String((cred.payload && cred.payload.issuanceDate) || '').slice(0, 10) + ', verified ' + (res.method || '') + ').', 'success');
+                      } else { addToast && addToast('✗ Could not verify this credential' + (res.error ? (': ' + res.error) : ' — it may be altered or from a different issuer.'), 'error'); }
+                    });
+                  };
+                  reader.readAsText(f);
+                  ev.target.value = '';
+                },
+              })
+            ),
             hist.length > 0 && e('button', {
               onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast('Cleared your local PD history.', 'info'); },
               className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
@@ -1828,6 +1905,8 @@
   CommunityCatalog._buildPdGenPrompt = buildPdGenPrompt;
   CommunityCatalog._buildPdCertificateHtml = buildPdCertificateHtml;
   CommunityCatalog._buildPdPathCertificateHtml = buildPdPathCertificateHtml;
+  CommunityCatalog._requestPdCredential = requestPdCredential;
+  CommunityCatalog._verifyPdCredential = verifyPdCredential;
   CommunityCatalog._loadPdHistory = loadPdHistory;
   CommunityCatalog._recordPdCompletion = recordPdCompletion;
   CommunityCatalog._importPdHistory = importPdHistory;

@@ -9,6 +9,19 @@ GITHUB_OWNER = "Apomera"
 GITHUB_REPO  = "AlloFlow"
 GITHUB_BRANCH = "main"
 
+# OPTIONAL — Tier-2 verified PD credentials (POST /issuePd, /verifyPd, GET /pdIssuerKey).
+# Leave unset to keep credentials disabled (the app degrades to the Tier-1 self-paced
+# record). To enable, generate an Ed25519 keypair and set:
+#   PD_ISSUER_PUBLIC_KEY  = base64(SPKI) of the public key  (a [vars] entry — it is public)
+#   PD_ISSUER_PRIVATE_KEY = base64(PKCS8) of the private key (a SECRET: `wrangler secret put PD_ISSUER_PRIVATE_KEY`)
+# Generate with Node:
+#   const {publicKey,privateKey}=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);
+#   Buffer.from(await crypto.subtle.exportKey('pkcs8',privateKey)).toString('base64'); // -> secret
+#   Buffer.from(await crypto.subtle.exportKey('spki',publicKey)).toString('base64');   // -> PD_ISSUER_PUBLIC_KEY
+# PD_ISSUER_PUBLIC_KEY = "REPLACE_WITH_SPKI_BASE64"
+PD_ISSUER_NAME = "AlloFlow PD"
+PD_ISSUER_KEY_ID = "alloflow-pd-1"
+
 # Private KV store for bug reports (POST /submitBug). These carry error logs + free
 # text that can include student-identifiable data, so they go to PRIVATE KV — NOT the
 # public GitHub repo (unlike lessons/translations). One-time setup:

@@ -20,6 +20,9 @@
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
  *   GET  /pdSubmissions     token-gated PD-submission reader
+ *   POST /issuePd           issue an Ed25519-signed PD completion attestation (opt-in)
+ *   GET  /pdIssuerKey       the issuer's Ed25519 public key (for client-side verify)
+ *   POST /verifyPd          verify a PD credential against the issuer key
  *   OPTIONS *               CORS preflight
  *   GET  /healthz           liveness probe
  */
@@ -401,6 +404,109 @@ async function handlePdList(request, env, url) {
   return jsonResponse({ ok: true, count: submissions.length, submissions });
 }
 
+// ── PD completion credentials (Tier-2, OPTIONAL): Ed25519-signed attestations ──
+// MUST stay byte-identical to pd_core_module.js canonicalize/buildCredentialPayload
+// so a credential signed here verifies client-side. The signature proves issuance +
+// integrity + timestamp + issuer identity — NOT supervised/proctored completion.
+// Enabled only when PD_ISSUER_PRIVATE_KEY (pkcs8 base64 secret) is configured.
+function pdCanonicalize(v) {
+  if (v === null) return 'null';
+  const t = typeof v;
+  if (t === 'number') { if (!isFinite(v)) throw new Error('non-finite number'); return JSON.stringify(v); }
+  if (t === 'boolean') return v ? 'true' : 'false';
+  if (t === 'string') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map((x) => pdCanonicalize(x === undefined ? null : x)).join(',') + ']';
+  if (t === 'object') {
+    const keys = Object.keys(v).filter((k) => v[k] !== undefined && typeof v[k] !== 'function').sort();
+    return '{' + keys.map((k) => JSON.stringify(k) + ':' + pdCanonicalize(v[k])).join(',') + '}';
+  }
+  throw new Error('cannot canonicalize ' + t);
+}
+function pdBuildCredentialPayload(record, issuerName, nowISO) {
+  record = record || {};
+  const per = record.perActivity || [];
+  return {
+    schema_version: 'pd-credential-1.0',
+    type: 'PdCompletionAttestation',
+    issuer: { name: issuerName || 'AlloFlow PD' },
+    issuanceDate: nowISO || null,
+    credentialSubject: {
+      name: (record.learner && record.learner.name) || null,
+      moduleId: record.moduleId || null,
+      moduleTitle: record.moduleTitle || null,
+      topic: record.topic || null,
+      complete: !!record.complete,
+      completedAt: record.completedAt || null,
+      achievement: {
+        name: record.moduleTitle || record.moduleId || 'PD module',
+        activitiesPassed: per.filter((p) => p && p.passed).length,
+        activitiesTotal: per.length,
+      },
+    },
+    attestation_note: 'Issuer-signed, tamper-evident attestation: confirms this self-paced completion record was issued by the named issuer at issuanceDate and has not been altered since. It is self-reported and NOT proctored, accredited, or contact-hour-bearing.',
+  };
+}
+function b64ToBuf(b64) { const bin = atob(String(b64 || '').replace(/\s+/g, '')); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+function bufToB64(buf) { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s); }
+
+async function handlePdIssue(request, env) {
+  if (!env.PD_ISSUER_PRIVATE_KEY) return jsonResponse({ ok: false, error: 'Verified credentials are not enabled on this issuer.' }, 501);
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const rawBody = await request.text();
+  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  let p;
+  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  const rec = p && p.record;
+  if (!rec || typeof rec !== 'object') return jsonResponse({ ok: false, error: 'record (a completion record) is required.' }, 400);
+  if (rec.complete !== true) return jsonResponse({ ok: false, error: 'Only a completed record can be issued a credential.' }, 400);
+  const payload = pdBuildCredentialPayload(rec, env.PD_ISSUER_NAME || 'AlloFlow PD', new Date().toISOString());
+  let signature;
+  try {
+    const key = await crypto.subtle.importKey('pkcs8', b64ToBuf(env.PD_ISSUER_PRIVATE_KEY), { name: 'Ed25519' }, false, ['sign']);
+    const sig = await crypto.subtle.sign({ name: 'Ed25519' }, key, new TextEncoder().encode(pdCanonicalize(payload)));
+    signature = bufToB64(sig);
+  } catch (e) {
+    return jsonResponse({ ok: false, error: 'Signing failed: ' + e.message }, 500);
+  }
+  return jsonResponse({
+    ok: true,
+    credential: {
+      schema_version: 'pd-credential-1.0',
+      payload: payload,
+      signature: signature,
+      alg: 'Ed25519',
+      key_id: env.PD_ISSUER_KEY_ID || 'alloflow-pd-1',
+      public_key_spki_b64: env.PD_ISSUER_PUBLIC_KEY || null,
+    },
+  }, 201);
+}
+
+function handlePdIssuerKey(env) {
+  if (!env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'No issuer public key configured.' }, 501);
+  return jsonResponse({ ok: true, alg: 'Ed25519', key_id: env.PD_ISSUER_KEY_ID || 'alloflow-pd-1', public_key_spki_b64: env.PD_ISSUER_PUBLIC_KEY });
+}
+
+async function handlePdVerify(request, env) {
+  if (!env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'No issuer public key configured.' }, 501);
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const rawBody = await request.text();
+  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  let cred;
+  try { const p = JSON.parse(rawBody); cred = (p && p.credential) || p; } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  if (!cred || !cred.payload || !cred.signature) return jsonResponse({ ok: false, error: 'credential {payload, signature} required.' }, 400);
+  // Verify against the SERVER's trusted public key (never the key embedded in the credential).
+  let valid = false;
+  try {
+    const pub = await crypto.subtle.importKey('spki', b64ToBuf(env.PD_ISSUER_PUBLIC_KEY), { name: 'Ed25519' }, false, ['verify']);
+    valid = await crypto.subtle.verify({ name: 'Ed25519' }, pub, b64ToBuf(cred.signature), new TextEncoder().encode(pdCanonicalize(cred.payload)));
+  } catch (e) {
+    return jsonResponse({ ok: false, error: 'Verification error: ' + e.message }, 400);
+  }
+  return jsonResponse({ ok: true, valid: valid });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -433,8 +539,20 @@ export default {
       return handlePdList(request, env, url);
     }
 
+    if (request.method === 'POST' && url.pathname === '/issuePd') {
+      return handlePdIssue(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/pdIssuerKey') {
+      return handlePdIssuerKey(env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/verifyPd') {
+      return handlePdVerify(request, env);
+    }
+
     if (request.method !== 'POST' || url.pathname !== '/submit') {
-      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitBug, or /submitPd' }, 405);
+      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, /submitBug, /submitPd, or /issuePd' }, 405);
     }
 
     if (!env.GITHUB_PAT) {

@@ -316,3 +316,34 @@ describe('sim activity type (AI-assessed scenario)', () => {
     expect(PD.normalizeResult(simAct(), {}).completed).toBe(false);
   });
 });
+
+describe('credential canonicalization + payload (Tier-2)', () => {
+  it('canonicalize sorts keys deterministically and is order-independent', () => {
+    expect(PD.canonicalize({ b: 1, a: 2 })).toBe('{"a":2,"b":1}');
+    expect(PD.canonicalize({ a: 2, b: 1 })).toBe(PD.canonicalize({ b: 1, a: 2 }));
+    expect(PD.canonicalize({ z: [3, { y: 1, x: 2 }], a: 'hi' })).toBe('{"a":"hi","z":[3,{"x":2,"y":1}]}');
+  });
+
+  it('canonicalize rejects non-finite numbers', () => {
+    expect(() => PD.canonicalize({ n: Infinity })).toThrow();
+    expect(() => PD.canonicalize(NaN)).toThrow();
+  });
+
+  it('buildCredentialPayload borrows VC field names + keeps honest framing', () => {
+    const rec = { moduleId: 'm', moduleTitle: 'M', topic: 'T', complete: true, completedAt: '2026-06-20', learner: { name: 'Pat' }, perActivity: [{ passed: true }, { passed: true }, { passed: false }] };
+    const p = PD.buildCredentialPayload(rec, 'AlloFlow PD', '2026-06-22T00:00:00Z');
+    expect(p.type).toBe('PdCompletionAttestation');
+    expect(p.issuer.name).toBe('AlloFlow PD');
+    expect(p.issuanceDate).toBe('2026-06-22T00:00:00Z');
+    expect(p.credentialSubject.moduleId).toBe('m');
+    expect(p.credentialSubject.name).toBe('Pat');
+    expect(p.credentialSubject.achievement.activitiesPassed).toBe(2);
+    expect(p.credentialSubject.achievement.activitiesTotal).toBe(3);
+    expect(p.attestation_note).toMatch(/NOT proctored, accredited/i);
+  });
+
+  it('canonical form of a payload is stable across key-order / round-trip', () => {
+    const p = PD.buildCredentialPayload({ moduleId: 'm', complete: true }, 'X', 'T');
+    expect(PD.canonicalize(p)).toBe(PD.canonicalize(JSON.parse(JSON.stringify(p))));
+  });
+});

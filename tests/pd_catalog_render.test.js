@@ -300,6 +300,12 @@ describe('certificate + completion history', () => {
     expect(html).toContain('window.print()');
   });
 
+  it('verifyPdCredential rejects a non-credential immediately (no network)', async () => {
+    const { CC } = loadWithCore();
+    expect((await CC._verifyPdCredential({ foo: 1 })).valid).toBe(false);
+    expect((await CC._verifyPdCredential(null)).valid).toBe(false);
+  });
+
   it('buildPdPathCertificateHtml lists the path modules + honest framing (escaped)', () => {
     const { CC } = loadWithCore();
     const path = { slug: 'p', title: 'My <Path>' };

@@ -165,3 +165,29 @@ Review submissions with `wrangler kv key list --binding PD_SUBMISSIONS` /
 `wrangler kv key get --binding PD_SUBMISSIONS <id>`; to publish an approved one, save its `pd_module`
 to `catalog/pd/approved/<slug>.json`, add an entry to `catalog/pd/index.json`, and push. Smoke test for
 all routes: `npm test`.
+
+### Verified PD credentials (Tier-2, OPTIONAL) — `POST /issuePd`, `GET /pdIssuerKey`, `POST /verifyPd`
+Issues an **Ed25519-signed completion attestation** so a learner's downloaded record is
+tamper-evident and traceable to this issuer. **Honest scope:** the signature proves *issuance +
+integrity + timestamp + issuer identity* — it does **NOT** prove supervised/proctored completion (the
+learner generates the record client-side), and it is **not** accreditation or contact hours.
+
+Disabled by default — the app degrades to the Tier-1 self-paced record. To enable, generate an
+Ed25519 keypair and configure the keys (see `wrangler.toml`):
+
+```
+node -e "(async()=>{const k=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);\
+console.log('PUBLIC (PD_ISSUER_PUBLIC_KEY var):',Buffer.from(await crypto.subtle.exportKey('spki',k.publicKey)).toString('base64'));\
+console.log('PRIVATE (secret):',Buffer.from(await crypto.subtle.exportKey('pkcs8',k.privateKey)).toString('base64'));})()"
+# put PD_ISSUER_PUBLIC_KEY in [vars]; then:
+wrangler secret put PD_ISSUER_PRIVATE_KEY   # paste the PRIVATE base64
+wrangler deploy
+```
+
+- `POST /issuePd` `{record}` → `{credential:{payload,signature,alg:'Ed25519',key_id,public_key_spki_b64}}`
+  (only for `record.complete===true`; 501 when no key configured).
+- `GET /pdIssuerKey` → the issuer's public key (clients verify with it).
+- `POST /verifyPd` `{credential}` → `{valid}` (verifies against the server's trusted key, never the
+  key embedded in the credential). The in-app verifier prefers client-side WebCrypto and falls back to
+  this route. Canonicalization (`pd_core_module.js` ↔ worker) is kept byte-identical and cross-checked
+  in `tests/pd_worker.test.js`. Smoke test: `npm test`.

@@ -4,7 +4,8 @@
 // handler with a fake KV binding, proving PD submissions are validated and
 // staged to PRIVATE KV (PD_SUBMISSIONS) — never the public GitHub /submit path.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
+import fs from 'node:fs';
 import worker from '../catalog/cloudflare-worker/src/index.js';
 
 function postPd(body, env) {
@@ -147,5 +148,65 @@ describe('worker /submitPd structural summary (non-blocking)', () => {
     const rec = JSON.parse(env.PD_SUBMISSIONS.store[key].v);
     expect(rec.structure_check.ok).toBe(false);
     expect(rec.structure_check.issues.join(' ')).toMatch(/correctIndex/);
+  });
+});
+
+describe('worker Tier-2 credentials (/issuePd, /verifyPd, /pdIssuerKey)', () => {
+  let KEYS;
+  beforeAll(async () => {
+    const kp = await globalThis.crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+    KEYS = {
+      privB64: Buffer.from(await globalThis.crypto.subtle.exportKey('pkcs8', kp.privateKey)).toString('base64'),
+      pubB64: Buffer.from(await globalThis.crypto.subtle.exportKey('spki', kp.publicKey)).toString('base64'),
+    };
+  });
+  const issuerEnv = () => ({ PD_ISSUER_PRIVATE_KEY: KEYS.privB64, PD_ISSUER_PUBLIC_KEY: KEYS.pubB64, PD_ISSUER_NAME: 'Test PD', PD_ISSUER_KEY_ID: 'k1' });
+  const validRecord = () => ({ schema_version: 'pd-completion-1.0', complete: true, moduleId: 'm', moduleTitle: 'M', topic: 'T', completedAt: '2026-06-20', learner: { name: 'Pat' }, perActivity: [{ passed: true }, { passed: true }] });
+  const post = (path, body, env) => worker.fetch(new Request('https://w.test' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }), env);
+
+  it('issuePd is disabled (501) when no signing key is configured', async () => {
+    expect((await post('/issuePd', { record: validRecord() }, {})).status).toBe(501);
+  });
+
+  it('issues a signed credential that verifies, and tampering breaks it', async () => {
+    const env = issuerEnv();
+    const res = await post('/issuePd', { record: validRecord() }, env);
+    expect(res.status).toBe(201);
+    const j = await res.json();
+    expect(j.ok).toBe(true);
+    expect(j.credential.alg).toBe('Ed25519');
+    expect(j.credential.payload.type).toBe('PdCompletionAttestation');
+    expect(j.credential.payload.attestation_note).toMatch(/NOT proctored, accredited/i);
+
+    const v1 = await (await post('/verifyPd', { credential: j.credential }, env)).json();
+    expect(v1.valid).toBe(true);
+
+    const tampered = JSON.parse(JSON.stringify(j.credential));
+    tampered.payload.credentialSubject.moduleTitle = 'HACKED';
+    const v2 = await (await post('/verifyPd', { credential: tampered }, env)).json();
+    expect(v2.valid).toBe(false);
+  });
+
+  it('refuses to issue for an incomplete record (400)', async () => {
+    const rec = validRecord(); rec.complete = false;
+    expect((await post('/issuePd', { record: rec }, issuerEnv())).status).toBe(400);
+  });
+
+  it('exposes the issuer public key', async () => {
+    const res = await worker.fetch(new Request('https://w.test/pdIssuerKey', { method: 'GET' }), issuerEnv());
+    const j = await res.json();
+    expect(j.ok).toBe(true);
+    expect(j.public_key_spki_b64).toBe(KEYS.pubB64);
+  });
+
+  it('a worker-signed credential verifies CLIENT-side via pd_core.canonicalize + WebCrypto', async () => {
+    const j = await (await post('/issuePd', { record: validRecord() }, issuerEnv())).json();
+    // Load pd_core's canonicalize the same way the browser client would use it.
+    const src = fs.readFileSync('pd_core_module.js', 'utf8');
+    const win = {}; new Function('window', 'module', src)(win, { exports: {} }); // eslint-disable-line no-new-func
+    const PDc = win.AlloModules.PdCore;
+    const pub = await globalThis.crypto.subtle.importKey('spki', Buffer.from(KEYS.pubB64, 'base64'), { name: 'Ed25519' }, false, ['verify']);
+    const ok = await globalThis.crypto.subtle.verify({ name: 'Ed25519' }, pub, Buffer.from(j.credential.signature, 'base64'), new TextEncoder().encode(PDc.canonicalize(j.credential.payload)));
+    expect(ok).toBe(true); // proves worker-sign + pd_core-canonicalize + WebCrypto-verify all agree
   });
 });

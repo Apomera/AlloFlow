@@ -229,9 +229,64 @@
     };
   }
 
+  // ── Tier-2 (optional): issuer-signed completion attestation ────────────────
+  // Shared, pure helpers the worker (sign) and client (verify) BOTH use so they
+  // agree byte-for-byte. The signature proves issuance + integrity + timestamp +
+  // issuer identity — NOT supervised/proctored or accredited completion (the
+  // learner controls the input record). Crypto (Ed25519) lives in the worker /
+  // client; only the deterministic payload + canonicalization live here.
+  var CREDENTIAL_SCHEMA_VERSION = 'pd-credential-1.0';
+
+  // Deterministic JSON canonicalization (RFC 8785 / JCS-aligned for our value
+  // space: strings, FINITE numbers, booleans, null, arrays, plain objects).
+  // Sorted keys (UTF-16 code units, as JS sort does) + ECMAScript number
+  // formatting (as JSON.stringify does). Rejects non-finite numbers.
+  function canonicalize(v) {
+    if (v === null) return 'null';
+    var t = typeof v;
+    if (t === 'number') { if (!isFinite(v)) throw new Error('Cannot canonicalize a non-finite number.'); return JSON.stringify(v); }
+    if (t === 'boolean') return v ? 'true' : 'false';
+    if (t === 'string') return JSON.stringify(v);
+    if (Array.isArray(v)) { return '[' + v.map(function (x) { return canonicalize(x === undefined ? null : x); }).join(',') + ']'; }
+    if (t === 'object') {
+      var keys = Object.keys(v).filter(function (k) { return v[k] !== undefined && typeof v[k] !== 'function'; }).sort();
+      return '{' + keys.map(function (k) { return JSON.stringify(k) + ':' + canonicalize(v[k]); }).join(',') + '}';
+    }
+    throw new Error('Cannot canonicalize value of type ' + t);
+  }
+
+  // The unsigned credential payload (what gets canonicalized + signed). Borrows
+  // W3C-VC field NAMES (issuer / issuanceDate / credentialSubject / achievement)
+  // without the JSON-LD stack. Deterministic: pass issuanceDate (nowISO) in.
+  function buildCredentialPayload(record, issuerName, nowISO) {
+    record = record || {};
+    var per = record.perActivity || [];
+    return {
+      schema_version: CREDENTIAL_SCHEMA_VERSION,
+      type: 'PdCompletionAttestation',
+      issuer: { name: issuerName || 'AlloFlow PD' },
+      issuanceDate: nowISO || null,
+      credentialSubject: {
+        name: (record.learner && record.learner.name) || null,
+        moduleId: record.moduleId || null,
+        moduleTitle: record.moduleTitle || null,
+        topic: record.topic || null,
+        complete: !!record.complete,
+        completedAt: record.completedAt || null,
+        achievement: {
+          name: record.moduleTitle || record.moduleId || 'PD module',
+          activitiesPassed: per.filter(function (p) { return p && p.passed; }).length,
+          activitiesTotal: per.length
+        }
+      },
+      attestation_note: 'Issuer-signed, tamper-evident attestation: confirms this self-paced completion record was issued by the named issuer at issuanceDate and has not been altered since. It is self-reported and NOT proctored, accredited, or contact-hour-bearing.'
+    };
+  }
+
   var API = {
     SCHEMA_VERSION: SCHEMA_VERSION,
     COMPLETION_SCHEMA_VERSION: COMPLETION_SCHEMA_VERSION,
+    CREDENTIAL_SCHEMA_VERSION: CREDENTIAL_SCHEMA_VERSION,
     DEFAULT_THRESHOLD: DEFAULT_THRESHOLD,
     ACTIVITY_TYPES: ACTIVITY_TYPES,
     SCORABLE_TYPES: SCORABLE_TYPES,
@@ -239,7 +294,9 @@
     normalizeResult: normalizeResult,
     evaluateGate: evaluateGate,
     evaluateModule: evaluateModule,
-    buildCompletionRecord: buildCompletionRecord
+    buildCompletionRecord: buildCompletionRecord,
+    canonicalize: canonicalize,
+    buildCredentialPayload: buildCredentialPayload
   };
 
   if (typeof window !== 'undefined') {
