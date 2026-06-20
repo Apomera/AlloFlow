@@ -4068,9 +4068,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const deterministicShown = (_eaBase && typeof _eaBase.score === 'number' && typeof axeScore === 'number')
                       ? Math.min(axeScore, _eaBase.score) : axeScore;
                     const _eaIsLower = deterministicShown !== axeScore;
-                    const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-                    const scoreWithoutPasses = Math.max(0, 100 - rawDed);
-                    const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
+                    // Buyback display removed (2026-06-20): the engine's disclosed methodology is
+                    // passFactor=1 — unverified passes do NOT buy back deductions — so the UI must not
+                    // show a pass-buyback line implying a discount the score never actually applied.
                     return (
                   <details data-help-key="pdf_audit_results_score_breakdown_details" className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden" open>
                     <summary className="px-3 py-2 text-[11px] font-bold text-slate-700 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
@@ -4097,7 +4097,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="text-[11px] text-purple-800 space-y-0.5">
                             <div>{t('pdf_audit.score.starts_at_100') || 'Starts at 100, deducts per issue type'}</div>
                             {totalIssues > 0 && <div>{totalIssues} issues found</div>}
-                            {passBenefit > 0 && <div className="text-green-700 font-bold">{passCount} passes recovered +{passBenefit} pts</div>}
                           </div>
                           <details data-help-key="pdf_audit_results_score_how_ai_details" className="mt-1 text-[11px]">
                             <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">{t('pdf_audit.score.how_ai_scores') || 'How AI scores'}</summary>
@@ -4105,7 +4104,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div>{t('pdf_audit.score.ai_critical_rule') || 'Critical: -15 each (lang, title, alt, landmark, contrast)'}</div>
                               <div>{t('pdf_audit.score.ai_major_rule') || 'Major: -10 each (headings, tables, forms)'}</div>
                               <div>{t('pdf_audit.score.ai_minor_rule') || 'Minor: -5 each (skip-nav, landmarks, links, lists)'}</div>
-                              <div>{t('pdf_audit.score.ai_passes_rule') || 'Passes reduce total deductions proportionally'}</div>
+                              <div>{t('pdf_audit.score.ai_passes_rule_v2') || 'Passes are listed but do NOT reduce the score (they are not independently verified)'}</div>
                             </div>
                           </details>
                         </div>
@@ -4315,19 +4314,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   )}
                   {pdfAuditResult.passes?.length > 0 && (() => {
                     const pc = pdfAuditResult.passes.length;
-                    const critC = (pdfAuditResult.critical || []).length;
-                    const serC = (pdfAuditResult.serious || pdfAuditResult.major || []).length;
-                    const modC = (pdfAuditResult.moderate || []).length;
-                    const minC = (pdfAuditResult.minor || []).length;
-                    const rawDed = critC * 15 + serC * 10 + modC * 5 + minC * 2;
-                    const ic = critC + serC + modC + minC;
-                    const passRatio = pc > 0 ? pc / (pc + ic) : 0;
-                    const pf = 1 - (passRatio * 0.4);
-                    const saved = rawDed - Math.round(rawDed * pf);
+                    // Buyback badge removed (2026-06-20): the score uses passFactor=1 (no buyback), so a
+                    // pass-buyback pill advertised a discount the score never applied — exactly the kind of
+                    // fabricated-looking inflation a skeptical reviewer would discount the whole tool over.
                     return (
                     <section aria-label={`${pc} accessibility checks passed`}>
                       <h4 className="text-xs font-bold text-green-600 uppercase tracking-widest mb-2">
-                        Passed Checks ({pc}){saved > 0 && <span className="ml-2 text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold normal-case">+{saved} points recovered</span>}
+                        Passed Checks ({pc})
                       </h4>
                       <ul className="list-none space-y-1">
                       {pdfAuditResult.passes.map((pass, i) => (
@@ -6572,7 +6565,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                           {(pdfFixResult.verificationAudit.passes || []).length > 0 && (
                             <div className="bg-green-50 rounded-lg p-2 border border-green-200">
-                              <div className="text-[11px] font-bold text-green-600 uppercase mb-1">{t('pdf_audit.results.verified_accessible') || 'Verified Accessible'}</div>
+                              <div className="text-[11px] font-bold text-green-600 uppercase mb-1">{t('pdf_audit.results.ai_reported_passing') || 'Reported passing (AI rubric — not independently verified)'}</div>
                               {pdfFixResult.verificationAudit.passes.map((pass, i) => (
                                 <div key={i} className="text-[11px] text-green-700 mb-0.5">✓ {pass}</div>
                               ))}

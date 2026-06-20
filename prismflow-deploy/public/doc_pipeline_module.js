@@ -9147,7 +9147,11 @@ HTML section ${chunkNum}/${chunks.length}:
       // consumers (the report renderer) get serializable data.
       let mergedIssues = [...seenIssues.values()].map(iss => {
         const pagesArr = iss.pages ? [...iss.pages].sort((a, b) => a - b) : [];
-        return { ...iss, pages: pagesArr };
+        // Count-weighting fix (2026-06-20): derive the issue's occurrence count from the page
+        // multiset accumulated across chunks. Without this, _alloIssueWeight(i.count) below got the
+        // AI's per-chunk self-reported count (usually 1 / absent), so in the chunked path — every
+        // multi-page report — a doc with ONE missing-alt and a doc with TWENTY deducted identically.
+        return { ...iss, pages: pagesArr, count: Math.max(iss.count || 1, pagesArr.length) };
       });
 
       // ── Structural pass detection on full document ──
@@ -9155,7 +9159,7 @@ HTML section ${chunkNum}/${chunks.length}:
       // Check the full HTML structure once for global accessibility features.
       const structuralPasses = [];
       const lc = htmlContent.toLowerCase();
-      if (/<html[^>]*lang="[a-z]{2,3}/.test(lc)) structuralPasses.push('HTML lang attribute is correctly set');
+      if (/<html[^>]*lang="[a-z]{2,3}/.test(lc)) structuralPasses.push('HTML lang attribute is present'); // honesty (2026-06-20): presence only — value is NOT validated against the document's actual language here
       if (/<title>[^<]+<\/title>/.test(lc)) structuralPasses.push('Page title is present and descriptive');
       if (/<main[\s>]/.test(lc)) structuralPasses.push('A <main> landmark defines the primary content area');
       if (/<nav[\s>]/.test(lc)) structuralPasses.push('Navigation landmark (<nav>) is present');
@@ -9169,7 +9173,7 @@ HTML section ${chunkNum}/${chunks.length}:
       if (/<table[\s>]/.test(lc) && /<th[\s>]/.test(lc)) structuralPasses.push('Table headers (th) are used for data tables');
       if (/<th[^>]*scope=/.test(lc)) structuralPasses.push('Table header scope attributes define data relationships');
       if (/skip.*content|skip.*nav/i.test(htmlContent)) structuralPasses.push('Skip-to-content link is provided for keyboard navigation');
-      if (/<img[^>]*alt="[^"]+"/i.test(htmlContent)) structuralPasses.push('Images have descriptive alt text');
+      if (/<img[^>]*alt="[^"]+"/i.test(htmlContent)) structuralPasses.push('All images have a non-empty alt attribute (description quality not verified)'); // honesty (2026-06-20): presence only — the text auditor sees the alt string, not the image
       if (/<figcaption[\s>]/.test(lc)) structuralPasses.push('Figure captions provide image descriptions');
       if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) structuralPasses.push('Form elements have associated labels');
       if (/role="(main|navigation|banner|contentinfo|complementary)"/.test(lc)) structuralPasses.push('ARIA landmark roles are used for page structure');
@@ -9224,12 +9228,22 @@ HTML section ${chunkNum}/${chunks.length}:
       const _auditedCount = chunkResults.length;
       const _failedChunks = chunks.length - _auditedCount;
       const _partialAudit = _failedChunks > 0;
-      warnLog(`[Output Audit] Chunked: ${_auditedCount}/${chunks.length} sections returned${_partialAudit ? ' (' + _failedChunks + ' FAILED — score covers audited sections only)' : ''}, ${mergedIssues.length} unique issues, ${passCount} passes (${structuralPasses.length} structural), raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${mergedScore}`);
+      // Partial-audit floor (2026-06-20): correlated chunk failures (a shared K-12 quota or a timeout
+      // storm) mean the score reflects ONLY the sections that returned → artificially HIGH. Past a 25%
+      // failure rate the number is no longer trustworthy, so we null it (degraded) — the UI then shows
+      // "score unavailable — partial audit" instead of a falsely-high score. Downstream Number.isFinite
+      // guards skip a null score (same path as the NaN / single-doc _scoreDegraded branch). This is the
+      // "left for the maintainer" reroute the old comment deferred.
+      const _coverageTooLow = chunks.length > 0 && (_failedChunks / chunks.length) > 0.25;
+      warnLog(`[Output Audit] Chunked: ${_auditedCount}/${chunks.length} sections returned${_partialAudit ? ' (' + _failedChunks + ' FAILED' + (_coverageTooLow ? ' — coverage too low, score NULLED' : ' — score covers audited sections only') + ')' : ''}, ${mergedIssues.length} unique issues, ${passCount} passes (${structuralPasses.length} structural), raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${_coverageTooLow ? 'null (degraded)' : mergedScore}`);
       return {
-        score: mergedScore,
-        summary: summary + (_partialAudit
-          ? ` (${_auditedCount}/${chunks.length} sections audited; ${_failedChunks} failed — score covers audited sections only)`
-          : ` (${chunks.length} sections audited)`),
+        score: _coverageTooLow ? null : mergedScore,
+        _scoreDegraded: _coverageTooLow || undefined,
+        summary: (_coverageTooLow
+          ? `Score unavailable — only ${_auditedCount} of ${chunks.length} sections could be audited (the rest failed, often a quota or timeout storm). A score from a fraction of the document would be misleadingly high; retry when the AI service is stable.`
+          : summary) + (_partialAudit
+            ? ` (${_auditedCount}/${chunks.length} sections audited; ${_failedChunks} failed${_coverageTooLow ? '' : ' — score covers audited sections only'})`
+            : ` (${chunks.length} sections audited)`),
         issues: mergedIssues,
         passes: mergedPassList,
         chunksAudited: _auditedCount,
