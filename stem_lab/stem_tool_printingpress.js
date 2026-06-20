@@ -19982,7 +19982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               { label: 'Leading', val: leadingScore.toFixed(0) },
               { label: 'Contrast', val: contrastScore.toFixed(0) }
             ].map(function(m) {
-              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#13100c', border: '1px solid ' + sm.border, textAlign: 'center' } },
                 h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
               );
@@ -20018,16 +20018,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, sz: iq.typeSize, ln: iq.lineLength, ld: iq.leading.toFixed(2), c: iq.paperContrast, sc: totalScore.toFixed(0), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this layout'),
-            h('button', { onClick: function() { setIQ({ typeSize: 12, lineLength: 65, leading: 1.4, paperContrast: 80 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset'),
-            h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, '← Menu')
+            h('button', { onClick: function() { setIQ({ typeSize: 12, lineLength: 65, leading: 1.4, paperContrast: 80 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: '#d4c4a0', cursor: 'pointer' } }, 'Reset'),
+            h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: '#d4c4a0', cursor: 'pointer' } }, '← Menu')
           ),
-          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#13100c', border: '1px solid #5c4630', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · sz' + e.sz + ' ln' + e.ln + ' ld' + e.ld + ' c' + e.c + ' → ' + e.sc); })
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which slider drops legibility fastest? Why?)'),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., line length matters most because saccades break down past ~80 chars...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
-          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., line length matters most because saccades break down past ~80 chars...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#13100c', color: '#f5ecd9', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#13100c', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
               h('li', null, 'Why is the optimal line length ~65 characters (Tschichold, Bringhurst)?'),
@@ -20040,7 +20040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
             h('span', null, 'I can explain why this typography combination yields this legibility state.')
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#13100c', color: '#f5ecd9', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
           h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Legibility heuristics from Tschichold, Bringhurst, Tinker; real reading rates also depend on typeface design, reader age, content density, and lighting.')
         );
       }
