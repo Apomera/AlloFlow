@@ -42,6 +42,12 @@
   var ENTRY_STEPS  = '1969020676';  // Steps to Reproduce / What were you doing?
   var ENTRY_BROWSER = '937961519';  // Browser & Device
 
+  // Primary submit path: the community Cloudflare Worker → PRIVATE KV. Bug reports carry error
+  // logs + free text that can include FERPA-sensitive data, so they go to private KV, NOT the
+  // public repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
+  // pre-filled Google Form (private responses Sheet) so a report is never lost.
+  var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
+
   var STORAGE_KEY = 'alloflow_error_log';
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
   var MAX_BUFFERED = 50;
@@ -431,31 +437,41 @@
       }
     };
     if ($('aer-send')) $('aer-send').onclick = function () {
-      try {
-        var url = buildPrefilledFormUrl();
-        // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
-        // If we exceed, drop stack traces from older entries.
-        if (url.length > 7500) {
-          var p = buildReportPayload();
-          // Trim "what" payload more aggressively
-          p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
-          url = FORM_BASE +
-            '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
-            '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
-            '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
-            '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
-        }
-        var win = window.open(url, '_blank', 'noopener,noreferrer');
-        if (!win) {
-          // Pop-up blocked — copy URL to clipboard and tell user
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).catch(function () {});
+      var btn = $('aer-send');
+      // Fallback: the original Google-Form path (private responses Sheet), used if the worker POST fails.
+      var openFormFallback = function () {
+        try {
+          var url = buildPrefilledFormUrl();
+          // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
+          // If we exceed, drop stack traces from older entries.
+          if (url.length > 7500) {
+            var p = buildReportPayload();
+            p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
+            url = FORM_BASE +
+              '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
+              '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
+              '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
+              '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
           }
-          if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
-        }
-      } catch (e) {
-        origConsoleError('[ErrorReporter] Submit failed:', e);
-      }
+          var win = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!win) {
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).catch(function () {}); }
+            if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
+          }
+        } catch (e) { origConsoleError('[ErrorReporter] Submit failed:', e); }
+      };
+      // Primary: POST to the worker → private KV. No new tab, no PII to a public surface.
+      var p = buildReportPayload();
+      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: (location.href || '').slice(0, 500) };
+      btn.disabled = true; btn.textContent = 'Sending…';
+      var done = function (text, color) { if (!$('aer-send')) return; var b = $('aer-send'); b.textContent = text; if (color) b.style.background = color; setTimeout(closePanel, 1300); };
+      var fail = function () { if ($('aer-send')) { $('aer-send').disabled = false; $('aer-send').textContent = '📬 Send to Developers'; } openFormFallback(); };
+      try {
+        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
+          .then(function (res) { if (res.ok && res.j && res.j.ok) done('Sent ✓ Thank you!', '#15803d'); else fail(); })
+          .catch(function () { fail(); });
+      } catch (_) { fail(); }
     };
   }
 

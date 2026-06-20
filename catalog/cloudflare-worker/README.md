@@ -117,3 +117,31 @@ Every 90 days when the token expires:
 - The Worker writes to `catalog/pending/`. The PAT cannot push directly to a branch protection rule; consider adding branch protection on `main` for additional safety.
 - All submitted data ends up in a public GitHub commit, even pending ones. The Worker is NOT a private staging area. Reviewers must promptly delete rejected submissions to keep PII out of git history (and use `git filter-repo` if real PII slips through and needs to be erased).
 - The Worker does not implement spam protection beyond size + schema validation. If submission volume warrants, add Cloudflare Turnstile to the form and verify the token in the Worker.
+
+## Additional submission types (same Worker)
+
+This Worker also serves two other intake routes that reuse the same `GITHUB_PAT` secret / PII
+scanner / CORS. Re-deploy after pulling (`wrangler deploy`).
+
+### `POST /submitTranslation` → GitHub (public)
+Community translation corrections. Validates `{language, suggested, key?, current?, english?, note?}`,
+PII-rescans, commits one record to `translations/pending/<ts>-<lang>-<keyslug>.json`. Low-PII (UI
+string suggestions), so public-repo storage is acceptable — same as lessons. Maintainer applies via
+`node dev-tools/i18n/ingest_translation_feedback.cjs --apply`. No extra setup beyond the existing PAT.
+
+### `POST /submitBug` → Cloudflare KV (PRIVATE)
+Bug reports from the in-app error reporter. Validates `{what|steps, type?, browser?, url?}`, PII-rescans,
+and stores the record in the **private** `BUG_REPORTS` KV namespace — **NOT** GitHub, because error
+logs + free text can contain FERPA-sensitive student data and this repo is public. One-time setup:
+
+```
+wrangler kv namespace create BUG_REPORTS      # paste the printed id into wrangler.toml
+wrangler secret put ADMIN_TOKEN               # optional — enables the GET /bugs reader
+wrangler deploy
+```
+
+Read reports either with the CLI (`wrangler kv key list --binding BUG_REPORTS`,
+`wrangler kv key get --binding BUG_REPORTS <id>`) or, if `ADMIN_TOKEN` is set, via
+`GET /bugs?token=<ADMIN_TOKEN>&limit=50` (returns newest-first JSON). KV reports persist until
+manually purged; periodically delete handled ones (and remember KV is private but still contains PII —
+treat accordingly). Smoke test for all routes: `npm test`.

@@ -214,6 +214,77 @@ async function handleTranslationSubmit(request, env) {
   return jsonResponse({ ok: true, language: record.language, key: record.key, pii_findings_count: piiFindings.length }, 201);
 }
 
+// ── Bug reports → Cloudflare KV (PRIVATE, not GitHub) ──
+// Unlike lessons/translations, bug reports carry error logs + free text that can include
+// student-identifiable data (FERPA). The AlloFlow repo is PUBLIC, so these must NOT go to GitHub.
+// They're stored in the private BUG_REPORTS KV namespace instead. Defense-in-depth PII scan still
+// runs so findings are flagged. Read them via GET /bugs (token-gated) or `wrangler kv key list`.
+// Requires a KV binding `BUG_REPORTS` in wrangler.toml. Read route requires the ADMIN_TOKEN secret.
+
+function validateBug(p) {
+  if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
+  const what = typeof p.what === 'string' ? p.what : '';
+  const steps = typeof p.steps === 'string' ? p.steps : '';
+  if (!what.trim() && !steps.trim()) return 'Report needs a description (what/steps).';
+  for (const [f, max] of [['type', 60], ['what', 16000], ['steps', 8000], ['browser', 500], ['url', 500]]) {
+    if (p[f] != null && (typeof p[f] !== 'string' || p[f].length > max)) return `${f} must be a string up to ${max} chars.`;
+  }
+  return null;
+}
+
+async function handleBugSubmit(request, env) {
+  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing BUG_REPORTS KV binding.' }, 500);
+  const contentType = request.headers.get('Content-Type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const rawBody = await request.text();
+  if (rawBody.length > MAX_BODY_BYTES) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  let p;
+  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  const err = validateBug(p);
+  if (err) return jsonResponse({ ok: false, error: err }, 400);
+
+  const piiFindings = scanForPii([p.what, p.steps].filter(Boolean).join('\n'));
+  const submittedAt = new Date().toISOString();
+  const record = {
+    schema_version: '1.0',
+    kind: 'bug_report',
+    submitted_at: submittedAt,
+    type: (p.type || 'Bug Report').slice(0, 60),
+    what: (p.what || '').slice(0, 16000),
+    steps: (p.steps || '').slice(0, 8000),
+    browser: (p.browser || '').slice(0, 500),
+    url: (p.url || '').slice(0, 500),
+    pii_scan: { ran_server_side: true, findings: piiFindings },
+    submitter: {
+      ip_country: request.cf?.country || null,
+      user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
+    },
+  };
+  // Key sorts by time (13-digit epoch). No TTL — reports persist until manually purged.
+  const id = `bug:${Date.now()}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+  try {
+    await env.BUG_REPORTS.put(id, JSON.stringify(record), {
+      metadata: { submitted_at: submittedAt, pii: piiFindings.length > 0, country: record.submitter.ip_country },
+    });
+  } catch (e) {
+    return jsonResponse({ ok: false, error: 'Could not store report: ' + e.message }, 502);
+  }
+  return jsonResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
+}
+
+async function handleBugList(request, env, url) {
+  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /bugs (or use `wrangler kv key list`).' }, 501);
+  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Missing BUG_REPORTS KV binding.' }, 500);
+  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+  const listed = await env.BUG_REPORTS.list({ prefix: 'bug:', limit });
+  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+  const reports = [];
+  for (const k of keys) { const v = await env.BUG_REPORTS.get(k); if (v) { try { reports.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
+  return jsonResponse({ ok: true, count: reports.length, reports });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -230,8 +301,16 @@ export default {
       return handleTranslationSubmit(request, env);
     }
 
+    if (request.method === 'POST' && url.pathname === '/submitBug') {
+      return handleBugSubmit(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/bugs') {
+      return handleBugList(request, env, url);
+    }
+
     if (request.method !== 'POST' || url.pathname !== '/submit') {
-      return jsonResponse({ ok: false, error: 'Use POST /submit or POST /submitTranslation' }, 405);
+      return jsonResponse({ ok: false, error: 'Use POST /submit, /submitTranslation, or /submitBug' }, 405);
     }
 
     if (!env.GITHUB_PAT) {

@@ -65,6 +65,49 @@ const run = async () => {
   r = await worker.fetch(jsonPost('/nope', {}), ENV);
   ok(r.status === 405, 'unknown route → 405 (got ' + r.status + ')');
 
+  // ── /submitBug → private KV (mock the KV binding) ──
+  const kvStore = new Map();
+  const KV = {
+    put: async (k, v) => { kvStore.set(k, v); },
+    get: async (k) => kvStore.get(k) || null,
+    list: async () => ({ keys: [...kvStore.keys()].map(name => ({ name })) }),
+  };
+  const ENVKV = { ...ENV, BUG_REPORTS: KV };
+
+  // 11. missing KV binding → 500
+  r = await worker.fetch(jsonPost('/submitBug', { what: 'boom' }), ENV);
+  ok(r.status === 500, '/submitBug without KV binding → 500 (got ' + r.status + ')');
+
+  // 12. validation: empty report → 400
+  r = await worker.fetch(jsonPost('/submitBug', { type: 'Bug Report' }), ENVKV);
+  ok(r.status === 400, '/submitBug with no what/steps → 400 (got ' + r.status + ')');
+
+  // 13. happy path → 201, stored in KV
+  r = await worker.fetch(jsonPost('/submitBug', { type: 'Bug Report', what: 'TypeError at line 5', steps: 'clicked export', browser: 'UA', url: 'https://app/x' }), ENVKV);
+  ok(r.status === 201, '/submitBug valid → 201 (got ' + r.status + ')');
+  const bbody = await r.json();
+  ok(bbody.ok === true && /^bug:\d+:/.test(bbody.id), 'returns ok + bug:<ts>:<rand> id');
+  ok(kvStore.size === 1, 'report written to KV');
+  const stored = JSON.parse([...kvStore.values()][0]);
+  ok(stored.kind === 'bug_report' && stored.what === 'TypeError at line 5', 'stored record shape correct');
+
+  // 14. PII flagged (does not block)
+  r = await worker.fetch(jsonPost('/submitBug', { what: 'student Jamie, ssn 123-45-6789' }), ENVKV);
+  const pb = await r.json();
+  ok(r.status === 201 && pb.pii_findings_count >= 1, '/submitBug flags PII (SSN) → count >= 1');
+
+  // 15. GET /bugs disabled without ADMIN_TOKEN → 501
+  r = await worker.fetch(req('/bugs'), ENVKV);
+  ok(r.status === 501, 'GET /bugs without ADMIN_TOKEN → 501 (got ' + r.status + ')');
+
+  // 16. GET /bugs wrong token → 401; right token → 200 list
+  const ENVADMIN = { ...ENVKV, ADMIN_TOKEN: 'sekret' };
+  r = await worker.fetch(req('/bugs?token=nope'), ENVADMIN);
+  ok(r.status === 401, 'GET /bugs wrong token → 401 (got ' + r.status + ')');
+  r = await worker.fetch(req('/bugs?token=sekret'), ENVADMIN);
+  const lb = await r.json();
+  ok(r.status === 200 && lb.ok === true && lb.count === 2, 'GET /bugs valid token → 200 + lists 2 reports (got ' + r.status + '/' + (lb && lb.count) + ')');
+
   globalThis.fetch = realFetch;
   console.log((fail === 0 ? '✓' : '✗') + ' worker smoke: ' + pass + ' passed, ' + fail + ' failed');
   process.exit(fail === 0 ? 0 : 1);
