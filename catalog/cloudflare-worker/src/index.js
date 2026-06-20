@@ -19,6 +19,7 @@
  *   POST /submitBug         accept a bug report (-> PRIVATE BUG_REPORTS KV)
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
+ *   GET  /pdSubmissions     token-gated PD-submission reader
  *   OPTIONS *               CORS preflight
  *   GET  /healthz           liveness probe
  */
@@ -354,6 +355,19 @@ async function handleBugList(request, env, url) {
   return jsonResponse({ ok: true, count: reports.length, reports });
 }
 
+async function handlePdList(request, env, url) {
+  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501);
+  if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500);
+  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+  const listed = await env.PD_SUBMISSIONS.list({ prefix: 'pd:', limit });
+  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+  const submissions = [];
+  for (const k of keys) { const v = await env.PD_SUBMISSIONS.get(k); if (v) { try { submissions.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
+  return jsonResponse({ ok: true, count: submissions.length, submissions });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -380,6 +394,10 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/bugs') {
       return handleBugList(request, env, url);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/pdSubmissions') {
+      return handlePdList(request, env, url);
     }
 
     if (request.method !== 'POST' || url.pathname !== '/submit') {

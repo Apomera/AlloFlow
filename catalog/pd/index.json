@@ -13,6 +13,17 @@
       "license": "CC-BY-SA-4.0",
       "audience": "educator",
       "path": "catalog/pd/approved/udl-representation-quickstart.json"
+    },
+    {
+      "slug": "retrieval-practice-quickstart",
+      "title": "Retrieval Practice: Quizzing that Builds Memory",
+      "topic": "Learning Science",
+      "summary": "A ~12-minute primer on retrieval practice (the 'testing effect') — why recalling beats re-reading — with a knowledge check and a classroom action plan.",
+      "estMinutes": 12,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/retrieval-practice-quickstart.json"
     }
   ]
 }

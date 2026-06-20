@@ -1,0 +1,126 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "retrieval-practice-quickstart",
+    "title": "Retrieval Practice: Quizzing that Builds Memory",
+    "topic": "Learning Science",
+    "summary": "A ~12-minute primer on retrieval practice (the 'testing effect') — why recalling beats re-reading — with a knowledge check and a classroom action plan. General educator PD; no AlloFlow features required.",
+    "estMinutes": 12,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-retrieval",
+          "type": "read",
+          "title": "What retrieval practice is — and why it works",
+          "content": {
+            "body": "Retrieval practice means having learners bring information to mind from memory — answering a question, writing what they remember, explaining an idea aloud — rather than reviewing it again. The act of retrieving strengthens memory more than re-reading or re-watching the same material. Researchers call this the 'testing effect.'\n\nThis is one of the most consistently replicated findings in learning science (e.g., Roediger & Karpicke, 2006, and many studies since), and it holds across ages, subjects, and formats. The benefit is largest when retrieval is effortful but successful, and when it is spaced out over time rather than crammed.\n\nImportant: the goal is LEARNING, not grading. Retrieval works best when it is low- or no-stakes — frequent, ungraded or lightly weighted practice — which gets the memory benefit while keeping anxiety low. High-stakes, infrequent testing does not.",
+            "keyPoints": [
+              "Recalling from memory builds retention more than re-reading.",
+              "It is well-replicated across ages and subjects (testing effect).",
+              "Keep it low-/no-stakes and spaced over time."
+            ],
+            "links": [
+              { "label": "Retrieval practice overview (retrievalpractice.org)", "url": "https://www.retrievalpractice.org/" }
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Check your understanding",
+      "activities": [
+        {
+          "id": "quiz-retrieval",
+          "type": "quiz",
+          "title": "Knowledge check (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "The 'testing effect' (retrieval practice) is best described as:",
+                "options": [
+                  "Recalling information from memory strengthens later retention more than re-reading it",
+                  "Re-reading highlighted notes is the most efficient way to study",
+                  "Frequent graded tests mainly serve accountability",
+                  "Matching instruction to each student's learning style"
+                ],
+                "correctIndex": 0
+              },
+              {
+                "prompt": "Which is the strongest example of retrieval practice?",
+                "options": [
+                  "A brief, closed-notes 'brain dump' where students write everything they remember",
+                  "Re-reading the chapter and highlighting key sentences",
+                  "Watching a recap video of the lesson",
+                  "Copying the teacher's notes neatly"
+                ],
+                "correctIndex": 0
+              },
+              {
+                "prompt": "To get the memory benefit while keeping anxiety low, retrieval practice should usually be:",
+                "options": [
+                  "Low- or no-stakes (ungraded or lightly weighted)",
+                  "High-stakes and infrequent",
+                  "Replaced by re-reading for struggling students",
+                  "Saved only for the end-of-year exam"
+                ],
+                "correctIndex": 0
+              },
+              {
+                "prompt": "Spacing retrieval practice across days and weeks (instead of cramming it) tends to:",
+                "options": [
+                  "Improve long-term retention",
+                  "Harm long-term retention",
+                  "Make no measurable difference",
+                  "Help only the highest-achieving students"
+                ],
+                "correctIndex": 0
+              }
+            ]
+          },
+          "gate": { "kind": "score", "threshold": 0.75 }
+        }
+      ]
+    },
+    {
+      "title": "Plan it",
+      "activities": [
+        {
+          "id": "checklist-retrieval",
+          "type": "checklist",
+          "title": "Pick retrieval routines you'll commit to",
+          "content": {
+            "items": [
+              "Open a lesson with a 2-minute 'what do you remember from last time?' brain dump.",
+              "End class with 3–5 ungraded recall questions.",
+              "Use short, low-stakes quizzes spaced across the unit — not only before the test.",
+              "Have students close their notes and explain a concept from memory before reviewing it."
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-retrieval",
+          "type": "reflect",
+          "title": "Name your next step",
+          "content": {
+            "prompt": "Name one lesson you will teach in the next two weeks. Which ONE retrieval routine will you add, and at what moment in the lesson? Write it here."
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    }
+  ]
+}
