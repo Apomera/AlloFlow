@@ -124,7 +124,7 @@ const PHONEME_PACK_GROUPS = {
 };
 const PHONEME_PACK_EXAMPLES = { b: "ball", c: "cat", d: "dog", f: "fish", g: "goat", h: "hat", j: "jam", k: "kite", l: "leg", m: "man", n: "net", p: "pig", r: "red", s: "sun", t: "top", v: "van", w: "win", y: "yes", z: "zip", sh: "ship", zh: "measure", ch: "chip", th: "thumb", wh: "whale", ph: "phone", ck: "duck", ng: "ring", q: "queen", a: "apple", e: "egg", i: "igloo", o: "octopus", u: "up", oo_short: "book", ee: "tree", oo: "moon", ue: "blue", aw: "paw", ai: "rain", ea: "leaf", oa: "boat", ay: "play", ie: "pie", ow: "cow", oy: "boy", ar: "car", er: "her", ir: "bird", or: "fork", ur: "fur", air: "chair", ear: "ear" };
 const PHONEME_PACK_CUES = {
-  b: "Lips together, pop WITH voice \u2014 buzzy. Quick.",
+  b: "Lips together, pop WITH voice, buzzy. Quick.",
   c: "Back of tongue up, quiet pop /k/. Quick.",
   d: "Tongue taps behind top teeth, with voice. Quick.",
   f: "Top teeth on bottom lip, push quiet air. Stretch it: fffff.",
@@ -135,38 +135,38 @@ const PHONEME_PACK_CUES = {
   l: "Tongue tip up behind teeth, voice on. Stretch it: llll.",
   m: "Lips together, hum. Stretch it: mmmm.",
   n: "Tongue behind top teeth, hum. Stretch it: nnnn.",
-  p: "Lips together, quiet pop \u2014 no voice. Quick.",
+  p: "Lips together, quiet pop, no voice. Quick.",
   r: "Tongue pulled back, lips a little round. Stretch it.",
-  s: "Smile, tongue near teeth, hiss \u2014 no voice. Stretch it: sssss.",
+  s: "Smile, tongue near teeth, hiss, no voice. Stretch it: sssss.",
   t: "Tongue taps behind top teeth, no voice. Quick.",
   v: "Top teeth on bottom lip + voice (buzz). Stretch it.",
   w: "Round your lips, then glide. Voice on.",
   y: "Tongue high, then glide (yes). Voice on.",
   z: "Like /s/ but buzzing. Stretch it: zzzz.",
-  sh: 'Lips rounded, push quiet air \u2014 "shhh". Stretch it.',
+  sh: 'Lips rounded, push quiet air, "shhh". Stretch it.',
   zh: "Like /sh/ but WITH voice (treasure).",
   ch: "Like /t/ + /sh/ together (chip). Quick.",
   th: "Tongue tip between teeth, push air.",
   wh: "Round lips, blow (whale).",
-  ph: "Same as /f/ \u2014 teeth on lip, push air.",
-  ck: "Same as /k/ \u2014 back of tongue, quiet pop. Quick.",
+  ph: "Same as /f/: teeth on lip, push air.",
+  ck: "Same as /k/: back of tongue, quiet pop. Quick.",
   ng: "Back of tongue up, hum through your nose (ring).",
-  q: "Usually /kw/ \u2014 quiet /k/, then round lips (queen).",
+  q: "Usually /kw/: quiet /k/, then round lips (queen).",
   a: "Open mouth, short /a/ (apple).",
   e: "Mouth a little open, short /e/ (egg).",
   i: "Small smile, short /i/ (igloo).",
   o: "Round mouth, short /o/ (octopus).",
   u: "Relaxed mouth, short /u/ (up).",
-  oo_short: "Short /oo/ (book) \u2014 lips a little round.",
+  oo_short: "Short /oo/ (book), lips a little round.",
   ee: "Big smile, long /ee/ (tree). Stretch it.",
   oo: "Round lips, long /oo/ (moon). Stretch it.",
-  ue: "Long /u/ (blue) \u2014 round lips.",
+  ue: "Long /u/ (blue), round lips.",
   aw: "Open round mouth /aw/ (paw).",
-  ai: "Long /a/ (rain) \u2014 say the letter A.",
+  ai: "Long /a/ (rain), say the letter A.",
   ea: "Long /ee/ (leaf).",
-  oa: "Long /o/ (boat) \u2014 say the letter O.",
-  ay: "Long /a/ (play) \u2014 say the letter A.",
-  ie: "Long /i/ (pie) \u2014 say the letter I.",
+  oa: "Long /o/ (boat), say the letter O.",
+  ay: "Long /a/ (play), say the letter A.",
+  ie: "Long /i/ (pie), say the letter I.",
   ow: "Round, then open (cow).",
   oy: "Round, then smile (boy).",
   ar: "Open /ar/ (car).",
@@ -279,7 +279,7 @@ function applyInstrToBank(instr) {
         } else {
           try {
             const d = typeof window.getAudio === "function" ? window.getAudio("instructions", k) : null;
-            if (d) window.__ALLO_INSTRUCTION_AUDIO[k] = d;
+            window.__ALLO_INSTRUCTION_AUDIO[k] = d || null;
           } catch (e) {
           }
         }
@@ -315,7 +315,15 @@ function normalizePhonemePack(p) {
     clips: p.clips && typeof p.clips === "object" ? p.clips : {},
     instr: p.instr && typeof p.instr === "object" ? p.instr : {},
     // instruction + reinforcer overrides, keyed by slot id
-    history: p.history && typeof p.history === "object" ? p.history : {},
+    history: (function() {
+      const out = {};
+      if (p.history && typeof p.history === "object") {
+        Object.keys(p.history).forEach((k) => {
+          if (Array.isArray(p.history[k])) out[k] = p.history[k];
+        });
+      }
+      return out;
+    })(),
     studentName: typeof p.studentName === "string" ? p.studentName : "",
     studentId: p.studentId || null
   };
@@ -445,7 +453,8 @@ async function cleanPhonemeClip(dataUri) {
     start = Math.max(0, start - pad);
     end = Math.min(len - 1, end + pad);
     const outLen = end - start + 1;
-    const wav = encodePhonemeWav(data, start, outLen, buf.sampleRate, 0.97 / peak);
+    const gain = Math.min(0.97 / peak, 6);
+    const wav = encodePhonemeWav(data, start, outLen, buf.sampleRate, gain);
     if (ctx.close) ctx.close();
     return wav && wav.length > 64 ? wav : dataUri;
   } catch (e) {
@@ -460,6 +469,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     const id = prev.activeId;
     return Object.assign({}, prev, { packs: prev.packs.map((p) => p.id === id ? typeof updater === "function" ? updater(p) : Object.assign({}, p, updater) : p) });
   });
+  const setPackById = (id, updater) => setLib((prev) => Object.assign({}, prev, { packs: prev.packs.map((p) => p.id === id ? typeof updater === "function" ? updater(p) : Object.assign({}, p, updater) : p) }));
   const [recordingKey, setRecordingKey] = React.useState(null);
   const [status, setStatus] = React.useState("");
   const [aiCheckOn, setAiCheckOn] = React.useState(false);
@@ -470,6 +480,26 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
   const [category, setCategory] = React.useState("sounds");
   const recorderRef = React.useRef(null);
   const fileInputRef = React.useRef(null);
+  const audioElRef = React.useRef(null);
+  const playPreview = (src) => {
+    try {
+      if (audioElRef.current) {
+        audioElRef.current.pause();
+        audioElRef.current = null;
+      }
+    } catch (e) {
+    }
+    if (!src) return null;
+    try {
+      const a = new Audio(src);
+      audioElRef.current = a;
+      a.play().catch(() => {
+      });
+      return a;
+    } catch (e) {
+      return null;
+    }
+  };
   const clips = pack.clips || {};
   const kind = pack.kind === "student-voice" ? "student-voice" : "teacher-model";
   const isStudent = kind === "student-voice";
@@ -490,7 +520,8 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     setChecks({});
     setSelfChecks({});
     setView("record");
-    setStatus(target ? 'Switched to "' + (target.name || "pack") + '" \u2014 this voice is active now.' : "");
+    setAiCheckOn(false);
+    setStatus(target ? 'Switched to "' + (target.name || "pack") + '". This voice is active now.' : "");
   };
   const newPack = () => {
     const id = genPhonemePackId();
@@ -515,8 +546,9 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     setSelfChecks({});
     setStatus("");
   };
-  const logAttempt = (key) => {
-    setPack((prev) => {
+  const logAttempt = (key, packId) => {
+    const writer = packId ? ((u) => setPackById(packId, u)) : setPack;
+    writer((prev) => {
       const hist = Object.assign({}, prev.history || {});
       const arr = (hist[key] || []).slice(-19);
       arr.push({ ts: Date.now(), ai: null, self: null });
@@ -524,8 +556,9 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       return Object.assign({}, prev, { history: hist });
     });
   };
-  const updateLatestAttempt = (key, patch) => {
-    setPack((prev) => {
+  const updateLatestAttempt = (key, patch, packId) => {
+    const writer = packId ? ((u) => setPackById(packId, u)) : setPack;
+    writer((prev) => {
       const arr = prev.history && prev.history[key] || [];
       if (!arr.length) return prev;
       const hist = Object.assign({}, prev.history);
@@ -535,7 +568,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       return Object.assign({}, prev, { history: hist });
     });
   };
-  const runAiCheck = (key, dataUri) => {
+  const runAiCheck = (key, dataUri, packId) => {
     if (!aiAvailable || !dataUri) return;
     setChecks((prev) => Object.assign({}, prev, { [key]: { state: "checking" } }));
     const ex = PHONEME_PACK_EXAMPLES[key];
@@ -545,7 +578,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       const parsed = parsePhonemePackJsonLoose(resp);
       if (parsed) {
         setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: parsed.match, clipped: parsed.clipped, note: parsed.note || "" } }));
-        updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } });
+        updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }, packId);
       } else setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: null, note: "Could not analyze the clip." } }));
     }).catch(() => setChecks((prev) => Object.assign({}, prev, { [key]: { state: "error", note: "AI check failed." } })));
   };
@@ -566,9 +599,10 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       stopRecording();
       return;
     }
+    const targetId = lib.activeId;
     const voice = window.AlloFlowVoice;
     if (!voice || typeof voice.recordAudioBlob !== "function") {
-      setStatus("\u{1F399}\uFE0F Recording needs the in-app microphone \u2014 open in Canvas.");
+      setStatus("\u{1F399}\uFE0F Recording needs the in-app microphone. Open in Canvas.");
       return;
     }
     const ctrl = voice.recordAudioBlob({ maxDurationMs: isInstr ? 8e3 : 4e3, preferredMimeType: "audio/webm;codecs=opus", onError: () => {
@@ -577,12 +611,17 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       recorderRef.current = null;
     } });
     if (!ctrl || !ctrl.supported) {
+      try {
+        if (ctrl && ctrl.result && typeof ctrl.result.catch === "function") ctrl.result.catch(() => {
+        });
+      } catch (e) {
+      }
       setStatus("Recording is not supported in this browser.");
       return;
     }
     recorderRef.current = ctrl;
     setRecordingKey(key);
-    setStatus("\u25CF Recording " + (opts.label || "/" + key + "/" + (PHONEME_PACK_EXAMPLES[key] ? " (like " + PHONEME_PACK_EXAMPLES[key] + ")" : "")) + " \u2014 tap again to stop.");
+    setStatus("\u25CF Recording " + (opts.label || "/" + key + "/" + (PHONEME_PACK_EXAMPLES[key] ? " (like " + PHONEME_PACK_EXAMPLES[key] + ")" : "")) + ". Tap again to stop.");
     ctrl.result.then(async (rec) => {
       if (rec && rec.base64) {
         let finalClip = rec.base64;
@@ -596,13 +635,13 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
         }
         const clip = finalClip;
         if (isInstr) {
-          setPack((prev) => Object.assign({}, prev, { instr: Object.assign({}, prev.instr, { [key]: clip }) }));
+          setPackById(targetId, (prev) => Object.assign({}, prev, { instr: Object.assign({}, prev.instr, { [key]: clip }) }));
           setStatus("\u2713 Recorded " + (opts.label || key) + ". Tap \u{1F50A} to hear it, then Save & Use.");
         } else {
-          setPack((prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
+          setPackById(targetId, (prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
           setStatus("\u2713 Recorded /" + key + "/. Tap \u{1F50A} to hear it, then Save & Use.");
-          logAttempt(key);
-          if (aiCheckOn) runAiCheck(key, clip);
+          logAttempt(key, targetId);
+          if (aiCheckOn) runAiCheck(key, clip, targetId);
         }
       }
       if (recorderRef.current === ctrl) recorderRef.current = null;
@@ -616,11 +655,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
   const playInstrClip = (slot) => {
     const d = instr[slot];
     if (!d) return;
-    try {
-      new Audio(d).play().catch(() => {
-      });
-    } catch (e) {
-    }
+    playPreview(d);
   };
   const clearInstrClip = (slot) => setPack((prev) => {
     const c = Object.assign({}, prev.instr);
@@ -633,34 +668,20 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       setStatus("No default recording to preview for this one.");
       return;
     }
-    try {
-      new Audio(ref).play().catch(() => {
-      });
-    } catch (e) {
-    }
+    playPreview(ref);
   };
   const playClip = (key) => {
     const d = clips[key];
     if (!d) return;
-    try {
-      const a = new Audio(d);
-      a.play().catch(() => {
-      });
-    } catch (e) {
-    }
+    playPreview(d);
   };
   const playReference = (key) => {
     const ref = phonemeReferenceClip(key);
     if (!ref) {
-      setStatus("No model recording for /" + key + "/ in the default voice \u2014 record what you think it sounds like, or check a reference chart.");
+      setStatus("No model recording for /" + key + "/ in the default voice. Record what you think it sounds like, or check a reference chart.");
       return;
     }
-    try {
-      const a = new Audio(ref);
-      a.play().catch(() => {
-      });
-    } catch (e) {
-    }
+    playPreview(ref);
   };
   const playCompare = (key) => {
     const ref = phonemeReferenceClip(key);
@@ -668,26 +689,15 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     if (!ref || !mine) return;
     const lbl = key === "oo_short" ? "oo" : key;
     setStatus("\u{1F501} Listen: the model first, then your /" + lbl + "/.");
-    try {
-      const a = new Audio(ref);
-      const playMine = () => {
-        try {
-          const b = new Audio(mine);
-          b.play().catch(() => {
-          });
-        } catch (e) {
-        }
-      };
+    const playMine = () => {
+      playPreview(mine);
+    };
+    const a = playPreview(ref);
+    if (a) {
       a.onended = playMine;
       a.onerror = playMine;
-      a.play().catch(playMine);
-    } catch (e) {
-      try {
-        const b = new Audio(mine);
-        b.play().catch(() => {
-        });
-      } catch (e2) {
-      }
+    } else {
+      playMine();
     }
   };
   const rateSelf = (key, val) => {
@@ -711,14 +721,11 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       }
       const clip = seq[i];
       i++;
-      try {
-        const a = new Audio(clip);
+      const a = playPreview(clip);
+      if (a) {
         a.onended = () => setTimeout(next, 240);
         a.onerror = () => setTimeout(next, 240);
-        a.play().catch(() => setTimeout(next, 240));
-      } catch (e) {
-        setTimeout(next, 240);
-      }
+      } else setTimeout(next, 240);
     };
     next();
   };
@@ -742,17 +749,30 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
   const persist = () => {
     try {
       localStorage.setItem(PHONEME_PACK_LIB_KEY, JSON.stringify(lib));
+      try {
+        localStorage.removeItem(PHONEME_PACK_STORAGE_KEY);
+      } catch (e) {
+      }
       return true;
     } catch (e) {
       return false;
     }
   };
+  React.useEffect(() => {
+    const id = setTimeout(() => {
+      try {
+        persist();
+      } catch (e) {
+      }
+    }, 500);
+    return () => clearTimeout(id);
+  }, [lib]);
   const savePack = () => {
     const applied = applyPhonemeVoicePackToBank(pack.clips);
-    const appliedInstr = Object.keys(pack.instr || {}).length ? applyInstrToBank(pack.instr) > 0 : false;
+    const appliedInstr = applyInstrToBank(pack.instr || {}) > 0;
     const ok = persist();
     const extra = appliedInstr ? " + your cheers/instructions" : "";
-    setStatus(ok ? "\u2705 Saved and active now (" + applied + " sounds" + extra + "). Word Sounds will use this voice." : "Active for this session (" + applied + " sounds), but the pack was too large for browser storage \u2014 use Export to keep it as a file.");
+    setStatus(ok ? "\u2705 Saved and active now (" + applied + " sounds" + extra + "). Word Sounds will use this voice." : "Active for this session (" + applied + " sounds), but the pack was too large for browser storage. Use Export to keep it as a file.");
   };
   const exportPack = () => {
     try {
@@ -767,7 +787,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      setStatus('\u2B07\uFE0F Exported "' + (pack.name || "My Voice Pack") + '"' + (isStudent ? " (confidential \u2014 student voice)." : "."));
+      setStatus('\u2B07\uFE0F Exported "' + (pack.name || "My Voice Pack") + '"' + (isStudent ? " (confidential student voice)." : "."));
     } catch (e) {
       setStatus("Export failed.");
     }
@@ -784,11 +804,20 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
           setStatus("That file is not a phoneme pack.");
           return;
         }
+        const sanitizeClips = (o) => {
+          const out = {};
+          if (o && typeof o === "object") Object.keys(o).forEach((k) => {
+            if (typeof o[k] === "string" && o[k]) out[k] = o[k];
+          });
+          return out;
+        };
+        const safeClips = sanitizeClips(incoming);
+        const safeInstr = sanitizeClips(data && data.instr);
         const id = genPhonemePackId();
-        setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: data && data.name || "Imported Pack", kind: data && data.kind === "student-voice" ? "student-voice" : "teacher-model", consent: false, clips: incoming, instr: data && data.instr && typeof data.instr === "object" ? data.instr : {}, history: data && data.history && typeof data.history === "object" ? data.history : {}, studentName: data && data.studentName || "" })]) }));
+        setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: data && data.name || "Imported Pack", kind: data && data.kind === "student-voice" ? "student-voice" : "teacher-model", consent: false, clips: safeClips, instr: safeInstr, history: data && data.history && typeof data.history === "object" ? data.history : {}, studentName: data && typeof data.studentName === "string" ? data.studentName : "", studentId: data && data.studentId || null })]) }));
         setChecks({});
         setSelfChecks({});
-        setStatus("\u{1F4E5} Imported as a new pack (" + Object.keys(incoming).length + " sounds). Tap Save & Use to apply.");
+        setStatus("\u{1F4E5} Imported as a new pack (" + Object.keys(safeClips).length + " sounds). Tap Save & Use to apply.");
       } catch (err) {
         setStatus("Could not read that file.");
       }
@@ -803,7 +832,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     const good = c.match === true && c.clipped !== false;
     return /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-semibold ${good ? "text-emerald-600" : "text-amber-600"}`, title: c.note || "" }, good ? "\u2713 sounds right" : "\u26A0 " + (c.note || "try again"));
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4", role: "dialog", "aria-label": "Phoneme Voice Pack editor" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black flex items-center gap-2" }, "\u{1F399}\uFE0F ", T("word_sounds.voice_pack_title", "Voice Pack \u2014 record your own sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/80" }, recordedCount, " / ", allKeys.length, " ", T("word_sounds.voice_pack_recorded", "sounds recorded"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": "Close", className: "p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 border-b border-slate-200 flex items-center gap-2 flex-wrap text-xs bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-500 uppercase tracking-wider" }, T("word_sounds.voice_pack_pack_label", "Pack")), /* @__PURE__ */ React.createElement("select", { value: lib.activeId, onChange: (e) => selectPack(e.target.value), "aria-label": "Active pack", className: "border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold bg-white max-w-[180px]" }, lib.packs.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: p.id }, (p.kind === "student-voice" ? "\u{1F9D2} " : "\u{1F393} ") + (p.name || "Untitled") + (p.studentName ? " \u2014 " + p.studentName : "")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: newPack, className: "px-2 py-1 rounded-lg bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100" }, "\u2795 ", T("word_sounds.voice_pack_new", "New")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deletePack, disabled: lib.packs.length <= 1, className: `px-2 py-1 rounded-lg border font-bold ${lib.packs.length <= 1 ? "text-slate-300 border-slate-200 cursor-not-allowed" : "text-rose-600 border-rose-200 hover:bg-rose-50"}` }, "\u{1F5D1}\uFE0F ", T("word_sounds.voice_pack_delete", "Delete")), isStudent ? /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.studentName || "", onChange: (e) => setStudentName(e.target.value), placeholder: T("word_sounds.voice_pack_student_name", "Student name (optional)"), "aria-label": "Student name", className: "border border-slate-300 rounded-lg px-2 py-1 text-xs ml-auto min-w-[120px]" }) : null), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2.5 border-b border-slate-200 flex items-center gap-3 flex-wrap text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-300 overflow-hidden", role: "group", "aria-label": "Pack type" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("teacher-model"), className: `px-3 py-1.5 font-bold transition-colors ${!isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F393} Teacher model"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("student-voice"), className: `px-3 py-1.5 font-bold transition-colors ${isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F9D2} Student voice")), /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center gap-1.5 font-semibold text-slate-700 cursor-pointer", title: "Trim silence and even out the volume after each recording, for cleaner blending" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: cleanOn, onChange: (e) => setCleanOn(e.target.checked) }), " \u2702\uFE0F ", T("word_sounds.voice_pack_clean", "Auto-trim & level")), /* @__PURE__ */ React.createElement("label", { className: `inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? "text-slate-700" : "text-slate-300 cursor-not-allowed"}`, title: aiAvailable ? "Coach: judges each clip against the target sound (sends it to Gemini)" : "AI coach needs Canvas" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: aiCheckOn, disabled: !aiAvailable, onChange: (e) => setAiCheckOn(e.target.checked) }), " \u{1F3AF} ", T("word_sounds.voice_pack_aicheck", "AI coach")), aiCheckOn ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-amber-600" }, T("word_sounds.voice_pack_aicheck_note", "Each clip is sent to Gemini for analysis.")) : null), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 bg-violet-50 border-b border-violet-100 text-xs text-slate-700" }, isStudent ? T("word_sounds.voice_pack_intro_student", "The student records each sound in their own voice (great for ownership and articulation practice). Tap \u{1F442} to hear the model first, then \u{1F399}\uFE0F to record. Student voice is a confidential record: it stays on this device, and Export creates a CONFIDENTIAL file you control.") : T("word_sounds.voice_pack_intro", 'Record each sound in your own voice: tap \u{1F442} to hear the model, then \u{1F399}\uFE0F and say the sound clipped ("/p/", not "puh"). The app plays your voice during blending, isolation and the anchor card. Empty sounds keep the default voice.')), isStudent && !consentOk ? /* @__PURE__ */ React.createElement("div", { className: "mx-5 mt-3 p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, "\u26A0\uFE0F ", T("word_sounds.voice_pack_consent_title", "Recording a student voice")), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, T("word_sounds.voice_pack_consent_body", "A student's voice recording is a confidential, biometric-adjacent record. It stays on this device, is never uploaded by this tool (the AI check, if you turn it on, is the only thing that sends a clip out), and you can delete it any time. Confirm you have permission to record this student.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: giveConsent, className: "px-3 py-1.5 rounded-lg bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors" }, T("word_sounds.voice_pack_consent_ok", "I have permission \u2014 start recording"))) : null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-4 space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setView("record"), className: `px-3 py-1 rounded-lg text-xs font-bold transition-colors ${view === "record" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}` }, "\u{1F399}\uFE0F ", T("word_sounds.voice_pack_tab_record", "Record")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setView("progress"), className: `px-3 py-1 rounded-lg text-xs font-bold transition-colors ${view === "progress" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}` }, "\u{1F4C8} ", T("word_sounds.voice_pack_tab_progress", "Progress"))), view === "progress" ? (() => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4", role: "dialog", "aria-label": "Phoneme Voice Pack editor" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black flex items-center gap-2" }, "\u{1F399}\uFE0F ", T("word_sounds.voice_pack_title", "Voice Pack: record your own sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/80" }, recordedCount, " / ", allKeys.length, " ", T("word_sounds.voice_pack_recorded", "sounds recorded"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": "Close", className: "p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 border-b border-slate-200 flex items-center gap-2 flex-wrap text-xs bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-500 uppercase tracking-wider" }, T("word_sounds.voice_pack_pack_label", "Pack")), /* @__PURE__ */ React.createElement("select", { value: lib.activeId, onChange: (e) => selectPack(e.target.value), "aria-label": "Active pack", className: "border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold bg-white max-w-[180px]" }, lib.packs.map((p) => /* @__PURE__ */ React.createElement("option", { key: p.id, value: p.id }, (p.kind === "student-voice" ? "\u{1F9D2} " : "\u{1F393} ") + (p.name || "Untitled") + (p.studentName ? ": " + p.studentName : "")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: newPack, className: "px-2 py-1 rounded-lg bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100" }, "\u2795 ", T("word_sounds.voice_pack_new", "New")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deletePack, disabled: lib.packs.length <= 1, className: `px-2 py-1 rounded-lg border font-bold ${lib.packs.length <= 1 ? "text-slate-300 border-slate-200 cursor-not-allowed" : "text-rose-600 border-rose-200 hover:bg-rose-50"}` }, "\u{1F5D1}\uFE0F ", T("word_sounds.voice_pack_delete", "Delete")), isStudent ? /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.studentName || "", onChange: (e) => setStudentName(e.target.value), placeholder: T("word_sounds.voice_pack_student_name", "Student name (optional)"), "aria-label": "Student name", className: "border border-slate-300 rounded-lg px-2 py-1 text-xs ml-auto min-w-[120px]" }) : null), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2.5 border-b border-slate-200 flex items-center gap-3 flex-wrap text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-300 overflow-hidden", role: "group", "aria-label": "Pack type" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("teacher-model"), className: `px-3 py-1.5 font-bold transition-colors ${!isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F393} Teacher model"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setKind("student-voice"), className: `px-3 py-1.5 font-bold transition-colors ${isStudent ? "bg-violet-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}` }, "\u{1F9D2} Student voice")), /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center gap-1.5 font-semibold text-slate-700 cursor-pointer", title: "Trim silence and even out the volume after each recording, for cleaner blending" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: cleanOn, onChange: (e) => setCleanOn(e.target.checked) }), " \u2702\uFE0F ", T("word_sounds.voice_pack_clean", "Auto-trim & level")), /* @__PURE__ */ React.createElement("label", { className: `inline-flex items-center gap-1.5 font-semibold cursor-pointer ${aiAvailable ? "text-slate-700" : "text-slate-300 cursor-not-allowed"}`, title: aiAvailable ? "Coach: judges each clip against the target sound (sends it to Gemini)" : "AI coach needs Canvas" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: aiCheckOn, disabled: !aiAvailable, onChange: (e) => setAiCheckOn(e.target.checked) }), " \u{1F3AF} ", T("word_sounds.voice_pack_aicheck", "AI coach")), aiCheckOn ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-amber-600" }, T("word_sounds.voice_pack_aicheck_note", "Each clip is sent to Gemini for analysis.")) : null), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 bg-violet-50 border-b border-violet-100 text-xs text-slate-700" }, isStudent ? T("word_sounds.voice_pack_intro_student", "The student records each sound in their own voice (great for ownership and articulation practice). Tap \u{1F442} to hear the model first, then \u{1F399}\uFE0F to record. Student voice is a confidential record: it stays on this device, and Export creates a CONFIDENTIAL file you control.") : T("word_sounds.voice_pack_intro", 'Record each sound in your own voice: tap \u{1F442} to hear the model, then \u{1F399}\uFE0F and say the sound clipped ("/p/", not "puh"). The app plays your voice during blending, isolation and the anchor card. Empty sounds keep the default voice.')), isStudent && !consentOk ? /* @__PURE__ */ React.createElement("div", { className: "mx-5 mt-3 p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, "\u26A0\uFE0F ", T("word_sounds.voice_pack_consent_title", "Recording a student voice")), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, T("word_sounds.voice_pack_consent_body", "A student's voice recording is a confidential, biometric-adjacent record. It stays on this device, is never uploaded by this tool (the AI check, if you turn it on, is the only thing that sends a clip out), and you can delete it any time. Confirm you have permission to record this student.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: giveConsent, className: "px-3 py-1.5 rounded-lg bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors" }, T("word_sounds.voice_pack_consent_ok", "I have permission, start recording"))) : null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-4 space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setView("record"), className: `px-3 py-1 rounded-lg text-xs font-bold transition-colors ${view === "record" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}` }, "\u{1F399}\uFE0F ", T("word_sounds.voice_pack_tab_record", "Record")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setView("progress"), className: `px-3 py-1 rounded-lg text-xs font-bold transition-colors ${view === "progress" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}` }, "\u{1F4C8} ", T("word_sounds.voice_pack_tab_progress", "Progress"))), view === "progress" ? (() => {
     const histKeys = allKeys.filter((k) => pack.history && pack.history[k] && pack.history[k].length);
     if (!histKeys.length) return /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 italic p-3 rounded-xl bg-slate-50 border border-slate-200" }, T("word_sounds.voice_pack_progress_empty", "Record sounds (with the \u{1F600} / \u{1F914} self-rating, or the \u{1F3AF} AI coach on) to build a practice log here. Every recording is logged so you can see a sound improve over time."));
     const isGood = (e) => e.ai && e.ai.match === true && e.ai.clipped !== false || e.self === "good";
@@ -827,7 +856,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     return /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border-2 border-amber-200 bg-amber-50 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-0.5" }, "\u{1F50A} ", T("word_sounds.voice_pack_words_title", "Hear a word in your voice")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600 mb-2" }, readyWords.length > 0 ? T("word_sounds.voice_pack_words_ready", "Tap a word to hear it built from YOUR sounds.") : T("word_sounds.voice_pack_words_hint", "Record the sounds in a word, then tap it to hear the whole word in your own voice."), " ", readyWords.length > 0 ? "(" + readyWords.length + "/" + PHONEME_PACK_WORDS.length + ")" : ""), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, PHONEME_PACK_WORDS.map((w) => {
       const ready = wordReady(w);
       const missing = w.keys.filter((k) => !clips[k]).map((k) => "/" + (k === "oo_short" ? "oo" : k) + "/").join(" ");
-      return /* @__PURE__ */ React.createElement("button", { key: w.word, type: "button", onClick: () => ready && playWord(w), disabled: !ready, "aria-label": ready ? "Hear " + w.word + " in your voice" : w.word + " \u2014 still need " + missing, title: ready ? 'Hear "' + w.word + '" in your voice' : "Record: " + missing, className: `px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${ready ? "bg-violet-600 text-white hover:bg-violet-700" : "bg-white text-slate-400 border border-slate-200 cursor-not-allowed"}` }, ready ? "\u{1F50A} " : "\u{1F512} ", w.word);
+      return /* @__PURE__ */ React.createElement("button", { key: w.word, type: "button", onClick: () => ready && playWord(w), disabled: !ready, "aria-label": ready ? "Hear " + w.word + " in your voice" : w.word + ": still need " + missing, title: ready ? 'Hear "' + w.word + '" in your voice' : "Record: " + missing, className: `px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${ready ? "bg-violet-600 text-white hover:bg-violet-700" : "bg-white text-slate-400 border border-slate-200 cursor-not-allowed"}` }, ready ? "\u{1F50A} " : "\u{1F512} ", w.word);
     })));
   })(), Object.keys(PHONEME_PACK_GROUPS).map((group) => /* @__PURE__ */ React.createElement("div", { key: group }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, group), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, PHONEME_PACK_GROUPS[group].map((key) => {
     const has = !!clips[key];
@@ -835,7 +864,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     const label = key === "oo_short" ? "oo" : key;
     const hasRef = !!phonemeReferenceClip(key);
     return /* @__PURE__ */ React.createElement("div", { key, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${has ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 leading-tight" }, "/", label, "/ ", has && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600" }, "\u2713")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500" }, renderExampleWithGrapheme(key, PHONEME_PACK_EXAMPLES[key])), PHONEME_PACK_CUES[key] ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-violet-500 leading-snug" }, PHONEME_PACK_CUES[key]) : null, has ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 flex-wrap" }, hasRef ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playCompare(key), className: "text-[10px] font-bold text-amber-700 hover:underline" }, "\u{1F501} compare") : null, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-400" }, "me:"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "good"), "aria-label": "I think " + label + " sounds right", className: `text-sm leading-none transition-opacity ${selfChecks[key] === "good" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F600}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "retry"), "aria-label": "I want to try " + label + " again", className: `text-sm leading-none transition-opacity ${selfChecks[key] === "retry" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F914}"), checkBadge(key)) : null), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playReference(key), disabled: !hasRef, "aria-label": "Hear the model sound " + label, title: "Hear the model (default) sound", className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRef ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(key), disabled: !consentOk, "aria-label": rec ? "Stop recording " + label : "Record " + label, className: `w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? "bg-red-500 text-white animate-pulse" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, rec ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playClip(key), disabled: !has, "aria-label": "Play your recording of " + label, className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${has ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearClip(key), disabled: !has, "aria-label": "Clear " + label, className: `w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${has ? "text-rose-500 hover:bg-rose-50" : "text-slate-200 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
-  }))))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug" }, category === "cheers" ? T("word_sounds.voice_pack_cheers_intro", "Record praise in your (or a parent's) voice \u2014 the app plays it when the student gets things right, as a personalized reinforcer. Tap \u{1F442} to hear the default first.") : T("word_sounds.voice_pack_instr_intro", "Record the task directions in your own voice, clear and unhurried. Empty ones keep the default narration. Tap \u{1F442} to hear the default first.")), (category === "cheers" ? PHONEME_PACK_CHEERS : PHONEME_PACK_INSTRS).map((slot) => {
+  }))))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug" }, category === "cheers" ? T("word_sounds.voice_pack_cheers_intro", "Record praise in your (or a parent's) voice. The app plays it when the student gets things right, as a personalized reinforcer. Tap \u{1F442} to hear the default first.") : T("word_sounds.voice_pack_instr_intro", "Record the task directions in your own voice, clear and unhurried. Empty ones keep the default narration. Tap \u{1F442} to hear the default first.")), (category === "cheers" ? PHONEME_PACK_CHEERS : PHONEME_PACK_INSTRS).map((slot) => {
     const hasI = !!instr[slot.id];
     const recI = recordingKey === slot.id;
     const hasRefI = !!instrReferenceClip(slot.id);
@@ -932,15 +961,28 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   }, []);
   const [showVoicePack, setShowVoicePack] = React.useState(false);
   React.useEffect(() => {
-    try {
-      const _lib = loadVoicePackLibrary();
-      const _active = _lib.packs.find((p) => p.id === _lib.activeId) || _lib.packs[0];
-      if (_active) {
-        if (_active.clips && Object.keys(_active.clips).length) applyPhonemeVoicePackToBank(_active.clips);
-        if (_active.instr && Object.keys(_active.instr).length) applyInstrToBank(_active.instr);
+    const reapply = () => {
+      try {
+        const _lib = loadVoicePackLibrary();
+        const _active = _lib.packs.find((p) => p.id === _lib.activeId) || _lib.packs[0];
+        if (_active) {
+          if (_active.clips && Object.keys(_active.clips).length) applyPhonemeVoicePackToBank(_active.clips);
+          if (_active.instr && Object.keys(_active.instr).length) applyInstrToBank(_active.instr);
+        }
+      } catch (e) {
       }
+    };
+    reapply();
+    try {
+      window.addEventListener("audio_bank_loaded", reapply);
     } catch (e) {
     }
+    return () => {
+      try {
+        window.removeEventListener("audio_bank_loaded", reapply);
+      } catch (e) {
+      }
+    };
   }, []);
   const [generatedCount, setGeneratedCount] = React.useState(0);
   const [prewarmCount, setPrewarmCount] = React.useState(0);

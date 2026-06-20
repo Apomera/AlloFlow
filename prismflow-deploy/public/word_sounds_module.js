@@ -299,7 +299,7 @@
         if (typeof props.onModeChange === "function") props.onModeChange("hidden");
       };
       const handlePlay = () => {
-        if (typeof props.onPlaySound === "function") props.onPlaySound(anchor.ipa, anchor.keyWord);
+        if (typeof props.onPlaySound === "function") props.onPlaySound(((anchor.graphemes && anchor.graphemes[0]) || target), anchor.keyWord);
       };
       const hasMultiSpellings = (anchor.graphemes || []).length > 1;
       const primaryGrapheme = (anchor.graphemes && anchor.graphemes[0]) || target;
@@ -2227,17 +2227,17 @@
       // Anchor play handler: speak the key word so the student hears the
       // sound in its keyword context (Jolly-Phonics style). Falls back to
       // attempting to play the phoneme directly if no key word is available.
-      const handleAnchorPlay = React.useCallback((ipa, keyWord) => {
-        // The anchor button says "Hear the sound /p/", so play the PHONEME from
-        // the audio bank — handleAudio checks __ALLO_PHONEME_AUDIO_BANK first, so
-        // the child hears the real recorded /p/ clip (or a teacher's custom
-        // override) instead of regenerating the key word via TTS, which can fail
-        // or sound wrong. Fall back to speaking the key word only if there is no
-        // phoneme to play. (handleAudio is defined just below and is referenced
-        // here at call time; it is intentionally kept out of the dep array to
-        // avoid a temporal-dead-zone error when the dep array evaluates at render.)
-        if (ipa && typeof handleAudio === "function") { handleAudio(ipa); return; }
-        const toSpeak = keyWord || ipa;
+      const handleAnchorPlay = React.useCallback((soundKey, keyWord) => {
+        // Play the anchor's PHONEME from the bank. IMPORTANT: pass the GRAPHEME
+        // key (e.g. 'a','sh','oo'), NOT the IPA symbol — the bank (and a teacher's
+        // custom Voice Pack) is keyed by grapheme, so handleAudio(ipa) would miss
+        // for vowels/digraphs and even play the wrong (short) vowel via specialMap.
+        // handleAudio checks __ALLO_PHONEME_AUDIO_BANK first, so the child hears the
+        // real recorded clip (or a custom override). Fall back to speaking the key
+        // word only if there is no clip. (handleAudio is referenced at call time and
+        // kept out of the dep array to avoid a render-time temporal-dead-zone error.)
+        if (soundKey && typeof handleAudio === "function") { handleAudio(soundKey); return; }
+        const toSpeak = keyWord || soundKey;
         if (toSpeak && typeof speakWord === "function") speakWord(toSpeak);
       }, [speakWord]);
       // Post-error remediation: when the student gets an answer wrong, briefly
@@ -2257,7 +2257,7 @@
         const anchor = getAnchor(anchorTarget);
         if (anchor && anchor.keyWord) {
           // Brief delay so the incorrect-feedback chime plays first.
-          setTimeout(function() { handleAnchorPlay(anchor.ipa, anchor.keyWord); }, 400);
+          setTimeout(function() { handleAnchorPlay(((anchor.graphemes && anchor.graphemes[0]) || anchorTarget), anchor.keyWord); }, 400);
         }
         const t = setTimeout(function() { setAnchorErrorFlash(false); }, 1600);
         return function() { clearTimeout(t); };
