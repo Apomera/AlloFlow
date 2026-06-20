@@ -97,6 +97,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       var GripVertical = ctx.icons.GripVertical;
       var announceToSR = ctx.announceToSR;
       var awardStemXP = ctx.awardXP;
+      // The quiz / question / Life-Sim handlers call addXP(amount, reason), but
+      // addXP was never defined → `typeof addXP === 'function'` was always false
+      // → XP was never awarded anywhere. Define it against the host signature
+      // awardStemXP(toolId, points, reason).
+      var addXP = function(amount, reason) { if (typeof awardStemXP === 'function') awardStemXP('economicsLab', amount, reason); };
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
