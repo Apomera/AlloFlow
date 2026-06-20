@@ -1477,11 +1477,31 @@
           });
         }
 
+        // ── Coordinate-reading helpers: the y-intercept (0, b) marker for line
+        // levels + a live readout of where the beam crosses the target's x
+        // column vs the node's own y. The readout only shows when the curve is
+        // visible (respects the hidden-preview anti-fishing gate). All aria-hidden.
+        var mathEls = [];
+        var _mhalo = THEME === 'dark' ? 'rgba(2,8,6,0.55)' : 'rgba(255,255,255,0.7)';
+        if (level.family === 'line' && P.b >= wy0 - 0.5 && P.b <= wy1 + 0.5) {
+          var _byPx = sy(P.b);
+          mathEls.push(h('circle', { key: 'bdot', cx: sx(0), cy: _byPx, r: 4.5, fill: BEAM, stroke: '#06262b', strokeWidth: 1.5, 'aria-hidden': 'true' }));
+          mathEls.push(h('text', { key: 'blabel', x: sx(0) + 8, y: _byPx - 6, fill: BEAM, fontSize: 11, fontWeight: 800, style: { paintOrder: 'stroke', stroke: _mhalo, strokeWidth: 2.6 }, 'aria-hidden': 'true' }, 'b = ' + fmtVal(P.b, level.params.b.step)));
+        }
+        if (showPreview && !isMatch && level.node) {
+          var _nx = level.node.x, _ny = fnY(level.family, P, _nx);
+          if (isFinite(_ny) && _ny >= wy0 - 1 && _ny <= wy1 + 1) {
+            mathEls.push(h('line', { key: 'bhdrop', x1: sx(_nx), y1: sy(_ny), x2: sx(_nx), y2: sy(level.node.y), stroke: INK, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.5, 'aria-hidden': 'true' }));
+            mathEls.push(h('circle', { key: 'bhdot', cx: sx(_nx), cy: sy(_ny), r: 3.5, fill: 'none', stroke: BEAM, strokeWidth: 2, 'aria-hidden': 'true' }));
+            mathEls.push(h('text', { key: 'bhlabel', x: sx(_nx) - 7, y: sy(_ny) - 5, textAnchor: 'end', fill: INK, fontSize: 10, fontWeight: 700, style: { paintOrder: 'stroke', stroke: _mhalo, strokeWidth: 2.6 }, 'aria-hidden': 'true' }, 'y=' + (Math.round(_ny * 10) / 10)));
+          }
+        }
+
         var svg = (gauntlet && gauntlet.empty) ? null : h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat([defs], backdropEls, gridEls, axisEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
+        }, [].concat([defs], backdropEls, gridEls, axisEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
