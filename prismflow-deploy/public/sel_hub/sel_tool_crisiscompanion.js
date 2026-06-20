@@ -83,6 +83,12 @@ window.SelHub = window.SelHub || {
   // localStorage helpers
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+  // Per-student namespace for crisis data. Without it, every student on a shared
+  // device read/wrote the SAME global key — so the next student loaded the
+  // previous one's suicide safety plan / coping toolkit. _ccNs is set at render
+  // time (session + codename); ccKey() suffixes every crisis key with it.
+  var _ccNs = '';
+  function ccKey(key) { return _ccNs ? (key + '::' + _ccNs) : key; }
 
   // Theme palette — calming teal / emerald, NOT alarming reds for this tool.
   // TEAL is teal-700 (not teal-600) so white-on-TEAL buttons hit 5.48:1
@@ -714,11 +720,11 @@ window.SelHub = window.SelHub || {
   // Tap any strategy to add it to your personal "toolkit". Persisted in
   // localStorage. Toolkit shows highlighted strategies first as a "go-to" list.
   function _CopingToolkit(h, d, upd) {
-    var saved = d.toolkitIds || lsGet('crisisCompanion.toolkit.v1', []) || [];
+    var saved = d.toolkitIds || lsGet(ccKey('crisisCompanion.toolkit.v1'), []) || [];
     function toggle(id) {
       var next = saved.indexOf(id) === -1 ? saved.concat([id]) : saved.filter(function(x) { return x !== id; });
       upd('toolkitIds', next);
-      lsSet('crisisCompanion.toolkit.v1', next);
+      lsSet(ccKey('crisisCompanion.toolkit.v1'), next);
       announce(saved.indexOf(id) === -1 ? 'Added to your toolkit' : 'Removed from your toolkit');
     }
     var byCategory = {};
@@ -793,16 +799,16 @@ window.SelHub = window.SelHub || {
       { id: 'professionals', label: '5. Professionals + crisis lines', sub: 'My therapist (if I have one), psychiatrist, doctor, school counselor, plus 24/7 crisis lines.', placeholder: 'e.g., "988 Lifeline (call or text), Crisis Text Line (text HOME to 741741), Dr. ____ at clinic ____, school counselor"' },
       { id: 'environment', label: '6. Making my environment safer', sub: 'What can I (or someone I trust) do to put distance between me and anything I might use to hurt myself? This is the single most evidence-based step.', placeholder: 'e.g., "Give my medications to mom to lock up. Stay out of the basement. Stay with someone overnight if it\'s really bad."' }
     ];
-    var entries = d.safetyPlan || lsGet('crisisCompanion.safetyPlan.v1', null) || {};
+    var entries = d.safetyPlan || lsGet(ccKey('crisisCompanion.safetyPlan.v1'), null) || {};
     function setStep(id, val) {
       var ne = Object.assign({}, entries); ne[id] = val;
       upd('safetyPlan', ne);
-      lsSet('crisisCompanion.safetyPlan.v1', ne);
+      lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne);
     }
     function clearAll() {
       if (typeof window !== 'undefined' && !window.confirm('Clear your saved safety plan? This cannot be undone.')) return;
       upd('safetyPlan', {});
-      lsSet('crisisCompanion.safetyPlan.v1', {});
+      lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
       announce('Safety plan cleared.');
     }
     function printPlan() {
@@ -1394,6 +1400,23 @@ window.SelHub = window.SelHub || {
       var band = ctx.gradeBand || 'middle';
 
       var d = (ctx.toolData && ctx.toolData.crisiscompanion) || {};
+
+      // ── Per-student isolation for crisis localStorage keys ──
+      // Namespace by live session + student codename so a shared classroom
+      // device never exposes one student's safety plan / toolkit / badges to
+      // the next. One-time cleanup: in solo use, migrate a pre-namespacing plan
+      // into this student's namespace; then delete the old global key so the
+      // previously-shared data can't be read by anyone else.
+      _ccNs = [ctx.activeSessionCode, ctx.studentCodename].filter(Boolean).join('.') || 'student';
+      try {
+        var _ccSolo = !ctx.activeSessionCode;
+        ['crisisCompanion.safetyPlan.v1', 'crisisCompanion.toolkit.v1', 'crisisCompanion.badges.v1'].forEach(function (k) {
+          var legacy = localStorage.getItem(k);
+          if (legacy == null) return;
+          if (_ccSolo && localStorage.getItem(ccKey(k)) == null) { localStorage.setItem(ccKey(k), legacy); }
+          localStorage.removeItem(k);
+        });
+      } catch (e) {}
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('crisiscompanion', key); else { Object.keys(key).forEach(function(k) { ctx.update && ctx.update('crisiscompanion', k, key[k]); }); } }
         else { ctx.update && ctx.update('crisiscompanion', key, val); }
@@ -1401,7 +1424,7 @@ window.SelHub = window.SelHub || {
 
       // Hydrate persisted badges
       if (!d._hydrated) {
-        var savedBadges = lsGet('crisisCompanion.badges.v1', null);
+        var savedBadges = lsGet(ccKey('crisisCompanion.badges.v1'), null);
         if (savedBadges && d.badges === undefined) upd({ badges: savedBadges, _hydrated: true });
         else upd('_hydrated', true);
       }
@@ -1432,7 +1455,7 @@ window.SelHub = window.SelHub || {
         if (!badges[id]) {
           var nb = Object.assign({}, badges); nb[id] = true;
           upd('badges', nb);
-          lsSet('crisisCompanion.badges.v1', nb);
+          lsSet(ccKey('crisisCompanion.badges.v1'), nb);
         }
       }
 
