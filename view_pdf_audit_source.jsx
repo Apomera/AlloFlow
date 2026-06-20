@@ -1678,6 +1678,7 @@ function PdfAuditView(props) {
   const VERAPDF_VALIDATOR_URL = 'https://alloflow-cdn.pages.dev/verapdf/verapdf_validator.html';
   const [veraPdfResult, setVeraPdfResult] = useState(null);   // {compliant, failedChecks, failedRules:[{clause,testNumber,message,count}]} | {error}
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
+  const [veraPdfFixing, setVeraPdfFixing] = useState(false);  // closed-loop remediation in progress
   const _lastTaggedBytesRef = useRef(null);                   // shipped tagged-PDF bytes, for on-demand veraPDF validation
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
@@ -1690,6 +1691,22 @@ function PdfAuditView(props) {
       const d = (ev && ev.data) || {};
       if (d.type === 'verapdf-ready') { try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) {} }
       else if (d.type === 'verapdf-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
+    }
+    window.addEventListener('message', onMsg);
+  });
+  // Closed-loop remediation: the companion window validates → repairs → re-validates → loops until
+  // green (or best-effort), returning the repaired bytes (repairedB64) + the per-iteration log.
+  const runVeraPdfRemediate = (bytes) => new Promise((resolve, reject) => {
+    let win = null;
+    try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
+    if (!win) { reject(new Error('Popup blocked — allow pop-ups so AlloFlow can run veraPDF remediation.')); return; }
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF remediation timed out')); } }, 600000);
+    function cleanup() { clearTimeout(timer); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) {
+      const d = (ev && ev.data) || {};
+      if (d.type === 'verapdf-ready') { try { win.postMessage({ type: 'verapdf-remediate', bytes: bytes, maxIters: 5 }, '*'); } catch (e) {} }
+      else if (d.type === 'verapdf-remediate-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
     }
     window.addEventListener('message', onMsg);
   });
@@ -8118,6 +8135,38 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <li key={i} className="text-red-700 leading-snug">ISO 14289-1 §{f.clause} (test {f.testNumber}): {f.message}{f.count > 1 ? ' ×' + f.count : ''}</li>
                                         ))}
                                       </ul>
+                                    )}
+                                    {/* Closed-loop auto-fix: the validator window validates → repairs → re-validates → loops
+                                        until veraPDF passes (or best-effort), then downloads the result. Bytes never leave the browser. */}
+                                    {veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && _lastTaggedBytesRef.current && (
+                                      <button type="button" disabled={veraPdfFixing} data-help-ignore="true"
+                                        onClick={async () => {
+                                          setVeraPdfFixing(true);
+                                          try {
+                                            const _rem = await runVeraPdfRemediate(_lastTaggedBytesRef.current);
+                                            if (_rem && _rem.repairedB64) {
+                                              const _bin = atob(_rem.repairedB64);
+                                              const _u8 = new Uint8Array(_bin.length);
+                                              for (let _i = 0; _i < _bin.length; _i++) _u8[_i] = _bin.charCodeAt(_i);
+                                              _lastTaggedBytesRef.current = _u8;
+                                              const _url = URL.createObjectURL(new Blob([_u8], { type: 'application/pdf' }));
+                                              const _a = document.createElement('a');
+                                              _a.href = _url; _a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-tagged-veraPDF-fixed.pdf';
+                                              document.body.appendChild(_a); _a.click(); document.body.removeChild(_a); URL.revokeObjectURL(_url);
+                                              setVeraPdfResult(_rem.verdict || { compliant: !!_rem.compliant, failedChecks: 0, failedRules: [] });
+                                              addToast(_rem.compliant
+                                                ? (t('pdf_audit.verapdf.fixed_pass') || 'Auto-fixed to PDF/UA-1 — downloaded the independently-validated file.')
+                                                : (t('pdf_audit.verapdf.fixed_partial') || 'Applied veraPDF auto-fixes (some rules need richer repair) — downloaded the improved file.'),
+                                                _rem.compliant ? 'success' : 'warning');
+                                            }
+                                          } catch (e) { addToast((t('pdf_audit.verapdf.fix_failed') || 'veraPDF auto-fix failed') + ': ' + String((e && e.message) || e), 'error'); }
+                                          finally { setVeraPdfFixing(false); }
+                                        }}
+                                        className="mt-1.5 block font-bold text-emerald-700 hover:underline disabled:opacity-60 outline-none">
+                                        {veraPdfFixing
+                                          ? '⏳ ' + (t('pdf_audit.verapdf.fixing') || 'Auto-fixing to PDF/UA-1 (validate → repair → re-validate)…')
+                                          : '🔧 ' + (t('pdf_audit.verapdf.autofix') || 'Auto-fix remaining issues (veraPDF closed loop)')}
+                                      </button>
                                     )}
                                     <p className="text-[10px] text-slate-500 italic mt-1">{t('pdf_audit.verapdf.disclaimer') || 'Independent open-source validation — not a legal accessibility certificate; human review still recommended.'}</p>
                                   </div>

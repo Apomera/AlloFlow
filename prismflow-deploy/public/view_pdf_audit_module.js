@@ -1665,6 +1665,7 @@ function PdfAuditView(props) {
   const VERAPDF_VALIDATOR_URL = "https://alloflow-cdn.pages.dev/verapdf/verapdf_validator.html";
   const [veraPdfResult, setVeraPdfResult] = useState(null);
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
+  const [veraPdfFixing, setVeraPdfFixing] = useState(false);
   const _lastTaggedBytesRef = useRef(null);
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
@@ -1699,6 +1700,51 @@ function PdfAuditView(props) {
         } catch (e) {
         }
       } else if (d.type === "verapdf-result") {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        if (d.error) reject(new Error(d.error));
+        else resolve(d.result);
+      }
+    }
+    window.addEventListener("message", onMsg);
+  });
+  const runVeraPdfRemediate = (bytes) => new Promise((resolve, reject) => {
+    let win = null;
+    try {
+      win = window.open(VERAPDF_VALIDATOR_URL, "alloflow-verapdf", "width=480,height=380");
+    } catch (e) {
+    }
+    if (!win) {
+      reject(new Error("Popup blocked \u2014 allow pop-ups so AlloFlow can run veraPDF remediation."));
+      return;
+    }
+    let done = false;
+    const timer = setTimeout(() => {
+      if (!done) {
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(new Error("veraPDF remediation timed out"));
+      }
+    }, 6e5);
+    function cleanup() {
+      clearTimeout(timer);
+      window.removeEventListener("message", onMsg);
+    }
+    function onMsg(ev) {
+      const d = ev && ev.data || {};
+      if (d.type === "verapdf-ready") {
+        try {
+          win.postMessage({ type: "verapdf-remediate", bytes, maxIters: 5 }, "*");
+        } catch (e) {
+        }
+      } else if (d.type === "verapdf-remediate-result") {
         done = true;
         cleanup();
         try {
@@ -6250,7 +6296,45 @@ Return ONLY JSON:
         className: "font-bold text-indigo-700 hover:underline disabled:opacity-60 outline-none"
       },
       veraPdfBusy ? "\u23F3 " + (t("pdf_audit.verapdf.running") || "Validating with veraPDF\u2026 (first run downloads ~25 MB, ~15s)") : "\u{1F50E} " + (t("pdf_audit.verapdf.btn") || "Independently validate with veraPDF (ISO 14289-1)")
-    ), veraPdfResult && veraPdfResult.error && /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 mt-1" }, t("pdf_audit.verapdf.unavailable") || "veraPDF validation unavailable", " (", veraPdfResult.error, ") \u2014 ", t("pdf_audit.verapdf.fallback") || "rely on the self-check above and verify in PAC 2024."), veraPdfResult && !veraPdfResult.error && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, veraPdfResult.compliant ? "\u2705 " + (t("pdf_audit.verapdf.pass") || "Passes PDF/UA-1 (independently validated by veraPDF)") : "\u274C " + ((veraPdfResult.failedRules ? veraPdfResult.failedRules.length : 0) + " " + (t("pdf_audit.verapdf.failed") || "rule(s) failed (veraPDF)"))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 mt-1" }, veraPdfResult.failedRules.map((f, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-red-700 leading-snug" }, "ISO 14289-1 \xA7", f.clause, " (test ", f.testNumber, "): ", f.message, f.count > 1 ? " \xD7" + f.count : ""))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-1" }, t("pdf_audit.verapdf.disclaimer") || "Independent open-source validation \u2014 not a legal accessibility certificate; human review still recommended."))), (() => {
+    ), veraPdfResult && veraPdfResult.error && /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 mt-1" }, t("pdf_audit.verapdf.unavailable") || "veraPDF validation unavailable", " (", veraPdfResult.error, ") \u2014 ", t("pdf_audit.verapdf.fallback") || "rely on the self-check above and verify in PAC 2024."), veraPdfResult && !veraPdfResult.error && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, veraPdfResult.compliant ? "\u2705 " + (t("pdf_audit.verapdf.pass") || "Passes PDF/UA-1 (independently validated by veraPDF)") : "\u274C " + ((veraPdfResult.failedRules ? veraPdfResult.failedRules.length : 0) + " " + (t("pdf_audit.verapdf.failed") || "rule(s) failed (veraPDF)"))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 mt-1" }, veraPdfResult.failedRules.map((f, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-red-700 leading-snug" }, "ISO 14289-1 \xA7", f.clause, " (test ", f.testNumber, "): ", f.message, f.count > 1 ? " \xD7" + f.count : ""))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && _lastTaggedBytesRef.current && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        disabled: veraPdfFixing,
+        "data-help-ignore": "true",
+        onClick: async () => {
+          setVeraPdfFixing(true);
+          try {
+            const _rem = await runVeraPdfRemediate(_lastTaggedBytesRef.current);
+            if (_rem && _rem.repairedB64) {
+              const _bin = atob(_rem.repairedB64);
+              const _u8 = new Uint8Array(_bin.length);
+              for (let _i = 0; _i < _bin.length; _i++) _u8[_i] = _bin.charCodeAt(_i);
+              _lastTaggedBytesRef.current = _u8;
+              const _url = URL.createObjectURL(new Blob([_u8], { type: "application/pdf" }));
+              const _a = document.createElement("a");
+              _a.href = _url;
+              _a.download = (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-veraPDF-fixed.pdf";
+              document.body.appendChild(_a);
+              _a.click();
+              document.body.removeChild(_a);
+              URL.revokeObjectURL(_url);
+              setVeraPdfResult(_rem.verdict || { compliant: !!_rem.compliant, failedChecks: 0, failedRules: [] });
+              addToast(
+                _rem.compliant ? t("pdf_audit.verapdf.fixed_pass") || "Auto-fixed to PDF/UA-1 \u2014 downloaded the independently-validated file." : t("pdf_audit.verapdf.fixed_partial") || "Applied veraPDF auto-fixes (some rules need richer repair) \u2014 downloaded the improved file.",
+                _rem.compliant ? "success" : "warning"
+              );
+            }
+          } catch (e) {
+            addToast((t("pdf_audit.verapdf.fix_failed") || "veraPDF auto-fix failed") + ": " + String(e && e.message || e), "error");
+          } finally {
+            setVeraPdfFixing(false);
+          }
+        },
+        className: "mt-1.5 block font-bold text-emerald-700 hover:underline disabled:opacity-60 outline-none"
+      },
+      veraPdfFixing ? "\u23F3 " + (t("pdf_audit.verapdf.fixing") || "Auto-fixing to PDF/UA-1 (validate \u2192 repair \u2192 re-validate)\u2026") : "\u{1F527} " + (t("pdf_audit.verapdf.autofix") || "Auto-fix remaining issues (veraPDF closed loop)")
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-1" }, t("pdf_audit.verapdf.disclaimer") || "Independent open-source validation \u2014 not a legal accessibility certificate; human review still recommended."))), (() => {
       const td = lastTaggedValidation && lastTaggedValidation.roundTrip && lastTaggedValidation.roundTrip.textDiff;
       const residual = td && typeof td.residualMissingCount === "number" ? td.residualMissingCount : null;
       if (!td || !residual || residual <= 0) return null;
