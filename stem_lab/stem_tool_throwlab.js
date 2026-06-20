@@ -1614,9 +1614,15 @@ window.StemLab = window.StemLab || {
       var callGemini = ctx.callGemini;
 
       // ── State init guard ─────────────────────────────────
-      if (!labToolData || !labToolData.throwlab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { throwlab: {
+      // Seed defaults, but DO NOT early-return here. This render calls hooks
+      // (useState/useRef/useEffect) on the lines below AND deep in its body, so
+      // a conditional early-return changes the hook count between the empty and
+      // seeded renders and throws "Rendered more hooks than during the previous
+      // render" on that transition (live Rules-of-Hooks bug, fixed 2026-06-20).
+      // We seed state and fall through with the defaults; the body reads state
+      // only via the local `d` (bucket-or-defaults), so first paint matches the
+      // next render.
+      var THROWLAB_DEFAULTS = {
             pitchType: '4seam',
             speedMph: 92,
             releaseHeight: 1.85,
@@ -1680,11 +1686,13 @@ window.StemLab = window.StemLab || {
               goalKickTypes: {}, totalGoals: 0,
               fgMadeByDist: {}
             }
-          }});
+          };
+      if (!labToolData || !labToolData.throwlab) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { throwlab: THROWLAB_DEFAULTS });
         });
-        return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
       }
-      var d = labToolData.throwlab;
+      var d = (labToolData && labToolData.throwlab) || THROWLAB_DEFAULTS;
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab); next[key] = val;
