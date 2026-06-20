@@ -114,7 +114,7 @@ window.StemLab = window.StemLab || {
     complete: { icon: '\uD83E\uDDEC', label: 'Complete Dominance', desc: 'One allele fully masks the other. Heterozygotes look like the dominant homozygote.' },
     incomplete: { icon: '\uD83C\uDF38', label: 'Incomplete Dominance', desc: 'Neither allele fully dominates. Heterozygotes show a blended intermediate phenotype.' },
     codominant: { icon: '\uD83E\uDE78', label: 'Codominance', desc: 'Both alleles are fully expressed. Heterozygotes show both traits simultaneously.' },
-    sexLinked: { icon: '\u2640\u2642', label: 'Sex-Linked (X-Linked)', desc: 'Trait is carried on the X chromosome. Males (XY) need only one copy to express.' }
+    sexLinked: { icon: '\u2640\u2642', label: 'Sex-Linked (X-Linked)', desc: 'Trait is carried on the X chromosome. This models X-linked RECESSIVE inheritance (e.g. hemophilia, red-green color blindness): males (XY) need only one copy to express it; females (XX) need two.' }
   };
 
   // ── Trait presets by mode ──
