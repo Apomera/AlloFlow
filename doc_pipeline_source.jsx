@@ -12391,6 +12391,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
+      window.__lastExtractEncrypted = false; // password-cause (2026-06-20): true when a password-protected PDF was detected, so the <20-char abort can name the real cause
       // Reset Vision-strip audit trail. Every conservative JSON-strip decision is
       // recorded here so the fidelity panel can show what was kept vs stripped.
       window.__lastVisionStripTrail = [];
@@ -12556,8 +12557,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   }
                 }
               } catch (_mixErr) { warnLog('[Det] Mixed-page OCR rescue failed (keeping text-layer result): ' + (_mixErr && _mixErr.message)); }
+              // B1 (2026-06-20): surface born-digital extraction THROWS to the Stage-1 partial-extraction
+              // banner. Only the SCANNED path wrote __lastOcrPageErrors, so a text-PDF page that threw on
+              // getTextContent — and wasn't recovered by the mixed-page rescue above — vanished with no
+              // banner (the 97% char gate is the only net, and one short lost page stays under it). Report
+              // pages that threw AND are still empty post-rescue; blank-by-design pages don't throw, so excluded.
+              try {
+                if (Array.isArray(det.pageErrors) && det.pageErrors.length) {
+                  const _lost = det.pageErrors.filter(e => { const pg = (det.pages || []).find(p => p && p.pageNum === e.pageNum); return !pg || (pg.text || '').trim().length < 20; });
+                  if (_lost.length) { window.__lastOcrPageErrors = _lost; warnLog('[Det] ' + _lost.length + ' born-digital page(s) failed extraction (unrecovered) — surfaced to the partial-extraction banner'); }
+                }
+              } catch (_) {}
             }
           } else if (det) {
+            if (det.isEncrypted) window.__lastExtractEncrypted = true; // password-cause: remember for the <20-char abort message below
             warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
           }
         }
@@ -12781,7 +12794,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       }
 
       if (!extractedText || extractedText.length < 20) {
-        throw new Error('Could not extract sufficient text from this PDF');
+        // password-cause (2026-06-20): name the actionable cause when the input was a password-protected
+        // PDF (extraction + OCR both yield nothing) instead of the generic "couldn't extract" message.
+        throw new Error(window.__lastExtractEncrypted
+          ? 'This PDF is password-protected — remove the password (open it and re-save / print to PDF without a password), then re-upload.'
+          : 'Could not extract sufficient text from this PDF');
       }
 
       // ── Clean extracted text: strip JSON wrappers, fix escaped newlines ──
