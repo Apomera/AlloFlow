@@ -1,0 +1,102 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "udl-representation-quickstart",
+    "title": "UDL Quick Start: Multiple Means of Representation",
+    "topic": "UDL",
+    "summary": "A ~15-minute primer on the UDL principle of Multiple Means of Representation — the 'what' of learning — with a knowledge check and a classroom-application reflection. General educator PD; no AlloFlow features required.",
+    "estMinutes": 15,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Learn",
+      "activities": [
+        {
+          "id": "read-representation",
+          "type": "read",
+          "title": "What 'Multiple Means of Representation' means",
+          "content": {
+            "body": "Universal Design for Learning (UDL, from CAST) is built on three principles, each tied to a brain network. Multiple Means of Representation is the 'what' of learning — it addresses recognition networks: how learners take in and make sense of information.\n\nThe core idea: there is no single way of presenting information that works for every learner, so design instruction to offer the same content in MORE THAN ONE format. This gives every learner multiple entry points — it is NOT about sorting students into 'visual' or 'auditory' types.\n\nCAST organizes Representation into three guidelines: (1) Perception — offer alternatives for visual and auditory information (captions, transcripts, adjustable text/contrast); (2) Language & Symbols — clarify vocabulary, syntax, and symbols, and illustrate with multiple media; (3) Comprehension — activate prior knowledge, highlight patterns and big ideas, and support how learners process and organize information.",
+            "keyPoints": [
+              "Representation = the 'what' of learning (recognition networks).",
+              "Give ALL learners multiple formats of the same content — not one format per 'learning style'.",
+              "Three guidelines: Perception; Language & Symbols; Comprehension."
+            ],
+            "links": [
+              { "label": "CAST UDL Guidelines", "url": "https://udlguidelines.cast.org/" }
+            ]
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    },
+    {
+      "title": "Check your understanding",
+      "activities": [
+        {
+          "id": "quiz-representation",
+          "type": "quiz",
+          "title": "Knowledge check (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "The three UDL principles each map to a brain network. Multiple Means of Representation addresses the ___ of learning.",
+                "options": ["the WHAT (recognition networks)", "the HOW (strategic networks)", "the WHY (affective networks)", "none of these"],
+                "correctIndex": 0
+              },
+              {
+                "prompt": "Which best describes Multiple Means of Representation?",
+                "options": [
+                  "Presenting information in more than one format so every learner has multiple entry points",
+                  "Identifying each student's 'learning style' and teaching them only in that modality",
+                  "Letting students choose how they show what they know",
+                  "Rewarding students for staying on task"
+                ],
+                "correctIndex": 0
+              },
+              {
+                "prompt": "Which is an example of Multiple Means of Representation?",
+                "options": [
+                  "Providing a captioned video AND a text transcript of the same content",
+                  "Offering a choice between a poster or an essay to demonstrate learning",
+                  "Using a token economy to increase participation",
+                  "Giving a student extra time on a test"
+                ],
+                "correctIndex": 0
+              },
+              {
+                "prompt": "Representation is sometimes confused with the 'learning styles' idea. The evidence-based stance is:",
+                "options": [
+                  "Matching instruction to a preferred 'style' is not supported by research — provide multiple representations for ALL learners",
+                  "Visual learners should only be taught with visuals",
+                  "Auditory learners learn best by listening only",
+                  "Learning styles are settled science"
+                ],
+                "correctIndex": 0
+              }
+            ]
+          },
+          "gate": { "kind": "score", "threshold": 0.75 }
+        }
+      ]
+    },
+    {
+      "title": "Apply it",
+      "activities": [
+        {
+          "id": "reflect-representation",
+          "type": "reflect",
+          "title": "Plan one change",
+          "content": {
+            "prompt": "Name one lesson you will teach in the next two weeks. Identify TWO additional ways you could represent the key content (for example: a labeled diagram, a vocabulary pre-teach, a captioned video plus transcript, or a worked example). Write them here."
+          },
+          "gate": { "kind": "none" }
+        }
+      ]
+    }
+  ]
+}

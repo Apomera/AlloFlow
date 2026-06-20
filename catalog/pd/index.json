@@ -1,0 +1,18 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_catalog",
+  "generated_at": "2026-06-19T00:00:00.000Z",
+  "entries": [
+    {
+      "slug": "udl-representation-quickstart",
+      "title": "UDL Quick Start: Multiple Means of Representation",
+      "topic": "UDL",
+      "summary": "A ~15-minute primer on the UDL principle of Multiple Means of Representation, with a knowledge check and a classroom-application reflection.",
+      "estMinutes": 15,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/udl-representation-quickstart.json"
+    }
+  ]
+}
