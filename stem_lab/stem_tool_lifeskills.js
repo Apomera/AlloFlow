@@ -1539,12 +1539,24 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-3xl font-bold', style: { color: scoreRange.color } }, estimatedScore),
               h('p', { className: 'text-xs font-bold', style: { color: scoreRange.color } }, scoreRange.label),
               h('p', { className: 'text-[11px] text-slate-600 mt-1' }, scoreRange.desc),
-              // Score bar
-              h('div', { className: 'relative h-3 bg-slate-200 rounded-full mt-3 overflow-hidden' },
-                h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'absolute inset-y-0 left-0 bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500 rounded-full', style: { width: '100%' } }),
-                h('div', { className: 'absolute top-0 w-0.5 h-full bg-white shadow-md', style: { left: ((estimatedScore - 300) / 550 * 100) + '%' } })
-              ),
-              h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-1' }, h('span', null, '300'), h('span', null, '850'))
+              // FICO radial gauge (300-850) — the iconic credit-score dial,
+              // arc segmented into the real FICO bands (Poor/Fair/Good/Very
+              // Good/Excellent) with a needle at the estimated score.
+              (function() {
+                var GA_cx = 100, GA_cy = 92, GA_r = 76;
+                var arcPt = function(score, rad) { var tt = (Math.max(300, Math.min(850, score)) - 300) / 550; var a = Math.PI * (1 - tt); return { x: GA_cx + rad * Math.cos(a), y: GA_cy - rad * Math.sin(a) }; };
+                var np = arcPt(estimatedScore, GA_r - 15);
+                return h('svg', { width: '100%', viewBox: '0 0 200 106', style: { maxWidth: 240, display: 'block', margin: '8px auto 0' }, role: 'img', 'aria-label': 'FICO score gauge: ' + estimatedScore + ' of 850, ' + scoreRange.label + '.' },
+                  [[300, 580, '#ef4444'], [580, 670, '#f59e0b'], [670, 740, '#eab308'], [740, 800, '#84cc16'], [800, 850, '#22c55e']].map(function(b) {
+                    var p0 = arcPt(b[0], GA_r), p1 = arcPt(b[1], GA_r);
+                    return h('path', { key: b[0], d: 'M' + p0.x.toFixed(1) + ' ' + p0.y.toFixed(1) + ' A' + GA_r + ' ' + GA_r + ' 0 0 1 ' + p1.x.toFixed(1) + ' ' + p1.y.toFixed(1), stroke: b[2], strokeWidth: 12, fill: 'none' });
+                  }),
+                  h('line', { x1: GA_cx, y1: GA_cy, x2: np.x.toFixed(1), y2: np.y.toFixed(1), stroke: '#1e293b', strokeWidth: 3, strokeLinecap: 'round' }),
+                  h('circle', { cx: GA_cx, cy: GA_cy, r: 5, fill: '#1e293b' }),
+                  h('text', { x: 18, y: GA_cy + 13, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#64748b' }, '300'),
+                  h('text', { x: 182, y: GA_cy + 13, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#64748b' }, '850')
+                );
+              })()
             )
           ),
           // Compound Interest Calculator
