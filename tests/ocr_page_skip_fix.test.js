@@ -16,10 +16,12 @@ import { resolve } from 'node:path';
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 describe('#4A — OCR render recovers a slow/hung page via a bounded lower-scale retry', () => {
-  it('tries 2x then 1.25x, every attempt _withTimeout-wrapped (still bounded — hang fix intact)', () => {
-    expect(src).toContain('for (const _sc of [2.0, 1.25]) {');
-    expect(src).toContain("await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 75000 : 40000,");
-    // 2x failure retries; a 1.25x failure rethrows into the per-page catch (recorded, not silent)
+  it('tries 2x then 1.25x then 1x, every attempt _withTimeout-wrapped (still bounded — hang fix intact)', () => {
+    // 2026-06-19: ladder gained a final 1x rung with a generous budget so a heavy scanned page reliably
+    // renders (→ Tesseract word boxes → POSITIONED searchable text) instead of dropping to a top-block.
+    expect(src).toContain('for (const _sc of [2.0, 1.25, 1.0]) {');
+    expect(src).toContain("await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000),");
+    // higher scales retry to a lower scale; the final 1x rung rethrows into the per-page catch (recorded, not silent)
     expect(src).toContain('else throw _rErr;');
   });
 

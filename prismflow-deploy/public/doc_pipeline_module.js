@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -17814,6 +17814,18 @@ tr { page-break-inside: avoid; }
       // Setting it on every page is one line and a real keyboard-only
       // accessibility win.
       try { page.node.set(PDFName.of('Tabs'), PDFName.of('S')); } catch (_) {}
+      // Capture how many content streams are the ORIGINAL page (the scanned IMAGE) BEFORE we append
+      // the OCR text layer below — so the Stage-3 wrap can mark the image as /Artifact and the
+      // appended OCR text as tagged /P content. PDF/UA §7.1: a scanned page image must be marked
+      // Artifact (or a /Figure), NOT lumped into a /P with the text — that was the veraPDF §7.1 ×N
+      // "content neither Artifact nor tagged" failure. (2026-06-19 scanned-tagging fix)
+      let _origContentCount = 0;
+      if (isScanned) {
+        try {
+          const _rc0 = page.node.get(PDFName.of('Contents'));
+          _origContentCount = (_rc0 && typeof _rc0.size === 'function') ? _rc0.size() : (_rc0 ? 1 : 0);
+        } catch (_) { _origContentCount = 0; }
+      }
       // Path B — invisible OCR text layer for scanned PDFs. opacity:0 keeps
       // it invisible to sighted users while SR readers still pick it up via
       // the content stream. Wrapped later by the BDC/EMC pass below.
@@ -17985,21 +17997,27 @@ tr { page-break-inside: avoid; }
         // output exactly as it was when Stage 4 isn't applicable (scanned
         // PDFs, Stage 4 parse failures, pdf.js load failures).
         try {
-          const bdcBytes = new TextEncoder().encode('/P <</MCID 0>> BDC\n');
-          const emcBytes = new TextEncoder().encode('\nEMC\n');
-          const bdcStream = context.stream(bdcBytes);
-          const emcStream = context.stream(emcBytes);
-          const bdcRef = context.register(bdcStream);
-          const emcRef = context.register(emcStream);
           const node = page.node;
           const rawContents = node.get(PDFName.of('Contents'));
-          const newArr = [bdcRef];
+          const _contentRefs = [];
           if (rawContents && typeof rawContents.size === 'function' && typeof rawContents.get === 'function') {
-            for (let k = 0; k < rawContents.size(); k++) newArr.push(rawContents.get(k));
-          } else if (rawContents) {
-            newArr.push(rawContents);
+            for (let k = 0; k < rawContents.size(); k++) _contentRefs.push(rawContents.get(k));
+          } else if (rawContents) { _contentRefs.push(rawContents); }
+          const _mkCS = (s) => context.register(context.stream(new TextEncoder().encode(s)));
+          let newArr;
+          if (isScanned && _origContentCount > 0 && _contentRefs.length > _origContentCount) {
+            // SCANNED: the first _origContentCount streams are the page IMAGE → mark /Artifact; the
+            // appended streams are the OCR text layer → tag as real /P content (MCID 0). An image
+            // lumped into a /P is veraPDF §7.1 "content neither Artifact nor tagged"; this separates them.
+            newArr = [_mkCS('/Artifact BDC\n')];
+            for (let k = 0; k < _origContentCount; k++) newArr.push(_contentRefs[k]);
+            newArr.push(_mkCS(' EMC\n'), _mkCS('/P <</MCID 0>> BDC\n'));
+            for (let k = _origContentCount; k < _contentRefs.length; k++) newArr.push(_contentRefs[k]);
+            newArr.push(_mkCS(' EMC\n'));
+          } else {
+            // Born-digital Stage-4 fallback (or no separable image): single /P MCID 0 wrap, as before.
+            newArr = [_mkCS('/P <</MCID 0>> BDC\n')].concat(_contentRefs).concat([_mkCS('\nEMC\n')]);
           }
-          newArr.push(emcRef);
           node.set(PDFName.of('Contents'), context.obj(newArr));
           node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
         } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
@@ -26223,11 +26241,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
