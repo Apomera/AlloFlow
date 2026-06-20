@@ -485,6 +485,7 @@ window.StemLab = window.StemLab || {
         };
 
         function draw() {
+          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
           ctx2d.clearRect(0, 0, w, hh);
           var baseW = Math.min(32, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -641,6 +642,7 @@ window.StemLab = window.StemLab || {
         var currentReplStep = replStep;
 
         function drawRepl() {
+          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
           ctx2d.clearRect(0, 0, w, h2);
           var baseW = Math.min(28, (w - 100) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -776,6 +778,7 @@ window.StemLab = window.StemLab || {
         }
 
         function drawTrans() {
+          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
           ctx2d.clearRect(0, 0, w, hh);
 
           // Track step duration & progress
@@ -1184,6 +1187,7 @@ window.StemLab = window.StemLab || {
         var phaseStartTime = Date.now();
 
         function drawCRISPR() {
+          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
           ctx2d.clearRect(0, 0, w, h2);
           var baseW = Math.min(24, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -1487,6 +1491,7 @@ window.StemLab = window.StemLab || {
         var start = Date.now();
 
         function drawForensics() {
+          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
           ctx2d.clearRect(0, 0, w, h2);
           
           var progress = Math.min(1, (Date.now() - start) / 3000); // 3 seconds migration duration

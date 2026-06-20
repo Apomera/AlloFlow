@@ -2972,6 +2972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           function draw() {
+            if (!canvasEl.isConnected) { if (canvasEl._fireAnim) cancelAnimationFrame(canvasEl._fireAnim); return; }
             canvasEl._fireAnim = requestAnimationFrame(draw);
             tick++;
             cx.clearRect(0, 0, cW, cH);

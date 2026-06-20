@@ -2421,6 +2421,7 @@ const d = labToolData.waterCycle || {};
             });
 
             function draw() {
+              if (!canvasEl.isConnected) { if (canvasEl._wcAnim) cancelAnimationFrame(canvasEl._wcAnim); return; }
 
               tick++;
 

@@ -158,6 +158,7 @@ window.StemLab = window.StemLab || {
     // Animate
     var animId;
     var animate = function() {
+      if (!renderer.domElement.isConnected) { cancelAnimationFrame(animId); return; }
       animId = requestAnimationFrame(animate);
       renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
       if (controls) controls.update();
