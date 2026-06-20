@@ -1783,31 +1783,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             // Final entity state
             h('div', { style: { marginBottom: 16 } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Final entity state'),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
-                scenario.entities.map(function(ent) {
-                  var v = (st.entities && st.entities[ent.id] != null) ? st.entities[ent.id] : ent.init;
-                  var inverted = scenario.entityInverted && scenario.entityInverted[ent.id];
-                  var effective = inverted ? 100 - v : v;
-                  var barColor = effective >= 60 ? '#86efac' : effective >= 30 ? '#fbbf24' : '#dc2626';
-                  var delta = Math.round(v - ent.init);
-                  return h('div', { key: ent.id, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
-                      h('span', { style: { fontSize: 18 } }, ent.icon),
-                      h('div', { style: { flex: 1 } },
-                        h('div', { style: { fontWeight: 700, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, ent.name),
-                        h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ent.label)
+              (function() {
+                // Reconstruct each entity's trajectory by replaying the decision
+                // log's effects from the initial values — so the debrief shows
+                // the TREND the tutorial promises, not just the final delta.
+                var traj = {};
+                scenario.entities.forEach(function(e) { traj[e.id] = [e.init]; });
+                (st.decisionLog || []).forEach(function(entry) {
+                  var dec = scenario.decisions[entry.step];
+                  var opt = dec && dec.options.filter(function(o) { return o.id === entry.optionId; })[0];
+                  var fx = (opt && opt.effects) || {};
+                  scenario.entities.forEach(function(e) {
+                    var prev = traj[e.id][traj[e.id].length - 1];
+                    traj[e.id].push(Math.max(0, Math.min(100, prev + (fx[e.id] || 0))));
+                  });
+                });
+                return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
+                  scenario.entities.map(function(ent) {
+                    var v = (st.entities && st.entities[ent.id] != null) ? st.entities[ent.id] : ent.init;
+                    var inverted = scenario.entityInverted && scenario.entityInverted[ent.id];
+                    var effective = inverted ? 100 - v : v;
+                    var barColor = effective >= 60 ? '#86efac' : effective >= 30 ? '#fbbf24' : '#dc2626';
+                    var delta = Math.round(v - ent.init);
+                    var pts = traj[ent.id] || [v], n = pts.length;
+                    var SW = 100, SH = 24, px = function(i) { return (n <= 1 ? 0.5 : i / (n - 1)) * SW; }, pyv = function(val) { return SH - 3 - (val / 100) * (SH - 6); };
+                    return h('div', { key: ent.id, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                        h('span', { style: { fontSize: 18 } }, ent.icon),
+                        h('div', { style: { flex: 1 } },
+                          h('div', { style: { fontWeight: 700, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, ent.name),
+                          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ent.label)
+                        ),
+                        h('div', { style: { textAlign: 'right' } },
+                          h('div', { style: { fontSize: 14, fontWeight: 900, color: barColor } }, Math.round(v)),
+                          h('div', { style: { fontSize: 10, color: delta >= 0 ? '#86efac' : '#f87171', fontWeight: 700 } }, (delta >= 0 ? '+' : '') + delta)
+                        )
                       ),
-                      h('div', { style: { textAlign: 'right' } },
-                        h('div', { style: { fontSize: 14, fontWeight: 900, color: barColor } }, Math.round(v)),
-                        h('div', { style: { fontSize: 10, color: delta >= 0 ? '#86efac' : '#f87171', fontWeight: 700 } }, (delta >= 0 ? '+' : '') + delta)
-                      )
-                    ),
-                    h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
-                      h('div', { style: { width: v + '%', height: '100%', background: barColor } })
-                    )
-                  );
-                })
-              )
+                      n >= 2 ? h('svg', { width: '100%', viewBox: '0 0 ' + SW + ' ' + SH, preserveAspectRatio: 'none', style: { display: 'block', height: 24 }, 'aria-hidden': 'true' },
+                        h('line', { x1: 0, y1: pyv(ent.init), x2: SW, y2: pyv(ent.init), stroke: '#475569', strokeWidth: 0.75, strokeDasharray: '2 2', opacity: 0.6 }),
+                        h('polyline', { points: pts.map(function(val, i) { return px(i).toFixed(1) + ',' + pyv(val).toFixed(1); }).join(' '), fill: 'none', stroke: barColor, strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
+                        h('circle', { cx: px(n - 1), cy: pyv(pts[n - 1]), r: 2, fill: barColor })
+                      ) : h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
+                        h('div', { style: { width: v + '%', height: '100%', background: barColor } }))
+                    );
+                  })
+                );
+              })()
             ),
             // Decision log
             (st.decisionLog && st.decisionLog.length > 0) ? h('div', { style: { marginBottom: 16 } },
