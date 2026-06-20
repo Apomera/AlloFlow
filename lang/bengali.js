@@ -990,7 +990,7 @@
     "storage_full_text_only": "স্টোরেজ পূর্ণ। শুধুমাত্র টেক্সট সংরক্ষণ করা হচ্ছে (ছবি সরানো হয়েছে)।",
     "storage_full_critical": "জটিল: ইতিহাস সংরক্ষণ করা যায়নি। স্টোরেজ পূর্ণ।",
     "resource_not_found": "রিসোর্স পাওয়া যায়নি।",
-    "resource_not_found_history": "ইতিহাসে রিসোর্স পাওয়া যায়নি।",
+    "resource_not_found_history": "ইতিহাসে রিসোর্স পাওয়া যায়নি (এটি মুছে ফেলা হয়ে থাকতে পারে)।",
     "analysis_failed": "বিশ্লেষণ ব্যর্থ. দয়া করে আবার চেষ্টা করুন.",
     "enter_target_language": "অনুগ্রহ করে একটি লক্ষ্য ভাষা লিখুন।",
     "translation_started": "অনুবাদ শুরু হয়েছে...",
@@ -1626,7 +1626,7 @@
     "ai_feedback_unavailable": "AI ফিডব্যাক উপলব্ধ নয়",
     "write_essay_first": "প্রথমে আপনার প্রবন্ধ লিখুন!",
     "enter_word_art_first": "অনুগ্রহ করে প্রথমে ওয়ার্ড আর্ট টেক্সট লিখুন",
-    "preview_not_ready": "প্রিভিউ এখনও প্রস্তুত নয়",
+    "preview_not_ready": "প্রিভিউ এখনও প্রস্তুত নয় — এটি রেন্ডার হওয়া পর্যন্ত অপেক্ষা করুন, তারপর আবার চেষ্টা করুন।",
     "word_art_render_failed": "ওয়ার্ড আর্ট রেন্ডার করা যায়নি",
     "diff_engine_load_failed": "ডিফ ইঞ্জিন লোড হতে ব্যর্থ (নেটওয়ার্ক ব্লকড?)। আপনার সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।",
     "brf_downloaded": "ইলেকট্রনিক ব্রেইল (BRF) ডাউনলোড হয়েছে",
@@ -4142,6 +4142,7 @@
     "image_size_tooltip": "সমন্বয় size এর timeline চিত্র"
   },
   "pdf_audit": {
+    "fidelity_delta": "পাঠ্য বিশ্বস্ততা: {before}% → {after}%{detail}",
     "view_last_audit": "View শেষ Audit",
     "start_new_audit": "শুরু নতুন Audit",
     "apply_and_export": "প্রয়োগ করুন & রপ্তানি",

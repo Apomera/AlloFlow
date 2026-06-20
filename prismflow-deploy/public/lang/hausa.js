@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving rubutu only (hoto removed).",
     "storage_full_critical": "Critical: Could ba ajiye history. Storage full.",
     "resource_not_found": "albarkatu ba found.",
-    "resource_not_found_history": "albarkatu ba found history.",
+    "resource_not_found_history": "Ba a sami albarkatun a cikin tarihi ba (wataƙila an share shi).",
     "analysis_failed": "Analysis failed. don Allah gwada again.",
     "enter_target_language": "don Allah shigar target harshe.",
     "translation_started": "fassara started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ra'ayi babu",
     "write_essay_first": "Rubuta naka essay na farko!",
     "enter_word_art_first": "don Allah shigar kalma art rubutu na farko",
-    "preview_not_ready": "Pbita ba ready yet",
+    "preview_not_ready": "Samfoti bai shirya ba tukuna — ka jira ya bayyana, sannan ka sake gwadawa.",
     "word_art_render_failed": "Could ba render kalma art",
     "diff_engine_load_failed": "Diff engine failed zuwa ɗora (network blocked?). Check naka connection da gwada again.",
     "brf_downloaded": "An sauke Braille Electronic (BRF)",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 An ajiye aiki ({count} kewaye); loda shi daga baya don ci gaba",
     "project_saved": "💾 An ajiye aiki; loda shi daga baya don ci gaba da gyara",
     "search_result_desc": "Sakamakon Bincike na Google: {title}",
-    "link_url_prompt": "Shigar da URL na mahaɗi:"
+    "link_url_prompt": "Shigar da URL na mahaɗi:",
+    "building_accessible_docx": "Ana ƙirƙirar fayil ɗin Word mai saukin samun dama…",
+    "building_accessible_pptx": "Ana ƙirƙirar PowerPoint mai saukin samun dama…",
+    "batch_tagging": "📄 Ana samar da PDF masu tag domin ZIP — fayilolin da aka sikan suna ɗaukar lokaci mai tsawo (OCR yana gudana ga kowane fayil)…",
+    "builder_edits_preserved": "✋ An kiyaye gyare-gyaren da ka yi da hannu — ba a sake nuna samfotin ba. Fitar ko rufe mai ginin domin ajiye su, sannan ka canza saituna.",
+    "builder_edits_synced": "✏️ An ajiye gyare-gyaren mai ginin cikin takardar da aka gyara — fitar da Tagged PDF / Word / PowerPoint yanzu sun haɗa da su.",
+    "pptx_ai_theme": "🎨 Ana tambayar AI don launuka da suka dace da batun (ana tabbatar da saukin karatu a gida)…",
+    "make_accessible_fixing": "✨ An gama dubawa — ana gyara kai tsaye (ba a buƙatar danna kome)…",
+    "tagged_pdf_saved_see_report": "📄 An ajiye Tagged PDF — cikakken rahoton yana sama da maɓallan saukewa (✕ don kawarwa).",
+    "no_open_image_slot": "Babu wani wuri a buɗe domin hoto a samfotin — ja ƙaramin hoton zuwa kan wani hoto na musamman domin maye gurbinsa maimakon haka.",
+    "extracted_image_inserted": "🖼 An saka shi cikin wuri na farko da ke buɗe domin hoto — ja ƙaramin hoto maimakon haka idan kana son wani wuri daban.",
+    "html_downloaded": "🌐 An sauke HTML — yana buɗewa a kowane birawsa.",
+    "odt_downloaded": "📄 An sauke OpenDocument (.odt) — yana buɗewa a LibreOffice, Google Docs, ko Word.",
+    "daisy_downloaded": "🔊 An sauke fakitin littafin magana na DAISY (.zip) — buɗe shi a cikin mai karanta DAISY.",
+    "mo_no_voice": "Sabis ɗin murya babu shi, don haka ba za a iya samar da sautin karatu mai jagora a yanzu ba.",
+    "mo_busy": "Ana riga ana gudanar da fitar karatu mai jagora.",
+    "mo_no_text": "Ba a sami rubutu mai karantuwa don karantawa ba.",
+    "mo_no_audio": "⚠ An ajiye littafin karatu mai jagora, amma ba a iya samar da sauti ba (sabis ɗin murya babu shi). Rubutun da tsarin daidaitawa suna nan lafiya.",
+    "mo_done": "An sauke littafin karatu mai jagora",
+    "audio_unavailable_now": "Sauti babu shi a yanzu (wani aiki na iya gudana, ko kuma sabis ɗin murya a kashe yake)."
   },
   "large_file": {
     "modal_title": "Shigo Large sauti fayil",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator kayan aiki",
     "documents_menu_aria": "takarda jerin abinci",
     "open_doc_builder_pdf_aria": "Buɗe takarda Builder don PDF",
-    "export_slides_tooltip": "Opens takarda Builder Slides yanayi"
+    "export_slides_tooltip": "Opens takarda Builder Slides yanayi",
+    "learning_tools_tooltip": "Kayan Aikin Koyo (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Target harshe",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Na zaɓi. Ana amfani da shi ga kowane hoto a cikin gwajin (tambaya + zaɓuɓɓuka). Mara komai = salon tsoho. Ana adana shi tare da gwajin saboda ayyukan gyaran su tsaya kan salon.",
     "generate_pre_check": "Samar da Pre-Check",
     "generate_formative": "Samar da Formative Check",
-    "generate_review": "Samar da Spaced Review"
+    "generate_review": "Samar da Spaced Review",
+    "likert_strongly_disagree": "Ban yarda ba sosai",
+    "no_right_answer": "Babu amsoshi masu kyau ko marasa kyau a nan.",
+    "poll_completed": "Mun gode da raba ra'ayinka.",
+    "poll_intro": "Babu amsoshi masu kyau ko marasa kyau a nan — ra'ayinka na gaskiya yana taimakon malaminka kuma yana taimakon ka.",
+    "mode_poll": "🗣️ Kuri'a (muryar ɗalibi)"
   },
   "outline": {
     "title": "gani Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "Adjust size na timeline hoto"
   },
   "pdf_audit": {
+    "fidelity_delta": "Aminci: {before}% → {after}%{detail}",
     "view_last_audit": "Duba na ƙarshe Audit",
     "start_new_audit": "Fara sabon Audit",
     "apply_and_export": "Aiwatar & Fitar",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "Yana bin tsari amma yana da rauni a ma’ana — AI ya yi alama da ingancin abun ciki da axe-core ba zai iya gano shi ba",
-      "structural": "An gano keta WCAG matakin lambar — axe-core ya sami kasawar da injin zai iya tabbatarwa"
+      "structural": "An gano keta WCAG matakin lambar — axe-core ya sami kasawar da injin zai iya tabbatarwa",
+      "critical_override": "axe-core ya gano keta WCAG mai muhimmanci {n} — ka duba su kafin ka dogara da maki da aka haɗa; matsakaici na iya ɓoye gazawa mai tsanani"
     },
     "tagtree": {
       "label": "Tsarin alama da yake wanzu",
@@ -4278,7 +4305,8 @@
       "std_dev": "mizani Deviation",
       "icc_title": "Custom 1−(SD/50) index; ba textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Hadewar CV + pairwise heuristic a tsakanin wucewar AI; ba Cronbach's α na littafi ba"
     },
     "score": {
       "total_checks": "Jimillar binciken da aka yi",
@@ -4436,7 +4464,9 @@
       "title": "Regenerate PDF daga remediated HTML. Layout reflows — page breaks, fonts, da pagination may differ daga original. Works well don mai sauƙi prose takarda."
     },
     "tagged_pdf": {
-      "title": "Preserve original PDF's gani layout byte-identical da inject accessibility tags cikin its structure tree. Best don textbooks, multi-shafi takarda, da branded PDFs ina gani fidelity matters."
+      "title": "Preserve original PDF's gani layout byte-identical da inject accessibility tags cikin its structure tree. Best don textbooks, multi-shafi takarda, da branded PDFs ina gani fidelity matters.",
+      "office_note": "Tagged PDF ya shafi shigarwar PDF — yi amfani da Word/HTML",
+      "office_note_title": "Ana iya saka tag ɗin tsari kawai cikin baitin PDF. Domin shigarwar Word/PowerPoint, saukewar Word da HTML masu saukin samun dama suna ɗauke da tsarin da aka gyara."
     },
     "alt_formats": {
       "intro": "Sauke remediated takarda accessible alternative tsari"
@@ -4507,7 +4537,9 @@
       "heading": "sigogi Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Ja thumbnail onto any hoto placeholder pbita zuwa insert it, ko danna \"📷 Loda\" inside placeholder da zaɓi \"Yi amfani extracted hoto\"."
+      "drag_hint": "Ja thumbnail onto any hoto placeholder pbita zuwa insert it, ko danna \"📷 Loda\" inside placeholder da zaɓi \"Yi amfani extracted hoto\".",
+      "drag_hint2": "Danna ƙaramin hoto domin saka shi cikin wuri na farko da ke buɗe domin hoto, ko ka ja shi kan kowane wuri ko hoto na musamman a samfotin. ×N = hoto ɗaya ya bayyana a shafuka N (yawanci shugaban takarda ko tambari).",
+      "insert_aria": "Saka hoton da aka cire cikin wuri na farko da ke buɗe"
     },
     "toolbar": {
       "aria": "rubutu formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "Take {count}",
     "violation_other": "Take {count}",
     "ai_issue_one": "Matsala {count} da AI ya yiwa alama",
-    "ai_issue_other": "Matsaloli {count} da AI ya yiwa alama"
+    "ai_issue_other": "Matsaloli {count} da AI ya yiwa alama",
+    "tagged": {
+      "born_digital_note": "Lura: ga PDF masu shimfiɗar rubutu, tag ɗin ma'ana suna amfani da haɗin ActualText maimakon cikakken haɗin abun ciki. Fayil ɗin ya fi saukin samun dama sosai, amma ka tabbatar a PAC 2024 ko Acrobat kafin ka da'awar bin ka'idar PDF/UA."
+    },
+    "one_click": {
+      "label": "Sanya Mai Saukin Samun Dama",
+      "badge": "kai tsaye gaba ɗaya — dubawa, gyarawa, tabbatarwa, maimaitawa zuwa manufa",
+      "desc": "Danna ɗaya yana gudanar da dukan tsarin ba tare da hannu ba tare da saitunan tsoho; saukewa suna shirye a ƙarshe. Ka fi son iko? Yi amfani da \"Gudanar da Dubawa\" a ƙasa, ka duba sakamakon, sannan ka danna Gyara & Tabbatar da kanka."
+    },
+    "run_audit_label": "Gudanar da Dubawa (mataki na 1 cikin 2)",
+    "manual_path_explainer": "\"Gudanar da Dubawa\" yana ba takardar maki kuma yana nuna abin da ke buƙatar gyara — sannan ka duba ka danna Gyara & Tabbatar da kanka (mataki na 2). \"Sanya Mai Saukin Samun Dama\" a sama yana yin matakan biyu da kuma sake dubawa, kai tsaye. \"Cire Rubutu\" kawai yana ɗauko ɗanyen rubutun domin samar da abun ciki.",
+    "tagged_report": {
+      "heading": "Rahoton Tagged PDF",
+      "close_aria": "Kawar da rahoton tagged-PDF",
+      "note": "Wannan fanel yana nan har sai ka kawar da shi. Ana aika cikakkun bayanan a cikin saukewar A11y Report mai salon Adobe."
+    },
+    "docx_export": {
+      "title": "Mai da abun da aka gyara zuwa takardar Word mai salon kanun rubutu na gaske, rubutun alt a kan hotuna, jeri na kanun tebur, tsarin lissafi, da hanyoyin haɗi masu aiki. Ka tabbatar da Mai Duba Saukin Samun Dama na cikin Word (Review → Check Accessibility) kafin rabawa."
+    },
+    "pptx_export": {
+      "title": "Sake gina abun da aka gyara a matsayin shafin PowerPoint mai sunayen nunin gaske, rubutun alt a kan hotuna, jerin tebur masu salon kanun rubutu, jerin alama na gaske, da tsarin karatu = tsarin gani. Shimfiɗa mai saukin samun dama da aka sake ginawa — ba kwafin gani na asali ba. Ka tabbatar da Mai Duba Saukin Samun Dama na PowerPoint kafin rabawa."
+    },
+    "dashboard": {
+      "aria": "Bayyani na sakamakon gyara da kewayar sashe",
+      "score_title": "Makin saukin samun dama: kafin → bayan"
+    },
+    "tag_to_workbench_title": "Aika wannan toshe zuwa Expert Workbench: yana cika umarni da aka yi niyya (har da kowane gargaɗi) domin ka iya gyara shi da umarni ɗaya",
+    "tag_to_workbench_aria": "Aika zuwa Expert Workbench",
+    "pptx_theme_aria": "Jigon fitar PowerPoint",
+    "pptx_theme_title": "Jigon nuni domin fitar PowerPoint. An duba bambancin launi na dukan saitunan da aka shirya (WCAG AA); zaɓin AI yana dacewa da batunka, tare da tabbatar da saukin karatu a gida ko ta wace hanya.",
+    "export_menu": {
+      "button": "Fitar / Saukewa",
+      "intro": "Sauke takardar da aka gyara a kowane tsari — zaɓi wanda ya dace da yadda za a yi amfani da ita.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — ba wa ɗalibai)",
+      "word": "Word (.docx — ci gaba da gyarawa)",
+      "pptx": "PowerPoint (.pptx — gabatar da shi)",
+      "html": "HTML (yana buɗewa ko'ina, babu manhaja)",
+      "group_access": "Tsare-tsare masu saukin samun dama",
+      "daisy": "Littafin magana na DAISY (cikakken rubutu)",
+      "daisy_title": "Fakitin littafin magana mai cikakken rubutu na DAISY 3 (DTBook). Buɗe shi a cikin mai karanta DAISY, wanda ke samar da magana, braille, ko babban bugu. (Domin sautin karatu da aka daidaita, yi amfani da Karatu mai jagora a ƙasa.)",
+      "readalong": "Littafin karatu mai jagora (sauti da aka daidaita)",
+      "readalong_progress": "Ana karatu… {done}/{total}",
+      "readalong_title": "Littafin karatu mai jagora (EPUB3 Media Overlays): yana samar da rubutu-zuwa-magana ga kowane sakin layi kuma yana daidaita shi da rubutun domin tsarin karatu ya haska kalmomi sa'ad da ake faɗarsu. Yana yin kira da yawa ga murya — yana iya ɗaukar 'yan mintuna.",
+      "group_text": "Rubutu & mai gyaruwa",
+      "odt_title": "OpenDocument Text — yana buɗewa kai tsaye a LibreOffice da Google Docs (da Word).",
+      "group_audio": "Karatun sauti",
+      "audio": "Karatun sauti (na yau da kullum)",
+      "audio_title": "Karatun magana na takardar (MP3/WAV).",
+      "audio_sr": "Sauti (salon na'urar karanta allo)",
+      "audio_sr_title": "Murya ɗaya, amma yana sanar da tsari yadda na'urar karanta allo za ta yi (matakan kanun rubutu, ƙidayar jeri, jerin tebur, alt ɗin hotuna)."
+    },
+    "mo": {
+      "confirm": "Gina littafin karatu mai jagora? Wannan yana karanta sassan rubutu {n} da rubutu-zuwa-magana — kusan kiran murya {n}, wanda zai iya ɗaukar 'yan mintuna."
+    }
   },
   "concept_sort": {
     "title": "Concept Tsara",
@@ -6890,7 +6975,10 @@
     "pdf_audit_alt_formats_epub_btn": "Adana takardar da aka gyara a matsayin fayil ɗin ePub tare da teburin abubuwa da metadata na samun damar. Yana aiki akan Kindle, Apple Books, da yawancin masu karatu na hannu — ɗalibai za su iya canza girman font, launi, da saurin karatu.",
     "pdf_audit_alt_formats_braille_btn": "Adana fayil ɗin Braille na Daraja 1 (ba a rage shi ba) wanda za a iya buga shi a kan firinta na Braille ko aiko shi zuwa nunin Braille mai sabunta. Don raguwar Daraja 2, ba da fayil ɗin ga TVI (malami ga ɗalibai masu nakasar gani) don gamawa.",
     "pdf_audit_alt_formats_text_btn": "Adana fayil ɗin .txt mai sauƙi tare da duk tsarawa da aka cire — tsari mafi sauƙi ga masu karanta allo, juyawa zuwa babban bugu, ko liƙawa cikin wani kayan aiki.",
-    "pdf_audit_alt_formats_markdown_btn": "Adana takardar a matsayin Markdown — yana shiga sosai a shafukan Canvas, Schoology, ko D2L, Google Docs (ta hanyar liƙawa), wikis, da bayanan salon GitHub ba tare da rasa kanun labarai ko hanyoyin haɗi ba."
+    "pdf_audit_alt_formats_markdown_btn": "Adana takardar a matsayin Markdown — yana shiga sosai a shafukan Canvas, Schoology, ko D2L, Google Docs (ta hanyar liƙawa), wikis, da bayanan salon GitHub ba tare da rasa kanun labarai ko hanyoyin haɗi ba.",
+    "pdf_audit_alt_formats_daisy_btn": "Ajiye fakitin littafin magana mai cikakken rubutu na DAISY 3. Masu karanta DAISY (na kowa a ilimi na musamman) suna ƙara nasu magana, braille, ko babban bugu da cikakken kewayawa. Rubutu kawai a nan — domin karatu da aka daidaita, yi amfani da littafin karatu mai jagora.",
+    "pdf_audit_alt_formats_readalong_btn": "Gina littafin karatu mai jagora (EPUB3 Media Overlays): ana karanta kowane sakin layi da rubutu-zuwa-magana kuma a daidaita shi da rubutun domin kalmomi su haska sa'ad da ake faɗarsu. Kiran murya ɗaya ga kowane sashe, don haka yana iya ɗaukar 'yan mintuna.",
+    "pdf_audit_alt_formats_odt_btn": "Ajiye fayil ɗin OpenDocument Text (.odt) — na asali ga LibreOffice da Google Docs (Word ma yana buɗe shi). Yi amfani da shi sa'ad da makarantarka ba duka Microsoft ba ce amma har yanzu kana son takarda mai gyaruwa tare da tsarin nan lafiya."
   },
   "groups": {
     "title": "Ƙungiyoyin Bambantawa",
@@ -9080,7 +9168,7 @@
       "soulful_gritty_expressive": "Mai zurfi, mai karfi, mai bayyana ji.",
       "jazz_funk_sophisticated_minor": "Jazz, funk, ƙarami mai wayo.",
       "rock_folk_dominant_feel": "Rock, folk, jin daɗi mai rinjaye.",
-      "spanish_flamenco_metal": "Spanish, flamenco, metal.",
+      "spanish_flamenco_metal": "Yaren Sifaniyanci, flamenco, metal.",
       "dreamy_ethereal_film_scores": "Dreamy, ethereal, film maki.",
       "mysterious_ambiguous_dreamlike": "Mai ban mamaki, mara tabbas, kamar mafarki.",
       "all_12_notes_complete_but": "duka 12 notes. Kammala amma atonal.",
@@ -9119,12 +9207,12 @@
       "minor_7th": "Ƙarami na 7",
       "major_7th": "Babba na 7",
       "octave": "Octave",
-      "iivvi_classical": "I-IV-V-I (Classical)",
+      "iivvi_classical": "I-IV-V-I (Na gargajiya)",
       "the_foundation_of_western_music": "foundation na Western kiɗ.",
       "ivviiv_pop": "I-V-vi-IV (Pop)",
       "used_in_thousands_of_pop": "Used thousands na pop songs.",
       "the_most_important_jazz_progression": "most important jazz progression.",
-      "iviivv_50s": "I-vi-IV-V (50s)",
+      "iviivv_50s": "I-vi-IV-V (Shekarun 50)",
       "classic_doowop_progression": "Tsohon ci gaba na doo-wop.",
       "foundation_of_blues_rock_and": "Foundation na blues, rock, da jazz.",
       "common_in_alternative_and_emo": "Common alternative da emo.",
@@ -9259,7 +9347,7 @@
       "cerebellum": "Cerebellum",
       "brocas_area": "Broca's fadin",
       "wernickes_area": "Wernicke's fadin",
-      "medial_sagittal": "Medial (Sagittal)",
+      "medial_sagittal": "Na Tsakiya (Sagittal)",
       "midline_cut_revealing_deep_structures": "Midline cut revealing mai zurfi structures",
       "corpus_callosum": "Corpus Callosum",
       "thalamus": "Thalamus",
@@ -9279,8 +9367,8 @@
       "olfactory_bulbstracts_cn_i": "Olfactory Bulbs/Tracts (CN I)",
       "optic_chiasm_cn_ii": "Optic Chiasm (CN II)",
       "temporal_lobes_inferior": "Lobes na Temporal (Inferior)",
-      "cerebellum_inferior": "Cerebellum (Inferior)",
-      "medulla_oblongata_inferior": "Medulla Oblongata (Inferior)",
+      "cerebellum_inferior": "Cerebellum (Na Kasa)",
+      "medulla_oblongata_inferior": "Medulla Oblongata (Na Kasa)",
       "cranial_nerves_iiu2013xii": "Jijiyoyin Cranial (II\\u2013XII)"
     },
     "planet_view": {
@@ -9313,7 +9401,7 @@
       "ammonia_crystal_layer": "Lemar Crystal na Ammonia",
       "lightning_alley": "Hanyar Walƙiya",
       "metallic_hydrogen_zone": "Yankin Hydrogen na Karfe",
-      "hexagonal_polar_vortex": "Hexagonal Polar Vortex",
+      "hexagonal_polar_vortex": "Guguwar Sandar Mai Kusurwa Shida",
       "ring_shadow_zone": "Yankin Inuwar Zobe",
       "titan_flyby_path": "Hanyar Tashin Titan",
       "the_orbital_zone_of_titan": "orbital zone na Titan, Saturn\\u2019s largest moon.",
@@ -9697,7 +9785,7 @@
   },
   "splash": {
     "tagline": "Adaptive matakin, Layers, & fito ➔ Flexible Learning zaɓi don Whole-ɗalibi Education",
-    "rights": "AGPLv3 Licensed • Copyright © 2026 Aaron Pomeranz, PsyD",
+    "rights": "An ba da Lasisi a karkashin AGPLv3 • Hakkin mallaka © 2026 Aaron Pomeranz, PsyD",
     "udl_tagline": "Informed by Universal Design don Learning",
     "initializing": "Ana farawa...",
     "loading_resources": "Loading albarkatu...",
@@ -9726,9 +9814,9 @@
       "randomize": "Bazuwa",
       "select_student_first": "Zaɓi ɗalibi above zuwa get started",
       "abc_title": "ABC bayanai",
-      "abc_desc": "Record antecedent, hali, da consequence lura",
+      "abc_desc": "Rubuta lura na antecedent, hali, da consequence",
       "obs_title": "Kai-tsaye lura",
-      "obs_desc": "Lokaci-zahiri interval, frequency, ko duration recording",
+      "obs_desc": "Rikodin interval na lokaci-zahiri, yawa, ko tsawon lokaci",
       "analysis_title": "Binciken AI",
       "analysis_desc": "AI-powered hali pattern analysis & recommendations",
       "overview_title": "Bayyani",
@@ -9762,13 +9850,13 @@
       "triangulation_title": "Triangulation",
       "triangulation_desc": "Cross-reference 3+ bayanai sources don convergence",
       "impact_title": "Mai Kirga Tasiri",
-      "impact_desc": "Quantify hali frequency, duration, da annual cost",
+      "impact_desc": "Auna yawan hali, tsawon lokaci, da kuɗin shekara",
       "crisis_title": "Shirin Rikici",
       "crisis_desc": "Mai samar da yarjejeniyar shiga tsakani ta matakai uku na rikici",
       "traffic_title": "Hasken Hanya",
       "traffic_desc": "ɗalibi-facing red/yellow/green hali zone poster",
       "datasheet_title": "bayanai Sheet",
-      "datasheet_desc": "Printable frequency, duration, ABC, ko latency bayanai sheets",
+      "datasheet_desc": "Takaddun bayanan yawa, tsawon lokaci, ABC, ko latency da ake iya bugawa",
       "homenote_title": "Sakon Gida",
       "homenote_desc": "AI-drafted iyaye communication tare da sauti selector",
       "fidelity_title": "Jerin Aminci",
@@ -9777,7 +9865,7 @@
       "feasibility_desc": "5-tambaya contextual fit tantance tare da AI recommendations",
       "gas_title": "Ma'aunin GAS",
       "gas_desc": "manufa Attainment Scaling tare da AI- samar descriptors",
-      "pocket_title": "Pocket BIP",
+      "pocket_title": "BIP na Aljihu",
       "pocket_desc": "Compact index-kati BIP summary don clipboard carry",
       "abagraph_desc": "Publication-mizani jadawali tare da phase layi, trend layi, da gani analysis",
       "abagraph_title": "ABA jadawali Engine",
@@ -10051,7 +10139,7 @@
       "generate": "AI Samar da GAS Descriptors"
     },
     "pocket": {
-      "title": "Pocket BIP",
+      "title": "BIP na Aljihu",
       "generate": "AI Samar da Pocket BIP"
     },
     "no_entries_match": "A'a entries match naka filters",
@@ -10091,7 +10179,7 @@
     "reinforcer_sensory": "🌀 Hankali",
     "quiz_fba_purpose": "menene shi ne primary purpose na FBA?",
     "quiz_replacement": "menene shi ne replacement hali?",
-    "search_placeholder": "Bincika antecedent, hali, consequence, notes, saiti...",
+    "search_placeholder": "Bincika antecedent, hali, consequence, bayanan kula, saiti...",
     "quick_fill_placeholder": "e.g. \"ɗalibi threw paper during math lokacin asked zuwa nuna work, malami redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"change consequence zuwa malami redirected\"",
     "now": "yanzu",
@@ -10244,7 +10332,7 @@
       "paste_share_code_here": "Manna raba code here...",
       "person": "Mutum\\",
       "phase_label": "Suna mataki",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does wannan address?)",
+      "rationale_which_antecedent_does_this_address": "Dalili (wane antecedent wannan ke magancewa?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect kan naka approach...\\n• menene worked well?\\n• menene would kai do differently?\\n• menene dabaru do kai want zuwa horo na gaba?",
       "reinforcement_how_you": "⭐ Reinforcement (yaya kai\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement hali (functionally equivalent)",
@@ -10317,7 +10405,7 @@
       "data_cleared": "bayanai cleared",
       "data_loaded_from_cloud": "☁️ bayanai loaded daga cloud",
       "drafting_failed": "Tsarawa ya gaza",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval kammala — REINFORCE! A'a target hali occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval ya kammala — REINFORCE! Babu wani hali da aka nufa da ya faru!",
       "each_phase_needs_at_least_2_data_points": "kowane phase needs at least 2 bayanai wuri",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached zuwa IEP Prep!",
       "effect_sizes_calculated": "An lissafa girman tasiri!",
@@ -10675,7 +10763,7 @@
       "top_behavior": "Top hali",
       "total_contacts": "Jimillar Lambobin Sadarwa",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track hali frequency over time tare da aim layi, phase changes, da trend analysis.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Bibiyar yawan hali a kan lokaci tare da layukan nufi, sauye-sauyen phase, da nazarin yanayin canji.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track hali at home amfani mai sauƙi, everyday harshe. wannan taimakos naka child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track naka feelings, earn lamba, da build streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-bisa harshe cikin asset-focused descriptions",
@@ -10860,7 +10948,7 @@
       "developing": "Bunkasa",
       "discontinue": "Daina",
       "dismiss": "Kore",
-      "document_baseline_frequency_for_flagged_students": "takarda baseline frequency don flagged ɗalibi",
+      "document_baseline_frequency_for_flagged_students": "Rubuta yawan baseline don ɗaliban da aka yiwa alama",
       "document_outcomes_and_lessons_learned": "takarda outcomes da darasi learned",
       "document_the_confirmed_function": "takarda confirmed function",
       "document_the_hypothesis_in_session_notes": "takarda tunani zama notes",
@@ -10926,8 +11014,8 @@
       "level_mean": "matakin (Mean)",
       "maintenance_tracker": "Mai Bin Diddigin Kulawa",
       "make_tier_movement_decision_stay_fade_intensify": "Yi tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → hali → consequence pathways",
-      "map_each_target_behavior_to_a_replacement": "Map kowane target hali zuwa replacement",
+      "map_antecedent_behavior_consequence_pathways": "Tsara hanyoyin antecedent → hali → consequence",
+      "map_each_target_behavior_to_a_replacement": "Tsara kowane hali da aka nufa zuwa madadinsa",
       "materials_access": "Materials Shiga",
       "measure_effect_size_of_interventions": "Auna effect size na interventions",
       "model": "Yanayil",
@@ -10963,10 +11051,10 @@
       "percentage": "kashi cikin ɗari",
       "phone": "Waya",
       "phone_call": "Kira",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plan reinforcement schedule don replacement hali",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Tsara jadawalin reinforcement don halayen madadi",
       "plan_data_collection_methods_and_frequency": "Plan bayanai collection methods da frequency",
       "plan_fidelity_monitoring": "Lura da Amincin Shirin",
-      "plan_reinforcement_for_replacement_behaviors": "Plan reinforcement don replacement hali",
+      "plan_reinforcement_for_replacement_behaviors": "Tsara reinforcement don halayen madadi",
       "plan_replacement_behaviors": "Plan Replacement hali",
       "plan_weekly_progress_monitoring_data_collection": "Plan weekly ci gaba monitoring bayanai collection",
       "positivecorrective_ratio": "Rabon Tabbatacce:Gyara",
@@ -11008,7 +11096,7 @@
       "sensory": "Na hankali",
       "sensory_break_menu": "Sensory Break jerin abinci",
       "sensoryautomatic": "Sensory/na atomatik",
-      "sensoryautomatic_function": "Sensory/na atomatik Function",
+      "sensoryautomatic_function": "Sensory/Automatic Function",
       "sensoryrelated": "Mai Alaka da Hankali",
       "session_tracker": "zama Tracker",
       "set_a_6week_intervention_cycle": "Saita 6-week intervention cycle",
@@ -11104,7 +11192,7 @@
       "incorrect": "Kuskure",
       "independent": "Kai kaɗai",
       "intensity": "Ƙarfi",
-      "interval_and_latency_recording": "Interval da latency recording",
+      "interval_and_latency_recording": "Rikodin interval da latency",
       "level": "matakin",
       "mastered": "An iya",
       "momentary_time_sampling": "Daukar samfurin lokaci na dan kankanin lokaci",
@@ -11152,7 +11240,7 @@
       "tip_good_coverage": "mai kyau coverage across days.",
       "tip_good_diversity": "mai kyau diversity across antecedents.",
       "tip_great_volume": "Great girma na entries don analysis.",
-      "tip_last_entry_ago": "na ƙarshe entry was recorded while ago.",
+      "tip_last_entry_ago": "An rubuta shigarwa na ƙarshe tun ɗan lokaci.",
       "tip_missing_fields": "Some entries su ne missing wajibi fields.",
       "tip_spread_days": "Entries su ne well spread across days.",
       "volume": "girma"
@@ -11165,7 +11253,7 @@
       "step_collect_more": "Collect ƙari bayanai",
       "step_collect_more_desc": "Ƙara ƙari lura zama zuwa strengthen dataset.",
       "step_hypothesis": "tunani",
-      "step_hypothesis_desc": "Draft working tunani na hali function.",
+      "step_hypothesis_desc": "Tsara hasashen aiki na ayyukan hali.",
       "step_record_abc": "Record ABC bayanai",
       "step_record_abc_desc": "takarda antecedents, hali, da consequences.",
       "step_report": "Rahoto",
@@ -11277,7 +11365,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories zuwa life tare da tafarki voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Rubuta poems tare da form scaffolds, rhyme & meter analysis, AI ra'ayi"
+    "poettree_desc": "Rubuta poems tare da form scaffolds, rhyme & meter analysis, AI ra'ayi",
+    "throughline_desc": "Tsara darussanku zuwa wani bangare na sarari: jerin koyarwa, abubuwan da ake bukata tukuna, fayil daya da za a iya fitarwa"
   },
   "sel_hub": {
     "loading": "Ana loda SEL Hub...",
@@ -12597,5 +12686,10 @@
     "byline": "Daga {author} · kalmomi {words} · {used}/{total} ƙamus",
     "student": "Ɗalibi",
     "score": "Maki: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Sake nuna samfotin zai maye gurbin gyare-gyaren da ka yi da hannu da sabon abun da aka ƙirƙira. Ka ci gaba ka jefar da gyare-gyaren? (Soke yana kiyaye su — fitar ko rufe mai ginin domin ajiye da farko.)",
+    "remediation_banner_title": "Ana gyara takardar da aka gyara.",
+    "remediation_banner_body": "Ana ajiye gyare-gyaren da ka yi a nan cikinta sa'ad da ka rufe mai ginin, don haka saukewar Tagged PDF / Word / PowerPoint suna haɗa da su."
   }
 }

@@ -979,7 +979,7 @@
     "storage_full_text_only": "ቦታ መዕቆሪ መሊኡ። ጽሑፍ ጥራይ ይዕቅብ (ስእልታት ተወጊዱ)።",
     "storage_full_critical": "ኣዝዩ ኣገዳሲ፡ ታሪኽ ክዕቀብ ኣይካኣለን። ቦታ መሊኡ።",
     "resource_not_found": "ሃብቲ ኣይተረኽበን።",
-    "resource_not_found_history": "ሃብቲ ኣብ ታሪኽ ኣይተረኽበን።",
+    "resource_not_found_history": "ሃብቲ ኣብ ታሪኽ ኣይተረኽበን (ምናልባት ተደምሲሱ ይኸውን)።",
     "analysis_failed": "ምትንታን ኣይተዓወተን። እንደገና ፈትኑ።",
     "enter_target_language": "በጃኹም እተው ሓደ ዕላማ ቋንቋ.",
     "translation_started": "ትርጉም ጀሚሩ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ግብረመልሲ ዘይርከብ",
     "write_essay_first": "ቅድም ጽሑፍኩም ጽሓፉ!",
     "enter_word_art_first": "በጃኹም ቅድም ናይ ቃል ጥበብ ጽሑፍ ኣእትዉ",
-    "preview_not_ready": "ቅድመ-ምርኢት ገና ድሉው ኣይኮነን",
+    "preview_not_ready": "ቅድመ-ምርኢት ገና ድሉው ኣይኮነን — ክሳብ ዝቐርብ ተጸበ፡ ድሕሪኡ እንደገና ፈትን።",
     "word_art_render_failed": "ናይ ቃል ጥበብ ምርኣይ ኣይተኻእለን",
     "diff_engine_load_failed": "ናይ ፍልልይ ኤንጂን ኣይተጻዕነን (መርበብ ተዓጽዩ?)። ርክብኩም ኣረጋግጹ ኢልኩም እንደገና ፈትኑ።",
     "brf_downloaded": "ኤሌክትሮኒካዊ ብሬይል (BRF) ወሪዱ",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "ምስናይ size ናይ timeline ስእሊ"
   },
   "pdf_audit": {
+    "fidelity_delta": "እሙንነት ጽሑፍ፡ {before}% → {after}%{detail}",
     "view_last_audit": "ርአ መወዳእታ Audit",
     "start_new_audit": "ጀምር ሓድሽ Audit",
     "apply_and_export": "ኣተግብር & ላእኽ",

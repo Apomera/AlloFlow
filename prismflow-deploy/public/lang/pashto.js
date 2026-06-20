@@ -589,7 +589,8 @@
     "educator_tools_aria": "د ښوونکو وسایل",
     "documents_menu_aria": "د اسنادو مینو",
     "open_doc_builder_pdf_aria": "د PDF لپاره Document Builder خنهص کړئ",
-    "export_slides_tooltip": "Document Builder په سلایډونو حالت کې پرانیزي"
+    "export_slides_tooltip": "Document Builder په سلایډونو حالت کې پرانیزي",
+    "learning_tools_tooltip": "د زده کړې وسایل (STEM Lab، SEL Hub، Research Hub، LitLab، PoetTree، StoryForge)"
   },
   "sidebar": {
     "create_tab": "جوړونه",
@@ -683,7 +684,7 @@
     "close_aria": "تړل"
   },
   "splash": {
-    "tagline": "Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education",
+    "tagline": "تطابقي کچې، پوړونه، او محصولات ➔ د بشپړ-زده‌کوونکي زده‌کړې لپاره انعطاف وړ د زده‌کړې اختیارونه",
     "rights": "د AGPLv3 جواز • کاپی رایټ © ۲۰۲۶ Aaron Pomeranz, PsyD",
     "udl_tagline": "د Universal Design for Learning پر بنسټ",
     "initializing": "پیلیږی...",
@@ -1011,7 +1012,7 @@
     "toggle_theme": "موضوع بدله کړئ",
     "close_story_forge": "StoryForge بند کړئ",
     "story_creation_phases": "د کیسې جوړولو پړاوونه",
-    "doc_builder": "Document Builder",
+    "doc_builder": "د سند جوړونکی",
     "close_doc_builder": "د سند جوړونکی بند کړئ",
     "font_size": "د توری اندازه",
     "target_word_count": "د کلمو د موخې شمېر",
@@ -1064,7 +1065,7 @@
     "pictionary_host_dashboard": "د Concept Pictionary میزبان ډشبورډ",
     "concept_to_draw": "د انځور لپاره مفهوم",
     "round_timer": "د دور ټایمر",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "د مفهوم انځوریز قاموس",
     "your_guess": "ستاسو اټکل",
     "remove_columns": "ستنې لرې کړئ",
     "add_column": "ستنه اضافه کړئ",
@@ -1605,7 +1606,7 @@
     "storage_full_text_only": "ذخیره ډکه ده. یوازې متن خوندي کېږي (انځورونه لیرې شول).",
     "storage_full_critical": "حرج: ناتوان از محفاوظ کړئ سابقه. تخزین ممتلئ.",
     "resource_not_found": "لم یهاو شو عثاور په اوسیلہ.",
-    "resource_not_found_history": "لم یهاو شو عثاور په اوسیلہ زه سابقه.",
+    "resource_not_found_history": "لم یهاو شو عثاور په اوسیلہ زه سابقه (ښايي ړنګ شوی وي).",
     "analysis_failed": "تحلیل ناکام شو. مهرباني وکړئ بیا هڅه وکړئ.",
     "enter_target_language": "مهرباني وکړئ موخه ژبه ولیکئ.",
     "translation_started": "بدأت ژباړه...",
@@ -2241,7 +2242,7 @@
     "ai_feedback_unavailable": "د AI نظر شته نه دی",
     "write_essay_first": "لومړی خپله مقاله ولیکئ!",
     "enter_word_art_first": "مهربانی وکړئ لومړی د کلمو هنر متن ولیکئ",
-    "preview_not_ready": "مخکتنه لا چمتو نه ده",
+    "preview_not_ready": "مخکتنه لا چمتو نه ده — انتظار وکړئ چې جوړه شي، بیا بیا هڅه وکړئ.",
     "word_art_render_failed": "د کلمو هنر نه شو ښودل کېدی",
     "diff_engine_load_failed": "د توپیر انجن د پورته کولو په وخت کې ناکام شو (شبکه بنده ده؟). خپله اتصال وګورئ او بیا هڅه وکړئ.",
     "brf_downloaded": "بریل بریښنایی (BRF) ښکته شو",
@@ -2353,7 +2354,26 @@
     "project_saved_multi_other": "💾 پروژه خوندي شوه ({count} حدونه)؛ د دوام لپاره وروسته یې پورته کړه",
     "project_saved": "💾 پروژه خوندي شوه؛ د سمون دوام لپاره وروسته یې پورته کړه",
     "search_result_desc": "د Google لټون پایله: {title}",
-    "link_url_prompt": "د لینک URL دننه کړه:"
+    "link_url_prompt": "د لینک URL دننه کړه:",
+    "building_accessible_docx": "د لاسرسي وړ Word فایل جوړېږي…",
+    "building_accessible_pptx": "د لاسرسي وړ PowerPoint جوړېږي…",
+    "batch_tagging": "📄 د ZIP لپاره ټاګ شوي PDF فایلونه جوړېږي — سکن شوي فایلونه ډېر وخت نیسي (د هر فایل لپاره OCR ترسره کېږي)…",
+    "builder_edits_preserved": "✋ ستاسو لاسي بدلونونه وساتل شول — مخکتنه بیا نه ده جوړه شوې. د دوی د ساتلو لپاره صادر کړئ یا جوړونکی وتړئ، بیا تنظیمات بدل کړئ.",
+    "builder_edits_synced": "✏️ د جوړونکي بدلونونه په سمون شوي سند کې وساتل شول — د Tagged PDF / Word / PowerPoint صادرات اوس دا هم لري.",
+    "pptx_ai_theme": "🎨 له AI نه د موضوع سره سمه رنګ پلیټ غوښتل کېږي (لوستلو وړوالی په ځایي ډول تضمین شوی)…",
+    "make_accessible_fixing": "✨ پلټنه بشپړه شوه — په اتومات ډول سمون ورکول کېږي (هیڅ کلیک ته اړتیا نشته)…",
+    "tagged_pdf_saved_see_report": "📄 ټاګ شوی PDF وساتل شو — بشپړ راپور د ډاونلوډ تڼیو پورته نښلول شوی (د بندولو لپاره ✕).",
+    "no_open_image_slot": "په مخکتنه کې د انځور هیڅ خالي ځای پاتې نه دی — د دې پر ځای د بدلولو لپاره کوچنی انځور یوه ټاکلې انځور باندې راکش کړئ.",
+    "extracted_image_inserted": "🖼 لومړي خالي انځور ځای کې ننوتل — که بل ځای غواړئ، د دې پر ځای یو کوچنی انځور راکش کړئ.",
+    "html_downloaded": "🌐 HTML ډاونلوډ شو — په هر براوزر کې پرانیستل کېږي.",
+    "odt_downloaded": "📄 OpenDocument (.odt) ډاونلوډ شو — په LibreOffice، Google Docs، یا Word کې پرانیستل کېږي.",
+    "daisy_downloaded": "🔊 د DAISY غږېدونکي کتاب بنډل (.zip) ډاونلوډ شو — په DAISY لوستونکي کې یې پرانیزئ.",
+    "mo_no_voice": "د غږ خدمت شته نه دی، نو اوس د همږغ لوستلو غږ نشي جوړېدلی.",
+    "mo_busy": "د همږغ لوستلو صادرات لا دمخه روان دي.",
+    "mo_no_text": "د لوستلو لپاره هیڅ لوستلو وړ متن ونه موندل شو.",
+    "mo_no_audio": "⚠ د همږغ لوستلو ebook وساتل شو، خو هیڅ غږ نشو جوړېدلی (د غږ خدمت شته نه دی). متن او د همغږۍ جوړښت روغ دي.",
+    "mo_done": "د همږغ لوستلو ebook ډاونلوډ شو",
+    "audio_unavailable_now": "غږ اوس شته نه دی (کېدای شي کوم کار روان وي، یا د غږ خدمت بند وي)."
   },
   "process": {
     "source_missing": "لطفاً تپهانا متن منبع یالًا.",
@@ -2463,7 +2483,7 @@
     "plan_hook": "مثیر",
     "plan_independent": "خپلواک تمرین",
     "col_image": "تصاویر",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "د کلمو غږونو سټوډیو",
     "stop": "ودروه",
     "expand_header": "سرلیک پراخه کړه",
     "collapse_header": "سرلیک راونغاړه ترڅو منځپانګې ته ډیر ځای ورکړې",
@@ -3189,8 +3209,8 @@
       "line": "فن خطاوط",
       "render_3d": "تپهانا ثنهثی أبعاد",
       "custom": "✏️ Custom…",
-      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
-      "custom_aria": "Custom art style description"
+      "custom_placeholder": "د بیلګې په توګه، زاړه نباتي انځور، د موم رنګ نقاشي، رنګین ښيښه…",
+      "custom_aria": "د دودیز هنري سبک تشرېح"
     },
     "generate": "جوړونه مرئیات",
     "regenerate_prompt": "بیا إنشاء څخه ماوجِّه",
@@ -3460,7 +3480,7 @@
       "math_desc": "اړونده لفظي مسلې او د ریاضي مفاهیمو سره اړیکې جوړې کړئ.",
       "persona_title": "د AI کرکټر",
       "persona_desc": "د متن د کرکټر یا شخصیت سره د خبرو اترو نقل وکړئ.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "د کلمو د غږونو سټوډیو",
       "wordsounds_desc": "د قاموس اصطلاحات یا د ټکو کورنۍ کاروي ترڅو موخه ییز فونیکس او د فونیم پوهاوي درسونه ډیزاین کړئ.",
       "glossary_settings_title": "تنظیمات قاموس",
       "glossary_settings_desc": "دا چې اصطلاحات څنګه ټاکل کیږي او ژباړل کیږي خپل کړئ. تاسو کولی شئ د کچې لرونکو ټکو په واسطه فلټر کړئ یا ځانګړي ژبې اجباري کړئ.",
@@ -3564,7 +3584,12 @@
     "style_tooltip": "اختیاري. د ازموینې په هر انځور باندې پلي کیږي (پوښتنه + غوراوي). تش = اصلي سټایل. د ازموینې سره ساتل کیږي ترڅو د سمولو کړنې په برانډ پاتې شي.",
     "generate_pre_check": "جوړونه فحص مدرس",
     "generate_formative": "جوړونه فحص تکاوینی",
-    "generate_review": "د واټن لرونکې کتنه جوړه کړئ"
+    "generate_review": "د واټن لرونکې کتنه جوړه کړئ",
+    "likert_strongly_disagree": "کلک مخالف یم",
+    "no_right_answer": "دلته هیڅ سم یا ناسم ځواب نشته.",
+    "poll_completed": "ستاسو د نظر په شریکولو مننه.",
+    "poll_intro": "دلته هیڅ سم یا ناسم ځواب نشته — ستاسو رښتینی نظر ستاسو ښوونکي ته او تاسو ته ګټه رسوي.",
+    "mode_poll": "🗣️ نظرپوښتنه (د زده کوونکي غږ)"
   },
   "alignment": {
     "title": "تدقیق نصاب",
@@ -5463,6 +5488,7 @@
     "generate_aria": "جوړونه DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "دقت: {before}% → {after}%{detail}",
     "view_last_audit": "وښیئ بل تدقیق",
     "start_new_audit": "شراوع تدقیق نوی",
     "apply_and_export": "تطبیق اوصادرول",
@@ -5608,7 +5634,8 @@
       "std_dev": "انهنحراف سرهیاری",
       "icc_title": "مؤشر مخصص 1−(SD/50)؛ لیس ICC بکتاب مدرسی",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "د AI پاسونو ترمنځ د CV + جوړه-وار ترکیبي هیوریستیک؛ نه د درسي کتاب Cronbach's α"
     },
     "score": {
       "total_checks": "ټول ترسره شوي چکونه",
@@ -5686,7 +5713,7 @@
       "wcag_strong": "WCAG 2.1 پړاو AA",
       "deadline_50k": "24 أبریل 2026",
       "deadline_small": "26 أبریل 2027",
-      "covered_desc": "Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities",
+      "covered_desc": "د حکومتي ارګانونو لخوا خپاره شوي عامه ویب پاڼې، ګرځنده اپلیکیشنونه، ډیجیټل اسناد (PDF، Word، Excel، PowerPoint)، او ټولنیز رسنۍ",
       "who_desc": "ټولې ایالتي او محلي حکومتي ادارې — په شمول د عامه ښوونځیو، پوهنتونونو، محکمو، کتابتونونو، د ترانزیټ ادارو او ښاروالۍ خدماتو",
       "matters_desc": "د قانوني اطاعت څخه هاخوا: د لاسرسي وړ سندونه ډاډ ورکوي چې د معلولینو خلک کولی شي په مساوي توګه زده کړې، عامه خدماتو، ګمارنې او مدني ګډون ته لاسرسی ولري",
       "standard_callout": "هغه معیار چې AlloFlow یې هدف ګرځوي — WCAG 2.1 د AA کچه — همغه دقیق معیار دی چې د دې فدرالي قاعدې له خوا غوښتل کېږي."
@@ -5770,7 +5797,9 @@
       "title": "د سم شوي HTML څخه PDF بیا جوړ کړئ. ترتیب بیا جریان کوي — د پاڼې ماتیدل، فونټونه، او شمیرنه ممکن د اصلي څخه توپیر ولري. د سادو نثري سندونو لپاره ښه کار کوي."
     },
     "tagged_pdf": {
-      "title": "د اصلي PDF بصري ترتیب د بایټ په کچه ساتلی او د لاسرسي ټګونه د هغه د جوړښت ونې ته دننه کړئ. د درسي کتابونو، څو کالمو لرونکو سندونو، او د سوداګریزو نښو لرونکو PDFs لپاره غوره چیرې چې بصري دقت اهمیت لري."
+      "title": "د اصلي PDF بصري ترتیب د بایټ په کچه ساتلی او د لاسرسي ټګونه د هغه د جوړښت ونې ته دننه کړئ. د درسي کتابونو، څو کالمو لرونکو سندونو، او د سوداګریزو نښو لرونکو PDFs لپاره غوره چیرې چې بصري دقت اهمیت لري.",
+      "office_note": "ټاګ شوی PDF د PDF ورودیو لپاره دی — Word/HTML وکاروئ",
+      "office_note_title": "د جوړښت ټاګونه یوازې د PDF بایټونو کې ننوتلی شي. د Word/PowerPoint ورودیو لپاره، د لاسرسي وړ Word او HTML ډاونلوډونه سمون شوی جوړښت لري."
     },
     "alt_formats": {
       "intro": "سم شوی سند په د لاسرسي وړ بدیلو بڼو کې ډاونلوډ کړئ"
@@ -5841,7 +5870,9 @@
       "heading": "خهاو شو بڼه"
     },
     "extracted_images": {
-      "drag_hint": "د هغې دننه کولو لپاره په مخکتنه کې د هر انځور د ځای پر ځای کوونکي په لور یوه کوچنۍ انځوره راکاږئ، یا د ځای پر ځای کوونکي دننه په \"📷 اپلوډ\" کلیک وکړئ او \"د ایستل شوي انځور کارول\" غوره کړئ."
+      "drag_hint": "د هغې دننه کولو لپاره په مخکتنه کې د هر انځور د ځای پر ځای کوونکي په لور یوه کوچنۍ انځوره راکاږئ، یا د ځای پر ځای کوونکي دننه په \"📷 اپلوډ\" کلیک وکړئ او \"د ایستل شوي انځور کارول\" غوره کړئ.",
+      "drag_hint2": "په یوه تصویرک کلیک وکړئ ترڅو په لومړي پرانیستي تصویر ځای کې یې دننه کړئ، یا یې په مخکتنه کې په کوم ځانګړي ځای‌نیوي یا تصویر باندې راکاږئ. ×N = ورته تصویر په N مخونو کې راڅرګند شوی (معمولاً سرلیک یا لوګو).",
+      "insert_aria": "ایستل شوی تصویر په لومړي پرانیستي ځای کې دننه کړئ"
     },
     "toolbar": {
       "aria": "تنسیق متن",
@@ -5867,7 +5898,8 @@
     },
     "divergence": {
       "semantic": "په جوړښت کې مطابقت لری مګر په معنی کې ضعیف — AI د محتوا کیفیت ته اشاره وکړه چې axe-core نه شی موندلی",
-      "structural": "د کوډ په کچه د WCAG سرغړونې وموندل شوې — axe-core داسې ناکامۍ وموندلې چې AI روبریک یې لږ وزن ورکړ"
+      "structural": "د کوډ په کچه د WCAG سرغړونې وموندل شوې — axe-core داسې ناکامۍ وموندلې چې AI روبریک یې لږ وزن ورکړ",
+      "critical_override": "axe-core د WCAG {n} کره سرغړونه(ونه) وموندل — د ترکیب شوي نمرې له باور کولو مخکې یې وګورئ؛ اوسط کولای شي یوه سخته ناکامي پټه کړي"
     },
     "tagtree": {
       "label": "د دمخه شته نښې جوړښت",
@@ -5900,7 +5932,60 @@
     "violation_one": "{count} سرغړونه",
     "violation_other": "{count} سرغړونې",
     "ai_issue_one": "{count} د AI نښه شوې ستونزه",
-    "ai_issue_other": "{count} د AI نښه شوې ستونزې"
+    "ai_issue_other": "{count} د AI نښه شوې ستونزې",
+    "tagged": {
+      "born_digital_note": "پاملرنه: د متن-پرتي PDF فایلونو لپاره معنوي ټاګونه د بشپړې منځپانګې اړیکې پر ځای د ActualText اړیکې کاروي. فایل د پام وړ ډېر د لاسرسي وړ دی، خو د PDF/UA سره د سمون ادعا کولو مخکې یې په PAC 2024 یا Acrobat کې تایید کړئ."
+    },
+    "one_click": {
+      "label": "د لاسرسي وړ یې کړئ",
+      "badge": "بشپړ اتومات — پلټنه، سمون، تایید، تر موخې پورې تکرار",
+      "desc": "یو کلیک ټوله پروسه په اتومات ډول له ډیفالټ تنظیماتو سره پرته له لاس وهنې پرمخ وړي؛ ډاونلوډونه په پای کې چمتو دي. کنټرول غواړئ؟ لاندې \"پلټنه پرمخ یوسئ\" وکاروئ، پایلې وګورئ، بیا پخپله Fix & Verify کلیک کړئ."
+    },
+    "run_audit_label": "پلټنه پرمخ یوسئ (له ۲ نه ۱ ګام)",
+    "manual_path_explainer": "\"پلټنه پرمخ یوسئ\" سند ته نمره ورکوي او ښیي چې څه ته سمون په کار دی — بیا تاسو یې وګورئ او پخپله Fix & Verify کلیک کړئ (۲ ګام). پورتنی \"د لاسرسي وړ یې کړئ\" دواړه ګامونه او بیا کتنه په اتومات ډول ترسره کوي. \"د متن استخراج\" یوازې د منځپانګې د جوړولو لپاره خام متن راباسي.",
+    "tagged_report": {
+      "heading": "د ټاګ شوي PDF راپور",
+      "close_aria": "د ټاګ شوي PDF راپور بند کړئ",
+      "note": "دا پینل تر هغه پاتې کېږي چې تاسو یې بند کړئ. همدا جزئیات د Adobe ډوله A11y راپور په ډاونلوډ کې هم شامل دي."
+    },
+    "docx_export": {
+      "title": "سمون شوې منځپانګه په Word سند بدل کړئ چې اصلي سرلیک سټایلونه، په انځورونو باندې بدیل متن، د جدول د سرلیک کرښې، د لیست جوړښت، او کارېدونکي هایپرلینکونه ولري. د وېشلو مخکې یې د Word په جوړښتي د لاسرسي چکر (Review → Check Accessibility) سره تایید کړئ."
+    },
+    "pptx_export": {
+      "title": "سمون شوې منځپانګه د PowerPoint سلایډونو په توګه بیا جوړه کړئ چې اصلي سلایډ سرلیکونه، په انځورونو باندې بدیل متن، د سرلیک-سټایل جدول کرښې، اصلي ګولۍ لیستونه، او د لوستلو ترتیب = د لید ترتیب ولري. یو بیا جوړ شوی د لاسرسي وړ ډیزاین — نه د اصلي یو لیدنی کاپي. د وېشلو مخکې یې د PowerPoint د لاسرسي چکر سره تایید کړئ."
+    },
+    "dashboard": {
+      "aria": "د سمون پایلو لنډیز او د برخو لارښوونه",
+      "score_title": "د لاسرسي نمره: مخکې ← وروسته"
+    },
+    "tag_to_workbench_title": "دا بلاک د کارپوهانو ورک بنچ ته واستوئ: یو هدفي امر مخکې ډکوي (هره خبرداری شامله) ترڅو یې په یوه لارښوونه سمه کړئ",
+    "tag_to_workbench_aria": "د کارپوهانو ورک بنچ ته واستوئ",
+    "pptx_theme_aria": "د PowerPoint صادراتو تیم",
+    "pptx_theme_title": "د PowerPoint صادراتو لپاره د سلایډ تیم. ټول مخکې جوړ شوي د کنټراست له پلوه کتل شوي دي (WCAG AA)؛ د AI انتخاب ستاسو موضوع سره سمون لري، چې لوستلو وړوالی په هره بڼه په ځایي ډول تضمین شوی.",
+    "export_menu": {
+      "button": "صادرول / ډاونلوډ",
+      "intro": "سمون شوی سند په هره بڼه ډاونلوډ کړئ — هغه وټاکئ چې د کارونې له طریقې سره یې سمون خوري.",
+      "tagged_pdf": "ټاګ شوی PDF (PDF/UA — زده کوونکو ته یې ورکړئ)",
+      "word": "Word (.docx — سمول دوام ورکړئ)",
+      "pptx": "PowerPoint (.pptx — وړاندې یې کړئ)",
+      "html": "HTML (هرچیرته پرانیستل کیږي، هیڅ سافټویر ته اړتیا نشته)",
+      "group_access": "د لاسرسي وړ فارمټونه",
+      "daisy": "DAISY غږیز کتاب (بشپړ متن)",
+      "daisy_title": "DAISY 3 (DTBook) د بشپړ متن غږیز کتاب کڅوړه. په DAISY لوستونکي کې یې پرانیزئ، چې وینا، بریل، یا لوی چاپ وړاندې کوي. (د همغږي شوي لوړ-غږ لوستلو غږ لپاره، لاندې Read-along وکاروئ.)",
+      "readalong": "د لوستلو-سره ای‌بوک (همغږی شوی غږ)",
+      "readalong_progress": "روایت کول… {done}/{total}",
+      "readalong_title": "د لوستلو-سره ای‌بوک (EPUB3 Media Overlays): د هرې پراګراف لپاره متن-نه-وینا جوړوي او له متن سره یې همغږي کوي ترڅو د لوستلو سیسټم کلمې د ویل کیدو پر مهال روښانه کړي. ډېرې غږیزې اړیکې کوي — کیدای شي څو دقیقې ونیسي.",
+      "group_text": "متن او د سمون وړ",
+      "odt_title": "OpenDocument Text — په LibreOffice او Google Docs (او Word) کې په طبیعي ډول پرانیستل کیږي.",
+      "group_audio": "غږیز روایت",
+      "audio": "غږیز روایت (معیاري)",
+      "audio_title": "د سند ویل شوی روایت (MP3/WAV).",
+      "audio_sr": "غږ (د سکرین-ریډر په سبک)",
+      "audio_sr_title": "ورته غږ، خو ساختار په هغه ډول اعلانوي چې یو سکرین ریډر یې کوي (د سرلیک کچې، د لیستونو شمیر، د جدول کتارونه، د انځورونو بدیل متنونه)."
+    },
+    "mo": {
+      "confirm": "د لوستلو-سره ای‌بوک جوړ کړو؟ دا د متن-نه-وینا په مرسته {n} متني برخې روایت کوي — شاوخوا {n} غږیزې اړیکې، چې کیدای شي څو دقیقې ونیسي."
+    }
   },
   "persona": {
     "title": "د مرکې حالت",
@@ -6083,7 +6168,7 @@
     "toggle_play_aria": "تبدیل چنهئیں"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "د کلمو د غږونو سټوډیو",
     "subtitle": "افعال انهوعی فاونیمی",
     "listen_word": "اسهاو شوع للکلمه",
     "activity_counting": "عدّ آاوازیں",
@@ -6240,7 +6325,7 @@
     "use_microphone": "کارول میکراوفاون",
     "pre_activity_review": "📋 د فعالیت څخه مخکې بیاکتنه",
     "phonics_counting_guide_title": "📖 دلیل عدّ آاوازیات",
-    "r_controlled_explanation_prefix": "R-controlled vowels (ar, er, ir, or, ur) are counted as ",
+    "r_controlled_explanation_prefix": "د R لخوا کنټرول شوي واولونه (ar, er, ir, or, ur) داسې شمېرل کېږي ",
     "single_sounds": "ساده غږونه",
     "r_controlled_explanation_suffix": " ځکه چې حرف متحرک اوR یندمجان سرهًا.",
     "r_controlled_example": "بېلګه: \"star\" = ۳ غږونه (s-t-ar)، نه ۴. دا د Orton-Gillingham او Wilson Reading طریقو سره سمون لری.",
@@ -7137,7 +7222,7 @@
   },
   "export_menu": {
     "label": "د... په توګه ډاونلوډ کړئ",
-    "qti": "Canvas Quiz (QTI)",
+    "qti": "د Canvas کویز (QTI)",
     "print": "چاپ / محفاوظ کړئ PDF",
     "clean_pdf": "فایل PDF نظیف",
     "worksheet": "د کار پاڼه",
@@ -8139,7 +8224,61 @@
     "blueprint_critique_mode_toggle": "د بلوپرینټ نقد حالت چې اجازه ورکوي په پلان باندې نقد ورکړئ.",
     "pdf_audit_view_web_audit_btn": "د WCAG 2.1 AA لاسرسي لپاره پاڼه د AI ارزوونکي او د axe-core انجن (هماغه انجن چې مسلکي ارزوونکي یې کاروي) دواړو په کارولو سره نمره ورکوي. هیڅ شی نه بدلیږي — کله چې یوازې غواړئ پوه شئ چې پاڼه نن ورځ څنګه ولاړه ده، نو دا وکاروئ.",
     "pdf_audit_results_score_badge": "ستاسو د PDF د لاسرسي ټوله نمره له ۰ څخه تر ۱۰۰ پورې. شین (۸۰+) WCAG AA ته نږدې دی، نسواري (۵۰-۷۹) کار ته اړتیا لري، سور (<۵۰) د پردې لوستونکي یا معاون ټکنالوژي کاروونکو زده کوونکو لپاره لوی خنډونه لري.",
-    "pdf_audit_alt_formats_braille_btn": "د درجه-۱ (نه-لنډ شوی) بریل فایل خوندي کړئ چې د بریل پرینټر باندې وپړسول شي یا د تازه کیدونکي بریل ښودنې ته واستول شي. د درجه-۲ لنډونو لپاره، فایل یو TVI (د بصري ناتوانۍ لرونکو زده کوونکو ښوونکي) ته ورکړئ چې بشپړ یې کړي."
+    "pdf_audit_alt_formats_braille_btn": "د درجه-۱ (نه-لنډ شوی) بریل فایل خوندي کړئ چې د بریل پرینټر باندې وپړسول شي یا د تازه کیدونکي بریل ښودنې ته واستول شي. د درجه-۲ لنډونو لپاره، فایل یو TVI (د بصري ناتوانۍ لرونکو زده کوونکو ښوونکي) ته ورکړئ چې بشپړ یې کړي.",
+    "pdf_audit_view_web_url_input": "د هغه ویب پاڼې پته دلته ولګوئ چې غواړئ وکتل شي (د بیلګې په توګه https://yourdistrict.org/handbook)، بیا د Fetch تڼۍ کلیک کړئ ترڅو یې HTML راکش شي او تاسو یې پلټنه او سمون وکولای شئ.",
+    "pdf_audit_view_web_fetch_btn": "هغه پاڼه چې پورته URL کې ده ښکته کوي او د هغې HTML لاندې بکس کې اچوي. که سایټ راکښل بند کړي، د پاڼې سرچینه پخپله په HTML بکس کې ولګوئ.",
+    "pdf_audit_view_web_html_textarea": "هغه اصلي HTML چې پلټل کیږي — یا د Fetch له لارې اچول شوی یا ستاسو لخوا لګول شوی. دلته یې د پلټنې له پیلولو مخکې سمولی شئ (د بیلګې په توګه، د نیویګیشن یو پټه ړنګ کړئ چې ستاسو نه ده).",
+    "pdf_audit_view_web_remediate_btn": "پاڼه نمره کوي، بیا HTML بیا لیکي ترڅو هغه څه چې کولای شي سم کړي (کنټراست، د ژبې ټګ، سکیپ-لینک، نښې) او تاسو ته د لاسرسي وړ ډاونلوډ وړ کاپي درکوي. تل خپله محصول د خپرولو مخکې بیا وګورئ.",
+    "pdf_audit_view_batch_dropzone": "د PDF فایلونه له خپل ډیسکټاپ یا د ډاونلوډونو فولډر نه مستقیماً پدې بکس باندې راکاږئ ترڅو دا د بیچ کتار ته ور زیات کړئ. غیر-PDF فایلونه له پامه غورځول کیږي.",
+    "pdf_audit_view_batch_browse_btn": "ستاسو د فایل ټاکونکی پرانیزي ترڅو یو یا څو PDFونه وټاکئ. دا هغه وخت وکاروئ کله چې د فایلونو راکښل اسانه نه وي (لمسیز وسیله، سکرین ریډر، ټیټ لید، یا یو Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "ستاسو وروستی بیچ له هغه ځایه چې پاتې و بیا پیلوي — مخکې بشپړ شوي PDFونه ساتل کیږي او یوازې هغه چې نه دي بشپړ شوي بیا چلیږي. دا هغه وخت وکاروئ کله چې یو بیچ نیمګړی پاتې شو (تړل شوی ټب، ریفریش، کرش).",
+    "pdf_audit_view_batch_discard_btn": "ستاسو د وروستي ګډوډ شوي بیچ ساتل شوې پرمختیا غورځوي — بینر له منځه ځي او ساتل شوي پایلې ستاسو له براوزر نه ړنګیږي.",
+    "pdf_audit_view_batch_clear_all_btn": "هر PDF له کتار نه لرې کوي ترڅو تاسو بیا له سره پیل وکړئ. یوازې مخکې له دې چې Start Batch فشار کړئ شته.",
+    "pdf_audit_view_batch_row_retry_btn": "یوازې دا یو ناکام شوی فایل بیا چلوي پرته له دې چې پاتې بیچ ته لاس وروړي. لومړی سور X باندې موږ تېر کړئ ترڅو ولولئ چې ولې ناکام شو — که دا ساختاري وي (خراب شوی PDF، یوازې-تصویري سکین)، بیا هڅه به ګټه ونه کړي.",
+    "pdf_audit_view_batch_row_remove_btn": "دا یو PDF له کتار نه لرې کوي ترڅو بیچ یې پرېږدي. یوازې مخکې له دې چې بیچ روان شي شته.",
+    "pdf_audit_view_batch_stop_btn": "له بیچ نه غواړي چې وروسته له هغه فایل نه چې اوس پرې کار کوي ودریږي. مخکې بشپړ شوي PDFونه بشپړ پاتې کیږي — تاسو به خپل بشپړ شوی کار له لاسه ورنکړئ، او پاتې نور یې وروسته بیا پیلولی شئ.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "هر هغه PDF چې ناکام شوی بیا کتار ته اچوي او بیا یې چلوي. مخکې بریالي شوي فایلونو ته لاس نه ورکول کیږي. یوه هڅه ارزښت لري که ناکامۍ د بې ثباته شبکې غلطۍ ښکاري؛ په رښتیا خراب شوي PDFونه مه بیا بیا هڅه کوئ.",
+    "pdf_audit_view_batch_start_btn": "په کتار کې د هر PDF پلټنه او سمون پیلوي. لومړی یوه تاییدي راڅرګندیږي چې د AI اړیکو اټکل (او لګښت، په پخپله-کوربه شوي پلان کې) لري ترڅو تاسو یې له پیلولو مخکې پریکړه وکولای شئ.",
+    "pdf_audit_view_batch_download_zip_btn": "هر بریالی سم شوی PDF د یوه واحد ZIP فایل په توګه ډاونلوډ کوي. د یوه ښوونکي یا د ولسوالۍ اړیکې ته د یوه بشپړ فولډر په یوځل ورکولو لپاره ګټور دی.",
+    "pdf_audit_view_batch_new_batch_btn": "بشپړ شوی بیچ پاکوي ترڅو تاسو نوي PDFونه ور دننه کړئ. هر ZIP چې تاسو مخکې ډاونلوډ کړی ستاسو په کمپیوټر کې پاتې کیږي — دا یوازې سکرین بیا پیلوي.",
+    "pdf_audit_view_batch_dashboard_btn": "په نوي ټب کې د چاپ وړ د موافقت ډشبورډ پرانیزي — منځنۍ نمره، څومره PDFونه 90+ ته رسیدلي، تر ټولو عام WCAG ستونزې. د یوه مدیر سره د شریکولو یا د Title II / 504 ریکارډ سره د نښلولو لپاره ګټور.",
+    "pdf_audit_view_settings_panel": "د پلټنې او سمون پایپلاین لپاره د سمون تڼۍ. اصلي ارزښتونه مناسب دي — یوازې هغه وخت یې بدل کړئ کله چې معیاري چلونه هغه څه نه درکوي چې اړتیا یې لرئ (نور بشپړوالی، ټیټ لګښت، بل د درېدلو ټکی).",
+    "pdf_audit_view_audit_passes_slider": "څومره خپلواک AI پلټونکي PDF ته ګوري — دوی په رښتیني ستونزو موافقه او په شور باندې مخالفت کوي، نو نور پلټونکي د لږ دروغجن خبرتیاوو معنا لري. 5 ښه ټکی دی؛ د لوړ-خطر موافقت سندونو لپاره یې پورته کړئ، د چټک کتنو لپاره یې ښکته کړئ.",
+    "pdf_audit_view_target_score_slider": "هغه نمره چې تاسو غواړئ سم شوی PDF ورته ورسیږي — 90 یوه قوي د WCAG 2.1 AA کامیابي ده، 95+ نږدې-بشپړه ده، 70 د سکین شویو سندونو لپاره یو ګټور پوړ دی. د Auto-continue سره یې یوځای کړئ ترڅو پایپلاین تر هغه چې نمره ورسیږي کار وکوي.",
+    "pdf_audit_view_max_fix_passes_slider": "څومره اتومات د سمون-دوران ته پایپلاین ته اجازه ده چې له درېدلو مخکې یې وچلوي. 8 اصلي دی؛ په پخپله-کوربه شوي پلان کې د لګښت محدودولو لپاره دا ښکته کړئ، یا د اتومات-سمون په بشپړه توګه د پرېښودلو لپاره یې 0 ته وټاکئ (یوازې-پلټنه).",
+    "pdf_audit_view_auto_continue_toggle": "کله چې فعال وي، پایپلاین تر هغه چې هدف نمره ورسیږي اضافي د سمون دورانونه (تر 3 نورو پورې) کوي، بیا پخپله درېږي. که تاسو دقیقاً یو چل او یوه واحده پایله غواړئ چې وڅیړئ، خاموش یې کړئ.",
+    "pdf_audit_view_polish_passes_slider": "د رښتیني د لاسرسي سمونونو وروسته اضافي پاکولو دورانونه — واټن، سرلیکونه، لیدلوری ښکلا منظموي. 0 پرېږدي، 2 معیاري دی، 3 د هغو سندونو لپاره دی چې چاپ یا بهرنیو لیدونکو ته ځي.",
+    "pdf_audit_view_branding_panel": "اختیاري — کنټرولوي چې سم شوی PDF څنګه ښکاري: د برانډ رنګونه او ټول ډیزاین سبک. د اصلي د لاسرسي وړ بڼې لپاره یې پرېږدئ، یا که سند ته اړتیا وي چې د ښوونځي یا ولسوالۍ برانډ سره سمون ولري، یې پراخه کړئ.",
+    "pdf_audit_view_brand_mode_auto_btn": "د برانډ رنګونه له هغه PDF نه ایستل کوي چې تاسو پورته کړی ترڅو سم شوې نسخه د اصلي په شان ښکاره شي. غوره اصلي — سند د کارکوونکو او کورنیو لپاره د پیژندلو وړ ساتي.",
+    "pdf_audit_view_brand_mode_upload_input": "یوه جلا د برانډ پاڼه، لوګو، یا د سبک لارښود (تصویر یا PDF) پورته کړئ او پایپلاین یې رنګونه او فونټونه ترې راکاږي. هغه وخت ګټور دی کله چې اصلي PDF ساده ښکاري خو اړتیا یې وي چې د ولسوالۍ برانډ سره سمون ولري.",
+    "pdf_audit_view_brand_mode_none_btn": "د برانډ رنګونه په بشپړه توګه پرېږدئ او داخلي د لاسرسي وړ رنګ-پلیټ وکاروئ. دا د عمومي کاري پاڼو لپاره وټاکئ، یا کله چې اصلي رنګونه کنټراست کې ناکام شي او تاسو ته اړتیا نه وي چې بڼه وساتئ.",
+    "pdf_audit_results_tab_remediation_btn": "وروسته له دې چې AlloFlow PDF سم کړ د پلټنې پایلې وښیه. دا ټب وکاروئ ترڅو ښه شوې نمره او هغه ستونزې وګورئ چې اوس سمې شوي.",
+    "pdf_audit_results_tab_original_btn": "مخکې له دې چې AlloFlow هرڅه سم کړي، د اصلي PDF پلټنې ته بیرته واوړئ. د مخکې-سره-وروسته نمرو څنګ په څنګ پرتله کولو لپاره ګټور.",
+    "pdf_audit_results_reliability_details": "پراخه یې کړئ ترڅو وګورئ چې AI پلټونکي پدې نمره کې څومره باوري وو. ډیری AI چلونه یوځای روان دي — نږدې موافقه پدې معنا چې نمره د باور وړ ده، پراخ خپریدل پدې معنا چې انفرادي ستونزې پخپله وڅیړئ.",
+    "pdf_audit_results_score_breakdown_details": "پراخه یې کړئ ترڅو دقیقاً وګورئ چې نمره څنګه محاسبه شوه — څومره کتنې وشوې، فی ستونزه څومره کم شو، او د AI روبریک او axe-core نمرې څنګه یوځای منځنۍ شوې. دا د سرلیک شمیرې شاته د روڼتیا پوړ دی.",
+    "pdf_audit_results_score_how_ai_details": "پراخه یې کړئ ترڅو وګورئ چې AI هره ستونزه څومره سخته نمره کوي: د هغو جدي ستونزو لپاره چې د سکرین-ریډر کاروونکي بندوي لوی کمښتونه، د کوچنیو لپاره کوچني کمښتونه، او د هغو کتنو لپاره چې کامیابیږي بیرته ترلاسه شوي ټکي.",
+    "pdf_audit_results_score_how_axe_details": "پراخه یې کړئ ترڅو وګورئ چې axe-core چیکر (هماغه انجن چې مسلکي د لاسرسي پلټونکي یې کاروي) ستاسو PDF څنګه نمره کړ، د هغو دقیقو WCAG قاعدې IDونو سره چې ناکام شول.",
+    "pdf_audit_results_issue_explain": "کلیک وکړئ ترڅو ولولئ چې دا ستونزه په رښتیا د زده‌کوونکو لپاره څه بندوي او WCAG قاعده څنګه پلي کیږي. که غواړئ نور ژور لاړ شئ د رسمي WCAG توضیح لینک هم لري.",
+    "pdf_audit_results_image_failures_details": "پراخه یې کړئ ترڅو هغه تصویرونه وګورئ چې د سمون پرمهال غورځول شوي. هر کتار یو-کلیک Regenerate تڼۍ وړاندې کوي نو هیڅ انځور په خاموشۍ سره نه ورکیږي.",
+    "pdf_audit_results_image_regenerate_btn": "دا ورک شوی تصویر د هغه ساتل شوي توضیح پر بنسټ د AI په مرسته بیا جوړوي. نوی تصویر مستقیماً بیرته په سند کې راځي — هیڅ لاسي پورته کولو ته اړتیا نشته.",
+    "pdf_audit_view_report_menu_btn": "د راپور مینو پرانیزئ ترڅو د لاسرسي راپور په مختلفو فارمټونو کې ډاونلوډ کړئ — د موافقت چارواکو لپاره د Adobe په سبک، د عمومي شریکولو لپاره فارمټ شوی PDF، د څیړنې لپاره JSON، یا د پلټنې ریکارډونو لپاره یوه لاسلیک شوې لاره.",
+    "pdf_audit_view_adobe_report_btn": "یو راپور ډاونلوډ کړئ چې د Adobe د لاسرسي چیکر په شان فارمټ شوی، د PDF/UA-1 (د PDFونو لپاره د فدرالي لاسرسي معیار) په وړاندې نمره شوی. د موافقت چارواکو سره د شریکولو یا د Title II / 504 درخواست سره د نښلولو لپاره غوره.",
+    "pdf_audit_view_tierb_diff_view_btn": "هغه کلمې وڅیړئ چې د وروستي خوندي کولو پرمهال ورکې شوې مخکې له دې چې پریکړه وکړئ چې د بیا رغونې چل وچلوئ. یوازې-لوستلو — تر هغه چې تاسو د بیا رغولو غوره کوئ هیڅ نه بدلیږي.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "ورکې شوې سرچینه کلمې بیرته سند ته ونښلوئ او ټګ شوی PDF بیا جوړ کړئ. هغه کلمې چې په خوندي توګه نشي ځای پر ځای کیدای د Content Recovery برخه کې پای ته رسیږي نو هیڅ نه ورکیږي — د مخکې او وروسته پاتې شمیر تل ښودل کیږي نو تاسو وینئ چې ګټه یې وکړه که نه.",
+    "pdf_audit_view_formatted_report_btn": "په نوي ټب کې د چاپ وړ د مخکې/وروسته د لاسرسي راپور پرانیزئ — په بینر کې Save as PDF کلیک کړئ ترڅو د خپلو ریکارډونو یا د والدینو غونډې لپاره یوه کاپي وساتئ.",
+    "pdf_audit_view_html_report_btn": "د مخکې/وروسته راپور د یوه HTML فایل په توګه ډاونلوډ کړئ چې په ویب سایټ کې یې کوربه کولی یا سمولی شئ. محتوا د چاپ وړ PDF نسخې سره سمون لري.",
+    "pdf_audit_view_json_data_btn": "خام د پلټنې شمیرې او د قاعدې-په-قاعده ډاټا د JSON په توګه صادر کړئ. دا هغه وخت وکاروئ کله چې غواړئ د لاسرسي پایلې په سپریډشیټ، د څیړنې نوټ بوک، یا بل وسیله کې وڅیړئ.",
+    "pdf_audit_view_audit_trail_signed_btn": "یوه پخپله-تاییدوونکې د پلټنې لاره جوړه کړئ (یو HTML فایل چې یوه داخلي Verify Integrity تڼۍ لري چې دستکاري کشف کوي). د موافقت شواهدو لپاره ښه — په یاد ولرئ چې دا د براوزر-اړخ لاسلیک دی، نه یو په قانوني توګه-تړونکی.",
+    "pdf_audit_view_save_project_btn": "ستاسو د سمون کار خوندي کوي — د لاسرسي وړ HTML، نمرې، تنظیمات، د مخ-په-مخ پرمختیا — د یوه د لیږد وړ فایل کې. د AI بیا چلولو پرته د سمولو دوام لپاره یې د Load Project سره بیا پرانیزئ.",
+    "pdf_audit_view_load_project_btn": "یو د پروژې فایل بیا پرانیزئ چې تاسو مخکې خوندي کړی. سم شوی HTML، نمرې، او هر مخ سلسله چې مخکې بشپړ شوی بیرته راولي — دقیقاً له هغه ځایه چې پاتې وئ پیلوي.",
+    "pdf_audit_view_save_template_btn": "د سند د لاسرسي وړ ساختار (د سرلیک خاکه، جدولونه، لیستونه، نښې) د یوه د بیا کارولو وړ کینوس په توګه خوندي کړئ. په Document Builder کې یې وکاروئ ترڅو نوي سندونه پیل کړئ — IEPونه، نصابونه — مخکې له مخکې د لاسرسي لپاره جوړ شوي.",
+    "pdf_audit_alt_formats_summary": "د بدیلو فارمټونو لپاره یې پراخه کړئ — ePub، بریښنایي بریل، ساده متن، Markdown — د هغو زده‌کوونکو لپاره چې له PDF یا HTML نه یو بل ډول فایل ته اړتیا لري.",
+    "pdf_audit_alt_formats_epub_btn": "سم شوی سند د یوه ePub فایل په توګه د محتویاتو جدول او د لاسرسي میټاډاټا سره خوندي کړئ. په Kindle، Apple Books، او ډیری ګرځنده لوستونکو کې کار کوي — زده‌کوونکي د فونټ اندازه، رنګ، او د لوستلو چټکتیا بدلولی شي.",
+    "pdf_audit_alt_formats_text_btn": "یو ساده .txt فایل خوندي کړئ چې ټول فارمټ ترې لیرې شوی — د سکرین ریډرونو، د لوی-چاپ بدلون، یا بل وسیله کې د لګولو لپاره اسانه فارمټ.",
+    "pdf_audit_alt_formats_markdown_btn": "سند د Markdown په توګه خوندي کړئ — په Canvas، Schoology، یا D2L پاڼو، Google Docs (د لګولو له لارې)، ویکیانو، او د GitHub-سبک نوټونو کې پرته له دې چې سرلیکونه یا لینکونه له لاسه ورکړي په پاکۍ راځي.",
+    "pdf_audit_alt_formats_daisy_btn": "د DAISY 3 بشپړ-متن غږیز کتاب کڅوړه خوندي کړئ. DAISY لوستونکي (په ځانګړي ښوونه کې عام) د بشپړ نیویګیشن سره خپله وینا، بریل، یا لوی چاپ ورزیاتوي. دلته یوازې-متن — د همغږي شوي لوړ-غږ لوستلو لپاره، د لوستلو-سره ای‌بوک وکاروئ.",
+    "pdf_audit_alt_formats_readalong_btn": "د لوستلو-سره ای‌بوک جوړ کړئ (EPUB3 Media Overlays): هره پراګراف د متن-نه-وینا په مرسته روایت کیږي او له متن سره همغږي کیږي نو کلمې د ویل کیدو پر مهال روښانه کیږي. فی برخه یوه غږیزه اړیکه، نو کیدای شي څو دقیقې ونیسي.",
+    "pdf_audit_alt_formats_odt_btn": "یو OpenDocument Text (.odt) فایل خوندي کړئ — د LibreOffice او Google Docs لپاره طبیعي (Word یې هم پرانیزي). دا هغه وخت وکاروئ کله چې ستاسو ښوونځی ټول-Microsoft نه وي خو لاهم غواړئ یو د سمون وړ سند چې ساختار یې سالم پاتې وي."
   },
   "grades": {
     "k": "وړکتون",
@@ -9672,7 +9811,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "کیسې د شخصیتونو غږونو او ادبي تحلیل سره ژوندۍ کړئ",
     "poettree_title": "PoetTree",
-    "poettree_desc": "اکتب قصائد بسقانهت شهر اوتحلیل قافیه اوانهوزن اوڅخهہیںحظات هوښیارتیا مصنوعی"
+    "poettree_desc": "اکتب قصائد بسقانهت شهر اوتحلیل قافیه اوانهوزن اوڅخهہیںحظات هوښیارتیا مصنوعی",
+    "throughline_desc": "خپل درسونه په یوه فضايي واحد کې تنظیم کړئ: د ښوونې ترتیب، مخکینۍ اړتیاوې، یو د صادرولو وړ فایل"
   },
   "sel_hub": {
     "loading": "در حال نهوڈ کړئ SEL Hub...",
@@ -9936,9 +10076,9 @@
       "cumrecord_title": "سجل تراکمی",
       "deescalate_desc": "د سا اخیستلو تمرینونه، بصري ټایمرونه، حسي وقفې، او ځمکني کول — په ریښتیني وخت کې د ارامولو ملاتړ",
       "deescalate_title": "وسایل نزع تصعید",
-      "drstrategy_desc": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+      "drstrategy_desc": "د سمې تفاضلي تقویې ستراتیژۍ غوره کول (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "د DR ستراتیژۍ انتخاب کوونکی",
-      "dtt_desc": "Discrete Trial Training — د هرې ازموینې ثبت د تسلط معیارونو او اوتومات مخکې تګ سره",
+      "dtt_desc": "Discrete Trial Training — د هرې ازموینې پر بنسټ ثبت د تسلط معیارونو او اوتومات مخکې تګ سره",
       "dtt_title": "د DTT ډیټا پاڼه",
       "effectsize_desc": "د بصری پړاو پرتلې سره د مداخلې اغېزمنتیا د اندازه کولو لپاره Tau-U، NAP، او PND محاسبه کړئ",
       "effectsize_title": "د اغیز اندازې محاسبه",
@@ -10653,7 +10793,7 @@
       "communication_log": "سجلّ تاواصل",
       "conditional_probability": "انهحهاو شوال شرطی",
       "create_your_first_replacement_behavior_plan": "د بدیل چلند خپل لومړنی پلان جوړ کړئ.",
-      "crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": "CRF (هر ځل) ← FR-2 ← FR-3 ← FR-5 ← VR-5 ← VR-8 ← طبیعي تقویه",
+      "crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": "CRF (هر ځل) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → طبیعي تقویه",
       "crossstudent_comparison": "د زده کوونکو ترمنځ پرتله",
       "cultural_context_reflection": "تأمّل شرایط ثقازه",
       "cumulative_record": "سجلّ تراکمی",
@@ -10664,7 +10804,7 @@
       "day_streak": "د ورځو لړۍ",
       "define_the_behaviors_settings_or_students_for_stag": "حدّد راودایات یا تنظیمات یا ساحه للتدخّل مُدرَّج.",
       "describe_your_research_question_and_let_ai_recomme": "ټولګی ساوال بحثک اودع هوښیارتیا مصنوعی یاوصی بأفضل تصمیم.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training سره تتبّع إتقان اوالتقدّم تلقائی",
+      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training د تسلط تعقیب او اوتومات مخکې تګ سره",
       "document_whether_interventions_are_implemented_as": "اوثّق ما که کانت تدخّنهت تُنفَّذ کما صُمِّمت",
       "done": "هاو شوّ",
       "drop_a_snapshot_file_here": "د سنیپ شاټ فایل دلته وغورځوئ",
@@ -11426,7 +11566,7 @@
       "pos_help": "هغه عناصر چې tabindex > 0 لري د سند طبیعي ټب ترتیب ماتوي او د کیبورډ کاروونکي ګډوډوي. حل: tabindex=\"0\" (ډیفالټ ترتیب) وکاروئ یا د تڼیو/لینکونو لپاره په ډیفالټ تمرکز وړتیا تکیه وکړئ.",
       "no_label_heading": "🔴 ورک شوي لاسرس وړ نومونه",
       "no_label_help": "د فوکس وړ عناصر چې متن، aria-label، aria-labelledby، یا title نه لری. د سکرین لوستونکی کاروونکی به یوازې د ټګ نوم واوری، د بېلګې په توګه، پرته له هیڅ شرایطو \"button\". حل: aria-label یا ښکاره متن اضافه کړئ.",
-      "tip": "Tip: navigate the page behind the lab using only Tab, Shift+Tab, Enter, and Esc. Click on any element name in the lists above to focus it (the page will scroll if needed)."
+      "tip": "نکته: د لابراتوار شاته پاڼه یوازې د Tab، Shift+Tab، Enter، او Esc په کارولو سره نیویګیټ کړئ. د پورته لیستونو کې په هر عنصر نوم کلیک وکړئ ترڅو پرې فوکس وکړئ (که اړتیا وي پاڼه به سکرول شي)."
     },
     "audit": {
       "heading": "په اپلیکیشن کې د ژوندي لاسرسي پلټنه",
@@ -11488,7 +11628,7 @@
         "html_has_lang": "دې پاڼې د lang صفت نلري. سکرین لوستونکي به ونه پوهیږي چې کوم تلفظ وکاروي.",
         "html_lang_valid": "د پاڼې د lang صفت سم د ژبې کوډ نه دی.",
         "landmark_one_main": "دې پاڼې د <main> نښه نلري. د سکرین لوستونکي کاروونکي د تنقل څخه اصلي محتوا ته د تېرېدو لپاره ډېر وخت تېروي.",
-        "region": "Some content is not contained in a landmark (header, main, nav, footer). Screen reader users may struggle to navigate.",
+        "region": "ځینې محتوا په یوه نښه (header، main، nav، footer) کې نه ده ځای پر ځای شوې. د سکرین ریډر کاروونکي کیدای شي د نیویګیشن کې ستونزه ولري.",
         "heading_order": "په دې پاڼه کې سرلیکونه کچې پرېږدي (لکه h1 h3 ته ټوپ وهي). د سرلیک کچو له لارې د سکرین لوستونکي تنقل ګډوډ کیږي.",
         "page_has_heading_one": "دې پاڼې <h1> سرلیک نلري. د سکرین لوستونکي کاروونکي د پاڼې د موضوع په اړه لارښوونه له لاسه ورکوي.",
         "list": "د لیست یو عنصر (ul/ol) هغه توکي لري چې <li> نه دي. سکرین لوستونکي د جوړښت په اړه ناسم راپور ورکوي.",
@@ -11550,7 +11690,7 @@
         "dyslexia_label": "إجهاد بصری لـ Dyslexia",
         "dyslexia_desc": "د یوې عامې بصري فشار تجربې محدود سمولاسیون چې د dyslexia ځینې لوستونکي یې راپور ورکوي (لږ بې حسي، ټیټ توپیر، بدلیدونکې فاصله). dyslexia ډېره فردي ده؛ دا یوه برخه ده، نه قطعي انځور. د زده‌کوونکو نږدې 5-10% dyslexia لري.",
         "motor_label": "حرکي معلولیتونه",
-        "motor_desc": "Motor impairments resist visual simulation. The most authentic test is to use the OS-level tools real students use: Windows Sticky Keys, macOS Slow Keys, dwell-click software, switch access (e.g., the iOS Switch Control or Android Switch Access). Try completing a lesson using only one hand, only the keyboard, or only one finger."
+        "motor_desc": "حرکتي معلولیتونه د بصري نقل سره مقاومت کوي. تر ټولو ریښتینی ازموینه دا ده چې د OS-کچې هغه وسیلې وکاروئ چې ریښتیني زده‌کوونکي یې کاروي: Windows Sticky Keys، macOS Slow Keys، د دریدنه-کلیک سافټویر، د سویچ لاسرسی (د بیلګې په توګه، iOS Switch Control یا Android Switch Access). هڅه وکړئ یو درس یوازې په یوه لاس، یوازې په کیبورډ، یا یوازې په یوه ګوته بشپړ کړئ."
       }
     }
   },
@@ -11701,51 +11841,51 @@
     "share_or_print": "شریک کړئ یا چاپ کړئ"
   },
   "audit": {
-    "section_divider": "Section divider",
+    "section_divider": "د برخې بیلونکی",
     "remove_divider": "Remove divider",
-    "remove_page_break": "Remove page break",
+    "remove_page_break": "د مخ ماتوونکی لرې کړئ",
     "callout": "Callout",
     "remove_callout": "Remove callout",
     "remove_quote": "Remove quote",
-    "remove_checklist": "Remove checklist",
+    "remove_checklist": "چک لیست لرې کړئ",
     "checklist": "Checklist",
     "remove_steps": "Remove steps",
-    "step_by_step": "Step-by-step instructions",
-    "remove_accordion": "Remove accordion",
-    "qa_pair": "Question and answer pair",
+    "step_by_step": "ګام په ګام لارښوونې",
+    "remove_accordion": "اکارډین لرې کړئ",
+    "qa_pair": "د پوښتنې او ځواب جوړه",
     "remove_qa": "Remove Q and A",
-    "remove_definition": "Remove definition",
-    "pronunciation_audio": "Pronunciation audio",
+    "remove_definition": "تعریف لرې کړئ",
+    "pronunciation_audio": "د تلفظ غږ",
     "term_language": "Term language",
-    "gen_pronunciation_term": "Generate pronunciation audio from the term using AI text-to-speech",
+    "gen_pronunciation_term": "د AI متن-نه-وینا په کارولو سره له اصطلاح نه د تلفظ غږ جوړ کړئ",
     "sentence_frame": "Sentence frame",
-    "remove_sentence_frame": "Remove sentence frame",
-    "sentence_frame_template": "Sentence frame template",
-    "learning_objective": "Learning objective",
-    "remove_learning_objective": "Remove learning objective",
-    "remove_vocab_card": "Remove vocabulary card",
-    "gen_pronunciation_word": "Generate pronunciation audio from the word using AI text-to-speech",
-    "remove_reflection": "Remove reflection",
-    "reflection_response_aria": "Reflection response",
+    "remove_sentence_frame": "د جملې چوکاټ لرې کړئ",
+    "sentence_frame_template": "د جملې د چوکاټ کينډۍ",
+    "learning_objective": "د زده کړې موخه",
+    "remove_learning_objective": "د زده کړې موخه لرې کړئ",
+    "remove_vocab_card": "د لغتونو کارت لرې کړئ",
+    "gen_pronunciation_word": "د AI متن-نه-وینا په کارولو سره له کلمې نه د تلفظ غږ جوړ کړئ",
+    "remove_reflection": "غور لرې کړئ",
+    "reflection_response_aria": "د غور ځواب",
     "remove_rubric": "Remove rubric",
     "scoring_rubric": "Scoring rubric",
-    "lesson_plan_template": "Lesson plan template",
-    "remove_lesson_plan": "Remove lesson plan",
+    "lesson_plan_template": "د درس پلان کينډۍ",
+    "remove_lesson_plan": "د درس پلان لرې کړئ",
     "remove_table": "Remove table",
     "data_table": "Data table",
-    "image_description": "Image with description",
+    "image_description": "له تشرېح سره انځور",
     "remove_image": "Remove image",
     "image_url": "Image URL",
     "remove_audio": "Remove audio",
-    "audio_recording": "Audio recording",
+    "audio_recording": "د غږ ثبت",
     "audio_url": "Audio URL",
-    "gen_audio_transcript": "Generate audio from transcript using AI text-to-speech",
+    "gen_audio_transcript": "د AI متن-نه-وینا په کارولو سره له لیکل شوي متن نه غږ جوړ کړئ",
     "remove_video": "Remove video",
     "video_url": "Video URL",
-    "video_title_screen": "Video title for screen readers",
-    "math_equation": "Mathematical equation",
-    "remove_equation": "Remove equation",
-    "insert_formula": "Insert formula from library"
+    "video_title_screen": "د سکرین لوستونکو لپاره د ویډیو سرلیک",
+    "math_equation": "ریاضي معادله",
+    "remove_equation": "معادله لرې کړئ",
+    "insert_formula": "له کتابتون نه فورمول ننباسئ"
   },
   "alts": {
     "scene_visualization": "د صحنې لید",
@@ -12083,17 +12223,17 @@
   },
   "headings": {
     "story_forge": "StoryForge",
-    "narrate_story": "Narrate Your Story",
-    "review_feedback": "Review & Feedback",
-    "character_name_check": "Character Name Check",
-    "writing_analytics": "Writing Analytics",
+    "narrate_story": "خپله کیسه روایت کړئ",
+    "review_feedback": "کتنه او نظر",
+    "character_name_check": "د کرکټر نوم کتنه",
+    "writing_analytics": "د لیکلو شننه",
     "word_frequency": "Word Frequency",
-    "score_breakdown": "Score Breakdown",
-    "vocab_usage": "Vocabulary Usage",
-    "storybook_ready": "Your Storybook is Ready!",
-    "per_dimension_findings": "Per-Dimension Findings",
-    "your_self_assessment": "Your Self-Assessment",
-    "cloud_voice_unavailable": "Cloud Voice Unavailable",
+    "score_breakdown": "د نمرې ویش",
+    "vocab_usage": "د لغتونو کارونه",
+    "storybook_ready": "ستاسو کیسه کتاب چمتو دی!",
+    "per_dimension_findings": "د هرې برخې موندنې",
+    "your_self_assessment": "ستاسو ځان ارزونه",
+    "cloud_voice_unavailable": "د کلاوډ غږ شتون نلري",
     "allohaven": "AlloHaven",
     "tts": "Text-to-Speech"
   },
@@ -12425,5 +12565,10 @@
     "byline": "لیکوال {author} · {words} کلمې · {used}/{total} لغتونه",
     "student": "زده‌کوونکی",
     "score": "نمره: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "د مخکتنې بیا جوړول به ستاسو لاسي بدلونونه په نوي جوړ شوي منځپانګه بدل کړي. دوام ورکړئ او بدلونونه له منځه یوسئ؟ (لغوه کول یې ساتي — د لومړي ساتلو لپاره صادر کړئ یا جوړونکی وتړئ.)",
+    "remediation_banner_title": "د سمون شوي سند سمول.",
+    "remediation_banner_body": "ستاسو دلته بدلونونه بیرته په هغه کې ساتل کېږي کله چې جوړونکی وتړئ، نو د Tagged PDF / Word / PowerPoint ډاونلوډونه یې هم لري."
   }
 }

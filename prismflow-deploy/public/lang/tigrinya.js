@@ -979,7 +979,7 @@
     "storage_full_text_only": "ቦታ መዕቆሪ መሊኡ። ጽሑፍ ጥራይ ይዕቅብ (ስእልታት ተወጊዱ)።",
     "storage_full_critical": "ኣዝዩ ኣገዳሲ፡ ታሪኽ ክዕቀብ ኣይካኣለን። ቦታ መሊኡ።",
     "resource_not_found": "ሃብቲ ኣይተረኽበን።",
-    "resource_not_found_history": "ሃብቲ ኣብ ታሪኽ ኣይተረኽበን።",
+    "resource_not_found_history": "ሃብቲ ኣብ ታሪኽ ኣይተረኽበን (ምናልባት ተደምሲሱ ይኸውን)።",
     "analysis_failed": "ምትንታን ኣይተዓወተን። እንደገና ፈትኑ።",
     "enter_target_language": "በጃኹም እተው ሓደ ዕላማ ቋንቋ.",
     "translation_started": "ትርጉም ጀሚሩ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ግብረመልሲ ዘይርከብ",
     "write_essay_first": "ቅድም ጽሑፍኩም ጽሓፉ!",
     "enter_word_art_first": "በጃኹም ቅድም ናይ ቃል ጥበብ ጽሑፍ ኣእትዉ",
-    "preview_not_ready": "ቅድመ-ምርኢት ገና ድሉው ኣይኮነን",
+    "preview_not_ready": "ቅድመ-ምርኢት ገና ድሉው ኣይኮነን — ክሳብ ዝቐርብ ተጸበ፡ ድሕሪኡ እንደገና ፈትን።",
     "word_art_render_failed": "ናይ ቃል ጥበብ ምርኣይ ኣይተኻእለን",
     "diff_engine_load_failed": "ናይ ፍልልይ ኤንጂን ኣይተጻዕነን (መርበብ ተዓጽዩ?)። ርክብኩም ኣረጋግጹ ኢልኩም እንደገና ፈትኑ።",
     "brf_downloaded": "ኤሌክትሮኒካዊ ብሬይል (BRF) ወሪዱ",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 ፕሮጀክት ተዓቝቡ ({count} ክሊታት); ንምቕጻል ጸኒሕካ ጽዓኖ",
     "project_saved": "💾 ፕሮጀክት ተዓቝቡ; ምስትኽኻል ንምቕጻል ጸኒሕካ ጽዓኖ",
     "search_result_desc": "ናይ Google ፍለጋ ውጽኢት: {title}",
-    "link_url_prompt": "ናይ መላግቦ URL ኣእቱ:"
+    "link_url_prompt": "ናይ መላግቦ URL ኣእቱ:",
+    "building_accessible_docx": "ተበጻሕነት ዘለዎ ናይ Word ፋይል ይስራሕ ኣሎ…",
+    "building_accessible_pptx": "ተበጻሕነት ዘለዎ PowerPoint ይስራሕ ኣሎ…",
+    "batch_tagging": "📄 ንዕኡ ZIP ዝኸውን tagged PDF ይፍጠር ኣሎ — ዝተscan ዝተገብሩ ፋይላት ግዜ ይወስዱ (OCR ንነፍሲ ወከፍ ፋይል ይሰርሕ)…",
+    "builder_edits_preserved": "✋ ብኢድካ ዝገበርካዮም ምትዕርራያት ተሓልዮም — ቅድመ-ምርኣይ ኣይተሓደሰን። ንምዕቃቦም ሰዲድካ ወይ ነቲ builder ዓጺኻ፣ ብድሕሪኡ ቅጥዕታት ቀይር።",
+    "builder_edits_synced": "✏️ ናይ builder ምትዕርራያት ኣብቲ ዝተዐረየ ሰነድ ተዓቝቡ — ናይ Tagged PDF / Word / PowerPoint ምውጻእ ሕጂ የጠቓልሎም።",
+    "pptx_ai_theme": "🎨 ምስ ዛዕባ ዝሳነ ቅብኣ ቀለም ካብ AI ይሕተት ኣሎ (ንባብነት ኣብ ውሽጢ ይረጋገጽ)…",
+    "make_accessible_fixing": "✨ ምርመራ ተወዲኡ — ብኣውቶማቲክ ይዕረ ኣሎ (ምጥዋቕ ኣየድልን)…",
+    "tagged_pdf_saved_see_report": "📄 Tagged PDF ተዓቝቡ — እቲ ምሉእ ጸብጻብ ኣብ ልዕሊ መልጎማት ምውራድ ተሰኪዑ ኣሎ (✕ ንምዕጻው)።",
+    "no_open_image_slot": "ኣብ ቅድመ-ምርኣይ ክፉት ናይ ስእሊ ቦታ ኣይተረፈን — ኣብ ክንድኡ ነቲ ምስሊ ንምትካእ ነቲ thumbnail ናብ ሓደ ፍሉይ ስእሊ ጎተቶ።",
+    "extracted_image_inserted": "🖼 ኣብ ቀዳማይ ክፉት ናይ ስእሊ ቦታ ተኣትዩ — ካልእ ቦታ እንተ ደሊኻ ኣብ ክንድኡ thumbnail ጎተት።",
+    "html_downloaded": "🌐 HTML ወሪዱ — ኣብ ዝኾነ browser ይኽፈት።",
+    "odt_downloaded": "📄 OpenDocument (.odt) ወሪዱ — ኣብ LibreOffice፣ Google Docs ወይ Word ይኽፈት።",
+    "daisy_downloaded": "🔊 ናይ DAISY ዘዛርብ-መጽሓፍ ጥርዚ (.zip) ወሪዱ — ኣብ DAISY reader ክፈቶ።",
+    "mo_no_voice": "እቲ ናይ ድምጺ ኣገልግሎት ስለ ዘይርከብ፣ ሕጂ ምስ ንባብ ዝኸይድ ድምጺ ክፍጠር ኣይክእልን።",
+    "mo_busy": "ሓደ ምስ ንባብ ዝኸይድ ምውጻእ ድሮ ይሰርሕ ኣሎ።",
+    "mo_no_text": "ዝንበብ ጽሑፍ ኣይተረኽበን።",
+    "mo_no_audio": "⚠ ምስ ንባብ ዝኸይድ ኢ-መጽሓፍ ተዓቝቡ፣ ግን ድምጺ ክፍጠር ኣይከኣለን (ናይ ድምጺ ኣገልግሎት ኣይርከብን)። እቲ ጽሑፍ + ናይ ምሕዋስ ቅርጺ ጸኒዑ ኣሎ።",
+    "mo_done": "ምስ ንባብ ዝኸይድ ኢ-መጽሓፍ ወሪዱ",
+    "audio_unavailable_now": "ድምጺ ሕጂ ኣይርከብን (ስራሕ ይካየድ ይኸውን፣ ወይ እቲ ናይ ድምጺ ኣገልግሎት ጠፊኡ ኣሎ)።"
   },
   "large_file": {
     "modal_title": "ኣእቱ Large ድምጺ ፋይል",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator መሳርሒታት",
     "documents_menu_aria": "ሰነድ ሜኑ",
     "open_doc_builder_pdf_aria": "ክፈት ሰነድ Builder ንዓ PDF",
-    "export_slides_tooltip": "Opens ሰነድ Builder ኣብ Slides ኣገባብ"
+    "export_slides_tooltip": "Opens ሰነድ Builder ኣብ Slides ኣገባብ",
+    "learning_tools_tooltip": "ናይ ምምሃር መሳርሒታት (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "ዕላማ ቋንቋ",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "ኣማራጺ። ኣብ ናይ ጸወታ ዝኾነ ስእሊ (ሕቶ + ኣማራጺታት) ይምልከት። ባዶ = ነባሪ ስታይል። ናይ ምምሕያሽ ስርሓት ኣብ ብራንድ ንኽጸንሕ ምስ ጸወታ ይተሓዝ።",
     "generate_pre_check": "ቅድመ-ምርመራ ኣፍሪ",
     "generate_formative": "ፍጠር Formative ምርመራ",
-    "generate_review": "ፍጠር Spaced ምግምጋም"
+    "generate_review": "ፍጠር Spaced ምግምጋም",
+    "likert_strongly_disagree": "ኣጸቢቐ ኣይሰማማዕን",
+    "no_right_answer": "ኣብዚ ቅኑዕ ወይ ግጉይ መልሲ የለን።",
+    "poll_completed": "ርእይቶኻ ስለ ዘካፈልካ የቐንየልና።",
+    "poll_intro": "ኣብዚ ቅኑዕ ወይ ግጉይ መልሲ የለን — ቅኑዕ ርእይቶኻ ንመምህርካ ይሕግዝ፣ ንዓኻ እውን ይሕግዝ።",
+    "mode_poll": "🗣️ ድምጺ-ህዝቢ (ድምጺ ተማሃራይ)"
   },
   "outline": {
     "title": "ምርኢት Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "ምስናይ size ናይ timeline ስእሊ"
   },
   "pdf_audit": {
+    "fidelity_delta": "እሙንነት ጽሑፍ፡ {before}% → {after}%{detail}",
     "view_last_audit": "ርአ መወዳእታ Audit",
     "start_new_audit": "ጀምር ሓድሽ Audit",
     "apply_and_export": "ኣተግብር & ላእኽ",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "ኣብ ቅርጺ ይሰማማዕ እምበር ኣብ ትርጉም ድኹም — AI ኣክስ-ኮር ክፈልጦ ዘይክእል ናይ ትሕዝቶ ጽፈት ምልክት ኣቐሚጡ",
-      "structural": "ናይ ኮድ ደረጃ WCAG ጥሕሰት ተራእዩ — axe-core ብማሺን ክፈትሽ ዝኽእል ጥፍኣት ኣረኪቡ"
+      "structural": "ናይ ኮድ ደረጃ WCAG ጥሕሰት ተራእዩ — axe-core ብማሺን ክፈትሽ ዝኽእል ጥፍኣት ኣረኪቡ",
+      "critical_override": "axe-core {n} ከቢድ ጥሕሰት WCAG ረኺቡ — ነቲ ዝተሓዋወሰ ነጥቢ ቅድሚ ምእማን ተመልከቶም፤ ማእከላይ ነጥቢ ከቢድ ውድቀት ክሓብእ ይኽእል እዩ"
     },
     "tagtree": {
       "label": "ቅድሚ ሕጂ ዝነበረ ምልክት ቅርጺ",
@@ -4274,7 +4301,8 @@
       "std_dev": "መዐቀኒ Deviation",
       "icc_title": "Custom 1−(SD/50) index; ኣይኮነን textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "ኣብ መንጎ ናይ AI ምሕላፋት CV + pairwise ዝተሓዋወሰ heuristic፤ ናይ መጽሓፍ Cronbach's α ኣይኮነን"
     },
     "score": {
       "total_checks": "ድምር ዝተገብሩ መርመራታት",
@@ -4436,7 +4464,9 @@
       "title": "Regenerate ሓደ PDF ካብ remediated HTML. Layout reflows — ገጽ breaks, fonts, ከምኡውን pagination ይኽእል differ ካብ ኦርጅናል. ይሰርሕ well ንዓ ቐሊል prose ሰነድ."
     },
     "tagged_pdf": {
-      "title": "ናይ መጀመርያ PDF ስእላዊ ኣቐማምጣ ብባይት-ተመሳሳሊ ሕልው ከምኡ'ውን ናይ ተበጻሕነት ስም ኣብ ናይ ቅርጺ ዛፍ ኣእትው። ንመጻሕፍቲ፣ ብዙሕ-ኣምድ ሰነዳትን ናይ ብራንድ PDF — ስእላዊ እምነት ኣገዳሲ ኣብ ዘለዎ ብሉጽ።"
+      "title": "ናይ መጀመርያ PDF ስእላዊ ኣቐማምጣ ብባይት-ተመሳሳሊ ሕልው ከምኡ'ውን ናይ ተበጻሕነት ስም ኣብ ናይ ቅርጺ ዛፍ ኣእትው። ንመጻሕፍቲ፣ ብዙሕ-ኣምድ ሰነዳትን ናይ ብራንድ PDF — ስእላዊ እምነት ኣገዳሲ ኣብ ዘለዎ ብሉጽ።",
+      "office_note": "Tagged PDF ንናይ PDF input ይምልከት — Word/HTML ተጠቐም",
+      "office_note_title": "ናይ ቅርጺ tags ኣብ ናይ PDF bytes ጥራይ ክስገሩ ይኽእሉ። ንናይ Word/PowerPoint input፣ እቲ ተበጻሕነት ዘለዎ Word ከምኡውን HTML ምውራዳት ነቲ ዝተዐረየ ቅርጺ ይሕዙ።"
     },
     "alt_formats": {
       "intro": "ኣውርድ remediated ሰነድ ኣብ ኪበጻሕ ዝኽእል alternative ቅርጻ"
@@ -4507,7 +4537,9 @@
       "heading": "ኣይነት Stamp"
     },
     "extracted_images": {
-      "drag_hint": "ስሓብ ሓደ thumbnail onto ዝኾነ ስእሊ placeholder ኣብ preview ናብ insert it, ወይ ጠውቕ \"📷 ስቐል\" inside ሓደ placeholder ከምኡውን ምረጽ \"ተጠቐም extracted ስእሊ\"."
+      "drag_hint": "ስሓብ ሓደ thumbnail onto ዝኾነ ስእሊ placeholder ኣብ preview ናብ insert it, ወይ ጠውቕ \"📷 ስቐል\" inside ሓደ placeholder ከምኡውን ምረጽ \"ተጠቐም extracted ስእሊ\".",
+      "drag_hint2": "ኣብ ቀዳማይ ክፉት ናይ ስእሊ ቦታ ንምእታው thumbnail ጠውቕ፣ ወይ ኣብ ቅድመ-ምርኣይ ኣብ ዝኾነ ፍሉይ ቦታ ወይ ስእሊ ጎተቶ። ×N = ተመሳሳሊ ስእሊ ኣብ N ገጻት ተራእዩ (መብዛሕትኡ ግዜ letterhead ወይ ሎጎ)።",
+      "insert_aria": "ዝተወጽአ ስእሊ ኣብ ቀዳማይ ክፉት ቦታ ኣእቱ"
     },
     "toolbar": {
       "aria": "ጽሑፍ formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} ጥሕሰት",
     "violation_other": "{count} ጥሕሰታት",
     "ai_issue_one": "{count} ብ AI ዝተመልከተ ጸገም",
-    "ai_issue_other": "{count} ብ AI ዝተመልከቱ ጸገማት"
+    "ai_issue_other": "{count} ብ AI ዝተመልከቱ ጸገማት",
+    "tagged": {
+      "born_digital_note": "ኣስተብህል፦ ንናይ ጽሑፍ-ደረጃ PDFs እቶም ትርጉማዊ tags ምሉእ ናይ ትሕዝቶ ምትእስሳር ዘይኮነ ናይ ActualText ምትእስሳር ይጥቀሙ። እቲ ፋይል ኣዝዩ ዝበለጸ ተበጻሕነት ኣለዎ፣ ግን ቅድሚ PDF/UA ምስምማዕ ምድንጋጽካ ኣብ PAC 2024 ወይ Acrobat ኣረጋግጾ።"
+    },
+    "one_click": {
+      "label": "ተበጻሕነት ግበሮ",
+      "badge": "ምሉእ ኣውቶማቲክ — ምርመራ፣ ምዕራይ፣ ምርግጋጽ፣ ክሳብ ዕላማ ምድግጋም",
+      "desc": "ሓደ ጠውቕ ብነባሪ ቅጥዕታት ነቲ ምሉእ ሰንሰለት ብዘይ ኢድ የካይዶ፤ ኣብ መወዳእታ ምውራድ ድሉው ይኸውን። ቍጽጽር ትደሊ? ኣብ ታሕቲ ዘሎ \"Run Audit\" ተጠቐም፣ ነቲ ውጽኢት ተመልከት፣ ብድሕሪኡ ባዕልኻ Fix & Verify ጠውቕ።"
+    },
+    "run_audit_label": "ምርመራ ኣካይድ (ስጉሚ 1 ካብ 2)",
+    "manual_path_explainer": "\"Run Audit\" ነቲ ሰነድ ይግምግሞ ኣየናይ ምዕራይ ከም ዘድልዮ ድማ የርኢ — ብድሕሪኡ ተመልኪትካ ባዕልኻ Fix & Verify ትጥውቕ (ስጉሚ 2)። እቲ ኣብ ላዕሊ ዘሎ \"Make Accessible\" ክልቲኡ ስጉምትታት ብተወሳኺ ዳግመ-ምርመራ ብኣውቶማቲክ ይገብሮ። \"Text Extraction\" ንምፍጣር ትሕዝቶ ጥራይ ነቲ ጥረ ጽሑፍ የውጽኦ።",
+    "tagged_report": {
+      "heading": "ናይ Tagged PDF ጸብጻብ",
+      "close_aria": "ናይ tagged-PDF ጸብጻብ ዕጸዎ",
+      "note": "እዚ ሰሌዳ ክሳብ ትዓጽዎ ይጸንሕ። ተመሳሳሊ ዝርዝራት ኣብቲ ብኣገባብ Adobe ዝተሰርሐ A11y Report ምውራድ ይሕቆፉ።"
+    },
+    "docx_export": {
+      "title": "ነቲ ዝተዐረየ ትሕዝቶ ናብ ናይ Word ሰነድ ቀይሮ ምስ ሓቀኛ ናይ ኣርእስቲ ቅዲ፣ ኣብ ስእልታት ኣማራጺ ጽሑፍ፣ ናይ ሰንጠረዥ ናይ ኣርእስቲ ረድፍታት፣ ናይ ዝርዝር ቅርጺ፣ ከምኡውን ዝሰርሑ hyperlinks። ቅድሚ ምዝርጋሕ ብናይ Word ውሁድ Accessibility Checker (Review → Check Accessibility) ኣረጋግጽ።"
+    },
+    "pptx_export": {
+      "title": "ነቲ ዝተዐረየ ትሕዝቶ ከም PowerPoint deck ዳግማይ ስርሓዮ ምስ ሓቀኛ ናይ ስላይድ ኣርእስትታት፣ ኣብ ስእልታት ኣማራጺ ጽሑፍ፣ ብኣርእስቲ ዝተቐረጹ ናይ ሰንጠረዥ ረድፍታት፣ ሓቀኛ ናይ ነጥቢ ዝርዝራት፣ ከምኡውን ናይ ንባብ ቅደም-ተኸተል = ናይ ምርኣይ ቅደም-ተኸተል። ዳግማይ ዝተሰርሐ ተበጻሒ ኣቀማምጣ — ናይቲ በዓል ቅዳሕ ምስሊ ቅዳሕ ኣይኮነን። ቅድሚ ምዝርጋሕ ብናይ PowerPoint Accessibility Checker ኣረጋግጽ።"
+    },
+    "dashboard": {
+      "aria": "ናይ ምዕራይ ውጽኢት ሓፈሻዊ ትሕዝቶን ናይ ክፋል ኣሰሳስኖን",
+      "score_title": "ናይ ተበጻሕነት ነጥቢ፦ ቅድሚ → ድሕሪ"
+    },
+    "tag_to_workbench_title": "ነዚ ብሎክ ናብ Expert Workbench ስደዶ፦ ብሓደ መምርሒ ክትዕርዮ ምእንቲ ዝቐንዐ ትእዛዝ ኣቐዲሙ ይመልኦ (ዝኾኑ መጠንቀቕታታት ሓዊሱ)",
+    "tag_to_workbench_aria": "ናብ Expert Workbench ስደድ",
+    "pptx_theme_aria": "ናይ PowerPoint ምውጻእ ቴማ",
+    "pptx_theme_title": "ናይ ስላይድ ቴማ ንናይ PowerPoint ምውጻእ። ኩሎም presets ናይ ኣፈላላይ-ቀለም ምርመራ ተገይሩሎም (WCAG AA)፤ እቲ ናይ AI ኣማራጺ ምስ ዛዕባኻ ይሳነ፣ ኣብ ክልቲኡ ኩነታት ድማ ንባብነት ኣብ ውሽጢ ይረጋገጽ።",
+    "export_menu": {
+      "button": "ምውጻእ / ምውራድ",
+      "intro": "ነቲ ዝተዐረየ ሰነድ ብዝኾነ ቅርጺ ኣውርዶ — ከመይ ጌሩ ከም ዝውዕል ዝሳነ ምረጽ።",
+      "tagged_pdf": "Tagged PDF (PDF/UA — ንተማሃሮ ሃቦም)",
+      "word": "Word (.docx — ምትዕርራይ ቀጽል)",
+      "pptx": "PowerPoint (.pptx — ኣቕርቦ)",
+      "html": "HTML (ኣብ ዝኾነ ይኽፈት፣ ሶፍትዌር ኣየድልን)",
+      "group_access": "ተበጻሕቲ ቅርጽታት",
+      "daisy": "DAISY ዘዛርብ መጽሓፍ (ምሉእ ጽሑፍ)",
+      "daisy_title": "DAISY 3 (DTBook) ምሉእ-ጽሑፍ ዘዛርብ-መጽሓፍ ጥርዚ። ኣብ DAISY reader ክፈቶ፣ ንሱ ዘረባ፣ ብሬይል ወይ ዓብዪ ሕትመት ይህብ። (ምስ ዝተሓወሰ ዓው ኢልካ-ዝንበብ ድምጺ፣ ኣብ ታሕቲ ዘሎ ምስ ንባብ-ዝኸይድ ተጠቐም።)",
+      "readalong": "ምስ ንባብ ዝኸይድ ኢ-መጽሓፍ (ዝተሓወሰ ድምጺ)",
+      "readalong_progress": "ይንበብ ኣሎ… {done}/{total}",
+      "readalong_title": "ምስ ንባብ ዝኸይድ ኢ-መጽሓፍ (EPUB3 Media Overlays)፦ ንነፍሲ ወከፍ ሕጡብ ጽሑፍ-ናብ-ዘረባ ይፈጥርን ምስቲ ጽሑፍ የተሓሕዞን፣ ሓደ ናይ ምንባብ ስርዓት ቃላት ክዝረቡ ከለዉ ምእንቲ ከጉልሕ። ብዙሕ ናይ ድምጺ ጻውዒታት ይገብር — ቅሩብ ደቓይቕ ክወስድ ይኽእል።",
+      "group_text": "ጽሑፍን ዝተዓረየን",
+      "odt_title": "OpenDocument Text — ኣብ LibreOffice ከምኡውን Google Docs (ከምኡውን Word) ብባህሪኡ ይኽፈት።",
+      "group_audio": "ናይ ድምጺ ንባብ",
+      "audio": "ናይ ድምጺ ንባብ (ስታንዳርድ)",
+      "audio_title": "ናይቲ ሰነድ ዝተዛረበ ንባብ (MP3/WAV)።",
+      "audio_sr": "ድምጺ (ብኣገባብ screen-reader)",
+      "audio_sr_title": "ተመሳሳሊ ድምጺ፣ ግን ከም ሓደ screen reader ጌሩ ቅርጺ ብምእዋጅ (ናይ ኣርእስቲ ደረጃታት፣ ናይ ዝርዝር ቍጽሪ፣ ናይ ሰንጠረዥ ረድፍታት፣ ናይ ስእሊ ኣማራጺ ጽሑፍ)።"
+    },
+    "mo": {
+      "confirm": "ምስ ንባብ ዝኸይድ ኢ-መጽሓፍ ይስራሕ? እዚ {n} ናይ ጽሑፍ ክፋላት ብጽሑፍ-ናብ-ዘረባ የንብቦም — ኣስታት {n} ናይ ድምጺ ጻውዒታት፣ ቅሩብ ደቓይቕ ክወስድ ይኽእል።"
+    }
   },
   "concept_sort": {
     "title": "ሓሳብ ኣሰናዲ",
@@ -6831,7 +6916,61 @@
     "timeline_image_size": "ናይ Timeline event card image resize ቁጽጽር — small / medium / large።",
     "pdf_audit_view_web_audit_btn": "ንክልቲኦም AI ኦዲተርን ናይ axe-core ሞተርን (እቶም ሞያውያን ኦዲተራት ዝጥቀምሉ ሞተር) ብምጥቃም ነቲ ገጽ ንWCAG 2.1 AA ተበጻሕነት ይግምግሞ። ዝኾነ ነገር ኣይቕየርን — ነቲ ገጽ ሎሚ ኣብ ምንታይ ደረጃ ከም ዘሎ ክትፈልጥ ጥራይ ምስ እትደሊ ነዚ ተጠቐም።",
     "pdf_audit_results_score_badge": "ናይ PDF ኪ ኣጠቓላሊ ናይ ተበጻሕነት ነጥቢ ካብ 0 ክሳብ 100። ቀጠልያ (80+) ናብ WCAG AA ቀሪቡ ኣሎ፣ ብርቱኳናዊ (50-79) ስራሕ የድልዮ፣ ቀይሕ (<50) ንስክሪን ኣንበብትን ሓጋዚ ቴክኖሎጂን ዝጥቀሙ ተመሃሮ ዓበይቲ ዕንቅፋታት ኣለዎ።",
-    "pdf_audit_alt_formats_braille_btn": "ኣብ ናይ ብሬይል ሕታም ክሕተም ወይ ናብ ዝሕደስ ናይ ብሬይል መርኣዪ ክስደድ ዝኽእል ናይ ብርኪ-1 (ዘይተቆጻጸረ) ናይ ብሬይል ፋይል ኣቐምጥ። ንናይ ብርኪ-2 ምቍጽጻር፣ ነቲ ፋይል ንTVI (መምህር ናይ ስእነት ርእየት ዘለዎም ተመሃሮ) ንምዝዛም ኣረክቦ።"
+    "pdf_audit_alt_formats_braille_btn": "ኣብ ናይ ብሬይል ሕታም ክሕተም ወይ ናብ ዝሕደስ ናይ ብሬይል መርኣዪ ክስደድ ዝኽእል ናይ ብርኪ-1 (ዘይተቆጻጸረ) ናይ ብሬይል ፋይል ኣቐምጥ። ንናይ ብርኪ-2 ምቍጽጻር፣ ነቲ ፋይል ንTVI (መምህር ናይ ስእነት ርእየት ዘለዎም ተመሃሮ) ንምዝዛም ኣረክቦ።",
+    "pdf_audit_view_web_url_input": "ነቲ ክትምርምሮ እትደሊ ናይ ድረ-ገጽ ኣድራሻ ለጥፎ (ንኣብነት https://yourdistrict.org/handbook)፣ ብድሕሪኡ ምእንቲ ክትምርምሮን ክተዐርዮን HTMLኡ ንምስሓብ Fetch ጠውቕ።",
+    "pdf_audit_view_web_fetch_btn": "ነቲ ኣብ ላዕሊ ኣብ URL ዘሎ ገጽ የውርዶ HTMLኡ ድማ ኣብቲ ኣብ ታሕቲ ዘሎ ሳጹን የእትዎ። እቲ መርበብ ምስሓብ እንተ ኣጊዱ፣ ነቲ ናይ ገጽ source ባዕልኻ ኣብቲ ናይ HTML ሳጹን ለጥፎ።",
+    "pdf_audit_view_web_html_textarea": "እቲ ብሓቂ ዝምርመር ዘሎ HTML — ወይ ብFetch ዝኣተወ ወይ ብኣኻ ዝተለጠፈ። ቅድሚ ምርመራ ምክያድካ ኣብዚ ክትዐርዮ ትኽእል (ንኣብነት፣ ናትካ ዘይኮነ navigation bar ኣልግሶ)።",
+    "pdf_audit_view_web_remediate_btn": "ነቲ ገጽ ይግምግሞ፣ ብድሕሪኡ ነቲ ክዐርዮ ዝኽእል ንምዕራይ ነቲ HTML ይጽሕፎ (ኣፈላላይ-ቀለም፣ ናይ ቋንቋ tag፣ skip-link፣ landmarks) ዝውረድ ተበጻሒ ቅዳሕ ድማ ይህበካ። ቅድሚ ምሕታም ኩሉ ግዜ ነቲ ውጽኢት ባዕልኻ ዳግማይ ኣረጋግጽ።",
+    "pdf_audit_view_batch_dropzone": "ናብ batch queue ንምውሳኽ ናይ PDF ፋይላት ካብ desktop ወይ ካብ ናይ ምውራዳት folderካ ናብዚ ሳጹን ጎተቶም። PDF ዘይኮኑ ፋይላት ይዕለሉ።",
+    "pdf_audit_view_batch_browse_btn": "ሓደ ወይ ካብኡ ንላዕሊ PDFs ንምምራጽ ናይ ፋይል መማረጺኻ ይኽፍት። ፋይላት ምጉታት ቀሊል እንተ ዘይኮይኑ (ናይ ምትንኻፍ መሳርሒ፣ screen reader፣ ትሑት ራኢ፣ ወይ Chromebook) እዚ ተጠቐም።",
+    "pdf_audit_view_batch_resume_btn": "ናይ መወዳእታ ባጫኻ ካብቲ ዝደው ኣበሉ ይቕጽሎ — እቶም ዝተወድኡ PDF ይተሓዙ፣ እቶም ዘይተወድኡ ጥራይ እዮም ዳግም ዝሰርሑ። ባጫ ቕድሚ ምውዳኡ ምስ ዝቋረጽ (ዕጹው ታብ፣ ምሕዳስ፣ ምውዳቕ) ነዚ ተጠቐመሉ።",
+    "pdf_audit_view_batch_discard_btn": "ካብ ናይ መወዳእታ ዝተቋረጸ ባጫኻ እተዓቑረ ምዕባለ ይድርብዮ — እቲ ባነር ይኸይድ ከምኡ’ውን እቶም እተዓቑሩ ውጽኢታት ካብ ብራውዘርካ ይድምሰሱ።",
+    "pdf_audit_view_batch_clear_all_btn": "ካብ መስርዕ ኩሉ PDF የልግሶ እሞ ካብ መጀመርታ ክትጅምር ትኽእል። Start Batch ቅድሚ ምጥዋቕካ ጥራይ ዝርከብ።",
+    "pdf_audit_view_batch_row_retry_btn": "ነቲ ካልእ ናይ ባጫ ክፋል ከይተንከፍካ ነዛ ሓንቲ ዝፈሸለት ፋይል ጥራይ ዳግም ይሰርሓ። ስለምንታይ ከም ዝፈሸለ ንምንባብ ቅድሚኡ ኣብ ቀይሕ X ኣንሳፍፍ — ቅርጻዊ እንተኾይኑ (ዝተበላሸወ PDF፣ ስእሊ-ጥራይ ስካን)፣ ዳግም ምፍታን ኣይሕግዝን።",
+    "pdf_audit_view_batch_row_remove_btn": "ነዛ ሓንቲ PDF ካብ መስርዕ የልግሳ እሞ ባጫ ይዘላ። ባጫ ቅድሚ ምጅማሩ ጥራይ ዝርከብ።",
+    "pdf_audit_view_batch_stop_btn": "ነቲ ባጫ ሕጂ ዝሰርሓ ዘሎ ፋይል ምስ ወድአ ደው ክብል ይሓትት። እቶም ዝተወድኡ PDF ከም ዝተወድኡ ይተርፉ — ዝተወድአ ስራሕ ኣይትስእንን፣ ነቲ ዝተረፈ ድማ ጸኒሕካ ክትቅጽሎ ትኽእል።",
+    "pdf_audit_view_batch_retry_all_failed_btn": "ነፍሲ ወከፍ ዝፈሸለ PDF ዳግም ኣብ መስርዕ የእትዎ እሞ ዳግም ይሰርሖ። እቶም ዝተዓወቱ ፋይላት ኣይትንከፉን። ፍሽለታት ናይ ዘይተረጋገአ መርበብ ጌጋታት ዝመስሉ እንተኾይኖም ሓደ ግዜ ምፍታን ይበቅዕ፤ ብሓቂ ዝተበላሸዉ PDF ግን ደጋጊምካ ኣይትፈትን።",
+    "pdf_audit_view_batch_start_btn": "ኣብ መስርዕ ንዘሎ ነፍሲ ወከፍ PDF ምምርማርን ምዕራይን ይጅምር። ቅድሚ ምጅማሩ፣ ብኣጋጣሚ ናይ AI ጻውዒታት (ከምኡ’ውን ኣብቲ ባዕልኻ እተአንግዶ ፕላን፣ ወጻኢ) ዘሎ ግምት ዝሓዘ መረጋገጺ ይቐርብ፣ ስለዚ ቅድሚ ምጅማርካ ክትውስን ትኽእል።",
+    "pdf_audit_view_batch_download_zip_btn": "ኩሉ ብዓወት እተዓረየ PDF ከም ሓንቲ ZIP ፋይል ይወርድ። ምሉእ ፎልደር ናብ መምህር ወይ ናብ ኣራኺቢ ዲስትሪክት ብሓደ ግዜ ንምምላስ ዝጠቅም።",
+    "pdf_audit_view_batch_new_batch_btn": "ነቲ ዝተወድአ ባጫ ይጽርዮ እሞ ሓድሽ ስብስብ PDF ከተእቱ ትኽእል። ዝኾነ ድሮ ዘውረድካዮ ZIP ኣብ ኮምፒተርካ ይተርፍ — እዚ ነቲ ስክሪን ጥራይ እዩ ዳግም ዘዳሉ።",
+    "pdf_audit_view_batch_dashboard_btn": "ኣብ ሓድሽ ታብ ክትሕተም ዝኽእል ናይ ምምልላእ ዳሽቦርድ ይኸፍት — ማእከላይ ነጥቢ፣ ክንደይ PDF 90+ ከም ዝበጽሑ፣ እቶም ኣዝዮም ዝውቱራት ናይ WCAG ጸገማት። ምስ ኣመሓዳሪ ንምክፋል ወይ ኣብ ናይ Title II / 504 መዝገብ ንምልጣፍ ይጠቅም።",
+    "pdf_audit_view_settings_panel": "ናይ ምምርማርን ምዕራይን መስርሕ መስተኻኸሊ መቆጻጸሪታት። እቲ ነባሪ ኣቀማምጣ ምኽኑይ እዩ — እቲ ስሩዕ ስራሕ ዘድልየካ ዘይህበካ እንተኾይኑ ጥራይ ቀይሮ (ዝያዳ ጥንቃቐ፣ ትሑት ወጻኢ፣ ካልእ መደምደምታ ነጥቢ)።",
+    "pdf_audit_view_audit_passes_slider": "ክንደይ ናይ ነጻ AI መርመርቲ ነቲ PDF ይርእይዎ — ኣብ ሓቀኛ ጸገማት ይሰማምዑ ኣብ ጫውጫው ድማ ይፈላለዩ፣ ስለዚ ዝያዳ መርመርቲ ማለት ውሑድ ሃሰው ምባል ማለት እዩ። 5 እቲ ዝበለጸ ኣማራጺ እዩ፤ ንልዑል ኣገዳስነት ዘለዎም ናይ ምምልላእ ሰነዳት ኣዕብዮ፣ ንቅልጡፍ ምርመራ ድማ ኣጉድሎ።",
+    "pdf_audit_view_target_score_slider": "እቲ ዝተዓረየ PDF ክበጽሖ እትደልዮ ነጥቢ — 90 ድልዱል ናይ WCAG 2.1 AA መሕለፊ እዩ፣ 95+ ናብ ፍጹም ዝቐረበ እዩ፣ 70 ድማ ንዝተስከኑ ሰነዳት ዝጠቅም መሰረታዊ ደረት እዩ። ነቲ መስርሕ እቲ ነጥቢ ክሳብ ዝበጽሕ ክሰርሕ ምእንቲ ምስ Auto-continue ኣጣምሮ።",
+    "pdf_audit_view_max_fix_passes_slider": "እቲ መስርሕ ደው ቅድሚ ምባሉ ክንደይ ናይ ኣውቶማቲክ መዕረዪ-ዙርያ ክሰርሕ ይፍቀደሉ። 8 እቲ ነባሪ እዩ፤ ኣብ ባዕልኻ እተአንግዶ ፕላን ወጻኢ ንምድራት ነዚ ኣጉድሎ፣ ወይ ድማ ኣውቶ-መዕረዪ ብሕልኽ ንምዝላል (ምርመራ-ጥራይ) ናብ 0 ኣቐምጦ።",
+    "pdf_audit_view_auto_continue_toggle": "ምስ ዝውላዕ፣ እቲ መስርሕ እቲ ዕላማ ነጥቢ (Target Score) ክሳብ ዝበጽሕ ተወሳኺ ናይ መዕረዪ ዙርያታት (ክሳብ 3 ተወሳኺ) ይቕጽል፣ ድሕሪኡ ባዕሉ ደው ይብል። ልክዕ ሓደ ዙርያን ሓደ ውጽኢትን ክትምርምር እንተደሊኻ ኣጥፍኦ።",
+    "pdf_audit_view_polish_passes_slider": "ድሕሪ እቶም ሓቀኛ ናይ ተበጻሕነት መዕረዪታት ዝመጹ ተወሳኺ ናይ ምጽራይ ዙርያታት — ምትእኽኻብ፣ ኣርእስታት፣ ናይ ትርኢት ምጽፋፍ የጽብቕ። 0 ይዝል፣ 2 ስሩዕ እዩ፣ 3 ድማ ናብ ሕትመት ወይ ናብ ግዳማውያን ተዓዘብቲ ንዝኸዱ ሰነዳት እዩ።",
+    "pdf_audit_view_branding_panel": "ኣማራጺ — እቲ እተዓረየ PDF ብኸመይ ከም ዝመስል ይቆጻጸር፦ ናይ ብራንድ ሕብርታትን ሓፈሻዊ ናይ ዲዛይን ቅዲን። ንነባሪ ተበጻሒ ትርኢት ዘሎ ዝል፣ ወይ እቲ ሰነድ ናይ ቤት ትምህርቲ ወይ ናይ ዲስትሪክት ብራንድ ክመሳሰል እንተደልዩ ኣግፍሖ።",
+    "pdf_audit_view_brand_mode_auto_btn": "ካብቲ ዝሰቐልካዮ PDF ናይ ብራንድ ሕብርታት የውጽእ ስለዚ እቲ ዝተዓረየ ቅዳሕ ከም እቲ ኦሪጅናል ይመስል። እቲ ዝበለጸ ነባሪ — እቲ ሰነድ ንሰራሕተኛታትን ስድራቤታትን ክፍለጥ ይሕልዎ።",
+    "pdf_audit_view_brand_mode_upload_input": "ፍሉይ ናይ ብራንድ ሉሕ፣ ሎጎ፣ ወይ ናይ ቅዲ መምርሒ (ስእሊ ወይ PDF) ስቐሎ እሞ እቲ መስርሕ ካብኡ ሕብርታትን ፊደላትን የውጽእ። እቲ ኦሪጅናል PDF ቀሊል ትርኢት ዘለዎ ኮይኑ ግን ናይ ዲስትሪክት ብራንድ ክመሳሰል ዘድልዮ ምስ ዝኸውን ይጠቅም።",
+    "pdf_audit_view_brand_mode_none_btn": "ናይ ብራንድ ሕብርታት ብሕልኽ ዘሊልካ እቲ ውሽጣዊ ተበጻሒ ሕብራዊ ስብስብ ተጠቐም። ንሓፈሻዊ ናይ ስራሕ ወረቓቕቲ፣ ወይ ድማ እቲ ኦሪጅናል ሕብርታት ኣብ ኮንትራስት ምስ ዝፈሽሉን ነቲ ትርኢት ምዕቃብ ዘየድልየካ ምስ ዝኸውንን ነዚ ምረጽ።",
+    "pdf_audit_results_tab_remediation_btn": "AlloFlow ነቲ PDF ድሕሪ ምዕራዩ ዘሎ ናይ ምርመራ ውጽኢታት ኣርኢ። ነቲ ዝተመሓየሸ ነጥብን ሕጂ እተዓረዩ ጸገማት ኣየኖት ምዃኖምን ንምርኣይ ነዛ ታብ ተጠቐመላ።",
+    "pdf_audit_results_tab_original_btn": "AlloFlow ዝኾነ ቅድሚ ምዕራዩ ናብ ምርመራ እቲ ኦሪጅናል PDF ተመለስ። ቅድምን ድሕርን ዘለዉ ነጥብታት ጎድኒ ንጎድኒ ንምንጽጻር ይጠቅም።",
+    "pdf_audit_results_reliability_details": "እቶም AI መርመርቲ ኣብዚ ነጥቢ ክሳብ ክንደይ ርግጸኛታት ከም ዝነበሩ ንምርኣይ ኣግፍሖ። ብዙሓት ናይ AI ዙርያታት ብማዕረ ይሰርሑ — ጽኑዕ ስምምዕ ማለት እቲ ነጥቢ ዘተኣማምን እዩ ማለት እዩ፣ ሰፊሕ ፍልልይ ማለት ድማ ነቶም ውልቀ ጸገማት ባዕልኻ ምርመሮም።",
+    "pdf_audit_results_score_breakdown_details": "እቲ ነጥቢ ብኸመይ ከም እተሰርሐ ብልክዕ ንምርኣይ ኣግፍሖ — ክንደይ ምርመራታት ከም ዝሰርሑ፣ ኣብ ነፍሲ ወከፍ ጸገም እንታይ ከም እተቐንሰ፣ ከምኡ’ውን እቲ ናይ AI ሩብሪክን ናይ axe-core ነጥብታትን ብኸመይ ብሓባር ከም እተማእከሉ። እዚ ድሕሪ እቲ ቀንዲ ቁጽሪ ዘሎ ናይ ግሉጽነት ደረጃ እዩ።",
+    "pdf_audit_results_score_how_ai_details": "እቲ AI ንነፍሲ ወከፍ ጸገም ክሳብ ክንደይ ብትሪ ከም ዝህቦ ንምርኣይ ኣግፍሖ፦ ንተጠቀምቲ ናይ ስክሪን-ኣንባቢ ዝዓግቱ ወሰንቲ ጸገማት ዝያዳ ምቕናስ፣ ንናእሽቱ ድማ ውሑድ ምቕናስ፣ ከምኡ’ውን ንዝሓልፉ ምርመራታት ዝምለሱ ነጥብታት።",
+    "pdf_audit_results_score_how_axe_details": "እቲ axe-core መርማሪ (እቲ ሞያዊ ናይ ተበጻሕነት መርመርቲ ዝጥቀሙሉ ሞተር) ነቲ PDF ብኸመይ ከም ዝሰርዖ፣ ምስቶም ብልክዕ ዝፈሸሉ ናይ WCAG ሕጊ መለለይታት፣ ንምርኣይ ኣግፍሖ።",
+    "pdf_audit_results_issue_explain": "እዚ ጸገም ብሓቂ ንተማሃሮ እንታይ ከም ዝዓግትን እቲ ናይ WCAG ሕጊ ብኸመይ ከም ዝምልከትን ንምንባብ ጠውቕ። ዝያዳ ክትፈልጥ እንተደሊኻ ናብቲ ወግዓዊ ናይ WCAG መብርሂ ዝወስድ መላግቦ የጠቓልል።",
+    "pdf_audit_results_image_failures_details": "ኣብ ግዜ ምዕራይ ዝወደቑ ዝኾኑ ስእልታት ንምርኣይ ኣግፍሖ። ነፍሲ ወከፍ መስርዕ ብሓደ ጠውቒ ዳግም ምፍጣር ዝኽእል Regenerate መልጎም ይህብ ስለዚ ዝኾነ ምስሊ ብጸጥታ ኣይጠፍእን።",
+    "pdf_audit_results_image_regenerate_btn": "ነዚ ዝጠፍአ ምስሊ ኣብ ዝተዓቑረ መግለጺኡ ተመርኲሱ ብ AI ዳግም ይፈጥሮ። እቲ ሓድሽ ምስሊ ቀጥታ ናብቲ ሰነድ ይምለስ — ብኢድ ምስቓል ኣየድልን።",
+    "pdf_audit_view_report_menu_btn": "ናይ ተበጻሕነት ጸብጻብ ብዝተፈላለየ ቅርጺ ንምውራድ ናይ ጸብጻብ መዝሙር ክፈት — ንመኮንናት ምምልላእ ናይ Adobe-ቅዲ፣ ንሓፈሻዊ ምክፋል እተቐርጸ PDF፣ ንመጽናዕቲ JSON፣ ወይ ንናይ ምርመራ መዛግብቲ እተፈረመ ኣሰር።",
+    "pdf_audit_view_adobe_report_btn": "ከም ናይ Adobe Accessibility Checker እተቐርጸ ጸብጻብ ኣውርድ፣ ብ PDF/UA-1 (እቲ ናይ ፈደራል ናይ ተበጻሕነት ስታንዳርድ ንPDF) እተሰርዐ። ንመኮንናት ምምልላእ ንምክፋል ወይ ኣብ ናይ Title II / 504 መዝገብ ንምልጣፍ ዝበለጸ።",
+    "pdf_audit_view_tierb_diff_view_btn": "ናይ ምምላስ ዙርያ ክተካይድ ምውሳንካ ቅድሚ፣ ኣብ ናይ መወዳእታ ምዕቃብ ዝጠፍኡ ቃላት ምርመሮም። ምንባብ-ጥራይ — ክሳብ ክትመልስ እትመርጽ ዝኾነ ኣይቕየርን።",
+    "pdf_audit_view_tierb_rerun_restore_btn": "ነቶም ዝጠፍኡ ናይ ምንጪ ቃላት ናብቲ ሰነድ ይመልሶም እሞ ነቲ እተሰየመ PDF ዳግም ይሃንጾ። ብሰላም ክቕመጡ ዘይክእሉ ቃላት ኣብ Content Recovery ክፋል ይኣትዉ ስለዚ ዝኾነ ኣይጠፍእን — እቲ ቅድምን ድሕርን ዘሎ ዝተረፈ ቁጽሪ ኩሉ ግዜ ይርአ ስለዚ ሓጊዙ እንተኾይኑ ክትርኢ ትኽእል።",
+    "pdf_audit_view_formatted_report_btn": "ኣብ ሓድሽ ታብ ክትሕተም ዝኽእል ናይ ቅድሚ/ድሕሪ ናይ ተበጻሕነት ጸብጻብ ክፈት — ንመዝገብካ ወይ ንኣኼባ ወላዲ ቅዳሕ ንምሓዝ ኣብቲ ባነር ዘሎ Save as PDF ጠውቕ።",
+    "pdf_audit_view_html_report_btn": "ነቲ ናይ ቅድሚ/ድሕሪ ጸብጻብ ከም ኣብ ወብሳይት ክተአንግዶ ወይ ክተርሞ ትኽእል HTML ፋይል ኣውርዶ። እቲ ትሕዝቶ ምስቲ ክትሕተም ዝኽእል ናይ PDF ቅዳሕ ይሰማማዕ።",
+    "pdf_audit_view_json_data_btn": "ነቲ ጥረ ናይ ምርመራ ቁጽርታትን ሕጊ-ብ-ሕጊ ዳታን ከም JSON ኣውጽኦ። ናይ ተበጻሕነት ውጽኢታት ኣብ ስፕረድሺት፣ ናይ መጽናዕቲ ኖትቡክ፣ ወይ ካልእ መሳርሒ ክትትንትን እንተደሊኻ ነዚ ተጠቐም።",
+    "pdf_audit_view_audit_trail_signed_btn": "ባዕሉ ዝፍተሽ ናይ ምርመራ ኣሰር ኣፍርይ (ምትዕርራይ ዝመልዕ ውሽጣዊ Verify Integrity መልጎም ዘለዎ HTML ፋይል)። ንናይ ምምልላእ መርትዖ ጽቡቕ — ግን ናይ ብራውዘር-ወገን ፊርማ ምዃኑ፣ ብሕጊ ዘገድድ ከም ዘይኮነ ኣስተብህል።",
+    "pdf_audit_view_save_project_btn": "ናይ ምዕራይ ስራሕካ — ተበጻሒ HTML፣ ነጥብታት፣ ኣቀማምጣ፣ ገጽ-ብ-ገጽ ምዕባለ — ናብ ተንቀሳቓሲ ፋይል የዕቁሮ። ነቲ AI ዳግም ከይሰራሕካ ምርማም ንምቕጻል ብ Load Project ዳግም ክፈቶ።",
+    "pdf_audit_view_load_project_btn": "ኣቐዲምካ ዘዕቆርካዮ ናይ ፕሮጀክት ፋይል ዳግም ክፈቶ። ነቲ እተዓረየ HTML፣ ነጥብታት፣ ከምኡ’ውን ድሮ እተወድኡ ናይ ገጽ ደረታት ይመልሶ — ካብቲ ዝደው ኣበልካዮ ብልክዕ ይቕጽል።",
+    "pdf_audit_view_save_template_btn": "ነቲ ተበጻሒ ቅርጺ እቲ ሰነድ (ናይ ኣርእስቲ ረቛሒ፣ ሰንጠረዣት፣ ዝርዝራት፣ ምልክታት) ከም ዳግም ክትጥቀመሉ ትኽእል ቅዲ ኣዕቁሮ። ኣብ Document Builder ሓደስቲ ሰነዳት ንምጅማር ተጠቐመሉ — IEP፣ ስርዓተ ትምህርቲ — ድሮ ንተበጻሕነት እተዳለወ ቅርጺ ዘለዎም።",
+    "pdf_audit_alt_formats_summary": "ካብ PDF ወይ HTML ዝተፈልየ ዓይነት ፋይል ንዘድልዮም ተማሃሮ ንኣማራጺ ቅርጽታት — ePub፣ ኤሌክትሮኒካዊ Braille፣ ቀሊል ጽሑፍ፣ Markdown — ኣግፍሖ።",
+    "pdf_audit_alt_formats_epub_btn": "ነቲ እተዓረየ ሰነድ ምስ ናይ ትሕዝቶ ሰንጠረዥን ናይ ተበጻሕነት ሜታዳታን ከም ePub ፋይል ኣዕቁሮ። ኣብ Kindle፣ Apple Books፣ ከምኡ’ውን ኣብ መብዛሕትኦም ናይ ሞባይል ኣንበብቲ ይሰርሕ — ተማሃሮ መጠን ፊደል፣ ሕብሪ፣ ከምኡ’ውን ናህሪ ንባብ ክቕይሩ ይኽእሉ።",
+    "pdf_audit_alt_formats_text_btn": "ኩሉ ቅርጻ እተላገሰ ቀሊል .txt ፋይል ኣዕቁሮ — ንናይ ስክሪን ኣንበብቲ፣ ናብ ዓብዪ-ሕትመት ንምቕያር፣ ወይ ናብ ካልእ መሳርሒ ንምልጣፍ እቲ ዝቐለለ ቅርጺ።",
+    "pdf_audit_alt_formats_markdown_btn": "ነቲ ሰነድ ከም Markdown ኣዕቁሮ — ኣርእስታት ወይ መላግቦታት ከይጠፍኡ ናብ Canvas፣ Schoology፣ ወይ D2L ገጻት፣ Google Docs (ብምልጣፍ)፣ ዊክታት፣ ከምኡ’ውን ናይ GitHub-ቅዲ ኖትታት ብጽርየት ይኣቱ።",
+    "pdf_audit_alt_formats_daisy_btn": "ምሉእ-ጽሑፍ ናይ DAISY 3 መዛረቢ-መጽሓፍ ጥርዚ ኣዕቁሮ። ናይ DAISY ኣንበብቲ (ኣብ ፍሉይ ትምህርቲ ዝውቱራት) ባዕሎም ዘረባ፣ braille፣ ወይ ዓብዪ ሕትመት ምስ ምሉእ ናይ ምንቅስቓስ ዓቕሚ ይውስኹ። ኣብዚ ጽሑፍ-ጥራይ — ንዝተሳነየ ብደሓን ምንባብ፣ Read-along ebook ተጠቐም።",
+    "pdf_audit_alt_formats_readalong_btn": "ናይ ሕብረ-ምንባብ ኢቡክ ሃንጽ (EPUB3 Media Overlays)፦ ነፍሲ ወከፍ ሕጡበ ጽሑፍ ብጽሑፍ-ናብ-ዘረባ ይንበብ ከምኡ’ውን ቃላት ኣብ ግዜ ምዝራቦም ምእንቲ ክደምቑ ምስ ጽሑፉ ይሳነ። ኣብ ነፍሲ ወከፍ ክፋል ሓደ ናይ ድምጺ ጻውዒት ስለ ዝኾነ ቁሩብ ደቓይቕ ክወስድ ይኽእል።",
+    "pdf_audit_alt_formats_odt_btn": "ናይ OpenDocument Text (.odt) ፋይል ኣዕቁሮ — ንLibreOffice ከምኡ’ውን ንGoogle Docs ተወላዲ (Word እውን ይኸፍቶ)። ቤት ትምህርትኻ ኩሉ-Microsoft ዘይኮነ ኮይኑ ግን ቅርጹ እተሓለወ ክተርሞ ትኽእል ሰነድ እትደሊ ምስ እትኸውን ተጠቐመሉ።"
   },
   "groups": {
     "title": "ናይ ምፍልላይ ጉጅለታት",
@@ -9657,7 +9796,7 @@
     "obs_momentary": "Momentary ግዜ Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional ባህሪ ግምገማ, ABC ዳታ collection, ከምኡውን ባህሪ ኢድ ምእታው ውጥን መሳርሒታት.",
+      "subtitle": "ስነ-ተግባራዊ ናይ ባህሪ ግምገማ (FBA)፡ ናይ ABC ዳታ ኣከፋፍላ፡ ከምኡውን ናይ ባህሪ ኢድ-ምትእትታው ውጥን (BIP) መሳርሒታት።",
       "open_btn": "ክፈት BehaviorLens",
       "select_student": "ምረጽ ተምሃራይ",
       "choose_student": "— ምረጽ ሓደ ተምሃራይ —",
@@ -9730,7 +9869,7 @@
       "antecedentmod_desc": "ባህርያት ከይጀመሩ ንምክልኻል ብ AI ዝሰላሰል ለበዋታት ናይ ኣከባቢያዊ ለውጢ",
       "antecedentmod_title": "መርሓ ናይ ቅድመ ኩነታት ለውጢ",
       "avg_intensity": "ማእከላይ ድሕታር",
-      "bcbahandoff_desc": "ንBCBAs ናይ ዳታ dashboard + ንምኽሪ ዝሕተም ናይ ምትሕልላፍ ጥቕልል",
+      "bcbahandoff_desc": "ንBCBAታት ናይ ዳታ ሰሌዳ + ንምኽሪ ዝሕተም ናይ ምትሕልላፍ ጥቕልል",
       "bcbahandoff_title": "BCBA ምኽሪ",
       "biascheck_desc": "ኣብ ዳታኻ ቅዲታት ብለዋህ የቕርብ ንተኽእሎ ስውር ኣድልዎ ንምስትንታን — ዕቤት፡ ዘይ ጥፍኣት",
       "biascheck_title": "ናይ ኣድልዎ ምርኣይ ሞኒተር",
@@ -9800,7 +9939,7 @@
       "prefassess_title": "Preference ግምገማ",
       "progress_desc": "ካብ ዝተኣከበ ናይ ባህሪ ዳታ ንIEP ዝበቅዕ ናይ ኣረጋግጻ ምክትታል ኣንቀጻት",
       "progress_title": "ዕቤት ኣዘንታዊ",
-      "progressreport_desc": "AI-generated ዕቤት reports ምስ ዳታ summaries, trend ትንታነ, ዕላማ ዕቤት, ከምኡውን ወላዲ-ምስ ዝሰማማዕ ቋንቋ ኣማራጺታት",
+      "progressreport_desc": "ብAI ዝፍጠር ናይ ዕቤት ጸብጻባት ምስ ናይ ዳታ ጽማቝ፡ ናይ ኣንፈት ትንታነ፡ ናይ ዕላማ ዕቤት፡ ከምኡውን ምስ ወለዲ ዝሰማማዕ ቋንቋ ኣማራጺ",
       "progressreport_title": "ዕቤት Reports",
       "qualitycheck_desc": "ብ AI ዝሰላሰል ምስ ፍሉያት ናይ ምምሕያሽ ለበዋታት ናይ ABC ቅራቤታትካ ምግምጋም",
       "qualitycheck_title": "ዳታ ጽሬት ምርመራ",
@@ -10032,7 +10171,7 @@
     "reinforcer_sensory": "🌀 ስምዒት",
     "quiz_fba_purpose": "ቀንዲ ዕላማ FBA እንታይ እዩ?",
     "quiz_replacement": "እንታይ እዩ ሓደ replacement ባህሪ?",
-    "search_placeholder": "ድለ antecedent, ባህሪ, consequence, መዘኻኸሪ, ስርዓት...",
+    "search_placeholder": "ቅድመ-ኩነት (antecedent)፡ ባህሪ፡ ሳዕቤን (consequence)፡ መዘኻኸሪ፡ ኩነታት ድለ...",
     "quick_fill_placeholder": "ንኣብነት \"ተመሃራይ ኣብ ናይ ቊጽሪ ትምህርቲ ስራሕ ከርኢ ምስ ተሓቶ ወረቐት ደርብዩ፡ መምህር ብህዳአ ኣናተኸ\"",
     "nl_edit_placeholder": "ንኣብነት \"ሳዕቤን ናብ መምህር ኣናተኸ ቀይር\"",
     "now": "ሕጂ",
@@ -10132,7 +10271,7 @@
     "cycle_de_escalation": "ምውራድ",
     "cycle_recovery": "ምሕዋይ",
     "quiz_opt_punish": "ናብ punish ተምሃራይ",
-    "quiz_opt_identify_why": "ናብ ምልላይ WHY ሓደ ባህሪ occurs",
+    "quiz_opt_identify_why": "ሓደ ባህሪ ስለ ምንታይ ከም ዘጋጥም (WHY) ንምልላይ",
     "quiz_opt_any_stops": "ዝኾነ ነቲ ጸገም ዘቕልል ባህሪ",
     "analysis": {
       "hypothesized_function": "ግምታዊ ተግባር",
@@ -10205,7 +10344,7 @@
       "topic_purpose_of_contact": "ኣርእስቲ / ዕላማ ምትእስሳር",
       "type_full_name": "ዓይነት ምሉእ name",
       "type_language_eg_spanish_arabic_somali": "ቋንቋ ጽሓፍ (ንኣብነት፡ ስፓኒሽ፡ ዓረብ፡ ሶማል)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "ዓይነት ናትካ ምክትታል, note, ወይ ጠውቕ mic ናብ dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "ናትካ ምክትታል ወይ መዘኻኸሪ ጽሓፍ፡ ወይ ንምድማጽ ናይቲ ማይክ ኣርማ ጠውቕ...",
       "type_your_response_here_be_thorough_and_use_profes": "ምላሽካ ኣብዚ ጽሓፍ። ጥንቁቕ ኩን ሞያዊ ቋንቋ ተጠቐም...",
       "what_behavior_will_change": "እንታይ ባህሪ ክ ለውጢ?",
       "what_could_you_or_a_grownup_do_differently": "ንስኻ ወይ ዓቢ ሰብ እንታይ ብዝተፈለየ መገዲ ምገበረ?",
@@ -10478,7 +10617,7 @@
       "data_quality_score": "ዳታ ጽሬት ነጥቢ",
       "data_to_include": "ዳታ ናብ ኣካትት",
       "day_streak": "መዓልታት",
-      "define_the_behaviors_settings_or_students_for_stag": "Define ባህሪ, ስርዓታት, ወይ ተምሃራይ ንዓ staggered ኢድ ምእታው.",
+      "define_the_behaviors_settings_or_students_for_stag": "ንተደራራቢ (staggered) ኢድ-ምትእትታው ዝኾኑ ባህርያት፡ ኩነታት፡ ወይ ተምሃሮ ሰምር።",
       "describe_your_research_question_and_let_ai_recomme": "ናይ ምርምር ሕቶኻ ግለጽ እሞ AI ዝበለጸ ዲዛይን ክመክረካ ሕደግ።",
       "discrete_trial_training_with_mastery_tracking_and": "ብናይ ዕውትነት ምክትታልን ኣውቶ-ምቕጻልን ዘለዎ Discrete Trial Training",
       "document_whether_interventions_are_implemented_as": "ኢንተርቨንሽናት ከም ዝተደልዩ ይትግበሩ እንተኾኑ ሰንዶ",
@@ -10497,7 +10636,7 @@
       "from_abc_data": "ካብ ABC ዳታ:",
       "full_student_summary": "ምሉእ ተምሃራይ ጽማቝ",
       "functional_communication_training_planning_tool": "ናይ Functional Communication Training መደብ መሳርሒ",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "ፍጠር ሓደ multi-week ኢድ ምእታው ውጥን መሰረት ኣብ ናትካ collected ABC ዳታ ከምኡውን AI ትንታነ.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "ኣብ ዝኣከብካዮ ናይ ABC ዳታን ናይ AI ትንታነን ተመርኲስካ ናይ ብዙሕ-ሰሙን ኢድ-ምትእትታው ውጥን ፍጠር።",
       "generate_a_professional_printready_progress_report": "ሞያዊ፣ ንሕታም-ድልው ናይ ምዕባለ ጸብጻብ ምስ ኣብ-መስመር ቻርትታት፣ ናይ ዳታ ኣጠቓላሊታት፣ ከምኡ'ውን ናይ AI ምሕባራት ኣፍሪ። ሓደ-ጠወቕ ናይ PDF ኤክስፖርት ብናይ ብራውዘር ሕታም።",
       "generate_a_unique_scenario_tailored_to_your_traini": "ንናይ ስልጠናኻ ድሌታት ዝተዳለወ ፍሉይ ሲናርዮ ፍጠር።",
       "generate_compliant_iep_behavioral_goals_from_obser": "ፍጠር compliant IEP behavioral ዕላማ ካብ ምክትታል ዳታ ምስ present ደረጃ, SMART ዕላማ, ከምኡውን ዕቤት monitoring.",
@@ -10547,7 +10686,7 @@
       "no_data_yet": "ኣይኮነን ዳታ yet",
       "no_entries_yet_tap_log_a_behavior_to_get_started": "ክሳብ ሕጂ ዝኾነ ምእታው የለን። ንምጅማር \"Log a Behavior\" ጠውቕ!",
       "no_occurrence": "ኣይኮነን occurrence",
-      "no_reflections_yet_tap_the_button_above_to_check_i": "ኣይኮነን ምስልጣን yet. Tap መልጎም above ናብ ምርመራ ኣብ ምስ yourself!",
+      "no_reflections_yet_tap_the_button_above_to_check_i": "ክሳብ ሕጂ ዝኾነ ሓሳብ የለን። ምስ ነፍስኻ ንምፍታሽ ኣብ ላዕሊ ዘሎ መልጎም ጠውቕ!",
       "no_session_data_recorded_yet": "ኣይኮነን ኣኼባ ዳታ recorded yet.",
       "no_sessions_recorded_yet": "ኣይኮነን ኣኼባ recorded yet.",
       "no_sessions_yet": "ኣይኮነን ኣኼባ yet.",
@@ -10560,7 +10699,7 @@
       "optional_message": "ኣማራጺ መልእኽቲ",
       "or_explore_the_pd_learning_path": "ወይ ድለ PD ምምሃር Path →",
       "parent": "ወላዲ",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ለጥፍ one ዋጋ per መስመር. ደገፍ ቅርጻ: \"5\", \"ኣኼባ 1: 5\", ወይ \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "ኣብ ነፍሲወከፍ መስመር ሓደ ዋጋ ለጥፍ። ዝድገፉ ቅርጻታት፥ \"5\"፡ \"ኣኼባ 1: 5\"፡ ወይ \"1,5\"",
       "pd_learning_path": "PD ምምሃር Path",
       "please_use_chrome_edge_or_safari_for_voice_input": "በጃኹም ተጠቐም Chrome, Edge, ወይ Safari ንዓ ድምጺ መእተዊ.",
       "practice_clinical_reasoning_with_aigenerated_case": "ብ AI-ዝፍጠሩ ናይ ጉዳይ መጽናዕትታት ናይ ክሊኒካዊ ምክንያት ኣለማመድ። ኣብ ምላሻትካ ናይ ክኢላ-ደረጃ ግብረ መልሲ ርከብ።",
@@ -10575,10 +10714,10 @@
       "publicationstandard_singlecase_design_graphs": "ናይ ሕታም-ደረጃ ናይ ሓደ-ጉዳይ ድዛይን ግራፋት",
       "quick_switch": "ቅልጡፍ ቀይር",
       "range": "ጽፍሒ",
-      "read_through_the_module_content_above_then_click_c": "ኣንብብ ብ module ትሕዝቶ above, ድሕሪኡ ጠውቕ ወድእ below.",
+      "read_through_the_module_content_above_then_click_c": "ኣብ ላዕሊ ዘሎ ትሕዝቶ ናይቲ ሞዱል ኣንቢብካ፡ ድሕሪኡ ኣብ ታሕቲ ዘሎ \"ወድእ\" ጠውቕ።",
       "realtime_calming_tools_for_inthemoment_support": "ኣብ-ቅጽበት ደገፍ ናይ ቅጽበት ሰላማዊ መሳርሕታት",
       "recent_moods": "ቀረባ ስምዒታት፡",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record ኣኼባ ምስ ኣኼባ ዳታ Tracker, ወይ ቀይር ናብ ብኢድ Entry ኣገባብ.",
+      "record_sessions_with_the_session_data_tracker_or_s": "ኣኼባታት ብናይ ኣኼባ ዳታ መኸታተሊ መዝግብ፡ ወይ ናብ ናይ ኢድ ምእታው ኣገባብ ቀይር።",
       "recording": "ይምዝግብ ኣሎ...",
       "relationship_map": "ካርታ ርክብ",
       "remember_cultural_humility_is_a_lifelong_practice": "ዘክር፥ ባህላዊ ትሕትና ናይ ምሉእ ዕድመ ልምምድ እዩ። ነፍሲ ወከፍ ኣስተንትኖ ዝያዳ ፍትሓዊ ፈጻሚ ይገብረካ።",
@@ -10606,7 +10745,7 @@
       "summary": "ጽማቝ:",
       "systematic_behavioral_measurement_across_sessions": "ኣብ ዝተፈላለዩ ኣኼባታት ስርዓታዊ ናይ ባህሪ ልኬት",
       "systematic_reinforcer_identification_using_evidenc": "ብመርትዖ ዝተደገፉ ፕሮቶኮላት ብምጥቃም ስርዓታዊ ምልላይ ናይ ኣጠናኻሪ",
-      "tap_each_item_when_student_engages_with_it": "Tap ነፍሲወከፍ ኣቕሓ መዓስ ተምሃራይ engages ምስ it",
+      "tap_each_item_when_student_engages_with_it": "ተምሃራይ ምስ ነፍሲወከፍ ኣቕሓ ኪዋሳእ ከሎ ነቲ ኣቕሓ ጠውቖ",
       "target_behavior": "ዕላማ ባህሪ",
       "task_analysis": "Task ትንታነ",
       "taskskill_name": "ናይ ስራሕ/ክእለት ስም",
@@ -10616,7 +10755,7 @@
       "top_behavior": "Top ባህሪ",
       "total_contacts": "ጠቕላላ ርክባት",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ባህሪ frequency ኣብ ልዕሊ ግዜ ምስ aim መስመር, phase ለውጢ, ከምኡውን trend ትንታነ.",
+      "track_behavior_frequency_over_time_with_aim_lines": "ናይ ባህሪ ድግግሞሽ ኣብ ምስ ግዜ ብናይ ሸቶ መስመራት፡ ናይ ምዕራፍ ለውጥታት፡ ከምኡውን ናይ ኣንፈት ትንታነ ተኸታተሎ።",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track ባህሪ at home ምጥቃም ቐሊል, everyday ቋንቋ. እዚ ሓገዝ ናትካ child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "ስምዒታትካ ኣካታተል፣ ባጅታት ኣጥሪ፣ ቀጻልነት ሃንጽ!",
       "transform_deficitbased_language_into_assetfocused": "ናይ ጋባ-ዝሰረሐ ቋንቋ ናብ ናይ ሓብቲ-ዝተተኮረ መግለጺታት ቀይር",
@@ -10868,7 +11007,7 @@
       "maintenance_tracker": "ናይ ምሕላው ተኸታታሊ",
       "make_tier_movement_decision_stay_fade_intensify": "ናይ ደረጃ ምንቅስቓስ ውሳነ ግበር (ጽናሕ / ዘሕል / ኣጽንዕ)",
       "map_antecedent_behavior_consequence_pathways": "ቀዳማይ → ባህሪ → ሳዕቤን መንገድታት ኣራኽብ",
-      "map_each_target_behavior_to_a_replacement": "Map ነፍሲወከፍ ዕላማ ባህሪ ናብ ሓደ replacement",
+      "map_each_target_behavior_to_a_replacement": "ንነፍሲወከፍ ዕላማ ባህሪ ምስ ተካኢ ባህሪ ኣዛምዶ",
       "materials_access": "ጽሑፋት መእተዊ",
       "measure_effect_size_of_interventions": "ናይ ኢንተርቨንሽን ናይ ጽልዋ ስፍሓት ለክዕ",
       "model": "ኣገባብ",
@@ -11218,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories ናብ life ምስ ባህሪ voices & literary ትንታነ",
     "poettree_title": "PoetTree",
-    "poettree_desc": "ጽሓፍ poems ምስ form scaffolds, rhyme & meter ትንታነ, AI ግብረመልሲ"
+    "poettree_desc": "ጽሓፍ poems ምስ form scaffolds, rhyme & meter ትንታነ, AI ግብረመልሲ",
+    "throughline_desc": "ትምህርትኻ ናብ ስፍሓታዊ ኣሃዱ ኣዳልዎ፦ ስርዓተ ምምሃር፣ ቅድመ-ኩነታት፣ ሓደ ክወጽእ ዝኽእል ፋይል"
   },
   "sel_hub": {
     "loading": "SEL Hub ይጽዕን ኣሎ...",
@@ -12538,5 +12678,10 @@
     "byline": "ብ {author} · {words} ቃላት · {used}/{total} መዝገበ-ቃላት",
     "student": "ተማሃራይ",
     "score": "ነጥቢ: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "ነቲ ቅድመ-ምርኣይ ምሕዳስ ብኢድካ ዝገበርካዮም ምትዕርራያት ብሓዲሽ ዝተፈጥረ ትሕዝቶ ክትክኦም እዩ። ቀጺልካ ነቶም ምትዕርራያት ክትድርብዮም ትደሊ? (Cancel የሕልዎም — ቅድሚ ምሕላው ሰዲድካ ወይ ነቲ builder ዓጾ።)",
+    "remediation_banner_title": "ነቲ ዝተዐረየ ሰነድ ምትዕርራይ።",
+    "remediation_banner_body": "ኣብዚ ዝገበርካዮም ምትዕርራያት ነቲ builder ምስ ዓጸኻዮ ናብኡ ይምለሱ፣ ስለዚ ናይ Tagged PDF / Word / PowerPoint ምውራድ የጠቓልሎም።"
   }
 }

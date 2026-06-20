@@ -1378,7 +1378,7 @@
     "storage_full_text_only": "Stockage plein. Enregistrement du texte seulement (images retirées).",
     "storage_full_critical": "Critique : impossible d'enregistrer l'historique. Stockage plein.",
     "resource_not_found": "Ressource introuvable.",
-    "resource_not_found_history": "Ressource introuvable dans l'historique.",
+    "resource_not_found_history": "Ressource introuvable dans l'historique (elle a peut-être été supprimée).",
     "analysis_failed": "Échec de l'analyse. Veuillez réessayer.",
     "enter_target_language": "Veuillez saisir une langue cible.",
     "translation_started": "Traduction démarrée...",
@@ -2014,7 +2014,7 @@
     "ai_feedback_unavailable": "Retour de l'AI indisponible",
     "write_essay_first": "Rédigez d'abord votre rédaction !",
     "enter_word_art_first": "Veuillez d'abord saisir le texte du mot stylisé",
-    "preview_not_ready": "L'aperçu n'est pas encore prêt",
+    "preview_not_ready": "L'aperçu n'est pas encore prêt — attendez qu'il s'affiche, puis réessayez.",
     "word_art_render_failed": "Impossible d'afficher le mot stylisé",
     "diff_engine_load_failed": "Échec du chargement du moteur de comparaison (réseau bloqué ?). Vérifiez votre connexion et réessayez.",
     "brf_downloaded": "Braille électronique (BRF) téléchargé",
@@ -5521,6 +5521,7 @@
     "gauge_simple": "Simple"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidélité : {before}% → {after}%{detail}",
     "view_last_audit": "Voir le dernier audit",
     "start_new_audit": "Démarrer un nouvel audit",
     "apply_and_export": "Appliquer et exporter",

@@ -2157,7 +2157,7 @@
     "resource_renamed": "Resource renamed.",
     "copy_url_paste": "Please copy the URL from the new tab and paste it here.",
     "storage_full_critical": "Critical: Could not save history. Storage full.",
-    "resource_not_found_history": "Resource not found in history.",
+    "resource_not_found_history": "ບໍ່ພົບຊັບພະຍາກອນໃນປະຫວັດ (ມັນອາດຈະຖືກລຶບອອກແລ້ວ).",
     "translation_interrupted": "Translation sequence interrupted.",
     "no_glossary_terms": "No glossary terms found.",
     "revision_failed": "Revision failed.",
@@ -2761,7 +2761,7 @@
     "ai_feedback_unavailable": "AI feedback unavailable",
     "write_essay_first": "Write your essay first!",
     "enter_word_art_first": "Please enter word art text first",
-    "preview_not_ready": "Preview not ready yet",
+    "preview_not_ready": "ການເບິ່ງຕົວຢ່າງຍັງບໍ່ພ້ອມເທື່ອ — ກະລຸນາລໍຖ້າໃຫ້ມັນສະແດງຜົນ, ແລ້ວລອງໃໝ່ອີກຄັ້ງ.",
     "word_art_render_failed": "Could not render word art",
     "diff_engine_load_failed": "Diff engine failed to load (network blocked?). Check your connection and try again.",
     "brf_downloaded": "Electronic Braille (BRF) downloaded",
@@ -5399,6 +5399,7 @@
     "image_size_tooltip": "Adjust the size of timeline images"
   },
   "pdf_audit": {
+    "fidelity_delta": "ຄວາມຖືກຕ້ອງ: {before}% → {after}%{detail}",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "Start New Audit",
     "apply_and_export": "Apply & Export",

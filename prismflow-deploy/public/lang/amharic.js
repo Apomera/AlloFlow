@@ -979,7 +979,7 @@
     "storage_full_text_only": "ማከማቻው ሞልቷል። ጽሑፉን ብቻ በማስቀመጥ ላይ (ምስሎች ተወግደዋል)።",
     "storage_full_critical": "አስቸኳይ፦ ታሪክን ማስቀመጥ አልተቻለም። ማከማቻው ሞልቷል።",
     "resource_not_found": "ግብአቱ አልተገኘም።",
-    "resource_not_found_history": "ግብአቱ በታሪክ ውስጥ አልተገኘም።",
+    "resource_not_found_history": "ግብአቱ በታሪክ ውስጥ አልተገኘም (ምናልባት ተሰርዞ ሊሆን ይችላል)።",
     "analysis_failed": "ትንተና አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
     "enter_target_language": "እባክዎ አስገባ አንድ ግብ ቋንቋ.",
     "translation_started": "ትርጉም ተጀመረ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ግብረመልስ አይገኝም",
     "write_essay_first": "መጀመሪያ ድርሰትዎን ይጻፉ!",
     "enter_word_art_first": "እባክዎ መጀመሪያ የቃል ጥበብ ጽሑፍ ያስገቡ።",
-    "preview_not_ready": "ቅድመ እይታ ገና ዝግጁ አይደለም",
+    "preview_not_ready": "ቅድመ እይታ ገና ዝግጁ አይደለም — እስኪታይ ድረስ ይጠብቁ፣ ከዚያ እንደገና ይሞክሩ።",
     "word_art_render_failed": "የቃል ጥበብን ማቅረብ አልተቻለም።",
     "diff_engine_load_failed": "Diff engine መጫን አልተሳካም (አውታረ መረብ ታግዷል?)። የግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
     "brf_downloaded": "ኤሌክትሮኒክ ብሬይል (BRF) ወርዷል",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 ፕሮጀክት ተቀምጧል ({count} ክልሎች)፤ ለመቀጠል በኋላ ጫነው",
     "project_saved": "💾 ፕሮጀክት ተቀምጧል፤ አርትዖትን ለመቀጠል በኋላ ጫነው",
     "search_result_desc": "የGoogle ፍለጋ ውጤት፦ {title}",
-    "link_url_prompt": "የአገናኝ URL አስገባ፦"
+    "link_url_prompt": "የአገናኝ URL አስገባ፦",
+    "building_accessible_docx": "ተደራሽ የሆነ የWord ፋይል በመገንባት ላይ…",
+    "building_accessible_pptx": "ተደራሽ የሆነ PowerPoint በመገንባት ላይ…",
+    "batch_tagging": "📄 ለZIP መለያ ያላቸው PDFዎች በመፍጠር ላይ — የተቃኙ ፋይሎች ረዘም ያለ ጊዜ ይወስዳሉ (OCR በእያንዳንዱ ፋይል ላይ ይሰራል)…",
+    "builder_edits_preserved": "✋ በእጅ ያደረጓቸው ለውጦች ተጠብቀዋል — ቅድመ-እይታው እንደገና አልተቀረጸም። እነሱን ለማስቀመጥ ይላኩ ወይም ገንቢውን ይዝጉ፣ ከዚያ ቅንብሮችን ይቀይሩ።",
+    "builder_edits_synced": "✏️ የገንቢ ለውጦች ወደ ተስተካከለው ሰነድ ተቀምጠዋል — የመለያ PDF / Word / PowerPoint ወደ ውጭ መላኪያዎች አሁን እነሱን ያካትታሉ።",
+    "pptx_ai_theme": "🎨 ከርዕሱ ጋር የሚስማማ የቀለም ስብስብ ከAI በመጠየቅ ላይ (ተነባቢነት በአካባቢው ይተገበራል)…",
+    "make_accessible_fixing": "✨ ኦዲት ተጠናቋል — በራስ-ሰር በማስተካከል ላይ (ምንም ጠቅታ አያስፈልግም)…",
+    "tagged_pdf_saved_see_report": "📄 መለያ ያለው PDF ተቀምጧል — ሙሉ ሪፖርቱ ከማውረጃ አዝራሮች በላይ ተሰክቷል (ለማስወገድ ✕)።",
+    "no_open_image_slot": "በቅድመ-እይታው ውስጥ ምንም ክፍት የምስል ቦታ አልቀረም — በምትኩ ለመተካት ድንክዬውን ወደ አንድ የተወሰነ ምስል ይጎትቱት።",
+    "extracted_image_inserted": "🖼 ወደ መጀመሪያው ክፍት የምስል ቦታ ገብቷል — የተለየ ቦታ ከፈለጉ በምትኩ ድንክዬ ይጎትቱ።",
+    "html_downloaded": "🌐 HTML ወርዷል — በማንኛውም አሳሽ ይከፈታል።",
+    "odt_downloaded": "📄 OpenDocument (.odt) ወርዷል — በLibreOffice፣ Google Docs ወይም Word ይከፈታል።",
+    "daisy_downloaded": "🔊 የDAISY ተናጋሪ-መጽሐፍ ጥቅል (.zip) ወርዷል — በDAISY አንባቢ ይክፈቱ።",
+    "mo_no_voice": "የድምጽ አገልግሎቱ አይገኝም፣ ስለዚህ አሁን አብሮ-የሚነበብ ድምጽ ሊፈጠር አይችልም።",
+    "mo_busy": "አብሮ-የሚነበብ ወደ ውጭ መላኪያ አስቀድሞ እየሄደ ነው።",
+    "mo_no_text": "ለመተረክ ሊነበብ የሚችል ጽሑፍ አልተገኘም።",
+    "mo_no_audio": "⚠ አብሮ-የሚነበብ ኢ-መጽሐፍ ተቀምጧል፣ ግን ምንም ድምጽ ሊፈጠር አልቻለም (የድምጽ አገልግሎት አይገኝም)። ጽሑፉ + የማመሳሰል አወቃቀሩ ሳይበላሹ ቀርተዋል።",
+    "mo_done": "አብሮ-የሚነበብ ኢ-መጽሐፍ ወርዷል",
+    "audio_unavailable_now": "ድምጽ አሁን አይገኝም (ሥራ እየሄደ ሊሆን ይችላል፣ ወይም የድምጽ አገልግሎቱ ጠፍቷል)።"
   },
   "large_file": {
     "modal_title": "አስገባ Large ድምጽ ፋይል",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator መሳሪያዎች",
     "documents_menu_aria": "ሰነድ ምናሌ",
     "open_doc_builder_pdf_aria": "ክፈት ሰነድ Builder ለ PDF",
-    "export_slides_tooltip": "Opens ሰነድ Builder ውስጥ Slides ሁነታ"
+    "export_slides_tooltip": "Opens ሰነድ Builder ውስጥ Slides ሁነታ",
+    "learning_tools_tooltip": "የመማሪያ መሳሪያዎች (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "ግብ ቋንቋ",
@@ -2205,7 +2225,7 @@
     "pictionary_host_dashboard": "Concept Pictionary አስተናጋጅ ዳሽቦርድ",
     "concept_to_draw": "Concept to ሳል",
     "round_timer": "የዙር ሰዓት ቆጣሪ",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "የጽንሰ-ሐሳብ ምስል ግምት",
     "your_guess": "የእርስዎ ግምት",
     "remove_columns": "አስወግድ አምድ",
     "add_column": "ጨምር አምድ",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "አማራጭ። በquiz ውስጥ ላለ እያንዳንዱ ምስል ይተገበራል (ጥያቄ + አማራጮች)። ባዶ = ነባሪ ስልት። የማጣራት ድርጊቶች በብራንድ ላይ እንዲቆዩ ከquiz ጋር ይቆያል።",
     "generate_pre_check": "Pre-Check ፍጠር",
     "generate_formative": "አመንጭ Formative ማረጋገጥ",
-    "generate_review": "አመንጭ Spaced ግምገማ"
+    "generate_review": "አመንጭ Spaced ግምገማ",
+    "likert_strongly_disagree": "በጣም አልስማማም",
+    "no_right_answer": "እዚህ ትክክለኛ ወይም የተሳሳተ መልስ የለም።",
+    "poll_completed": "ሐሳብዎን ስላካፈሉ እናመሰግናለን።",
+    "poll_intro": "እዚህ ትክክለኛ ወይም የተሳሳተ መልስ የለም — ቅን ሐሳብዎ መምህርዎን ይረዳል እንዲሁም እርስዎንም ይረዳዎታል።",
+    "mode_poll": "🗣️ የሕዝብ አስተያየት (የተማሪ ድምጽ)"
   },
   "outline": {
     "title": "እይታ Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "ማስተካከል size የ timeline ምስል"
   },
   "pdf_audit": {
+    "fidelity_delta": "የጽሑፍ ታማኝነት፡ {before}% → {after}%{detail}",
     "view_last_audit": "እይታ መጨረሻ Audit",
     "start_new_audit": "ጀምር አዲስ Audit",
     "apply_and_export": "ተግብር & ላክ",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "በመዋቅራዊ መልኩ ተስማሚ ግን በትርጉም ደካማ — AI axe-core ሊያውቀው የማይችለውን የይዘት ጥራት ምልክት አድርጓል",
-      "structural": "የኮድ ደረጃ WCAG ጥሰቶች ተገኝተዋል — axe-core በማሽን ሊረጋገጡ የሚችሉ ስህተቶችን አግኝቷል"
+      "structural": "የኮድ ደረጃ WCAG ጥሰቶች ተገኝተዋል — axe-core በማሽን ሊረጋገጡ የሚችሉ ስህተቶችን አግኝቷል",
+      "critical_override": "axe-core {n} አሳሳቢ የWCAG ጥሰት(ቶች) አግኝቷል — የተቀላቀለውን ውጤት ከመተማመንዎ በፊት ይገምግሟቸው፤ አማካይ ከባድ ውድቀትን ሊደብቅ ይችላል"
     },
     "tagtree": {
       "label": "አስቀድሞ ያለ የመለያ መዋቅር",
@@ -4264,7 +4291,8 @@
       "std_dev": "መስፈርት Deviation",
       "icc_title": "Custom 1−(SD/50) index; አይደለም textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "በAI ምልልሶች ሁሉ ላይ CV + ጥንድ-በጥንድ ድብልቅ ሂዩሪስቲክ፤ የመማሪያ-መጽሐፍ Cronbach's α አይደለም"
     },
     "score": {
       "total_checks": "የተከናወኑ ጠቅላላ ቼኮች",
@@ -4426,7 +4454,9 @@
       "title": "Regenerate አንድ PDF ከ remediated HTML. Layout reflows — ገጽ breaks, fonts, እና pagination ይችላል differ ከ ኦሪጅናል. ይሰራል well ለ ቀላል prose ሰነድ."
     },
     "tagged_pdf": {
-      "title": "የመጀመሪያውን PDF እይታ አቀማመጥ ባይት-ተመሳሳይ ይጠብቁ እና የተደራሽነት መለያዎችን በመዋቅር ዛፉ ውስጥ ይክተቱ። ለመማሪያ መጽሐፍት፣ ለብዙ-ዓምድ ሰነዶች እና የእይታ ታማኝነት ለሚያስፈልጋቸው የብራንድ PDF ምርጥ።"
+      "title": "የመጀመሪያውን PDF እይታ አቀማመጥ ባይት-ተመሳሳይ ይጠብቁ እና የተደራሽነት መለያዎችን በመዋቅር ዛፉ ውስጥ ይክተቱ። ለመማሪያ መጽሐፍት፣ ለብዙ-ዓምድ ሰነዶች እና የእይታ ታማኝነት ለሚያስፈልጋቸው የብራንድ PDF ምርጥ።",
+      "office_note": "መለያ ያለው PDF ለPDF ግብአቶች ይሰራል — Word/HTML ይጠቀሙ",
+      "office_note_title": "የአወቃቀር መለያዎች ሊገቡ የሚችሉት ወደ PDF ባይቶች ብቻ ነው። ለWord/PowerPoint ግብአቶች፣ ተደራሽ የWord እና HTML ማውረጃዎች የተስተካከለውን አወቃቀር ይዘዋል።"
     },
     "alt_formats": {
       "intro": "አውርድ remediated ሰነድ ውስጥ ተደራሽ alternative ቅርጸት"
@@ -4497,7 +4527,9 @@
       "heading": "ስሪት Stamp"
     },
     "extracted_images": {
-      "drag_hint": "ጎትት አንድ thumbnail onto ማንኛውም ምስል placeholder ውስጥ preview ወደ insert it, ወይም ጠቅ ያድርጉ \"📷 ስቀል\" inside አንድ placeholder እና ምረጥ \"ተጠቀም extracted ምስል\"."
+      "drag_hint": "ጎትት አንድ thumbnail onto ማንኛውም ምስል placeholder ውስጥ preview ወደ insert it, ወይም ጠቅ ያድርጉ \"📷 ስቀል\" inside አንድ placeholder እና ምረጥ \"ተጠቀም extracted ምስል\".",
+      "drag_hint2": "ድንክዬን ጠቅ ያድርጉ ወደ መጀመሪያው ክፍት የምስል ቦታ ለማስገባት፣ ወይም በቅድመ-እይታው ውስጥ ወደ ማንኛውም የተወሰነ ቦታ ያዢ ወይም ምስል ይጎትቱት። ×N = ተመሳሳዩ ምስል በN ገጾች ላይ ታይቷል (ብዙውን ጊዜ የደብዳቤ ራስጌ ወይም አርማ)።",
+      "insert_aria": "የተወጣ ምስል ወደ መጀመሪያው ክፍት ቦታ አስገባ"
     },
     "toolbar": {
       "aria": "ጽሑፍ formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} ጥሰት",
     "violation_other": "{count} ጥሰቶች",
     "ai_issue_one": "{count} በAI የተለየ ችግር",
-    "ai_issue_other": "{count} በAI የተለዩ ችግሮች"
+    "ai_issue_other": "{count} በAI የተለዩ ችግሮች",
+    "tagged": {
+      "born_digital_note": "ማስታወሻ፦ ለጽሑፍ-ንብርብር PDFዎች የፍች መለያዎች ሙሉ የይዘት ትስስርን ሳይሆን የActualText ግንኙነቶችን ይጠቀማሉ። ፋይሉ በከፍተኛ ደረጃ የበለጠ ተደራሽ ነው፣ ግን የPDF/UA ተስማሚነትን ከመግለጽዎ በፊት በPAC 2024 ወይም Acrobat ያረጋግጡ።"
+    },
+    "one_click": {
+      "label": "ተደራሽ አድርግ",
+      "badge": "ሙሉ በሙሉ ራስ-ሰር — ኦዲት፣ ማስተካከል፣ ማረጋገጥ፣ ግቡ ላይ እስኪደርስ መድገም",
+      "desc": "አንድ ጠቅታ ሙሉውን ሂደት በነባሪ ቅንብሮች ያለ እጅ ያንቀሳቅሰዋል፤ ማውረጃዎች በመጨረሻ ዝግጁ ይሆናሉ። ቁጥጥር ይመርጣሉ? ከታች ያለውን \"ኦዲት አሂድ\" ይጠቀሙ፣ ውጤቶቹን ይገምግሙ፣ ከዚያ እራስዎ ማስተካከል እና ማረጋገጥ ላይ ይጫኑ።"
+    },
+    "run_audit_label": "ኦዲት አሂድ (ከ2 ደረጃ 1)",
+    "manual_path_explainer": "\"ኦዲት አሂድ\" ሰነዱን ይመዝናል እና ምን ማስተካከል እንደሚያስፈልግ ያሳያል — ከዚያ እራስዎ ይገምግማሉ እና ማስተካከል እና ማረጋገጥ ላይ ይጫናሉ (ደረጃ 2)። ከላይ ያለው \"ተደራሽ አድርግ\" ሁለቱንም ደረጃዎች እንዲሁም እንደገና ማረጋገጥን በራስ-ሰር ያከናውናል። \"የጽሑፍ ማውጣት\" ለይዘት ፍጥረት ጥሬ ጽሑፉን ብቻ ይጎትታል።",
+    "tagged_report": {
+      "heading": "የመለያ PDF ሪፖርት",
+      "close_aria": "የመለያ-PDF ሪፖርትን አስወግድ",
+      "note": "ይህ ፓነል እስኪያስወግዱት ድረስ ይቆያል። ተመሳሳዩ ዝርዝሮች በAdobe-ስታይል A11y Report ማውረጃ ውስጥ ይላካሉ።"
+    },
+    "docx_export": {
+      "title": "የተስተካከለውን ይዘት ወደ Word ሰነድ ይቀይሩ፣ እውነተኛ የርዕስ ቅጦች፣ በምስሎች ላይ ተለዋጭ ጽሑፍ፣ የሰንጠረዥ ራስጌ ረድፎች፣ የዝርዝር አወቃቀር እና የሚሰሩ ሃይፐርሊንኮች ጋር። ከማሰራጨትዎ በፊት በWord ውስጥ ባለው የተደራሽነት ማረጋገጫ (Review → Check Accessibility) ያረጋግጡ።"
+    },
+    "pptx_export": {
+      "title": "የተስተካከለውን ይዘት እንደ PowerPoint እንደገና ይገንቡ፣ እውነተኛ የስላይድ ርዕሶች፣ በምስሎች ላይ ተለዋጭ ጽሑፍ፣ በራስጌ-ቅጥ የተቀረጹ የሰንጠረዥ ረድፎች፣ እውነተኛ የነጥብ ዝርዝሮች እና የንባብ ቅደም ተከተል = የምስል ቅደም ተከተል ጋር። እንደገና የተገነባ ተደራሽ አቀማመጥ — የመጀመሪያው ምስላዊ ቅጂ አይደለም። ከማሰራጨትዎ በፊት በPowerPoint የተደራሽነት ማረጋገጫ ያረጋግጡ።"
+    },
+    "dashboard": {
+      "aria": "የማስተካከያ ውጤቶች አጠቃላይ እይታ እና የክፍል አሰሳ",
+      "score_title": "የተደራሽነት ውጤት፦ ከበፊት → ከኋላ"
+    },
+    "tag_to_workbench_title": "ይህን ብሎክ ወደ Expert Workbench ይላኩ፦ የታለመ ትዕዛዝ (ማንኛውንም ማስጠንቀቂያዎች ጨምሮ) አስቀድሞ ይሞላል ስለዚህ በአንድ መመሪያ ማስተካከል ይችላሉ",
+    "tag_to_workbench_aria": "ወደ Expert Workbench ላክ",
+    "pptx_theme_aria": "የPowerPoint ወደ ውጭ መላኪያ ገጽታ",
+    "pptx_theme_title": "ለPowerPoint ወደ ውጭ መላኪያ የስላይድ ገጽታ። ሁሉም ቅድመ-ቅንብሮች በንፅፅር ተፈትነዋል (WCAG AA)፤ የAI አማራጭ ከርዕስዎ ጋር ይዛመዳል፣ ተነባቢነት በሁለቱም መንገድ በአካባቢው ይተገበራል።",
+    "export_menu": {
+      "button": "ወደ ውጭ ላክ / አውርድ",
+      "intro": "የተስተካከለውን ሰነድ በማንኛውም ቅርጸት ያውርዱ — እንዴት ጥቅም ላይ እንደሚውል የሚስማማውን ይምረጡ።",
+      "tagged_pdf": "መለያ ያለው PDF (PDF/UA — ለተማሪዎች ይስጡ)",
+      "word": "Word (.docx — ማረም ይቀጥሉ)",
+      "pptx": "PowerPoint (.pptx — ያቅርቡት)",
+      "html": "HTML (በየትኛውም ቦታ ይከፈታል፣ ሶፍትዌር አያስፈልግም)",
+      "group_access": "ተደራሽ ቅርጸቶች",
+      "daisy": "DAISY ተናጋሪ መጽሐፍ (ሙሉ ጽሑፍ)",
+      "daisy_title": "DAISY 3 (DTBook) የሙሉ-ጽሑፍ ተናጋሪ-መጽሐፍ ጥቅል። ንግግር፣ ብሬይል ወይም ትልቅ ህትመት በሚሰጥ የDAISY አንባቢ ይክፈቱ። (ለተመሳሰለ ጮክ-ብሎ-ማንበብ ድምጽ፣ ከታች ያለውን አብሮ-ማንበብ ይጠቀሙ።)",
+      "readalong": "አብሮ-የሚነበብ ኢ-መጽሐፍ (የተመሳሰለ ድምጽ)",
+      "readalong_progress": "በመተረክ ላይ… {done}/{total}",
+      "readalong_title": "አብሮ-የሚነበብ ኢ-መጽሐፍ (EPUB3 Media Overlays)፦ ለእያንዳንዱ አንቀጽ ጽሑፍ-ወደ-ንግግር ይፈጥራል እና ከጽሑፉ ጋር ያመሳስለዋል ስለዚህ የንባብ ስርዓቱ ቃላት ሲነገሩ ያደምቃቸዋል። ብዙ የድምጽ ጥሪዎችን ያደርጋል — ጥቂት ደቂቃዎች ሊወስድ ይችላል።",
+      "group_text": "ጽሑፍ እና ሊታረም የሚችል",
+      "odt_title": "OpenDocument Text — በLibreOffice እና Google Docs (እና Word) ውስጥ በቀጥታ ይከፈታል።",
+      "group_audio": "የድምጽ ትረካ",
+      "audio": "የድምጽ ትረካ (መደበኛ)",
+      "audio_title": "የሰነዱ የተነገረ ትረካ (MP3/WAV)።",
+      "audio_sr": "ድምጽ (የስክሪን-አንባቢ ስታይል)",
+      "audio_sr_title": "ተመሳሳይ ድምጽ፣ ግን አንድ የስክሪን አንባቢ እንደሚያደርገው አወቃቀርን በማስታወቅ (የርዕስ ደረጃዎች፣ የዝርዝር ብዛቶች፣ የሰንጠረዥ ረድፎች፣ የምስል ተለዋጮች)።"
+    },
+    "mo": {
+      "confirm": "አብሮ-የሚነበብ ኢ-መጽሐፍ ይገነባ? ይህ {n} የጽሑፍ ክፍሎችን በጽሑፍ-ወደ-ንግግር ይተርካል — ወደ {n} የድምጽ ጥሪዎች ገደማ፣ ጥቂት ደቂቃዎች ሊወስድ ይችላል።"
+    }
   },
   "concept_sort": {
     "title": "ጽንሰ-ሐሳብ ደርድር",
@@ -6831,7 +6916,61 @@
     "timeline_image_size": "በTimeline ክስተት ካርዶች ውስጥ ለበAI የተመረቱ ምስሎች የመጠን ቁጥጥር (ክስተቶች ምስሎች ሲኖራቸው ብቻ ይታያል)። ሶስት-ደረጃ ስላይደር፡ small / medium / large።",
     "pdf_audit_view_web_audit_btn": "ገጹን ለWCAG 2.1 AA ተደራሽነት የAI ኦዲተርን እና axe-core ሞተርን (ባለሙያ ኦዲተሮች የሚጠቀሙበትን ተመሳሳይ ሞተር) በመጠቀም ይመዝናል። ምንም አይቀየርም — ገጹ ዛሬ በምን ሁኔታ ላይ እንዳለ ብቻ ማወቅ ሲፈልጉ ይህንን ይጠቀሙ።",
     "pdf_audit_results_score_badge": "የእርስዎ PDF አጠቃላይ የተደራሽነት ነጥብ ከ0 እስከ 100። አረንጓዴ (80+) ለWCAG AA ቅርብ ነው፣ ብርቱካናማ (50-79) ማሻሻያ ይፈልጋል፣ ቀይ (<50) የስክሪን አንባቢ ወይም ረዳት ቴክኖሎጂ ለሚጠቀሙ ተማሪዎች ከባድ እንቅፋቶች አሉት።",
-    "pdf_audit_alt_formats_braille_btn": "በBraille ማተሚያ ላይ ሊቀረጽ ወይም ወደ የሚታደስ የBraille ማሳያ ሊላክ የሚችል የደረጃ-1 (ያልተኮማተረ) የBraille ፋይል ያስቀምጡ። ለደረጃ-2 ኩማታዎች፣ ለማጠናቀቅ ፋይሉን ለTVI (የማየት እክል ላለባቸው ተማሪዎች መምህር) ይስጡ።"
+    "pdf_audit_alt_formats_braille_btn": "በBraille ማተሚያ ላይ ሊቀረጽ ወይም ወደ የሚታደስ የBraille ማሳያ ሊላክ የሚችል የደረጃ-1 (ያልተኮማተረ) የBraille ፋይል ያስቀምጡ። ለደረጃ-2 ኩማታዎች፣ ለማጠናቀቅ ፋይሉን ለTVI (የማየት እክል ላለባቸው ተማሪዎች መምህር) ይስጡ።",
+    "pdf_audit_view_web_url_input": "ሊፈትሹት የሚፈልጉትን የድረ-ገጽ አድራሻ ይለጥፉ (ለምሳሌ https://yourdistrict.org/handbook)፣ ከዚያ ኦዲት አድርገው እንዲያስተካክሉት HTMLውን ለመጎተት Fetch ላይ ይጫኑ።",
+    "pdf_audit_view_web_fetch_btn": "ከላይ ባለው URL ላይ ያለውን ገጽ ያወርዳል እና HTMLውን ከታች ባለው ሳጥን ውስጥ ይጥላል። ጣቢያው መጎተትን ካገደ፣ የገጹን ምንጭ እራስዎ ወደ HTML ሳጥኑ ይለጥፉ።",
+    "pdf_audit_view_web_html_textarea": "በትክክል እየተኦዲት የተደረገው HTML — በFetch የተጣለ ወይም በእርስዎ የተለጠፈ። ኦዲት ከማስኬድዎ በፊት እዚህ ማረም ይችላሉ (ለምሳሌ፣ የእርስዎ ያልሆነ የአሰሳ አሞሌ ማስወገድ)።",
+    "pdf_audit_view_web_remediate_btn": "ገጹን ይመዝናል፣ ከዚያ ሊያስተካክለው የሚችለውን ለማስተካከል HTMLውን እንደገና ይጽፋል (ንፅፅር፣ የቋንቋ መለያ፣ መዝለያ-አገናኝ፣ ምልክቶች) እና ሊወርድ የሚችል ተደራሽ ቅጂ ይሰጥዎታል። ከማተምዎ በፊት ሁልጊዜ ውጤቱን እራስዎ እንደገና ይፈትሹ።",
+    "pdf_audit_view_batch_dropzone": "PDF ፋይሎችን ከዴስክቶፕዎ ወይም ከማውረጃ አቃፊዎ ወደዚህ ሳጥን በቀጥታ ይጎትቱ ወደ የጥቅል ወረፋው ለማከል። PDF ያልሆኑ ፋይሎች ችላ ይባላሉ።",
+    "pdf_audit_view_batch_browse_btn": "አንድ ወይም ከዚያ በላይ PDFዎችን ለመምረጥ የፋይል መራጭዎን ይከፍታል። ፋይሎችን መጎተት ቀላል ካልሆነ ይህን ይጠቀሙ (የመዳሰሻ መሳሪያ፣ የስክሪን አንባቢ፣ ዝቅተኛ እይታ፣ ወይም Chromebook)።",
+    "pdf_audit_view_batch_resume_btn": "የመጨረሻ ቡድንዎን ካቆመበት ቦታ ጀምሮ ይቀጥላል — አስቀድሞ የተጠናቀቁ PDFs ይቀመጣሉ፣ ያልተጠናቀቁት ብቻ እንደገና ይሄዳሉ። ቡድኑ ሳይጠናቀቅ ሲቋረጥ (ትር ሲዘጋ፣ ሲታደስ፣ ሲበላሽ) ይህንን ይጠቀሙ።",
+    "pdf_audit_view_batch_discard_btn": "ከመጨረሻው የተቋረጠ ቡድንዎ የተቀመጠውን እድገት ይጥላል — ባነሩ ይጠፋል እና የተከማቹ ውጤቶች ከአሳሽዎ ይሰረዛሉ።",
+    "pdf_audit_view_batch_clear_all_btn": "እንደገና መጀመር እንዲችሉ ሁሉንም PDF ከወረፋው ያስወግዳል። Start Batch ከመጫንዎ በፊት ብቻ የሚገኝ።",
+    "pdf_audit_view_batch_row_retry_btn": "የቀረውን ቡድን ሳይነካ ይህን አንድ ያልተሳካ ፋይል ብቻ እንደገና ያስኬዳል። ለምን እንዳልተሳካ ለማንበብ መጀመሪያ ቀዩን X ላይ ያንዣብቡ — ችግሩ መዋቅራዊ ከሆነ (የተበላሸ PDF፣ የምስል ብቻ ቅኝት) እንደገና መሞከር አይረዳም።",
+    "pdf_audit_view_batch_row_remove_btn": "ቡድኑ እንዲዘለው ይህን አንድ PDF ከወረፋው ያስወግዳል። ቡድኑ ከመሄዱ በፊት ብቻ የሚገኝ።",
+    "pdf_audit_view_batch_stop_btn": "አሁን እየሰራ ያለው ፋይል ካለቀ በኋላ ቡድኑ እንዲቆም ይጠይቃል። አስቀድሞ የተጠናቀቁ PDFs እንደተጠናቀቁ ይቆያሉ — የጨረሱትን ስራ አያጡም፣ የቀረውንም በኋላ መቀጠል ይችላሉ።",
+    "pdf_audit_view_batch_retry_all_failed_btn": "ያልተሳካ እያንዳንዱን PDF እንደገና ወረፋ ላይ አስቀምጦ እንደገና ያስኬዳል። አስቀድሞ የተሳኩ ፋይሎች አይነኩም። ውድቀቶቹ የተናወጡ የኔትወርክ ስህተቶች የሚመስሉ ከሆነ አንድ ጊዜ መሞከር ጠቃሚ ነው፤ በእውነት የተበላሹ PDFs ላይ መደጋገም አያስፈልግም።",
+    "pdf_audit_view_batch_start_btn": "በወረፋው ውስጥ ያለውን እያንዳንዱን PDF ማረም እና ማስተካከል ይጀምራል። ከመጀመርዎ በፊት ውሳኔ እንዲወስኑ የ AI ጥሪዎች (እና በራስ-አስተናጋጅ ዕቅድ ላይ ወጪ) ግምት ያለው ማረጋገጫ መጀመሪያ ይታያል።",
+    "pdf_audit_view_batch_download_zip_btn": "በተሳካ ሁኔታ የተስተካከለ እያንዳንዱን PDF እንደ አንድ ነጠላ ZIP ፋይል ያወርዳል። ሙሉ አቃፊ ለመምህር ወይም ለዲስትሪክት ተጠሪ በአንድ ጊዜ ለመመለስ ምቹ ነው።",
+    "pdf_audit_view_batch_new_batch_btn": "አዲስ ስብስብ PDFs እንዲጨምሩ የተጠናቀቀውን ቡድን ያጸዳል። አስቀድመው ያወረዱት ማንኛውም ZIP በኮምፒውተርዎ ላይ ይቆያል — ይህ ማያ ገጹን ብቻ ዳግም ያስጀምራል።",
+    "pdf_audit_view_batch_dashboard_btn": "በአዲስ ትር ላይ ሊታተም የሚችል የተገዢነት ዳሽቦርድ ይከፍታል — አማካይ ውጤት፣ ስንት PDFs 90+ እንደደረሱ፣ በጣም የተለመዱ የ WCAG ችግሮች። ለአስተዳዳሪ ለማካፈል ወይም ከ Title II / 504 መዝገብ ጋር ለማያያዝ ጠቃሚ።",
+    "pdf_audit_view_settings_panel": "የኦዲት እና የማስተካከያ ቧንቧ ማስተካከያ ቁልፎች። ነባሪዎቹ ምክንያታዊ ናቸው — መደበኛው ሩጫ የሚፈልጉትን (የበለጠ ጥልቀት፣ ዝቅተኛ ወጪ፣ የተለየ የማቆሚያ ነጥብ) የማይሰጥዎት ከሆነ ብቻ እነዚህን ይቀይሩ።",
+    "pdf_audit_view_audit_passes_slider": "ስንት ራሳቸውን የቻሉ የ AI ኦዲተሮች PDF ይመለከታሉ — በእውነተኛ ችግሮች ላይ ይስማማሉ በጩኸት ላይ ይለያያሉ፣ ስለዚህ ብዙ ኦዲተሮች ማለት ያነሱ የውሸት ማንቂያዎች ማለት ነው። 5 ምርጡ ቦታ ነው፤ ለከፍተኛ-ስጋት የተገዢነት ሰነዶች ከፍ ያድርጉ፣ ለፈጣን ፍተሻዎች ዝቅ ያድርጉ።",
+    "pdf_audit_view_target_score_slider": "የተስተካከለው PDF እንዲደርስ የሚፈልጉት ውጤት — 90 ጠንካራ የ WCAG 2.1 AA ማለፊያ ነው፣ 95+ ወደ ፍጹም ቅርብ ነው፣ 70 ለተቃኙ ሰነዶች ጠቃሚ ወለል ነው። ቧንቧው ውጤቱ እስኪደርስ ድረስ መስራቱን እንዲቀጥል ከ Auto-continue ጋር ያጣምሩ።",
+    "pdf_audit_view_max_fix_passes_slider": "ቧንቧው ከመቆሙ በፊት ስንት ራስ-ሰር የማስተካከያ ዙሮች እንዲሄድ ይፈቀዳል። 8 ነባሪው ነው፤ በራስ-አስተናጋጅ ዕቅድ ላይ ወጪን ለመገደብ ይህንን ዝቅ ያድርጉ፣ ወይም ራስ-ማስተካከያን ሙሉ በሙሉ ለመዝለል (ኦዲት-ብቻ) ወደ 0 ያቀናብሩ።",
+    "pdf_audit_view_auto_continue_toggle": "ሲበራ፣ ቧንቧው Target Score እስኪደርስ ድረስ ተጨማሪ የማስተካከያ ዙሮችን (እስከ 3 ተጨማሪ) መስራቱን ይቀጥላል፣ ከዚያም በራሱ ይቆማል። በትክክል አንድ ሩጫ እና ለመመርመር አንድ ውጤት ከፈለጉ ያጥፉ።",
+    "pdf_audit_view_polish_passes_slider": "ከእውነተኛው የተደራሽነት ማስተካከያዎች በኋላ ተጨማሪ የጽዳት ዙሮች — ክፍተት፣ ራስጌዎች፣ የእይታ ጥራትን ያጠብቃል። 0 ይዘላል፣ 2 መደበኛ ነው፣ 3 ለሕትመት ወይም ለውጫዊ ተመልካቾች ለሚሄዱ ሰነዶች ነው።",
+    "pdf_audit_view_branding_panel": "አማራጭ — የተስተካከለው PDF እንዴት እንደሚታይ ይቆጣጠራል፦ የብራንድ ቀለሞች እና አጠቃላይ የንድፍ ዘይቤ። ለነባሪው ተደራሽ መልክ ይዝለሉ፣ ወይም ሰነዱ ከትምህርት ቤት ወይም ዲስትሪክት ብራንድ ጋር መመጣጠን ካስፈለገ ያስፋፉ።",
+    "pdf_audit_view_brand_mode_auto_btn": "የተስተካከለው ስሪት ከመጀመሪያው ጋር እንዲመሳሰል ካስቀመጡት PDF ውስጥ የብራንድ ቀለሞችን ይስባል። ምርጥ ነባሪ — ሰነዱን ለሰራተኞች እና ለቤተሰቦች ሊታወቅ የሚችል ያደርገዋል።",
+    "pdf_audit_view_brand_mode_upload_input": "የተለየ የብራንድ ሉህ፣ አርማ ወይም የዘይቤ መመሪያ (ምስል ወይም PDF) ይስቀሉ እና ቧንቧው ከእሱ ቀለሞችን እና ቅርጸ-ቁምፊዎችን ይስባል። የመጀመሪያው PDF ቀላል መልክ ያለው ሆኖ ግን ከዲስትሪክት ብራንድ ጋር መመጣጠን ሲያስፈልገው ጠቃሚ።",
+    "pdf_audit_view_brand_mode_none_btn": "የብራንድ ቀለሞችን ሙሉ በሙሉ ይዝለሉ እና አብሮ የተሰራውን ተደራሽ የቀለም ስብስብ ይጠቀሙ። ለአጠቃላይ የስራ ወረቀቶች ይህንን ይምረጡ፣ ወይም የመጀመሪያዎቹ ቀለሞች የንፅፅር ሙከራን ሲወድቁ እና መልኩን መጠበቅ ሳያስፈልግዎ።",
+    "pdf_audit_results_tab_remediation_btn": "AlloFlow PDF ካስተካከለ በኋላ የኦዲት ውጤቶችን ያሳዩ። የተሻሻለውን ውጤት እና አሁን የትኞቹ ችግሮች እንደተስተካከሉ ለማየት ይህን ትር ይጠቀሙ።",
+    "pdf_audit_results_tab_original_btn": "AlloFlow ምንም ከማስተካከሉ በፊት ወደ መጀመሪያው PDF ኦዲት ይመለሱ። ከ-በፊት-ከ-በኋላ ውጤቶችን ጎን ለጎን ለማነጻጸር ጠቃሚ።",
+    "pdf_audit_results_reliability_details": "የ AI ኦዲተሮች በዚህ ውጤት ላይ ምን ያህል እርግጠኞች እንደነበሩ ለማየት ያስፋፉ። ብዙ የ AI ሩጫዎች በትይዩ ይሄዳሉ — ጥብቅ ስምምነት ማለት ውጤቱ የሚታመን ነው፣ ሰፊ ልዩነት ማለት እያንዳንዱን ችግር ራስዎ ይገምግሙ ማለት ነው።",
+    "pdf_audit_results_score_breakdown_details": "ውጤቱ በትክክል እንዴት እንደተሰላ ለማየት ያስፋፉ — ስንት ፍተሻዎች እንደሄዱ፣ በእያንዳንዱ ችግር ምን እንደተቀነሰ፣ እና የ AI መለኪያ እና axe-core ውጤቶች እንዴት አብረው እንደተሰሉ። ይህ ከዋናው ቁጥር በስተጀርባ ያለው የግልጽነት ንብርብር ነው።",
+    "pdf_audit_results_score_how_ai_details": "AI እያንዳንዱን ችግር ምን ያህል በጥብቅ እንደሚገመግም ለማየት ያስፋፉ፦ ለማያ ገጽ-አንባቢ ተጠቃሚዎችን ለሚያግዱ ወሳኝ ችግሮች ትልቅ ቅነሳ፣ ለጥቃቅን ችግሮች ትንሽ ቅነሳ፣ እና ለሚያልፉ ፍተሻዎች የሚመለሱ ነጥቦች።",
+    "pdf_audit_results_score_how_axe_details": "axe-core ፈታኙ (ሙያዊ የተደራሽነት ኦዲተሮች የሚጠቀሙበት ተመሳሳይ ሞተር) PDFዎን እንዴት እንደመዘነ ለማየት ያስፋፉ፣ ካልተሳኩት ትክክለኛ የ WCAG ደንብ IDs ጋር።",
+    "pdf_audit_results_issue_explain": "ይህ ችግር በትክክል ለተማሪዎች ምን እንደሚያግድ እና የ WCAG ደንቡ እንዴት እንደሚተገበር ለማንበብ ጠቅ ያድርጉ። ጠለቅ ብለው መሄድ ከፈለጉ ለ ኦፊሴላዊው WCAG ማብራሪያ አገናኝ ያካትታል።",
+    "pdf_audit_results_image_failures_details": "በማስተካከያ ወቅት የተተዉ ማንኛውም ምስሎችን ለማየት ያስፋፉ። እያንዳንዱ ረድፍ ምንም ስዕል በዝምታ እንዳይጠፋ የአንድ-ጠቅታ Regenerate አዝራር ያቀርባል።",
+    "pdf_audit_results_image_regenerate_btn": "ይህን የጎደለ ምስል በተከማቸ መግለጫው ላይ ተመስርቶ AI በመጠቀም እንደገና ይፈጥራል። አዲሱ ምስል በቀጥታ ወደ ሰነዱ ይመለሳል — ምንም በእጅ መስቀል አያስፈልግም።",
+    "pdf_audit_view_report_menu_btn": "የተደራሽነት ሪፖርትን በተለያዩ ቅርጸቶች ለማውረድ የሪፖርት ምናሌውን ይክፈቱ — ለተገዢነት ኦፊሰሮች Adobe-ስታይል፣ ለአጠቃላይ ማካፈል የተቀረጸ PDF፣ ለምርምር JSON፣ ወይም ለኦዲት መዝገቦች የተፈረመ ዱካ።",
+    "pdf_audit_view_adobe_report_btn": "እንደ Adobe Accessibility Checker የተቀረጸ ሪፖርት ያውርዱ፣ በ PDF/UA-1 (ለ PDFs የፌዴራል የተደራሽነት ደረጃ) ላይ የተመዘነ። ለተገዢነት ኦፊሰሮች ለማካፈል ወይም ከ Title II / 504 ማመልከቻ ጋር ለማያያዝ ምርጥ።",
+    "pdf_audit_view_tierb_diff_view_btn": "የመመለሻ ሩጫ ለማስኬድ መወሰንዎ በፊት በመጨረሻው ቁጠባ ወቅት የጎደሉትን ቃላት ይገምግሙ። ለማንበብ-ብቻ — እስኪመለስ እስኪመርጡ ድረስ ምንም አይቀየርም።",
+    "pdf_audit_view_tierb_rerun_restore_btn": "የጎደሉትን ምንጭ ቃላት ወደ ሰነዱ መልሰው ያያይዙ እና የተሰየመውን PDF እንደገና ይገንቡ። በደህና ሊቀመጡ የማይችሉ ቃላት ምንም እንዳይጠፋ በ Content Recovery ክፍል ውስጥ ይገባሉ — ከበፊትና ከበኋላ ያለው ቀሪ ቆጠራ ሁልጊዜ ይታያል ስለዚህ ረድቶ እንደሆነ ማየት ይችላሉ።",
+    "pdf_audit_view_formatted_report_btn": "በአዲስ ትር ላይ ሊታተም የሚችል የበፊት/በኋላ የተደራሽነት ሪፖርት ይክፈቱ — ለመዝገቦችዎ ወይም ለወላጅ ስብሰባ ቅጂ ለማስቀመጥ በባነሩ ውስጥ Save as PDF ጠቅ ያድርጉ።",
+    "pdf_audit_view_html_report_btn": "የበፊት/በኋላ ሪፖርቱን በድረ-ገጽ ላይ ማስተናገድ ወይም ማረም እንደሚችሉት HTML ፋይል አድርገው ያውርዱ። ይዘቱ ሊታተም ከሚችለው የ PDF ስሪት ጋር ይዛመዳል።",
+    "pdf_audit_view_json_data_btn": "ጥሬ የኦዲት ቁጥሮችን እና ደንብ-በደንብ ውሂብ እንደ JSON ይላኩ። የተደራሽነት ውጤቶችን በ ስፕሬድሺት፣ የምርምር ማስታወሻ ደብተር ወይም በሌላ መሳሪያ ውስጥ መተንተን ሲፈልጉ ይህንን ይጠቀሙ።",
+    "pdf_audit_view_audit_trail_signed_btn": "ራሱን-የሚያረጋግጥ የኦዲት ዱካ ይፍጠሩ (ማጭበርበርን የሚያውቅ አብሮ የተሰራ Verify Integrity አዝራር ያለው HTML ፋይል)። ለተገዢነት ማስረጃ ጥሩ — የአሳሽ-ጎን ፊርማ እንጂ በሕግ-የሚያስገድድ እንዳልሆነ ልብ ይበሉ።",
+    "pdf_audit_view_save_project_btn": "የማስተካከያ ስራዎን — ተደራሽ HTML፣ ውጤቶች፣ ቅንብሮች፣ ገጽ-በገጽ እድገት — ወደ ተንቀሳቃሽ ፋይል ያስቀምጣል። AI እንደገና ሳያስኬዱ ማረምን ለመቀጠል በ Load Project እንደገና ይክፈቱ።",
+    "pdf_audit_view_load_project_btn": "ቀደም ብለው ያስቀመጡትን የፕሮጀክት ፋይል እንደገና ይክፈቱ። የተስተካከለውን HTML፣ ውጤቶች እና አስቀድሞ የተጠናቀቁ ማንኛውንም የገጽ ክልሎች መልሶ ያመጣል — ካቆሙበት በትክክል ይቀጥላል።",
+    "pdf_audit_view_save_template_btn": "የሰነዱን ተደራሽ መዋቅር (የራስጌ ዝርዝር፣ ሠንጠረዦች፣ ዝርዝሮች፣ የመሬት ምልክቶች) እንደገና ጥቅም ላይ ሊውል እንደሚችል ቅንብር ያስቀምጣል። አዲስ ሰነዶችን — IEPs፣ ሥርዓተ-ትምህርቶችን — ለመጀመር በ Document Builder ውስጥ ይጠቀሙት፣ ለተደራሽነት አስቀድሞ የተዋቀሩ።",
+    "pdf_audit_alt_formats_summary": "ከ PDF ወይም HTML የተለየ የፋይል አይነት ለሚፈልጉ ተማሪዎች ለአማራጭ ቅርጸቶች ያስፋፉ — ePub፣ ኤሌክትሮኒክ ብሬይል፣ ቀላል ጽሑፍ፣ Markdown።",
+    "pdf_audit_alt_formats_epub_btn": "የተስተካከለውን ሰነድ ከይዘት ሠንጠረዥ እና ከተደራሽነት ሜታዳታ ጋር እንደ ePub ፋይል ያስቀምጡ። በ Kindle፣ Apple Books እና በአብዛኞቹ የሞባይል አንባቢዎች ላይ ይሰራል — ተማሪዎች የቅርጸ-ቁምፊ መጠን፣ ቀለም እና የንባብ ፍጥነት መቀየር ይችላሉ።",
+    "pdf_audit_alt_formats_text_btn": "ሁሉም ቅርጸት የተወገደበት ቀላል .txt ፋይል ያስቀምጡ — ለማያ ገጽ አንባቢዎች፣ ለትልቅ-ህትመት ልወጣ ወይም ወደ ሌላ መሳሪያ ለመለጠፍ በጣም ቀላሉ ቅርጸት።",
+    "pdf_audit_alt_formats_markdown_btn": "ሰነዱን እንደ Markdown ያስቀምጡ — ራስጌዎችን ወይም አገናኞችን ሳያጡ ወደ Canvas፣ Schoology ወይም D2L ገጾች፣ Google Docs (በመለጠፍ)፣ ዊኪዎች እና GitHub-ስታይል ማስታወሻዎች ውስጥ በንፅህና ይገባል።",
+    "pdf_audit_alt_formats_daisy_btn": "የ DAISY 3 ሙሉ-ጽሑፍ የሚናገር-መጽሐፍ ጥቅል ያስቀምጡ። የ DAISY አንባቢዎች (በልዩ ትምህርት የተለመዱ) ከሙሉ ዳሰሳ ጋር የራሳቸውን ንግግር፣ ብሬይል ወይም ትልቅ ህትመት ይጨምራሉ። እዚህ ጽሑፍ-ብቻ — ለተመሳሰለ ጮክ-ብሎ-ማንበብ Read-along ebook ይጠቀሙ።",
+    "pdf_audit_alt_formats_readalong_btn": "ጮክ-ብሎ-የሚነበብ ኢ-መጽሐፍ ይገንቡ (EPUB3 Media Overlays)፦ እያንዳንዱ አንቀጽ በ ጽሑፍ-ወደ-ንግግር ይተረካል እና ቃላት ሲነገሩ እንዲደምቁ ከጽሑፉ ጋር ይመሳሰላል። በአንድ ክፍል አንድ የድምጽ ጥሪ ስለሆነ ጥቂት ደቂቃዎችን ሊወስድ ይችላል።",
+    "pdf_audit_alt_formats_odt_btn": "የ OpenDocument Text (.odt) ፋይል ያስቀምጡ — ለ LibreOffice እና Google Docs ቤተኛ ነው (Word ደግሞ ይከፍተዋል)። ትምህርት ቤትዎ ሙሉ-Microsoft ሳይሆን ግን አሁንም መዋቅር ሳይበላሽ ሊታረም የሚችል ሰነድ ሲፈልጉ ይጠቀሙት።"
   },
   "groups": {
     "title": "Differentiation ቡድን",
@@ -9657,7 +9796,7 @@
     "obs_momentary": "Momentary ጊዜ Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional ባህሪ ግምገማ, ABC ውሂብ collection, እና ባህሪ ጣልቃ ገብነት ዕቅድ መሳሪያዎች.",
+      "subtitle": "የFunctional Behavior Assessment (FBA)፣ የABC ውሂብ አሰባሰብ፣ እና የBehavior Intervention Plan (BIP) መሳሪያዎች።",
       "open_btn": "ክፈት BehaviorLens",
       "select_student": "ምረጥ ተማሪ",
       "choose_student": "— ምረጥ አንድ ተማሪ —",
@@ -9754,7 +9893,7 @@
       "deescalate_title": "የማረጋጊያ መሣሪያ ስብስብ",
       "drstrategy_desc": "ትክክለኛውን የልዩነት ማጠናከሪያ ስልት ይምረጡ (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "DR ስልት Selector",
-      "dtt_desc": "Discrete Trial Training — በሙከራ-በሙከራ ምዝገባ ከመማር መስፈርቶች እና ራስ-ሰር መሄድ ጋር",
+      "dtt_desc": "Discrete Trial Training — ከብቃት መስፈርቶች እና ራስ-ሰር ማስቀደም ጋር በሙከራ-በሙከራ ምዝገባ",
       "dtt_title": "DTT ውሂብ Sheet",
       "effectsize_desc": "በእይታ ምዕራፍ ንጽጽር የጣልቃ ገብነት ውጤታማነትን ለመለካት Tau-U, NAP, እና PND ያስሉ",
       "effectsize_title": "የውጤት መጠን ካልኩሌተር",
@@ -9765,7 +9904,7 @@
       "fbaworkflow_title": "FBA የስራ ፍሰት መመሪያ",
       "fcttemplate_desc": "Functional Communication Training እቅድ ከመጥፋት ምርጫ ጋር",
       "fcttemplate_title": "FCT አብነት",
-      "gamify_desc": "ለተማሪ የተኮረ የስሜት ተከታታይ ከ-streaks፣ ባጅዎች፣ quests እና የነፀብራቅ ጆርናል ጋር",
+      "gamify_desc": "ለተማሪ የተኮረ የስሜት መከታተያ ከተከታታይ ጅረቶች (streaks)፣ ባጅዎች፣ ተልዕኮዎች (quests) እና የነጸብራቅ ማስታወሻ ደብተር ጋር",
       "gamify_title": "My እድገት ተልዕኮ",
       "glossary_desc": "25+ ሊፈለጉ የሚችሉ የABA ቃላት ከቀላል-ቋንቋ ትርጉሞች እና ከእውነተኛ-ዓለም ምሳሌዎች ጋር",
       "glossary_title": "ABA ጽንሰ-ሐሳብ መዝገበ ቃላት",
@@ -9777,7 +9916,7 @@
       "iepprep_title": "IEP ስብሰባ ዝግጅት",
       "intervention_desc": "በAI-የመነጨ የበርካታ ሳምንት የጣልቃ ገብነት እቅድ ሊለኩ የሚችሉ ግቦች እና ግቦች ጋር",
       "intervention_title": "ጣልቃ ገብነት ዕቅድ",
-      "ioacalc_desc": "Inter-Observer Agreement በ6 ዘዴዎች — ነጥብ-በ-ነጥብ፣ የጊዜ ክፍተት፣ ነጥብ ያገኘ/ያላገኘ፣ ትክክለኛ ቆጠራ",
+      "ioacalc_desc": "Inter-Observer Agreement (IOA) በ6 ዘዴዎች — ነጥብ-በ-ነጥብ፣ የጊዜ ክፍተት፣ ነጥብ ያገኘ/ያላገኘ፣ ትክክለኛ ቆጠራ",
       "ioacalc_title": "IOA ካልኩሌተር",
       "latency_desc": "ከ-አማካይ፣ መካከለኛ እና የክልል ስታቲስቲክስ ጋር የመነቃቃት-ወደ-ምላሽ ጊዜ መለኪያ",
       "latency_title": "የመዘግየት መዝጋቢ",
@@ -9800,7 +9939,7 @@
       "prefassess_title": "Preference ግምገማ",
       "progress_desc": "ከተከማቸ የባህሪ ዳታ የIEP-ዝግጁ የእድገት ክትትል አንቀጾች",
       "progress_title": "እድገት ትረካ",
-      "progressreport_desc": "AI-generated እድገት reports ከ ውሂብ summaries, trend ትንተና, ግብ እድገት, እና ወላጅ-ወዳጃዊ ቋንቋ አማራጮች",
+      "progressreport_desc": "በAI የተመነጩ የእድገት ሪፖርቶች ከውሂብ ማጠቃለያዎች፣ የዝንባሌ ትንተና፣ የግብ እድገት፣ እና ለወላጅ ምቹ የቋንቋ አማራጭ ጋር",
       "progressreport_title": "እድገት Reports",
       "qualitycheck_desc": "በAI-የተደገፈ የABC ግቤቶችዎ ግምገማ ከተወሰኑ የማሻሻያ ጥቆማዎች ጋር",
       "qualitycheck_title": "ውሂብ ጥራት ማረጋገጥ",
@@ -10032,7 +10171,7 @@
     "reinforcer_sensory": "🌀 ስሜት",
     "quiz_fba_purpose": "የFBA ዋና ዓላማ ምንድን ነው?",
     "quiz_replacement": "ምን ነው አንድ replacement ባህሪ?",
-    "search_placeholder": "ፈልግ antecedent, ባህሪ, consequence, ማስታወሻዎች, ቅንብር...",
+    "search_placeholder": "antecedent፣ ባህሪ፣ consequence፣ ማስታወሻዎች፣ ሁኔታ ይፈልጉ...",
     "quick_fill_placeholder": "ለምሳሌ \"ተማሪው ሥራውን እንዲያሳይ ሲጠየቅ በሂሳብ ጊዜ ወረቀት ጣለ፣ አስተማሪው በእርጋታ መልሶ አስተካከለ\"",
     "nl_edit_placeholder": "ለምሳሌ \"ውጤቱን ወደ አስተማሪ መልሶ አስተካከለ ቀይር\"",
     "now": "አሁን",
@@ -10132,7 +10271,7 @@
     "cycle_de_escalation": "ማረጋጋት",
     "cycle_recovery": "ማገገም",
     "quiz_opt_punish": "ወደ punish ተማሪ",
-    "quiz_opt_identify_why": "ወደ መለየት WHY አንድ ባህሪ occurs",
+    "quiz_opt_identify_why": "አንድ ባህሪ ለምን (WHY) እንደሚከሰት ለመለየት",
     "quiz_opt_any_stops": "ችግሩን የሚያቆም ማንኛውም ባህሪ",
     "analysis": {
       "hypothesized_function": "የተገመተ ተግባር",
@@ -10205,7 +10344,7 @@
       "topic_purpose_of_contact": "ርዕስ / የግንኙነቱ ዓላማ",
       "type_full_name": "ዓይነት ሙሉ name",
       "type_language_eg_spanish_arabic_somali": "ቋንቋ ያስገቡ (ለምሳሌ፣ ስፓኒሽ፣ አረብኛ፣ ሶማልኛ)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "ዓይነት የእርስዎ ምልከታ, note, ወይም ጠቅ ያድርጉ mic ወደ dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "ምልከታዎን ወይም ማስታወሻዎን ይተይቡ፣ ወይም ለመናገር ማይኩን ጠቅ ያድርጉ...",
       "type_your_response_here_be_thorough_and_use_profes": "ምላሽዎን እዚህ ይተይቡ። ዝርዝር ይሁኑ እና ሙያዊ ቋንቋ ይጠቀሙ...",
       "what_behavior_will_change": "ምን ባህሪ ይሆናል ለውጥ?",
       "what_could_you_or_a_grownup_do_differently": "አንተ ወይም አዋቂ ሰው በተለየ መንገድ ምን ማድረግ ይችላል?",
@@ -10400,7 +10539,7 @@
       "triangulation_complete": "Triangulation አጠናቅቅ ✨",
       "wizard_failed": "መመሪያ failed",
       "workspace_loaded_n_entries_n_notes": "የሥራ ቦታ ተጭኗል (N ግቤቶች፣ N ማስታወሻዎች) 📂",
-      "you_have_unsaved_changes_consider_saving_your_work": "💡 እርስዎ አለው unአስቀምጥ ለውጦች — ማሰብ saving የእርስዎ workspace.",
+      "you_have_unsaved_changes_consider_saving_your_work": "💡 ያልተቀመጡ ለውጦች አሉዎት — የስራ ቦታዎን ማስቀመጥ ያስቡበት።",
       "autofilled_from_phase_tagged_entries": "ከምዕራፍ-መለያ ግቤቶች በራስ-ሰር ተሞልቷል።",
       "enter_task_name": "አስገባ አንድ task name.",
       "need_2_baseline_2_intervention_entries_with_phase_tags": "ቢያንስ 2 መነሻ እና 2 የጣልቃ ገብነት ግቤቶች ከምዕራፍ መለያዎች ጋር ያስፈልጋሉ።",
@@ -10432,7 +10571,7 @@
       "add_abc_entries_to_see_progress_over_time": "ጨምር ABC entries ወደ እይ እድገት በላይ ጊዜ",
       "add_abc_entries_to_see_visual_trend_data": "የእይታ አዝማሚያ ውሂብን ለማየት የ ABC ግቤቶችን ያክሉ።",
       "add_connections_to_build_the_relationship_map": "የግንኙነት ካርታውን ለመገንባት ግንኙነቶችን ያክሉ።",
-      "add_data_points_above_or_paste_csv_data_to_get_sta": "ጨምር ውሂብ ነጥብ above ወይም ለጥፍ CSV ውሂብ ወደ get started.",
+      "add_data_points_above_or_paste_csv_data_to_get_sta": "ለመጀመር ከላይ የውሂብ ነጥቦችን ይጨምሩ ወይም የCSV ውሂብ ይለጥፉ።",
       "additional_context_optional": "Additional አውድ (አማራጭ)",
       "ai_analysis": "AI ትንተና",
       "ai_context_available": "AI አውድ ይገኛል",
@@ -10478,9 +10617,9 @@
       "data_quality_score": "ውሂብ ጥራት ውጤት",
       "data_to_include": "ውሂብ ወደ አካትት",
       "day_streak": "የቀን ተከታታይነት",
-      "define_the_behaviors_settings_or_students_for_stag": "Define ባህሪ, ቅንብሮች, ወይም ተማሪ ለ staggered ጣልቃ ገብነት.",
+      "define_the_behaviors_settings_or_students_for_stag": "ለተደራራቢ (staggered) ጣልቃ ገብነት ባህሪያቱን፣ ሁኔታዎቹን ወይም ተማሪዎቹን ይግለጹ።",
       "describe_your_research_question_and_let_ai_recomme": "የምርምር ጥያቄዎን ይግለጹ እና AI ምርጡን ንድፍ እንዲመክር ይፍቀዱ።",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training ከመካን ክትትል እና በራስ-ሰር ማስቀደም ጋር",
+      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training ከብቃት ክትትል እና ራስ-ሰር ማስቀደም ጋር",
       "document_whether_interventions_are_implemented_as": "ጣልቃ ገብነቶች እንደተነደፉ መተግበራቸውን ይመዝግቡ",
       "done": "ተጠናቋል",
       "drop_a_snapshot_file_here": "የቅጽበታዊ ገጽ እይታ ፋይል እዚህ ይጣሉ",
@@ -10497,7 +10636,7 @@
       "from_abc_data": "ከ ABC ውሂብ:",
       "full_student_summary": "ሙሉ ተማሪ ማጠቃለያ",
       "functional_communication_training_planning_tool": "Functional Communication Training የእቅድ መሣሪያ",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "አመንጭ አንድ multi-week ጣልቃ ገብነት ዕቅድ መሠረት ያደረገ ላይ የእርስዎ collected ABC ውሂብ እና AI ትንተና.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "በሰበሰቡት የABC ውሂብ እና የAI ትንተና ላይ ተመስርቶ የብዙ-ሳምንት ጣልቃ ገብነት ዕቅድ ያመንጩ።",
       "generate_a_professional_printready_progress_report": "ከመስመር ቻርቶች፣ የውሂብ ማጠቃለያዎች እና የAI ምክሮች ጋር ሙያዊ፣ ለህትመት-ዝግጁ የእድገት ሪፖርት ይፍጠሩ። በአሳሽ ህትመት በኩል በአንድ-ጠቅታ PDF ኤክስፖርት።",
       "generate_a_unique_scenario_tailored_to_your_traini": "ለሥልጠና ፍላጎቶችዎ የተበጀ ልዩ ሁኔታ ያመንጩ።",
       "generate_compliant_iep_behavioral_goals_from_obser": "አመንጭ compliant IEP behavioral ግብ ከ ምልከታ ውሂብ ከ present ደረጃ, SMART ግብ, እና እድገት monitoring.",
@@ -10535,7 +10674,7 @@
       "measure_time_between_stimulus_presentation_and_beh": "በማነቃቂያ አቀራረብ እና በባህሪ ምላሽ መካከል ያለውን ጊዜ ይለኩ",
       "median": "መካከለኛ",
       "methods_used": "ጥቅም ላይ የዋሉ ዘዴዎች",
-      "modify_the_environment_to_prevent_behaviors_before": "አስተካክል environment ወደ prevent ባህሪ በፊት እነሱ ጀምር",
+      "modify_the_environment_to_prevent_behaviors_before": "ባህሪያት ከመጀመራቸው በፊት ለመከላከል አካባቢውን ያስተካክሉ",
       "mtssrti_tier_manager": "MTSS/RTI የደረጃ አስተዳዳሪ",
       "my_progress_quest": "My እድገት ተልዕኮ",
       "natural_language_abc_entry": "የተፈጥሮ ቋንቋ ABC ግቤት",
@@ -10560,7 +10699,7 @@
       "optional_message": "አማራጭ መልዕክት",
       "or_explore_the_pd_learning_path": "ወይም ቃኝ PD መማር Path →",
       "parent": "ወላጅ",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ለጥፍ one ዋጋ per መስመር. ድጋፍ ቅርጸት: \"5\", \"ክፍለ ጊዜ 1: 5\", ወይም \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "በአንድ መስመር አንድ ዋጋ ይለጥፉ። የሚደገፉ ቅርጸቶች: \"5\"፣ \"ክፍለ ጊዜ 1: 5\"፣ ወይም \"1,5\"",
       "pd_learning_path": "PD መማር Path",
       "please_use_chrome_edge_or_safari_for_voice_input": "እባክዎ ተጠቀም Chrome, Edge, ወይም Safari ለ ድምጽ ግቤት.",
       "practice_clinical_reasoning_with_aigenerated_case": "በAI-በተፈጠሩ የጉዳይ ጥናቶች ክሊኒካዊ ምክንያትን ይለማመዱ። በምላሾችዎ ላይ የባለሙያ-ደረጃ ግብረመልስ ያግኙ።",
@@ -10575,10 +10714,10 @@
       "publicationstandard_singlecase_design_graphs": "የህትመት-ደረጃ ነጠላ-ጉዳይ ንድፍ ግራፎች",
       "quick_switch": "ፈጣን ቀይር",
       "range": "ክልል",
-      "read_through_the_module_content_above_then_click_c": "አንብብ በኩል module ይዘት above, ከዚያ ጠቅ ያድርጉ አጠናቅቅ below.",
+      "read_through_the_module_content_above_then_click_c": "ከላይ ያለውን የሞጁል ይዘት ያንብቡ፣ ከዚያም ከታች ያለውን አጠናቅቅ የሚለውን ጠቅ ያድርጉ።",
       "realtime_calming_tools_for_inthemoment_support": "በ-ቅጽበት-ውስጥ ድጋፍ ለ-ቅጽበታዊ የማረጋጊያ መሳሪያዎች",
       "recent_moods": "የቅርብ ጊዜ ስሜቶች፡",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record ክፍለ ጊዜ ከ ክፍለ ጊዜ ውሂብ Tracker, ወይም ቀይር ወደ በእጅ Entry ሁነታ.",
+      "record_sessions_with_the_session_data_tracker_or_s": "ክፍለ ጊዜዎችን በክፍለ ጊዜ ውሂብ መከታተያ ይመዝግቡ፣ ወይም ወደ በእጅ ማስገቢያ ሁነታ ይቀይሩ።",
       "recording": "በመመዝገብ ላይ...",
       "relationship_map": "የግንኙነት ካርታ",
       "remember_cultural_humility_is_a_lifelong_practice": "አስታውሱ፦ የባህል ትህትና የዕድሜ ልክ ልምምድ ነው። እያንዳንዱ ነጸብራቅ የበለጠ ፍትሃዊ ባለሙያ ያደርግዎታል።",
@@ -10606,7 +10745,7 @@
       "summary": "ማጠቃለያ:",
       "systematic_behavioral_measurement_across_sessions": "በ-ክፍለ ጊዜዎች መካከል ስልታዊ የባህሪ መለኪያ",
       "systematic_reinforcer_identification_using_evidenc": "በ-ማስረጃ-ላይ የተመሰረቱ ፕሮቶኮሎችን በመጠቀም ስልታዊ የማጠናከሪያ መለያ",
-      "tap_each_item_when_student_engages_with_it": "Tap እያንዳንዱ እቃ ሲ ተማሪ engages ከ it",
+      "tap_each_item_when_student_engages_with_it": "ተማሪው እያንዳንዱን እቃ ሲጠቀምበት ነካ ያድርጉት",
       "target_behavior": "ግብ ባህሪ",
       "task_analysis": "Task ትንተና",
       "taskskill_name": "የተግባር/ችሎታ ስም",
@@ -10616,14 +10755,14 @@
       "top_behavior": "Top ባህሪ",
       "total_contacts": "ጠቅላላ ግንኙነቶች",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ባህሪ frequency በላይ ጊዜ ከ aim መስመር, phase ለውጦች, እና trend ትንተና.",
-      "track_behaviors_at_home_using_simple_everyday_lang": "Track ባህሪ at home በመጠቀም ቀላል, everyday ቋንቋ. ይህ እርዳታ የእርስዎ child\\",
+      "track_behavior_frequency_over_time_with_aim_lines": "የባህሪ ድግግሞሽን በጊዜ ሂደት ከዓላማ መስመሮች፣ ከምዕራፍ ለውጦች እና ከዝንባሌ ትንተና ጋር ይከታተሉ።",
+      "track_behaviors_at_home_using_simple_everyday_lang": "ቀላል የዕለት ተዕለት ቋንቋ በመጠቀም ባህሪያትን በቤት ውስጥ ይከታተሉ። ይህ ልጅዎን ይረዳል\\",
       "track_your_feelings_earn_badges_and_build_streaks": "ስሜቶችዎን ይከታተሉ፣ ባጆችን ያግኙ፣ እና ተከታታይ ድሎችን ይገንቡ!",
       "transform_deficitbased_language_into_assetfocused": "በ-ድክመት-ላይ የተመሰረተ ቋንቋን ወደ ሀብት-ያተኮረ መግለጫዎች ይለውጡ",
       "translate_to_any_language": "Translate ወደ ማንኛውም ቋንቋ:",
       "treatment_integrity": "የሕክምና ታማኝነት",
       "trend": "አዝማሚያ",
-      "type_or_paste_your_observation_notes_in_everyday_e": "ዓይነት ወይም ለጥፍ የእርስዎ ምልከታ ማስታወሻዎች ውስጥ everyday English. AI ይሆናል መዋቅር them ወደ ውስጥ proper ABC entries.",
+      "type_or_paste_your_observation_notes_in_everyday_e": "የምልከታ ማስታወሻዎችዎን በዕለት ተዕለት እንግሊዝኛ ይተይቡ ወይም ይለጥፉ። AI ወደ ትክክለኛ የABC ግቤቶች ያዋቅራቸዋል።",
       "use_these_criteria_when_examining_your_graph": "ግራፍዎን ሲመረምሩ እነዚህን መስፈርቶች ይጠቀሙ፦",
       "use_this_flow_to_hypothesize_the_function_of_a_cha": "የፈታኝ ባህሪን ተግባር ለመገመት ይህን ፍሰት ይጠቀሙ።",
       "visual_multitiered_system_of_supports_assign_stude": "ምስላዊ ባለብዙ ደረጃ የድጋፍ ስርዓት። ተማሪዎችን ለደረጃዎች ይመድቡ፣ በ AI የሚሰሩ የመመደብ ምክሮችን ያግኙ።",
@@ -10868,7 +11007,7 @@
       "maintenance_tracker": "የጥገና መከታተያ",
       "make_tier_movement_decision_stay_fade_intensify": "የደረጃ እንቅስቃሴ ውሳኔ ያድርጉ (ይቆዩ / ይቀንሱ / ያጠናክሩ)",
       "map_antecedent_behavior_consequence_pathways": "የቀዳሚ → ባህሪ → ውጤት መንገዶችን ያዛምዱ",
-      "map_each_target_behavior_to_a_replacement": "Map እያንዳንዱ ግብ ባህሪ ወደ አንድ replacement",
+      "map_each_target_behavior_to_a_replacement": "እያንዳንዱን ዒላማ ባህሪ ከተተኪ ባህሪ ጋር ያዛምዱ",
       "materials_access": "ቁሳቁሶች መዳረሻ",
       "measure_effect_size_of_interventions": "የጣልቃ ገብነቶችን የውጤት መጠን ይለኩ",
       "model": "ሁነታ",
@@ -11218,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories ወደ life ከ ገጸ ባህሪ voices & literary ትንተና",
     "poettree_title": "PoetTree",
-    "poettree_desc": "ጻፍ poems ከ form scaffolds, rhyme & meter ትንተና, AI ግብረመልስ"
+    "poettree_desc": "ጻፍ poems ከ form scaffolds, rhyme & meter ትንተና, AI ግብረመልስ",
+    "throughline_desc": "ትምህርቶችዎን ወደ የቦታ ክፍል ያደራጁ፦ የማስተማር ቅደም ተከተል፣ ቅድመ-ሁኔታዎች፣ አንድ ሊወጣ የሚችል ፋይል"
   },
   "sel_hub": {
     "loading": "SEL Hub በመጫን ላይ...",
@@ -12538,5 +12678,10 @@
     "byline": "በ{author} · {words} ቃላት · {used}/{total} የቃላት ዝርዝር",
     "student": "ተማሪ",
     "score": "ነጥብ፦ {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "ቅድመ-እይታውን እንደገና መቅረጽ በእጅ ያደረጓቸውን ለውጦች በአዲስ በተፈጠረ ይዘት ይተካል። ይቀጥሉና ለውጦቹን ይጣሉ? (መሰረዝ ያስቀምጣቸዋል — መጀመሪያ ለማስቀመጥ ይላኩ ወይም ገንቢውን ይዝጉ።)",
+    "remediation_banner_title": "ተስተካክሎ የነበረውን ሰነድ በማረም ላይ።",
+    "remediation_banner_body": "ገንቢውን ሲዘጉ እዚህ ያደረጓቸው ለውጦች ወደ ሰነዱ ይመለሳሉ፣ ስለዚህ የመለያ PDF / Word / PowerPoint ማውረጃዎች እነሱን ያካትታሉ።"
   }
 }

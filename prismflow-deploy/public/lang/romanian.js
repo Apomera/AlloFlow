@@ -96,7 +96,7 @@
     "exit": "Ieșire"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "Studio Sunete și Cuvinte",
     "subtitle": "Activități de conștientizare fonemică",
     "listen_word": "Ascultă la cuvânt",
     "activity_counting": "Numărarea sunetelor",
@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving text only (imagine removed).",
     "storage_full_critical": "Critical: Could nu salvează history. Storage full.",
     "resource_not_found": "resurse nu found.",
-    "resource_not_found_history": "resurse nu found în history.",
+    "resource_not_found_history": "Resursa nu a fost găsită în istoric (este posibil să fi fost ștearsă).",
     "analysis_failed": "Analysis failed. vă rog încearcă again.",
     "enter_target_language": "vă rog introdu un target limbă.",
     "translation_started": "traducere started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback indisponibil",
     "write_essay_first": "Scrie tău essay primul!",
     "enter_word_art_first": "vă rog introdu cuvânt art text primul",
-    "preview_not_ready": "Precenzie nu ready yet",
+    "preview_not_ready": "Previzualizarea nu este încă gata — așteaptă să se genereze, apoi încearcă din nou.",
     "word_art_render_failed": "Could nu render cuvânt art",
     "diff_engine_load_failed": "Diff engine failed la încarcă (network blocked?). Check tău connection și încearcă again.",
     "brf_downloaded": "Braille electronic (BRF) descărcat",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Proiect salvat ({count} intervale); încarcă-l mai târziu pentru a continua",
     "project_saved": "💾 Proiect salvat; încarcă-l mai târziu pentru a continua editarea",
     "search_result_desc": "Rezultat căutare Google: {title}",
-    "link_url_prompt": "Introdu URL-ul linkului:"
+    "link_url_prompt": "Introdu URL-ul linkului:",
+    "building_accessible_docx": "Se creează fișierul Word accesibil…",
+    "building_accessible_pptx": "Se creează prezentarea PowerPoint accesibilă…",
+    "batch_tagging": "📄 Se generează fișiere PDF etichetate pentru arhiva ZIP — fișierele scanate durează mai mult (OCR rulează pentru fiecare fișier)…",
+    "builder_edits_preserved": "✋ Modificările tale manuale au fost păstrate — previzualizarea nu a fost regenerată. Exportă sau închide editorul pentru a le salva, apoi schimbă setările.",
+    "builder_edits_synced": "✏️ Modificările din editor au fost salvate în documentul remediat — exporturile PDF etichetat / Word / PowerPoint le includ acum.",
+    "pptx_ai_theme": "🎨 Se solicită AI o paletă potrivită temei (lizibilitatea este garantată local)…",
+    "make_accessible_fixing": "✨ Auditul este gata — se remediază automat (fără să fie nevoie de clicuri)…",
+    "tagged_pdf_saved_see_report": "📄 PDF-ul etichetat a fost salvat — raportul complet este fixat deasupra butoanelor de descărcare (✕ pentru a-l închide).",
+    "no_open_image_slot": "Nu mai există spațiu liber pentru imagini în previzualizare — trage miniatura pe o anumită imagine pentru a o înlocui.",
+    "extracted_image_inserted": "🖼 Inserată în primul spațiu liber pentru imagini — trage o miniatură dacă vrei alt loc.",
+    "html_downloaded": "🌐 Fișierul HTML a fost descărcat — se deschide în orice browser.",
+    "odt_downloaded": "📄 Fișierul OpenDocument (.odt) a fost descărcat — se deschide în LibreOffice, Google Docs sau Word.",
+    "daisy_downloaded": "🔊 Pachetul de carte audio DAISY (.zip) a fost descărcat — deschide-l într-un cititor DAISY.",
+    "mo_no_voice": "Serviciul de voce nu este disponibil, așa că audio pentru citire-simultană nu poate fi generat în acest moment.",
+    "mo_busy": "Un export pentru citire-simultană este deja în curs.",
+    "mo_no_text": "Nu s-a găsit niciun text care poate fi citit pentru narațiune.",
+    "mo_no_audio": "⚠ Cartea electronică pentru citire-simultană a fost salvată, dar nu s-a putut genera audio (serviciul de voce este indisponibil). Textul și structura de sincronizare sunt intacte.",
+    "mo_done": "Cartea electronică pentru citire-simultană a fost descărcată",
+    "audio_unavailable_now": "Audio nu este disponibil în acest moment (este posibil să ruleze o sarcină sau serviciul de voce este oprit)."
   },
   "large_file": {
     "modal_title": "Importă Large audio fișier",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator instrumente",
     "documents_menu_aria": "document meniu",
     "open_doc_builder_pdf_aria": "Deschide document Builder pentru PDF",
-    "export_slides_tooltip": "Opens document Builder în Slides mod"
+    "export_slides_tooltip": "Opens document Builder în Slides mod",
+    "learning_tools_tooltip": "Instrumente de învățare (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Target limbă",
@@ -3599,7 +3619,7 @@
       "math_desc": "Generează relevant cuvânt problems și connections la math concepts.",
       "persona_title": "AI Persona",
       "persona_desc": "Simulate un conversation cu un personaj sau figure din text.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "Studio Sunete și Cuvinte",
       "wordsounds_desc": "Design targeted phonics și phoneme awareness lecție folosind glosar termen sau cuvânt families.",
       "glossary_settings_title": "glosar setări",
       "glossary_settings_desc": "Personalizează cum termen sunt selectat și translated. tu poate filtrează by tiered vocabular sau pentruță specific limbă.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "opțional. Applied la every imagine în test (întrebare + opțiuni). Empty = implicit stil. Persisted cu test so refine actions stay pe-brand.",
     "generate_pre_check": "Generează Pre-Check",
     "generate_formative": "Generează Formative Check",
-    "generate_review": "Generează Spaced Recenzie"
+    "generate_review": "Generează Spaced Recenzie",
+    "likert_strongly_disagree": "Dezacord total",
+    "no_right_answer": "Aici nu există răspunsuri corecte sau greșite.",
+    "poll_completed": "Mulțumim că ți-ai împărtășit părerea.",
+    "poll_intro": "Aici nu există răspunsuri corecte sau greșite — părerea ta sinceră îl ajută pe profesorul tău și te ajută pe tine.",
+    "mode_poll": "🗣️ Sondaj (vocea elevului)"
   },
   "outline": {
     "title": "vizual Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "Adjust size de timeline imagine"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidelitate: {before}% → {after}%{detail}",
     "view_last_audit": "Vizualizează ultimul Audit",
     "start_new_audit": "Începe nou Audit",
     "apply_and_export": "Aplică și exportă",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "Conform structural dar slab semantic — AI a marcat calitatea conținutului pe care axe-core nu o poate detecta",
-      "structural": "Încălcări WCAG la nivel de cod detectate — axe-core a găsit eșecuri verificabile mecanic"
+      "structural": "Încălcări WCAG la nivel de cod detectate — axe-core a găsit eșecuri verificabile mecanic",
+      "critical_override": "axe-core a găsit {n} încălcare(i) critică(e) WCAG — verifică-le înainte de a te baza pe scorul combinat; o medie poate ascunde o eroare gravă"
     },
     "tagtree": {
       "label": "Structură de etichete preexistentă",
@@ -4278,7 +4305,8 @@
       "std_dev": "standard Deviation",
       "icc_title": "Custom 1−(SD/50) index; nu textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Euristică hibridă CV + comparații perechi între trecerile AI; nu este coeficientul α Cronbach din manual"
     },
     "score": {
       "total_checks": "Total verificări efectuate",
@@ -4436,7 +4464,9 @@
       "title": "Regenerate un PDF din remediated HTML. Layout reflows — page breaks, fonts, și pagination may differ din original. Works well pentru simplu prose document."
     },
     "tagged_pdf": {
-      "title": "Preserve original PDF's vizual layout byte-identical și inject accessibility tags în its structure tree. Best pentru textbooks, multi-coloană document, și branded PDFs unde vizual fidelity matters."
+      "title": "Preserve original PDF's vizual layout byte-identical și inject accessibility tags în its structure tree. Best pentru textbooks, multi-coloană document, și branded PDFs unde vizual fidelity matters.",
+      "office_note": "PDF-ul etichetat se aplică intrărilor PDF — folosește Word/HTML",
+      "office_note_title": "Etichetele de structură pot fi injectate doar în octeții PDF. Pentru intrările Word/PowerPoint, descărcările accesibile Word și HTML conțin structura remediată."
     },
     "alt_formats": {
       "intro": "Descarcă remediated document în accessible alternative format"
@@ -4507,7 +4537,9 @@
       "heading": "versiune Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Trage un thumbnail onto any imagine placeholder în precenzie la insert it, sau apasă \"📷 Încarcă\" inside un placeholder și alege \"Folosește extracted imagine\"."
+      "drag_hint": "Trage un thumbnail onto any imagine placeholder în precenzie la insert it, sau apasă \"📷 Încarcă\" inside un placeholder și alege \"Folosește extracted imagine\".",
+      "drag_hint2": "Apasă pe o miniatură pentru a o insera în primul spațiu liber pentru imagini sau trage-o pe orice substituent ori imagine din previzualizare. ×N = aceeași imagine a apărut pe N pagini (de obicei un antet sau un logo).",
+      "insert_aria": "Inserează imaginea extrasă în primul spațiu liber"
     },
     "toolbar": {
       "aria": "text formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} încălcare",
     "violation_other": "{count} încălcări",
     "ai_issue_one": "{count} problemă semnalată de IA",
-    "ai_issue_other": "{count} probleme semnalate de IA"
+    "ai_issue_other": "{count} probleme semnalate de IA",
+    "tagged": {
+      "born_digital_note": "Atenție: pentru PDF-urile cu strat de text, etichetele semantice folosesc asocieri ActualText în loc de o legătură completă cu conținutul. Fișierul este considerabil mai accesibil, dar verifică-l în PAC 2024 sau Acrobat înainte de a declara conformitatea PDF/UA."
+    },
+    "one_click": {
+      "label": "Fă-l accesibil",
+      "badge": "complet automat — auditare, remediere, verificare, repetare până la țintă",
+      "desc": "Un singur clic rulează întregul proces automat, cu setările implicite; descărcările sunt gata la final. Preferi controlul? Folosește „Rulează auditul” mai jos, verifică rezultatele, apoi apasă tu însuți Remediază și verifică."
+    },
+    "run_audit_label": "Rulează auditul (pasul 1 din 2)",
+    "manual_path_explainer": "„Rulează auditul” evaluează documentul și arată ce trebuie remediat — apoi verifici și apeși tu însuți Remediază și verifică (pasul 2). „Fă-l accesibil” de mai sus face ambii pași plus reverificarea, automat. „Extragere text” doar extrage textul brut pentru generarea de conținut.",
+    "tagged_report": {
+      "heading": "Raport PDF etichetat",
+      "close_aria": "Închide raportul PDF etichetat",
+      "note": "Acest panou rămâne afișat până îl închizi. Aceleași detalii sunt incluse în descărcarea raportului A11y în stil Adobe."
+    },
+    "docx_export": {
+      "title": "Convertește conținutul remediat într-un document Word cu stiluri reale de titluri, text alternativ pe imagini, rânduri de antet în tabele, structură de liste și hyperlinkuri funcționale. Verifică-l cu Verificatorul de accesibilitate încorporat în Word (Revizuire → Verifică accesibilitatea) înainte de distribuire."
+    },
+    "pptx_export": {
+      "title": "Reconstruiește conținutul remediat ca o prezentare PowerPoint cu titluri reale de diapozitive, text alternativ pe imagini, rânduri de tabel în stil de antet, liste cu marcatori autentice și ordinea de citire = ordinea vizuală. Un aspect accesibil reconstruit — nu o copie vizuală a originalului. Verifică-l cu Verificatorul de accesibilitate din PowerPoint înainte de distribuire."
+    },
+    "dashboard": {
+      "aria": "Prezentare generală a rezultatelor remedierii și navigare între secțiuni",
+      "score_title": "Scor de accesibilitate: înainte → după"
+    },
+    "tag_to_workbench_title": "Trimite acest bloc către Atelierul Expert: precompletează o comandă țintită (inclusiv eventualele avertismente) ca să-l poți remedia cu o singură instrucțiune",
+    "tag_to_workbench_aria": "Trimite către Atelierul Expert",
+    "pptx_theme_aria": "Tema exportului PowerPoint",
+    "pptx_theme_title": "Tema diapozitivelor pentru exportul PowerPoint. Toate presetările sunt verificate pentru contrast (WCAG AA); opțiunea AI se potrivește temei tale, iar lizibilitatea este garantată local în ambele cazuri.",
+    "export_menu": {
+      "button": "Exportă / Descarcă",
+      "intro": "Descarcă documentul remediat în orice format — alege-l pe cel potrivit modului în care va fi folosit.",
+      "tagged_pdf": "PDF etichetat (PDF/UA — de oferit elevilor)",
+      "word": "Word (.docx — continuă editarea)",
+      "pptx": "PowerPoint (.pptx — prezintă-l)",
+      "html": "HTML (se deschide oriunde, fără software)",
+      "group_access": "Formate accesibile",
+      "daisy": "Carte audio DAISY (text integral)",
+      "daisy_title": "Pachet de carte audio cu text integral DAISY 3 (DTBook). Deschide-l într-un cititor DAISY, care oferă voce, braille sau text mărit. (Pentru audio citit cu voce tare sincronizat, folosește Citire-simultană mai jos.)",
+      "readalong": "Carte electronică citire-simultană (audio sincronizat)",
+      "readalong_progress": "Se narează… {done}/{total}",
+      "readalong_title": "Carte electronică citire-simultană (EPUB3 Media Overlays): generează sinteză vocală pentru fiecare paragraf și o sincronizează cu textul, astfel încât un sistem de citire evidențiază cuvintele pe măsură ce sunt rostite. Face multe apeluri de voce — poate dura câteva minute.",
+      "group_text": "Text și editabil",
+      "odt_title": "OpenDocument Text — se deschide nativ în LibreOffice și Google Docs (și în Word).",
+      "group_audio": "Narațiune audio",
+      "audio": "Narațiune audio (standard)",
+      "audio_title": "Narațiune vorbită a documentului (MP3/WAV).",
+      "audio_sr": "Audio (stil cititor de ecran)",
+      "audio_sr_title": "Aceeași voce, dar anunțând structura așa cum ar face-o un cititor de ecran (niveluri de titluri, numărul de elemente din liste, rânduri de tabel, texte alternative ale imaginilor)."
+    },
+    "mo": {
+      "confirm": "Creezi o carte electronică citire-simultană? Aceasta narează {n} secțiuni de text prin sinteză vocală — aproximativ {n} apeluri de voce, ceea ce poate dura câteva minute."
+    }
   },
   "concept_sort": {
     "title": "Concept Sortează",
@@ -5241,7 +5326,7 @@
     "plan_hook": "Captare",
     "plan_independent": "Independent exersează",
     "col_image": "imagine",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "Studio Sunete și Cuvinte",
     "stop": "Oprește",
     "expand_header": "Extinde antetul",
     "collapse_header": "Restrânge antetul pentru a oferi mai mult spațiu conținutului",
@@ -6882,7 +6967,10 @@
     "pdf_audit_alt_formats_epub_btn": "Salvați documentul remediat ca fișier ePub cu cuprins și metadate de accesibilitate. Funcționează pe Kindle, Apple Books și majoritatea cititoarelor mobile — elevii pot schimba dimensiunea fontului, culoarea și viteza de citire.",
     "pdf_audit_alt_formats_braille_btn": "Salvați un fișier Braille de Gradul 1 (necontractat) care poate fi imprimat în relief pe o imprimantă Braille sau trimis la un afișaj Braille reîmprospătabil. Pentru contracțiile de Gradul 2, predați fișierul unui TVI (profesor pentru elevi cu deficiențe vizuale) pentru finalizare.",
     "pdf_audit_alt_formats_text_btn": "Salvați un fișier .txt simplu cu toată formatarea eliminată — cel mai ușor format pentru cititoare de ecran, conversie la imprimare mare, sau lipirea într-un alt instrument.",
-    "pdf_audit_alt_formats_markdown_btn": "Salvați documentul ca Markdown — intră curat în paginile Canvas, Schoology sau D2L, Google Docs (prin lipire), wiki-uri și note în stil GitHub fără a pierde titluri sau linkuri."
+    "pdf_audit_alt_formats_markdown_btn": "Salvați documentul ca Markdown — intră curat în paginile Canvas, Schoology sau D2L, Google Docs (prin lipire), wiki-uri și note în stil GitHub fără a pierde titluri sau linkuri.",
+    "pdf_audit_alt_formats_daisy_btn": "Salvează un pachet de carte audio cu text integral DAISY 3. Cititoarele DAISY (frecvente în educația specială) adaugă propria voce, braille sau text mărit, cu navigare completă. Aici doar text — pentru citire cu voce tare sincronizată, folosește cartea electronică citire-simultană.",
+    "pdf_audit_alt_formats_readalong_btn": "Creează o carte electronică citire-simultană (EPUB3 Media Overlays): fiecare paragraf este narat prin sinteză vocală și sincronizat cu textul, astfel încât cuvintele se evidențiază pe măsură ce sunt rostite. Câte un apel de voce pentru fiecare secțiune, deci poate dura câteva minute.",
+    "pdf_audit_alt_formats_odt_btn": "Salvează un fișier OpenDocument Text (.odt) — nativ pentru LibreOffice și Google Docs (îl deschide și Word). Folosește-l când școala ta nu este complet pe Microsoft, dar vrei totuși un document editabil cu structura intactă."
   },
   "groups": {
     "title": "Differentiation Grups",
@@ -9769,7 +9857,7 @@
       "feasibility_desc": "5-întrebare contextual fit evaluare cu AI recommendations",
       "gas_title": "Rubrică GAS",
       "gas_desc": "obiectiv Attainment Scaling cu AI-generat descriptors",
-      "pocket_title": "Pocket BIP",
+      "pocket_title": "BIP de buzunar",
       "pocket_desc": "Compact index-card BIP summary pentru clipboard carry",
       "abagraph_desc": "Publication-standard grafic cu phase linie, trend linie, și vizual analysis",
       "abagraph_title": "ABA grafic Engine",
@@ -10043,7 +10131,7 @@
       "generate": "AI Generează GAS Descriptors"
     },
     "pocket": {
-      "title": "Pocket BIP",
+      "title": "BIP de buzunar",
       "generate": "AI Generează Pocket BIP"
     },
     "no_entries_match": "Nu entries match tău filters",
@@ -11269,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories la life cu personaj voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Scrie poems cu form scaffolds, rhyme & meter analysis, AI feedback"
+    "poettree_desc": "Scrie poems cu form scaffolds, rhyme & meter analysis, AI feedback",
+    "throughline_desc": "Organizează-ți lecțiile într-o unitate spațială: secvența de predare, cerințele preliminare, un singur fișier exportabil"
   },
   "sel_hub": {
     "loading": "Se încarcă SEL Hub...",
@@ -12589,5 +12678,10 @@
     "byline": "De {author} · {words} cuvinte · {used}/{total} vocabular",
     "student": "Elev",
     "score": "Scor: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Regenerarea previzualizării va înlocui modificările tale manuale cu conținut generat din nou. Continui și renunți la modificări? (Anulează le păstrează — exportă sau închide editorul pentru a le salva mai întâi.)",
+    "remediation_banner_title": "Editezi documentul remediat.",
+    "remediation_banner_body": "Modificările pe care le faci aici sunt salvate înapoi în el când închizi editorul, astfel încât descărcările PDF etichetat / Word / PowerPoint să le includă."
   }
 }

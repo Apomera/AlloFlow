@@ -577,7 +577,8 @@
     "educator_tools_aria": "Ferramentas para Educadores",
     "documents_menu_aria": "Menu de documentos",
     "open_doc_builder_pdf_aria": "Abrir o Document Builder para PDF",
-    "export_slides_tooltip": "Abre o Document Builder no modo Slides"
+    "export_slides_tooltip": "Abre o Document Builder no modo Slides",
+    "learning_tools_tooltip": "Ferramentas de Aprendizagem (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "sidebar": {
     "create_tab": "Criar",
@@ -999,7 +1000,7 @@
     "toggle_theme": "Alternar tema",
     "close_story_forge": "Fechar StoryForge",
     "story_creation_phases": "Fases de criação da história",
-    "doc_builder": "Document Builder",
+    "doc_builder": "Construtor de Documentos",
     "close_doc_builder": "Fechar construtor de documentos",
     "font_size": "Tamanho da letra",
     "target_word_count": "Objectivo de número de palavras",
@@ -1052,7 +1053,7 @@
     "pictionary_host_dashboard": "Painel do anfitrião de Concept Pictionary",
     "concept_to_draw": "Conceito a desenhar",
     "round_timer": "Temporizador da ronda",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "Pictionary de Conceitos",
     "your_guess": "O seu palpite",
     "remove_columns": "Remover colunas",
     "add_column": "Adicionar coluna",
@@ -1282,7 +1283,7 @@
     "storage_full_text_only": "Armazenamento cheio. Salvando apenas o texto (imagens removidas).",
     "storage_full_critical": "Crítico: não foi possível guardar o histórico. Armazenamento cheio.",
     "resource_not_found": "Recurso não encontrado.",
-    "resource_not_found_history": "Recurso não encontrado no histórico.",
+    "resource_not_found_history": "Recurso não encontrado no histórico (pode ter sido eliminado).",
     "analysis_failed": "Falha na análise. Tente novamente.",
     "enter_target_language": "Informe um idioma-alvo.",
     "translation_started": "Tradução iniciada...",
@@ -1918,7 +1919,7 @@
     "ai_feedback_unavailable": "Comentários da AI indisponíveis",
     "write_essay_first": "Escreva primeiro a sua redacção!",
     "enter_word_art_first": "Por favor, introduza primeiro o texto da arte gráfica",
-    "preview_not_ready": "A pré-visualização ainda não está pronta",
+    "preview_not_ready": "A pré-visualização ainda não está pronta — aguarde que seja apresentada e tente novamente.",
     "word_art_render_failed": "Não foi possível renderizar a arte gráfica",
     "diff_engine_load_failed": "Falha ao carregar o motor de comparação (rede bloqueada?). Verifique a sua ligação e tente novamente.",
     "brf_downloaded": "Braille Electrónico (BRF) transferido",
@@ -2030,7 +2031,26 @@
     "project_saved_multi_other": "💾 Projeto guardado ({count} intervalos); carrega-o mais tarde para continuar",
     "project_saved": "💾 Projeto guardado; carrega-o mais tarde para continuar a editar",
     "search_result_desc": "Resultado da Pesquisa do Google: {title}",
-    "link_url_prompt": "Introduz o URL da ligação:"
+    "link_url_prompt": "Introduz o URL da ligação:",
+    "building_accessible_docx": "A criar ficheiro Word acessível…",
+    "building_accessible_pptx": "A criar PowerPoint acessível…",
+    "batch_tagging": "📄 A gerar PDFs etiquetados para o ZIP — os ficheiros digitalizados demoram mais (o OCR corre por ficheiro)…",
+    "builder_edits_preserved": "✋ As suas edições manuais foram mantidas — a pré-visualização não foi regenerada. Exporte ou feche o construtor para as guardar e só depois altere as definições.",
+    "builder_edits_synced": "✏️ Edições do construtor guardadas no documento corrigido — as exportações de PDF etiquetado / Word / PowerPoint incluem-nas agora.",
+    "pptx_ai_theme": "🎨 A pedir à AI uma paleta adequada ao tema (legibilidade garantida localmente)…",
+    "make_accessible_fixing": "✨ Auditoria concluída — a corrigir automaticamente (sem cliques necessários)…",
+    "tagged_pdf_saved_see_report": "📄 PDF etiquetado guardado — o relatório completo está fixado acima dos botões de transferência (✕ para dispensar).",
+    "no_open_image_slot": "Não há mais espaços de imagem livres na pré-visualização — em alternativa, arraste a miniatura para uma imagem específica para a substituir.",
+    "extracted_image_inserted": "🖼 Inserida no primeiro espaço de imagem livre — arraste antes uma miniatura se quiser um sítio diferente.",
+    "html_downloaded": "🌐 HTML transferido — abre em qualquer navegador.",
+    "odt_downloaded": "📄 OpenDocument (.odt) transferido — abre no LibreOffice, Google Docs ou Word.",
+    "daisy_downloaded": "🔊 Pacote de livro falado DAISY (.zip) transferido — abra num leitor DAISY.",
+    "mo_no_voice": "O serviço de voz está indisponível, por isso não é possível gerar o áudio de leitura acompanhada neste momento.",
+    "mo_busy": "Já está a decorrer uma exportação de leitura acompanhada.",
+    "mo_no_text": "Não foi encontrado texto legível para narrar.",
+    "mo_no_audio": "⚠ Livro digital com leitura acompanhada guardado, mas não foi possível gerar áudio (serviço de voz indisponível). O texto e a estrutura de sincronização estão intactos.",
+    "mo_done": "Livro digital com leitura acompanhada transferido",
+    "audio_unavailable_now": "O áudio está indisponível neste momento (pode estar uma tarefa em execução, ou o serviço de voz está desligado)."
   },
   "settings": {
     "immersive_options": "Opções Imersivas",
@@ -3166,8 +3186,8 @@
       "line": "Arte de Linhas",
       "render_3d": "Renderização 3D",
       "custom": "✏️ Custom…",
-      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
-      "custom_aria": "Custom art style description"
+      "custom_placeholder": "p. ex. Ilustração botânica vintage, Desenho a lápis de cor, Vitral…",
+      "custom_aria": "Descrição de estilo artístico personalizado"
     },
     "generate": "Gerar Visual",
     "regenerate_prompt": "Regenerar a partir do Prompt",
@@ -3448,7 +3468,7 @@
       "math_desc": "Gere problemas-modelo relevantes e conexões com conceitos matemáticos.",
       "persona_title": "Persona de IA",
       "persona_desc": "Simule uma conversa com um personagem ou figura do texto.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "Estúdio de Sons das Palavras",
       "wordsounds_desc": "Crie aulas direcionadas de fonética e consciência fonêmica usando termos do glossário ou famílias de palavras.",
       "glossary_settings_title": "Configurações do Glossário",
       "glossary_settings_desc": "Personalize como os termos são selecionados e traduzidos. Você pode filtrar por vocabulário em níveis ou forçar idiomas específicos.",
@@ -3552,7 +3572,12 @@
     "style_tooltip": "Opcional. Aplicado a toda imagem do quiz (pergunta + opções). Vazio = estilo padrão. Guardado com o quiz para que as ações de refinamento mantenham a identidade.",
     "generate_pre_check": "Gerar Verificação Prévia",
     "generate_formative": "Gerar Verificação Formativa",
-    "generate_review": "Gerar Revisão Espaçada"
+    "generate_review": "Gerar Revisão Espaçada",
+    "likert_strongly_disagree": "Discordo totalmente",
+    "no_right_answer": "Aqui não há respostas certas nem erradas.",
+    "poll_completed": "Obrigado por partilhar a sua opinião.",
+    "poll_intro": "Aqui não há respostas certas nem erradas — a tua opinião sincera ajuda o teu professor e ajuda-te a ti.",
+    "mode_poll": "🗣️ Sondagem (voz do aluno)"
   },
   "alignment": {
     "title": "Auditoria Curricular",
@@ -3662,7 +3687,7 @@
     },
     "detail": {
       "adventure_badge": "Aventura Nv {level}",
-      "quiz_badge": "{count} Quizzes",
+      "quiz_badge": "{count} Questionários",
       "assessment_data": "Dados de Avaliação e Pesquisa",
       "probe_results": "Resultados da Sondagem",
       "intervention_logs": "Registros de Intervenção",
@@ -5361,7 +5386,7 @@
     "new_group_color": "Nova cor de grupo"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "Estúdio de Sons das Palavras",
     "subtitle": "Atividades de Consciência Fonêmica",
     "listen_word": "Ouvir Palavra",
     "activity_counting": "Contagem de Sons",
@@ -7534,7 +7559,10 @@
     "pdf_audit_alt_formats_epub_btn": "Salva o documento remediado como um arquivo ePub com sumário e metadados de acessibilidade. Funciona em Kindle, Apple Books e na maioria dos leitores móveis — alunos podem mudar tamanho de fonte, cor e velocidade de leitura.",
     "pdf_audit_alt_formats_braille_btn": "Guarda um ficheiro Braille de Grau 1 (sem contrações) que pode ser gravado em relevo numa impressora Braille ou enviado para uma linha Braille atualizável. Para contrações de Grau 2, entregue o ficheiro a um TVI (professor de alunos com deficiência visual) para finalização.",
     "pdf_audit_alt_formats_text_btn": "Salva um arquivo .txt simples com toda formatação removida — o formato mais fácil para leitores de tela, conversão para letra grande, ou colar em outra ferramenta.",
-    "pdf_audit_alt_formats_markdown_btn": "Salva o documento como Markdown — entra limpinho em páginas do Canvas, Schoology ou D2L, Google Docs (colando), wikis e notas estilo GitHub sem perder cabeçalhos ou links."
+    "pdf_audit_alt_formats_markdown_btn": "Salva o documento como Markdown — entra limpinho em páginas do Canvas, Schoology ou D2L, Google Docs (colando), wikis e notas estilo GitHub sem perder cabeçalhos ou links.",
+    "pdf_audit_alt_formats_daisy_btn": "Guarde um pacote de livro falado de texto integral DAISY 3. Os leitores DAISY (comuns na educação especial) acrescentam a sua própria voz, braille ou letra grande com navegação completa. Aqui apenas texto — para leitura em voz alta sincronizada, utilize o ebook de Leitura acompanhada.",
+    "pdf_audit_alt_formats_readalong_btn": "Crie um ebook de leitura acompanhada (EPUB3 Media Overlays): cada parágrafo é narrado com conversão de texto em voz e sincronizado com o texto, de modo que as palavras se realçam à medida que são lidas. Uma chamada de voz por secção, pelo que pode demorar alguns minutos.",
+    "pdf_audit_alt_formats_odt_btn": "Guarde um ficheiro OpenDocument Text (.odt) — nativo do LibreOffice e do Google Docs (o Word também o abre). Utilize-o quando a sua escola não for inteiramente Microsoft, mas ainda assim quiser um documento editável com a estrutura intacta."
   },
   "grades": {
     "k": "Educação Infantil",
@@ -7822,7 +7850,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Dê vida às histórias com vozes de personagens e análise literária",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Escreva poemas com estruturas de forma, análise de rima e métrica, feedback por IA"
+    "poettree_desc": "Escreva poemas com estruturas de forma, análise de rima e métrica, feedback por IA",
+    "throughline_desc": "Organize as suas aulas numa unidade espacial: sequência de ensino, pré-requisitos, um ficheiro exportável"
   },
   "sel_hub": {
     "loading": "Carregando SEL Hub...",
@@ -8395,6 +8424,7 @@
     "generate_aria": "Gerar DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidelidade: {before}% → {after}%{detail}",
     "view_last_audit": "Ver Última Auditoria",
     "start_new_audit": "Iniciar Nova Auditoria",
     "apply_and_export": "Aplicar e Exportar",
@@ -8540,7 +8570,8 @@
       "std_dev": "Desvio Padrão",
       "icc_title": "Índice customizado 1−(DP/50); não é o ICC do livro-texto",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Heurística híbrida de CV + comparação par a par entre passagens da AI; não é o α de Cronbach clássico"
     },
     "score": {
       "total_checks": "Total de verificações realizadas",
@@ -8702,7 +8733,9 @@
       "title": "Regere um PDF a partir do HTML remediado. O layout se reorganiza, quebras de página, fontes e paginação podem diferir do original. Funciona bem para documentos simples de texto corrido."
     },
     "tagged_pdf": {
-      "title": "Preserve o layout visual original do PDF byte por byte e injete tags de acessibilidade na árvore de estrutura. Melhor para livros didáticos, documentos com várias colunas e PDFs com identidade visual onde a fidelidade visual importa."
+      "title": "Preserve o layout visual original do PDF byte por byte e injete tags de acessibilidade na árvore de estrutura. Melhor para livros didáticos, documentos com várias colunas e PDFs com identidade visual onde a fidelidade visual importa.",
+      "office_note": "O PDF etiquetado aplica-se a entradas em PDF — use Word/HTML",
+      "office_note_title": "As etiquetas de estrutura só podem ser injetadas em bytes de PDF. Para entradas em Word/PowerPoint, as transferências de Word acessível e de HTML contêm a estrutura corrigida."
     },
     "alt_formats": {
       "intro": "Descarregue o documento remediado em formatos alternativos acessíveis"
@@ -8773,7 +8806,9 @@
       "heading": "Carimbo de Versão"
     },
     "extracted_images": {
-      "drag_hint": "Arraste uma miniatura para qualquer espaço de imagem na prévia para inseri-la, ou clique em \"📷 Enviar\" dentro de um espaço e escolha \"Usar imagem extraída\"."
+      "drag_hint": "Arraste uma miniatura para qualquer espaço de imagem na prévia para inseri-la, ou clique em \"📷 Enviar\" dentro de um espaço e escolha \"Usar imagem extraída\".",
+      "drag_hint2": "Clique numa miniatura para a inserir no primeiro espaço de imagem disponível, ou arraste-a para qualquer marcador de posição ou imagem específica na pré-visualização. ×N = a mesma imagem apareceu em N páginas (geralmente um timbre ou logótipo).",
+      "insert_aria": "Inserir imagem extraída no primeiro espaço disponível"
     },
     "toolbar": {
       "aria": "Formatação de texto",
@@ -8799,7 +8834,8 @@
     },
     "divergence": {
       "semantic": "Estruturalmente conforme mas semanticamente fraco — a IA sinalizou qualidade do conteúdo (texto alt, significado de cabeçalhos, ordem de leitura) que o axe-core não consegue detetar",
-      "structural": "Violações WCAG ao nível do código detetadas — axe-core encontrou falhas verificáveis por máquina que a grelha de IA ponderou levemente"
+      "structural": "Violações WCAG ao nível do código detetadas — axe-core encontrou falhas verificáveis por máquina que a grelha de IA ponderou levemente",
+      "critical_override": "O axe-core encontrou {n} violação(ões) crítica(s) das WCAG — reveja-as antes de confiar na pontuação combinada; uma média pode esconder uma falha grave"
     },
     "tagtree": {
       "label": "Estrutura de tags pré-existente",
@@ -8832,7 +8868,60 @@
     "violation_one": "{count} violação",
     "violation_other": "{count} violações",
     "ai_issue_one": "{count} problema sinalizado pela IA",
-    "ai_issue_other": "{count} problemas sinalizados pela IA"
+    "ai_issue_other": "{count} problemas sinalizados pela IA",
+    "tagged": {
+      "born_digital_note": "Atenção: para PDFs com camada de texto, as etiquetas semânticas usam associações ActualText em vez de ligação total ao conteúdo. O ficheiro fica substancialmente mais acessível, mas verifique no PAC 2024 ou no Acrobat antes de declarar conformidade com PDF/UA."
+    },
+    "one_click": {
+      "label": "Tornar Acessível",
+      "badge": "totalmente automático — auditar, corrigir, verificar, repetir até ao objetivo",
+      "desc": "Um clique corre todo o processo sem intervenção, com as definições predefinidas; as transferências ficam prontas no fim. Prefere ter controlo? Use \"Executar Auditoria\" abaixo, reveja os resultados e clique você mesmo em Corrigir e Verificar."
+    },
+    "run_audit_label": "Executar Auditoria (passo 1 de 2)",
+    "manual_path_explainer": "\"Executar Auditoria\" pontua o documento e mostra o que precisa de ser corrigido — depois você revê e clica em Corrigir e Verificar (passo 2). \"Tornar Acessível\" acima faz ambos os passos, mais uma nova verificação, automaticamente. \"Extração de Texto\" apenas obtém o texto em bruto para a geração de conteúdo.",
+    "tagged_report": {
+      "heading": "Relatório de PDF etiquetado",
+      "close_aria": "Dispensar relatório de PDF etiquetado",
+      "note": "Este painel permanece até o dispensar. Os mesmos detalhes são incluídos na transferência do Relatório de Acessibilidade ao estilo Adobe."
+    },
+    "docx_export": {
+      "title": "Converta o conteúdo corrigido num documento Word com estilos de título reais, texto alternativo nas imagens, linhas de cabeçalho nas tabelas, estrutura de listas e hiperligações funcionais. Verifique com o Verificador de Acessibilidade integrado do Word (Rever → Verificar Acessibilidade) antes de distribuir."
+    },
+    "pptx_export": {
+      "title": "Reconstrua o conteúdo corrigido como uma apresentação PowerPoint com títulos de diapositivo reais, texto alternativo nas imagens, linhas de tabela com estilo de cabeçalho, listas com marcas reais e ordem de leitura = ordem visual. Um esquema acessível reconstruído — não uma cópia visual do original. Verifique com o Verificador de Acessibilidade do PowerPoint antes de distribuir."
+    },
+    "dashboard": {
+      "aria": "Vista geral dos resultados da correção e navegação por secções",
+      "score_title": "Pontuação de acessibilidade: antes → depois"
+    },
+    "tag_to_workbench_title": "Enviar este bloco para a Bancada de Especialista: pré-preenche um comando específico (incluindo eventuais avisos) para que o possa corrigir com uma só instrução",
+    "tag_to_workbench_aria": "Enviar para a Bancada de Especialista",
+    "pptx_theme_aria": "Tema da exportação PowerPoint",
+    "pptx_theme_title": "Tema dos diapositivos para a exportação PowerPoint. Todas as predefinições têm o contraste verificado (WCAG AA); a opção de AI adapta-se ao seu tema, com a legibilidade garantida localmente em qualquer dos casos.",
+    "export_menu": {
+      "button": "Exportar / Transferir",
+      "intro": "Transfira o documento corrigido em qualquer formato — escolha o que se adequa à forma como vai ser usado.",
+      "tagged_pdf": "PDF etiquetado (PDF/UA — para dar aos alunos)",
+      "word": "Word (.docx — para continuar a editar)",
+      "pptx": "PowerPoint (.pptx — para apresentar)",
+      "html": "HTML (abre em qualquer lado, sem software)",
+      "group_access": "Formatos acessíveis",
+      "daisy": "Livro falado DAISY (texto completo)",
+      "daisy_title": "Pacote de livro falado de texto integral DAISY 3 (DTBook). Abra num leitor DAISY, que disponibiliza voz, braille ou letra grande. (Para áudio de leitura em voz alta sincronizado, utilize a Leitura acompanhada abaixo.)",
+      "readalong": "Ebook de leitura acompanhada (áudio sincronizado)",
+      "readalong_progress": "A narrar… {done}/{total}",
+      "readalong_title": "Ebook de leitura acompanhada (EPUB3 Media Overlays): gera conversão de texto em voz para cada parágrafo e sincroniza-a com o texto, de modo que o sistema de leitura realça as palavras à medida que são lidas. Faz muitas chamadas de voz — pode demorar alguns minutos.",
+      "group_text": "Texto e editável",
+      "odt_title": "OpenDocument Text — abre nativamente no LibreOffice e no Google Docs (e no Word).",
+      "group_audio": "Narração áudio",
+      "audio": "Narração áudio (padrão)",
+      "audio_title": "Narração falada do documento (MP3/WAV).",
+      "audio_sr": "Áudio (estilo leitor de ecrã)",
+      "audio_sr_title": "A mesma voz, mas a anunciar a estrutura tal como um leitor de ecrã o faria (níveis de cabeçalho, contagens de listas, linhas de tabela, textos alternativos de imagens)."
+    },
+    "mo": {
+      "confirm": "Criar um ebook de leitura acompanhada? Isto narra {n} secções de texto com conversão de texto em voz — cerca de {n} chamadas de voz, o que pode demorar alguns minutos."
+    }
   },
   "stem": {
     "common": {
@@ -10691,7 +10780,7 @@
       "cancel": "Cancelar",
       "caseload_dashboard": "Painel da Carga de Casos",
       "chaining_method": "Método de Encadeamento",
-      "checkins": "Check-Ins",
+      "checkins": "Verificações",
       "choose_the_right_differential_reinforcement_strate": "Escolha a estratégia certa de reforço diferencial",
       "click_ai_generate_checklist_to_create_items_based": "Clique em \"IA Gerar Checklist\" para criar itens baseados no BIP",
       "click_load_student_workspaces_and_select_multiple": "Clique em \"Carregar Espaços de Trabalho de Alunos\" e selecione múltiplos ficheiros .json salvos do BehaviorLens",
@@ -11699,51 +11788,51 @@
     "submit_reflection": "Enviar reflexão"
   },
   "audit": {
-    "section_divider": "Section divider",
+    "section_divider": "Separador de secção",
     "remove_divider": "Remove divider",
-    "remove_page_break": "Remove page break",
+    "remove_page_break": "Remover quebra de página",
     "callout": "Callout",
     "remove_callout": "Remove callout",
     "remove_quote": "Remove quote",
-    "remove_checklist": "Remove checklist",
+    "remove_checklist": "Remover lista de verificação",
     "checklist": "Checklist",
     "remove_steps": "Remove steps",
-    "step_by_step": "Step-by-step instructions",
-    "remove_accordion": "Remove accordion",
-    "qa_pair": "Question and answer pair",
+    "step_by_step": "Instruções passo a passo",
+    "remove_accordion": "Remover acordeão",
+    "qa_pair": "Par de pergunta e resposta",
     "remove_qa": "Remove Q and A",
-    "remove_definition": "Remove definition",
-    "pronunciation_audio": "Pronunciation audio",
+    "remove_definition": "Remover definição",
+    "pronunciation_audio": "Áudio de pronúncia",
     "term_language": "Term language",
-    "gen_pronunciation_term": "Generate pronunciation audio from the term using AI text-to-speech",
+    "gen_pronunciation_term": "Gerar áudio de pronúncia a partir do termo com conversão de texto em voz por AI",
     "sentence_frame": "Sentence frame",
-    "remove_sentence_frame": "Remove sentence frame",
-    "sentence_frame_template": "Sentence frame template",
-    "learning_objective": "Learning objective",
-    "remove_learning_objective": "Remove learning objective",
-    "remove_vocab_card": "Remove vocabulary card",
-    "gen_pronunciation_word": "Generate pronunciation audio from the word using AI text-to-speech",
-    "remove_reflection": "Remove reflection",
-    "reflection_response_aria": "Reflection response",
+    "remove_sentence_frame": "Remover estrutura de frase",
+    "sentence_frame_template": "Modelo de estrutura de frase",
+    "learning_objective": "Objetivo de aprendizagem",
+    "remove_learning_objective": "Remover objetivo de aprendizagem",
+    "remove_vocab_card": "Remover cartão de vocabulário",
+    "gen_pronunciation_word": "Gerar áudio de pronúncia a partir da palavra com conversão de texto em voz por AI",
+    "remove_reflection": "Remover reflexão",
+    "reflection_response_aria": "Resposta de reflexão",
     "remove_rubric": "Remove rubric",
     "scoring_rubric": "Scoring rubric",
-    "lesson_plan_template": "Lesson plan template",
-    "remove_lesson_plan": "Remove lesson plan",
+    "lesson_plan_template": "Modelo de plano de aula",
+    "remove_lesson_plan": "Remover plano de aula",
     "remove_table": "Remove table",
     "data_table": "Data table",
-    "image_description": "Image with description",
+    "image_description": "Imagem com descrição",
     "remove_image": "Remove image",
     "image_url": "Image URL",
     "remove_audio": "Remove audio",
-    "audio_recording": "Audio recording",
+    "audio_recording": "Gravação de áudio",
     "audio_url": "Audio URL",
-    "gen_audio_transcript": "Generate audio from transcript using AI text-to-speech",
+    "gen_audio_transcript": "Gerar áudio a partir da transcrição com conversão de texto em voz por AI",
     "remove_video": "Remove video",
     "video_url": "Video URL",
-    "video_title_screen": "Video title for screen readers",
-    "math_equation": "Mathematical equation",
-    "remove_equation": "Remove equation",
-    "insert_formula": "Insert formula from library"
+    "video_title_screen": "Título do vídeo para leitores de ecrã",
+    "math_equation": "Equação matemática",
+    "remove_equation": "Remover equação",
+    "insert_formula": "Inserir fórmula da biblioteca"
   },
   "alts": {
     "scene_visualization": "Visualização da cena",
@@ -11920,17 +12009,17 @@
   },
   "headings": {
     "story_forge": "StoryForge",
-    "narrate_story": "Narrate Your Story",
-    "review_feedback": "Review & Feedback",
-    "character_name_check": "Character Name Check",
-    "writing_analytics": "Writing Analytics",
+    "narrate_story": "Narre a Sua História",
+    "review_feedback": "Revisão e Comentários",
+    "character_name_check": "Verificação dos Nomes das Personagens",
+    "writing_analytics": "Estatísticas de Escrita",
     "word_frequency": "Word Frequency",
-    "score_breakdown": "Score Breakdown",
-    "vocab_usage": "Vocabulary Usage",
-    "storybook_ready": "Your Storybook is Ready!",
-    "per_dimension_findings": "Per-Dimension Findings",
-    "your_self_assessment": "Your Self-Assessment",
-    "cloud_voice_unavailable": "Cloud Voice Unavailable",
+    "score_breakdown": "Detalhe da Pontuação",
+    "vocab_usage": "Utilização de Vocabulário",
+    "storybook_ready": "O Seu Livro de Histórias Está Pronto!",
+    "per_dimension_findings": "Resultados por Dimensão",
+    "your_self_assessment": "A Sua Autoavaliação",
+    "cloud_voice_unavailable": "Voz na Nuvem Indisponível",
     "allohaven": "AlloHaven",
     "tts": "Text-to-Speech"
   },
@@ -12262,5 +12351,10 @@
     "byline": "Por {author} · {words} palavras · {used}/{total} vocabulário",
     "student": "Aluno",
     "score": "Pontuação: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Regenerar a pré-visualização vai substituir as suas edições manuais por conteúdo gerado de novo. Continuar e descartar as edições? (Cancelar mantém-nas — exporte ou feche o construtor para as guardar primeiro.)",
+    "remediation_banner_title": "A editar o documento corrigido.",
+    "remediation_banner_body": "As suas edições aqui são guardadas de volta no documento quando fecha o construtor, por isso as transferências de PDF etiquetado / Word / PowerPoint incluem-nas."
   }
 }

@@ -48,8 +48,8 @@ exports[`Throughline render goldens > populated unit (seeded localStorage + matc
 {
   "buttons": 13,
   "inputs": 1,
-  "lengthBucket": 34,
-  "sha": "1a86b1a73db93c21",
+  "lengthBucket": 35,
+  "sha": "930842ceada6b487",
   "svgs": 1,
   "textareas": 0,
 }
@@ -59,8 +59,8 @@ exports[`Throughline render goldens > populated unit tolerates a dangling lesson
 {
   "buttons": 15,
   "inputs": 1,
-  "lengthBucket": 41,
-  "sha": "e87a532d4c0c8960",
+  "lengthBucket": 42,
+  "sha": "cc06612b6f5805c2",
   "svgs": 1,
   "textareas": 0,
 }

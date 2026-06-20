@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving ederede only (foto removed).",
     "storage_full_critical": "Critical: Could anaghị chekwaa history. Storage full.",
     "resource_not_found": "ihe enyemaka anaghị found.",
-    "resource_not_found_history": "ihe enyemaka anaghị found na history.",
+    "resource_not_found_history": "Ahụghị ihe enyemaka ahụ na ihe ndekọ gara aga (o nwere ike ka ehichapụrụ ya).",
     "analysis_failed": "Analysis failed. biko gbalịa again.",
     "enter_target_language": "biko tinye otu target asụsụ.",
     "translation_started": "ntụgharị asụsụ started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI nzaghachi adịghị",
     "write_essay_first": "Dee gị essay mbụ!",
     "enter_word_art_first": "biko tinye okwu art ederede mbụ",
-    "preview_not_ready": "Pnyocha anaghị ready yet",
+    "preview_not_ready": "Nlele anya adịghị njikere ka ugbu a — chere ka ọ pụta, mgbe ahụ nwaa ọzọ.",
     "word_art_render_failed": "Could anaghị render okwu art",
     "diff_engine_load_failed": "Diff engine failed na bulite (network blocked?). Check gị connection na gbalịa again.",
     "brf_downloaded": "Ebudatala Braille Eletrọnịkị (BRF)",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Adjust size nke timeline foto"
   },
   "pdf_audit": {
+    "fidelity_delta": "Izi ezi: {before}% → {after}%{detail}",
     "view_last_audit": "Lee ikpeazụ Audit",
     "start_new_audit": "Bido ọhụrụ Audit",
     "apply_and_export": "Tinye n'ọrụ & Bupụ",

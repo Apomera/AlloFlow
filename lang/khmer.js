@@ -979,7 +979,7 @@
     "storage_full_text_only": "កន្លែងផ្ទុកពេញ។ កំពុងរក្សាទុកតែអត្ថបទ (បានដកចេញរូបភាព)។",
     "storage_full_critical": "សំខាន់៖ មិនអាចរក្សាទុកប្រវត្តិបានទេ។ កន្លែងផ្ទុកពេញ។",
     "resource_not_found": "រកមិនឃើញធនធាន។",
-    "resource_not_found_history": "រកមិនឃើញធនធាននៅក្នុងប្រវត្តិ។",
+    "resource_not_found_history": "រកមិនឃើញធនធាននៅក្នុងប្រវត្តិ (វាប្រហែលជាត្រូវបានលុបចោល)។",
     "analysis_failed": "ការវិភាគបរាជ័យ។ សូមព្យាយាមម្ដងទៀត។",
     "enter_target_language": "សូម បញ្ចូល គោលដៅ ភាសា.",
     "translation_started": "ការបកប្រែបានចាប់ផ្ដើម...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI មតិកែលម្អ មិនអាចប្រើបាន",
     "write_essay_first": "សូមសរសេរអត្ថបទរបស់អ្នកជាមុនសិន!",
     "enter_word_art_first": "សូមបញ្ចូលអត្ថបទសិល្បៈពាក្យជាមុនសិន",
-    "preview_not_ready": "ការមើលជាមុនមិនទាន់រួចរាល់",
+    "preview_not_ready": "ការមើលជាមុនមិនទាន់រួចរាល់ — សូមរង់ចាំឱ្យវាបង្ហាញ រួចព្យាយាមម្តងទៀត។",
     "word_art_render_failed": "មិនអាចបង្ហាញសិល្បៈពាក្យបានទេ",
     "diff_engine_load_failed": "ម៉ាស៊ីនភាពខុសគ្នាបរាជ័យក្នុងការផ្ទុក (បណ្ដាញត្រូវបានបិទ?)។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក ហើយព្យាយាមម្ដងទៀត។",
     "brf_downloaded": "បានទាញយកអក្សរ Braille អេឡិចត្រូនិច (BRF)",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "កែសម្រួល size នៃ timeline រូបភាព"
   },
   "pdf_audit": {
+    "fidelity_delta": "ភាពត្រឹមត្រូវ៖ {before}% → {after}%{detail}",
     "view_last_audit": "មើល ចុងក្រោយ Audit",
     "start_new_audit": "ចាប់ផ្តើម ថ្មី Audit",
     "apply_and_export": "អនុវត្ត & នាំចេញ",

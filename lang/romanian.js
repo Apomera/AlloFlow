@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving text only (imagine removed).",
     "storage_full_critical": "Critical: Could nu salvează history. Storage full.",
     "resource_not_found": "resurse nu found.",
-    "resource_not_found_history": "resurse nu found în history.",
+    "resource_not_found_history": "Resursa nu a fost găsită în istoric (este posibil să fi fost ștearsă).",
     "analysis_failed": "Analysis failed. vă rog încearcă again.",
     "enter_target_language": "vă rog introdu un target limbă.",
     "translation_started": "traducere started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback indisponibil",
     "write_essay_first": "Scrie tău essay primul!",
     "enter_word_art_first": "vă rog introdu cuvânt art text primul",
-    "preview_not_ready": "Precenzie nu ready yet",
+    "preview_not_ready": "Previzualizarea nu este încă gata — așteaptă să se genereze, apoi încearcă din nou.",
     "word_art_render_failed": "Could nu render cuvânt art",
     "diff_engine_load_failed": "Diff engine failed la încarcă (network blocked?). Check tău connection și încearcă again.",
     "brf_downloaded": "Braille electronic (BRF) descărcat",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Adjust size de timeline imagine"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidelitate: {before}% → {after}%{detail}",
     "view_last_audit": "Vizualizează ultimul Audit",
     "start_new_audit": "Începe nou Audit",
     "apply_and_export": "Aplică și exportă",

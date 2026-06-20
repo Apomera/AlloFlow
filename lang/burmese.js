@@ -979,7 +979,7 @@
     "storage_full_text_only": "သိမ်းဆည်းမှု ပြည့်နေပါသည်။ စာသားသာ သိမ်းပါမည် (ပုံများ ဖယ်ရှားပြီး)။",
     "storage_full_critical": "အရေးကြီး: မှတ်တမ်းကို မသိမ်းနိုင်ပါ။ သိမ်းဆည်းမှု ပြည့်နေပါသည်။",
     "resource_not_found": "အရင်းအမြစ်ကို မတွေ့ပါ။",
-    "resource_not_found_history": "မှတ်တမ်းတွင် အရင်းအမြစ်ကို မတွေ့ပါ။",
+    "resource_not_found_history": "မှတ်တမ်းတွင် အရင်းအမြစ်ကို မတွေ့ပါ (၎င်းကို ဖျက်လိုက်ခြင်း ဖြစ်နိုင်ပါသည်)။",
     "analysis_failed": "ခွဲခြမ်းစိတ်ဖြာခြင်း မအောင်မြင်ပါ။ ထပ်ကြိုးစားကြည့်ပါ။",
     "enter_target_language": "ကျေးဇူးပြု၍ ထည့်ပါ ပစ်မှတ် ဘာသာစကား.",
     "translation_started": "ဘာသာပြန်ခြင်း စတင်နေပါသည်...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI တုံ့ပြန်ချက် မရရှိနိုင်",
     "write_essay_first": "သင်၏ စာစီစာကုံးကို အရင်ရေးပါ။",
     "enter_word_art_first": "Word art စာသားကို အရင်ဖြည့်ပါ။",
-    "preview_not_ready": "အကြိုကြည့်ရှုခြင်း မပြင်ဆင်ရသေးပါ",
+    "preview_not_ready": "အကြိုကြည့်ရှုခြင်း မပြင်ဆင်ရသေးပါ — ၎င်း ပြသပြီးသည်အထိ စောင့်ပြီး ထပ်မံကြိုးစားပါ။",
     "word_art_render_failed": "Word art ပြသ၍ မရပါ။",
     "diff_engine_load_failed": "Diff engine တင်ခြင်း မအောင်မြင်ပါ (ကွန်ရက် ပိတ်ထား?)။ ချိတ်ဆက်မှုကို စစ်ဆေး၍ ထပ်ကြိုးစားပါ။",
     "brf_downloaded": "အီလက်ထရွန်နစ် ဘရေးလ် (BRF) ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "ညှိ size ၏ timeline ပုံ"
   },
   "pdf_audit": {
+    "fidelity_delta": "မူရင်းကိုက်ညီမှု: {before}% → {after}%{detail}",
     "view_last_audit": "ကြည့်ပါ နောက်ဆုံး Audit",
     "start_new_audit": "စတင်ပါ အသစ် Audit",
     "apply_and_export": "အသုံးပြုပါ & ထုတ်ယူပါ",

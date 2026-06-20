@@ -978,7 +978,7 @@
     "storage_full_text_only": "Pamięć jest pełna. Zapisuję tylko tekst (obrazy usunięte).",
     "storage_full_critical": "Krytyczne: Nie można zapisać historii. Pamięć jest pełna.",
     "resource_not_found": "Zasób nie znaleziony.",
-    "resource_not_found_history": "Zasób nie znaleziony w historii.",
+    "resource_not_found_history": "Zasób nie znaleziony w historii (mógł zostać usunięty).",
     "analysis_failed": "Analiza nie udał się. Spróbuj ponownie.",
     "enter_target_language": "Wprowadź język docelowy.",
     "translation_started": "Tłumaczenie naczat...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "Informacja zwrotna AI niedostępna",
     "write_essay_first": "Napisz najpierw swoje wypracowanie!",
     "enter_word_art_first": "Najpierw wprowadź tekst word art",
-    "preview_not_ready": "Podgląd jeszcze nie jest gotowy",
+    "preview_not_ready": "Podgląd jeszcze nie jest gotowy — poczekaj, aż się wyrenderuje, a następnie spróbuj ponownie.",
     "word_art_render_failed": "Nie można wyrenderować word art",
     "diff_engine_load_failed": "Silnik różnicowy nie załadował się (sieć zablokowana?). Sprawdź połączenie i spróbuj ponownie.",
     "brf_downloaded": "Elektroniczny Braille (BRF) pobrany",
@@ -4130,6 +4130,7 @@
     "image_size_tooltip": "Dostosuj rozmiar obrazów na osi czasu"
   },
   "pdf_audit": {
+    "fidelity_delta": "Dokładność: {before}% → {after}%{detail}",
     "view_last_audit": "Przeglądać ostatni audyt",
     "start_new_audit": "Rozpocznij nowy audyt",
     "apply_and_export": "Zastosuj i eksportuj",

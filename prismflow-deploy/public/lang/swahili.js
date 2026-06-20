@@ -96,7 +96,7 @@
     "exit": "Toka"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "Studio ya Sauti za Maneno",
     "subtitle": "Phonemic Awareness Shughuli",
     "listen_word": "Sikiliza kwa maneno",
     "activity_counting": "Kuhesabu Sauti",
@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage kamili. Saving maandishi tu (picha removed).",
     "storage_full_critical": "Critical: Could sio hifadhi historia. Storage kamili.",
     "resource_not_found": "rasilimali sio found.",
-    "resource_not_found_history": "rasilimali sio found katika historia.",
+    "resource_not_found_history": "Rasilimali haikupatikana katika historia (huenda imefutwa).",
     "analysis_failed": "Uchambuzi failed. tafadhali jaribu again.",
     "enter_target_language": "tafadhali ingiza lengo lugha.",
     "translation_started": "tafsiri started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI maoni haipatikani",
     "write_essay_first": "Andika your essay ya kwanza!",
     "enter_word_art_first": "tafadhali ingiza maneno art maandishi ya kwanza",
-    "preview_not_ready": "Hakiki bado haijawa tayari",
+    "preview_not_ready": "Hakiki bado haijawa tayari — subiri ipakuliwe, kisha ujaribu tena.",
     "word_art_render_failed": "Could not render maneno art",
     "diff_engine_load_failed": "Injini ya Diff imeshindwa kupakia (mtandao umezuiwa?). Angalia muunganisho wako na ujaribu tena.",
     "brf_downloaded": "Breli ya Kielektroniki (BRF) imepakuliwa",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Mradi umehifadhiwa (masafa {count}); upakie baadaye ili kuendelea",
     "project_saved": "💾 Mradi umehifadhiwa; upakie baadaye ili kuendelea kuhariri",
     "search_result_desc": "Matokeo ya Utafutaji wa Google: {title}",
-    "link_url_prompt": "Weka URL ya kiungo:"
+    "link_url_prompt": "Weka URL ya kiungo:",
+    "building_accessible_docx": "Inatengeneza faili ya Word inayofikika…",
+    "building_accessible_pptx": "Inatengeneza PowerPoint inayofikika…",
+    "batch_tagging": "📄 Inazalisha PDF zilizo na lebo kwa ajili ya ZIP — faili zilizoskaniwa huchukua muda zaidi (OCR huendeshwa kwa kila faili)…",
+    "builder_edits_preserved": "✋ Mabadiliko yako ya mkono yamehifadhiwa — onyesho la awali halikutengenezwa upya. Hamisha au funga kijenzi ili kuyahifadhi, kisha ubadilishe mipangilio.",
+    "builder_edits_synced": "✏️ Mabadiliko ya kijenzi yamehifadhiwa katika hati iliyorekebishwa — mauzo ya Tagged PDF / Word / PowerPoint sasa yanayajumuisha.",
+    "pptx_ai_theme": "🎨 Inaomba AI rangi zinazolingana na mada (usomekaji unatekelezwa ndani)…",
+    "make_accessible_fixing": "✨ Ukaguzi umekamilika — inarekebisha kiotomatiki (hakuna kubofya kunakohitajika)…",
+    "tagged_pdf_saved_see_report": "📄 Tagged PDF imehifadhiwa — ripoti kamili imebandikwa juu ya vitufe vya kupakua (✕ kuondoa).",
+    "no_open_image_slot": "Hakuna nafasi tupu ya picha iliyobaki katika onyesho la awali — buruta kijipicha juu ya picha mahususi ili kuibadilisha badala yake.",
+    "extracted_image_inserted": "🖼 Imeingizwa katika nafasi ya kwanza tupu ya picha — buruta kijipicha badala yake ikiwa unataka mahali tofauti.",
+    "html_downloaded": "🌐 HTML imepakuliwa — inafunguka katika kivinjari chochote.",
+    "odt_downloaded": "📄 OpenDocument (.odt) imepakuliwa — inafunguka katika LibreOffice, Google Docs, au Word.",
+    "daisy_downloaded": "🔊 Kifurushi cha kitabu-zungumzi cha DAISY (.zip) kimepakuliwa — fungua katika kisomaji cha DAISY.",
+    "mo_no_voice": "Huduma ya sauti haipatikani, kwa hivyo sauti ya kusoma-pamoja haiwezi kuzalishwa kwa sasa.",
+    "mo_busy": "Uhamishaji wa kusoma-pamoja tayari unaendelea.",
+    "mo_no_text": "Hakuna maandishi yanayosomeka yaliyopatikana ili kusimulia.",
+    "mo_no_audio": "⚠ Kitabu cha kielektroniki cha kusoma-pamoja kimehifadhiwa, lakini hakuna sauti iliyoweza kuzalishwa (huduma ya sauti haipatikani). Maandishi + muundo wa upatanishaji vipo salama.",
+    "mo_done": "Kitabu cha kielektroniki cha kusoma-pamoja kimepakuliwa",
+    "audio_unavailable_now": "Sauti haipatikani kwa sasa (huenda kazi inaendelea, au huduma ya sauti imezimwa)."
   },
   "large_file": {
     "modal_title": "Leta Large sauti faili",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator zana",
     "documents_menu_aria": "hati menyu",
     "open_doc_builder_pdf_aria": "Fungua hati Builder kwa PDF",
-    "export_slides_tooltip": "Opens hati Builder katika Slides hali"
+    "export_slides_tooltip": "Opens hati Builder katika Slides hali",
+    "learning_tools_tooltip": "Zana za Kujifunza (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Lengo lugha",
@@ -2148,7 +2168,7 @@
     "data_observations": "data and uchunguzi",
     "story_print": "Chapisha hii kitabu cha hadithi or hifadhi as PDF",
     "teacher_feedback": "mwalimu maoni",
-    "story_forge_studio": "StoryForge Creative Writing Studio",
+    "story_forge_studio": "Studio ya Uandishi Bunifu ya StoryForge",
     "toggle_theme": "Geuza mandhari",
     "close_story_forge": "Funga StoryForge",
     "story_creation_phases": "hadithi creation phases",
@@ -2205,7 +2225,7 @@
     "pictionary_host_dashboard": "Dashibodi ya mwenyeji ya Concept Pictionary",
     "concept_to_draw": "Concept to chora",
     "round_timer": "Saa ya raundi",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "Mchezo wa Picha za Dhana",
     "your_guess": "Kisio chako",
     "remove_columns": "Ondoa safuwima",
     "add_column": "Ongeza safuwima",
@@ -3599,7 +3619,7 @@
       "math_desc": "Tengeneza relevant maneno matatizo na connections kwa hesabu dhana.",
       "persona_title": "AI Persona",
       "persona_desc": "Simulate mazungumzo na mhusika au figure kutoka maandishi.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "Studio ya Sauti za Maneno",
       "wordsounds_desc": "Design targeted phonics na phoneme awareness somo kutumia kamusi istilahi au maneno families.",
       "glossary_settings_title": "kamusi mipangilio",
       "glossary_settings_desc": "Badilisha jinsi istilahi ni imechaguliwa na translated. wewe inaweza chuja by tiered msamiati au nguvu maalum lugha.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Si lazima. Hutumika kwa kila picha katika jaribio (swali + chaguzi). Tupu = mtindo chaguomsingi. Huhifadhiwa na jaribio ili vitendo vya kuboresha vibaki katika mtindo huo.",
     "generate_pre_check": "Tengeneza Pre-Angalia",
     "generate_formative": "Tengeneza Formative Angalia",
-    "generate_review": "Tengeneza Spaced Kagua"
+    "generate_review": "Tengeneza Spaced Kagua",
+    "likert_strongly_disagree": "Sikubaliani kabisa",
+    "no_right_answer": "Hapa hakuna majibu sahihi wala yasiyo sahihi.",
+    "poll_completed": "Asante kwa kushiriki maoni yako.",
+    "poll_intro": "Hapa hakuna majibu sahihi wala yasiyo sahihi — maoni yako ya kweli humsaidia mwalimu wako na hukusaidia wewe.",
+    "mode_poll": "🗣️ Kura ya maoni (sauti ya mwanafunzi)"
   },
   "outline": {
     "title": "kuona Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "Rekebisha size ya timeline picha"
   },
   "pdf_audit": {
+    "fidelity_delta": "Uaminifu: {before}% → {after}%{detail}",
     "view_last_audit": "Tazama ya mwisho Audit",
     "start_new_audit": "Anza mpya Audit",
     "apply_and_export": "Tumia na uhamishe",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "Inatii kimuundo lakini dhaifu kisemantiki — AI ilionyesha ubora wa maudhui ambao axe-core haiwezi kugundua",
-      "structural": "Ukiukaji wa WCAG katika kiwango cha msimbo umegunduliwa — axe-core ilipata makosa yanayoweza kuthibitishwa na mashine"
+      "structural": "Ukiukaji wa WCAG katika kiwango cha msimbo umegunduliwa — axe-core ilipata makosa yanayoweza kuthibitishwa na mashine",
+      "critical_override": "axe-core imepata ukiukaji {n} muhimu wa WCAG — yapitie kabla ya kuamini alama iliyochanganywa; wastani unaweza kuficha kushindwa kuzito"
     },
     "tagtree": {
       "label": "Muundo wa lebo uliopo",
@@ -4264,7 +4291,8 @@
       "std_dev": "kiwango Deviation",
       "icc_title": "Custom 1−(SD/50) index; sio textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Mbinu ya mseto ya CV + jozi katika hatua za AI; si Cronbach's α ya kawaida ya kitabu"
     },
     "score": {
       "total_checks": "Jumla ya ukaguzi uliofanywa",
@@ -4426,7 +4454,9 @@
       "title": "Regenerate PDF kutoka remediated HTML. Layout reflows — ukurasa breaks, fonts, na pagination inaweza differ kutoka asili. Inafanya kazi well kwa rahisi prose hati."
     },
     "tagged_pdf": {
-      "title": "Preserve asili PDF's kuona layout byte-identical na inject ufikivu tags ndani its muundo tree. Bora kwa textbooks, multi-safuwima hati, na branded PDFs wapi kuona fidelity matters."
+      "title": "Preserve asili PDF's kuona layout byte-identical na inject ufikivu tags ndani its muundo tree. Bora kwa textbooks, multi-safuwima hati, na branded PDFs wapi kuona fidelity matters.",
+      "office_note": "Tagged PDF inahusika na ingizo la PDF — tumia Word/HTML",
+      "office_note_title": "Lebo za muundo zinaweza tu kuingizwa katika baiti za PDF. Kwa ingizo la Word/PowerPoint, upakuaji wa Word na HTML unaofikika hubeba muundo uliorekebishwa."
     },
     "alt_formats": {
       "intro": "Pakua remediated hati katika inapatikana alternative muundo"
@@ -4497,7 +4527,9 @@
       "heading": "toleo Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Buruta thumbnail onto yoyote picha placeholder katika preview kwa insert it, au bofya \"📷 Pakia\" inside placeholder na chagua \"Tumia extracted picha\"."
+      "drag_hint": "Buruta thumbnail onto yoyote picha placeholder katika preview kwa insert it, au bofya \"📷 Pakia\" inside placeholder na chagua \"Tumia extracted picha\".",
+      "drag_hint2": "Bofya kijipicha ili kukiingiza katika nafasi ya kwanza tupu ya picha, au kiburute juu ya kishika-nafasi au picha yoyote mahususi katika onyesho la awali. ×N = picha ile ile ilionekana kwenye kurasa N (kwa kawaida kichwa cha barua au nembo).",
+      "insert_aria": "Ingiza picha iliyochimbwa katika nafasi ya kwanza tupu"
     },
     "toolbar": {
       "aria": "maandishi formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "Ukiukaji {count}",
     "violation_other": "Ukiukaji {count}",
     "ai_issue_one": "Suala {count} lililowekewa alama na AI",
-    "ai_issue_other": "Masuala {count} yaliyowekewa alama na AI"
+    "ai_issue_other": "Masuala {count} yaliyowekewa alama na AI",
+    "tagged": {
+      "born_digital_note": "Tahadhari: kwa PDF zenye tabaka la maandishi, lebo za kisemantiki hutumia uhusiano wa ActualText badala ya uunganishaji kamili wa maudhui. Faili inafikika zaidi kwa kiasi kikubwa, lakini hakiki katika PAC 2024 au Acrobat kabla ya kudai ufuasi wa PDF/UA."
+    },
+    "one_click": {
+      "label": "Fanya Ifikike",
+      "badge": "kiotomatiki kabisa — kagua, rekebisha, hakiki, rudia hadi lengo",
+      "desc": "Mbofyo mmoja huendesha mfululizo mzima bila mikono kwa mipangilio chaguomsingi; upakuaji uko tayari mwishoni. Unapendelea udhibiti? Tumia \"Endesha Ukaguzi\" hapa chini, pitia matokeo, kisha ubofye Rekebisha na Hakiki mwenyewe."
+    },
+    "run_audit_label": "Endesha Ukaguzi (hatua ya 1 kati ya 2)",
+    "manual_path_explainer": "\"Endesha Ukaguzi\" hupatia hati alama na huonyesha kinachohitaji kurekebishwa — kisha wewe hupitia na kubofya Rekebisha na Hakiki mwenyewe (hatua ya 2). \"Fanya Ifikike\" hapo juu hufanya hatua zote mbili pamoja na kukagua tena, kiotomatiki. \"Uchimbaji wa Maandishi\" huvuta tu maandishi ghafi kwa ajili ya kuzalisha maudhui.",
+    "tagged_report": {
+      "heading": "Ripoti ya Tagged PDF",
+      "close_aria": "Ondoa ripoti ya tagged-PDF",
+      "note": "Kidirisha hiki kinabaki hadi utakapokiondoa. Maelezo yale yale husafirishwa ndani ya upakuaji wa Ripoti ya A11y ya mtindo wa Adobe."
+    },
+    "docx_export": {
+      "title": "Geuza maudhui yaliyorekebishwa kuwa hati ya Word yenye mitindo halisi ya vichwa, maandishi mbadala kwenye picha, safu za vichwa vya jedwali, muundo wa orodha, na viungo vinavyofanya kazi. Hakiki kwa Kikaguzi cha Ufikikaji kilichojengwa ndani ya Word (Review → Check Accessibility) kabla ya kusambaza."
+    },
+    "pptx_export": {
+      "title": "Jenga upya maudhui yaliyorekebishwa kama wasilisho la PowerPoint lenye vichwa halisi vya slaidi, maandishi mbadala kwenye picha, safu za jedwali za mtindo wa kichwa, orodha za nukta za kweli, na mpangilio wa kusoma = mpangilio wa kuonekana. Mpangilio uliofikika uliojengwa upya — si nakala ya kuonekana ya asili. Hakiki kwa Kikaguzi cha Ufikikaji cha PowerPoint kabla ya kusambaza."
+    },
+    "dashboard": {
+      "aria": "Muhtasari wa matokeo ya urekebishaji na uelekezaji wa sehemu",
+      "score_title": "Alama ya ufikikaji: kabla → baada"
+    },
+    "tag_to_workbench_title": "Tuma kizuizi hiki kwa Expert Workbench: hujaza awali amri lengwa (pamoja na maonyo yoyote) ili uweze kukirekebisha kwa maelekezo moja",
+    "tag_to_workbench_aria": "Tuma kwa Expert Workbench",
+    "pptx_theme_aria": "Mandhari ya mauzo ya PowerPoint",
+    "pptx_theme_title": "Mandhari ya slaidi kwa mauzo ya PowerPoint. Mipangilio yote tayari imekaguliwa kwa utofautishaji (WCAG AA); chaguo la AI hulingana na mada yako, huku usomekaji ukitekelezwa ndani kwa njia yoyote ile.",
+    "export_menu": {
+      "button": "Hamisha / Pakua",
+      "intro": "Pakua hati iliyorekebishwa katika muundo wowote — chagua unaolingana na jinsi itakavyotumika.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — wape wanafunzi)",
+      "word": "Word (.docx — endelea kuhariri)",
+      "pptx": "PowerPoint (.pptx — liwasilishe)",
+      "html": "HTML (inafunguka popote, bila programu)",
+      "group_access": "Miundo inayofikika",
+      "daisy": "Kitabu-zungumzi cha DAISY (maandishi kamili)",
+      "daisy_title": "Kifurushi cha kitabu-zungumzi cha maandishi kamili cha DAISY 3 (DTBook). Fungua katika kisomaji cha DAISY, ambacho hutoa usemi, breli, au chapa kubwa. (Kwa sauti ya kusoma-kwa-sauti iliyopatanishwa, tumia Kusoma-pamoja hapa chini.)",
+      "readalong": "Kitabu cha kielektroniki cha kusoma-pamoja (sauti iliyopatanishwa)",
+      "readalong_progress": "Inasimulia… {done}/{total}",
+      "readalong_title": "Kitabu cha kielektroniki cha kusoma-pamoja (EPUB3 Media Overlays): huzalisha matini-hadi-usemi kwa kila aya na kuipatanisha na maandishi ili mfumo wa kusoma uangazie maneno yanapotamkwa. Hupiga simu nyingi za sauti — kunaweza kuchukua dakika kadhaa.",
+      "group_text": "Maandishi na yanayoharirika",
+      "odt_title": "OpenDocument Text — inafunguka kiasili katika LibreOffice na Google Docs (na Word).",
+      "group_audio": "Usimulizi wa sauti",
+      "audio": "Usimulizi wa sauti (kawaida)",
+      "audio_title": "Usimulizi wa kusemwa wa hati (MP3/WAV).",
+      "audio_sr": "Sauti (mtindo wa kisomaji-skrini)",
+      "audio_sr_title": "Sauti ile ile, lakini ikitangaza muundo jinsi kisomaji-skrini kingefanya (viwango vya vichwa, idadi ya orodha, safu za jedwali, maandishi mbadala ya picha)."
+    },
+    "mo": {
+      "confirm": "Ujenge kitabu cha kielektroniki cha kusoma-pamoja? Hii husimulia sehemu {n} za maandishi kwa matini-hadi-usemi — takriban simu {n} za sauti, ambazo zinaweza kuchukua dakika kadhaa."
+    }
   },
   "concept_sort": {
     "title": "Dhana Panga",
@@ -5241,7 +5326,7 @@
     "plan_hook": "Kichocheo",
     "plan_independent": "Independent fanya mazoezi",
     "col_image": "picha",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "Studio ya Sauti za Maneno",
     "stop": "Simamisha",
     "expand_header": "Panua kichwa",
     "collapse_header": "Kunja kichwa ili kutoa nafasi zaidi kwa maudhui",
@@ -6882,7 +6967,10 @@
     "pdf_audit_alt_formats_epub_btn": "Hifadhi hati iliyorekebishwa kama faili ya ePub yenye jedwali la yaliyomo na metadata ya ufikivu. Inafanya kazi kwenye Kindle, Apple Books, na visomaji vingi vya simu — wanafunzi wanaweza kubadilisha ukubwa wa fonti, rangi, na kasi ya kusoma.",
     "pdf_audit_alt_formats_braille_btn": "Hifadhi faili ya Braille ya Daraja 1 (isiyofupishwa) ambayo inaweza kuwekwa kwenye printa ya Braille au kutumwa kwa kionyesho cha Braille kinachoweza kuonyesha upya. Kwa ufupisho wa Daraja 2, kabidhi faili kwa TVI (mwalimu wa wanafunzi wenye ulemavu wa kuona) kwa kumalizia.",
     "pdf_audit_alt_formats_text_btn": "Hifadhi faili ya .txt ya kawaida na uumbizaji wote uliondolewa — muundo rahisi zaidi kwa visomaji vya skrini, ubadilishaji wa kuchapishwa kubwa, au kubandika kwenye chombo kingine.",
-    "pdf_audit_alt_formats_markdown_btn": "Hifadhi hati kama Markdown — huingia kwa usafi katika kurasa za Canvas, Schoology, au D2L, Google Docs (kupitia kubandika), wikis, na maelezo ya mtindo wa GitHub bila kupoteza vichwa au viungo."
+    "pdf_audit_alt_formats_markdown_btn": "Hifadhi hati kama Markdown — huingia kwa usafi katika kurasa za Canvas, Schoology, au D2L, Google Docs (kupitia kubandika), wikis, na maelezo ya mtindo wa GitHub bila kupoteza vichwa au viungo.",
+    "pdf_audit_alt_formats_daisy_btn": "Hifadhi kifurushi cha kitabu-zungumzi cha maandishi kamili cha DAISY 3. Visomaji vya DAISY (vya kawaida katika elimu maalum) huongeza usemi, breli, au chapa kubwa yao wenyewe pamoja na uelekezaji kamili. Maandishi-pekee hapa — kwa kusoma-kwa-sauti kulikopatanishwa, tumia kitabu cha kielektroniki cha kusoma-pamoja.",
+    "pdf_audit_alt_formats_readalong_btn": "Jenga kitabu cha kielektroniki cha kusoma-pamoja (EPUB3 Media Overlays): kila aya husimuliwa kwa matini-hadi-usemi na kupatanishwa na maandishi ili maneno yaangaze yanapotamkwa. Simu moja ya sauti kwa kila sehemu, kwa hivyo inaweza kuchukua dakika kadhaa.",
+    "pdf_audit_alt_formats_odt_btn": "Hifadhi faili ya OpenDocument Text (.odt) — ya kiasili kwa LibreOffice na Google Docs (Word huifungua pia). Itumie wakati shule yako si ya Microsoft pekee lakini bado unataka hati inayoharirika yenye muundo ulio salama."
   },
   "groups": {
     "title": "Differentiation Kikundis",
@@ -9720,7 +9808,7 @@
       "abc_title": "ABC data",
       "abc_desc": "Rekodi uchunguzi wa kichocheo, tabia, na matokeo",
       "obs_title": "Moja kwa moja uchunguzi",
-      "obs_desc": "Real-wakati interval, frequency, au duration recording",
+      "obs_desc": "Kurekodi kwa wakati halisi kwa kipindi, marudio, au muda",
       "analysis_title": "AI Uchambuzi",
       "analysis_desc": "AI-powered tabia pattern uchambuzi & recommendations",
       "overview_title": "Muhtasari",
@@ -9754,13 +9842,13 @@
       "triangulation_title": "Utatuzi wa Pembetatu",
       "triangulation_desc": "Cross-rejea 3+ data sources kwa convergence",
       "impact_title": "Kikokotoo cha Athari",
-      "impact_desc": "Quantify tabia frequency, duration, na annual cost",
+      "impact_desc": "Kadiria marudio ya tabia, muda, na gharama ya mwaka",
       "crisis_title": "Crisis Mpango",
       "crisis_desc": "Three-tier crisis uingiliaji protocol generator",
       "traffic_title": "Taa za Trafiki",
       "traffic_desc": "mwanafunzi-facing red/yellow/green tabia zone poster",
       "datasheet_title": "data Sheet",
-      "datasheet_desc": "inayoweza kuchapishwa frequency, duration, ABC, au latency data sheets",
+      "datasheet_desc": "Karatasi za takwimu za marudio, muda, ABC, au latency zinazoweza kuchapishwa",
       "homenote_title": "Barua Nyumbani",
       "homenote_desc": "AI-drafted mzazi communication na mwoneko selector",
       "fidelity_title": "Orodha ya Uaminifu",
@@ -10083,7 +10171,7 @@
     "reinforcer_sensory": "🌀 Hisia",
     "quiz_fba_purpose": "nini ni primary purpose ya FBA?",
     "quiz_replacement": "nini ni replacement tabia?",
-    "search_placeholder": "Tafuta antecedent, tabia, consequence, maelezo, mpangilio...",
+    "search_placeholder": "Tafuta kichocheo, tabia, matokeo, maelezo, mpangilio...",
     "quick_fill_placeholder": "e.g. \"mwanafunzi threw paper wakati hesabu wakati asked kwa onyesha kazi, mwalimu redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"badiliko consequence kwa mwalimu redirected\"",
     "now": "sasa",
@@ -10236,7 +10324,7 @@
       "paste_share_code_here": "Bandika shiriki code here...",
       "person": "Mtu\\",
       "phase_label": "Lebo ya awamu",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does hii address?)",
+      "rationale_which_antecedent_does_this_address": "Sababu (ni kichocheo kipi hii inashughulikia?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect juu ya yako approach...\\n• nini worked well?\\n• nini would wewe do differently?\\n• nini mikakati do wewe taka kwa fanya mazoezi inayofuata?",
       "reinforcement_how_you": "⭐ Reinforcement (jinsi wewe\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement tabia (functionally sawa na)",
@@ -10667,7 +10755,7 @@
       "top_behavior": "Top tabia",
       "total_contacts": "Jumla ya Mawasiliano",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track tabia frequency juu wakati na aim mstari, phase mabadiliko, na trend uchambuzi.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Fuatilia marudio ya tabia kwa muda kwa mistari ya lengo, mabadiliko ya awamu, na uchambuzi wa mwelekeo.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track tabia at home kutumia rahisi, everyday lugha. Hii inasaidia yako child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track yako feelings, earn beji, na jenga streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-kulingana lugha ndani asset-focused descriptions",
@@ -10852,7 +10940,7 @@
       "developing": "Inakua",
       "discontinue": "Sitisha",
       "dismiss": "Ondoa",
-      "document_baseline_frequency_for_flagged_students": "hati baseline frequency kwa flagged mwanafunzi",
+      "document_baseline_frequency_for_flagged_students": "Andika marudio ya msingi kwa wanafunzi walioalamishwa",
       "document_outcomes_and_lessons_learned": "hati outcomes na somo learned",
       "document_the_confirmed_function": "hati confirmed function",
       "document_the_hypothesis_in_session_notes": "hati dhana katika kipindi maelezo",
@@ -10918,7 +11006,7 @@
       "level_mean": "kiwango (Mean)",
       "maintenance_tracker": "Kifuatiliaji cha Matengenezo",
       "make_tier_movement_decision_stay_fade_intensify": "Tengeneza tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → tabia → consequence pathways",
+      "map_antecedent_behavior_consequence_pathways": "Chora njia za kichocheo → tabia → matokeo",
       "map_each_target_behavior_to_a_replacement": "Map kila lengo tabia kwa replacement",
       "materials_access": "Vifaa Fikia",
       "measure_effect_size_of_interventions": "Pima effect size ya uingiliaji",
@@ -10955,10 +11043,10 @@
       "percentage": "asilimia",
       "phone": "Simu",
       "phone_call": "Simu",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Mpango reinforcement schedule kwa replacement tabia",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Panga ratiba ya uimarishaji kwa tabia mbadala",
       "plan_data_collection_methods_and_frequency": "Mpango data collection methods na frequency",
       "plan_fidelity_monitoring": "Mpango Fidelity Monitoring",
-      "plan_reinforcement_for_replacement_behaviors": "Mpango reinforcement kwa replacement tabia",
+      "plan_reinforcement_for_replacement_behaviors": "Panga uimarishaji kwa tabia mbadala",
       "plan_replacement_behaviors": "Mpango Replacement tabia",
       "plan_weekly_progress_monitoring_data_collection": "Mpango weekly maendeleo monitoring data collection",
       "positivecorrective_ratio": "Uwiano wa Chanya:Marekebisho",
@@ -11000,7 +11088,7 @@
       "sensory": "Hisia",
       "sensory_break_menu": "Sensory Break menyu",
       "sensoryautomatic": "Sensory/kiotomatiki",
-      "sensoryautomatic_function": "Sensory/kiotomatiki Function",
+      "sensoryautomatic_function": "Kazi ya Kihisia/Kiotomatiki",
       "sensoryrelated": "Inayohusiana na Hisia",
       "session_tracker": "kipindi Tracker",
       "set_a_6week_intervention_cycle": "Weka 6-week uingiliaji cycle",
@@ -11096,7 +11184,7 @@
       "incorrect": "Sio sahihi",
       "independent": "Kujitegemea",
       "intensity": "Nguvu",
-      "interval_and_latency_recording": "Interval na latency recording",
+      "interval_and_latency_recording": "Kurekodi kwa kipindi na latency",
       "level": "kiwango",
       "mastered": "Umefanikiwa",
       "momentary_time_sampling": "Momentary wakati sampling",
@@ -11157,7 +11245,7 @@
       "step_collect_more": "Collect zaidi data",
       "step_collect_more_desc": "Ongeza zaidi uchunguzi kipindi kwa strengthen dataset.",
       "step_hypothesis": "dhana",
-      "step_hypothesis_desc": "Draft working dhana ya tabia function.",
+      "step_hypothesis_desc": "Andaa dhana ya awali kuhusu kazi ya tabia.",
       "step_record_abc": "Rekodi data ya ABC",
       "step_record_abc_desc": "hati antecedents, tabia, na consequences.",
       "step_report": "Ripoti",
@@ -11269,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories kwa life na mhusika voices & literary uchambuzi",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Andika poems na form scaffolds, rhyme & meter uchambuzi, AI maoni"
+    "poettree_desc": "Andika poems na form scaffolds, rhyme & meter uchambuzi, AI maoni",
+    "throughline_desc": "Panga masomo yako katika kipimo cha anga: mfuatano wa ufundishaji, mahitaji ya awali, faili moja inayoweza kuhamishwa"
   },
   "sel_hub": {
     "loading": "Inapakia SEL Hub...",
@@ -11376,7 +11465,7 @@
     "google_api_label": "Google Tafuta API Ufunguo",
     "google_api_placeholder": "yako Google API ufunguo...",
     "google_api_hint": "Power users: ingiza yako own Google Custom Tafuta API ufunguo (100 bure queries/day)",
-    "wolfram_label": "Wolfram Alpha App ID",
+    "wolfram_label": "Kitambulisho cha Programu ya Wolfram Alpha (App ID)",
     "wolfram_placeholder": "XXXXX-XXXXXXXXXX (kutoka developer.wolframalpha.com)",
     "wolfram_hint": "Bure: 2,000 queries/month. Adds exact hesabu solving na hatua-by-hatua verification"
   },
@@ -11442,7 +11531,7 @@
     "api_key_hint": "(cloud providers tu)",
     "api_key_aria": "Custom AI backend API ufunguo",
     "api_key_placeholder": "yako API ufunguo...",
-    "wolfram_label": "Wolfram Alpha App ID",
+    "wolfram_label": "Kitambulisho cha Programu ya Wolfram Alpha (App ID)",
     "wolfram_hint": "(hiari — enhances hesabu)",
     "wolfram_aria": "Wolfram App ID ya backend maalum",
     "wolfram_placeholder": "XXXXX-XXXXXXXXXX (kutoka developer.wolframalpha.com)",
@@ -11761,7 +11850,7 @@
     "panel_narrator": "What's happening in hii paneli? (narrator sauti)",
     "who_speaker": "Nani?",
     "character_thinking": "What the mhusika is thinking...",
-    "sound_effect_example": "BOOM! CRASH! WHOOSH!",
+    "sound_effect_example": "BUUM! GBWAA! VYUU!",
     "missing_word": "Andika the missing maneno…",
     "short_response": "Andika your 1-2 sentensi response…",
     "explain_own_words": "Explain in your own maneno (3-5 sentensi)…",
@@ -12589,5 +12678,10 @@
     "byline": "Na {author} · maneno {words} · {used}/{total} msamiati",
     "student": "Mwanafunzi",
     "score": "Alama: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Kutengeneza upya onyesho la awali kutabadilisha mabadiliko yako ya mkono na maudhui yaliyozalishwa upya. Uendelee na utupe mabadiliko? (Ghairi huyahifadhi — hamisha au funga kijenzi ili kuhifadhi kwanza.)",
+    "remediation_banner_title": "Unahariri hati iliyorekebishwa.",
+    "remediation_banner_body": "Mabadiliko yako hapa yanahifadhiwa ndani yake unapofunga kijenzi, kwa hivyo upakuaji wa Tagged PDF / Word / PowerPoint unayajumuisha."
   }
 }

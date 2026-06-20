@@ -982,7 +982,7 @@
     "storage_full_text_only": "Bộ nhớ đầy. Chỉ lưu văn bản (đã xóa hình ảnh).",
     "storage_full_critical": "Nghiêm trọng: Không thể lưu lịch sử. Bộ nhớ đầy.",
     "resource_not_found": "Không tìm thấy tài nguyên.",
-    "resource_not_found_history": "Không tìm thấy tài nguyên trong lịch sử.",
+    "resource_not_found_history": "Không tìm thấy tài nguyên trong lịch sử (có thể nó đã bị xóa).",
     "analysis_failed": "Phân tích thất bại. Vui lòng thử lại.",
     "enter_target_language": "Vui lòng nhập ngôn ngữ mục tiêu.",
     "translation_started": "Đã bắt đầu dịch...",
@@ -1618,7 +1618,7 @@
     "ai_feedback_unavailable": "Phản hồi từ AI không khả dụng",
     "write_essay_first": "Hãy viết bài luận của bạn trước!",
     "enter_word_art_first": "Vui lòng nhập nội dung chữ nghệ thuật trước",
-    "preview_not_ready": "Bản xem trước chưa sẵn sàng",
+    "preview_not_ready": "Bản xem trước chưa sẵn sàng — hãy đợi nó hiển thị xong, rồi thử lại.",
     "word_art_render_failed": "Không thể kết xuất chữ nghệ thuật",
     "diff_engine_load_failed": "Không tải được công cụ so sánh (mạng bị chặn?). Hãy kiểm tra kết nối và thử lại.",
     "brf_downloaded": "Đã tải xuống chữ nổi điện tử (BRF)",
@@ -4134,6 +4134,7 @@
     "image_size_tooltip": "Điều chỉnh kích thước của hình ảnh dòng thời gian"
   },
   "pdf_audit": {
+    "fidelity_delta": "Độ trung thành: {before}% → {after}%{detail}",
     "view_last_audit": "Xem Kiểm toán gần nhất",
     "start_new_audit": "Bắt đầu Kiểm toán mới",
     "apply_and_export": "Áp dụng & Xuất",

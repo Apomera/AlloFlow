@@ -1886,7 +1886,7 @@
     "storage_full_text_only": "האחסון מלא. שומר טקסט בלבד (תמונות הוסרו).",
     "storage_full_critical": "קריטי: לא ניתן לשמור היסטוריה. האחסון מלא.",
     "resource_not_found": "המשאב לא נמצא.",
-    "resource_not_found_history": "המשאב לא נמצא בהיסטוריה.",
+    "resource_not_found_history": "המשאב לא נמצא בהיסטוריה (ייתכן שהוא נמחק).",
     "analysis_failed": "הניתוח נכשל. אנא נסה שוב.",
     "enter_target_language": "אנא הזן שפת יעד.",
     "translation_started": "התרגום החל...",
@@ -2521,7 +2521,7 @@
     "ai_feedback_unavailable": "משוב AI אינו זמין",
     "write_essay_first": "כתוב תחילה את החיבור שלך!",
     "enter_word_art_first": "אנא הזן תחילה טקסט לאמנות מילים",
-    "preview_not_ready": "התצוגה המקדימה אינה מוכנה עדיין",
+    "preview_not_ready": "התצוגה המקדימה אינה מוכנה עדיין — המתן עד שתעובד, ולאחר מכן נסה שוב.",
     "word_art_render_failed": "לא ניתן לעבד את אמנות המילים",
     "diff_engine_load_failed": "מנוע ההשוואה נכשל בטעינה (הרשת חסומה?). בדוק את החיבור שלך ונסה שוב.",
     "brf_downloaded": "ברייל אלקטרוני (BRF) הורד",
@@ -10092,6 +10092,7 @@
     }
   },
   "pdf_audit": {
+    "fidelity_delta": "נאמנות: {before}% → {after}%{detail}",
     "view_last_audit": "צפה בביקורת האחרונה",
     "start_new_audit": "התחל ביקורת חדשה",
     "apply_and_export": "החל וייצא",

@@ -985,7 +985,7 @@
     "storage_full_text_only": "Storage full. Saving text only (တၢ်ဂီၤ removed).",
     "storage_full_critical": "Critical: Could တ ပာ်ဖျါ history. Storage full.",
     "resource_not_found": "Resource တ found.",
-    "resource_not_found_history": "Resource တ found လ၁် history.",
+    "resource_not_found_history": "တၢ်ဖိတၢ်လံၤ တအိၣ်ဘၣ်လၢ တၢ်မၤအဆၢကတီၢ်ပူၤဘၣ်. (န့ၣ်ဘၣ်တၢ်ထုးကွံာ်အီၤလၢ်)",
     "analysis_failed": "Analysis failed. Please try again.",
     "enter_target_language": "Please နုၥ်လီၤ တၢ်ပညိၣ် ကျိၥ်.",
     "translation_started": "တၢ်ကွဲးကျိၥ်ထံ started...",
@@ -1620,7 +1620,7 @@
     "ai_feedback_unavailable": "AI feedback unavailable",
     "write_essay_first": "ကွဲးတၢ် your essay first!",
     "enter_word_art_first": "Please နုၥ်လီၤ တၢ်ကတိၤ art text first",
-    "preview_not_ready": "Preview not ready yet",
+    "preview_not_ready": "တၢ်ကွၢ်ဆိ တအိၣ်ကတဲာ်ကတီၤသးဒံးဘၣ် — အိၣ်ခိးစ့ၢ်ကီးဖဲအဒုးနဲၣ်ထီၣ်အသးဝံၤ, ဝံၤမၤကွၢ်ကဒီးတဘျီ",
     "word_art_render_failed": "Could not render တၢ်ကတိၤ art",
     "diff_engine_load_failed": "Diff engine failed to load (network blocked?). Check your connection and try again.",
     "brf_downloaded": "Electronic Braille (BRF) downloaded",
@@ -4112,6 +4112,7 @@
     "image_size_tooltip": "Adjust size အ timeline တၢ်ဂီၤ"
   },
   "pdf_audit": {
+    "fidelity_delta": "လံာ်တၢ်ဘၣ်ဂ့ၤ - တၢ်ဂ့ၤဖျၢၣ်ဂ့ၤ: {before}% → {after}%{detail}",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "စးထီၣ် အသီ Audit",
     "apply_and_export": "Apply & Export",

@@ -985,7 +985,7 @@
     "storage_full_text_only": "Storage full. Saving text only (limceu removed).",
     "storage_full_critical": "Critical: Could si lo khoh history. Storage full.",
     "resource_not_found": "Resource si lo found.",
-    "resource_not_found_history": "Resource si lo found ah history.",
+    "resource_not_found_history": "Thil cu rian ṭuanmi cazin ah hmuh a si lo (a hlohmi a si kho).",
     "analysis_failed": "Analysis failed. Please try again.",
     "enter_target_language": "Please lut tinhmi holh.",
     "translation_started": "lehhnak started...",
@@ -1620,7 +1620,7 @@
     "ai_feedback_unavailable": "AI feedback unavailable",
     "write_essay_first": "Tial your essay first!",
     "enter_word_art_first": "Please lut biafang art text first",
-    "preview_not_ready": "Preview not ready yet",
+    "preview_not_ready": "Hmasa zohnak cu a tlamtling rih lo — a langh hlan ah hngah law, cun ṭhanhlei in tuah ṭhan.",
     "word_art_render_failed": "Could not render biafang art",
     "diff_engine_load_failed": "Diff engine failed to load (network blocked?). Check your connection and try again.",
     "brf_downloaded": "Electronic Braille (BRF) downloaded",
@@ -4112,6 +4112,7 @@
     "image_size_tooltip": "Remhmi size i timeline limceu"
   },
   "pdf_audit": {
+    "fidelity_delta": "Adikna: {before}% → {after}%{detail}",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "Thawk thar Audit",
     "apply_and_export": "Apply & Export",

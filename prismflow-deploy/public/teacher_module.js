@@ -124,8 +124,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [rosterAdj, setRosterAdj] = useState("");
   const [rosterAnimal, setRosterAnimal] = useState("");
   const [useCustomName, setUseCustomName] = useState(false);
-  const rosterAdjectives = t("codenames.adjectives") || [];
-  const rosterAnimals = t("codenames.animals") || [];
+  const rosterAdjectives = t("codenames.adjectives", { returnObjects: true }) || [];
+  const rosterAnimals = t("codenames.animals", { returnObjects: true }) || [];
   const randomizeRosterName = () => {
     if (rosterAdjectives.length > 0 && rosterAnimals.length > 0) {
       setRosterAdj(rosterAdjectives[Math.floor(Math.random() * rosterAdjectives.length)]);

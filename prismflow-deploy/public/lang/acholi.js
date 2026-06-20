@@ -985,7 +985,7 @@
     "storage_full_text_only": "Storage full. Saving text only (cal removed).",
     "storage_full_critical": "Critical: Could pe gwoki history. Storage full.",
     "resource_not_found": "Resource pe found.",
-    "resource_not_found_history": "Resource pe found i history.",
+    "resource_not_found_history": "Pe kinongo jami i gin macon (twero bedo ni okwanyo woko).",
     "analysis_failed": "Analysis failed. Please tem again.",
     "enter_target_language": "Please donyo kit leb.",
     "translation_started": "gony pa lok started...",
@@ -1620,7 +1620,7 @@
     "ai_feedback_unavailable": "AI feedback unavailable",
     "write_essay_first": "Coyo your essay first!",
     "enter_word_art_first": "Please donyo lok art text first",
-    "preview_not_ready": "Preview not ready yet",
+    "preview_not_ready": "Cal me anena pud pe oyubbe — kur wek ocwe, ci tem doki.",
     "word_art_render_failed": "Could not render lok art",
     "diff_engine_load_failed": "Diff engine failed to load (network blocked?). Check your connection and tem again.",
     "brf_downloaded": "Electronic Braille (BRF) downloaded",
@@ -4112,6 +4112,7 @@
     "image_size_tooltip": "Yubo size pa timeline cal"
   },
   "pdf_audit": {
+    "fidelity_delta": "Rwatte: {before}% → {after}%{detail}",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "Cak manyen Audit",
     "apply_and_export": "Apply & Export",

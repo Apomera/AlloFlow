@@ -984,7 +984,7 @@
     "storage_full_text_only": "Storage voll. Wird gespeichert Text nur (Bilds entfernend).",
     "storage_full_critical": "Critical: Could nicht speichern Verlauf. Storage voll.",
     "resource_not_found": "Ressource nicht gefunden.",
-    "resource_not_found_history": "Ressource nicht gefunden in Verlauf.",
+    "resource_not_found_history": "Ressource nicht gefunden in Verlauf (möglicherweise wurde sie gelöscht).",
     "analysis_failed": "Analyse fehlgeschlagen. Bitte erneut versuchen.",
     "enter_target_language": "Bitte eingeben ein Zielsprache.",
     "translation_started": "Übersetzung startened...",
@@ -1620,7 +1620,7 @@
     "ai_feedback_unavailable": "KI-Feedback nicht verfügbar",
     "write_essay_first": "Schreiben Sie zuerst Ihren Aufsatz!",
     "enter_word_art_first": "Bitte geben Sie zuerst den Wortkunst-Text ein",
-    "preview_not_ready": "Vorschau noch nicht bereit",
+    "preview_not_ready": "Vorschau noch nicht bereit — warten Sie, bis sie gerendert ist, und versuchen Sie es dann erneut.",
     "word_art_render_failed": "Wortkunst konnte nicht gerendert werden",
     "diff_engine_load_failed": "Diff-Engine konnte nicht geladen werden (Netzwerk blockiert?).",
     "brf_downloaded": "Elektronische Braille (BRF) heruntergeladen",
@@ -4136,6 +4136,7 @@
     "image_size_tooltip": "Anpassen die Größe von Zeitline Bilds"
   },
   "pdf_audit": {
+    "fidelity_delta": "Textgenauigkeit: {before}% → {after}%{detail}",
     "view_last_audit": "Ansicht Letzte Audit",
     "start_new_audit": "Starten Neu Audit",
     "apply_and_export": "Anwenden & Exportieren",

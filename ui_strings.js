@@ -37,11 +37,11 @@
     "lesson_plan_title": "Lesson Plan",
     "lesson_plan_text": "Generate a complete, structured Lesson Plan that ties everything together. It provides a roadmap for instruction, including specific scripts for 'I Do, We Do, You Do' teaching phases.\n### Mode-Adaptive Naming\n• **Teacher Mode**: Full Lesson Plan with instructional scripts.\n• **Student Mode**: Becomes a structured Study Guide.\n• **Parent Mode**: Becomes a Family Guide for home support.\n### Panel Options\n• **Custom Additions**: Specify any special requests (e.g., \"include technology integration\" or \"focus on visual learners\").\n### Plan Components\n• **Learning Objectives**: SMART goals derived from the content.\n• **Materials List**: Comprehensive checklist of required resources.\n• **Direct Instruction**: Scripted 'I Do' section.\n• **Guided Practice**: Collaborative 'We Do' activities.\n• **Independent Practice**: 'You Do' assignments.\n• **Differentiation**: Specific accommodations for IEP/504 students.\n### Pro Tip\nThe 'Differentiation' section generates specific IEP accommodations that you can copy directly into official paperwork.\n### UDL Connection\n• **Engagement**: Heighten salience of goals and objectives (Guideline 8.1) by clearly structuring the learning path.",
     "fullpack_title": "Full Pack",
-    "fullpack_text": "The universal 'Easy Button' for instant, high-quality content generation. Perfect for teachers, parents, and self-guided learners, this tool generates every resource in sequence with intelligent AI configuration.\n### Smart Automation\n• **Auto-Configuration**: AI analyzes your text and intelligently configures optimal settings for every tool.\n• **Context-Aware**: Ensures quizzes, scaffolds, and games are perfectly aligned to text complexity and themes.\n• **Custom Resource Count**: Choose 'Auto' (AI picks essentials) or 'All' (full 13-resource suite).\n### Generated Resources\nBatch generates up to 13 resources in intelligent order:\n• **Analysis** (first) ? Glossary ? Leveled Text ? Visual Image\n• **Outline** ? FAQ ? Sentence Frames ? Timeline\n• **Persona Interview** ? Concept Sort ? Brainstorm ? Quiz\n• **Lesson Plan** (last, uses all prior resources for context)\n### Mode Adaptation\n• **Teacher Mode**: Full educator resources with pedagogical guidance.\n• **Student Mode**: Self-study materials with embedded supports.\n• **Parent Mode**: Family-friendly guides for home learning.\n### Pro Tip\nEnter custom instructions before clicking Full Pack•AI distributes them intelligently across all generated resources!\n### UDL Connection\n• **Action & Expression**: Streamlines resource creation (Guideline 5) by automatically generating multiple formats from a single source.",
+    "fullpack_text": "The universal 'Easy Button' for instant, high-quality content generation. Perfect for teachers, parents, and self-guided learners, this tool generates every resource in sequence with intelligent AI configuration.\n### Smart Automation\n• **Auto-Configuration**: AI analyzes your text and intelligently configures optimal settings for every tool.\n• **Context-Aware**: Ensures quizzes, scaffolds, and games are perfectly aligned to text complexity and themes.\n• **Custom Resource Count**: Choose 'Auto' (AI picks essentials) or 'All' (full 13-resource suite).\n### Generated Resources\nBatch generates up to 13 resources in intelligent order:\n• **Analysis** (first) → Glossary → Leveled Text → Visual Image\n• **Outline** → FAQ → Sentence Frames → Timeline\n• **Persona Interview** → Concept Sort → Brainstorm → Quiz\n• **Lesson Plan** (last, uses all prior resources for context)\n### Mode Adaptation\n• **Teacher Mode**: Full educator resources with pedagogical guidance.\n• **Student Mode**: Self-study materials with embedded supports.\n• **Parent Mode**: Family-friendly guides for home learning.\n### Pro Tip\nEnter custom instructions before clicking Full Pack•AI distributes them intelligently across all generated resources!\n### UDL Connection\n• **Action & Expression**: Streamlines resource creation (Guideline 5) by automatically generating multiple formats from a single source.",
     "utils_title": "Accessibility Hub",
     "utils_text": "The Accessibility and Settings Hub. Customize the entire application for diverse learner needs.\n### Reading Accessibility\n• **Text Size**: Adjust font scale for visual comfort.\n• **Font Style**: Choose from dyslexia-friendly and high-readability fonts.\n• **Line Height & Spacing**: Increase vertical spacing for easier reading.\n• **Bionic Reading**: Bold first portion of words to guide reading flow.\n• **Color Overlay**: Apply tinted overlay to reduce visual stress (Irlen-style).\n### Theme & Display\n• **Dark Mode**: Low-light interface for reduced eye strain.\n• **High Contrast Mode**: Maximum contrast with bold outlines for low vision.\n• **Reduce Animations**: Toggle off motion effects for vestibular sensitivity.\n### Voice & Audio\n• **Voice Selection**: Choose from multiple TTS voices (male/female, accents).\n• **Speed Control**: Adjust speech rate from 0.5• to 2• speed.\n• **Volume Control**: Set TTS volume independently from system audio.\n### AlloBot Settings\n• **Show/Hide AlloBot**: Toggle the animated assistant character.\n• **Disable Tips**: Turn off proactive tips from AlloBot.\n### Profile & System\n• **Profile Context**: Add your teaching context (grade, subject) to improve AI output.\n• **Language Preferences**: Set default interface and target translation languages.\n• **Documentation**: Access user guides, tutorials, and pedagogical resources.\n### Pro Tip\nFor students with IEPs requiring text modifications, configure Reading Accessibility settings once•they persist across all generated content!\n### UDL Connection\n• **Representation**: Offer alternatives for auditory and visual information (Guidelines 1.1-1.3).",
     "dashboard_title": "Dashboard / Tools",
-    "dashboard_text": "The Tool Navigation Bar and Teacher Dashboard access point.\n### Tool Navigation Bar\n• **Tool Icons**: One-click jump to any generator (Quiz, Glossary, Adventure, etc.).\n• **Status Dots**: Green = active content, Orange = processing, Gray = empty.\n• **Logical Flow**: Tools ordered left-to-right from Input ? Generate ? Export.\n### Teacher Dashboard Button\nClick the Dashboard icon to open the **Teacher Grading Dashboard** - a dedicated panel for tracking student progress:\n• **Upload Student JSONs**: Students export their work as JSON files; upload them here for batch analysis.\n• **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.\n• **Individual Review**: Click any student to see their full history•quizzes, adventures, responses.\n• **Mark as Graded**: Checkbox to track which students you've reviewed.\n• **Class Insights Tab**: Analytics charts showing common misconceptions and class-wide performance.\n• **Export to CSV**: Download class data for gradebook import.\n### Related Header Actions\n• **Jump to Lesson**: Quick-return to your most recent lesson plan.\n• **View Toggle**: Switch between Teacher and Student views.\n### Pro Tip\nHave students export their JSON saves at the end of class, then batch-upload them here for efficient overnight grading!",
+    "dashboard_text": "The Tool Navigation Bar and Teacher Dashboard access point.\n### Tool Navigation Bar\n• **Tool Icons**: One-click jump to any generator (Quiz, Glossary, Adventure, etc.).\n• **Status Dots**: Green = active content, Orange = processing, Gray = empty.\n• **Logical Flow**: Tools ordered left-to-right from Input → Generate → Export.\n### Teacher Dashboard Button\nClick the Dashboard icon to open the **Teacher Grading Dashboard** - a dedicated panel for tracking student progress:\n• **Upload Student JSONs**: Students export their work as JSON files; upload them here for batch analysis.\n• **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.\n• **Individual Review**: Click any student to see their full history•quizzes, adventures, responses.\n• **Mark as Graded**: Checkbox to track which students you've reviewed.\n• **Class Insights Tab**: Analytics charts showing common misconceptions and class-wide performance.\n• **Export to CSV**: Download class data for gradebook import.\n### Related Header Actions\n• **Jump to Lesson**: Quick-return to your most recent lesson plan.\n• **View Toggle**: Switch between Teacher and Student views.\n### Pro Tip\nHave students export their JSON saves at the end of class, then batch-upload them here for efficient overnight grading!",
     "actions_title": "Action Bar",
     "actions_text": "The Action Bar: Language control, live sessions, translation, and export options.\n### App Language (UI)\nChange the entire application interface to any language:\n• **Language Selector**: Choose from pre-loaded languages or generate new ones.\n• **Custom Language Packs**: Upload/download JSON files to share or backup translations.\n• **Generate New Language**: AI generates a complete UI translation for any language in ~30 seconds.\n• **Force Regenerate**: Re-translate the interface to fix or update translations.\n### Live Session Controls\n• **Start Session** (Teacher): Launch a live session and generate a 4-character join code.\n• **Join Session** (Student): Enter a session code to connect to a teacher's live lesson.\n• **Session Status**: View connection status and disconnect when finished.\n### Translate Resources\nThe Translate button instantly converts **all generated content** to your target language:\n• **Batch Translation**: Quiz, Glossary, Scaffolds, FAQ•everything translates at once.\n• **Preserve Structure**: Formatting, questions, and answers remain intact.\n• **Target Language**: Set via the Language panel in the sidebar (separate from App Language).\n### Export Menu\n• **Print View**: Clean layout optimized for direct browser printing.\n• **Worksheet Export**: Structured student handout format.\n• **HTML Export**: Self-contained offline HTML file with all resources, styles, and interactivity included.\n• **Slides (PPTX)**: Generate a PowerPoint presentation from your content.\n• **IMS Export**: LMS-compatible Common Cartridge package.\n• **QTI Export**: Appears when viewing Quiz•exports to Canvas, Blackboard, Moodle.\n### Submit Work (Student Mode)\nStudents can export and submit their completed work back to the teacher.\n### Pro Tip\nUse \"Translate Resources\" after generating content•students can access the same lesson in their home language instantly!\n### UDL Connection\n• **Representation**: Offer alternatives for language (Guideline 2.4) through multi-language exports.",
     "history_title": "Session History",
@@ -934,6 +934,42 @@
     "text_condensing": "Condensing text..."
   },
   "toasts": {
+    "focus_streak": "{flames} {minutes}-minute focus streak! Keep it up!",
+    "streak_saved": "Welcome back! Your {minutes}-min streak was saved.",
+    "points_awarded": "Points awarded!",
+    "welcome_name": "Welcome, {name}!",
+    "element_not_found": "Element not found: {id}",
+    "overlay_set": "Overlay: {mode}",
+    "synced_resource": "Synced: {title}",
+    "group_resource": "Group Resource: {title}",
+    "preset_saved": "Preset \"{name}\" saved!",
+    "translated_resources": "Successfully translated {count} resources!",
+    "bingo_cards_count": "Generated {count} Bingo cards!",
+    "sound_enabled": "Sound Enabled",
+    "sound_muted": "Sound Muted",
+    "democracy_mode_on": "Democracy Mode Enabled: Class Voting ON",
+    "democracy_mode_off": "Democracy Mode Disabled: Solo Play",
+    "resource_moved_up": "Moved {title} up",
+    "resource_moved_down": "Moved {title} down",
+    "panels_regenerated": "{count} panels regenerated!",
+    "settings_undone": "Undone: {label}. Settings restored. (Generated resources are not affected.)",
+    "concept_added": "Added concept: {text}",
+    "resource_not_found_history": "Resource not found in history (it may have been deleted).",
+    "lesson_not_found": "Lesson not found in this unit.",
+    "probe_complete": "Probe complete: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Settings Updated: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Tone: {value}",
+    "change_length": "Length: ~{value} words",
+    "change_language": "Language: {value}",
+    "change_interest": "Added Interest: {value}",
+    "backup_saved": "💾 A backup of this session was saved to your Downloads (a project file). Nothing to do with it now — if you ever need to come back, \"Load Project\" brings everything back.",
+    "backup_saved_score": " (score {score})",
+    "project_saved_multi_one": "💾 Project saved ({count} range) — load it later to continue",
+    "project_saved_multi_other": "💾 Project saved ({count} ranges) — load it later to continue",
+    "project_saved": "💾 Project saved — load it later to continue editing",
+    "search_result_desc": "Google Search Result: {title}",
+    "link_url_prompt": "Enter link URL:",
     "copied": "Text copied to clipboard!",
     "draft_restored": "Restored previous draft",
     "level_up": "Level Up! You are now Level {level}!",
@@ -978,7 +1014,6 @@
     "storage_full_text_only": "Storage full. Saving text only (images removed).",
     "storage_full_critical": "Critical: Could not save history. Storage full.",
     "resource_not_found": "Resource not found.",
-    "resource_not_found_history": "Resource not found in history.",
     "analysis_failed": "Analysis failed. Please try again.",
     "enter_target_language": "Please enter a target language.",
     "translation_started": "Translation started...",
@@ -1634,7 +1669,6 @@
     "ai_feedback_unavailable": "AI feedback unavailable",
     "write_essay_first": "Write your essay first!",
     "enter_word_art_first": "Please enter word art text first",
-    "preview_not_ready": "Preview not ready yet",
     "word_art_render_failed": "Could not render word art",
     "diff_engine_load_failed": "Diff engine failed to load (network blocked?). Check your connection and try again.",
     "brf_downloaded": "Electronic Braille (BRF) downloaded",
@@ -1727,7 +1761,14 @@
     "cancel_transcription": "Cancel Transcription",
     "chunk_info": "Audio is split into 5-minute chunks for processing",
     "chunk_progress": "Chunk {current} of {total}",
-    "audio_only_error": "Currently only audio files (MP3, WAV, etc.) are supported for chunked transcription."
+    "audio_only_error": "Currently only audio files (MP3, WAV, etc.) are supported for chunked transcription.",
+    "starting": "Starting..."
+  },
+  "voice_engine": {
+    "preparing": "Preparing voice engine...",
+    "downloading_model": "Downloading voice model",
+    "loading_memory": "Loading into memory",
+    "loading_model_memory": "Loading voice model into memory"
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -1833,7 +1874,8 @@
     "open_storyforge_aria": "Open StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based Questions",
-    "open_stem_lab_explore_aria": "Open STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Open STEM Lab Explore",
+    "stem_lab_explore": "Explore"
   },
   "history": {
     "load_project": "Load Project",
@@ -2930,10 +2972,10 @@
     "announcement_mismatch": "Not a match. -5 Points. Cards flipped back.",
     "mode_switch_confirm": "Changing the mode will restart this round. Continue?",
     "modes": {
-      "smart": "Auto (Term ? Visual)",
-      "term_def": "Term ? Definition",
-      "term_image": "Term ? Picture",
-      "image_def": "Picture ? Definition",
+      "smart": "Auto (Term → Visual)",
+      "term_def": "Term → Definition",
+      "term_image": "Term → Picture",
+      "image_def": "Picture → Definition",
       "mixed": "Mix It Up (All Types)"
     },
     "board_aria": "Memory Game Board",
@@ -4247,6 +4289,25 @@
     "remediation_banner_body": "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."
   },
   "pdf_audit": {
+    "reattach_mismatch": "Re-attached PDF differs from the audited one{detail}. Proceeding anyway — results may be inconsistent with the original audit.",
+    "reattach_name_detail": " (name: \"{new}\" vs \"{old}\")",
+    "reattach_size_detail": " (size: {new} vs {old} bytes)",
+    "audit_failed_kept": "{label}: audit failed — kept previous version.",
+    "score_dropped_kept": "{label}: score would have dropped ({prev} → {next}{axe}). Kept previous version.",
+    "axe_only_comparison": ", axe-only comparison",
+    "axe_only_committed": "{label}: AI verification unavailable — committed with the deterministic axe-core score only.",
+    "fidelity_delta": "Fidelity: {before}% → {after}%{detail}",
+    "reinserted_ai": "{count} reinserted (AI)",
+    "reinserted_sentence": "{count} reinserted (sentence)",
+    "reinserted_fuzzy": "{count} reinserted (fuzzy)",
+    "in_recovery_appendix": "{count} in recovery appendix",
+    "duplicates_removed_one": "{count} duplicate removed",
+    "duplicates_removed_other": "{count} duplicates removed",
+    "auto_continue_round": "Auto-continue round {round}/{max}: {detail}, score {score}/100 (target {target})...",
+    "violation_one": "{count} violation",
+    "violation_other": "{count} violations",
+    "ai_issue_one": "{count} AI-flagged issue",
+    "ai_issue_other": "{count} AI-flagged issues",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "Start New Audit",
     "apply_and_export": "Apply & Export",
@@ -4740,6 +4801,7 @@
     }
   },
   "concept_sort": {
+    "explanation_unavailable": "Couldn't generate an explanation right now. Try again in a moment.",
     "title": "Concept Sort",
     "subtitle": "Drag cards into the correct category.",
     "instructions": "Drag items to the correct section.",
@@ -5209,6 +5271,11 @@
     "admin_report_title": "Admin Report & Recommendations",
     "activities_header": "Activities & Practice",
     "no_activities": "No interactive activities found.",
+    "skill_check": "Skill Check",
+    "desc_skill_check": "Verify your mastery against standards.",
+    "desc_parent": "See how this matches school goals",
+    "desc_6dim": "Audits curriculum across 6 dimensions",
+    "desc_5dim": "Audits curriculum across 5 dimensions (add standards for full audit)",
     "notifications": {
       "no_standard_error": "Please add at least one target standard in the settings.",
       "analysis_complete": "Analysis complete.",
@@ -5429,7 +5496,34 @@
     "plan_hook": "Hook",
     "plan_independent": "Independent Practice",
     "col_image": "Image",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Stop",
+    "expand_header": "Expand header",
+    "collapse_header": "Collapse header to give content more space",
+    "collapse_header_short": "Collapse header",
+    "step_x_of_y": "Step {current} of {total}",
+    "english_translation": "English Translation",
+    "source_references": "Source Text References",
+    "activity_probe": "{activity} Probe",
+    "word_sounds_count": "Word Sounds ({count} words)",
+    "quick_practice_mode": "Quick Practice Mode",
+    "new_option": "New Option",
+    "meta_lesson_extensions": "Lesson Extensions",
+    "title_extension_ideas": "Extension Ideas",
+    "meta_full_chat_log": "Full Chat Log",
+    "title_udl_consultation_log": "UDL Consultation Log",
+    "meta_actionable_steps": "Actionable Steps (AI Summary)",
+    "title_differentiation_strategy": "Differentiation Strategy",
+    "meta_udl_guide_advice": "UDL Guide Advice",
+    "title_stem_assessment": "STEM Assessment",
+    "title_explore_challenge": "Explore Challenge",
+    "title_fluency_maze": "🏰 Fluency Maze",
+    "title_storyforge_config": "📖 StoryForge Assignment",
+    "title_storyforge_submission": "📖 Story Submission",
+    "title_poettree_config": "🌳 PoetTree Assignment",
+    "title_poettree_submission": "🌳 Poem Submission",
+    "title_litlab_config": "🎭 LitLab Assignment",
+    "title_litlab_submission": "🎭 Performance Submission"
   },
   "persona": {
     "title": "Interview Mode",
@@ -7761,6 +7855,9 @@
   },
   "status_steps": {
     "initializing": "Initializing AI...",
+    "preparing_translation": "Preparing translation to {lang}...",
+    "translating_item": "Translating {current}/{total}: {title}...",
+    "generating_panel": "Generating panel {current}/{total}...",
     "extracting_vocab": "Extracting vocabulary & definitions...",
     "generating_icons": "Generating term icons...",
     "refining_icons": "Creating icons & refining visuals...",
@@ -9085,7 +9182,8 @@
     "loading_resources": "Loading resources...",
     "preparing_workspace": "Preparing your workspace...",
     "almost_ready": "Almost ready...",
-    "loading_screen_aria": "AlloFlow loading screen"
+    "loading_screen_aria": "AlloFlow loading screen",
+    "preparing_environment": "Preparing your learning environment..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -10734,7 +10832,12 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser."
+    "audit_queue_help": "Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.",
+    "queued_one": "{count} document queued from LMS",
+    "queued_other": "{count} documents queued from LMS",
+    "fetching": "Fetching {name}...",
+    "loaded_ready": "{name} loaded — ready for audit",
+    "fetch_failed": "Failed to fetch {name}: {error}. The file may require LMS authentication."
   },
   "annotation": {
     "undo_tooltip": "Undo last annotation ({count} available) — Ctrl/Cmd+Z",
@@ -10754,7 +10857,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visual Support from your teacher"
+    "teacher_modal_aria": "Visual Support from your teacher",
+    "now": "NOW",
+    "read_aloud": "Read Aloud"
   },
   "canvas_settings": {
     "title": "Advanced Settings",
@@ -10771,7 +10876,28 @@
     "read_all_button": "Read All",
     "stop_button": "Stop",
     "focus_narration_label": "Keyboard Focus Narration",
-    "focus_narration_on_hint": "Tab to hear controls"
+    "focus_narration_on_hint": "Tab to hear controls",
+    "reading": "Reading...",
+    "item_aria": "Click to hear: {text}",
+    "footer_stats": "{count} items · Click any item to hear it · Tab narration {state}",
+    "narration_on": "ON",
+    "narration_off": "OFF"
+  },
+  "voice_control": {
+    "listening": "Listening — say “stop listening” to finish",
+    "stop_aria": "Stop voice control"
+  },
+  "dynamic_assessment": {
+    "return_title": "This resource was generated by Dynamic Assessment. Click to reopen the DA module.",
+    "return_aria": "Return to Dynamic Assessment",
+    "return_label": "Return to Dynamic Assessment",
+    "item_badge": "item {num}"
+  },
+  "story_gallery": {
+    "title": "Story Gallery",
+    "byline": "By {author} · {words} words · {used}/{total} vocab",
+    "student": "Student",
+    "score": "Score: {score}"
   },
   "teacher": {
     "local_only": "Local only",

@@ -24796,8 +24796,8 @@ Use professional language. Refer to "the student" (not the codename).`;
         const parentTools = ['overview', 'token', 'traffic', 'choice', 'homelog', 'abaguide', 'homenote', 'pocket', 'snapshot', 'selfcheck'];
 
         // Two-dropdown codename system (adjective + animal)
-        const adjectives = useMemo(() => t('codenames.adjectives') || [], [t]);
-        const animals = useMemo(() => t('codenames.animals') || [], [t]);
+        const adjectives = useMemo(() => t('codenames.adjectives', { returnObjects: true }) || [], [t]);
+        const animals = useMemo(() => t('codenames.animals', { returnObjects: true }) || [], [t]);
         const [selectedAdj, setSelectedAdj] = useState('');
         const [selectedAnimal, setSelectedAnimal] = useState('');
 

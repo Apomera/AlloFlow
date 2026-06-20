@@ -1606,7 +1606,7 @@
     "storage_full_text_only": "ذخیرہ بھرا ہوا ہے۔ صرف متن محفوظ کیا جا رہا ہے (تصاویر ہٹا دی گئیں)۔",
     "storage_full_critical": "حرج: ناتوان از محفوظ کریں سابقه. تخزین ممتلئ.",
     "resource_not_found": "لم یہاور گیا عثاورر پر اورسیلہ.",
-    "resource_not_found_history": "لم یہاور گیا عثاورر پر اورسیلہ میں سابقه.",
+    "resource_not_found_history": "وسیلہ سابقہ میں نہیں ملا (ممکن ہے اسے حذف کر دیا گیا ہو)۔",
     "analysis_failed": "تجزیہ ناکام۔ براہ کرم دوبارہ کوشش کریں۔",
     "enter_target_language": "براہ کرم ہدف زبان درج کریں۔",
     "translation_started": "بدأت ترجمہ...",
@@ -2242,7 +2242,7 @@
     "ai_feedback_unavailable": "AI کی رائے دستیاب نہیں ہے",
     "write_essay_first": "پہلے اپنا مضمون لکھیں!",
     "enter_word_art_first": "براہِ کرم پہلے ورڈ آرٹ کا متن درج کریں",
-    "preview_not_ready": "پیش منظر ابھی تیار نہیں ہے",
+    "preview_not_ready": "پیش منظر ابھی تیار نہیں ہے — اس کے رینڈر ہونے کا انتظار کریں، پھر دوبارہ کوشش کریں۔",
     "word_art_render_failed": "ورڈ آرٹ تیار نہیں ہو سکا",
     "diff_engine_load_failed": "Diff انجن لوڈ ہونے میں ناکام (نیٹ ورک بلاک ہے؟)۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
     "brf_downloaded": "الیکٹرانک بریل (BRF) ڈاؤن لوڈ ہو گیا",
@@ -5488,6 +5488,7 @@
     "generate_aria": "تخلیق DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "صداقت: {before}% → {after}%{detail}",
     "view_last_audit": "دکھائیں آخری تدقیق",
     "start_new_audit": "شراورع تدقیق نیا",
     "apply_and_export": "تطبیق اوربرآمد",

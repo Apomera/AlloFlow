@@ -979,7 +979,7 @@
     "storage_full_text_only": "Ububiko bwuzuye. Bibika umwandiko gusa (amashusho yarakuwemo).",
     "storage_full_critical": "Ikomeye: Sinashoboye kubika amateka. Ububiko bwuzuye.",
     "resource_not_found": "Igikoresho cyabuze.",
-    "resource_not_found_history": "Igikoresho ntikiboneka mu mateka.",
+    "resource_not_found_history": "Igikoresho ntikiboneka mu mateka (birashoboka ko byasibwe).",
     "analysis_failed": "Isesengura ryatsinzwe. Wongere ugerageze.",
     "enter_target_language": "Andika ururimi rugamijwe.",
     "translation_started": "Igihindurwa cyatangiye...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI igitekerezo ntibihari",
     "write_essay_first": "Andika your essay cya mbere!",
     "enter_word_art_first": "nyamuneka injiza ijambo art inyandiko cya mbere",
-    "preview_not_ready": "Pgusubiramo not ready yet",
+    "preview_not_ready": "Igaragazambere ntiriteguye — tegereza ko rirangiza kwerekana, hanyuma wongere ugerageze.",
     "word_art_render_failed": "Could not render ijambo art",
     "diff_engine_load_failed": "Diff engine yanze gupakira (mbese internet yahagaritswe?). Genzura ihuzwa ryawe maze wongere ugerageze.",
     "brf_downloaded": "Braille y'ikoranabuhanga (BRF) yapakuruwe",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Hindura ingano y'amashusho y'umutaka"
   },
   "pdf_audit": {
+    "fidelity_delta": "Indahemuka y'inyandiko: {before}% → {after}%{detail}",
     "view_last_audit": "Reba Audit ya Nyuma",
     "start_new_audit": "Tangira Audit Nshya",
     "apply_and_export": "Shyiraho & Ohereza",

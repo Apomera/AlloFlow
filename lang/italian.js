@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage completo. Saving testo solo (immagini removed).",
     "storage_full_critical": "Critical: Could non salva storia. Storage completo.",
     "resource_not_found": "risorse non found.",
-    "resource_not_found_history": "risorse non found in storia.",
+    "resource_not_found_history": "Risorsa non trovata nella cronologia (potrebbe essere stata eliminata).",
     "analysis_failed": "Analisi failed. per favore prova again.",
     "enter_target_language": "per favore inserisci un obiettivo lingue.",
     "translation_started": "traduzioni started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback non disponibile",
     "write_essay_first": "Scrivi your essay primo!",
     "enter_word_art_first": "per favore inserisci parole art testo primo",
-    "preview_not_ready": "Previsualizza not ready yet",
+    "preview_not_ready": "Anteprima non ancora pronta — attendi che venga generata, poi riprova.",
     "word_art_render_failed": "Could not render parole art",
     "diff_engine_load_failed": "Caricamento del motore diff non riuscito (rete bloccata?).",
     "brf_downloaded": "Braille elettronico (BRF) scaricato",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Regolare il size di timeline immagini"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fedeltà: {before}% → {after}%{detail}",
     "view_last_audit": "Visualizza ultimo Audit",
     "start_new_audit": "Inizia nuovo Audit",
     "apply_and_export": "Applica ed esporta",

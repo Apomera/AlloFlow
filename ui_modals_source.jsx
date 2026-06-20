@@ -610,8 +610,8 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const entryRef = useRef(null);
   useFocusTrap(entryRef, isOpen);
-  const adjectives = t('codenames.adjectives') || [];
-  const animals = t('codenames.animals') || [];
+  const adjectives = t('codenames.adjectives', { returnObjects: true }) || [];
+  const animals = t('codenames.animals', { returnObjects: true }) || [];
   const randomizeName = useCallback(() => {
     if (adjectives.length > 0 && animals.length > 0) {
         const adj = adjectives[Math.floor(Math.random() * adjectives.length)];

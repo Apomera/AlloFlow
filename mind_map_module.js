@@ -95,6 +95,31 @@
     'concept-sort', 'brainstorm', 'timeline', 'quiz', 'faq', 'note-taking',
     'anchor-chart', 'adventure', 'dbq', 'persona', 'image', 'lesson-plan'
   ];
+  // Known lesson/resource types (union of badges, renderable, toggleable). Imported
+  // lesson items are sanitized against a tight field set; an unknown type still
+  // imports but is render/open-guarded downstream (RENDERABLE_TYPES).
+  var _KNOWN_LESSON_TYPES = (function () {
+    var s = {};
+    Object.keys(TYPE_ICONS).forEach(function (k) { s[k] = 1; });
+    Object.keys(RENDERABLE_TYPES).forEach(function (k) { s[k] = 1; });
+    RESOURCE_TYPE_OPTIONS.forEach(function (k) { s[k] = 1; });
+    ['note-taking', 'anchor-chart', 'math', 'gemini-bridge', 'explore-challenge', 'math-fluency-maze'].forEach(function (k) { s[k] = 1; });
+    return s;
+  })();
+  // Harden an imported lesson item (untrusted file): require a string id, keep only
+  // the canonical AlloFlow item fields, coerce/cap type+title. Returns null to drop.
+  function sanitizeLessonItem(it) {
+    if (!it || typeof it !== 'object' || typeof it.id !== 'string' || !it.id) return null;
+    var out = {
+      id: it.id.slice(0, 120),
+      type: (typeof it.type === 'string' && it.type) ? it.type.slice(0, 80) : 'unknown',
+      title: (typeof it.title === 'string') ? it.title.slice(0, 400) : ''
+    };
+    if (typeof it.timestamp === 'number' || typeof it.timestamp === 'string') out.timestamp = it.timestamp;
+    if (typeof it.meta === 'string') out.meta = it.meta.slice(0, 200);
+    if (it.data && typeof it.data === 'object') out.data = it.data;
+    return out;
+  }
   // Pacing between lessons (the "pauses at regular intervals" the flow promises).
   // A short cool-down after each lesson, and a longer breather every Nth, so a
   // full unit run does not hammer the model. Skippable via "Continue now".
@@ -496,7 +521,25 @@
           if (n.lessonId) referenced[n.lessonId] = true;
           if (Array.isArray(n.bundledLessonIds)) n.bundledLessonIds.forEach(function (id) { if (id) referenced[id] = true; });
         });
-        var history = Object.keys(referenced).map(function (id) { return lessonPool[id]; }).filter(Boolean);
+        // FERPA scrub: a shareable unit file must never carry per-student response/
+        // score PII (e.g. stem-assessment data.answers). Drop these keys anywhere in
+        // an exported item; answer KEYS (singular "answer"/"correctAnswer") are kept.
+        var _PII_KEYS = { answers: 1, studentAnswers: 1, studentResponses: 1, studentSubmissions: 1, responses: 1, submissions: 1, roster: 1, students: 1, studentName: 1, studentNames: 1, liveResults: 1, pollResults: 1, votes: 1, scoresByStudent: 1, perStudent: 1 };
+        function _scrubPII(v, depth) {
+          if (!v || typeof v !== 'object' || depth > 8) return v;
+          if (Array.isArray(v)) return v.map(function (x) { return _scrubPII(x, depth + 1); });
+          var out = {}; Object.keys(v).forEach(function (k) { if (_PII_KEYS[k]) return; out[k] = _scrubPII(v[k], depth + 1); });
+          return out;
+        }
+        var _scrubbed = 0;
+        var _refIds = Object.keys(referenced);
+        var _resolved = _refIds.map(function (id) { return lessonPool[id]; }).filter(Boolean);
+        var _dropped = _refIds.length - _resolved.length;   // referenced lessons not resolvable (e.g. import-only after reload)
+        var history = _resolved.map(function (it) {
+          var clean = _scrubPII(it, 0);
+          try { if (JSON.stringify(clean) !== JSON.stringify(it)) _scrubbed += 1; } catch (e) {}
+          return clean;
+        });
         var stamped = Object.assign({}, unit, { updatedAt: nowIso(), generator: GENERATOR, schemaVersion: SCHEMA_VERSION });
         var payload = {
           mode: 'independent',
@@ -511,7 +554,7 @@
         a.href = url; a.download = 'alloflow-' + slug + '.unit.json';
         document.body.appendChild(a); a.click();
         setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
-        addToast((t('throughline.exported') || 'Unit exported') + ' (' + history.length + ' ' + (t('throughline.lessons') || 'lessons') + ')', 'success');
+        addToast((t('throughline.exported') || 'Unit exported') + ' (' + history.length + ' ' + (t('throughline.lessons') || 'lessons') + ')' + (_scrubbed ? ' · ' + _scrubbed + ' ' + (t('throughline.export_scrubbed') || 'with student data removed') : '') + (_dropped ? ' · ' + _dropped + ' ' + (t('throughline.export_dropped') || 'could not be included (open them once, then re-export)') : ''), _dropped ? 'warning' : 'success');
       } catch (e) {
         addToast((t('throughline.export_failed') || 'Export failed') + ': ' + e.message, 'error');
       }
@@ -527,7 +570,7 @@
           var packHistory = Array.isArray(parsed && parsed.history) ? parsed.history : [];
           // keep the file's lessons resolvable
           var imp = {};
-          packHistory.forEach(function (it) { if (it && it.id) imp[it.id] = it; });
+          packHistory.forEach(function (it) { var s = sanitizeLessonItem(it); if (s) imp[s.id] = s; });
 
           if (parsed && parsed.unitLayout) {
             var nu = normalizeUnit(parsed.unitLayout);
@@ -638,6 +681,8 @@
     // host provides only two capabilities: onProposeUnit (draft a structure) and
     // onGenerateUnitLesson (run ONE lesson through the shared blueprint engine).
     var genBaseRef = useRef(120);
+    var genDialogRef = useRef(null);
+    var busyRef = useRef(false);   // synchronous re-entrancy guard for propose/build/retry
     useEffect(function () { genRef.current = gen; }, [gen]);
     useEffect(function () {
       mountedRef.current = true;
@@ -647,6 +692,38 @@
         try { if (paceTimerRef.current) clearTimeout(paceTimerRef.current); } catch (e) {}
       };
     }, []);
+    // Generate-Unit modal a11y: focus on open, Escape to close (confirm mid-build),
+    // Tab-trap inside the dialog, restore focus on close. (WCAG 2.1.2 / 2.4.3)
+    useEffect(function () {
+      if (!gen) return;
+      var prevFocus = (typeof document !== 'undefined') ? document.activeElement : null;
+      function focusables() {
+        var el = genDialogRef.current; if (!el) return [];
+        return Array.prototype.slice.call(el.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'))
+          .filter(function (n) { return !n.disabled && n.offsetParent !== null; });
+      }
+      try { var f0 = focusables(); var t0 = f0[0] || genDialogRef.current; if (t0 && t0.focus) t0.focus(); } catch (e) {}
+      function onKey(ev) {
+        var el = genDialogRef.current; if (!el) return;
+        if (ev.key === 'Escape') {
+          ev.preventDefault();
+          var g = genRef.current;
+          if (g && g.phase === 'generating') { if (!window.confirm(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.')) return; stopGeneration(); }
+          closeGenerate(); return;
+        }
+        if (ev.key === 'Tab') {
+          var f = focusables(); if (!f.length) return;
+          var first = f[0], last = f[f.length - 1], a = document.activeElement;
+          if (ev.shiftKey && (a === first || !el.contains(a))) { ev.preventDefault(); last.focus(); }
+          else if (!ev.shiftKey && (a === last || !el.contains(a))) { ev.preventDefault(); first.focus(); }
+        }
+      }
+      document.addEventListener('keydown', onKey, true);
+      return function () {
+        document.removeEventListener('keydown', onKey, true);
+        try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {}
+      };
+    }, [!!gen]);
 
     function setGenMerge(patch) { setGen(function (g) { return g ? Object.assign({}, g, patch) : g; }); }
     function setLesson(idx, patch) {
@@ -675,6 +752,7 @@
       try { if (abortRef.current) abortRef.current.abort(); } catch (e) {}
       try { if (paceTimerRef.current) clearTimeout(paceTimerRef.current); } catch (e) {}
       decisionRef.current = null; paceResolveRef.current = null;
+      busyRef.current = false;
       setGen(null);
     }
     function setInput(patch) { setGen(function (g) { return g ? Object.assign({}, g, { input: Object.assign({}, g.input, patch) }) : g; }); }
@@ -682,14 +760,18 @@
     // setup → proposing → review
     function proposeStructure() {
       var g = genRef.current; if (!g || !onProposeUnit) return;
+      if (busyRef.current) return;   // re-entrancy guard (double-click → double Gemini call)
       if (!g.input.topic || !g.input.topic.trim()) { setGenMerge({ error: t('throughline.gen_need_topic') || 'Add a topic or focus for the unit first.' }); return; }
+      busyRef.current = true;
       setGenMerge({ phase: 'proposing', busy: true, error: null });
       Promise.resolve().then(function () { return onProposeUnit(g.input); }).then(function (proposal) {
+        busyRef.current = false;
         if (!mountedRef.current) return;
         var lessons = (proposal && Array.isArray(proposal.lessons)) ? proposal.lessons : [];
         if (!lessons.length) throw new Error(t('throughline.gen_empty') || 'no lessons returned');
         setGenMerge({ phase: 'review', busy: false, proposal: proposal, results: lessons.map(function () { return { status: 'pending', sub: null, nulls: 0, error: null, nodeId: null }; }) });
       }).catch(function (e) {
+        busyRef.current = false;
         if (!mountedRef.current) return;
         setGenMerge({ phase: 'setup', busy: false, error: (t('throughline.gen_propose_failed') || 'Could not draft a structure') + ': ' + (e && e.message ? e.message : 'unknown error') });
       });
@@ -791,7 +873,10 @@
       };
       setUnit(function (u) {
         var nodes = u.nodes.concat([node]);
-        var edges = prevNodeId ? u.edges.concat([{ from: prevNodeId, to: nodeId, type: 'sequence' }]) : u.edges;
+        // only chain a sequence edge when the predecessor still exists — regenerate
+        // deletes-then-rebuilds the node at this index, which would otherwise dangle
+        var canChain = prevNodeId && u.nodes.some(function (nn) { return nn.nodeId === prevNodeId; });
+        var edges = canChain ? u.edges.concat([{ from: prevNodeId, to: nodeId, type: 'sequence' }]) : u.edges;
         return Object.assign({}, u, { nodes: nodes, edges: edges });
       });
       return nodeId;
@@ -799,6 +884,8 @@
 
     function startGeneration() {
       var g = genRef.current; if (!g || !g.proposal) return;
+      if (busyRef.current || g.phase === 'generating') return;   // re-entrancy guard (double-click)
+      busyRef.current = true;
       if (!unit.title && g.proposal.title) patchUnit({ title: g.proposal.title });
       if (!unit.essentialQuestion && g.proposal.essentialQuestion) patchUnit({ essentialQuestion: g.proposal.essentialQuestion });
       var maxY = 0; unit.nodes.forEach(function (n) { if (n.y > maxY) maxY = n.y; });
@@ -809,30 +896,53 @@
       setGenMerge({ phase: 'generating', cursor: 0, error: null });
       runGeneration();
     }
+    // rebuild only the lessons that failed or came back empty; keep the rest in place
+    function retryFailed() {
+      var g = genRef.current; if (!g || !g.proposal) return;
+      if (busyRef.current) return;
+      if (!(g.results || []).some(function (r) { return r && (r.status === 'error' || r.status === 'empty'); })) return;
+      busyRef.current = true;
+      abortRef.current = (typeof AbortController !== 'undefined') ? new AbortController() : { abort: function () {}, signal: { aborted: false, addEventListener: function () {} } };
+      setGenMerge({ phase: 'generating', cursor: 0, awaiting: -1, error: null });
+      runGeneration(true);
+    }
 
-    function runGeneration() {
+    function runGeneration(retryOnly) {
       var g = genRef.current; if (!g || !g.proposal) return;
       var lessons = g.proposal.lessons;
       var dna = {
         grade: g.proposal.gradeBand || g.input.gradeLevel || '',
         topic: g.proposal.title || g.input.topic || '',
         standard: g.input.standards || '',
-        concepts: Array.isArray(g.proposal.goldenThread) ? g.proposal.goldenThread.slice() : [],
-        keyTerms: Array.isArray(g.proposal.keyTerms) ? g.proposal.keyTerms.slice() : [],
+        concepts: (Array.isArray(g.proposal.goldenThread) ? g.proposal.goldenThread : []).map(function (s) { return String(s).trim(); }).filter(Boolean),
+        keyTerms: (Array.isArray(g.proposal.keyTerms) ? g.proposal.keyTerms : []).map(function (s) { return String(s).trim(); }).filter(Boolean),
+        desiredResults: (Array.isArray(g.proposal.desiredResults) ? g.proposal.desiredResults : []).map(function (s) { return String(s).trim(); }).filter(Boolean),
         essentialQuestion: g.proposal.essentialQuestion || ''
       };
       var prevNodeId = null;
       var i = 0;
 
       function finish() {
+        busyRef.current = false;
         if (!mountedRef.current) return;
         setGenMerge({ phase: 'done', cursor: -1, awaiting: -1, pacing: 0 });
       }
       function aborted() { return !mountedRef.current || (abortRef.current && abortRef.current.signal.aborted); }
+      // most recent placed node before index k (skips skipped/errored lessons that left no node)
+      function anchorBefore(k) { for (var j = k - 1; j >= 0; j--) { var pid = genRef.current.results[j] && genRef.current.results[j].nodeId; if (pid) return pid; } return null; }
 
       function step() {
         if (aborted() || i >= lessons.length) return finish();
         var idx = i;
+        // retry mode: keep already-built/skipped lessons; only rebuild error/empty/pending
+        if (retryOnly) {
+          var rs = (genRef.current.results[idx] || {}).status;
+          if (rs === 'done' || rs === 'skipped') {
+            var keep = genRef.current.results[idx] && genRef.current.results[idx].nodeId;
+            if (keep) prevNodeId = keep;
+            i = idx + 1; return step();
+          }
+        }
         // regenerate cleanup: drop the node a prior attempt at this index made
         var prior = genRef.current.results[idx] && genRef.current.results[idx].nodeId;
         if (prior) {
@@ -881,7 +991,9 @@
       function afterLesson(idx) {
         if (aborted()) return finish();
         var isLast = idx >= lessons.length - 1;
-        if (genRef.current.autoContinue) {
+        var _st = (genRef.current.results[idx] || {}).status;
+        // even in auto mode, stop at the gate on a failed/empty lesson so the teacher can retry or skip
+        if (genRef.current.autoContinue && _st !== 'error' && _st !== 'empty') {
           i = idx + 1;
           if (isLast) return finish();
           var s0 = (i % BREATHER_EVERY === 0) ? BREATHER_SECONDS : PACE_SECONDS;
@@ -892,8 +1004,15 @@
         waitForDecision().then(function (decision) {
           if (!mountedRef.current) return;
           if (decision === 'stop') return finish();
-          if (decision === 'regenerate') { i = idx; return step(); }       // same index
-          if (decision === 'skip') { setLesson(idx, { status: 'skipped' }); i = idx + 1; if (isLast) return finish(); return pace(PACE_SECONDS).then(step); }
+          if (decision === 'regenerate') { prevNodeId = anchorBefore(idx); i = idx; return step(); }   // re-chain off the predecessor, not the node step() deletes
+          if (decision === 'skip') {
+            // discard this lesson's node (if one was built) and bypass it in the sequence
+            var skipNode = genRef.current.results[idx] && genRef.current.results[idx].nodeId;
+            if (skipNode) setUnit(function (u) { return Object.assign({}, u, { nodes: u.nodes.filter(function (n) { return n.nodeId !== skipNode; }), edges: u.edges.filter(function (e) { return e.from !== skipNode && e.to !== skipNode; }) }); });
+            setLesson(idx, { status: 'skipped', nodeId: null });
+            prevNodeId = anchorBefore(idx);
+            i = idx + 1; if (isLast) return finish(); return pace(PACE_SECONDS).then(step);
+          }
           // accept
           i = idx + 1;
           if (isLast) return finish();
@@ -933,10 +1052,24 @@
       var pendingThis = pendingFrom === n.nodeId;
       var border = pendingThis ? '#d97706' : (planned ? '#cbd5e1' : '#475569');
       var bg = pendingThis ? '#fffbeb' : '#ffffff';
+      // keyboard summary + ops so the canvas is operable without a mouse (WCAG 2.1.1)
+      var cardAria = planned
+        ? ((t('throughline.empty_node') || 'Attach a lesson') + (n.description ? ': ' + n.description : '') + '. ' + (t('throughline.aria_planned_hint') || 'Press Enter to attach a lesson, E to edit, Delete to remove.'))
+        : ((item ? (typeLabel(item.type) + ': ' + (item.title || typeLabel(item.type))) : (t('throughline.lesson_missing_short') || 'Lesson missing')) + '. ' + (t('throughline.aria_lesson_hint') || 'Press Enter to open, E to edit, Delete to remove.'));
       return h('div', {
         key: n.nodeId,
+        tabIndex: 0,
+        role: 'group',
+        'aria-label': cardAria,
         onMouseDown: function (e) { onCardMouseDown(e, n); },
         onClick: function (e) { onCardClick(e, n); },
+        onKeyDown: function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            if (!planned && !missing && onOpenLesson) { e.preventDefault(); openNodeLesson(n); }
+            else if (planned && hostHistory.length) { e.preventDefault(); setPickerForNode(n.nodeId); }
+          } else if (e.key === 'e' || e.key === 'E' || e.key === 'F2') { e.preventDefault(); setEditingNode(n.nodeId); }
+          else if (e.key === 'Delete') { e.preventDefault(); deleteNode(n.nodeId); }
+        },
         style: {
           position: 'absolute', left: n.x, top: n.y, width: NODE_W, minHeight: NODE_H,
           background: bg, border: '2px ' + (planned ? 'dashed' : 'solid') + ' ' + border,
@@ -1242,12 +1375,12 @@
     },
       h('div', { style: { background: '#fff', borderRadius: 14, width: '100%', maxWidth: 440, padding: 18 } },
         h('div', { style: { fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 12 } }, t('throughline.unit_details') || 'Unit details'),
-        h('label', { style: { fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 } }, t('throughline.title_label') || 'Unit title'),
-        h('input', { value: unit.title || '', autoFocus: true, onChange: function (e) { patchUnit({ title: e.target.value }); },
+        h('label', { htmlFor: 'tl-unit-title', style: { fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 } }, t('throughline.title_label') || 'Unit title'),
+        h('input', { id: 'tl-unit-title', value: unit.title || '', autoFocus: true, onChange: function (e) { patchUnit({ title: e.target.value }); },
           placeholder: t('throughline.title_ph') || 'e.g. The Water Cycle',
           style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', marginBottom: 12 } }),
-        h('label', { style: { fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 } }, t('throughline.eq_label') || 'Essential question (Understanding by Design)'),
-        h('textarea', { value: unit.essentialQuestion || '', rows: 2, onChange: function (e) { patchUnit({ essentialQuestion: e.target.value }); },
+        h('label', { htmlFor: 'tl-unit-eq', style: { fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 } }, t('throughline.eq_label') || 'Essential question (Understanding by Design)'),
+        h('textarea', { id: 'tl-unit-eq', value: unit.essentialQuestion || '', rows: 2, onChange: function (e) { patchUnit({ essentialQuestion: e.target.value }); },
           placeholder: t('throughline.eq_ph') || 'e.g. How does Earth recycle its water?',
           style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', resize: 'vertical' } }),
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 14 } },
@@ -1263,8 +1396,10 @@
       var proposal = gen.proposal;
 
       function field(label, node) {
+        // nest the control inside the <label> for an implicit, AT-correct association
         return h('div', { style: { marginBottom: 11 } },
-          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 } }, label), node);
+          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569' } },
+            h('span', { style: { display: 'block', marginBottom: 4 } }, label), node));
       }
       var inStyle = { width: '100%', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' };
 
@@ -1275,7 +1410,7 @@
         sub = t('throughline.gen_setup_sub') || 'AI drafts a backward-designed structure, then builds each lesson with the blueprint engine. You review and refine every step. This makes several AI calls and is paced to respect rate limits.';
         body = h('div', null,
           gen.error && h('div', { style: { background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 8, padding: '8px 10px', fontSize: 12, marginBottom: 10, fontWeight: 600 } }, '⚠️ ' + gen.error),
-          field((t('throughline.gen_topic') || 'Topic or focus') + ' *', h('input', { autoFocus: true, value: inp.topic || '', onChange: function (e) { setInput({ topic: e.target.value }); }, placeholder: t('throughline.gen_topic_ph') || 'e.g. The water cycle; Causes of the American Revolution', style: inStyle })),
+          field((t('throughline.gen_topic') || 'Topic or focus') + ' *', h('input', { autoFocus: true, 'aria-required': true, value: inp.topic || '', onChange: function (e) { setInput({ topic: e.target.value }); }, placeholder: t('throughline.gen_topic_ph') || 'e.g. The water cycle; Causes of the American Revolution', style: inStyle })),
           h('div', { style: { display: 'flex', gap: 10 } },
             h('div', { style: { flex: 2 } }, field(t('throughline.gen_grade') || 'Grade band', h('input', { value: inp.gradeLevel || '', onChange: function (e) { setInput({ gradeLevel: e.target.value }); }, placeholder: t('throughline.gen_grade_ph') || 'e.g. 5th grade (blank = use app setting)', style: inStyle }))),
             h('div', { style: { flex: 1 } }, field(t('throughline.gen_count') || 'Lessons', h('input', { type: 'number', min: 2, max: 8, value: inp.lessonCount || 4, onChange: function (e) { var v = parseInt(e.target.value, 10); setInput({ lessonCount: isNaN(v) ? 4 : Math.max(2, Math.min(8, v)) }); }, style: inStyle })))
@@ -1309,9 +1444,11 @@
             '~' + calls + ' ' + (t('throughline.gen_calls') || 'AI generations across') + ' ' + proposal.lessons.length + ' ' + (t('throughline.lessons') || 'lessons') + '. ' + (t('throughline.gen_paced_note') || 'Paced, and you review each one as it is built.')),
           field(t('throughline.gen_unit_title') || 'Unit title', h('input', { value: proposal.title || '', onChange: function (e) { patchProposal({ title: e.target.value }); }, style: inStyle })),
           field(t('throughline.eq_label') || 'Essential question', h('textarea', { value: proposal.essentialQuestion || '', rows: 2, onChange: function (e) { patchProposal({ essentialQuestion: e.target.value }); }, style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
+          field(t('throughline.gen_eu') || 'Enduring understandings (the big ideas this unit is designed backward from)', h('textarea', { value: (proposal.desiredResults || []).join('\n'), rows: 2, onChange: function (e) { patchProposal({ desiredResults: e.target.value.split('\n') }); }, placeholder: t('throughline.gen_eu_ph') || 'One per line — these now ground every lesson the AI builds', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
           (proposal.keyTerms && proposal.keyTerms.length > 0) && h('div', { style: { marginBottom: 10 } },
             h('div', { style: { fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4 } }, t('throughline.gen_key_terms') || 'Key terms (carried through every lesson)'),
             h('div', null, proposal.keyTerms.slice(0, 14).map(function (kt, i) { return chip(kt, 'kt' + i); }))),
+          field(t('throughline.gen_golden') || 'Golden thread — recurring concepts carried into every lesson', h('textarea', { value: (proposal.goldenThread || []).join('\n'), rows: 2, onChange: function (e) { patchProposal({ goldenThread: e.target.value.split('\n') }); }, placeholder: t('throughline.gen_golden_ph') || 'One concept per line — these steer every lesson the AI builds', style: Object.assign({}, inStyle, { resize: 'vertical' }) })),
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#1e293b', margin: '12px 0 6px' } }, (t('throughline.gen_lessons_label') || 'Lessons')),
           proposal.lessons.map(function (l, i) {
             return h('div', { key: 'L' + i, style: { border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, marginBottom: 8, background: '#fff' } },
@@ -1325,9 +1462,11 @@
               h('input', { value: l.objective || '', onChange: function (e) { patchLessonSpec(i, { objective: e.target.value }); }, placeholder: t('throughline.gen_objective_ph') || 'Measurable objective', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
               h('input', { value: l.focus || '', onChange: function (e) { patchLessonSpec(i, { focus: e.target.value }); }, placeholder: t('throughline.gen_focus_ph') || 'One-line focus that steers every resource in this lesson', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
-                RESOURCE_TYPE_OPTIONS.map(function (rt) {
+                // standard palette + any AI-proposed type not in it, so every type that
+                // will actually generate is visible and can be toggled off
+                RESOURCE_TYPE_OPTIONS.concat((l.suggestedResourceTypes || []).filter(function (rt) { return RESOURCE_TYPE_OPTIONS.indexOf(rt) < 0; })).map(function (rt) {
                   var on = (l.suggestedResourceTypes || []).indexOf(rt) >= 0;
-                  return h('button', { key: rt, onClick: function () { toggleLessonType(i, rt); },
+                  return h('button', { key: rt, onClick: function () { toggleLessonType(i, rt); }, 'aria-pressed': on, 'aria-label': typeLabel(rt) + (on ? ' — ' + (t('throughline.selected') || 'selected') : ''),
                     title: rt, style: { fontSize: 11, padding: '3px 8px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + (on ? '#4338ca' : '#e2e8f0'), background: on ? '#4f46e5' : '#fff', color: on ? '#fff' : '#64748b', fontWeight: on ? 700 : 500 } },
                     typeIcon(rt) + ' ' + typeLabel(rt));
                 })
@@ -1346,20 +1485,35 @@
       } else if ((phase === 'generating' || phase === 'done') && proposal) {
         var lessons = proposal.lessons;
         var statusMeta = {
-          pending: { icon: '•', color: '#94a3b8', label: t('throughline.gen_pending') || 'waiting' },
+          pending: { icon: '•', color: '#64748b', label: t('throughline.gen_pending') || 'waiting' },
           running: { icon: '⏳', color: '#7c3aed', label: t('throughline.gen_running') || 'building' },
-          done: { icon: '✅', color: '#16a34a', label: t('throughline.gen_done') || 'added to canvas' },
+          done: { icon: '✅', color: '#15803d', label: t('throughline.gen_done') || 'added to canvas' },
           empty: { icon: '⚠️', color: '#b45309', label: t('throughline.gen_empty_label') || 'no resources returned' },
           error: { icon: '❌', color: '#dc2626', label: t('throughline.gen_error_label') || 'failed' },
-          skipped: { icon: '⤼', color: '#94a3b8', label: t('throughline.gen_skipped') || 'skipped' }
+          skipped: { icon: '⤼', color: '#64748b', label: t('throughline.gen_skipped') || 'skipped' }
         };
         var doneN = gen.results.filter(function (r) { return r.status === 'done'; }).length;
+        var failedN = gen.results.filter(function (r) { return r.status === 'error' || r.status === 'empty'; }).length;
+        // gate banner reflects the ACTUAL outcome of the lesson at gen.awaiting (not always "ready")
+        var gateR = (gen.awaiting >= 0 && gen.results[gen.awaiting]) || { status: 'done' };
+        var gateOk = gateR.status === 'done';
+        var gateLessonN = (t('throughline.gen_review_gate') || 'Lesson') + ' ' + (gen.awaiting + 1) + ' ';
+        var gateRetry = (t('throughline.gen_gate_retry') || 'Regenerate to try again, or skip it.');
+        var gateText = gateOk
+          ? (gateLessonN + (t('throughline.gen_ready_review') || 'is ready. Review it, then continue.'))
+          : (gateR.status === 'error'
+              ? (gateLessonN + (t('throughline.gen_gate_failed') || 'did not build') + (gateR.error ? ' (' + gateR.error + ')' : '') + '. ' + gateRetry)
+              : (gateLessonN + (t('throughline.gen_gate_empty') || 'returned no resources') + '. ' + gateRetry));
+        var gateBg = gateOk ? '#eef2ff' : '#fff7ed';
+        var gateBorder = gateOk ? '#c7d2fe' : '#fed7aa';
+        var gateTextColor = gateOk ? '#3730a3' : '#9a3412';
         headline = (phase === 'done' ? '🎉 ' : '🛠 ') + (phase === 'done' ? (t('throughline.gen_complete') || 'Unit built') : (t('throughline.gen_building') || 'Building your unit'));
         sub = phase === 'done'
-          ? (doneN + ' / ' + lessons.length + ' ' + (t('throughline.gen_lessons_added') || 'lessons added to your canvas'))
+          ? (doneN + ' / ' + lessons.length + ' ' + (t('throughline.gen_lessons_added') || 'lessons added to your canvas') + (failedN ? ' · ' + failedN + ' ' + (t('throughline.gen_failed_count') || 'need attention') : ''))
           : ((t('throughline.gen_lesson') || 'Lesson') + ' ' + (Math.min(gen.cursor + 1, lessons.length)) + ' ' + (t('throughline.gen_of') || 'of') + ' ' + lessons.length);
 
         body = h('div', null,
+          h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': t('throughline.gen_progress_aria') || 'Lesson build progress' },
           lessons.map(function (l, i) {
             var r = gen.results[i] || { status: 'pending' };
             var meta = statusMeta[r.status] || statusMeta.pending;
@@ -1377,30 +1531,31 @@
               ),
               (phase === 'done' && r.status === 'done' && r.nodeId && onOpenLesson) && h('button', { onClick: function () { var nd = null; unit.nodes.forEach(function (n) { if (n.nodeId === r.nodeId) nd = n; }); if (nd) openNodeLesson(nd); }, style: { fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 6, border: '1px solid #6366f1', background: '#eef2ff', color: '#4338ca', cursor: 'pointer', whiteSpace: 'nowrap' } }, (t('throughline.open_lesson') || 'Open') + ' ↗')
             );
-          }),
+          })),
           // pacing countdown
           (phase === 'generating' && gen.pacing > 0) && h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginTop: 6, fontSize: 12, color: '#92400e', fontWeight: 600 } },
             h('span', null, '⏸ ' + (t('throughline.gen_pacing') || 'Pausing') + ' ' + gen.pacing + 's ' + (t('throughline.gen_pacing_why') || 'to respect rate limits…')),
             h('button', { onClick: continueNow, style: { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 6, border: '1px solid #f59e0b', background: '#fff', color: '#b45309', cursor: 'pointer' } }, t('throughline.gen_continue_now') || 'Continue now')),
           // backpressure / review gate
-          (phase === 'generating' && gen.awaiting >= 0) && h('div', { style: { background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 8, padding: '10px', marginTop: 6 } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: '#3730a3', marginBottom: 8 } }, (t('throughline.gen_review_gate') || 'Lesson') + ' ' + (gen.awaiting + 1) + ' ' + (t('throughline.gen_ready_review') || 'is ready. Review it, then continue.')),
+          (phase === 'generating' && gen.awaiting >= 0) && h('div', { role: 'status', style: { background: gateBg, border: '1px solid ' + gateBorder, borderRadius: 8, padding: '10px', marginTop: 6 } },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: gateTextColor, marginBottom: 8 } }, gateText),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              h('button', { onClick: function () { resolveDecision('accept'); }, style: { fontSize: 12, fontWeight: 800, padding: '6px 12px', borderRadius: 7, border: 'none', background: '#4f46e5', color: '#fff', cursor: 'pointer' } }, '✓ ' + (t('throughline.gen_accept') || 'Accept & continue')),
-              h('button', { onClick: function () { resolveDecision('regenerate'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #c7d2fe', background: '#fff', color: '#4338ca', cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_regen') || 'Regenerate')),
+              h('button', { onClick: function () { resolveDecision('accept'); }, style: { fontSize: 12, fontWeight: 800, padding: '6px 12px', borderRadius: 7, border: gateOk ? 'none' : '1px solid #cbd5e1', background: gateOk ? '#4f46e5' : '#fff', color: gateOk ? '#fff' : '#475569', cursor: 'pointer' } }, gateOk ? ('✓ ' + (t('throughline.gen_accept') || 'Accept & continue')) : ('→ ' + (t('throughline.gen_continue_without') || 'Continue without it'))),
+              h('button', { onClick: function () { resolveDecision('regenerate'); }, style: { fontSize: 12, fontWeight: gateOk ? 700 : 800, padding: '6px 12px', borderRadius: 7, border: gateOk ? '1px solid #c7d2fe' : 'none', background: gateOk ? '#fff' : '#4f46e5', color: gateOk ? '#4338ca' : '#fff', cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_regen') || 'Regenerate')),
               h('button', { onClick: function () { resolveDecision('skip'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' } }, '⤼ ' + (t('throughline.gen_skip') || 'Skip')),
               h('button', { onClick: function () { resolveDecision('stop'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', cursor: 'pointer' } }, (t('throughline.gen_finish_here') || 'Finish here'))
             )
           ),
           phase === 'generating' && h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 12, color: '#475569', cursor: 'pointer' } },
-            h('input', { type: 'checkbox', checked: !!gen.autoContinue, onChange: function (e) { setGenMerge({ autoContinue: e.target.checked }); if (e.target.checked && gen.awaiting >= 0) resolveDecision('accept'); } }),
+            h('input', { type: 'checkbox', checked: !!gen.autoContinue, onChange: function (e) { setGenMerge({ autoContinue: e.target.checked }); if (e.target.checked && gen.awaiting >= 0 && (gen.results[gen.awaiting] || {}).status === 'done') resolveDecision('accept'); } }),
             (t('throughline.gen_auto_running') || 'Stop pausing — build the rest without me (still paced)')),
           phase === 'done' && h('div', { style: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px', marginTop: 8, fontSize: 12, color: '#166534' } },
             '💾 ' + (t('throughline.gen_export_nudge') || 'Your lessons live in this browser. Use Export unit to save a durable file you can reopen or share.'))
         );
 
         footer = phase === 'done'
-          ? h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+          ? h('div', { style: { display: 'flex', justifyContent: failedN ? 'space-between' : 'flex-end', gap: 8 } },
+              failedN ? h('button', { onClick: retryFailed, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_retry_failed') || 'Retry failed') + ' (' + failedN + ')') : null,
               h('button', { onClick: closeGenerate, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, t('throughline.gen_open_unit') || 'Open the unit'))
           : h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', alignSelf: 'center' } }, t('throughline.gen_safe_note') || 'Lessons already built stay in your unit.'),
@@ -1422,7 +1577,7 @@
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 },
         onClick: function (e) { if (e.target === e.currentTarget && phase !== 'generating') onOverlayClose(); }
       },
-        h('div', { style: { background: '#fff', borderRadius: 16, width: '100%', maxWidth: 720, maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(15,23,42,0.3)' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': t('throughline.gen_title') || 'Generate a unit' },
+        h('div', { ref: genDialogRef, tabIndex: -1, style: { background: '#fff', borderRadius: 16, width: '100%', maxWidth: 720, maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(15,23,42,0.3)' }, role: 'dialog', 'aria-modal': 'true', 'aria-label': t('throughline.gen_title') || 'Generate a unit' },
           h('div', { style: { padding: '14px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-start', gap: 10 } },
             h('div', { style: { flex: 1 } },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#1e293b' } }, headline),

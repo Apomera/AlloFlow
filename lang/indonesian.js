@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage penuh. Saving teks hanya (gambar removed).",
     "storage_full_critical": "Critical: Could tidak simpan sejarah. Storage penuh.",
     "resource_not_found": "sumber daya tidak found.",
-    "resource_not_found_history": "sumber daya tidak found di sejarah.",
+    "resource_not_found_history": "Sumber daya tidak ditemukan di riwayat (mungkin telah dihapus).",
     "analysis_failed": "Analisis failed. mohon coba again.",
     "enter_target_language": "mohon masukkan sebuah target bahasa.",
     "translation_started": "terjemahan started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback tidak tersedia",
     "write_essay_first": "Tulis your essay pertama!",
     "enter_word_art_first": "mohon masukkan kata seni teks pertama",
-    "preview_not_ready": "Pratinjau belum siap",
+    "preview_not_ready": "Pratinjau belum siap — tunggu hingga selesai dirender, lalu coba lagi.",
     "word_art_render_failed": "Could not render kata seni",
     "diff_engine_load_failed": "Mesin diff gagal dimuat (jaringan diblokir?).",
     "brf_downloaded": "Braille Elektronik (BRF) diunduh",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Menyesuaikan size timeline gambar"
   },
   "pdf_audit": {
+    "fidelity_delta": "Kesetiaan: {before}% → {after}%{detail}",
     "view_last_audit": "Lihat terakhir Audit",
     "start_new_audit": "Mulai baru Audit",
     "apply_and_export": "Terapkan dan Ekspor",

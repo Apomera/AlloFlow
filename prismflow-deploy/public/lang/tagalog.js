@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage buo. Saving teksto lamang (imahe removed).",
     "storage_full_critical": "Kritikal: Hindi ma-save ang kasaysayan. Puno ang storage.",
     "resource_not_found": "mga mapagkukunan hindi found.",
-    "resource_not_found_history": "mga mapagkukunan hindi found sa kasaysayan.",
+    "resource_not_found_history": "Hindi natagpuan ang mapagkukunan sa kasaysayan (maaaring naalis na ito).",
     "analysis_failed": "Pagsusuri failed. pakiusap subukan again.",
     "enter_target_language": "pakiusap ipasok isang target wika.",
     "translation_started": "pagsasalin started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback hindi magagamit",
     "write_essay_first": "Isulat your essay una!",
     "enter_word_art_first": "pakiusap ipasok mga salita art teksto una",
-    "preview_not_ready": "Hindi pa handa ang preview",
+    "preview_not_ready": "Hindi pa handa ang silip — hintayin itong lumabas, pagkatapos ay ulitin.",
     "word_art_render_failed": "Could not render mga salita art",
     "diff_engine_load_failed": "Nabigong mag-load ang diff engine (na-block ang network?). Suriin ang iyong koneksyon at subukang muli.",
     "brf_downloaded": "Na-download ang Electronic Braille (BRF)",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Na-save ang project ({count} range); i-load ito mamaya para magpatuloy",
     "project_saved": "💾 Na-save ang project; i-load ito mamaya para magpatuloy sa pag-edit",
     "search_result_desc": "Resulta ng Paghahanap sa Google: {title}",
-    "link_url_prompt": "Ilagay ang URL ng link:"
+    "link_url_prompt": "Ilagay ang URL ng link:",
+    "building_accessible_docx": "Ginagawa ang accessible na Word file…",
+    "building_accessible_pptx": "Ginagawa ang accessible na PowerPoint…",
+    "batch_tagging": "📄 Gumagawa ng mga tagged na PDF para sa ZIP — mas matagal ang mga na-scan na file (umaandar ang OCR bawat file)…",
+    "builder_edits_preserved": "✋ Pinanatili ang iyong mga manu-manong pagbabago — hindi na-render muli ang preview. I-export o isara ang builder para i-save ang mga ito, pagkatapos ay baguhin ang mga setting.",
+    "builder_edits_synced": "✏️ Na-save sa na-remediate na dokumento ang mga pagbabago sa builder — kasama na ang mga ito sa mga export na Tagged PDF / Word / PowerPoint.",
+    "pptx_ai_theme": "🎨 Humihingi sa AI ng palette na bagay sa paksa (lokal na ipinapatupad ang pagkabasa)…",
+    "make_accessible_fixing": "✨ Tapos na ang audit — awtomatikong nire-remediate (walang kailangang i-click)…",
+    "tagged_pdf_saved_see_report": "📄 Na-save ang Tagged PDF — naka-pin ang buong ulat sa itaas ng mga download button (✕ para i-dismiss).",
+    "no_open_image_slot": "Wala nang bukas na slot para sa larawan sa preview — sa halip, i-drag ang thumbnail papunta sa isang partikular na larawan para palitan ito.",
+    "extracted_image_inserted": "🖼 Inilagay sa unang bukas na slot ng larawan — i-drag na lang ang thumbnail kung gusto mo ng ibang lugar.",
+    "html_downloaded": "🌐 Na-download ang HTML — nabubuksan sa kahit anong browser.",
+    "odt_downloaded": "📄 Na-download ang OpenDocument (.odt) — nabubuksan sa LibreOffice, Google Docs, o Word.",
+    "daisy_downloaded": "🔊 Na-download ang DAISY talking-book package (.zip) — buksan sa isang DAISY reader.",
+    "mo_no_voice": "Hindi magamit ang serbisyo ng boses, kaya hindi makakagawa ng read-along audio sa ngayon.",
+    "mo_busy": "May umaandar nang read-along export.",
+    "mo_no_text": "Walang nakitang nababasang teksto na maisasalaysay.",
+    "mo_no_audio": "⚠ Na-save ang read-along ebook, ngunit walang audio na nagawa (hindi magamit ang serbisyo ng boses). Buo ang teksto at ang sync structure.",
+    "mo_done": "Na-download ang read-along ebook",
+    "audio_unavailable_now": "Hindi magamit ang audio sa ngayon (maaaring may umaandar na trabaho, o naka-off ang serbisyo ng boses)."
   },
   "large_file": {
     "modal_title": "I-import Large audio file",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator mga kasangkapan",
     "documents_menu_aria": "dokumento menu",
     "open_doc_builder_pdf_aria": "Buksan dokumento Builder para sa PDF",
-    "export_slides_tooltip": "Opens dokumento Builder sa Slides mode"
+    "export_slides_tooltip": "Opens dokumento Builder sa Slides mode",
+    "learning_tools_tooltip": "Mga Learning Tool (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Target wika",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Opsyonal. Inilalapat sa bawat imahe sa quiz (tanong + mga opsyon). Walang laman = default na estilo. Pinapanatili kasama ng quiz para manatiling on-brand ang mga aksyong pagpapakinis.",
     "generate_pre_check": "Bumuo Pre-Suriin",
     "generate_formative": "Bumuo Formative Suriin",
-    "generate_review": "Bumuo Spaced Pagsusuri"
+    "generate_review": "Bumuo Spaced Pagsusuri",
+    "likert_strongly_disagree": "Lubos na hindi sang-ayon",
+    "no_right_answer": "Walang tama o maling sagot dito.",
+    "poll_completed": "Salamat sa pagbabahagi ng iyong saloobin.",
+    "poll_intro": "Walang tama o maling sagot dito — ang iyong tapat na saloobin ay nakakatulong sa iyong guro at nakakatulong sa iyo.",
+    "mode_poll": "🗣️ Poll (boses ng mag-aaral)"
   },
   "outline": {
     "title": "biswal Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "Isaayos ang size ng timeline imahe"
   },
   "pdf_audit": {
+    "fidelity_delta": "Katapatan: {before}% → {after}%{detail}",
     "view_last_audit": "Tingnan huli Audit",
     "start_new_audit": "Simulan bago Audit",
     "apply_and_export": "Ilapat at i-export",
@@ -4251,7 +4277,8 @@
       "std_dev": "pamantayan Deviation",
       "icc_title": "Custom 1−(SD/50) index; hindi textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "CV + pairwise na hybrid na heuristic sa mga AI pass; hindi ang tunay na Cronbach's α"
     },
     "score": {
       "total_checks": "Kabuuang naisagawang pagsusuri",
@@ -4413,7 +4440,9 @@
       "title": "Regenerate isang PDF mula sa ang remediated HTML. Layout reflows — pahina breaks, fonts, at pagination maaaring differ mula sa ang orihinal. Gumagana well para sa simple prose dokumento."
     },
     "tagged_pdf": {
-      "title": "Preserve ang orihinal PDF's biswal layout byte-identical at inject pagiging madaling magamit tags sa loob its istraktura tree. Pinakamahusay para sa textbooks, multi-kolum dokumento, at branded PDFs saan biswal fidelity matters."
+      "title": "Preserve ang orihinal PDF's biswal layout byte-identical at inject pagiging madaling magamit tags sa loob its istraktura tree. Pinakamahusay para sa textbooks, multi-kolum dokumento, at branded PDFs saan biswal fidelity matters.",
+      "office_note": "Para sa mga PDF input ang Tagged PDF — gamitin ang Word/HTML",
+      "office_note_title": "Maaari lang i-inject ang mga structure tag sa mga PDF byte. Para sa mga Word/PowerPoint input, ang mga accessible na download na Word at HTML ang nagdadala ng na-remediate na istruktura."
     },
     "alt_formats": {
       "intro": "I-download ang remediated dokumento sa naa-access alternative format"
@@ -4484,7 +4513,9 @@
       "heading": "bersyon Stamp"
     },
     "extracted_images": {
-      "drag_hint": "I-drag ang isang thumbnail papunta sa anumang placeholder ng imahe sa preview para ipasok ito, o i-click ang \"📷 Upload\" sa loob ng isang placeholder at piliin ang \"Gamitin ang nakuhang imahe\"."
+      "drag_hint": "I-drag ang isang thumbnail papunta sa anumang placeholder ng imahe sa preview para ipasok ito, o i-click ang \"📷 Upload\" sa loob ng isang placeholder at piliin ang \"Gamitin ang nakuhang imahe\".",
+      "drag_hint2": "I-click ang isang thumbnail upang ipasok ito sa unang bukas na image slot, o i-drag ito sa anumang partikular na placeholder o larawan sa preview. ×N = ang parehong larawan ay lumitaw sa N na pahina (kadalasang isang letterhead o logo).",
+      "insert_aria": "Ipasok ang na-extract na larawan sa unang bukas na slot"
     },
     "toolbar": {
       "aria": "teksto formatting",
@@ -4510,7 +4541,8 @@
     },
     "divergence": {
       "semantic": "Sumusunod sa estruktura pero mahina sa semantika — minarkahan ng AI ang kalidad ng nilalaman (alt text, kahulugan ng heading, pagkakasunod-sunod ng pagbabasa) na hindi matutukoy ng axe-core",
-      "structural": "Natuklasan ang mga paglabag sa WCAG sa antas ng code — natagpuan ng axe-core ang mga pagkabigo na maaaring suriin ng makina"
+      "structural": "Natuklasan ang mga paglabag sa WCAG sa antas ng code — natagpuan ng axe-core ang mga pagkabigo na maaaring suriin ng makina",
+      "critical_override": "Nakakita ang axe-core ng {n} kritikal na paglabag sa WCAG — suriin ang mga ito bago magtiwala sa pinaghalong iskor; maaaring itago ng average ang isang malubhang depekto"
     },
     "tagtree": {
       "label": "Kasalukuyang istruktura ng tag",
@@ -4543,7 +4575,59 @@
     "violation_one": "{count} paglabag",
     "violation_other": "{count} paglabag",
     "ai_issue_one": "{count} isyung na-flag ng AI",
-    "ai_issue_other": "{count} isyung na-flag ng AI"
+    "ai_issue_other": "{count} isyung na-flag ng AI",
+    "tagged": {
+      "born_digital_note": "Paalala: para sa mga PDF na may text layer, ang mga semantic tag ay gumagamit ng ActualText associations sa halip na buong content linkage. Mas accessible nang husto ang file, ngunit i-verify sa PAC 2024 o Acrobat bago i-claim ang PDF/UA conformance."
+    },
+    "one_click": {
+      "label": "Gawing Accessible",
+      "badge": "ganap na awtomatiko — audit, ayos, verify, ulitin hanggang sa target",
+      "desc": "Sa isang click, hands-free na pinapatakbo ang buong pipeline gamit ang mga default na setting; handa na ang mga download sa dulo. Gusto ng kontrol? Gamitin ang \"Run Audit\" sa ibaba, suriin ang mga resulta, pagkatapos ay i-click mismo ang Fix & Verify."
+    },
+    "run_audit_label": "Run Audit (hakbang 1 ng 2)",
+    "manual_path_explainer": "Ang \"Run Audit\" ay nagbibigay-iskor sa dokumento at nagpapakita ng kailangang ayusin — pagkatapos ay susuriin mo at i-click mismo ang Fix & Verify (hakbang 2). Ang \"Gawing Accessible\" sa itaas ay ginagawa ang parehong hakbang kasama ang muling pagsusuri, awtomatiko. Ang \"Text Extraction\" ay kinukuha lang ang raw na teksto para sa paggawa ng nilalaman.",
+    "tagged_report": {
+      "heading": "Ulat ng Tagged PDF",
+      "close_aria": "I-dismiss ang ulat ng tagged-PDF",
+      "note": "Mananatili ang panel na ito hanggang i-dismiss mo. Ang parehong mga detalye ay kasama sa download na Adobe-style na A11y Report."
+    },
+    "docx_export": {
+      "title": "I-convert ang na-remediate na nilalaman sa isang Word document na may totoong mga estilo ng heading, alt text sa mga larawan, mga header row ng talahanayan, istruktura ng listahan, at gumaganang mga hyperlink. I-verify gamit ang built-in na Accessibility Checker ng Word (Review → Check Accessibility) bago ipamahagi."
+    },
+    "pptx_export": {
+      "title": "Muling buuin ang na-remediate na nilalaman bilang isang PowerPoint deck na may totoong mga pamagat ng slide, alt text sa mga larawan, mga row ng talahanayan na may estilong header, totoong mga bullet list, at reading order = visual order. Isang muling binuong accessible na layout — hindi visual na kopya ng orihinal. I-verify gamit ang Accessibility Checker ng PowerPoint bago ipamahagi."
+    },
+    "dashboard": {
+      "aria": "Pangkalahatang-tanaw ng mga resulta ng remediation at navigation ng seksyon",
+      "score_title": "Iskor ng accessibility: bago → pagkatapos"
+    },
+    "tag_to_workbench_title": "Ipadala ang block na ito sa Expert Workbench: pinupuno nang maaga ang isang nakatutok na utos (kasama ang anumang babala) para maayos mo ito sa isang tagubilin",
+    "tag_to_workbench_aria": "Ipadala sa Expert Workbench",
+    "pptx_theme_aria": "Tema ng PowerPoint export",
+    "pptx_theme_title": "Tema ng slide para sa PowerPoint export. Lahat ng preset ay nasuri ang contrast (WCAG AA); ang opsyong AI ay tumutugma sa iyong paksa, na may lokal na ipinapatupad na pagkabasa sa alinmang paraan.",
+    "export_menu": {
+      "intro": "I-download ang na-remediate na dokumento sa anumang format — piliin ang bagay sa kung paano ito gagamitin.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — ibigay sa mga mag-aaral)",
+      "word": "Word (.docx — patuloy na i-edit)",
+      "pptx": "PowerPoint (.pptx — i-present ito)",
+      "html": "HTML (nabubuksan kahit saan, walang software)",
+      "group_access": "Mga accessible na format",
+      "daisy": "DAISY talking book (buong teksto)",
+      "daisy_title": "DAISY 3 (DTBook) na full-text na talking-book package. Buksan sa isang DAISY reader, na nagbibigay ng pananalita, braille, o malaking print. (Para sa naka-sync na read-aloud audio, gamitin ang Read-along sa ibaba.)",
+      "readalong": "Read-along ebook (naka-sync na audio)",
+      "readalong_progress": "Nagsasalaysay… {done}/{total}",
+      "readalong_title": "Read-along ebook (EPUB3 Media Overlays): gumagawa ng text-to-speech para sa bawat talata at sini-sync ito sa teksto para i-highlight ng reading system ang mga salita habang binibigkas. Gumagawa ng maraming voice call — maaaring tumagal nang ilang minuto.",
+      "group_text": "Teksto at nae-edit",
+      "odt_title": "OpenDocument Text — natural na nabubuksan sa LibreOffice at Google Docs (at Word).",
+      "group_audio": "Pagsasalaysay sa audio",
+      "audio": "Pagsasalaysay sa audio (standard)",
+      "audio_title": "Binibigkas na pagsasalaysay ng dokumento (MP3/WAV).",
+      "audio_sr": "Audio (estilong screen-reader)",
+      "audio_sr_title": "Parehong boses, ngunit inaanunsyo ang istruktura sa paraang gagawin ng isang screen reader (mga antas ng heading, bilang ng listahan, mga row ng talahanayan, mga alt ng larawan)."
+    },
+    "mo": {
+      "confirm": "Gumawa ng read-along ebook? Isinasalaysay nito ang {n} seksyon ng teksto gamit ang text-to-speech — humigit-kumulang {n} voice call, na maaaring tumagal nang ilang minuto."
+    }
   },
   "concept_sort": {
     "title": "Konsepto Ayusin",
@@ -5251,7 +5335,7 @@
     "source_references": "Mga Sanggunian ng Source Text",
     "activity_probe": "Probe ng {activity}",
     "word_sounds_count": "Word Sounds ({count} salita)",
-    "quick_practice_mode": "Quick Practice Mode",
+    "quick_practice_mode": "Mabilisang Practice Mode",
     "new_option": "Bagong opsyon",
     "meta_lesson_extensions": "Mga Extension ng Aralin",
     "title_extension_ideas": "Mga Ideya sa Extension",
@@ -5504,7 +5588,7 @@
       "recent_probes": "Recent Probe resulta",
       "external_cbm": "External CBM iskor",
       "probes_count": "{count} Probes",
-      "surveys_count": "{count} Surveys"
+      "surveys_count": "{count} na Survey"
     },
     "header_nickname": "Palayaw",
     "header_date": "Petsa",
@@ -6882,7 +6966,10 @@
     "pdf_audit_alt_formats_epub_btn": "I-save ang naayos na dokumento bilang ePub file na may table of contents at accessibility metadata. Gumagana sa Kindle, Apple Books, at karamihan sa mga mobile reader — maaaring baguhin ng mga estudyante ang laki ng font, kulay, at bilis ng pagbabasa.",
     "pdf_audit_alt_formats_braille_btn": "Mag-save ng Grade 1 (uncontracted) Braille file na maaaring i-emboss sa Braille printer o ipadala sa refreshable Braille display. Para sa Grade 2 contractions, ibigay ang file sa TVI (guro para sa mga estudyanteng may visual impairment) para sa pagtatapos.",
     "pdf_audit_alt_formats_text_btn": "Mag-save ng plain na .txt file na walang lahat ng pag-format — ang pinakamadaling format para sa mga screen reader, large print conversion, o pag-paste sa ibang tool.",
-    "pdf_audit_alt_formats_markdown_btn": "I-save ang dokumento bilang Markdown — malinis na pumupunta sa mga pahina ng Canvas, Schoology, o D2L, Google Docs (sa pamamagitan ng paste), wiki, at mga GitHub-style note nang hindi nawawala ang mga heading o link."
+    "pdf_audit_alt_formats_markdown_btn": "I-save ang dokumento bilang Markdown — malinis na pumupunta sa mga pahina ng Canvas, Schoology, o D2L, Google Docs (sa pamamagitan ng paste), wiki, at mga GitHub-style note nang hindi nawawala ang mga heading o link.",
+    "pdf_audit_alt_formats_daisy_btn": "Mag-save ng DAISY 3 full-text talking-book package. Ang mga DAISY reader (karaniwan sa special education) ay nagdaragdag ng sarili nilang pagsasalita, braille, o malaking print na may kumpletong navigation. Text-only lang dito — para sa naka-sync na read-aloud, gamitin ang Read-along ebook.",
+    "pdf_audit_alt_formats_readalong_btn": "Bumuo ng read-along ebook (EPUB3 Media Overlays): ang bawat talata ay binibigkas gamit ang text-to-speech at naka-sync sa teksto kaya nagha-highlight ang mga salita habang binibigkas ang mga ito. Isang voice call bawat seksyon, kaya maaari itong tumagal ng ilang minuto.",
+    "pdf_audit_alt_formats_odt_btn": "Mag-save ng OpenDocument Text (.odt) file — likas sa LibreOffice at Google Docs (binubuksan din ito ng Word). Gamitin ito kapag hindi all-Microsoft ang iyong paaralan ngunit gusto mo pa rin ng nae-edit na dokumento na buo ang istruktura."
   },
   "groups": {
     "title": "Differentiation Grupos",
@@ -9720,7 +9807,7 @@
       "abc_title": "ABC datos",
       "abc_desc": "Mag-record ng mga obserbasyon sa antecedent, pag-uugali, at consequence",
       "obs_title": "Sa direkta obserbasyon",
-      "obs_desc": "Real-oras interval, frequency, o duration recording",
+      "obs_desc": "Real-time na pagtatala ng interval, frequency, o duration",
       "analysis_title": "AI Pagsusuri",
       "analysis_desc": "AI-powered pag-uugali pattern pagsusuri & recommendations",
       "overview_title": "Pangkalahatan",
@@ -9754,13 +9841,13 @@
       "triangulation_title": "Triangulasyon",
       "triangulation_desc": "Cross-sanggunian 3+ datos sources para sa convergence",
       "impact_title": "Calculator ng Epekto",
-      "impact_desc": "Quantify pag-uugali frequency, duration, at annual cost",
+      "impact_desc": "Sukatin ang frequency, duration, at taunang gastos ng pag-uugali",
       "crisis_title": "Crisis Plano",
       "crisis_desc": "Three-tier crisis interbensyon protocol generator",
       "traffic_title": "Ilaw ng Trapiko",
       "traffic_desc": "mag-aaral-facing red/yellow/green pag-uugali zone poster",
       "datasheet_title": "datos Sheet",
-      "datasheet_desc": "mai-print frequency, duration, ABC, o latency datos sheets",
+      "datasheet_desc": "Mai-print na data sheet para sa frequency, duration, ABC, o latency",
       "homenote_title": "Tala sa Bahay",
       "homenote_desc": "AI-drafted magulang communication kasama tono selector",
       "fidelity_title": "Tsek-listahan ng Katapatan",
@@ -9793,7 +9880,7 @@
       "commlog_title": "Talaan ng Komunikasyon",
       "condprob_desc": "Foreground vs background probability pagsusuri sa validate ABC hypotheses kasama datos",
       "condprob_title": "Conditional Probability",
-      "consent_desc": "Customizable consent form para sa magulang datos exchange — i-edit, i-print, ibahagi as JSON",
+      "consent_desc": "Nababagong consent form para sa palitan ng datos ng magulang — i-edit, i-print, ibahagi bilang JSON",
       "consent_title": "Tagapamahala ng FERPA Consent",
       "counseling_desc": "AI role-maglaro kasama mag-aaral personas para sa counseling magsanay",
       "counseling_title": "Counseling Simulasyon",
@@ -9973,7 +10060,7 @@
     },
     "export": {
       "title": "I-export datos",
-      "download": "I-download I-export"
+      "download": "I-download ang Export"
     },
     "record": {
       "title": "Pagsusuri ng Dosye",
@@ -10236,7 +10323,7 @@
       "paste_share_code_here": "I-paste ibahagi code here...",
       "person": "Tao\\",
       "phase_label": "Yugto",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does ito address?)",
+      "rationale_which_antecedent_does_this_address": "Katwiran (aling antecedent ang tinutugunan nito?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect sa iyong approach...\\n• ano worked well?\\n• ano would ikaw do differently?\\n• ano mga estratehiya do ikaw gusto sa magsanay susunod?",
       "reinforcement_how_you": "⭐ Reinforcement (paano ikaw\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement pag-uugali (functionally katumbas)",
@@ -10309,7 +10396,7 @@
       "data_cleared": "datos cleared",
       "data_loaded_from_cloud": "☁️ datos loaded mula sa cloud",
       "drafting_failed": "Nabigo ang pagdadraft",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval kumpletuhin — REINFORCE! No target pag-uugali occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 Kumpleto na ang DRO interval — MAG-REINFORCE! Walang naganap na target na pag-uugali!",
       "each_phase_needs_at_least_2_data_points": "bawat phase needs at least 2 datos punto",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached sa IEP Prep!",
       "effect_sizes_calculated": "Nakalkula na ang mga effect size!",
@@ -10376,7 +10463,7 @@
       "need_at_least_2_phases_in_the_graph_baseline_inter": "Kailangan at least 2 phases sa ang graph (baseline + interbensyon)",
       "need_at_least_3_items": "Kailangan at least 3 aytem",
       "no_entries_to_export": "No entries sa i-export",
-      "no_graph_found_to_export": "No graph found sa i-export",
+      "no_graph_found_to_export": "Walang natagpuang graph na i-export",
       "no_valid_data_found_in_csv": "No valid datos found sa CSV",
       "not_a_valid_alloflow_snapshot_file": "hindi isang valid AlloFlow snapshot file",
       "not_a_valid_consent_template_file": "hindi isang valid consent template file",
@@ -10416,7 +10503,7 @@
       "reinforce_now": "🎉 REINFORCE ngayon!",
       "reinforcers_recommended": "Inirekomenda ang mga reinforcer ✨",
       "replacement_plan_added": "Replacement plano added",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Ulat nabuo — gamitin I-print/I-save as PDF sa ang bago tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "Nabuo na ang ulat — gamitin ang I-print/I-save bilang PDF sa bagong tab!",
       "reset_to_default_template": "I-reset sa default template",
       "reset_to_defaults": "I-reset sa defaults",
       "response_failed_try_again": "Tugon failed — subukan again",
@@ -10549,7 +10636,7 @@
       "full_student_summary": "Buo mag-aaral Buod",
       "functional_communication_training_planning_tool": "Functional Communication Training planning mga kasangkapan",
       "generate_a_multiweek_intervention_plan_based_on_yo": "Bumuo isang multi-week interbensyon plano batay sa iyong collected ABC datos at AI pagsusuri.",
-      "generate_a_professional_printready_progress_report": "Bumuo isang professional, i-print-ready pag-unlad ulat kasama inline tsart, datos summaries, at AI recommendations. One-i-click PDF i-export via browser i-print.",
+      "generate_a_professional_printready_progress_report": "Bumuo ng propesyonal, mai-print na ulat ng pag-unlad na may kasamang inline na chart, buod ng datos, at mga rekomendasyon ng AI. One-click na PDF export sa pamamagitan ng browser print.",
       "generate_a_unique_scenario_tailored_to_your_traini": "Bumuo isang unique scenario tailored sa iyong training needs.",
       "generate_compliant_iep_behavioral_goals_from_obser": "Bumuo compliant IEP behavioral layunin mula sa obserbasyon datos kasama present antas, SMART layunin, at pag-unlad monitoring.",
       "generate_iepready_progress_monitoring_paragraphs_f": "Bumuo IEP-ready pag-unlad monitoring talata mula sa iyong accumulated behavioral datos.",
@@ -10667,7 +10754,7 @@
       "top_behavior": "Top pag-uugali",
       "total_contacts": "Kabuuang Kontak",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track pag-uugali frequency higit oras kasama aim linya, phase mga pagbabago, at trend pagsusuri.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Subaybayan ang frequency ng pag-uugali sa paglipas ng panahon gamit ang aim line, mga pagbabago sa phase, at pagsusuri ng trend.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track pag-uugali at home paggamit simple, everyday wika. Ito tumutulong iyong child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track iyong feelings, earn badge, at bumuo streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-batay wika sa loob asset-focused descriptions",
@@ -10852,7 +10939,7 @@
       "developing": "Umuunlad",
       "discontinue": "Itigil",
       "dismiss": "Isara",
-      "document_baseline_frequency_for_flagged_students": "dokumento baseline frequency para sa flagged mag-aaral",
+      "document_baseline_frequency_for_flagged_students": "Idokumento ang baseline frequency para sa mga na-flag na mag-aaral",
       "document_outcomes_and_lessons_learned": "dokumento outcomes at aralin learned",
       "document_the_confirmed_function": "dokumento ang confirmed function",
       "document_the_hypothesis_in_session_notes": "dokumento ang haka-haka sa sesyon mga tala",
@@ -10918,8 +11005,8 @@
       "level_mean": "antas (Mean)",
       "maintenance_tracker": "Tagasubaybay ng Pagpapanatili",
       "make_tier_movement_decision_stay_fade_intensify": "Gumawa tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → pag-uugali → consequence landass",
-      "map_each_target_behavior_to_a_replacement": "Map bawat target pag-uugali sa isang replacement",
+      "map_antecedent_behavior_consequence_pathways": "Imapa ang mga daan ng antecedent → pag-uugali → consequence",
+      "map_each_target_behavior_to_a_replacement": "Itugma ang bawat target na pag-uugali sa isang kapalit",
       "materials_access": "Mga materyales Access",
       "measure_effect_size_of_interventions": "Sukatin effect size ng interbensyon",
       "model": "Modelo",
@@ -10955,10 +11042,10 @@
       "percentage": "porsyento",
       "phone": "Telepono",
       "phone_call": "Tawag",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plano isang reinforcement schedule para sa replacement pag-uugali",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Magplano ng iskedyul ng reinforcement para sa mga kapalit na pag-uugali",
       "plan_data_collection_methods_and_frequency": "Plano datos collection methods at frequency",
       "plan_fidelity_monitoring": "Plano Fidelity Monitoring",
-      "plan_reinforcement_for_replacement_behaviors": "Plano reinforcement para sa replacement pag-uugali",
+      "plan_reinforcement_for_replacement_behaviors": "Magplano ng reinforcement para sa mga kapalit na pag-uugali",
       "plan_replacement_behaviors": "Plano Replacement pag-uugali",
       "plan_weekly_progress_monitoring_data_collection": "Plano weekly pag-unlad monitoring datos collection",
       "positivecorrective_ratio": "Ratio ng Positibo:Pagwawasto",
@@ -11000,7 +11087,7 @@
       "sensory": "Pandama",
       "sensory_break_menu": "Sensory Break menu",
       "sensoryautomatic": "Sensory/awtomatiko",
-      "sensoryautomatic_function": "Sensory/awtomatiko Function",
+      "sensoryautomatic_function": "Sensory/Automatic na Function",
       "sensoryrelated": "May Kaugnayan sa Sensory",
       "session_tracker": "sesyon Tracker",
       "set_a_6week_intervention_cycle": "Itakda isang 6-week interbensyon cycle",
@@ -11096,7 +11183,7 @@
       "incorrect": "Mali",
       "independent": "Sarili",
       "intensity": "Tindi",
-      "interval_and_latency_recording": "Interval at latency recording",
+      "interval_and_latency_recording": "Pagtatala ng interval at latency",
       "level": "antas",
       "mastered": "Nabihasa",
       "momentary_time_sampling": "Momentary oras sampling",
@@ -11157,7 +11244,7 @@
       "step_collect_more": "Collect higit pa datos",
       "step_collect_more_desc": "Magdagdag higit pa obserbasyon sesyon sa strengthen ang dataset.",
       "step_hypothesis": "haka-haka",
-      "step_hypothesis_desc": "Draft isang working haka-haka ng pag-uugali function.",
+      "step_hypothesis_desc": "Bumuo ng panimulang haka-haka tungkol sa function ng pag-uugali.",
       "step_record_abc": "I-record ang datos ng ABC",
       "step_record_abc_desc": "dokumento antecedents, pag-uugali, at consequences.",
       "step_report": "Ulat",
@@ -11221,7 +11308,7 @@
     "aria": {
       "delete_goal": "Tanggalin ang layunin",
       "probe_schedule": "Iskedyul ng probe",
-      "behavior_function": "Function ng behavior"
+      "behavior_function": "Function ng pag-uugali"
     },
     "maintenance": {
       "probe_schedule_label_v2": "Standard ABA maintenance probe levels"
@@ -11269,7 +11356,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories sa life kasama karakter voices & literary pagsusuri",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Isulat poems kasama form scaffolds, rhyme & meter pagsusuri, AI feedback"
+    "poettree_desc": "Isulat poems kasama form scaffolds, rhyme & meter pagsusuri, AI feedback",
+    "throughline_desc": "Ayusin ang iyong mga aralin sa isang spatial unit: pagkakasunod-sunod ng pagtuturo, mga prerequisite, isang nae-export na file"
   },
   "sel_hub": {
     "loading": "Naglo-load ng SEL Hub...",
@@ -12589,5 +12677,10 @@
     "byline": "Ni {author} · {words} salita · {used}/{total} bokabularyo",
     "student": "Mag-aaral",
     "score": "Iskor: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Ang muling pag-render ng preview ay papalitan ang iyong mga manu-manong pagbabago ng bagong nilikhang nilalaman. Magpatuloy at itapon ang mga pagbabago? (Pinapanatili ang mga ito ng Cancel — i-export o isara muna ang builder para i-save.)",
+    "remediation_banner_title": "Ine-edit ang na-remediate na dokumento.",
+    "remediation_banner_body": "Ang mga pagbabago mo rito ay nase-save pabalik dito kapag isinara mo ang builder, kaya kasama ang mga ito sa mga download na Tagged PDF / Word / PowerPoint."
   }
 }

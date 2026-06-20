@@ -822,7 +822,7 @@
     "storage_full_text_only": "Depo plen. Anrejistre sèlman tèks (imaj retire).",
     "storage_full_critical": "Kritik: Pa kapab anrejistre istwa. Depo plen.",
     "resource_not_found": "Resous pa jwenn.",
-    "resource_not_found_history": "Resous pa jwenn nan istwa.",
+    "resource_not_found_history": "Resous pa jwenn nan istwa (li ka te efase).",
     "analysis_failed": "Analiz la pa reyisi. Tanpri eseye ankò.",
     "enter_target_language": "Tanpri antre yon lang sib.",
     "translation_started": "Tradiksyon kòmanse...",
@@ -1457,7 +1457,7 @@
     "ai_feedback_unavailable": "AI feedback pa disponib",
     "write_essay_first": "Ekri your essay premye!",
     "enter_word_art_first": "Please antre mo art tèks premye",
-    "preview_not_ready": "Apèsi a poko pare",
+    "preview_not_ready": "Apèsi a poko pare — tann li fin afiche, epi eseye ankò.",
     "word_art_render_failed": "Could not render mo art",
     "diff_engine_load_failed": "Diff engine an pa t kapab chaje (rezo a bloke?). Tcheke koneksyon ou epi eseye ankò.",
     "brf_downloaded": "Bray Elektwonik (BRF) telechaje",
@@ -8869,6 +8869,7 @@
     }
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidelite: {before}% → {after}%{detail}",
     "view_last_audit": "Wè Dènye Odit",
     "start_new_audit": "Kòmanse Nouvo Odit",
     "apply_and_export": "Aplike ak Ekspòte",

@@ -1866,7 +1866,7 @@
     "storage_full_text_only": "Kaydintu waa buuxda. Waxaa la kaydinayaa qoraal kaliya (sawirada waa la saaray).",
     "storage_full_critical": "Halis: Taariikhda lama kaydin karin. Kaydintu waa buuxda.",
     "resource_not_found": "Kheyraadka lama helin.",
-    "resource_not_found_history": "Kheyraadka lagama helin taariikhda.",
+    "resource_not_found_history": "Kheyraadka lagama helin taariikhda (waxaa laga yaabaa in la tirtiray).",
     "analysis_failed": "Falanqayntu way fashilantay. Fadlan mar kale isku day.",
     "enter_target_language": "Fadlan geli luqad bartilmaameed ah.",
     "translation_started": "Tarjumaada waa la bilaabay...",
@@ -2502,7 +2502,7 @@
     "ai_feedback_unavailable": "Jawaab-celinta AI lama helo",
     "write_essay_first": "Marka hore qor qormadaada!",
     "enter_word_art_first": "Fadlan marka hore geli qoraalka farshaxanka erayga",
-    "preview_not_ready": "Horfiriinta weli diyaar ma aha",
+    "preview_not_ready": "Horfiriinta weli diyaar ma aha — sug inta ay soo muuqanayso, kadibna mar kale isku day.",
     "word_art_render_failed": "Lama soo bandhigi karin farshaxanka erayga",
     "diff_engine_load_failed": "Mishiinka isbarbardhigga way fashilantay in la soo rraro (shabakad xidhan?). Hubi xidhiidhkaaga oo mar kale isku day.",
     "brf_downloaded": "Farta Indhoolaha ee Elektarooniga ah (BRF) waa la soo dejiyay",
@@ -6572,6 +6572,7 @@
     "reading_level": "Heerka Akhrinta"
   },
   "pdf_audit": {
+    "fidelity_delta": "Saxnaanta: {before}% → {after}%{detail}",
     "view_last_audit": "Eeg Hubinta Ugu Dambeysay",
     "start_new_audit": "Bilow Hubin Cusub",
     "apply_and_export": "Codso & Dhoofi",

@@ -1606,7 +1606,7 @@
     "storage_full_text_only": "ذخیره ډکه ده. یوازې متن خوندي کېږي (انځورونه لیرې شول).",
     "storage_full_critical": "حرج: ناتوان از محفاوظ کړئ سابقه. تخزین ممتلئ.",
     "resource_not_found": "لم یهاو شو عثاور په اوسیلہ.",
-    "resource_not_found_history": "لم یهاو شو عثاور په اوسیلہ زه سابقه.",
+    "resource_not_found_history": "لم یهاو شو عثاور په اوسیلہ زه سابقه (ښايي ړنګ شوی وي).",
     "analysis_failed": "تحلیل ناکام شو. مهرباني وکړئ بیا هڅه وکړئ.",
     "enter_target_language": "مهرباني وکړئ موخه ژبه ولیکئ.",
     "translation_started": "بدأت ژباړه...",
@@ -2242,7 +2242,7 @@
     "ai_feedback_unavailable": "د AI نظر شته نه دی",
     "write_essay_first": "لومړی خپله مقاله ولیکئ!",
     "enter_word_art_first": "مهربانی وکړئ لومړی د کلمو هنر متن ولیکئ",
-    "preview_not_ready": "مخکتنه لا چمتو نه ده",
+    "preview_not_ready": "مخکتنه لا چمتو نه ده — انتظار وکړئ چې جوړه شي، بیا بیا هڅه وکړئ.",
     "word_art_render_failed": "د کلمو هنر نه شو ښودل کېدی",
     "diff_engine_load_failed": "د توپیر انجن د پورته کولو په وخت کې ناکام شو (شبکه بنده ده؟). خپله اتصال وګورئ او بیا هڅه وکړئ.",
     "brf_downloaded": "بریل بریښنایی (BRF) ښکته شو",
@@ -5488,6 +5488,7 @@
     "generate_aria": "جوړونه DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "دقت: {before}% → {after}%{detail}",
     "view_last_audit": "وښیئ بل تدقیق",
     "start_new_audit": "شراوع تدقیق نوی",
     "apply_and_export": "تطبیق اوصادرول",

@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage buo. Saving teksto lamang (imahe removed).",
     "storage_full_critical": "Kritikal: Hindi ma-save ang kasaysayan. Puno ang storage.",
     "resource_not_found": "mga mapagkukunan hindi found.",
-    "resource_not_found_history": "mga mapagkukunan hindi found sa kasaysayan.",
+    "resource_not_found_history": "Hindi natagpuan ang mapagkukunan sa kasaysayan (maaaring naalis na ito).",
     "analysis_failed": "Pagsusuri failed. pakiusap subukan again.",
     "enter_target_language": "pakiusap ipasok isang target wika.",
     "translation_started": "pagsasalin started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback hindi magagamit",
     "write_essay_first": "Isulat your essay una!",
     "enter_word_art_first": "pakiusap ipasok mga salita art teksto una",
-    "preview_not_ready": "Hindi pa handa ang preview",
+    "preview_not_ready": "Hindi pa handa ang silip — hintayin itong lumabas, pagkatapos ay ulitin.",
     "word_art_render_failed": "Could not render mga salita art",
     "diff_engine_load_failed": "Nabigong mag-load ang diff engine (na-block ang network?). Suriin ang iyong koneksyon at subukang muli.",
     "brf_downloaded": "Na-download ang Electronic Braille (BRF)",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Isaayos ang size ng timeline imahe"
   },
   "pdf_audit": {
+    "fidelity_delta": "Katapatan: {before}% → {after}%{detail}",
     "view_last_audit": "Tingnan huli Audit",
     "start_new_audit": "Simulan bago Audit",
     "apply_and_export": "Ilapat at i-export",

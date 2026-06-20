@@ -1878,7 +1878,7 @@
     "storage_full_text_only": "Almacenamiento lleno. Guardando solo el texto (las imágenes se quitaron).",
     "storage_full_critical": "Crítico: No se pudo guardar el historial. Almacenamiento lleno.",
     "resource_not_found": "Recurso no encontrado.",
-    "resource_not_found_history": "Recurso no encontrado en el historial.",
+    "resource_not_found_history": "Recurso no encontrado en el historial (es posible que se haya eliminado).",
     "analysis_failed": "El análisis falló. Inténtalo de nuevo.",
     "enter_target_language": "Por favor ingresa un idioma objetivo.",
     "translation_started": "Traducción iniciada...",
@@ -2514,7 +2514,7 @@
     "ai_feedback_unavailable": "Comentarios de AI no disponibles",
     "write_essay_first": "¡Primero escribe tu ensayo!",
     "enter_word_art_first": "Primero ingresa el texto del arte de palabras",
-    "preview_not_ready": "La vista previa aún no está lista",
+    "preview_not_ready": "La vista previa aún no está lista: espera a que se renderice y luego vuelve a intentarlo.",
     "word_art_render_failed": "No se pudo generar el arte de palabras",
     "diff_engine_load_failed": "El motor de comparación no se pudo cargar (¿red bloqueada?). Revisa tu conexión e inténtalo de nuevo.",
     "brf_downloaded": "Braille electrónico (BRF) descargado",
@@ -5898,6 +5898,7 @@
     "generate_aria": "Generar DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidelidad: {before}% → {after}%{detail}",
     "view_last_audit": "Ver Última Auditoría",
     "start_new_audit": "Iniciar Auditoría Nueva",
     "apply_and_export": "Aplicar y Exportar",

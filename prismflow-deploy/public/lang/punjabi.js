@@ -96,7 +96,7 @@
     "exit": "ਬਾਹਰ"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "ਵਰਡ ਸਾਊਂਡਸ ਸਟੂਡੀਓ",
     "subtitle": "Phonemic Awareness ਗਤੀਵਿਧੀਆਂ",
     "listen_word": "ਸੁਣੋ ਨੂੰ ਸ਼ਬਦ",
     "activity_counting": "ਆਵਾਜ਼ ਗਿਣਤੀ",
@@ -979,7 +979,7 @@
     "storage_full_text_only": "ਸਟੋਰੇਜ ਭਰ ਗਈ। ਸਿਰਫ ਟੈਕਸਟ ਸੰਭਾਲਿਆ ਜਾ ਰਿਹਾ ਹੈ (ਤਸਵੀਰਾਂ ਹਟਾਈਆਂ ਗਈਆਂ)।",
     "storage_full_critical": "ਨਾਜ਼ੁਕ: ਇਤਿਹਾਸ ਸੰਭਾਲ ਨਹੀਂ ਸਕੇ। ਸਟੋਰੇਜ ਭਰ ਗਈ ਹੈ।",
     "resource_not_found": "ਸਰੋਤ ਨਹੀਂ ਮਿਲਿਆ।",
-    "resource_not_found_history": "ਇਤਿਹਾਸ ਵਿੱਚ ਸਰੋਤ ਨਹੀਂ ਮਿਲਿਆ।",
+    "resource_not_found_history": "ਇਤਿਹਾਸ ਵਿੱਚ ਸਰੋਤ ਨਹੀਂ ਮਿਲਿਆ (ਸ਼ਾਇਦ ਇਸਨੂੰ ਮਿਟਾ ਦਿੱਤਾ ਗਿਆ ਹੋਵੇ)।",
     "analysis_failed": "ਵਿਸ਼ਲੇਸ਼ਣ ਅਸਫਲ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     "enter_target_language": "ਕਿਰਪਾ ਕਰਕੇ ਦਾਖਲ ਕਰੋ ਇੱਕ ਟੀਚਾ ਭਾਸ਼ਾ.",
     "translation_started": "ਅਨੁਵਾਦ ਸ਼ੁਰੂ ਹੋਇਆ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ਫੀਡਬੈਕ ਅਣਉਪਲਬਧ",
     "write_essay_first": "ਪਹਿਲਾਂ ਆਪਣਾ ਲੇਖ ਲਿਖੋ!",
     "enter_word_art_first": "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਵਰਡ ਆਰਟ ਟੈਕਸਟ ਦਾਖਲ ਕਰੋ",
-    "preview_not_ready": "ਪੂਰਵਦਰਸ਼ਨ ਅਜੇ ਤਿਆਰ ਨਹੀਂ ਹੈ",
+    "preview_not_ready": "ਪੂਰਵਦਰਸ਼ਨ ਅਜੇ ਤਿਆਰ ਨਹੀਂ ਹੈ — ਇਸਦੇ ਰੈਂਡਰ ਹੋਣ ਦੀ ਉਡੀਕ ਕਰੋ, ਫਿਰ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     "word_art_render_failed": "ਵਰਡ ਆਰਟ ਰੈਂਡਰ ਨਹੀਂ ਕਰ ਸਕੇ",
     "diff_engine_load_failed": "Diff ਇੰਜਣ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕਿਆ (ਨੈੱਟਵਰਕ ਰੁਕਿਆ?)। ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     "brf_downloaded": "ਇਲੈਕਟ੍ਰਾਨਿਕ ਬ੍ਰੇਲ (BRF) ਡਾਊਨਲੋਡ ਕੀਤਾ ਗਿਆ",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 ਪ੍ਰੋਜੈਕਟ ਸੰਭਾਲਿਆ ਗਿਆ ({count} ਰੇਂਜ); ਜਾਰੀ ਰੱਖਣ ਲਈ ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਲੋਡ ਕਰੋ",
     "project_saved": "💾 ਪ੍ਰੋਜੈਕਟ ਸੰਭਾਲਿਆ ਗਿਆ; ਸੰਪਾਦਨ ਜਾਰੀ ਰੱਖਣ ਲਈ ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਲੋਡ ਕਰੋ",
     "search_result_desc": "Google ਖੋਜ ਨਤੀਜਾ: {title}",
-    "link_url_prompt": "ਲਿੰਕ ਦਾ URL ਦਾਖਲ ਕਰੋ:"
+    "link_url_prompt": "ਲਿੰਕ ਦਾ URL ਦਾਖਲ ਕਰੋ:",
+    "building_accessible_docx": "ਪਹੁੰਚਯੋਗ Word ਫਾਈਲ ਬਣਾਈ ਜਾ ਰਹੀ ਹੈ…",
+    "building_accessible_pptx": "ਪਹੁੰਚਯੋਗ PowerPoint ਬਣਾਇਆ ਜਾ ਰਿਹਾ ਹੈ…",
+    "batch_tagging": "📄 ZIP ਲਈ ਟੈਗ ਕੀਤੀਆਂ PDF ਬਣਾਈਆਂ ਜਾ ਰਹੀਆਂ ਹਨ — ਸਕੈਨ ਕੀਤੀਆਂ ਫਾਈਲਾਂ ਨੂੰ ਜ਼ਿਆਦਾ ਸਮਾਂ ਲੱਗਦਾ ਹੈ (ਹਰ ਫਾਈਲ ਲਈ OCR ਚੱਲਦਾ ਹੈ)…",
+    "builder_edits_preserved": "✋ ਤੁਹਾਡੀਆਂ ਹੱਥੀਂ ਕੀਤੀਆਂ ਤਬਦੀਲੀਆਂ ਰੱਖ ਲਈਆਂ — ਪੂਰਵ-ਝਲਕ ਮੁੜ ਨਹੀਂ ਬਣਾਈ ਗਈ। ਉਨ੍ਹਾਂ ਨੂੰ ਸੰਭਾਲਣ ਲਈ ਬਿਲਡਰ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ ਜਾਂ ਬੰਦ ਕਰੋ, ਫਿਰ ਸੈਟਿੰਗਾਂ ਬਦਲੋ।",
+    "builder_edits_synced": "✏️ ਬਿਲਡਰ ਦੀਆਂ ਤਬਦੀਲੀਆਂ ਸੁਧਾਰੇ ਦਸਤਾਵੇਜ਼ ਵਿੱਚ ਸੰਭਾਲ ਲਈਆਂ — ਟੈਗ ਕੀਤੀ PDF / Word / PowerPoint ਐਕਸਪੋਰਟਾਂ ਵਿੱਚ ਹੁਣ ਇਹ ਸ਼ਾਮਲ ਹਨ।",
+    "pptx_ai_theme": "🎨 AI ਤੋਂ ਵਿਸ਼ੇ ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਰੰਗ-ਪੱਟਾ ਮੰਗਿਆ ਜਾ ਰਿਹਾ ਹੈ (ਪੜ੍ਹਨਯੋਗਤਾ ਸਥਾਨਕ ਤੌਰ 'ਤੇ ਲਾਗੂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ)…",
+    "make_accessible_fixing": "✨ ਆਡਿਟ ਪੂਰਾ ਹੋਇਆ — ਆਪਣੇ-ਆਪ ਸੁਧਾਰਿਆ ਜਾ ਰਿਹਾ ਹੈ (ਕੋਈ ਕਲਿੱਕ ਦੀ ਲੋੜ ਨਹੀਂ)…",
+    "tagged_pdf_saved_see_report": "📄 ਟੈਗ ਕੀਤੀ PDF ਸੰਭਾਲ ਲਈ — ਪੂਰੀ ਰਿਪੋਰਟ ਡਾਊਨਲੋਡ ਬਟਨਾਂ ਦੇ ਉੱਪਰ ਪਿੰਨ ਕੀਤੀ ਹੋਈ ਹੈ (ਹਟਾਉਣ ਲਈ ✕)।",
+    "no_open_image_slot": "ਪੂਰਵ-ਝਲਕ ਵਿੱਚ ਕੋਈ ਖਾਲੀ ਚਿੱਤਰ ਥਾਂ ਬਾਕੀ ਨਹੀਂ — ਇਸ ਦੀ ਥਾਂ ਥੰਬਨੇਲ ਨੂੰ ਕਿਸੇ ਖਾਸ ਚਿੱਤਰ ਉੱਤੇ ਖਿੱਚ ਕੇ ਉਸ ਨੂੰ ਬਦਲੋ।",
+    "extracted_image_inserted": "🖼 ਪਹਿਲੀ ਖਾਲੀ ਚਿੱਤਰ ਥਾਂ ਵਿੱਚ ਪਾ ਦਿੱਤਾ — ਜੇ ਕੋਈ ਹੋਰ ਥਾਂ ਚਾਹੀਦੀ ਹੈ ਤਾਂ ਇਸ ਦੀ ਥਾਂ ਥੰਬਨੇਲ ਖਿੱਚੋ।",
+    "html_downloaded": "🌐 HTML ਡਾਊਨਲੋਡ ਹੋ ਗਈ — ਕਿਸੇ ਵੀ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਖੁੱਲ੍ਹਦੀ ਹੈ।",
+    "odt_downloaded": "📄 OpenDocument (.odt) ਡਾਊਨਲੋਡ ਹੋ ਗਈ — LibreOffice, Google Docs ਜਾਂ Word ਵਿੱਚ ਖੁੱਲ੍ਹਦੀ ਹੈ।",
+    "daisy_downloaded": "🔊 DAISY ਬੋਲਣ ਵਾਲਾ-ਕਿਤਾਬ ਪੈਕੇਜ (.zip) ਡਾਊਨਲੋਡ ਹੋ ਗਿਆ — ਕਿਸੇ DAISY ਰੀਡਰ ਵਿੱਚ ਖੋਲ੍ਹੋ।",
+    "mo_no_voice": "ਆਵਾਜ਼ ਸੇਵਾ ਉਪਲਬਧ ਨਹੀਂ, ਇਸ ਲਈ ਨਾਲੋ-ਨਾਲ ਪੜ੍ਹਨ ਵਾਲਾ ਆਡੀਓ ਹੁਣੇ ਨਹੀਂ ਬਣਾਇਆ ਜਾ ਸਕਦਾ।",
+    "mo_busy": "ਨਾਲੋ-ਨਾਲ ਪੜ੍ਹਨ ਵਾਲਾ ਇੱਕ ਐਕਸਪੋਰਟ ਪਹਿਲਾਂ ਹੀ ਚੱਲ ਰਿਹਾ ਹੈ।",
+    "mo_no_text": "ਸੁਣਾਉਣ ਲਈ ਕੋਈ ਪੜ੍ਹਨਯੋਗ ਟੈਕਸਟ ਨਹੀਂ ਮਿਲਿਆ।",
+    "mo_no_audio": "⚠ ਨਾਲੋ-ਨਾਲ ਪੜ੍ਹਨ ਵਾਲੀ ਈਬੁੱਕ ਸੰਭਾਲ ਲਈ, ਪਰ ਕੋਈ ਆਡੀਓ ਨਹੀਂ ਬਣ ਸਕਿਆ (ਆਵਾਜ਼ ਸੇਵਾ ਉਪਲਬਧ ਨਹੀਂ)। ਟੈਕਸਟ + ਸਿੰਕ ਢਾਂਚਾ ਸਹੀ-ਸਲਾਮਤ ਹਨ।",
+    "mo_done": "ਨਾਲੋ-ਨਾਲ ਪੜ੍ਹਨ ਵਾਲੀ ਈਬੁੱਕ ਡਾਊਨਲੋਡ ਹੋ ਗਈ",
+    "audio_unavailable_now": "ਆਡੀਓ ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ (ਕੋਈ ਕੰਮ ਚੱਲ ਰਿਹਾ ਹੋ ਸਕਦਾ ਹੈ, ਜਾਂ ਆਵਾਜ਼ ਸੇਵਾ ਬੰਦ ਹੈ)।"
   },
   "large_file": {
     "modal_title": "ਆਯਾਤ ਕਰੋ Large ਆਡੀਓ ਫਾਈਲ",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator ਔਜ਼ਾਰ",
     "documents_menu_aria": "ਦਸਤਾਵੇਜ਼ ਮੀਨੂ",
     "open_doc_builder_pdf_aria": "ਖੋਲ੍ਹੋ ਦਸਤਾਵੇਜ਼ Builder ਲਈ PDF",
-    "export_slides_tooltip": "Opens ਦਸਤਾਵੇਜ਼ Builder ਵਿੱਚ Slides ਮੋਡ"
+    "export_slides_tooltip": "Opens ਦਸਤਾਵੇਜ਼ Builder ਵਿੱਚ Slides ਮੋਡ",
+    "learning_tools_tooltip": "ਸਿੱਖਣ ਦੇ ਔਜ਼ਾਰ (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "ਟੀਚਾ ਭਾਸ਼ਾ",
@@ -3599,7 +3619,7 @@
       "math_desc": "ਸੰਬੰਧਿਤ ਸ਼ਬਦ ਸਮੱਸਿਆਵਾਂ ਅਤੇ ਗਣਿਤ ਸੰਕਲਪਾਂ ਨਾਲ ਸੰਬੰਧ ਤਿਆਰ ਕਰੋ।",
       "persona_title": "AI Persona",
       "persona_desc": "ਟੈਕਸਟ ਵਿੱਚੋਂ ਕਿਸੇ ਪਾਤਰ ਜਾਂ ਹਸਤੀ ਨਾਲ ਇੱਕ ਗੱਲਬਾਤ ਦੀ ਨਕਲ ਕਰੋ।",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "ਵਰਡ ਸਾਊਂਡਸ ਸਟੂਡੀਓ",
       "wordsounds_desc": "Design targeted phonics ਅਤੇ phoneme awareness ਪਾਠ ਵਰਤਦੇ ਹੋਏ ਸ਼ਬਦਕੋਸ਼ ਸ਼ਬਦ ਜਾਂ ਸ਼ਬਦ families.",
       "glossary_settings_title": "ਸ਼ਬਦਕੋਸ਼ ਸੈਟਿੰਗਾਂ",
       "glossary_settings_desc": "ਅਨੁਕੂਲਿਤ ਕਰੋ ਕਿ ਸ਼ਬਦ ਕਿਵੇਂ ਚੁਣੇ ਅਤੇ ਅਨੁਵਾਦ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। ਤੁਸੀਂ ਪੱਧਰਾਂ ਅਨੁਸਾਰ ਸ਼ਬਦਾਵਲੀ ਨੂੰ ਫਿਲਟਰ ਕਰ ਸਕਦੇ ਹੋ ਜਾਂ ਖਾਸ ਭਾਸ਼ਾਵਾਂ ਨੂੰ ਲਾਜ਼ਮੀ ਕਰ ਸਕਦੇ ਹੋ।",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "ਵਿਕਲਪਿਕ। ਕਵਿਜ਼ ਵਿੱਚ ਹਰ ਚਿੱਤਰ (ਪ੍ਰਸ਼ਨ + ਵਿਕਲਪ) 'ਤੇ ਲਾਗੂ। ਖਾਲੀ = ਡਿਫੌਲਟ ਸ਼ੈਲੀ। ਕਵਿਜ਼ ਨਾਲ ਸੁਰੱਖਿਅਤ ਤਾਂ ਜੋ ਰਿਫਾਈਨ ਕਾਰਵਾਈਆਂ ਬ੍ਰਾਂਡ 'ਤੇ ਰਹਿਣ।",
     "generate_pre_check": "ਪ੍ਰੀ-ਚੈੱਕ ਪੈਦਾ ਕਰੋ",
     "generate_formative": "ਤਿਆਰ ਕਰੋ Formative ਜਾਂਚ",
-    "generate_review": "ਤਿਆਰ ਕਰੋ Spaced ਸਮੀਖਿਆ"
+    "generate_review": "ਤਿਆਰ ਕਰੋ Spaced ਸਮੀਖਿਆ",
+    "likert_strongly_disagree": "ਬਿਲਕੁਲ ਅਸਹਿਮਤ",
+    "no_right_answer": "ਇੱਥੇ ਕੋਈ ਸਹੀ ਜਾਂ ਗਲਤ ਜਵਾਬ ਨਹੀਂ ਹੈ।",
+    "poll_completed": "ਆਪਣੀ ਰਾਏ ਸਾਂਝੀ ਕਰਨ ਲਈ ਧੰਨਵਾਦ।",
+    "poll_intro": "ਇੱਥੇ ਕੋਈ ਸਹੀ ਜਾਂ ਗਲਤ ਜਵਾਬ ਨਹੀਂ ਹੈ — ਤੁਹਾਡੀ ਇਮਾਨਦਾਰ ਰਾਏ ਤੁਹਾਡੇ ਅਧਿਆਪਕ ਦੀ ਮਦਦ ਕਰਦੀ ਹੈ ਅਤੇ ਤੁਹਾਡੀ ਵੀ।",
+    "mode_poll": "🗣️ ਪੋਲ (ਵਿਦਿਆਰਥੀ ਦੀ ਆਵਾਜ਼)"
   },
   "outline": {
     "title": "ਦ੍ਰਿਸ਼ਟੀ Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "ਐਡਜਸਟ size ਦਾ timeline ਚਿੱਤਰ"
   },
   "pdf_audit": {
+    "fidelity_delta": "ਸ਼ੁੱਧਤਾ: {before}% → {after}%{detail}",
     "view_last_audit": "ਦੇਖੋ ਆਖਰੀ Audit",
     "start_new_audit": "ਸ਼ੁਰੂ ਕਰੋ ਨਵਾਂ Audit",
     "apply_and_export": "ਲਾਗੂ ਕਰੋ & ਨਿਰਯਾਤ ਕਰੋ",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "ਢਾਂਚਾਗਤ ਤੌਰ ਤੇ ਅਨੁਕੂਲ ਪਰ ਅਰਥ ਪੱਖੋਂ ਕਮਜ਼ੋਰ — AI ਨੇ ਸਮੱਗਰੀ ਦੀ ਗੁਣਵੱਤਾ ਨੂੰ ਚਿੰਨ੍ਹਿਤ ਕੀਤਾ ਜੋ axe-core ਨਹੀਂ ਖੋਜ ਸਕਦਾ",
-      "structural": "ਕੋਡ-ਪੱਧਰ ਦੀਆਂ WCAG ਉਲੰਘਣਾਵਾਂ ਮਿਲੀਆਂ — axe-core ਨੇ ਮਸ਼ੀਨ-ਜਾਂਚਯੋਗ ਅਸਫਲਤਾਵਾਂ ਲੱਭੀਆਂ"
+      "structural": "ਕੋਡ-ਪੱਧਰ ਦੀਆਂ WCAG ਉਲੰਘਣਾਵਾਂ ਮਿਲੀਆਂ — axe-core ਨੇ ਮਸ਼ੀਨ-ਜਾਂਚਯੋਗ ਅਸਫਲਤਾਵਾਂ ਲੱਭੀਆਂ",
+      "critical_override": "axe-core ਨੂੰ {n} ਗੰਭੀਰ WCAG ਉਲੰਘਣਾ(ਵਾਂ) ਮਿਲੀਆਂ — ਮਿਲਵੇਂ ਸਕੋਰ 'ਤੇ ਭਰੋਸਾ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਇਨ੍ਹਾਂ ਦੀ ਜਾਂਚ ਕਰੋ; ਔਸਤ ਕਿਸੇ ਵੱਡੀ ਖਾਮੀ ਨੂੰ ਲੁਕਾ ਸਕਦੀ ਹੈ"
     },
     "tagtree": {
       "label": "ਪਹਿਲਾਂ ਤੋਂ ਮੌਜੂਦ ਟੈਗ ਢਾਂਚਾ",
@@ -4274,7 +4301,8 @@
       "std_dev": "ਮਿਆਰ Deviation",
       "icc_title": "Custom 1−(SD/50) index; ਨਹੀਂ textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "AI ਪਾਸਾਂ ਵਿਚਕਾਰ CV + ਜੋੜੀਵਾਰ ਮਿਸ਼ਰਤ ਹਿਊਰਿਸਟਿਕ; ਪਾਠ-ਪੁਸਤਕ ਵਾਲਾ Cronbach's α ਨਹੀਂ"
     },
     "score": {
       "total_checks": "ਕੁੱਲ ਜਾਂਚਾਂ ਕੀਤੀਆਂ ਗਈਆਂ",
@@ -4436,7 +4464,9 @@
       "title": "Regenerate ਇੱਕ PDF ਤੋਂ remediated HTML. Layout reflows — ਪੰਨਾ breaks, fonts, ਅਤੇ pagination ਸਕਦਾ differ ਤੋਂ ਮੂਲ. ਕੰਮ ਕਰਦਾ well ਲਈ ਸਾਦਾ prose ਦਸਤਾਵੇਜ਼."
     },
     "tagged_pdf": {
-      "title": "ਅਸਲੀ PDF ਦੇ ਵਿਜ਼ੂਅਲ ਲੇਆਉਟ ਨੂੰ byte-identical ਸੁਰੱਖਿਅਤ ਕਰੋ ਅਤੇ ਇਸਦੇ ਢਾਂਚਾ ਟ੍ਰੀ ਵਿੱਚ ਪਹੁੰਚਯੋਗਤਾ ਟੈਗ ਟੀਕਾ ਲਗਾਓ। ਪਾਠ ਪੁਸਤਕਾਂ, ਬਹੁ-ਕਾਲਮ ਦਸਤਾਵੇਜ਼ਾਂ, ਅਤੇ ਬ੍ਰਾਂਡ ਵਾਲੇ PDFs ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਜਿੱਥੇ ਵਿਜ਼ੂਅਲ ਵਫ਼ਾਦਾਰੀ ਮਾਇਨੇ ਰੱਖਦੀ ਹੈ।"
+      "title": "ਅਸਲੀ PDF ਦੇ ਵਿਜ਼ੂਅਲ ਲੇਆਉਟ ਨੂੰ byte-identical ਸੁਰੱਖਿਅਤ ਕਰੋ ਅਤੇ ਇਸਦੇ ਢਾਂਚਾ ਟ੍ਰੀ ਵਿੱਚ ਪਹੁੰਚਯੋਗਤਾ ਟੈਗ ਟੀਕਾ ਲਗਾਓ। ਪਾਠ ਪੁਸਤਕਾਂ, ਬਹੁ-ਕਾਲਮ ਦਸਤਾਵੇਜ਼ਾਂ, ਅਤੇ ਬ੍ਰਾਂਡ ਵਾਲੇ PDFs ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਜਿੱਥੇ ਵਿਜ਼ੂਅਲ ਵਫ਼ਾਦਾਰੀ ਮਾਇਨੇ ਰੱਖਦੀ ਹੈ।",
+      "office_note": "ਟੈਗ ਕੀਤੀ PDF ਸਿਰਫ਼ PDF ਇਨਪੁੱਟਾਂ 'ਤੇ ਲਾਗੂ ਹੁੰਦੀ ਹੈ — Word/HTML ਵਰਤੋ",
+      "office_note_title": "ਢਾਂਚਾ ਟੈਗ ਸਿਰਫ਼ PDF ਬਾਈਟਾਂ ਵਿੱਚ ਪਾਏ ਜਾ ਸਕਦੇ ਹਨ। Word/PowerPoint ਇਨਪੁੱਟਾਂ ਲਈ, ਪਹੁੰਚਯੋਗ Word ਅਤੇ HTML ਡਾਊਨਲੋਡ ਸੁਧਾਰਿਆ ਢਾਂਚਾ ਆਪਣੇ ਨਾਲ ਲੈ ਕੇ ਆਉਂਦੇ ਹਨ।"
     },
     "alt_formats": {
       "intro": "ਉਪਚਾਰਿਤ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਪਹੁੰਚਯੋਗ ਵਿਕਲਪਿਕ ਫਾਰਮੈਟਾਂ ਵਿੱਚ ਡਾਊਨਲੋਡ ਕਰੋ"
@@ -4507,7 +4537,9 @@
       "heading": "ਸੰਸਕਰਣ Stamp"
     },
     "extracted_images": {
-      "drag_hint": "ਖਿੱਚੋ ਇੱਕ thumbnail onto ਕੋਈ ਵੀ ਚਿੱਤਰ placeholder ਵਿੱਚ preview ਨੂੰ insert it, ਜਾਂ ਕਲਿੱਕ ਕਰੋ \"📷 ਅੱਪਲੋਡ ਕਰੋ\" inside ਇੱਕ placeholder ਅਤੇ ਚੁਣੋ \"ਵਰਤੋ extracted ਚਿੱਤਰ\"."
+      "drag_hint": "ਖਿੱਚੋ ਇੱਕ thumbnail onto ਕੋਈ ਵੀ ਚਿੱਤਰ placeholder ਵਿੱਚ preview ਨੂੰ insert it, ਜਾਂ ਕਲਿੱਕ ਕਰੋ \"📷 ਅੱਪਲੋਡ ਕਰੋ\" inside ਇੱਕ placeholder ਅਤੇ ਚੁਣੋ \"ਵਰਤੋ extracted ਚਿੱਤਰ\".",
+      "drag_hint2": "ਥੰਬਨੇਲ 'ਤੇ ਕਲਿੱਕ ਕਰਕੇ ਇਸ ਨੂੰ ਪਹਿਲੀ ਖਾਲੀ ਚਿੱਤਰ ਥਾਂ ਵਿੱਚ ਪਾਓ, ਜਾਂ ਇਸ ਨੂੰ ਪੂਰਵ-ਝਲਕ ਵਿੱਚ ਕਿਸੇ ਖਾਸ ਪਲੇਸਹੋਲਡਰ ਜਾਂ ਚਿੱਤਰ ਉੱਤੇ ਖਿੱਚੋ। ×N = ਉਹੀ ਚਿੱਤਰ N ਪੰਨਿਆਂ 'ਤੇ ਆਇਆ (ਆਮ ਤੌਰ 'ਤੇ ਲੈਟਰਹੈੱਡ ਜਾਂ ਲੋਗੋ)।",
+      "insert_aria": "ਕੱਢਿਆ ਚਿੱਤਰ ਪਹਿਲੀ ਖਾਲੀ ਥਾਂ ਵਿੱਚ ਪਾਓ"
     },
     "toolbar": {
       "aria": "ਟੈਕਸਟ formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} ਉਲੰਘਣਾ",
     "violation_other": "{count} ਉਲੰਘਣਾਵਾਂ",
     "ai_issue_one": "{count} AI-ਚਿੰਨ੍ਹਿਤ ਸਮੱਸਿਆ",
-    "ai_issue_other": "{count} AI-ਚਿੰਨ੍ਹਿਤ ਸਮੱਸਿਆਵਾਂ"
+    "ai_issue_other": "{count} AI-ਚਿੰਨ੍ਹਿਤ ਸਮੱਸਿਆਵਾਂ",
+    "tagged": {
+      "born_digital_note": "ਧਿਆਨ ਦਿਓ: ਟੈਕਸਟ-ਲੇਅਰ PDF ਲਈ ਅਰਥ-ਟੈਗ ਪੂਰੇ ਸਮੱਗਰੀ-ਸੰਬੰਧ ਦੀ ਥਾਂ ActualText ਸੰਬੰਧਾਂ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹਨ। ਫਾਈਲ ਕਾਫ਼ੀ ਜ਼ਿਆਦਾ ਪਹੁੰਚਯੋਗ ਹੈ, ਪਰ PDF/UA ਅਨੁਕੂਲਤਾ ਦਾ ਦਾਅਵਾ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ PAC 2024 ਜਾਂ Acrobat ਵਿੱਚ ਜਾਂਚ ਕਰੋ।"
+    },
+    "one_click": {
+      "label": "ਪਹੁੰਚਯੋਗ ਬਣਾਓ",
+      "badge": "ਪੂਰੀ ਤਰ੍ਹਾਂ ਆਪਣੇ-ਆਪ — ਆਡਿਟ, ਠੀਕ, ਜਾਂਚ, ਟੀਚੇ ਤੱਕ ਦੁਹਰਾਓ",
+      "desc": "ਇੱਕ ਕਲਿੱਕ ਪੂਰੀ ਪ੍ਰਕਿਰਿਆ ਨੂੰ ਮੂਲ ਸੈਟਿੰਗਾਂ ਨਾਲ ਆਪਣੇ-ਆਪ ਚਲਾਉਂਦਾ ਹੈ; ਅੰਤ ਵਿੱਚ ਡਾਊਨਲੋਡ ਤਿਆਰ ਹੋ ਜਾਂਦੇ ਹਨ। ਕੰਟਰੋਲ ਚਾਹੀਦਾ ਹੈ? ਹੇਠਾਂ \"Run Audit\" ਵਰਤੋ, ਨਤੀਜੇ ਵੇਖੋ, ਫਿਰ ਆਪ Fix & Verify 'ਤੇ ਕਲਿੱਕ ਕਰੋ।"
+    },
+    "run_audit_label": "ਆਡਿਟ ਚਲਾਓ (2 ਵਿੱਚੋਂ ਕਦਮ 1)",
+    "manual_path_explainer": "\"Run Audit\" ਦਸਤਾਵੇਜ਼ ਨੂੰ ਸਕੋਰ ਦਿੰਦਾ ਹੈ ਅਤੇ ਦੱਸਦਾ ਹੈ ਕਿ ਕੀ ਠੀਕ ਕਰਨ ਦੀ ਲੋੜ ਹੈ — ਫਿਰ ਤੁਸੀਂ ਜਾਂਚ ਕਰਕੇ ਆਪ Fix & Verify 'ਤੇ ਕਲਿੱਕ ਕਰਦੇ ਹੋ (ਕਦਮ 2)। ਉੱਪਰਲਾ \"Make Accessible\" ਦੋਵੇਂ ਕਦਮ ਅਤੇ ਮੁੜ-ਜਾਂਚ ਆਪਣੇ-ਆਪ ਕਰਦਾ ਹੈ। \"Text Extraction\" ਸਿਰਫ਼ ਸਮੱਗਰੀ ਬਣਾਉਣ ਲਈ ਕੱਚਾ ਟੈਕਸਟ ਕੱਢਦਾ ਹੈ।",
+    "tagged_report": {
+      "heading": "ਟੈਗ ਕੀਤੀ PDF ਰਿਪੋਰਟ",
+      "close_aria": "ਟੈਗ ਕੀਤੀ-PDF ਰਿਪੋਰਟ ਹਟਾਓ",
+      "note": "ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਇਸ ਨੂੰ ਹਟਾਉਂਦੇ ਨਹੀਂ, ਇਹ ਪੈਨਲ ਰਹਿੰਦਾ ਹੈ। ਇਹੀ ਵੇਰਵੇ Adobe-ਸ਼ੈਲੀ ਦੀ A11y ਰਿਪੋਰਟ ਡਾਊਨਲੋਡ ਵਿੱਚ ਆਉਂਦੇ ਹਨ।"
+    },
+    "docx_export": {
+      "title": "ਸੁਧਾਰੀ ਸਮੱਗਰੀ ਨੂੰ ਅਸਲੀ ਸਿਰਲੇਖ ਸ਼ੈਲੀਆਂ, ਚਿੱਤਰਾਂ 'ਤੇ ਬਦਲਵੇਂ ਟੈਕਸਟ, ਟੇਬਲ ਸਿਰਲੇਖ ਕਤਾਰਾਂ, ਸੂਚੀ ਢਾਂਚੇ ਅਤੇ ਕੰਮ ਕਰਦੇ ਹਾਈਪਰਲਿੰਕਾਂ ਨਾਲ ਇੱਕ Word ਦਸਤਾਵੇਜ਼ ਵਿੱਚ ਬਦਲੋ। ਵੰਡਣ ਤੋਂ ਪਹਿਲਾਂ Word ਦੇ ਬਿਲਟ-ਇਨ ਪਹੁੰਚਯੋਗਤਾ ਜਾਂਚਕਰਤਾ (Review → Check Accessibility) ਨਾਲ ਜਾਂਚ ਕਰੋ।"
+    },
+    "pptx_export": {
+      "title": "ਸੁਧਾਰੀ ਸਮੱਗਰੀ ਨੂੰ ਅਸਲੀ ਸਲਾਈਡ ਸਿਰਲੇਖਾਂ, ਚਿੱਤਰਾਂ 'ਤੇ ਬਦਲਵੇਂ ਟੈਕਸਟ, ਸਿਰਲੇਖ-ਸ਼ੈਲੀ ਦੀਆਂ ਟੇਬਲ ਕਤਾਰਾਂ, ਸਹੀ ਬੁਲੇਟ ਸੂਚੀਆਂ, ਅਤੇ ਪੜ੍ਹਨ ਕ੍ਰਮ = ਦਿੱਖ ਕ੍ਰਮ ਨਾਲ ਇੱਕ PowerPoint ਡੈੱਕ ਵਜੋਂ ਮੁੜ ਬਣਾਓ। ਇੱਕ ਮੁੜ-ਬਣਾਇਆ ਪਹੁੰਚਯੋਗ ਖਾਕਾ — ਮੂਲ ਦੀ ਦਿੱਖ-ਨਕਲ ਨਹੀਂ। ਵੰਡਣ ਤੋਂ ਪਹਿਲਾਂ PowerPoint ਦੇ ਪਹੁੰਚਯੋਗਤਾ ਜਾਂਚਕਰਤਾ ਨਾਲ ਜਾਂਚ ਕਰੋ।"
+    },
+    "dashboard": {
+      "aria": "ਸੁਧਾਰ ਨਤੀਜਿਆਂ ਦੀ ਸੰਖੇਪ ਝਲਕ ਅਤੇ ਭਾਗ ਨੇਵੀਗੇਸ਼ਨ",
+      "score_title": "ਪਹੁੰਚਯੋਗਤਾ ਸਕੋਰ: ਪਹਿਲਾਂ → ਬਾਅਦ"
+    },
+    "tag_to_workbench_title": "ਇਸ ਬਲਾਕ ਨੂੰ Expert Workbench ਵੱਲ ਭੇਜੋ: ਇੱਕ ਨਿਸ਼ਾਨਾ ਕਮਾਂਡ ਪਹਿਲਾਂ ਤੋਂ ਭਰ ਦਿੰਦਾ ਹੈ (ਕੋਈ ਵੀ ਚੇਤਾਵਨੀਆਂ ਸਮੇਤ) ਤਾਂ ਜੋ ਤੁਸੀਂ ਇਸ ਨੂੰ ਇੱਕ ਹਦਾਇਤ ਨਾਲ ਠੀਕ ਕਰ ਸਕੋ",
+    "tag_to_workbench_aria": "Expert Workbench ਵੱਲ ਭੇਜੋ",
+    "pptx_theme_aria": "PowerPoint ਐਕਸਪੋਰਟ ਥੀਮ",
+    "pptx_theme_title": "PowerPoint ਐਕਸਪੋਰਟ ਲਈ ਸਲਾਈਡ ਥੀਮ। ਸਾਰੇ ਪ੍ਰੀਸੈੱਟ ਕੰਟ੍ਰਾਸਟ-ਜਾਂਚੇ ਹੋਏ ਹਨ (WCAG AA); AI ਵਿਕਲਪ ਤੁਹਾਡੇ ਵਿਸ਼ੇ ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਹੈ, ਅਤੇ ਪੜ੍ਹਨਯੋਗਤਾ ਦੋਵੇਂ ਤਰੀਕਿਆਂ ਨਾਲ ਸਥਾਨਕ ਤੌਰ 'ਤੇ ਲਾਗੂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।",
+    "export_menu": {
+      "button": "ਐਕਸਪੋਰਟ / ਡਾਊਨਲੋਡ",
+      "intro": "ਸੁਧਾਰੇ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਕਿਸੇ ਵੀ ਫਾਰਮੈਟ ਵਿੱਚ ਡਾਊਨਲੋਡ ਕਰੋ — ਉਹ ਚੁਣੋ ਜੋ ਇਸ ਦੀ ਵਰਤੋਂ ਦੇ ਢੰਗ ਨਾਲ ਢੁੱਕਦਾ ਹੈ।",
+      "tagged_pdf": "ਟੈਗ ਕੀਤੀ PDF (PDF/UA — ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਦਿਓ)",
+      "word": "Word (.docx — ਸੰਪਾਦਨ ਜਾਰੀ ਰੱਖੋ)",
+      "pptx": "PowerPoint (.pptx — ਪੇਸ਼ ਕਰੋ)",
+      "html": "HTML (ਕਿਤੇ ਵੀ ਖੁੱਲ੍ਹਦੀ ਹੈ, ਕੋਈ ਸਾਫਟਵੇਅਰ ਨਹੀਂ)",
+      "group_access": "ਪਹੁੰਚਯੋਗ ਫਾਰਮੈਟ",
+      "daisy": "DAISY ਬੋਲਣ ਵਾਲੀ ਕਿਤਾਬ (ਪੂਰਾ ਟੈਕਸਟ)",
+      "daisy_title": "DAISY 3 (DTBook) ਪੂਰੇ-ਟੈਕਸਟ ਵਾਲਾ ਬੋਲਣ ਵਾਲੀ-ਕਿਤਾਬ ਪੈਕੇਜ। ਕਿਸੇ DAISY ਰੀਡਰ ਵਿੱਚ ਖੋਲ੍ਹੋ, ਜੋ ਬੋਲੀ, ਬਰੇਲ ਜਾਂ ਵੱਡੀ ਛਪਾਈ ਦਿੰਦਾ ਹੈ। (ਸਿੰਕ ਕੀਤੇ ਪੜ੍ਹ-ਕੇ-ਸੁਣਾਉਣ ਵਾਲੇ ਆਡੀਓ ਲਈ, ਹੇਠਾਂ Read-along ਵਰਤੋ।)",
+      "readalong": "ਨਾਲੋ-ਨਾਲ ਪੜ੍ਹਨ ਵਾਲੀ ਈਬੁੱਕ (ਸਿੰਕ ਆਡੀਓ)",
+      "readalong_progress": "ਸੁਣਾਇਆ ਜਾ ਰਿਹਾ ਹੈ… {done}/{total}",
+      "readalong_title": "ਨਾਲੋ-ਨਾਲ ਪੜ੍ਹਨ ਵਾਲੀ ਈਬੁੱਕ (EPUB3 Media Overlays): ਹਰ ਪੈਰੇ ਲਈ ਟੈਕਸਟ-ਤੋਂ-ਬੋਲੀ ਬਣਾਉਂਦੀ ਹੈ ਅਤੇ ਇਸ ਨੂੰ ਟੈਕਸਟ ਨਾਲ ਸਿੰਕ ਕਰਦੀ ਹੈ ਤਾਂ ਜੋ ਪੜ੍ਹਨ ਸਿਸਟਮ ਬੋਲੇ ਜਾਣ ਵੇਲੇ ਸ਼ਬਦਾਂ ਨੂੰ ਉਜਾਗਰ ਕਰੇ। ਬਹੁਤ ਸਾਰੀਆਂ ਆਵਾਜ਼ ਕਾਲਾਂ ਕਰਦੀ ਹੈ — ਕੁਝ ਮਿੰਟ ਲੱਗ ਸਕਦੇ ਹਨ।",
+      "group_text": "ਟੈਕਸਟ ਅਤੇ ਸੰਪਾਦਨਯੋਗ",
+      "odt_title": "OpenDocument Text — LibreOffice ਅਤੇ Google Docs (ਅਤੇ Word) ਵਿੱਚ ਮੂਲ ਰੂਪ ਵਿੱਚ ਖੁੱਲ੍ਹਦੀ ਹੈ।",
+      "group_audio": "ਆਡੀਓ ਵਰਣਨ",
+      "audio": "ਆਡੀਓ ਵਰਣਨ (ਮਿਆਰੀ)",
+      "audio_title": "ਦਸਤਾਵੇਜ਼ ਦਾ ਬੋਲ ਕੇ ਵਰਣਨ (MP3/WAV)।",
+      "audio_sr": "ਆਡੀਓ (ਸਕ੍ਰੀਨ-ਰੀਡਰ ਸ਼ੈਲੀ)",
+      "audio_sr_title": "ਉਹੀ ਆਵਾਜ਼, ਪਰ ਢਾਂਚੇ ਦਾ ਐਲਾਨ ਉਸ ਤਰ੍ਹਾਂ ਕਰਦੀ ਹੈ ਜਿਵੇਂ ਇੱਕ ਸਕ੍ਰੀਨ ਰੀਡਰ ਕਰੇ (ਸਿਰਲੇਖ ਪੱਧਰ, ਸੂਚੀ ਗਿਣਤੀ, ਟੇਬਲ ਕਤਾਰਾਂ, ਚਿੱਤਰ ਬਦਲਵੇਂ ਟੈਕਸਟ)।"
+    },
+    "mo": {
+      "confirm": "ਨਾਲੋ-ਨਾਲ ਪੜ੍ਹਨ ਵਾਲੀ ਈਬੁੱਕ ਬਣਾਈਏ? ਇਹ {n} ਟੈਕਸਟ ਭਾਗਾਂ ਨੂੰ ਟੈਕਸਟ-ਤੋਂ-ਬੋਲੀ ਨਾਲ ਸੁਣਾਉਂਦੀ ਹੈ — ਲਗਭਗ {n} ਆਵਾਜ਼ ਕਾਲਾਂ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਕੁਝ ਮਿੰਟ ਲੱਗ ਸਕਦੇ ਹਨ।"
+    }
   },
   "concept_sort": {
     "title": "ਸੰਕਲਪ ਕ੍ਰਮਬੱਧ ਕਰੋ",
@@ -5241,7 +5326,7 @@
     "plan_hook": "ਹੁੱਕ",
     "plan_independent": "Independent ਅਭਿਆਸ ਕਰੋ",
     "col_image": "ਚਿੱਤਰ",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "ਵਰਡ ਸਾਊਂਡਸ ਸਟੂਡੀਓ",
     "stop": "ਰੋਕੋ",
     "expand_header": "ਹੈਡਰ ਫੈਲਾਓ",
     "collapse_header": "ਸਮੱਗਰੀ ਨੂੰ ਵੱਧ ਥਾਂ ਦੇਣ ਲਈ ਹੈਡਰ ਸਮੇਟੋ",
@@ -6828,7 +6913,64 @@
     "brainstorm_worksheet": "ਵਿਦਿਆਰਥੀ-facing worksheet ਦੇਖੋ ਦਾ ਇੱਕ brainstormed idea — strips out ਅਧਿਆਪਕ-side metadata (ਮੋਡ rationale, prompt ਇਤਿਹਾਸ, ਪੀੜ੍ਹੀ timing) ਅਤੇ renders just cover ਚਿੱਤਰ (ਜੇ present), title, ਅਤੇ body ਟੈਕਸਟ ਵਿੱਚ ਇੱਕ clean, ਛਾਪਣਯੋਗ layout. Useful ਲਈ: handing ਵਾਪਸ as ਇੱਕ paper artifact, embedding ਵਿੱਚ ਇੱਕ ਪਾਠ PDF, ਜਾਂ projecting idea ਉੱਤੇ smartboard ਲਈ ਜਮਾਤ discussion ਬਿਨਾਂ AI 'plumbing' ਦਿਖਾਈ ਦੇਣ ਵਾਲਾ. ਸੁਝਾਅ: brainstorm ideas often ਹੈ rich generative-AI ਪ੍ਰਸੰਗ attached; worksheet ਦੇਖੋ ਹੈ ਕੀ ਵਿਦਿਆਰਥੀ ਦੇਖੋ, ਜਦੋਂ ਕਿ ਪੂਰਾ ਪੈਨਲ ਹੈ ਕੀ ਅਧਿਆਪਕ ਦੇਖੋ. Toggling ਇਹ ਖੋਲ੍ਹੋ ਵਿੱਚ ਅਧਿਆਪਕ ਦੇਖੋ ਹੈ ਇੱਕ ਤੇਜ਼ way ਨੂੰ preview ਕੀ ਵਿਦਿਆਰਥੀ ਹੋਵੇਗਾ actually ਪ੍ਰਾਪਤ ਕਰੋ.",
     "concept_sort_image_scale": "ਦ੍ਰਿਸ਼ਟੀ-size slider ਲਈ AI-generated ਕੀਤਾ ਗਿਆ ਕਾਰਡ ਚਿੱਤਰ ਵਿੱਚ ਸੰਕਲਪ ਕ੍ਰਮਬੱਧ ਕਰੋ (ਦਿਖਾਈ ਦੇਣ ਵਾਲਾ ਸਿਰਫ਼ ਜਦੋਂ at least one ਕਾਰਡ has ਇੱਕ ਚਿੱਤਰ). Adjusts thumbnail pixel size ਪਾਰ small / medium / large / xl ranges. Persists ਨਾਲ ਕ੍ਰਮਬੱਧ ਕਰੋ so size ਚੋਣ rides printed PDF + digital ਕ੍ਰਮਬੱਧ ਕਰੋ. ਸੁਝਾਅ: larger sizes (large / xl) ਹਨ ਸਹੀ call ਲਈ K-2 ਕਲਾਸrooms ਕਿੱਥੇ ਚਿੱਤਰ-as-anchor ਹੈ primary scaffold; smaller sizes (small / medium) fit ਹੋਰ ਕਾਰਡ ਉੱਤੇ ਸਕ੍ਰੀਨ ਲਈ older ਵਿਦਿਆਰਥੀ who ਸਕਦਾ ਹੈ ਪੜ੍ਹੋ labels ਅਤੇ ਵਰਤੋ ਚਿੱਤਰ as ਇੱਕ secondary cue. slider ਹੈ hidden ਜਦੋਂ no ਕਾਰਡ ਹੈ ਚਿੱਤਰ so it doesn't take up space.",
     "glossary_pronounce_term": "Pronunciation ਮਦਦ ਬਟਨ per ਸ਼ਬਦਕੋਸ਼ ਸ਼ਬਦ — ਦਿਖਾਉਂਦਾ ਹੈ IPA notation (/əˈ/-ਸ਼ੈਲੀ), syllable breakdown, ਅਤੇ pronunciation guide ਲਈ ਸ਼ਬਦ. Especially useful ਲਈ: ELL ਵਿਦਿਆਰਥੀ ਸਿੱਖਣਾ English ਸਮੱਗਰੀ ਸ਼ਬਦਾਵਲੀ, Tier 3 ਅਕਾਦਮਿਕ ਸ਼ਬਦਾਵਲੀ ਨਾਲ non-obvious pronunciation (mitochondria, hyperbole, antecedent), ਅਤੇ ਸਮੱਗਰੀ ਖੇਤਰਫਲ glossaries ਕਿੱਥੇ ਸ਼ਬਦ ਸਕਦਾ ਨਹੀਂ ਦਿਖਾਈ ਦੇਣਾ ਵਿੱਚ everyday speech. Pairs ਨਾਲ ਆਡੀਓ ਡਾਊਨਲੋਡ ਕਰੋ ਬਟਨ alongside it ਲਈ ਪੂਰਾ pronunciation ਸਹਾਇਤਾ. ਸੁਝਾਅ: encourage ਵਿਦਿਆਰਥੀ ਨੂੰ ਅਭਿਆਸ ਕਰੋ IPA out loud — knowing ਉਹ 'mi-toh-KON-dree-uh' ਹੈ stress pattern ਹੈ ਫਰਕ ਵਿਚਕਾਰ confident participation ਅਤੇ silent avoidance ਦੌਰਾਨ ਜਮਾਤ discussion.",
-    "timeline_image_size": "Resize ਨਿਯੰਤਰਣ ਲਈ AI-generated ਕੀਤਾ ਗਿਆ ਚਿੱਤਰ embedded ਵਿੱਚ timeline event ਕਾਰਡ (ਦਿਖਾਈ ਦੇਣ ਵਾਲਾ ਸਿਰਫ਼ ਜਦੋਂ ਘਟਨਾਵਾਂ ਹੈ ਚਿੱਤਰ). Three-ਕਦਮ slider: small / medium / large. Persists ਨਾਲ timeline so size ਚੋਣ rides printed PDF + ਵਿੱਚ-ਖੇਡ draggable ਕਾਰਡ. ਸੁਝਾਅ: larger sizes ਕੰਮ well ਲਈ K-5 timelines ਕਿੱਥੇ ਦ੍ਰਿਸ਼ਟੀ anchors matter ਜ਼ਿਆਦਾਤਰ (life cycles, historical ਘਟਨਾਵਾਂ, ਕਹਾਣੀ plots). ਲਈ dense AP-ਪੱਧਰ timelines ਨਾਲ 15+ ਘਟਨਾਵਾਂ, medium ਜਾਂ small lets ਪੂਰਾ sequence fit ਉੱਤੇ one ਛਾਪਣਯੋਗ ਪੰਨਾ ਬਿਨਾਂ ਵਿਦਿਆਰਥੀ having ਨੂੰ flip ਵਾਪਸ ਅਤੇ forth."
+    "timeline_image_size": "Resize ਨਿਯੰਤਰਣ ਲਈ AI-generated ਕੀਤਾ ਗਿਆ ਚਿੱਤਰ embedded ਵਿੱਚ timeline event ਕਾਰਡ (ਦਿਖਾਈ ਦੇਣ ਵਾਲਾ ਸਿਰਫ਼ ਜਦੋਂ ਘਟਨਾਵਾਂ ਹੈ ਚਿੱਤਰ). Three-ਕਦਮ slider: small / medium / large. Persists ਨਾਲ timeline so size ਚੋਣ rides printed PDF + ਵਿੱਚ-ਖੇਡ draggable ਕਾਰਡ. ਸੁਝਾਅ: larger sizes ਕੰਮ well ਲਈ K-5 timelines ਕਿੱਥੇ ਦ੍ਰਿਸ਼ਟੀ anchors matter ਜ਼ਿਆਦਾਤਰ (life cycles, historical ਘਟਨਾਵਾਂ, ਕਹਾਣੀ plots). ਲਈ dense AP-ਪੱਧਰ timelines ਨਾਲ 15+ ਘਟਨਾਵਾਂ, medium ਜਾਂ small lets ਪੂਰਾ sequence fit ਉੱਤੇ one ਛਾਪਣਯੋਗ ਪੰਨਾ ਬਿਨਾਂ ਵਿਦਿਆਰਥੀ having ਨੂੰ flip ਵਾਪਸ ਅਤੇ forth.",
+    "pdf_audit_view_web_url_input": "ਜਿਸ ਵੈੱਬ ਪੰਨੇ ਦੀ ਤੁਸੀਂ ਜਾਂਚ ਕਰਵਾਉਣੀ ਚਾਹੁੰਦੇ ਹੋ ਉਸ ਦਾ ਪਤਾ ਪੇਸਟ ਕਰੋ (ਉਦਾਹਰਨ ਲਈ https://yourdistrict.org/handbook), ਫਿਰ ਇਸ ਦਾ HTML ਖਿੱਚਣ ਲਈ Fetch 'ਤੇ ਕਲਿੱਕ ਕਰੋ ਤਾਂ ਜੋ ਤੁਸੀਂ ਇਸ ਦੀ ਆਡਿਟ ਅਤੇ ਸੁਧਾਈ ਕਰ ਸਕੋ।",
+    "pdf_audit_view_web_fetch_btn": "ਉੱਪਰਲੇ URL 'ਤੇ ਮੌਜੂਦ ਪੰਨੇ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਦਾ ਹੈ ਅਤੇ ਇਸ ਦਾ HTML ਹੇਠਲੇ ਬਾਕਸ ਵਿੱਚ ਪਾ ਦਿੰਦਾ ਹੈ। ਜੇ ਸਾਈਟ ਫੈਚ ਕਰਨ ਨੂੰ ਰੋਕਦੀ ਹੈ, ਤਾਂ ਪੰਨੇ ਦਾ ਸਰੋਤ ਆਪ HTML ਬਾਕਸ ਵਿੱਚ ਪੇਸਟ ਕਰੋ।",
+    "pdf_audit_view_web_html_textarea": "ਅਸਲ HTML ਜਿਸ ਦੀ ਆਡਿਟ ਹੋ ਰਹੀ ਹੈ — ਜਾਂ ਤਾਂ Fetch ਨੇ ਪਾਇਆ ਜਾਂ ਤੁਸੀਂ ਪੇਸਟ ਕੀਤਾ। ਆਡਿਟ ਚਲਾਉਣ ਤੋਂ ਪਹਿਲਾਂ ਤੁਸੀਂ ਇਸ ਨੂੰ ਇੱਥੇ ਸੰਪਾਦਿਤ ਕਰ ਸਕਦੇ ਹੋ (ਉਦਾਹਰਨ ਲਈ, ਇੱਕ ਨੇਵੀਗੇਸ਼ਨ ਬਾਰ ਹਟਾਓ ਜੋ ਤੁਹਾਡੀ ਨਹੀਂ ਹੈ)।",
+    "pdf_audit_view_web_audit_btn": "ਪੰਨੇ ਨੂੰ WCAG 2.1 AA ਪਹੁੰਚਯੋਗਤਾ ਲਈ ਇੱਕ AI ਆਡਿਟਰ ਅਤੇ axe-core ਇੰਜਣ (ਉਹੀ ਇੰਜਣ ਜੋ ਪੇਸ਼ੇਵਰ ਆਡਿਟਰ ਵਰਤਦੇ ਹਨ) ਦੋਵਾਂ ਨਾਲ ਸਕੋਰ ਦਿੰਦਾ ਹੈ। ਕੁਝ ਨਹੀਂ ਬਦਲਿਆ ਜਾਂਦਾ — ਇਸ ਨੂੰ ਉਦੋਂ ਵਰਤੋ ਜਦੋਂ ਤੁਸੀਂ ਸਿਰਫ਼ ਇਹ ਜਾਣਨਾ ਚਾਹੁੰਦੇ ਹੋ ਕਿ ਪੰਨਾ ਅੱਜ ਕਿਵੇਂ ਹੈ।",
+    "pdf_audit_view_web_remediate_btn": "ਪੰਨੇ ਨੂੰ ਸਕੋਰ ਦਿੰਦਾ ਹੈ, ਫਿਰ ਜੋ ਠੀਕ ਕਰ ਸਕਦਾ ਹੈ ਉਸ ਨੂੰ ਠੀਕ ਕਰਨ ਲਈ HTML ਨੂੰ ਮੁੜ ਲਿਖਦਾ ਹੈ (ਕੰਟ੍ਰਾਸਟ, ਭਾਸ਼ਾ ਟੈਗ, skip-link, ਲੈਂਡਮਾਰਕ) ਅਤੇ ਤੁਹਾਨੂੰ ਇੱਕ ਡਾਊਨਲੋਡ-ਯੋਗ ਪਹੁੰਚਯੋਗ ਕਾਪੀ ਦਿੰਦਾ ਹੈ। ਪ੍ਰਕਾਸ਼ਿਤ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਨਤੀਜੇ ਦੀ ਆਪ ਹਮੇਸ਼ਾ ਮੁੜ-ਜਾਂਚ ਕਰੋ।",
+    "pdf_audit_view_batch_dropzone": "ਆਪਣੇ ਡੈਸਕਟਾਪ ਜਾਂ ਡਾਊਨਲੋਡ ਫੋਲਡਰ ਤੋਂ PDF ਫਾਈਲਾਂ ਨੂੰ ਸਿੱਧਾ ਇਸ ਬਾਕਸ ਉੱਤੇ ਖਿੱਚ ਕੇ ਉਨ੍ਹਾਂ ਨੂੰ ਬੈਚ ਕਤਾਰ ਵਿੱਚ ਜੋੜੋ। ਗੈਰ-PDF ਫਾਈਲਾਂ ਨੂੰ ਅਣਡਿੱਠ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।",
+    "pdf_audit_view_batch_browse_btn": "ਇੱਕ ਜਾਂ ਵੱਧ PDF ਚੁਣਨ ਲਈ ਤੁਹਾਡਾ ਫਾਈਲ ਚੋਣਕਾਰ ਖੋਲ੍ਹਦਾ ਹੈ। ਇਸ ਨੂੰ ਉਦੋਂ ਵਰਤੋ ਜਦੋਂ ਫਾਈਲਾਂ ਖਿੱਚਣਾ ਸੌਖਾ ਨਹੀਂ (ਟੱਚ ਡਿਵਾਈਸ, ਸਕ੍ਰੀਨ ਰੀਡਰ, ਘੱਟ ਨਜ਼ਰ, ਜਾਂ ਇੱਕ Chromebook)।",
+    "pdf_audit_view_batch_resume_btn": "ਤੁਹਾਡੇ ਪਿਛਲੇ ਬੈਚ ਨੂੰ ਉੱਥੋਂ ਚੁੱਕ ਲੈਂਦਾ ਹੈ ਜਿੱਥੇ ਇਹ ਛੱਡਿਆ ਸੀ — ਪਹਿਲਾਂ ਹੀ ਪੂਰੀਆਂ ਹੋ ਚੁੱਕੀਆਂ PDF ਰੱਖ ਲਈਆਂ ਜਾਂਦੀਆਂ ਹਨ ਅਤੇ ਸਿਰਫ਼ ਉਹੀ ਮੁੜ ਚੱਲਦੀਆਂ ਹਨ ਜੋ ਪੂਰੀਆਂ ਨਹੀਂ ਹੋਈਆਂ। ਇਸ ਨੂੰ ਉਦੋਂ ਵਰਤੋ ਜਦੋਂ ਕੋਈ ਬੈਚ ਅਧੂਰਾ ਰਹਿ ਗਿਆ ਹੋਵੇ (ਟੈਬ ਬੰਦ ਹੋਣਾ, ਤਾਜ਼ਾ ਕਰਨਾ, ਕ੍ਰੈਸ਼)।",
+    "pdf_audit_view_batch_discard_btn": "ਤੁਹਾਡੇ ਪਿਛਲੇ ਅਧੂਰੇ ਬੈਚ ਦੀ ਸੰਭਾਲੀ ਹੋਈ ਤਰੱਕੀ ਨੂੰ ਸੁੱਟ ਦਿੰਦਾ ਹੈ — ਬੈਨਰ ਚਲਾ ਜਾਂਦਾ ਹੈ ਅਤੇ ਕੈਸ਼ ਕੀਤੇ ਨਤੀਜੇ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਤੋਂ ਮਿਟਾ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ।",
+    "pdf_audit_view_batch_clear_all_btn": "ਕਤਾਰ ਵਿੱਚੋਂ ਹਰ PDF ਨੂੰ ਹਟਾ ਦਿੰਦਾ ਹੈ ਤਾਂ ਜੋ ਤੁਸੀਂ ਮੁੜ ਸ਼ੁਰੂ ਕਰ ਸਕੋ। ਇਹ ਸਿਰਫ਼ Start Batch ਦਬਾਉਣ ਤੋਂ ਪਹਿਲਾਂ ਹੀ ਉਪਲਬਧ ਹੁੰਦਾ ਹੈ।",
+    "pdf_audit_view_batch_row_retry_btn": "ਬਾਕੀ ਬੈਚ ਨੂੰ ਛੇੜੇ ਬਿਨਾਂ ਸਿਰਫ਼ ਇਸ ਇੱਕ ਫ਼ੇਲ੍ਹ ਹੋਈ ਫ਼ਾਈਲ ਨੂੰ ਦੁਬਾਰਾ ਚਲਾਉਂਦਾ ਹੈ। ਪਹਿਲਾਂ ਲਾਲ X ਉੱਤੇ ਹੋਵਰ ਕਰ ਕੇ ਪੜ੍ਹੋ ਕਿ ਇਹ ਫ਼ੇਲ੍ਹ ਕਿਉਂ ਹੋਈ — ਜੇ ਕਾਰਨ ਢਾਂਚਾਗਤ ਹੈ (ਖ਼ਰਾਬ PDF, ਸਿਰਫ਼-ਚਿੱਤਰ ਵਾਲਾ ਸਕੈਨ), ਤਾਂ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਨਾਲ ਮਦਦ ਨਹੀਂ ਹੋਵੇਗੀ।",
+    "pdf_audit_view_batch_row_remove_btn": "ਇਸ ਇੱਕ PDF ਨੂੰ ਕਤਾਰ ਵਿੱਚੋਂ ਹਟਾ ਦਿੰਦਾ ਹੈ ਤਾਂ ਜੋ ਬੈਚ ਇਸਨੂੰ ਛੱਡ ਦੇਵੇ। ਇਹ ਸਿਰਫ਼ ਬੈਚ ਚੱਲਣ ਤੋਂ ਪਹਿਲਾਂ ਹੀ ਉਪਲਬਧ ਹੁੰਦਾ ਹੈ।",
+    "pdf_audit_view_batch_stop_btn": "ਬੈਚ ਨੂੰ ਕਹਿੰਦਾ ਹੈ ਕਿ ਜਿਹੜੀ ਫ਼ਾਈਲ ਉੱਤੇ ਇਹ ਇਸ ਵੇਲੇ ਕੰਮ ਕਰ ਰਿਹਾ ਹੈ ਉਹ ਪੂਰੀ ਹੋਣ ਮਗਰੋਂ ਰੁਕ ਜਾਵੇ। ਪਹਿਲਾਂ ਹੀ ਪੂਰੀਆਂ ਹੋ ਚੁੱਕੀਆਂ PDF ਪੂਰੀਆਂ ਹੀ ਰਹਿੰਦੀਆਂ ਹਨ — ਤੁਹਾਡਾ ਮੁਕੰਮਲ ਕੰਮ ਖ਼ਰਾਬ ਨਹੀਂ ਹੋਵੇਗਾ, ਅਤੇ ਤੁਸੀਂ ਬਾਕੀ ਬਾਅਦ ਵਿੱਚ ਜਾਰੀ ਰੱਖ ਸਕਦੇ ਹੋ।",
+    "pdf_audit_view_batch_retry_all_failed_btn": "ਹਰ ਉਸ PDF ਨੂੰ ਮੁੜ ਕਤਾਰ ਵਿੱਚ ਪਾ ਕੇ ਦੁਬਾਰਾ ਚਲਾਉਂਦਾ ਹੈ ਜੋ ਫ਼ੇਲ੍ਹ ਹੋਈ ਸੀ। ਪਹਿਲਾਂ ਹੀ ਕਾਮਯਾਬ ਹੋ ਚੁੱਕੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਨਹੀਂ ਛੇੜਿਆ ਜਾਂਦਾ। ਜੇ ਫ਼ੇਲ੍ਹੀਆਂ ਨੈੱਟਵਰਕ ਦੀਆਂ ਅਸਥਿਰ ਗਲਤੀਆਂ ਵਰਗੀਆਂ ਲੱਗਣ ਤਾਂ ਇੱਕ ਵਾਰ ਕੋਸ਼ਿਸ਼ ਕਰਨੀ ਠੀਕ ਹੈ; ਸੱਚਮੁੱਚ ਖ਼ਰਾਬ PDF ਨੂੰ ਵਾਰ-ਵਾਰ ਨਾ ਅਜ਼ਮਾਓ।",
+    "pdf_audit_view_batch_start_btn": "ਕਤਾਰ ਵਿੱਚਲੀ ਹਰ PDF ਦਾ ਆਡਿਟ ਕਰਨਾ ਅਤੇ ਠੀਕ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰਦਾ ਹੈ। ਪਹਿਲਾਂ ਇੱਕ ਪੁਸ਼ਟੀ ਸਾਹਮਣੇ ਆਉਂਦੀ ਹੈ ਜਿਸ ਵਿੱਚ AI ਕਾਲਾਂ (ਅਤੇ ਸੈਲਫ਼-ਹੋਸਟ ਪਲਾਨ ਉੱਤੇ ਲਾਗਤ) ਦਾ ਅੰਦਾਜ਼ਾ ਹੁੰਦਾ ਹੈ ਤਾਂ ਜੋ ਤੁਸੀਂ ਸ਼ੁਰੂ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਫ਼ੈਸਲਾ ਕਰ ਸਕੋ।",
+    "pdf_audit_view_batch_download_zip_btn": "ਹਰ ਉਸ PDF ਨੂੰ ਜੋ ਕਾਮਯਾਬੀ ਨਾਲ ਠੀਕ ਹੋ ਗਈ ਹੈ, ਇੱਕੋ ZIP ਫ਼ਾਈਲ ਵਜੋਂ ਡਾਊਨਲੋਡ ਕਰਦਾ ਹੈ। ਪੂਰਾ ਫੋਲਡਰ ਇੱਕੋ ਵਾਰ ਕਿਸੇ ਅਧਿਆਪਕ ਜਾਂ ਜ਼ਿਲ੍ਹਾ ਸੰਪਰਕ ਨੂੰ ਵਾਪਸ ਸੌਂਪਣ ਲਈ ਸੌਖਾ ਹੈ।",
+    "pdf_audit_view_batch_new_batch_btn": "ਮੁਕੰਮਲ ਹੋਏ ਬੈਚ ਨੂੰ ਸਾਫ਼ ਕਰ ਦਿੰਦਾ ਹੈ ਤਾਂ ਜੋ ਤੁਸੀਂ PDF ਦਾ ਨਵਾਂ ਸੈੱਟ ਪਾ ਸਕੋ। ਜੋ ZIP ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ ਡਾਊਨਲੋਡ ਕਰ ਚੁੱਕੇ ਹੋ ਉਹ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਉੱਤੇ ਰਹਿੰਦਾ ਹੈ — ਇਹ ਸਿਰਫ਼ ਸਕਰੀਨ ਨੂੰ ਮੁੜ-ਸੈੱਟ ਕਰਦਾ ਹੈ।",
+    "pdf_audit_view_batch_dashboard_btn": "ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਇੱਕ ਛਾਪਣਯੋਗ ਪਾਲਣਾ (ਕੰਪਲਾਇੰਸ) ਡੈਸ਼ਬੋਰਡ ਖੋਲ੍ਹਦਾ ਹੈ — ਔਸਤ ਸਕੋਰ, ਕਿੰਨੀਆਂ PDF 90+ ਤੱਕ ਪਹੁੰਚੀਆਂ, ਸਭ ਤੋਂ ਆਮ WCAG ਮੁੱਦੇ। ਕਿਸੇ ਪ੍ਰਸ਼ਾਸਕ ਨਾਲ ਸਾਂਝਾ ਕਰਨ ਜਾਂ Title II / 504 ਰਿਕਾਰਡ ਨਾਲ ਨੱਥੀ ਕਰਨ ਲਈ ਲਾਭਦਾਇਕ।",
+    "pdf_audit_view_settings_panel": "ਆਡਿਟ ਅਤੇ ਸੁਧਾਰ ਪਾਈਪਲਾਈਨ ਲਈ ਸੈਟਿੰਗ ਦੇ ਨੌਬ। ਮੂਲ ਮੁੱਲ ਸਮਝਦਾਰ ਹਨ — ਇਹਨਾਂ ਨੂੰ ਸਿਰਫ਼ ਤਾਂ ਹੀ ਬਦਲੋ ਜੇ ਆਮ ਚਲਾਈ ਨਾਲ ਤੁਹਾਨੂੰ ਲੋੜੀਂਦਾ ਨਤੀਜਾ ਨਹੀਂ ਮਿਲ ਰਿਹਾ (ਵੱਧ ਡੂੰਘਾਈ, ਘੱਟ ਲਾਗਤ, ਵੱਖਰਾ ਰੁਕਣ ਦਾ ਬਿੰਦੂ)।",
+    "pdf_audit_view_audit_passes_slider": "ਕਿੰਨੇ ਸੁਤੰਤਰ AI ਆਡਿਟਰ PDF ਨੂੰ ਵੇਖਦੇ ਹਨ — ਉਹ ਅਸਲ ਸਮੱਸਿਆਵਾਂ ਉੱਤੇ ਸਹਿਮਤ ਹੁੰਦੇ ਹਨ ਅਤੇ ਫ਼ਾਲਤੂ ਰੌਲੇ ਉੱਤੇ ਅਸਹਿਮਤ, ਸੋ ਵੱਧ ਆਡਿਟਰਾਂ ਦਾ ਮਤਲਬ ਘੱਟ ਝੂਠੀਆਂ ਚਿਤਾਵਨੀਆਂ। 5 ਸਭ ਤੋਂ ਵਧੀਆ ਚੋਣ ਹੈ; ਅਹਿਮ ਪਾਲਣਾ ਦਸਤਾਵੇਜ਼ਾਂ ਲਈ ਵਧਾਓ, ਛੇਤੀ ਜਾਂਚਾਂ ਲਈ ਘਟਾਓ।",
+    "pdf_audit_view_target_score_slider": "ਉਹ ਸਕੋਰ ਜੋ ਤੁਸੀਂ ਚਾਹੁੰਦੇ ਹੋ ਕਿ ਠੀਕ ਕੀਤੀ PDF ਹਾਸਲ ਕਰੇ — 90 ਇੱਕ ਮਜ਼ਬੂਤ WCAG 2.1 AA ਪਾਸ ਹੈ, 95+ ਲਗਭਗ-ਮੁਕੰਮਲ ਹੈ, 70 ਸਕੈਨ ਕੀਤੇ ਦਸਤਾਵੇਜ਼ਾਂ ਲਈ ਇੱਕ ਲਾਭਦਾਇਕ ਘੱਟੋ-ਘੱਟ ਹੱਦ ਹੈ। ਇਸਨੂੰ Auto-continue ਨਾਲ ਜੋੜੋ ਤਾਂ ਜੋ ਪਾਈਪਲਾਈਨ ਸਕੋਰ ਪੂਰਾ ਹੋਣ ਤੱਕ ਕੰਮ ਕਰਦੀ ਰਹੇ।",
+    "pdf_audit_view_max_fix_passes_slider": "ਰੁਕਣ ਤੋਂ ਪਹਿਲਾਂ ਪਾਈਪਲਾਈਨ ਨੂੰ ਕਿੰਨੇ ਆਟੋਮੈਟਿਕ ਸੁਧਾਰ-ਗੇੜ ਚਲਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਹੈ। 8 ਮੂਲ ਹੈ; ਸੈਲਫ਼-ਹੋਸਟ ਪਲਾਨ ਉੱਤੇ ਲਾਗਤ ਨੂੰ ਸੀਮਤ ਕਰਨ ਲਈ ਇਸਨੂੰ ਘਟਾਓ, ਜਾਂ ਆਟੋ-ਫ਼ਿਕਸ ਨੂੰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਛੱਡਣ (ਸਿਰਫ਼-ਆਡਿਟ) ਲਈ 0 ਉੱਤੇ ਸੈੱਟ ਕਰੋ।",
+    "pdf_audit_view_auto_continue_toggle": "ਜਦੋਂ ਚਾਲੂ ਹੋਵੇ, ਪਾਈਪਲਾਈਨ Target Score ਪੂਰਾ ਹੋਣ ਤੱਕ ਵਾਧੂ ਸੁਧਾਰ-ਗੇੜ (3 ਹੋਰ ਤੱਕ) ਕਰਦੀ ਰਹਿੰਦੀ ਹੈ, ਫਿਰ ਆਪੇ ਰੁਕ ਜਾਂਦੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਠੀਕ ਇੱਕ ਪਾਸ ਅਤੇ ਜਾਂਚਣ ਲਈ ਇੱਕੋ ਨਤੀਜਾ ਚਾਹੁੰਦੇ ਹੋ ਤਾਂ ਬੰਦ ਕਰ ਦਿਓ।",
+    "pdf_audit_view_polish_passes_slider": "ਅਸਲ ਪਹੁੰਚਯੋਗਤਾ ਸੁਧਾਰਾਂ ਤੋਂ ਬਾਅਦ ਵਾਧੂ ਸਫ਼ਾਈ ਦੇ ਗੇੜ — ਵਿੱਥ, ਸਿਰਲੇਖ ਅਤੇ ਦਿੱਖ ਨੂੰ ਸੁਚੱਜਾ ਬਣਾਉਂਦੇ ਹਨ। 0 ਛੱਡ ਦਿੰਦਾ ਹੈ, 2 ਮਿਆਰੀ ਹੈ, 3 ਉਹਨਾਂ ਦਸਤਾਵੇਜ਼ਾਂ ਲਈ ਹੈ ਜੋ ਛਪਾਈ ਜਾਂ ਬਾਹਰੀ ਪਾਠਕਾਂ ਲਈ ਜਾ ਰਹੇ ਹਨ।",
+    "pdf_audit_view_branding_panel": "ਵਿਕਲਪਿਕ — ਇਹ ਕੰਟਰੋਲ ਕਰਦਾ ਹੈ ਕਿ ਠੀਕ ਕੀਤੀ PDF ਕਿਵੇਂ ਦਿਖਾਈ ਦਿੰਦੀ ਹੈ: ਬ੍ਰਾਂਡ ਰੰਗ ਅਤੇ ਸਮੁੱਚਾ ਡਿਜ਼ਾਈਨ ਅੰਦਾਜ਼। ਮੂਲ ਪਹੁੰਚਯੋਗ ਦਿੱਖ ਲਈ ਛੱਡ ਦਿਓ, ਜਾਂ ਜੇ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਕਿਸੇ ਸਕੂਲ ਜਾਂ ਜ਼ਿਲ੍ਹੇ ਦੇ ਬ੍ਰਾਂਡ ਨਾਲ ਮੇਲ ਖਾਣਾ ਚਾਹੀਦਾ ਹੈ ਤਾਂ ਖੋਲ੍ਹੋ।",
+    "pdf_audit_view_brand_mode_auto_btn": "ਤੁਹਾਡੇ ਅੱਪਲੋਡ ਕੀਤੀ PDF ਵਿੱਚੋਂ ਬ੍ਰਾਂਡ ਰੰਗ ਕੱਢ ਲੈਂਦਾ ਹੈ ਤਾਂ ਜੋ ਠੀਕ ਕੀਤਾ ਰੂਪ ਅਸਲ ਵਰਗਾ ਦਿਖੇ। ਸਭ ਤੋਂ ਵਧੀਆ ਮੂਲ ਚੋਣ — ਦਸਤਾਵੇਜ਼ ਨੂੰ ਅਮਲੇ ਅਤੇ ਪਰਿਵਾਰਾਂ ਲਈ ਪਛਾਣਨਯੋਗ ਰੱਖਦਾ ਹੈ।",
+    "pdf_audit_view_brand_mode_upload_input": "ਇੱਕ ਵੱਖਰੀ ਬ੍ਰਾਂਡ ਸ਼ੀਟ, ਲੋਗੋ, ਜਾਂ ਸਟਾਈਲ ਗਾਈਡ (ਚਿੱਤਰ ਜਾਂ PDF) ਅੱਪਲੋਡ ਕਰੋ ਅਤੇ ਪਾਈਪਲਾਈਨ ਉਸ ਵਿੱਚੋਂ ਰੰਗ ਅਤੇ ਫ਼ੌਂਟ ਕੱਢ ਲੈਂਦੀ ਹੈ। ਉਦੋਂ ਲਾਭਦਾਇਕ ਜਦੋਂ ਅਸਲ PDF ਸਾਦੀ ਦਿੱਖ ਵਾਲੀ ਹੋਵੇ ਪਰ ਜ਼ਿਲ੍ਹਾ ਬ੍ਰਾਂਡਿੰਗ ਨਾਲ ਮੇਲ ਖਾਣਾ ਜ਼ਰੂਰੀ ਹੋਵੇ।",
+    "pdf_audit_view_brand_mode_none_btn": "ਬ੍ਰਾਂਡ ਰੰਗ ਪੂਰੀ ਤਰ੍ਹਾਂ ਛੱਡ ਦਿਓ ਅਤੇ ਅੰਦਰ-ਬਣਿਆ ਪਹੁੰਚਯੋਗ ਪੈਲੇਟ ਵਰਤੋ। ਆਮ ਵਰਕਸ਼ੀਟਾਂ ਲਈ ਇਹ ਚੁਣੋ, ਜਾਂ ਉਦੋਂ ਜਦੋਂ ਅਸਲ ਰੰਗ ਕੰਟ੍ਰਾਸਟ ਵਿੱਚ ਫ਼ੇਲ੍ਹ ਹੋਣ ਅਤੇ ਤੁਹਾਨੂੰ ਦਿੱਖ ਬਰਕਰਾਰ ਰੱਖਣ ਦੀ ਲੋੜ ਨਾ ਹੋਵੇ।",
+    "pdf_audit_results_tab_remediation_btn": "AlloFlow ਵੱਲੋਂ PDF ਨੂੰ ਠੀਕ ਕਰਨ ਤੋਂ ਬਾਅਦ ਦੇ ਆਡਿਟ ਨਤੀਜੇ ਵਿਖਾਓ। ਸੁਧਰਿਆ ਸਕੋਰ ਅਤੇ ਹੁਣ ਕਿਹੜੇ ਮੁੱਦੇ ਠੀਕ ਹੋ ਗਏ ਹਨ, ਇਹ ਵੇਖਣ ਲਈ ਇਸ ਟੈਬ ਨੂੰ ਵਰਤੋ।",
+    "pdf_audit_results_tab_original_btn": "AlloFlow ਵੱਲੋਂ ਕੁਝ ਠੀਕ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਵਾਲੀ ਅਸਲ PDF ਦੇ ਆਡਿਟ ਉੱਤੇ ਵਾਪਸ ਜਾਓ। ਪਹਿਲਾਂ-ਬਨਾਮ-ਬਾਅਦ ਦੇ ਸਕੋਰਾਂ ਦੀ ਨਾਲੋ-ਨਾਲ ਤੁਲਨਾ ਕਰਨ ਲਈ ਲਾਭਦਾਇਕ।",
+    "pdf_audit_results_score_badge": "ਤੁਹਾਡੀ PDF ਦਾ 0 ਤੋਂ 100 ਤੱਕ ਦਾ ਸਮੁੱਚਾ ਪਹੁੰਚਯੋਗਤਾ ਸਕੋਰ। ਹਰਾ (80+) WCAG AA ਦੇ ਨੇੜੇ ਹੈ, ਅੰਬਰ (50-79) ਨੂੰ ਕੰਮ ਦੀ ਲੋੜ ਹੈ, ਲਾਲ (<50) ਵਿੱਚ ਸਕਰੀਨ ਰੀਡਰ ਜਾਂ ਸਹਾਇਕ ਤਕਨੀਕ ਵਰਤਣ ਵਾਲੇ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਵੱਡੀਆਂ ਰੁਕਾਵਟਾਂ ਹਨ।",
+    "pdf_audit_results_reliability_details": "ਇਹ ਵੇਖਣ ਲਈ ਖੋਲ੍ਹੋ ਕਿ AI ਆਡਿਟਰ ਇਸ ਸਕੋਰ ਬਾਰੇ ਕਿੰਨੇ ਭਰੋਸੇਮੰਦ ਸਨ। ਕਈ AI ਪਾਸ ਨਾਲੋ-ਨਾਲ ਚੱਲਦੇ ਹਨ — ਪੱਕੀ ਸਹਿਮਤੀ ਦਾ ਮਤਲਬ ਸਕੋਰ ਭਰੋਸੇਯੋਗ ਹੈ, ਜਦੋਂ ਕਿ ਖਿੰਡਾਅ ਜ਼ਿਆਦਾ ਹੋਵੇ ਤਾਂ ਵੱਖਰੇ-ਵੱਖਰੇ ਮੁੱਦੇ ਖ਼ੁਦ ਜਾਂਚੋ।",
+    "pdf_audit_results_score_breakdown_details": "ਇਹ ਵੇਖਣ ਲਈ ਖੋਲ੍ਹੋ ਕਿ ਸਕੋਰ ਠੀਕ ਕਿਵੇਂ ਗਿਣਿਆ ਗਿਆ — ਕਿੰਨੀਆਂ ਜਾਂਚਾਂ ਚੱਲੀਆਂ, ਹਰ ਮੁੱਦੇ ਲਈ ਕਿੰਨੇ ਅੰਕ ਕੱਟੇ ਗਏ, ਅਤੇ AI ਰੁਬਰਿਕ ਅਤੇ axe-core ਸਕੋਰਾਂ ਦੀ ਔਸਤ ਕਿਵੇਂ ਕੱਢੀ ਗਈ। ਇਹ ਮੁੱਖ ਅੰਕੜੇ ਪਿੱਛੇ ਦੀ ਪਾਰਦਰਸ਼ਤਾ ਪਰਤ ਹੈ।",
+    "pdf_audit_results_score_how_ai_details": "ਇਹ ਵੇਖਣ ਲਈ ਖੋਲ੍ਹੋ ਕਿ AI ਹਰ ਸਮੱਸਿਆ ਨੂੰ ਕਿੰਨੀ ਸਖ਼ਤੀ ਨਾਲ ਅੰਕ ਦਿੰਦਾ ਹੈ: ਸਕਰੀਨ-ਰੀਡਰ ਵਰਤਣ ਵਾਲਿਆਂ ਨੂੰ ਰੋਕਣ ਵਾਲੇ ਗੰਭੀਰ ਮੁੱਦਿਆਂ ਲਈ ਵੱਡੀ ਕਟੌਤੀ, ਨਿੱਕੇ ਮੁੱਦਿਆਂ ਲਈ ਛੋਟੀ ਕਟੌਤੀ, ਅਤੇ ਪਾਸ ਹੋਣ ਵਾਲੀਆਂ ਜਾਂਚਾਂ ਲਈ ਮੁੜ-ਮਿਲੇ ਅੰਕ।",
+    "pdf_audit_results_score_how_axe_details": "ਇਹ ਵੇਖਣ ਲਈ ਖੋਲ੍ਹੋ ਕਿ axe-core ਚੈਕਰ (ਉਹੀ ਇੰਜਣ ਜੋ ਪੇਸ਼ੇਵਰ ਪਹੁੰਚਯੋਗਤਾ ਆਡਿਟਰ ਵਰਤਦੇ ਹਨ) ਨੇ ਤੁਹਾਡੀ PDF ਨੂੰ ਕੀ ਸਕੋਰ ਦਿੱਤਾ, ਨਾਲ ਹੀ ਉਹ ਠੀਕ WCAG ਨਿਯਮ ID ਜੋ ਫ਼ੇਲ੍ਹ ਹੋਏ।",
+    "pdf_audit_results_issue_explain": "ਇਹ ਪੜ੍ਹਨ ਲਈ ਕਲਿੱਕ ਕਰੋ ਕਿ ਇਹ ਮੁੱਦਾ ਅਸਲ ਵਿੱਚ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਕੀ ਰੋਕਦਾ ਹੈ ਅਤੇ WCAG ਨਿਯਮ ਕਿਵੇਂ ਲਾਗੂ ਹੁੰਦਾ ਹੈ। ਜੇ ਤੁਸੀਂ ਹੋਰ ਡੂੰਘਾਈ ਵਿੱਚ ਜਾਣਾ ਚਾਹੁੰਦੇ ਹੋ ਤਾਂ ਅਧਿਕਾਰਤ WCAG ਵਿਆਖਿਆ ਦਾ ਲਿੰਕ ਵੀ ਸ਼ਾਮਲ ਹੈ।",
+    "pdf_audit_results_image_failures_details": "ਉਹ ਚਿੱਤਰ ਵੇਖਣ ਲਈ ਖੋਲ੍ਹੋ ਜੋ ਸੁਧਾਰ ਦੌਰਾਨ ਡਿੱਗ ਗਏ ਸਨ। ਹਰ ਕਤਾਰ ਇੱਕ-ਕਲਿੱਕ Regenerate ਬਟਨ ਦਿੰਦੀ ਹੈ ਤਾਂ ਜੋ ਕੋਈ ਚਿੱਤਰ ਚੁੱਪ-ਚਾਪ ਗੁਆਚ ਨਾ ਜਾਵੇ।",
+    "pdf_audit_results_image_regenerate_btn": "ਇਸ ਗੁੰਮ ਹੋਏ ਚਿੱਤਰ ਨੂੰ ਇਸਦੇ ਸੰਭਾਲੇ ਵਰਣਨ ਦੇ ਆਧਾਰ 'ਤੇ AI ਨਾਲ ਮੁੜ-ਬਣਾਉਂਦਾ ਹੈ। ਨਵਾਂ ਚਿੱਤਰ ਸਿੱਧਾ ਦਸਤਾਵੇਜ਼ ਵਿੱਚ ਵਾਪਸ ਆ ਜਾਂਦਾ ਹੈ — ਕਿਸੇ ਹੱਥੀਂ ਅੱਪਲੋਡ ਦੀ ਲੋੜ ਨਹੀਂ।",
+    "pdf_audit_view_report_menu_btn": "ਪਹੁੰਚਯੋਗਤਾ ਰਿਪੋਰਟ ਨੂੰ ਵੱਖ-ਵੱਖ ਫ਼ਾਰਮੈਟਾਂ ਵਿੱਚ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਰਿਪੋਰਟ ਮੀਨੂ ਖੋਲ੍ਹੋ — ਪਾਲਣਾ ਅਫ਼ਸਰਾਂ ਲਈ Adobe-ਅੰਦਾਜ਼, ਆਮ ਸਾਂਝਾ ਕਰਨ ਲਈ ਫ਼ਾਰਮੈਟ ਕੀਤੀ PDF, ਖੋਜ ਲਈ JSON, ਜਾਂ ਆਡਿਟ ਰਿਕਾਰਡਾਂ ਲਈ ਦਸਤਖ਼ਤੀ ਟ੍ਰੇਲ।",
+    "pdf_audit_view_adobe_report_btn": "Adobe ਦੇ Accessibility Checker ਵਾਂਗ ਫ਼ਾਰਮੈਟ ਕੀਤੀ ਇੱਕ ਰਿਪੋਰਟ ਡਾਊਨਲੋਡ ਕਰੋ, ਜੋ PDF/UA-1 (PDF ਲਈ ਸੰਘੀ ਪਹੁੰਚਯੋਗਤਾ ਮਿਆਰ) ਦੇ ਮੁਕਾਬਲੇ ਸਕੋਰ ਕੀਤੀ ਗਈ ਹੈ। ਪਾਲਣਾ ਅਫ਼ਸਰਾਂ ਨਾਲ ਸਾਂਝਾ ਕਰਨ ਜਾਂ Title II / 504 ਫ਼ਾਈਲਿੰਗ ਨਾਲ ਨੱਥੀ ਕਰਨ ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ।",
+    "pdf_audit_view_tierb_diff_view_btn": "ਬਹਾਲੀ ਪਾਸ ਚਲਾਉਣ ਦਾ ਫ਼ੈਸਲਾ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਉਹ ਸ਼ਬਦ ਵੇਖੋ ਜੋ ਪਿਛਲੀ ਸੰਭਾਲ ਦੌਰਾਨ ਗੁੰਮ ਹੋ ਗਏ ਸਨ। ਸਿਰਫ਼-ਪੜ੍ਹਨਯੋਗ — ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਬਹਾਲ ਕਰਨ ਦੀ ਚੋਣ ਨਹੀਂ ਕਰਦੇ ਉਦੋਂ ਤੱਕ ਕੁਝ ਨਹੀਂ ਬਦਲਿਆ ਜਾਂਦਾ।",
+    "pdf_audit_view_tierb_rerun_restore_btn": "ਗੁੰਮ ਹੋਏ ਸਰੋਤ ਸ਼ਬਦਾਂ ਨੂੰ ਮੁੜ ਦਸਤਾਵੇਜ਼ ਵਿੱਚ ਜੋੜ ਕੇ ਟੈਗ ਕੀਤੀ PDF ਮੁੜ-ਬਣਾਉਂਦਾ ਹੈ। ਜਿਹੜੇ ਸ਼ਬਦ ਸੁਰੱਖਿਅਤ ਢੰਗ ਨਾਲ ਨਹੀਂ ਰੱਖੇ ਜਾ ਸਕਦੇ ਉਹ Content Recovery ਭਾਗ ਵਿੱਚ ਚਲੇ ਜਾਂਦੇ ਹਨ ਤਾਂ ਜੋ ਕੁਝ ਵੀ ਨਾ ਗੁਆਚੇ — ਪਹਿਲਾਂ ਅਤੇ ਬਾਅਦ ਦੀ ਬਚੀ ਗਿਣਤੀ ਹਮੇਸ਼ਾ ਵਿਖਾਈ ਜਾਂਦੀ ਹੈ ਤਾਂ ਜੋ ਤੁਸੀਂ ਵੇਖ ਸਕੋ ਕਿ ਇਸ ਨਾਲ ਮਦਦ ਹੋਈ ਜਾਂ ਨਹੀਂ।",
+    "pdf_audit_view_formatted_report_btn": "ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਇੱਕ ਛਾਪਣਯੋਗ ਪਹਿਲਾਂ/ਬਾਅਦ ਪਹੁੰਚਯੋਗਤਾ ਰਿਪੋਰਟ ਖੋਲ੍ਹੋ — ਆਪਣੇ ਰਿਕਾਰਡਾਂ ਜਾਂ ਮਾਪੇ-ਮੀਟਿੰਗ ਲਈ ਕਾਪੀ ਰੱਖਣ ਵਾਸਤੇ ਬੈਨਰ ਵਿੱਚ Save as PDF ਉੱਤੇ ਕਲਿੱਕ ਕਰੋ।",
+    "pdf_audit_view_html_report_btn": "ਪਹਿਲਾਂ/ਬਾਅਦ ਦੀ ਰਿਪੋਰਟ ਨੂੰ ਇੱਕ HTML ਫ਼ਾਈਲ ਵਜੋਂ ਡਾਊਨਲੋਡ ਕਰੋ ਜਿਸਨੂੰ ਤੁਸੀਂ ਕਿਸੇ ਵੈੱਬਸਾਈਟ 'ਤੇ ਰੱਖ ਜਾਂ ਸੋਧ ਸਕਦੇ ਹੋ। ਸਮੱਗਰੀ ਛਾਪਣਯੋਗ PDF ਰੂਪ ਨਾਲ ਮੇਲ ਖਾਂਦੀ ਹੈ।",
+    "pdf_audit_view_json_data_btn": "ਕੱਚੇ ਆਡਿਟ ਅੰਕੜੇ ਅਤੇ ਨਿਯਮ-ਦਰ-ਨਿਯਮ ਡਾਟਾ ਨੂੰ JSON ਵਜੋਂ ਨਿਰਯਾਤ ਕਰੋ। ਇਸਨੂੰ ਉਦੋਂ ਵਰਤੋ ਜਦੋਂ ਤੁਸੀਂ ਪਹੁੰਚਯੋਗਤਾ ਨਤੀਜਿਆਂ ਦਾ ਕਿਸੇ ਸਪ੍ਰੈੱਡਸ਼ੀਟ, ਖੋਜ ਨੋਟਬੁੱਕ, ਜਾਂ ਕਿਸੇ ਹੋਰ ਟੂਲ ਵਿੱਚ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ।",
+    "pdf_audit_view_audit_trail_signed_btn": "ਇੱਕ ਖ਼ੁਦ-ਤਸਦੀਕ ਹੋਣ ਵਾਲਾ ਆਡਿਟ ਟ੍ਰੇਲ ਬਣਾਓ (ਇੱਕ HTML ਫ਼ਾਈਲ ਜਿਸ ਵਿੱਚ ਅੰਦਰ-ਬਣਿਆ Verify Integrity ਬਟਨ ਹੁੰਦਾ ਹੈ ਜੋ ਛੇੜਛਾੜ ਦਾ ਪਤਾ ਲਾਉਂਦਾ ਹੈ)। ਪਾਲਣਾ ਸਬੂਤ ਲਈ ਚੰਗਾ — ਪਰ ਧਿਆਨ ਰੱਖੋ ਕਿ ਇਹ ਬ੍ਰਾਊਜ਼ਰ-ਪਾਸੇ ਦਾ ਦਸਤਖ਼ਤ ਹੈ, ਕਾਨੂੰਨੀ ਤੌਰ 'ਤੇ ਪਾਬੰਦ ਨਹੀਂ।",
+    "pdf_audit_view_save_project_btn": "ਤੁਹਾਡੇ ਸੁਧਾਰ ਦੇ ਕੰਮ — ਪਹੁੰਚਯੋਗ HTML, ਸਕੋਰ, ਸੈਟਿੰਗਾਂ, ਪੰਨਾ-ਦਰ-ਪੰਨਾ ਤਰੱਕੀ — ਨੂੰ ਇੱਕ ਪੋਰਟੇਬਲ ਫ਼ਾਈਲ ਵਿੱਚ ਸੰਭਾਲਦਾ ਹੈ। AI ਨੂੰ ਮੁੜ-ਚਲਾਏ ਬਿਨਾਂ ਸੋਧ ਜਾਰੀ ਰੱਖਣ ਲਈ Load Project ਨਾਲ ਮੁੜ ਖੋਲ੍ਹੋ।",
+    "pdf_audit_view_load_project_btn": "ਉਹ ਪ੍ਰੋਜੈਕਟ ਫ਼ਾਈਲ ਮੁੜ ਖੋਲ੍ਹੋ ਜੋ ਤੁਸੀਂ ਪਹਿਲਾਂ ਸੰਭਾਲੀ ਸੀ। ਇਹ ਠੀਕ ਕੀਤਾ HTML, ਸਕੋਰ, ਅਤੇ ਪਹਿਲਾਂ ਹੀ ਮੁਕੰਮਲ ਹੋਏ ਕੋਈ ਵੀ ਪੰਨਾ-ਰੇਂਜ ਵਾਪਸ ਲਿਆਉਂਦਾ ਹੈ — ਠੀਕ ਉੱਥੋਂ ਜਾਰੀ ਹੁੰਦਾ ਹੈ ਜਿੱਥੋਂ ਤੁਸੀਂ ਛੱਡਿਆ ਸੀ।",
+    "pdf_audit_view_save_template_btn": "ਦਸਤਾਵੇਜ਼ ਦੇ ਪਹੁੰਚਯੋਗ ਢਾਂਚੇ (ਸਿਰਲੇਖ ਰੂਪਰੇਖਾ, ਟੇਬਲ, ਸੂਚੀਆਂ, ਲੈਂਡਮਾਰਕ) ਨੂੰ ਮੁੜ-ਵਰਤੋਂਯੋਗ ਟੈਮਪਲੇਟ ਵਜੋਂ ਸੰਭਾਲੋ। ਨਵੇਂ ਦਸਤਾਵੇਜ਼ — IEP, ਸਿਲੇਬਸ — ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਇਸਨੂੰ Document Builder ਵਿੱਚ ਵਰਤੋ ਜੋ ਪਹਿਲਾਂ ਤੋਂ ਹੀ ਪਹੁੰਚਯੋਗਤਾ ਲਈ ਢਾਂਚਾਬੱਧ ਹਨ।",
+    "pdf_audit_alt_formats_summary": "ਵਿਕਲਪਿਕ ਫ਼ਾਰਮੈਟਾਂ ਲਈ ਖੋਲ੍ਹੋ — ePub, ਇਲੈਕਟ੍ਰਾਨਿਕ ਬਰੇਲ, ਸਾਦਾ ਟੈਕਸਟ, Markdown — ਉਹਨਾਂ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਜਿਨ੍ਹਾਂ ਨੂੰ PDF ਜਾਂ HTML ਤੋਂ ਵੱਖਰੀ ਫ਼ਾਈਲ ਕਿਸਮ ਦੀ ਲੋੜ ਹੈ।",
+    "pdf_audit_alt_formats_epub_btn": "ਠੀਕ ਕੀਤੇ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਸਮੱਗਰੀ-ਸੂਚੀ ਅਤੇ ਪਹੁੰਚਯੋਗਤਾ ਮੈਟਾਡਾਟਾ ਸਮੇਤ ਇੱਕ ePub ਫ਼ਾਈਲ ਵਜੋਂ ਸੰਭਾਲੋ। Kindle, Apple Books, ਅਤੇ ਬਹੁਤੇ ਮੋਬਾਈਲ ਰੀਡਰਾਂ 'ਤੇ ਚੱਲਦੀ ਹੈ — ਵਿਦਿਆਰਥੀ ਫ਼ੌਂਟ ਆਕਾਰ, ਰੰਗ, ਅਤੇ ਪੜ੍ਹਨ ਦੀ ਰਫ਼ਤਾਰ ਬਦਲ ਸਕਦੇ ਹਨ।",
+    "pdf_audit_alt_formats_braille_btn": "ਇੱਕ Grade-1 (ਬਿਨਾਂ-ਸੰਖੇਪ) ਬਰੇਲ ਫ਼ਾਈਲ ਸੰਭਾਲੋ ਜਿਸਨੂੰ ਬਰੇਲ ਪ੍ਰਿੰਟਰ 'ਤੇ ਉਭਾਰਿਆ ਜਾ ਸਕਦਾ ਹੈ ਜਾਂ ਤਾਜ਼ਾ ਹੋਣ ਵਾਲੇ ਬਰੇਲ ਡਿਸਪਲੇ ਨੂੰ ਭੇਜਿਆ ਜਾ ਸਕਦਾ ਹੈ। Grade-2 ਸੰਖੇਪਾਂ ਲਈ, ਫ਼ਾਈਲ ਨੂੰ ਮੁਕੰਮਲ ਕਰਨ ਵਾਸਤੇ ਕਿਸੇ TVI (ਦ੍ਰਿਸ਼ਟੀਹੀਣ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਅਧਿਆਪਕ) ਨੂੰ ਸੌਂਪੋ।",
+    "pdf_audit_alt_formats_text_btn": "ਸਾਰੀ ਫ਼ਾਰਮੈਟਿੰਗ ਹਟਾ ਕੇ ਇੱਕ ਸਾਦੀ .txt ਫ਼ਾਈਲ ਸੰਭਾਲੋ — ਸਕਰੀਨ ਰੀਡਰਾਂ, ਵੱਡੇ-ਪ੍ਰਿੰਟ ਵਿੱਚ ਬਦਲਣ, ਜਾਂ ਕਿਸੇ ਹੋਰ ਟੂਲ ਵਿੱਚ ਪੇਸਟ ਕਰਨ ਲਈ ਸਭ ਤੋਂ ਸੌਖਾ ਫ਼ਾਰਮੈਟ।",
+    "pdf_audit_alt_formats_markdown_btn": "ਦਸਤਾਵੇਜ਼ ਨੂੰ Markdown ਵਜੋਂ ਸੰਭਾਲੋ — ਇਹ ਸਿਰਲੇਖ ਜਾਂ ਲਿੰਕ ਗੁਆਏ ਬਿਨਾਂ Canvas, Schoology, ਜਾਂ D2L ਪੰਨਿਆਂ, Google Docs (ਪੇਸਟ ਰਾਹੀਂ), wiki, ਅਤੇ GitHub-ਅੰਦਾਜ਼ ਨੋਟਾਂ ਵਿੱਚ ਸਾਫ਼-ਸੁਥਰੇ ਢੰਗ ਨਾਲ ਆ ਜਾਂਦਾ ਹੈ।",
+    "pdf_audit_alt_formats_daisy_btn": "ਇੱਕ DAISY 3 ਪੂਰਾ-ਟੈਕਸਟ ਬੋਲਣ ਵਾਲੀ-ਕਿਤਾਬ ਪੈਕੇਜ ਸੰਭਾਲੋ। DAISY ਰੀਡਰ (ਵਿਸ਼ੇਸ਼ ਸਿੱਖਿਆ ਵਿੱਚ ਆਮ) ਪੂਰੀ ਨੈਵੀਗੇਸ਼ਨ ਨਾਲ ਆਪਣੀ ਆਵਾਜ਼, ਬਰੇਲ, ਜਾਂ ਵੱਡਾ ਪ੍ਰਿੰਟ ਜੋੜਦੇ ਹਨ। ਇੱਥੇ ਸਿਰਫ਼-ਟੈਕਸਟ ਹੈ — ਸਿੰਕ ਕੀਤੇ ਪੜ੍ਹ ਕੇ ਸੁਣਾਉਣ ਲਈ, Read-along ebook ਵਰਤੋ।",
+    "pdf_audit_alt_formats_readalong_btn": "ਇੱਕ read-along ebook ਬਣਾਓ (EPUB3 Media Overlays): ਹਰ ਪੈਰ੍ਹਾ text-to-speech ਨਾਲ ਸੁਣਾਇਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਟੈਕਸਟ ਨਾਲ ਸਿੰਕ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਤਾਂ ਜੋ ਬੋਲੇ ਜਾਣ ਵੇਲੇ ਸ਼ਬਦ ਉਜਾਗਰ ਹੋਣ। ਹਰ ਭਾਗ ਲਈ ਇੱਕ ਆਵਾਜ਼ ਕਾਲ ਹੁੰਦੀ ਹੈ, ਇਸ ਲਈ ਇਸ ਵਿੱਚ ਕੁਝ ਮਿੰਟ ਲੱਗ ਸਕਦੇ ਹਨ।",
+    "pdf_audit_alt_formats_odt_btn": "ਇੱਕ OpenDocument Text (.odt) ਫ਼ਾਈਲ ਸੰਭਾਲੋ — ਇਹ LibreOffice ਅਤੇ Google Docs ਦੀ ਮੂਲ ਫ਼ਾਈਲ ਹੈ (Word ਵੀ ਇਸਨੂੰ ਖੋਲ੍ਹ ਲੈਂਦਾ ਹੈ)। ਇਸਨੂੰ ਉਦੋਂ ਵਰਤੋ ਜਦੋਂ ਤੁਹਾਡਾ ਸਕੂਲ ਪੂਰੀ ਤਰ੍ਹਾਂ Microsoft ਵਾਲਾ ਨਾ ਹੋਵੇ ਪਰ ਤੁਸੀਂ ਫਿਰ ਵੀ ਢਾਂਚਾ ਬਰਕਰਾਰ ਰੱਖਣ ਵਾਲਾ ਸੋਧਣਯੋਗ ਦਸਤਾਵੇਜ਼ ਚਾਹੁੰਦੇ ਹੋ।"
   },
   "groups": {
     "title": "ਵਖਰੇਵੇਂ ਸਮੂਹ",
@@ -9654,7 +9796,7 @@
     "obs_momentary": "Momentary ਸਮਾਂ Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional ਵਿਵਹਾਰ ਮੁਲਾਂਕਣ, ABC ਡਾਟਾ collection, ਅਤੇ ਵਿਵਹਾਰ ਦਖਲ ਯੋਜਨਾ ਔਜ਼ਾਰ.",
+      "subtitle": "Functional ਵਿਵਹਾਰ ਮੁਲਾਂਕਣ (FBA), ABC ਡਾਟਾ ਇਕੱਠ, ਅਤੇ ਵਿਵਹਾਰ ਦਖਲ ਯੋਜਨਾ (BIP) ਔਜ਼ਾਰ।",
       "open_btn": "ਖੋਲ੍ਹੋ BehaviorLens",
       "select_student": "ਚੁਣੋ ਵਿਦਿਆਰਥੀ",
       "choose_student": "— ਚੁਣੋ ਇੱਕ ਵਿਦਿਆਰਥੀ —",
@@ -9797,7 +9939,7 @@
       "prefassess_title": "Preference ਮੁਲਾਂਕਣ",
       "progress_desc": "ਇਕੱਠੇ ਕੀਤੇ ਵਿਵਹਾਰਕ ਡਾਟੇ ਤੋਂ IEP-ਤਿਆਰ ਪ੍ਰਗਤੀ ਨਿਗਰਾਨੀ ਪੈਰੇ",
       "progress_title": "ਤਰੱਕੀ ਬਿਰਤਾਂਤ",
-      "progressreport_desc": "AI-generated ਕੀਤਾ ਗਿਆ ਤਰੱਕੀ reports ਨਾਲ ਡਾਟਾ summaries, trend ਵਿਸ਼ਲੇਸ਼ਣ, ਟੀਚਾ ਤਰੱਕੀ, ਅਤੇ ਮਾਪੇ-ਦੋਸਤਾਨਾ ਭਾਸ਼ਾ ਵਿਕਲਪ",
+      "progressreport_desc": "ਡਾਟਾ ਸਾਰਾਂਸ਼, ਰੁਝਾਨ ਵਿਸ਼ਲੇਸ਼ਣ, ਟੀਚਾ ਤਰੱਕੀ, ਅਤੇ ਮਾਪੇ-ਦੋਸਤਾਨਾ ਭਾਸ਼ਾ ਵਿਕਲਪ ਨਾਲ AI ਦੁਆਰਾ ਤਿਆਰ ਤਰੱਕੀ ਰਿਪੋਰਟਾਂ",
       "progressreport_title": "ਤਰੱਕੀ Reports",
       "qualitycheck_desc": "ਖਾਸ ਸੁਧਾਰ ਸੁਝਾਵਾਂ ਨਾਲ ਤੁਹਾਡੀਆਂ ABC ਐਂਟਰੀਆਂ ਦੀ AI-ਸੰਚਾਲਿਤ ਸਮੀਖਿਆ",
       "qualitycheck_title": "ਡਾਟਾ ਗੁਣਵੱਤਾ ਜਾਂਚ",
@@ -9829,7 +9971,7 @@
       "sessionnotes_title": "ਸੈਸ਼ਨ ਨੋਟਸ",
       "sessiontracker_desc": "ਦਰ ਗਣਨਾ ਨਾਲ ਯੋਜਨਾਬੱਧ ਸੈਸ਼ਨ-ਅਧਾਰਿਤ ਵਿਵਹਾਰਕ ਮਾਪ",
       "sessiontracker_title": "ਸੈਸ਼ਨ ਡਾਟਾ Tracker",
-      "snapshot_desc": "ਨਿਰਯਾਤ ਕਰੋ & ਆਯਾਤ ਕਰੋ JSON snapshots ਲਈ ਮਾਪੇ–ਅਧਿਆਪਕ ਡਾਟਾ exchange",
+      "snapshot_desc": "ਮਾਪੇ–ਅਧਿਆਪਕ ਡਾਟਾ ਵਟਾਂਦਰੇ ਲਈ JSON ਸਨੈਪਸ਼ਾਟ ਨਿਰਯਾਤ ਅਤੇ ਆਯਾਤ ਕਰੋ",
       "snapshot_title": "ਵਿਦਿਆਰਥੀ ਸਨੈਪਸ਼ਾਟ ਅਦਲਾ-ਬਦਲੀ",
       "socialvalidity_desc": "ਇਲਾਜ ਦੀ ਸਵੀਕਾਰਯੋਗਤਾ ਮਾਪਣ ਲਈ TARF ਅਤੇ IRP-15 ਸਕੇਲ — ਪ੍ਰਕਾਸ਼ਨ ਲਈ ਲੋੜੀਂਦਾ",
       "socialvalidity_title": "ਸਮਾਜਿਕ Validity",
@@ -10029,7 +10171,7 @@
     "reinforcer_sensory": "🌀 ਸੰਵੇਦੀ",
     "quiz_fba_purpose": "FBA ਦਾ ਮੁੱਖ ਉਦੇਸ਼ ਕੀ ਹੈ?",
     "quiz_replacement": "ਕੀ ਹੈ ਇੱਕ replacement ਵਿਵਹਾਰ?",
-    "search_placeholder": "ਖੋਜੋ antecedent, ਵਿਵਹਾਰ, consequence, ਨੋਟਸ, ਸੈਟਿੰਗ...",
+    "search_placeholder": "antecedent (ਪੂਰਵ-ਘਟਨਾ), ਵਿਵਹਾਰ, consequence (ਨਤੀਜਾ), ਨੋਟਸ, ਸਥਾਨ ਖੋਜੋ...",
     "quick_fill_placeholder": "ਜਿਵੇਂ \"ਵਿਦਿਆਰਥੀ ਨੇ ਗਣਿਤ ਦੌਰਾਨ ਕੰਮ ਦਿਖਾਉਣ ਲਈ ਕਹੇ ਜਾਣ 'ਤੇ ਕਾਗਜ਼ ਸੁੱਟਿਆ, ਅਧਿਆਪਕ ਨੇ ਸ਼ਾਂਤੀ ਨਾਲ ਮੁੜ-ਨਿਰਦੇਸ਼ਿਤ ਕੀਤਾ\"",
     "nl_edit_placeholder": "ਜਿਵੇਂ \"ਨਤੀਜੇ ਨੂੰ ਅਧਿਆਪਕ ਨੇ ਮੁੜ-ਨਿਰਦੇਸ਼ਿਤ ਕੀਤਾ ਵਿੱਚ ਬਦਲੋ\"",
     "now": "ਹੁਣ",
@@ -10129,7 +10271,7 @@
     "cycle_de_escalation": "ਡੀ-ਐਸਕੇਲੇਸ਼ਨ",
     "cycle_recovery": "ਮੁੜ ਸ਼ਾਂਤ",
     "quiz_opt_punish": "ਨੂੰ punish ਵਿਦਿਆਰਥੀ",
-    "quiz_opt_identify_why": "ਨੂੰ ਪਛਾਣੋ WHY ਇੱਕ ਵਿਵਹਾਰ occurs",
+    "quiz_opt_identify_why": "ਇਹ ਪਛਾਣਨ ਲਈ ਕਿ ਵਿਵਹਾਰ ਕਿਉਂ (WHY) ਵਾਪਰਦਾ ਹੈ",
     "quiz_opt_any_stops": "ਕੋਈ ਵੀ ਵਿਵਹਾਰ ਜੋ ਸਮੱਸਿਆ ਨੂੰ ਰੋਕਦਾ ਹੈ",
     "analysis": {
       "hypothesized_function": "ਅਨੁਮਾਨਿਤ ਕਾਰਜ",
@@ -10202,7 +10344,7 @@
       "topic_purpose_of_contact": "ਵਿਸ਼ਾ / ਸੰਪਰਕ ਦਾ ਮਕਸਦ",
       "type_full_name": "ਕਿਸਮ ਪੂਰਾ name",
       "type_language_eg_spanish_arabic_somali": "ਭਾਸ਼ਾ ਟਾਈਪ ਕਰੋ (ਜਿਵੇਂ, ਸਪੈਨਿਸ਼, ਅਰਬੀ, ਸੋਮਾਲੀ)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "ਕਿਸਮ ਤੁਹਾਡਾ ਨਿਰੀਖਣ, note, ਜਾਂ ਕਲਿੱਕ ਕਰੋ mic ਨੂੰ dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "ਆਪਣਾ ਨਿਰੀਖਣ ਜਾਂ ਨੋਟ ਲਿਖੋ, ਜਾਂ ਬੋਲ ਕੇ ਲਿਖਣ ਲਈ mic 'ਤੇ ਕਲਿੱਕ ਕਰੋ...",
       "type_your_response_here_be_thorough_and_use_profes": "ਆਪਣਾ ਜਵਾਬ ਇੱਥੇ ਟਾਈਪ ਕਰੋ। ਪੂਰੀ ਤਰ੍ਹਾਂ ਅਤੇ ਪੇਸ਼ੇਵਰ ਭਾਸ਼ਾ ਦੀ ਵਰਤੋਂ ਕਰੋ...",
       "what_behavior_will_change": "ਕੀ ਵਿਵਹਾਰ ਹੋਵੇਗਾ ਬਦਲਾਅ?",
       "what_could_you_or_a_grownup_do_differently": "ਤੁਸੀਂ ਜਾਂ ਕੋਈ ਵੱਡਾ ਵਿਅਕਤੀ ਕੀ ਵੱਖਰਾ ਕਰ ਸਕਦਾ ਹੈ?",
@@ -10475,7 +10617,7 @@
       "data_quality_score": "ਡਾਟਾ ਗੁਣਵੱਤਾ ਅੰਕ",
       "data_to_include": "ਡਾਟਾ ਨੂੰ ਸ਼ਾਮਲ ਕਰੋ",
       "day_streak": "ਦਿਨ ਲੜੀ",
-      "define_the_behaviors_settings_or_students_for_stag": "Define ਵਿਵਹਾਰ, ਸੈਟਿੰਗਾਂ, ਜਾਂ ਵਿਦਿਆਰਥੀ ਲਈ staggered ਦਖਲ.",
+      "define_the_behaviors_settings_or_students_for_stag": "ਪੜਾਅਵਾਰ (staggered) ਦਖਲ ਲਈ ਵਿਵਹਾਰ, ਸਥਾਨ, ਜਾਂ ਵਿਦਿਆਰਥੀ ਪਰਿਭਾਸ਼ਿਤ ਕਰੋ।",
       "describe_your_research_question_and_let_ai_recomme": "ਆਪਣਾ ਖੋਜ ਸਵਾਲ ਦੱਸੋ ਅਤੇ AI ਨੂੰ ਸਭ ਤੋਂ ਵਧੀਆ ਡਿਜ਼ਾਈਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਨ ਦਿਓ।",
       "discrete_trial_training_with_mastery_tracking_and": "ਮੁਹਾਰਤ ਟ੍ਰੈਕਿੰਗ ਅਤੇ ਆਟੋ-ਅਡਵਾਂਸ ਨਾਲ DTT ਸਿਖਲਾਈ",
       "document_whether_interventions_are_implemented_as": "ਦਸਤਾਵੇਜ਼ ਕਰੋ ਕਿ ਕੀ ਦਖਲ ਡਿਜ਼ਾਈਨ ਅਨੁਸਾਰ ਲਾਗੂ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ",
@@ -10494,7 +10636,7 @@
       "from_abc_data": "ਤੋਂ ABC ਡਾਟਾ:",
       "full_student_summary": "ਪੂਰਾ ਵਿਦਿਆਰਥੀ ਸੰਖੇਪ",
       "functional_communication_training_planning_tool": "FCT ਸਿਖਲਾਈ ਯੋਜਨਾਬੰਦੀ ਟੂਲ",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "ਤਿਆਰ ਕਰੋ ਇੱਕ multi-week ਦਖਲ ਯੋਜਨਾ ਆਧਾਰਿਤ ਉੱਤੇ ਤੁਹਾਡਾ collected ABC ਡਾਟਾ ਅਤੇ AI ਵਿਸ਼ਲੇਸ਼ਣ.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "ਆਪਣੇ ਇਕੱਠੇ ਕੀਤੇ ABC ਡਾਟਾ ਅਤੇ AI ਵਿਸ਼ਲੇਸ਼ਣ ਦੇ ਆਧਾਰ 'ਤੇ ਕਈ-ਹਫ਼ਤਿਆਂ ਦੀ ਦਖਲ ਯੋਜਨਾ ਤਿਆਰ ਕਰੋ।",
       "generate_a_professional_printready_progress_report": "ਇਨਲਾਈਨ ਚਾਰਟਾਂ, ਡਾਟਾ ਸੰਖੇਪਾਂ, ਅਤੇ AI ਸਿਫ਼ਾਰਸ਼ਾਂ ਨਾਲ ਇੱਕ ਪੇਸ਼ੇਵਰ, ਪ੍ਰਿੰਟ-ਤਿਆਰ ਪ੍ਰਗਤੀ ਰਿਪੋਰਟ ਪੈਦਾ ਕਰੋ। ਬ੍ਰਾਊਜ਼ਰ ਪ੍ਰਿੰਟ ਰਾਹੀਂ ਇੱਕ-ਕਲਿੱਕ PDF ਐਕਸਪੋਰਟ।",
       "generate_a_unique_scenario_tailored_to_your_traini": "ਤੁਹਾਡੀਆਂ ਸਿਖਲਾਈ ਲੋੜਾਂ ਅਨੁਸਾਰ ਇੱਕ ਵਿਲੱਖਣ ਦ੍ਰਿਸ਼ ਤਿਆਰ ਕਰੋ।",
       "generate_compliant_iep_behavioral_goals_from_obser": "ਤਿਆਰ ਕਰੋ compliant IEP behavioral ਟੀਚਾ ਤੋਂ ਨਿਰੀਖਣ ਡਾਟਾ ਨਾਲ present ਪੱਧਰ, SMART ਟੀਚਾ, ਅਤੇ ਤਰੱਕੀ monitoring.",
@@ -10557,7 +10699,7 @@
       "optional_message": "ਵਿਕਲਪਿਕ ਸੁਨੇਹਾ",
       "or_explore_the_pd_learning_path": "ਜਾਂ ਪੜਚੋਲ ਕਰੋ PD ਸਿੱਖਣਾ Path →",
       "parent": "ਮਾਪੇ",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ਚਿਪਕਾਓ one ਮੁੱਲ per ਲਾਈਨ. ਸਹਾਇਤਾ ਫਾਰਮੈਟ: \"5\", \"ਸੈਸ਼ਨ 1: 5\", ਜਾਂ \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "ਪ੍ਰਤੀ ਲਾਈਨ ਇੱਕ ਮੁੱਲ ਚਿਪਕਾਓ। ਇਹ ਫਾਰਮੈਟ ਸਮਰਥਿਤ ਹਨ: \"5\", \"ਸੈਸ਼ਨ 1: 5\", ਜਾਂ \"1,5\"",
       "pd_learning_path": "PD ਸਿੱਖਣਾ Path",
       "please_use_chrome_edge_or_safari_for_voice_input": "ਕਿਰਪਾ ਕਰਕੇ ਵਰਤੋ Chrome, Edge, ਜਾਂ Safari ਲਈ ਆਵਾਜ਼ ਇਨਪੁੱਟ.",
       "practice_clinical_reasoning_with_aigenerated_case": "AI-ਜਨਰੇਟ ਕੇਸ ਅਧਿਐਨਾਂ ਨਾਲ ਕਲੀਨਿਕਲ ਤਰਕ ਦਾ ਅਭਿਆਸ ਕਰੋ। ਆਪਣੇ ਜਵਾਬਾਂ 'ਤੇ ਮਾਹਿਰ-ਪੱਧਰੀ ਫੀਡਬੈਕ ਪ੍ਰਾਪਤ ਕਰੋ।",
@@ -10572,10 +10714,10 @@
       "publicationstandard_singlecase_design_graphs": "ਪ੍ਰਕਾਸ਼ਨ-ਮਿਆਰੀ ਇਕਹਿਰੇ-ਕੇਸ ਡਿਜ਼ਾਈਨ ਗ੍ਰਾਫ਼",
       "quick_switch": "ਤੇਜ਼ ਬਦਲੋ",
       "range": "ਰੇਂਜ",
-      "read_through_the_module_content_above_then_click_c": "ਪੜ੍ਹੋ ਰਾਹੀਂ module ਸਮੱਗਰੀ above, ਫਿਰ ਕਲਿੱਕ ਕਰੋ ਪੂਰਾ ਕਰੋ below.",
+      "read_through_the_module_content_above_then_click_c": "ਉੱਪਰ ਦਿੱਤੀ ਮੋਡੀਊਲ ਸਮੱਗਰੀ ਪੜ੍ਹੋ, ਫਿਰ ਹੇਠਾਂ ਪੂਰਾ ਕਰੋ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।",
       "realtime_calming_tools_for_inthemoment_support": "ਉਸ ਪਲ ਦੀ ਸਹਾਇਤਾ ਲਈ ਅਸਲ-ਸਮੇਂ ਦੇ ਸ਼ਾਂਤ ਕਰਨ ਵਾਲੇ ਟੂਲ",
       "recent_moods": "ਹਾਲੀਆ ਮਨੋਦਸ਼ਾਵਾਂ:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record ਸੈਸ਼ਨ ਨਾਲ ਸੈਸ਼ਨ ਡਾਟਾ Tracker, ਜਾਂ ਬਦਲੋ ਨੂੰ ਮੈਨੁਅਲ Entry ਮੋਡ.",
+      "record_sessions_with_the_session_data_tracker_or_s": "ਸੈਸ਼ਨ ਡਾਟਾ ਟ੍ਰੈਕਰ ਨਾਲ ਸੈਸ਼ਨ ਰਿਕਾਰਡ ਕਰੋ, ਜਾਂ ਮੈਨੁਅਲ ਐਂਟਰੀ ਮੋਡ 'ਤੇ ਬਦਲੋ।",
       "recording": "ਰਿਕਾਰਡ ਹੋ ਰਿਹਾ ਹੈ...",
       "relationship_map": "ਰਿਸ਼ਤਾ ਨਕਸ਼ਾ",
       "remember_cultural_humility_is_a_lifelong_practice": "ਯਾਦ ਰੱਖੋ: ਸੱਭਿਆਚਾਰਕ ਨਿਮਰਤਾ ਇੱਕ ਜੀਵਨ ਭਰ ਦਾ ਅਭਿਆਸ ਹੈ। ਹਰ ਚਿੰਤਨ ਤੁਹਾਨੂੰ ਵਧੇਰੇ ਬਰਾਬਰੀ ਵਾਲਾ ਅਭਿਆਸਕਰਤਾ ਬਣਾਉਂਦਾ ਹੈ।",
@@ -10603,7 +10745,7 @@
       "summary": "ਸੰਖੇਪ:",
       "systematic_behavioral_measurement_across_sessions": "ਸੈਸ਼ਨਾਂ ਦੌਰਾਨ ਵਿਵਸਥਿਤ ਵਿਵਹਾਰਕ ਮਾਪ",
       "systematic_reinforcer_identification_using_evidenc": "ਸਬੂਤ-ਆਧਾਰਿਤ ਪ੍ਰੋਟੋਕੋਲ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਵਿਵਸਥਿਤ ਰੀਨਫੋਰਸਰ ਪਛਾਣ",
-      "tap_each_item_when_student_engages_with_it": "Tap ਹਰ ਆਈਟਮ ਜਦੋਂ ਵਿਦਿਆਰਥੀ engages ਨਾਲ it",
+      "tap_each_item_when_student_engages_with_it": "ਹਰ ਆਈਟਮ 'ਤੇ ਟੈਪ ਕਰੋ ਜਦੋਂ ਵਿਦਿਆਰਥੀ ਉਸ ਨਾਲ ਜੁੜਦਾ ਹੈ",
       "target_behavior": "ਟੀਚਾ ਵਿਵਹਾਰ",
       "task_analysis": "Task ਵਿਸ਼ਲੇਸ਼ਣ",
       "taskskill_name": "ਕੰਮ/ਹੁਨਰ ਨਾਮ",
@@ -10613,7 +10755,7 @@
       "top_behavior": "Top ਵਿਵਹਾਰ",
       "total_contacts": "ਕੁੱਲ ਸੰਪਰਕ",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ਵਿਵਹਾਰ frequency ਉੱਪਰ ਸਮਾਂ ਨਾਲ aim ਲਾਈਨ, phase ਤਬਦੀਲੀਆਂ, ਅਤੇ trend ਵਿਸ਼ਲੇਸ਼ਣ.",
+      "track_behavior_frequency_over_time_with_aim_lines": "ਟੀਚਾ ਲਾਈਨਾਂ, ਪੜਾਅ ਤਬਦੀਲੀਆਂ, ਅਤੇ ਰੁਝਾਨ ਵਿਸ਼ਲੇਸ਼ਣ ਨਾਲ ਸਮੇਂ ਦੇ ਨਾਲ ਵਿਵਹਾਰ ਦੀ ਬਾਰੰਬਾਰਤਾ ਟ੍ਰੈਕ ਕਰੋ।",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track ਵਿਵਹਾਰ at home ਵਰਤਦੇ ਹੋਏ ਸਾਦਾ, everyday ਭਾਸ਼ਾ. ਇਹ ਮਦਦ ਤੁਹਾਡਾ child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "ਆਪਣੀਆਂ ਭਾਵਨਾਵਾਂ ਨੂੰ ਟਰੈਕ ਕਰੋ, ਬੈਜ ਕਮਾਓ, ਅਤੇ ਲੜੀਆਂ ਬਣਾਓ!",
       "transform_deficitbased_language_into_assetfocused": "ਘਾਟ-ਆਧਾਰਿਤ ਭਾਸ਼ਾ ਨੂੰ ਸੰਪੱਤੀ-ਕੇਂਦ੍ਰਿਤ ਵਰਣਨ ਵਿੱਚ ਬਦਲੋ",
@@ -11215,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories ਨੂੰ life ਨਾਲ ਪਾਤਰ voices & literary ਵਿਸ਼ਲੇਸ਼ਣ",
     "poettree_title": "PoetTree",
-    "poettree_desc": "ਲਿਖੋ poems ਨਾਲ form scaffolds, rhyme & meter ਵਿਸ਼ਲੇਸ਼ਣ, AI ਫੀਡਬੈਕ"
+    "poettree_desc": "ਲਿਖੋ poems ਨਾਲ form scaffolds, rhyme & meter ਵਿਸ਼ਲੇਸ਼ਣ, AI ਫੀਡਬੈਕ",
+    "throughline_desc": "ਆਪਣੇ ਪਾਠਾਂ ਨੂੰ ਇੱਕ ਸਥਾਨਕ ਇਕਾਈ ਵਿੱਚ ਤਰਤੀਬ ਦਿਓ: ਪੜ੍ਹਾਉਣ ਦਾ ਕ੍ਰਮ, ਪੂਰਵ-ਲੋੜਾਂ, ਇੱਕ ਨਿਰਯਾਤ-ਯੋਗ ਫ਼ਾਈਲ"
   },
   "sel_hub": {
     "loading": "SEL ਹੱਬ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
@@ -12535,5 +12678,10 @@
     "byline": "{author} ਦੁਆਰਾ · {words} ਸ਼ਬਦ · {used}/{total} ਸ਼ਬਦਾਵਲੀ",
     "student": "ਵਿਦਿਆਰਥੀ",
     "score": "ਸਕੋਰ: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "ਪੂਰਵ-ਝਲਕ ਮੁੜ ਬਣਾਉਣ ਨਾਲ ਤੁਹਾਡੀਆਂ ਹੱਥੀਂ ਕੀਤੀਆਂ ਤਬਦੀਲੀਆਂ ਨਵੀਂ ਬਣਾਈ ਸਮੱਗਰੀ ਨਾਲ ਬਦਲ ਜਾਣਗੀਆਂ। ਜਾਰੀ ਰੱਖਣਾ ਅਤੇ ਤਬਦੀਲੀਆਂ ਰੱਦ ਕਰਨੀਆਂ ਹਨ? (ਰੱਦ ਕਰੋ ਉਨ੍ਹਾਂ ਨੂੰ ਰੱਖਦਾ ਹੈ — ਪਹਿਲਾਂ ਸੰਭਾਲਣ ਲਈ ਬਿਲਡਰ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ ਜਾਂ ਬੰਦ ਕਰੋ।)",
+    "remediation_banner_title": "ਸੁਧਾਰੇ ਗਏ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਸੰਪਾਦਿਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ।",
+    "remediation_banner_body": "ਜਦੋਂ ਤੁਸੀਂ ਬਿਲਡਰ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਇੱਥੇ ਕੀਤੀਆਂ ਤੁਹਾਡੀਆਂ ਤਬਦੀਲੀਆਂ ਉਸ ਵਿੱਚ ਮੁੜ ਸੰਭਾਲ ਲਈਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਇਸ ਲਈ ਟੈਗ ਕੀਤੀ PDF / Word / PowerPoint ਡਾਊਨਲੋਡਾਂ ਵਿੱਚ ਇਹ ਸ਼ਾਮਲ ਹੁੰਦੀਆਂ ਹਨ।"
   }
 }

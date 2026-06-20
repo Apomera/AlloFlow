@@ -979,7 +979,7 @@
     "storage_full_text_only": "भंडारण भरा हुआ है। केवल टेक्स्ट सहेजा जा रहा है (छवियाँ हटा दी गईं)।",
     "storage_full_critical": "गंभीर: इतिहास सहेजा नहीं जा सका। भंडारण भरा हुआ है।",
     "resource_not_found": "संसाधन नहीं मिला।",
-    "resource_not_found_history": "इतिहास में संसाधन नहीं मिला।",
+    "resource_not_found_history": "इतिहास में संसाधन नहीं मिला (हो सकता है इसे हटा दिया गया हो)।",
     "analysis_failed": "विश्लेषण विफल। कृपया पुनः प्रयास करें।",
     "enter_target_language": "कृपया दर्ज करें एक लक्ष्य भाषा.",
     "translation_started": "अनुवाद शुरू हुआ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI प्रतिक्रिया अनुपलब्ध",
     "write_essay_first": "पहले अपना निबंध लिखें!",
     "enter_word_art_first": "कृपया दर्ज करें शब्द कला पाठ पहला",
-    "preview_not_ready": "पूर्वावलोकन अभी तैयार नहीं है",
+    "preview_not_ready": "पूर्वावलोकन अभी तैयार नहीं है — इसके रेंडर होने तक प्रतीक्षा करें, फिर पुनः प्रयास करें।",
     "word_art_render_failed": "शब्द कला प्रस्तुत नहीं हो सकी",
     "diff_engine_load_failed": "डिफ़ इंजन लोड नहीं हो सका (नेटवर्क अवरुद्ध?).",
     "brf_downloaded": "इलेक्ट्रॉनिक ब्रेल (BRF) डाउनलोड किया गया",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 प्रोजेक्ट सहेजा गया ({count} रेंज); जारी रखने के लिए इसे बाद में लोड करें",
     "project_saved": "💾 प्रोजेक्ट सहेजा गया; संपादन जारी रखने के लिए इसे बाद में लोड करें",
     "search_result_desc": "Google खोज परिणाम: {title}",
-    "link_url_prompt": "लिंक का URL दर्ज करें:"
+    "link_url_prompt": "लिंक का URL दर्ज करें:",
+    "building_accessible_docx": "सुलभ Word फ़ाइल बनाई जा रही है…",
+    "building_accessible_pptx": "सुलभ PowerPoint बनाई जा रही है…",
+    "batch_tagging": "📄 ZIP के लिए टैग किए गए PDF बनाए जा रहे हैं — स्कैन की गई फ़ाइलों में ज़्यादा समय लगता है (हर फ़ाइल पर OCR चलता है)…",
+    "builder_edits_preserved": "✋ आपके मैन्युअल बदलाव सहेज लिए गए — प्रीव्यू दोबारा रेंडर नहीं हुआ। उन्हें सहेजने के लिए एक्सपोर्ट करें या बिल्डर बंद करें, फिर सेटिंग्स बदलें।",
+    "builder_edits_synced": "✏️ बिल्डर के बदलाव सुधारे गए दस्तावेज़ में सहेज लिए गए — टैग किया गया PDF / Word / PowerPoint एक्सपोर्ट अब उन्हें शामिल करते हैं।",
+    "pptx_ai_theme": "🎨 AI से विषय से मेल खाता रंग-पटल माँगा जा रहा है (पठनीयता स्थानीय रूप से सुनिश्चित की जाती है)…",
+    "make_accessible_fixing": "✨ ऑडिट पूरा हुआ — अपने आप सुधार किया जा रहा है (किसी क्लिक की ज़रूरत नहीं)…",
+    "tagged_pdf_saved_see_report": "📄 टैग किया गया PDF सहेजा गया — पूरी रिपोर्ट डाउनलोड बटनों के ऊपर पिन की गई है (हटाने के लिए ✕)।",
+    "no_open_image_slot": "प्रीव्यू में कोई खाली छवि स्लॉट नहीं बचा — बदलने के लिए थंबनेल को किसी खास छवि पर खींचकर छोड़ें।",
+    "extracted_image_inserted": "🖼 पहले खाली छवि स्लॉट में डाल दिया गया — किसी और जगह चाहिए तो इसके बजाय थंबनेल को खींचें।",
+    "html_downloaded": "🌐 HTML डाउनलोड हो गया — किसी भी ब्राउज़र में खुलता है।",
+    "odt_downloaded": "📄 OpenDocument (.odt) डाउनलोड हो गया — LibreOffice, Google Docs, या Word में खुलता है।",
+    "daisy_downloaded": "🔊 DAISY टॉकिंग-बुक पैकेज (.zip) डाउनलोड हो गया — किसी DAISY रीडर में खोलें।",
+    "mo_no_voice": "वॉइस सेवा उपलब्ध नहीं है, इसलिए अभी पढ़ने-के-साथ ऑडियो नहीं बनाया जा सकता।",
+    "mo_busy": "एक पढ़ने-के-साथ एक्सपोर्ट पहले से ही चल रहा है।",
+    "mo_no_text": "सुनाने के लिए कोई पठनीय टेक्स्ट नहीं मिला।",
+    "mo_no_audio": "⚠ पढ़ने-के-साथ ईबुक सहेजी गई, पर कोई ऑडियो नहीं बनाया जा सका (वॉइस सेवा उपलब्ध नहीं)। टेक्स्ट और सिंक संरचना बरकरार हैं।",
+    "mo_done": "पढ़ने-के-साथ ईबुक डाउनलोड हो गई",
+    "audio_unavailable_now": "ऑडियो अभी उपलब्ध नहीं है (कोई काम चल रहा हो सकता है, या वॉइस सेवा बंद है)।"
   },
   "large_file": {
     "modal_title": "आयात करें Large ऑडियो फ़ाइल",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator उपकरण",
     "documents_menu_aria": "दस्तावेज़ मेनू",
     "open_doc_builder_pdf_aria": "खोलें दस्तावेज़ Builder के लिए PDF",
-    "export_slides_tooltip": "Opens दस्तावेज़ Builder में Slides मोड"
+    "export_slides_tooltip": "Opens दस्तावेज़ Builder में Slides मोड",
+    "learning_tools_tooltip": "लर्निंग टूल्स (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "लक्ष्य भाषा",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "वैकल्पिक। क्विज़ की प्रत्येक छवि पर लागू (प्रश्न + विकल्प)। खाली = डिफ़ॉल्ट शैली। क्विज़ के साथ संग्रहीत ताकि रिफाइन क्रियाएँ ब्रांड पर बनी रहें।",
     "generate_pre_check": "उत्पन्न करें Pre-check",
     "generate_formative": "उत्पन्न करें Formative जाँच",
-    "generate_review": "उत्पन्न करें Spaced समीक्षा"
+    "generate_review": "उत्पन्न करें Spaced समीक्षा",
+    "likert_strongly_disagree": "पूरी तरह असहमत",
+    "no_right_answer": "यहाँ कोई सही या गलत जवाब नहीं है।",
+    "poll_completed": "अपनी राय साझा करने के लिए धन्यवाद।",
+    "poll_intro": "यहाँ कोई सही या गलत जवाब नहीं है — आपकी ईमानदार राय आपके शिक्षक की और आपकी मदद करती है।",
+    "mode_poll": "🗣️ पोल (छात्र की राय)"
   },
   "outline": {
     "title": "दृश्य Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "समायोजित size का timeline छवि"
   },
   "pdf_audit": {
+    "fidelity_delta": "पाठ निष्ठा: {before}% → {after}%{detail}",
     "view_last_audit": "देखें अंतिम Audit",
     "start_new_audit": "शुरू करें नया Audit",
     "apply_and_export": "लागू करें & निर्यात करें",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "संरचनात्मक रूप से अनुपालन परंतु शब्दार्थ रूप से कमज़ोर — AI ने सामग्री गुणवत्ता (वैकल्पिक टेक्स्ट, शीर्षक अर्थ, पठन क्रम) चिह्नित की जो axe-core का पता नहीं लगा सकता",
-      "structural": "कोड-स्तरीय WCAG उल्लंघन का पता चला — axe-core ने मशीन-जाँचयोग्य विफलताएँ पाईं जिन्हें AI रूब्रिक ने हल्के से तौला"
+      "structural": "कोड-स्तरीय WCAG उल्लंघन का पता चला — axe-core ने मशीन-जाँचयोग्य विफलताएँ पाईं जिन्हें AI रूब्रिक ने हल्के से तौला",
+      "critical_override": "axe-core को {n} गंभीर WCAG उल्लंघन मिले — मिश्रित स्कोर पर भरोसा करने से पहले उनकी समीक्षा करें; औसत एक बड़ी विफलता को छिपा सकता है"
     },
     "tagtree": {
       "label": "पूर्व-मौजूदा टैग संरचना",
@@ -4264,7 +4291,8 @@
       "std_dev": "मानक Deviation",
       "icc_title": "कस्टम 1−(SD/50) index; नहीं textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "AI पासों में CV + जोड़ी-वार हाइब्रिड ह्यूरिस्टिक; पाठ्यपुस्तक का Cronbach's α नहीं"
     },
     "score": {
       "total_checks": "कुल जाँचें की गईं",
@@ -4426,7 +4454,9 @@
       "title": "Regenerate एक PDF से remediated HTML. Layout reflows — पृष्ठ breaks, fonts, और pagination सकता है differ से मूल. काम करता well के लिए सरल prose दस्तावेज़."
     },
     "tagged_pdf": {
-      "title": "मूल PDF के दृश्य लेआउट को बाइट-समान संरक्षित करें और इसके संरचना ट्री में सुलभता टैग इंजेक्ट करें। पाठ्यपुस्तकों, बहु-स्तंभ दस्तावेज़ों, और ब्रांडेड PDF के लिए सर्वोत्तम जहाँ दृश्य निष्ठा मायने रखती है।"
+      "title": "मूल PDF के दृश्य लेआउट को बाइट-समान संरक्षित करें और इसके संरचना ट्री में सुलभता टैग इंजेक्ट करें। पाठ्यपुस्तकों, बहु-स्तंभ दस्तावेज़ों, और ब्रांडेड PDF के लिए सर्वोत्तम जहाँ दृश्य निष्ठा मायने रखती है।",
+      "office_note": "टैग किया गया PDF, PDF इनपुट पर लागू होता है — Word/HTML का उपयोग करें",
+      "office_note_title": "संरचना टैग केवल PDF बाइट्स में डाले जा सकते हैं। Word/PowerPoint इनपुट के लिए, सुलभ Word और HTML डाउनलोड सुधारी गई संरचना ले जाते हैं।"
     },
     "alt_formats": {
       "intro": "डाउनलोड करें remediated दस्तावेज़ में सुलभ alternative प्रारूप"
@@ -4497,7 +4527,9 @@
       "heading": "संस्करण Stamp"
     },
     "extracted_images": {
-      "drag_hint": "खींचें एक thumbnail onto कोई भी छवि placeholder में preview को insert it, या क्लिक करें \"📷 अपलोड करें\" inside एक placeholder और चुनें \"उपयोग करें extracted छवि\"."
+      "drag_hint": "खींचें एक thumbnail onto कोई भी छवि placeholder में preview को insert it, या क्लिक करें \"📷 अपलोड करें\" inside एक placeholder और चुनें \"उपयोग करें extracted छवि\".",
+      "drag_hint2": "किसी थंबनेल पर क्लिक करके उसे पहले खाली छवि स्लॉट में डालें, या उसे प्रीव्यू में किसी खास प्लेसहोल्डर या छवि पर खींचकर छोड़ें। ×N = वही छवि N पन्नों पर दिखाई दी (आमतौर पर कोई लेटरहेड या लोगो)।",
+      "insert_aria": "निकाली गई छवि को पहले खाली स्लॉट में डालें"
     },
     "toolbar": {
       "aria": "पाठ formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} उल्लंघन",
     "violation_other": "{count} उल्लंघन",
     "ai_issue_one": "{count} AI-चिह्नित समस्या",
-    "ai_issue_other": "{count} AI-चिह्नित समस्याएँ"
+    "ai_issue_other": "{count} AI-चिह्नित समस्याएँ",
+    "tagged": {
+      "born_digital_note": "ध्यान दें: टेक्स्ट-लेयर वाले PDF के लिए सिमैंटिक टैग पूरी सामग्री-कड़ी के बजाय ActualText संबंधों का उपयोग करते हैं। फ़ाइल काफ़ी हद तक ज़्यादा सुलभ है, पर PDF/UA अनुरूपता का दावा करने से पहले PAC 2024 या Acrobat में सत्यापित करें।"
+    },
+    "one_click": {
+      "label": "सुलभ बनाएँ",
+      "badge": "पूरी तरह स्वचालित — ऑडिट, सुधार, सत्यापन, लक्ष्य तक दोहराव",
+      "desc": "एक क्लिक डिफ़ॉल्ट सेटिंग्स के साथ पूरी पाइपलाइन को बिना हस्तक्षेप चलाता है; अंत में डाउनलोड तैयार रहते हैं। ज़्यादा नियंत्रण चाहिए? नीचे \"Run Audit\" का उपयोग करें, परिणामों की समीक्षा करें, फिर खुद Fix & Verify पर क्लिक करें।"
+    },
+    "run_audit_label": "Run Audit (2 में से चरण 1)",
+    "manual_path_explainer": "\"Run Audit\" दस्तावेज़ को स्कोर करता है और दिखाता है कि क्या ठीक करना है — फिर आप समीक्षा करते हैं और खुद Fix & Verify पर क्लिक करते हैं (चरण 2)। ऊपर का \"सुलभ बनाएँ\" दोनों चरण और दोबारा-जाँच, अपने आप करता है। \"Text Extraction\" सामग्री बनाने के लिए सिर्फ़ कच्चा टेक्स्ट निकालता है।",
+    "tagged_report": {
+      "heading": "टैग किया गया PDF रिपोर्ट",
+      "close_aria": "टैग किए गए PDF रिपोर्ट को हटाएँ",
+      "note": "जब तक आप इसे हटाते नहीं, यह पैनल बना रहता है। यही विवरण Adobe-शैली की A11y रिपोर्ट डाउनलोड में भी शामिल होते हैं।"
+    },
+    "docx_export": {
+      "title": "सुधारी गई सामग्री को असली शीर्षक शैलियों, छवियों पर वैकल्पिक टेक्स्ट, तालिका शीर्षक पंक्तियों, सूची संरचना और काम करने वाले हाइपरलिंक के साथ एक Word दस्तावेज़ में बदलें। वितरण से पहले Word के बिल्ट-इन Accessibility Checker (Review → Check Accessibility) से सत्यापित करें।"
+    },
+    "pptx_export": {
+      "title": "सुधारी गई सामग्री को असली स्लाइड शीर्षकों, छवियों पर वैकल्पिक टेक्स्ट, शीर्षक-शैली वाली तालिका पंक्तियों, सच्ची बुलेट सूचियों, और पढ़ने का क्रम = दृश्य क्रम के साथ एक PowerPoint प्रस्तुति के रूप में फिर से बनाएँ। यह नए सिरे से बना एक सुलभ लेआउट है — मूल की दृश्य प्रतिलिपि नहीं। वितरण से पहले PowerPoint के Accessibility Checker से सत्यापित करें।"
+    },
+    "dashboard": {
+      "aria": "सुधार परिणामों का अवलोकन और अनुभाग नेविगेशन",
+      "score_title": "सुलभता स्कोर: पहले → बाद"
+    },
+    "tag_to_workbench_title": "इस ब्लॉक को Expert Workbench पर भेजें: एक लक्षित कमांड (किसी भी चेतावनी सहित) पहले से भर देता है ताकि आप इसे एक निर्देश से ठीक कर सकें",
+    "tag_to_workbench_aria": "Expert Workbench पर भेजें",
+    "pptx_theme_aria": "PowerPoint एक्सपोर्ट थीम",
+    "pptx_theme_title": "PowerPoint एक्सपोर्ट के लिए स्लाइड थीम। सभी प्रीसेट कंट्रास्ट-जाँचे गए हैं (WCAG AA); AI विकल्प आपके विषय से मेल खाता है, और दोनों ही स्थितियों में पठनीयता स्थानीय रूप से सुनिश्चित की जाती है।",
+    "export_menu": {
+      "button": "एक्सपोर्ट / डाउनलोड",
+      "intro": "सुधारे गए दस्तावेज़ को किसी भी प्रारूप में डाउनलोड करें — वही चुनें जो इसके इस्तेमाल के तरीके के अनुकूल हो।",
+      "tagged_pdf": "टैग किया गया PDF (PDF/UA — छात्रों को दें)",
+      "word": "Word (.docx — संपादन जारी रखें)",
+      "pptx": "PowerPoint (.pptx — इसे प्रस्तुत करें)",
+      "html": "HTML (कहीं भी खुलता है, कोई सॉफ़्टवेयर नहीं)",
+      "group_access": "सुलभ प्रारूप",
+      "daisy": "DAISY टॉकिंग बुक (पूरा टेक्स्ट)",
+      "daisy_title": "DAISY 3 (DTBook) पूर्ण-पाठ टॉकिंग-बुक पैकेज। किसी DAISY रीडर में खोलें, जो वाक्, ब्रेल, या बड़े प्रिंट की सुविधा देता है। (सिंक किए गए पढ़कर-सुनाने वाले ऑडियो के लिए, नीचे पढ़ने-के-साथ का उपयोग करें।)",
+      "readalong": "पढ़ने-के-साथ ईबुक (सिंक किया ऑडियो)",
+      "readalong_progress": "सुनाया जा रहा है… {done}/{total}",
+      "readalong_title": "पढ़ने-के-साथ ईबुक (EPUB3 Media Overlays): हर पैराग्राफ़ के लिए टेक्स्ट-टू-स्पीच बनाता है और उसे टेक्स्ट से सिंक करता है ताकि पढ़ने वाला सिस्टम बोले जाने पर शब्दों को हाइलाइट करे। बहुत-सी वॉइस कॉल करता है — कुछ मिनट लग सकते हैं।",
+      "group_text": "टेक्स्ट और संपादन-योग्य",
+      "odt_title": "OpenDocument Text — LibreOffice और Google Docs (और Word) में मूल रूप से खुलता है।",
+      "group_audio": "ऑडियो वर्णन",
+      "audio": "ऑडियो वर्णन (मानक)",
+      "audio_title": "दस्तावेज़ का बोला गया वर्णन (MP3/WAV)।",
+      "audio_sr": "ऑडियो (स्क्रीन-रीडर शैली)",
+      "audio_sr_title": "वही आवाज़, पर संरचना की घोषणा वैसे करते हुए जैसे कोई स्क्रीन रीडर करता है (शीर्षक स्तर, सूची गणना, तालिका पंक्तियाँ, छवि वैकल्पिक टेक्स्ट)।"
+    },
+    "mo": {
+      "confirm": "पढ़ने-के-साथ ईबुक बनाएँ? यह {n} टेक्स्ट अनुभागों को टेक्स्ट-टू-स्पीच से सुनाता है — लगभग {n} वॉइस कॉल, जिनमें कुछ मिनट लग सकते हैं।"
+    }
   },
   "concept_sort": {
     "title": "अवधारणा क्रमबद्ध करें",
@@ -5714,7 +5799,7 @@
       "quiz": "{count} प्रश्नोत्तरी",
       "quizzes": "{count} प्रश्नोत्तरी",
       "adventure": "{count} साहसिक",
-      "adventures": "{count} Adventures",
+      "adventures": "{count} एडवेंचर",
       "reading": "{count} पढ़ना",
       "readings": "{count} पठन"
     },
@@ -6882,7 +6967,10 @@
     "pdf_audit_alt_formats_epub_btn": "सुधरी हुई दस्तावेज़ को सामग्री सूची और पहुँच मेटाडेटा के साथ ePub फ़ाइल के रूप में सहेजें। Kindle, Apple Books, और अधिकांश मोबाइल रीडर पर काम करता है — छात्र फ़ॉन्ट आकार, रंग और पढ़ने की गति बदल सकते हैं।",
     "pdf_audit_alt_formats_braille_btn": "ग्रेड 1 (अनुबंधित नहीं) ब्रेल फ़ाइल सहेजें जो ब्रेल प्रिंटर पर उभारी जा सकती है या ताज़ा करने योग्य ब्रेल डिस्प्ले को भेजी जा सकती है। ग्रेड 2 संकुचन के लिए, फ़ाइल को TVI (दृष्टि बाधित छात्रों के शिक्षक) को पूरा करने के लिए दें।",
     "pdf_audit_alt_formats_text_btn": "सभी फ़ॉर्मेटिंग हटी हुई सादी .txt फ़ाइल सहेजें — स्क्रीन रीडर, बड़े प्रिंट रूपांतरण, या किसी अन्य उपकरण में पेस्ट करने के लिए सबसे आसान प्रारूप।",
-    "pdf_audit_alt_formats_markdown_btn": "दस्तावेज़ को Markdown के रूप में सहेजें — Canvas, Schoology या D2L पृष्ठों, Google Docs (पेस्ट के माध्यम से), विकि और GitHub शैली के नोट्स में शीर्षक या लिंक खोए बिना साफ-सुथरा फिट होता है।"
+    "pdf_audit_alt_formats_markdown_btn": "दस्तावेज़ को Markdown के रूप में सहेजें — Canvas, Schoology या D2L पृष्ठों, Google Docs (पेस्ट के माध्यम से), विकि और GitHub शैली के नोट्स में शीर्षक या लिंक खोए बिना साफ-सुथरा फिट होता है।",
+    "pdf_audit_alt_formats_daisy_btn": "एक DAISY 3 पूर्ण-पाठ टॉकिंग-बुक पैकेज सहेजें। DAISY रीडर (विशेष शिक्षा में आम) पूरे नेविगेशन के साथ अपना वाक्, ब्रेल, या बड़ा प्रिंट जोड़ते हैं। यहाँ केवल टेक्स्ट है — सिंक किए गए पढ़कर-सुनाने के लिए, पढ़ने-के-साथ ईबुक का उपयोग करें।",
+    "pdf_audit_alt_formats_readalong_btn": "एक पढ़ने-के-साथ ईबुक बनाएँ (EPUB3 Media Overlays): हर पैराग्राफ़ को टेक्स्ट-टू-स्पीच से सुनाया जाता है और टेक्स्ट से सिंक किया जाता है ताकि बोले जाने पर शब्द हाइलाइट हों। प्रति अनुभाग एक वॉइस कॉल, इसलिए कुछ मिनट लग सकते हैं।",
+    "pdf_audit_alt_formats_odt_btn": "एक OpenDocument Text (.odt) फ़ाइल सहेजें — LibreOffice और Google Docs के लिए मूल (Word भी इसे खोलता है)। इसका उपयोग तब करें जब आपका स्कूल पूरी तरह Microsoft पर न हो पर आप फिर भी संरचना बरकरार रखते हुए एक संपादन-योग्य दस्तावेज़ चाहते हों।"
   },
   "groups": {
     "title": "विभेदीकरण समूह",
@@ -9708,7 +9796,7 @@
     "obs_momentary": "Momentary समय Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional व्यवहार मूल्यांकन, ABC डेटा collection, और व्यवहार हस्तक्षेप योजना उपकरण.",
+      "subtitle": "Functional Behavior Assessment (कार्यात्मक व्यवहार मूल्यांकन), ABC डेटा संग्रह, और Behavior Intervention Plan (व्यवहार हस्तक्षेप योजना) उपकरण।",
       "open_btn": "खोलें BehaviorLens",
       "select_student": "चुनें छात्र",
       "choose_student": "— चुनें एक छात्र —",
@@ -9828,7 +9916,7 @@
       "iepprep_title": "IEP बैठक तैयारी",
       "intervention_desc": "मापने योग्य लक्ष्यों और मील के पत्थरों के साथ AI-निर्मित बहु-सप्ताह हस्तक्षेप योजना",
       "intervention_title": "हस्तक्षेप योजना",
-      "ioacalc_desc": "6 विधियों के साथ Inter-Observer Agreement — बिंदु-दर-बिंदु, अंतराल, स्कोर/अस्कोर, सटीक गणना",
+      "ioacalc_desc": "6 विधियों के साथ Inter-Observer Agreement — बिंदु-दर-बिंदु, अंतराल, स्कोर्ड/अनस्कोर्ड, सटीक गणना",
       "ioacalc_title": "IOA कैलकुलेटर",
       "latency_desc": "औसत, मध्य और सीमा आँकड़ों के साथ उत्तेजना-से-प्रतिक्रिया समय माप",
       "latency_title": "विलंबता रिकॉर्डर",
@@ -9851,7 +9939,7 @@
       "prefassess_title": "Preference मूल्यांकन",
       "progress_desc": "संचित व्यवहार डेटा से IEP-तैयार प्रगति निगरानी अनुच्छेद",
       "progress_title": "प्रगति कथा",
-      "progressreport_desc": "AI-generated प्रगति reports के साथ डेटा summaries, trend विश्लेषण, लक्ष्य प्रगति, और अभिभावक-मित्रवत भाषा विकल्प",
+      "progressreport_desc": "AI द्वारा निर्मित प्रगति रिपोर्ट, जिनमें डेटा सारांश, प्रवृत्ति विश्लेषण, लक्ष्य प्रगति, और अभिभावक-अनुकूल भाषा विकल्प शामिल हैं",
       "progressreport_title": "प्रगति Reports",
       "qualitycheck_desc": "विशिष्ट सुधार सुझावों के साथ आपकी ABC प्रविष्टियों की AI-संचालित समीक्षा",
       "qualitycheck_title": "डेटा गुणवत्ता जाँच",
@@ -9870,7 +9958,7 @@
       "restorative_desc": "क्षति मरम्मत, समुदाय मंडलों, और पुनर्एकीकरण सम्मेलनों के लिए चरण-दर-चरण स्क्रिप्ट",
       "restorative_title": "पुनर्स्थापनात्मक संवाद मार्गदर्शिका",
       "riskscreen_title": "जोखिम Screening",
-      "sandbox_desc": "लोड करें अनुकरण किया गया छात्र डेटा के लिए PD, pre-service training, या सीखना ABA बिना वास्तविक छात्र",
+      "sandbox_desc": "PD, सेवा-पूर्व प्रशिक्षण, या वास्तविक छात्रों के बिना ABA सीखने के लिए अनुकरणित छात्र डेटा लोड करें",
       "sandbox_title": "अभ्यास करें Sandbox",
       "save_workspace": "सहेजें Workspace",
       "scatterplot_desc": "अस्थायी पैटर्न की पहचान के लिए दिन-का-समय × व्यवहार ग्रिड — ABC डेटा से स्वतः भरता है",
@@ -9883,7 +9971,7 @@
       "sessionnotes_title": "सत्र नोट्स",
       "sessiontracker_desc": "दर गणना के साथ व्यवस्थित सत्र-आधारित व्यवहार माप",
       "sessiontracker_title": "सत्र डेटा Tracker",
-      "snapshot_desc": "निर्यात करें & आयात करें JSON snapshots के लिए अभिभावक–शिक्षक डेटा exchange",
+      "snapshot_desc": "अभिभावक–शिक्षक डेटा आदान-प्रदान के लिए JSON स्नैपशॉट निर्यात और आयात करें",
       "snapshot_title": "छात्र स्नैपशॉट विनिमय",
       "socialvalidity_desc": "उपचार स्वीकार्यता मापने के लिए TARF और IRP-15 पैमाने — प्रकाशन हेतु आवश्यक",
       "socialvalidity_title": "सामाजिक Validity",
@@ -10083,7 +10171,7 @@
     "reinforcer_sensory": "🌀 संवेदी",
     "quiz_fba_purpose": "FBA का प्राथमिक उद्देश्य क्या है?",
     "quiz_replacement": "क्या है एक replacement व्यवहार?",
-    "search_placeholder": "खोजें antecedent, व्यवहार, consequence, नोट्स, सेटिंग...",
+    "search_placeholder": "पूर्ववर्ती (antecedent), व्यवहार, परिणाम (consequence), नोट्स, सेटिंग खोजें...",
     "quick_fill_placeholder": "उदा. \"जब काम दिखाने को कहा गया तो छात्र ने गणित के दौरान कागज़ फेंका, शिक्षक ने शांति से पुनर्निर्देशित किया\"",
     "nl_edit_placeholder": "उदा. \"परिणाम को बदलकर शिक्षक ने पुनर्निर्देशित किया करें\"",
     "now": "अब",
@@ -10183,7 +10271,7 @@
     "cycle_de_escalation": "शांति की ओर",
     "cycle_recovery": "पुनःप्राप्ति",
     "quiz_opt_punish": "को punish छात्र",
-    "quiz_opt_identify_why": "को पहचानना WHY एक व्यवहार occurs",
+    "quiz_opt_identify_why": "किसी व्यवहार के होने का कारण (WHY) पहचानने के लिए",
     "quiz_opt_any_stops": "कोई भी व्यवहार जो समस्या को रोकता है",
     "analysis": {
       "hypothesized_function": "अनुमानित कार्य",
@@ -10256,7 +10344,7 @@
       "topic_purpose_of_contact": "विषय / संपर्क का उद्देश्य",
       "type_full_name": "प्रकार पूर्ण name",
       "type_language_eg_spanish_arabic_somali": "भाषा टाइप करें (जैसे, स्पैनिश, अरबी, सोमाली)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "प्रकार आपका अवलोकन, note, या क्लिक करें mic को dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "अपना अवलोकन या नोट टाइप करें, या बोलकर लिखवाने के लिए माइक पर क्लिक करें...",
       "type_your_response_here_be_thorough_and_use_profes": "अपना उत्तर यहां टाइप करें। विस्तृत रहें और पेशेवर भाषा का उपयोग करें...",
       "what_behavior_will_change": "क्या व्यवहार होगा बदलाव?",
       "what_could_you_or_a_grownup_do_differently": "आप या कोई बड़ा व्यक्ति अलग तरीके से क्या कर सकते थे?",
@@ -10451,7 +10539,7 @@
       "triangulation_complete": "Triangulation पूरा करें ✨",
       "wizard_failed": "विज़ार्ड failed",
       "workspace_loaded_n_entries_n_notes": "कार्यक्षेत्र लोड किया गया (${a} प्रविष्टियां, ${b} नोट्स) 📂",
-      "you_have_unsaved_changes_consider_saving_your_work": "💡 आप है unसहेजें परिवर्तन — विचार saving आपका workspace.",
+      "you_have_unsaved_changes_consider_saving_your_work": "💡 आपके पास असहेजे परिवर्तन हैं — अपना कार्यक्षेत्र सहेजने पर विचार करें।",
       "autofilled_from_phase_tagged_entries": "चरण-टैग की गई प्रविष्टियों से स्वतः भरा गया।",
       "enter_task_name": "दर्ज करें एक task name.",
       "need_2_baseline_2_intervention_entries_with_phase_tags": "चरण टैग के साथ कम से कम 2 आधाररेखा और 2 हस्तक्षेप प्रविष्टियों की आवश्यकता है।",
@@ -10548,7 +10636,7 @@
       "from_abc_data": "से ABC डेटा:",
       "full_student_summary": "पूर्ण छात्र सारांश",
       "functional_communication_training_planning_tool": "FCT योजना उपकरण",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "उत्पन्न करें एक multi-week हस्तक्षेप योजना आधारित पर आपका collected ABC डेटा और AI विश्लेषण.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "अपने संग्रहित ABC डेटा और AI विश्लेषण के आधार पर एक बहु-सप्ताहीय हस्तक्षेप योजना तैयार करें।",
       "generate_a_professional_printready_progress_report": "इनलाइन चार्ट, डेटा सारांश, और AI अनुशंसाओं के साथ एक पेशेवर, प्रिंट-तैयार प्रगति रिपोर्ट तैयार करें। ब्राउज़र प्रिंट के माध्यम से एक-क्लिक PDF निर्यात।",
       "generate_a_unique_scenario_tailored_to_your_traini": "अपनी प्रशिक्षण आवश्यकताओं के अनुरूप एक अनूठा परिदृश्य तैयार करें।",
       "generate_compliant_iep_behavioral_goals_from_obser": "उत्पन्न करें compliant IEP behavioral लक्ष्य से अवलोकन डेटा के साथ present स्तर, SMART लक्ष्य, और प्रगति monitoring.",
@@ -10583,10 +10671,10 @@
       "mastery": "महारत:",
       "mastery_independent_for": "Mastery: Independent के लिए",
       "mean": "माध्य",
-      "measure_time_between_stimulus_presentation_and_beh": "मापें समय के बीच stimulus प्रस्तुति और behavioral प्रतिक्रिया",
+      "measure_time_between_stimulus_presentation_and_beh": "उद्दीपन प्रस्तुति और व्यवहारिक प्रतिक्रिया के बीच का समय मापें",
       "median": "माध्यिका",
       "methods_used": "उपयोग की गई विधियाँ",
-      "modify_the_environment_to_prevent_behaviors_before": "संशोधित करें environment को prevent व्यवहार पहले वे शुरू करें",
+      "modify_the_environment_to_prevent_behaviors_before": "व्यवहारों को शुरू होने से पहले रोकने के लिए वातावरण में बदलाव करें",
       "mtssrti_tier_manager": "MTSS/RTI स्तर manager",
       "my_progress_quest": "My प्रगति खोज",
       "natural_language_abc_entry": "प्राकृतिक भाषा ABC प्रविष्टि",
@@ -10604,7 +10692,7 @@
       "no_sessions_yet": "नहीं सत्र yet.",
       "no_students": "नहीं छात्र",
       "no_students_in_caseload": "नहीं छात्र में caseload.",
-      "no_team_notes_yet_start_the_conversation": "नहीं team नोट्स yet. शुरू करें बातचीत!",
+      "no_team_notes_yet_start_the_conversation": "अभी तक कोई टीम नोट नहीं। बातचीत शुरू करें!",
       "no_workspaces_loaded_yet": "नहीं workspaces loaded yet",
       "objective": "Objective",
       "observations": "अवलोकन",
@@ -10626,10 +10714,10 @@
       "publicationstandard_singlecase_design_graphs": "प्रकाशन-मानक एकल-केस डिज़ाइन ग्राफ़",
       "quick_switch": "तेज़ बदलें",
       "range": "परास",
-      "read_through_the_module_content_above_then_click_c": "पढ़ें के माध्यम से module सामग्री above, फिर क्लिक करें पूरा करें below.",
+      "read_through_the_module_content_above_then_click_c": "ऊपर दी गई मॉड्यूल सामग्री को पढ़ें, फिर नीचे 'पूरा करें' पर क्लिक करें।",
       "realtime_calming_tools_for_inthemoment_support": "तत्क्षण सहायता के लिए वास्तविक-समय शांत करने वाले उपकरण",
       "recent_moods": "हाल की मनोदशाएँ:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record सत्र के साथ सत्र डेटा Tracker, या बदलें को मैनुअल Entry मोड.",
+      "record_sessions_with_the_session_data_tracker_or_s": "Session Data Tracker से सत्र रिकॉर्ड करें, या मैनुअल प्रविष्टि मोड पर स्विच करें।",
       "recording": "रिकॉर्ड हो रहा है...",
       "relationship_map": "संबंध मानचित्र",
       "remember_cultural_humility_is_a_lifelong_practice": "याद रखें: सांस्कृतिक विनम्रता एक आजीवन अभ्यास है। प्रत्येक चिंतन आपको एक अधिक न्यायसंगत व्यवसायी बनाता है।",
@@ -10657,18 +10745,18 @@
       "summary": "सारांश:",
       "systematic_behavioral_measurement_across_sessions": "सत्रों में व्यवस्थित व्यवहार मापन",
       "systematic_reinforcer_identification_using_evidenc": "साक्ष्य-आधारित प्रोटोकॉल का उपयोग करते हुए व्यवस्थित प्रबलक पहचान",
-      "tap_each_item_when_student_engages_with_it": "Tap प्रत्येक आइटम जब छात्र engages के साथ it",
+      "tap_each_item_when_student_engages_with_it": "जब छात्र किसी वस्तु के साथ संलग्न हो, तब प्रत्येक वस्तु पर टैप करें",
       "target_behavior": "लक्ष्य व्यवहार",
       "task_analysis": "Task विश्लेषण",
       "taskskill_name": "कार्य/कौशल नाम",
       "teacher": "शिक्षक",
       "team_collaboration_notes": "Team सहयोग नोट्स",
-      "test_your_behavioral_analysis_knowledge_80_to_earn": "परीक्षा आपका behavioral विश्लेषण knowledge — 80% को अर्जित करें आपका बैज",
+      "test_your_behavioral_analysis_knowledge_80_to_earn": "अपने व्यवहार विश्लेषण ज्ञान की परीक्षा लें — बैज अर्जित करने के लिए 80%",
       "top_behavior": "Top व्यवहार",
       "total_contacts": "कुल संपर्क",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track व्यवहार frequency के ऊपर समय के साथ aim रेखा, phase परिवर्तन, और trend विश्लेषण.",
-      "track_behaviors_at_home_using_simple_everyday_lang": "Track व्यवहार at home उपयोग करते हुए सरल, everyday भाषा. यह मदद आपका child\\",
+      "track_behavior_frequency_over_time_with_aim_lines": "समय के साथ व्यवहार की आवृत्ति को लक्ष्य रेखाओं (aim lines), चरण परिवर्तनों, और प्रवृत्ति विश्लेषण के साथ ट्रैक करें।",
+      "track_behaviors_at_home_using_simple_everyday_lang": "सरल, रोज़मर्रा की भाषा का उपयोग करते हुए घर पर व्यवहारों को ट्रैक करें। यह आपके बच्चे\\",
       "track_your_feelings_earn_badges_and_build_streaks": "अपनी भावनाओं को ट्रैक करें, बैज अर्जित करें, और निरंतरता बनाएं!",
       "transform_deficitbased_language_into_assetfocused": "कमी-आधारित भाषा को संपत्ति-केंद्रित विवरणों में बदलें",
       "translate_to_any_language": "Translate को कोई भी भाषा:",
@@ -10721,7 +10809,7 @@
     "allobot_chat": {
       "card_desc": "चैट के साथ AI के बारे में व्यवहार रणनीतियां, FBA, BIP, और हस्तक्षेप planning",
       "empty_desc": "मैं FBA रणनीतियों, हस्तक्षेप विचारों, डेटा व्याख्या, उत्तेजना-कम करने की तकनीकों, और अधिक में मदद कर सकता हूँ।",
-      "empty_title": "Ask me anything के बारे में व्यवहार विश्लेषण!",
+      "empty_title": "व्यवहार विश्लेषण के बारे में मुझसे कुछ भी पूछें!",
       "placeholder": "Ask के बारे में व्यवहार, रणनीतियां, FBA, BIP...",
       "subtitle": "AI-संचालित व्यवहार विश्लेषण सहायक",
       "title": "AlloBot से पूछें"
@@ -10919,7 +11007,7 @@
       "maintenance_tracker": "रखरखाव ट्रैकर",
       "make_tier_movement_decision_stay_fade_intensify": "स्तर परिवर्तन निर्णय लें (रहें / कम करें / तीव्र करें)",
       "map_antecedent_behavior_consequence_pathways": "पूर्ववर्ती → व्यवहार → परिणाम मार्गों का मानचित्रण करें",
-      "map_each_target_behavior_to_a_replacement": "Map प्रत्येक लक्ष्य व्यवहार को एक replacement",
+      "map_each_target_behavior_to_a_replacement": "प्रत्येक लक्ष्य व्यवहार को एक प्रतिस्थापन (replacement) व्यवहार से मैप करें",
       "materials_access": "सामग्री पहुंच",
       "measure_effect_size_of_interventions": "हस्तक्षेपों के प्रभाव आकार को मापें",
       "model": "modal",
@@ -11269,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories को life के साथ पात्र voices & literary विश्लेषण",
     "poettree_title": "PoetTree",
-    "poettree_desc": "लिखें poems के साथ form scaffolds, rhyme & meter विश्लेषण, AI प्रतिक्रिया"
+    "poettree_desc": "लिखें poems के साथ form scaffolds, rhyme & meter विश्लेषण, AI प्रतिक्रिया",
+    "throughline_desc": "अपने पाठों को एक स्थानिक इकाई में व्यवस्थित करें: पढ़ाने का क्रम, पूर्वापेक्षाएँ, एक एक्सपोर्ट-योग्य फ़ाइल"
   },
   "sel_hub": {
     "loading": "SEL Hub लोड हो रहा है...",
@@ -12380,5 +12469,10 @@
     "byline": "{author} द्वारा · {words} शब्द · {used}/{total} शब्दावली",
     "student": "छात्र",
     "score": "स्कोर: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "प्रीव्यू को दोबारा रेंडर करने से आपके मैन्युअल बदलाव नई बनाई गई सामग्री से बदल जाएँगे। जारी रखें और बदलाव हटा दें? (Cancel उन्हें रखता है — पहले सहेजने के लिए एक्सपोर्ट करें या बिल्डर बंद करें।)",
+    "remediation_banner_title": "सुधारे गए दस्तावेज़ का संपादन।",
+    "remediation_banner_body": "जब आप बिल्डर बंद करते हैं तो आपके यहाँ किए बदलाव उसमें वापस सहेज लिए जाते हैं, इसलिए टैग किया गया PDF / Word / PowerPoint डाउनलोड उन्हें शामिल करते हैं।"
   }
 }

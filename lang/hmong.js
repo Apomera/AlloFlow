@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving cov ntawv only (duab removed).",
     "storage_full_critical": "Critical: Could tsis khaws history. Storage full.",
     "resource_not_found": "kev pab cuam tsis found.",
-    "resource_not_found_history": "kev pab cuam tsis found hauv history.",
+    "resource_not_found_history": "Nrhiav tsis tau cov peev txheej hauv keeb kwm (tej zaum twb raug muab tshem tawm lawm).",
     "analysis_failed": "Analysis failed. thov sim again.",
     "enter_target_language": "thov sau lub hom phiaj hom lus.",
     "translation_started": "kev txhais lus started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI kev tawm tswv yim tsis muaj",
     "write_essay_first": "Sau your essay thawj!",
     "enter_word_art_first": "thov sau lo lus art cov ntawv thawj",
-    "preview_not_ready": "Pkev tshuaj xyuas not ready yet",
+    "preview_not_ready": "Tseb saib ua ntej tseem tsis tau npaj txhij — tos kom nws tshwm tso, ces rov sim dua.",
     "word_art_render_failed": "Could not render lo lus art",
     "diff_engine_load_failed": "Diff engine nqa tsis tau (network raug thaiv?). Xyuas koj qhov kev txuas thiab sim dua.",
     "brf_downloaded": "Tau rub Electronic Braille (BRF) los lawm",
@@ -4132,6 +4132,7 @@
     "image_size_tooltip": "Kho size ntawm timeline duab"
   },
   "pdf_audit": {
+    "fidelity_delta": "Kev raug raws: {before}% → {after}%{detail}",
     "view_last_audit": "Saib kawg Audit",
     "start_new_audit": "Pib tshiab Audit",
     "apply_and_export": "Siv & Xa tawm",

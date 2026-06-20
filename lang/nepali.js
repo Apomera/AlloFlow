@@ -979,7 +979,7 @@
     "storage_full_text_only": "भण्डारण भरियो। केवल पाठ बचत गर्दै (चित्रहरू हटाइए)।",
     "storage_full_critical": "गम्भीर: इतिहास बचत गर्न सकिएन। भण्डारण भरियो।",
     "resource_not_found": "स्रोत भेटिएन।",
-    "resource_not_found_history": "इतिहासमा स्रोत भेटिएन।",
+    "resource_not_found_history": "इतिहासमा स्रोत भेटिएन (यो मेटिएको हुन सक्छ)।",
     "analysis_failed": "विश्लेषण असफल भयो। कृपया फेरि प्रयास गर्नुहोस्।",
     "enter_target_language": "कृपया प्रविष्ट गर्नुहोस् एक लक्ष्य भाषा.",
     "translation_started": "अनुवाद सुरु भयो...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI प्रतिक्रिया अनुपलब्ध",
     "write_essay_first": "पहिले आफ्नो निबन्ध लेख्नुहोस्!",
     "enter_word_art_first": "कृपया पहिले वर्ड आर्ट पाठ प्रविष्ट गर्नुहोस्",
-    "preview_not_ready": "पूर्वावलोकन अझै तयार छैन",
+    "preview_not_ready": "पूर्वावलोकन अझै तयार छैन — यो रेन्डर हुन पर्खनुहोस्, त्यसपछि फेरि प्रयास गर्नुहोस्।",
     "word_art_render_failed": "वर्ड आर्ट रेन्डर गर्न सकिएन",
     "diff_engine_load_failed": "डिफ इन्जिन लोड हुन असफल भयो (नेटवर्क रोकिएको?)। आफ्नो जडान जाँच गरेर फेरि प्रयास गर्नुहोस्।",
     "brf_downloaded": "इलेक्ट्रोनिक ब्रेल (BRF) डाउनलोड भयो",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "समायोजन size को timeline तस्वीर"
   },
   "pdf_audit": {
+    "fidelity_delta": "यथार्थता: {before}% → {after}%{detail}",
     "view_last_audit": "हेर्नुहोस् अन्तिम Audit",
     "start_new_audit": "सुरु गर्नुहोस् नयाँ Audit",
     "apply_and_export": "लागू गर्नुहोस् & निर्यात गर्नुहोस्",

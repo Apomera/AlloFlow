@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving rubutu only (hoto removed).",
     "storage_full_critical": "Critical: Could ba ajiye history. Storage full.",
     "resource_not_found": "albarkatu ba found.",
-    "resource_not_found_history": "albarkatu ba found history.",
+    "resource_not_found_history": "Ba a sami albarkatun a cikin tarihi ba (wataƙila an share shi).",
     "analysis_failed": "Analysis failed. don Allah gwada again.",
     "enter_target_language": "don Allah shigar target harshe.",
     "translation_started": "fassara started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ra'ayi babu",
     "write_essay_first": "Rubuta naka essay na farko!",
     "enter_word_art_first": "don Allah shigar kalma art rubutu na farko",
-    "preview_not_ready": "Pbita ba ready yet",
+    "preview_not_ready": "Samfoti bai shirya ba tukuna — ka jira ya bayyana, sannan ka sake gwadawa.",
     "word_art_render_failed": "Could ba render kalma art",
     "diff_engine_load_failed": "Diff engine failed zuwa ɗora (network blocked?). Check naka connection da gwada again.",
     "brf_downloaded": "An sauke Braille Electronic (BRF)",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Adjust size na timeline hoto"
   },
   "pdf_audit": {
+    "fidelity_delta": "Aminci: {before}% → {after}%{detail}",
     "view_last_audit": "Duba na ƙarshe Audit",
     "start_new_audit": "Fara sabon Audit",
     "apply_and_export": "Aiwatar & Fitar",

@@ -597,7 +597,8 @@
     "educator_tools_aria": "כלים למחנכים",
     "documents_menu_aria": "תפריט מסמכים",
     "open_doc_builder_pdf_aria": "פתח את בונה המסמכים ל-PDF",
-    "export_slides_tooltip": "פותח את בונה המסמכים במצב שקופיות"
+    "export_slides_tooltip": "פותח את בונה המסמכים במצב שקופיות",
+    "learning_tools_tooltip": "כלי למידה (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "sidebar": {
     "create_tab": "יצירה",
@@ -1885,7 +1886,7 @@
     "storage_full_text_only": "האחסון מלא. שומר טקסט בלבד (תמונות הוסרו).",
     "storage_full_critical": "קריטי: לא ניתן לשמור היסטוריה. האחסון מלא.",
     "resource_not_found": "המשאב לא נמצא.",
-    "resource_not_found_history": "המשאב לא נמצא בהיסטוריה.",
+    "resource_not_found_history": "המשאב לא נמצא בהיסטוריה (ייתכן שהוא נמחק).",
     "analysis_failed": "הניתוח נכשל. אנא נסה שוב.",
     "enter_target_language": "אנא הזן שפת יעד.",
     "translation_started": "התרגום החל...",
@@ -2520,7 +2521,7 @@
     "ai_feedback_unavailable": "משוב AI אינו זמין",
     "write_essay_first": "כתוב תחילה את החיבור שלך!",
     "enter_word_art_first": "אנא הזן תחילה טקסט לאמנות מילים",
-    "preview_not_ready": "התצוגה המקדימה אינה מוכנה עדיין",
+    "preview_not_ready": "התצוגה המקדימה אינה מוכנה עדיין — המתן עד שתעובד, ולאחר מכן נסה שוב.",
     "word_art_render_failed": "לא ניתן לעבד את אמנות המילים",
     "diff_engine_load_failed": "מנוע ההשוואה נכשל בטעינה (הרשת חסומה?). בדוק את החיבור שלך ונסה שוב.",
     "brf_downloaded": "ברייל אלקטרוני (BRF) הורד",
@@ -2633,7 +2634,26 @@
     "project_saved_multi_other": "💾 הפרויקט נשמר ({count} טווחים); טען אותו מאוחר יותר כדי להמשיך",
     "project_saved": "💾 הפרויקט נשמר; טען אותו מאוחר יותר כדי להמשיך לערוך",
     "search_result_desc": "תוצאת חיפוש Google: {title}",
-    "link_url_prompt": "הזן את כתובת ה-URL של הקישור:"
+    "link_url_prompt": "הזן את כתובת ה-URL של הקישור:",
+    "building_accessible_docx": "בונה קובץ Word נגיש…",
+    "building_accessible_pptx": "בונה PowerPoint נגיש…",
+    "batch_tagging": "📄 מייצר קובצי PDF מתויגים עבור ה-ZIP — קבצים סרוקים אורכים יותר זמן (OCR רץ על כל קובץ)…",
+    "builder_edits_preserved": "✋ העריכות הידניות שלך נשמרו — התצוגה המקדימה לא עובדה מחדש. ייצא או סגור את הבנאי כדי לשמור אותן, ואז שנה את ההגדרות.",
+    "builder_edits_synced": "✏️ עריכות הבנאי נשמרו במסמך המתוקן — ייצוא ה-PDF המתויג / Word / PowerPoint כולל אותן כעת.",
+    "pptx_ai_theme": "🎨 מבקש מ-AI פלטת צבעים תואמת-נושא (קריאוּת נאכפת מקומית)…",
+    "make_accessible_fixing": "✨ הביקורת הושלמה — מתקן אוטומטית (ללא צורך בלחיצות)…",
+    "tagged_pdf_saved_see_report": "📄 ה-PDF המתויג נשמר — הדוח המלא מוצמד מעל לכפתורי ההורדה (✕ כדי לסגור).",
+    "no_open_image_slot": "לא נותרה משבצת תמונה פנויה בתצוגה המקדימה — גרור את התמונה הממוזערת אל תמונה מסוימת כדי להחליף אותה במקום זאת.",
+    "extracted_image_inserted": "🖼 הוכנס למשבצת התמונה הפנויה הראשונה — גרור תמונה ממוזערת במקום זאת אם ברצונך במיקום אחר.",
+    "html_downloaded": "🌐 קובץ HTML הורד — נפתח בכל דפדפן.",
+    "odt_downloaded": "📄 קובץ OpenDocument ‏(.odt) הורד — נפתח ב-LibreOffice, ב-Google Docs או ב-Word.",
+    "daisy_downloaded": "🔊 חבילת ספר-מדבר DAISY ‏(.zip) הורדה — פתח בקורא DAISY.",
+    "mo_no_voice": "שירות הקול אינו זמין, ולכן לא ניתן להפיק כעת אודיו להקראה-תוך-כדי-קריאה.",
+    "mo_busy": "ייצוא הקראה-תוך-כדי-קריאה כבר פועל.",
+    "mo_no_text": "לא נמצא טקסט קריא להקראה.",
+    "mo_no_audio": "⚠ ספר ההקראה-תוך-כדי-קריאה נשמר, אך לא ניתן היה להפיק אודיו (שירות הקול אינו זמין). הטקסט ומבנה הסנכרון שלמים.",
+    "mo_done": "ספר ההקראה-תוך-כדי-קריאה הורד",
+    "audio_unavailable_now": "אודיו אינו זמין כרגע (ייתכן שמשימה פועלת, או ששירות הקול כבוי)."
   },
   "analysis": {
     "title": "ניתוח חומר מקור",
@@ -3480,7 +3500,12 @@
     "style_tooltip": "אופציונלי. מיושם על כל תמונה בחידון (שאלה + אפשרויות). ריק = סגנון ברירת מחדל. נשמר עם החידון כך שפעולות שכלול נשארות עם המותג.",
     "generate_pre_check": "ייצר בדיקה מקדימה",
     "generate_formative": "ייצר בדיקה מעצבת",
-    "generate_review": "ייצר חזרה מרווחת"
+    "generate_review": "ייצר חזרה מרווחת",
+    "likert_strongly_disagree": "ממש לא מסכים/ה",
+    "no_right_answer": "אין כאן תשובות נכונות או שגויות.",
+    "poll_completed": "תודה שחלקת את דעתך.",
+    "poll_intro": "אין כאן תשובות נכונות או שגויות — דעתך הכנה עוזרת למורה שלך ועוזרת לך.",
+    "mode_poll": "🗣️ סקר (קול התלמיד)"
   },
   "math": {
     "title": "מעבדת STEM",
@@ -6778,7 +6803,7 @@
     "start_prompt": "התחל את ההרפתקה כדי להתחיל סימולציה.",
     "tooltips": {
       "energy": "אנרגיה: {value}%",
-      "xp": "XP: {current} / {next}",
+      "xp": "XP: ‏{current} / {next}",
       "gold": "זהב נוכחי: {value}",
       "dictation_start": "השתמש בקלט קולי",
       "dictation_stop": "עצור הכתבה",
@@ -8085,7 +8110,10 @@
     "pdf_audit_alt_formats_epub_btn": "שמור את המסמך המתוקן כקובץ ePub עם תוכן עניינים ומטא-דאטה של נגישות. עובד על Kindle, Apple Books, ורוב הקוראים הניידים — תלמידים יכולים לשנות גודל גופן, צבע, ומהירות קריאה.",
     "pdf_audit_alt_formats_braille_btn": "שמור קובץ ברייל מדרגה 1 (לא מקוצר) שניתן להבליט במדפסת ברייל או לשלוח לתצוגת ברייל מתחדשת. עבור קיצורי דרגה 2, מסור את הקובץ ל-TVI (מורה לתלמידים עם ליקויי ראייה) לסיום.",
     "pdf_audit_alt_formats_text_btn": "שמור קובץ .txt רגיל עם כל העיצוב מוסר — הפורמט הקל ביותר לקוראי מסך, המרה לאות גדולה, או הדבקה לכלי אחר.",
-    "pdf_audit_alt_formats_markdown_btn": "שמור את המסמך כ-Markdown — נופל בצורה נקייה לדפי Canvas, Schoology, או D2L, Google Docs (דרך הדבקה), wikis, והערות בסגנון GitHub מבלי לאבד כותרות או קישורים."
+    "pdf_audit_alt_formats_markdown_btn": "שמור את המסמך כ-Markdown — נופל בצורה נקייה לדפי Canvas, Schoology, או D2L, Google Docs (דרך הדבקה), wikis, והערות בסגנון GitHub מבלי לאבד כותרות או קישורים.",
+    "pdf_audit_alt_formats_daisy_btn": "שמור חבילת ספר-מדבר DAISY 3 בטקסט מלא. קוראי DAISY (נפוצים בחינוך המיוחד) מוסיפים דיבור, ברייל או הדפסה מוגדלת משלהם עם ניווט מלא. כאן טקסט בלבד — להקראה מסונכרנת, השתמש בספר אלקטרוני להקראה-תוך-כדי-קריאה.",
+    "pdf_audit_alt_formats_readalong_btn": "בנה ספר אלקטרוני להקראה-תוך-כדי-קריאה (EPUB3 Media Overlays): כל פסקה מוקראת באמצעות טקסט-לדיבור ומסונכרנת עם הטקסט כך שמילים מודגשות תוך כדי השמעתן. קריאת קול אחת לכל מקטע, ולכן זה יכול לארוך מספר דקות.",
+    "pdf_audit_alt_formats_odt_btn": "שמור קובץ OpenDocument Text ‏(.odt) — מקורי ל-LibreOffice ול-Google Docs (גם Word פותח אותו). השתמש בו כאשר בית הספר שלך אינו כולו Microsoft אך עדיין ברצונך מסמך הניתן לעריכה עם מבנה שלם."
   },
   "grades": {
     "k": "גן חובה",
@@ -8373,7 +8401,8 @@
     "litlab_title": "מעבדת ספרות",
     "litlab_desc": "החיה סיפורים עם קולות דמויות וניתוח ספרותי",
     "poettree_title": "עץ השירה",
-    "poettree_desc": "כתוב שירים עם פיגומי צורה, ניתוח חרוז ומשקל, ומשוב AI"
+    "poettree_desc": "כתוב שירים עם פיגומי צורה, ניתוח חרוז ומשקל, ומשוב AI",
+    "throughline_desc": "סדר את השיעורים שלך ליחידה מרחבית: רצף הוראה, ידע מוקדם, קובץ אחד הניתן לייצוא"
   },
   "sel_hub": {
     "loading": "טוען SEL Hub...",
@@ -8983,7 +9012,7 @@
     "parent_redirected": "הופנה ברוגע",
     "parent_gave_break": "נתן הפסקה",
     "parent_used_timer": "השתמש בטיימר",
-    "parent_first_then": "Used ראשון-then שפות",
+    "parent_first_then": "השתמש בשפת \"קודם-ואז\"",
     "parent_ignored": "Ignored the התנהגות",
     "parent_removed_item": "הסיר את הפריט/הפעילות",
     "parent_visual_schedule": "Used a חזותי schedule",
@@ -9106,7 +9135,7 @@
       "added_n_entries_to_abc_data": "נוספו N רשומות לנתוני ABC!",
       "ai_analysis_failed": "בינה מלאכותית analysis failed",
       "ai_customization_failed": "בינה מלאכותית customization failed",
-      "ai_draft_failed": "בינה מלאכותית draft failed",
+      "ai_draft_failed": "יצירת טיוטת ה-AI נכשלה",
       "ai_edit_failed": "בינה מלאכותית ערוך failed",
       "ai_not_available": "בינה מלאכותית not זמין",
       "ai_suggestion_applied": "בינה מלאכותית suggestion applied ✨",
@@ -9251,7 +9280,7 @@
       "reinforce_now": "🎉 חזק/י עכשיו!",
       "reinforcers_recommended": "הומלצו מחזקים ✨",
       "replacement_plan_added": "תוכנית החלופה נוספה",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report הופק — השתמש הדפס/שמור as PDF in the חדש tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "הדוח הופק — השתמש ב\"הדפס/שמור כ-PDF\" בלשונית החדשה!",
       "reset_to_default_template": "אפס to ברירת מחדל template",
       "reset_to_defaults": "אפס to defaults",
       "response_failed_try_again": "התגובה נכשלה — נסה שוב",
@@ -9318,7 +9347,7 @@
       "add_abc_entries_to_see_progress_over_time": "הוסף רשומות ABC כדי לראות התקדמות לאורך זמן",
       "add_abc_entries_to_see_visual_trend_data": "הוסף רשומות ABC כדי לראות נתוני מגמה חזותיים.",
       "add_connections_to_build_the_relationship_map": "הוסף קשרים כדי לבנות את מפת היחסים.",
-      "add_data_points_above_or_paste_csv_data_to_get_sta": "הוסף נתונים נקודות above or הדבק CSV נתונים to get started.",
+      "add_data_points_above_or_paste_csv_data_to_get_sta": "הוסף נקודות נתונים למעלה או הדבק נתוני CSV כדי להתחיל.",
       "additional_context_optional": "הקשר נוסף (אופציונלי)",
       "ai_analysis": "בינה מלאכותית Analysis",
       "ai_context_available": "בינה מלאכותית Context זמין",
@@ -9349,7 +9378,7 @@
       "chaining_method": "שיטת שרשור",
       "checkins": "צ'ק-אינים",
       "choose_the_right_differential_reinforcement_strate": "בחרו את אסטרטגיית החיזוק הדיפרנציאלי הנכונה",
-      "click_ai_generate_checklist_to_create_items_based": "לחץ \"בינה מלאכותית הפק Checklist\" to צור פריטים based on the BIP",
+      "click_ai_generate_checklist_to_create_items_based": "לחץ על \"AI הפק רשימת בדיקה\" כדי ליצור פריטים על בסיס ה-BIP",
       "click_load_student_workspaces_and_select_multiple": "לחצו על \"טען סביבות עבודה של תלמידים\" ובחרו קבצי .json מרובים שנשמרו מ-BehaviorLens",
       "collect_some_abc_data_first_to_generate_a_meaningf": "אספו תחילה נתוני ABC כדי ליצור חבילה משמעותית.",
       "communication_log": "יומן תקשורת",
@@ -9364,7 +9393,7 @@
       "data_quality_score": "נתונים Quality ציונים",
       "data_to_include": "נתונים to כלול",
       "day_streak": "רצף ימים",
-      "define_the_behaviors_settings_or_students_for_stag": "Define the התנהגות, הגדרות, or תלמידים for staggered התערבויות.",
+      "define_the_behaviors_settings_or_students_for_stag": "הגדר את ההתנהגויות, הסביבות או התלמידים עבור התערבות מדורגת.",
       "describe_your_research_question_and_let_ai_recomme": "תארו את שאלת המחקר שלכם ותנו ל-AI להמליץ על העיצוב הטוב ביותר.",
       "discrete_trial_training_with_mastery_tracking_and": "אימון ניסוי דיסקרטי עם מעקב שליטה וקידום אוטומטי",
       "document_whether_interventions_are_implemented_as": "תעדו האם ההתערבויות מיושמות כפי שתוכננו",
@@ -9446,7 +9475,7 @@
       "optional_message": "אופציונלי הודעות",
       "or_explore_the_pd_learning_path": "או חקרו את מסלול הלמידה של PD →",
       "parent": "הורים",
-      "paste_one_value_per_line_supports_formats_5_sessio": "הדבק one ערכים per קווים. תמיכה פורמטים: \"5\", \"מפגשים 1: 5\", or \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "הדבק ערך אחד בכל שורה. תומך בפורמטים: \"5\", \"מפגש 1: 5\", או \"1,5\"",
       "pd_learning_path": "מסלול למידה מקצועי",
       "please_use_chrome_edge_or_safari_for_voice_input": "נא השתמש Chrome, Edge, or Safari for קול קלט.",
       "practice_clinical_reasoning_with_aigenerated_case": "תרגלו חשיבה קלינית עם מקרי בוחן שנוצרו על ידי AI. קבלו משוב ברמת מומחה על תגובותיכם.",
@@ -9495,7 +9524,7 @@
       "tap_each_item_when_student_engages_with_it": "הקש על כל פריט כאשר התלמיד מתקשר אתו",
       "target_behavior": "Target התנהגות",
       "task_analysis": "ניתוח משימה",
-      "taskskill_name": "Task/מיומנויות Name",
+      "taskskill_name": "שם המשימה/המיומנות",
       "teacher": "מורים",
       "team_collaboration_notes": "הערות שיתוף פעולה צוותי",
       "test_your_behavioral_analysis_knowledge_80_to_earn": "בחנו את הידע שלכם בניתוח התנהגותי — 80% כדי לזכות בתג שלכם",
@@ -9557,7 +9586,7 @@
       "card_desc": "שוחחו עם AI על אסטרטגיות התנהגות, FBA, BIP ותכנון התערבות",
       "empty_desc": "אני יכול לעזור עם אסטרטגיות FBA, רעיונות להתערבות, פרשנות נתונים, טכניקות הרגעה ועוד.",
       "empty_title": "שאלו אותי כל דבר על ניתוח התנהגות!",
-      "placeholder": "Ask about התנהגות, אסטרטגיות, FBA, BIP...",
+      "placeholder": "שאל על התנהגויות, אסטרטגיות, FBA, BIP...",
       "subtitle": "עוזר ניתוח התנהגותי מבוסס AI",
       "title": "שאל את AlloBot"
     },
@@ -9690,7 +9719,7 @@
       "document_baseline_frequency_for_flagged_students": "תעדו תדירות בסיס לתלמידים מסומנים",
       "document_outcomes_and_lessons_learned": "תעדו תוצאות ולקחים שנלמדו",
       "document_the_confirmed_function": "תעדו את הפונקציה המאושרת",
-      "document_the_hypothesis_in_session_notes": "מסמכים the השערה in מפגשים notes",
+      "document_the_hypothesis_in_session_notes": "תעד את ההשערה בהערות המפגש",
       "dr_schedule": "לוח DR",
       "dr_strategy": "DR אסטרטגיה",
       "draft_progress_narrative": "Draft התקדמות narrative",
@@ -9753,7 +9782,7 @@
       "level_mean": "רמות (Mean)",
       "maintenance_tracker": "מעקב שימור",
       "make_tier_movement_decision_stay_fade_intensify": "קבלו החלטת תזוזה בין רמות (להישאר / להחליש / להעצים)",
-      "map_antecedent_behavior_consequence_pathways": "Map קדמות → התנהגות → תוצאות pathways",
+      "map_antecedent_behavior_consequence_pathways": "מפה מסלולי קדם → התנהגות → תוצאה",
       "map_each_target_behavior_to_a_replacement": "מפו כל התנהגות מטרה לחלופה",
       "materials_access": "Materials גישה",
       "measure_effect_size_of_interventions": "מדדו גודל אפקט של התערבויות",
@@ -9874,7 +9903,7 @@
       "tier_3_intensive": "שכבה 3 — אינטנסיבית",
       "tier_3_intensive_support": "Tier 3: Intensive תמיכה",
       "time_commitment": "מחויבות זמן",
-      "tips_for_quality_data": "טיפים for Quality נתונים",
+      "tips_for_quality_data": "טיפים לנתונים איכותיים",
       "today": "היום",
       "tough": "קשה",
       "triangulate_with_observation_data": "בצע שילוב משולש עם נתוני תצפית",
@@ -10063,6 +10092,7 @@
     }
   },
   "pdf_audit": {
+    "fidelity_delta": "נאמנות: {before}% → {after}%{detail}",
     "view_last_audit": "צפה בביקורת האחרונה",
     "start_new_audit": "התחל ביקורת חדשה",
     "apply_and_export": "החל וייצא",
@@ -10249,7 +10279,8 @@
       "std_dev": "תקנים Deviation",
       "icc_title": "מדד מותאם 1−(SD/50); לא ICC ספרי",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "היוריסטיקה היברידית של CV ושל השוואות-זוגות לאורך מעברי ה-AI; לא אלפא של קרונבך הקלאסית"
     },
     "score": {
       "total_checks": "סה\"כ בדיקות שבוצעו",
@@ -10404,7 +10435,9 @@
       "title": "Regenerate a PDF from the remediated HTML. Layout reflows — page breaks, fonts, and pagination may differ from the original. Works well for פשוט prose מסמכים."
     },
     "tagged_pdf": {
-      "title": "Preserve the original PDF's חזותי layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-עמודות מסמכים, and branded PDFs where חזותי fidelity matters."
+      "title": "Preserve the original PDF's חזותי layout byte-identical and inject accessibility tags into its structure tree. Best for textbooks, multi-עמודות מסמכים, and branded PDFs where חזותי fidelity matters.",
+      "office_note": "PDF מתויג חל על קלטי PDF — השתמש ב-Word/HTML",
+      "office_note_title": "ניתן להזריק תגי מבנה רק לבייטים של PDF. עבור קלטי Word/PowerPoint, הורדות ה-Word וה-HTML הנגישות נושאות את המבנה המתוקן."
     },
     "alt_formats": {
       "intro": "הורד the remediated מסמכים in accessible alternative פורמטים"
@@ -10458,7 +10491,9 @@
       "heading": "גרסאות Stamp"
     },
     "extracted_images": {
-      "drag_hint": "גרור a thumbnail onto any תמונות placeholder in the preview to insert it, or לחץ \"📷 העלה\" inside a placeholder and בחר \"השתמש extracted תמונות\"."
+      "drag_hint": "גרור a thumbnail onto any תמונות placeholder in the preview to insert it, or לחץ \"📷 העלה\" inside a placeholder and בחר \"השתמש extracted תמונות\".",
+      "drag_hint2": "לחץ על תמונה ממוזערת כדי להכניס אותה למשבצת התמונה הפנויה הראשונה, או גרור אותה אל כל מציין-מקום או תמונה מסוימים בתצוגה המקדימה. ×N = אותה תמונה הופיעה ב-N עמודים (בדרך כלל נייר מכתבים או לוגו).",
+      "insert_aria": "הכנס תמונה שחולצה למשבצת הפנויה הראשונה"
     },
     "agreement": {
       "tooltip": "סומן על ידי {n} מתוך {total} מבקרים",
@@ -10467,7 +10502,8 @@
     },
     "divergence": {
       "semantic": "תואם מבנית אך חלש סמנטית — ה-AI סימן את איכות התוכן (טקסט חלופי, משמעות כותרות, סדר קריאה) ש-axe-core לא יכול לזהות",
-      "structural": "הפרות WCAG ברמת קוד זוהו — axe-core מצא כשלים הניתנים לאימות מכונה ש-AI שקלל בקלילות"
+      "structural": "הפרות WCAG ברמת קוד זוהו — axe-core מצא כשלים הניתנים לאימות מכונה ש-AI שקלל בקלילות",
+      "critical_override": "axe-core מצא {n} הפרות WCAG קריטיות — בדוק אותן לפני שתסמוך על הציון המשוקלל; ממוצע עלול להסתיר כשל חמור"
     },
     "tagtree": {
       "label": "מבנה תגיות קיים",
@@ -10500,7 +10536,61 @@
     "violation_one": "{count} הפרה",
     "violation_other": "{count} הפרות",
     "ai_issue_one": "{count} בעיה שסומנה על ידי בינה מלאכותית",
-    "ai_issue_other": "{count} בעיות שסומנו על ידי בינה מלאכותית"
+    "ai_issue_other": "{count} בעיות שסומנו על ידי בינה מלאכותית",
+    "tagged": {
+      "born_digital_note": "לתשומת לבך: עבור קובצי PDF עם שכבת טקסט, התגים הסמנטיים משתמשים בשיוכי ActualText במקום בקישור תוכן מלא. הקובץ נגיש משמעותית יותר, אך ודא ב-PAC 2024 או ב-Acrobat לפני שתטען לתאימות PDF/UA."
+    },
+    "one_click": {
+      "label": "הפוך לנגיש",
+      "badge": "אוטומטי לחלוטין — ביקורת, תיקון, אימות, חזרה עד ליעד",
+      "desc": "לחיצה אחת מריצה את כל התהליך ללא מגע יד עם הגדרות ברירת המחדל; ההורדות מוכנות בסיום. מעדיף שליטה? השתמש ב\"הרץ ביקורת\" למטה, בדוק את התוצאות, ואז לחץ על תקן ואמת בעצמך."
+    },
+    "run_audit_label": "הרץ ביקורת (שלב 1 מתוך 2)",
+    "manual_path_explainer": "\"הרץ ביקורת\" מעניק ציון למסמך ומציג מה דורש תיקון — לאחר מכן אתה בודק ולוחץ על תקן ואמת בעצמך (שלב 2). \"הפוך לנגיש\" למעלה מבצע את שני השלבים בתוספת בדיקה חוזרת, אוטומטית. \"חילוץ טקסט\" רק שולף את הטקסט הגולמי ליצירת תוכן.",
+    "tagged_report": {
+      "heading": "דוח PDF מתויג",
+      "close_aria": "סגור את דוח ה-PDF המתויג",
+      "note": "פאנל זה נשאר עד שתסגור אותו. אותם פרטים נכללים בהורדת דוח הנגישות (A11y) בסגנון Adobe."
+    },
+    "docx_export": {
+      "title": "המר את התוכן המתוקן למסמך Word עם סגנונות כותרת אמיתיים, טקסט חלופי בתמונות, שורות כותרת בטבלאות, מבנה רשימות וקישורים פעילים. ודא באמצעות בודק הנגישות המובנה של Word ‏(סקירה ← בדוק נגישות) לפני ההפצה."
+    },
+    "pptx_export": {
+      "title": "בנה מחדש את התוכן המתוקן כמצגת PowerPoint עם כותרות שקופית אמיתיות, טקסט חלופי בתמונות, שורות טבלה בסגנון כותרת, רשימות תבליטים אמיתיות, וסדר קריאה = סדר חזותי. פריסה נגישה שנבנתה מחדש — לא העתק חזותי של המקור. ודא באמצעות בודק הנגישות של PowerPoint לפני ההפצה."
+    },
+    "dashboard": {
+      "aria": "סקירת תוצאות התיקון וניווט בין מקטעים",
+      "score_title": "ציון נגישות: לפני ← אחרי"
+    },
+    "tag_to_workbench_title": "שלח בלוק זה אל שולחן העבודה של המומחה: ממלא מראש פקודה ממוקדת (כולל כל אזהרה) כדי שתוכל לתקן אותו בהוראה אחת",
+    "tag_to_workbench_aria": "שלח אל שולחן העבודה של המומחה",
+    "pptx_theme_aria": "ערכת נושא לייצוא PowerPoint",
+    "pptx_theme_title": "ערכת נושא לשקופיות עבור ייצוא ה-PowerPoint. כל הערכות המוגדרות מראש נבדקות לניגודיות (WCAG AA); אפשרות ה-AI מתאימה לנושא שלך, כשהקריאוּת נאכפת מקומית בכל מקרה.",
+    "export_menu": {
+      "button": "ייצוא / הורדה",
+      "intro": "הורד את המסמך המתוקן בכל פורמט — בחר את זה שמתאים לאופן השימוש בו.",
+      "tagged_pdf": "PDF מתויג (PDF/UA — לחלוקה לתלמידים)",
+      "word": "Word ‏(.docx — להמשך עריכה)",
+      "pptx": "PowerPoint ‏(.pptx — להצגה)",
+      "html": "HTML ‏(נפתח בכל מקום, ללא תוכנה)",
+      "group_access": "פורמטים נגישים",
+      "daisy": "ספר-מדבר DAISY ‏(טקסט מלא)",
+      "daisy_title": "חבילת ספר-מדבר DAISY 3 ‏(DTBook) בטקסט מלא. פתח בקורא DAISY, המספק דיבור, ברייל או הדפסה מוגדלת. (לאודיו הקראה מסונכרן, השתמש בהקראה-תוך-כדי-קריאה למטה.)",
+      "readalong": "ספר אלקטרוני להקראה-תוך-כדי-קריאה (אודיו מסונכרן)",
+      "readalong_progress": "מקריא… {done}/{total}",
+      "readalong_title": "ספר אלקטרוני להקראה-תוך-כדי-קריאה (EPUB3 Media Overlays): מפיק טקסט-לדיבור עבור כל פסקה ומסנכרן אותו עם הטקסט כך שמערכת קריאה מדגישה מילים תוך כדי השמעתן. מבצע קריאות קול רבות — יכול לארוך מספר דקות.",
+      "group_text": "טקסט וניתן לעריכה",
+      "odt": "ODT ‏(LibreOffice / Google Docs)",
+      "odt_title": "OpenDocument Text — נפתח באופן מקורי ב-LibreOffice וב-Google Docs (וגם ב-Word).",
+      "group_audio": "הקראת אודיו",
+      "audio": "הקראת אודיו (רגילה)",
+      "audio_title": "הקראה מדוברת של המסמך (MP3/WAV).",
+      "audio_sr": "אודיו (בסגנון קורא מסך)",
+      "audio_sr_title": "אותו קול, אך מכריז על המבנה כפי שקורא מסך היה עושה (רמות כותרת, ספירת פריטי רשימה, שורות טבלה, טקסט חלופי לתמונות)."
+    },
+    "mo": {
+      "confirm": "לבנות ספר אלקטרוני להקראה-תוך-כדי-קריאה? פעולה זו מקריאה {n} מקטעי טקסט באמצעות טקסט-לדיבור — כ-{n} קריאות קול, שעשויות לארוך מספר דקות."
+    }
   },
   "stem": {
     "common": {
@@ -12611,5 +12701,10 @@
     "byline": "מאת {author} · {words} מילים · {used}/{total} אוצר מילים",
     "student": "תלמיד",
     "score": "ניקוד: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "עיבוד מחדש של התצוגה המקדימה יחליף את העריכות הידניות שלך בתוכן שנוצר מחדש. להמשיך ולמחוק את העריכות? (ביטול ישמור אותן — ייצא או סגור את הבנאי כדי לשמור תחילה.)",
+    "remediation_banner_title": "עריכת המסמך המתוקן.",
+    "remediation_banner_body": "העריכות שלך כאן נשמרות בחזרה אל המסמך כשאתה סוגר את הבנאי, כך שהורדות ה-PDF המתויג / Word / PowerPoint כוללות אותן."
   }
 }

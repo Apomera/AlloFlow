@@ -1594,7 +1594,7 @@
     "storage_full_text_only": "التخزين ممتلئ. حفظ النص فقط (تمت إزالة الصور).",
     "storage_full_critical": "حرج: تعذَّر حفظ السجل. التخزين ممتلئ.",
     "resource_not_found": "لم يتم العثور على المورد.",
-    "resource_not_found_history": "لم يتم العثور على المورد في السجل.",
+    "resource_not_found_history": "لم يتم العثور على المورد في السجل (قد يكون قد تم حذفه).",
     "analysis_failed": "فشل التحليل. يُرجى المحاولة مجددًا.",
     "enter_target_language": "يُرجى إدخال لغة مستهدفة.",
     "translation_started": "بدأت الترجمة...",
@@ -2230,7 +2230,7 @@
     "ai_feedback_unavailable": "ملاحظات AI غير متاحة",
     "write_essay_first": "اكتب مقالك أولًا!",
     "enter_word_art_first": "يرجى إدخال نص فن الكلمات أولًا",
-    "preview_not_ready": "المعاينة ليست جاهزة بعد",
+    "preview_not_ready": "المعاينة ليست جاهزة بعد — انتظر حتى يتم عرضها، ثم حاول مرة أخرى.",
     "word_art_render_failed": "تعذر عرض فن الكلمات",
     "diff_engine_load_failed": "فشل تحميل محرك المقارنة (هل الشبكة محجوبة؟). تحقق من اتصالك وحاول مرة أخرى.",
     "brf_downloaded": "تم تنزيل ملف برايل الإلكتروني (BRF)",
@@ -5476,6 +5476,7 @@
     "generate_aria": "إنشاء DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "أمانة النص: {before}% → {after}%{detail}",
     "view_last_audit": "عرض آخر تدقيق",
     "start_new_audit": "بدء تدقيق جديد",
     "apply_and_export": "تطبيق وتصدير",

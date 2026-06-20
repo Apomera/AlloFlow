@@ -96,7 +96,7 @@
     "exit": "Έξοδος"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "Studio Ήχων Λέξεων",
     "subtitle": "Phonemic Awareness Δραστηριότητες",
     "listen_word": "Ακούστε σε λέξη",
     "activity_counting": "Μέτρηση Ήχων",
@@ -979,7 +979,7 @@
     "storage_full_text_only": "Ο αποθηκευτικός χώρος είναι πλήρης. Αποθήκευση μόνο κειμένου (αφαιρέθηκαν οι εικόνες).",
     "storage_full_critical": "Κρίσιμο: Δεν ήταν δυνατή η αποθήκευση του ιστορικού. Ο χώρος είναι πλήρης.",
     "resource_not_found": "Ο πόρος δεν βρέθηκε.",
-    "resource_not_found_history": "Ο πόρος δεν βρέθηκε στο ιστορικό.",
+    "resource_not_found_history": "Ο πόρος δεν βρέθηκε στο ιστορικό (ενδέχεται να έχει διαγραφεί).",
     "analysis_failed": "Η ανάλυση απέτυχε. Δοκιμάστε ξανά.",
     "enter_target_language": "παρακαλώ εισάγετε στόχος γλώσσα.",
     "translation_started": "Η μετάφραση ξεκίνησε...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI σχόλια μη διαθέσιμο",
     "write_essay_first": "Γράψτε πρώτα την έκθεσή σας!",
     "enter_word_art_first": "Εισαγάγετε πρώτα κείμενο word art",
-    "preview_not_ready": "Η προεπισκόπηση δεν είναι έτοιμη ακόμη",
+    "preview_not_ready": "Η προεπισκόπηση δεν είναι έτοιμη ακόμη — περιμένετε να φορτώσει και δοκιμάστε ξανά.",
     "word_art_render_failed": "Δεν ήταν δυνατή η απόδοση του word art",
     "diff_engine_load_failed": "Η μηχανή διαφορών απέτυχε να φορτώσει (αποκλεισμός δικτύου;). Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.",
     "brf_downloaded": "Η Ηλεκτρονική Μπράιγ (BRF) λήφθηκε",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Το έργο αποθηκεύτηκε ({count} εύρη)· φόρτωσέ το αργότερα για να συνεχίσεις",
     "project_saved": "💾 Το έργο αποθηκεύτηκε· φόρτωσέ το αργότερα για να συνεχίσεις την επεξεργασία",
     "search_result_desc": "Αποτέλεσμα αναζήτησης Google: {title}",
-    "link_url_prompt": "Εισαγάγετε το URL του συνδέσμου:"
+    "link_url_prompt": "Εισαγάγετε το URL του συνδέσμου:",
+    "building_accessible_docx": "Δημιουργία προσβάσιμου αρχείου Word…",
+    "building_accessible_pptx": "Δημιουργία προσβάσιμου PowerPoint…",
+    "batch_tagging": "📄 Δημιουργία PDF με ετικέτες για το ZIP — τα σαρωμένα αρχεία αργούν περισσότερο (το OCR εκτελείται ανά αρχείο)…",
+    "builder_edits_preserved": "✋ Διατηρήθηκαν οι χειροκίνητες επεξεργασίες σας — η προεπισκόπηση δεν δημιουργήθηκε ξανά. Εξαγάγετε ή κλείστε τον επεξεργαστή για να τις αποθηκεύσετε, και μετά αλλάξτε τις ρυθμίσεις.",
+    "builder_edits_synced": "✏️ Οι επεξεργασίες αποθηκεύτηκαν στο αποκατεστημένο έγγραφο — οι εξαγωγές σε PDF με ετικέτες / Word / PowerPoint τις περιλαμβάνουν πλέον.",
+    "pptx_ai_theme": "🎨 Ζητείται από το AI μια παλέτα προσαρμοσμένη στο θέμα (η αναγνωσιμότητα διασφαλίζεται τοπικά)…",
+    "make_accessible_fixing": "✨ Ο έλεγχος ολοκληρώθηκε — αυτόματη αποκατάσταση (δεν χρειάζονται κλικ)…",
+    "tagged_pdf_saved_see_report": "📄 Το PDF με ετικέτες αποθηκεύτηκε — η πλήρης αναφορά είναι καρφιτσωμένη πάνω από τα κουμπιά λήψης (✕ για απόρριψη).",
+    "no_open_image_slot": "Δεν υπάρχει διαθέσιμη θέση εικόνας στην προεπισκόπηση — σύρετε τη μικρογραφία πάνω σε μια συγκεκριμένη εικόνα για να την αντικαταστήσετε.",
+    "extracted_image_inserted": "🖼 Εισήχθη στην πρώτη διαθέσιμη θέση εικόνας — σύρετε μια μικρογραφία αν θέλετε διαφορετικό σημείο.",
+    "html_downloaded": "🌐 Το HTML κατέβηκε — ανοίγει σε οποιοδήποτε πρόγραμμα περιήγησης.",
+    "odt_downloaded": "📄 Το OpenDocument (.odt) κατέβηκε — ανοίγει σε LibreOffice, Google Docs ή Word.",
+    "daisy_downloaded": "🔊 Το πακέτο ομιλούντος βιβλίου DAISY (.zip) κατέβηκε — ανοίξτε το σε αναγνώστη DAISY.",
+    "mo_no_voice": "Η υπηρεσία φωνής δεν είναι διαθέσιμη, οπότε δεν είναι δυνατή η δημιουργία ήχου ανάγνωσης αυτή τη στιγμή.",
+    "mo_busy": "Μια εξαγωγή ανάγνωσης εκτελείται ήδη.",
+    "mo_no_text": "Δεν βρέθηκε αναγνώσιμο κείμενο για αφήγηση.",
+    "mo_no_audio": "⚠ Το ηχητικό e-book αποθηκεύτηκε, αλλά δεν ήταν δυνατή η δημιουργία ήχου (η υπηρεσία φωνής δεν είναι διαθέσιμη). Το κείμενο και η δομή συγχρονισμού παραμένουν ανέπαφα.",
+    "mo_done": "Το ηχητικό e-book κατέβηκε",
+    "audio_unavailable_now": "Ο ήχος δεν είναι διαθέσιμος αυτή τη στιγμή (ίσως εκτελείται μια εργασία ή η υπηρεσία φωνής είναι ανενεργή)."
   },
   "large_file": {
     "modal_title": "Εισαγωγή Large ήχος αρχείο",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator εργαλεία",
     "documents_menu_aria": "έγγραφο μενού",
     "open_doc_builder_pdf_aria": "Άνοιγμα έγγραφο Builder για PDF",
-    "export_slides_tooltip": "Ανοίγει το Document Builder σε λειτουργία Διαφανειών"
+    "export_slides_tooltip": "Ανοίγει το Document Builder σε λειτουργία Διαφανειών",
+    "learning_tools_tooltip": "Εργαλεία Μάθησης (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Στόχος γλώσσα",
@@ -2205,7 +2225,7 @@
     "pictionary_host_dashboard": "Πίνακας ελέγχου παρουσιαστή Concept Pictionary",
     "concept_to_draw": "Concept to σχεδιάστε",
     "round_timer": "Χρονόμετρο γύρου",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "Παντομίμα Εννοιών",
     "your_guess": "Η εικασία σας",
     "remove_columns": "Αφαίρεση στήλη",
     "add_column": "Προσθήκη στήλη",
@@ -3599,7 +3619,7 @@
       "math_desc": "Δημιουργήστε σχετικά λεκτικά προβλήματα και συνδέσεις με μαθηματικές έννοιες.",
       "persona_title": "AI Persona",
       "persona_desc": "Προσομοιώστε μια συνομιλία με έναν χαρακτήρα ή μια προσωπικότητα από το κείμενο.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "Studio Ήχων Λέξεων",
       "wordsounds_desc": "Design targeted phonics και phoneme awareness μάθημα χρησιμοποιώντας γλωσσάρι όρος ή λέξη families.",
       "glossary_settings_title": "γλωσσάρι ρυθμίσεις",
       "glossary_settings_desc": "Προσαρμόστε τον τρόπο επιλογής και μετάφρασης των όρων. Μπορείτε να φιλτράρετε ανά διαβαθμισμένο λεξιλόγιο ή να επιβάλετε συγκεκριμένες γλώσσες.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Προαιρετικό. Εφαρμόζεται σε κάθε εικόνα του κουίζ (ερώτηση + επιλογές). Κενό = προεπιλεγμένο στυλ. Διατηρείται με το κουίζ ώστε οι ενέργειες βελτίωσης να παραμένουν στο ίδιο ύφος.",
     "generate_pre_check": "Δημιουργία Pre-Έλεγχος",
     "generate_formative": "Δημιουργία Formative Έλεγχος",
-    "generate_review": "Δημιουργία Spaced Αναθεώρηση"
+    "generate_review": "Δημιουργία Spaced Αναθεώρηση",
+    "likert_strongly_disagree": "Διαφωνώ απόλυτα",
+    "no_right_answer": "Εδώ δεν υπάρχουν σωστές ή λάθος απαντήσεις.",
+    "poll_completed": "Ευχαριστούμε που μοιραστήκατε την άποψή σας.",
+    "poll_intro": "Εδώ δεν υπάρχουν σωστές ή λάθος απαντήσεις — η ειλικρινής σας άποψη βοηθά τον δάσκαλό σας και βοηθά κι εσάς.",
+    "mode_poll": "🗣️ Δημοσκόπηση (η φωνή των μαθητών)"
   },
   "outline": {
     "title": "οπτικός Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "Προσαρμόστε το μέγεθος των εικόνων του χρονολογίου"
   },
   "pdf_audit": {
+    "fidelity_delta": "Πιστότητα: {before}% → {after}%{detail}",
     "view_last_audit": "Προβολή τελευταίο Audit",
     "start_new_audit": "Έναρξη νέος Audit",
     "apply_and_export": "Εφαρμογή & Εξαγωγή",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "Δομικά συμβατό αλλά σημασιολογικά αδύναμο — η AI επισήμανε ποιότητα περιεχομένου που το axe-core δεν μπορεί να εντοπίσει",
-      "structural": "Εντοπίστηκαν παραβιάσεις WCAG σε επίπεδο κώδικα — το axe-core βρήκε επαληθεύσιμα από μηχανή σφάλματα που το AI rubric σταθμίστηκε ελαφρώς"
+      "structural": "Εντοπίστηκαν παραβιάσεις WCAG σε επίπεδο κώδικα — το axe-core βρήκε επαληθεύσιμα από μηχανή σφάλματα που το AI rubric σταθμίστηκε ελαφρώς",
+      "critical_override": "Το axe-core εντόπισε {n} κρίσιμη/ες παραβίαση/εις WCAG — ελέγξτε τις πριν εμπιστευτείτε τη μεικτή βαθμολογία· ένας μέσος όρος μπορεί να κρύβει μια σοβαρή αποτυχία"
     },
     "tagtree": {
       "label": "Προϋπάρχουσα δομή ετικετών",
@@ -4278,7 +4305,8 @@
       "std_dev": "πρότυπο Deviation",
       "icc_title": "Custom 1−(SD/50) index; δεν textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Υβριδική ευρετική CV + κατά ζεύγη σε όλα τα περάσματα του AI· όχι το κλασικό α του Cronbach"
     },
     "score": {
       "total_checks": "Συνολικοί έλεγχοι που εκτελέστηκαν",
@@ -4350,7 +4378,7 @@
       "innovation_desc": "Η αναγνώριση φωνής, οι κλειστές λεζάντες και οι αναγνώστες οθόνης ξεκίνησαν όλα ως χαρακτηριστικά προσβασιμότητας — και μετά έγιναν απαραίτητα εργαλεία που χρησιμοποιούνται από εκατομμύρια"
     },
     "ada": {
-      "heading": "ADA Title II & WCAG 2.1 AA",
+      "heading": "ADA Τίτλος II & WCAG 2.1 AA",
       "deadline_badge": "Προθεσμία: 24 Απριλίου 2026",
       "title_strong": "Title II του Americans με Disabilities Act (ADA)",
       "wcag_strong": "WCAG 2.1 επίπεδο AA",
@@ -4436,7 +4464,9 @@
       "title": "Regenerate PDF από remediated HTML. Layout reflows — σελίδα breaks, fonts, και pagination μπορεί differ από πρωτότυπο. Λειτουργεί well για απλό prose έγγραφο."
     },
     "tagged_pdf": {
-      "title": "Preserve πρωτότυπο PDF's οπτικός layout byte-identical και inject προσβασιμότητα tags σε its δομή tree. Καλύτερος για textbooks, multi-στήλη έγγραφο, και branded PDFs που οπτικός fidelity matters."
+      "title": "Preserve πρωτότυπο PDF's οπτικός layout byte-identical και inject προσβασιμότητα tags σε its δομή tree. Καλύτερος για textbooks, multi-στήλη έγγραφο, και branded PDFs που οπτικός fidelity matters.",
+      "office_note": "Το PDF με ετικέτες ισχύει για εισόδους PDF — χρησιμοποιήστε Word/HTML",
+      "office_note_title": "Οι ετικέτες δομής μπορούν να εισαχθούν μόνο σε bytes PDF. Για εισόδους Word/PowerPoint, οι προσβάσιμες λήψεις Word και HTML μεταφέρουν την αποκατεστημένη δομή."
     },
     "alt_formats": {
       "intro": "Κατεβάστε το αποκατεστημένο έγγραφο σε προσβάσιμες εναλλακτικές μορφές"
@@ -4507,7 +4537,9 @@
       "heading": "έκδοση Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Σύρετε μια μικρογραφία πάνω σε οποιοδήποτε placeholder εικόνας στην προεπισκόπηση για να την εισαγάγετε, ή κάντε κλικ στο «📷 Μεταφόρτωση» μέσα σε ένα placeholder και επιλέξτε «Χρήση εξαγόμενης εικόνας»."
+      "drag_hint": "Σύρετε μια μικρογραφία πάνω σε οποιοδήποτε placeholder εικόνας στην προεπισκόπηση για να την εισαγάγετε, ή κάντε κλικ στο «📷 Μεταφόρτωση» μέσα σε ένα placeholder και επιλέξτε «Χρήση εξαγόμενης εικόνας».",
+      "drag_hint2": "Κάντε κλικ σε μια μικρογραφία για να την εισαγάγετε στην πρώτη διαθέσιμη θέση εικόνας, ή σύρετέ την πάνω σε οποιοδήποτε συγκεκριμένο σύμβολο κράτησης θέσης ή εικόνα στην προεπισκόπηση. ×N = η ίδια εικόνα εμφανίστηκε σε N σελίδες (συνήθως επιστολόχαρτο ή λογότυπο).",
+      "insert_aria": "Εισαγωγή εξαγόμενης εικόνας στην πρώτη διαθέσιμη θέση"
     },
     "toolbar": {
       "aria": "κείμενο formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} παράβαση",
     "violation_other": "{count} παραβάσεις",
     "ai_issue_one": "{count} ζήτημα που επισημάνθηκε από AI",
-    "ai_issue_other": "{count} ζητήματα που επισημάνθηκαν από AI"
+    "ai_issue_other": "{count} ζητήματα που επισημάνθηκαν από AI",
+    "tagged": {
+      "born_digital_note": "Προσοχή: για τα PDF με επίπεδο κειμένου, οι σημασιολογικές ετικέτες χρησιμοποιούν συσχετίσεις ActualText αντί για πλήρη σύνδεση περιεχομένου. Το αρχείο γίνεται σημαντικά πιο προσβάσιμο, αλλά επαληθεύστε το στο PAC 2024 ή στο Acrobat πριν διεκδικήσετε συμμόρφωση με το PDF/UA."
+    },
+    "one_click": {
+      "label": "Κάνε το Προσβάσιμο",
+      "badge": "πλήρως αυτόματο — έλεγχος, διόρθωση, επαλήθευση, επανάληψη έως τον στόχο",
+      "desc": "Με ένα κλικ εκτελείται ολόκληρη η διαδικασία αυτόματα με τις προεπιλεγμένες ρυθμίσεις· οι λήψεις είναι έτοιμες στο τέλος. Προτιμάτε τον έλεγχο; Χρησιμοποιήστε το «Εκτέλεση Ελέγχου» παρακάτω, ελέγξτε τα αποτελέσματα και μετά πατήστε μόνοι σας Διόρθωση & Επαλήθευση."
+    },
+    "run_audit_label": "Εκτέλεση Ελέγχου (βήμα 1 από 2)",
+    "manual_path_explainer": "Το «Εκτέλεση Ελέγχου» βαθμολογεί το έγγραφο και δείχνει τι χρειάζεται διόρθωση — μετά ελέγχετε και πατάτε μόνοι σας Διόρθωση & Επαλήθευση (βήμα 2). Το «Κάνε το Προσβάσιμο» παραπάνω κάνει και τα δύο βήματα μαζί με επανέλεγχο, αυτόματα. Η «Εξαγωγή Κειμένου» απλώς αντλεί το ακατέργαστο κείμενο για δημιουργία περιεχομένου.",
+    "tagged_report": {
+      "heading": "Αναφορά PDF με ετικέτες",
+      "close_aria": "Απόρριψη αναφοράς PDF με ετικέτες",
+      "note": "Αυτό το πλαίσιο παραμένει μέχρι να το απορρίψετε. Οι ίδιες λεπτομέρειες περιλαμβάνονται στη λήψη της Αναφοράς Προσβασιμότητας τύπου Adobe."
+    },
+    "docx_export": {
+      "title": "Μετατρέψτε το αποκατεστημένο περιεχόμενο σε έγγραφο Word με πραγματικά στυλ επικεφαλίδων, εναλλακτικό κείμενο στις εικόνες, γραμμές κεφαλίδας σε πίνακες, δομή λίστας και λειτουργικούς υπερσυνδέσμους. Επαληθεύστε με τον ενσωματωμένο Έλεγχο Προσβασιμότητας του Word (Αναθεώρηση → Έλεγχος Προσβασιμότητας) πριν τη διανομή."
+    },
+    "pptx_export": {
+      "title": "Ανακατασκευάστε το αποκατεστημένο περιεχόμενο ως παρουσίαση PowerPoint με πραγματικούς τίτλους διαφανειών, εναλλακτικό κείμενο στις εικόνες, γραμμές πίνακα με στυλ κεφαλίδας, πραγματικές λίστες με κουκκίδες και σειρά ανάγνωσης = οπτική σειρά. Μια ανακατασκευασμένη προσβάσιμη διάταξη — όχι οπτικό αντίγραφο του πρωτοτύπου. Επαληθεύστε με τον Έλεγχο Προσβασιμότητας του PowerPoint πριν τη διανομή."
+    },
+    "dashboard": {
+      "aria": "Επισκόπηση αποτελεσμάτων αποκατάστασης και πλοήγηση ενοτήτων",
+      "score_title": "Βαθμολογία προσβασιμότητας: πριν → μετά"
+    },
+    "tag_to_workbench_title": "Στείλτε αυτό το μπλοκ στο Expert Workbench: προσυμπληρώνει μια στοχευμένη εντολή (μαζί με τυχόν προειδοποιήσεις) ώστε να το διορθώσετε με μία οδηγία",
+    "tag_to_workbench_aria": "Αποστολή στο Expert Workbench",
+    "pptx_theme_aria": "Θέμα εξαγωγής PowerPoint",
+    "pptx_theme_title": "Θέμα διαφανειών για την εξαγωγή PowerPoint. Όλα τα προκαθορισμένα είναι ελεγμένα ως προς την αντίθεση (WCAG AA)· η επιλογή AI ταιριάζει με το θέμα σας, με την αναγνωσιμότητα να διασφαλίζεται τοπικά σε κάθε περίπτωση.",
+    "export_menu": {
+      "button": "Εξαγωγή / Λήψη",
+      "intro": "Κατεβάστε το αποκατεστημένο έγγραφο σε οποιαδήποτε μορφή — επιλέξτε αυτή που ταιριάζει στον τρόπο που θα χρησιμοποιηθεί.",
+      "tagged_pdf": "PDF με ετικέτες (PDF/UA — δώστε το στους μαθητές)",
+      "word": "Word (.docx — συνεχίστε την επεξεργασία)",
+      "pptx": "PowerPoint (.pptx — παρουσιάστε το)",
+      "html": "HTML (ανοίγει παντού, χωρίς λογισμικό)",
+      "group_access": "Προσβάσιμες μορφές",
+      "daisy": "Ομιλούν βιβλίο DAISY (πλήρες κείμενο)",
+      "daisy_title": "Πακέτο ομιλούντος βιβλίου πλήρους κειμένου DAISY 3 (DTBook). Ανοίξτε το σε αναγνώστη DAISY, που παρέχει ομιλία, Braille ή μεγάλη εκτύπωση. (Για συγχρονισμένο ήχο ανάγνωσης, χρησιμοποιήστε το Ανάγνωση-με-ήχο παρακάτω.)",
+      "readalong": "E-book ανάγνωσης-με-ήχο (συγχρονισμένος ήχος)",
+      "readalong_progress": "Αφήγηση… {done}/{total}",
+      "readalong_title": "E-book ανάγνωσης-με-ήχο (EPUB3 Media Overlays): δημιουργεί ομιλία από κείμενο για κάθε παράγραφο και τη συγχρονίζει με το κείμενο, ώστε το σύστημα ανάγνωσης να επισημαίνει τις λέξεις καθώς εκφωνούνται. Πραγματοποιεί πολλές κλήσεις φωνής — μπορεί να διαρκέσει μερικά λεπτά.",
+      "group_text": "Κείμενο & επεξεργάσιμα",
+      "odt_title": "OpenDocument Text — ανοίγει εγγενώς σε LibreOffice και Google Docs (και Word).",
+      "group_audio": "Ηχητική αφήγηση",
+      "audio": "Ηχητική αφήγηση (τυπική)",
+      "audio_title": "Εκφώνηση του εγγράφου (MP3/WAV).",
+      "audio_sr": "Ήχος (τύπου αναγνώστη οθόνης)",
+      "audio_sr_title": "Ίδια φωνή, αλλά με ανακοίνωση της δομής όπως θα έκανε ένας αναγνώστης οθόνης (επίπεδα επικεφαλίδων, αριθμός στοιχείων λίστας, γραμμές πίνακα, εναλλακτικά κείμενα εικόνων)."
+    },
+    "mo": {
+      "confirm": "Δημιουργία e-book ανάγνωσης-με-ήχο; Αυτό αφηγείται {n} ενότητες κειμένου με ομιλία από κείμενο — περίπου {n} κλήσεις φωνής, που μπορεί να διαρκέσουν μερικά λεπτά."
+    }
   },
   "concept_sort": {
     "title": "Έννοια Ταξινόμηση",
@@ -5249,7 +5334,7 @@
     "plan_hook": "Εισαγωγή",
     "plan_independent": "Independent εξάσκηση",
     "col_image": "εικόνα",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "Studio Ήχων Λέξεων",
     "stop": "Διακοπή",
     "expand_header": "Ανάπτυξη κεφαλίδας",
     "collapse_header": "Σύμπτυξη κεφαλίδας για περισσότερο χώρο στο περιεχόμενο",
@@ -6890,7 +6975,10 @@
     "pdf_audit_alt_formats_epub_btn": "Αποθηκεύστε το αποκατασταθέν έγγραφο ως αρχείο ePub με πίνακα περιεχομένων και μεταδεδομένα προσβασιμότητας. Λειτουργεί σε Kindle, Apple Books και τους περισσότερους κινητούς αναγνώστες — οι μαθητές μπορούν να αλλάξουν μέγεθος γραμματοσειράς, χρώμα και ταχύτητα ανάγνωσης.",
     "pdf_audit_alt_formats_braille_btn": "Αποθηκεύστε ένα αρχείο Braille Βαθμού 1 (μη συντμημένο) που μπορεί να αποτυπωθεί σε εκτυπωτή Braille ή να σταλεί σε ανανεώσιμη οθόνη Braille. Για συντμήσεις Βαθμού 2, παραδώστε το αρχείο σε έναν TVI (δάσκαλο για μαθητές με οπτικές αναπηρίες) για ολοκλήρωση.",
     "pdf_audit_alt_formats_text_btn": "Αποθηκεύστε ένα απλό αρχείο .txt με όλη τη μορφοποίηση αφαιρεμένη — η ευκολότερη μορφή για αναγνώστες οθόνης, μετατροπή σε μεγάλη εκτύπωση ή επικόλληση σε άλλο εργαλείο.",
-    "pdf_audit_alt_formats_markdown_btn": "Αποθηκεύστε το έγγραφο ως Markdown — εισέρχεται καθαρά σε σελίδες Canvas, Schoology ή D2L, Google Docs (μέσω επικόλλησης), wikis και σημειώσεις στιλ GitHub χωρίς να χάνονται επικεφαλίδες ή σύνδεσμοι."
+    "pdf_audit_alt_formats_markdown_btn": "Αποθηκεύστε το έγγραφο ως Markdown — εισέρχεται καθαρά σε σελίδες Canvas, Schoology ή D2L, Google Docs (μέσω επικόλλησης), wikis και σημειώσεις στιλ GitHub χωρίς να χάνονται επικεφαλίδες ή σύνδεσμοι.",
+    "pdf_audit_alt_formats_daisy_btn": "Αποθηκεύστε ένα πακέτο ομιλούντος βιβλίου πλήρους κειμένου DAISY 3. Οι αναγνώστες DAISY (συνηθισμένοι στην ειδική αγωγή) προσθέτουν τη δική τους ομιλία, Braille ή μεγάλη εκτύπωση με πλήρη πλοήγηση. Εδώ μόνο κείμενο — για συγχρονισμένη ανάγνωση, χρησιμοποιήστε το e-book ανάγνωσης-με-ήχο.",
+    "pdf_audit_alt_formats_readalong_btn": "Δημιουργήστε ένα e-book ανάγνωσης-με-ήχο (EPUB3 Media Overlays): κάθε παράγραφος αφηγείται με ομιλία από κείμενο και συγχρονίζεται με το κείμενο, ώστε οι λέξεις να επισημαίνονται καθώς εκφωνούνται. Μία κλήση φωνής ανά ενότητα, οπότε μπορεί να διαρκέσει μερικά λεπτά.",
+    "pdf_audit_alt_formats_odt_btn": "Αποθηκεύστε ένα αρχείο OpenDocument Text (.odt) — εγγενές σε LibreOffice και Google Docs (το ανοίγει και το Word). Χρησιμοποιήστε το όταν το σχολείο σας δεν χρησιμοποιεί αποκλειστικά Microsoft, αλλά θέλετε ένα επεξεργάσιμο έγγραφο με ανέπαφη δομή."
   },
   "groups": {
     "title": "Differentiation Ομάδαs",
@@ -9716,7 +9804,7 @@
     "obs_momentary": "Momentary Χρόνος Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional συμπεριφορά αξιολόγηση, ABC δεδομένα collection, και συμπεριφορά Intervention Σχέδιο εργαλεία.",
+      "subtitle": "Εργαλεία Λειτουργικής Αξιολόγησης Συμπεριφοράς (FBA), συλλογής δεδομένων ABC και Σχεδίου Παρέμβασης Συμπεριφοράς (BIP).",
       "open_btn": "Άνοιγμα BehaviorLens",
       "select_student": "Επιλέξτε μαθητής",
       "choose_student": "— Επιλέξτε μαθητής —",
@@ -9746,7 +9834,7 @@
       "record_title": "Record Αναθεώρηση",
       "record_desc": "Επικολλήστε IEP/αξιολογήσεις για σύνοψη με τη βοήθεια AI",
       "hypothesis_title": "υπόθεση διάγραμμα",
-      "hypothesis_desc": "οπτικός →B→C→Function flow γράφημα με AI γενιά",
+      "hypothesis_desc": "Οπτικό διάγραμμα ροής A→B→C→Λειτουργία με δημιουργία μέσω AI",
       "goals_title": "SMART στόχος",
       "goals_desc": "AI-δημιουργήθηκε SMART συμπεριφορά στόχος με πρόοδος παρακολούθηση",
       "contract_title": "συμπεριφορά Contract",
@@ -9756,7 +9844,7 @@
       "reinforcer_title": "Reinforcer αξιολόγηση",
       "reinforcer_desc": "Εντοπίστε αποτελεσματικούς ενισχυτές σε 5 κατηγορίες",
       "choice_title": "Επιλογή Board",
-      "choice_desc": "μαθητής-facing οπτικός επιλογή κάρτα για εαυτός-regulation",
+      "choice_desc": "Οπτικές κάρτες επιλογής για τον μαθητή, με σκοπό την αυτορρύθμιση",
       "audit_title": "Έλεγχος Περιβάλλοντος",
       "audit_desc": "Λίστα ελέγχου περιβάλλοντος τάξης 8 στοιχείων με συστάσεις AI",
       "triangulation_title": "Τριγωνοποίηση",
@@ -9776,10 +9864,10 @@
       "feasibility_title": "Feasibility Έλεγχος",
       "feasibility_desc": "Αξιολόγηση πλαισιακής εφαρμογής 5 ερωτήσεων με συστάσεις AI",
       "gas_title": "Ρουμπρίκα GAS",
-      "gas_desc": "Goal Attainment Scaling με περιγραφικά δημιουργημένα από AI",
+      "gas_desc": "Goal Attainment Scaling (GAS) με περιγραφικά δημιουργημένα από AI",
       "pocket_title": "Pocket BIP",
       "pocket_desc": "Συμπαγής σύνοψη BIP σε καρτέλα ευρετηρίου για χρήση με κλιπ",
-      "abagraph_desc": "Publication-πρότυπο γράφημα με phase γραμμή, trend γραμμή, και οπτικός ανάλυση",
+      "abagraph_desc": "Γραφήματα δημοσιεύσιμου επιπέδου με γραμμές φάσης, γραμμές τάσης και οπτική ανάλυση",
       "abagraph_title": "ABA γράφημα Engine",
       "abaguide_desc": "Αναζητήσιμο γλωσσάρι, προγράμματα ενίσχυσης, δέντρο αποφάσεων και κοινά λάθη",
       "abaguide_title": "ABA γρήγορο Guide",
@@ -9792,7 +9880,7 @@
       "bcbahandoff_desc": "Πίνακας ελέγχου δεδομένων για BCBA + εκτυπώσιμο πακέτο παράδοσης για συμβουλευτική",
       "bcbahandoff_title": "Συμβουλευτική BCBA",
       "biascheck_desc": "Αναδεικνύει διακριτικά μοτίβα στα δεδομένα σας για στοχασμό σχετικά με πιθανή υπόρρητη προκατάληψη — ανάπτυξη, όχι ενοχή",
-      "biascheck_title": "Bias Αναστοχασμός Monitor",
+      "biascheck_title": "Παρακολούθηση Αναστοχασμού Μεροληψίας",
       "caseload_desc": "Πανοραμική επισκόπηση όλων των μαθητών — δείκτες κατάστασης, τάσεις, ειδοποιήσεις ασφαλείας και σύνοψη φόρτου εργασίας με AI",
       "caseload_title": "Caseload Πίνακας ελέγχου",
       "casestudy_desc": "Μελέτες περιπτώσεων δημιουργημένες με AI με κλινική συλλογιστική 4 φάσεων και βαθμολόγηση",
@@ -9826,13 +9914,13 @@
       "fcttemplate_title": "Πρότυπο FCT",
       "gamify_desc": "Ιχνηλάτης διάθεσης για μαθητές με σερί, σήματα, αποστολές και ημερολόγιο στοχασμού",
       "gamify_title": "My πρόοδος Quest",
-      "glossary_desc": "25+ searchable ABA όρος με plain-γλώσσα ορισμός και πραγματικός-world παράδειγμα",
+      "glossary_desc": "25+ αναζητήσιμοι όροι ABA με ορισμούς σε απλή γλώσσα και ρεαλιστικά παραδείγματα",
       "glossary_title": "ABA Έννοια γλωσσάρι",
-      "homelog_desc": "Simplified γονέας-φιλικός συμπεριφορά logging με everyday γλώσσα",
-      "homelog_title": "Home συμπεριφορά Log",
+      "homelog_desc": "Απλοποιημένη καταγραφή συμπεριφοράς, φιλική προς τους γονείς, σε καθημερινή γλώσσα",
+      "homelog_title": "Ημερολόγιο Συμπεριφοράς στο Σπίτι",
       "iepgoals_desc": "Παρόντα επίπεδα, στόχοι SMART, αντικειμενικοί σκοποί, διευκολύνσεις και σχέδια παρακολούθησης προόδου δημιουργημένα με AI",
       "iepgoals_title": "IEP στόχος Generator",
-      "iepprep_desc": "AI-δημιουργήθηκε meeting preparation packet με δεδομένα σύνοψη, talking σημείο, και επόμενο βήμα",
+      "iepprep_desc": "Φάκελος προετοιμασίας συνάντησης δημιουργημένος από AI, με σύνοψη δεδομένων, σημεία συζήτησης και επόμενα βήματα",
       "iepprep_title": "Προετοιμασία Συνάντησης IEP",
       "intervention_desc": "Σχέδιο παρέμβασης πολλών εβδομάδων δημιουργημένο με AI με μετρήσιμους στόχους και ορόσημα",
       "intervention_title": "Intervention Σχέδιο",
@@ -9859,7 +9947,7 @@
       "prefassess_title": "Preference αξιολόγηση",
       "progress_desc": "Παράγραφοι παρακολούθησης προόδου έτοιμες για IEP από συσσωρευμένα δεδομένα συμπεριφοράς",
       "progress_title": "πρόοδος Αφήγηση",
-      "progressreport_desc": "AI-δημιουργήθηκε πρόοδος reports με δεδομένα summaries, trend ανάλυση, στόχος πρόοδος, και γονέας-φιλικός γλώσσα επιλογές",
+      "progressreport_desc": "Αναφορές προόδου δημιουργημένες από AI, με συνόψεις δεδομένων, ανάλυση τάσεων, πρόοδο στόχων και επιλογή φιλικής προς τους γονείς γλώσσας",
       "progressreport_title": "πρόοδος Reports",
       "qualitycheck_desc": "Επανεξέταση των καταχωρήσεων ABC σας με τη βοήθεια AI με συγκεκριμένες προτάσεις βελτίωσης",
       "qualitycheck_title": "δεδομένα Ποιότητα Έλεγχος",
@@ -9878,10 +9966,10 @@
       "restorative_desc": "Σενάρια βήμα προς βήμα για αποκατάσταση βλάβης, κύκλους κοινότητας και διασκέψεις επανένταξης",
       "restorative_title": "Οδηγός Επανορθωτικής Συνομιλίας",
       "riskscreen_title": "Κίνδυνος Screening",
-      "sandbox_desc": "Φόρτωση simulated μαθητής δεδομένα για PD, pre-service training, ή μάθηση ABA χωρίς πραγματικός μαθητής",
+      "sandbox_desc": "Φόρτωση προσομοιωμένων δεδομένων μαθητή για PD, εκπαίδευση πριν την υπηρεσία ή εκμάθηση του ABA χωρίς πραγματικούς μαθητές",
       "sandbox_title": "εξάσκηση Sandbox",
       "save_workspace": "Αποθήκευση Workspace",
-      "scatterplot_desc": "Χρόνος-του-day × συμπεριφορά πλέγμα σε ταυτοποιώ temporal μοτίβα — αυτόματο-populates από ABC δεδομένα",
+      "scatterplot_desc": "Πλέγμα ώρας ημέρας × συμπεριφοράς για τον εντοπισμό χρονικών μοτίβων — συμπληρώνεται αυτόματα από δεδομένα ABC",
       "scatterplot_title": "Scatterplot Ανάλυση",
       "scdmanager_desc": "AB, ABAB, Πολλαπλή Βασική Γραμμή, Εναλλασσόμενες Θεραπείες, Μεταβαλλόμενο Κριτήριο",
       "scdmanager_title": "SCD Διαχείρισηr",
@@ -9891,7 +9979,7 @@
       "sessionnotes_title": "συνεδρία Σημειώσεις",
       "sessiontracker_desc": "Συστηματική μέτρηση συμπεριφοράς βασισμένη σε συνεδρία με υπολογισμό ρυθμού",
       "sessiontracker_title": "συνεδρία δεδομένα Tracker",
-      "snapshot_desc": "Εξαγωγή & εισαγωγή JSON snapshots για γονέας–δάσκαλος δεδομένα exchange",
+      "snapshot_desc": "Εξαγωγή και εισαγωγή στιγμιότυπων JSON για ανταλλαγή δεδομένων μεταξύ γονέα–δασκάλου",
       "snapshot_title": "Ανταλλαγή Στιγμιότυπου Μαθητή",
       "socialvalidity_desc": "Κλίμακες TARF και IRP-15 για μέτρηση της αποδοχής θεραπείας — απαιτείται για δημοσίευση",
       "socialvalidity_title": "Κοινωνικός Validity",
@@ -9904,7 +9992,7 @@
       "trends_desc": "Γραφήματα SVG που δείχνουν τάσεις έντασης, συχνότητα χώρου και θερμικό χάρτη ημέρας/ώρας",
       "trends_title": "Trend Πίνακας ελέγχου",
       "bipgen_title": "Δημιουργός BIP",
-      "bipgen_desc": "Draft συμπεριφορά Intervention Σχέδιο από σας δεδομένα.",
+      "bipgen_desc": "Συντάξτε ένα Σχέδιο Παρέμβασης Συμπεριφοράς (BIP) από τα δεδομένα σας.",
       "cantdowontdo_title": "Δεν μπορεί / Δεν θέλει",
       "cantdowontdo_desc": "Ταξινομήστε ελλείμματα δεξιότητας έναντι απόδοσης για να επιλέξετε τη σωστή υποστήριξη.",
       "competingpathways_title": "Ανταγωνιστικές Διαδρομές",
@@ -9917,7 +10005,7 @@
       "practicum_title": "Εικονική Πρακτική Άσκηση",
       "practicum_desc": "Εκτελέστε μια καθοδηγούμενη πρακτική υπόθεση από την αρχή έως το τέλος.",
       "replacementbehavior_title": "Replacement συμπεριφορά",
-      "replacementbehavior_desc": "Ταυτοποιώ ίδιος-function συμπεριφορά αυτό meets μαθητής’s ανάγκη.",
+      "replacementbehavior_desc": "Εντοπίστε μια συμπεριφορά ίδιας λειτουργίας που καλύπτει την ανάγκη του μαθητή.",
       "wizard_title": "συμπεριφορά Lens οδηγός",
       "riskscreen_desc_v2": "Λίστα ελέγχου αναστοχασμού ασφάλειας + ανίχνευση μοτίβων με ΤΝ (δεν είναι επίσημο εργαλείο αξιολόγησης απειλών)",
       "opdef_desc_v2": "Μετατρέψτε ασαφείς περιγραφές σε παρατηρήσιμους και μετρήσιμους ορισμούς χρησιμοποιώντας τις τυπικές διαστάσεις ABA + το Τεστ του Νεκρού (υποστηριζόμενο από ΤΝ, δεν είναι προϊόν πιστοποιημένο από BACB)"
@@ -9953,7 +10041,7 @@
     "overview": {
       "title": "συμπεριφορά Overview",
       "ai_summary": "δεδομένα Insights",
-      "empty_desc": "Έναρξη collecting ABC δεδομένα ή εκτέλεση ζωντανά παρατήρηση σε δείτε trends εδώ.",
+      "empty_desc": "Ξεκινήστε να συλλέγετε δεδομένα ABC ή εκτελέστε ζωντανές παρατηρήσεις για να δείτε τάσεις εδώ.",
       "empty_title": "Όχι δεδομένα Yet",
       "intensity_dist": "Κατανομή Έντασης",
       "time_of_day": "Χρόνος του Day Distribution",
@@ -9986,7 +10074,7 @@
     "record": {
       "title": "Record Αναθεώρηση",
       "analyze": "Σύνοψη AI",
-      "desc": "Επικόλληση IEP στόχος, evaluation reports, ή πρόοδος σημειώσεις για AI-powered ανάλυση.",
+      "desc": "Επικολλήστε στόχους IEP, αναφορές αξιολόγησης ή σημειώσεις προόδου για ανάλυση με τη βοήθεια AI.",
       "placeholder": "Επικόλληση έγγραφο κείμενο εδώ..."
     },
     "hypothesis": {
@@ -10091,7 +10179,7 @@
     "reinforcer_sensory": "🌀 Αισθητ.",
     "quiz_fba_purpose": "Ποιος είναι ο πρωταρχικός σκοπός μιας FBA;",
     "quiz_replacement": "τι είναι replacement συμπεριφορά?",
-    "search_placeholder": "Αναζήτηση antecedent, συμπεριφορά, consequence, σημειώσεις, ρύθμιση...",
+    "search_placeholder": "Αναζήτηση προηγηθέντος, συμπεριφοράς, συνέπειας, σημειώσεων, πλαισίου...",
     "quick_fill_placeholder": "π.χ. \"Ο μαθητής πέταξε χαρτί στα μαθηματικά όταν του ζητήθηκε να δείξει την εργασία, ο δάσκαλος ανακατεύθυνε ήρεμα\"",
     "nl_edit_placeholder": "π.χ. \"αλλαγή συνέπειας σε ο δάσκαλος ανακατεύθυνε\"",
     "now": "τώρα",
@@ -10155,7 +10243,7 @@
     "parent_visual_schedule": "Used οπτικός schedule",
     "coping_look_out_window": "Κοίτα έξω από το παράθυρο",
     "coping_count_ceiling_tiles": "Μετρήστε ceiling tiles",
-    "coping_watch_a_glitter_jar": "Παρακολουθήστε glitter jar",
+    "coping_watch_a_glitter_jar": "Παρακολουθήστε ένα βάζο με χρυσόσκονη",
     "coping_listen_to_calming_music": "Ακούστε σε calming μουσική",
     "coping_count_sounds_you_hear": "Μετρήστε ήχοι εσείς hear",
     "coping_squeeze_a_stress_ball": "Squeeze stress ball",
@@ -10191,7 +10279,7 @@
     "cycle_de_escalation": "Αποκλιμάκωση",
     "cycle_recovery": "Ανάκαμψη",
     "quiz_opt_punish": "Σε punish μαθητής",
-    "quiz_opt_identify_why": "Σε ταυτοποιώ WHY συμπεριφορά occurs",
+    "quiz_opt_identify_why": "Για να εντοπιστεί ΓΙΑΤΙ συμβαίνει μια συμπεριφορά",
     "quiz_opt_any_stops": "Οποιαδήποτε συμπεριφορά σταματά το πρόβλημα",
     "analysis": {
       "hypothesized_function": "Υποτιθέμενη Λειτουργία",
@@ -10203,8 +10291,8 @@
     "ph": {
       "a_break_help_someone_to_listen_space": "Ένα διάλειμμα; Βοήθεια; Κάποιον να ακούσει; Χώρο;",
       "add_a_custom_reinforcer": "Προσθήκη προσαρμοσμένο reinforcer",
-      "add_a_team_note_shiftenter_for_new_line": "Προσθήκη ομάδα note... (Shift+Εισάγετε για νέος γραμμή)",
-      "add_context_constraints_or_specific_challenges_eg": "Προσθήκη πλαίσιο, constraints, ή συγκεκριμένος πρόκληση... e.g., \" μαθητής επίσης έχει speech delay\" ή \"αυτό είναι middle σχολείο μαθητής\"",
+      "add_a_team_note_shiftenter_for_new_line": "Προσθέστε σημείωση ομάδας... (Shift+Enter για νέα γραμμή)",
+      "add_context_constraints_or_specific_challenges_eg": "Προσθέστε πλαίσιο, περιορισμούς ή συγκεκριμένες προκλήσεις... π.χ., \"Ο μαθητής έχει επίσης καθυστέρηση λόγου\" ή \"Πρόκειται για μαθητή γυμνασίου\"",
       "any_other_details_was_child_tired_hungry_etc": "Οποιεσδήποτε άλλες λεπτομέρειες (ήταν το παιδί κουρασμένο, πεινασμένο, κλπ.)...",
       "behavior": "συμπεριφορά...",
       "behavior_name": "συμπεριφορά name...",
@@ -10264,8 +10352,8 @@
       "topic_purpose_of_contact": "Θέμα / σκοπός επικοινωνίας",
       "type_full_name": "Τύπος πλήρης name",
       "type_language_eg_spanish_arabic_somali": "Πληκτρολογήστε γλώσσα (π.χ., Ισπανικά, Αραβικά, Σομαλικά)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "Τύπος σας παρατήρηση, note, ή κάντε κλικ mic σε dictate...",
-      "type_your_response_here_be_thorough_and_use_profes": "Τύπος σας απάντηση εδώ. είναι thorough και χρήση professional γλώσσα...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "Πληκτρολογήστε την παρατήρησή σας, μια σημείωση, ή κάντε κλικ στο μικρόφωνο για υπαγόρευση...",
+      "type_your_response_here_be_thorough_and_use_profes": "Πληκτρολογήστε την απάντησή σας εδώ. Να είστε διεξοδικοί και να χρησιμοποιείτε επαγγελματική γλώσσα...",
       "what_behavior_will_change": "τι συμπεριφορά θα αλλαγή?",
       "what_could_you_or_a_grownup_do_differently": "Τι θα μπορούσατε εσείς ή ένας ενήλικας να κάνετε διαφορετικά;",
       "what_environmental_change_will_you_make": "τι environmental αλλαγή θα εσείς δημιουργία?",
@@ -10334,7 +10422,7 @@
       "failed_to_generate_questions": "Failed σε δημιουργία ερώτηση",
       "failed_to_generate_share_code": "Αποτυχία δημιουργίας κωδικού κοινοποίησης",
       "failed_to_generate_summary": "Failed σε δημιουργία σύνοψη",
-      "failed_to_parse_notes": "Failed σε parse σημειώσεις.",
+      "failed_to_parse_notes": "Αποτυχία ανάλυσης σημειώσεων.",
       "failed_to_parse_snapshot_file": "Αποτυχία ανάλυσης αρχείου στιγμιότυπου",
       "failed_to_parse_template": "Failed σε parse template",
       "failed_to_parse_transcript": "Αποτυχία ανάλυσης απομαγνητοφώνησης",
@@ -10354,7 +10442,7 @@
       "graph_data_attached_to_iep_prep": "Τα δεδομένα γραφήματος επισυνάφθηκαν στην προετοιμασία IEP!",
       "graph_data_ready_autofill_available_in_effect_size": "Τα δεδομένα γραφήματος είναι έτοιμα — αυτόματη συμπλήρωση διαθέσιμη στο Μέγεθος Επίδρασης!",
       "home_log_exported_as_snapshot": "Το αρχείο καταγραφής σπιτιού εξήχθη ως στιγμιότυπο 📦",
-      "home_note_generated": "Home note δημιουργήθηκε ✨",
+      "home_note_generated": "Η σημείωση για το σπίτι δημιουργήθηκε ✨",
       "hypothesis_generated": "υπόθεση δημιουργήθηκε ✨",
       "iep_goals_generated": "IEP στόχος δημιουργήθηκε!",
       "iep_prep_packet_generated": "Δημιουργήθηκε πακέτο προετοιμασίας IEP ✨",
@@ -10388,7 +10476,7 @@
       "no_valid_data_found_in_csv": "Δεν βρέθηκαν έγκυρα δεδομένα στο CSV",
       "not_a_valid_alloflow_snapshot_file": "Δεν είναι έγκυρο αρχείο στιγμιότυπου AlloFlow",
       "not_a_valid_consent_template_file": "Δεν είναι έγκυρο αρχείο προτύπου συναίνεσης",
-      "not_quite_try_again": "δεν quite — δοκιμάστε again!",
+      "not_quite_try_again": "Όχι ακριβώς — δοκιμάστε ξανά!",
       "note_added": "Προστέθηκε σημ.",
       "note_added_2": "Η σημείωση προστέθηκε ✏️",
       "note_deleted": "Η σημείωση διαγράφηκε",
@@ -10459,7 +10547,7 @@
       "triangulation_complete": "Triangulation ολοκλήρωση ✨",
       "wizard_failed": "οδηγός failed",
       "workspace_loaded_n_entries_n_notes": "Ο χώρος εργασίας φορτώθηκε (N καταχωρήσεις, N σημειώσεις) 📂",
-      "you_have_unsaved_changes_consider_saving_your_work": "💡 εσείς έχει unαποθήκευσηd αλλαγές — σκεφτείτε saving σας workspace.",
+      "you_have_unsaved_changes_consider_saving_your_work": "💡 Έχετε μη αποθηκευμένες αλλαγές — σκεφτείτε να αποθηκεύσετε τον χώρο εργασίας σας.",
       "autofilled_from_phase_tagged_entries": "Αυτόματη συμπλήρωση από καταχωρήσεις με ετικέτα φάσης.",
       "enter_task_name": "Εισάγετε task name.",
       "need_2_baseline_2_intervention_entries_with_phase_tags": "Χρειάζονται τουλάχιστον 2 καταχωρήσεις βάσης και 2 παρέμβασης με ετικέτες φάσης.",
@@ -10491,7 +10579,7 @@
       "add_abc_entries_to_see_progress_over_time": "Προσθήκη ABC entries σε δείτε πρόοδος πάνω χρόνος",
       "add_abc_entries_to_see_visual_trend_data": "Προσθέστε καταχωρήσεις ABC για να δείτε δεδομένα οπτικής τάσης.",
       "add_connections_to_build_the_relationship_map": "Προσθέστε συνδέσεις για να δημιουργήσετε τον χάρτη σχέσεων.",
-      "add_data_points_above_or_paste_csv_data_to_get_sta": "Προσθήκη δεδομένα σημείο above ή επικόλληση CSV δεδομένα σε get started.",
+      "add_data_points_above_or_paste_csv_data_to_get_sta": "Προσθέστε σημεία δεδομένων παραπάνω ή επικολλήστε δεδομένα CSV για να ξεκινήσετε.",
       "additional_context_optional": "Additional Πλαίσιο (προαιρετικό)",
       "ai_analysis": "AI Ανάλυση",
       "ai_context_available": "AI Πλαίσιο διαθέσιμο",
@@ -10539,7 +10627,7 @@
       "day_streak": "Σερί ημερών",
       "define_the_behaviors_settings_or_students_for_stag": "Ορίστε τις συμπεριφορές, τα πλαίσια ή τους μαθητές για κλιμακωτή παρέμβαση.",
       "describe_your_research_question_and_let_ai_recomme": "Περιγράψτε το ερευνητικό σας ερώτημα και αφήστε το AI να προτείνει τον καλύτερο σχεδιασμό.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training με παρακολούθηση κατάκτησης και αυτόματη προώθηση",
+      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training (DTT) με παρακολούθηση κατάκτησης και αυτόματη προώθηση",
       "document_whether_interventions_are_implemented_as": "Τεκμηριώστε εάν οι παρεμβάσεις εφαρμόζονται όπως σχεδιάστηκαν",
       "done": "Έτοιμο",
       "drop_a_snapshot_file_here": "Αποθέστε Snapshot αρχείο εδώ",
@@ -10557,9 +10645,9 @@
       "full_student_summary": "Πλήρης μαθητής Σύνοψη",
       "functional_communication_training_planning_tool": "Εργαλείο σχεδιασμού Εκπαίδευσης Λειτουργικής Επικοινωνίας (FCT)",
       "generate_a_multiweek_intervention_plan_based_on_yo": "Δημιουργήστε ένα πολυεβδομαδιαίο σχέδιο παρέμβασης βάσει των συλλεγμένων δεδομένων ABC και της ανάλυσης AI.",
-      "generate_a_professional_printready_progress_report": "Δημιουργία professional, εκτύπωση-ready πρόοδος αναφορά με inline γράφημα, δεδομένα summaries, και AI recommendations. One-κάντε κλικ PDF εξαγωγή via browser εκτύπωση.",
+      "generate_a_professional_printready_progress_report": "Δημιουργήστε μια επαγγελματική, έτοιμη για εκτύπωση αναφορά προόδου με ενσωματωμένα γραφήματα, συνόψεις δεδομένων και συστάσεις AI. Εξαγωγή PDF με ένα κλικ μέσω της εκτύπωσης του προγράμματος περιήγησης.",
       "generate_a_unique_scenario_tailored_to_your_traini": "Δημιουργήστε ένα μοναδικό σενάριο προσαρμοσμένο στις εκπαιδευτικές σας ανάγκες.",
-      "generate_compliant_iep_behavioral_goals_from_obser": "Δημιουργία compliant IEP behavioral στόχος από παρατήρηση δεδομένα με present επίπεδο, SMART στόχος, και πρόοδος monitoring.",
+      "generate_compliant_iep_behavioral_goals_from_obser": "Δημιουργήστε συμμορφούμενους συμπεριφορικούς στόχους IEP από δεδομένα παρατήρησης, με παρόντα επίπεδα, στόχους SMART και παρακολούθηση προόδου.",
       "generate_iepready_progress_monitoring_paragraphs_f": "Δημιουργήστε παραγράφους παρακολούθησης προόδου έτοιμες για IEP από τα συσσωρευμένα συμπεριφορικά δεδομένα σας.",
       "generate_tailored_recommendations_based_on_the_beh": "Δημιουργήστε εξατομικευμένες συστάσεις βάσει των συμπεριφορικών δεδομένων και του επιλεγμένου κοινού.",
       "generated": "Δημιουργήθηκε:",
@@ -10570,7 +10658,7 @@
       "graph_phases": "γράφημα Phases",
       "graph_title": "γράφημα Title",
       "high": "Υψηλός",
-      "home_behavior_log": "Home συμπεριφορά Log",
+      "home_behavior_log": "Ημερολόγιο Συμπεριφοράς στο Σπίτι",
       "how_often_and_when_to_deliver_reinforcement_use_th": "Πόσο συχνά και πότε να παρέχεται η ενίσχυση. Χρησιμοποιήστε το εργαλείο Πίνακα Κουπονιών για να εφαρμόσετε αυτά τα προγράμματα στην πράξη.",
       "identify_temporal_patterns_in_behavior_occurrence": "Εντοπίστε χρονικά μοτίβα στην εμφάνιση της συμπεριφοράς",
       "iep_behavior_goal_generator": "IEP συμπεριφορά στόχος Generator",
@@ -10583,7 +10671,7 @@
       "interventions": "Παρεμβάσεις",
       "last_entry": "τελευταίο Entry",
       "latency_recorder": "Καταγραφέας Χρόνου Λανθάνουσας Απόκρισης",
-      "load_multiple_student_workspace_files_to_compare_b": "Φόρτωση πολλαπλό μαθητής workspace αρχείο σε σύγκριση συμπεριφορά μοτίβα, intensity επίπεδο, και trends side-by-side.",
+      "load_multiple_student_workspace_files_to_compare_b": "Φορτώστε πολλαπλά αρχεία χώρου εργασίας μαθητών για να συγκρίνετε μοτίβα συμπεριφοράς, επίπεδα έντασης και τάσεις δίπλα-δίπλα.",
       "low": "Χαμηλό",
       "maintenance_generalization": "Διατήρηση & Γενίκευση",
       "map_target_behaviors_to_functionally_equivalent_re": "Αντιστοιχίστε τις στοχευόμενες συμπεριφορές με λειτουργικά ισοδύναμες εναλλακτικές",
@@ -10594,20 +10682,20 @@
       "measure_time_between_stimulus_presentation_and_beh": "Μετρήστε τον χρόνο μεταξύ της παρουσίασης του ερεθίσματος και της συμπεριφορικής απόκρισης",
       "median": "Διάμεσος",
       "methods_used": "Μέθοδοι που Χρησιμοποιήθηκαν",
-      "modify_the_environment_to_prevent_behaviors_before": "Τροποποίηση environment σε prevent συμπεριφορά πριν αυτοί έναρξη",
+      "modify_the_environment_to_prevent_behaviors_before": "Τροποποιήστε το περιβάλλον ώστε να προλαμβάνετε τις συμπεριφορές πριν ξεκινήσουν",
       "mtssrti_tier_manager": "MTSS/RTI Επίπεδο Διαχείρισηr",
       "my_progress_quest": "My πρόοδος Quest",
       "natural_language_abc_entry": "Εισαγωγή ABC σε Φυσική Γλώσσα",
       "need_at_least_3_abc_entries_for_pattern_detection": "Χρειάζονται τουλάχιστον 3 καταχωρήσεις ABC για ανίχνευση μοτίβων.",
       "need_at_least_5_abc_entries_for_pattern_analysis": "Χρειάζονται τουλάχιστον 5 καταχωρήσεις ABC για ανάλυση μοτίβων.",
-      "no_abc_entries_to_check_yet_start_collecting_data": "Όχι ABC entries σε έλεγχος yet. Έναρξη collecting δεδομένα πρώτο!",
+      "no_abc_entries_to_check_yet_start_collecting_data": "Δεν υπάρχουν ακόμη καταχωρήσεις ABC για έλεγχο. Ξεκινήστε πρώτα να συλλέγετε δεδομένα!",
       "no_behavioral_data_recorded": "Δεν έχουν καταγραφεί συμπεριφορικά δεδομένα",
       "no_contacts_logged_yet_consistent_communication_bu": "Δεν έχουν καταγραφεί επαφές ακόμη. Η συνεπής επικοινωνία οικοδομεί εμπιστοσύνη!",
       "no_data_yet": "Όχι δεδομένα yet",
       "no_entries_yet_tap_log_a_behavior_to_get_started": "Δεν υπάρχουν καταχωρήσεις ακόμη. Πατήστε «Καταγραφή Συμπεριφοράς» για να ξεκινήσετε!",
       "no_occurrence": "Όχι occurrence",
-      "no_reflections_yet_tap_the_button_above_to_check_i": "Όχι αναστοχασμόςs yet. Tap κουμπί above σε έλεγχος σε με yourself!",
-      "no_session_data_recorded_yet": "Όχι συνεδρία δεδομένα recorded yet.",
+      "no_reflections_yet_tap_the_button_above_to_check_i": "Δεν υπάρχουν ακόμη αναστοχασμοί. Πατήστε το κουμπί παραπάνω για να κάνετε έναν εσωτερικό απολογισμό!",
+      "no_session_data_recorded_yet": "Δεν έχουν καταγραφεί ακόμη δεδομένα συνεδρίας.",
       "no_sessions_recorded_yet": "Όχι συνεδρία recorded yet.",
       "no_sessions_yet": "Όχι συνεδρία yet.",
       "no_students": "Όχι μαθητής",
@@ -10634,16 +10722,16 @@
       "publicationstandard_singlecase_design_graphs": "Γραφήματα σχεδιασμού μεμονωμένης περίπτωσης προτύπου δημοσίευσης",
       "quick_switch": "γρήγορο Εναλλαγή",
       "range": "Εύρος",
-      "read_through_the_module_content_above_then_click_c": "Διαβάστε μέσω module περιεχόμενο above, τότε κάντε κλικ Ολοκλήρωση below.",
-      "realtime_calming_tools_for_inthemoment_support": "Πραγματικός-χρόνος calming εργαλεία για σε--moment υποστήριξη",
+      "read_through_the_module_content_above_then_click_c": "Διαβάστε το περιεχόμενο της ενότητας παραπάνω και έπειτα κάντε κλικ στο Ολοκλήρωση παρακάτω.",
+      "realtime_calming_tools_for_inthemoment_support": "Εργαλεία ηρεμίας σε πραγματικό χρόνο για άμεση υποστήριξη τη στιγμή της κρίσης",
       "recent_moods": "Πρόσφατες διαθέσεις:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record συνεδρία με συνεδρία δεδομένα Tracker, ή εναλλαγή σε χειροκίνητο Entry λειτουργία.",
+      "record_sessions_with_the_session_data_tracker_or_s": "Καταγράψτε συνεδρίες με τον Καταγραφέα Δεδομένων Συνεδρίας ή μεταβείτε σε λειτουργία Χειροκίνητης Καταχώρησης.",
       "recording": "Εγγραφή...",
       "relationship_map": "Χάρτης Σχέσεων",
       "remember_cultural_humility_is_a_lifelong_practice": "Θυμηθείτε: η πολιτισμική ταπεινότητα είναι μια δια βίου πρακτική. Κάθε αναστοχασμός σας καθιστά πιο δίκαιο επαγγελματία.",
       "required": "υποχρεωτικό",
       "restorative_conversation_guide": "Οδηγός Αποκαταστατικής Συνομιλίας",
-      "review_your_abc_data_collection_for_completeness_a": "Αναθεώρηση σας ABC δεδομένα collection για completeness και ποιότητα",
+      "review_your_abc_data_collection_for_completeness_a": "Επιθεωρήστε τη συλλογή δεδομένων ABC σας ως προς την πληρότητα και την ποιότητα",
       "risk_screening_checklist": "Κίνδυνος Screening Checklist",
       "role": "Role:",
       "scatterplot_analysis": "Scatterplot Ανάλυση",
@@ -10665,25 +10753,25 @@
       "summary": "Σύνοψη:",
       "systematic_behavioral_measurement_across_sessions": "Συστηματική συμπεριφορική μέτρηση σε όλες τις συνεδρίες",
       "systematic_reinforcer_identification_using_evidenc": "Συστηματικός εντοπισμός ενισχυτών με χρήση πρωτοκόλλων τεκμηριωμένων από στοιχεία",
-      "tap_each_item_when_student_engages_with_it": "Tap κάθε στοιχείο όταν μαθητής engages με αυτό",
+      "tap_each_item_when_student_engages_with_it": "Πατήστε κάθε αντικείμενο όταν ο μαθητής ασχολείται με αυτό",
       "target_behavior": "Στόχος συμπεριφορά",
       "task_analysis": "Task Ανάλυση",
-      "taskskill_name": "Task/δεξιότητα Name",
+      "taskskill_name": "Όνομα Έργου/Δεξιότητας",
       "teacher": "δάσκαλος",
       "team_collaboration_notes": "Ομάδα Collaboration Σημειώσεις",
       "test_your_behavioral_analysis_knowledge_80_to_earn": "τεστ σας behavioral ανάλυση knowledge — 80% σε earn σας σήμα",
       "top_behavior": "Top συμπεριφορά",
       "total_contacts": "Σύνολο Επαφών",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track συμπεριφορά frequency πάνω χρόνος με aim γραμμή, phase αλλαγές, και trend ανάλυση.",
-      "track_behaviors_at_home_using_simple_everyday_lang": "Track συμπεριφορά σε home χρησιμοποιώντας απλό, everyday γλώσσα. αυτό βοηθά σας child\\",
+      "track_behavior_frequency_over_time_with_aim_lines": "Παρακολουθήστε τη συχνότητα της συμπεριφοράς με την πάροδο του χρόνου, με γραμμές στόχου, αλλαγές φάσης και ανάλυση τάσεων.",
+      "track_behaviors_at_home_using_simple_everyday_lang": "Παρακολουθήστε συμπεριφορές στο σπίτι χρησιμοποιώντας απλή, καθημερινή γλώσσα. Αυτό βοηθά το παιδί σας\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Παρακολουθήστε τα συναισθήματά σας, κερδίστε σήματα και χτίστε σερί!",
       "transform_deficitbased_language_into_assetfocused": "Μετατρέψτε τη γλώσσα ελλειμμάτων σε περιγραφές εστιασμένες σε δυνατά σημεία",
       "translate_to_any_language": "Translate σε οποιοδήποτε γλώσσα:",
       "treatment_integrity": "Ακεραιότητα Θεραπείας",
       "trend": "Τάση",
-      "type_or_paste_your_observation_notes_in_everyday_e": "Τύπος ή επικόλληση σας παρατήρηση σημειώσεις σε everyday English. AI θα δομή them σε proper ABC entries.",
-      "use_these_criteria_when_examining_your_graph": "Χρήση αυτά criteria όταν examining σας γράφημα:",
+      "type_or_paste_your_observation_notes_in_everyday_e": "Πληκτρολογήστε ή επικολλήστε τις σημειώσεις παρατήρησής σας σε καθημερινά Αγγλικά. Το AI θα τις δομήσει σε κατάλληλες καταχωρήσεις ABC.",
+      "use_these_criteria_when_examining_your_graph": "Χρησιμοποιήστε αυτά τα κριτήρια όταν εξετάζετε το γράφημά σας:",
       "use_this_flow_to_hypothesize_the_function_of_a_cha": "Χρησιμοποιήστε αυτή τη ροή για να διατυπώσετε υπόθεση σχετικά με τη λειτουργία μιας προκλητικής συμπεριφοράς.",
       "visual_multitiered_system_of_supports_assign_stude": "Οπτικό πολυεπίπεδο σύστημα υποστηρίξεων (MTSS). Αντιστοιχίστε μαθητές σε επίπεδα, λάβετε συστάσεις τοποθέτησης υποστηριζόμενες από AI.",
       "voicetoabc": "φωνή-σε-ABC",
@@ -10727,9 +10815,9 @@
       "title": "ABA γρήγορο Guide"
     },
     "allobot_chat": {
-      "card_desc": "συνομιλία με AI σχετικά συμπεριφορά στρατηγικές, FBA, BIP, και intervention planning",
+      "card_desc": "Συνομιλήστε με το AI σχετικά με στρατηγικές συμπεριφοράς, FBA, BIP και σχεδιασμό παρεμβάσεων",
       "empty_desc": "Μπορώ να βοηθήσω με στρατηγικές FBA, ιδέες παρέμβασης, ερμηνεία δεδομένων, τεχνικές αποκλιμάκωσης και άλλα.",
-      "empty_title": "Ask me anything σχετικά συμπεριφορά ανάλυση!",
+      "empty_title": "Ρωτήστε με οτιδήποτε σχετικά με την ανάλυση συμπεριφοράς!",
       "placeholder": "Ask σχετικά συμπεριφορά, στρατηγικές, FBA, BIP...",
       "subtitle": "Βοηθός συμπεριφορικής ανάλυσης υποστηριζόμενος από AI",
       "title": "Ρωτήστε AlloBot"
@@ -10749,7 +10837,7 @@
       "saved": "συνεδρία αποθηκευμένο ✅"
     },
     "homelog": {
-      "title": "Home συμπεριφορά Log"
+      "title": "Ημερολόγιο Συμπεριφοράς στο Σπίτι"
     },
     "interval": {
       "save": "Αποθήκευση συνεδρία",
@@ -10770,7 +10858,7 @@
       "saved": "παρατήρηση συνεδρία αποθηκευμένο ✅",
       "session_notes": "συνεδρία σημειώσεις...",
       "start_to_begin": "Ξεκινήστε το χρονόμετρο για να αρχίσει η μέτρηση καθυστέρησης",
-      "tap_when_starts": "Tap όταν συμπεριφορά starts",
+      "tap_when_starts": "Πατήστε όταν ξεκινά η συμπεριφορά",
       "title": "Ζωντανά παρατήρηση",
       "waiting_for_behavior": "⏳ Waiting για συμπεριφορά..."
     },
@@ -10927,7 +11015,7 @@
       "maintenance_tracker": "Παρακολούθηση Διατήρησης",
       "make_tier_movement_decision_stay_fade_intensify": "Λάβετε απόφαση μετακίνησης επιπέδου (παραμονή / σταδιακή απόσυρση / εντατικοποίηση)",
       "map_antecedent_behavior_consequence_pathways": "Χαρτογραφήστε διαδρομές προηγούμενο → συμπεριφορά → συνέπεια",
-      "map_each_target_behavior_to_a_replacement": "Map κάθε στόχος συμπεριφορά σε replacement",
+      "map_each_target_behavior_to_a_replacement": "Αντιστοιχίστε κάθε συμπεριφορά-στόχο σε μια συμπεριφορά αντικατάστασης",
       "materials_access": "Υλικά Πρόσβαση",
       "measure_effect_size_of_interventions": "Μετρήστε το μέγεθος επίδρασης των παρεμβάσεων",
       "model": "Λειτουργίαl",
@@ -10949,7 +11037,7 @@
       "not_feasible": "δεν Feasible",
       "not_started": "δεν Started",
       "observation_methods": "παρατήρηση Methods",
-      "observe_across_multiple_settings_classroom_recess_etc": "Observe απέναντι πολλαπλό ρυθμίσεις (τάξη, recess, etc.)",
+      "observe_across_multiple_settings_classroom_recess_etc": "Παρατηρήστε σε πολλαπλά πλαίσια (τάξη, διάλειμμα, κ.λπ.)",
       "okay": "Εντάξει",
       "on_track": "Σε Track",
       "outcome_evaluation": "Αξιολόγηση Αποτελέσματος",
@@ -11179,7 +11267,7 @@
     "heatmap": {
       "less": "λιγότερο",
       "more": "περισσότερο",
-      "subtitle": "συμπεριφορά frequency by day και χρόνος",
+      "subtitle": "Συχνότητα συμπεριφοράς ανά ημέρα και ώρα",
       "title": "συμπεριφορά Heatmap"
     },
     "sandbox": {
@@ -11277,7 +11365,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories σε life με χαρακτήρας voices & literary ανάλυση",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Γράψτε poems με form scaffolds, rhyme & meter ανάλυση, AI σχόλια"
+    "poettree_desc": "Γράψτε poems με form scaffolds, rhyme & meter ανάλυση, AI σχόλια",
+    "throughline_desc": "Οργανώστε τα μαθήματά σας σε μια χωρική ενότητα: σειρά διδασκαλίας, προαπαιτούμενα, ένα εξαγώγιμο αρχείο"
   },
   "sel_hub": {
     "loading": "Φόρτωση SEL Hub...",
@@ -12597,5 +12686,10 @@
     "byline": "Από {author} · {words} λέξεις · {used}/{total} λεξιλόγιο",
     "student": "Μαθητής",
     "score": "Βαθμολογία: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Η εκ νέου δημιουργία της προεπισκόπησης θα αντικαταστήσει τις χειροκίνητες επεξεργασίες σας με νέο περιεχόμενο. Συνέχεια και απόρριψη των επεξεργασιών; (Η Ακύρωση τις διατηρεί — εξαγάγετε ή κλείστε πρώτα τον επεξεργαστή για να τις αποθηκεύσετε.)",
+    "remediation_banner_title": "Επεξεργασία του αποκατεστημένου εγγράφου.",
+    "remediation_banner_body": "Οι επεξεργασίες σας εδώ αποθηκεύονται ξανά σε αυτό όταν κλείνετε τον επεξεργαστή, ώστε οι λήψεις σε PDF με ετικέτες / Word / PowerPoint να τις περιλαμβάνουν."
   }
 }

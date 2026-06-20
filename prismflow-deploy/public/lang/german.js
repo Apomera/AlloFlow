@@ -984,7 +984,7 @@
     "storage_full_text_only": "Storage voll. Wird gespeichert Text nur (Bilds entfernend).",
     "storage_full_critical": "Critical: Could nicht speichern Verlauf. Storage voll.",
     "resource_not_found": "Ressource nicht gefunden.",
-    "resource_not_found_history": "Ressource nicht gefunden in Verlauf.",
+    "resource_not_found_history": "Ressource nicht gefunden in Verlauf (möglicherweise wurde sie gelöscht).",
     "analysis_failed": "Analyse fehlgeschlagen. Bitte erneut versuchen.",
     "enter_target_language": "Bitte eingeben ein Zielsprache.",
     "translation_started": "Übersetzung startened...",
@@ -1620,7 +1620,7 @@
     "ai_feedback_unavailable": "KI-Feedback nicht verfügbar",
     "write_essay_first": "Schreiben Sie zuerst Ihren Aufsatz!",
     "enter_word_art_first": "Bitte geben Sie zuerst den Wortkunst-Text ein",
-    "preview_not_ready": "Vorschau noch nicht bereit",
+    "preview_not_ready": "Vorschau noch nicht bereit — warten Sie, bis sie gerendert ist, und versuchen Sie es dann erneut.",
     "word_art_render_failed": "Wortkunst konnte nicht gerendert werden",
     "diff_engine_load_failed": "Diff-Engine konnte nicht geladen werden (Netzwerk blockiert?).",
     "brf_downloaded": "Elektronische Braille (BRF) heruntergeladen",
@@ -1732,7 +1732,26 @@
     "project_saved_multi_other": "💾 Projekt gespeichert ({count} Bereiche); lade es später, um fortzufahren",
     "project_saved": "💾 Projekt gespeichert; lade es später, um die Bearbeitung fortzusetzen",
     "search_result_desc": "Google-Suchergebnis: {title}",
-    "link_url_prompt": "Link-URL eingeben:"
+    "link_url_prompt": "Link-URL eingeben:",
+    "building_accessible_docx": "Barrierefreie Word-Datei wird erstellt…",
+    "building_accessible_pptx": "Barrierefreie PowerPoint wird erstellt…",
+    "batch_tagging": "📄 Getaggte PDFs für das ZIP werden erstellt – gescannte Dateien dauern länger (OCR läuft pro Datei)…",
+    "builder_edits_preserved": "✋ Ihre manuellen Änderungen wurden beibehalten – die Vorschau wurde nicht neu gerendert. Exportieren oder schließen Sie den Builder, um sie zu speichern, und ändern Sie dann die Einstellungen.",
+    "builder_edits_synced": "✏️ Builder-Änderungen wurden im korrigierten Dokument gespeichert – die Exporte als getaggtes PDF / Word / PowerPoint enthalten sie jetzt.",
+    "pptx_ai_theme": "🎨 KI wird nach einer zum Thema passenden Farbpalette gefragt (Lesbarkeit wird lokal sichergestellt)…",
+    "make_accessible_fixing": "✨ Prüfung abgeschlossen – automatische Korrektur läuft (keine Klicks nötig)…",
+    "tagged_pdf_saved_see_report": "📄 Getaggtes PDF gespeichert – der vollständige Bericht ist über den Download-Schaltflächen angeheftet (✕ zum Schließen).",
+    "no_open_image_slot": "In der Vorschau ist kein freier Bildplatz mehr vorhanden – ziehen Sie das Vorschaubild stattdessen auf ein bestimmtes Bild, um es zu ersetzen.",
+    "extracted_image_inserted": "🖼 In den ersten freien Bildplatz eingefügt – ziehen Sie stattdessen ein Vorschaubild, wenn Sie eine andere Stelle möchten.",
+    "html_downloaded": "🌐 HTML heruntergeladen – lässt sich in jedem Browser öffnen.",
+    "odt_downloaded": "📄 OpenDocument (.odt) heruntergeladen – lässt sich in LibreOffice, Google Docs oder Word öffnen.",
+    "daisy_downloaded": "🔊 DAISY-Hörbuchpaket (.zip) heruntergeladen – in einem DAISY-Reader öffnen.",
+    "mo_no_voice": "Der Sprachdienst ist nicht verfügbar, daher kann das Mitlese-Audio gerade nicht erzeugt werden.",
+    "mo_busy": "Ein Mitlese-Export läuft bereits.",
+    "mo_no_text": "Kein lesbarer Text zum Vorlesen gefunden.",
+    "mo_no_audio": "⚠ Mitlese-E-Book gespeichert, aber es konnte kein Audio erzeugt werden (Sprachdienst nicht verfügbar). Text und Synchronisationsstruktur sind intakt.",
+    "mo_done": "Mitlese-E-Book heruntergeladen",
+    "audio_unavailable_now": "Audio ist gerade nicht verfügbar (möglicherweise läuft ein Vorgang oder der Sprachdienst ist deaktiviert)."
   },
   "large_file": {
     "modal_title": "Importieren Groß Audio Datei",
@@ -1806,7 +1825,8 @@
     "educator_tools_aria": "Lehrertools",
     "documents_menu_aria": "Dokumentenmenü",
     "open_doc_builder_pdf_aria": "Document Builder für PDF öffnen",
-    "export_slides_tooltip": "Öffnet Document Builder im Folienmodus"
+    "export_slides_tooltip": "Öffnet Document Builder im Folienmodus",
+    "learning_tools_tooltip": "Lernwerkzeuge (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Zielsprache",
@@ -3708,7 +3728,12 @@
     "style_tooltip": "Optional. Angewirndet zu jeder Bild in die Quiz (Frage + Optionen). Empty = Standard-Stil. Persisted mit die Quiz so refine actions stay auf-brand.",
     "generate_pre_check": "Generieren Pre-Prüfen",
     "generate_formative": "Generieren Formative Prüfen",
-    "generate_review": "Generieren Spaced Überprüfung"
+    "generate_review": "Generieren Spaced Überprüfung",
+    "likert_strongly_disagree": "Stimme überhaupt nicht zu",
+    "no_right_answer": "Hier gibt es keine richtigen oder falschen Antworten.",
+    "poll_completed": "Danke, dass du deine Meinung geteilt hast.",
+    "poll_intro": "Hier gibt es keine richtigen oder falschen Antworten – deine ehrliche Meinung hilft deiner Lehrkraft und dir selbst.",
+    "mode_poll": "🗣️ Umfrage (Schülerstimme)"
   },
   "outline": {
     "title": "Visueller Organizer",
@@ -4111,6 +4136,7 @@
     "image_size_tooltip": "Anpassen die Größe von Zeitline Bilds"
   },
   "pdf_audit": {
+    "fidelity_delta": "Textgenauigkeit: {before}% → {after}%{detail}",
     "view_last_audit": "Ansicht Letzte Audit",
     "start_new_audit": "Starten Neu Audit",
     "apply_and_export": "Anwenden & Exportieren",
@@ -4165,7 +4191,8 @@
     },
     "divergence": {
       "semantic": "Strukturell konform aber semantisch schwach — die KI markierte Inhaltsqualität (Alt-Text, Überschriftsbedeutung, Lesereihenfolge), die axe-core nicht erkennen kann",
-      "structural": "WCAG-Verletzungen auf Code-Ebene erkannt — axe-core fand maschinell prüfbare Fehler, die die KI-Rubrik leicht gewichtete"
+      "structural": "WCAG-Verletzungen auf Code-Ebene erkannt — axe-core fand maschinell prüfbare Fehler, die die KI-Rubrik leicht gewichtete",
+      "critical_override": "axe-core hat {n} kritische WCAG-Verstöße gefunden – prüfen Sie sie, bevor Sie dem kombinierten Wert vertrauen; ein Durchschnitt kann ein gravierendes Versagen verbergen"
     },
     "tagtree": {
       "label": "Vorhandene Tag-Struktur",
@@ -4269,7 +4296,8 @@
       "std_dev": "Standard-Deviation",
       "icc_title": "Benutzerdefiniert 1−(SD/50) index; nicht Textbook IchCC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Hybride Heuristik aus CV und paarweisem Vergleich über die KI-Durchläufe; nicht das klassische Cronbachs α"
     },
     "score": {
       "total_checks": "Gesamt prüfens performed",
@@ -4431,7 +4459,9 @@
       "title": "Regenerieren ein PDF von die remediated HTML. Ladut refniedrigs — Seite breaks, fonts, und pagination kann differ von die original. Funktioniert wirll für einfach prose documents."
     },
     "tagged_pdf": {
-      "title": "Preserve die original PDF's visuell ladut byte-identical und inject Barrierefreiheit Tags in sein Struktur tree. Beste für Textbooks, multi-column documents, und branded PDFs wo visuell fidelity matters."
+      "title": "Preserve die original PDF's visuell ladut byte-identical und inject Barrierefreiheit Tags in sein Struktur tree. Beste für Textbooks, multi-column documents, und branded PDFs wo visuell fidelity matters.",
+      "office_note": "Getaggtes PDF gilt für PDF-Eingaben – nutzen Sie Word/HTML",
+      "office_note_title": "Strukturtags können nur in PDF-Bytes eingefügt werden. Bei Word-/PowerPoint-Eingaben tragen die Downloads als barrierefreies Word und HTML die korrigierte Struktur."
     },
     "alt_formats": {
       "intro": "Downladen die remediated document in zugänglich alternative formats"
@@ -4502,7 +4532,9 @@
       "heading": "Versionsstempel"
     },
     "extracted_images": {
-      "drag_hint": "Ziehen Sie ein Vorschaubild auf einen Bildplatzhalter in der Vorschau, um es einzufügen, oder klicken Sie auf „📷 Hochladen“ innerhalb eines Platzhalters und wählen Sie „Extrahiertes Bild verwenden“."
+      "drag_hint": "Ziehen Sie ein Vorschaubild auf einen Bildplatzhalter in der Vorschau, um es einzufügen, oder klicken Sie auf „📷 Hochladen“ innerhalb eines Platzhalters und wählen Sie „Extrahiertes Bild verwenden“.",
+      "drag_hint2": "Klicken Sie auf ein Vorschaubild, um es in den ersten freien Bildplatz einzufügen, oder ziehen Sie es auf einen bestimmten Platzhalter oder ein Bild in der Vorschau. ×N = dasselbe Bild erschien auf N Seiten (meist ein Briefkopf oder Logo).",
+      "insert_aria": "Extrahiertes Bild in den ersten freien Platz einfügen"
     },
     "toolbar": {
       "aria": "Textformatierung",
@@ -4548,7 +4580,60 @@
     "violation_one": "{count} Verstoß",
     "violation_other": "{count} Verstöße",
     "ai_issue_one": "{count} von der KI markiertes Problem",
-    "ai_issue_other": "{count} von der KI markierte Probleme"
+    "ai_issue_other": "{count} von der KI markierte Probleme",
+    "tagged": {
+      "born_digital_note": "Hinweis: Bei PDFs mit Textebene verwenden die semantischen Tags ActualText-Zuordnungen statt einer vollständigen Inhaltsverknüpfung. Die Datei ist deutlich barrierefreier, aber prüfen Sie sie in PAC 2024 oder Acrobat, bevor Sie PDF/UA-Konformität geltend machen."
+    },
+    "one_click": {
+      "label": "Barrierefrei machen",
+      "badge": "vollautomatisch – prüfen, korrigieren, verifizieren, bis zum Ziel wiederholen",
+      "desc": "Ein Klick durchläuft die gesamte Pipeline automatisch mit den Standardeinstellungen; am Ende stehen die Downloads bereit. Lieber mehr Kontrolle? Nutzen Sie unten „Prüfung starten“, sehen Sie sich die Ergebnisse an und klicken Sie dann selbst auf Korrigieren & Verifizieren."
+    },
+    "run_audit_label": "Prüfung starten (Schritt 1 von 2)",
+    "manual_path_explainer": "„Prüfung starten“ bewertet das Dokument und zeigt, was korrigiert werden muss – Sie prüfen es dann und klicken selbst auf Korrigieren & Verifizieren (Schritt 2). „Barrierefrei machen“ oben erledigt beide Schritte plus erneute Prüfung automatisch. „Textextraktion“ zieht nur den Rohtext für die Inhaltserstellung heraus.",
+    "tagged_report": {
+      "heading": "Bericht zum getaggten PDF",
+      "close_aria": "Bericht zum getaggten PDF schließen",
+      "note": "Dieses Feld bleibt sichtbar, bis Sie es schließen. Dieselben Details sind im Download des A11y-Berichts im Adobe-Stil enthalten."
+    },
+    "docx_export": {
+      "title": "Wandelt den korrigierten Inhalt in ein Word-Dokument mit echten Überschriftenformaten, Alternativtext für Bilder, Tabellenkopfzeilen, Listenstruktur und funktionierenden Hyperlinks um. Prüfen Sie es vor dem Verteilen mit der integrierten Barrierefreiheitsprüfung von Word (Überprüfen → Barrierefreiheit prüfen)."
+    },
+    "pptx_export": {
+      "title": "Baut den korrigierten Inhalt als PowerPoint-Präsentation neu auf – mit echten Folientiteln, Alternativtext für Bilder, als Kopfzeile formatierten Tabellenzeilen, echten Aufzählungslisten und Lesereihenfolge = visuelle Reihenfolge. Ein neu aufgebautes barrierefreies Layout – kein optisches Abbild des Originals. Prüfen Sie es vor dem Verteilen mit der Barrierefreiheitsprüfung von PowerPoint."
+    },
+    "dashboard": {
+      "aria": "Überblick über die Korrekturergebnisse und Abschnittsnavigation",
+      "score_title": "Barrierefreiheits-Score: vorher → nachher"
+    },
+    "tag_to_workbench_title": "Diesen Block an die Experten-Werkbank senden: füllt einen gezielten Befehl vor (inklusive etwaiger Warnungen), sodass Sie ihn mit einer einzigen Anweisung korrigieren können",
+    "tag_to_workbench_aria": "An die Experten-Werkbank senden",
+    "pptx_theme_aria": "Design für den PowerPoint-Export",
+    "pptx_theme_title": "Foliendesign für den PowerPoint-Export. Alle Vorlagen sind kontrastgeprüft (WCAG AA); die KI-Option passt sich Ihrem Thema an, wobei die Lesbarkeit in beiden Fällen lokal sichergestellt wird.",
+    "export_menu": {
+      "button": "Exportieren / Herunterladen",
+      "intro": "Laden Sie das korrigierte Dokument in einem beliebigen Format herunter – wählen Sie das passende für den jeweiligen Einsatzzweck.",
+      "tagged_pdf": "Getaggtes PDF (PDF/UA – für Schüler)",
+      "word": "Word (.docx – weiterbearbeiten)",
+      "pptx": "PowerPoint (.pptx – präsentieren)",
+      "html": "HTML (überall öffnen, keine Software nötig)",
+      "group_access": "Barrierefreie Formate",
+      "daisy": "DAISY-Hörbuch (Volltext)",
+      "daisy_title": "DAISY 3 (DTBook) Hörbuchpaket mit Volltext. In einem DAISY-Reader öffnen, der Sprachausgabe, Braille oder Großdruck bereitstellt. (Für synchronisiertes Vorlesen mit Audio nutzen Sie unten „Mitlesen“.)",
+      "readalong": "Mitlese-E-Book (synchronisiertes Audio)",
+      "readalong_progress": "Wird vorgelesen… {done}/{total}",
+      "readalong_title": "Mitlese-E-Book (EPUB3 Media Overlays): erzeugt für jeden Absatz eine Sprachausgabe und synchronisiert sie mit dem Text, sodass ein Lesesystem die Wörter beim Sprechen hervorhebt. Erfordert viele Sprachaufrufe – kann einige Minuten dauern.",
+      "group_text": "Text & bearbeitbar",
+      "odt_title": "OpenDocument Text – öffnet sich nativ in LibreOffice und Google Docs (und in Word).",
+      "group_audio": "Audio-Vertonung",
+      "audio": "Audio-Vertonung (Standard)",
+      "audio_title": "Gesprochene Vertonung des Dokuments (MP3/WAV).",
+      "audio_sr": "Audio (im Screenreader-Stil)",
+      "audio_sr_title": "Dieselbe Stimme, aber mit Ansage der Struktur, wie es ein Screenreader täte (Überschriftenebenen, Listenanzahl, Tabellenzeilen, Bild-Alternativtexte)."
+    },
+    "mo": {
+      "confirm": "Ein Mitlese-E-Book erstellen? Dabei werden {n} Textabschnitte per Sprachausgabe vorgelesen – etwa {n} Sprachaufrufe, was einige Minuten dauern kann."
+    }
   },
   "concept_sort": {
     "title": "Konzept-Sortierung",
@@ -5052,7 +5137,7 @@
     "consult_btn_title": "Ask für Ausrichtung advice basierend auf QuellText",
     "press_search_hint": "Drücke Suchen, um Standards zu finden.",
     "region_placeholder": "Region (z. B. Texas, UK, CASEL)...",
-    "region_optional": "Region (Optional)...",
+    "region_optional": "Region (optional)…",
     "search_button_title": "Finden relevant Standards",
     "manual_placeholder": "z. B. CCSS.ELA-LIchTERACY.RIch.3.1 (Typ oder Einfügen)",
     "toast_describe_skill": "Bitte describe ein skill erste.",
@@ -6887,7 +6972,10 @@
     "pdf_audit_alt_formats_epub_btn": "Speichert das korrigierte Dokument als ePub-Datei mit Inhaltsverzeichnis und Barrierefreiheits-Metadaten. Funktioniert auf Kindle, Apple Books und den meisten mobilen Lesegeräten — Schüler können Schriftgröße, Farbe und Lesegeschwindigkeit ändern.",
     "pdf_audit_alt_formats_braille_btn": "Speichert eine Grade-1-Braille-Datei (unverkürzt), die auf einem Brailledrucker geprägt oder an eine Braillezeile gesendet werden kann. Für Grade-2-Kürzungen geben Sie die Datei an einen TVI (Lehrer für Schüler mit Sehbehinderungen) zur Fertigstellung.",
     "pdf_audit_alt_formats_text_btn": "Speichert eine einfache .txt-Datei mit entfernter gesamter Formatierung — das einfachste Format für Screenreader, Großdruck-Konvertierung oder zum Einfügen in ein anderes Werkzeug.",
-    "pdf_audit_alt_formats_markdown_btn": "Speichert das Dokument als Markdown — fügt sich sauber in Canvas-, Schoology- oder D2L-Seiten ein, Google Docs (per Einfügen), Wikis und GitHub-artige Notizen, ohne Überschriften oder Links zu verlieren."
+    "pdf_audit_alt_formats_markdown_btn": "Speichert das Dokument als Markdown — fügt sich sauber in Canvas-, Schoology- oder D2L-Seiten ein, Google Docs (per Einfügen), Wikis und GitHub-artige Notizen, ohne Überschriften oder Links zu verlieren.",
+    "pdf_audit_alt_formats_daisy_btn": "Speichert ein DAISY 3 Hörbuchpaket mit Volltext. DAISY-Reader (in der Sonderpädagogik verbreitet) ergänzen ihre eigene Sprachausgabe, Braille oder Großdruck mit voller Navigation. Hier nur Text – für synchronisiertes Vorlesen nutzen Sie das Mitlese-E-Book.",
+    "pdf_audit_alt_formats_readalong_btn": "Erstellt ein Mitlese-E-Book (EPUB3 Media Overlays): Jeder Absatz wird per Sprachausgabe vorgelesen und mit dem Text synchronisiert, sodass die Wörter beim Sprechen hervorgehoben werden. Ein Sprachaufruf pro Abschnitt, daher kann es einige Minuten dauern.",
+    "pdf_audit_alt_formats_odt_btn": "Speichert eine OpenDocument-Text-Datei (.odt) – nativ in LibreOffice und Google Docs (Word öffnet sie ebenfalls). Nutzen Sie sie, wenn Ihre Schule nicht durchgängig Microsoft einsetzt, Sie aber trotzdem ein bearbeitbares Dokument mit intakter Struktur möchten."
   },
   "groups": {
     "title": "Differentiation Gruppes",
@@ -9725,7 +9813,7 @@
       "abc_title": "ABC Daten",
       "abc_desc": "Antezedenz, Verhalten und Konsequenz beobachten und aufzeichnen",
       "obs_title": "Live-Beobachtung",
-      "obs_desc": "Real-Zeit interval, frequency, oder duration recording",
+      "obs_desc": "Echtzeit-Erfassung von Intervall, Häufigkeit oder Dauer",
       "analysis_title": "AI Analyse",
       "analysis_desc": "AI-powirred Verhalten pattern Analyse & recommendations",
       "overview_title": "OverAnsicht",
@@ -9759,13 +9847,13 @@
       "triangulation_title": "Triangulation",
       "triangulation_desc": "Cross-Referenz 3+ Daten sources für convergence",
       "impact_title": "Auswirk Calculator",
-      "impact_desc": "Quantify Verhalten frequency, duration, und annual cost",
+      "impact_desc": "Häufigkeit, Dauer und jährliche Kosten des Verhaltens quantifizieren",
       "crisis_title": "Krisenplan",
       "crisis_desc": "Three-Stufe crisis intervention protocol generator",
       "traffic_title": "Traffic Hell",
       "traffic_desc": "Schüler-facing red/yelniedrig/green Verhalten zone poster",
       "datasheet_title": "Daten Sheet",
-      "datasheet_desc": "Druckaktivieren frequency, duration, ABC, oder latency Daten sheets",
+      "datasheet_desc": "Druckbare Datenblätter für Häufigkeit, Dauer, ABC oder Latenz",
       "homenote_title": "Home Notiz",
       "homenote_desc": "AI-drafted Elternteil communication mit tone auswähleneinr",
       "fidelity_title": "Fidelity Prüfenlist",
@@ -10087,8 +10175,8 @@
     "coping_movement": "🏃 Verschiebenment",
     "reinforcer_sensory": "🌀 Sensorisch",
     "quiz_fba_purpose": "was ist die primary purpose von ein FBA?",
-    "quiz_replacement": "was ist ein replacement Verhalten?",
-    "search_placeholder": "Suchen antecedent, Verhalten, consequence, Notizs, Einstellung...",
+    "quiz_replacement": "Was ist ein Ersatzverhalten?",
+    "search_placeholder": "Auslöser, Verhalten, Konsequenz, Notizen, Setting durchsuchen...",
     "quick_fill_placeholder": "z. B. \"Schüler threw paper während Mathematik wenn asked zu anzeigen Arbeit, Lehrer redirected calmly\"",
     "nl_edit_placeholder": "z. B. \"ändern consequence zu Lehrer redirected\"",
     "now": "Neinw",
@@ -10210,7 +10298,7 @@
       "counts_per_session_3_5_2_8_4": "Anzahls pro Sitzung: 3, 5, 2, 8, 4...",
       "describe_the_scenario_you_want_to_practice_with": "Describe die scenario du möchten zu practice mit...",
       "describe_the_student_persona_eg_you_are_a_3rd_grad": "Describe die Schüler persona... z. B., \"Du sind ein 3rd grader who becomes anxious während Mathematik und tends zu cry und shut down...\"",
-      "describe_what_your_child_did": "Describe was dein child did...",
+      "describe_what_your_child_did": "Beschreiben Sie, was Ihr Kind getan hat...",
       "eg_12_15_14_13_16": "z. B. 12, 15, 14, 13, 16",
       "eg_5": "z. B. 5",
       "eg_8_6_5_4_3": "z. B. 8, 6, 5, 4, 3",
@@ -10241,8 +10329,8 @@
       "paste_share_code_here": "Einfügen teilen Code here...",
       "person": "Person\\",
       "phase_label": "Phasenname",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does dies hinzufügenress?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect auf dein approach...\\n• was worked wirll?\\n• was would du do differently?\\n• was strategies do du möchten zu practice nächste?",
+      "rationale_which_antecedent_does_this_address": "Begründung (welchen Auslöser adressiert dies?)",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflektieren Sie über Ihr Vorgehen...\\n• Was hat gut funktioniert?\\n• Was würden Sie anders machen?\\n• Welche Strategien möchten Sie als Nächstes üben?",
       "reinforcement_how_you": "⭐ Reinforcement (how du\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement Verhalten (Funktionally equivalent)",
       "respond_as_the_counselor": "Respond as die counselor...",
@@ -10264,7 +10352,7 @@
       "type_your_observation_note_or_click_the_mic_to_dic": "Gib deinen ein Beobachtung, Notiz, oder klicken die mic zu dictate...",
       "type_your_response_here_be_thorough_and_use_profes": "Gib deinen ein Antwort here. Be thorough und verwenden professional Sprache...",
       "what_behavior_will_change": "was Verhalten wird ändern?",
-      "what_could_you_or_a_grownup_do_differently": "was could du oder ein grown-up do differently?",
+      "what_could_you_or_a_grownup_do_differently": "Was könntest du oder ein Erwachsener anders machen?",
       "what_environmental_change_will_you_make": "was environmental ändern wird du machen?",
       "what_made_you_feel_this_way_optional": "was made du feel dies way? (Optional)",
       "what_supports_are_needed": "was unterstützt sind brauchened?",
@@ -10314,7 +10402,7 @@
       "data_cleared": "Daten leerened",
       "data_loaded_from_cloud": "☁️ Daten ladened von cloud",
       "drafting_failed": "Drafting fehlgeschlagen",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval abschließen — REIchNFORCE! Nein target Verhalten occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO-Intervall abgeschlossen — VERSTÄRKEN! Kein Zielverhalten aufgetreten!",
       "each_phase_needs_at_least_2_data_points": "jeder phase brauchens at least 2 Daten Punkte",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached zu IchEP Prep!",
       "effect_sizes_calculated": "Effektstärken berechnet!",
@@ -10672,7 +10760,7 @@
       "top_behavior": "Top Verhalten",
       "total_contacts": "Gesamt Contacts",
       "total_entries": "Gesamt entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track Verhalten frequency über Zeit mit aim lines, phase Änderungen, und trend Analyse.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Verfolgen Sie die Verhaltenshäufigkeit über die Zeit mit Ziellinien, Phasenwechseln und Trendanalyse.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track Verhaltens at home verwendend einfach, everyTag Sprache. dies Hilfes dein child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track dein feelings, earn schlechtges, und bauen streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-basierend Sprache in asfestlegen-focverwendend Beschreibungs",
@@ -10823,7 +10911,7 @@
       "build_smart_goals_from_analysis": "Bauen SMART Ziels von Analyse",
       "canvas_environment_local_storage_only": "Kannvas environment — local storage nur",
       "challenging": "Herausfordernd",
-      "champion": "Champion",
+      "champion": "Verantwortliche/r",
       "classroom_structure": "Klasseroom Struktur",
       "clear_chat_history": "Leeren chat Verlauf",
       "collect_baseline_data": "Collect Baseline Daten",
@@ -10857,7 +10945,7 @@
       "developing": "Entwickelnd",
       "discontinue": "Disfortfahren",
       "dismiss": "Schließen",
-      "document_baseline_frequency_for_flagged_students": "Document baseline frequency für flagged Schülers",
+      "document_baseline_frequency_for_flagged_students": "Baseline-Häufigkeit für markierte Schüler dokumentieren",
       "document_outcomes_and_lessons_learned": "Document outcomes und Lektions learned",
       "document_the_confirmed_function": "Document die bestätigened Funktion",
       "document_the_hypothesis_in_session_notes": "Document die hypothesis in Sitzung Notizs",
@@ -10923,8 +11011,8 @@
       "level_mean": "Stufe (Mean)",
       "maintenance_tracker": "Aufrechterhaltungs-Tracker",
       "make_tier_movement_decision_stay_fade_intensify": "Machen Stufe verschiebenment decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → Verhalten → consequence pathways",
-      "map_each_target_behavior_to_a_replacement": "Map jeder target Verhalten zu ein replacement",
+      "map_antecedent_behavior_consequence_pathways": "Auslöser → Verhalten → Konsequenz-Pfade abbilden",
+      "map_each_target_behavior_to_a_replacement": "Jedes Zielverhalten einem Ersatzverhalten zuordnen",
       "materials_access": "Materialien Access",
       "measure_effect_size_of_interventions": "Measure effect Größe von interventions",
       "model": "Modusl",
@@ -10960,10 +11048,10 @@
       "percentage": "Prozent",
       "phone": "Telefon",
       "phone_call": "Anruf",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plan ein reinforcement schedule für replacement Verhaltens",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Einen Verstärkungsplan für Ersatzverhalten erstellen",
       "plan_data_collection_methods_and_frequency": "Plan Daten collection methods und frequency",
       "plan_fidelity_monitoring": "Überwachung der Plantreue",
-      "plan_reinforcement_for_replacement_behaviors": "Plan reinforcement für replacement Verhaltens",
+      "plan_reinforcement_for_replacement_behaviors": "Verstärkung für Ersatzverhalten planen",
       "plan_replacement_behaviors": "Plan Replacement Verhaltens",
       "plan_weekly_progress_monitoring_data_collection": "Plan wirekly Fortschritt monitoring Daten collection",
       "positivecorrective_ratio": "Positive:Richtigive Ratio",
@@ -11101,7 +11189,7 @@
       "incorrect": "Ichnrichtig",
       "independent": "Ichndependent",
       "intensity": "Ichntensity",
-      "interval_and_latency_recording": "Ichnterval und latency recording",
+      "interval_and_latency_recording": "Intervall- und Latenzaufzeichnung",
       "level": "Stufe",
       "mastered": "Gemeistert",
       "momentary_time_sampling": "Momentary Zeit sampling",
@@ -11128,8 +11216,8 @@
       "trend_dashboard": "Trend Dashboard",
       "value": "Wert",
       "voicetoabc": "Stimme-zu-ABC",
-      "what_is_a_replacement_behavior": "was ist ein replacement Verhalten?",
-      "what_is_reinforcement_really": "was ist reinforcement, really?",
+      "what_is_a_replacement_behavior": "Was ist ein Ersatzverhalten?",
+      "what_is_reinforcement_really": "Was ist Verstärkung eigentlich?",
       "when_to_consult_specialists": "wenn zu consult speciaListen",
       "whole_interval": "Gesamtintervall",
       "workspace_sharing": "Arbeitsbereich-Freigabe",
@@ -11274,7 +11362,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories zu life mit Charakter Stimmes & literary Analyse",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Schreiben poems mit form scaffalts, rhyme & meter Analyse, AI feedzurück"
+    "poettree_desc": "Schreiben poems mit form scaffalts, rhyme & meter Analyse, AI feedzurück",
+    "throughline_desc": "Ordnen Sie Ihre Lektionen zu einer räumlichen Einheit an: Unterrichtsablauf, Voraussetzungen, eine exportierbare Datei"
   },
   "sel_hub": {
     "loading": "Ladening SEL Hub...",
@@ -12386,5 +12475,10 @@
     "byline": "Von {author} · {words} Wörter · {used}/{total} Vokabeln",
     "student": "Schüler",
     "score": "Punktzahl: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Beim erneuten Rendern der Vorschau werden Ihre manuellen Änderungen durch neu generierten Inhalt ersetzt. Fortfahren und die Änderungen verwerfen? (Mit „Abbrechen“ bleiben sie erhalten – exportieren oder schließen Sie zuerst den Builder, um sie zu speichern.)",
+    "remediation_banner_title": "Bearbeitung des korrigierten Dokuments.",
+    "remediation_banner_body": "Ihre Änderungen hier werden beim Schließen des Builders darin gespeichert, sodass die Downloads als getaggtes PDF / Word / PowerPoint sie enthalten."
   }
 }

@@ -96,7 +96,7 @@
     "exit": "Exitus"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "Officina Sonorum Verborum",
     "subtitle": "Exercitationes Conscientiae Phonemicae",
     "listen_word": "Audī ad verbum",
     "activity_counting": "Numeratio Sonorum",
@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving textus only (imāgō removed).",
     "storage_full_critical": "Critical: Could nōn servā history. Storage full.",
     "resource_not_found": "subsidia nōn found.",
-    "resource_not_found_history": "subsidia nōn found in history.",
+    "resource_not_found_history": "Subsidium in historiā nōn repertum (fortasse dēlētum est).",
     "analysis_failed": "Analysis failed. amābō tentā again.",
     "enter_target_language": "amābō inscrībe scopus lingua.",
     "translation_started": "trānslātiō started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback nōn praestō",
     "write_essay_first": "Scrībe your essay prīmus!",
     "enter_word_art_first": "amābō inscrībe verbum art textus prīmus",
-    "preview_not_ready": "Praevisio nondum parata",
+    "preview_not_ready": "Praevisio nondum parata — exspectā dum redditur, deinde iterum cōnāre.",
     "word_art_render_failed": "Could not render verbum art",
     "diff_engine_load_failed": "Diff engine failed to onerā (network blocked?). Check your connection and tentā again.",
     "brf_downloaded": "Braille electronicum (BRF) descriptum",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Opus servatum ({count} intervalla); postea onera ut pergas",
     "project_saved": "💾 Opus servatum; postea onera ut editionem pergas",
     "search_result_desc": "Eventus Quaestionis Google: {title}",
-    "link_url_prompt": "URL nexus insere:"
+    "link_url_prompt": "URL nexus insere:",
+    "building_accessible_docx": "Tabella Word accessibilis aedificatur…",
+    "building_accessible_pptx": "PowerPoint accessibilis aedificatur…",
+    "batch_tagging": "📄 PDF notati pro ZIP generantur — tabellae scansae plus temporis poscunt (OCR per singulas tabellas decurrit)…",
+    "builder_edits_preserved": "✋ Emendationes tuae manuales servatae sunt — praevisio iterum non reddita est. Exporta vel claude aedificatorem ut eas serves, deinde optiones muta.",
+    "builder_edits_synced": "✏️ Emendationes aedificatoris in documentum remediatum servatae sunt — exportationes PDF Notati / Word / PowerPoint nunc eas continent.",
+    "pptx_ai_theme": "🎨 AI rogatur de palette argumento congruente (legibilitas localiter cogitur)…",
+    "make_accessible_fixing": "✨ Recognitio peracta — automatice remediatur (nullis ictibus opus est)…",
+    "tagged_pdf_saved_see_report": "📄 PDF notatus servatus — relatio plena supra pulsantia descensus affixa est (✕ ut dimittas).",
+    "no_open_image_slot": "Nullus locus imaginis vacuus in praevisione restat — trahe imaginem minutam in certam imaginem ut eam substituas.",
+    "extracted_image_inserted": "🖼 In primum locum imaginis vacuum insertum — trahe potius imaginem minutam si locum diversum mavis.",
+    "html_downloaded": "🌐 HTML descensum — in quovis navigatro aperitur.",
+    "odt_downloaded": "📄 OpenDocument (.odt) descensum — in LibreOffice, Google Docs, vel Word aperitur.",
+    "daisy_downloaded": "🔊 Fasciculus libri loquentis DAISY (.zip) descensus — in lectore DAISY aperi.",
+    "mo_no_voice": "Officium vocis non praesto est, ideo audio ad legendum simul nunc generari non potest.",
+    "mo_busy": "Exportatio ad legendum simul iam decurrit.",
+    "mo_no_text": "Nullus textus legibilis ad narrandum inventus est.",
+    "mo_no_audio": "⚠ Liber electronicus ad legendum simul servatus est, sed nullum audio generari potuit (officium vocis non praesto). Textus + structura synchronizationis integra sunt.",
+    "mo_done": "Liber electronicus ad legendum simul descensus",
+    "audio_unavailable_now": "Audio nunc non praesto est (opus fortasse decurrit, vel officium vocis exstinctum est)."
   },
   "large_file": {
     "modal_title": "Importā Large sonus tabula",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator īnstrūmenta",
     "documents_menu_aria": "documentum index",
     "open_doc_builder_pdf_aria": "Aperī documentum Builder prō PDF",
-    "export_slides_tooltip": "Opens documentum Builder in Slides modus"
+    "export_slides_tooltip": "Opens documentum Builder in Slides modus",
+    "learning_tools_tooltip": "Instrumenta Discendi (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Scopus lingua",
@@ -2205,7 +2225,7 @@
     "pictionary_host_dashboard": "Tabula moderatoris Concept Pictionary",
     "concept_to_draw": "Concept to pinge",
     "round_timer": "Horologium",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "Pictionarium Notionum",
     "your_guess": "Coniectura tua",
     "remove_columns": "Remove columna",
     "add_column": "Adde columna",
@@ -3599,7 +3619,7 @@
       "math_desc": "Generā relevant verbum problēmata et connections ad mathēmatica conceptūs.",
       "persona_title": "AI Persona",
       "persona_desc": "Simulate conversation cum persōna aut figure ā textus.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "Officina Sonorum Verborum",
       "wordsounds_desc": "Design targeted phonics et phoneme awareness lectiō ūtendō glōssārium terminus aut verbum families.",
       "glossary_settings_title": "glōssārium cōnstitūtiōnēs",
       "glossary_settings_desc": "Accommodā quōmodo terminus sunt ēlectum et translated. tu potest excerne by tiered vocābulārium aut vīs specificus lingua.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "optātīvus. Applied ad every imāgō in quaestiōnārium (quaestiō + optiōnēs). Empty = praedēfīnītus stilus. Persisted cum quaestiōnārium so refine actions stay in-brand.",
     "generate_pre_check": "Generā Pre-Check",
     "generate_formative": "Generā Formative Check",
-    "generate_review": "Generā Spaced Review"
+    "generate_review": "Generā Spaced Review",
+    "likert_strongly_disagree": "Vehementer dissentio",
+    "no_right_answer": "Hic nulla responsa recta aut prava sunt.",
+    "poll_completed": "Gratias quod sententiam tuam communicavisti.",
+    "poll_intro": "Hic nulla responsa recta aut prava sunt — sententia tua sincera et magistro tuo et tibi prodest.",
+    "mode_poll": "🗣️ Suffragatio (vox discipuli)"
   },
   "outline": {
     "title": "vīsuālis Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "Aptāre size timeline imāgō"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidēlitās: {before}% → {after}%{detail}",
     "view_last_audit": "Aspice ultimus Audit",
     "start_new_audit": "Incipe novus Audit",
     "apply_and_export": "Adhibere & Exportā",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "Structuraliter conformis sed semantice debilis — AI signavit qualitatem contentus quam axe-core detegere non potest",
-      "structural": "Violationes WCAG ad codicis gradum detectae — axe-core invenit defectus a machina verificabiles"
+      "structural": "Violationes WCAG ad codicis gradum detectae — axe-core invenit defectus a machina verificabiles",
+      "critical_override": "axe-core invenit {n} violationes WCAG criticas — eas recognosce antequam puncto mixto credas; medium numerum gravem defectum celare potest"
     },
     "tagtree": {
       "label": "Structura titulorum praeexistens",
@@ -4278,7 +4305,8 @@
       "std_dev": "norma Deviation",
       "icc_title": "Custom 1−(SD/50) index; nōn textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Heuristica hybrida CV + comparationis binarum per AI transitus; non α Cronbachii e libris textus"
     },
     "score": {
       "total_checks": "Summa probationum factarum",
@@ -4436,7 +4464,9 @@
       "title": "Regenerate PDF ā remediated HTML. Layout reflows — pāgina breaks, fonts, et pagination may differ ā orīginālis. Operātur well prō simplex prose documentum."
     },
     "tagged_pdf": {
-      "title": "Preserve orīginālis PDF's vīsuālis layout byte-identical et inject accessibilitas tags into its structure tree. Best prō textbooks, multi-columna documentum, et branded PDFs ubi vīsuālis fidelity matters."
+      "title": "Preserve orīginālis PDF's vīsuālis layout byte-identical et inject accessibilitas tags into its structure tree. Best prō textbooks, multi-columna documentum, et branded PDFs ubi vīsuālis fidelity matters.",
+      "office_note": "PDF Notatus ad PDF ingressus pertinet — utere Word/HTML",
+      "office_note_title": "Notae structurae solum in bytes PDF inici possunt. Pro ingressibus Word/PowerPoint, descensus Word accessibilis et HTML structuram remediatam ferunt."
     },
     "alt_formats": {
       "intro": "Recipe remediated documentum in accessibilis alternative fōrma"
@@ -4507,7 +4537,9 @@
       "heading": "versiō Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Trahe thumbnail onto any imāgō placeholder in preview ad insert it, aut pulsā \"📷 Submitte\" inside placeholder et ēlige \"Ūtere extracted imāgō\"."
+      "drag_hint": "Trahe thumbnail onto any imāgō placeholder in preview ad insert it, aut pulsā \"📷 Submitte\" inside placeholder et ēlige \"Ūtere extracted imāgō\".",
+      "drag_hint2": "Preme imaginem minutam ut eam in primum locum imaginis vacuum inseras, vel trahe eam in certum locum tenentem aut imaginem in praevisione. ×N = eadem imago in N paginis apparuit (plerumque capitulum epistulare aut insigne).",
+      "insert_aria": "Insere imaginem extractam in primum locum vacuum"
     },
     "toolbar": {
       "aria": "textus formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} violatio",
     "violation_other": "{count} violationes",
     "ai_issue_one": "{count} quaestio ab AI notata",
-    "ai_issue_other": "{count} quaestiones ab AI notatae"
+    "ai_issue_other": "{count} quaestiones ab AI notatae",
+    "tagged": {
+      "born_digital_note": "Cave: pro PDF cum strato textus notae semanticae associationibus ActualText utuntur potius quam plena nexu contenti. Tabella multo accessibilior est, sed in PAC 2024 vel Acrobat verifica antequam conformitatem PDF/UA asseras."
+    },
+    "one_click": {
+      "label": "Redde Accessibile",
+      "badge": "plene automaticum — recognosce, corrige, verifica, repete ad metam",
+      "desc": "Unus ictus totam seriem sine manibus cum optionibus statutis decurrit; descensus in fine parati sunt. Mavisne moderationem? Utere \"Recognitionem Decurre\" infra, exitus recognosce, deinde ipse Corrige & Verifica preme."
+    },
+    "run_audit_label": "Recognitionem Decurre (gradus 1 ex 2)",
+    "manual_path_explainer": "\"Recognitionem Decurre\" documentum aestimat et ostendit quid corrigendum sit — deinde ipse recognoscis et Corrige & Verifica premis (gradus 2). \"Redde Accessibile\" supra ambos gradus facit plusque re-examinationem, automatice. \"Extractio Textus\" tantum textum crudum pro contento generando extrahit.",
+    "tagged_report": {
+      "heading": "Relatio PDF notati",
+      "close_aria": "Dimitte relationem PDF notati",
+      "note": "Haec tabula manet donec eam dimittas. Eaedem singulae intra descensum Relationis A11y stili Adobe traduntur."
+    },
+    "docx_export": {
+      "title": "Converte contentum remediatum in documentum Word cum veris stilis titulorum, textu alternativo in imaginibus, ordinibus capitis in tabulis, structura elenchi, et nexibus operantibus. Verifica cum Examinatore Accessibilitatis Word intrinseco (Recognosce → Examina Accessibilitatem) antequam distribuas."
+    },
+    "pptx_export": {
+      "title": "Reaedifica contentum remediatum ut acervum PowerPoint cum veris titulis schedularum, textu alternativo in imaginibus, ordinibus tabulae stilo capitis, veris elenchis punctatis, et ordine legendi = ordine visuali. Dispositio accessibilis reaedificata — non clonum visuale originalis. Verifica cum Examinatore Accessibilitatis PowerPoint antequam distribuas."
+    },
+    "dashboard": {
+      "aria": "Conspectus exituum remediationis et navigatio sectionum",
+      "score_title": "Punctum accessibilitatis: ante → postea"
+    },
+    "tag_to_workbench_title": "Mitte hunc nodum ad Mensam Periti: praeimplet mandatum certum (incluso quovis monito) ut id una instructione corrigere possis",
+    "tag_to_workbench_aria": "Mitte ad Mensam Periti",
+    "pptx_theme_aria": "Thema exportationis PowerPoint",
+    "pptx_theme_title": "Thema schedularum pro exportatione PowerPoint. Omnia praestituta de contrastu examinata sunt (WCAG AA); optio AI argumento tuo congruit, legibilitate utroque modo localiter coacta.",
+    "export_menu": {
+      "button": "Exporta / Descende",
+      "intro": "Descende documentum remediatum quovis formato — elige id quod congruit quomodo usurpabitur.",
+      "tagged_pdf": "PDF Notatus (PDF/UA — da discipulis)",
+      "word": "Word (.docx — perge emendare)",
+      "pptx": "PowerPoint (.pptx — praesenta)",
+      "html": "HTML (ubique aperitur, nullo programmate)",
+      "group_access": "Formata accessibilia",
+      "daisy": "Liber loquens DAISY (textus plenus)",
+      "daisy_title": "Fasciculus libri loquentis pleni-textus DAISY 3 (DTBook). Aperi in lectore DAISY, qui vocem, braille, vel litteras grandes praebet. (Pro audio synchronizato ad legendum, utere Lege-simul infra.)",
+      "readalong": "Liber electronicus ad legendum simul (audio synchronizatum)",
+      "readalong_progress": "Narratur… {done}/{total}",
+      "readalong_title": "Liber electronicus ad legendum simul (EPUB3 Media Overlays): generat textum-ad-vocem pro singulis paragraphis et eam textui synchronizat ut systema legens verba dum dicuntur illuminet. Multas vocis vocationes facit — minuta aliquot capere potest.",
+      "group_text": "Textus & emendabile",
+      "odt_title": "OpenDocument Text — native in LibreOffice et Google Docs (et Word) aperitur.",
+      "group_audio": "Narratio audio",
+      "audio": "Narratio audio (vulgaris)",
+      "audio_title": "Narratio dicta documenti (MP3/WAV).",
+      "audio_sr": "Audio (stilo lectoris schermi)",
+      "audio_sr_title": "Eadem vox, sed structuram nuntians eo modo quo lector schermi faceret (gradus titulorum, numeri elenchorum, ordines tabulae, textus alternativi imaginum)."
+    },
+    "mo": {
+      "confirm": "Aedificarene librum electronicum ad legendum simul? Hoc narrat {n} sectiones textus per textum-ad-vocem — circa {n} vocis vocationes, quae minuta aliquot capere possunt."
+    }
   },
   "concept_sort": {
     "title": "Conceptus Dispōne",
@@ -5249,7 +5334,7 @@
     "plan_hook": "Hamus",
     "plan_independent": "Independent exercē",
     "col_image": "imāgō",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "Officina Sonorum Verborum",
     "stop": "Siste",
     "expand_header": "Capitulum expandere",
     "collapse_header": "Capitulum contrahere ut contento plus spatii detur",
@@ -5721,8 +5806,8 @@
       "empty": "Minimē activities completed yet.",
       "quiz": "{count} quaestiōnārium",
       "quizzes": "{count} quaestiōnārium",
-      "adventure": "{count} Adventure",
-      "adventures": "{count} Adventures",
+      "adventure": "{count} Aventura",
+      "adventures": "{count} Aventurae",
       "reading": "{count} Lectio",
       "readings": "{count} Lectiones"
     },
@@ -6890,7 +6975,10 @@
     "pdf_audit_alt_formats_epub_btn": "Servat documentum correctum sicut fasciculum ePub cum tabula contenti et metadatis accessibilitatis. Operatur in Kindle, Apple Books et plurimis lectoribus mobilibus — discipuli magnitudinem characteris, colorem et velocitatem lectionis mutare possunt.",
     "pdf_audit_alt_formats_braille_btn": "Servat fasciculum Braille Gradus 1 (non contractum) qui in impressore Braille imprimi aut ad tabulam Braille renovābilem (refreshable Braille display) mitti potest. Pro contractionibus Gradus 2, fasciculum TVI (magistro discipulorum cum incapacitatibus visualibus) ad finiendum trade.",
     "pdf_audit_alt_formats_text_btn": "Servat fasciculum .txt simplex omni formato amoto — formatus facillimus pro lectoribus velaminis, conversione ad litteras magnas, aut pasting in aliud instrumentum.",
-    "pdf_audit_alt_formats_markdown_btn": "Servat documentum sicut Markdown — limpide intrat in paginas Canvas, Schoology aut D2L, Google Docs (per pasting), wikis et notas stili GitHub sine capitibus aut vinculis amittendis."
+    "pdf_audit_alt_formats_markdown_btn": "Servat documentum sicut Markdown — limpide intrat in paginas Canvas, Schoology aut D2L, Google Docs (per pasting), wikis et notas stili GitHub sine capitibus aut vinculis amittendis.",
+    "pdf_audit_alt_formats_daisy_btn": "Serva fasciculum libri loquentis pleni-textus DAISY 3. Lectores DAISY (in educatione speciali frequentes) propriam vocem, braille, vel litteras grandes cum plena navigatione addunt. Hic solum textus — pro audio synchronizato ad legendum, utere libro electronico ad legendum simul.",
+    "pdf_audit_alt_formats_readalong_btn": "Aedifica librum electronicum ad legendum simul (EPUB3 Media Overlays): singulae paragraphi per textum-ad-vocem narrantur et textui synchronizantur ut verba dum dicuntur illuminentur. Una vocis vocatio per sectionem, ideo minuta aliquot capere potest.",
+    "pdf_audit_alt_formats_odt_btn": "Serva tabellam OpenDocument Text (.odt) — native in LibreOffice et Google Docs (Word eam quoque aperit). Utere ea cum schola tua non tota Microsoft est sed tamen documentum emendabile structura integra cupis."
   },
   "groups": {
     "title": "Greges differentiationis",
@@ -9139,7 +9227,7 @@
       "musical_intervals": "Intervalla Musica",
       "arpeggiator": "Arpeggiator",
       "resonant_filter": "Resonant Excerne",
-      "tremolo_vibrato": "Tremolo & Vibrato",
+      "tremolo_vibrato": "Tremolo et Vibrato",
       "karplusstrong_synthesis": "Synthesis Karplus-Strong",
       "music_composition": "mūsica Composition",
       "musical_notation": "Notatio Musica",
@@ -9186,22 +9274,22 @@
       "tibia": "Tibia",
       "fibula": "Fibula",
       "tarsals": "Tarsi",
-      "sacrum_coccyx": "Sacrum & Coccyx",
+      "sacrum_coccyx": "Os sacrum et coccyx",
       "muscular": "Musculosa",
       "deltoid": "Deltoides",
-      "pectoralis_major": "Pectoralis Major",
+      "pectoralis_major": "Musculus pectoralis maior",
       "biceps_brachii": "Biceps Brachii",
-      "triceps_brachii": "Triceps Brachii",
-      "rectus_abdominis": "Rectus Abdominis",
+      "triceps_brachii": "Musculus triceps brachii",
+      "rectus_abdominis": "Musculus rectus abdominis",
       "external_obliques": "Obliqui Externi",
-      "quadriceps_femoris": "Quadriceps Femoris",
+      "quadriceps_femoris": "Musculus quadriceps femoris",
       "hamstrings": "Poplitei",
       "gastrocnemius": "Gastrocnemius",
       "trapezius": "Trapezius",
-      "latissimus_dorsi": "Latissimus Dorsi",
-      "gluteus_maximus": "Gluteus Maximus",
+      "latissimus_dorsi": "Musculus latissimus dorsi",
+      "gluteus_maximus": "Musculus gluteus maximus",
       "sartorius": "Sartorius",
-      "tibialis_anterior": "Tibialis Anterior",
+      "tibialis_anterior": "Musculus tibialis anterior",
       "soleus": "Soleus",
       "circulatory": "Circulatoria",
       "heart": "Cor",
@@ -9261,7 +9349,7 @@
       "wernickes_area": "Wernicke's ārea",
       "medial_sagittal": "Medialis (Sagittalis)",
       "midline_cut_revealing_deep_structures": "Sectio mediana structuras profundas revelans",
-      "corpus_callosum": "Corpus Callosum",
+      "corpus_callosum": "Corpus callosum",
       "thalamus": "Thalamus",
       "hypothalamus": "Hypothalamus",
       "cingulate_gyrus": "Gyrus Cinguli",
@@ -9280,7 +9368,7 @@
       "optic_chiasm_cn_ii": "Chiasma Opticum (CN II)",
       "temporal_lobes_inferior": "Lobi Temporales (Inferiores)",
       "cerebellum_inferior": "Cerebellum (Inferius)",
-      "medulla_oblongata_inferior": "Medulla Oblongata (Inferior)",
+      "medulla_oblongata_inferior": "Medulla oblongata (pars inferior)",
       "cranial_nerves_iiu2013xii": "Nervi Craniales (II–XII)"
     },
     "planet_view": {
@@ -9729,7 +9817,7 @@
       "abc_desc": "Record antecedent, mōrēs, et consequence observātiō",
       "obs_title": "Vīvus observātiō",
       "obs_desc": "Real-time interval, frequency, aut duration recording",
-      "analysis_title": "AI Analysis",
+      "analysis_title": "Analysis AI",
       "analysis_desc": "AI-powered mōrēs pattern analysis & recommendations",
       "overview_title": "Conspectus",
       "overview_desc": "mōrēs trends, tabula, et summārium statistics",
@@ -9777,7 +9865,7 @@
       "feasibility_desc": "5-quaestiō contextual fit aestimātiō cum AI recommendations",
       "gas_title": "GAS Norma",
       "gas_desc": "fīnis Attainment Scaling cum AI-generātum descriptors",
-      "pocket_title": "Pocket BIP",
+      "pocket_title": "BIP Portatilis",
       "pocket_desc": "Compact index-schedula BIP summārium prō clipboard carry",
       "abagraph_desc": "Publication-norma graphēma cum phase līnea, trend līnea, et vīsuālis analysis",
       "abagraph_title": "ABA graphēma Engine",
@@ -10051,7 +10139,7 @@
       "generate": "AI Generā GAS Descriptors"
     },
     "pocket": {
-      "title": "Pocket BIP",
+      "title": "BIP Portatilis",
       "generate": "AI Generā Pocket BIP"
     },
     "no_entries_match": "Minimē entries match tuus filters",
@@ -10493,7 +10581,7 @@
       "add_connections_to_build_the_relationship_map": "Adde connections ad aedificāre relationship map.",
       "add_data_points_above_or_paste_csv_data_to_get_sta": "Adde data pūnctum above aut adfīge CSV data ad get started.",
       "additional_context_optional": "Additional Context (optātīvus)",
-      "ai_analysis": "AI Analysis",
+      "ai_analysis": "Analysis AI",
       "ai_context_available": "AI Context praestō",
       "ai_is_analyzing_your_transcript": "AI est analyzing tuus transcript...",
       "ai_observation_coach": "AI observātiō Coach",
@@ -11277,7 +11365,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories ad life cum persōna voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Scrībe poems cum form scaffolds, rhyme & meter analysis, AI feedback"
+    "poettree_desc": "Scrībe poems cum form scaffolds, rhyme & meter analysis, AI feedback",
+    "throughline_desc": "Lectiones tuas in unitatem spatialem dispone: ordo docendi, praerequisita, unus tabellarius exportabilis"
   },
   "sel_hub": {
     "loading": "SEL Hub onerans...",
@@ -12399,5 +12488,10 @@
     "byline": "Ab {author} · {words} verba · {used}/{total} vocabularium",
     "student": "Discipulus",
     "score": "Punctum: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Praevisionem iterum reddere emendationes tuas manuales contento recenter generato substituet. Pergisne emendationesque abicis? (Renuntiatio eas servat — exporta vel claude aedificatorem ut prius serves.)",
+    "remediation_banner_title": "Documentum remediatum emendatur.",
+    "remediation_banner_body": "Emendationes tuae hic in id reservantur cum aedificatorem claudis, ideo descensus PDF Notati / Word / PowerPoint eas continent."
   }
 }

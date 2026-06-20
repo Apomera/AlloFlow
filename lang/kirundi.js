@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving inyandiko only (ifoto removed).",
     "storage_full_critical": "Critical: Could ntibi bika history. Storage full.",
     "resource_not_found": "umutungo ntibi found.",
-    "resource_not_found_history": "umutungo ntibi found muri history.",
+    "resource_not_found_history": "Umutungo ntiwabonetse mu kahise (vyoshoboka ko wafutwe).",
     "analysis_failed": "Analysis failed. nakwinginze gerageza again.",
     "enter_target_language": "nakwinginze injiza intumbero ururimi.",
     "translation_started": "ihindurwa started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI igitekerezo ntibihari",
     "write_essay_first": "Andika your essay ca mbere!",
     "enter_word_art_first": "nakwinginze injiza ijambo art inyandiko ca mbere",
-    "preview_not_ready": "Pgusubiramwo not ready yet",
+    "preview_not_ready": "Igaragaza ntiriratunganywa — rindira ngo riboneke, hanyuma wongere ugerageze.",
     "word_art_render_failed": "Could not render ijambo art",
     "diff_engine_load_failed": "Diff engine yananiwe gutangizwa (urusobe rwabujijwe?). Genzura ukwihuza kwawe maze ongera ugerageze.",
     "brf_downloaded": "Braille ya elegitoroniki (BRF) yakuwemwo",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Guhindura size ca timeline ifoto"
   },
   "pdf_audit": {
+    "fidelity_delta": "Ukuri kw'inyandiko: {before}% → {after}%{detail}",
     "view_last_audit": "Reba Audit ya Nyuma",
     "start_new_audit": "Tangira Audit Nshya",
     "apply_and_export": "Shiraho & Ohereza",

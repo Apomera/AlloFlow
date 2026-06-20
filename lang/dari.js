@@ -1614,7 +1614,7 @@
     "storage_full_text_only": "حافظه پُر شد. فقط متن ذخیره می‌شود (تصاویر حذف شدند).",
     "storage_full_critical": "حرج: ناتوان از ذخیره سابقه. تخزین ممتلئ.",
     "resource_not_found": "منبع یافت نشد.",
-    "resource_not_found_history": "منبع در تاریخچه یافت نشد.",
+    "resource_not_found_history": "منبع در تاریخچه یافت نشد (ممکن است حذف شده باشد).",
     "analysis_failed": "ناموفق تحلیل. لطفاً تلاش مجددًا.",
     "enter_target_language": "لطفاً یک زبان هدف وارد کنید.",
     "translation_started": "بدأت ترجمه...",
@@ -2250,7 +2250,7 @@
     "ai_feedback_unavailable": "بازخورد AI در دسترس نیست",
     "write_essay_first": "ابتدا انشای خود را بنویسید!",
     "enter_word_art_first": "لطفاً ابتدا متن word art را وارد کنید",
-    "preview_not_ready": "پیش‌نمایش هنوز آماده نیست",
+    "preview_not_ready": "پیش‌نمایش هنوز آماده نیست — منتظر بمانید تا ارائه شود، سپس دوباره تلاش کنید.",
     "word_art_render_failed": "نمی‌توان word art را رندر کرد",
     "diff_engine_load_failed": "موتور تفاوت بارگذاری نشد (شبکه مسدود شده؟).",
     "brf_downloaded": "Braille الکترونیکی (BRF) دانلود شد",
@@ -5496,6 +5496,7 @@
     "generate_aria": "ایجاد DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "امانت‌داری: {before}% → {after}%{detail}",
     "view_last_audit": "نمایش آخر تدقیق",
     "start_new_audit": "شروع تدقیق جدید",
     "apply_and_export": "اعمال وصادر کردن",

@@ -96,7 +96,7 @@
     "exit": "Esci"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "Studio dei Suoni delle Parole",
     "subtitle": "Phonemic Awareness Attività",
     "listen_word": "Ascolta un parole",
     "activity_counting": "Conteggio dei suoni",
@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage completo. Saving testo solo (immagini removed).",
     "storage_full_critical": "Critical: Could non salva storia. Storage completo.",
     "resource_not_found": "risorse non found.",
-    "resource_not_found_history": "risorse non found in storia.",
+    "resource_not_found_history": "Risorsa non trovata nella cronologia (potrebbe essere stata eliminata).",
     "analysis_failed": "Analisi failed. per favore prova again.",
     "enter_target_language": "per favore inserisci un obiettivo lingue.",
     "translation_started": "traduzioni started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback non disponibile",
     "write_essay_first": "Scrivi your essay primo!",
     "enter_word_art_first": "per favore inserisci parole art testo primo",
-    "preview_not_ready": "Previsualizza not ready yet",
+    "preview_not_ready": "Anteprima non ancora pronta — attendi che venga generata, poi riprova.",
     "word_art_render_failed": "Could not render parole art",
     "diff_engine_load_failed": "Caricamento del motore diff non riuscito (rete bloccata?).",
     "brf_downloaded": "Braille elettronico (BRF) scaricato",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Progetto salvato ({count} intervalli); caricalo più tardi per continuare",
     "project_saved": "💾 Progetto salvato; caricalo più tardi per continuare a modificare",
     "search_result_desc": "Risultato della ricerca Google: {title}",
-    "link_url_prompt": "Inserisci l'URL del link:"
+    "link_url_prompt": "Inserisci l'URL del link:",
+    "building_accessible_docx": "Creazione del file Word accessibile…",
+    "building_accessible_pptx": "Creazione del PowerPoint accessibile…",
+    "batch_tagging": "📄 Generazione dei PDF taggati per lo ZIP — i file scansionati richiedono più tempo (l'OCR viene eseguito per ogni file)…",
+    "builder_edits_preserved": "✋ Le tue modifiche manuali sono state mantenute — l'anteprima non è stata rigenerata. Esporta o chiudi il builder per salvarle, poi modifica le impostazioni.",
+    "builder_edits_synced": "✏️ Le modifiche del builder sono state salvate nel documento corretto — le esportazioni in PDF taggato / Word / PowerPoint ora le includono.",
+    "pptx_ai_theme": "🎨 Richiesta all'AI di una palette adatta all'argomento (leggibilità garantita localmente)…",
+    "make_accessible_fixing": "✨ Verifica completata — correzione automatica in corso (nessun clic necessario)…",
+    "tagged_pdf_saved_see_report": "📄 PDF taggato salvato — il report completo è fissato sopra i pulsanti di download (✕ per chiuderlo).",
+    "no_open_image_slot": "Nessuno spazio immagine libero nell'anteprima — trascina invece la miniatura su un'immagine specifica per sostituirla.",
+    "extracted_image_inserted": "🖼 Inserita nel primo spazio immagine libero — trascina una miniatura se preferisci un'altra posizione.",
+    "html_downloaded": "🌐 HTML scaricato — si apre in qualsiasi browser.",
+    "odt_downloaded": "📄 OpenDocument (.odt) scaricato — si apre in LibreOffice, Google Docs o Word.",
+    "daisy_downloaded": "🔊 Pacchetto audiolibro DAISY (.zip) scaricato — aprilo in un lettore DAISY.",
+    "mo_no_voice": "Il servizio vocale non è disponibile, quindi al momento non è possibile generare l'audio di lettura sincronizzata.",
+    "mo_busy": "È già in corso un'esportazione con lettura sincronizzata.",
+    "mo_no_text": "Nessun testo leggibile trovato da narrare.",
+    "mo_no_audio": "⚠ Ebook con lettura sincronizzata salvato, ma non è stato possibile generare l'audio (servizio vocale non disponibile). Il testo e la struttura di sincronizzazione sono intatti.",
+    "mo_done": "Ebook con lettura sincronizzata scaricato",
+    "audio_unavailable_now": "L'audio non è disponibile al momento (potrebbe essere in corso un processo, oppure il servizio vocale è disattivato)."
   },
   "large_file": {
     "modal_title": "Importa Large audio file",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator strumento",
     "documents_menu_aria": "documenti menu",
     "open_doc_builder_pdf_aria": "Apri documenti Builder per PDF",
-    "export_slides_tooltip": "Opens documenti Builder in Slides modalità"
+    "export_slides_tooltip": "Opens documenti Builder in Slides modalità",
+    "learning_tools_tooltip": "Strumenti di apprendimento (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Obiettivo lingue",
@@ -3599,7 +3619,7 @@
       "math_desc": "Genera relevant parole problemi e connections un matematica concetti.",
       "persona_title": "AI Persona",
       "persona_desc": "Simulate un conversazione con un personaggi o figure da il testo.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "Studio dei Suoni delle Parole",
       "wordsounds_desc": "Design targeted phonics e phoneme awareness lezioni utilizzando glossario termini o parole families.",
       "glossary_settings_title": "glossario impostazioni",
       "glossary_settings_desc": "Personalizza come termini sono selezionato e translated. tu può filtra by tiered vocabolario o forze specifico lingue.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "opzionale. Applied un every immagini in il quiz (domande + opzioni). Empty = predefinito stili. Persisted con il quiz so refine actions stay su-brand.",
     "generate_pre_check": "Genera Pre-Controllo",
     "generate_formative": "Genera Formative Controllo",
-    "generate_review": "Genera Spaced Recensione"
+    "generate_review": "Genera Spaced Recensione",
+    "likert_strongly_disagree": "Fortemente in disaccordo",
+    "no_right_answer": "Qui non ci sono risposte giuste o sbagliate.",
+    "poll_completed": "Grazie per aver condiviso la tua opinione.",
+    "poll_intro": "Qui non ci sono risposte giuste o sbagliate — la tua opinione sincera aiuta il tuo insegnante e aiuta te.",
+    "mode_poll": "🗣️ Sondaggio (voce degli studenti)"
   },
   "outline": {
     "title": "visivo Organizer",
@@ -4106,6 +4131,7 @@
     "image_size_tooltip": "Regolare il size di timeline immagini"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fedeltà: {before}% → {after}%{detail}",
     "view_last_audit": "Visualizza ultimo Audit",
     "start_new_audit": "Inizia nuovo Audit",
     "apply_and_export": "Applica ed esporta",
@@ -4160,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "Conforme strutturalmente ma debole semanticamente — l'IA ha segnalato qualità del contenuto (testo alt, significato delle intestazioni, ordine di lettura) che axe-core non può rilevare",
-      "structural": "Violazioni WCAG a livello di codice rilevate — axe-core ha trovato errori verificabili a macchina che la rubrica IA ha ponderato poco"
+      "structural": "Violazioni WCAG a livello di codice rilevate — axe-core ha trovato errori verificabili a macchina che la rubrica IA ha ponderato poco",
+      "critical_override": "axe-core ha rilevato {n} violazione/i critica/he WCAG — esaminale prima di fidarti del punteggio combinato; una media può nascondere un errore grave"
     },
     "tagtree": {
       "label": "Struttura di tag preesistente",
@@ -4264,7 +4291,8 @@
       "std_dev": "standard Deviation",
       "icc_title": "Custom 1−(SD/50) index; non textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Euristica ibrida CV + a coppie tra i passaggi dell'AI; non è l'α di Cronbach da manuale"
     },
     "score": {
       "total_checks": "Totale verifiche eseguite",
@@ -4426,7 +4454,9 @@
       "title": "Regenerare un PDF da il remediated HTML. Layout reflows — pagina breaks, fonts, e pagination può differ da il originale. Funziona well per semplice prose documenti."
     },
     "tagged_pdf": {
-      "title": "Preserve il originale PDF's visivo layout byte-identical e inject accessibilità tags in its struttura tree. Migliore per textbooks, multi-colonne documenti, e branded PDFs dove visivo fidelity matters."
+      "title": "Preserve il originale PDF's visivo layout byte-identical e inject accessibilità tags in its struttura tree. Migliore per textbooks, multi-colonne documenti, e branded PDFs dove visivo fidelity matters.",
+      "office_note": "Il PDF taggato si applica agli input PDF — usa Word/HTML",
+      "office_note_title": "I tag di struttura possono essere inseriti solo nei byte di un PDF. Per gli input Word/PowerPoint, i download accessibili in Word e HTML conservano la struttura corretta."
     },
     "alt_formats": {
       "intro": "Scarica il remediated documenti in accessibile alternative formato"
@@ -4497,7 +4527,9 @@
       "heading": "versioni Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Trascina un thumbnail onto qualsiasi immagini placeholder in il previsualizza un insert it, o clicca \"📷 Carica\" inside un placeholder e scegli \"Usa extracted immagini\"."
+      "drag_hint": "Trascina un thumbnail onto qualsiasi immagini placeholder in il previsualizza un insert it, o clicca \"📷 Carica\" inside un placeholder e scegli \"Usa extracted immagini\".",
+      "drag_hint2": "Fai clic su una miniatura per inserirla nel primo spazio immagine libero, oppure trascinala su un segnaposto o un'immagine specifica nell'anteprima. ×N = la stessa immagine è comparsa su N pagine (di solito una carta intestata o un logo).",
+      "insert_aria": "Inserisci l'immagine estratta nel primo spazio libero"
     },
     "toolbar": {
       "aria": "testo formatting",
@@ -4543,7 +4575,60 @@
     "violation_one": "{count} violazione",
     "violation_other": "{count} violazioni",
     "ai_issue_one": "{count} problema segnalato dall'IA",
-    "ai_issue_other": "{count} problemi segnalati dall'IA"
+    "ai_issue_other": "{count} problemi segnalati dall'IA",
+    "tagged": {
+      "born_digital_note": "Attenzione: per i PDF con livello di testo i tag semantici utilizzano associazioni ActualText anziché un collegamento completo dei contenuti. Il file è notevolmente più accessibile, ma verificalo in PAC 2024 o Acrobat prima di dichiarare la conformità a PDF/UA."
+    },
+    "one_click": {
+      "label": "Rendi accessibile",
+      "badge": "completamente automatico — verifica, correggi, controlla, ripeti fino all'obiettivo",
+      "desc": "Un clic esegue l'intero processo in automatico con le impostazioni predefinite; i download sono pronti alla fine. Preferisci avere il controllo? Usa \"Esegui verifica\" qui sotto, esamina i risultati, poi avvia tu stesso Correggi e controlla."
+    },
+    "run_audit_label": "Esegui verifica (passaggio 1 di 2)",
+    "manual_path_explainer": "\"Esegui verifica\" valuta il documento e mostra cosa va corretto — poi esamini e avvii tu stesso Correggi e controlla (passaggio 2). \"Rendi accessibile\" qui sopra esegue entrambi i passaggi più un nuovo controllo, automaticamente. \"Estrazione del testo\" estrae solo il testo grezzo per la generazione dei contenuti.",
+    "tagged_report": {
+      "heading": "Report PDF taggato",
+      "close_aria": "Chiudi il report del PDF taggato",
+      "note": "Questo pannello resta visibile finché non lo chiudi. Gli stessi dettagli sono inclusi nel download del report di accessibilità in stile Adobe."
+    },
+    "docx_export": {
+      "title": "Converti il contenuto corretto in un documento Word con veri stili di titolo, testo alternativo sulle immagini, righe di intestazione nelle tabelle, struttura degli elenchi e collegamenti ipertestuali funzionanti. Verifica con il Controllo accessibilità integrato di Word (Revisione → Verifica accessibilità) prima di distribuirlo."
+    },
+    "pptx_export": {
+      "title": "Ricostruisci il contenuto corretto come presentazione PowerPoint con veri titoli di diapositiva, testo alternativo sulle immagini, righe di tabella con stile di intestazione, veri elenchi puntati e ordine di lettura = ordine visivo. Un layout accessibile ricostruito — non una copia visiva dell'originale. Verifica con il Controllo accessibilità di PowerPoint prima di distribuirlo."
+    },
+    "dashboard": {
+      "aria": "Panoramica dei risultati di correzione e navigazione tra le sezioni",
+      "score_title": "Punteggio di accessibilità: prima → dopo"
+    },
+    "tag_to_workbench_title": "Invia questo blocco al Banco di lavoro per esperti: precompila un comando mirato (incluse eventuali avvertenze) così puoi correggerlo con una sola istruzione",
+    "tag_to_workbench_aria": "Invia al Banco di lavoro per esperti",
+    "pptx_theme_aria": "Tema di esportazione PowerPoint",
+    "pptx_theme_title": "Tema delle diapositive per l'esportazione PowerPoint. Tutti i preset sono verificati per il contrasto (WCAG AA); l'opzione AI si adatta al tuo argomento, con la leggibilità garantita localmente in entrambi i casi.",
+    "export_menu": {
+      "button": "Esporta / Scarica",
+      "intro": "Scarica il documento corretto in qualsiasi formato — scegli quello più adatto all'uso che ne farai.",
+      "tagged_pdf": "PDF taggato (PDF/UA — da dare agli studenti)",
+      "word": "Word (.docx — per continuare a modificare)",
+      "pptx": "PowerPoint (.pptx — per presentarlo)",
+      "html": "HTML (si apre ovunque, senza software)",
+      "group_access": "Formati accessibili",
+      "daisy": "Audiolibro DAISY (testo completo)",
+      "daisy_title": "Pacchetto audiolibro DAISY 3 (DTBook) a testo completo. Aprilo in un lettore DAISY, che fornisce voce, braille o stampa a caratteri grandi. (Per l'audio sincronizzato di lettura ad alta voce, usa Lettura sincronizzata qui sotto.)",
+      "readalong": "Ebook con lettura sincronizzata (audio sincronizzato)",
+      "readalong_progress": "Narrazione… {done}/{total}",
+      "readalong_title": "Ebook con lettura sincronizzata (EPUB3 Media Overlays): genera la sintesi vocale per ogni paragrafo e la sincronizza con il testo, così un sistema di lettura evidenzia le parole man mano che vengono pronunciate. Effettua molte chiamate vocali — può richiedere alcuni minuti.",
+      "group_text": "Testo e modificabile",
+      "odt_title": "OpenDocument Text — si apre nativamente in LibreOffice e Google Docs (e in Word).",
+      "group_audio": "Narrazione audio",
+      "audio": "Narrazione audio (standard)",
+      "audio_title": "Narrazione vocale del documento (MP3/WAV).",
+      "audio_sr": "Audio (stile screen reader)",
+      "audio_sr_title": "Stessa voce, ma annunciando la struttura come farebbe uno screen reader (livelli dei titoli, conteggio degli elenchi, righe delle tabelle, testi alternativi delle immagini)."
+    },
+    "mo": {
+      "confirm": "Creare un ebook con lettura sincronizzata? Questo narra {n} sezioni di testo con la sintesi vocale — circa {n} chiamate vocali, che possono richiedere alcuni minuti."
+    }
   },
   "concept_sort": {
     "title": "Concetto Ordina",
@@ -5241,7 +5326,7 @@
     "plan_hook": "Aggancio",
     "plan_independent": "Independent esercitati",
     "col_image": "immagini",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "Studio dei Suoni delle Parole",
     "stop": "Ferma",
     "expand_header": "Espandi intestazione",
     "collapse_header": "Comprimi l'intestazione per dare più spazio al contenuto",
@@ -5815,7 +5900,7 @@
     "chunk_mood_tooltip": "Animation mood per attivo chunk · Inserisci skips typewriter reveal",
     "font_lexend": "Lexend (leggibile)",
     "font_atkinson": "Atkinson Hyperlegible",
-    "font_serif_georgia": "Serif (Georgia)",
+    "font_serif_georgia": "Con grazie (Georgia)",
     "font_sans_inter": "Sans (Inter)",
     "font_comic_sans": "Comic Sans",
     "crawl_speed_aria": "Crawl velocità",
@@ -6882,7 +6967,10 @@
     "pdf_audit_alt_formats_epub_btn": "Salva il documento corretto come file ePub con indice e metadati di accessibilità. Funziona su Kindle, Apple Books e la maggior parte dei lettori mobili — gli studenti possono cambiare dimensione del carattere, colore e velocità di lettura.",
     "pdf_audit_alt_formats_braille_btn": "Salva un file Braille di Grado 1 (non contratto) che può essere stampato su una stampante Braille o inviato a un display Braille aggiornabile. Per contrazioni di Grado 2, consegna il file a un TVI (insegnante per studenti con disabilità visiva) per il completamento.",
     "pdf_audit_alt_formats_text_btn": "Salva un file .txt semplice con tutta la formattazione rimossa — il formato più facile per screen reader, conversione a stampa grande, o incollare in un altro strumento.",
-    "pdf_audit_alt_formats_markdown_btn": "Salva il documento come Markdown — entra pulitamente in pagine Canvas, Schoology o D2L, Google Docs (incollando), wiki e note in stile GitHub senza perdere titoli o link."
+    "pdf_audit_alt_formats_markdown_btn": "Salva il documento come Markdown — entra pulitamente in pagine Canvas, Schoology o D2L, Google Docs (incollando), wiki e note in stile GitHub senza perdere titoli o link.",
+    "pdf_audit_alt_formats_daisy_btn": "Salva un pacchetto audiolibro DAISY 3 a testo completo. I lettori DAISY (diffusi nell'istruzione speciale) aggiungono la propria voce, il braille o la stampa a caratteri grandi con navigazione completa. Qui solo testo — per la lettura sincronizzata ad alta voce, usa l'ebook con lettura sincronizzata.",
+    "pdf_audit_alt_formats_readalong_btn": "Crea un ebook con lettura sincronizzata (EPUB3 Media Overlays): ogni paragrafo viene narrato con la sintesi vocale e sincronizzato con il testo, così le parole si evidenziano man mano che vengono pronunciate. Una chiamata vocale per sezione, quindi può richiedere alcuni minuti.",
+    "pdf_audit_alt_formats_odt_btn": "Salva un file OpenDocument Text (.odt) — nativo per LibreOffice e Google Docs (anche Word lo apre). Usalo quando la tua scuola non è interamente Microsoft ma vuoi comunque un documento modificabile con la struttura intatta."
   },
   "groups": {
     "title": "Differentiation Gruppos",
@@ -11072,7 +11160,7 @@
       "analyze": "Analizza",
       "antecedent": "Antecedente",
       "ask_for_help": "Ask per aiuto",
-      "baseline": "Baseline",
+      "baseline": "Linea di base",
       "batch_import": "Batch importa",
       "behavior": "comportamento",
       "bias_and_behavior": "Bias e comportamento",
@@ -11269,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories un life con personaggi voices & literary analisi",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Scrivi poems con form scaffolds, rhyme & meter analisi, AI feedback"
+    "poettree_desc": "Scrivi poems con form scaffolds, rhyme & meter analisi, AI feedback",
+    "throughline_desc": "Organizza le tue lezioni in un'unità spaziale: sequenza didattica, prerequisiti, un unico file esportabile"
   },
   "sel_hub": {
     "loading": "Caricamento di SEL Hub in corso...",
@@ -12380,5 +12469,10 @@
     "byline": "Di {author} · {words} parole · {used}/{total} vocabolario",
     "student": "Studente",
     "score": "Punteggio: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Rigenerare l'anteprima sostituirà le tue modifiche manuali con contenuti appena generati. Continuare e scartare le modifiche? (Annulla le mantiene — esporta o chiudi il builder per salvarle prima.)",
+    "remediation_banner_title": "Modifica del documento corretto.",
+    "remediation_banner_body": "Le modifiche apportate qui vengono salvate nel documento quando chiudi il builder, così i download in PDF taggato / Word / PowerPoint le includono."
   }
 }

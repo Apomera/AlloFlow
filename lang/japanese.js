@@ -1287,7 +1287,7 @@
     "storage_full_text_only": "ストレージがいっぱいです。テキストのみ保存します (画像は削除)。",
     "storage_full_critical": "重大： 履歴を保存できませんでした。ストレージがいっぱいです。",
     "resource_not_found": "リソースが見つかりません。",
-    "resource_not_found_history": "履歴にリソースが見つかりません。",
+    "resource_not_found_history": "履歴にリソースが見つかりません（削除された可能性があります）。",
     "analysis_failed": "分析に失敗しました。もう一度お試しください。",
     "enter_target_language": "ターゲット言語を入力してください。",
     "translation_started": "翻訳を開始しました...",
@@ -1922,7 +1922,7 @@
     "ai_feedback_unavailable": "AIフィードバックを利用できません",
     "write_essay_first": "まずエッセイを書いてください！",
     "enter_word_art_first": "まずワードアートのテキストを入力してください",
-    "preview_not_ready": "プレビューない準備完了まだ。",
+    "preview_not_ready": "プレビューない準備完了まだ — レンダリングが完了するまで待ってから、もう一度お試しください。",
     "word_art_render_failed": "ワードアートを描画できませんでした",
     "diff_engine_load_failed": "差分エンジンの読み込みに失敗しました（ネットワークがブロックされている可能性があります）。接続を確認して、再度お試しください。",
     "brf_downloaded": "Electronic Braille (BRF) downloaded。",
@@ -7837,6 +7837,7 @@
     "note_taking_text": "生徒に何を書くかではなく *どのように* ノートを取るかを教える、スキャフォールド型ノート取りテンプレート。コーネル、グラフィックオーガナイザー、ダブルエントリ、学習ジャーナルを含みます。"
   },
   "pdf_audit": {
+    "fidelity_delta": "忠実度: {before}% → {after}%{detail}",
     "view_last_audit": "前回の監査を表示",
     "start_new_audit": "新しい監査を開始",
     "apply_and_export": "適用＆エクスポート",

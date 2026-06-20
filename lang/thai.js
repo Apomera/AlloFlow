@@ -2177,7 +2177,7 @@
     "storage_full_text_only": "พื้นที่จัดเก็บเต็ม กำลังบันทึกเฉพาะข้อความ (ลบภาพ)",
     "storage_full_critical": "วิกฤต: ไม่สามารถบันทึกประวัติ พื้นที่จัดเก็บเต็ม",
     "resource_not_found": "ไม่พบทรัพยากร",
-    "resource_not_found_history": "ไม่พบทรัพยากรในประวัติ",
+    "resource_not_found_history": "ไม่พบทรัพยากรในประวัติ (อาจถูกลบไปแล้ว)",
     "analysis_failed": "การวิเคราะห์ล้มเหลว โปรดลองอีกครั้ง",
     "enter_target_language": "โปรดระบุภาษาเป้าหมาย",
     "translation_started": "เริ่มการแปลแล้ว...",
@@ -2812,7 +2812,7 @@
     "ai_feedback_unavailable": "ไม่สามารถใช้ฟีดแบ็กจาก AI ได้",
     "write_essay_first": "เขียนเรียงความของคุณก่อน!",
     "enter_word_art_first": "กรุณาใส่ข้อความสำหรับ Word Art ก่อน",
-    "preview_not_ready": "ตัวอย่างยังไม่พร้อม",
+    "preview_not_ready": "ตัวอย่างยังไม่พร้อม — โปรดรอให้แสดงผลเสร็จ แล้วลองอีกครั้ง",
     "word_art_render_failed": "ไม่สามารถแสดงผล Word Art ได้",
     "diff_engine_load_failed": "โหลดเอนจินเปรียบเทียบความต่างไม่สำเร็จ (เครือข่ายถูกบล็อก?) ตรวจสอบการเชื่อมต่อแล้วลองใหม่",
     "brf_downloaded": "ดาวน์โหลดอักษรเบรลล์อิเล็กทรอนิกส์ (BRF) แล้ว",
@@ -9010,6 +9010,7 @@
     "portrait_refine_aria": "ปรับแต่งภาพบุคคลของตัวละคร"
   },
   "pdf_audit": {
+    "fidelity_delta": "ความถูกต้องของข้อความ: {before}% → {after}%{detail}",
     "view_last_audit": "ดูการตรวจสอบล่าสุด",
     "start_new_audit": "เริ่มการตรวจสอบใหม่",
     "apply_and_export": "นำไปใช้และส่งออก",

@@ -571,7 +571,8 @@ window.AlloModules.PhaseOHandlers = {
   handleWizardComplete,
   handleWizardStandardLookup,
   handleExecuteBlueprint,
+  executeOneBlueprint,   // exposed for the Generate-Unit driver (runs it once per lesson)
 };
 window.AlloModules.PhaseOHandlersModule = true;
-console.log("[PhaseOHandlers] 6 handlers registered");
+console.log("[PhaseOHandlers] 7 handlers registered");
 })();

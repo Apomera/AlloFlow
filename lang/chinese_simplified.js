@@ -1594,7 +1594,7 @@
     "storage_full_text_only": "存储已满。只保存文本(图片已移除)。",
     "storage_full_critical": "严重：无法保存历史记录。存储已满。",
     "resource_not_found": "未找到资源。",
-    "resource_not_found_history": "历史记录中未找到资源。",
+    "resource_not_found_history": "历史记录中未找到资源（可能已被删除）。",
     "analysis_failed": "分析失败。请重试。",
     "enter_target_language": "请输入目标语言。",
     "translation_started": "翻译已开始...",
@@ -2230,7 +2230,7 @@
     "ai_feedback_unavailable": "AI 反馈不可用",
     "write_essay_first": "请先写好你的作文！",
     "enter_word_art_first": "请先输入艺术字文本",
-    "preview_not_ready": "预览尚未就绪",
+    "preview_not_ready": "预览尚未就绪——请等待其渲染完成后重试。",
     "word_art_render_failed": "无法渲染艺术字",
     "diff_engine_load_failed": "差异比对引擎加载失败（网络被拦截？）。请检查网络连接后重试。",
     "brf_downloaded": "电子盲文 (BRF) 已下载",
@@ -4173,6 +4173,7 @@
     "generate_aria": "生成 DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "保真度：{before}% → {after}%{detail}",
     "view_last_audit": "查看上次审核",
     "start_new_audit": "开始新的审核",
     "apply_and_export": "应用并导出",

@@ -9,6 +9,6 @@ require('./_build_simple_iife_module.js').build({
   guardKey: 'PhaseOHandlersModule',
   footer: `
 window.AlloModules.PhaseOHandlersModule = true;
-console.log("[PhaseOHandlers] 6 handlers registered");`,
+console.log("[PhaseOHandlers] 7 handlers registered");`,
   logTag: 'PhaseOHandlers'
 });

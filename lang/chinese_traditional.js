@@ -1594,7 +1594,7 @@
     "storage_full_text_only": "存儲已滿。只儲存文本(圖片已移除)。",
     "storage_full_critical": "嚴重：無法儲存歷史記錄。存儲已滿。",
     "resource_not_found": "未找到資源。",
-    "resource_not_found_history": "歷史記錄中未找到資源。",
+    "resource_not_found_history": "歷史記錄中未找到資源（可能已被刪除）。",
     "analysis_failed": "分析失敗。請重試。",
     "enter_target_language": "請輸入目標語言。",
     "translation_started": "翻譯已開始...",
@@ -2230,7 +2230,7 @@
     "ai_feedback_unavailable": "AI 回饋無法使用",
     "write_essay_first": "請先撰寫您的作文！",
     "enter_word_art_first": "請先輸入文字藝術的文字",
-    "preview_not_ready": "預覽尚未就緒",
+    "preview_not_ready": "預覽尚未就緒 — 請等待其完成渲染後再試一次。",
     "word_art_render_failed": "無法算繪文字藝術",
     "diff_engine_load_failed": "差異比對引擎載入失敗（網路被封鎖？）。請檢查您的連線後再試一次。",
     "brf_downloaded": "已下載電子點字檔 (BRF)",
@@ -4173,6 +4173,7 @@
     "generate_aria": "生成 DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "保真度：{before}% → {after}%{detail}",
     "view_last_audit": "檢視上次審核",
     "start_new_audit": "開始新的審核",
     "apply_and_export": "應用並導出",

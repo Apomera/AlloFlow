@@ -979,7 +979,7 @@
     "storage_full_text_only": "저장 공간이 가득 찼습니다. 텍스트만 저장합니다(이미지 제거됨).",
     "storage_full_critical": "심각: 기록을 저장할 수 없습니다. 저장 공간이 가득 찼습니다.",
     "resource_not_found": "자료를 찾을 수 없습니다.",
-    "resource_not_found_history": "기록에서 자료를 찾을 수 없습니다.",
+    "resource_not_found_history": "기록에서 자료를 찾을 수 없습니다 (삭제되었을 수 있습니다).",
     "analysis_failed": "분석에 실패했습니다. 다시 시도해 주세요.",
     "enter_target_language": "부디 입력 대상 언어.",
     "translation_started": "번역을 시작합니다...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI 피드백 사용 불가",
     "write_essay_first": "먼저 에세이를 작성해 주세요!",
     "enter_word_art_first": "부디 입력 단어 아트 텍스트 첫 번째",
-    "preview_not_ready": "미리보기가 아직 준비되지 않았습니다",
+    "preview_not_ready": "미리보기가 아직 준비되지 않았습니다 — 렌더링될 때까지 기다린 후 다시 시도하세요.",
     "word_art_render_failed": "워드 아트를 렌더링할 수 없습니다",
     "diff_engine_load_failed": "차이 엔진을 불러오지 못했습니다 (네트워크 차단?). 연결을 확인하고 다시 시도해 주세요.",
     "brf_downloaded": "전자 점자(BRF) 다운로드됨",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "조정 size 의 timeline 이미지"
   },
   "pdf_audit": {
+    "fidelity_delta": "충실도: {before}% → {after}%{detail}",
     "view_last_audit": "보기 마지막 Audit",
     "start_new_audit": "시작 새로운 Audit",
     "apply_and_export": "적용 & 내보내기",

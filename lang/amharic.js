@@ -979,7 +979,7 @@
     "storage_full_text_only": "ማከማቻው ሞልቷል። ጽሑፉን ብቻ በማስቀመጥ ላይ (ምስሎች ተወግደዋል)።",
     "storage_full_critical": "አስቸኳይ፦ ታሪክን ማስቀመጥ አልተቻለም። ማከማቻው ሞልቷል።",
     "resource_not_found": "ግብአቱ አልተገኘም።",
-    "resource_not_found_history": "ግብአቱ በታሪክ ውስጥ አልተገኘም።",
+    "resource_not_found_history": "ግብአቱ በታሪክ ውስጥ አልተገኘም (ምናልባት ተሰርዞ ሊሆን ይችላል)።",
     "analysis_failed": "ትንተና አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
     "enter_target_language": "እባክዎ አስገባ አንድ ግብ ቋንቋ.",
     "translation_started": "ትርጉም ተጀመረ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ግብረመልስ አይገኝም",
     "write_essay_first": "መጀመሪያ ድርሰትዎን ይጻፉ!",
     "enter_word_art_first": "እባክዎ መጀመሪያ የቃል ጥበብ ጽሑፍ ያስገቡ።",
-    "preview_not_ready": "ቅድመ እይታ ገና ዝግጁ አይደለም",
+    "preview_not_ready": "ቅድመ እይታ ገና ዝግጁ አይደለም — እስኪታይ ድረስ ይጠብቁ፣ ከዚያ እንደገና ይሞክሩ።",
     "word_art_render_failed": "የቃል ጥበብን ማቅረብ አልተቻለም።",
     "diff_engine_load_failed": "Diff engine መጫን አልተሳካም (አውታረ መረብ ታግዷል?)። የግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
     "brf_downloaded": "ኤሌክትሮኒክ ብሬይል (BRF) ወርዷል",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "ማስተካከል size የ timeline ምስል"
   },
   "pdf_audit": {
+    "fidelity_delta": "የጽሑፍ ታማኝነት፡ {before}% → {after}%{detail}",
     "view_last_audit": "እይታ መጨረሻ Audit",
     "start_new_audit": "ጀምር አዲስ Audit",
     "apply_and_export": "ተግብር & ላክ",

@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving makomi only (elilingi removed).",
     "storage_full_critical": "Critical: Could te bombá history. Storage full.",
     "resource_not_found": "biloko te found.",
-    "resource_not_found_history": "biloko te found na history.",
+    "resource_not_found_history": "Eloko emonani te na molongo ya kala (ekoki kozala ete balongolaki yango).",
     "analysis_failed": "Analysis failed. nabondeli yo memá again.",
     "enter_target_language": "nabondeli yo kotisá mokano monoko.",
     "translation_started": "libongoli started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI liloba ezali te",
     "write_essay_first": "Komá your essay ya liboso!",
     "enter_word_art_first": "nabondeli yo kotisá maloba art makomi ya liboso",
-    "preview_not_ready": "Pkotala lisusu not ready yet",
+    "preview_not_ready": "Botali ya liboso esili naino te — zela ete emonana, na sima meka lisusu.",
     "word_art_render_failed": "Could not render maloba art",
     "diff_engine_load_failed": "Diff engine elongi te kotia (network ekangami?). Tala bokangani na yo na memá lisusu.",
     "brf_downloaded": "Braille ya elektroniki (BRF) ekitisami",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Kobongisa size ya timeline elilingi"
   },
   "pdf_audit": {
+    "fidelity_delta": "Boyengebene: {before}% → {after}%{detail}",
     "view_last_audit": "Talá ya nsuka Audit",
     "start_new_audit": "Bandá ya sika Audit",
     "apply_and_export": "Salela & Bimisá",

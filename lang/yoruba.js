@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving ọrọ only (aworan removed).",
     "storage_full_critical": "Critical: Could ko pamọ history. Storage full.",
     "resource_not_found": "awọn ohun elo ko found.",
-    "resource_not_found_history": "awọn ohun elo ko found ninu history.",
+    "resource_not_found_history": "A kò rí ohun-èlò náà nínú àkọsílẹ̀ àtẹ̀yìnwá (ó ṣeé ṣe kí a ti pa á rẹ́).",
     "analysis_failed": "Analysis failed. jọwọ gbiyanju again.",
     "enter_target_language": "jọwọ wọle target ede.",
     "translation_started": "itumọ started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI èsì ko si",
     "write_essay_first": "Kọ rẹ essay akọkọ!",
     "enter_word_art_first": "jọwọ wọle ọrọ art ọrọ akọkọ",
-    "preview_not_ready": "Patunyẹwo ko ready yet",
+    "preview_not_ready": "Àyẹ̀wò-kíákíá kò tíì ṣetán — dúró kí ó tó fihàn, lẹ́yìn náà tún dán an wò.",
     "word_art_render_failed": "Could ko render ọrọ art",
     "diff_engine_load_failed": "Diff engine failed si ko (network blocked?). Check rẹ connection ati gbiyanju again.",
     "brf_downloaded": "A ti gba Braille Ẹ̀rọ (BRF) sílẹ̀",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Adjust size ti timeline aworan"
   },
   "pdf_audit": {
+    "fidelity_delta": "Òtítọ́ ọrọ: {before}% → {after}%{detail}",
     "view_last_audit": "Wo kẹhin Audit",
     "start_new_audit": "Bẹrẹ titun Audit",
     "apply_and_export": "Lo & Firanṣẹ",

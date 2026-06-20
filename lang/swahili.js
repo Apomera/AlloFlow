@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage kamili. Saving maandishi tu (picha removed).",
     "storage_full_critical": "Critical: Could sio hifadhi historia. Storage kamili.",
     "resource_not_found": "rasilimali sio found.",
-    "resource_not_found_history": "rasilimali sio found katika historia.",
+    "resource_not_found_history": "Rasilimali haikupatikana katika historia (huenda imefutwa).",
     "analysis_failed": "Uchambuzi failed. tafadhali jaribu again.",
     "enter_target_language": "tafadhali ingiza lengo lugha.",
     "translation_started": "tafsiri started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI maoni haipatikani",
     "write_essay_first": "Andika your essay ya kwanza!",
     "enter_word_art_first": "tafadhali ingiza maneno art maandishi ya kwanza",
-    "preview_not_ready": "Hakiki bado haijawa tayari",
+    "preview_not_ready": "Hakiki bado haijawa tayari — subiri ipakuliwe, kisha ujaribu tena.",
     "word_art_render_failed": "Could not render maneno art",
     "diff_engine_load_failed": "Injini ya Diff imeshindwa kupakia (mtandao umezuiwa?). Angalia muunganisho wako na ujaribu tena.",
     "brf_downloaded": "Breli ya Kielektroniki (BRF) imepakuliwa",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Rekebisha size ya timeline picha"
   },
   "pdf_audit": {
+    "fidelity_delta": "Uaminifu: {before}% → {after}%{detail}",
     "view_last_audit": "Tazama ya mwisho Audit",
     "start_new_audit": "Anza mpya Audit",
     "apply_and_export": "Tumia na uhamishe",

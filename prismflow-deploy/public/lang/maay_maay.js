@@ -985,7 +985,7 @@
     "storage_full_text_only": "Storage full. Saving text only (sawir removed).",
     "storage_full_critical": "Critical: Could maaha kaydi history. Storage full.",
     "resource_not_found": "Resource maaha found.",
-    "resource_not_found_history": "Resource maaha found ku history.",
+    "resource_not_found_history": "Kheyraadka lagama helin taariikhda (waxaa laga yaabaa in la tirtiray).",
     "analysis_failed": "Falanqaynta waa fashilantay. Fadlan mar kale isku day.",
     "enter_target_language": "Please geli a target luqad.",
     "translation_started": "Turjumaadda waa la bilaabay...",
@@ -1620,7 +1620,7 @@
     "ai_feedback_unavailable": "Faallada AI lama heli karo",
     "write_essay_first": "Qor your essay first!",
     "enter_word_art_first": "Please geli ereyo art text first",
-    "preview_not_ready": "Eegista hore weli ma diyaarsana",
+    "preview_not_ready": "Eegista hore weli ma diyaarsana — sug inta uu soo baxayo, ka dibna mar kale isku day.",
     "word_art_render_failed": "Could not render ereyo art",
     "diff_engine_load_failed": "Diff engine wuu fashilmay inuu soo raro (shabakad la xidhay?). Hubi xiriirkaaga oo mar kale isku day.",
     "brf_downloaded": "Electronic Braille (BRF) waa la soo dejiyay",
@@ -4112,6 +4112,7 @@
     "image_size_tooltip": "Adjust size timeline sawir"
   },
   "pdf_audit": {
+    "fidelity_delta": "Sax-ahaanshaha: {before}% → {after}%{detail}",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "Bilow cusub Audit",
     "apply_and_export": "Apply & Export",

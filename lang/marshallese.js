@@ -985,7 +985,7 @@
     "storage_full_text_only": "Storage full. Saving text only (pija removed).",
     "storage_full_critical": "Critical: Could jab kōjparok history. Storage full.",
     "resource_not_found": "Resource jab found.",
-    "resource_not_found_history": "Resource jab found ilo history.",
+    "resource_not_found_history": "Jab lo men eo ilo bwebwenato eo (bōlen eṃōj joḷọk e).",
     "analysis_failed": "Analysis ear jab tōprak. Jouj im bar kajjeoñ.",
     "enter_target_language": "Please deḷọñ a target kajin.",
     "translation_started": "Ukok ear jino...",
@@ -1620,7 +1620,7 @@
     "ai_feedback_unavailable": "AI feedback ejjelọk",
     "write_essay_first": "Jeje your essay first!",
     "enter_word_art_first": "Please deḷọñ naan art text first",
-    "preview_not_ready": "Preview ej jañin pojak",
+    "preview_not_ready": "Jab pojak ñan alwōj kake — kōttar ñan an walọk, innām bar kajjioñ.",
     "word_art_render_failed": "Could not render naan art",
     "diff_engine_load_failed": "Diff engine ear jab loading (network ej pinej?). Etale connection im bar kajjeoñ.",
     "brf_downloaded": "Electronic Braille (BRF) emōj download",
@@ -4112,6 +4112,7 @@
     "image_size_tooltip": "Adjust eo size in timeline pija"
   },
   "pdf_audit": {
+    "fidelity_delta": "Jiṃwe: {before}% → {after}%{detail}",
     "view_last_audit": "View Last Audit",
     "start_new_audit": "Jino ekāāl Audit",
     "apply_and_export": "Apply & Export",

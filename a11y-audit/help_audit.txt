@@ -2,17 +2,29 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 365
-Defined help keys (help_strings.js): 875
-Referenced help keys (data-help-key attrs): 854
-  - With definition: 853
-  - MISSING definition: 1
+Files scanned: 368
+Defined help keys (help_strings.js): 878
+Referenced help keys (data-help-key attrs): 861
+  - With definition: 856
+  - MISSING definition: 5
 Dead entries (defined but never referenced): 22
 
 --- MISSING help strings (referenced, no definition) ---
+  educator_hub_cinematic_studio_card  [2x in 2 file(s)]
+     - view_educator_hub_modal_module.js
+     - view_educator_hub_modal_source.jsx
   educator_hub_lesson_builder_card  [2x in 2 file(s)]
      - view_educator_hub_modal_module.js
      - view_educator_hub_modal_source.jsx
+  educator_hub_professional_dev_card  [2x in 2 file(s)]
+     - view_educator_hub_modal_module.js
+     - view_educator_hub_modal_source.jsx
+  pdf_audit_writing_check_btn  [2x in 2 file(s)]
+     - view_pdf_audit_module.js
+     - view_pdf_audit_source.jsx
+  ws_gen_voice_pack  [2x in 2 file(s)]
+     - word_sounds_setup_module.js
+     - word_sounds_setup_source.jsx
 
 --- DEAD entries (defined but never used) ---
   alignment_generate_button
@@ -39,4 +51,6 @@ Dead entries (defined but never referenced): 22
   wizard_close_btn
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
-     1  educator
+     3  educator
+     1  pdf
+     1  ws

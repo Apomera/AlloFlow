@@ -577,7 +577,8 @@
     "educator_tools_aria": "أدوات المعلم",
     "documents_menu_aria": "قائمة المستندات",
     "open_doc_builder_pdf_aria": "فتح أداة إنشاء المستندات لـ PDF",
-    "export_slides_tooltip": "يفتح أداة إنشاء المستندات في وضع الشرائح"
+    "export_slides_tooltip": "يفتح أداة إنشاء المستندات في وضع الشرائح",
+    "learning_tools_tooltip": "أدوات التعلّم (STEM Lab، SEL Hub، Research Hub، LitLab، PoetTree، StoryForge)"
   },
   "sidebar": {
     "create_tab": "إنشاء",
@@ -999,7 +1000,7 @@
     "toggle_theme": "تبديل السمة",
     "close_story_forge": "إغلاق StoryForge",
     "story_creation_phases": "مراحل إنشاء القصة",
-    "doc_builder": "Document Builder",
+    "doc_builder": "مُنشئ المستندات",
     "close_doc_builder": "إغلاق منشئ المستندات",
     "font_size": "حجم الخط",
     "target_word_count": "هدف عدد الكلمات المستهدف",
@@ -1052,7 +1053,7 @@
     "pictionary_host_dashboard": "لوحة مضيف Concept Pictionary",
     "concept_to_draw": "المفهوم المراد رسمه",
     "round_timer": "مؤقت الجولة",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "بيكشنري المفاهيم",
     "your_guess": "تخمينك",
     "remove_columns": "إزالة الأعمدة",
     "add_column": "إضافة عمود",
@@ -1593,7 +1594,7 @@
     "storage_full_text_only": "التخزين ممتلئ. حفظ النص فقط (تمت إزالة الصور).",
     "storage_full_critical": "حرج: تعذَّر حفظ السجل. التخزين ممتلئ.",
     "resource_not_found": "لم يتم العثور على المورد.",
-    "resource_not_found_history": "لم يتم العثور على المورد في السجل.",
+    "resource_not_found_history": "لم يتم العثور على المورد في السجل (قد يكون قد تم حذفه).",
     "analysis_failed": "فشل التحليل. يُرجى المحاولة مجددًا.",
     "enter_target_language": "يُرجى إدخال لغة مستهدفة.",
     "translation_started": "بدأت الترجمة...",
@@ -2229,7 +2230,7 @@
     "ai_feedback_unavailable": "ملاحظات AI غير متاحة",
     "write_essay_first": "اكتب مقالك أولًا!",
     "enter_word_art_first": "يرجى إدخال نص فن الكلمات أولًا",
-    "preview_not_ready": "المعاينة ليست جاهزة بعد",
+    "preview_not_ready": "المعاينة ليست جاهزة بعد — انتظر حتى يتم عرضها، ثم حاول مرة أخرى.",
     "word_art_render_failed": "تعذر عرض فن الكلمات",
     "diff_engine_load_failed": "فشل تحميل محرك المقارنة (هل الشبكة محجوبة؟). تحقق من اتصالك وحاول مرة أخرى.",
     "brf_downloaded": "تم تنزيل ملف برايل الإلكتروني (BRF)",
@@ -2341,7 +2342,26 @@
     "project_saved_multi_other": "💾 تم حفظ المشروع ({count} نطاقات)؛ حمّله لاحقًا للمتابعة",
     "project_saved": "💾 تم حفظ المشروع؛ حمّله لاحقًا لمواصلة التحرير",
     "search_result_desc": "نتيجة بحث Google: {title}",
-    "link_url_prompt": "أدخل عنوان URL للرابط:"
+    "link_url_prompt": "أدخل عنوان URL للرابط:",
+    "building_accessible_docx": "جارٍ إنشاء ملف Word يسهل الوصول إليه…",
+    "building_accessible_pptx": "جارٍ إنشاء عرض PowerPoint يسهل الوصول إليه…",
+    "batch_tagging": "📄 جارٍ توليد ملفات PDF موسومة لأجل ملف ZIP — الملفات الممسوحة ضوئياً تستغرق وقتاً أطول (يُشغَّل OCR لكل ملف)…",
+    "builder_edits_preserved": "✋ تم الاحتفاظ بتعديلاتك اليدوية — لم تُعَد معاينة المحتوى. صدّر المستند أو أغلق المُنشئ لحفظها، ثم غيّر الإعدادات.",
+    "builder_edits_synced": "✏️ حُفظت تعديلات المُنشئ في المستند المُعالَج — تشمله الآن صادرات PDF الموسوم / Word / PowerPoint.",
+    "pptx_ai_theme": "🎨 جارٍ طلب لوحة ألوان متطابقة مع الموضوع من الذكاء الاصطناعي (تُفرَض قابلية القراءة محلياً)…",
+    "make_accessible_fixing": "✨ اكتمل التدقيق — جارٍ المعالجة تلقائياً (لا حاجة للنقر)…",
+    "tagged_pdf_saved_see_report": "📄 حُفظ ملف PDF الموسوم — التقرير الكامل مثبَّت فوق أزرار التنزيل (✕ للإغلاق).",
+    "no_open_image_slot": "لم يتبقَّ أي خانة صور شاغرة في المعاينة — اسحب الصورة المصغّرة فوق صورة محددة لاستبدالها بدلاً من ذلك.",
+    "extracted_image_inserted": "🖼 أُدرجت في أول خانة صور شاغرة — اسحب صورة مصغّرة بدلاً من ذلك إذا أردت موضعاً مختلفاً.",
+    "html_downloaded": "🌐 تم تنزيل HTML — يُفتح في أي متصفح.",
+    "odt_downloaded": "📄 تم تنزيل OpenDocument ‏(.odt) — يُفتح في LibreOffice أو Google Docs أو Word.",
+    "daisy_downloaded": "🔊 تم تنزيل حزمة الكتاب الناطق DAISY ‏(.zip) — افتحها في قارئ DAISY.",
+    "mo_no_voice": "خدمة الصوت غير متاحة، لذا لا يمكن توليد صوت القراءة المتزامنة الآن.",
+    "mo_busy": "هناك عملية تصدير قراءة متزامنة قيد التشغيل بالفعل.",
+    "mo_no_text": "لم يُعثر على نص قابل للقراءة للسرد الصوتي.",
+    "mo_no_audio": "⚠ حُفظ الكتاب الإلكتروني للقراءة المتزامنة، لكن تعذّر توليد أي صوت (خدمة الصوت غير متاحة). النص وبنية المزامنة سليمان.",
+    "mo_done": "تم تنزيل الكتاب الإلكتروني للقراءة المتزامنة",
+    "audio_unavailable_now": "الصوت غير متاح الآن (قد تكون هناك مهمة قيد التشغيل، أو أن خدمة الصوت متوقفة)."
   },
   "process": {
     "source_missing": "يُرجى تقديم نص المصدر أولًا.",
@@ -2451,7 +2471,7 @@
     "plan_hook": "المثير",
     "plan_independent": "الممارسة المستقلة",
     "col_image": "صورة",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "استوديو أصوات الكلمات",
     "stop": "إيقاف",
     "expand_header": "توسيع الترويسة",
     "collapse_header": "طيّ الترويسة لإعطاء المحتوى مساحة أكبر",
@@ -3177,8 +3197,8 @@
       "line": "فن الخطوط",
       "render_3d": "تقديم ثلاثي الأبعاد",
       "custom": "✏️ Custom…",
-      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
-      "custom_aria": "Custom art style description"
+      "custom_placeholder": "مثل: رسم نباتي كلاسيكي، رسم بأقلام التلوين، زجاج معشّق…",
+      "custom_aria": "وصف نمط فني مخصص"
     },
     "generate": "إنشاء المرئيات",
     "regenerate_prompt": "إعادة الإنشاء من الموجِّه",
@@ -3552,7 +3572,12 @@
     "style_tooltip": "اختياري. يُطبَّق على كل صورة في الاختبار (السؤال + الخيارات). فارغ = النمط الافتراضي. يُحفظ مع الاختبار حتى تبقى إجراءات التحسين متوافقة مع الهوية.",
     "generate_pre_check": "إنشاء فحص مسبق",
     "generate_formative": "إنشاء فحص تكويني",
-    "generate_review": "إنشاء مراجعة متباعدة"
+    "generate_review": "إنشاء مراجعة متباعدة",
+    "likert_strongly_disagree": "لا أوافق بشدة",
+    "no_right_answer": "لا توجد إجابات صحيحة أو خاطئة هنا.",
+    "poll_completed": "شكراً لمشاركة رأيك.",
+    "poll_intro": "لا توجد إجابات صحيحة أو خاطئة هنا — رأيك الصادق يساعد معلمك ويساعدك.",
+    "mode_poll": "🗣️ استطلاع رأي (صوت الطالب)"
   },
   "alignment": {
     "title": "تدقيق المنهج",
@@ -5451,6 +5476,7 @@
     "generate_aria": "إنشاء DBQ"
   },
   "pdf_audit": {
+    "fidelity_delta": "أمانة النص: {before}% → {after}%{detail}",
     "view_last_audit": "عرض آخر تدقيق",
     "start_new_audit": "بدء تدقيق جديد",
     "apply_and_export": "تطبيق وتصدير",
@@ -5526,7 +5552,7 @@
       "name_aria": "اسم نمط مخصص",
       "font_aria": "عائلة الخط",
       "font_inter": "Inter (نظيف)",
-      "font_georgia": "Georgia (Serif)",
+      "font_georgia": "Georgia (خط مذيّل)",
       "font_atkinson": "Atkinson (إتاحة)",
       "font_lexend": "Lexend (قابل للقراءة)",
       "font_comic": "Comic Sans (ممتع)",
@@ -5596,7 +5622,8 @@
       "std_dev": "الانحراف المعياري",
       "icc_title": "مؤشر مخصص 1−(SD/50)؛ ليس ICC بالكتاب المدرسي",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "أسلوب استدلالي هجين يجمع معامل التباين والمقارنة الثنائية عبر مرور الذكاء الاصطناعي؛ ليس معامل ألفا كرونباخ الأكاديمي"
     },
     "score": {
       "total_checks": "إجمالي الفحوصات المُجراة",
@@ -5674,7 +5701,7 @@
       "wcag_strong": "WCAG 2.1 المستوى AA",
       "deadline_50k": "24 أبريل 2026",
       "deadline_small": "26 أبريل 2027",
-      "covered_desc": "Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities",
+      "covered_desc": "المواقع الإلكترونية الموجهة للجمهور، وتطبيقات الجوال، والمستندات الرقمية (ملفات PDF وWord وExcel وPowerPoint)، ووسائل التواصل الاجتماعي التي تنشرها الجهات الحكومية",
       "who_desc": "جميع كيانات الحكومة الولائية والمحلية، بما في ذلك المدارس العامة والجامعات والمحاكم والمكتبات ووكالات النقل والخدمات البلدية",
       "matters_desc": "بعيدًا عن الامتثال القانوني: تضمن الوثائق المُيسَّرة أن الأشخاص ذوي الإعاقة يمكنهم الوصول بالتساوي إلى التعليم والخدمات العامة والتوظيف والمشاركة المدنية",
       "standard_callout": "المعيار الذي يستهدفه AlloFlow، WCAG 2.1 المستوى AA، هو نفس المعيار الذي تطلبه هذه القاعدة الفيدرالية."
@@ -5758,7 +5785,9 @@
       "title": "أعد إنشاء PDF من HTML المُعالَج. يعيد التخطيط التدفُّق، فواصل الصفحات والخطوط والترقيم قد تختلف عن الأصلي. يعمل جيدًا للوثائق النثرية البسيطة."
     },
     "tagged_pdf": {
-      "title": "حافظ على التخطيط البصري الأصلي للـ PDF متطابقًا بايتًا بايت واحقن علامات الإتاحة في شجرة بنيته. الأفضل للكتب المدرسية والوثائق متعددة الأعمدة والـ PDF ذات العلامة التجارية حيث تهم الأمانة البصرية."
+      "title": "حافظ على التخطيط البصري الأصلي للـ PDF متطابقًا بايتًا بايت واحقن علامات الإتاحة في شجرة بنيته. الأفضل للكتب المدرسية والوثائق متعددة الأعمدة والـ PDF ذات العلامة التجارية حيث تهم الأمانة البصرية.",
+      "office_note": "PDF الموسوم ينطبق على مدخلات PDF — استخدم Word/HTML",
+      "office_note_title": "لا يمكن حقن وسوم البنية إلا في بايتات PDF. بالنسبة لمدخلات Word/PowerPoint، تحمل تنزيلات Word وHTML القابلة للوصول البنية المُعالَجة."
     },
     "alt_formats": {
       "intro": "نزِّل الوثيقة المُعالَجة بتنسيقات بديلة مُيسَّرة"
@@ -5790,7 +5819,7 @@
       "ai_restyle_hint": "إعادة تنميط بنقرة واحدة بالذكاء الاصطناعي. هذه تتجاوز السمة أعلاه.",
       "body_font_aria": "خط المتن",
       "font_system": "النظام (افتراضي)",
-      "font_georgia": "Georgia (Serif)",
+      "font_georgia": "Georgia ‏(مذيّل/Serif)",
       "font_times_new": "Times New Roman",
       "font_atkinson_hyper": "Atkinson Hyperlegible",
       "font_comic_short": "Comic Sans",
@@ -5829,7 +5858,9 @@
       "heading": "ختم الإصدار"
     },
     "extracted_images": {
-      "drag_hint": "اسحب صورة مصغرة على أي عنصر نائب للصور في المعاينة لإدراجها، أو انقر \"📷 رفع\" داخل عنصر نائب واختر \"استخدام صورة مستخرجة\"."
+      "drag_hint": "اسحب صورة مصغرة على أي عنصر نائب للصور في المعاينة لإدراجها، أو انقر \"📷 رفع\" داخل عنصر نائب واختر \"استخدام صورة مستخرجة\".",
+      "drag_hint2": "انقر على صورة مصغّرة لإدراجها في أول خانة صورة متاحة، أو اسحبها إلى أي عنصر نائب أو صورة محدّدة في المعاينة. ‏×N‏ = الصورة نفسها ظهرت في N من الصفحات (عادةً ترويسة رسمية أو شعار).",
+      "insert_aria": "إدراج الصورة المستخرَجة في أول خانة متاحة"
     },
     "toolbar": {
       "aria": "تنسيق النص",
@@ -5855,7 +5886,8 @@
     },
     "divergence": {
       "semantic": "متوافق هيكليًا ولكن ضعيف دلاليًا — وضع الذكاء الاصطناعي علامة على جودة المحتوى (النص البديل، معنى العناوين، ترتيب القراءة) التي لا يستطيع axe-core اكتشافها",
-      "structural": "تم اكتشاف انتهاكات WCAG على مستوى الكود — وجد axe-core أخطاء يمكن التحقق منها آليًا قيّمها رصيد الذكاء الاصطناعي بشكل خفيف"
+      "structural": "تم اكتشاف انتهاكات WCAG على مستوى الكود — وجد axe-core أخطاء يمكن التحقق منها آليًا قيّمها رصيد الذكاء الاصطناعي بشكل خفيف",
+      "critical_override": "عثرت axe-core على {n} انتهاك (انتهاكات) حرجة لـ WCAG — راجعها قبل الوثوق بالنتيجة المدمجة؛ فالمتوسط قد يخفي فشلاً جسيماً"
     },
     "tagtree": {
       "label": "هيكل العلامات الموجود مسبقًا",
@@ -5888,7 +5920,61 @@
     "violation_one": "{count} مخالفة",
     "violation_other": "{count} مخالفة",
     "ai_issue_one": "{count} مشكلة رصدها الذكاء الاصطناعي",
-    "ai_issue_other": "{count} مشكلة رصدها الذكاء الاصطناعي"
+    "ai_issue_other": "{count} مشكلة رصدها الذكاء الاصطناعي",
+    "tagged": {
+      "born_digital_note": "تنبيه: في ملفات PDF ذات الطبقة النصية، تستخدم الوسوم الدلالية ارتباطات ActualText بدلاً من الربط الكامل للمحتوى. الملف أصبح أكثر قابلية للوصول بدرجة ملموسة، لكن تحقق منه في PAC 2024 أو Acrobat قبل الادعاء بمطابقة PDF/UA."
+    },
+    "one_click": {
+      "label": "اجعله قابلاً للوصول",
+      "badge": "تلقائي بالكامل — تدقيق، إصلاح، تحقق، وتكرار حتى بلوغ الهدف",
+      "desc": "نقرة واحدة تُشغّل المسار بأكمله دون تدخل بالإعدادات الافتراضية؛ تكون التنزيلات جاهزة في النهاية. تفضّل التحكم؟ استخدم \"تشغيل التدقيق\" أدناه، راجع النتائج، ثم انقر الإصلاح والتحقق بنفسك."
+    },
+    "run_audit_label": "تشغيل التدقيق (الخطوة 1 من 2)",
+    "manual_path_explainer": "\"تشغيل التدقيق\" يقيّم المستند ويعرض ما يحتاج إلى إصلاح — ثم تراجعه وتنقر الإصلاح والتحقق بنفسك (الخطوة 2). \"اجعله قابلاً للوصول\" أعلاه يؤدي الخطوتين معاً بالإضافة إلى إعادة الفحص، تلقائياً. \"استخراج النص\" يسحب النص الخام فقط لتوليد المحتوى.",
+    "tagged_report": {
+      "heading": "تقرير PDF الموسوم",
+      "close_aria": "إغلاق تقرير PDF الموسوم",
+      "note": "تبقى هذه اللوحة حتى تغلقها. تأتي التفاصيل نفسها داخل تنزيل تقرير A11y بنمط Adobe."
+    },
+    "docx_export": {
+      "title": "حوّل المحتوى المُعالَج إلى مستند Word بأنماط عناوين حقيقية، ونص بديل على الصور، وصفوف رؤوس للجداول، وبنية قوائم، وروابط تشعبية تعمل. تحقق منه باستخدام مدقق إمكانية الوصول المدمج في Word (مراجعة ← فحص إمكانية الوصول) قبل التوزيع."
+    },
+    "pptx_export": {
+      "title": "أعد بناء المحتوى المُعالَج كعرض PowerPoint بعناوين شرائح حقيقية، ونص بديل على الصور، وصفوف جداول بنمط الرؤوس، وقوائم نقطية حقيقية، وترتيب قراءة = الترتيب البصري. تخطيط قابل للوصول معاد بناؤه — وليس نسخة بصرية من الأصل. تحقق منه باستخدام مدقق إمكانية الوصول في PowerPoint قبل التوزيع."
+    },
+    "dashboard": {
+      "aria": "نظرة عامة على نتائج المعالجة والتنقل بين الأقسام",
+      "score_title": "درجة إمكانية الوصول: قبل ← بعد"
+    },
+    "tag_to_workbench_title": "أرسل هذه الكتلة إلى منضدة عمل الخبراء: تملأ مسبقاً أمراً موجهاً (بما في ذلك أي تحذيرات) لتتمكن من إصلاحه بتعليمة واحدة",
+    "tag_to_workbench_aria": "إرسال إلى منضدة عمل الخبراء",
+    "pptx_theme_aria": "سمة تصدير PowerPoint",
+    "pptx_theme_title": "سمة الشرائح لتصدير PowerPoint. جميع الإعدادات المسبقة مفحوصة التباين (WCAG AA)؛ يطابق خيار الذكاء الاصطناعي موضوعك، مع فرض قابلية القراءة محلياً في كلتا الحالتين.",
+    "export_menu": {
+      "button": "تصدير / تنزيل",
+      "intro": "نزّل المستند المُعالَج بأي صيغة — اختر الصيغة التي تناسب طريقة استخدامه.",
+      "tagged_pdf": "PDF موسوم (PDF/UA — للطلاب)",
+      "word": "Word ‏(.docx — تابع التحرير)",
+      "pptx": "PowerPoint ‏(‎.pptx‎ — لعرضه تقديميًّا)",
+      "html": "HTML ‏(يُفتح في أي مكان، دون برامج)",
+      "group_access": "صيغ يسهل الوصول إليها",
+      "daisy": "كتاب DAISY الناطق (النص الكامل)",
+      "daisy_title": "حزمة كتاب ناطق كامل النص بصيغة DAISY 3 ‏(DTBook). افتحها في أحد قارئات DAISY التي توفّر النطق أو طريقة برايل أو الطباعة الكبيرة. (للحصول على صوت قراءة متزامن، استخدم خيار «القراءة المتزامنة» أدناه.)",
+      "readalong": "كتاب إلكتروني للقراءة المتزامنة (صوت متزامن)",
+      "readalong_progress": "جارٍ السرد… {done}/{total}",
+      "readalong_title": "كتاب إلكتروني للقراءة المتزامنة (تراكبات وسائط EPUB3): يُولّد تحويلًا للنص إلى كلام لكل فقرة ويُزامنه مع النص بحيث يُبرز نظام القراءة الكلمات أثناء نطقها. يُجري الكثير من طلبات الصوت — وقد يستغرق بضع دقائق.",
+      "group_text": "نص قابل للتحرير",
+      "odt": "ODT ‏(LibreOffice / Google Docs)",
+      "odt_title": "نص OpenDocument — يُفتح أصليًّا في LibreOffice وGoogle Docs (وWord أيضًا).",
+      "group_audio": "سرد صوتي",
+      "audio": "سرد صوتي (قياسي)",
+      "audio_title": "سرد منطوق للمستند (MP3/WAV).",
+      "audio_sr": "صوت (بأسلوب قارئ الشاشة)",
+      "audio_sr_title": "الصوت نفسه، لكن مع الإعلان عن البنية بالطريقة التي يتّبعها قارئ الشاشة (مستويات العناوين، وأعداد عناصر القوائم، وصفوف الجداول، والنصوص البديلة للصور)."
+    },
+    "mo": {
+      "confirm": "هل تريد إنشاء كتاب إلكتروني للقراءة المتزامنة؟ سيؤدي هذا إلى سرد {n} من الأقسام النصية باستخدام تحويل النص إلى كلام — أي نحو {n} من طلبات الصوت، وقد يستغرق ذلك بضع دقائق."
+    }
   },
   "persona": {
     "title": "وضع المقابلة",
@@ -6062,7 +6148,7 @@
     "chunk_mood_tooltip": "مزاج الرسوم المتحركة للجزء النشط · Enter يتخطّى كشف الآلة الكاتبة",
     "font_lexend": "Lexend (قابل للقراءة)",
     "font_atkinson": "Atkinson Hyperlegible",
-    "font_serif_georgia": "Serif (Georgia)",
+    "font_serif_georgia": "مذيّل/Serif ‏(Georgia)",
     "font_sans_inter": "Sans (Inter)",
     "font_comic_sans": "Comic Sans",
     "crawl_speed_aria": "سرعة الزحف",
@@ -6228,7 +6314,7 @@
     "use_microphone": "استخدام الميكروفون",
     "pre_activity_review": "📋 مراجعة ما قبل النشاط",
     "phonics_counting_guide_title": "📖 دليل عدّ الصوتيات",
-    "r_controlled_explanation_prefix": "R-controlled vowels (ar, er, ir, or, ur) are counted as ",
+    "r_controlled_explanation_prefix": "الحركات المتحكَّم بها بحرف R (ar, er, ir, or, ur) تُحسب كـ ",
     "single_sounds": "أصواتًا مفردة",
     "r_controlled_explanation_suffix": " لأن الحرف المتحرك وR يندمجان معًا.",
     "r_controlled_example": "مثال: \"star\" = 3 أصوات (s-t-ar)، وليس 4. يتوافق هذا مع طريقتَي Orton-Gillingham و Wilson Reading.",
@@ -6812,7 +6898,7 @@
     "start_prompt": "ابدأ المغامرة لتبدأ المحاكاة.",
     "tooltips": {
       "energy": "الطاقة: {value}%",
-      "xp": "XP: {current} / {next}",
+      "xp": "XP: ‏{current} / {next}",
       "gold": "الذهب الحالي: {value}",
       "dictation_start": "استخدم الإدخال الصوتي",
       "dictation_stop": "إيقاف الإملاء",
@@ -7064,7 +7150,7 @@
     "simplified_title": "القارئ المتدرج",
     "simplified_text": "قم بتمييز نصك للمتعلمين المتنوعين. تعيد هذه الأداة كتابة المحتوى إلى مستويات إتقان محددة وتوفر قارئًا غامرًا غنيًا بدعم محو الأمية.\n### خيارات اللوحة\n• **هدف الصف**: قياس التعقيد من رياض الأطفال إلى مستوى الكلية.\n• **اختيار الوضع**: إعادة الكتابة القياسية، الشرح والتوسيع، أو التلخيص.\n• **اللغة**: ترجم النص المتدرج إلى لغة مستهدفة.\n### ميزات القارئ الغامر\n• **قارئ التركيز (RSVP)**: قراءة سريعة كلمة واحدة في كل مرة للتركيز.\n• **وضع الكاريوكي**: TTS جملة بجملة مع إبراز نشط.\n• **القراءة الذكية**: يبرز بدايات الكلمات لتوجيه حركة العين.\n• **إبراز القواعد**: ترميز الأسماء والأفعال والصفات بالألوان.\n• **نشاط الإكمال**: لعبة فهم تفاعلية لملء الفراغ.\n• **الوضع الهادئ**: تجربة قراءة بملء الشاشة خالية من الإلهاء.\n### طلاقة القراءة الشفوية (ORF)\n• **استمع إلى القراءات بصوت عالٍ**: يقرأ الطلاب النص بصوت عالٍ بينما يسجل النظام ويحلل.\n• **تسجيل WCPM**: حساب تلقائي للكلمات الصحيحة في الدقيقة.\n• **ملاحظات مرمزة بالألوان**: إبراز أخضر (صحيح)، أصفر (تردد)، أحمر (فات).\n• **تتبع الدقة**: نسبة الكلمات المقروءة بشكل صحيح مع استمرار بيانات الطلاقة.\n### نصيحة احترافية\nبدّل 'إبراز القواعد' لتحديد أجزاء الكلام بصريًا - رائع لطلاب ELL الذين يتعلمون بنية الجملة.\n### اتصال UDL\n• **التمثيل**: يوفر تخصيص الإدراك (الإرشاد 1)، مما يتيح للمتعلمين الوصول إلى المحتوى في منطقة نموهم القريب مع دعم مخصص.",
     "wordsounds_title": "Word Sounds",
-    "wordsounds_text": "Build foundational literacy skills with the Word Sounds Studio•a comprehensive phonemic awareness and phonics practice environment.\n### Panel Options\n• **Grade Level**: Adjust word difficulty (K-2, 3-5, Custom).\n• **Activity Mode**: Select 'Phonics' (Letters+Sounds) or 'Sound Only' (Auditory Focus).\n• **Source**: Use Glossary terms or generate new words by phoneme pattern.\n### 8 Activity Types\n• **Count Sounds**: How many phonemes in the word?\n• **Find Sounds (Isolation)**: Identify first/middle/last sounds.\n• **Blend Sounds**: Listen to phonemes, blend into a word.\n• **Break Apart (Segmentation)**: Separate words into sounds using Elkonin boxes.\n• **Rhyme Time**: Find rhyming words from options.\n• **Sound Mapping**: Connect phonemes to graphemes (letters).\n• **Sight & Spell**: Orthography and spelling practice.\n• **Word Families**: Match words with the same start or end sound (-at, -ing, etc.).\n### Gamification Features\n• **6 Achievement Badges**: First Sound, On Fire, Perfect 10, Rhyme Master, Blend Wizard, Daily Star.\n• **Streak System**: Build consecutive correct answers for bonus XP.\n• **Adaptive Difficulty**: Auto-adjusts based on accuracy (Easy/Medium/Hard/Auto).\n• **Session Goals**: Set daily word count targets.\n• **Phoneme Mastery Tracking**: Identifies struggling sounds for targeted practice.\n• **Confusion Pattern Detection**: AI detects and addresses common mistakes (b/d, short vowels).\n### Audio & Visual Modes\n• **TTS Speed Control**: Slow down or speed up pronunciation.\n• **Phonics Toggle**: Switch between letters+sounds or sounds-only mode.\n• **Auto-Generated Images**: Visual cues accompanying each word.\n• **Phoneme Bank Picker**: Browse and preview all phoneme sounds.\n### Teacher Features\n• **Pre-Activity Review Panel**: Audit and correct AI-generated phonetic data before students play.\n• **Word Regeneration**: Replace problematic words with teacher-curated alternatives.\n• **Progress Reports**: Track individual phoneme accuracy across sessions.\n### Pro Tip\nUse the Phoneme Bank Picker to select specific sounds for targeted intervention•great for RTI groups!\n### UDL Connection\n• **Representation**: Provides multiple means of perception (Guideline 1) through auditory-only, visual, and combined phonics modes.",
+    "wordsounds_text": "اِبنِ مهارات القراءة والكتابة الأساسية باستخدام Word Sounds Studio•بيئة شاملة لممارسة الوعي الصوتي والصوتيات.\n### خيارات اللوحة\n• **المستوى الدراسي**: اضبط صعوبة الكلمات (K-2، 3-5، مخصص).\n• **نمط النشاط**: اختر \"الصوتيات\" (الحروف + الأصوات) أو \"الصوت فقط\" (التركيز السمعي).\n• **المصدر**: استخدم مصطلحات المسرد أو ولّد كلمات جديدة حسب نمط الوحدة الصوتية.\n### 8 أنواع من الأنشطة\n• **عدّ الأصوات**: كم عدد الوحدات الصوتية في الكلمة؟\n• **إيجاد الأصوات (العزل)**: حدّد الأصوات الأولى/الوسطى/الأخيرة.\n• **مزج الأصوات**: استمع إلى الوحدات الصوتية وامزجها في كلمة.\n• **التفكيك (التجزئة)**: افصل الكلمات إلى أصوات باستخدام صناديق إلكونين.\n• **وقت القافية**: ابحث عن الكلمات المتقافية من بين الخيارات.\n• **رسم خرائط الأصوات**: اربط الوحدات الصوتية بالرموز الكتابية (الحروف).\n• **الرؤية والتهجئة**: ممارسة الإملاء والتهجئة.\n• **عائلات الكلمات**: طابق الكلمات التي لها نفس صوت البداية أو النهاية (-at، -ing، إلخ).\n### ميزات التلعيب\n• **6 شارات إنجاز**: الصوت الأول، مشتعل، العشرة الكاملة، سيد القافية، ساحر المزج، نجم اليوم.\n• **نظام السلاسل**: راكِم الإجابات الصحيحة المتتالية للحصول على نقاط XP إضافية.\n• **الصعوبة التكيفية**: تتكيف تلقائياً بناءً على الدقة (سهل/متوسط/صعب/تلقائي).\n• **أهداف الجلسة**: حدّد أهدافاً يومية لعدد الكلمات.\n• **تتبع إتقان الوحدات الصوتية**: يحدّد الأصوات الصعبة للممارسة المستهدفة.\n• **اكتشاف أنماط الالتباس**: يكتشف الذكاء الاصطناعي الأخطاء الشائعة ويعالجها (b/d، الحركات القصيرة).\n### أنماط الصوت والمرئيات\n• **التحكم في سرعة TTS**: أبطئ أو سرّع النطق.\n• **مفتاح تبديل الصوتيات**: بدّل بين نمط الحروف + الأصوات أو الأصوات فقط.\n• **صور مولّدة تلقائياً**: إشارات بصرية ترافق كل كلمة.\n• **منتقي بنك الوحدات الصوتية**: تصفّح واستمع مسبقاً إلى جميع أصوات الوحدات الصوتية.\n### ميزات المعلم\n• **لوحة المراجعة قبل النشاط**: راجع وصحّح البيانات الصوتية المولّدة بالذكاء الاصطناعي قبل أن يلعب الطلاب.\n• **إعادة توليد الكلمات**: استبدل الكلمات الإشكالية ببدائل منتقاة من المعلم.\n• **تقارير التقدم**: تتبّع دقة كل وحدة صوتية لدى كل طالب عبر الجلسات.\n### نصيحة احترافية\nاستخدم منتقي بنك الوحدات الصوتية لاختيار أصوات محددة للتدخل المستهدف•رائع لمجموعات RTI!\n### الصلة بـ UDL\n• **التمثيل**: يوفّر وسائل متعددة للإدراك (المبدأ التوجيهي 1) من خلال أنماط الصوتيات السمعية فقط والبصرية والمدمجة.",
     "outline_title": "منظِّم بصري",
     "outline_text": "أنشئ تمثيلات بصرية لبنية محتواك. حوِّل النص إلى 6 تنسيقات مختلفة من المنظِّمات الرسومية، كل منها مُصمَّم لأنماط تفكير ومنطق محددة.\n### خيارات اللوحة\n• **نوع البنية**: اختر تنسيق المنظم من بين 6 أنواع متاحة.\n• **تعليمات مخصصة**: أضف إرشادات محددة للتنظيم المخصص (على سبيل المثال، \"ركز على سلاسل السبب\" أو \"استخدم هذه المصطلحات المحددة\").\n### أنواع المنظمات\n• **مخطط فين**: قارن وتباين مفهومين أو أكثر مع أقسام قابلة للسحب.\n• **مخطط منظم**: قائمة هرمية تعرض الأفكار الرئيسية والتفاصيل الداعمة.\n• **خريطة المفاهيم الرئيسية**: تصور على شكل شبكة عنكبوت يربط الأفكار المركزية بالمفاهيم ذات الصلة.\n• **مخطط التدفق**: تصور العمليات المتسلسلة أو الجداول الزمنية أو شجرات القرار.\n• **السبب والنتيجة**: مخططات عظمة السمكة/إيشيكاوا تعرض العلاقات بين العوامل والنتائج.\n• **المشكلة والحل**: حدد المشاكل، حلل العوامل المساهمة، واقترح حلولاً.\n### ميزات تفاعلية\n• **فرز السحب والإفلات**: ينقل الطلاب العناصر بين أقسام فين أو يعيدون ترتيب نقاط المخطط.\n• **وضع اللعبة**: حوّل المنظمات الثابتة إلى أنشطة فرز تنافسية.\n• **وضع التعديل**: أعد تسمية العناوين، أضف نقاطًا فرعية، أو أعد هيكلة المحتوى يدويًا.\n• **الوضع ثنائي اللغة**: عرض المنظمات بتسميات مترجمة للمتعلمين متعددي اللغات.\n### نصيحة احترافية\nاستخدم منظمات السبب والنتيجة للتجارب العلمية والمشكلة والحل لمهام الكتابة الإقناعية.\n### اتصال UDL\n• **التمثيل**: يوجه المعالجة والتصور (الإرشاد 3.3) بتحويل النص الخطي إلى علاقات مكانية.",
     "visual_title": "مرئيات الذكاء الاصطناعي",
@@ -7125,7 +7211,7 @@
   },
   "export_menu": {
     "label": "تنزيل بصيغة...",
-    "qti": "Canvas Quiz (QTI)",
+    "qti": "اختبار Canvas ‏(QTI)",
     "print": "طباعة / حفظ PDF",
     "clean_pdf": "ملف PDF نظيف",
     "worksheet": "ورقة عمل",
@@ -8177,7 +8263,10 @@
     "pdf_audit_alt_formats_epub_btn": "احفظ المستند المعالج كملف ePub مع جدول محتويات وبيانات تعريف لإمكانية الوصول. يعمل على Kindle و Apple Books ومعظم القراء المحمولة — يمكن للطلاب تغيير حجم الخط واللون وسرعة القراءة.",
     "pdf_audit_alt_formats_braille_btn": "احفظ ملف برايل من الدرجة 1 (غير مختصر) يمكن طباعته على طابعة برايل أو إرساله إلى شاشة برايل قابلة للتحديث. لاختصارات الدرجة 2، سلّم الملف إلى TVI (معلم للطلاب ذوي الإعاقات البصرية) للتشطيب.",
     "pdf_audit_alt_formats_text_btn": "احفظ ملف .txt عادي مع إزالة كل التنسيق — أسهل تنسيق لقارئات الشاشة، أو التحويل إلى طباعة كبيرة، أو اللصق في أداة أخرى.",
-    "pdf_audit_alt_formats_markdown_btn": "احفظ المستند كـ Markdown — يدخل بشكل نظيف إلى صفحات Canvas أو Schoology أو D2L، Google Docs (عبر اللصق)، الويكي، والملاحظات بنمط GitHub دون فقدان العناوين أو الروابط."
+    "pdf_audit_alt_formats_markdown_btn": "احفظ المستند كـ Markdown — يدخل بشكل نظيف إلى صفحات Canvas أو Schoology أو D2L، Google Docs (عبر اللصق)، الويكي، والملاحظات بنمط GitHub دون فقدان العناوين أو الروابط.",
+    "pdf_audit_alt_formats_daisy_btn": "احفظ حزمة كتاب ناطق كامل النص بصيغة DAISY 3. تضيف قارئات DAISY (الشائعة في التربية الخاصة) ما لديها من نطق أو طريقة برايل أو طباعة كبيرة مع تنقّل كامل. هنا نص فقط — وللحصول على قراءة متزامنة، استخدم الكتاب الإلكتروني للقراءة المتزامنة.",
+    "pdf_audit_alt_formats_readalong_btn": "أنشئ كتابًا إلكترونيًّا للقراءة المتزامنة (تراكبات وسائط EPUB3): تُسرد كل فقرة بتحويل النص إلى كلام وتُزامَن مع النص بحيث تُبرز الكلمات أثناء نطقها. طلب صوتي واحد لكل قسم، لذا قد يستغرق ذلك بضع دقائق.",
+    "pdf_audit_alt_formats_odt_btn": "احفظ ملف نص OpenDocument ‏(‎.odt‎) — وهو أصلي في LibreOffice وGoogle Docs (ويفتحه Word أيضًا). استخدمه عندما لا تعتمد مدرستك على منتجات Microsoft بالكامل لكنك ما زلت تريد مستندًا قابلًا للتحرير مع الحفاظ على البنية سليمة."
   },
   "grades": {
     "k": "روضة الأطفال",
@@ -9710,7 +9799,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "ابعث القصص للحياة بأصوات الشخصيات والتحليل الأدبي",
     "poettree_title": "PoetTree",
-    "poettree_desc": "اكتب القصائد بسقالات الشكل وتحليل القافية والوزن وملاحظات الذكاء الاصطناعي"
+    "poettree_desc": "اكتب القصائد بسقالات الشكل وتحليل القافية والوزن وملاحظات الذكاء الاصطناعي",
+    "throughline_desc": "رتّب دروسك في وحدة مكانية: تسلسل تدريسي، ومتطلبات مسبقة، وملف واحد قابل للتصدير"
   },
   "sel_hub": {
     "loading": "جارٍ تحميل SEL Hub...",
@@ -9974,7 +10064,7 @@
       "cumrecord_title": "سجل تراكمي",
       "deescalate_desc": "تمارين تنفس، مؤقتات بصرية، استراحات حسية، وتأريض — دعم تهدئة في الوقت الفعلي",
       "deescalate_title": "أدوات نزع التصعيد",
-      "drstrategy_desc": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+      "drstrategy_desc": "اختر استراتيجية التعزيز التفاضلي المناسبة (DRA، DRI، DRO، DRL)",
       "drstrategy_title": "محدد استراتيجية DR",
       "dtt_desc": "التدريب على المحاولات المنفصلة — تسجيل تجربة بتجربة مع معايير إتقان وتقدم تلقائي",
       "dtt_title": "ورقة بيانات DTT",
@@ -10018,7 +10108,7 @@
       "pdpath_title": "مسار التطوير المهني",
       "predict_desc": "تحليل أنماط مدعوم بالذكاء الاصطناعي يتنبأ بمتى وأين وماذا يثير السلوكيات — مع استراتيجيات منع",
       "predict_title": "رؤى تنبُّئية",
-      "prefassess_desc": "تحديد منهجي للمعززات — بروتوكولات MSWO والمنبه المُقترَن و Free Operant",
+      "prefassess_desc": "تحديد منهجي للمعززات — بروتوكولات MSWO والمنبه المُقترَن والتشغيل الحر (Free Operant)",
       "prefassess_title": "تقييم التفضيل",
       "progress_desc": "فقرات مراقبة تقدم جاهزة لـ IEP من بيانات سلوكية متراكمة",
       "progress_title": "سرد التقدم",
@@ -10702,7 +10792,7 @@
       "day_streak": "سلسلة الأيام",
       "define_the_behaviors_settings_or_students_for_stag": "حدّد السلوكيات أو الإعدادات أو الطلاب للتدخّل المُدرَّج.",
       "describe_your_research_question_and_let_ai_recomme": "صف سؤال بحثك ودع الذكاء الاصطناعي يوصي بأفضل تصميم.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training مع تتبّع الإتقان والتقدّم التلقائي",
+      "discrete_trial_training_with_mastery_tracking_and": "التدريب بالمحاولات المنفصلة (Discrete Trial Training) مع تتبّع الإتقان والتقدّم التلقائي",
       "document_whether_interventions_are_implemented_as": "وثّق ما إذا كانت التدخّلات تُنفَّذ كما صُمِّمت",
       "done": "تمّ",
       "drop_a_snapshot_file_here": "أفلت ملف لقطة هنا",
@@ -11464,7 +11554,7 @@
       "pos_help": "عناصر بـ tabindex > 0 تكسر ترتيب التبويب الطبيعي للمستند وتربك مستخدمي لوحة المفاتيح. الإصلاح: استخدم tabindex=\"0\" (الترتيب الافتراضي) أو اعتمد على قابلية التركيز الافتراضية للأزرار/الروابط.",
       "no_label_heading": "🔴 أسماء يمكن الوصول إليها مفقودة",
       "no_label_help": "عناصر قابلة للتركيز بدون نص أو aria-label أو aria-labelledby أو title. لن يسمع مستخدمو قارئات الشاشة سوى اسم الوسم، مثل \"button\" بدون سياق. الإصلاح: أضف aria-label أو نصاً مرئياً.",
-      "tip": "Tip: navigate the page behind the lab using only Tab, Shift+Tab, Enter, and Esc. Click on any element name in the lists above to focus it (the page will scroll if needed)."
+      "tip": "نصيحة: تنقّل في الصفحة خلف المختبر باستخدام مفاتيح Tab وShift+Tab وEnter وEsc فقط. انقر على اسم أي عنصر في القوائم أعلاه لتركيزه (ستُمرَّر الصفحة عند الحاجة)."
     },
     "audit": {
       "heading": "فحص إمكانية الوصول المباشر في التطبيق",
@@ -11526,7 +11616,7 @@
         "html_has_lang": "الصفحة تفتقر إلى سمة lang. لن تعرف قارئات الشاشة أي نطق تستخدم.",
         "html_lang_valid": "سمة lang للصفحة ليست رمز لغة صالح.",
         "landmark_one_main": "الصفحة تفتقر إلى علامة <main>. يواجه مستخدمو قارئ الشاشة وقتًا أصعب في تخطي التنقل إلى المحتوى الرئيسي.",
-        "region": "Some content is not contained in a landmark (header, main, nav, footer). Screen reader users may struggle to navigate.",
+        "region": "بعض المحتوى غير مُضمَّن داخل معلم بنيوي (header أو main أو nav أو footer). قد يواجه مستخدمو قارئات الشاشة صعوبة في التنقّل.",
         "heading_order": "تتخطى العناوين على هذه الصفحة المستويات (مثل h1 يقفز إلى h3). يصبح التنقل في قارئ الشاشة حسب مستويات العنوان مربكًا.",
         "page_has_heading_one": "الصفحة ليس لها عنوان <h1>. يفقد مستخدمو قارئ الشاشة التوجيه حول موضوع الصفحة.",
         "list": "عنصر قائمة (ul/ol) يحتوي على عناصر ليست <li>. تخطئ قارئات الشاشة في الإبلاغ عن البنية.",
@@ -11588,7 +11678,7 @@
         "dyslexia_label": "إجهاد بصري لـ Dyslexia",
         "dyslexia_desc": "محاكاة محدودة لتجربة إجهاد بصري شائعة يبلغ عنها بعض قراء dyslexia (ضبابية طفيفة، تباين أقل، تباعد متغير). dyslexia فردية للغاية؛ هذه شريحة واحدة، وليست تصورًا نهائيًا. حوالي 5-10% من الطلاب يعانون من dyslexia.",
         "motor_label": "الإعاقات الحركية",
-        "motor_desc": "Motor impairments resist visual simulation. The most authentic test is to use the OS-level tools real students use: Windows Sticky Keys, macOS Slow Keys, dwell-click software, switch access (e.g., the iOS Switch Control or Android Switch Access). Try completing a lesson using only one hand, only the keyboard, or only one finger."
+        "motor_desc": "تصعب محاكاة الإعاقات الحركية بصريًّا. أصدق اختبار هو استخدام أدوات نظام التشغيل نفسها التي يستخدمها الطلاب فعليًّا: المفاتيح اللاصقة في Windows، والمفاتيح البطيئة في macOS، وبرامج النقر بالتثبيت، والوصول عبر المفاتيح (مثل Switch Control في iOS أو Switch Access في Android). جرّب إكمال درس باستخدام يد واحدة فقط، أو لوحة المفاتيح فقط، أو إصبع واحد فقط."
       }
     }
   },
@@ -11691,51 +11781,51 @@
     "submit_reflection": "إرسال التأمل"
   },
   "audit": {
-    "section_divider": "Section divider",
+    "section_divider": "فاصل الأقسام",
     "remove_divider": "Remove divider",
-    "remove_page_break": "Remove page break",
+    "remove_page_break": "إزالة فاصل الصفحة",
     "callout": "Callout",
     "remove_callout": "Remove callout",
     "remove_quote": "Remove quote",
-    "remove_checklist": "Remove checklist",
+    "remove_checklist": "إزالة قائمة التحقق",
     "checklist": "Checklist",
     "remove_steps": "Remove steps",
-    "step_by_step": "Step-by-step instructions",
-    "remove_accordion": "Remove accordion",
-    "qa_pair": "Question and answer pair",
+    "step_by_step": "تعليمات خطوة بخطوة",
+    "remove_accordion": "إزالة العنصر القابل للطي",
+    "qa_pair": "زوج سؤال وجواب",
     "remove_qa": "Remove Q and A",
-    "remove_definition": "Remove definition",
-    "pronunciation_audio": "Pronunciation audio",
+    "remove_definition": "إزالة التعريف",
+    "pronunciation_audio": "صوت النطق",
     "term_language": "Term language",
-    "gen_pronunciation_term": "Generate pronunciation audio from the term using AI text-to-speech",
+    "gen_pronunciation_term": "توليد صوت النطق من المصطلح باستخدام تحويل النص إلى كلام بالذكاء الاصطناعي",
     "sentence_frame": "Sentence frame",
-    "remove_sentence_frame": "Remove sentence frame",
-    "sentence_frame_template": "Sentence frame template",
-    "learning_objective": "Learning objective",
-    "remove_learning_objective": "Remove learning objective",
-    "remove_vocab_card": "Remove vocabulary card",
-    "gen_pronunciation_word": "Generate pronunciation audio from the word using AI text-to-speech",
-    "remove_reflection": "Remove reflection",
-    "reflection_response_aria": "Reflection response",
+    "remove_sentence_frame": "إزالة قالب الجملة",
+    "sentence_frame_template": "قالب إطار الجملة",
+    "learning_objective": "هدف التعلّم",
+    "remove_learning_objective": "إزالة هدف التعلّم",
+    "remove_vocab_card": "إزالة بطاقة المفردات",
+    "gen_pronunciation_word": "توليد صوت النطق من الكلمة باستخدام تحويل النص إلى كلام بالذكاء الاصطناعي",
+    "remove_reflection": "إزالة التأمل",
+    "reflection_response_aria": "استجابة التأمل",
     "remove_rubric": "Remove rubric",
     "scoring_rubric": "Scoring rubric",
-    "lesson_plan_template": "Lesson plan template",
-    "remove_lesson_plan": "Remove lesson plan",
+    "lesson_plan_template": "قالب خطة الدرس",
+    "remove_lesson_plan": "إزالة خطة الدرس",
     "remove_table": "Remove table",
     "data_table": "Data table",
-    "image_description": "Image with description",
+    "image_description": "صورة مع وصف",
     "remove_image": "Remove image",
     "image_url": "Image URL",
     "remove_audio": "Remove audio",
-    "audio_recording": "Audio recording",
+    "audio_recording": "تسجيل صوتي",
     "audio_url": "Audio URL",
-    "gen_audio_transcript": "Generate audio from transcript using AI text-to-speech",
+    "gen_audio_transcript": "توليد الصوت من النص المكتوب باستخدام تحويل النص إلى كلام بالذكاء الاصطناعي",
     "remove_video": "Remove video",
     "video_url": "Video URL",
-    "video_title_screen": "Video title for screen readers",
-    "math_equation": "Mathematical equation",
-    "remove_equation": "Remove equation",
-    "insert_formula": "Insert formula from library"
+    "video_title_screen": "عنوان الفيديو لقارئات الشاشة",
+    "math_equation": "معادلة رياضية",
+    "remove_equation": "إزالة المعادلة",
+    "insert_formula": "إدراج صيغة من المكتبة"
   },
   "alts": {
     "scene_visualization": "تصور المشهد",
@@ -11912,17 +12002,17 @@
   },
   "headings": {
     "story_forge": "StoryForge",
-    "narrate_story": "Narrate Your Story",
-    "review_feedback": "Review & Feedback",
-    "character_name_check": "Character Name Check",
-    "writing_analytics": "Writing Analytics",
+    "narrate_story": "اسرد قصتك",
+    "review_feedback": "المراجعة والملاحظات",
+    "character_name_check": "التحقق من اسم الشخصية",
+    "writing_analytics": "تحليلات الكتابة",
     "word_frequency": "Word Frequency",
-    "score_breakdown": "Score Breakdown",
-    "vocab_usage": "Vocabulary Usage",
-    "storybook_ready": "Your Storybook is Ready!",
-    "per_dimension_findings": "Per-Dimension Findings",
-    "your_self_assessment": "Your Self-Assessment",
-    "cloud_voice_unavailable": "Cloud Voice Unavailable",
+    "score_breakdown": "تفصيل الدرجة",
+    "vocab_usage": "استخدام المفردات",
+    "storybook_ready": "كتاب قصتك جاهز!",
+    "per_dimension_findings": "النتائج حسب كل بُعد",
+    "your_self_assessment": "تقييمك الذاتي",
+    "cloud_voice_unavailable": "الصوت السحابي غير متاح",
     "allohaven": "AlloHaven",
     "tts": "Text-to-Speech"
   },
@@ -12254,5 +12344,10 @@
     "byline": "بقلم {author} · {words} كلمة · {used}/{total} مفردات",
     "student": "طالب",
     "score": "الدرجة: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "ستؤدي إعادة عرض المعاينة إلى استبدال تعديلاتك اليدوية بمحتوى مولّد حديثاً. هل تريد المتابعة وتجاهل التعديلات؟ (الإلغاء يبقيها — صدّر المستند أو أغلق المُنشئ للحفظ أولاً.)",
+    "remediation_banner_title": "تحرير المستند المُعالَج.",
+    "remediation_banner_body": "تُحفظ تعديلاتك هنا في المستند عند إغلاق المُنشئ، لذا تشمله تنزيلات PDF الموسوم / Word / PowerPoint."
   }
 }

@@ -979,7 +979,7 @@
     "storage_full_text_only": "ਸਟੋਰੇਜ ਭਰ ਗਈ। ਸਿਰਫ ਟੈਕਸਟ ਸੰਭਾਲਿਆ ਜਾ ਰਿਹਾ ਹੈ (ਤਸਵੀਰਾਂ ਹਟਾਈਆਂ ਗਈਆਂ)।",
     "storage_full_critical": "ਨਾਜ਼ੁਕ: ਇਤਿਹਾਸ ਸੰਭਾਲ ਨਹੀਂ ਸਕੇ। ਸਟੋਰੇਜ ਭਰ ਗਈ ਹੈ।",
     "resource_not_found": "ਸਰੋਤ ਨਹੀਂ ਮਿਲਿਆ।",
-    "resource_not_found_history": "ਇਤਿਹਾਸ ਵਿੱਚ ਸਰੋਤ ਨਹੀਂ ਮਿਲਿਆ।",
+    "resource_not_found_history": "ਇਤਿਹਾਸ ਵਿੱਚ ਸਰੋਤ ਨਹੀਂ ਮਿਲਿਆ (ਸ਼ਾਇਦ ਇਸਨੂੰ ਮਿਟਾ ਦਿੱਤਾ ਗਿਆ ਹੋਵੇ)।",
     "analysis_failed": "ਵਿਸ਼ਲੇਸ਼ਣ ਅਸਫਲ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     "enter_target_language": "ਕਿਰਪਾ ਕਰਕੇ ਦਾਖਲ ਕਰੋ ਇੱਕ ਟੀਚਾ ਭਾਸ਼ਾ.",
     "translation_started": "ਅਨੁਵਾਦ ਸ਼ੁਰੂ ਹੋਇਆ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI ਫੀਡਬੈਕ ਅਣਉਪਲਬਧ",
     "write_essay_first": "ਪਹਿਲਾਂ ਆਪਣਾ ਲੇਖ ਲਿਖੋ!",
     "enter_word_art_first": "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਵਰਡ ਆਰਟ ਟੈਕਸਟ ਦਾਖਲ ਕਰੋ",
-    "preview_not_ready": "ਪੂਰਵਦਰਸ਼ਨ ਅਜੇ ਤਿਆਰ ਨਹੀਂ ਹੈ",
+    "preview_not_ready": "ਪੂਰਵਦਰਸ਼ਨ ਅਜੇ ਤਿਆਰ ਨਹੀਂ ਹੈ — ਇਸਦੇ ਰੈਂਡਰ ਹੋਣ ਦੀ ਉਡੀਕ ਕਰੋ, ਫਿਰ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     "word_art_render_failed": "ਵਰਡ ਆਰਟ ਰੈਂਡਰ ਨਹੀਂ ਕਰ ਸਕੇ",
     "diff_engine_load_failed": "Diff ਇੰਜਣ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕਿਆ (ਨੈੱਟਵਰਕ ਰੁਕਿਆ?)। ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਜਾਂਚੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     "brf_downloaded": "ਇਲੈਕਟ੍ਰਾਨਿਕ ਬ੍ਰੇਲ (BRF) ਡਾਊਨਲੋਡ ਕੀਤਾ ਗਿਆ",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "ਐਡਜਸਟ size ਦਾ timeline ਚਿੱਤਰ"
   },
   "pdf_audit": {
+    "fidelity_delta": "ਸ਼ੁੱਧਤਾ: {before}% → {after}%{detail}",
     "view_last_audit": "ਦੇਖੋ ਆਖਰੀ Audit",
     "start_new_audit": "ਸ਼ੁਰੂ ਕਰੋ ਨਵਾਂ Audit",
     "apply_and_export": "ਲਾਗੂ ਕਰੋ & ਨਿਰਯਾਤ ਕਰੋ",

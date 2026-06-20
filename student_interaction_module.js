@@ -68,8 +68,8 @@
 
 const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "" }) => {
   const { t } = useContext(LanguageContext);
-  const adjectives = t("codenames.adjectives") || [];
-  const animals = t("codenames.animals") || [];
+  const adjectives = t("codenames.adjectives", { returnObjects: true }) || [];
+  const animals = t("codenames.animals", { returnObjects: true }) || [];
   const parseNickname = useCallback((nickname) => {
     if (!nickname || typeof nickname !== "string") return { adj: "", animal: "" };
     const parts = nickname.trim().split(" ");

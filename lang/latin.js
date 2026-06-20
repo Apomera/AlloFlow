@@ -979,7 +979,7 @@
     "storage_full_text_only": "Storage full. Saving textus only (imāgō removed).",
     "storage_full_critical": "Critical: Could nōn servā history. Storage full.",
     "resource_not_found": "subsidia nōn found.",
-    "resource_not_found_history": "subsidia nōn found in history.",
+    "resource_not_found_history": "Subsidium in historiā nōn repertum (fortasse dēlētum est).",
     "analysis_failed": "Analysis failed. amābō tentā again.",
     "enter_target_language": "amābō inscrībe scopus lingua.",
     "translation_started": "trānslātiō started...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI feedback nōn praestō",
     "write_essay_first": "Scrībe your essay prīmus!",
     "enter_word_art_first": "amābō inscrībe verbum art textus prīmus",
-    "preview_not_ready": "Praevisio nondum parata",
+    "preview_not_ready": "Praevisio nondum parata — exspectā dum redditur, deinde iterum cōnāre.",
     "word_art_render_failed": "Could not render verbum art",
     "diff_engine_load_failed": "Diff engine failed to onerā (network blocked?). Check your connection and tentā again.",
     "brf_downloaded": "Braille electronicum (BRF) descriptum",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "Aptāre size timeline imāgō"
   },
   "pdf_audit": {
+    "fidelity_delta": "Fidēlitās: {before}% → {after}%{detail}",
     "view_last_audit": "Aspice ultimus Audit",
     "start_new_audit": "Incipe novus Audit",
     "apply_and_export": "Adhibere & Exportā",

@@ -979,7 +979,7 @@
     "storage_full_text_only": "भंडारण भरा हुआ है। केवल टेक्स्ट सहेजा जा रहा है (छवियाँ हटा दी गईं)।",
     "storage_full_critical": "गंभीर: इतिहास सहेजा नहीं जा सका। भंडारण भरा हुआ है।",
     "resource_not_found": "संसाधन नहीं मिला।",
-    "resource_not_found_history": "इतिहास में संसाधन नहीं मिला।",
+    "resource_not_found_history": "इतिहास में संसाधन नहीं मिला (हो सकता है इसे हटा दिया गया हो)।",
     "analysis_failed": "विश्लेषण विफल। कृपया पुनः प्रयास करें।",
     "enter_target_language": "कृपया दर्ज करें एक लक्ष्य भाषा.",
     "translation_started": "अनुवाद शुरू हुआ...",
@@ -1614,7 +1614,7 @@
     "ai_feedback_unavailable": "AI प्रतिक्रिया अनुपलब्ध",
     "write_essay_first": "पहले अपना निबंध लिखें!",
     "enter_word_art_first": "कृपया दर्ज करें शब्द कला पाठ पहला",
-    "preview_not_ready": "पूर्वावलोकन अभी तैयार नहीं है",
+    "preview_not_ready": "पूर्वावलोकन अभी तैयार नहीं है — इसके रेंडर होने तक प्रतीक्षा करें, फिर पुनः प्रयास करें।",
     "word_art_render_failed": "शब्द कला प्रस्तुत नहीं हो सकी",
     "diff_engine_load_failed": "डिफ़ इंजन लोड नहीं हो सका (नेटवर्क अवरुद्ध?).",
     "brf_downloaded": "इलेक्ट्रॉनिक ब्रेल (BRF) डाउनलोड किया गया",
@@ -4131,6 +4131,7 @@
     "image_size_tooltip": "समायोजित size का timeline छवि"
   },
   "pdf_audit": {
+    "fidelity_delta": "पाठ निष्ठा: {before}% → {after}%{detail}",
     "view_last_audit": "देखें अंतिम Audit",
     "start_new_audit": "शुरू करें नया Audit",
     "apply_and_export": "लागू करें & निर्यात करें",
