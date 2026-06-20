@@ -105,6 +105,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       if (a) T0 -= b / (2 * a);
     }
 
+    // Guard div-by-zero / non-finite: a maxpos of 0 (or a parabolic refine that
+    // drives T0<=0) would return Infinity/negative Hz, poisoning the pitch
+    // history + the SR announcement ("Infinity hertz"). -1 = "no pitch" sentinel.
+    if (!isFinite(T0) || T0 <= 0) return -1;
     return sampleRate / T0;
   }
 
@@ -194,7 +198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       ctx2d.lineTo(W, y);
       ctx2d.stroke();
       ctx2d.setLineDash([]);
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.fillText(zones[zi].label, W - 4, y - 3);
     }
 
@@ -222,7 +226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Draw user pitch curve
     if (!pitchHistory || pitchHistory.length < 2) {
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.textAlign = 'center';
       ctx2d.font = '13px sans-serif';
       ctx2d.fillText('Start speaking to see your pitch curve', W / 2, H / 2);
@@ -320,9 +324,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Draw tick marks
     ctx2d.lineWidth = 2;
-    ctx2d.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.strokeStyle = isDark ? '#94a3b8' : '#475569';
     ctx2d.font = '9px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
     ctx2d.textAlign = 'center';
     for (var tick = 0; tick <= maxWpm; tick += 20) {
       var tickAngle = startAngle + (tick / maxWpm) * Math.PI;
@@ -431,7 +435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Zone labels
     ctx2d.font = '8px sans-serif';
     ctx2d.textAlign = 'center';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
     ctx2d.fillText('Quiet', barX + (barW * quietEnd) / 2, barY + barH + 12);
     ctx2d.fillText('Good Projection', barX + barW * quietEnd + (barW * (goodEnd - quietEnd)) / 2, barY + barH + 12);
     ctx2d.fillText('Too Loud', barX + barW * goodEnd + (barW * (1 - goodEnd)) / 2, barY + barH + 12);
@@ -460,7 +464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
       ctx2d.font = '10px sans-serif';
       ctx2d.textAlign = 'left';
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.fillText('Steadiness:', barX, barY + barH + 28);
       ctx2d.fillStyle = steadyColor;
       ctx2d.font = 'bold 10px sans-serif';
@@ -510,7 +514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Labels
     ctx2d.font = '9px sans-serif';
     ctx2d.textAlign = 'left';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
     ctx2d.fillText('Speech: ' + Math.round(speechPct * 100) + '%', 68, cy - 8);
     ctx2d.fillText('Pauses: ' + Math.round((pauseRatio || 0) * 100) + '%', 68, cy + 4);
 
@@ -529,7 +533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Ideal range note
     ctx2d.font = '8px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
     ctx2d.fillText('Ideal pause ratio: 20-30%', 68, H - 4);
   }
 
@@ -668,7 +672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Axis labels
     ctx2d.font = '10px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
     ctx2d.textAlign = 'center';
     ctx2d.fillText('F2 (Hz) — High \u2190 \u2192 Low', W / 2, H - 5);
     ctx2d.save();
@@ -682,7 +686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.textAlign = 'center';
     for (var f2t = 800; f2t <= 2400; f2t += 400) {
       var tx = f2x(f2t);
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.fillText(f2t.toString(), tx, H - pad + 12);
       ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
       ctx2d.beginPath();
@@ -693,7 +697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.textAlign = 'right';
     for (var f1t = 300; f1t <= 700; f1t += 100) {
       var ty = f1y(f1t);
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.fillText(f1t.toString(), pad - 5, ty + 3);
       ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
       ctx2d.beginPath();
@@ -888,7 +892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillRect(0, 0, W, H);
 
     if (!pitchData || pitchData.length < 2) {
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.textAlign = 'center';
       ctx2d.font = '12px sans-serif';
       ctx2d.fillText('No recording data', W / 2, H / 2);
@@ -1037,7 +1041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillText('Recording 2', 6, 26);
 
     if (!pitchData1 && !pitchData2) {
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.textAlign = 'center';
       ctx2d.font = '12px sans-serif';
       ctx2d.fillText('Select two recordings to compare', W / 2, H / 2);
@@ -1062,7 +1066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillRect(0, 0, W, H);
 
     if (!sessions || sessions.length === 0) {
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.textAlign = 'center';
       ctx2d.font = '11px sans-serif';
       ctx2d.fillText('No fluency sessions yet', W / 2, H / 2);
@@ -1079,7 +1083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Y-axis (0-5 stars)
     ctx2d.font = '8px sans-serif';
     ctx2d.textAlign = 'right';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
     for (var si = 0; si <= 5; si++) {
       var sy = pad + plotH - (si / 5) * plotH;
       ctx2d.fillText(si.toString(), pad - 4, sy + 3);
@@ -1113,13 +1117,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
       // Session label
       ctx2d.font = '7px sans-serif';
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
       ctx2d.fillText('#' + (startIdx + bi + 1), bx + barW / 2, pad + plotH + 12);
     }
 
     // Title
     ctx2d.font = 'bold 10px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#475569';
     ctx2d.textAlign = 'center';
     ctx2d.fillText('Fluency Score History', W / 2, 12);
   }
@@ -1733,6 +1737,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   var lastSyllableTs = 0;
 
                   function analyzeLoop() {
+                    // Resurrection guard: bail if this loop no longer owns the live
+                    // analyser (stopRecording nulls analyserRef; a restart points it
+                    // at a new one) — stops an orphaned loop rescheduling forever /
+                    // calling setState against a closed AudioContext.
+                    if (analyserRef.current !== analyser) return;
                     analyser.getFloatTimeDomainData(buf);
                     var rms = calculateRMS(buf);
                     var db = rmsToDb(rms);
@@ -1907,6 +1916,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               var lastSyllableTs = 0;
 
               function analyzeLoop() {
+                // Resurrection guard: bail if this loop no longer owns the live
+                // analyser (stopRecording nulls analyserRef; a restart points it
+                // at a new one) — stops an orphaned loop rescheduling forever /
+                // calling setState against a closed AudioContext.
+                if (analyserRef.current !== analyser) return;
                 analyser.getFloatTimeDomainData(buf);
                 var rms = calculateRMS(buf);
                 var db = rmsToDb(rms);
@@ -2581,7 +2595,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           else if (composite >= 55) stars = 3;
           else if (composite >= 40) stars = 2;
 
-          var starLabels = ['', 'Needs Support', 'Developing', 'Making Progress', 'Proficient', 'Fluent Speaker'];
+          // Integrity: these describe the MEASURED delivery steadiness (a
+          // loudness-envelope proxy), not the speaker's fluency/ability. The old
+          // clinical ladder ("Needs Support".."Fluent Speaker") over-claimed a
+          // diagnostic verdict from an amplitude-CV heuristic.
+          var starLabels = ['', 'Just getting started', 'Finding a rhythm', 'Fairly steady', 'Smooth & steady', 'Very smooth & steady'];
 
           setFluencyScore(composite);
           setFluencyStars(stars);
@@ -2666,7 +2684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               '\n  Volume steadiness: ' + fluencyDetails.volScore + '/100' +
               '\n  Normal pauses: ' + fluencyDetails.normalPauses +
               ', Extended pauses: ' + fluencyDetails.extendedPauses +
-              ', Blocks: ' + fluencyDetails.blocks;
+              ', Long pauses: ' + fluencyDetails.blocks;
           }
           var fluencyHistoryLine = '';
           if (fluencySessions && fluencySessions.length > 1) {
@@ -2688,7 +2706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             'Time spent: ~' + (timeMin > 0 ? timeMin + ' minutes' : 'less than 1 minute'),
             'Smooth pacing achieved: ' + (achievedSmoothPacing ? 'Yes' : 'Not yet'),
             '',
-            '--- Fluency Assessment ---',
+            '--- Delivery Steadiness (acoustic estimate) ---',
             fluencyLine,
             fluencyDetailLines,
             fluencyHistoryLine,
@@ -2697,8 +2715,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             'This student used the Oratory & Prosody Communication Lab for real-time',
             'speech visualization practice. The tool provides visual feedback on pitch',
             'contour, speaking rate, volume consistency, pause patterns, and fluency.',
-            'Fluency metrics track pause classification (normal/extended/block),',
-            'syllable rate consistency (CV), and volume steadiness.',
+            'These are rough ACOUSTIC PROXIES (loudness-envelope pause timing,',
+            'syllable-onset rate CV, and volume steadiness) for self-practice —',
+            'NOT a clinical fluency assessment, diagnosis, or measure of ability.',
             '',
             'Generated by AlloFlow Oratory Lab'
           ];
@@ -2981,7 +3000,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   fluencyDetails && h('div', { className: subTextClass },
                     'Pauses: ' + fluencyDetails.normalPauses + ' normal, ' +
                     fluencyDetails.extendedPauses + ' extended (0.5-2s), ' +
-                    fluencyDetails.blocks + ' blocks (>2s). ' +
+                    fluencyDetails.blocks + ' long pauses (>2s). ' +
                     'Syllable CV: ' + fluencyDetails.syllCV.toFixed(2) + ' (lower = smoother).')),
 
                 // Session comparison chart
@@ -4008,7 +4027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-200 text-[11px] font-bold text-slate-700' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border border-slate-300 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, '↺ Reset')
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How does pace affect audience comprehension?',
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
@@ -4022,7 +4041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   'I understand — explain in own words'),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how prosody shapes oratory impact.',
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.')
+                h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.')
               );
             })()
           ),
