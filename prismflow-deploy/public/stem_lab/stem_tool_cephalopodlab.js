@@ -15395,6 +15395,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('circle', { cx: 10, cy: -8, r: 3, fill: '#fbbf24' }),
                     h('text', { x: 0, y: 24, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' },
                       'predator looking up')),
+                  // Match-meter: downwelling light vs your ventral glow as two
+                  // bars — LINE THEM UP to erase your silhouette. Turns the
+                  // abstract "match the brightness" goal into a visible target.
+                  (function() {
+                    var bx = 338, bw = 18, gp = 8, bTop = 64, bBot = 248, bh = bBot - bTop;
+                    var dy = bBot - depth / 100 * bh, by = bBot - belly / 100 * bh;
+                    return h('g', null,
+                      h('text', { x: bx + bw + gp / 2, y: 56, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#94a3b8', fontFamily: 'system-ui' }, 'match ↕'),
+                      h('rect', { x: bx, y: bTop, width: bw, height: bh, rx: 3, fill: 'rgba(255,255,255,0.07)' }),
+                      h('rect', { x: bx + bw + gp, y: bTop, width: bw, height: bh, rx: 3, fill: 'rgba(255,255,255,0.07)' }),
+                      h('rect', { x: bx, y: dy, width: bw, height: bBot - dy, rx: 3, fill: '#fbbf24', opacity: 0.85 }),
+                      h('rect', { x: bx + bw + gp, y: by, width: bw, height: bBot - by, rx: 3, fill: '#86efac', opacity: 0.85 }),
+                      h('line', { x1: bx - 3, y1: dy, x2: bx + 2 * bw + gp + 3, y2: dy, stroke: '#fbbf24', strokeWidth: 0.75, strokeDasharray: '2 2', opacity: 0.6 }),
+                      h('text', { x: bx + bw / 2, y: bBot + 11, textAnchor: 'middle', fontSize: 8 }, '☀️'),
+                      h('text', { x: bx + bw + gp + bw / 2, y: bBot + 11, textAnchor: 'middle', fontSize: 8 }, '💡')
+                    );
+                  })(),
                   h('rect', { x: 12, y: 12, width: 130, height: 50, rx: 6, fill: 'rgba(0,0,0,0.7)' }),
                   h('text', { x: 18, y: 28, fontSize: 10, fontWeight: 800, fill: matchVerdict.color, fontFamily: 'ui-monospace, Menlo, monospace' },
                     'Match: ' + matchScore + '%'),
