@@ -15384,22 +15384,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         : null;
       let axeCoreFailed = false;
       if (finalAfterScore !== null && axeScoreAvailable) {
-        // Blend the AI rubric with the deterministic WCAG engines. Default 50/50 — BUT when the doc is
-        // axe-CLEAN (0 violations) AND the deterministic score is strong (>=90), weight toward the
-        // deterministic signal (75/25). axe + EqualAccess are reliable, reproducible WCAG validators;
-        // the AI rubric is a noisy heuristic (±~20 run-to-run). A document that PASSES the real
-        // checkers shouldn't be dragged below target by rubric noise. This is an honesty call, not
-        // score-inflation: when the trustworthy measurement is strong, it should lead. (2026-06-19)
-        const _axeClean = !!(axeResults && axeResults.totalViolations === 0);
-        const _detStrong = deterministicScore >= 90;
-        let blendedFinal;
-        if (_axeClean && _detStrong) {
-          blendedFinal = Math.round(deterministicScore * 0.75 + finalAfterScore * 0.25);
-          warnLog(`[PDF Fix] Final blended score (deterministic-weighted 75/25 — axe-clean + deterministic ${deterministicScore}): AI ${finalAfterScore} + deterministic ${deterministicScore} = ${blendedFinal}`);
-        } else {
-          blendedFinal = Math.round((finalAfterScore + deterministicScore) / 2);
-          warnLog(`[PDF Fix] Final blended score: AI ${finalAfterScore} + deterministic ${deterministicScore} (axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}) = ${blendedFinal}`);
-        }
+        // Blend the AI rubric with the deterministic WCAG engines, 50/50.
+        // (REMOVED 2026-06-20 — the 75/25 deterministic upweight that fired when the doc was axe-CLEAN +
+        // deterministic>=90. Its premise — "a document that PASSES the real checkers shouldn't be dragged
+        // below target by rubric noise" — was FALSE here: axeResults is axe run on the HTML RECONSTRUCTION
+        // (_stripChromeForAudit(accessibleHtml) above), which passes by construction — NOT on the real
+        // exported PDF bytes. So the upweight inflated the CONTENT score on a by-construction signal. The
+        // honest real-bytes conformance verdict is independent veraPDF, surfaced SEPARATELY; the content
+        // score stays an even 50/50 AI + deterministic and is no longer lifted by reconstruction-axe.)
+        const blendedFinal = Math.round((finalAfterScore + deterministicScore) / 2);
+        warnLog(`[PDF Fix] Final blended score (50/50): AI ${finalAfterScore} + deterministic ${deterministicScore} (axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}) = ${blendedFinal}`);
         finalAfterScore = blendedFinal;
       } else if (!axeScoreAvailable) {
         // Dual-engine guarantee is broken — surface this to the UI so the banner can warn users.
