@@ -8851,6 +8851,10 @@ Rules:
                 'aria-label': 'Search glossary terms',
                 className: 'w-full px-4 py-3 border border-slate-400 rounded-xl text-sm shadow-sm focus:ring-2 focus:ring-blue-300 outline-none'
             }),
+            h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[11px] text-slate-600 leading-relaxed' },
+                h('span', { className: 'font-bold text-slate-700' }, 'About the plain-language labels: '),
+                'each term shows a plain-language name first and the clinical term in parentheses. The plain-language name is a communication aid — it does not make a procedure automatically affirming. Any strategy still has to be evaluated for assent, dignity, and the student\'s own interest.'
+            ),
             // Category legend
             h('div', { className: 'flex flex-wrap gap-2' },
                 Object.entries(categories).map(([k, v]) =>
