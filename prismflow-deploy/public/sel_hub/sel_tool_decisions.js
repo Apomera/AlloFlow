@@ -1776,6 +1776,29 @@ window.SelHub = window.SelHub || {
                   'NEVER tell them what to decide. Help them think, not choose.\n' +
                   'Keep the total under 300 words.\n\n' +
                   'Student\'s decision: ' + advPrompt;
+                // CRISIS-5: triangulated safety assessment of the student's decision
+                // disclosure, fired in parallel (mirrors the Decision Tree path above).
+                if (window.SelHub && window.SelHub.assessSafety) {
+                  window.SelHub.assessSafety(advPrompt, band, 'decisions', callGemini)
+                    .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                    .then(function(_safety) {
+                      _safety = _safety || { tier: 0 };
+                      if (_safety.tier >= 2 && onSafetyFlag) {
+                        onSafetyFlag({
+                          category: 'ai_advisor_' + (_safety.category || 'concerning'),
+                          match: _safety.rationale || 'SEL advisor safety concern',
+                          severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                          source: 'sel_decisions',
+                          context: advPrompt.substring(0, 100),
+                          timestamp: new Date().toISOString(),
+                          aiGenerated: true,
+                          confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                          tier: _safety.tier
+                        });
+                      }
+                      upd('_decisionsTier', _safety.tier || 0);
+                    });
+                }
                 callGemini(systemPrompt).then(function(result) {
                   var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                   upd('advResponse', text);

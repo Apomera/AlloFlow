@@ -28137,7 +28137,13 @@ window.SelHub = window.SelHub || {
                     });
                   }
                 : function() {
-                    return callGemini(prompt).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                    // SELUX-6: when the full safety layer (safeCoach) is absent, still run the
+                    // local regex safety check so a crisis disclosure on this fallback path
+                    // isn't silently fail-open (matches the thought-flip/self-talk pattern).
+                    var fb = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(matcherFeeling, { toolId: 'coping_matcher', onSafetyFlag: onSafetyFlag })
+                      : { action: 'continue' };
+                    return callGemini(prompt).then(function(r) { return { response: r, tier: fb.action === 'block' ? 3 : 0, showCrisis: fb.action === 'block' }; });
                   };
               matchFn().then(function(result) {
                 upd({ matcherResult: result.response, matcherLoading: false, _matcherTier: result.tier || 0 });

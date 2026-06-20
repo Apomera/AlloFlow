@@ -1727,6 +1727,7 @@ window.SelHub = window.SelHub || {
                         'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
                         histCtx + '\nStudent says: "' + userInput + '"\n\n' +
                         'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
+                      _runSafetyAssess(userInput, 'casestudy'); // CRISIS-3: Send-button path now triages like the Enter path
                       callGemini(prompt).then(function(resp) {
                         var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
                         updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
