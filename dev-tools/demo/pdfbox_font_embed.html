@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
+<title>PDFBox font-embedding recipe (7.21.4.1) — veraPDF-verified</title>
+<!--
+  The last common rule neither tier fixes: 7.21.4.1 (all fonts shall be embedded). A doc that
+  references a base-14 font (e.g. Helvetica) with no embedded program fails. This recipe, on the
+  proven PDFBox+veraPDF co-load:
+    R-FONT  detect non-embedded fonts in each page's resources → embed a WinAnsi TrueType
+            substitute (NotoSans — the SAME font AlloFlow's pipeline already fetches) and
+            re-point the resource. Existing 1-byte WinAnsi/ASCII text codes still resolve, so
+            the characters are preserved (glyph metrics are approximate — disclosed for review).
+  Then veraPDF re-validates → the 7.21.4.1 failure should be gone.
+-->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
+</head><body><pre id="out">starting…</pre><script>
+  const out = document.getElementById('out');
+  function log(m) { out.textContent += '\n' + m; console.log('[font] ' + m); }
+  const NOTO_URL = 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf';
+
+  (async () => {
+    window.__done = null;
+    try {
+      await cheerpjInit();
+      log('cheerpjInit done');
+      const lib = await cheerpjRunLibrary('/app/verapdf-cli.jar:/app/pdfbox-app.jar');
+      log('co-loaded veraPDF + PDFBox');
+
+      // ── veraPDF ──
+      const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
+      await Provider.initialise();
+      const foundry = await (await lib.org.verapdf.pdfa.Foundries).defaultInstance();
+      const ua1 = await (await lib.org.verapdf.pdfa.flavours.PDFAFlavour).fromString('ua1');
+      const FileInputStream = await lib.java.io.FileInputStream;
+      async function validate(path) {
+        const fis = await new FileInputStream(path);
+        const parser = await foundry.createParser(fis, ua1);
+        const validator = await foundry.createValidator(ua1, false);
+        const result = await validator.validate(parser);
+        const compliant = await result.isCompliant();
+        const seen = new Set();
+        try {
+          const it = await (await result.getTestAssertions()).iterator();
+          while (await it.hasNext()) { const a = await it.next(); const r = await a.getRuleId(); seen.add((await r.getClause()) + 't' + (await r.getTestNumber())); }
+        } catch (e) {}
+        try { await parser.close(); } catch (e) {}
+        return { compliant: !!compliant, rules: [...seen] };
+      }
+
+      // ── PDFBox handles ──
+      const pb = lib.org.apache.pdfbox;
+      const Loader = await pb.Loader, File = await lib.java.io.File;
+      const PDTrueTypeFont = await pb.pdmodel.font.PDTrueTypeFont;
+      const WinAnsiEncoding = await pb.pdmodel.font.encoding.WinAnsiEncoding;
+
+      // ── fixture: 1 page, NON-embedded Helvetica text (pdf-lib base-14 = not embedded) ──
+      const { PDFDocument, StandardFonts } = window.PDFLib;
+      const src = await PDFDocument.create();
+      src.setTitle('Font Embed Test');
+      const helv = await src.embedFont(StandardFonts.Helvetica); // base-14, NOT embedded
+      const pg = src.addPage([612, 792]);
+      pg.drawText('The quick brown fox jumps over the lazy dog.', { x: 72, y: 700, size: 14, font: helv });
+      cheerpOSAddStringFile('/str/nonembed.pdf', await src.save());
+      const before = await validate('/str/nonembed.pdf');
+      const fontRule = (rs) => rs.filter((r) => r.indexOf('7.21') === 0);
+      log('fixture → veraPDF: compliant=' + before.compliant + ' | font rules: ' + (fontRule(before.rules).join(', ') || 'none') + ' | all: ' + before.rules.join(', '));
+
+      // ── R-FONT: embed a WinAnsi TrueType substitute + re-point non-embedded fonts ──
+      const ttf = new Uint8Array(await (await fetch(NOTO_URL)).arrayBuffer());
+      cheerpOSAddStringFile('/str/sub.ttf', ttf);
+      log('fetched NotoSans-Regular.ttf (' + ttf.length + ' bytes)');
+      const doc = await Loader.loadPDF(await new File('/str/nonembed.pdf'));
+      const subFont = await PDTrueTypeFont.load(doc, await new File('/str/sub.ttf'), await WinAnsiEncoding.INSTANCE);
+      let replaced = 0;
+      const n = await doc.getNumberOfPages();
+      for (let i = 0; i < n; i++) {
+        const res = await (await doc.getPage(i)).getResources();
+        const names = [];
+        const it = await (await res.getFontNames()).iterator();
+        // safe to substitute ONLY non-embedded STANDARD-14 fonts (Helvetica/Times/Courier = ASCII/WinAnsi);
+        // a symbolic or CID font would render wrong glyphs under a WinAnsi substitute, so skip those.
+        while (await it.hasNext()) { const nm = await it.next(); const f = await res.getFont(nm); if (f && !(await f.isEmbedded()) && (await f.isStandard14())) names.push(nm); }
+        for (const nm of names) { await res.put(nm, subFont); replaced++; }
+      }
+      log('R-FONT: embedded NotoSans + re-pointed ' + replaced + ' non-embedded font(s)');
+      await doc.save('/files/font_embedded.pdf');
+      await doc.close();
+
+      const after = await validate('/files/font_embedded.pdf');
+      log('after R-FONT → veraPDF: compliant=' + after.compliant + ' | font rules: ' + (fontRule(after.rules).join(', ') || 'none') + ' | all: ' + after.rules.join(', '));
+
+      const fontCleared = fontRule(before.rules).length > 0 && fontRule(after.rules).length === 0;
+      log(fontCleared ? '\n✅ FONT-EMBEDDING RECIPE PROVEN — 7.21.x non-embedded-font failure cleared in-browser.'
+                      : '\n⚠ font rule not cleared as expected (before: ' + fontRule(before.rules).join(',') + ' after: ' + fontRule(after.rules).join(','));
+      window.__done = { ok: fontCleared, before, after, replaced };
+    } catch (e) {
+      log('ERROR: ' + (e && (e.stack || e.message) || e));
+      window.__done = { ok: false, err: String(e && (e.message || e)) };
+    }
+  })();
+</script></body></html>
