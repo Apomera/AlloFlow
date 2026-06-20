@@ -6107,7 +6107,14 @@ var createDocPipeline = function(deps) {
         const _tConf = _meanConf(tPage);
         const _extremeGarbage = _winJ >= 0.45 && _altJ < _winJ; // winner is mostly non-text → garbage even if longer
         const _clearlyWorse = _winJ >= 0.18 && _winJ >= _altJ * 1.6 && _substantialAlt; // absolutely + relatively junkier
-        const _lowConfTess = _winner === 'tesseract' && _tConf != null && _tConf < 50 && _vJ <= _tJ && _substantialAlt;
+        // Low-confidence Tesseract → prefer a cleaner, substantial Vision. Threshold raised 50→60
+        // (2026-06-20) to match the B5 low-confidence banner: garbled-but-letter-shaped OCR (e.g. a
+        // shaded callout box — "lke"/"ae"/"mac") has LOW junk-ratio so _extremeGarbage/_clearlyWorse
+        // miss it; confidence is the right signal. The guards stay — only flips when Vision is at
+        // least as clean (_vJ <= _tJ) AND substantial (≥50% length), so we never trade down to a
+        // worse/shorter page. (Won't help when Vision is empty/short for the page — that's the
+        // separate Vision per-page-coverage issue.)
+        const _lowConfTess = _winner === 'tesseract' && _tConf != null && _tConf < 60 && _vJ <= _tJ && _substantialAlt;
         if (_extremeGarbage || _clearlyWorse || _lowConfTess) _winner = _winner === 'tesseract' ? 'vision' : 'tesseract';
       }
       const chosen = _winner === 'tesseract' ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
