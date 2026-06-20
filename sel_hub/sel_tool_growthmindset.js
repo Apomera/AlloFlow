@@ -20,9 +20,13 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
-  // ── Inject SEL Visual Polish CSS (shared keyframes + effects) ──
-  (function() {
-    if (document.getElementById('sel-visual-polish-css')) return;
+  // ── SEL Visual Polish CSS (shared keyframes + effects) ──
+  // Defined here but injected at RENDER time (see render → _selInjectVisualPolishCSS()),
+  // not at module load, so merely loading this tool's script no longer mutates
+  // document.head app-wide. The .sel-* classes are used only by this tool; the
+  // prefers-reduced-motion rule it carries is a genuine accommodation and is kept.
+  function _selInjectVisualPolishCSS() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('sel-visual-polish-css')) return;
     var style = document.createElement('style');
     style.id = 'sel-visual-polish-css';
     style.textContent = [
@@ -58,7 +62,7 @@ window.SelHub = window.SelHub || {
       '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
     ].join('\n');
     document.head.appendChild(style);
-  })();
+  }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -220,6 +224,7 @@ window.SelHub = window.SelHub || {
     color: 'emerald',
     category: 'self-direction',
     render: function(ctx) {
+      _selInjectVisualPolishCSS(); // inject visual-polish CSS on first render, not at module load (A11Y-6)
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;

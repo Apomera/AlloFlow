@@ -19868,7 +19868,36 @@ if (activeTab === 'weather') {
     { id: 'mixed',   label: 'Mixed = Rainbow after rain', bg: P.card, accent: '#22d3ee', kind: 'rainbow', desc: 'Two true things at once. Beauty AND sadness can share the sky.' }
   ];
   var scene = WEATHER_SCENES.find(function(s) { return s.id === wxEmotion; }) || WEATHER_SCENES[0];
-  // SVG-based weather animation
+  // SVG-based weather animation. The sel-emo-* classes below had NO keyframes
+  // anywhere, so the scenes never animated. Inject them once, at render time (not
+  // at module load), with a mandatory prefers-reduced-motion override — the hub's
+  // global reduced-motion rule only covers modal overlays, not in-page tool
+  // content. Timings are deliberately calm and the "flash" is a slow opacity
+  // pulse (~0.4 Hz, far under the 3/s photosensitivity threshold) since this is a
+  // children's tool.
+  (function injectWeatherKeyframes() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('sel-emo-weather-css')) return;
+    var st = document.createElement('style');
+    st.id = 'sel-emo-weather-css';
+    st.textContent = [
+      '@keyframes selEmoSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}',
+      '@keyframes selEmoDrift{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}',
+      '@keyframes selEmoRain{0%{transform:translateY(-10px);opacity:0}10%{opacity:.7}100%{transform:translateY(330px);opacity:0}}',
+      '@keyframes selEmoFlash{0%,100%{opacity:.25}50%{opacity:.9}}',
+      '@keyframes selEmoFog{0%,100%{transform:translateX(-12px);opacity:.3}50%{transform:translateX(12px);opacity:.5}}',
+      '@keyframes selEmoWind{0%{transform:translateX(-20px);opacity:.3}50%{opacity:.8}100%{transform:translateX(20px);opacity:.3}}',
+      '@keyframes selEmoSnow{0%{transform:translateY(-10px);opacity:0}10%{opacity:.8}100%{transform:translateY(330px) translateX(12px);opacity:.2}}',
+      '.sel-emo-spin{animation:selEmoSpin 40s linear infinite}',
+      '.sel-emo-drift{animation:selEmoDrift 9s ease-in-out infinite}',
+      '.sel-emo-rain{animation:selEmoRain 1.1s linear infinite}',
+      '.sel-emo-flash{animation:selEmoFlash 2.4s ease-in-out infinite}',
+      '.sel-emo-fog{animation:selEmoFog 12s ease-in-out infinite}',
+      '.sel-emo-wind{animation:selEmoWind 3s ease-in-out infinite}',
+      '.sel-emo-snow{animation:selEmoSnow 3.2s linear infinite}',
+      '@media (prefers-reduced-motion: reduce){.sel-emo-spin,.sel-emo-drift,.sel-emo-rain,.sel-emo-flash,.sel-emo-fog,.sel-emo-wind,.sel-emo-snow{animation:none !important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
   var weatherSvg = h('svg', {
     width: '100%', height: 320, viewBox: '0 0 400 320',
     style: { background: scene.bg, borderRadius: 12, display: 'block' }
