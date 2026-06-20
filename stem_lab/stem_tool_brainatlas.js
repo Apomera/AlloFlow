@@ -2725,6 +2725,15 @@ var d = labToolData.brainAtlas || {};
                 var densY = function (dn) { return yB - dn * pH; };
                 ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, yB); ctx.lineTo(x0 + pW, yB); ctx.stroke();
+                // Horizontal density gridlines + y-tick labels (readability — the
+                // chart had an axis line but no reference levels for the curves).
+                ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+                [0, 0.25, 0.5, 0.75, 1.0].forEach(function (dn) {
+                  var gy = densY(dn);
+                  ctx.strokeStyle = 'rgba(71,85,105,0.35)'; ctx.lineWidth = 1;
+                  ctx.beginPath(); ctx.moveTo(x0, gy); ctx.lineTo(x0 + pW, gy); ctx.stroke();
+                  ctx.fillStyle = '#64748b'; ctx.fillText(dn === 1.0 ? 'peak' : dn.toFixed(2), x0 - 6, gy + 3);
+                });
                 ctx.fillStyle = '#64748b'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
                 [0, 1, 2, 5, 10, 15, 20, 25, 40, 70].forEach(function (a) { var x = ageX(a); ctx.beginPath(); ctx.moveTo(x, yB); ctx.lineTo(x, yB + 4); ctx.stroke(); ctx.fillText(a + (a === 70 ? '+' : ''), x, yB + 16); });
                 ctx.fillText('Age (years)', x0 + pW / 2, yB + 34);
