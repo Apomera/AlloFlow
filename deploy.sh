@@ -119,6 +119,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ curated non-STEM CDN modules render without throwing."
   node dev-tools/check_aria_handler.cjs --quiet
   echo "  ✓ no object-typed aria-labels / unguarded tool-state array-spreads."
+  node dev-tools/scan_group_t_calls.cjs --quiet
+  echo "  ✓ no group-level t() calls (an i18n group OBJECT rendered as a React child = fatal crash; the pdf_audit.fidelity regression)."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────

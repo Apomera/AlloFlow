@@ -4,6 +4,7 @@
 // class of bug behind the pdf_audit.fidelity crash (a leaf key that collided with a section group).
 //   node dev-tools/scan_group_t_calls.cjs
 const fs = require('fs');
+const QUIET = process.argv.includes('--quiet');
 const REPO = process.cwd();
 const LANG = REPO + '/lang/spanish_latin_america.js'; // any full pack works — structure is shared
 const lang = JSON.parse(fs.readFileSync(LANG, 'utf8'));
@@ -28,6 +29,6 @@ for (const f of files) {
     if (groups.has(key) && !/returnObjects\s*:\s*true/.test(rest)) flagged.push(f + '  ->  t("' + key + '")');
   }
 }
-console.log('Group key-paths: ' + groups.size + ' | scanned ' + files.length + ' shipped files');
-if (flagged.length) { console.log('\n[FAIL] group-level t() calls without {returnObjects:true} (render an object -> crash):'); [...new Set(flagged)].forEach((x) => console.log('  ' + x)); process.exit(1); }
-console.log('\n[OK] no unsafe group-level t() calls');
+if (!QUIET) console.log('Group key-paths: ' + groups.size + ' | scanned ' + files.length + ' shipped files');
+if (flagged.length) { console.log('[FAIL] group-level t() calls without {returnObjects:true} (render an i18n group object -> React crash):'); [...new Set(flagged)].forEach((x) => console.log('  ' + x)); process.exit(1); }
+if (!QUIET) console.log('[OK] no unsafe group-level t() calls');
