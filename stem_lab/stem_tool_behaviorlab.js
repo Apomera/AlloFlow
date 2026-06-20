@@ -841,7 +841,7 @@ dataRef.current = d;
             { year: 1961, event: 'Bandura\u2019s Bobo doll study on observational learning/modeling', icon: '\uD83E\uDE86', era: 'growth' },
             { year: 1968, event: 'Baer, Wolf & Risley publish "Some Current Dimensions of ABA" \u2014 ABA formally defined', icon: '\u2B50', era: 'growth' },
             { year: 1970, event: 'Lovaas begins intensive ABA-based early intervention for autism', icon: '\uD83E\uDDE9', era: 'applied' },
-            { year: 1987, event: 'Lovaas Study: 47% of children achieve "normal functioning" with intensive ABA', icon: '\uD83D\uDCC8', era: 'applied' },
+            { year: 1987, event: 'Lovaas study reports 47% of children reached "normal functioning" with intensive ABA \u2014 an influential but contested result (non-random design, not replicated at that rate; "normalization"/"indistinguishable" goals are now widely critiqued for training masking)', icon: '\uD83D\uDCC8', era: 'applied' },
             { year: 1998, event: 'BACB (Behavior Analyst Certification Board) established', icon: '\uD83C\uDFC5', era: 'modern' },
             { year: 2005, event: 'BACB introduces BCBA certification exam', icon: '\uD83C\uDF93', era: 'modern' },
             { year: 2014, event: 'All 50 US states require insurance coverage for ABA autism treatment', icon: '\uD83C\uDFE5', era: 'modern' },
