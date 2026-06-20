@@ -4269,7 +4269,7 @@
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Design parameters'),
               h('table', { style: { width: '100%', fontSize: 12, color: '#0f172a', borderCollapse: 'collapse' } },
                 h('tbody', null,
-                  printRow('Bridge type', 'Warren truss, ' + d.nBays + ' bays'),
+                  printRow('Bridge type', ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren') + ' truss, ' + d.nBays + ' bays'),
                   printRow('Span', d.span + ' m'),
                   printRow('Height', d.height + ' m'),
                   printRow('Load per top joint', d.loadPerJoint + ' kN'),
