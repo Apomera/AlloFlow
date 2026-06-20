@@ -17599,9 +17599,18 @@ tr { page-break-inside: avoid; }
     // Checker as "orphaned semantic elements with no content linkage." This pass
     // retro-patches each leaf with /K → MCR(page, MCID 0) — the page-wrap MCID
     // that Stage-3 already generates per-page. Every leaf shares MCID 0 on its
-    // assigned page, which is structurally degenerate (no per-leaf granularity)
-    // but VALID per PDF spec, and /ActualText still wins for SR reading order
-    // per spec §14.9.4, so the SR experience is unchanged.
+    // assigned page, which is structurally degenerate (no per-leaf granularity):
+    // MULTIPLE struct elements then claim the same single marked-content sequence.
+    // CORRECTION (2026-06-20, verified via dev-tools/demo/inspect_structtree.cjs): this is
+    // NOT "valid per PDF spec" — ISO 32000 §14.7.4 expects one MCID to belong to one element,
+    // so PAC 2024 / Adobe may flag the multiply-claimed MCID (veraPDF does NOT — confirmed
+    // blind spot, scanned fixtures pass 106/0). What saves the actual SR experience is that
+    // every SEMANTIC text leaf carries correct /ActualText (empirically: all H1/H2/P/TH/TD read
+    // their own text; the only leaves without it are the legitimate per-page MCID-0 owners),
+    // and §14.9.4 makes /ActualText authoritative for reading order — so the SR experience is
+    // correct DESPITE the degenerate MCID. The spec-clean fix (per-leaf MCIDs) was attempted at
+    // b0d24ae3 and reverted for an unexplained content-loss regression, so this multiply-claim +
+    // /ActualText combination is the deliberate, SR-correct trade-off, not a clean tag tree.
     //
     // Slice 1 (single-page): all leaves point to pages[0].ref MCID 0.
     // Slice 2 (multi-page): leaves are distributed PROPORTIONALLY across pages
@@ -18665,6 +18674,23 @@ tr { page-break-inside: avoid; }
     // outline first gives SR readers the semantic reading order when they
     // traverse the tag tree depth-first.
     const combinedK = structElemRefs.concat(pageElemRefs).concat(fieldElemRefs).concat(linkAnnotElemRefs);
+    // Wrap all top-level structure under a single /Document element — PAC 2024 / Matterhorn expect
+    // exactly ONE Document element as the StructTreeRoot child; multiple top-level siblings
+    // (H1/Sect/P…) get flagged. The Document is a pure container (no page content → no ParentTree
+    // entry); re-parent each former top-level child's /P (currently → structRootRef) to it.
+    // Safe: structure-only, no content redraw; nested elements keep their existing /P.
+    let topLevelK = combinedK;
+    if (combinedK.length > 0) {
+      try {
+        const documentRef = context.register(context.obj({
+          Type: PDFName.of('StructElem'), S: PDFName.of('Document'), P: structRootRef, K: context.obj(combinedK),
+        }));
+        for (const childRef of combinedK) {
+          try { const _ch = context.lookup(childRef); if (_ch && typeof _ch.set === 'function') _ch.set(PDFName.of('P'), documentRef); } catch (_) {}
+        }
+        topLevelK = [documentRef];
+      } catch (docErr) { topLevelK = combinedK; try { warnLog('[createTaggedPdf] /Document wrapper failed (non-fatal): ' + (docErr && docErr.message)); } catch (_) {} }
+    }
     // Stage 5b lite: /IDTree name tree. Required by readers that resolve TD
     // /Headers [(id)] back to the referenced TH StructElem. Name tree keys
     // must be sorted lexicographically (PDF spec §7.9.6).
@@ -18682,7 +18708,7 @@ tr { page-break-inside: avoid; }
     }
     const structRootDictBody = {
       Type: PDFName.of('StructTreeRoot'),
-      K: context.obj(combinedK),
+      K: context.obj(topLevelK),
       ParentTree: parentTreeRef,
       ParentTreeNextKey: PDFNumber.of(nextStructParentKey),
       RoleMap: context.obj({}),

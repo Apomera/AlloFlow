@@ -18672,6 +18672,23 @@ tr { page-break-inside: avoid; }
     // outline first gives SR readers the semantic reading order when they
     // traverse the tag tree depth-first.
     const combinedK = structElemRefs.concat(pageElemRefs).concat(fieldElemRefs).concat(linkAnnotElemRefs);
+    // Wrap all top-level structure under a single /Document element — PAC 2024 / Matterhorn expect
+    // exactly ONE Document element as the StructTreeRoot child; multiple top-level siblings
+    // (H1/Sect/P…) get flagged. The Document is a pure container (no page content → no ParentTree
+    // entry); re-parent each former top-level child's /P (currently → structRootRef) to it.
+    // Safe: structure-only, no content redraw; nested elements keep their existing /P.
+    let topLevelK = combinedK;
+    if (combinedK.length > 0) {
+      try {
+        const documentRef = context.register(context.obj({
+          Type: PDFName.of('StructElem'), S: PDFName.of('Document'), P: structRootRef, K: context.obj(combinedK),
+        }));
+        for (const childRef of combinedK) {
+          try { const _ch = context.lookup(childRef); if (_ch && typeof _ch.set === 'function') _ch.set(PDFName.of('P'), documentRef); } catch (_) {}
+        }
+        topLevelK = [documentRef];
+      } catch (docErr) { topLevelK = combinedK; try { warnLog('[createTaggedPdf] /Document wrapper failed (non-fatal): ' + (docErr && docErr.message)); } catch (_) {} }
+    }
     // Stage 5b lite: /IDTree name tree. Required by readers that resolve TD
     // /Headers [(id)] back to the referenced TH StructElem. Name tree keys
     // must be sorted lexicographically (PDF spec §7.9.6).
@@ -18689,7 +18706,7 @@ tr { page-break-inside: avoid; }
     }
     const structRootDictBody = {
       Type: PDFName.of('StructTreeRoot'),
-      K: context.obj(combinedK),
+      K: context.obj(topLevelK),
       ParentTree: parentTreeRef,
       ParentTreeNextKey: PDFNumber.of(nextStructParentKey),
       RoleMap: context.obj({}),
