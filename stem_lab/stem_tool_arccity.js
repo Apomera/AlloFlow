@@ -1297,6 +1297,24 @@
         for (var gx = 0; gx <= 10; gx++) gridEls.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: sy(wy0), x2: sx(gx), y2: sy(wy1), stroke: GRID, strokeWidth: gx === 0 ? 1.5 : 0.5, opacity: gx === 0 ? 0.9 : 0.4 }));
         for (var gy = 0; gy <= 8; gy++) gridEls.push(h('line', { key: 'gy' + gy, x1: sx(wx0), y1: sy(gy), x2: sx(wx1), y2: sy(gy), stroke: GRID, strokeWidth: gy === 0 ? 1.5 : 0.5, opacity: gy === 0 ? 0.9 : 0.4 }));
 
+        // ── Axis tick numbers + titles ──
+        // A graphing tool must let the student READ coordinates off the grid:
+        // without these, tuning m to reach node (8,4) meant counting unlabeled
+        // gridlines. Integer ticks along the bottom (x) and left (y) edges (inset
+        // so the overflow-hidden viewBox never clips them), a single origin "0",
+        // and x/y axis titles. Bounds come from the world (not hardcoded) so they
+        // track any window. paintOrder halo keeps them legible over grid/sky on
+        // both themes; INK is the WCAG-tested, theme-aware ink colour.
+        var axisEls = [];
+        var _gxMax = Math.round(wx1), _gyMax = Math.round(wy1);
+        var _tickHalo = THEME === 'dark' ? 'rgba(2,8,6,0.55)' : 'rgba(255,255,255,0.7)';
+        var _tickStyle = { paintOrder: 'stroke', stroke: _tickHalo, strokeWidth: 2.5 };
+        axisEls.push(h('text', { key: 'ax0', x: 6, y: H - 5, textAnchor: 'start', fill: INK, fontSize: 10, fontWeight: 600, style: _tickStyle, 'aria-hidden': 'true' }, '0'));
+        for (var _tx = 1; _tx < _gxMax; _tx++) axisEls.push(h('text', { key: 'axx' + _tx, x: sx(_tx), y: H - 5, textAnchor: 'middle', fill: INK, fontSize: 10, fontWeight: 600, style: _tickStyle, 'aria-hidden': 'true' }, String(_tx)));
+        for (var _ty = 1; _ty < _gyMax; _ty++) axisEls.push(h('text', { key: 'axy' + _ty, x: 6, y: sy(_ty) + 3, textAnchor: 'start', fill: INK, fontSize: 10, fontWeight: 600, style: _tickStyle, 'aria-hidden': 'true' }, String(_ty)));
+        axisEls.push(h('text', { key: 'axtX', x: W - 6, y: H - 6, textAnchor: 'end', fill: INK, fontSize: 12, fontWeight: 700, fontStyle: 'italic', style: _tickStyle, 'aria-hidden': 'true' }, 'x'));
+        axisEls.push(h('text', { key: 'axtY', x: 6, y: 14, textAnchor: 'start', fill: INK, fontSize: 12, fontWeight: 700, fontStyle: 'italic', style: _tickStyle, 'aria-hidden': 'true' }, 'y'));
+
         // Gates IGNITE green the moment the beam threads them all (a solved board
         // turns success-green) — ties the visceral payoff straight to the math.
         var litNow = ls.solved || res.result === 'hit';
@@ -1463,7 +1481,7 @@
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat([defs], backdropEls, gridEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
+        }, [].concat([defs], backdropEls, gridEls, axisEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
 
         // ── Level progression bar ──
         var levelBtns = LEVELS.map(function (lv, i) {
@@ -1488,8 +1506,8 @@
               padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: current ? 800 : 600,
               border: '1px solid ' + (current ? BEAM : GRID),
               background: current ? 'rgba(34,211,238,0.15)' : 'transparent',
-              color: unlocked ? INK : 'var(--allo-stem-text, #64748b)',
-              opacity: unlocked ? 1 : 0.5, cursor: unlocked ? 'pointer' : 'not-allowed', textAlign: 'center'
+              color: unlocked ? INK : 'var(--allo-stem-text-soft, #475569)',
+              opacity: unlocked ? 1 : 0.7, cursor: unlocked ? 'pointer' : 'not-allowed', textAlign: 'center'
             }
           }, h('div', { key: 'face' }, face), starLine);
         });
