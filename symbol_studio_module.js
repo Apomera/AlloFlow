@@ -6536,6 +6536,7 @@
           e('button', { onClick: symMode === 'single' ? genSingle : genBatch, disabled: isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim()), 'aria-label': isLoading ? 'Generating symbols' : 'Generate symbol' + (symMode === 'batch' ? ' batch' : ''), style: S.btn(PURPLE, '#fff', isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim())) },
             isLoading ? '⏳ Generating...' : '✨ Generate' + (symMode === 'batch' ? ' Batch' : '')
           ),
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols — not a validated symbol set (e.g. PCS / SymbolStix). Review each for accuracy and consistency before classroom or clinical use.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
           gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': 'Clear all symbols from gallery', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
         ),
@@ -7236,7 +7237,8 @@
           ),
           e('div', null,
             e('label', { style: S.lbl }, 'Additional context (optional)'),
-            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. Marcus is 7, has autism, loves trains', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) })
+            e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. likes trains, gets nervous at drop-off (avoid real names / diagnoses)', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) }),
+            e('p', { style: { fontSize: '10px', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '6px', padding: '4px 8px', margin: '4px 0 0' } }, 'Story and image prompts are sent to a cloud AI (Google Gemini / Imagen). Do not enter real student names, diagnoses, or other identifying details (FERPA).')
           ),
           e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': 'Generate social story', style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
           e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.'),
