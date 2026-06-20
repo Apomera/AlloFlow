@@ -346,6 +346,41 @@
         const recorderRef = React.useRef(null);
         const fileInputRef = React.useRef(null);
         const audioElRef = React.useRef(null); // the one preview clip currently playing
+        const modalRootRef = React.useRef(null); // dialog root, for the focus trap
+        const previouslyFocusedRef = React.useRef(null); // element to restore focus to on close
+        // Focus management (WCAG 2.4.3 / 2.1.2): move focus into the dialog on open,
+        // trap Tab inside it, close on Escape, and restore focus to the trigger on close.
+        React.useEffect(() => {
+            const root = modalRootRef.current;
+            if (!root || typeof document === 'undefined') return undefined;
+            previouslyFocusedRef.current = document.activeElement;
+            const FOCUSABLE = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+            const getFocusable = () => Array.from(root.querySelectorAll(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
+            const focusTimer = setTimeout(() => { const f = getFocusable(); (f[0] || root).focus(); }, 0);
+            const onKeyDown = (e) => {
+                if (e.key === 'Escape') { e.preventDefault(); if (typeof onClose === 'function') onClose(); return; }
+                if (e.key !== 'Tab') return;
+                const f = getFocusable();
+                if (f.length === 0) { e.preventDefault(); root.focus(); return; }
+                const first = f[0];
+                const last = f[f.length - 1];
+                const active = document.activeElement;
+                if (e.shiftKey) {
+                    if (active === first || !root.contains(active)) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (active === last || !root.contains(active)) { e.preventDefault(); first.focus(); }
+                }
+            };
+            root.addEventListener('keydown', onKeyDown);
+            return () => {
+                clearTimeout(focusTimer);
+                root.removeEventListener('keydown', onKeyDown);
+                const prev = previouslyFocusedRef.current;
+                if (prev && typeof prev.focus === 'function' && document.contains(prev)) {
+                    try { prev.focus(); } catch (e) { /* trigger gone — nothing to restore to */ }
+                }
+            };
+        }, []);
         // Play a single clip, stopping whatever was playing first (no overlap/stacking).
         const playPreview = (src) => {
             try { if (audioElRef.current) { audioElRef.current.pause(); audioElRef.current = null; } } catch (e) {}
@@ -561,7 +596,7 @@
             return <span className={`text-[10px] font-semibold ${good ? 'text-emerald-600' : 'text-amber-600'}`} title={c.note || ''}>{good ? '✓ sounds right' : ('⚠ ' + (c.note || 'try again'))}</span>;
         };
         return (
-            <div className="fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-label="Phoneme Voice Pack editor">
+            <div ref={modalRootRef} tabIndex={-1} className="fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 outline-none" role="dialog" aria-modal="true" aria-label="Phoneme Voice Pack editor">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
                     <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white">
                         <div>
