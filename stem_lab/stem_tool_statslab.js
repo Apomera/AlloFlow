@@ -4561,6 +4561,13 @@ window.StemLab = window.StemLab || {
           h('rect', { x: cx - bw / 2, y: sy(q.q3), width: bw, height: sy(q.q1) - sy(q.q3), fill: color, opacity: 0.30, stroke: color, strokeWidth: 1.5 }),
           // Median line (quartiles() returns q2 as the median — q.median was undefined → NaN → the line never drew)
           h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: '#fef3c7', strokeWidth: 2 }),
+          // Quartile value annotations (Q3 / Md / Q1) beside the box — only when
+          // there are few groups, so the labels never crowd adjacent boxes.
+          validGroups.length <= 4 ? h('g', { key: 'qlab' },
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q3) + 3, fill: '#cbd5e1', fontSize: 8 }, 'Q3 ' + q.q3.toFixed(1)),
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q2) + 3, fill: '#fde68a', fontSize: 8, fontWeight: 700 }, 'Md ' + q.q2.toFixed(1)),
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q1) + 3, fill: '#cbd5e1', fontSize: 8 }, 'Q1 ' + q.q1.toFixed(1))
+          ) : null,
           // Mean dot
           h('circle', { cx: cx, cy: sy(mean(x)), r: 3, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1 }),
           // Outliers
