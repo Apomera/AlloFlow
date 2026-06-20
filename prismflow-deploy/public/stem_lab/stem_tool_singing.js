@@ -288,7 +288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var lineGap = opts.lineGap || 10;
     var isDark = opts.isDark;
 
-    c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
+    c.strokeStyle = isDark ? '#94a3b8' : '#475569';
     c.lineWidth = 1;
 
     // 5 staff lines
@@ -444,7 +444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         c.moveTo(plotX, noteY);
         c.lineTo(W, noteY);
         c.stroke();
-        c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+        c.fillStyle = isDark ? '#94a3b8' : '#475569';
         c.fillText(noteInfo.str, labelW - 3, noteY + 3);
       } else if (isNatural) {
         c.strokeStyle = isDark ? '#1e293b' : '#e2e8f0';
@@ -458,7 +458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Draw pitch history line
     if (!history || history.length < 2) {
-      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      c.fillStyle = isDark ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.font = '13px sans-serif';
       c.fillText('Start singing to see your pitch', W / 2, H / 2);
@@ -558,7 +558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Labels
     c.font = '8px sans-serif';
-    c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    c.fillStyle = isDark ? '#94a3b8' : '#475569';
     c.textAlign = 'center';
     c.fillText('Flat', barX + 10, barY + barH + 12);
     c.fillText('Sharp', barX + barW - 10, barY + barH + 12);
@@ -599,7 +599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     c.fillRect(0, 0, W, H);
 
     if (!history || history.length < 10) {
-      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      c.fillStyle = isDark ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.font = '12px sans-serif';
       c.fillText('Sustain a note to see vibrato waveform', W / 2, H / 2);
@@ -621,7 +621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var gridCents = [-40, -20, 0, 20, 40];
     c.font = '8px sans-serif';
     c.textAlign = 'right';
-    c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+    c.fillStyle = isDark ? '#94a3b8' : '#475569';
     for (var gi = 0; gi < gridCents.length; gi++) {
       var gy = centerY - gridCents[gi] * scaleY;
       c.beginPath();
@@ -2730,7 +2730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         function renderPitchDetective() {
           // Note display color
           var centsAbs = Math.abs(currentNote.cents || 0);
-          var noteColor = currentNote.midi <= 0 ? (isDark ? '#94a3b8' : '#94a3b8')
+          var noteColor = currentNote.midi <= 0 ? (isDark ? '#94a3b8' : '#475569')
             : centsAbs <= 10 ? '#22c55e'
             : centsAbs <= 25 ? '#eab308'
             : '#ef4444';

@@ -202,11 +202,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       c.beginPath();
       c.moveTo(Math.cos(a) * (radius - 6), Math.sin(a) * (radius - 6));
       c.lineTo(Math.cos(a) * (radius - 1), Math.sin(a) * (radius - 1));
-      c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
+      c.strokeStyle = isDark ? '#94a3b8' : '#475569';
       c.lineWidth = 1;
       c.stroke();
       // Label
-      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+      c.fillStyle = isDark ? '#94a3b8' : '#475569';
       c.fillText(dirs[di], Math.cos(a) * (radius - 12), Math.sin(a) * (radius - 12));
     }
 
@@ -662,7 +662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.textAlign = 'left';
             c.fillText('Formation Efficiency: ' + eff + '%', 14, 26);
             c.font = '10px system-ui';
-            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.fillText('Energy Savings: ' + Math.round(eff * 0.65) + '%', 14, 40);
             c.fillText('Leader Rotations: ' + (leaderRotations || 0), 14, 52);
 
@@ -2264,7 +2264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.closePath();
             c.fillStyle = isDark ? '#475569' : '#94a3b8';
             c.fill();
-            c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
+            c.strokeStyle = isDark ? '#94a3b8' : '#475569';
             c.lineWidth = 1.5;
             c.stroke();
 
@@ -2417,7 +2417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.strokeRect(graphX - 5, graphY - 5, graphW + 10, graphH + 30);
 
             // Axes
-            c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
+            c.strokeStyle = isDark ? '#94a3b8' : '#475569';
             c.lineWidth = 1;
             c.beginPath();
             c.moveTo(graphX, graphY + graphH);
@@ -2471,7 +2471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.setLineDash([]);
 
             // Graph labels
-            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.font = '8px system-ui';
             c.textAlign = 'center';
             c.fillText('Angle of Attack (\u00B0)', graphX + graphW / 2, graphY + graphH + 22);
@@ -2484,13 +2484,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // Legend
             c.fillStyle = '#3b82f6';
             c.fillRect(graphX + 4, graphY + 4, 8, 2);
-            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.font = '8px system-ui';
             c.textAlign = 'left';
             c.fillText('Lift (C\u2097)', graphX + 16, graphY + 8);
             c.fillStyle = '#ef4444';
             c.fillRect(graphX + 4, graphY + 16, 8, 2);
-            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+            c.fillStyle = isDark ? '#94a3b8' : '#475569';
             c.fillText('Drag (C\u2091)', graphX + 16, graphY + 20);
 
             // Best L/D marker

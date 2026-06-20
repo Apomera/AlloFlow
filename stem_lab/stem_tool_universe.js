@@ -2072,7 +2072,7 @@ var d = labToolData.universe || {};
                       pctx.fillStyle = isDark ? '#e2e8f0' : '#334155';
                       pctx.fillText(sl.label, PW * 0.62 + 15, ly + 9);
                     });
-                    pctx.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+                    pctx.fillStyle = isDark ? '#94a3b8' : '#475569';
                     pctx.font = '8px system-ui';
                     pctx.textAlign = 'center';
                     pctx.fillText('Composition of the Universe', PW * 0.5, PH - 5);

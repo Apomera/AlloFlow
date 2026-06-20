@@ -3343,7 +3343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         gfx.stroke();
 
         // Axis labels
-        gfx.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
+        gfx.fillStyle = isDark ? '#94a3b8' : '#475569';
         gfx.font = '8px system-ui';
         gfx.textAlign = 'center';
         gfx.fillText('Distance \u2192', graphX + graphW / 2, graphY + graphH + 14);
