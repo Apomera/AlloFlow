@@ -954,7 +954,7 @@ window.StemLab = window.StemLab || {
                       fontSize: Math.min(24, Math.floor(600 / gridW)) + 'px',
                       userSelect: 'none', minWidth: '12px', minHeight: '12px'
                     }
-                  }, (showDanger && danger > 0) ? (tInfo.emoji || '') : (tInfo.emoji || ''));
+                  }, (showDanger && danger > 0 && tId === 'empty') ? h('span', { style: { fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.9)' } }, danger) : (tInfo.emoji || ''));
                 })
               )
             ),

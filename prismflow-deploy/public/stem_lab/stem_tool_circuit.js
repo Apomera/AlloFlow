@@ -1396,6 +1396,28 @@ window.StemLab = window.StemLab || {
               })
             ),
 
+            // Ohm's-law I-V characteristic — current vs voltage is a line through the origin (slope 1/R).
+            current > 0 && totalR < 1e8 && (function() {
+              var Vmax = Math.max(voltage * 1.5, voltage + 1), Imax = Vmax / totalR;
+              var W = 300, H = 130, pl = 38, pb = 22, pt = 10, pr = 10;
+              var sx = function(v) { return pl + (v / Vmax) * (W - pl - pr); };
+              var sy = function(i) { return pt + (1 - i / Imax) * (H - pt - pb); };
+              return h('div', { className: 'mt-3 bg-slate-900/40 border border-blue-500/20 rounded-xl p-3' },
+                h('p', { className: 'text-[11px] font-bold text-blue-400 uppercase tracking-wider mb-1' }, "⚡ Ohm's law: I–V characteristic"),
+                h('p', { className: 'text-[10px] text-slate-400 mb-2' }, 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.'),
+                h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Current versus voltage is a straight line through the origin; at ' + voltage + ' volts the current is ' + current.toFixed(3) + ' amps.' },
+                  h('line', { x1: pl, y1: pt, x2: pl, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
+                  h('line', { x1: pl, y1: H - pb, x2: W - pr, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
+                  h('line', { x1: sx(0), y1: sy(0), x2: sx(Vmax), y2: sy(Imax), stroke: '#3b82f6', strokeWidth: 2 }),
+                  h('line', { x1: sx(voltage), y1: sy(0), x2: sx(voltage), y2: sy(current), stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 2' }),
+                  h('line', { x1: sx(0), y1: sy(current), x2: sx(voltage), y2: sy(current), stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 2' }),
+                  h('circle', { cx: sx(voltage), cy: sy(current), r: 4, fill: '#60a5fa', stroke: '#0f172a', strokeWidth: 1 }),
+                  h('text', { x: sx(voltage) - 4, y: sy(current) - 4, textAnchor: 'end', fontSize: 8, fill: '#93c5fd', fontWeight: 'bold' }, voltage + 'V, ' + current.toFixed(2) + 'A'),
+                  h('text', { x: (pl + W - pr) / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, 'Voltage (V) →'),
+                  h('text', { x: 8, y: pt + 6, fontSize: 8, fill: '#94a3b8' }, 'I (A)')
+                )
+              );
+            })(),
             // ══════════════════════════════════════
             // Per-component analysis table
             // ══════════════════════════════════════

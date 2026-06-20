@@ -21087,6 +21087,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', fontFamily: 'monospace', marginBottom: '6px' } }, les.formula),
               h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.5' } }, les.variables)
             ),
+            // Stopping-distance-vs-speed chart — makes the v² growth (and the friction effect) visible.
+            selectedLesson === 'stopping' && (function() {
+              var G = 9.81, tR = 1.5;
+              var distFt = function(mph, mu) { var v = mph * 0.44704; return (v * tR + (v * v) / (2 * mu * G)) * 3.28084; };
+              var W = 320, H = 150, pl = 34, pb = 22, pt = 10, pr = 8, xMax = 80;
+              var yMax = Math.ceil(distFt(xMax, 0.4) / 100) * 100;
+              var sx = function(mph) { return pl + mph / xMax * (W - pl - pr); };
+              var sy = function(ft) { return pt + (1 - Math.min(ft, yMax) / yMax) * (H - pt - pb); };
+              var curve = function(mu) { var pts = []; for (var s = 0; s <= xMax; s += 5) pts.push(sx(s).toFixed(1) + ',' + sy(distFt(s, mu)).toFixed(1)); return pts.join(' '); };
+              return h('div', { style: { background: 'var(--allo-stem-deeper, #020617)', borderRadius: '10px', padding: '12px', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: '10px' } },
+                h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', marginBottom: '6px' } }, 'Total stopping distance vs speed (the v² curve)'),
+                h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Stopping distance grows with the square of speed; at 60 mph about ' + Math.round(distFt(60, 0.7)) + ' feet dry and ' + Math.round(distFt(60, 0.4)) + ' feet wet.' },
+                  [0, 0.25, 0.5, 0.75, 1].map(function(t, i) { var ft = yMax * t, y = sy(ft); return h('g', { key: i }, h('line', { x1: pl, y1: y, x2: W - pr, y2: y, stroke: '#1e293b', strokeWidth: 1 }), h('text', { x: pl - 3, y: y + 3, textAnchor: 'end', fontSize: 7, fill: '#64748b' }, Math.round(ft) + 'ft')); }),
+                  [20, 40, 60, 80].map(function(s) { return h('text', { key: s, x: sx(s), y: H - pb + 10, textAnchor: 'middle', fontSize: 7, fill: '#64748b' }, s); }),
+                  h('text', { x: (pl + W - pr) / 2, y: H - 2, textAnchor: 'middle', fontSize: 8, fill: '#94a3b8' }, 'Speed (mph) →'),
+                  h('polyline', { points: curve(0.7), fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
+                  h('polyline', { points: curve(0.4), fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+                  h('line', { x1: sx(60), y1: pt, x2: sx(60), y2: H - pb, stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 2' }),
+                  h('circle', { cx: sx(60), cy: sy(distFt(60, 0.7)), r: 3, fill: '#22c55e' }),
+                  h('circle', { cx: sx(60), cy: sy(distFt(60, 0.4)), r: 3, fill: '#fbbf24' })
+                ),
+                h('div', { style: { display: 'flex', gap: 12, marginTop: 4, fontSize: 10, flexWrap: 'wrap' } },
+                  h('span', { style: { color: '#22c55e', fontWeight: 700 } }, '— Dry (μ=0.7)'),
+                  h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, '— Wet (μ=0.4)'),
+                  h('span', { style: { color: '#94a3b8' } }, 'Ice (μ=0.1) ≈ 7× dry — off this chart.')
+                )
+              );
+            })(),
             h('div', { style: { background: 'rgba(251,191,36,0.08)', borderRadius: '10px', padding: '12px', border: '1px solid rgba(251,191,36,0.3)' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '4px' } }, 'Practice'),
               h('div', { style: { fontSize: '11px', color: '#fcd34d' } }, les.practice)

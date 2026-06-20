@@ -4186,6 +4186,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 2 } }, 'Shop cost'),
                 h('div', { style: { fontSize: 14, color: T.warn, fontWeight: 700 } }, pickedRepair.cost.shop))
             ),
+            // DIY vs shop cost — visualize the savings (midpoints parsed from the listed ranges).
+            (function() {
+              var parseCost = function(s) { var nums = (String(s).match(/\d+/g) || []).map(Number); return nums.length ? (Math.min.apply(null, nums) + Math.max.apply(null, nums)) / 2 : 0; };
+              var diy = parseCost(pickedRepair.cost.diy), shop = parseCost(pickedRepair.cost.shop);
+              if (shop <= 0) return null;
+              var maxC = Math.max(diy, shop, 1), save = Math.max(0, shop - diy), savePct = Math.round(save / shop * 100);
+              var bar = function(label, val, color) {
+                return h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                  h('span', { style: { width: 36, fontSize: 11, color: T.dim, fontWeight: 700 } }, label),
+                  h('div', { style: { flex: 1, height: 16, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' } },
+                    h('div', { style: { height: '100%', width: (val / maxC * 100) + '%', background: color, borderRadius: 4 } })),
+                  h('span', { style: { width: 52, textAlign: 'right', fontSize: 12, color: T.text, fontWeight: 800 } }, '$' + Math.round(val)));
+              };
+              return h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 } }, 'DIY vs shop (typical)'),
+                bar('DIY', diy, T.good || '#22c55e'),
+                bar('Shop', shop, T.warn || '#f59e0b'),
+                save > 0 && h('div', { style: { marginTop: 4, fontSize: 12, color: T.good, fontWeight: 700 } }, '↓ Save ~$' + Math.round(save) + ' (' + savePct + '%) doing it yourself'),
+                h('div', { style: { marginTop: 2, fontSize: 10, color: T.muted, fontStyle: 'italic' } }, 'Midpoints of the listed ranges. DIY cost excludes your time + any tool investment.')
+              );
+            })(),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
               h('strong', { style: { color: T.accentHi } }, '💡 '), pickedRepair.universal),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },

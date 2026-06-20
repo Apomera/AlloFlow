@@ -786,6 +786,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'h-2 bg-white/60 rounded-full overflow-hidden mb-1.5', 'aria-hidden': true },
                     h('div', { className: 'h-full bg-orange-600 transition-all', style: { width: catalogPct + '%' } })
                   ),
+                  // Per-type tally: all defect icons, lit when identified, grayed when not — shows WHICH remain.
+                  h('div', { className: 'flex flex-wrap gap-1 mb-1.5', 'aria-hidden': true },
+                    Object.keys(DEFECT_INFO).map(function (k) {
+                      var found = !!catalog[k];
+                      return h('span', { key: k, title: DEFECT_INFO[k].name + (found ? ' — identified' : ' — not yet found'),
+                        className: 'text-sm leading-none', style: found ? {} : { filter: 'grayscale(1)', opacity: 0.3 } }, DEFECT_INFO[k].icon || '•');
+                    })
+                  ),
                   h('p', { className: 'text-xs text-slate-700 leading-snug' },
                     foundDefectTypes === 0
                       ? 'Find your first defect in Defect Hunt Lab to start your inspector\'s catalog.'

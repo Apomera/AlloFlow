@@ -4021,6 +4021,21 @@ window.StemLab = window.StemLab || {
                 }, tk.emoji + ' ' + tk.label);
               })
             ),
+            // Trick-demand chart — required air time (s) per trick; harder tricks need more air.
+            (function() {
+              var maxAir = Math.max.apply(null, TRICKS.map(function(t) { return t.minAir; })) || 1;
+              return h('div', { style: { marginTop: 8 } },
+                h('div', { style: { fontSize: 9, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Air time each trick needs'),
+                TRICKS.slice().sort(function(a, b) { return a.minAir - b.minAir; }).map(function(tk) {
+                  var sel = d.trickId === tk.id;
+                  return h('div', { key: tk.id, style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                    h('span', { style: { width: 86, fontSize: 10, color: sel ? '#fbbf24' : '#fef3c7', fontWeight: sel ? 800 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, tk.emoji + ' ' + tk.label),
+                    h('div', { style: { flex: 1, height: 9, background: 'rgba(254,243,199,0.10)', borderRadius: 3, overflow: 'hidden' } },
+                      h('div', { style: { height: '100%', width: (tk.minAir / maxAir * 100) + '%', background: sel ? '#d97706' : 'rgba(251,191,36,0.55)', borderRadius: 3 } })),
+                    h('span', { style: { width: 36, textAlign: 'right', fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' } }, tk.minAir.toFixed(2) + 's'));
+                })
+              );
+            })(),
             // ── Custom-trick second row ──────────────────────────
             // Renders student-invented tricks as purple pills with
             // an inline × delete button. Visually distinct from the
