@@ -18620,7 +18620,7 @@ window.SelHub = window.SelHub || {
       description: {
         elementary: 'This is your “safe and friendly” feeling. Your body knows you\'re okay, so you can play, learn, and be with friends. Your face smiles easily and your voice sounds warm.',
         middle: 'Ventral vagal is the state where you feel safe enough to connect. Your nervous system has decided the environment and people are okay, so the social engagement system comes online. You can think, learn, joke, listen, and care about other people.',
-        high: 'The ventral vagal branch of the parasympathetic nervous system controls the muscles of the face, middle ear, larynx, and pharynx through cranial nerves V, VII, IX, X, and XI — what Porges calls the social engagement system. When the neuroception of safety is sufficient, this branch dominates, supporting heart rate variability, facial expressivity, vocal prosody, listening to human-frequency sounds, and the capacity for co-regulation. This is the substrate of learning, memory consolidation, immune function, and healthy connection.'
+        high: 'The ventral vagal branch of the parasympathetic nervous system controls the muscles of the face, middle ear, larynx, and pharynx through cranial nerves V, VII, IX, X, and XI — what Porges calls the social engagement system. When the neuroception of safety is sufficient, this branch dominates, supporting heart rate variability, facial expressivity, vocal prosody, listening to human-frequency sounds, and the capacity for co-regulation. In this model, feeling safe and settled is what makes it easier to learn, focus, and connect with others.'
       },
       feelsLike: [
         'Body relaxed but with normal energy',
@@ -18667,7 +18667,7 @@ window.SelHub = window.SelHub || {
       description: {
         elementary: 'This is your “alarm on” feeling. Your body thinks something is dangerous, so it gives you a lot of energy to fight back or run away. It\'s not bad — it\'s your body trying to protect you. But it\'s hard to think or learn when this alarm is loud.',
         middle: 'Sympathetic mobilization is the fight-or-flight state. Your body has decided action is needed for survival, so it floods you with energy: faster heart, faster breath, tight muscles, scanning eyes. It\'s adaptive in real danger, but in a classroom or social situation, it can hijack you.',
-        high: 'Sympathetic mobilization is driven by the sympathetic chain ganglia and adrenal medulla, releasing norepinephrine and cortisol. The amygdala signals threat, the HPA axis activates, blood is shunted from digestion and prefrontal cortex to large muscles. This is evolutionarily designed for brief acute threats followed by discharge and recovery, not for chronic activation — which produces sustained inflammation, immune suppression, and the structural narrowing of the window of tolerance.'
+        high: 'Sympathetic mobilization is driven by the sympathetic chain ganglia and adrenal medulla, releasing norepinephrine and cortisol. The amygdala signals threat, the HPA axis activates, blood is shunted from digestion and prefrontal cortex to large muscles. It is adaptive for brief, acute threats followed by recovery, not for staying switched on for long stretches; prolonged stress is associated with worse health and a harder time staying regulated over time.'
       },
       feelsLike: [
         'Heart pounding, fast pulse',
@@ -18757,7 +18757,7 @@ window.SelHub = window.SelHub || {
       description: {
         elementary: 'This is your “battery empty” feeling. Your body thinks the problem is too big to fight or run from, so it slows everything way down to save energy. You might feel foggy, numb, or like you\'re not really here. It\'s your body trying to protect you, even though it feels bad.',
         middle: 'Dorsal vagal shutdown is what happens when your nervous system decides a threat is too big to fight or flee. So it conserves energy by going offline: slow heart, slow breath, numb feelings, foggy thinking, withdrawal. It\'s an ancient survival response — evolutionarily older than fight/flight — and it\'s not weakness or laziness.',
-        high: 'Dorsal vagal shutdown is mediated by the unmyelinated dorsal motor nucleus of the vagus, the oldest branch of the parasympathetic nervous system, shared with reptiles. When neuroception detects inescapable threat (real or perceived), the system collapses: bradycardia, hypotension, immobilization, dissociation, analgesia. In trauma populations this becomes a default response, producing chronic depression, dissociative symptoms, and the experience of “not being here.” It is metabolically expensive over time and disrupts every body system.'
+        high: 'Dorsal vagal shutdown is mediated by the unmyelinated dorsal motor nucleus of the vagus. When neuroception detects inescapable threat (real or perceived), the system collapses: bradycardia, hypotension, immobilization, dissociation, analgesia. In trauma populations this becomes a default response, and is linked over time with low mood, dissociation, and the experience of “not being here.” Staying stuck in this state for long periods is hard on the body and is worth support.'
       },
       feelsLike: [
         'Heavy, slow, like moving through mud',
@@ -28543,6 +28543,9 @@ window.SelHub = window.SelHub || {
         }
         if (learnSection === 'polyvagal' && typeof POLYVAGAL_STATES !== 'undefined') {
           learnBody = h('div', { style: { padding: '0 12px 24px', display: 'grid', gap: 10 } },
+            h('div', { style: { padding: '8px 10px', borderRadius: 6, background: '#1e293b', border: '1px solid #f59e0b', color: '#fcd34d', fontSize: 11, lineHeight: 1.5 } },
+              h('strong', null, '⚠️ A contested model, not settled neuroscience. '),
+              'Polyvagal theory (Porges) is popular in trauma and SEL work, but its specific brain-and-evolution claims are scientifically contested and not well validated (Grossman & Taylor, 2007; Grossman, 2023). Use these "states" as a friendly map for noticing and shifting how your body feels — the calming practices help regardless of the exact mechanism.'),
             POLYVAGAL_STATES.map(function(p) {
               return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid ' + (p.color || '#334155') } },
                 h('h5', { style: { margin: 0, color: p.color || '#f1f5f9', fontSize: 14, fontWeight: 700 } }, (p.icon || '') + ' ' + p.name),

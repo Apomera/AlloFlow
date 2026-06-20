@@ -1296,7 +1296,7 @@
         // Emerging: real but limited or mixed evidence
         zones: { tier: 'emerging', note: 'Draws on adjacent research; the Zones curriculum itself has limited outcome studies (the tool says so in its own limitations).' },
         emotions: { tier: 'emerging', note: 'Emotional granularity has empirical support (Barrett); specific neuro explanations are framed as models.' },
-        coping: { tier: 'emerging' },
+        coping: { tier: 'emerging', note: 'Core CBT/DBT/somatic coping skills are well supported; the "Nervous System States" polyvagal framing is popular but scientifically contested (Grossman, 2023) and is flagged as such in the tool.' },
         mindfulness: { tier: 'emerging', note: 'Benefits are modest and context-dependent; trauma-informed cautions apply.' },
         windowOfTolerance: { tier: 'emerging', note: 'Widely used clinical heuristic (Siegel); the polyvagal framing it is often paired with is scientifically contested, which this tool flags.' },
         stressBucket: { tier: 'emerging', note: 'CBT-tradition heuristic (Brabban and Turkington), widely used in NHS IAPT.' },
