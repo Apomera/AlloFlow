@@ -3671,6 +3671,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           if (project.incomplete) {
                             if (project.pdfBase64 && typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64);
                             setPendingPdfFile({ name: project.fileName || 'resumed-project.pdf' });
+                            // OCR-skip seed (2026-06-20): park the already-extracted text under the SAME
+                            // filename fixAndVerifyPdf will compute (pendingPdfFile.name), so Step 1 reuses
+                            // it instead of re-running the slow OCR. Single-use; cleared once consumed.
+                            try { if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || 'resumed-project.pdf', text: project.extractedText }; } catch (_) {}
                             if (project.auditResult) {
                               setPdfAuditResult(project.auditResult);
                             } else {

@@ -12653,6 +12653,28 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
 
+      // ── Resume seed: skip re-OCR when we already have this file's text (2026-06-20) ──
+      // A saved incomplete project (the "Continue a previous session" loader) parks the
+      // text we already extracted/OCR'd last time on window.__resumeExtractedText. If the
+      // deterministic text-layer pass above came up empty (the SCANNED case — exactly where
+      // re-running Vision/Tesseract OCR is the slow part), reuse the cached text instead.
+      // Born-digital docs are untouched: their fresh deterministic text already won above and
+      // is more accurate than any cache. Fail-safe — a filename mismatch / short / malformed
+      // seed just falls through to normal OCR. Single-use (cleared whether matched or not) so a
+      // later, unrelated file that happens to share the name can't pick up stale text. Ground
+      // truth is then recorded by the vision-ocr fallback below (the cached text IS OCR text).
+      try {
+        if ((!extractedText || extractedText.length <= 100) && typeof window !== 'undefined') {
+          const _seed = window.__resumeExtractedText;
+          if (_seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
+            extractedText = _seed.text;
+            warnLog('[Resume] Reusing cached extracted text (' + extractedText.length + ' chars) from a saved project — skipping re-extraction/OCR');
+            if (typeof addToast === 'function') addToast(t('toasts.resume_reused_cached_text') || 'Reused your saved text from the unfinished session — no re-scanning needed.', 'info');
+          }
+          window.__resumeExtractedText = null; // consume once (stale-/collision-guard)
+        }
+      } catch (_seedErr) { /* seed reuse is best-effort — never block extraction */ }
+
       // If deterministic extraction succeeded, skip OCR entirely
       if (extractedText && extractedText.length > 100) {
         warnLog(`[Det] Using deterministic extraction (${extractedText.length} chars), skipping OCR`);

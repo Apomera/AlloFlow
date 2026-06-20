@@ -124,3 +124,52 @@ describe('anti-drift: all three modules ship the wiring', () => {
     expect(viewSrc).toMatch(/setPendingPdfBase64\(project\.pdfBase64\)/);
   });
 });
+
+// ── Mirror of the Step-1 OCR-skip seed gate (doc_pipeline) ──
+// Returns the text the pipeline would feed downstream given the deterministic-extraction
+// result + a parked resume seed. Born-digital (text already >100) ALWAYS wins; the seed
+// only fills the scanned/empty case, and only on an exact filename match with real text.
+const textAfterSeed = (extracted, seed, fileName) => {
+  let text = extracted || '';
+  if ((!text || text.length <= 100) && seed && seed.fileName === fileName
+      && typeof seed.text === 'string' && seed.text.trim().length >= 50) {
+    text = seed.text;
+  }
+  return text;
+};
+
+describe('OCR-skip on resume — reuse cached text only when it actually saves re-OCR', () => {
+  const seed = { fileName: 'scan.pdf', text: 'OCR'.repeat(50) }; // 150 chars
+
+  it('SCANNED (deterministic empty) + matching seed → reuses cached text (skips OCR)', () => {
+    expect(textAfterSeed('', seed, 'scan.pdf')).toBe(seed.text);
+  });
+  it('BORN-DIGITAL (fresh text-layer >100) → ignores the seed (fresh extraction is truth)', () => {
+    const fresh = 'D'.repeat(500);
+    expect(textAfterSeed(fresh, seed, 'scan.pdf')).toBe(fresh);
+  });
+  it('filename mismatch → seed ignored, falls through to OCR (no cross-file reuse)', () => {
+    expect(textAfterSeed('', seed, 'a-different.pdf')).toBe('');
+  });
+  it('too-short seed (<50 chars) → ignored', () => {
+    expect(textAfterSeed('', { fileName: 'scan.pdf', text: 'tiny' }, 'scan.pdf')).toBe('');
+  });
+  it('no seed present → unchanged (normal path)', () => {
+    expect(textAfterSeed('', null, 'scan.pdf')).toBe('');
+  });
+});
+
+describe('anti-drift: the OCR-skip seed is wired end-to-end', () => {
+  it('pipeline consumes window.__resumeExtractedText with the filename + length guards', () => {
+    expect(pipeSrc).toMatch(/const _seed = window\.__resumeExtractedText/);
+    expect(pipeSrc).toMatch(/_seed\.fileName === _fileName/);
+    expect(pipeSrc).toMatch(/_seed\.text\.trim\(\)\.length >= 50/);
+    expect(pipeSrc).toMatch(/window\.__resumeExtractedText = null/); // single-use consume
+  });
+  it('pipeline only reuses when deterministic extraction came up empty (scanned case)', () => {
+    expect(pipeSrc).toMatch(/!extractedText \|\| extractedText\.length <= 100/);
+  });
+  it('the loader parks the seed under the same filename it sets on pendingPdfFile', () => {
+    expect(viewSrc).toMatch(/window\.__resumeExtractedText = \{ fileName: project\.fileName \|\| 'resumed-project\.pdf', text: project\.extractedText \}/);
+  });
+});

@@ -3646,6 +3646,10 @@ Return ONLY JSON:
           if (project.incomplete) {
             if (project.pdfBase64 && typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64);
             setPendingPdfFile({ name: project.fileName || "resumed-project.pdf" });
+            try {
+              if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || "resumed-project.pdf", text: project.extractedText };
+            } catch (_) {
+            }
             if (project.auditResult) {
               setPdfAuditResult(project.auditResult);
             } else {
