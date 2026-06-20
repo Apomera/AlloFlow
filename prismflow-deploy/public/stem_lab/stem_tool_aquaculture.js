@@ -7923,6 +7923,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { fontSize: 10 } }, hud.reachedLease ? '✓ Reached lease' : '• Reach lease (yellow buoys)'),
               h('div', { style: { fontSize: 10 } }, (hud.droppersDeployed >= 5) ? '✓ All droppers deployed' : '• Deploy 5 droppers (F)'),
               h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Returned' : '• Return to landing')),
+            probes.length > 0 && (function() {
+              var latest = probes[probes.length - 1];
+              var doVals = probes.map(function(r) { return parseFloat(r.DO); }).filter(function(v) { return !isNaN(v); });
+              var n = doVals.length;
+              var W = 188, H = 38, pad = 2;
+              var doMin = Math.min.apply(null, doVals.concat([5])), doMax = Math.max.apply(null, doVals.concat([10]));
+              var sx = function(i) { return pad + (n === 1 ? W - 2 * pad : i / (n - 1) * (W - 2 * pad)); };
+              var sy = function(v) { return pad + (1 - (v - doMin) / ((doMax - doMin) || 1)) * (H - 2 * pad); };
+              var pts = doVals.map(function(v, i) { return sx(i).toFixed(1) + ',' + sy(v).toFixed(1); }).join(' ');
+              return h('div', { style: { position: 'absolute', bottom: 116, right: 10, background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8, fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', width: 204 } },
+                h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 3 } }, '💧 Water quality (latest)'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  h('span', null, 'Temp ' + latest.temp + '°C'),
+                  h('span', null, 'Sal ' + latest.salinity),
+                  h('span', { style: { color: parseFloat(latest.DO) < 6 ? '#fb923c' : '#86efac' } }, 'DO ' + latest.DO),
+                  h('span', null, 'pH ' + latest.pH)),
+                n > 1 && h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Dissolved oxygen across ' + n + ' probe readings; latest ' + latest.DO + ' milligrams per liter, danger floor 6.' },
+                  h('line', { x1: 0, y1: sy(6), x2: W, y2: sy(6), stroke: '#fb923c', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.75 }),
+                  h('text', { x: W - 2, y: sy(6) - 2, textAnchor: 'end', fontSize: 6, fill: '#fb923c' }, '6 mg/L floor'),
+                  h('polyline', { points: pts, fill: 'none', stroke: '#22d3ee', strokeWidth: 1.5 })),
+                n > 1 && h('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, 'Dissolved O₂ across your ' + n + ' probes — warmer water holds less.'));
+            })(),
+
             h('div', { style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8 } },
               (status || []).slice(-4).map(function(ev, ei) {
                 var color = ev.type === 'probe' ? '#5eead4' : (ev.type === 'dropper' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#a7f3d0')));
