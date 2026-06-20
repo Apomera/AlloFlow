@@ -13639,6 +13639,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           ? ('Next key: ' + (nextKeyMeta.label || nextKeyMeta.k.toUpperCase()) + ' · use your ' + fingerLabel(nextKeyMeta.f))
           : 'Keep going!'),
 
+      // Home-row finger guide — the touch-typing fundamental the keyboard's
+      // per-finger colors reference but never spelled out. The 8 resting keys
+      // (ASDF | JKL;) colored by finger, with the finger name below.
+      h('div', { style: { marginBottom: '12px', textAlign: 'center' } },
+        h('div', { style: { fontSize: '9px', color: palette.textMute, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' } }, 'Home row — rest your fingers here'),
+        h('div', { style: { display: 'inline-flex', gap: '3px', alignItems: 'flex-end' } },
+          [
+            { k: 'A', f: 'LP' }, { k: 'S', f: 'LR' }, { k: 'D', f: 'LM' }, { k: 'F', f: 'LI', home: true },
+            { gap: true },
+            { k: 'J', f: 'RI', home: true }, { k: 'K', f: 'RM' }, { k: 'L', f: 'RR' }, { k: ';', f: 'RP' }
+          ].map(function(item, i) {
+            if (item.gap) return h('div', { key: 'g' + i, style: { width: '12px' } });
+            var fl = fingerLabel(item.f), shortFl = fl.indexOf(' ') >= 0 ? fl.slice(fl.indexOf(' ') + 1) : fl;
+            return h('div', { key: i, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' } },
+              h('div', { style: { width: '22px', height: '22px', borderRadius: '4px', background: FINGER_COLOR[item.f], color: '#0f172a', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: item.home ? 'inset 0 -2px 0 rgba(15,23,42,0.5)' : 'none' } }, item.k),
+              h('div', { style: { fontSize: '7px', color: palette.textMute } }, shortFl)
+            );
+          })
+        )
+      ),
+
       KB_LAYOUT.map(function(row, rowIdx) {
         return h('div', {
           key: 'row-' + rowIdx,
