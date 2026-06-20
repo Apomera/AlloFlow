@@ -623,7 +623,7 @@
             realUse: 'Costs about $7 billion/year in damage. Mars is red because of iron oxide on its surface!'
           },
           {
-            name: 'Carbon Dioxide', formula: 'CO\u2082', emoji: '\uD83D\uDCA8', color: 'var(--allo-stem-text-soft, #94a3b8)',
+            name: 'Carbon Dioxide', formula: 'CO\u2082', emoji: '\uD83D\uDCA8', color: '#22d3ee',
             desc: 'A greenhouse gas we exhale. Plants absorb it during photosynthesis.',
             elements: [
               { sym: 'C', name: 'Carbon', num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' },

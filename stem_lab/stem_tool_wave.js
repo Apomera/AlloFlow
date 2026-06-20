@@ -149,6 +149,7 @@ const d = labToolData.wave;
               try {
                 var _prevCv = canvasRef._lastCanvas;
                 if (_prevCv && _prevCv._waveAnim) { cancelAnimationFrame(_prevCv._waveAnim); _prevCv._waveAnim = null; }
+                if (_prevCv && _prevCv._wavePointerUp) { window.removeEventListener('mouseup', _prevCv._wavePointerUp); window.removeEventListener('touchend', _prevCv._wavePointerUp); _prevCv._wavePointerUp = null; }
               } catch (e) {}
               try { if (d && d._audioCtx) { d._audioCtx.close(); d._audioCtx = null; } } catch (e) {}
               return;
@@ -246,6 +247,7 @@ const d = labToolData.wave;
             canvasEl.addEventListener('touchstart', onPointerDown, { passive: false });
             canvasEl.addEventListener('touchmove', onPointerMove, { passive: false });
             window.addEventListener('touchend', onPointerUp);
+            canvasEl._wavePointerUp = onPointerUp;
             // Canvas Narration: tool init
             if (typeof canvasNarrate === 'function') canvasNarrate('wave', 'init', {
               first: 'Wave Simulator loaded. An underwater ocean scene shows animated waves. Adjust amplitude and frequency with sliders. Switch between Free Wave, Standing, Ripple Tank, Longitudinal, Doppler, and Spectrum modes.',

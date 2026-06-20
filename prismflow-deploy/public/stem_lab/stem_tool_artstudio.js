@@ -227,7 +227,7 @@ const d = labToolData.artStudio || {};
 
               });
 
-              canvas._wheelAnim = requestAnimationFrame(drawWheel);
+              if (canvas.isConnected) canvas._wheelAnim = requestAnimationFrame(drawWheel);
 
             }
 
@@ -3219,7 +3219,7 @@ const d = labToolData.artStudio || {};
 
 
 
-                      canvas._opAnim = requestAnimationFrame(drawFrame);
+                      if (canvas.isConnected) canvas._opAnim = requestAnimationFrame(drawFrame);
 
                     }
 

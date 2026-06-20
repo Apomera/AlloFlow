@@ -658,6 +658,7 @@ window.StemLab = window.StemLab || {
             return h('g', null,
               h('line', { x1: sxVal + (ineq.op.includes('>') ? 8 : -8), y1: 50, x2: endX, y2: 50, stroke: '#d946ef', strokeWidth: 3.5, style: { filter: 'drop-shadow(0 0 3px rgba(217,70,239,0.55))' } }),
               h('circle', { cx: sxVal, cy: 50, r: 6, fill: isClosed ? '#d946ef' : 'white', stroke: '#d946ef', strokeWidth: 2.5 }),
+              h('text', { x: sxVal, y: 18, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '10px', fontWeight: 'bold' } }, ineq.v + ' = ' + ineq.val),
               h('text', { x: sxVal, y: 26, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '9px', fontWeight: 'bold' } }, endpointLbl),
               ineq.op.includes('>') && h('polygon', { points: (W - pad) + ',50 ' + (W - pad - 10) + ',43 ' + (W - pad - 10) + ',57', fill: '#d946ef' }),
               ineq.op.includes('<') && h('polygon', { points: pad + ',50 ' + (pad + 10) + ',43 ' + (pad + 10) + ',57', fill: '#d946ef' }));
