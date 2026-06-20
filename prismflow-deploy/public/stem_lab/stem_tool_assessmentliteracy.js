@@ -9924,11 +9924,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('div', { className: 'text-3xl font-black text-rose-300' }, sim.totalFlipPct + '%'),
               h('div', { className: 'text-xs text-slate-300' }, 'of retests yield a different 4-letter type')
             ),
-            h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
+            h('div', { className: 'space-y-1.5' },
+              h('div', { className: 'text-[11px] text-slate-400 mb-1' }, 'How often each dimension’s letter flips on retest:'),
               Object.keys(sim.letterFlipPct).map(function(k) {
-                return h('div', { key: k, className: 'p-2 rounded bg-slate-800/60' },
-                  h('div', { className: 'text-xs font-bold text-slate-300' }, k + ' flips'),
-                  h('div', { className: 'text-sm font-black text-rose-300' }, sim.letterFlipPct[k] + '%')
+                var v = sim.letterFlipPct[k];
+                return h('div', { key: k, className: 'flex items-center gap-2' },
+                  h('div', { className: 'text-xs font-bold text-slate-300', style: { width: 36, flexShrink: 0 } }, k),
+                  h('div', { className: 'rounded bg-slate-800 overflow-hidden', style: { flex: 1, height: 18 } },
+                    h('div', { className: 'bg-gradient-to-r from-rose-500 to-rose-400', style: { width: Math.max(2, v) + '%', height: '100%' } })
+                  ),
+                  h('div', { className: 'text-sm font-black text-rose-300 text-right', style: { width: 40, flexShrink: 0 } }, v + '%')
                 );
               })
             ),
