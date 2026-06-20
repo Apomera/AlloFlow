@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -4777,8 +4777,10 @@ var createDocPipeline = function(deps) {
       };
     } catch (e) {
       const msg = e?.message || '';
-      const isEncrypted = /password|encrypted|decrypt/i.test(msg);
-      const isCorrupt = /invalid|corrupt|unexpected|stream/i.test(msg);
+      // Structured pdf.js error first (PasswordException is stable across versions/wording), with the
+      // message-regex kept as a fallback — so a version that changes the message text can't misclassify.
+      const isEncrypted = (e && e.name === 'PasswordException') || /password|encrypted|decrypt/i.test(msg);
+      const isCorrupt = !isEncrypted && /invalid|corrupt|unexpected|stream/i.test(msg);
       if (isEncrypted) {
         warnLog('[PDF Det] PDF is password-protected — falling through to Vision OCR');
         if (typeof addToast === 'function') addToast(t('toasts.pdf_appears_password_protected_using'), 'info');
@@ -6082,6 +6084,7 @@ var createDocPipeline = function(deps) {
     const _nums = Array.from(_byNum.keys()).sort((a, b) => a - b);
     const merged = [];
     const disagreements = [];
+    const lowConfidence = []; // B5 (2026-06-20): pages whose WINNING OCR is low-confidence — surfaced as a banner
     for (const _pn of _nums) {
       const _pair = _byNum.get(_pn);
       const tPage = _pair.t || null, vPage = _pair.v || null;
@@ -6118,6 +6121,14 @@ var createDocPipeline = function(deps) {
         words: (Array.isArray(_tp.words) && _tp.words.length ? _tp.words : null),
         pageW: (typeof _tp.pageW === 'number' ? _tp.pageW : null),
         pageH: (typeof _tp.pageH === 'number' ? _tp.pageH : null) });
+      // B5: flag a page whose WINNING OCR is low-confidence — especially the all-Tesseract case (Vision
+      // empty), where the quality-override above is skipped (it needs BOTH engines) so a garbled page
+      // would otherwise ship unflagged. Vision has no per-word confidence, so we can only assess
+      // Tesseract-won pages; mean Tesseract confidence <60 (clean prose is ~85-95) → flag for review.
+      const _winConf = _winner === 'tesseract' ? _meanConf(tPage) : null;
+      if (chosen.text && _winConf != null && _winConf < 60) {
+        lowConfidence.push({ pageNum: _pn, confidence: Math.round(_winConf) });
+      }
       // Flag disagreement if length gap > 10% or > 20 chars absolute — but ONLY when BOTH
       // engines produced text for this page. An empty side is a pagination artifact (single-pass
       // Vision returns one pseudo-page for a multi-page range) or a total per-engine failure,
@@ -6127,7 +6138,7 @@ var createDocPipeline = function(deps) {
         disagreements.push({ pageNum: _pn, tesseractChars: tLen, visionChars: vLen, tesseractText: tText, visionText: vText });
       }
     }
-    return { pages: merged, disagreements, fullText: merged.map(p => p.text).filter(Boolean).join('\n\n') };
+    return { pages: merged, disagreements, lowConfidence, fullText: merged.map(p => p.text).filter(Boolean).join('\n\n') };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction
@@ -6863,6 +6874,21 @@ var createDocPipeline = function(deps) {
         return failureResult;
       }
     }
+
+    // Magic-byte intake gate (2026-06-20): a non-PDF mislabeled .pdf (a renamed image/text file)
+    // otherwise reaches pdf.js → throws → a misleading "corrupt" toast → Vision OCR is attempted on
+    // garbage. Reject early with the honest cause. TOLERANT: PDFs may carry up to ~1KB of leading bytes
+    // before %PDF (spec), so scan the head — never just byte 0 (that would false-reject valid files).
+    // Office is already handled above; transcripts (ALLOTRANSCRIPT:) are a legitimate non-PDF input.
+    try {
+      const _head = atob(String(base64Data || '').slice(0, 2048)); // ~1.5KB of decoded bytes (slice is a multiple of 4)
+      if (_head && _head.indexOf('%PDF') === -1 && _head.indexOf('ALLOTRANSCRIPT:') === -1) {
+        const _notPdf = { score: -1, summary: 'This file isn’t a valid PDF — its contents don’t start with %PDF (it may be a renamed image, or a corrupted/incomplete file). Re-export it as a PDF and try again.', critical: [], serious: [], moderate: [], minor: [], passes: [], _notPdf: true };
+        if (!_skipUi) { setPdfAuditResult(_notPdf); setPdfAuditLoading(false); }
+        if (addToast) addToast('⚠ This file isn’t a valid PDF (no %PDF header found) — re-export it as a PDF and try again.', 'error');
+        return _notPdf;
+      }
+    } catch (_magicErr) { /* base64 decode hiccup — fail OPEN; the normal path will surface any real error */ }
 
     if (!_skipUi) addToast && addToast(`♿ Auditing document (${dataSizeKB > 1024 ? (dataSizeKB / 1024).toFixed(1) + 'MB' : dataSizeKB + 'KB'}) — typically ${estTime}`, 'info');
     try {
@@ -12419,6 +12445,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
+      window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
       window.__lastExtractEncrypted = false; // password-cause (2026-06-20): true when a password-protected PDF was detected, so the <20-char abort can name the real cause
       // Reset Vision-strip audit trail. Every conservative JSON-strip decision is
       // recorded here so the fidelity panel can show what was kept vs stripped.
@@ -12769,8 +12796,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // OCR layer had no text to draw even when its gate fired.
         window.__lastGroundTruthPageMap = (rec.pages && rec.pages.length) ? rec.pages : (tessResult.pages || []);
         warnLog(`[OCR reconcile] Tesseract ${tessResult.fullText.length} chars · Vision ${visionResult.fullText.length} chars · merged ${extractedText.length} chars · ${rec.disagreements.length} page disagreements`);
+        window.__lastOcrLowConfidencePages = (rec && rec.lowConfidence) || []; // B5: per-page low OCR confidence (Tesseract mean), for the fidelity panel + the banner below
         if (typeof addToast === 'function' && rec.disagreements.length > 0) {
           addToast(`OCR reconciled — ${rec.disagreements.length} page${rec.disagreements.length === 1 ? '' : 's'} where Tesseract & Vision disagree. Review in the fidelity panel.`, 'info');
+        }
+        if (typeof addToast === 'function' && rec.lowConfidence && rec.lowConfidence.length > 0) {
+          addToast(`⚠ ${rec.lowConfidence.length} page${rec.lowConfidence.length === 1 ? '' : 's'} OCR'd at low confidence — verify the text is correct (review the Diff / fidelity panel).`, 'warning');
         }
       } else if (numChunks <= 1 && effectivePageCount <= 2) {
         // Very short PDF (1-2 pages): single extraction pass is safe
@@ -26331,11 +26362,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
