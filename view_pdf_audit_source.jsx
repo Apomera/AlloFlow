@@ -6195,8 +6195,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
-                            <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Accessibility score: before → after'}>
-                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
+                            <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.'}>
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span> <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{t('pdf_audit.dashboard.content_tag') || 'content'}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
                             </span>
                             {/* #1 score↔fidelity coupling — a high accessibility number must not read as
                                 "all good" when source content may not have carried over. */}
@@ -6210,9 +6210,35 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             )}
                             {_vio !== null && (
                               <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (_vio === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
-                                {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'issues left')}
+                                {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 content issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'content issues')}
                               </span>
                             )}
+                            {/* Distinct PDF/UA verdict for the EXPORTED tagged PDF — separate from the content score above.
+                                Prefers the independent veraPDF verdict; falls back to the byte/self-check. A failing
+                                PDF/UA chip never lets a green content chip stand alone (the inconsistency we fixed). */}
+                            {lastTaggedValidation && (() => {
+                              const _v = lastTaggedValidation.veraPdf;
+                              const _pev = lastTaggedValidation.postExportValidator && lastTaggedValidation.postExportValidator.summary;
+                              const _sc = lastTaggedValidation.pdfUa1Checks && lastTaggedValidation.pdfUa1Checks.summary;
+                              let label = null, fail = false, indep = false;
+                              if (_v && !_v.error) {
+                                indep = true; fail = _v.compliant === false;
+                                label = fail ? ('veraPDF: ' + (_v.failedRules ? _v.failedRules.length : 0) + ' rule(s)') : 'veraPDF: passes';
+                              } else if (_pev) {
+                                fail = (_pev.fail || 0) > 0;
+                                label = 'PDF/UA self-check: ' + (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0));
+                              } else if (_sc) {
+                                fail = (_sc.fail || 0) > 0;
+                                label = 'PDF/UA self-check: ' + (_sc.conformancePct || 0) + '%';
+                              }
+                              if (!label) return null;
+                              return (
+                                <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (fail ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')}
+                                  title={(t('pdf_audit.dashboard.pdfua_title') || 'PDF/UA conformance of the EXPORTED tagged PDF — the actual file you hand out, distinct from the content score.') + (indep ? '' : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')}>
+                                  {(fail ? '❌ ' : '✅ ') + label}
+                                </span>
+                              );
+                            })()}
                             <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
                             <button className={_chip} onClick={() => _jump('allo-sec-verify')}>✅ {t('pdf_audit.dashboard.verify') || 'Verification'}</button>
                             <button className={_chip} onClick={() => _jump('allo-sec-recovery')}>🩹 {t('pdf_audit.dashboard.recovery') || 'Recovery'}</button>
