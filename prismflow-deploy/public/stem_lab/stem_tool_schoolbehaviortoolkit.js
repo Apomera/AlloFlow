@@ -1051,7 +1051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           var bg, color, borderC;
           if (showAsCorrect) { bg = 'rgba(34,197,94,0.18)'; color = '#22c55e'; borderC = '#22c55e'; }
           else if (showAsWrong) { bg = 'rgba(239,68,68,0.18)'; color = '#ef4444'; borderC = '#ef4444'; }
-          else if (picked) { bg = 'rgba(15,23,42,0.5)'; color = '#64748b'; borderC = 'rgba(100,116,139,0.30)'; }
+          else if (picked) { bg = 'rgba(15,23,42,0.5)'; color = '#94a3b8'; borderC = 'rgba(100,116,139,0.30)'; }
           else { bg = f.color + '12'; color = f.color; borderC = f.color + '60'; }
 
           return h('button', {
@@ -1431,7 +1431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, '11 sections · 3 interactive')
+              } }, '12 sections · 4 interactive')
             ),
             h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.')
           )
