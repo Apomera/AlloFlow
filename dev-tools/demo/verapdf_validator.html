@@ -47,6 +47,8 @@
   // jar at /assets/foo.jar → /app/assets/foo.jar. NOT a relative './' web URL.
   const JAR_URL = '/app/verapdf-cli.jar';
   const PDFBOX_JAR_URL = '/app/pdfbox-app.jar'; // co-loaded for PDFBox structural repairs (Plan A)
+  const NOTO_FONT_URL = 'https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSans/hinted/ttf/NotoSans-Regular.ttf';
+  let _notoTtf = null; // cached substitute-font bytes for the embedding recipe
 
   const $ = (id) => document.getElementById(id);
   const setStatus = (m) => { $('status').textContent = m; };
@@ -151,7 +153,8 @@
     // Artifact-wrap ONLY for fully-untagged docs (no StructTreeRoot = no real tagging to corrupt);
     // a partially-tagged page that fails 7.1t3 needs MANUAL tagging — auto-wrapping it as Artifact would hide real content.
     const needArtifact = has('7.1', 3) && needScaffold;
-    if (!needArtifact && !needScaffold) return { bytes: bytes, applied: [] };
+    const needFont = has('7.21.4.1', 1); // non-embedded font — safe on tagged docs too (doesn't touch structure)
+    if (!needArtifact && !needScaffold && !needFont) return { bytes: bytes, applied: [] };
     const L = _lib, pb = L.org.apache.pdfbox;
     const COSName = await pb.cos.COSName, COSArray = await pb.cos.COSArray, COSBoolean = await pb.cos.COSBoolean, COSDictionary = await pb.cos.COSDictionary;
     const Loader = await pb.Loader, File = await L.java.io.File;
@@ -186,6 +189,25 @@
         await (await cat.getCOSObject()).setItem(await COSName.getPDFName('MarkInfo'), mk);
         applied.push('§7.1t11:StructTreeRoot+/Document+ParentTree+MarkInfo');
       }
+      if (needFont) { // R-FONT: embed a WinAnsi TrueType substitute for non-embedded standard-14 fonts
+        try {
+          if (!_notoTtf) _notoTtf = new Uint8Array(await (await fetch(NOTO_FONT_URL)).arrayBuffer());
+          cheerpOSAddStringFile('/str/sub.ttf', _notoTtf);
+          const PDTrueTypeFont = await pb.pdmodel.font.PDTrueTypeFont;
+          const WinAnsiEncoding = await pb.pdmodel.font.encoding.WinAnsiEncoding;
+          const subFont = await PDTrueTypeFont.load(doc, await new File('/str/sub.ttf'), await WinAnsiEncoding.INSTANCE);
+          let replaced = 0;
+          const np = await doc.getNumberOfPages();
+          for (let i = 0; i < np; i++) {
+            const res = await (await doc.getPage(i)).getResources();
+            const names = []; // collect first, then replace (avoid concurrent modification)
+            const it = await (await res.getFontNames()).iterator();
+            while (await it.hasNext()) { const nm = await it.next(); const f = await res.getFont(nm); if (f && !(await f.isEmbedded()) && (await f.isStandard14())) names.push(nm); }
+            for (const nm of names) { await res.put(nm, subFont); replaced++; }
+          }
+          if (replaced) applied.push('§7.21.4.1:embedded ' + replaced + ' font(s) via NotoSans (REVIEW: substituted font — metrics approximate)');
+        } catch (e) { /* font fetch/embed is best-effort; leave the rule for honest disclosure */ }
+      }
       await doc.save('/files/struct_out.pdf');
       await doc.close();
       const Files = await L.java.nio.file.Files, Base64 = await L.java.util.Base64;
@@ -208,7 +230,7 @@
       step.applied = rep.applied.slice();
       cur = rep.bytes;
       // structural fallback (PDFBox, co-loaded) for rules pdf-lib can't fix: 7.1t3 content-marking, 7.1t11 StructTreeRoot
-      const structRules = verdict.failedRules.filter((f) => f.clause === '7.1' && (f.testNumber === 3 || f.testNumber === 11)); // only the rules pdf-lib can't fix; MarkInfo (6.2t1) is pdf-lib's
+      const structRules = verdict.failedRules.filter((f) => (f.clause === '7.1' && (f.testNumber === 3 || f.testNumber === 11)) || (f.clause === '7.21.4.1' && f.testNumber === 1)); // rules pdf-lib can't fix: content/struct-tree + font embedding (MarkInfo 6.2t1 is pdf-lib's)
       if (structRules.length && _lib) {
         try { const sr = await _applyStructuralRepairs(cur, verdict.failedRules); if (sr.applied.length) { cur = sr.bytes; step.applied = step.applied.concat(sr.applied); } }
         catch (e) { step.structError = String(e && (e.message || e)); }

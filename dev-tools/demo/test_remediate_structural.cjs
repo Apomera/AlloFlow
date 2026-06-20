@@ -45,6 +45,8 @@ const server = http.createServer((req, res) => {
     src.setTitle('Decorative Test Document');
     const pg = src.addPage([612, 792]);
     pg.drawRectangle({ x: 100, y: 600, width: 400, height: 100, color: rgb(0.8, 0.8, 0.92) }); // unmarked content
+    const helv = await src.embedFont(window.PDFLib.StandardFonts.Helvetica); // base-14 = NON-embedded → fails 7.21.4.1
+    pg.drawText('The quick brown fox jumps over the lazy dog.', { x: 72, y: 700, size: 14, font: helv });
     const cat = src.catalog;
     cat.set(PDFName.of('Lang'), PDFString.of('en'));
     const vp = src.context.obj({}); vp.set(PDFName.of('DisplayDocTitle'), PDFBool.True); cat.set(PDFName.of('ViewerPreferences'), vp);
@@ -57,9 +59,10 @@ const server = http.createServer((req, res) => {
   console.log('\n[test] REMEDIATION RESULT — compliant: ' + result.compliant);
   for (const s of result.log) console.log('  iter ' + s.iter + ': ' + s.failedRules + ' failed (' + (s.rules.join(', ') || 'none') + ')' + (s.applied ? ' → ' + s.applied.join('; ') : '') + (s.structError ? ' [structErr: ' + s.structError + ']' : ''));
   const usedStructural = result.log.some((s) => (s.applied || []).some((a) => /7\.1t3|7\.1t11|StructTreeRoot|Artifact/.test(a)));
-  const ok = result.compliant && usedStructural;
-  console.log(ok ? '\n✅ WIRED STRUCTURAL FALLBACK WORKS — remediate() used PDFBox recipes to reach PDF/UA-1 PASS.'
-                 : '\n⚠ ' + (result.compliant ? 'compliant but structural recipes were not exercised.' : 'did not converge.'));
+  const usedFont = result.log.some((s) => (s.applied || []).some((a) => /7\.21\.4\.1|NotoSans/.test(a)));
+  const ok = result.compliant && usedStructural && usedFont;
+  console.log(ok ? '\n✅ WIRED STRUCTURAL + FONT FALLBACK WORKS — remediate() used PDFBox structural AND font recipes to reach PDF/UA-1 PASS.'
+                 : '\n⚠ ' + (result.compliant ? ('compliant but recipes not all exercised (structural=' + usedStructural + ' font=' + usedFont + ').') : 'did not converge.'));
   await browser.close(); server.close();
   process.exit(ok ? 0 : 1);
 })();
