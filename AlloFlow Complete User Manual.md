@@ -1,7 +1,7 @@
 # AlloFlow — Complete User Manual & Pedagogical Guide
 ## Adaptive Levels, Layers, & Outputs: Flexible Learning Options for Whole-Student Education
 
-*Version 1.0 | Copyright 2026, Aaron Pomeranz, PsyD*
+*Version 1.1 | Copyright 2026, Aaron Pomeranz, PsyD*
 *Distributed under AGPL 3.0 (GNU Affero General Public License v3)*
 
 ---
@@ -27,13 +27,17 @@
    - [FAQ Generator](#-faq-generator)
    - [Socratic Tutor](#-socratic-tutor)
 5. [Word Sounds Studio](#5-word-sounds-studio)
-6. [STEM Lab (55 Tools)](#6-stem-lab)
+6. [STEM Lab (108 Tools)](#6-stem-lab)
 7. [Educator Tools Hub](#7-educator-tools-hub-teachergate-gated)
    - [Student Analytics & RTI Dashboard](#-student-analytics--rti-dashboard)
    - [Psychometric & CBM Probes](#-psychometric--cbm-probes)
    - [BehaviorLens (FBA / BIP)](#-behaviorlens-fba--bip-clinical-suite)
    - [Report Writer Wizard](#-report-writer-wizard)
    - [Symbol Studio (AAC & Visual Supports)](#-symbol-studio-aac--visual-supports)
+   - [PDF Accessibility Pipeline](#-pdf-accessibility-pipeline)
+   - [Cinematic Studio](#-cinematic-studio)
+   - [Professional Development](#-professional-development-community-catalog)
+   - [Newer Assessment & Research Tools](#-newer-assessment--research-tools)
 8. [Live Session & Engagement Modes](#8-live-session--engagement-modes)
 9. [Accessibility Features](#9-accessibility-features)
 10. [AlloBot (AI Companion)](#10-allobot-ai-companion)
@@ -62,7 +66,7 @@ This tool is designed strictly for **curriculum adaptation, lesson planning, and
 
 ## 1. Introduction to AlloFlow
 
-AlloFlow is an advanced, privacy-conscious generative AI platform created to help educators instantly differentiate curriculum materials. Powered by Google Gemini 2.5 Flash for text logic and Imagen for visual generation — as well as optional local open-source models — it transforms static, one-size-fits-all source text into a dynamic suite of interactive, gamified, and accessible learning resources.
+AlloFlow is an advanced, privacy-conscious generative AI platform created to help educators instantly differentiate curriculum materials. Powered by Google Gemini 3 (Flash for text logic, Gemini 3.1 Pro for high-stakes generation) and Imagen for visual generation — as well as optional local open-source models — it transforms static, one-size-fits-all source text into a dynamic suite of interactive, gamified, and accessible learning resources.
 
 ### The Philosophy: Universal Design for Learning (UDL)
 
@@ -72,11 +76,14 @@ AlloFlow is built upon the principles of Universal Design for Learning (UDL), a 
 - **Multiple Means of Action & Expression** — Allow students to demonstrate understanding through diverse avenues (quizzes, sorting activities, writing scaffolds, oral fluency) rather than relying solely on standard written tests.
 - **Multiple Means of Engagement** — Use gamification, interest-based analogies, and adventure simulations to tap into learners' intrinsic motivation.
 
-### Key Architectural Capabilities (v1.0)
+### Key Architectural Capabilities (v1.1)
 
 | Capability | Description |
 | :--- | :--- |
-| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite) load dynamically only when accessed, improving performance on older school devices. |
+| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite) load dynamically only when accessed, improving performance on older school devices. ~250 spoke modules served from the Cloudflare Pages CDN. |
+| **PDF Accessibility Pipeline** | Upload any PDF → multi-auditor AI audit → one-click WCAG remediation → **native tagged PDF** output with independent PDF/UA-1 (veraPDF) validation. PII redaction + fillable worksheets. See §7. |
+| **Cinematic Studio** | Agentic document → video generator: source-grounded storyboard, captions/translation, rendered client-side (WebCodecs/Remotion). See §7. |
+| **Professional Development** | Community-authored PD modules with AI co-authoring + completion certificates (Educator Hub → Community Catalog). See §7. |
 | **School Box (Local Docker)** | Full offline deployment via Docker Compose on district hardware. Connect to local models (Ollama/Phi-3.5) — zero cloud API costs, absolute data sovereignty. |
 | **AlloBot Interactive Tours** | Embodied AI character with 30+ emotional states provides guided 5-step walkthroughs for new users. |
 | **TeacherGate** | Educator tools (grading, clinical data, answer keys) are securely gated behind a teacher verification check. |
@@ -352,7 +359,7 @@ Launch the ORF assessment from Student Analytics to time student reading. The sy
 
 ## 6. STEM Lab
 
-**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and hosts **55 interactive browser-based simulations** spanning math, science, technology, arts, economics, and simulation.
+**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and hosts **108 interactive browser-based simulations** spanning math, science, technology, arts, economics, life skills, and simulation. (The category list below is representative; the full on-disk set is 108 tools and growing — see `stem_lab/stem_tool_*.js`.)
 
 ### How to Use
 1. Click the STEM Lab icon → select a domain category or browse all tools.
@@ -594,6 +601,60 @@ Waiting My Turn · Feeling Angry · Making Friends · Doctor Visit · Haircut ·
 - Up to 8 student profiles
 - Print-ready export with visual supports
 - Board personalization with student-specific vocabulary
+
+---
+
+### 📄 PDF Accessibility Pipeline
+
+**Access:** Educator Tools Hub → PDF Audit / Make Accessible (also reachable from the Doc Builder).
+**For:** Anyone remediating inaccessible documents to WCAG 2.1 AA / PDF/UA-1 (the workflow UMaine and district partners evaluate).
+
+Upload an inaccessible PDF (or DOCX/PPTX) and get back a fully accessible document plus an audit report.
+
+| Stage | What happens |
+| :--- | :--- |
+| **Multi-auditor audit** | 2–10 independent AI auditors (default 5) with stakeholder perspectives (screen-reader user, Section 508, Title II ADA, JAWS/NVDA tester…) + statistical agreement metrics |
+| **OCR (if scanned)** | Client-side **Tesseract.js** (on-device, deterministic) with Gemini Vision fallback + word-level reconciliation; document language auto-detected |
+| **Remediation** | Deterministic context-aware fixes + 34 surgical AI micro-tools (AI diagnoses, a deterministic tool applies) + full-rewrite for complex structure; self-healing loop with regression-revert + plateau detection; hands-off autonomous mode |
+| **Native tagged PDF out** | `createTaggedPdf` builds a real PDF `/StructTreeRoot` (headings, lists, tables with cell scope, figures with alt), embeds fonts (PDF/UA §7.21.4.1) |
+| **Independent validation** | In-browser **veraPDF (ISO 14289-1)** via CheerpJ + a validate→repair→re-validate closed loop — the independent third-party check institutions can re-run themselves |
+| **Other outputs** | PII **redaction** (true text removal, not visual masking), **fillable AcroForm worksheets** with screen-reader labels, plus ePub 3, DAISY, ODT, HTML, audio |
+
+> 🛡️ Everything (including veraPDF and font-subsetting) runs client-side — document bytes never leave the browser. A Knowbility referral is surfaced for documents that score below 70 or need expert human review.
+
+---
+
+### 🎬 Cinematic Studio
+
+**Access:** Educator Tools Hub → 🎬 Cinematic Studio.
+**For:** Turning a source document or lesson into a short narrated video — free, no server.
+
+- **Compose** — an agentic flow turns your source into a source-grounded storyboard (constrained scene schema; no AI code-execution) with a FERPA gate.
+- **Captions & translation** — auto-generated captions, translatable into the supported languages.
+- **Client-side rendering** — preview + render run in the browser via WebCodecs / Remotion (free for solo/nonprofit use; no render farm).
+
+> Adapt NotebookLM-style cinematic clips or generate from scratch. Some export paths depend on your browser's WebCodecs support.
+
+---
+
+### 🎓 Professional Development (Community Catalog)
+
+**Access:** Educator Hub → Community Catalog → **Professional Development** tab.
+**For:** Educators creating and completing micro-PD, and sharing it with the community.
+
+- Browse community-authored PD modules; complete them with progress tracking and a **completion certificate**.
+- Author your own with AI co-authoring, then **submit a module** for review (submissions go to a private store, FERPA-gated — never auto-published).
+- Lazy-loaded; zero impact on the core app until opened.
+
+---
+
+### 🧪 Newer Assessment & Research Tools
+
+- **Dynamic Assessment** — guided test-teach-retest "assessment of learning potential" workflow.
+- **Research Hub + Research Lanes** — structured engineering / humanities / scientific research scaffolds with source grounding.
+- **Lumen** — a STEM Lab tool (light/optics-oriented); accessible from the STEM Lab grid.
+- **Generate-Unit / Throughline** — spatial unit builder with an AI co-author (Mind Map module).
+- **Footnotes + APA/MLA/Chicago doc modes** — citation-aware document generation in the Doc Builder.
 
 ---
 
@@ -936,6 +997,10 @@ AlloFlow complies with WCAG 2.1 AA standards for keyboard navigation and screen 
 
 ## Appendix A: Spoke Module Versions
 
+A representative subset of the ~250 CDN spoke modules (the clinical/flagship ones).
+The authoritative list is the on-disk `*_module.js` files, served hashless from the
+Cloudflare Pages CDN (`alloflow-cdn.pages.dev`).
+
 | Module | Version | Last Updated |
 | :--- | :--- | :--- |
 | BehaviorLens | 1.0.0 | Mar 2026 |
@@ -944,6 +1009,9 @@ AlloFlow complies with WCAG 2.1 AA standards for keyboard navigation and screen 
 | Word Sounds | 1.0.0 | Feb 2026 |
 | Student Analytics | 1.0.0 | Jan 2026 |
 | Math Fluency | 1.0.0 | Jan 2026 |
+| Doc Pipeline (PDF accessibility) | — | Jun 2026 |
+| Cinematic Studio | — | Jun 2026 |
+| PD Core (Professional Development) | — | Jun 2026 |
 
 ---
 
