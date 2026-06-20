@@ -8158,6 +8158,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                                 ? (t('pdf_audit.verapdf.fixed_pass') || 'Auto-fixed to PDF/UA-1 — downloaded the independently-validated file.')
                                                 : (t('pdf_audit.verapdf.fixed_partial') || 'Applied veraPDF auto-fixes (some rules need richer repair) — downloaded the improved file.'),
                                                 _rem.compliant ? 'success' : 'warning');
+                                              // Integrity: surface any content-altering repair (font substitution, Artifact-marking) so a
+                                              // "PASSES PDF/UA-1" verdict never silently hides a change that needs human review.
+                                              const _disc = [];
+                                              try { for (const _s of (_rem.log || [])) for (const _a of (_s.applied || [])) if (/REVIEW:/.test(_a)) _disc.push(_a.replace(/^§[^:]*:\s*/, '')); } catch (_e) {}
+                                              if (_disc.length) addToast('⚠ ' + (t('pdf_audit.verapdf.fix_review') || 'Auto-fix made changes to review before distribution') + ': ' + [...new Set(_disc)].join('; '), 'warning');
                                             }
                                           } catch (e) { addToast((t('pdf_audit.verapdf.fix_failed') || 'veraPDF auto-fix failed') + ': ' + String((e && e.message) || e), 'error'); }
                                           finally { setVeraPdfFixing(false); }

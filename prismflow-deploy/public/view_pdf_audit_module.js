@@ -6324,6 +6324,12 @@ Return ONLY JSON:
                 _rem.compliant ? t("pdf_audit.verapdf.fixed_pass") || "Auto-fixed to PDF/UA-1 \u2014 downloaded the independently-validated file." : t("pdf_audit.verapdf.fixed_partial") || "Applied veraPDF auto-fixes (some rules need richer repair) \u2014 downloaded the improved file.",
                 _rem.compliant ? "success" : "warning"
               );
+              const _disc = [];
+              try {
+                for (const _s of _rem.log || []) for (const _a2 of _s.applied || []) if (/REVIEW:/.test(_a2)) _disc.push(_a2.replace(/^§[^:]*:\s*/, ""));
+              } catch (_e) {
+              }
+              if (_disc.length) addToast("\u26A0 " + (t("pdf_audit.verapdf.fix_review") || "Auto-fix made changes to review before distribution") + ": " + [...new Set(_disc)].join("; "), "warning");
             }
           } catch (e) {
             addToast((t("pdf_audit.verapdf.fix_failed") || "veraPDF auto-fix failed") + ": " + String(e && e.message || e), "error");

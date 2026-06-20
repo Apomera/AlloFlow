@@ -1,7 +1,7 @@
 // Headless test of the WIRED structural fallback in verapdf_validator.html's remediate()
-// (Plan A: PDFBox co-loaded at boot). Builds an untagged fixture (catalog/metadata correct but
-// NO structure + unmarked content → fails 6.2t1/7.1t11/7.1t3), runs window.__remediate, and
-// asserts the closed loop drives it to compliant USING the PDFBox structural recipes.
+// (Plan A: PDFBox co-loaded at boot). Builds an untagged fixture with a non-embedded font (fails
+// 6.2t1/7.1t11/7.1t3/7.21.4.1), runs window.__remediate at the SAFE DEFAULT (Artifact-wrap OFF), and
+// asserts it embeds the font + scaffolds structure but does NOT hide content as /Artifact (P1 safety).
 const http = require('http'), fs = require('fs'), path = require('path');
 const { chromium } = require('@playwright/test');
 const ROOT = 'C:\\tmp', PORT = 8023;
@@ -58,11 +58,16 @@ const server = http.createServer((req, res) => {
 
   console.log('\n[test] REMEDIATION RESULT — compliant: ' + result.compliant);
   for (const s of result.log) console.log('  iter ' + s.iter + ': ' + s.failedRules + ' failed (' + (s.rules.join(', ') || 'none') + ')' + (s.applied ? ' → ' + s.applied.join('; ') : '') + (s.structError ? ' [structErr: ' + s.structError + ']' : ''));
-  const usedStructural = result.log.some((s) => (s.applied || []).some((a) => /7\.1t3|7\.1t11|StructTreeRoot|Artifact/.test(a)));
-  const usedFont = result.log.some((s) => (s.applied || []).some((a) => /7\.21\.4\.1|NotoSans/.test(a)));
-  const ok = result.compliant && usedStructural && usedFont;
-  console.log(ok ? '\n✅ WIRED STRUCTURAL + FONT FALLBACK WORKS — remediate() used PDFBox structural AND font recipes to reach PDF/UA-1 PASS.'
-                 : '\n⚠ ' + (result.compliant ? ('compliant but recipes not all exercised (structural=' + usedStructural + ' font=' + usedFont + ').') : 'did not converge.'));
+  const flat = result.log.flatMap((s) => s.applied || []);
+  const usedScaffold = flat.some((a) => /StructTreeRoot/.test(a));
+  const usedFont = flat.some((a) => /NotoSans|7\.21\.4\.1/.test(a));
+  const usedArtifact = flat.some((a) => /Artifact/.test(a));
+  const fontRuleGone = !((result.verdict && result.verdict.failedRules) || []).some((f) => f.clause === '7.21.4.1');
+  // SAFE DEFAULT (P1): the loop embeds fonts + scaffolds structure, but must NOT auto-wrap content as
+  // /Artifact — so a fully-untagged TEXT doc is never silently "passed" by hiding its text.
+  const ok = usedScaffold && usedFont && fontRuleGone && !usedArtifact && !result.compliant;
+  console.log(ok ? '\n✅ SAFE DEFAULT VERIFIED — embedded the font + scaffolded structure, did NOT hide content as /Artifact (honest partial; content-marking is opt-in).'
+                 : '\n⚠ unexpected: usedScaffold=' + usedScaffold + ' usedFont=' + usedFont + ' fontRuleGone=' + fontRuleGone + ' usedArtifact=' + usedArtifact + ' compliant=' + result.compliant);
   await browser.close(); server.close();
   process.exit(ok ? 0 : 1);
 })();

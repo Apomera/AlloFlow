@@ -146,13 +146,14 @@
   // 7.1t11 (no StructTreeRoot). Writes bytes to the CheerpJ FS, repairs with PDFBox's low-level
   // API, reads bytes back via Java Base64. INTEGRITY: gated to FULLY-UNTAGGED docs (no
   // StructTreeRoot) so it never corrupts real tagging; the 7.1t3 /Artifact entry discloses for review.
-  async function _applyStructuralRepairs(bytes, failedRules) {
+  async function _applyStructuralRepairs(bytes, failedRules, opts) {
     if (!_lib) return { bytes: bytes, applied: [] };
     const has = (c, t) => failedRules.some((f) => f.clause === c && f.testNumber === t);
     const needScaffold = has('7.1', 11); // StructTreeRoot missing → safe to add a skeleton (MarkInfo alone is pdf-lib's job, never triggers this)
-    // Artifact-wrap ONLY for fully-untagged docs (no StructTreeRoot = no real tagging to corrupt);
-    // a partially-tagged page that fails 7.1t3 needs MANUAL tagging — auto-wrapping it as Artifact would hide real content.
-    const needArtifact = has('7.1', 3) && needScaffold;
+    // Artifact-wrap is OPT-IN ONLY (opts.allowArtifact). Marking content /Artifact makes it decorative —
+    // for a fully-untagged TEXT doc that would HIDE the real text while still passing veraPDF (an empty
+    // document). The loop can't tell decorative residue from real content, so it NEVER auto-runs this.
+    const needArtifact = has('7.1', 3) && needScaffold && !!(opts && opts.allowArtifact);
     const needFont = has('7.21.4.1', 1); // non-embedded font — safe on tagged docs too (doesn't touch structure)
     if (!needArtifact && !needScaffold && !needFont) return { bytes: bytes, applied: [] };
     const L = _lib, pb = L.org.apache.pdfbox;
@@ -202,7 +203,13 @@
             const res = await (await doc.getPage(i)).getResources();
             const names = []; // collect first, then replace (avoid concurrent modification)
             const it = await (await res.getFontNames()).iterator();
-            while (await it.hasNext()) { const nm = await it.next(); const f = await res.getFont(nm); if (f && !(await f.isEmbedded()) && (await f.isStandard14())) names.push(nm); }
+            while (await it.hasNext()) {
+              const nm = await it.next(); const f = await res.getFont(nm);
+              if (!f || (await f.isEmbedded()) || !(await f.isStandard14())) continue;
+              // skip SYMBOLIC standard-14 (Symbol/ZapfDingbats) — a WinAnsi substitute would render WRONG glyphs (a dingbat becomes a letter)
+              if (/symbol|zapf|dingbat/i.test(String((await f.getName()) || ''))) continue;
+              names.push(nm);
+            }
             for (const nm of names) { await res.put(nm, subFont); replaced++; }
           }
           if (replaced) applied.push('§7.21.4.1:embedded ' + replaced + ' font(s) via NotoSans (REVIEW: substituted font — metrics approximate)');
@@ -217,7 +224,7 @@
     } catch (e) { try { await doc.close(); } catch (_) {} throw e; }
   }
 
-  async function remediate(bytes, maxIters) {
+  async function remediate(bytes, maxIters, opts) {
     maxIters = maxIters || 5;
     let cur = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
     const log = []; let verdict = null;
@@ -232,7 +239,7 @@
       // structural fallback (PDFBox, co-loaded) for rules pdf-lib can't fix: 7.1t3 content-marking, 7.1t11 StructTreeRoot
       const structRules = verdict.failedRules.filter((f) => (f.clause === '7.1' && (f.testNumber === 3 || f.testNumber === 11)) || (f.clause === '7.21.4.1' && f.testNumber === 1)); // rules pdf-lib can't fix: content/struct-tree + font embedding (MarkInfo 6.2t1 is pdf-lib's)
       if (structRules.length && _lib) {
-        try { const sr = await _applyStructuralRepairs(cur, verdict.failedRules); if (sr.applied.length) { cur = sr.bytes; step.applied = step.applied.concat(sr.applied); } }
+        try { const sr = await _applyStructuralRepairs(cur, verdict.failedRules, opts); if (sr.applied.length) { cur = sr.bytes; step.applied = step.applied.concat(sr.applied); } }
         catch (e) { step.structError = String(e && (e.message || e)); }
       }
       if (!step.applied.length) break; // nothing more is fixable — stop (ship best-effort)
@@ -308,7 +315,7 @@
     // Closed-loop remediation: validate → repair → re-validate → loop, return the green (or best-effort) PDF.
     if (d.type === 'verapdf-remediate' && d.bytes && ready) {
       try {
-        const r = await remediate(d.bytes, d.maxIters);
+        const r = await remediate(d.bytes, d.maxIters, { allowArtifact: !!d.allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
         (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', result: r }, '*');
       } catch (e) {
         (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, '*');
