@@ -96,7 +96,7 @@
     "exit": "Kobima"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "Studio ya Bilembo ya Maloba",
     "subtitle": "Misala ya Boyebi ya Mingongo ya Maloba",
     "listen_word": "Yoká na maloba",
     "activity_counting": "Kotanga Mingongo",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Projɛ ebombami (etando {count}); zwa yango na nsima mpo na kokoba",
     "project_saved": "💾 Projɛ ebombami; zwa yango na nsima mpo na kokoba kobongisa",
     "search_result_desc": "Mbano ya Boluki ya Google: {title}",
-    "link_url_prompt": "Kɔtɛla URL ya liyangani:"
+    "link_url_prompt": "Kɔtɛla URL ya liyangani:",
+    "building_accessible_docx": "Kosala fishye Word oyo ekoki kosalelama na bato nyonso…",
+    "building_accessible_pptx": "Kosala PowerPoint oyo ekoki kosalelama na bato nyonso…",
+    "batch_tagging": "📄 Kosala ba PDF ya bilembo mpo na ZIP — ba fishye oyo eskanné ezwaka ntango mingi (OCR esalemaka na fishye moko na moko)…",
+    "builder_edits_preserved": "✋ Tobombi mbongwana na yo ya maboko — preview esalemi lisusu te. Kobimisa to kokanga builder mpo na kobomba yango, na sima bongola ba paramètre.",
+    "builder_edits_synced": "✏️ Mbongwana ya builder ebombami na kati ya mokanda oyo ebongisami — ba export ya Tagged PDF / Word / PowerPoint ezali sikoyo na yango.",
+    "pptx_ai_theme": "🎨 Kosenga AI palette oyo ekokani na sujet (kotángama esengeli esalema awa)…",
+    "make_accessible_fixing": "✨ Audit esili — kobongisa yango moko (esengeli kofina te)…",
+    "tagged_pdf_saved_see_report": "📄 Tagged PDF ebombami — rapport mobimba ezali likolo ya ba butɔ ya kozwa (✕ mpo na kolongola yango).",
+    "no_open_image_slot": "Esika ya elilingi ya polele etikali te na preview — benda miniature na likolo ya elilingi moko mpo na kobongola yango.",
+    "extracted_image_inserted": "🖼 Ekɔtisami na esika ya liboso ya elilingi ya polele — benda miniature soki olingi esika mosusu.",
+    "html_downloaded": "🌐 HTML ezwami — efungwamaka na navigateur nyonso.",
+    "odt_downloaded": "📄 OpenDocument (.odt) ezwami — efungwamaka na LibreOffice, Google Docs, to Word.",
+    "daisy_downloaded": "🔊 Paquet ya buku-ya-koloba ya DAISY (.zip) ezwami — fungola yango na lecteur ya DAISY.",
+    "mo_no_voice": "Service ya mongongo ezali te, yango wana audio ya kotánga-elongo ekoki kosalema sikoyo te.",
+    "mo_busy": "Export ya kotánga-elongo ezali kosalema déjà.",
+    "mo_no_text": "Makomi ya kotánga mpo na koloba ezwami te.",
+    "mo_no_audio": "⚠ Buku ya kotánga-elongo ebombami, kasi audio ekokaki kosalema te (service ya mongongo ezali te). Makomi + structure ya synchronisation ezali malamu.",
+    "mo_done": "Buku ya kotánga-elongo ezwami",
+    "audio_unavailable_now": "Audio ezali te sikoyo (mosala moko ekoki kozala kosalema, to service ya mongongo ekangami)."
   },
   "large_file": {
     "modal_title": "Kotisá Large mongongo fichier",
@@ -1766,7 +1785,7 @@
     "equitable": "Ya bosembo",
     "accessible": "Epesami",
     "scaffolded": "Ya kosunga",
-    "rights": "AGPLv3 Licensed • Copyright © 2026 Aaron Pomeranz, PsyD",
+    "rights": "Licence ya AGPLv3 • Copyright © 2026 Aaron Pomeranz, PsyD",
     "pii_warning": "Note: Do te eloko ekoti Personally Identifiable sango (PII).",
     "next_level": "oyo elandi niveau",
     "share_classroom": "Kabolá na Google kelasi",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator biloko ya mosala",
     "documents_menu_aria": "mokanda menu",
     "open_doc_builder_pdf_aria": "Fungolá mokanda Builder mpo na PDF",
-    "export_slides_tooltip": "Opens mokanda Builder na Slides lolenge"
+    "export_slides_tooltip": "Opens mokanda Builder na Slides lolenge",
+    "learning_tools_tooltip": "Bisaleli ya Koyekola (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Mokano monoko",
@@ -2396,7 +2416,7 @@
       "hint_button": "elembo"
     },
     "bingo": {
-      "generator_title": "Bingo Generator",
+      "generator_title": "Mosali ya Bingo",
       "caller_title": "Mobengi ya Bingo",
       "student_title": "Bingo",
       "teacher_mode_desc": "molakisi lolenge: Call out ndimbola automatically.",
@@ -2565,7 +2585,7 @@
     "memory_game": "Memory lisano",
     "crossword": "Maloba Mokakatani",
     "matching": "Bokokani",
-    "bingo": "Bingo Generator",
+    "bingo": "Mosali ya Bingo",
     "play_bingo": "Saná Bingo",
     "scramble": "maloba Scramble",
     "word_sounds": "Word Sounds",
@@ -3022,7 +3042,7 @@
     }
   },
   "bingo": {
-    "generator_title": "Bingo Generator",
+    "generator_title": "Mosali ya Bingo",
     "caller_title": "Mobengi ya Bingo",
     "student_title": "Bingo",
     "teacher_mode_desc": "molakisi lolenge: Call out ndimbola automatically.",
@@ -3599,7 +3619,7 @@
       "math_desc": "Sala relevant maloba mikakatano na connections na mituya makanisi.",
       "persona_title": "AI Persona",
       "persona_desc": "Simulate conversation na mosali na lisapo to figure uta makomi.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "Studio ya Bilembo ya Maloba",
       "wordsounds_desc": "Design targeted phonics na phoneme awareness liteya kosalela mokanda ya maloba liloba to maloba families.",
       "glossary_settings_title": "mokanda ya maloba bobongisi",
       "glossary_settings_desc": "Bongisá how liloba ezali eponami na translated. yo can pona by tiered maloba to makasi oyo monoko.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Ya kopona. Etiami na elilingi nyonso na momekano (motuna + baponi). Pamba = style ya ebandeli. Ebombami elongo na momekano mpo misala ya kobongisa etikala na brand.",
     "generate_pre_check": "Sala Pre-Check",
     "generate_formative": "Sala Formative Check",
-    "generate_review": "Sala Spaced Review"
+    "generate_review": "Sala Spaced Review",
+    "likert_strongly_disagree": "Naboyi makasi",
+    "no_right_answer": "Eyano ya malamu to ya mabe ezali awa te.",
+    "poll_completed": "Matɔndi mpo na kokabola makanisi na yo.",
+    "poll_intro": "Eyano ya malamu to ya mabe ezali awa te — makanisi na yo ya solo esungaka molakisi na yo mpe esungaka yo.",
+    "mode_poll": "🗣️ Sondage (mongongo ya moyekoli)"
   },
   "outline": {
     "title": "elilingi Organizer",
@@ -4160,7 +4185,8 @@
     },
     "divergence": {
       "semantic": "Eyokani na ndenge ya boyokani kasi elemba na ndimbola — AI ezwaki bilembo ya bonzenga ya makambo oyo axe-core akoki kosalela te",
-      "structural": "Mbeba ya WCAG na nzela ya code emonanaki — axe-core ezwaki misala ya mabe oyo mashini ekoki kondima"
+      "structural": "Mbeba ya WCAG na nzela ya code emonanaki — axe-core ezwaki misala ya mabe oyo mashini ekoki kondima",
+      "critical_override": "axe-core emoni {n} infraction(s) ya WCAG ya makasi mpenza — tala yango liboso ya kondima score oyo esangani; moyenge ekoki kobomba libungi ya makasi"
     },
     "tagtree": {
       "label": "Bopangani ya bilembo oyo ezali liboso",
@@ -4278,7 +4304,8 @@
       "std_dev": "mibeko Deviation",
       "icc_title": "Custom 1−(SD/50) index; te textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Heuristique ya hybride CV + pairwise na ba passage ya AI; ezali α ya Cronbach ya buku te"
     },
     "score": {
       "total_checks": "Komeka nyonso esalami",
@@ -4436,7 +4463,9 @@
       "title": "Regenerate PDF uta remediated HTML. Layout reflows — lokasa breaks, fonts, na pagination may differ uta ya liboso. Esalaka well mpo na pete prose mokanda."
     },
     "tagged_pdf": {
-      "title": "Preserve ya liboso PDF's elilingi layout byte-identical na inject bokokoki tags na its structure tree. Best mpo na textbooks, multi-colonne mokanda, na branded PDFs wapi elilingi fidelity matters."
+      "title": "Preserve ya liboso PDF's elilingi layout byte-identical na inject bokokoki tags na its structure tree. Best mpo na textbooks, multi-colonne mokanda, na branded PDFs wapi elilingi fidelity matters.",
+      "office_note": "Tagged PDF esalemaka kaka na ba entrée ya PDF — salelá Word/HTML",
+      "office_note_title": "Bilembo ya structure ekoki kokɔtisama kaka na ba octet ya PDF. Mpo na ba entrée ya Word/PowerPoint, ba téléchargement ya Word mpe HTML oyo ekoki kosalelama ememaka structure oyo ebongisami."
     },
     "alt_formats": {
       "intro": "Kitisá remediated mokanda na epesami alternative lolenge"
@@ -4507,7 +4536,9 @@
       "heading": "version Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Benda thumbnail onto any elilingi placeholder na pkotala lisusu na insert it, to finá \"📷 Tomá\" inside placeholder na poná \"Salelá extracted elilingi\"."
+      "drag_hint": "Benda thumbnail onto any elilingi placeholder na pkotala lisusu na insert it, to finá \"📷 Tomá\" inside placeholder na poná \"Salelá extracted elilingi\".",
+      "drag_hint2": "Fina miniature mpo na kokɔtisa yango na esika ya liboso ya elilingi ya polele, to benda yango na likolo ya placeholder to elilingi nyonso na preview. ×N = elilingi moko wana emonanaki na nkasa N (mbala mingi en-tête to logo).",
+      "insert_aria": "Kɔtisa elilingi oyo ebimisami na esika ya liboso ya polele"
     },
     "toolbar": {
       "aria": "makomi formatting",
@@ -4543,7 +4574,60 @@
     "violation_one": "Bobuki {count}",
     "violation_other": "Bobuki {count}",
     "ai_issue_one": "Mokakatano {count} oyo AI elakisi",
-    "ai_issue_other": "Mikakatano {count} oyo AI elakisi"
+    "ai_issue_other": "Mikakatano {count} oyo AI elakisi",
+    "tagged": {
+      "born_digital_note": "Keba: mpo na ba PDF oyo ezali na couche ya makomi, bilembo ya ntina esalelaka ba association ya ActualText na esika ya liaison mobimba ya contenu. Fishye ekoki kosalelama mingi koleka, kasi tala na PAC 2024 to Acrobat liboso ya koloba conformité ya PDF/UA."
+    },
+    "one_click": {
+      "label": "Sala Yango Ekoki Kosalelama",
+      "badge": "automatique mobimba — audit, bongisa, tala, zongela tii na but",
+      "desc": "Kofina mbala moko ekosala pipeline mobimba sans maboko na ba paramètre ya mosusu; ba téléchargement ekozala pene na suka. Olingi kotambwisa yango? Salelá \"Sala Audit\" na nse, tala ba résultat, na sima fina Bongisa & Tala yo moko."
+    },
+    "run_audit_label": "Sala Audit (étape 1 ya 2)",
+    "manual_path_explainer": "\"Sala Audit\" epesaka mokanda score mpe elakisaka oyo esengeli kobongisama — na sima otalaka mpe ofinaka Bongisa & Tala yo moko (étape 2). \"Sala Yango Ekoki Kosalelama\" na likolo esalaka ba étape mibale + kotala lisusu, automatiquement. \"Bobimisi Makomi\" ebimisaka kaka makomi ya pɛto mpo na kosala contenu.",
+    "tagged_report": {
+      "heading": "Rapport ya Tagged PDF",
+      "close_aria": "Longola rapport ya Tagged PDF",
+      "note": "Panneau oyo etikalaka tii okolongola yango. Ba détail wana moko ezali na kati ya téléchargement ya Rapport ya A11y ya lolenge ya Adobe."
+    },
+    "docx_export": {
+      "title": "Bongola contenu oyo ebongisami na mokanda ya Word na ba style ya titre ya solo, makomi ya elilingi (alt text) na ba elilingi, ba molɔngɔ ya titre ya tableau, structure ya liste, mpe ba hyperlien oyo esalaka. Tala na Vérificateur ya Accessibilité ya Word (Review → Check Accessibility) liboso ya kokabola."
+    },
+    "pptx_export": {
+      "title": "Sala lisusu contenu oyo ebongisami lokola deck ya PowerPoint na ba titre ya diapositive ya solo, makomi ya elilingi (alt text) na ba elilingi, ba molɔngɔ ya tableau na style ya titre, ba liste ya solo, mpe molɔngɔ ya kotánga = molɔngɔ ya komona. Mise en page oyo ekoki kosalelama oyo esalemi lisusu — clone ya komona ya oyo ya liboso te. Tala na Vérificateur ya Accessibilité ya PowerPoint liboso ya kokabola."
+    },
+    "dashboard": {
+      "aria": "Aperçu ya ba résultat ya kobongisa mpe navigation ya ba section",
+      "score_title": "Score ya accessibilité: liboso → nsima"
+    },
+    "tag_to_workbench_title": "Tinda bloc oyo na Expert Workbench: etondisaka commande oyo ekokani (elongo na bakebisi nyonso) mpo okoka kobongisa yango na liteya moko",
+    "tag_to_workbench_aria": "Tinda na Expert Workbench",
+    "pptx_theme_aria": "Thème ya export ya PowerPoint",
+    "pptx_theme_title": "Thème ya diapositive mpo na export ya PowerPoint. Ba preset nyonso etalami mpo na contraste (WCAG AA); option ya AI ekokani na sujet na yo, na kotángama oyo esengeli esalema awa na ndenge nyonso.",
+    "export_menu": {
+      "button": "Bimisa / Zwa",
+      "intro": "Zwa mokanda oyo ebongisami na format nyonso — pona oyo ekokani na ndenge ekosalelama.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — pesa na bayekoli)",
+      "word": "Word (.docx — kobongola lisusu)",
+      "pptx": "PowerPoint (.pptx — lakisa yango)",
+      "html": "HTML (efungwamaka bisika nyonso, logiciel te)",
+      "group_access": "Ba format oyo ekoki kosalelama",
+      "daisy": "Buku ya koloba ya DAISY (makomi mobimba)",
+      "daisy_title": "Paquet ya buku-ya-koloba ya makomi mobimba ya DAISY 3 (DTBook). Fungola yango na lecteur ya DAISY, oyo epesaka koloba, braille, to ekomeli ya minene. (Mpo na audio ya kotánga-na-mongongo oyo esynchronisé, salelá Kotánga-elongo na nse.)",
+      "readalong": "Buku ya kotánga-elongo (audio synchronisé)",
+      "readalong_progress": "Koloba… {done}/{total}",
+      "readalong_title": "Buku ya kotánga-elongo (EPUB3 Media Overlays): esalaka koloba-makomi mpo na paragraphe moko na moko mpe esynchronisé yango na makomi mpo système ya kotánga elakisa maloba ntango elobami. Esalaka ba appel ya mongongo mingi — ekoki kozwa ba minute mingi.",
+      "group_text": "Makomi & oyo ekoki kobongolama",
+      "odt_title": "OpenDocument Text — efungwamaka mbala moko na LibreOffice mpe Google Docs (mpe Word).",
+      "group_audio": "Koloba na mongongo",
+      "audio": "Koloba na mongongo (ya momesano)",
+      "audio_title": "Koloba na mongongo ya mokanda (MP3/WAV).",
+      "audio_sr": "Audio (lolenge ya screen-reader)",
+      "audio_sr_title": "Mongongo moko, kasi kosakola structure ndenge screen reader ekosala (ba niveau ya titre, motángo ya ba liste, ba molɔngɔ ya tableau, ba alt ya elilingi)."
+    },
+    "mo": {
+      "confirm": "Sala buku ya kotánga-elongo? Oyo elobaka ba section ya makomi {n} na koloba-makomi — pene na ba appel ya mongongo {n}, oyo ekoki kozwa ba minute mingi."
+    }
   },
   "concept_sort": {
     "title": "Likanisi Tia na molongo",
@@ -5241,7 +5325,7 @@
     "plan_hook": "Bobendani",
     "plan_independent": "Independent salela",
     "col_image": "elilingi",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "Studio ya Bilembo ya Maloba",
     "stop": "Tɛlɛmisa",
     "expand_header": "Fungola motó",
     "collapse_header": "Kanga motó mpo na kopesa esika mingi na makomi",
@@ -6831,7 +6915,61 @@
     "timeline_image_size": "Slider ya monene ya bililingi na ba cartes ya Timeline: moke / katikati / monene. Etikalaka na timeline mpo na PDF mpe masano.",
     "pdf_audit_view_web_audit_btn": "Epesaka lokasa bilembo mpo na bokoki ya kosalela ya WCAG 2.1 AA na nzela ya AI auditor mpe motó ya axe-core (motó kaka oyo ba auditeurs ya bato ya mosala basalelaka). Eloko ata moko te ebongwani — salelá yango ntango olingi kaka koyeba ndenge lokasa ezali lelo.",
     "pdf_audit_results_score_badge": "Bilembo ya bokoki ya kosalela ya PDF na yo mobimba banda 0 kino 100. Mai (80+) ezali pene na WCAG AA, langi ya wolo (50-79) esengeli mosala, motane (<50) ezali na mikakatano minene mpo na bayekoli oyo basalelaka balari ya écran to tekiniki ya lisungi.",
-    "pdf_audit_alt_formats_braille_btn": "Bomba fishie ya Braille ya Grade-1 (oyo ekangami te) oyo ekoki kobima na imprimante ya Braille to kotindama na écran ya Braille oyo ebongwanaka. Mpo na ba contractions ya Grade-2, pesá fishie epai ya TVI (molakisi ya bayekoli oyo bazali na mikakatano ya komona) mpo na kosukisa."
+    "pdf_audit_alt_formats_braille_btn": "Bomba fishie ya Braille ya Grade-1 (oyo ekangami te) oyo ekoki kobima na imprimante ya Braille to kotindama na écran ya Braille oyo ebongwanaka. Mpo na ba contractions ya Grade-2, pesá fishie epai ya TVI (molakisi ya bayekoli oyo bazali na mikakatano ya komona) mpo na kosukisa.",
+    "pdf_audit_view_web_url_input": "Kotisa adresse ya lokasa ya web oyo olingi kotala (na ndakisa https://yourdistrict.org/handbook), na sima fina Fetch mpo na kozwa HTML na yango mpo okoka kosala audit mpe kobongisa yango.",
+    "pdf_audit_view_web_fetch_btn": "Ezwaka lokasa na URL ya likolo mpe etyaka HTML na yango na boîte ya nse. Soki site epekisi kozwa, kotisa code ya lokasa na boîte ya HTML yo moko.",
+    "pdf_audit_view_web_html_textarea": "HTML ya solo oyo ezali kotalama — esi etyami na Fetch to ekotisami na yo. Okoki kobongola yango awa liboso ya kosala audit (na ndakisa, longola barre ya navigation oyo ezali ya yo te).",
+    "pdf_audit_view_web_remediate_btn": "Epesaka lokasa note, na nsima ekomaka lisusu HTML mpo na kobongisa oyo ekoki kobongisa (contrast, etiketi ya monoko, skip-link, landmarks) mpe epesaka yo kopi oyo ekoki kozwama mpe ezali accessible. Tala lisusu yo moko output liboso ya kobimisa yango.",
+    "pdf_audit_view_batch_dropzone": "Benda fichiers ya PDF kowuta na bureau na yo to na dossier ya downloads mpe tika yango na kati ya boîte oyo mpo na kobakisa yango na queue ya batch. Fichiers oyo ezali PDF te ezali kotalama te.",
+    "pdf_audit_view_batch_browse_btn": "Efungolaka esika ya kopona fichiers mpo na kopona PDF moko to ebele. Salelá oyo soki kobenda fichiers ezali pɛtɛɛ te (esaleli ya kosimba, lisalisi ya kotanga mongongo, miso ya bolembu, to Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Ezongisaka batch na yo ya nsuka na esika oyo etikalaki — ba PDF oyo esilaki ebatelami mpe kaka oyo esilaki te nde ezali kosalema lisusu. Salelá oyo soki batch ekatanaki na kati (onglet efungwamaki, refresh, crash).",
+    "pdf_audit_view_batch_discard_btn": "Ebwakaka mosala oyo ebombamaki ya batch na yo ya suka oyo ekatanaki — banner ekei mpe ba résultats oyo ebombamaki na cache ezali kolongolama na navigateur na yo.",
+    "pdf_audit_view_batch_clear_all_btn": "Elongolaka PDF nyonso na queue mpo ete okoka kobanda lisusu. Ezali kaka liboso ya kofina Banda Batch.",
+    "pdf_audit_view_batch_row_retry_btn": "Esalaka lisusu kaka fichier oyo moko oyo ekweyaki kozanga kosimba batch nyonso. Tika souris likoló ya X ya motane liboso mpo na kotanga mpo na nini ekweyaki — soki ezali likambo ya structure (PDF ebebi, scan ya bilili kaka), kosala lisusu ekosalisa te.",
+    "pdf_audit_view_batch_row_remove_btn": "Elongolaka kaka PDF oyo moko na queue mpo ete batch eleka yango. Ezali kaka liboso ya kobanda ya batch.",
+    "pdf_audit_view_batch_stop_btn": "Esɛngaka batch etɛlɛma nsima ya kosilisa fichier oyo ezali kosala sikoyo. Ba PDF oyo esili etikali ya kosilisa — okobungisa mosala oyo esili te, mpe okoki kozongela oyo etikali na nsima.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Ezongisaka na queue PDF nyonso oyo ekweyaki mpe esalaka yango lisusu. Fichiers oyo elongaki esimbami te. Ezali malamu komeka mbala moko soki ba erreurs ezali lokola ba erreurs ya réseau oyo ezali sécurisé te; kobaka komeka lisusu ba PDF oyo ebebi mpenza te.",
+    "pdf_audit_view_batch_start_btn": "Ebandaka kotala mpe kobongisa PDF nyonso na queue. Lobiko ya kondima ebimaka liboso na motango ya ba appels ya AI (mpe ntalo, na plan ya self-hosted) mpo ete okoka kozwa mokano liboso ya kobanda.",
+    "pdf_audit_view_batch_download_zip_btn": "Ezwaka PDF nyonso oyo ebongisamaki malamu lokola fichier moko ya ZIP. Ezali malamu mpo na kozongisa dossier mobimba epai ya molakisi to moto ya district na mbala moko.",
+    "pdf_audit_view_batch_new_batch_btn": "Elongolaka batch oyo esili mpo ete okoka kotia ensemble ya sika ya ba PDF. ZIP nyonso oyo osili kozwa etikali na ordinateur na yo — oyo ezongisaka kaka écran.",
+    "pdf_audit_view_batch_dashboard_btn": "Efungolaka tableau de bord ya conformité oyo ekoki kobetama na onglet ya sika — note ya moyenne, ba PDF boni ekomaki na 90+, ba problèmes ya WCAG oyo ezali mingi. Ezali na ntina mpo na kokabola na administrateur to kobakisa na fichier ya Title II / 504.",
+    "pdf_audit_view_settings_panel": "Ba boutons ya kobongisa pipeline ya audit mpe ya remediation. Ba défauts ezali malamu — bongola yango kaka soki run ya momesano ezali kopesa yo te oyo osengeli na yango (boyebi mingi, ntalo ya moke, esika ya kotelema oyo ekeseni).",
+    "pdf_audit_view_audit_passes_slider": "Ba auditeurs ya AI boni oyo ezali misusu batalaka PDF — bandimaka na ba problèmes ya solo mpe baboyaka kondima na makelele, bongo ba auditeurs mingi elimboli ba alerte ya lokuta moke. 5 ezali esika ya malamu; matisa mpo na ba documents ya conformité ya ntina mingi, kitisa mpo na ba vérifications ya mbangu.",
+    "pdf_audit_view_target_score_slider": "Note oyo olingi PDF oyo ebongisami ekoma na yango — 90 ezali kolonga makasi ya WCAG 2.1 AA, 95+ ezali pene ya kokoka, 70 ezali ndelo ya malamu mpo na ba documents oyo escané. Bakisa na Auto-continue mpo na kotika pipeline esala tii note ekokoma.",
+    "pdf_audit_view_max_fix_passes_slider": "Ba tours ya kobongisa ya automatique boni oyo pipeline ekoki kosala liboso ya kotelema. 8 ezali défaut; kitisa oyo mpo na kolukisa ntalo na plan ya self-hosted, to tia na 0 mpo na koleka kobongisa ya automatique mobimba (audit kaka).",
+    "pdf_audit_view_auto_continue_toggle": "Soki ezali pɛ, pipeline ekobaka kosala ba tours ya kobongisa ya kobakisa (tii na 3 mosusu) tii Note ya Mokano ekokoma, na nsima etelemaka yango moko. Boma yango soki olingi kaka pass moko mpe résultat moko ya kotala.",
+    "pdf_audit_view_polish_passes_slider": "Ba tours ya kopetola ya kobakisa nsima ya kobongisa ya solo ya accessibilité — ebongisaka espace, ba titres, kitoko ya komonana. 0 elekisaka, 2 ezali momesano, 3 ezali mpo na ba documents oyo ekokende na impression to epai ya bato ya libándá.",
+    "pdf_audit_view_branding_panel": "Ya kopona — etambolaka ndenge PDF oyo ebongisami ezali komonana: ba couleurs ya marque mpe style mobimba ya design. Leka mpo na komonana ya accessible ya défaut, to fungola soki document esengeli kokokana na marque ya eteyelo to district.",
+    "pdf_audit_view_brand_mode_auto_btn": "Ebimisaka ba couleurs ya marque na kati ya PDF oyo otindaki mpo ete version oyo ebongisami emonana lokola ya ebandeli. Défaut ya malamu — esalaka ete document eyebana na basali mpe na mabota.",
+    "pdf_audit_view_brand_mode_upload_input": "Tinda fichier ya marque ya pɛ, logo, to guide ya style (image to PDF) mpe pipeline ebimisaka ba couleurs mpe ba polices na yango. Ezali na ntina soki PDF ya ebandeli ezali komonana pamba kasi esengeli kokokana na marque ya district.",
+    "pdf_audit_view_brand_mode_none_btn": "Leka ba couleurs ya marque mobimba mpe salelá palette ya accessible oyo ezali na kati. Pona oyo mpo na ba feuilles ya mosala ya pamba, to soki ba couleurs ya ebandeli ekweyaka na contrast mpe osengeli te kobatela komonana.",
+    "pdf_audit_results_tab_remediation_btn": "Lakisa ba résultats ya audit nsima AlloFlow ebongisi PDF. Salelá onglet oyo mpo na komona note oyo ebongisami mpe ba problèmes nini ebongisami sikoyo.",
+    "pdf_audit_results_tab_original_btn": "Zonga na audit ya PDF ya ebandeli liboso AlloFlow ebongisa eloko moko te. Ezali na ntina mpo na kokokanisa ba notes ya liboso na nsima pembeni na pembeni.",
+    "pdf_audit_results_reliability_details": "Fungola mpo na komona ndenge ba auditeurs ya AI bazalaki na elikya na note oyo. Ba passes mingi ya AI esalemaka esika moko — boyokani makasi elimboli note ezali ya kotyela motema, bopanzani monene elimboli tala ba problèmes moko na moko yo moko.",
+    "pdf_audit_results_score_breakdown_details": "Fungola mpo na komona ndenge note ezalaki ya kotángama mpenza — ba vérifications boni esalemaki, eloko nini elongwaki na problème moko na moko, mpe ndenge note ya rubrique ya AI mpe ya axe-core eyokanaki esika moko. Oyo ezali etanda ya bosembo nsima ya motango ya likoló.",
+    "pdf_audit_results_score_how_ai_details": "Fungola mpo na komona ndenge AI epesaka note ya makasi na problème moko na moko: kolongola monene mpo na ba problèmes ya minene oyo ekangaka basaleli ya lisalisi ya kotanga mongongo, kolongola ya moke mpo na ba problèmes ya mike, mpe ba points oyo ezongi mpo na ba vérifications oyo elongi.",
+    "pdf_audit_results_score_how_axe_details": "Fungola mpo na komona ndenge vérificateur ya axe-core (moteur kaka oyo ba auditeurs ya accessibilité ya professionnel basalelaka) epesaki note na PDF na yo, na ba IDs ya mibeko ya WCAG oyo ekweyaki.",
+    "pdf_audit_results_issue_explain": "Finá mpo na kotanga oyo problème oyo ekangaka mpo na bana mpe ndenge mobeko ya WCAG esalaka. Ezali na lien na ndimbola ya officiel ya WCAG soki olingi koleka na bozindo.",
+    "pdf_audit_results_image_failures_details": "Fungola mpo na komona bilili nyonso oyo ebwakamaki na tango ya remediation. Mokóló moko na moko ezali na bouton Regenerate ya kofina mbala moko mpo ete figure moko ebunga na nkuku te.",
+    "pdf_audit_results_image_regenerate_btn": "Esalaka lisusu image oyo ezangi na nzela ya AI na lisalisi ya ndimbola na yango oyo ebombamaki. Image ya sika ezongaka mbala moko na kati ya document — kotinda na maboko esengeli te.",
+    "pdf_audit_view_report_menu_btn": "Fungola menu ya rapport mpo na kozwa rapport ya accessibilité na ba formats ekeseni — ndenge ya Adobe mpo na bakeli ya conformité, PDF oyo ebongisami mpo na kokabola ya pamba, JSON mpo na bolukiluki, to nzela oyo esimbami mpo na ba archives ya audit.",
+    "pdf_audit_view_adobe_report_btn": "Zwa rapport oyo ebongisami lokola Vérificateur ya Accessibilité ya Adobe, oyo etalami na PDF/UA-1 (etalon ya accessibilité ya leta mpo na ba PDF). Ya malamu mpo na kokabola na bakeli ya conformité to kobakisa na dossier ya Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Tala maloba oyo ebungaki na tango ya kobomba ya suka liboso ya kozwa mokano ya kosala pass ya kozongisa. Ya kotanga kaka — eloko moko te ekobongwana tii oponi kozongisa.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Zongisa maloba ya ebandeli oyo ezangi na kati ya document mpe tonga lisusu PDF oyo etiyami étiquette. Maloba oyo ekoki kotyama na kimia te ekosuka na eteni ya Content Recovery mpo ete eloko moko te ebunga — motango oyo etikali liboso mpe nsima ezali ntango nyonso komonana mpo ete okoka komona soki esalisaki.",
+    "pdf_audit_view_formatted_report_btn": "Fungola rapport ya accessibilité ya liboso/nsima oyo ekoki kobetama na onglet ya sika — finá Bomba lokola PDF na banner mpo na kobatela kopi mpo na ba archives na yo to likita na baboti.",
+    "pdf_audit_view_html_report_btn": "Zwa rapport ya liboso/nsima lokola fichier ya HTML oyo okoki kotia na site internet to kobongola. Contenu ekokani na version ya PDF oyo ekoki kobetama.",
+    "pdf_audit_view_json_data_btn": "Bimisa motango ya brut ya audit mpe ba données ya mobeko na mobeko lokola JSON. Salelá oyo soki olingi kotala ba résultats ya accessibilité na feuille ya calcul, cahier ya bolukiluki, to esaleli mosusu.",
+    "pdf_audit_view_audit_trail_signed_btn": "Sala nzela ya audit oyo emikundolaka yango moko (fichier ya HTML na bouton ya Verify Integrity oyo ezali na kati mpe oyo emonaka kobebisama). Ya malamu mpo na ezaleli ya conformité — yeba ete ezali signature ya navigateur, ezali ya mibeko te.",
+    "pdf_audit_view_save_project_btn": "Ebombaka mosala na yo ya remediation — HTML ya accessible, ba notes, ba paramètres, mosala ya lokasa na lokasa — na fichier oyo ekoki komemama. Fungola lisusu na Load Project mpo na kokoba kobongola kozanga kosala lisusu AI.",
+    "pdf_audit_view_load_project_btn": "Fungola lisusu fichier ya projet oyo obombaki liboso. Ezongisaka HTML oyo ebongisami, ba notes, mpe ba lokasa nyonso oyo esili kosalema — ezongisaka mpenza na esika oyo otikalaki.",
+    "pdf_audit_view_save_template_btn": "Bomba structure ya accessible ya document (molongo ya ba titres, ba tableaux, ba listes, landmarks) lokola modèle oyo okoki kosalela lisusu. Salelá yango na Document Builder mpo na kobanda ba documents ya sika — ba IEP, ba syllabus — oyo esili kobongisama mpo na accessibilité.",
+    "pdf_audit_alt_formats_summary": "Fungola mpo na ba formats mosusu — ePub, Braille ya électronique, texte ya pamba, Markdown — mpo na bana oyo basengeli na lolenge ya fichier mosusu na esika ya PDF to HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Bomba document oyo ebongisami lokola fichier ya ePub na molongo ya makambo mpe ba métadonnées ya accessibilité. Esalaka na Kindle, Apple Books, mpe ba lecteurs mingi ya mobile — bana bakoki kobongola bonene ya police, couleur, mpe mbangu ya kotanga.",
+    "pdf_audit_alt_formats_text_btn": "Bomba fichier ya .txt ya pamba na formatage nyonso elongwaki — format ya pɛtɛɛ mpenza mpo na ba lecteurs ya écran, kobongola na impression ya monene, to kotia na esaleli mosusu.",
+    "pdf_audit_alt_formats_markdown_btn": "Bomba document lokola Markdown — ekotaka malamu na ba pages ya Canvas, Schoology, to D2L, Google Docs (na nzela ya kotia), ba wikis, mpe ba notes ya lolenge ya GitHub kozanga kobungisa ba titres to ba liens.",
+    "pdf_audit_alt_formats_daisy_btn": "Bomba colis ya buku-ya-koloba ya texte mobimba ya DAISY 3. Ba lecteurs ya DAISY (oyo ezali mingi na eteyelo spéciale) babakisaka mongongo na bango moko, braille, to impression ya monene na navigation mobimba. Texte kaka awa — mpo na kotanga-na-mongongo oyo esimbami, salelá Read-along ebook.",
+    "pdf_audit_alt_formats_readalong_btn": "Sala buku ya kotanga-elongo (EPUB3 Media Overlays): paragraphe moko na moko ezali kotángama na text-to-speech mpe esimbami na texte mpo ete maloba engenge ntango ezali kolobama. Appel moko ya mongongo na eteni moko, bongo ekoki kozwa ba minutes mwa moke.",
+    "pdf_audit_alt_formats_odt_btn": "Bomba fichier ya OpenDocument Text (.odt) — ya bomwana ya LibreOffice mpe Google Docs (Word mpe efungolaka yango). Salelá yango soki eteyelo na yo ezali Microsoft mobimba te kasi olingi kaka document oyo okoki kobongola na structure oyo etikali mobimba."
   },
   "groups": {
     "title": "Bituluku ya Bokesani",
@@ -11218,7 +11356,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories na life na mosali na lisapo voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Komá poems na form scaffolds, rhyme & meter analysis, AI liloba"
+    "poettree_desc": "Komá poems na form scaffolds, rhyme & meter analysis, AI liloba",
+    "throughline_desc": "Tia masolo na yo na kati ya eteni ya esika: molongo ya koteya, makambo ya liboso esengeli, fichier moko oyo okoki kobimisa"
   },
   "sel_hub": {
     "loading": "Kofungola SEL Hub...",
@@ -12538,5 +12677,10 @@
     "byline": "Na {author} · maloba {words} · {used}/{total} maloba",
     "student": "Moyekoli",
     "score": "Litɔmɔ: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Kosala preview lisusu ekobongola mbongwana na yo ya maboko na makambo ya sika oyo esalemi. Kokoba mpe kobwaka mbongwana? (Cancel ebombaka yango — bimisa to kanga builder mpo na kobomba liboso.)",
+    "remediation_banner_title": "Kobongola mokanda oyo ebongisami.",
+    "remediation_banner_body": "Mbongwana na yo awa ebombamaka na kati na yango ntango okangi builder, yango wana ba export ya Tagged PDF / Word / PowerPoint ezali na yango."
   }
 }

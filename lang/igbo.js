@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Echekwara ọrụ ({count} oghere); bulite ya ma emechaa iji gaa n'ihu",
     "project_saved": "💾 Echekwara ọrụ; bulite ya ma emechaa iji gaa n'ihu idezi",
     "search_result_desc": "Nsonaazụ Ọchụchọ Google: {title}",
-    "link_url_prompt": "Tinye URL njikọ:"
+    "link_url_prompt": "Tinye URL njikọ:",
+    "building_accessible_docx": "Na-ewu faịlụ Word nwere nnweta…",
+    "building_accessible_pptx": "Na-ewu PowerPoint nwere nnweta…",
+    "batch_tagging": "📄 Na-emepụta PDF ndị e tagịrị maka ZIP — faịlụ ndị e nyochara na-ewe oge karịa (OCR na-agba maka faịlụ ọ bụla)…",
+    "builder_edits_preserved": "✋ Edebere mgbanwe aka gị — atụgharịghị nlele ahụ ọzọ. Bupụ ma ọ bụ mechie onye nwuru ya iji chekwaa ha, mgbe ahụ gbanwee ntọala.",
+    "builder_edits_synced": "✏️ Echekwara mgbanwe nwuru n'ime akwụkwọ a kwadoro — mbupụ Tagged PDF / Word / PowerPoint ugbu a gụnyere ha.",
+    "pptx_ai_theme": "🎨 Na-arịọ AI maka agba dabara n'isiokwu (a na-amanye ịgụ ahụ n'ime ngwaọrụ)…",
+    "make_accessible_fixing": "✨ Nyocha emechara — na-akwado ya na-akpaghị aka (ọ dịghị mkpịsị aka achọrọ)…",
+    "tagged_pdf_saved_see_report": "📄 Echekwara Tagged PDF — akwụkwọ akụkọ zuru ezu ka kpọgidere n'elu bọtịnụ nbudata (✕ iji wepụ ya).",
+    "no_open_image_slot": "Ọ dịghị oghere onyonyo ghe oghe fọdụrụ na nlele ahụ — dọkpụrụ obere foto ahụ na onyonyo akọwapụtara iji dochie ya.",
+    "extracted_image_inserted": "🖼 Etinyere ya n'oghere onyonyo mbụ ghe oghe — dọkpụrụ obere foto ma ọ bụrụ na ịchọrọ ebe ọzọ.",
+    "html_downloaded": "🌐 Ebudatara HTML — na-emepe n'ihe nchọgharị ọ bụla.",
+    "odt_downloaded": "📄 Ebudatara OpenDocument (.odt) — na-emepe na LibreOffice, Google Docs, ma ọ bụ Word.",
+    "daisy_downloaded": "🔊 Ebudatara ngwugwu akwụkwọ na-ekwu okwu DAISY (.zip) — mepee ya n'ọgụgụ DAISY.",
+    "mo_no_voice": "Ọrụ olu adịghị, ya mere enweghị ike imepụta ọdịyo nke a na-agụ-na ya ugbu a.",
+    "mo_busy": "Mbupụ ọgụgụ-na na-agba ugbu a.",
+    "mo_no_text": "Ahụghị ederede a ga-agụ iji kọwaa.",
+    "mo_no_audio": "⚠ Echekwara akwụkwọ ọgụgụ-na, mana enweghị ike imepụta ọdịyo ọ bụla (ọrụ olu adịghị). Ederede + usoro mmekọrịta ahụ ka dị mma.",
+    "mo_done": "Ebudatara akwụkwọ ọgụgụ-na",
+    "audio_unavailable_now": "Ọdịyo adịghị ugbu a (ọrụ nwere ike na-agba, ma ọ bụ ọrụ olu agbanyụrụ)."
   },
   "large_file": {
     "modal_title": "Bubata Large olu faịlụ",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator ngwa",
     "documents_menu_aria": "akwụkwọ menu",
     "open_doc_builder_pdf_aria": "Mepee akwụkwọ Builder maka PDF",
-    "export_slides_tooltip": "Opens akwụkwọ Builder na Slides ọnọdụ"
+    "export_slides_tooltip": "Opens akwụkwọ Builder na Slides ọnọdụ",
+    "learning_tools_tooltip": "Ngwa Mmụta (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Target asụsụ",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Nhọrọ. Etinyere ya na foto ọ bụla n'ajụjụ ọnụ (ajụjụ + nhọrọ). Tọgbọrọ Chakoo = ụdị ndabara. E debere ya na ajụjụ ọnụ ka omume nnụcha na-anọgide na-akwado akara.",
     "generate_pre_check": "Mepụta Pre-Check",
     "generate_formative": "Mepụta Formative Check",
-    "generate_review": "Mepụta Spaced Review"
+    "generate_review": "Mepụta Spaced Review",
+    "likert_strongly_disagree": "Ekwenyeghị ike ike",
+    "no_right_answer": "Ọ dịghị azịza ziri ezi ma ọ bụ azịza ezighi ezi ebe a.",
+    "poll_completed": "Daalụ maka ịkọrọ echiche gị.",
+    "poll_intro": "Ọ dịghị azịza ziri ezi ma ọ bụ azịza ezighi ezi ebe a — echiche gị n'eziokwu na-enyere onye nkụzi gị aka ma na-enyere gị aka.",
+    "mode_poll": "🗣️ Ntuli aka (olu nwa akwụkwọ)"
   },
   "outline": {
     "title": "ihu Organizer",
@@ -4160,7 +4185,8 @@
     },
     "divergence": {
       "semantic": "Kwekọrọ n’usoro mana adịghị ike na nkọwa — AI akara àgwà ọdịnaya nke axe-core enweghị ike ịchọpụta",
-      "structural": "A chọpụtara mmebi WCAG n’ọkwa koodu — axe-core hụrụ ọdịda ndị igwe nwere ike ịkwado"
+      "structural": "A chọpụtara mmebi WCAG n’ọkwa koodu — axe-core hụrụ ọdịda ndị igwe nwere ike ịkwado",
+      "critical_override": "axe-core chọtara mmebi WCAG dị oke njọ {n} — nyochaa ha tupu ị tụkwasị obi na akara agwakọtara; nkezi nwere ike izo ọdịda siri ike"
     },
     "tagtree": {
       "label": "Ngwakọta mkpado dị adị",
@@ -4278,7 +4304,8 @@
       "std_dev": "ọkwa Deviation",
       "icc_title": "Custom 1−(SD/50) index; anaghị textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "CV + heuristic ngwakọta pairwise n'ofe AI passes; ọ bụghị Cronbach's α nke akwụkwọ"
     },
     "score": {
       "total_checks": "Ngụkọta nyocha emere",
@@ -4436,7 +4463,9 @@
       "title": "Regenerate otu PDF site na remediated HTML. Layout reflows — page breaks, fonts, na pagination may differ site na original. Works well maka dị mfe prose akwụkwọ."
     },
     "tagged_pdf": {
-      "title": "Preserve original PDF's ihu layout byte-identical na inject accessibility tags na its structure tree. Best maka textbooks, multi-kolomn akwụkwọ, na branded PDFs ebe ihu fidelity matters."
+      "title": "Preserve original PDF's ihu layout byte-identical na inject accessibility tags na its structure tree. Best maka textbooks, multi-kolomn akwụkwọ, na branded PDFs ebe ihu fidelity matters.",
+      "office_note": "Tagged PDF metụtara ntinye PDF — jiri Word/HTML",
+      "office_note_title": "A pụrụ naanị itinye mkpado ihe owuwu n'ime byte PDF. Maka ntinye Word/PowerPoint, nbudata Word na HTML nwere nnweta na-ebu owuwu a kwadoro."
     },
     "alt_formats": {
       "intro": "Budata remediated akwụkwọ na accessible alternative usoro"
@@ -4507,7 +4536,9 @@
       "heading": "ụdị Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Dọrọ otu thumbnail onto any foto placeholder na pnyocha na insert it, maọbụ pịa \"📷 Bulite\" inside otu placeholder na họrọ \"Jiri extracted foto\"."
+      "drag_hint": "Dọrọ otu thumbnail onto any foto placeholder na pnyocha na insert it, maọbụ pịa \"📷 Bulite\" inside otu placeholder na họrọ \"Jiri extracted foto\".",
+      "drag_hint2": "Pịa obere foto iji tinye ya n'oghere onyonyo mbụ ghe oghe, ma ọ bụ dọkpụrụ ya na ihe nnọchi ma ọ bụ onyonyo ọ bụla akọwapụtara na nlele ahụ. ×N = otu onyonyo ahụ pụtara na ibe N (na-abụkarị akaeji ma ọ bụ logo).",
+      "insert_aria": "Tinye onyonyo a wepụtara n'oghere mbụ ghe oghe"
     },
     "toolbar": {
       "aria": "ederede formatting",
@@ -4543,7 +4574,60 @@
     "violation_one": "Mmebi {count}",
     "violation_other": "Mmebi {count}",
     "ai_issue_one": "Nsogbu {count} nke AI kọwara",
-    "ai_issue_other": "Nsogbu {count} nke AI kọwara"
+    "ai_issue_other": "Nsogbu {count} nke AI kọwara",
+    "tagged": {
+      "born_digital_note": "Mara: maka PDF nwere ederede, mkpado ihe nghọta na-eji mmekọrịta ActualText kama mmekọrịta ọdịnaya zuru ezu. Faịlụ ahụ enwetawanụ nke ọma, mana nyochaa na PAC 2024 ma ọ bụ Acrobat tupu ịkwupụta nkwekọ PDF/UA."
+    },
+    "one_click": {
+      "label": "Mee Ka Ọ Nwee Nnweta",
+      "badge": "akpaghị aka kpamkpam — nyochaa, dozie, nyochaa, megharịa ruo ebumnuche",
+      "desc": "Otu mkpịsị na-agba usoro ahụ niile na-akpaghị aka site na ntọala ndabara; nbudata dị njikere na njedebe. Ịchọrọ njikwa? Jiri \"Run Audit\" n'okpuru, nyochaa nsonaazụ, mgbe ahụ pịa Fix & Verify n'onwe gị."
+    },
+    "run_audit_label": "Gba Nyocha (nzọụkwụ 1 nke 2)",
+    "manual_path_explainer": "\"Run Audit\" na-enye akwụkwọ akụkọ akara ma gosi ihe kwesịrị idozi — i wee nyochaa ma pịa Fix & Verify n'onwe gị (nzọụkwụ 2). \"Make Accessible\" dị n'elu na-eme nzọụkwụ abụọ na ịlegharị anya ọzọ, na-akpaghị aka. \"Text Extraction\" na-adọpụ naanị ederede ọkụ maka mmepụta ọdịnaya.",
+    "tagged_report": {
+      "heading": "Akwụkwọ akụkọ Tagged PDF",
+      "close_aria": "Wepụ akwụkwọ akụkọ tagged-PDF",
+      "note": "Ogwe a na-anọgide ruo mgbe ị wepụrụ ya. Otu nkọwa ahụ na-eso n'ime nbudata Adobe-style A11y Report."
+    },
+    "docx_export": {
+      "title": "Gbanwee ọdịnaya a kwadoro ka ọ bụrụ akwụkwọ Word nwere ụdị isiokwu n'ezie, ederede nnọchi na onyonyo, ahịrị isi tebụl, owuwu ndepụta, na njikọ na-arụ ọrụ. Jiri Accessibility Checker arụnyere na Word (Review → Check Accessibility) nyochaa tupu ikesa."
+    },
+    "pptx_export": {
+      "title": "Wugharịa ọdịnaya a kwadoro dị ka PowerPoint nwere aha slaịdị n'ezie, ederede nnọchi na onyonyo, ahịrị tebụl nwere ụdị isi, ndepụta ntụpọ n'ezie, na usoro ọgụgụ = usoro anya. Nhazi nwere nnweta e wugharịrị — ọ bụghị onyonyo onyonyo nke mbụ. Jiri Accessibility Checker nke PowerPoint nyochaa tupu ikesa."
+    },
+    "dashboard": {
+      "aria": "Nchịkọta nsonaazụ nkwado na nchịgharị ngalaba",
+      "score_title": "Akara nnweta: tupu → mgbe e mesịrị"
+    },
+    "tag_to_workbench_title": "Zipu ngọngọ a na Expert Workbench: na-edebe iwu ezubere (gụnyere ịdọ aka ná ntị ọ bụla) ka i nwee ike idozi ya site n'otu ntụziaka",
+    "tag_to_workbench_aria": "Zipu na Expert Workbench",
+    "pptx_theme_aria": "Isiokwu mbupụ PowerPoint",
+    "pptx_theme_title": "Isiokwu slaịdị maka mbupụ PowerPoint. A na-enyocha agba presets niile (WCAG AA); nhọrọ AI na-adaba n'isiokwu gị, ebe a na-amanye ịgụ ahụ n'ime ụzọ ọ bụla.",
+    "export_menu": {
+      "button": "Bupụ / Budata",
+      "intro": "Budata akwụkwọ a kwadoro n'ụdị ọ bụla — họrọ nke dabara otu a ga-esi jiri ya.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — nye ụmụ akwụkwọ)",
+      "word": "Word (.docx — nọgide na-edezi)",
+      "pptx": "PowerPoint (.pptx — gosipụta ya)",
+      "html": "HTML (na-emepe ebe ọ bụla, enweghị ngwanrọ)",
+      "group_access": "Ụdị nwere nnweta",
+      "daisy": "Akwụkwọ na-ekwu okwu DAISY (ederede zuru ezu)",
+      "daisy_title": "Ngwugwu akwụkwọ na-ekwu okwu ederede zuru ezu nke DAISY 3 (DTBook). Mepee n'ọgụgụ DAISY, nke na-enye okwu, braille, ma ọ bụ mbipụta buru ibu. (Maka ọdịyo ọgụgụ-na e mekọrịtara, jiri Read-along n'okpuru.)",
+      "readalong": "Akwụkwọ ọgụgụ-na (ọdịyo e mekọrịtara)",
+      "readalong_progress": "Na-akọwa… {done}/{total}",
+      "readalong_title": "Akwụkwọ ọgụgụ-na (EPUB3 Media Overlays): na-emepụta ederede-ka-okwu maka paragraf ọ bụla ma jikọọ ya na ederede ka usoro ọgụgụ na-egosipụta okwu ka a na-ekwu ha. Na-eme ọtụtụ oku olu — nwere ike iwe nkeji ole na ole.",
+      "group_text": "Ederede & nke a pụrụ idezi",
+      "odt_title": "OpenDocument Text — na-emepe nke ọma na LibreOffice na Google Docs (na Word).",
+      "group_audio": "Ọgụgụ ọdịyo",
+      "audio": "Ọgụgụ ọdịyo (ọkọlọtọ)",
+      "audio_title": "Ọgụgụ a na-ekwu okwu nke akwụkwọ (MP3/WAV).",
+      "audio_sr": "Ọdịyo (ụdị onye na-agụ ihuenyo)",
+      "audio_sr_title": "Otu olu, mana na-ekwupụta owuwu otú onye na-agụ ihuenyo ga-esi mee (ọkwa isiokwu, ọnụọgụ ndepụta, ahịrị tebụl, ederede nnọchi onyonyo)."
+    },
+    "mo": {
+      "confirm": "Wuo akwụkwọ ọgụgụ-na? Nke a na-akọwa ngalaba ederede {n} site na ederede-ka-okwu — ihe dịka oku olu {n}, nke nwere ike iwe nkeji ole na ole."
+    }
   },
   "concept_sort": {
     "title": "Concept Hazie",
@@ -6839,7 +6923,61 @@
     "timeline_image_size": "Resize control maka AI-mepụtara foto embedded na timeline event kaadị (ahụ anya only mgbe events nwere foto). Three-nzọụkwụ slider: small / medium / large. Persists na timeline so size nhọrọ rides printed PDF + na-egwuregwu draggable kaadị. ndụmọdụ: larger sizes work well maka K-5 timelines ebe ihu anchors matter most (life cycles, historical events, akụkọ plots). Maka dense AP-ọkwa timelines na 15+ events, medium maọbụ small lets full sequence fit na one printable page without nwa akwụkwọ having na flip back na forth.",
     "pdf_audit_view_web_audit_btn": "Na-enye ibe ahụ akara maka inweta ohere WCAG 2.1 AA site na iji ma onye nyocha AI ma injin axe-core (otu injin ndị ọkachamara na-enyocha na-eji). Ọ dịghị ihe a na-agbanwe — jiri nke a mgbe ị chọrọ naanị ịmata otú ibe ahụ si dị taa.",
     "pdf_audit_results_score_badge": "Akara inweta ohere zuru oke nke PDF gị site na 0 ruo 100. Akwụkwọ ndụ ndụ (80+) dị nso na WCAG AA, agba ọla edo (50-79) chọrọ ọrụ, uhie (<50) nwere mgbochi buru ibu maka ụmụ akwụkwọ na-eji ihe na-agụ ihe dị na sgrin ma ọ bụ teknụzụ enyemaka.",
-    "pdf_audit_alt_formats_braille_btn": "Chekwaa faịlụ Braille Ọkwa-1 (nke a na-emichaghị) nke a ga-akpụ n'ụlọ obibi akwụkwọ Braille ma ọ bụ ziga ya na ngosi Braille a na-emegharị emegharị. Maka mmichi Ọkwa-2, nye onye TVI (onye nkuzi ụmụ akwụkwọ nwere nkwarụ anya) faịlụ ahụ ka o mechaa ya."
+    "pdf_audit_alt_formats_braille_btn": "Chekwaa faịlụ Braille Ọkwa-1 (nke a na-emichaghị) nke a ga-akpụ n'ụlọ obibi akwụkwọ Braille ma ọ bụ ziga ya na ngosi Braille a na-emegharị emegharị. Maka mmichi Ọkwa-2, nye onye TVI (onye nkuzi ụmụ akwụkwọ nwere nkwarụ anya) faịlụ ahụ ka o mechaa ya.",
+    "pdf_audit_view_web_url_input": "Mado adreesị ibe weebụ ịchọrọ ka e nyochaa (dịka ọmụmaatụ https://yourdistrict.org/handbook), mgbe ahụ pịa Fetch iji dọpụta HTML ya ka i nwee ike nyochaa ma kwadoo ya.",
+    "pdf_audit_view_web_fetch_btn": "Na-ebudata ibe dị na URL dị n'elu ma tinye HTML ya n'ime igbe dị n'okpuru. Ọ bụrụ na saịtị gbochiri ibudata, mado isi mmalite ibe ahụ n'igbe HTML n'onwe gị.",
+    "pdf_audit_view_web_html_textarea": "HTML a na-enyocha n'ezie — ma ọ bụ nke Fetch tinyere ma ọ bụ nke ị madoro. Ị nwere ike idezi ya ebe a tupu ịgba nyocha (dịka ọmụmaatụ, wepụ ahịrị nchịgharị nke ị na-enweghị).",
+    "pdf_audit_view_web_remediate_btn": "Na-enye akara ibe ahụ, mgbe ahụ dezigharịa HTML iji dozie ihe ọ pụrụ idozi (ọdịiche, mkpado asụsụ, njikọ mwụfe, ebe nrịba ama) ma nye gị nnomi nwere nnweta a pụrụ ibudata. Lelee mmepụta ahụ n'onwe gị mgbe niile tupu ibipụta.",
+    "pdf_audit_view_batch_dropzone": "Dọkpụrụ faịlụ PDF si na desktop gị ma ọ bụ folda ihe ndị i budatara tinye ha ozugbo n'igbe a iji tinye ha n'usoro ogbo. A na-eleghara faịlụ ndị na-abụghị PDF anya.",
+    "pdf_audit_view_batch_browse_btn": "Na-emepe ihe nhọrọ faịlụ gị ka ị họrọ otu ma ọ bụ karịa PDF. Jiri nke a ma ọ bụrụ na ịdọkpụ faịlụ adịghị mfe (ngwaọrụ mmetụ aka, ihe na-agụ ihuenyo, anya na-adịghị ahụ ụzọ nke ọma, ma ọ bụ Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Na-ebido ogbo ikpeazụ gị ebe ọ kwụsịrị — a na-edobe PDF ndị emechaala, naanị ndị na-emechabeghị ka a na-emegharị. Jiri nke a mgbe a kwụsịrị ogbo n'efu (mmechi taabụ, imegharị, mberede).",
+    "pdf_audit_view_batch_discard_btn": "Na-atụfu ọganihu echekwara site na ogbo ikpeazụ gị nke kwụsịrị — banner ahụ na-apụ ma a na-ehichapụ nsonaazụ echekwara na ihe nchọgharị gị.",
+    "pdf_audit_view_batch_clear_all_btn": "Na-ewepụ PDF ọ bụla site n'usoro ka ị nwee ike ịmalitegharị. Naanị dị mgbe ị pịa Bido Ogbo.",
+    "pdf_audit_view_batch_row_retry_btn": "Na-emegharị naanị otu faịlụ a dara emeghị ka ọ metụ ndị ọzọ n'ogbo aka. Buru ụzọ tụkwasị X uhie iji gụọ ihe mere o ji daa — ọ bụrụ na ọ bụ ihe gbasara nhazi (PDF mebiri emebi, scan onyonyo naanị), imegharị agaghị enye aka.",
+    "pdf_audit_view_batch_row_remove_btn": "Na-ewepụ otu PDF a site n'usoro ka ogbo ahụ wụfee ya. Naanị dị mgbe ogbo ahụ na-amalitebeghị.",
+    "pdf_audit_view_batch_stop_btn": "Na-arịọ ka ogbo ahụ kwụsị mgbe faịlụ ọ na-arụ ugbu a mechara. PDF ndị emechaala na-anọgide na-emecha — ị gaghị atụfu ọrụ emechara, ị nwekwara ike ịmaliteghachi ndị fọdụrụ ma emechaa.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Na-etinyeghachi PDF ọ bụla dara n'usoro ma megharịa ha. A naghị emetụ faịlụ ndị gara nke ọma aka. O kwesịrị ịnwale otu ugboro ma ọ bụrụ na ọdịda ahụ yiri njehie netwọkụ na-adịghị akwụsi ike; achọkwala imegharị PDF ndị mebiri emebi n'ezie.",
+    "pdf_audit_view_batch_start_btn": "Na-amalite nyocha na idozi PDF ọ bụla dị n'usoro. Nkwenye na-apụta na mbụ na atụmatụ nke oku AI (na ọnụ ahịa, na atụmatụ nke onwe gị) ka ị nwee ike ikpebi tupu ị malite ya.",
+    "pdf_audit_view_batch_download_zip_btn": "Na-ebudata PDF ọ bụla a dozigharịrị nke ọma dị ka otu faịlụ ZIP. Bara uru maka inyeghachi onye nkuzi ma ọ bụ onye nkwekọrịta mpaghara otu folda dum n'otu oge.",
+    "pdf_audit_view_batch_new_batch_btn": "Na-ehichapụ ogbo emechara ka ị nwee ike itinye PDF ọhụrụ. ZIP ọ bụla i budatarala na-anọgide na kọmpụta gị — nke a naanị na-emaligharị ihuenyo ahụ.",
+    "pdf_audit_view_batch_dashboard_btn": "Na-emepe dashboard nrubeisi a na-ebipụta na taabụ ọhụrụ — akara nkezi, PDF ole rutere 90+, esemokwu WCAG ndị kachasị adịkarị. Bara uru maka ịkọrọ onye nlekọta ma ọ bụ itinye na ndekọ Title II / 504.",
+    "pdf_audit_view_settings_panel": "Mgbanwe maka usoro nyocha na idozi. Ihe ndị edobere dị mma — gbanwee naanị ndị a ma ọ bụrụ na ọsọ ọkọlọtọ anaghị enye gị ihe ịchọrọ (nyocha sara mbara karịa, ọnụ ahịa dị ala, ebe nkwụsị dị iche).",
+    "pdf_audit_view_audit_passes_slider": "Ole ndị nyocha AI nọọrọ onwe ha na-ele PDF anya — ha na-ekwekọ na nsogbu ndị dị adị ma na-ekwekọrịtaghị na mkpọtụ, ya mere ndị nyocha karịa pụtara obere mkpesa ụgha. 5 bụ ọnụọgụ kacha mma; bulie elu maka akwụkwọ nrubeisi dị oke mkpa, weda maka nlele ngwa ngwa.",
+    "pdf_audit_view_target_score_slider": "Akara ịchọrọ ka PDF a dozigharịrị ruru — 90 bụ nnyocha WCAG 2.1 AA siri ike, 95+ fọrọ nke nta ka ọ zuo oke, 70 bụ ala bara uru maka akwụkwọ a scan. Jiri ya na Aga-n'ihu-Onwe ka usoro ahụ na-arụ ọrụ ruo mgbe a ruru akara ahụ.",
+    "pdf_audit_view_max_fix_passes_slider": "Ole agba idozi akpaaka usoro ahụ nwere ike ịgba tupu ọ kwụsị. 8 bụ nke edobere; weda nke a iji belata ọnụ ahịa na atụmatụ nke onwe gị, ma ọ bụ tọọ ya na 0 iji wụfee idozi akpaaka kpamkpam (naanị nyocha).",
+    "pdf_audit_view_auto_continue_toggle": "Mgbe ọ gbanyere, usoro ahụ na-aga n'ihu na-eme agba idozi ọzọ (ruo 3 ọzọ) ruo mgbe a ruru Akara Ebumnuche, wee kwụsị n'onwe ya. Gbanyụọ ma ọ bụrụ na ịchọrọ kpọmkwem otu ọsọ na otu nsonaazụ ka i nyochaa.",
+    "pdf_audit_view_polish_passes_slider": "Agba ihicha ọzọ mgbe ezigbo idozi nnweta zuru oke gasịrị — na-arụzi oghere, isiokwu, mma anya. 0 na-awụfe, 2 bụ ọkọlọtọ, 3 bụ maka akwụkwọ na-aga mbipụta ma ọ bụ ndị mmadụ na-anọghị n'ime ya.",
+    "pdf_audit_view_branding_panel": "Nhọrọ — na-achịkwa otú PDF a dozigharịrị si adị: agba akara aha na ụdị ọdịdị niile. Wụfee maka ọdịdị nnweta zuru oke nke edobere, ma ọ bụ gbasaa ma ọ bụrụ na akwụkwọ ahụ kwesịrị ịdaba na akara aha ụlọ akwụkwọ ma ọ bụ mpaghara.",
+    "pdf_audit_view_brand_mode_auto_btn": "Na-ewepụta agba akara aha site na PDF ị bulitere ka ụdị a dozigharịrị yie nke mbụ. Nke kacha mma — na-eme ka akwụkwọ ahụ bụrụ nke ndị ọrụ na ezinụlọ ga-amata.",
+    "pdf_audit_view_brand_mode_upload_input": "Bulite mpempe akara aha, logo, ma ọ bụ ntuziaka ụdị dị iche (onyonyo ma ọ bụ PDF) ma usoro ahụ na-ewepụta agba na mkpụrụedemede site na ya. Bara uru mgbe PDF mbụ na-adị nkịtị mana ọ kwesịrị ịdaba na akara aha mpaghara.",
+    "pdf_audit_view_brand_mode_none_btn": "Wụfee agba akara aha kpamkpam ma jiri agba nnweta zuru oke nke arụnyere. Họrọ nke a maka akwụkwọ ọrụ izugbe, ma ọ bụ mgbe agba mbụ dara ọdịiche ma ị chọghị idobe ọdịdị ya.",
+    "pdf_audit_results_tab_remediation_btn": "Gosi nsonaazụ nyocha mgbe AlloFlow dozigharịsịrị PDF. Jiri taabụ a ịhụ akara emelitere na nsogbu ndị edozila ugbu a.",
+    "pdf_audit_results_tab_original_btn": "Laghachi azụ na nyocha nke PDF mbụ tupu AlloFlow edozie ihe ọ bụla. Bara uru maka iji akara tupu-na-emesịa tụnyere n'akụkụ.",
+    "pdf_audit_results_reliability_details": "Gbasaa ịhụ ole obi ike ndị nyocha AI nwere n'akara a. Ọtụtụ ọsọ AI na-agba n'otu oge — nkwekọrịta chịkọtara pụtara na akara ahụ kwesịrị ntụkwasị obi, mgbasa sara mbara pụtara na ị ga-enyochaghị nsogbu ọ bụla n'onwe gị.",
+    "pdf_audit_results_score_breakdown_details": "Gbasaa ịhụ kpọmkwem otú e si gbaa akara — ole nlele gbara, ihe e wepụrụ kwa nsogbu, na otú e si jikọta akara usoro AI na axe-core nkezi. Nke a bụ akụkụ nghọta dị n'azụ ọnụọgụ isi.",
+    "pdf_audit_results_score_how_ai_details": "Gbasaa ịhụ otú AI si akpọrọ nsogbu ọ bụla ike: mwepụ buru ibu maka nsogbu dị oke mkpa nke na-egbochi ndị na-eji ihe ngụ ihuenyo, mwepụ obere maka ndị pere mpe, na akara enwetaghachiri maka nlele gafere.",
+    "pdf_audit_results_score_how_axe_details": "Gbasaa ịhụ otú onye nyocha axe-core (otu engine ndị ọkachamara nyocha nnweta zuru oke na-eji) si nyochaa PDF gị, ya na ID iwu WCAG kpọmkwem ndị dara.",
+    "pdf_audit_results_issue_explain": "Pịa ịgụ ihe nsogbu a na-egbochi n'ezie maka ụmụ akwụkwọ na otú iwu WCAG si emetụta. Tinyere njikọ na nkọwa WCAG gọọmenti ma ọ bụrụ na ịchọrọ ịbanye omimi.",
+    "pdf_audit_results_image_failures_details": "Gbasaa ịhụ onyonyo ọ bụla a tụfuru n'oge idozi. Ahịrị ọ bụla na-enye bọtịnụ Mepụtagharị otu pịa ka a ghara itufu eserese n'enweghị mkpọtụ.",
+    "pdf_audit_results_image_regenerate_btn": "Na-emepụtagharị onyonyo a na-efu site na iji AI dabere na nkọwa echekwara ya. Onyonyo ọhụrụ na-alaghachi ozugbo n'ime akwụkwọ — ọ dịghị mkpa ibulite n'aka.",
+    "pdf_audit_view_report_menu_btn": "Mepee menu akụkọ ka ị budata akụkọ nnweta zuru oke n'ụdị dị iche iche — ụdị Adobe maka ndị ọrụ nrubeisi, PDF ahaziri ahazi maka ịkọrọ izugbe, JSON maka nyocha, ma ọ bụ ndekọ a bịanyere aka maka ndekọ nyocha.",
+    "pdf_audit_view_adobe_report_btn": "Budata akụkọ ahaziri dị ka Adobe Accessibility Checker, e nyochara megide PDF/UA-1 (ọkọlọtọ nnweta zuru oke gọọmenti etiti maka PDF). Kacha mma maka ịkọrọ ndị ọrụ nrubeisi ma ọ bụ itinye na ndekọ Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Nyochaa okwu ndị furu efu n'oge nchekwa ikpeazụ tupu ikpebi ma ị ga-agba ọsọ mweghachi. Naanị ọgụgụ — ọ dịghị ihe a na-agbanwe ruo mgbe ị họọrọ iweghachi.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Tinyeghachi okwu isi mmalite furu efu n'ime akwụkwọ wee wugharịa PDF e kekọrọ. Okwu ndị enweghị ike idozi nke ọma na-akwụsị na ngalaba Mweghachi Ọdịnaya ka ọ ghara ifu — a na-egosi mgbe niile ọnụọgụ fọdụrụ tupu na mgbe ahụ ka ị nwee ike ịhụ ma ọ nyere aka.",
+    "pdf_audit_view_formatted_report_btn": "Mepee akụkọ nnweta zuru oke tupu/mgbe a na-ebipụta na taabụ ọhụrụ — pịa Chekwaa dị ka PDF na banner iji debe otu nke maka ndekọ gị ma ọ bụ nzukọ nne na nna.",
+    "pdf_audit_view_html_report_btn": "Budata akụkọ tupu/mgbe dị ka faịlụ HTML ị nwere ike ịkwado na webụsaịtị ma ọ bụ dezie. Ọdịnaya kwekọrọ na ụdị PDF a na-ebipụta.",
+    "pdf_audit_view_json_data_btn": "Bupụta ọnụọgụ nyocha na data iwu-na-iwu dị ka JSON. Jiri nke a mgbe ịchọrọ ịnyocha nsonaazụ nnweta zuru oke na spreadsheet, akwụkwọ ndetu nyocha, ma ọ bụ ngwa ọzọ.",
+    "pdf_audit_view_audit_trail_signed_btn": "Mepụta ndekọ nyocha na-enyocha onwe ya (faịlụ HTML nwere bọtịnụ Nyochaa Izuoke arụnyere nke na-achọpụta mkpagbu). Dị mma maka ihe akaebe nrubeisi — mara na ọ bụ mbịanye aka n'akụkụ ihe nchọgharị, ọ bụghị nke iwu kwadoro.",
+    "pdf_audit_view_save_project_btn": "Na-echekwa ọrụ idozi gị — HTML nnweta zuru oke, akara, ntọala, ọganihu ibe-na-ibe — n'ime faịlụ a na-ebuga ebuga. Megheghachi site na Bulite Ọrụ iji nọgide na-edezi n'enweghị ịgbagharị AI.",
+    "pdf_audit_view_load_project_btn": "Megheghachi faịlụ ọrụ i chekwara na mbụ. Na-eweghachi HTML a dozigharịrị, akara, na ụdị ibe ọ bụla emechaala — na-ebido kpọmkwem ebe ị kwụsịrị.",
+    "pdf_audit_view_save_template_btn": "Chekwaa nhazi nnweta zuru oke nke akwụkwọ (usoro isiokwu, tebụl, ndepụta, ihe ngosi) dị ka template a ga-ejigharị. Jiri ya na Document Builder ịmalite akwụkwọ ọhụrụ — IEP, syllabi — ahaziri ahazi maka nnweta zuru oke.",
+    "pdf_audit_alt_formats_summary": "Gbasaa maka ụdị faịlụ ndị ọzọ — ePub, Braille eletrọnik, ederede nkịtị, Markdown — maka ụmụ akwụkwọ chọrọ ụdị faịlụ dị iche na PDF ma ọ bụ HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Chekwaa akwụkwọ a dozigharịrị dị ka faịlụ ePub nwere ndepụta ọdịnaya na metadata nnweta zuru oke. Na-arụ ọrụ na Kindle, Apple Books, na ọtụtụ ihe ngụ mkpanaka — ụmụ akwụkwọ nwere ike ịgbanwe nha mkpụrụedemede, agba, na ọsọ ọgụgụ.",
+    "pdf_audit_alt_formats_text_btn": "Chekwaa faịlụ .txt nkịtị nke ewepụrụ nhazi niile — ụdị kachasị mfe maka ihe ngụ ihuenyo, ntụgharị mbipụta buru ibu, ma ọ bụ ịmado n'ime ngwa ọzọ.",
+    "pdf_audit_alt_formats_markdown_btn": "Chekwaa akwụkwọ dị ka Markdown — na-abanye nke ọma na ibe Canvas, Schoology, ma ọ bụ D2L, Google Docs (site na ịmado), wiki, na ndetu ụdị GitHub n'enweghị itufu isiokwu ma ọ bụ njikọ.",
+    "pdf_audit_alt_formats_daisy_btn": "Chekwaa ngwugwu akwụkwọ na-ekwu okwu DAISY 3 nwere ederede zuru oke. Ndị ngụ DAISY (a na-ahụkarị na agụmakwụkwọ pụrụ iche) na-agbakwunye okwu, braille, ma ọ bụ mbipụta buru ibu nke ha ya na njegharị zuru oke. Naanị ederede ebe a — maka ọgụgụ a na-emekọrịta, jiri Read-along ebook.",
+    "pdf_audit_alt_formats_readalong_btn": "Wuo akwụkwọ ọgụgụ a na-eso (EPUB3 Media Overlays): a na-akọ paragraf ọ bụla na ederede-ka-okwu ma jikọta ya na ederede ka okwu na-egbuke ka a na-ekwu ha. Otu oku olu kwa ngalaba, ya mere ọ nwere ike were nkeji ole na ole.",
+    "pdf_audit_alt_formats_odt_btn": "Chekwaa faịlụ OpenDocument Text (.odt) — nke sitere na LibreOffice na Google Docs (Word na-emepekwa ya). Jiri ya mgbe ụlọ akwụkwọ gị abụghị Microsoft niile mana ị ka chọrọ akwụkwọ a na-edezi nwere nhazi zuru oke."
   },
   "groups": {
     "title": "Òtù Mmekọrịta Iche Iche",
@@ -11226,7 +11364,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories na life na agwa voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Dee poems na form scaffolds, rhyme & meter analysis, AI nzaghachi"
+    "poettree_desc": "Dee poems na form scaffolds, rhyme & meter analysis, AI nzaghachi",
+    "throughline_desc": "Hazie ihe ọmụmụ gị n'ime nkeji oghere: usoro nkuzi, ihe ndị dị mkpa tupu mmụta, otu faịlụ a na-ebupụta"
   },
   "sel_hub": {
     "loading": "Na-ebudata Ebe SEL...",
@@ -12546,5 +12685,10 @@
     "byline": "Site n'aka {author} · okwu {words} · {used}/{total} okwu",
     "student": "Nwa akwụkwọ",
     "score": "Akara: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Ịtụgharị nlele ahụ ọzọ ga-eji ọdịnaya e mepụtara ọhụrụ dochie mgbanwe aka gị. Gaa n'ihu ma tufuo mgbanwe ndị ahụ? (Kagbuo na-edebe ha — bupụ ma ọ bụ mechie onye nwuru ya iji chekwaa buru ụzọ.)",
+    "remediation_banner_title": "Na-edezi akwụkwọ a kwadoro.",
+    "remediation_banner_body": "A na-echekwa mgbanwe gị ebe a azụ n'ime ya mgbe ị mechiri onye nwuru ya, ya mere nbudata Tagged PDF / Word / PowerPoint na-agụnye ha."
   }
 }

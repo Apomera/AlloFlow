@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Umushinga wabitswe (ibice {count}); uzawukuremo nyuma kugira ngo ukomeze",
     "project_saved": "💾 Umushinga wabitswe; uzawukuremo nyuma kugira ngo ukomeze guhindura",
     "search_result_desc": "Igisubizo cyo Gushaka kuri Google: {title}",
-    "link_url_prompt": "Injiza URL y'ihuza:"
+    "link_url_prompt": "Injiza URL y'ihuza:",
+    "building_accessible_docx": "Kwubaka idosiye ya Word ishoboka kugerwako…",
+    "building_accessible_pptx": "Kwubaka PowerPoint ishoboka kugerwako…",
+    "batch_tagging": "📄 Kurema PDF zifise utumenyetso kubw'iyi ZIP — amadosiye yasikaniwe afata umwanya munini (OCR ikorera kuri buri dosiye)…",
+    "builder_edits_preserved": "✋ Twazigamye amahinduka wakoze n'ukuboko — igaragazwarihere ntiryasubiwemwo. Sohora canke ufunge umwubatsi kugira uyazigame, hanyuma uhindure amagenekerezo.",
+    "builder_edits_synced": "✏️ Amahinduka y'umwubatsi yazigamwe mu nyandiko yakosowe — gusohora kwa Tagged PDF / Word / PowerPoint ubu birayakubiyemwo.",
+    "pptx_ai_theme": "🎨 Kusaba AI amabara ahuye n'ingingo (gusoma neza bikurikizwa ng'aha)…",
+    "make_accessible_fixing": "✨ Igenzura rirangiye — gukosora bikwikorera (nta gufyonda bikenewe)…",
+    "tagged_pdf_saved_see_report": "📄 Tagged PDF yazigamwe — icegeranyo cose kibitswe hejuru y'utubuto two gukurura (✕ kugira ukure).",
+    "no_open_image_slot": "Nta mwanya w'ishusho usigaye mu igaragazwarihere — kwega ishusho ntoyi uyishire ku ishusho yihariye kugira uyisubirize.",
+    "extracted_image_inserted": "🖼 Yashizwe mu mwanya wa mbere usigaye w'ishusho — egera ishusho ntoyi nimba ushaka ahandi hantu.",
+    "html_downloaded": "🌐 HTML yamanuwe — irugurura muri mushakisha iyo ariyo yose.",
+    "odt_downloaded": "📄 OpenDocument (.odt) yamanuwe — irugurura muri LibreOffice, Google Docs, canke Word.",
+    "daisy_downloaded": "🔊 Umupaka w'igitabo kivuga DAISY (.zip) wamanuwe — wugurure muri musomyi wa DAISY.",
+    "mo_no_voice": "Serivisi y'ijwi ntiboneka, ku bw'ivyo ijwi ryo gusoma uherekeje ntiribasha kuremwa ubu nyene.",
+    "mo_busy": "Gusohora ivyo gusoma uherekeje birimwo bikora.",
+    "mo_no_text": "Nta nyandiko isomeka yabonetse yo gusoma.",
+    "mo_no_audio": "⚠ Igitabo c'ikoranabuhinga co gusoma uherekeje cazigamwe, ariko nta jwi ryashoboye kuremwa (serivisi y'ijwi ntiboneka). Inyandiko n'uburyo bwo guhuza biracari.",
+    "mo_done": "Igitabo c'ikoranabuhinga co gusoma uherekeje camanuwe",
+    "audio_unavailable_now": "Ijwi ntiriboneka ubu nyene (hari igikorwa coba kirimwo gikora, canke serivisi y'ijwi ihagaritswe)."
   },
   "large_file": {
     "modal_title": "Inyinjiza Idosiye Nini ya Audio",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator ibikoresho",
     "documents_menu_aria": "inyandiko menu",
     "open_doc_builder_pdf_aria": "Yugurura inyandiko Builder kuri PDF",
-    "export_slides_tooltip": "Opens inyandiko Builder muri Slides uburyo"
+    "export_slides_tooltip": "Opens inyandiko Builder muri Slides uburyo",
+    "learning_tools_tooltip": "Ibikoresho vyo Kwiga (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Intumbero ururimi",
@@ -2396,7 +2416,7 @@
       "hint_button": "Impanuro"
     },
     "bingo": {
-      "generator_title": "Bingo Generator",
+      "generator_title": "Umuremyi wa Bingo",
       "caller_title": "Umuhamagavyi wa Bingo",
       "student_title": "Bingo",
       "teacher_mode_desc": "umwigisha uburyo: Call out insobanuro automatically.",
@@ -2565,7 +2585,7 @@
     "memory_game": "Memory umukino",
     "crossword": "Crossword",
     "matching": "Guhuza",
-    "bingo": "Bingo Generator",
+    "bingo": "Umuremyi wa Bingo",
     "play_bingo": "Kina Bingo",
     "scramble": "ijambo Scramble",
     "word_sounds": "Word Sounds",
@@ -3022,7 +3042,7 @@
     }
   },
   "bingo": {
-    "generator_title": "Bingo Generator",
+    "generator_title": "Umuremyi wa Bingo",
     "caller_title": "Umuhamagavyi wa Bingo",
     "student_title": "Bingo",
     "teacher_mode_desc": "Teacher Uburyo: Vuga insobanuro byikora.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "C'ihitamwo. Bishirwa kuri buri shusho mu kizamini (ikibazo + amahitamwo). Ubusa = imiterere isanzwe. Bibikwa hamwe n'ikizamini kugira ibikorwa vyo kunonosora bisigare bihuje n'ikirango.",
     "generate_pre_check": "Kora Pre-Check",
     "generate_formative": "Kora Formative Check",
-    "generate_review": "Kora Spaced Review"
+    "generate_review": "Kora Spaced Review",
+    "likert_strongly_disagree": "Ndabihakana cane",
+    "no_right_answer": "Nta nyishu nziza canke mbi ng'aha.",
+    "poll_completed": "Urakoze ku kuturonsa iciyumviro cawe.",
+    "poll_intro": "Nta nyishu nziza canke mbi ng'aha — iciyumviro cawe c'ukuri gifasha umwigisha wawe kandi kikagufasha.",
+    "mode_poll": "🗣️ Itohoza (ijwi ry'umunyeshure)"
   },
   "outline": {
     "title": "ibibonwa Organizer",
@@ -4160,7 +4185,8 @@
     },
     "divergence": {
       "semantic": "Bihuza n’ibisanzwe ariko ntibikomeye mu nsiguro — AI yatangaje ubwiza bw’ibirimwo axe-core itashobora kumenya",
-      "structural": "Habonetse ihinduka rya WCAG ku rwego rwa kode — axe-core yabonye ibitagishobora gusuzumwa n’imashini"
+      "structural": "Habonetse ihinduka rya WCAG ku rwego rwa kode — axe-core yabonye ibitagishobora gusuzumwa n’imashini",
+      "critical_override": "axe-core yabonye {n} ukurenga gukomeye kwa WCAG — bisuzume imbere yo kwizera amanota avanze; impuzandengo ishobora guhisha ukunanirwa gukomeye"
     },
     "tagtree": {
       "label": "Imitunganyirizo ya tag isanzwe iriho",
@@ -4278,7 +4304,8 @@
       "std_dev": "Itandukaniro Risanzwe",
       "icc_title": "Custom 1−(SD/50) index; atari textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "CV + ubuhinga buvanze bwa pairwise mu mihora ya AI; si Cronbach's α y'igitabo"
     },
     "score": {
       "total_checks": "Total checks zakozwe",
@@ -4436,7 +4463,9 @@
       "title": "Kora bushya PDF kuva mu remediated HTML. Layout itembera nanone — page breaks, fonts, na pagination bishobora gutandukana n'umwimerere. Bikora neza ku inyandiko za prose zoroshye."
     },
     "tagged_pdf": {
-      "title": "Bika original PDF's visual layout byte-identical maze ushyiremo accessibility tags muri structure tree yayo. Vyiza ku bitabo, multi-column documents, na branded PDFs aho visual fidelity igira agaciro."
+      "title": "Bika original PDF's visual layout byte-identical maze ushyiremo accessibility tags muri structure tree yayo. Vyiza ku bitabo, multi-column documents, na branded PDFs aho visual fidelity igira agaciro.",
+      "office_note": "Tagged PDF ikoreshwa ku binjizwa vya PDF — koresha Word/HTML",
+      "office_note_title": "Utumenyetso tw'uburyo dushobora gushirwa gusa mu majambo ya PDF. Ku binjizwa vya Word/PowerPoint, gukurura kwa Word na HTML bishoboka kugerwako bifise uburyo bwakosowe."
     },
     "alt_formats": {
       "intro": "Manura remediated document mu accessible alternative formats"
@@ -4507,7 +4536,9 @@
       "heading": "Ikimenyetso c'Iverisiyo"
     },
     "extracted_images": {
-      "drag_hint": "Kurura thumbnail kuri ishusho placeholder iyo ari yo yose muri pgusubiramwo ku kuyishyiraho, canke kanda \"📷 Upload\" muri placeholder maze uhitemo \"Use extracted ishusho\"."
+      "drag_hint": "Kurura thumbnail kuri ishusho placeholder iyo ari yo yose muri pgusubiramwo ku kuyishyiraho, canke kanda \"📷 Upload\" muri placeholder maze uhitemo \"Use extracted ishusho\".",
+      "drag_hint2": "Fyonda ishusho ntoyi kugira uyishire mu mwanya wa mbere usigaye w'ishusho, canke uyiyege ku kibanza canke ishusho iyo ariyo yose yihariye mu igaragazwarihere. ×N = ishusho imwe nyene yabonetse ku mapaji N (akenshi umutwe w'ikete canke ikimenyetso).",
+      "insert_aria": "Shira ishusho yakuwemwo mu mwanya wa mbere usigaye"
     },
     "toolbar": {
       "aria": "Imiterere y'inyandiko",
@@ -4543,7 +4574,60 @@
     "violation_one": "Kurenga {count}",
     "violation_other": "Kurenga {count}",
     "ai_issue_one": "Ikibazo {count} cyagaragajwe na AI",
-    "ai_issue_other": "Ibibazo {count} byagaragajwe na AI"
+    "ai_issue_other": "Ibibazo {count} byagaragajwe na AI",
+    "tagged": {
+      "born_digital_note": "Ico umenya: kuri PDF zifise urutonde rw'inyandiko, utumenyetso tw'insobanuro tukoresha imigwi ya ActualText aho kwifatanya kw'ibikubiyemwo vyose. Idosiye iraryoshe cane kugerwako, ariko ugenzure muri PAC 2024 canke Acrobat imbere yo kuvuga ko ihuye na PDF/UA."
+    },
+    "one_click": {
+      "label": "Tuma Ishobora Kugerwako",
+      "badge": "vyikorera bwite — gusuzuma, gukosora, kugenzura, gusubiramwo kugeza ku ntego",
+      "desc": "Gufyonda rimwe bituma uburyo bwose bwikorera ata kuboko hamwe n'amagenekerezo asanzwe; ivyo gukurura biraba biteguye ku mpera. Urashaka kugenzura? Koresha \"Kora Igenzura\" hasi, usuzume ivyavuye, hanyuma ufyonde Kosora & Genzura ubwawe."
+    },
+    "run_audit_label": "Kora Igenzura (intambwe ya 1 kuri 2)",
+    "manual_path_explainer": "\"Kora Igenzura\" iha amanota inyandiko ikerekana ivyo bikeneye gukosorwa — hanyuma ugasuzuma ukafyonda Kosora & Genzura ubwawe (intambwe ya 2). \"Tuma Ishobora Kugerwako\" hejuru ikora izo ntambwe zompi hamwe no gusubira kugenzura, bikwikorera. \"Gukura Inyandiko\" gusa rikura inyandiko nkuru kugira hakorwe ibikubiyemwo.",
+    "tagged_report": {
+      "heading": "Icegeranyo ca Tagged PDF",
+      "close_aria": "Kura icegeranyo ca Tagged PDF",
+      "note": "Iri panneau risigara gushika uracikuyeko. Amakuru nk'ayo nyene aboneka mu gukurura kw'Icegeranyo c'A11y c'ubwoko bwa Adobe."
+    },
+    "docx_export": {
+      "title": "Hindura ibikubiyemwo vyakosowe ube inyandiko ya Word ifise imisusire y'imitwe nyayo, inyandiko isobanura amashusho, imirongo y'imitwe y'imbonerahamwe, uburyo bw'urutonde, n'amahuza akora. Genzura na musuzuma wa Word wo gukorerwa mu mutima (Review → Check Accessibility) imbere yo gukwiragiza."
+    },
+    "pptx_export": {
+      "title": "Subira wubake ibikubiyemwo vyakosowe ube PowerPoint ifise imitwe nyayo y'amapaji, inyandiko isobanura amashusho, imirongo y'imbonerahamwe ifise imisusire y'imitwe, urutonde nyarwo rw'utudomo, n'urutonde rwo gusoma = urutonde rugaragara. Imisusire ishobora kugerwako yubatswe bushasha — si ishusho nyene y'umwimbere. Genzura na musuzuma wa PowerPoint imbere yo gukwiragiza."
+    },
+    "dashboard": {
+      "aria": "Incamake y'ivyavuye mu gukosora n'urugendo rw'ibice",
+      "score_title": "Amanota yo gushobora kugerwako: imbere → inyuma"
+    },
+    "tag_to_workbench_title": "Rungika iyi ngingo ku Expert Workbench: ryuzuza imbere itegeko ryagenywe (harimwo n'imburizi iyo ariyo yose) kugira uyikosore n'integuro imwe",
+    "tag_to_workbench_aria": "Rungika ku Expert Workbench",
+    "pptx_theme_aria": "Ingingo nshingiro yo gusohora PowerPoint",
+    "pptx_theme_title": "Ingingo nshingiro y'amapaji yo gusohora PowerPoint. Ibitegekanijwe vyose vyagenzuwe ku vy'ukunyuranya kw'amabara (WCAG AA); ikintu ca AI gihuza n'ingingo yawe, n'ugusoma neza gukurikizwa kuri buri buryo.",
+    "export_menu": {
+      "button": "Sohora / Manura",
+      "intro": "Manura inyandiko yakosowe mu buryo ubwo ari bwo bwose — hitamwo ubuhuye n'ukuntu izokoreshwa.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — ha abanyeshure)",
+      "word": "Word (.docx — bandanya guhindura)",
+      "pptx": "PowerPoint (.pptx — yishikirize)",
+      "html": "HTML (irugurura aho ariho hose, ata porogaramu)",
+      "group_access": "Uburyo bushoboka kugerwako",
+      "daisy": "Igitabo kivuga DAISY (inyandiko yose)",
+      "daisy_title": "Umupaka w'igitabo kivuga c'inyandiko yose ca DAISY 3 (DTBook). Wugurure muri musomyi wa DAISY, atanga ijwi, braille, canke inyandiko nini. (Ku jwi ryo gusoma uherekeje rihujwe, koresha Gusoma uherekeje hasi.)",
+      "readalong": "Igitabo c'ikoranabuhinga co gusoma uherekeje (ijwi rihujwe)",
+      "readalong_progress": "Kuvuga… {done}/{total}",
+      "readalong_title": "Igitabo c'ikoranabuhinga co gusoma uherekeje (EPUB3 Media Overlays): rirema ijwi rivuye mu nyandiko kuri buri rugingo kandi rikarihuza n'inyandiko ku buryo sisitemu yo gusoma iha akarangamutima amajambo uko avugwa. Rikora amahamagara menshi y'ijwi — rishobora gufata iminota mike.",
+      "group_text": "Inyandiko & ihindurika",
+      "odt_title": "OpenDocument Text — irugurura ata ngorane muri LibreOffice na Google Docs (na Word).",
+      "group_audio": "Gusoma kw'ijwi",
+      "audio": "Gusoma kw'ijwi (gusanzwe)",
+      "audio_title": "Gusoma kw'ijwi kw'inyandiko (MP3/WAV).",
+      "audio_sr": "Ijwi (ubwoko bwa musomyi wa ecran)",
+      "audio_sr_title": "Ijwi rimwe nyene, ariko ritangaza uburyo nk'uko musomyi wa ecran yobikora (urwego rw'imitwe, igitigiri c'urutonde, imirongo y'imbonerahamwe, insobanuro z'amashusho)."
+    },
+    "mo": {
+      "confirm": "Wubake igitabo c'ikoranabuhinga co gusoma uherekeje? Iki kivuga ibice {n} vy'inyandiko mu ijwi rivuye mu nyandiko — nko kuri {n} amahamagara y'ijwi, ashobora gufata iminota mike."
+    }
   },
   "concept_sort": {
     "title": "Igitekerezo Shira mu rutonde",
@@ -6831,7 +6915,61 @@
     "timeline_image_size": "Igenzura ryo guhindura ingano y'amashusho yakozwe na AI ashyizwe mu cards z'ivyabaye vya timeline (igaragara gusa iyo ivyabaye bifise amashusho). Three-step slider: small / medium / large. Bibikwa hamwe na timeline kugira ihitamo ry'ingano rigume kuri PDF yacapwa + cards ziri mu mukino. Inama: ingano nini zikora neza ku timelines za K-5 aho visual anchors zigira agaciro cyane (life cycles, ivyabaye by'amateka, story plots). Ku timelines za AP-urwego zifite ivyabaye 15+, medium canke small zituma urutonde rwose ruhura ku rupapuro rumwe rwacapwa nta abanyeshure kongera kuyihindura inyuma.",
     "pdf_audit_view_web_audit_btn": "Iha urupapuro amanota y'ukugerwaho (accessibility) ku rwego rwa WCAG 2.1 AA hakoreshejwe umugenzuzi wa AI hamwe n'icuma axe-core (icuma nyene abagenzuzi b'abahinga bakoresha). Nta na kimwe gihinduwa — koresha iki igihe ushaka gusa kumenya ingene urupapuro ruhagaze uno musi.",
     "pdf_audit_results_score_badge": "Amanota yose y'ukugerwaho (accessibility) ya PDF yawe kuva kuri 0 gushika kuri 100. Icatsi (80+) kiri hafi ya WCAG AA, umuhondo (50-79) usaba akazi, agatukura (<50) gafise ingorane zikomeye ku banyeshure bakoresha screen readers canke ibikoresho vy'imfashanyo.",
-    "pdf_audit_alt_formats_braille_btn": "Bika idosiye ya Braille yo ku rwego Grade-1 (itagufijwe) ishobora gucapwa kuri imprimante ya Braille canke kurungikwa ku caretsi ca Braille kivugururwa. Ku magufya ya Grade-2, ha iyo dosiye umwigisha TVI (umwigisha w'abanyeshure bafise ubumuga bwo kutabona) kugira ayinonosore."
+    "pdf_audit_alt_formats_braille_btn": "Bika idosiye ya Braille yo ku rwego Grade-1 (itagufijwe) ishobora gucapwa kuri imprimante ya Braille canke kurungikwa ku caretsi ca Braille kivugururwa. Ku magufya ya Grade-2, ha iyo dosiye umwigisha TVI (umwigisha w'abanyeshure bafise ubumuga bwo kutabona) kugira ayinonosore.",
+    "pdf_audit_view_web_url_input": "Andika aderesi y'urupapuro rwa interineti ushaka ko rugenzurwa (nk'akarorero https://yourdistrict.org/handbook), hanyuma ufyonde Kura kugira ukure HTML yarwo ngo ushobore kurugenzura no kurukosora.",
+    "pdf_audit_view_web_fetch_btn": "Rimanura urupapuro ruri kuri URL yo hejuru kandi rigashira HTML yarwo mu gasanduku ko hasi. Nimba urubuga rubuza gukura, andika inkomoko y'urupapuro mu gasanduku ka HTML ubwawe.",
+    "pdf_audit_view_web_html_textarea": "HTML nyayo iriko irasuzumwa — yaba yarazanywe na Fetch canke yawe wayinjije ubwawe. Urashobora kuyihindura ng'aha imbere yo gukora isuzuma (nk'akarorero, kuvanamwo umurongo wo kugendera utari uwawe).",
+    "pdf_audit_view_web_remediate_btn": "Iha amanota urupapuro, hanyuma yandika bushya HTML kugira ngo ikosore ivyo ishobora (ukutaboneka neza kw'amabara, ikimenyetso c'ururimi, skip-link, ahantu nyamukuru), maze ikuhe kopi iboneka neza ushobora kumanura. Imisi yose subiramwo ivyavuye wewe nyene imbere yo gusohora.",
+    "pdf_audit_view_batch_dropzone": "Kwega amadosiye ya PDF ava ku biro vyawe canke mu kabati k'ivyamanuwe uyashire kuri aka gasanduku kugira ngo uyongere ku murongo w'umurwi. Amadosiye atari PDF ntiyitabwaho.",
+    "pdf_audit_view_batch_browse_btn": "Yugurura agasanduku ko gutoramwo amadosiye kugira ngo utore PDF imwe canke nyinshi. Koresha iki igihe kwega amadosiye bitoroshe (igikoresho gikorwa mu gukozako, umusomyi w'urupapuro, kutabona neza, canke Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Itanguza umurwi wawe wa nyuma aho wahagaze — PDF zamaze guheza zirabikwa, hanyuma zizosubirwamwo gusa izitarangiye. Koresha iki igihe umurwi waciwe (uguhugarara igisaba, gushira bushya, ukwononekara).",
+    "pdf_audit_view_batch_discard_btn": "Iteba imbere yabikijwe y'umurwi wawe wa nyuma waciwe — ubutumwa burazimangana kandi ivyavuyemwo vyabitswe biravanwa muri navigateri yawe.",
+    "pdf_audit_view_batch_clear_all_btn": "Ivanamwo PDF zose ku murongo kugira ngo ushobore gutangura bushya. Biraboneka gusa imbere yuko ukanda Tangura Umurwi.",
+    "pdf_audit_view_batch_row_retry_btn": "Isubiramwo iyi dosiye imwe yananiranye atavuyeko ku murwi usigaye. Banza ushire akamenyetso ka X gatukura kugira ngo usome igituma yananiranye — niba ari ikibazo c'imiterere (PDF yononekaye, igisanze c'ishusho gusa), gusubiramwo ntibizofasha.",
+    "pdf_audit_view_batch_row_remove_btn": "Ivanamwo iyi PDF imwe ku murongo kugira ngo umurwi uyirengaganye. Biraboneka gusa imbere yuko umurwi utangura.",
+    "pdf_audit_view_batch_stop_btn": "Isaba umurwi guhagarara hamwe dosiye uriko urakorako ubu izorangira. PDF zamaze guheza ziguma zarangiye — ntuzotakaza akazi karangiye, kandi urashobora gusubirira ibisigaye mu nyuma.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Isubira gushira ku murongo PDF zose zananiranye maze izisubiremwo. Amadosiye yamaze gushika neza ntavuweko. Birakwiye kugerageza rimwe niba ukunanirwa bisa n'amakosa y'urusobe rudahagaze; ntuze usubiremwo udahengeshanya PDF zononekaye vy'ukuri.",
+    "pdf_audit_view_batch_start_btn": "Itangura gusuzuma no gukosora PDF zose ku murongo. Iciyumviro kirabanza kikagaragara hamwe n'igereranyo ry'amahamagaro ya AI (n'igiciro, ku gahunda yawe ubwawe) kugira ngo ushobore gufata ingingo imbere yo gutangura.",
+    "pdf_audit_view_batch_download_zip_btn": "Imanura PDF zose zakosowe neza nka dosiye imwe ya ZIP. Bifasha mu gusubiza igikamba cose c'amadosiye ku mwigisha canke ku muntu w'akarere icarimwe.",
+    "pdf_audit_view_batch_new_batch_btn": "Ityorora umurwi warangiye kugira ngo ushobore gushiramwo umugwi mushasha wa PDF. ZIP iyo ariyo yose wamaze kumanura iguma kuri mudasobwa yawe — iki gisubiza gusa urupapuro nk'uko vyari.",
+    "pdf_audit_view_batch_dashboard_btn": "Yugurura urupapuro rwo gukurikiza amategeko rushobora gucapwa mu kindi gice gishasha — amanota asanzwe, PDF zingahe zashitse kuri 90+, ibibazo vya WCAG bikunze kugaragara. Birafasha mu gusangiza n'umuyobozi canke mu kwomeka ku gisanze ca Title II / 504.",
+    "pdf_audit_view_settings_panel": "Udufungura two gutunganya inzira yo gusuzuma no gukosora. Ivyashizweho imbere birafise ubwenge — bihindure gusa niba ugukora gusanzwe kutariko kuguha ivyo ukeneye (ubwitonzi bwinshi, igiciro gito, ahantu hatandukanye ho guhagarara).",
+    "pdf_audit_view_audit_passes_slider": "Abasuzuzi ba AI bangahe bishorera bareba PDF — baremera ku bibazo nyakuri kandi ntibemeranwa ku rusaku, gutyo abasuzuzi benshi basobanura amakangabuga make. 5 ni igiharuro ciza; uduze ku madosiye yo gukurikiza amategeko afise akamaro kanini, ugabanye ku gusuzuma vyihuta.",
+    "pdf_audit_view_target_score_slider": "Amanota ushaka ko PDF yakosowe ishikako — 90 ni ugutsinda gukomeye kwa WCAG 2.1 AA, 95+ hafi ni ukutagira inenge, 70 ni urufatiro rufasha ku madosiye yasanzwe. Hujanije n'Ukubandanya kw'umwitwarariko kugira ngo inzira ibandanye ikora gushika amanota ashitse.",
+    "pdf_audit_view_max_fix_passes_slider": "Imbu zingahe zo gukosora vy'umwitwarariko inzira yemerewe gukora imbere yo guhagarara. 8 ni iciyumviro c'imbere; gabanya iki kugira ngo ugabanye igiciro ku gahunda yawe ubwawe, canke shira kuri 0 kugira ngo urengaganye gukosora kw'umwitwarariko bidasanzwe (gusuzuma gusa).",
+    "pdf_audit_view_auto_continue_toggle": "Igihe biri ku, inzira ibandanya gukora imbu z'inyongera zo gukosora (gushika ku zindi 3) gushika Amanota Yagenywe ashikiwe, hanyuma igahagarara yo nyene. Zima niba ushaka imbu imwe yonyene n'ivyavuyemwo bimwe vyo gusuzuma.",
+    "pdf_audit_view_polish_passes_slider": "Imbu z'inyongera zo gusukura inyuma yo gukosora kw'ukugera vy'ukuri — bikomeza ikinya, imitwe, ubwiza bw'ishusho. 0 birenganya, 2 ni bisanzwe, 3 ni ku madosiye agiye gucapwa canke ku bantu bo hanze.",
+    "pdf_audit_view_branding_panel": "Ntibitegerezwa — bigenga ingene PDF yakosowe iboneka: amabara y'ikimenyetso n'ubwoko rusangi bw'igishushanyo. Renganya kugira ngo uboneke gusanzwe gufasha, canke wagure niba idosiye ikeneye guhuza n'ikimenyetso c'ishure canke c'akarere.",
+    "pdf_audit_view_brand_mode_auto_btn": "Ikura amabara y'ikimenyetso muri PDF wakwega gutyo verisiyo yakosowe iboneka nk'iya mbere. Iciyumviro ciza — gituma idosiye imenyekana ku bakozi n'imiryango.",
+    "pdf_audit_view_brand_mode_upload_input": "Kwega urupapuro rw'ikimenyetso, ikirango, canke urungtwaro rw'ubwoko (ishusho canke PDF) maze inzira ikura amabara n'imyandiko muri rwo. Bifasha igihe PDF y'umwimerere isa nshahu ariko ikeneye guhuza n'ikimenyetso c'akarere.",
+    "pdf_audit_view_brand_mode_none_btn": "Renganya amabara y'ikimenyetso bidasanzwe maze ukoreshe amabara aboneka neza yari mu gikoresho. Tora iki ku mapapuro y'imyimenyerezo asanzwe, canke igihe amabara y'umwimerere ananirwa kuboneka neza kandi udakeneye kubungabunga uko biboneka.",
+    "pdf_audit_results_tab_remediation_btn": "Erekana ivyavuye mu gusuzuma inyuma yuko AlloFlow yakosoye PDF. Koresha iki igice kugira ngo urabe amanota yatewe akarya n'ibibazo bimaze gukosorwa.",
+    "pdf_audit_results_tab_original_btn": "Subira inyuma ku gusuzuma PDF y'umwimerere imbere yuko AlloFlow ikosora ikintu cose. Birafasha mu kugereranya amanota yo hambere n'aya nyuma uruhande ku rundi.",
+    "pdf_audit_results_reliability_details": "Wagure kugira ngo urabe ingene abasuzuzi ba AI bizera aya manota. Imbu nyinshi za AI zikora hamwe — ukwemeranwa gukomeye bisobanura amanota yizewe, ukwitandukanya kwagutse bisobanura usubiremwo wewe nyene ibibazo bimwe bimwe.",
+    "pdf_audit_results_score_breakdown_details": "Wagure kugira ngo urabe neza ingene amanota yaharuwe — kugenzura kungahe kwakozwe, ico cakuwe kuri buri kibazo, n'ingene amategeko ya AI hamwe n'amanota ya axe-core bigereranijwe hamwe. Iki ni urwego rw'uguseruka inyuma y'igiharuro nyamukuru.",
+    "pdf_audit_results_score_how_ai_details": "Wagure kugira ngo urabe ingene AI itanga amanota ku buri kibazo n'ubukaze: ivyakuwe binini ku bibazo bikomeye bibuza abakoresha abasomyi b'urupapuro, ivyakuwe bito ku bibazo bito, n'amanota agarurwa ku kugenzura gutsinze.",
+    "pdf_audit_results_score_how_axe_details": "Wagure kugira ngo urabe ingene axe-core (icuma kimwe abasuzuzi b'umwuga b'ukuboneka neza bakoresha) yatanze amanota ku PDF yawe, hamwe n'indangamuntu z'amategeko ya WCAG yananiranye nyayo.",
+    "pdf_audit_results_issue_explain": "Kanda kugira ngo usome ico iki kibazo kibuza vy'ukuri ku banyeshure n'ingene itegeko rya WCAG rikora. Birimwo umurongo ujana ku nsobanuro zemewe za WCAG niba ushaka kwinjira cane.",
+    "pdf_audit_results_image_failures_details": "Wagure kugira ngo urabe amashusho yose yatakaye mu gukosora. Buri murongo utanga buto rimwe ryo Gusubiramwo mu gukandako rimwe gutyo nta gishusho gitakara mu rucereyo.",
+    "pdf_audit_results_image_regenerate_btn": "Isubira gukora iyi shusho yatakaye ikoresha AI ishingiye ku nsobanuro yayo yabitswe. Ishusho nshasha ishika imbere mu idosiye — nta kwega umaze gukenera.",
+    "pdf_audit_view_report_menu_btn": "Yugurura urutonde rw' icegeranyo kugira ngo umanure icegeranyo c'ukuboneka neza mu buryo butandukanye — ubwa Adobe ku bashinzwe gukurikiza amategeko, PDF itunganijwe yo gusangiza rusangi, JSON yo ubushakashatsi, canke umuhora wasinywe ku vyandikwa vyo gusuzuma.",
+    "pdf_audit_view_adobe_report_btn": "Manura icegeranyo catunganijwe nk'Igenzura ry'Ukuboneka neza rya Adobe, gitanzwe amanota ku PDF/UA-1 ( urugero rwa leta rw'ukuboneka neza kwa PDF). Ciza ku gusangiza n'abashinzwe gukurikiza amategeko canke mu kwomeka ku gisanze ca Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Subiramwo amajambo yatakaye mu kubika kwa nyuma imbere yo gufata ingingo niba uzokora imbu yo gusubiza. Ni iyo gusoma gusa — nta kintu gihinduwe gushika utoye gusubiza.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Subiza amajambo yabuze y'isôko mu idosiye maze wubake bushya PDF ifise ibimenyetso. Amajambo adashobora gushirwa neza ahera mu gice c'Ugusubiza Ibirimwo gutyo nta kintu gitakara — igiharuro c'ibisigaye imbere n'inyuma cama kiboneka kugira ngo urabe niba vyafashije.",
+    "pdf_audit_view_formatted_report_btn": "Yugurura icegeranyo c'ukuboneka neza co hambere/inyuma gishobora gucapwa mu kindi gice gishasha — kanda Bika nka PDF mu butumwa kugira ngo ubike kopi ku vyandikwa vyawe canke ku nama y'umuvyeyi.",
+    "pdf_audit_view_html_report_btn": "Manura icegeranyo co hambere/inyuma nka dosiye ya HTML ushobora kubika ku rubuga canke guhindura. Ibirimwo bihuje na verisiyo ya PDF ishobora gucapwa.",
+    "pdf_audit_view_json_data_btn": "Ohereza inomero z'isuzuma nyayo n'amakuru y'itegeko ku rindi nka JSON. Koresha iki igihe ushaka gusesengura ivyavuye mu kuboneka neza mu rupapuro rw'ibarura, mu gitabo c'ubushakashatsi, canke mu kindi gikoresho.",
+    "pdf_audit_view_audit_trail_signed_btn": "Kora umuhora wo gusuzuma wisuzuma ubwawo (dosiye ya HTML ifise buto ryo Kwemeza Ubudahungabana ribonako iyo hari uwononye). Ciza ku vyemezo vyo gukurikiza amategeko — menya ko ari umukono uri ku ruhande rwa navigateri, atari uwemewe n'amategeko.",
+    "pdf_audit_view_save_project_btn": "Ibika akazi kawe ko gukosora — HTML iboneka neza, amanota, amatunganyo, iterambere urupapuro ku rundi — muri dosiye ishobora kwimurwa. Yugurura bushya na Load Project kugira ngo ubandanye guhindura utasubiye gukora AI.",
+    "pdf_audit_view_load_project_btn": "Yugurura bushya dosiye y'umushinga wabitse kera. Igarura HTML yakosowe, amanota, n'urutonde rw'amapaji yamaze gukorwa — itangurira neza aho wahagaze.",
+    "pdf_audit_view_save_template_btn": "Bika imiterere y'idosiye iboneka neza (urutonde rw'imitwe, imbonerahamwe, urutonde, ahantu nyamukuru) nka rondi rushobora gukoreshwa bushya. Rukoreshe muri Document Builder kugira ngo utangure amadosiye mashasha — IEP, urungtwaro rw'isomo — amaze gutunganywa imbere ku kuboneka neza.",
+    "pdf_audit_alt_formats_summary": "Wagure ku buryo bundi — ePub, Braille y'ikoranabuhinga, inyandiko nyene, Markdown — ku banyeshure bakeneye ubwoko bw'idosiye butandukanye na PDF canke HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Bika idosiye yakosowe nka dosiye ya ePub ifise urutonde rw'ibirimwo n'amakuru y'ukuboneka neza. Ikora kuri Kindle, Apple Books, n'abasomyi benshi bo ku mahanga — abanyeshure barashobora guhindura ubunini bw'imyandiko, amabara, n'umuvuduko wo gusoma.",
+    "pdf_audit_alt_formats_text_btn": "Bika dosiye nyene ya .txt n'ukutunganywa kose kuvanyweko — ubwoko bworoshe ku basomyi b'urupapuro, ihindurwa ry'icapuro rinini, canke gufata uyishire mu kindi gikoresho.",
+    "pdf_audit_alt_formats_markdown_btn": "Bika idosiye nka Markdown — yinjira neza mu mapaji ya Canvas, Schoology, canke D2L, Google Docs (biciye ku gufata), wikis, n'inyandiko z'ubwoko bwa GitHub atatakaje imitwe canke imihora.",
+    "pdf_audit_alt_formats_daisy_btn": "Bika igikamba ca DAISY 3 c'igitabo kivuga gifise inyandiko yose. Abasomyi ba DAISY (basanzwe mu nyigisho zidasanzwe) bongerako ijwi ryabo bwite, braille, canke icapuro rinini hamwe n'inzira yose. Ng'aha ni inyandiko gusa — ku gusoma kw'ijwi gihujwe, koresha igitabo cy' amasomerwa.",
+    "pdf_audit_alt_formats_readalong_btn": "Ubaka igitabo c'amasomerwa (EPUB3 Media Overlays): buri kigabane gisomwa n'imyandiko-iva-mu-jwi kandi gihujwe n'inyandiko gutyo amajambo arabagirana uko avugwa. Ihamagara rimwe ry'ijwi kuri buri gice, gutyo bishobora gufata iminota mike.",
+    "pdf_audit_alt_formats_odt_btn": "Bika dosiye ya OpenDocument Text (.odt) — kavukire ya LibreOffice na Google Docs (Word irayugurura na yo). Yikoreshe igihe ishure ryawe ritari rya Microsoft yose ariko ucishaka idosiye ishobora guhindurwa ifise imiterere itononekaye."
   },
   "groups": {
     "title": "Amatsinda y'Ukutandukanya",
@@ -8595,7 +8733,7 @@
       "ud83cudfb2_random": "\\uD83C\\uDFB2 Random:",
       "water": "Amazi",
       "table_salt": "imbonerahamwe Salt",
-      "magnesium_oxide": "Magnesium Oxide",
+      "magnesium_oxide": "Magnesium Oxide (Okiside ya Magineziyumu)",
       "iron_oxide": "Icuma Cumye",
       "combustion": "Ugutwika",
       "photosynthesis": "Photosynthesis",
@@ -8603,7 +8741,7 @@
       "ammonia": "Amoniya",
       "thermite": "Thermite",
       "ethanol_combustion": "Ugusha kw'Ethanol",
-      "calcium_carbonate": "Calcium Carbonate",
+      "calcium_carbonate": "Calcium Carbonate (Karubonate ya Kalisiyumu)",
       "glucose_combustion": "Ugusha kwa Glucose"
     },
     "punnett": {
@@ -8793,11 +8931,11 @@
       "essential_for_life": "Y'ingenzi ku buzima",
       "carbon_dioxide": "Carbon Dioxide",
       "greenhouse_gas": "Igaze ry'inzu y'ibimera",
-      "sodium_chloride": "Sodium chloride",
+      "sodium_chloride": "Sodium chloride (Kloride ya Sodiyumu)",
       "cleaning_agent": "Igikoresho co gukarabya",
       "methane": "Methane",
       "natural_gas": "Gazi kama",
-      "hydrogen_peroxide": "Hydrogen Peroxide",
+      "hydrogen_peroxide": "Hydrogen Peroxide (Peroxide ya Idorojeni)",
       "disinfectant": "Umuti wo kwica udukoko",
       "ethanol": "Ethanol",
       "alcohol": "Inzoga",
@@ -8806,16 +8944,16 @@
       "glucose": "Glucose",
       "blood_sugar": "Isukari y'amaraso",
       "baking_soda": "Baking Soda",
-      "sodium_bicarbonate": "Sodium bicarbonate",
+      "sodium_bicarbonate": "Sodium bicarbonate (Bikarubonate ya Sodiyumu)",
       "chalk_marble": "Igitanda n'amabuye y'igiti",
       "rust": "Ingese",
-      "sodium_hydroxide": "Sodium Hydroxide",
-      "lye_caustic_soda": "Lye / caustic soda",
-      "hydrochloric_acid": "Hydrochloric Acid",
+      "sodium_hydroxide": "Sodium Hydroxide (Idoroxide ya Sodiyumu)",
+      "lye_caustic_soda": "Lye / soda yorya (caustic soda)",
+      "hydrochloric_acid": "Hydrochloric Acid (Aside Idoroklorike)",
       "stomach_acid": "Asidi y'igifu",
       "acetic_acid": "Acide acétique",
       "vinegar": "Vinegre",
-      "nitrogen_dioxide": "Nitrogen Dioxide",
+      "nitrogen_dioxide": "Nitrogen Dioxide (Diyokiside ya Azote)",
       "brown_smog_gas": "Igaze ry'urwumwiru rw'umukara",
       "sulfur_dioxide": "Sulfur Dioxide",
       "acid_rain_precursor": "Igitanguza imvura y'asidi",
@@ -8823,7 +8961,7 @@
       "uv_shield": "Inkinzo UV",
       "laughing_gas": "Igaze ry'Ugutwenga",
       "nitrous_oxide": "Nitrous oxide",
-      "silicon_dioxide": "Silicon Dioxide",
+      "silicon_dioxide": "Silicon Dioxide (Diyokiside ya Silisiyumu)",
       "sand_glass": "Umusenyi n'icirahuro",
       "hu2082o": "H\\u2082O",
       "cou2082": "CO\\u2082",
@@ -9638,7 +9776,7 @@
   },
   "splash": {
     "tagline": "Adaptive urwego, Layers, & inyishu ➔ Flexible Learning amahitamwo kuri Whole-umunyeshure Education",
-    "rights": "AGPLv3 Licensed • Copyright © 2026 Aaron Pomeranz, PsyD",
+    "rights": "Ifise uburenganzira bwa AGPLv3 • Copyright © 2026 Aaron Pomeranz, PsyD",
     "udl_tagline": "Informed by Universal Design kuri Learning",
     "initializing": "Biratangura...",
     "loading_resources": "Loading umutungo...",
@@ -11218,7 +11356,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories ku life hamwe na umuntu voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Andika poems hamwe na form scaffolds, rhyme & meter analysis, AI igitekerezo"
+    "poettree_desc": "Andika poems hamwe na form scaffolds, rhyme & meter analysis, AI igitekerezo",
+    "throughline_desc": "Shira amasomo yawe mu murwi w'ahantu: urutonde rwo kwigisha, ivya nkenerwa imbere, dosiye imwe ishobora koherezwa"
   },
   "sel_hub": {
     "loading": "SEL Hub iriko iratangurwa...",
@@ -12538,5 +12677,10 @@
     "byline": "Na {author} · amagambo {words} · {used}/{total} amagambo",
     "student": "Umunyeshuri",
     "score": "Amanota: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Gusubiramwo igaragazwarihere bizosubiriza amahinduka wakoze n'ukuboko n'ibikorwa bishasha vyaremwe. Ubandanye uhanagure ayo mahinduka? (Hagarika birayabika — sohora canke ufunge umwubatsi kugira uyazigame ubanza.)",
+    "remediation_banner_title": "Guhindura inyandiko yakosowe.",
+    "remediation_banner_body": "Amahinduka yawe ng'aha azigamwa muri yo igihe ufunze umwubatsi, ku buryo gukurura kwa Tagged PDF / Word / PowerPoint biyakubiyemwo."
   }
 }

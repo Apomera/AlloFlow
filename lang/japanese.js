@@ -581,7 +581,8 @@
     "educator_tools_aria": "教育者ツール",
     "documents_menu_aria": "ドキュメントメニュー",
     "open_doc_builder_pdf_aria": "PDF用ドキュメントビルダーを開く",
-    "export_slides_tooltip": "スライドモードでドキュメントビルダーを開きます"
+    "export_slides_tooltip": "スライドモードでドキュメントビルダーを開きます",
+    "learning_tools_tooltip": "学習ツール（STEM Lab、SEL Hub、Research Hub、LitLab、PoetTree、StoryForge）"
   },
   "sidebar": {
     "create_tab": "作成",
@@ -849,7 +850,7 @@
     "pictionary_host_dashboard": "Concept Pictionary ホスト用ダッシュボード",
     "concept_to_draw": "概念描画。",
     "round_timer": "ラウンドタイマー",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "コンセプト・ピクショナリー",
     "your_guess": "guess。",
     "remove_columns": "削除列。",
     "add_column": "追加列。",
@@ -981,18 +982,18 @@
     "mind_map_of": "Mind map: {topic}。",
     "tier_score": "ティア {tier}、スコア {score}",
     "draggable_item": "ドラッグ可能な項目",
-    "read_aloud_with_text": "Read aloud: {text}",
+    "read_aloud_with_text": "読み上げ: {text}",
     "stop_reading": "Stop reading",
     "mute_all_audio": "Mute all audio",
-    "unmute_all_audio": "Unmute all audio",
-    "mute_all_audio_title": "Mute All Audio (Classroom Mode)",
-    "unmute_all_audio_title": "Unmute All Audio",
-    "mute_ambient_pad": "Mute ambient pad",
-    "unmute_ambient_pad": "Unmute ambient pad",
-    "stop_fluency_reading": "Stop fluency reading",
-    "read_aloud_fluency_practice": "Read aloud for fluency practice",
-    "message_speaker_read_aloud": "Message from {name}. Click any sentence to hear it read aloud.",
-    "sentence_read_aloud": "Sentence {num}. Click to read aloud."
+    "unmute_all_audio": "すべての音声のミュートを解除",
+    "mute_all_audio_title": "すべての音声をミュート（教室モード）",
+    "unmute_all_audio_title": "すべての音声のミュートを解除",
+    "mute_ambient_pad": "環境音をミュート",
+    "unmute_ambient_pad": "環境音のミュートを解除",
+    "stop_fluency_reading": "流暢性の読み上げを停止",
+    "read_aloud_fluency_practice": "流暢性練習のために読み上げる",
+    "message_speaker_read_aloud": "{name}さんからのメッセージ。任意の文をクリックすると読み上げられます。",
+    "sentence_read_aloud": "{num}番目の文。クリックすると読み上げます。"
   },
   "large_file": {
     "modal_title": "大きな音声ファイルをインポート",
@@ -1973,33 +1974,33 @@
     "removed_from_gradebook": "成績表から削除しました。",
     "gradebook_empty": "成績帳空。",
     "nothing_to_save": "保存する内容がまだありません。まずルーブリックまたはアンカーを追加してください。",
-    "tts_failed": "Read-aloud failed. Please try again.",
-    "polish_skipped": "Polish skipped — your text is unchanged.",
-    "break_over": "Break over. Ready for the next focus session?",
-    "saved_to_journal": "Saved to your journal. (Daily reflection token already earned.)",
-    "memory_removed": "Memory content removed.",
-    "no_decks_due": "No decks due for review right now.",
+    "tts_failed": "読み上げに失敗しました。もう一度お試しください。",
+    "polish_skipped": "推敲をスキップしました — テキストは変更されていません。",
+    "break_over": "休憩終了です。次の集中セッションの準備はいいですか？",
+    "saved_to_journal": "ジャーナルに保存しました。（本日の振り返りトークンはすでに獲得済みです。）",
+    "memory_removed": "メモリの内容を削除しました。",
+    "no_decks_due": "現在、復習が必要なデッキはありません。",
     "goal_removed": "Goal removed.",
     "story_removed": "Story removed.",
-    "decoration_removed": "Decoration removed.",
-    "room_full": "Room is full. Save the gift for later by clearing a slot.",
-    "caption_removed": "Caption removed.",
-    "no_empty_cells": "No empty cells in this room to place a similar one. Try removing or moving something first.",
-    "no_image_to_save": "No image to save.",
-    "export_image_failed": "Could not export image. Try Print instead.",
-    "image_unavailable": "Image unavailable. Try again later.",
-    "nothing_to_export": "Nothing to export.",
-    "export_failed_browser": "Export failed. Try a different browser.",
-    "print_unavailable": "Print not available in this browser.",
-    "past_encounters_cleared": "Past encounters cleared.",
-    "pick_section_print": "Pick at least one section to print.",
-    "pick_section_preview": "Pick at least one section to preview.",
-    "companion_removed": "Companion removed.",
-    "voice_pref_save_failed": "Could not save voice preference.",
-    "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
-    "backup_failed": "Backup failed. Try again.",
-    "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "decoration_removed": "装飾を削除しました。",
+    "room_full": "部屋がいっぱいです。スロットを空けて、ギフトを後で保存してください。",
+    "caption_removed": "キャプションを削除しました。",
+    "no_empty_cells": "この部屋には同様のものを配置できる空きセルがありません。まず何かを削除するか移動してみてください。",
+    "no_image_to_save": "保存する画像がありません。",
+    "export_image_failed": "画像をエクスポートできませんでした。代わりに印刷をお試しください。",
+    "image_unavailable": "画像が利用できません。後でもう一度お試しください。",
+    "nothing_to_export": "エクスポートするものがありません。",
+    "export_failed_browser": "エクスポートに失敗しました。別のブラウザをお試しください。",
+    "print_unavailable": "このブラウザでは印刷を利用できません。",
+    "past_encounters_cleared": "過去の出会いをクリアしました。",
+    "pick_section_print": "印刷するセクションを少なくとも1つ選んでください。",
+    "pick_section_preview": "プレビューするセクションを少なくとも1つ選んでください。",
+    "companion_removed": "コンパニオンを削除しました。",
+    "voice_pref_save_failed": "音声設定を保存できませんでした。",
+    "whisper_load_failed": "Whisperの読み込みに失敗しました。他のエンジンに切り替えます。",
+    "backup_failed": "バックアップに失敗しました。もう一度お試しください。",
+    "invalid_backup_file": "有効なAlloHavenバックアップファイルではありません。",
+    "could_not_read_file": "そのファイルを読み込めませんでした。JSONバックアップですか？",
     "focus_streak": "{flames} {minutes}分間の集中ストリーク！その調子です！",
     "streak_saved": "おかえりなさい！{minutes}分のストリークを保存しました。",
     "points_awarded": "ポイントを付与しました！",
@@ -2034,7 +2035,26 @@
     "project_saved_multi_other": "💾 プロジェクトを保存しました（{count}範囲）。後で読み込んで続行してください",
     "project_saved": "💾 プロジェクトを保存しました。後で読み込んで編集を続けてください",
     "search_result_desc": "Google検索結果：{title}",
-    "link_url_prompt": "リンクのURLを入力してください："
+    "link_url_prompt": "リンクのURLを入力してください：",
+    "building_accessible_docx": "アクセシブルなWordファイルを作成しています…",
+    "building_accessible_pptx": "アクセシブルなPowerPointを作成しています…",
+    "batch_tagging": "📄 ZIP用のタグ付きPDFを生成しています — スキャンされたファイルは時間がかかります（ファイルごとにOCRを実行します）…",
+    "builder_edits_preserved": "✋ 手動編集を保持しました — プレビューは再描画されていません。エクスポートするかビルダーを閉じて保存してから、設定を変更してください。",
+    "builder_edits_synced": "✏️ ビルダーの編集を修正済みドキュメントに保存しました — タグ付きPDF / Word / PowerPointのエクスポートに反映されます。",
+    "pptx_ai_theme": "🎨 AIにトピックに合った配色を依頼しています（読みやすさはローカルで確保されます）…",
+    "make_accessible_fixing": "✨ 監査が完了しました — 自動的に修正しています（クリック不要）…",
+    "tagged_pdf_saved_see_report": "📄 タグ付きPDFを保存しました — 完全なレポートはダウンロードボタンの上に固定されています（✕で閉じます）。",
+    "no_open_image_slot": "プレビューに空いている画像スロットがありません — サムネイルを特定の画像にドラッグして置き換えてください。",
+    "extracted_image_inserted": "🖼 最初の空いている画像スロットに挿入しました — 別の場所に配置したい場合はサムネイルをドラッグしてください。",
+    "html_downloaded": "🌐 HTMLをダウンロードしました — どのブラウザでも開けます。",
+    "odt_downloaded": "📄 OpenDocument（.odt）をダウンロードしました — LibreOffice、Google Docs、またはWordで開けます。",
+    "daisy_downloaded": "🔊 DAISYトーキングブックパッケージ（.zip）をダウンロードしました — DAISYリーダーで開いてください。",
+    "mo_no_voice": "音声サービスが利用できないため、現在リードアロング音声を生成できません。",
+    "mo_busy": "リードアロングのエクスポートはすでに実行中です。",
+    "mo_no_text": "読み上げ可能なテキストが見つかりませんでした。",
+    "mo_no_audio": "⚠ リードアロング電子書籍を保存しましたが、音声を生成できませんでした（音声サービスが利用できません）。テキストと同期構造は保持されています。",
+    "mo_done": "リードアロング電子書籍をダウンロードしました",
+    "audio_unavailable_now": "現在、音声は利用できません（ジョブが実行中か、音声サービスがオフになっている可能性があります）。"
   },
   "settings": {
     "immersive_options": "イマーシブオプション",
@@ -3234,7 +3254,12 @@
     "style_tooltip": "任意。クイズ内のすべての画像 (質問 + オプション) に適用されます。空 = デフォルトスタイル。クイズと一緒に保存され、洗練アクションがブランドに沿ったままになります。",
     "generate_pre_check": "事前確認を生成",
     "generate_formative": "形成的確認を生成",
-    "generate_review": "間隔復習を生成"
+    "generate_review": "間隔復習を生成",
+    "likert_strongly_disagree": "まったくそう思わない",
+    "no_right_answer": "ここには正解も不正解もありません。",
+    "poll_completed": "ご意見をお寄せいただきありがとうございます。",
+    "poll_intro": "ここには正解も不正解もありません — あなたの正直な意見が先生の役に立ち、あなた自身の役にも立ちます。",
+    "mode_poll": "🗣️ 投票（生徒の声）"
   },
   "visuals": {
     "title": "ビジュアルサポート",
@@ -3259,8 +3284,8 @@
       "line": "線画",
       "render_3d": "3Dレンダー",
       "custom": "✏️ Custom…",
-      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
-      "custom_aria": "Custom art style description"
+      "custom_placeholder": "例：ヴィンテージ植物画、クレヨン画、ステンドグラス…",
+      "custom_aria": "カスタムアートスタイルの説明"
     },
     "generate": "ビジュアルを生成",
     "regenerate_prompt": "プロンプトから再生成",
@@ -3807,8 +3832,8 @@
     "toast_no_standards": "一致する基準が見つかりません。より広範な検索をお試しください。",
     "toast_search_failed": "検索に失敗しました。もう一度お試しください。",
     "frameworks": {
-      "ccss_ela": "Common Core ELA",
-      "ccss_math": "Common Core Math",
+      "ccss_ela": "Common Core 英語（ELA）",
+      "ccss_math": "Common Core 数学",
       "ngss": "NGSS (科学)",
       "c3": "C3フレームワーク (社会科)",
       "iste": "ISTE基準 (テクノロジー)",
@@ -5200,7 +5225,7 @@
     "chunk_mood_tooltip": "アクティブチャンクのアニメーション気分 · Enterでタイプライター表示をスキップ",
     "font_lexend": "Lexend (読みやすい)",
     "font_atkinson": "Atkinson Hyperlegible",
-    "font_serif_georgia": "Serif (Georgia)",
+    "font_serif_georgia": "セリフ体（Georgia）",
     "font_sans_inter": "Sans (Inter)",
     "font_comic_sans": "Comic Sans",
     "crawl_speed_aria": "クロール速度",
@@ -6765,7 +6790,10 @@
     "pdf_audit_alt_formats_epub_btn": "修正された文書を、目次とアクセシビリティメタデータを含むePubファイルとして保存します。Kindle、Apple Books、およびほとんどのモバイルリーダーで動作 — 生徒はフォントサイズ、色、読み取り速度を変更できます。",
     "pdf_audit_alt_formats_braille_btn": "グレード1（非短縮）の点字ファイルを保存し、点字プリンタで打ち込んだり、更新可能な点字ディスプレイに送信したりできます。グレード2の短縮形については、ファイルをTVI（視覚障害のある生徒のための教師）に渡して仕上げてもらってください。",
     "pdf_audit_alt_formats_text_btn": "すべての書式が削除されたプレーンな.txtファイルを保存します — スクリーンリーダー、大文字変換、または別のツールへの貼り付けに最も簡単な形式です。",
-    "pdf_audit_alt_formats_markdown_btn": "文書をMarkdownとして保存します — Canvas、Schoology、またはD2Lのページ、Google Docs（貼り付け経由）、wiki、GitHubスタイルのノートに見出しやリンクを失うことなくきれいに収まります。"
+    "pdf_audit_alt_formats_markdown_btn": "文書をMarkdownとして保存します — Canvas、Schoology、またはD2Lのページ、Google Docs（貼り付け経由）、wiki、GitHubスタイルのノートに見出しやリンクを失うことなくきれいに収まります。",
+    "pdf_audit_alt_formats_daisy_btn": "DAISY 3の全文トーキングブックパッケージを保存します。DAISYリーダー（特別支援教育で広く使われています）は、独自の音声・点字・大活字を、完全なナビゲーション付きで提供します。ここではテキストのみです。読み上げ音声と同期させたい場合は、読み上げ同期ブックをご利用ください。",
+    "pdf_audit_alt_formats_readalong_btn": "読み上げ同期ブック（EPUB3メディアオーバーレイ）を作成します。各段落を音声合成でナレーションし、テキストと同期させて、発話に合わせて単語がハイライトされます。セクションごとに1回の音声呼び出しを行うため、数分かかることがあります。",
+    "pdf_audit_alt_formats_odt_btn": "OpenDocument Text（.odt）ファイルを保存します。LibreOfficeやGoogleドキュメントでそのまま開けます（Wordでも開けます）。学校全体がMicrosoft一色ではないけれど、構造を保ったまま編集できるドキュメントが欲しい場合に使います。"
   },
   "explore": {
     "challenge_number_line": "数直線チャレンジ",
@@ -7541,7 +7569,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "キャラクターの声と文学分析で物語に命を吹き込む",
     "poettree_title": "PoetTree",
-    "poettree_desc": "形式スキャフォールド、韻律分析、AIフィードバックで詩を書く"
+    "poettree_desc": "形式スキャフォールド、韻律分析、AIフィードバックで詩を書く",
+    "throughline_desc": "レッスンを空間的なユニットにまとめましょう：指導の順序、前提条件、書き出し可能な1つのファイル"
   },
   "socratic": {
     "title": "ソクラテス式チューター",
@@ -7884,7 +7913,7 @@
       "font_aria": "フォントファミリー",
       "font_inter": "Inter (クリーン)",
       "font_georgia": "Georgia (セリフ)",
-      "font_atkinson": "Atkinson (A11y)",
+      "font_atkinson": "Atkinson（A11y）",
       "font_lexend": "Lexend (読みやすい)",
       "font_comic": "Comic Sans (楽しい)",
       "font_times": "Times (クラシック)",
@@ -7953,7 +7982,8 @@
       "std_dev": "標準偏差",
       "icc_title": "カスタム 1−(SD/50) インデックス。教科書ICCではありません",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "AIパス全体にわたるCV＋ペアワイズのハイブリッドヒューリスティック。教科書的なクロンバックのαではありません"
     },
     "score": {
       "total_checks": "実行された総チェック数",
@@ -8115,7 +8145,9 @@
       "title": "修正済みHTMLからPDFを再生成。レイアウトは再フロー — 改ページ、フォント、ページネーションは元のものと異なる場合があります。シンプルな散文ドキュメントに適しています。"
     },
     "tagged_pdf": {
-      "title": "元のPDFの視覚レイアウトをバイト単位で保持し、構造ツリーにアクセシビリティタグを注入。教科書、複数列ドキュメント、視覚的忠実度が重要なブランドPDFに最適。"
+      "title": "元のPDFの視覚レイアウトをバイト単位で保持し、構造ツリーにアクセシビリティタグを注入。教科書、複数列ドキュメント、視覚的忠実度が重要なブランドPDFに最適。",
+      "office_note": "タグ付きPDFはPDF入力に適用されます — Word/HTMLを使用してください",
+      "office_note_title": "構造タグはPDFのバイトにのみ挿入できます。Word/PowerPoint入力の場合、アクセシブルなWordおよびHTMLのダウンロードに修正済みの構造が含まれます。"
     },
     "alt_formats": {
       "intro": "修正済みドキュメントをアクセシブルな代替形式でダウンロード"
@@ -8186,7 +8218,9 @@
       "heading": "バージョンスタンプ"
     },
     "extracted_images": {
-      "drag_hint": "サムネイルをプレビュー内の任意の画像プレースホルダーにドラッグして挿入、またはプレースホルダー内の「📷 アップロード」をクリックして「抽出された画像を使用」を選択。"
+      "drag_hint": "サムネイルをプレビュー内の任意の画像プレースホルダーにドラッグして挿入、またはプレースホルダー内の「📷 アップロード」をクリックして「抽出された画像を使用」を選択。",
+      "drag_hint2": "サムネイルをクリックすると最初の空いている画像枠に挿入されます。プレビュー内の特定のプレースホルダーや画像にドラッグすることもできます。×N は、同じ画像がNページに表示されたことを示します（通常はレターヘッドやロゴ）。",
+      "insert_aria": "抽出した画像を最初の空き枠に挿入"
     },
     "toolbar": {
       "aria": "テキスト書式",
@@ -8212,7 +8246,8 @@
     },
     "divergence": {
       "semantic": "構造的には準拠していますが意味的に弱い — AIは axe-core が検出できないコンテンツ品質(代替テキスト、見出しの意味、読み取り順序)にフラグを立てました",
-      "structural": "コードレベルのWCAG違反を検出 — axe-core はAI採点が軽く重み付けした機械検証可能な失敗を発見しました"
+      "structural": "コードレベルのWCAG違反を検出 — axe-core はAI採点が軽く重み付けした機械検証可能な失敗を発見しました",
+      "critical_override": "axe-coreが{n}件の重大なWCAG違反を検出しました — ブレンドスコアを信頼する前に確認してください。平均値は重大な不合格を覆い隠すことがあります"
     },
     "tagtree": {
       "label": "既存のタグ構造",
@@ -8245,7 +8280,61 @@
     "violation_one": "{count}件の違反",
     "violation_other": "{count}件の違反",
     "ai_issue_one": "{count}件のAIが指摘した問題",
-    "ai_issue_other": "{count}件のAIが指摘した問題"
+    "ai_issue_other": "{count}件のAIが指摘した問題",
+    "tagged": {
+      "born_digital_note": "ご注意：テキストレイヤーのPDFでは、セマンティックタグは完全なコンテンツ連携ではなくActualText関連付けを使用します。ファイルのアクセシビリティは大幅に向上しますが、PDF/UA準拠を主張する前にPAC 2024またはAcrobatで検証してください。"
+    },
+    "one_click": {
+      "label": "アクセシブルにする",
+      "badge": "完全自動 — 監査・修正・検証を目標まで繰り返します",
+      "desc": "ワンクリックでデフォルト設定のまま全パイプラインを自動実行し、最後にダウンロードの準備が整います。細かく制御したい場合は、下の「監査を実行」を使い、結果を確認してから自分で「修正と検証」をクリックしてください。"
+    },
+    "run_audit_label": "監査を実行（ステップ1/2）",
+    "manual_path_explainer": "「監査を実行」はドキュメントを採点し、修正が必要な箇所を表示します — その後、自分で確認して「修正と検証」をクリックします（ステップ2）。上の「アクセシブルにする」は両方のステップに加えて再チェックも自動で行います。「テキスト抽出」はコンテンツ生成のために生のテキストを取り出すだけです。",
+    "tagged_report": {
+      "heading": "タグ付きPDFレポート",
+      "close_aria": "タグ付きPDFレポートを閉じる",
+      "note": "このパネルは閉じるまで表示されたままになります。同じ詳細はAdobe形式のA11yレポートのダウンロードにも含まれています。"
+    },
+    "docx_export": {
+      "title": "修正済みコンテンツを、実際の見出しスタイル、画像の代替テキスト、表のヘッダー行、リスト構造、機能するハイパーリンクを備えたWordドキュメントに変換します。配布する前にWord内蔵のアクセシビリティチェッカー（校閲 → アクセシビリティチェック）で検証してください。"
+    },
+    "pptx_export": {
+      "title": "修正済みコンテンツを、実際のスライドタイトル、画像の代替テキスト、ヘッダースタイルの表行、本物の箇条書きリスト、視覚的順序と一致する読み上げ順序を備えたPowerPointデッキとして再構築します。元の見た目を複製したものではなく、アクセシブルに再構築されたレイアウトです。配布する前にPowerPointのアクセシビリティチェッカーで検証してください。"
+    },
+    "dashboard": {
+      "aria": "修正結果の概要とセクションナビゲーション",
+      "score_title": "アクセシビリティスコア：修正前 → 修正後"
+    },
+    "tag_to_workbench_title": "このブロックをExpert Workbenchに送信：（警告を含む）対象を絞ったコマンドを事前入力し、1つの指示で修正できるようにします",
+    "tag_to_workbench_aria": "Expert Workbenchに送信",
+    "pptx_theme_aria": "PowerPointエクスポートのテーマ",
+    "pptx_theme_title": "PowerPoint書き出し用のスライドテーマです。すべてのプリセットはコントラストが検証済みです（WCAG AA準拠）。AIオプションはトピックに合わせて選ばれ、いずれの場合もローカルで読みやすさが確保されます。",
+    "export_menu": {
+      "button": "書き出し／ダウンロード",
+      "intro": "修正済みのドキュメントを任意の形式でダウンロードできます。使い方に合った形式を選んでください。",
+      "tagged_pdf": "タグ付きPDF（PDF/UA — 生徒に配布）",
+      "word": "Word（.docx — 編集を続ける）",
+      "pptx": "PowerPoint（.pptx — プレゼンに使う）",
+      "html": "HTML（ソフト不要でどこでも開ける）",
+      "group_access": "アクセシブルな形式",
+      "daisy": "DAISYトーキングブック（全文）",
+      "daisy_title": "DAISY 3（DTBook）全文トーキングブックパッケージ。DAISYリーダーで開くと、音声・点字・大活字で読めます。（読み上げ音声と同期させたい場合は、下の「読み上げ同期」をご利用ください。）",
+      "readalong": "読み上げ同期ブック（音声同期）",
+      "readalong_progress": "ナレーション生成中… {done}/{total}",
+      "readalong_title": "読み上げ同期ブック（EPUB3メディアオーバーレイ）：各段落の音声を生成してテキストと同期させ、読書システムが発話に合わせて単語をハイライトします。多数の音声呼び出しを行うため、数分かかることがあります。",
+      "group_text": "テキスト・編集可能",
+      "odt": "ODT（LibreOffice／Googleドキュメント）",
+      "odt_title": "OpenDocument Text — LibreOfficeやGoogleドキュメント（およびWord）でそのまま開けます。",
+      "group_audio": "音声ナレーション",
+      "audio": "音声ナレーション（標準）",
+      "audio_title": "ドキュメントを読み上げた音声（MP3／WAV）。",
+      "audio_sr": "音声（スクリーンリーダー方式）",
+      "audio_sr_title": "同じ音声ですが、スクリーンリーダーのように構造を読み上げます（見出しレベル、リストの項目数、表の行、画像の代替テキスト）。"
+    },
+    "mo": {
+      "confirm": "読み上げ同期ブックを作成しますか？ {n}個のテキストセクションを音声合成でナレーションします（約{n}回の音声呼び出し）。数分かかることがあります。"
+    }
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -12452,5 +12541,10 @@
     "byline": "{author}作 · {words}語 · 語彙{used}/{total}",
     "student": "生徒",
     "score": "スコア：{score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "プレビューを再描画すると、手動編集が新しく生成された内容に置き換えられます。続行して編集を破棄しますか？（キャンセルすると保持されます — まずエクスポートするかビルダーを閉じて保存してください。）",
+    "remediation_banner_title": "修正済みドキュメントを編集しています。",
+    "remediation_banner_body": "ここでの編集は、ビルダーを閉じるときにドキュメントへ保存されるため、タグ付きPDF / Word / PowerPointのダウンロードに反映されます。"
   }
 }

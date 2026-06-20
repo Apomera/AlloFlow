@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Khaws project lawm ({count} ntu); load nws tom qab los txuas ntxiv",
     "project_saved": "💾 Khaws project lawm; load nws tom qab los txuas ntxiv kev kho",
     "search_result_desc": "Google Tshawb Nrhiav Tau: {title}",
-    "link_url_prompt": "Sau URL ntawm txoj kev txuas:"
+    "link_url_prompt": "Sau URL ntawm txoj kev txuas:",
+    "building_accessible_docx": "Tab tsim cov ntaub ntawv Word uas siv tau yooj yim…",
+    "building_accessible_pptx": "Tab tsim PowerPoint uas siv tau yooj yim…",
+    "batch_tagging": "📄 Tab tsim cov PDF muaj tags rau ZIP — cov ntaub ntawv luam (scanned) yuav siv sij hawm ntev dua (OCR khiav rau txhua daim ntawv)…",
+    "builder_edits_preserved": "✋ Khaws koj cov kev hloov uas koj ua tes — daim qauv (preview) tsis tau rov tsim dua. Xa tawm los sis kaw lub builder kom khaws cov ntawd, ces mam li hloov cov chaw teeb tsa.",
+    "builder_edits_synced": "✏️ Cov kev hloov ntawm builder tau khaws rau hauv daim ntawv uas kho lawm — cov ntaub ntawv xa tawm Tagged PDF / Word / PowerPoint nim no muaj cov ntawd lawm.",
+    "pptx_ai_theme": "🎨 Tab thov AI kom muab cov xim phim raws li ntsiab lus (kev nyeem tau yooj yim raug tswj hauv qhov chaw no)…",
+    "make_accessible_fixing": "✨ Kev tshuaj xyuas tiav lawm — tab kho cia li (tsis tas nias dab tsi)…",
+    "tagged_pdf_saved_see_report": "📄 Tagged PDF khaws cia lawm — daim ntawv qhia tag nrho nyob saum cov khawm rub tawm (nias ✕ kom ploj).",
+    "no_open_image_slot": "Tsis muaj qhov chaw rau duab seem hauv daim qauv lawm — rub daim duab me (thumbnail) los tso rau saum ib daim duab tshwj xeeb kom hloov nws.",
+    "extracted_image_inserted": "🖼 Tau ntxig rau hauv thawj qhov chaw duab uas seem — rub ib daim duab me (thumbnail) yog tias koj xav tau lwm qhov chaw.",
+    "html_downloaded": "🌐 HTML rub tawm lawm — qhib tau hauv txhua tus browser.",
+    "odt_downloaded": "📄 OpenDocument (.odt) rub tawm lawm — qhib tau hauv LibreOffice, Google Docs, los sis Word.",
+    "daisy_downloaded": "🔊 DAISY phau ntawv hais lus (.zip) rub tawm lawm — qhib hauv ib tus nyeem DAISY.",
+    "mo_no_voice": "Qhov kev pab lub suab tsis muaj, yog li lub suab nyeem-nrog tsis tuaj yeem tsim tau rau lub sij hawm no.",
+    "mo_busy": "Kev xa tawm nyeem-nrog twb tab tom khiav lawm.",
+    "mo_no_text": "Tsis pom cov ntawv nyeem tau los hais.",
+    "mo_no_audio": "⚠ Phau ntawv nyeem-nrog khaws cia lawm, tab sis tsis tau tsim suab (kev pab lub suab tsis muaj). Cov ntawv + cov qauv sib txuas tseem zoo nkaus li qub.",
+    "mo_done": "Phau ntawv nyeem-nrog rub tawm lawm",
+    "audio_unavailable_now": "Lub suab tsis muaj rau lub sij hawm no (tej zaum muaj ib txoj hauj lwm khiav, los sis kev pab lub suab raug kaw)."
   },
   "large_file": {
     "modal_title": "Coj los Large suab cov ntaub ntawv",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator cov cuab yeej",
     "documents_menu_aria": "cov ntawv menu",
     "open_doc_builder_pdf_aria": "Qhib cov ntawv Builder rau PDF",
-    "export_slides_tooltip": "Opens cov ntawv Builder hauv Slides hom"
+    "export_slides_tooltip": "Opens cov ntawv Builder hauv Slides hom",
+    "learning_tools_tooltip": "Cov Cuab Yeej Kawm (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Lub hom phiaj hom lus",
@@ -1812,7 +1832,7 @@
   "sidebar": {
     "create_tab": "Tsim",
     "history_tab": "Keeb Kwm",
-    "tools_header": "Gemini Powered Scaffolds",
+    "tools_header": "Cov Scaffolds Siv Gemini",
     "expand_all": "Expand tag nrho",
     "collapse_all": "Collapse tag nrho",
     "expand_tooltip": "Expand tag nrho daim npav",
@@ -2328,13 +2348,13 @@
     "audio_narration_paragraph": "suab narration for nqe lus {n}",
     "score_n": "qhab nia: {score}",
     "venn_comparing": "Venn duab piav qhia comparing {a} and {b}",
-    "flow_chart_of": "Flow chart: {topic}",
+    "flow_chart_of": "Daim duab qhia kev khiav: {topic}",
     "cause_effect_pair": "Cov ua rau thiab cov tshwm sim khub {n} ntawm {total}",
     "tchart_comparing": "T-chart comparing {a} and {b}",
     "fishbone_for": "Fishbone duab piav qhia for {topic}",
-    "concept_map_of": "Concept map: {topic}",
+    "concept_map_of": "Daim duab ntsiab lus: {topic}",
     "mind_map_branch": "Mind map ceg {n} ntawm {total}: {title}",
-    "mind_map_of": "Mind map: {topic}",
+    "mind_map_of": "Daim duab xav (mind map): {topic}",
     "tier_score": "Tier {tier}, qhab nia {score}",
     "draggable_item": "khoom uas rub tau",
     "read_aloud_with_text": "Nyeem nrov: {text}",
@@ -3704,7 +3724,12 @@
     "style_tooltip": "Tsis yog yuav tsum. Siv rau txhua daim duab hauv quiz (lus nug + kev xaiv). Khoob = default style. Khaws cia nrog quiz kom cov haujlwm kho dua tseem haum brand.",
     "generate_pre_check": "Tsim Pre-Check",
     "generate_formative": "Tsim Formative Check",
-    "generate_review": "Tsim Spaced Review"
+    "generate_review": "Tsim Spaced Review",
+    "likert_strongly_disagree": "Tsis pom zoo heev",
+    "no_right_answer": "Ntawm no tsis muaj cov lus teb yog los sis tsis yog.",
+    "poll_completed": "Ua tsaug uas koj qhia koj txoj kev xav.",
+    "poll_intro": "Ntawm no tsis muaj cov lus teb yog los sis tsis yog — koj txoj kev xav tseeb pab koj tus xib fwb thiab pab koj.",
+    "mode_poll": "🗣️ Kev xaiv (lub suab tub ntxhais kawm)"
   },
   "outline": {
     "title": "kev pom Organizer",
@@ -4161,7 +4186,8 @@
     },
     "divergence": {
       "semantic": "Raws li qauv tab sis tsis muaj zog hauv kev xav — AI tau cim qhov zoo ntawm cov ntsiab lus uas axe-core tsis tuaj yeem nrhiav tau",
-      "structural": "WCAG kev txhaum theem code pom — axe-core pom kev tsis ua haujlwm uas tshuab tuaj yeem tshuaj xyuas"
+      "structural": "WCAG kev txhaum theem code pom — axe-core pom kev tsis ua haujlwm uas tshuab tuaj yeem tshuaj xyuas",
+      "critical_override": "axe-core pom {n} qhov ua txhaum WCAG hnyav heev — tshuaj xyuas lawv ua ntej ntseeg cov qhab nia uas muab xyaw; qhov nruab nrab tuaj yeem zais ib qho ua tsis tau"
     },
     "tagtree": {
       "label": "Cov qauv tag muaj tsim ntej",
@@ -4279,7 +4305,8 @@
       "std_dev": "tus qauv Deviation",
       "icc_title": "Custom 1−(SD/50) index; tsis textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "CV + pairwise hybrid heuristic thoob plaws AI passes; tsis yog Cronbach's α raws phau ntawv"
     },
     "score": {
       "total_checks": "Tag nrho qhov tau xyuas",
@@ -4437,7 +4464,9 @@
       "title": "Regenerate PDF los ntawm remediated HTML. Layout reflows — phab ntawv breaks, fonts, thiab pagination may differ los ntawm thawj. Ua hauj lwm well rau yooj yim prose cov ntawv."
     },
     "tagged_pdf": {
-      "title": "Preserve thawj PDF's kev pom layout byte-identical thiab inject kev nkag mus tau tags rau its structure tree. Best rau textbooks, multi-kem cov ntawv, thiab branded PDFs qhov twg kev pom fidelity matters."
+      "title": "Preserve thawj PDF's kev pom layout byte-identical thiab inject kev nkag mus tau tags rau its structure tree. Best rau textbooks, multi-kem cov ntawv, thiab branded PDFs qhov twg kev pom fidelity matters.",
+      "office_note": "Tagged PDF siv rau cov PDF uas xa tuaj — siv Word/HTML",
+      "office_note_title": "Cov tags qauv ntsiab lus tsuav txhaj tau rau hauv cov bytes ntawm PDF xwb. Rau cov Word/PowerPoint uas xa tuaj, cov ntaub ntawv Word thiab HTML uas siv tau yooj yim yog tus nqa cov qauv uas kho lawm."
     },
     "alt_formats": {
       "intro": "Rub los remediated cov ntawv hauv pom tau alternative hom"
@@ -4508,7 +4537,9 @@
       "heading": "version Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Rub thumbnail onto any duab placeholder hauv pkev tshuaj xyuas mus insert it, los yog nyem \"📷 Xa mus\" inside placeholder thiab xaiv \"Siv extracted duab\"."
+      "drag_hint": "Rub thumbnail onto any duab placeholder hauv pkev tshuaj xyuas mus insert it, los yog nyem \"📷 Xa mus\" inside placeholder thiab xaiv \"Siv extracted duab\".",
+      "drag_hint2": "Nias ib daim duab me (thumbnail) los ntxig rau hauv thawj qhov chaw duab uas seem, los sis rub nws los tso rau saum ib qho chaw cia (placeholder) los sis duab twg hauv daim qauv. ×N = tib daim duab tau tshwm rau N nplooj ntawv (feem ntau yog lub taub ntawv los sis logo).",
+      "insert_aria": "Ntxig daim duab uas rho tawm rau hauv thawj qhov chaw uas seem"
     },
     "toolbar": {
       "aria": "cov ntawv formatting",
@@ -4544,7 +4575,60 @@
     "violation_one": "{count} qhov ua txhaum",
     "violation_other": "{count} qhov ua txhaum",
     "ai_issue_one": "{count} qhov teeb meem AI tau cim",
-    "ai_issue_other": "{count} qhov teeb meem AI tau cim"
+    "ai_issue_other": "{count} qhov teeb meem AI tau cim",
+    "tagged": {
+      "born_digital_note": "Ceeb toom: rau cov PDF muaj txheej ntawv (text-layer), cov tags ntsiab lus siv kev txuas ActualText es tsis yog kev txuas ntsiab lus tag nrho. Daim ntaub ntawv siv tau yooj yim ntau dua, tab sis tshuaj xyuas hauv PAC 2024 los sis Acrobat ua ntej hais tias raws PDF/UA."
+    },
+    "one_click": {
+      "label": "Ua Kom Siv Tau Yooj Yim",
+      "badge": "ua cia li tag nrho — tshuaj xyuas, kho, txheeb xyuas, rov ua kom tau raws li lub hom phiaj",
+      "desc": "Ib qho nias khiav tag nrho txoj kev ua tsis tas tes nrog cov chaw teeb tsa ib txwm; cov ntaub ntawv rub tawm npaj txhij thaum kawg. Nyiam tswj nws? Siv \"Run Audit\" hauv qab no, tshuaj xyuas cov txiaj ntsig, ces koj nias Fix & Verify koj tus kheej."
+    },
+    "run_audit_label": "Run Audit (theem 1 ntawm 2)",
+    "manual_path_explainer": "\"Run Audit\" ntsuas daim ntawv thiab qhia tias yam twg yuav tsum kho — ces koj tshuaj xyuas thiab nias Fix & Verify koj tus kheej (theem 2). \"Ua Kom Siv Tau Yooj Yim\" saum no ua ob theem nrog rau kev rov tshuaj xyuas, ua cia li. \"Text Extraction\" tsuav rho cov ntawv nkaus xwb los tsim cov ntsiab lus.",
+    "tagged_report": {
+      "heading": "Tagged PDF daim ntawv qhia",
+      "close_aria": "Tshem tawm Tagged PDF daim ntawv qhia",
+      "note": "Lub vaj huam sib luag no nyob mus txog thaum koj tshem nws tawm. Cov ntsiab lus zoo ib yam nrog rau hauv qhov Adobe-style A11y Report uas rub tawm."
+    },
+    "docx_export": {
+      "title": "Hloov cov ntsiab lus uas kho lawm mus ua ib daim ntawv Word uas muaj cov style taub hau (heading) tiag, cov ntawv piav duab (alt text) rau cov duab, cov kab taub hau hauv lub rooj, cov qauv teev npe, thiab cov hyperlinks ua hauj lwm. Tshuaj xyuas nrog Word lub Accessibility Checker (Review → Check Accessibility) ua ntej faib tawm."
+    },
+    "pptx_export": {
+      "title": "Rov tsim cov ntsiab lus uas kho lawm ua ib daim PowerPoint uas muaj cov npe daim slide tiag, cov ntawv piav duab (alt text) rau cov duab, cov kab lub rooj style taub hau, cov npe teev (bullet) tiag, thiab kev nyeem = kev pom. Ib qho qauv siv tau yooj yim uas rov tsim — tsis yog daim qauv khaub li tus thawj. Tshuaj xyuas nrog PowerPoint lub Accessibility Checker ua ntej faib tawm."
+    },
+    "dashboard": {
+      "aria": "Cov txiaj ntsig kev kho thiab kev mus rau cov seem",
+      "score_title": "Cov qhab nia siv tau yooj yim: ua ntej → tom qab"
+    },
+    "tag_to_workbench_title": "Xa thaj no mus rau Expert Workbench: sau tsim ib qho lus txib taw tes (nrog rau cov ceeb toom) kom koj kho tau nrog ib qho lus qhia",
+    "tag_to_workbench_aria": "Xa mus rau Expert Workbench",
+    "pptx_theme_aria": "Lub ntsiab xim rau PowerPoint xa tawm",
+    "pptx_theme_title": "Lub ntsiab xim daim slide rau PowerPoint xa tawm. Txhua qhov teeb tsa twb tshuaj xyuas qhov sib txawv (WCAG AA); qhov AI haum koj lub ntsiab lus, nrog kev nyeem tau yooj yim raug tswj hauv qhov chaw no txawm yog xaiv qhov twg.",
+    "export_menu": {
+      "button": "Xa Tawm / Rub Tawm",
+      "intro": "Rub tawm daim ntawv uas kho lawm ua txhua hom — xaiv qhov uas haum nws yuav raug siv li cas.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — muab rau cov tub ntxhais kawm)",
+      "word": "Word (.docx — kho txuas ntxiv)",
+      "pptx": "PowerPoint (.pptx — nthuav qhia)",
+      "html": "HTML (qhib tau txhua qhov, tsis xav tau software)",
+      "group_access": "Cov hom siv tau yooj yim",
+      "daisy": "DAISY phau ntawv hais lus (cov ntawv tag nrho)",
+      "daisy_title": "DAISY 3 (DTBook) pob phau ntawv hais lus cov ntawv tag nrho. Qhib hauv ib tus nyeem DAISY, uas muab kev hais lus, braille, los sis cov ntawv loj. (Rau kev nyeem nrog suab sib txuas, siv Read-along hauv qab.)",
+      "readalong": "Phau ntawv nyeem-nrog (suab sib txuas)",
+      "readalong_progress": "Tab nyeem… {done}/{total}",
+      "readalong_title": "Phau ntawv nyeem-nrog (EPUB3 Media Overlays): tsim ntawv-mus-ua-suab rau txhua nqe lus thiab txuas nws rau cov ntawv kom lub kaw lus nyeem ci cov lo lus thaum hais. Hu lub suab ntau zaus — tuaj yeem siv ob peb feeb.",
+      "group_text": "Ntawv & kho tau",
+      "odt_title": "OpenDocument Text — qhib tau ncaj qha hauv LibreOffice thiab Google Docs (thiab Word).",
+      "group_audio": "Kev hais suab",
+      "audio": "Kev hais suab (ib txwm)",
+      "audio_title": "Kev hais suab ntawm daim ntawv (MP3/WAV).",
+      "audio_sr": "Suab (txuj screen-reader)",
+      "audio_sr_title": "Tib lub suab, tab sis qhia cov qauv li tus screen reader yuav qhia (cov theem taub hau, cov suav npe teev, cov kab lub rooj, cov ntawv piav duab)."
+    },
+    "mo": {
+      "confirm": "Tsim ib phau ntawv nyeem-nrog? Qhov no nyeem {n} seem ntawv nrog ntawv-mus-ua-suab — kwv yees {n} zaus hu lub suab, uas tuaj yeem siv ob peb feeb."
+    }
   },
   "concept_sort": {
     "title": "Lub tswv yim Muab cais",
@@ -4860,7 +4944,7 @@
       "physics": "Physics",
       "biology": "Biology",
       "earth_science": "Lub Ntiaj Teb Science",
-      "comp_sci": "Computer Science",
+      "comp_sci": "Kev Tshawb Fawb Computer",
       "economics": "Nyiaj txiag"
     },
     "modes": {
@@ -6832,7 +6916,61 @@
     "timeline_image_size": "Resize control rau AI-tau tsim duab embedded hauv timeline event daim npav (pom tau only thaum events muaj duab). Three-cov theem slider: small / medium / large. Persists nrog timeline so size kev xaiv rides printed PDF + hauv-kev ua si draggable daim npav. cov lus qhia: larger sizes work well rau K-5 timelines qhov twg kev pom anchors matter most (life cycles, historical events, dab neeg plots). Rau dense AP-theem timelines nrog 15+ events, medium los yog small lets full sequence fit rau saum one printable phab ntawv without tub ntxhais kawm having mus flip rov qab thiab forth.",
     "pdf_audit_view_web_audit_btn": "Qhab nia nplooj ntawv rau kev nkag tau WCAG 2.1 AA los ntawm kev siov ob qho - tus tshuaj xyuas AI thiab lub cav axe-core (tib lub cav uas cov kws tshuaj xyuas siv). Tsis muaj dab tsi raug hloov - siv qhov no thaum koj tsuas xav paub tias nplooj ntawv zoo li cas niaj hnub no.",
     "pdf_audit_results_score_badge": "Koj daim PDF cov qhab nia kev nkag tau tag nrho txij 0 mus rau 100. Ntsuab (80+) ze rau WCAG AA, daj (50-79) tseem yuav tsum kho, liab (<50) muaj kev cuam tshuam loj rau cov tub ntxhais kawm uas siv cov twj nyeem ntawv saum vijtsam los yog cov twj pab cuam.",
-    "pdf_audit_alt_formats_braille_btn": "Khaws ib daim ntawv Braille Theem 1 (tsis txo) uas tuaj yeem luam rau saum lub luam ntawv Braille los yog xa mus rau lub vijtsam Braille uas hloov tau. Rau Braille Theem 2 uas txo, muab daim ntawv rau ib tus TVI (xib fwb rau cov tub ntxhais kawm uas qhov muag tsis pom kev) los ua kom tiav."
+    "pdf_audit_alt_formats_braille_btn": "Khaws ib daim ntawv Braille Theem 1 (tsis txo) uas tuaj yeem luam rau saum lub luam ntawv Braille los yog xa mus rau lub vijtsam Braille uas hloov tau. Rau Braille Theem 2 uas txo, muab daim ntawv rau ib tus TVI (xib fwb rau cov tub ntxhais kawm uas qhov muag tsis pom kev) los ua kom tiav.",
+    "pdf_audit_view_web_url_input": "Muab qhov chaw nyob ntawm nplooj web uas koj xav kuaj (piv txwv li https://yourdistrict.org/handbook), ces nias Fetch los nqa nws cov HTML kom koj tshuaj xyuas thiab kho tau nws.",
+    "pdf_audit_view_web_fetch_btn": "Rub tawm nplooj ntawm lub URL saum no thiab muab nws cov HTML tso rau hauv lub thawv hauv qab. Yog tias lub vas sab thaiv kev nqa, koj muab nplooj ntawv qhov chaw (page source) tso rau hauv lub thawv HTML koj tus kheej.",
+    "pdf_audit_view_web_html_textarea": "Cov HTML uas tab tom raug tshuaj xyuas — yog tias raug coj los ntawm Fetch los yog koj muab tshooj rau. Koj txhawj kho nws ntawm no ua ntej khiav kev tshuaj xyuas (piv txwv li, tshem ib tug navigation bar uas tsis yog koj tug).",
+    "pdf_audit_view_web_remediate_btn": "Muab nplooj ntawv qhab ntsab, tom qab ntawd rov sau HTML los kho qhov nws kho tau (kev sib txawv xim, language tag, skip-link, landmarks) thiab muab ib daim ntawv luam siv tau rau koj rub tau los. Yeej ib txwm rov tshuaj xyuas cov khoom tso tawm dua koj tus kheej ua ntej tshaj tawm.",
+    "pdf_audit_view_batch_dropzone": "Luag cov ntaub ntawv PDF ntawm koj lub desktop los yog lub downloads folder ncaj nraim rau saum lub thawv no los ntxiv lawv rau cov kab ke batch. Cov ntaub ntawv uas tsis yog PDF yuav raug tso tseg.",
+    "pdf_audit_view_batch_browse_btn": "Qhib koj lub cuab yeej xaiv ntaub ntawv los xaiv ib los yog ntau daim PDF. Siv qhov no yog tias luag ntaub ntawv tsis yooj yim (lub cuab yeej kov, screen reader, qhov muag tsis pom zoo, los yog ib lub Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Rov pib koj cov batch kawg ntawm qhov chaw nws tau nres — cov PDF uas ua tiav lawm yuav raug khaws cia thiab tsuas yog cov uas tsis tau ua tiav thiaj rov khiav dua. Siv qhov no thaum ib cov batch raug txiav tu nrho (kaw tab, refresh, crash).",
+    "pdf_audit_view_batch_discard_btn": "Muab cov kev vam meej uas khaws cia los ntawm koj cov batch txiav tu kawg pov tseg — daim banner yuav ploj mus thiab cov txiaj ntsig khaws cia raug tshem tawm ntawm koj lub browser.",
+    "pdf_audit_view_batch_clear_all_btn": "Tshem txhua daim PDF tawm ntawm cov kab ke kom koj rov pib dua tau. Tsuas siv tau ua ntej koj nias Start Batch.",
+    "pdf_audit_view_batch_row_retry_btn": "Rov khiav tsuas yog ib daim ntaub ntawv uas ua tsis tiav no xwb tsis kov cov batch seem. Coj koj tus nas mus saum lub cim X liab ua ntej los nyeem vim li cas nws thiaj ua tsis tiav — yog tias nws yog teeb meem qauv (PDF puas lawm, scan uas tsuas muaj duab xwb), rov sim yuav tsis pab.",
+    "pdf_audit_view_batch_row_remove_btn": "Tshem daim PDF no ib daim tawm ntawm cov kab ke kom cov batch hla nws. Tsuas siv tau ua ntej cov batch pib khiav.",
+    "pdf_audit_view_batch_stop_btn": "Thov kom cov batch nres tom qab daim ntaub ntawv nws tab tom ua tam sim no ua tiav. Cov PDF uas ua tiav lawm yuav nyob tiav — koj yuav tsis poob koj cov hauj lwm uas ua tiav lawm, thiab koj rov pib ua cov seem tom qab tau.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Rov muab txhua daim PDF uas ua tsis tiav tso rau hauv kab ke thiab rov khiav lawv. Cov ntaub ntawv uas ua tiav lawm yuav tsis raug kov. Tsim nyog sim ib zaug yog tias cov kev ua tsis tiav zoo li yog cov network tsis ruaj khov; tsis txhob rov sim ntau zaus cov PDF uas puas tiag tiag.",
+    "pdf_audit_view_batch_start_btn": "Pib tshuaj xyuas thiab kho txhua daim PDF hauv cov kab ke. Ib qho lus pom zoo yuav tshwm ua ntej nrog ib qho kwv yees ntawm cov AI hu (thiab tus nqi, ntawm self-hosted plan) kom koj txiav txim tau ua ntej pib nws.",
+    "pdf_audit_view_batch_download_zip_btn": "Rub txhua daim PDF uas kho tau zoo lawm ua ib daim ntaub ntawv ZIP. Yooj yim rau muab ib lub folder tag nrho rov rau ib tug xib fwb los yog tus neeg saib lub cheeb tsam ib zaug.",
+    "pdf_audit_view_batch_new_batch_btn": "Tshem cov batch uas ua tiav lawm kom koj tso ib pawg PDF tshiab rau. Tej ZIP twg uas koj rub los lawm yuav nyob ntawm koj lub khoos phis tawj — qhov no tsuas yog rov teeb tsim daim screen xwb.",
+    "pdf_audit_view_batch_dashboard_btn": "Qhib ib daim compliance dashboard luam tau hauv ib daim tab tshiab — qhab ntsab nruab nrab, muaj pes tsawg daim PDF mus txog 90+, cov teeb meem WCAG uas pom ntau tshaj. Pab tau rau qhia rau ib tug thawj coj los yog txuas rau ib daim ntaub ntawv Title II / 504.",
+    "pdf_audit_view_settings_panel": "Cov viav hloov rau cov txheej txheem tshuaj xyuas thiab kho. Cov teeb tsim ua ntej yog cov tsim nyog — tsuas hloov cov no yog tias qhov khiav ib txwm tsis muab qhov koj xav tau rau koj (ntxaws zog, nqi tsawg dua, qhov chaw nres txawv).",
+    "pdf_audit_view_audit_passes_slider": "Muaj pes tsawg tus AI auditors ywj pheej saib daim PDF — lawv pom zoo rau cov teeb meem tiag tiag thiab sib cav rau cov suab nrov, yog li ntau tus auditors txhais tau hais tias muaj cov ceeb toom cuav tsawg dua. 5 yog qhov zoo tshaj; tsa siab rau cov ntaub ntawv compliance tseem ceeb, qis rau kev tshuaj xyuas sai.",
+    "pdf_audit_view_target_score_slider": "Tus qhab ntsab uas koj xav kom daim PDF kho tau mus txog — 90 yog ib qho WCAG 2.1 AA dhau zoo, 95+ yog yuav luag zoo tag nrho, 70 yog ib qho pem teb pab tau rau cov ntaub ntawv scan. Sib koom nrog Auto-continue kom cov txheej txheem ua mus txog thaum tus qhab ntsab mus txog.",
+    "pdf_audit_view_max_fix_passes_slider": "Muaj pes tsawg lub voj voog kho uas cov txheej txheem tso cai khiav ua ntej nres. 8 yog tus teeb tsim ua ntej; txo qhov no kom txwv tus nqi ntawm self-hosted plan, los yog teeb rau 0 kom hla qhov kho cia li (tshuaj xyuas xwb).",
+    "pdf_audit_view_auto_continue_toggle": "Thaum qhib, cov txheej txheem yuav khiav ntxiv lub voj voog kho (txog 3 lub ntxiv) mus txog thaum tus Target Score mus txog, ces nres nws tus kheej. Kaw nws yog tias koj xav tau ib lub voj voog xwb thiab ib qho txiaj ntsig kom tshuaj xyuas.",
+    "pdf_audit_view_polish_passes_slider": "Lub voj voog ntxhua ntxiv tom qab cov kev kho accessibility tiag tiag — kho qhov sib nrug, cov lub taub hau, kev zam zoo nkauj. 0 hla, 2 yog qhov ib txwm, 3 yog rau cov ntaub ntawv mus luam los yog rau cov neeg sab nraud.",
+    "pdf_audit_view_branding_panel": "Xaiv tau — tswj kev pom ntawm daim PDF kho tau: cov xim brand thiab cov style design tag nrho. Hla rau qhov accessible ib txwm, los yog nthuav yog tias daim ntaub ntawv yuav tsum sib raug nrog ib lub tsev kawm ntawv los yog lub cheeb tsam brand.",
+    "pdf_audit_view_brand_mode_auto_btn": "Rho cov xim brand tawm ntawm daim PDF koj tau xa los kom daim version kho tau zoo li tus thawj. Qhov ib txwm zoo tshaj — khaws cia daim ntaub ntawv kom cov neeg ua hauj lwm thiab tsev neeg paub.",
+    "pdf_audit_view_brand_mode_upload_input": "Xa ib daim brand sheet, logo, los yog style guide cais (duab los yog PDF) ces cov txheej txheem rho cov xim thiab fonts tawm ntawm nws. Pab tau thaum daim PDF qub zoo li yooj yim tab sis yuav tsum sib raug nrog cheeb tsam branding.",
+    "pdf_audit_view_brand_mode_none_btn": "Hla cov xim brand tag nrho thiab siv cov accessible palette uas muaj nyob hauv. Xaiv qhov no rau cov ntawv ua hauj lwm dav dav, los yog thaum cov xim qub ua tsis dhau qhov sib txawv xim thiab koj tsis xav tau khaws qhov kev pom.",
+    "pdf_audit_results_tab_remediation_btn": "Qhia cov txiaj ntsig tshuaj xyuas tom qab AlloFlow kho daim PDF lawm. Siv daim tab no los saib tus qhab ntsab uas zoo dua thiab cov teeb meem twg twb kho lawm.",
+    "pdf_audit_results_tab_original_btn": "Rov qab mus rau qhov tshuaj xyuas ntawm daim PDF qub ua ntej AlloFlow kho ib yam dab tsi. Pab tau rau muab cov qhab ntsab ua ntej-nrog-tom qab sib piv ib sab rau ib sab.",
+    "pdf_audit_results_reliability_details": "Nthuav los saib seb cov AI auditors muaj kev ntseeg npaum li cas rau tus qhab ntsab no. Ntau lub AI passes khiav ua ke — kev pom zoo nruj txhais tau hais tias tus qhab ntsab tso siab tau, kev sib txawv dav txhais tau hais tias koj tshuaj xyuas cov teeb meem ib qho zuj zus koj tus kheej.",
+    "pdf_audit_results_score_breakdown_details": "Nthuav los saib qhov tseeb seb tus qhab ntsab raug suav li cas — muaj pes tsawg qhov tshuaj xyuas khiav, dab tsi raug rho tawm rau ib qho teeb meem, thiab cov AI rubric thiab axe-core qhab ntsab sib ntxiv ua ke li cas. Qhov no yog txheej kev pom kev meej tom qab tus lej loj.",
+    "pdf_audit_results_score_how_ai_details": "Nthuav los saib seb AI qhab ntsab nruj npaum li cas rau ib qho teeb meem: rho ntau dua rau cov teeb meem tseem ceeb uas thaiv cov neeg siv screen-reader, rho tsawg dua rau cov me me, thiab cov ntsiab rov tau los rau cov tshuaj xyuas uas dhau.",
+    "pdf_audit_results_score_how_axe_details": "Nthuav los saib seb tus axe-core checker (tib lub cav uas cov kws tshuaj xyuas accessibility siv) qhab ntsab koj daim PDF li cas, nrog cov WCAG rule IDs uas ua tsis tiav.",
+    "pdf_audit_results_issue_explain": "Nias los nyeem seb qhov teeb meem no thaiv dab tsi rau cov tub ntxhais kawm thiab cov WCAG rule siv li cas. Muaj ib txoj kev txuas mus rau cov lus piav qhia WCAG raws cai yog tias koj xav mus tob dua.",
+    "pdf_audit_results_image_failures_details": "Nthuav los saib tej daim duab uas raug poob thaum kho. Txhua kab muaj ib lub pob Regenerate ib-nias kom tsis muaj ib daim duab raug poob ntsiag to.",
+    "pdf_audit_results_image_regenerate_btn": "Rov tsim daim duab uas ploj no siv AI raws li nws cov lus piav qhia khaws cia. Daim duab tshiab yuav rov los rau hauv daim ntaub ntawv ncaj nraim — tsis tas xa ntawm tes.",
+    "pdf_audit_view_report_menu_btn": "Qhib lub report menu los rub ib daim accessibility report ua ntau hom — Adobe-style rau cov tub ceev xwm compliance, PDF teeb tsim rau kev sib qhia dav dav, JSON rau kev tshawb fawb, los yog ib txoj kev kos npe rau cov ntaub ntawv tshuaj xyuas.",
+    "pdf_audit_view_adobe_report_btn": "Rub ib daim report teeb tsim zoo li Adobe lub Accessibility Checker, qhab ntsab raws PDF/UA-1 (tus qauv accessibility tsoom fwv rau cov PDF). Zoo tshaj rau kev sib qhia nrog cov tub ceev xwm compliance los yog txuas rau ib daim ntaub ntawv Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Tshuaj xyuas cov lus uas ploj mus thaum lub sij hawm khaws cia kawg ua ntej txiav txim seb puas khiav ib lub voj voog kho rov los. Nyeem-xwb — tsis muaj dab tsi hloov mus txog thaum koj xaiv kom kho rov los.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Muab cov lus qub uas ploj rov sib txuas rau hauv daim ntaub ntawv thiab rov tsim daim tagged PDF. Cov lus uas tsis muab tso tau zoo yuav mus rau hauv ib ntu Content Recovery kom tsis muaj dab tsi raug poob — tus lej seem ua ntej thiab tom qab yeej ib txwm qhia kom koj pom seb nws puas pab.",
+    "pdf_audit_view_formatted_report_btn": "Qhib ib daim accessibility report ua ntej/tom qab luam tau hauv ib daim tab tshiab — nias Save as PDF hauv daim banner kom khaws ib daim rau koj cov ntaub ntawv los yog ib lub rooj sib tham niam txiv.",
+    "pdf_audit_view_html_report_btn": "Rub daim report ua ntej/tom qab ua ib daim ntaub ntawv HTML uas koj tuav tau rau saum ib lub vas sab los yog kho tau. Cov ntsiab lus sib raug nrog daim PDF luam tau.",
+    "pdf_audit_view_json_data_btn": "Xa cov lej tshuaj xyuas qub thiab cov ntaub ntawv rule-by-rule tawm ua JSON. Siv qhov no thaum koj xav xyuas cov txiaj ntsig accessibility hauv ib daim spreadsheet, phau ntawv tshawb fawb, los yog lwm lub cuab yeej.",
+    "pdf_audit_view_audit_trail_signed_btn": "Tsim ib txoj kev tshuaj xyuas tus kheej-pov thawj (ib daim ntaub ntawv HTML uas muaj ib lub pob Verify Integrity nyob hauv uas pom kev hloov pauv). Zoo rau pov thawj compliance — nco ntsoov nws yog ib qho kos npe sab browser, tsis yog ib qho uas raug cai khi.",
+    "pdf_audit_view_save_project_btn": "Khaws koj cov hauj lwm kho — accessible HTML, qhab ntsab, settings, kev vam meej ib nplooj zuj zus — rau ib daim ntaub ntawv nqa tau. Rov qhib nrog Load Project kom kho ntxiv tsis tas rov khiav AI.",
+    "pdf_audit_view_load_project_btn": "Rov qhib ib daim project file uas koj khaws cia ua ntej. Coj daim HTML kho tau, qhab ntsab, thiab tej page ranges uas ua tiav lawm rov los — rov pib ncaj nraim ntawm qhov chaw koj tau nres.",
+    "pdf_audit_view_save_template_btn": "Khaws daim ntaub ntawv cov qauv accessible (kev cob lub taub hau, tables, lists, landmarks) ua ib daim template siv tau dua. Siv nws hauv Document Builder los pib cov ntaub ntawv tshiab — IEPs, syllabi — twb teeb tsim ua ntej rau accessibility lawm.",
+    "pdf_audit_alt_formats_summary": "Nthuav rau cov hom ntaub ntawv lwm yam — ePub, electronic Braille, ntawv nyeem, Markdown — rau cov tub ntxhais kawm uas xav tau ib hom ntaub ntawv txawv ntawm PDF los yog HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Khaws daim ntaub ntawv kho tau ua ib daim ntaub ntawv ePub nrog rooj ncauj lus thiab accessibility metadata. Ua hauj lwm rau Kindle, Apple Books, thiab feem ntau mobile readers — cov tub ntxhais kawm hloov tau font loj, xim, thiab kev nyeem ceev.",
+    "pdf_audit_alt_formats_text_btn": "Khaws ib daim ntaub ntawv .txt nrog txhua qhov formatting rho tawm — hom yooj yim tshaj rau cov screen readers, kev hloov ua ntawv loj, los yog shooj rau lwm lub cuab yeej.",
+    "pdf_audit_alt_formats_markdown_btn": "Khaws daim ntaub ntawv ua Markdown — poob huv si rau cov nplooj Canvas, Schoology, los yog D2L, Google Docs (los ntawm shooj), wikis, thiab cov ntawv GitHub-style tsis poob cov taub hau los yog cov links.",
+    "pdf_audit_alt_formats_daisy_btn": "Khaws ib daim DAISY 3 phau ntawv hais lus muaj cov ntawv tag nrho. Cov DAISY readers (pom ntau hauv special education) ntxiv lawv tus kheej cov lus hais, braille, los yog ntawv loj nrog kev taug kev tag nrho. Tsuas yog ntawv ntawm no — rau kev nyeem nrov sib koom, siv Read-along ebook.",
+    "pdf_audit_alt_formats_readalong_btn": "Tsim ib daim read-along ebook (EPUB3 Media Overlays): txhua nqe lus raug nyeem nrog text-to-speech thiab sib koom nrog cov ntawv kom cov lus ci thaum lawv raug hais. Ib qho voice call rau ib ntu, yog li nws siv tau ob peb feeb.",
+    "pdf_audit_alt_formats_odt_btn": "Khaws ib daim OpenDocument Text (.odt) — yug rau LibreOffice thiab Google Docs (Word qhib tau thiab). Siv nws thaum koj lub tsev kawm ntawv tsis yog tag nrho Microsoft tab sis koj tseem xav tau ib daim ntaub ntawv kho tau uas tseem muaj qauv tsis poob."
   },
   "groups": {
     "title": "Cov Pawg Sib Txawv",
@@ -11219,7 +11357,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories mus life nrog tus cwj pwm voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Sau poems nrog form scaffolds, rhyme & meter analysis, AI kev tawm tswv yim"
+    "poettree_desc": "Sau poems nrog form scaffolds, rhyme & meter analysis, AI kev tawm tswv yim",
+    "throughline_desc": "Teeb koj cov zaj kawm ua ib chav kawm raws qhov chaw: kev cob qhia, cov yam ua ntej, ib daim ntaub ntawv xa tau"
   },
   "sel_hub": {
     "loading": "Tab tom thauj SEL Hub...",
@@ -12539,5 +12678,10 @@
     "byline": "Los ntawm {author} · {words} lo lus · {used}/{total} cov lus",
     "student": "Tub ntxhais kawm",
     "score": "Qhab nia: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Kev rov tsim daim qauv dua yuav hloov koj cov kev hloov uas koj ua tes los ua cov ntsiab lus tshiab. Pom zoo thiab tso koj cov kev hloov pov tseg? (Nias Cancel khaws cov ntawd — xa tawm los sis kaw lub builder kom khaws ua ntej.)",
+    "remediation_banner_title": "Tab kho daim ntawv uas kho lawm.",
+    "remediation_banner_body": "Koj cov kev hloov ntawm no raug khaws rov qab rau hauv thaum koj kaw lub builder, yog li cov ntaub ntawv rub tawm Tagged PDF / Word / PowerPoint yuav muaj cov ntawd."
   }
 }

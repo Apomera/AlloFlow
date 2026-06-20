@@ -577,7 +577,8 @@
     "educator_tools_aria": "Zouti pou Edikatè",
     "documents_menu_aria": "Meni dokiman",
     "open_doc_builder_pdf_aria": "Ouvri Konstriktè Dokiman pou PDF",
-    "export_slides_tooltip": "Ouvri Konstriktè Dokiman an nan mòd Dyapozitif"
+    "export_slides_tooltip": "Ouvri Konstriktè Dokiman an nan mòd Dyapozitif",
+    "learning_tools_tooltip": "Zouti Aprantisaj (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "sidebar": {
     "create_tab": "Kreye",
@@ -1569,7 +1570,26 @@
     "project_saved_multi_other": "💾 Pwojè sove ({count} ranje); chaje l pita pou kontinye",
     "project_saved": "💾 Pwojè sove; chaje l pita pou kontinye edite",
     "search_result_desc": "Rezilta Rechèch Google: {title}",
-    "link_url_prompt": "Antre URL lyen an:"
+    "link_url_prompt": "Antre URL lyen an:",
+    "building_accessible_docx": "Ap konstwi yon fichye Word aksesib…",
+    "building_accessible_pptx": "Ap konstwi yon PowerPoint aksesib…",
+    "batch_tagging": "📄 Ap jenere PDF ki gen tag pou ZIP la — fichye eskane yo pran plis tan (OCR ap travay pou chak fichye)…",
+    "builder_edits_preserved": "✋ Nou kenbe modifikasyon ou te fè alamen yo — apèsi a pa t re-rann. Ekspòte oswa fèmen konstriktè a pou sove yo, apre sa chanje paramèt yo.",
+    "builder_edits_synced": "✏️ Modifikasyon konstriktè yo sove nan dokiman ki ranje a — ekspòtasyon PDF ki gen tag / Word / PowerPoint yo gen yo ladan kounye a.",
+    "pptx_ai_theme": "🎨 Ap mande AI yon palèt koulè ki matche ak sijè a (lizibilite garanti lokalman)…",
+    "make_accessible_fixing": "✨ Odit fini — ap ranje otomatikman (pa bezwen klike)…",
+    "tagged_pdf_saved_see_report": "📄 PDF ki gen tag sove — rapò konplè a make anwo bouton telechajman yo (✕ pou retire l).",
+    "no_open_image_slot": "Pa gen plas imaj ki lib ki rete nan apèsi a — pito trennen miniyati a sou yon imaj espesifik pou ranplase l.",
+    "extracted_image_inserted": "🖼 Mete nan premye plas imaj ki lib la — pito trennen yon miniyati si ou vle yon lòt kote.",
+    "html_downloaded": "🌐 HTML telechaje — li louvri nan nenpòt navigatè.",
+    "odt_downloaded": "📄 OpenDocument (.odt) telechaje — li louvri nan LibreOffice, Google Docs, oswa Word.",
+    "daisy_downloaded": "🔊 Pakè liv-pale DAISY (.zip) telechaje — louvri l nan yon lektè DAISY.",
+    "mo_no_voice": "Sèvis vwa a pa disponib, kidonk nou pa ka jenere odyo li-ansanm kounye a.",
+    "mo_busy": "Yon ekspòtasyon li-ansanm ap deja fèt.",
+    "mo_no_text": "Nou pa jwenn okenn tèks lizib pou narasyon.",
+    "mo_no_audio": "⚠ Liv elektwonik li-ansanm sove, men nou pa t ka jenere okenn odyo (sèvis vwa a pa disponib). Tèks la + estrikti senkronizasyon an entak.",
+    "mo_done": "Liv elektwonik li-ansanm telechaje",
+    "audio_unavailable_now": "Odyo pa disponib kounye a (yon travay ka ap fèt, oswa sèvis vwa a etenn)."
   },
   "tour": {
     "input_panel_title": "Panèl Antre",
@@ -3558,7 +3578,12 @@
       "article_imported": "Atik enpòte epi netwaye!",
       "error_extract": "Pa t kapab ekstrè tèks. URL la ka envalid oswa bloke aksè.",
       "error_read_file": "Echwe pou li fichye tèks."
-    }
+    },
+    "likert_strongly_disagree": "Pa dakò nèt",
+    "no_right_answer": "Pa gen repons ki kòrèk ni ki pa kòrèk isit la.",
+    "poll_completed": "Mèsi paske ou pataje opinyon ou.",
+    "poll_intro": "Pa gen repons ki kòrèk ni ki pa kòrèk isit la — opinyon onèt ou a ede pwofesè ou e ede ou.",
+    "mode_poll": "🗣️ Sondaj (vwa elèv yo)"
   },
   "math": {
     "title": "Laboratwa STEM",
@@ -6037,7 +6062,10 @@
     "pdf_audit_alt_formats_epub_btn": "Sove dokiman ranje a kòm yon fichye ePub ak yon tablo kontni ak metadata aksesibilite. Travay sou Kindle, Apple Books, ak pifò lektè mobil — elèv yo ka chanje gwosè font, koulè, ak vitès lekti.",
     "pdf_audit_alt_formats_braille_btn": "Sove yon fichye Bray Klas 1 (ki pa kontrakte) ki ka anbose sou yon enprimant Bray oswa voye nan yon ekran Bray ki rafrechisab. Pou kontraksyon Klas 2, bay fichye a yon TVI (pwofesè pou elèv ki gen pwoblèm vizyèl) pou fini.",
     "pdf_audit_alt_formats_text_btn": "Sove yon fichye .txt senp ak tout fòmatasyon retire — fòma ki pi fasil pou lektè ekran, konvèsyon gwo enprime, oswa kole nan yon lòt zouti.",
-    "pdf_audit_alt_formats_markdown_btn": "Sove dokiman an kòm Markdown — antre pwòpman nan paj Canvas, Schoology, oswa D2L, Google Docs (atravè kole), wiki, ak nòt estil GitHub san pèdi antèt oswa lyen."
+    "pdf_audit_alt_formats_markdown_btn": "Sove dokiman an kòm Markdown — antre pwòpman nan paj Canvas, Schoology, oswa D2L, Google Docs (atravè kole), wiki, ak nòt estil GitHub san pèdi antèt oswa lyen.",
+    "pdf_audit_alt_formats_daisy_btn": "Sove yon pakè liv-pale tèks konplè DAISY 3. Lektè DAISY yo (komen nan edikasyon espesyal) ajoute pwòp lapawòl, bray, oswa gwo lèt pa yo ak navigasyon konplè. Tèks-sèlman isit la — pou li-awotvwa senkronize, sèvi ak liv elektwonik Li-ansanm.",
+    "pdf_audit_alt_formats_readalong_btn": "Konstwi yon liv elektwonik li-ansanm (EPUB3 Media Overlays): chak paragraf fè narasyon ak tèks-an-pawòl epi senkronize ak tèks la pou mo yo make pandan y ap pale yo. Yon apèl vwa pou chak seksyon, kidonk li ka pran kèk minit.",
+    "pdf_audit_alt_formats_odt_btn": "Sove yon fichye OpenDocument Text (.odt) — natif pou LibreOffice ak Google Docs (Word louvri l tou). Sèvi avè l lè lekòl ou a pa tout-Microsoft men ou toujou vle yon dokiman modifyab ak estrikti a entak."
   },
   "socratic": {
     "title": "Pwofesè Sokratik",
@@ -8990,7 +9018,8 @@
       "std_dev": "Ekat Estanda",
       "icc_title": "Endis pèsonalize 1−(SD/50); pa ICC liv tèks",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Eristik ibrid CV + pèryè atravè pasaj AI yo; se pa α Cronbach klasik la"
     },
     "score": {
       "total_checks": "Total tchèk fèt",
@@ -9148,7 +9177,9 @@
       "title": "Re-jenere yon PDF soti nan HTML remedye. Layout re-koule — kase paj, font, ak paginasyon ka diferan de orijinal la. Travay byen pou dokiman pwòz senp."
     },
     "tagged_pdf": {
-      "title": "Konsève layout vizyèl orijinal PDF a bayt-idantik epi enjekte tag aksesibilite nan pyebwa estrikti li. Pi bon pou liv tèks, dokiman milti-kolòn, ak PDF mak kote fidelite vizyèl enpòtan."
+      "title": "Konsève layout vizyèl orijinal PDF a bayt-idantik epi enjekte tag aksesibilite nan pyebwa estrikti li. Pi bon pou liv tèks, dokiman milti-kolòn, ak PDF mak kote fidelite vizyèl enpòtan.",
+      "office_note": "PDF ki gen tag aplike pou antre PDF — sèvi ak Word/HTML",
+      "office_note_title": "Tag estrikti ka enjekte sèlman nan byte PDF yo. Pou antre Word/PowerPoint, telechajman Word aksesib ak HTML yo pote estrikti ki ranje a."
     },
     "alt_formats": {
       "intro": "Telechaje dokiman remedye nan fòma altènatif aksesib"
@@ -9219,7 +9250,9 @@
       "heading": "Tenm Vèsyon"
     },
     "extracted_images": {
-      "drag_hint": "Trennen yon imaj-pilòt sou nenpòt plas imaj nan prevyou pou ensere li, oswa klike \"📷 Telechaje\" andedan yon plas epi chwazi \"Itilize imaj ekstrè\"."
+      "drag_hint": "Trennen yon imaj-pilòt sou nenpòt plas imaj nan prevyou pou ensere li, oswa klike \"📷 Telechaje\" andedan yon plas epi chwazi \"Itilize imaj ekstrè\".",
+      "drag_hint2": "Klike yon miniyati pou mete l nan premye plas imaj ki lib la, oswa trennen l sou nenpòt plas oswa imaj espesifik nan apèsi a. ×N = menm imaj la te parèt sou N paj (anjeneral yon antèt lèt oswa yon logo).",
+      "insert_aria": "Mete imaj ki ekstrè a nan premye plas ki lib la"
     },
     "toolbar": {
       "aria": "Fòmataj tèks",
@@ -9245,7 +9278,8 @@
     },
     "divergence": {
       "semantic": "Estriktirèlman konfòm men semantik fèb — AI a make kalite kontni (tèks altènatif, sans tit, lòd lekti) ke axe-core pa ka detekte",
-      "structural": "Vyolasyon WCAG nan nivo kòd detekte — axe-core jwenn echèk machin-verifyab ke ribrik AI a te peze lejèman"
+      "structural": "Vyolasyon WCAG nan nivo kòd detekte — axe-core jwenn echèk machin-verifyab ke ribrik AI a te peze lejèman",
+      "critical_override": "axe-core jwenn {n} vyolasyon WCAG kritik — egzamine yo anvan ou fè konfyans nan nòt melanje a; yon mwayèn ka kache yon echèk grav"
     },
     "tagtree": {
       "label": "Estrikti tag ki egziste deja",
@@ -9278,7 +9312,60 @@
     "violation_one": "{count} vyolasyon",
     "violation_other": "{count} vyolasyon",
     "ai_issue_one": "{count} pwoblèm AI make",
-    "ai_issue_other": "{count} pwoblèm AI make"
+    "ai_issue_other": "{count} pwoblèm AI make",
+    "tagged": {
+      "born_digital_note": "Atansyon: pou PDF ki gen kouch tèks, tag semantik yo sèvi ak asosyasyon ActualText olye yon koneksyon konplè ak kontni an. Fichye a pi aksesib anpil, men verifye l nan PAC 2024 oswa Acrobat anvan ou di li konfòm ak PDF/UA."
+    },
+    "one_click": {
+      "label": "Fè L Aksesib",
+      "badge": "konplètman otomatik — odit, ranje, verifye, repete jiska objektif la",
+      "desc": "Yon sèl klik fè tout pwosesis la otomatikman ak paramèt defo yo; telechajman yo pare nan fen an. Ou pito gen kontwòl? Sèvi ak \"Fè Odit\" anba a, egzamine rezilta yo, apre sa klike Ranje & Verifye ou menm."
+    },
+    "run_audit_label": "Fè Odit (etap 1 sou 2)",
+    "manual_path_explainer": "\"Fè Odit\" bay dokiman an yon nòt epi montre sa ki bezwen ranje — apre sa ou egzamine epi klike Ranje & Verifye ou menm (etap 2). \"Fè L Aksesib\" anwo a fè toulède etap yo plis yon re-verifikasyon, otomatikman. \"Ekstraksyon Tèks\" senpleman rale tèks brit la pou jenere kontni.",
+    "tagged_report": {
+      "heading": "Rapò PDF ki gen tag",
+      "close_aria": "Retire rapò PDF ki gen tag la",
+      "note": "Panèl sa a rete jiskaske ou retire l. Menm detay yo ale anndan telechajman Rapò A11y style Adobe a."
+    },
+    "docx_export": {
+      "title": "Konvèti kontni ki ranje a an yon dokiman Word ak vrè stil tit, tèks altènatif sou imaj, ranje antèt tablo, estrikti lis, ak ipèlyen k ap mache. Verifye l ak Verifikatè Aksesibilite ki entegre nan Word la (Review → Check Accessibility) anvan ou distribiye l."
+    },
+    "pptx_export": {
+      "title": "Rekonstwi kontni ki ranje a kòm yon dyapozitiv PowerPoint ak vrè tit dyapozitiv, tèks altènatif sou imaj, ranje tablo ki gen stil antèt, vrè lis ak ti pwen, epi lòd lekti = lòd vizyèl. Yon agansman aksesib ki rekonstwi — se pa yon kopi vizyèl orijinal la. Verifye l ak Verifikatè Aksesibilite PowerPoint la anvan ou distribiye l."
+    },
+    "dashboard": {
+      "aria": "Apèsi rezilta ranjman yo ak navigasyon seksyon yo",
+      "score_title": "Nòt aksesibilite: anvan → apre"
+    },
+    "tag_to_workbench_title": "Voye blòk sa a nan Expert Workbench la: li ranpli davans yon kòmandman sible (ansanm ak nenpòt avètisman) pou ou ka ranje l ak yon sèl enstriksyon",
+    "tag_to_workbench_aria": "Voye nan Expert Workbench",
+    "pptx_theme_aria": "Tèm ekspòtasyon PowerPoint",
+    "pptx_theme_title": "Tèm dyapozitiv pou ekspòtasyon PowerPoint la. Tout preregle yo verifye pou kontras (WCAG AA); opsyon AI a matche ak sijè ou a, ak lizibilite garanti lokalman nan toulède ka yo.",
+    "export_menu": {
+      "button": "Ekspòte / Telechaje",
+      "intro": "Telechaje dokiman ki ranje a nan nenpòt fòma — chwazi sa ki adapte ak fason y ap sèvi avè l.",
+      "tagged_pdf": "PDF ki gen tag (PDF/UA — bay elèv yo)",
+      "word": "Word (.docx — kontinye modifye)",
+      "pptx": "PowerPoint (.pptx — prezante l)",
+      "html": "HTML (louvri tout kote, san lojisyèl)",
+      "group_access": "Fòma aksesib",
+      "daisy": "Liv-pale DAISY (tèks konplè)",
+      "daisy_title": "Pakè liv-pale tèks konplè DAISY 3 (DTBook). Louvri l nan yon lektè DAISY, ki bay lapawòl, bray, oswa gwo lèt. (Pou odyo li-awotvwa senkronize, sèvi ak Li-ansanm anba a.)",
+      "readalong": "Liv elektwonik li-ansanm (odyo senkronize)",
+      "readalong_progress": "Ap fè narasyon… {done}/{total}",
+      "readalong_title": "Liv elektwonik li-ansanm (EPUB3 Media Overlays): li jenere tèks-an-pawòl pou chak paragraf epi senkronize l ak tèks la pou yon sistèm lekti make mo yo pandan y ap pale yo. Li fè anpil apèl vwa — li ka pran kèk minit.",
+      "group_text": "Tèks & modifyab",
+      "odt_title": "OpenDocument Text — li louvri natifman nan LibreOffice ak Google Docs (epi Word tou).",
+      "group_audio": "Narasyon odyo",
+      "audio": "Narasyon odyo (estanda)",
+      "audio_title": "Narasyon pale dokiman an (MP3/WAV).",
+      "audio_sr": "Odyo (style lektè ekran)",
+      "audio_sr_title": "Menm vwa a, men l anonse estrikti a jan yon lektè ekran ta fè l (nivo tit, kantite lis, ranje tablo, tèks altènatif imaj)."
+    },
+    "mo": {
+      "confirm": "Konstwi yon liv elektwonik li-ansanm? Sa fè narasyon {n} seksyon tèks ak tèks-an-pawòl — anviwon {n} apèl vwa, ki ka pran kèk minit."
+    }
   },
   "export": {
     "district_resource": "Resous Distri AlloFlow",
@@ -11142,7 +11229,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Pote istwa lavi ak vwa pèsonaj ak analiz literè",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Ekri powèm ak echafodaj fòm, analiz rim ak metè, komantè IA"
+    "poettree_desc": "Ekri powèm ak echafodaj fòm, analiz rim ak metè, komantè IA",
+    "throughline_desc": "Ranje leson ou yo nan yon inite espasyal: sekans ansèyman, kondisyon prealab, yon sèl fichye ou ka ekspòte"
   },
   "sel_hub": {
     "loading": "K ap chaje SEL Hub...",
@@ -12591,5 +12679,10 @@
     "byline": "Pa {author} · {words} mo · {used}/{total} vokabilè",
     "student": "Elèv",
     "score": "Nòt: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Lè ou re-rann apèsi a, l ap ranplase modifikasyon ou te fè alamen yo ak kontni ki fenk jenere. Kontinye epi jete modifikasyon yo? (Anile kenbe yo — ekspòte oswa fèmen konstriktè a pou sove anvan.)",
+    "remediation_banner_title": "W ap modifye dokiman ki ranje a.",
+    "remediation_banner_body": "Modifikasyon ou fè isit yo sove ladan l lè ou fèmen konstriktè a, kidonk telechajman PDF ki gen tag / Word / PowerPoint yo gen yo ladan."
   }
 }

@@ -1732,7 +1732,26 @@
     "project_saved_multi_other": "💾 Projekt gespeichert ({count} Bereiche); lade es später, um fortzufahren",
     "project_saved": "💾 Projekt gespeichert; lade es später, um die Bearbeitung fortzusetzen",
     "search_result_desc": "Google-Suchergebnis: {title}",
-    "link_url_prompt": "Link-URL eingeben:"
+    "link_url_prompt": "Link-URL eingeben:",
+    "building_accessible_docx": "Barrierefreie Word-Datei wird erstellt…",
+    "building_accessible_pptx": "Barrierefreie PowerPoint wird erstellt…",
+    "batch_tagging": "📄 Getaggte PDFs für das ZIP werden erstellt – gescannte Dateien dauern länger (OCR läuft pro Datei)…",
+    "builder_edits_preserved": "✋ Ihre manuellen Änderungen wurden beibehalten – die Vorschau wurde nicht neu gerendert. Exportieren oder schließen Sie den Builder, um sie zu speichern, und ändern Sie dann die Einstellungen.",
+    "builder_edits_synced": "✏️ Builder-Änderungen wurden im korrigierten Dokument gespeichert – die Exporte als getaggtes PDF / Word / PowerPoint enthalten sie jetzt.",
+    "pptx_ai_theme": "🎨 KI wird nach einer zum Thema passenden Farbpalette gefragt (Lesbarkeit wird lokal sichergestellt)…",
+    "make_accessible_fixing": "✨ Prüfung abgeschlossen – automatische Korrektur läuft (keine Klicks nötig)…",
+    "tagged_pdf_saved_see_report": "📄 Getaggtes PDF gespeichert – der vollständige Bericht ist über den Download-Schaltflächen angeheftet (✕ zum Schließen).",
+    "no_open_image_slot": "In der Vorschau ist kein freier Bildplatz mehr vorhanden – ziehen Sie das Vorschaubild stattdessen auf ein bestimmtes Bild, um es zu ersetzen.",
+    "extracted_image_inserted": "🖼 In den ersten freien Bildplatz eingefügt – ziehen Sie stattdessen ein Vorschaubild, wenn Sie eine andere Stelle möchten.",
+    "html_downloaded": "🌐 HTML heruntergeladen – lässt sich in jedem Browser öffnen.",
+    "odt_downloaded": "📄 OpenDocument (.odt) heruntergeladen – lässt sich in LibreOffice, Google Docs oder Word öffnen.",
+    "daisy_downloaded": "🔊 DAISY-Hörbuchpaket (.zip) heruntergeladen – in einem DAISY-Reader öffnen.",
+    "mo_no_voice": "Der Sprachdienst ist nicht verfügbar, daher kann das Mitlese-Audio gerade nicht erzeugt werden.",
+    "mo_busy": "Ein Mitlese-Export läuft bereits.",
+    "mo_no_text": "Kein lesbarer Text zum Vorlesen gefunden.",
+    "mo_no_audio": "⚠ Mitlese-E-Book gespeichert, aber es konnte kein Audio erzeugt werden (Sprachdienst nicht verfügbar). Text und Synchronisationsstruktur sind intakt.",
+    "mo_done": "Mitlese-E-Book heruntergeladen",
+    "audio_unavailable_now": "Audio ist gerade nicht verfügbar (möglicherweise läuft ein Vorgang oder der Sprachdienst ist deaktiviert)."
   },
   "large_file": {
     "modal_title": "Importieren Groß Audio Datei",
@@ -1806,7 +1825,8 @@
     "educator_tools_aria": "Lehrertools",
     "documents_menu_aria": "Dokumentenmenü",
     "open_doc_builder_pdf_aria": "Document Builder für PDF öffnen",
-    "export_slides_tooltip": "Öffnet Document Builder im Folienmodus"
+    "export_slides_tooltip": "Öffnet Document Builder im Folienmodus",
+    "learning_tools_tooltip": "Lernwerkzeuge (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Zielsprache",
@@ -3708,7 +3728,12 @@
     "style_tooltip": "Optional. Angewirndet zu jeder Bild in die Quiz (Frage + Optionen). Empty = Standard-Stil. Persisted mit die Quiz so refine actions stay auf-brand.",
     "generate_pre_check": "Generieren Pre-Prüfen",
     "generate_formative": "Generieren Formative Prüfen",
-    "generate_review": "Generieren Spaced Überprüfung"
+    "generate_review": "Generieren Spaced Überprüfung",
+    "likert_strongly_disagree": "Stimme überhaupt nicht zu",
+    "no_right_answer": "Hier gibt es keine richtigen oder falschen Antworten.",
+    "poll_completed": "Danke, dass du deine Meinung geteilt hast.",
+    "poll_intro": "Hier gibt es keine richtigen oder falschen Antworten – deine ehrliche Meinung hilft deiner Lehrkraft und dir selbst.",
+    "mode_poll": "🗣️ Umfrage (Schülerstimme)"
   },
   "outline": {
     "title": "Visueller Organizer",
@@ -4165,7 +4190,8 @@
     },
     "divergence": {
       "semantic": "Strukturell konform aber semantisch schwach — die KI markierte Inhaltsqualität (Alt-Text, Überschriftsbedeutung, Lesereihenfolge), die axe-core nicht erkennen kann",
-      "structural": "WCAG-Verletzungen auf Code-Ebene erkannt — axe-core fand maschinell prüfbare Fehler, die die KI-Rubrik leicht gewichtete"
+      "structural": "WCAG-Verletzungen auf Code-Ebene erkannt — axe-core fand maschinell prüfbare Fehler, die die KI-Rubrik leicht gewichtete",
+      "critical_override": "axe-core hat {n} kritische WCAG-Verstöße gefunden – prüfen Sie sie, bevor Sie dem kombinierten Wert vertrauen; ein Durchschnitt kann ein gravierendes Versagen verbergen"
     },
     "tagtree": {
       "label": "Vorhandene Tag-Struktur",
@@ -4269,7 +4295,8 @@
       "std_dev": "Standard-Deviation",
       "icc_title": "Benutzerdefiniert 1−(SD/50) index; nicht Textbook IchCC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Hybride Heuristik aus CV und paarweisem Vergleich über die KI-Durchläufe; nicht das klassische Cronbachs α"
     },
     "score": {
       "total_checks": "Gesamt prüfens performed",
@@ -4431,7 +4458,9 @@
       "title": "Regenerieren ein PDF von die remediated HTML. Ladut refniedrigs — Seite breaks, fonts, und pagination kann differ von die original. Funktioniert wirll für einfach prose documents."
     },
     "tagged_pdf": {
-      "title": "Preserve die original PDF's visuell ladut byte-identical und inject Barrierefreiheit Tags in sein Struktur tree. Beste für Textbooks, multi-column documents, und branded PDFs wo visuell fidelity matters."
+      "title": "Preserve die original PDF's visuell ladut byte-identical und inject Barrierefreiheit Tags in sein Struktur tree. Beste für Textbooks, multi-column documents, und branded PDFs wo visuell fidelity matters.",
+      "office_note": "Getaggtes PDF gilt für PDF-Eingaben – nutzen Sie Word/HTML",
+      "office_note_title": "Strukturtags können nur in PDF-Bytes eingefügt werden. Bei Word-/PowerPoint-Eingaben tragen die Downloads als barrierefreies Word und HTML die korrigierte Struktur."
     },
     "alt_formats": {
       "intro": "Downladen die remediated document in zugänglich alternative formats"
@@ -4502,7 +4531,9 @@
       "heading": "Versionsstempel"
     },
     "extracted_images": {
-      "drag_hint": "Ziehen Sie ein Vorschaubild auf einen Bildplatzhalter in der Vorschau, um es einzufügen, oder klicken Sie auf „📷 Hochladen“ innerhalb eines Platzhalters und wählen Sie „Extrahiertes Bild verwenden“."
+      "drag_hint": "Ziehen Sie ein Vorschaubild auf einen Bildplatzhalter in der Vorschau, um es einzufügen, oder klicken Sie auf „📷 Hochladen“ innerhalb eines Platzhalters und wählen Sie „Extrahiertes Bild verwenden“.",
+      "drag_hint2": "Klicken Sie auf ein Vorschaubild, um es in den ersten freien Bildplatz einzufügen, oder ziehen Sie es auf einen bestimmten Platzhalter oder ein Bild in der Vorschau. ×N = dasselbe Bild erschien auf N Seiten (meist ein Briefkopf oder Logo).",
+      "insert_aria": "Extrahiertes Bild in den ersten freien Platz einfügen"
     },
     "toolbar": {
       "aria": "Textformatierung",
@@ -4548,7 +4579,60 @@
     "violation_one": "{count} Verstoß",
     "violation_other": "{count} Verstöße",
     "ai_issue_one": "{count} von der KI markiertes Problem",
-    "ai_issue_other": "{count} von der KI markierte Probleme"
+    "ai_issue_other": "{count} von der KI markierte Probleme",
+    "tagged": {
+      "born_digital_note": "Hinweis: Bei PDFs mit Textebene verwenden die semantischen Tags ActualText-Zuordnungen statt einer vollständigen Inhaltsverknüpfung. Die Datei ist deutlich barrierefreier, aber prüfen Sie sie in PAC 2024 oder Acrobat, bevor Sie PDF/UA-Konformität geltend machen."
+    },
+    "one_click": {
+      "label": "Barrierefrei machen",
+      "badge": "vollautomatisch – prüfen, korrigieren, verifizieren, bis zum Ziel wiederholen",
+      "desc": "Ein Klick durchläuft die gesamte Pipeline automatisch mit den Standardeinstellungen; am Ende stehen die Downloads bereit. Lieber mehr Kontrolle? Nutzen Sie unten „Prüfung starten“, sehen Sie sich die Ergebnisse an und klicken Sie dann selbst auf Korrigieren & Verifizieren."
+    },
+    "run_audit_label": "Prüfung starten (Schritt 1 von 2)",
+    "manual_path_explainer": "„Prüfung starten“ bewertet das Dokument und zeigt, was korrigiert werden muss – Sie prüfen es dann und klicken selbst auf Korrigieren & Verifizieren (Schritt 2). „Barrierefrei machen“ oben erledigt beide Schritte plus erneute Prüfung automatisch. „Textextraktion“ zieht nur den Rohtext für die Inhaltserstellung heraus.",
+    "tagged_report": {
+      "heading": "Bericht zum getaggten PDF",
+      "close_aria": "Bericht zum getaggten PDF schließen",
+      "note": "Dieses Feld bleibt sichtbar, bis Sie es schließen. Dieselben Details sind im Download des A11y-Berichts im Adobe-Stil enthalten."
+    },
+    "docx_export": {
+      "title": "Wandelt den korrigierten Inhalt in ein Word-Dokument mit echten Überschriftenformaten, Alternativtext für Bilder, Tabellenkopfzeilen, Listenstruktur und funktionierenden Hyperlinks um. Prüfen Sie es vor dem Verteilen mit der integrierten Barrierefreiheitsprüfung von Word (Überprüfen → Barrierefreiheit prüfen)."
+    },
+    "pptx_export": {
+      "title": "Baut den korrigierten Inhalt als PowerPoint-Präsentation neu auf – mit echten Folientiteln, Alternativtext für Bilder, als Kopfzeile formatierten Tabellenzeilen, echten Aufzählungslisten und Lesereihenfolge = visuelle Reihenfolge. Ein neu aufgebautes barrierefreies Layout – kein optisches Abbild des Originals. Prüfen Sie es vor dem Verteilen mit der Barrierefreiheitsprüfung von PowerPoint."
+    },
+    "dashboard": {
+      "aria": "Überblick über die Korrekturergebnisse und Abschnittsnavigation",
+      "score_title": "Barrierefreiheits-Score: vorher → nachher"
+    },
+    "tag_to_workbench_title": "Diesen Block an die Experten-Werkbank senden: füllt einen gezielten Befehl vor (inklusive etwaiger Warnungen), sodass Sie ihn mit einer einzigen Anweisung korrigieren können",
+    "tag_to_workbench_aria": "An die Experten-Werkbank senden",
+    "pptx_theme_aria": "Design für den PowerPoint-Export",
+    "pptx_theme_title": "Foliendesign für den PowerPoint-Export. Alle Vorlagen sind kontrastgeprüft (WCAG AA); die KI-Option passt sich Ihrem Thema an, wobei die Lesbarkeit in beiden Fällen lokal sichergestellt wird.",
+    "export_menu": {
+      "button": "Exportieren / Herunterladen",
+      "intro": "Laden Sie das korrigierte Dokument in einem beliebigen Format herunter – wählen Sie das passende für den jeweiligen Einsatzzweck.",
+      "tagged_pdf": "Getaggtes PDF (PDF/UA – für Schüler)",
+      "word": "Word (.docx – weiterbearbeiten)",
+      "pptx": "PowerPoint (.pptx – präsentieren)",
+      "html": "HTML (überall öffnen, keine Software nötig)",
+      "group_access": "Barrierefreie Formate",
+      "daisy": "DAISY-Hörbuch (Volltext)",
+      "daisy_title": "DAISY 3 (DTBook) Hörbuchpaket mit Volltext. In einem DAISY-Reader öffnen, der Sprachausgabe, Braille oder Großdruck bereitstellt. (Für synchronisiertes Vorlesen mit Audio nutzen Sie unten „Mitlesen“.)",
+      "readalong": "Mitlese-E-Book (synchronisiertes Audio)",
+      "readalong_progress": "Wird vorgelesen… {done}/{total}",
+      "readalong_title": "Mitlese-E-Book (EPUB3 Media Overlays): erzeugt für jeden Absatz eine Sprachausgabe und synchronisiert sie mit dem Text, sodass ein Lesesystem die Wörter beim Sprechen hervorhebt. Erfordert viele Sprachaufrufe – kann einige Minuten dauern.",
+      "group_text": "Text & bearbeitbar",
+      "odt_title": "OpenDocument Text – öffnet sich nativ in LibreOffice und Google Docs (und in Word).",
+      "group_audio": "Audio-Vertonung",
+      "audio": "Audio-Vertonung (Standard)",
+      "audio_title": "Gesprochene Vertonung des Dokuments (MP3/WAV).",
+      "audio_sr": "Audio (im Screenreader-Stil)",
+      "audio_sr_title": "Dieselbe Stimme, aber mit Ansage der Struktur, wie es ein Screenreader täte (Überschriftenebenen, Listenanzahl, Tabellenzeilen, Bild-Alternativtexte)."
+    },
+    "mo": {
+      "confirm": "Ein Mitlese-E-Book erstellen? Dabei werden {n} Textabschnitte per Sprachausgabe vorgelesen – etwa {n} Sprachaufrufe, was einige Minuten dauern kann."
+    }
   },
   "concept_sort": {
     "title": "Konzept-Sortierung",
@@ -5052,7 +5136,7 @@
     "consult_btn_title": "Ask für Ausrichtung advice basierend auf QuellText",
     "press_search_hint": "Drücke Suchen, um Standards zu finden.",
     "region_placeholder": "Region (z. B. Texas, UK, CASEL)...",
-    "region_optional": "Region (Optional)...",
+    "region_optional": "Region (optional)…",
     "search_button_title": "Finden relevant Standards",
     "manual_placeholder": "z. B. CCSS.ELA-LIchTERACY.RIch.3.1 (Typ oder Einfügen)",
     "toast_describe_skill": "Bitte describe ein skill erste.",
@@ -6887,7 +6971,10 @@
     "pdf_audit_alt_formats_epub_btn": "Speichert das korrigierte Dokument als ePub-Datei mit Inhaltsverzeichnis und Barrierefreiheits-Metadaten. Funktioniert auf Kindle, Apple Books und den meisten mobilen Lesegeräten — Schüler können Schriftgröße, Farbe und Lesegeschwindigkeit ändern.",
     "pdf_audit_alt_formats_braille_btn": "Speichert eine Grade-1-Braille-Datei (unverkürzt), die auf einem Brailledrucker geprägt oder an eine Braillezeile gesendet werden kann. Für Grade-2-Kürzungen geben Sie die Datei an einen TVI (Lehrer für Schüler mit Sehbehinderungen) zur Fertigstellung.",
     "pdf_audit_alt_formats_text_btn": "Speichert eine einfache .txt-Datei mit entfernter gesamter Formatierung — das einfachste Format für Screenreader, Großdruck-Konvertierung oder zum Einfügen in ein anderes Werkzeug.",
-    "pdf_audit_alt_formats_markdown_btn": "Speichert das Dokument als Markdown — fügt sich sauber in Canvas-, Schoology- oder D2L-Seiten ein, Google Docs (per Einfügen), Wikis und GitHub-artige Notizen, ohne Überschriften oder Links zu verlieren."
+    "pdf_audit_alt_formats_markdown_btn": "Speichert das Dokument als Markdown — fügt sich sauber in Canvas-, Schoology- oder D2L-Seiten ein, Google Docs (per Einfügen), Wikis und GitHub-artige Notizen, ohne Überschriften oder Links zu verlieren.",
+    "pdf_audit_alt_formats_daisy_btn": "Speichert ein DAISY 3 Hörbuchpaket mit Volltext. DAISY-Reader (in der Sonderpädagogik verbreitet) ergänzen ihre eigene Sprachausgabe, Braille oder Großdruck mit voller Navigation. Hier nur Text – für synchronisiertes Vorlesen nutzen Sie das Mitlese-E-Book.",
+    "pdf_audit_alt_formats_readalong_btn": "Erstellt ein Mitlese-E-Book (EPUB3 Media Overlays): Jeder Absatz wird per Sprachausgabe vorgelesen und mit dem Text synchronisiert, sodass die Wörter beim Sprechen hervorgehoben werden. Ein Sprachaufruf pro Abschnitt, daher kann es einige Minuten dauern.",
+    "pdf_audit_alt_formats_odt_btn": "Speichert eine OpenDocument-Text-Datei (.odt) – nativ in LibreOffice und Google Docs (Word öffnet sie ebenfalls). Nutzen Sie sie, wenn Ihre Schule nicht durchgängig Microsoft einsetzt, Sie aber trotzdem ein bearbeitbares Dokument mit intakter Struktur möchten."
   },
   "groups": {
     "title": "Differentiation Gruppes",
@@ -11274,7 +11361,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories zu life mit Charakter Stimmes & literary Analyse",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Schreiben poems mit form scaffalts, rhyme & meter Analyse, AI feedzurück"
+    "poettree_desc": "Schreiben poems mit form scaffalts, rhyme & meter Analyse, AI feedzurück",
+    "throughline_desc": "Ordnen Sie Ihre Lektionen zu einer räumlichen Einheit an: Unterrichtsablauf, Voraussetzungen, eine exportierbare Datei"
   },
   "sel_hub": {
     "loading": "Ladening SEL Hub...",
@@ -12386,5 +12474,10 @@
     "byline": "Von {author} · {words} Wörter · {used}/{total} Vokabeln",
     "student": "Schüler",
     "score": "Punktzahl: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Beim erneuten Rendern der Vorschau werden Ihre manuellen Änderungen durch neu generierten Inhalt ersetzt. Fortfahren und die Änderungen verwerfen? (Mit „Abbrechen“ bleiben sie erhalten – exportieren oder schließen Sie zuerst den Builder, um sie zu speichern.)",
+    "remediation_banner_title": "Bearbeitung des korrigierten Dokuments.",
+    "remediation_banner_body": "Ihre Änderungen hier werden beim Schließen des Builders darin gespeichert, sodass die Downloads als getaggtes PDF / Word / PowerPoint sie enthalten."
   }
 }

@@ -589,7 +589,8 @@
     "educator_tools_aria": "اساتذہ کے اوزار",
     "documents_menu_aria": "دستاویزات کا مینو",
     "open_doc_builder_pdf_aria": "PDF کے لیے Document Builder کھولیں",
-    "export_slides_tooltip": "Document Builder کو سلائیڈ موڈ میں کھولتا ہے"
+    "export_slides_tooltip": "Document Builder کو سلائیڈ موڈ میں کھولتا ہے",
+    "learning_tools_tooltip": "تعلیمی اوزار (STEM Lab، SEL Hub، Research Hub، LitLab، PoetTree، StoryForge)"
   },
   "sidebar": {
     "create_tab": "تخلیق",
@@ -683,7 +684,7 @@
     "close_aria": "بند کریں"
   },
   "splash": {
-    "tagline": "Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education",
+    "tagline": "موافق سطحیں، تہیں، اور نتائج ➔ مکمل طالبِ علم کی تعلیم کے لیے لچکدار سیکھنے کے اختیارات",
     "rights": "AGPLv3 نہیںئسنس • کاپی رائٹ © ۲۰۲۶ Aaron Pomeranz, PsyD",
     "udl_tagline": "Universal Design for Learning پر مبنی",
     "initializing": "شروع ہو رہا ہے...",
@@ -1011,7 +1012,7 @@
     "toggle_theme": "تھیم تبدیل کریں",
     "close_story_forge": "StoryForge بند کریں",
     "story_creation_phases": "کہانی کی تخلیق کے مراحل",
-    "doc_builder": "Document Builder",
+    "doc_builder": "دستاویز بلڈر",
     "close_doc_builder": "دستاویز ساز بند کریں",
     "font_size": "فونٹ کا سائز",
     "target_word_count": "الفاظ کی تعداد کا ہدف",
@@ -1064,7 +1065,7 @@
     "pictionary_host_dashboard": "Concept Pictionary میزبان ڈیش بورڈ",
     "concept_to_draw": "بنانے کے لیے تصور",
     "round_timer": "راؤنڈ ٹائمر",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "تصوراتی پکچر ڈکشنری",
     "your_guess": "آپ کا اندازہ",
     "remove_columns": "کالم ہٹائیں",
     "add_column": "کالم شامل کریں",
@@ -2353,7 +2354,26 @@
     "project_saved_multi_other": "💾 پروجیکٹ محفوظ ہو گیا ({count} رینجز)؛ جاری رکھنے کے لیے اسے بعد میں لوڈ کریں",
     "project_saved": "💾 پروجیکٹ محفوظ ہو گیا؛ ترمیم جاری رکھنے کے لیے اسے بعد میں لوڈ کریں",
     "search_result_desc": "Google تلاش کا نتیجہ: {title}",
-    "link_url_prompt": "لنک کا URL درج کریں:"
+    "link_url_prompt": "لنک کا URL درج کریں:",
+    "building_accessible_docx": "قابلِ رسائی ورڈ فائل بنائی جا رہی ہے…",
+    "building_accessible_pptx": "قابلِ رسائی پاورپوائنٹ بنائی جا رہی ہے…",
+    "batch_tagging": "📄 ZIP کے لیے ٹیگ شدہ PDFs بنائی جا رہی ہیں — اسکین شدہ فائلوں میں زیادہ وقت لگتا ہے (ہر فائل پر OCR چلتا ہے)…",
+    "builder_edits_preserved": "✋ آپ کی دستی ترامیم محفوظ رکھی گئیں — پیش منظر دوبارہ رینڈر نہیں ہوا۔ انہیں محفوظ کرنے کے لیے بلڈر کو ایکسپورٹ یا بند کریں، پھر ترتیبات تبدیل کریں۔",
+    "builder_edits_synced": "✏️ بلڈر کی ترامیم درست شدہ دستاویز میں محفوظ ہو گئیں — اب Tagged PDF / Word / PowerPoint ایکسپورٹس میں یہ شامل ہیں۔",
+    "pptx_ai_theme": "🎨 AI سے موضوع سے ہم آہنگ رنگوں کا پیلیٹ مانگا جا رہا ہے (پڑھنے کی اہلیت مقامی طور پر یقینی بنائی جاتی ہے)…",
+    "make_accessible_fixing": "✨ آڈٹ مکمل — خودکار طور پر درستی کی جا رہی ہے (کسی کلک کی ضرورت نہیں)…",
+    "tagged_pdf_saved_see_report": "📄 Tagged PDF محفوظ ہو گئی — مکمل رپورٹ ڈاؤن لوڈ بٹنوں کے اوپر پن کی گئی ہے (برخاست کرنے کے لیے ✕)۔",
+    "no_open_image_slot": "پیش منظر میں کوئی خالی تصویری خانہ باقی نہیں — اس کی بجائے تھمب نیل کو کسی مخصوص تصویر پر گھسیٹ کر اسے تبدیل کریں۔",
+    "extracted_image_inserted": "🖼 پہلے خالی تصویری خانے میں شامل کر دی گئی — کسی اور جگہ کے لیے اس کی بجائے تھمب نیل گھسیٹیں۔",
+    "html_downloaded": "🌐 HTML ڈاؤن لوڈ ہو گئی — کسی بھی براؤزر میں کھلتی ہے۔",
+    "odt_downloaded": "📄 OpenDocument (.odt) ڈاؤن لوڈ ہو گئی — LibreOffice، Google Docs، یا Word میں کھلتی ہے۔",
+    "daisy_downloaded": "🔊 DAISY ٹاکنگ بک پیکیج (.zip) ڈاؤن لوڈ ہو گیا — کسی DAISY ریڈر میں کھولیں۔",
+    "mo_no_voice": "صوتی سروس دستیاب نہیں، اس لیے ساتھ ساتھ پڑھنے والی آڈیو ابھی تیار نہیں کی جا سکتی۔",
+    "mo_busy": "ساتھ ساتھ پڑھنے والی ایک ایکسپورٹ پہلے ہی چل رہی ہے۔",
+    "mo_no_text": "سنانے کے لیے کوئی قابلِ مطالعہ متن نہیں ملا۔",
+    "mo_no_audio": "⚠ ساتھ ساتھ پڑھنے والی ای بک محفوظ ہو گئی، مگر کوئی آڈیو تیار نہ ہو سکی (صوتی سروس دستیاب نہیں)۔ متن + ہم آہنگی کا ڈھانچہ برقرار ہے۔",
+    "mo_done": "ساتھ ساتھ پڑھنے والی ای بک ڈاؤن لوڈ ہو گئی",
+    "audio_unavailable_now": "آڈیو ابھی دستیاب نہیں ہے (کوئی کام چل رہا ہو سکتا ہے، یا صوتی سروس بند ہے)۔"
   },
   "process": {
     "source_missing": "براہ کرم تپرانا متن منبع یالًا.",
@@ -3189,8 +3209,8 @@
       "line": "فن خطاورط",
       "render_3d": "تپرانا ثنہیںثی أبعاد",
       "custom": "✏️ Custom…",
-      "custom_placeholder": "e.g. Vintage botanical illustration, Crayon drawing, Stained glass…",
-      "custom_aria": "Custom art style description"
+      "custom_placeholder": "مثلاً قدیم نباتاتی خاکہ، کریون ڈرائنگ، رنگین شیشے کا فن…",
+      "custom_aria": "حسبِ ضرورت فنی انداز کی تفصیل"
     },
     "generate": "تخلیق مرئیات",
     "regenerate_prompt": "داوربارہ إنشاء سے ماورجِّه",
@@ -3460,7 +3480,7 @@
       "math_desc": "متعلقہ تحریری مسائل اور ریاضی کے تصورات سے روابط پیدا کریں۔",
       "persona_title": "AI Persona",
       "persona_desc": "متن سے کسی کردار یا شخصیت کے ساتھ گفتگو کی نقل کریں۔",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "ورڈ ساؤنڈز اسٹوڈیو",
       "wordsounds_desc": "لغوی اصطلاحات یا الفاظ کے خاندانوں کا استعمال کرتے ہوئے ہدف شدہ صوتیات اور صوتی شعور کے اسباق ڈیزائن کریں۔",
       "glossary_settings_title": "سیٹنگات لغت",
       "glossary_settings_desc": "اصطلاحات کو منتخب اور ترجمہ کرنے کے طریقے کو اپنی مرضی کے مطابق بنائیں۔ آپ درجہ بند الفاظ کے مطابق فلٹر کر سکتے ہیں یا مخصوص زبانیں نافذ کر سکتے ہیں۔",
@@ -3564,7 +3584,12 @@
     "style_tooltip": "اختیاری۔ کوئز کی ہر تصویر پر لاگو ہوتا ہے (سوال + اختیارات)۔ خالی = پہلے سے طے شدہ انداز۔ کوئز کے ساتھ محفوظ تاکہ تبدیلیاں برانڈ کے مطابق رہیں۔",
     "generate_pre_check": "تخلیق فحص مسبق",
     "generate_formative": "تخلیق فحص تکاورینی",
-    "generate_review": "وقفہ دار نظرثانی بنائیں"
+    "generate_review": "وقفہ دار نظرثانی بنائیں",
+    "likert_strongly_disagree": "سختی سے اختلاف",
+    "no_right_answer": "یہاں کوئی صحیح یا غلط جواب نہیں ہے۔",
+    "poll_completed": "اپنی رائے بتانے کا شکریہ۔",
+    "poll_intro": "یہاں کوئی صحیح یا غلط جواب نہیں ہے — آپ کی سچی رائے آپ کے استاد کی اور آپ کی مدد کرتی ہے۔",
+    "mode_poll": "🗣️ پول (طلبہ کی آواز)"
   },
   "alignment": {
     "title": "تدقیق نصاب",
@@ -5608,7 +5633,8 @@
       "std_dev": "انہیںنحراف کے ساتھیاری",
       "icc_title": "مؤشر مخصص 1−(SD/50)؛ نہیں ہے ICC بکتاب مسبقی",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "AI پاسز پر CV + جوڑے دار ہائبرڈ ہیورسٹک؛ نصابی Cronbach's α نہیں"
     },
     "score": {
       "total_checks": "کل کیے گئے فحص",
@@ -5686,7 +5712,7 @@
       "wcag_strong": "WCAG 2.1 سطح AA",
       "deadline_50k": "24 أبریل 2026",
       "deadline_small": "26 أبریل 2027",
-      "covered_desc": "Public-facing websites, mobile apps, digital documents (PDFs, Word, Excel, PowerPoint), and social media published by government entities",
+      "covered_desc": "سرکاری اداروں کی طرف سے شائع کردہ عوامی ویب سائٹس، موبائل ایپس، ڈیجیٹل دستاویزات (PDFs، Word، Excel، PowerPoint)، اور سوشل میڈیا",
       "who_desc": "تمام ریاستی اور مقامی حکومتی ادارے — بشمول سرکاری اسکول، جامعات، عدالتیں، لائبریریاں، نقل و حمل کے ادارے، اور بلدیاتی خدمات",
       "matters_desc": "قانونی تعمیل سے آگے: قابل رسائی دستاویزات یقینی بناتی ہیں کہ معذور افراد تعلیم، عوامی خدمات، روزگار، اور شہری شرکت تک برابر کی رسائی حاصل کر سکیں",
       "standard_callout": "AlloFlow جس معیار کو ہدف بناتا ہے — WCAG 2.1 سطح AA — یہ بالکل وہی معیار ہے جس کا یہ وفاقی قاعدہ تقاضا کرتا ہے۔"
@@ -5770,7 +5796,9 @@
       "title": "اصلاح شدہ HTML سے دوبارہ PDF بنائیں۔ ترتیب از سرِ نو بہتی ہے — صفحات کے وقفے، فونٹس اور صفحہ بندی اصل سے مختلف ہو سکتی ہے۔ سادہ نثری دستاویزات کے لیے بہترین ہے۔"
     },
     "tagged_pdf": {
-      "title": "اصل PDF کی بصری ترتیب کو بائٹ کے درست برابر محفوظ رکھیں اور اس کے ساخت کے درخت میں رسائی کے ٹیگ شامل کریں۔ نصابی کتب، کئی کالموں والی دستاویزات اور برانڈ شدہ PDF کے لیے بہترین جہاں بصری وفاداری اہم ہے۔"
+      "title": "اصل PDF کی بصری ترتیب کو بائٹ کے درست برابر محفوظ رکھیں اور اس کے ساخت کے درخت میں رسائی کے ٹیگ شامل کریں۔ نصابی کتب، کئی کالموں والی دستاویزات اور برانڈ شدہ PDF کے لیے بہترین جہاں بصری وفاداری اہم ہے۔",
+      "office_note": "Tagged PDF کا اطلاق PDF ان پٹس پر ہوتا ہے — Word/HTML استعمال کریں",
+      "office_note_title": "ساختی ٹیگز صرف PDF بائٹس میں شامل کیے جا سکتے ہیں۔ Word/PowerPoint ان پٹس کے لیے، قابلِ رسائی Word اور HTML ڈاؤن لوڈز درست شدہ ساخت کو ساتھ لے جاتے ہیں۔"
     },
     "alt_formats": {
       "intro": "اصلاح شدہ دستاویز کو قابلِ رسائی متبادل شکلوں میں ڈاؤن لوڈ کریں"
@@ -5841,7 +5869,9 @@
       "heading": "خہاور گیا ورژن"
     },
     "extracted_images": {
-      "drag_hint": "پیش منظر میں کسی بھی تصویر کے خانے پر تھمب نیل گھسیٹ کر چھوڑیں، یا کسی خانے کے اندر \"📷 اپ لوڈ\" پر کلک کر کے \"نکالی گئی تصویر استعمال کریں\" منتخب کریں۔"
+      "drag_hint": "پیش منظر میں کسی بھی تصویر کے خانے پر تھمب نیل گھسیٹ کر چھوڑیں، یا کسی خانے کے اندر \"📷 اپ لوڈ\" پر کلک کر کے \"نکالی گئی تصویر استعمال کریں\" منتخب کریں۔",
+      "drag_hint2": "کسی تھمب نیل پر کلک کریں تاکہ وہ پہلے خالی تصویری خانے میں شامل ہو جائے، یا اسے پیش منظر میں کسی مخصوص جگہ نگہدار یا تصویر پر گھسیٹیں۔ ×N = وہی تصویر N صفحات پر ظاہر ہوئی (عام طور پر لیٹر ہیڈ یا لوگو)۔",
+      "insert_aria": "نکالی گئی تصویر کو پہلے خالی خانے میں شامل کریں"
     },
     "toolbar": {
       "aria": "تنسیق متن",
@@ -5867,7 +5897,8 @@
     },
     "divergence": {
       "semantic": "ساختی طور پر مطابق لیکن معنوی طور پر کمزور — AI نے مواد کے معیار کو نشان زد کیا جسے axe-core نہیں پکڑ سکتا",
-      "structural": "کوڈ کی سطح پر WCAG خلاف ورزیاں پائی گئیں — axe-core نے ایسی مشینی طور پر قابلِ جانچ ناکامیاں ڈھونڈ نکالیں جنہیں AI روبرک نے کم اہمیت دی تھی"
+      "structural": "کوڈ کی سطح پر WCAG خلاف ورزیاں پائی گئیں — axe-core نے ایسی مشینی طور پر قابلِ جانچ ناکامیاں ڈھونڈ نکالیں جنہیں AI روبرک نے کم اہمیت دی تھی",
+      "critical_override": "axe-core کو {n} سنگین WCAG خلاف ورزی(اں) ملیں — ملے جلے اسکور پر بھروسہ کرنے سے پہلے ان کا جائزہ لیں؛ اوسط کسی سنگین ناکامی کو چھپا سکتی ہے"
     },
     "tagtree": {
       "label": "پہلے سے موجود ٹیگ ڈھانچہ",
@@ -5900,7 +5931,60 @@
     "violation_one": "{count} خلاف ورزی",
     "violation_other": "{count} خلاف ورزیاں",
     "ai_issue_one": "{count} AI-نشان زدہ مسئلہ",
-    "ai_issue_other": "{count} AI-نشان زدہ مسائل"
+    "ai_issue_other": "{count} AI-نشان زدہ مسائل",
+    "tagged": {
+      "born_digital_note": "خبردار: متنی تہہ والی PDFs کے لیے معنوی ٹیگز مکمل مواد رابطے کے بجائے ActualText وابستگیاں استعمال کرتے ہیں۔ فائل کافی زیادہ قابلِ رسائی ہے، مگر PDF/UA مطابقت کا دعویٰ کرنے سے پہلے PAC 2024 یا Acrobat میں تصدیق کریں۔"
+    },
+    "one_click": {
+      "label": "قابلِ رسائی بنائیں",
+      "badge": "مکمل خودکار — آڈٹ، درستی، تصدیق، ہدف تک دہرائیں",
+      "desc": "ایک کلک پورے پائپ لائن کو طے شدہ ترتیبات کے ساتھ خودکار طور پر چلاتا ہے؛ اختتام پر ڈاؤن لوڈز تیار ہوتے ہیں۔ زیادہ کنٹرول چاہتے ہیں؟ نیچے \"Run Audit\" استعمال کریں، نتائج کا جائزہ لیں، پھر خود Fix & Verify پر کلک کریں۔"
+    },
+    "run_audit_label": "آڈٹ چلائیں (مرحلہ 1 از 2)",
+    "manual_path_explainer": "\"Run Audit\" دستاویز کو اسکور کرتا ہے اور دکھاتا ہے کہ کیا درست کرنے کی ضرورت ہے — پھر آپ جائزہ لے کر خود Fix & Verify پر کلک کرتے ہیں (مرحلہ 2)۔ اوپر \"Make Accessible\" دونوں مراحل کے ساتھ ساتھ دوبارہ جانچ بھی خودکار طور پر کرتا ہے۔ \"Text Extraction\" صرف مواد کی تیاری کے لیے خام متن نکالتا ہے۔",
+    "tagged_report": {
+      "heading": "Tagged PDF رپورٹ",
+      "close_aria": "Tagged PDF رپورٹ برخاست کریں",
+      "note": "یہ پینل اس وقت تک رہتا ہے جب تک آپ اسے برخاست نہ کریں۔ یہی تفصیلات Adobe طرز کی A11y رپورٹ ڈاؤن لوڈ کے اندر بھی موجود ہوتی ہیں۔"
+    },
+    "docx_export": {
+      "title": "درست شدہ مواد کو ایک Word دستاویز میں تبدیل کریں جس میں اصل عنوان اسٹائلز، تصاویر پر متبادل متن، ٹیبل ہیڈر قطاریں، فہرستی ساخت، اور کام کرنے والے ہائپر لنکس ہوں۔ تقسیم سے پہلے Word کے اندرونی Accessibility Checker (Review → Check Accessibility) سے تصدیق کریں۔"
+    },
+    "pptx_export": {
+      "title": "درست شدہ مواد کو ایک PowerPoint ڈیک کے طور پر دوبارہ بنائیں جس میں اصل سلائیڈ عنوانات، تصاویر پر متبادل متن، ہیڈر طرز کی ٹیبل قطاریں، حقیقی بلٹ فہرستیں، اور پڑھنے کی ترتیب = بصری ترتیب ہو۔ یہ نئے سرے سے بنایا گیا قابلِ رسائی خاکہ ہے — اصل کی بصری نقل نہیں۔ تقسیم سے پہلے PowerPoint کے Accessibility Checker سے تصدیق کریں۔"
+    },
+    "dashboard": {
+      "aria": "درستی کے نتائج کا جائزہ اور حصوں کی نیویگیشن",
+      "score_title": "قابلِ رسائی اسکور: پہلے ← بعد"
+    },
+    "tag_to_workbench_title": "اس بلاک کو Expert Workbench میں بھیجیں: ایک ہدفی کمانڈ (بشمول کوئی بھی انتباہات) پہلے سے بھر دیتا ہے تاکہ آپ اسے ایک ہدایت سے درست کر سکیں",
+    "tag_to_workbench_aria": "Expert Workbench کو بھیجیں",
+    "pptx_theme_aria": "PowerPoint ایکسپورٹ تھیم",
+    "pptx_theme_title": "PowerPoint ایکسپورٹ کے لیے سلائیڈ تھیم۔ تمام پری سیٹس کنٹراسٹ کے لحاظ سے جانچے گئے ہیں (WCAG AA)؛ AI آپشن آپ کے موضوع سے ہم آہنگ ہوتا ہے، اور دونوں صورتوں میں پڑھنے کی اہلیت مقامی طور پر یقینی بنائی جاتی ہے۔",
+    "export_menu": {
+      "button": "ایکسپورٹ / ڈاؤن لوڈ",
+      "intro": "درست شدہ دستاویز کو کسی بھی فارمیٹ میں ڈاؤن لوڈ کریں — وہ منتخب کریں جو اس کے استعمال کے مطابق ہو۔",
+      "tagged_pdf": "Tagged PDF (PDF/UA — طلبہ کو دیں)",
+      "word": "Word (.docx — ترمیم جاری رکھیں)",
+      "pptx": "PowerPoint (.pptx — اسے پیش کریں)",
+      "html": "HTML (کہیں بھی کھلتا ہے، کسی سافٹ ویئر کی ضرورت نہیں)",
+      "group_access": "قابلِ رسائی فارمیٹس",
+      "daisy": "DAISY ٹاکنگ بُک (مکمل متن)",
+      "daisy_title": "DAISY 3 (DTBook) مکمل متن والا ٹاکنگ بُک پیکیج۔ کسی DAISY ریڈر میں کھولیں، جو تقریر، بریل، یا بڑے حروف کی سہولت دیتا ہے۔ (ہم آہنگ پڑھ کر سنانے والی آڈیو کے لیے، نیچے Read-along استعمال کریں۔)",
+      "readalong": "Read-along ای بُک (ہم آہنگ آڈیو)",
+      "readalong_progress": "تلاوت جاری ہے… {done}/{total}",
+      "readalong_title": "Read-along ای بُک (EPUB3 میڈیا اوورلیز): ہر پیراگراف کے لیے ٹیکسٹ ٹو اسپیچ تیار کرتا ہے اور اسے متن کے ساتھ ہم آہنگ کرتا ہے تاکہ پڑھنے والا نظام بولے جانے کے ساتھ ساتھ الفاظ کو نمایاں کرے۔ کئی وائس کالیں کرتا ہے — اس میں کچھ منٹ لگ سکتے ہیں۔",
+      "group_text": "متن اور قابلِ تدوین",
+      "odt_title": "OpenDocument Text — LibreOffice اور Google Docs (اور Word) میں براہِ راست کھلتا ہے۔",
+      "group_audio": "آڈیو بیانیہ",
+      "audio": "آڈیو بیانیہ (معیاری)",
+      "audio_title": "دستاویز کا بولا ہوا بیانیہ (MP3/WAV)۔",
+      "audio_sr": "آڈیو (اسکرین ریڈر طرز)",
+      "audio_sr_title": "وہی آواز، مگر ساخت کو اسی طرح بیان کرتی ہے جیسے کوئی اسکرین ریڈر کرتا ہے (سرخی کی سطحیں، فہرست کی گنتی، جدول کی قطاریں، تصویر کے متبادل متن)۔"
+    },
+    "mo": {
+      "confirm": "Read-along ای بُک بنائیں؟ یہ {n} متن کے حصوں کو ٹیکسٹ ٹو اسپیچ کے ذریعے بیان کرتا ہے — تقریباً {n} وائس کالیں، جن میں کچھ منٹ لگ سکتے ہیں۔"
+    }
   },
   "persona": {
     "title": "انٹرویو موڈ",
@@ -6083,7 +6167,7 @@
     "toggle_play_aria": "تبدیل چنہیںئیں"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "ورڈ ساؤنڈز اسٹوڈیو",
     "subtitle": "صوتی شعور کی سرگرمیاں",
     "listen_word": "اسہاور گیاع لللفظ",
     "activity_counting": "عدّ آاورازیں",
@@ -6240,7 +6324,7 @@
     "use_microphone": "استعمال میکراورفاورن",
     "pre_activity_review": "📋 سرگرمی سے پہلے کا جائزہ",
     "phonics_counting_guide_title": "📖 دلیل عدّ آاورازیات",
-    "r_controlled_explanation_prefix": "R-controlled vowels (ar, er, ir, or, ur) are counted as ",
+    "r_controlled_explanation_prefix": "R سے متاثرہ حروفِ علت (ar, er, ir, or, ur) کو شمار کیا جاتا ہے بطور ",
     "single_sounds": "اکیلی آوازیں",
     "r_controlled_explanation_suffix": " کیونکہ حرف متحرک اورR یندمجان کے ساتھًا.",
     "r_controlled_example": "مثال: \"star\" = 3 آوازیں (s-t-ar)، 4 نہیں۔ یہ Orton-Gillingham اور Wilson Reading طریقوں کے مطابق ہے۔",
@@ -7137,7 +7221,7 @@
   },
   "export_menu": {
     "label": "بطور ڈاؤن لوڈ کریں...",
-    "qti": "Canvas Quiz (QTI)",
+    "qti": "Canvas کوئز (QTI)",
     "print": "پرنٹ / محفوظ کریں PDF",
     "clean_pdf": "فائل PDF نظیف",
     "worksheet": "ورک شیٹ",
@@ -8189,7 +8273,10 @@
     "pdf_audit_alt_formats_epub_btn": "اصلاح شدہ دستاویز کو ePub فائل کے طور پر مواد کی فہرست اور رسائی میٹا ڈیٹا کے ساتھ محفوظ کریں۔ Kindle، Apple Books، اور زیادہ تر موبائل ریڈرز پر کام کرتا ہے — طلباء فونٹ کا سائز، رنگ، اور پڑھنے کی رفتار تبدیل کر سکتے ہیں۔",
     "pdf_audit_alt_formats_braille_btn": "گریڈ 1 (غیر سکڑا ہوا) بریل فائل محفوظ کریں جسے بریل پرنٹر پر ابھار کر چھاپا جا سکتا ہے یا قابل تازہ بریل ڈسپلے کو بھیجا جا سکتا ہے۔ گریڈ 2 سکڑاؤ کے لیے، ختم کرنے کے لیے فائل کو TVI (بصری معذوری والے طلباء کے استاد) کو دیں۔",
     "pdf_audit_alt_formats_text_btn": "تمام فارمیٹنگ ہٹا کر سادہ .txt فائل محفوظ کریں — اسکرین ریڈرز، بڑے پرنٹ کی تبدیلی، یا دوسرے ٹول میں چسپاں کرنے کے لیے سب سے آسان فارمیٹ۔",
-    "pdf_audit_alt_formats_markdown_btn": "دستاویز کو Markdown کے طور پر محفوظ کریں — Canvas، Schoology، یا D2L صفحات، Google Docs (چسپاں کر کے)، wikis، اور GitHub طرز کے نوٹس میں عنوانات یا لنکس کھوئے بغیر صاف ستھرا داخل ہوتا ہے۔"
+    "pdf_audit_alt_formats_markdown_btn": "دستاویز کو Markdown کے طور پر محفوظ کریں — Canvas، Schoology، یا D2L صفحات، Google Docs (چسپاں کر کے)، wikis، اور GitHub طرز کے نوٹس میں عنوانات یا لنکس کھوئے بغیر صاف ستھرا داخل ہوتا ہے۔",
+    "pdf_audit_alt_formats_daisy_btn": "DAISY 3 مکمل متن والا ٹاکنگ بُک پیکیج محفوظ کریں۔ DAISY ریڈرز (خصوصی تعلیم میں عام) مکمل نیویگیشن کے ساتھ اپنی تقریر، بریل، یا بڑے حروف خود فراہم کرتے ہیں۔ یہاں صرف متن ہے — ہم آہنگ پڑھ کر سنانے کے لیے Read-along ای بُک استعمال کریں۔",
+    "pdf_audit_alt_formats_readalong_btn": "Read-along ای بُک بنائیں (EPUB3 میڈیا اوورلیز): ہر پیراگراف کو ٹیکسٹ ٹو اسپیچ کے ذریعے بیان کیا جاتا ہے اور متن کے ساتھ ہم آہنگ کیا جاتا ہے تاکہ بولے جانے کے ساتھ الفاظ نمایاں ہوں۔ فی حصہ ایک وائس کال، اس لیے اس میں کچھ منٹ لگ سکتے ہیں۔",
+    "pdf_audit_alt_formats_odt_btn": "OpenDocument Text (.odt) فائل محفوظ کریں — LibreOffice اور Google Docs کے لیے موزوں (Word بھی اسے کھولتا ہے)۔ اسے اس وقت استعمال کریں جب آپ کا اسکول مکمل طور پر Microsoft پر نہ ہو مگر آپ پھر بھی ساخت برقرار رکھنے والی قابلِ تدوین دستاویز چاہتے ہوں۔"
   },
   "grades": {
     "k": "نرسری",
@@ -8464,7 +8551,7 @@
     "tools": {
       "simplified": "متن متدرج",
       "glossary": "فاظ اورلغت",
-      "quiz": "Exit Ticket (Quiz)",
+      "quiz": "Exit Ticket (کوئز)",
       "outline": "سےظِّم بصری",
       "image": "مخطط بصری",
       "timeline": "تسلسل زسےی",
@@ -9722,7 +9809,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "کرداروں کی آوازوں اور ادبی تجزیے کے ساتھ کہانیوں کو زندہ کریں",
     "poettree_title": "PoetTree",
-    "poettree_desc": "اکتب قصائد بسقانہیںت شہر اورتجزیہ قافیہ اورانہیںورزن اورسےہیںحظات ذہانت انہیںصطناعی"
+    "poettree_desc": "اکتب قصائد بسقانہیںت شہر اورتجزیہ قافیہ اورانہیںورزن اورسےہیںحظات ذہانت انہیںصطناعی",
+    "throughline_desc": "اپنے اسباق کو ایک مکانی یونٹ میں ترتیب دیں: تدریسی تسلسل، پیشگی شرائط، ایک قابلِ برآمد فائل"
   },
   "sel_hub": {
     "loading": "در حال لوڈ کریں SEL Hub...",
@@ -11476,7 +11564,7 @@
       "pos_help": "وہ عناصر جن کا tabindex > 0 ہے، دستاویز کی قدرتی ٹیب ترتیب کو توڑتے ہیں اور کی بورڈ صارفین کو الجھاتے ہیں۔ حل: tabindex=\"0\" (پہلے سے طے شدہ ترتیب) استعمال کریں یا بٹن/لنکس کے لیے ڈیفالٹ فوکس صلاحیت پر بھروسہ کریں۔",
       "no_label_heading": "🔴 غائب قابلِ رسائی نام",
       "no_label_help": "بغیر متن، aria-label، aria-labelledby، یا title کے فوکس ایبل عناصر۔ اسکرین ریڈر صارفین صرف ٹیگ کا نام سنیں گے، مثلاً، بغیر سیاق کے \"button\"۔ حل: aria-label یا قابلِ مشاہدہ متن شامل کریں۔",
-      "tip": "Tip: navigate the page behind the lab using only Tab, Shift+Tab, Enter, and Esc. Click on any element name in the lists above to focus it (the page will scroll if needed)."
+      "tip": "مشورہ: لیب کے پیچھے موجود صفحے میں صرف Tab، Shift+Tab، Enter، اور Esc استعمال کرتے ہوئے نیویگیٹ کریں۔ اوپر دی گئی فہرستوں میں کسی بھی عنصر کے نام پر کلک کریں تاکہ اس پر فوکس ہو (ضرورت پڑنے پر صفحہ اسکرول ہو جائے گا)۔"
     },
     "audit": {
       "heading": "ایپ کے اندر لائیو رسائی کا آڈٹ",
@@ -11538,7 +11626,7 @@
         "html_has_lang": "صفحے میں lang خصوصیت غائب ہے۔ اسکرین ریڈرز کو معلوم نہیں ہوگا کہ کون سا تلفظ استعمال کرنا ہے۔",
         "html_lang_valid": "صفحے کی lang خصوصیت درست زبان کا کوڈ نہیں ہے۔",
         "landmark_one_main": "صفحے میں <main> نشانی غائب ہے۔ اسکرین ریڈر صارفین کو نیویگیشن سے آگے بڑھ کر بنیادی مواد تک پہنچنے میں زیادہ دشواری ہوتی ہے۔",
-        "region": "Some content is not contained in a landmark (header, main, nav, footer). Screen reader users may struggle to navigate.",
+        "region": "کچھ مواد کسی لینڈ مارک (header، main، nav، footer) میں شامل نہیں ہے۔ اسکرین ریڈر استعمال کرنے والوں کو نیویگیٹ کرنے میں دشواری ہو سکتی ہے۔",
         "heading_order": "اِس صفحے کے عنوانات سطحیں چھوڑتے ہیں (مثلاً h1 سے h3 پر چھلانگ)۔ عنوانات کی سطحوں کے ذریعے اسکرین ریڈر کی نیویگیشن الجھ جاتی ہے۔",
         "page_has_heading_one": "صفحے پر کوئی <h1> عنوان نہیں ہے۔ اسکرین ریڈر صارفین صفحے کے موضوع کے بارے میں سمت کھو دیتے ہیں۔",
         "list": "ایک فہرست عنصر (ul/ol) میں ایسے آئٹمز شامل ہیں جو <li> نہیں ہیں۔ اسکرین ریڈرز ساخت کی غلط رپورٹ کرتے ہیں۔",
@@ -11600,7 +11688,7 @@
         "dyslexia_label": "إجهاد بصری لـ Dyslexia",
         "dyslexia_desc": "کچھ dyslexia قارئین کے ذکر کردہ ایک عام بصری دباؤ کے تجربے کی محدود مشق (ہلکا دھندلا پن، کم کنٹراسٹ، تبدیل ہوتا فاصلہ)۔ dyslexia انتہائی انفرادی ہے؛ یہ ایک ٹکڑا ہے، حتمی تصویر نہیں۔ تقریباً 5-10% طلبہ کو dyslexia ہوتا ہے۔",
         "motor_label": "موٹر معذوریاں",
-        "motor_desc": "Motor impairments resist visual simulation. The most authentic test is to use the OS-level tools real students use: Windows Sticky Keys, macOS Slow Keys, dwell-click software, switch access (e.g., the iOS Switch Control or Android Switch Access). Try completing a lesson using only one hand, only the keyboard, or only one finger."
+        "motor_desc": "حرکتی معذوریاں بصری نقل کے سامنے مزاحم رہتی ہیں۔ سب سے مستند جانچ وہ OS سطح کے اوزار استعمال کرنا ہے جو حقیقی طلبہ استعمال کرتے ہیں: Windows Sticky Keys، macOS Slow Keys، dwell-click سافٹ ویئر، سوئچ رسائی (مثلاً iOS Switch Control یا Android Switch Access)۔ صرف ایک ہاتھ سے، صرف کی بورڈ سے، یا صرف ایک انگلی سے کوئی سبق مکمل کرنے کی کوشش کریں۔"
       }
     }
   },
@@ -11751,51 +11839,51 @@
     "share_or_print": "شیئر کریں یا پرنٹ کریں"
   },
   "audit": {
-    "section_divider": "Section divider",
+    "section_divider": "حصہ تقسیم کرنے والا",
     "remove_divider": "Remove divider",
-    "remove_page_break": "Remove page break",
+    "remove_page_break": "صفحہ توڑ ہٹائیں",
     "callout": "Callout",
     "remove_callout": "Remove callout",
     "remove_quote": "Remove quote",
-    "remove_checklist": "Remove checklist",
+    "remove_checklist": "چیک لسٹ ہٹائیں",
     "checklist": "Checklist",
     "remove_steps": "Remove steps",
-    "step_by_step": "Step-by-step instructions",
-    "remove_accordion": "Remove accordion",
-    "qa_pair": "Question and answer pair",
+    "step_by_step": "مرحلہ وار ہدایات",
+    "remove_accordion": "اکارڈین ہٹائیں",
+    "qa_pair": "سوال اور جواب کا جوڑا",
     "remove_qa": "Remove Q and A",
-    "remove_definition": "Remove definition",
-    "pronunciation_audio": "Pronunciation audio",
+    "remove_definition": "تعریف ہٹائیں",
+    "pronunciation_audio": "تلفظ کی آڈیو",
     "term_language": "Term language",
-    "gen_pronunciation_term": "Generate pronunciation audio from the term using AI text-to-speech",
+    "gen_pronunciation_term": "AI ٹیکسٹ ٹو اسپیچ کے ذریعے اصطلاح سے تلفظ کی آڈیو تیار کریں",
     "sentence_frame": "Sentence frame",
-    "remove_sentence_frame": "Remove sentence frame",
-    "sentence_frame_template": "Sentence frame template",
-    "learning_objective": "Learning objective",
-    "remove_learning_objective": "Remove learning objective",
-    "remove_vocab_card": "Remove vocabulary card",
-    "gen_pronunciation_word": "Generate pronunciation audio from the word using AI text-to-speech",
-    "remove_reflection": "Remove reflection",
-    "reflection_response_aria": "Reflection response",
+    "remove_sentence_frame": "جملے کا فریم ہٹائیں",
+    "sentence_frame_template": "جملے کے فریم کا سانچہ",
+    "learning_objective": "تعلیمی مقصد",
+    "remove_learning_objective": "تعلیمی مقصد ہٹائیں",
+    "remove_vocab_card": "ذخیرۂ الفاظ کارڈ ہٹائیں",
+    "gen_pronunciation_word": "AI ٹیکسٹ ٹو اسپیچ کے ذریعے لفظ سے تلفظ کی آڈیو تیار کریں",
+    "remove_reflection": "غور و فکر ہٹائیں",
+    "reflection_response_aria": "غور و فکر کا جواب",
     "remove_rubric": "Remove rubric",
     "scoring_rubric": "Scoring rubric",
-    "lesson_plan_template": "Lesson plan template",
-    "remove_lesson_plan": "Remove lesson plan",
+    "lesson_plan_template": "سبق کے منصوبے کا سانچہ",
+    "remove_lesson_plan": "سبق کا منصوبہ ہٹائیں",
     "remove_table": "Remove table",
     "data_table": "Data table",
-    "image_description": "Image with description",
+    "image_description": "تفصیل کے ساتھ تصویر",
     "remove_image": "Remove image",
     "image_url": "Image URL",
     "remove_audio": "Remove audio",
-    "audio_recording": "Audio recording",
+    "audio_recording": "آڈیو ریکارڈنگ",
     "audio_url": "Audio URL",
-    "gen_audio_transcript": "Generate audio from transcript using AI text-to-speech",
+    "gen_audio_transcript": "AI ٹیکسٹ ٹو اسپیچ کے ذریعے تحریری نقل سے آڈیو تیار کریں",
     "remove_video": "Remove video",
     "video_url": "Video URL",
-    "video_title_screen": "Video title for screen readers",
-    "math_equation": "Mathematical equation",
-    "remove_equation": "Remove equation",
-    "insert_formula": "Insert formula from library"
+    "video_title_screen": "اسکرین ریڈرز کے لیے ویڈیو کا عنوان",
+    "math_equation": "ریاضیاتی مساوات",
+    "remove_equation": "مساوات ہٹائیں",
+    "insert_formula": "لائبریری سے فارمولا داخل کریں"
   },
   "alts": {
     "scene_visualization": "منظر کی بصری نمائندگی",
@@ -12133,17 +12221,17 @@
   },
   "headings": {
     "story_forge": "StoryForge",
-    "narrate_story": "Narrate Your Story",
-    "review_feedback": "Review & Feedback",
-    "character_name_check": "Character Name Check",
-    "writing_analytics": "Writing Analytics",
+    "narrate_story": "اپنی کہانی بیان کریں",
+    "review_feedback": "جائزہ اور رائے",
+    "character_name_check": "کردار کے نام کی جانچ",
+    "writing_analytics": "تحریری تجزیات",
     "word_frequency": "Word Frequency",
-    "score_breakdown": "Score Breakdown",
-    "vocab_usage": "Vocabulary Usage",
-    "storybook_ready": "Your Storybook is Ready!",
-    "per_dimension_findings": "Per-Dimension Findings",
-    "your_self_assessment": "Your Self-Assessment",
-    "cloud_voice_unavailable": "Cloud Voice Unavailable",
+    "score_breakdown": "اسکور کی تفصیل",
+    "vocab_usage": "ذخیرۂ الفاظ کا استعمال",
+    "storybook_ready": "آپ کی اسٹوری بُک تیار ہے!",
+    "per_dimension_findings": "فی پہلو نتائج",
+    "your_self_assessment": "آپ کا اپنا جائزہ",
+    "cloud_voice_unavailable": "کلاؤڈ وائس دستیاب نہیں",
     "allohaven": "AlloHaven",
     "tts": "Text-to-Speech"
   },
@@ -12475,5 +12563,10 @@
     "byline": "بقلم {author} · {words} الفاظ · {used}/{total} ذخیرہ الفاظ",
     "student": "طالب علم",
     "score": "اسکور: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "پیش منظر کو دوبارہ رینڈر کرنے سے آپ کی دستی ترامیم تازہ تیار کردہ مواد سے بدل جائیں گی۔ جاری رکھیں اور ترامیم رد کریں؟ (منسوخ کرنا انہیں برقرار رکھتا ہے — پہلے محفوظ کرنے کے لیے بلڈر کو ایکسپورٹ یا بند کریں۔)",
+    "remediation_banner_title": "درست شدہ دستاویز میں ترمیم کی جا رہی ہے۔",
+    "remediation_banner_body": "جب آپ بلڈر بند کرتے ہیں تو یہاں کی گئی آپ کی ترامیم اس میں واپس محفوظ ہو جاتی ہیں، اس لیے Tagged PDF / Word / PowerPoint ڈاؤن لوڈز میں یہ شامل ہوتی ہیں۔"
   }
 }

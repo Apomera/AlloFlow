@@ -96,7 +96,7 @@
     "exit": "나가기"
   },
   "word_sounds": {
-    "title": "Word Sounds Studio",
+    "title": "단어 소리 스튜디오",
     "subtitle": "Phonemic Awareness 활동",
     "listen_word": "듣기 에 단어",
     "activity_counting": "소리 세기",
@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 프로젝트가 저장되었습니다({count}개 범위). 나중에 불러와 계속하세요",
     "project_saved": "💾 프로젝트가 저장되었습니다. 나중에 불러와 편집을 계속하세요",
     "search_result_desc": "Google 검색 결과: {title}",
-    "link_url_prompt": "링크 URL을 입력하세요:"
+    "link_url_prompt": "링크 URL을 입력하세요:",
+    "building_accessible_docx": "접근 가능한 Word 파일 생성 중…",
+    "building_accessible_pptx": "접근 가능한 PowerPoint 생성 중…",
+    "batch_tagging": "📄 ZIP에 담을 태그된 PDF 생성 중 — 스캔 파일은 더 오래 걸립니다(파일마다 OCR 실행)…",
+    "builder_edits_preserved": "✋ 직접 수정한 내용을 유지했습니다 — 미리 보기는 다시 렌더링되지 않았습니다. 저장하려면 빌더에서 내보내거나 닫은 다음 설정을 변경하세요.",
+    "builder_edits_synced": "✏️ 빌더 편집 내용이 보정된 문서에 저장되었습니다 — 태그된 PDF / Word / PowerPoint 내보내기에 이제 반영됩니다.",
+    "pptx_ai_theme": "🎨 주제에 맞는 색상 팔레트를 AI에 요청하는 중입니다(가독성은 로컬에서 적용)…",
+    "make_accessible_fixing": "✨ 감사 완료 — 자동으로 보정하는 중입니다(클릭 불필요)…",
+    "tagged_pdf_saved_see_report": "📄 태그된 PDF가 저장되었습니다 — 전체 보고서는 다운로드 버튼 위에 고정되어 있습니다(✕로 닫기).",
+    "no_open_image_slot": "미리 보기에 비어 있는 이미지 자리가 없습니다 — 대신 썸네일을 특정 이미지 위로 끌어다 놓아 교체하세요.",
+    "extracted_image_inserted": "🖼 첫 번째 빈 이미지 자리에 삽입했습니다 — 다른 위치에 넣으려면 썸네일을 끌어다 놓으세요.",
+    "html_downloaded": "🌐 HTML이 다운로드되었습니다 — 모든 브라우저에서 열립니다.",
+    "odt_downloaded": "📄 OpenDocument(.odt)가 다운로드되었습니다 — LibreOffice, Google Docs 또는 Word에서 열립니다.",
+    "daisy_downloaded": "🔊 DAISY 토킹북 패키지(.zip)가 다운로드되었습니다 — DAISY 리더에서 여세요.",
+    "mo_no_voice": "음성 서비스를 사용할 수 없어 지금은 따라 읽기 오디오를 생성할 수 없습니다.",
+    "mo_busy": "따라 읽기 내보내기가 이미 실행 중입니다.",
+    "mo_no_text": "낭독할 읽을 수 있는 텍스트를 찾을 수 없습니다.",
+    "mo_no_audio": "⚠ 따라 읽기 전자책은 저장되었지만 오디오를 생성하지 못했습니다(음성 서비스 사용 불가). 텍스트와 동기화 구조는 그대로 유지됩니다.",
+    "mo_done": "따라 읽기 전자책이 다운로드되었습니다",
+    "audio_unavailable_now": "지금은 오디오를 사용할 수 없습니다(작업이 실행 중이거나 음성 서비스가 꺼져 있을 수 있습니다)."
   },
   "large_file": {
     "modal_title": "가져오기 Large 오디오 파일",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator 도구",
     "documents_menu_aria": "문서 메뉴",
     "open_doc_builder_pdf_aria": "열기 문서 Builder 위한 PDF",
-    "export_slides_tooltip": "Opens 문서 Builder 안에 Slides 모드"
+    "export_slides_tooltip": "Opens 문서 Builder 안에 Slides 모드",
+    "learning_tools_tooltip": "학습 도구 (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "대상 언어",
@@ -3599,7 +3619,7 @@
       "math_desc": "생성 relevant 단어 문제 및 connections 에 수학 개념.",
       "persona_title": "AI Persona",
       "persona_desc": "Simulate 대화 함께 캐릭터 또는 figure 에서 텍스트.",
-      "wordsounds_title": "Word Sounds Studio",
+      "wordsounds_title": "단어 소리 스튜디오",
       "wordsounds_desc": "Design targeted phonics 및 phoneme awareness 수업 사용 용어집 용어 또는 단어 families.",
       "glossary_settings_title": "용어집 설정",
       "glossary_settings_desc": "용어가 선택되고 번역되는 방식을 사용자 지정합니다. 단계별 어휘로 필터링하거나 특정 언어를 강제할 수 있습니다.",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "선택 사항. 퀴즈의 모든 이미지(질문 + 옵션)에 적용됩니다. 비어 있음 = 기본 스타일. 퀴즈와 함께 유지되므로 개선 작업이 브랜드에 맞게 유지됩니다.",
     "generate_pre_check": "사전 점검 생성",
     "generate_formative": "생성 Formative 확인",
-    "generate_review": "생성 Spaced 검토"
+    "generate_review": "생성 Spaced 검토",
+    "likert_strongly_disagree": "전혀 그렇지 않다",
+    "no_right_answer": "여기에는 정답도 오답도 없습니다.",
+    "poll_completed": "의견을 공유해 주셔서 감사합니다.",
+    "poll_intro": "여기에는 정답도 오답도 없습니다 — 솔직한 의견은 선생님에게도, 그리고 여러분 자신에게도 도움이 됩니다.",
+    "mode_poll": "🗣️ 설문(학생의 목소리)"
   },
   "outline": {
     "title": "시각 Organizer",
@@ -4160,7 +4185,8 @@
     },
     "divergence": {
       "semantic": "구조적으로 준수하지만 의미적으로 약함 — AI가 axe-core가 감지할 수 없는 콘텐츠 품질(대체 텍스트, 제목 의미, 읽기 순서)을 표시함",
-      "structural": "코드 수준 WCAG 위반이 감지됨 — axe-core가 AI 루브릭이 가볍게 가중치를 부여한 기계 검사 가능 실패를 발견함"
+      "structural": "코드 수준 WCAG 위반이 감지됨 — axe-core가 AI 루브릭이 가볍게 가중치를 부여한 기계 검사 가능 실패를 발견함",
+      "critical_override": "axe-core가 심각한 WCAG 위반 {n}건을 발견했습니다 — 혼합 점수를 신뢰하기 전에 이를 검토하세요. 평균값은 치명적 실패를 가릴 수 있습니다"
     },
     "tagtree": {
       "label": "기존 태그 구조",
@@ -4264,7 +4290,8 @@
       "std_dev": "표준 Deviation",
       "icc_title": "사용자 정의 1−(SD/50) index; 아닙니다 textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "AI 패스 전반에 걸친 CV + 쌍별 하이브리드 휴리스틱이며, 정통 Cronbach's α는 아닙니다"
     },
     "score": {
       "total_checks": "수행된 총 검사 수",
@@ -4426,7 +4453,9 @@
       "title": "Regenerate PDF 에서 remediated HTML. Layout reflows — 페이지 breaks, fonts, 및 pagination 할 수 있다 differ 에서 원본. 작동 well 위한 간단 prose 문서."
     },
     "tagged_pdf": {
-      "title": "원본 PDF의 시각적 레이아웃을 바이트 단위로 동일하게 보존하고 구조 트리에 접근성 태그를 주입합니다. 시각적 충실도가 중요한 교과서, 다단 문서 및 브랜드 PDF에 가장 적합합니다."
+      "title": "원본 PDF의 시각적 레이아웃을 바이트 단위로 동일하게 보존하고 구조 트리에 접근성 태그를 주입합니다. 시각적 충실도가 중요한 교과서, 다단 문서 및 브랜드 PDF에 가장 적합합니다.",
+      "office_note": "태그된 PDF는 PDF 입력에 적용됩니다 — Word/HTML을 사용하세요",
+      "office_note_title": "구조 태그는 PDF 바이트에만 삽입할 수 있습니다. Word/PowerPoint 입력의 경우 접근 가능한 Word 및 HTML 다운로드가 보정된 구조를 담고 있습니다."
     },
     "alt_formats": {
       "intro": "다운로드 remediated 문서 안에 접근 가능 alternative 형식"
@@ -4497,7 +4526,9 @@
       "heading": "버전 Stamp"
     },
     "extracted_images": {
-      "drag_hint": "드래그 thumbnail onto 어떤 이미지 placeholder 안에 preview 에 insert it, 또는 클릭 \"📷 업로드\" inside placeholder 및 선택 \"사용 extracted 이미지\"."
+      "drag_hint": "드래그 thumbnail onto 어떤 이미지 placeholder 안에 preview 에 insert it, 또는 클릭 \"📷 업로드\" inside placeholder 및 선택 \"사용 extracted 이미지\".",
+      "drag_hint2": "썸네일을 클릭하면 첫 번째 빈 이미지 자리에 삽입되며, 미리 보기의 특정 자리 표시자나 이미지 위로 끌어다 놓을 수도 있습니다. ×N = 같은 이미지가 N개 페이지에 나타났음을 의미합니다(보통 레터헤드나 로고).",
+      "insert_aria": "추출한 이미지를 첫 번째 빈 자리에 삽입"
     },
     "toolbar": {
       "aria": "텍스트 formatting",
@@ -4543,7 +4574,60 @@
     "violation_one": "{count}건의 위반",
     "violation_other": "{count}건의 위반",
     "ai_issue_one": "{count}건의 AI 표시 문제",
-    "ai_issue_other": "{count}건의 AI 표시 문제"
+    "ai_issue_other": "{count}건의 AI 표시 문제",
+    "tagged": {
+      "born_digital_note": "참고: 텍스트 레이어 PDF의 경우 시맨틱 태그는 전체 콘텐츠 연결 대신 ActualText 연결을 사용합니다. 파일의 접근성은 크게 향상되지만, PDF/UA 준수를 주장하기 전에 PAC 2024 또는 Acrobat에서 확인하세요."
+    },
+    "one_click": {
+      "label": "접근 가능하게 만들기",
+      "badge": "완전 자동 — 감사, 수정, 검증을 목표치까지 반복",
+      "desc": "한 번 클릭하면 기본 설정으로 전체 파이프라인이 자동 실행되며, 끝나면 다운로드가 준비됩니다. 직접 제어하고 싶으신가요? 아래의 \"감사 실행\"을 사용해 결과를 검토한 다음 직접 수정 및 검증을 클릭하세요."
+    },
+    "run_audit_label": "감사 실행 (2단계 중 1단계)",
+    "manual_path_explainer": "\"감사 실행\"은 문서를 채점하고 무엇을 고쳐야 하는지 보여줍니다 — 그런 다음 직접 검토하고 수정 및 검증을 클릭합니다(2단계). 위의 \"접근 가능하게 만들기\"는 두 단계와 재검사까지 자동으로 수행합니다. \"텍스트 추출\"은 콘텐츠 생성을 위해 원문 텍스트만 가져옵니다.",
+    "tagged_report": {
+      "heading": "태그된 PDF 보고서",
+      "close_aria": "태그된 PDF 보고서 닫기",
+      "note": "이 패널은 닫을 때까지 유지됩니다. 동일한 세부 정보는 Adobe 스타일 A11y 보고서 다운로드에 포함되어 제공됩니다."
+    },
+    "docx_export": {
+      "title": "보정된 콘텐츠를 실제 제목 스타일, 이미지 대체 텍스트, 표 머리글 행, 목록 구조, 작동하는 하이퍼링크를 갖춘 Word 문서로 변환합니다. 배포하기 전에 Word의 기본 접근성 검사기(검토 → 접근성 검사)로 확인하세요."
+    },
+    "pptx_export": {
+      "title": "보정된 콘텐츠를 실제 슬라이드 제목, 이미지 대체 텍스트, 머리글 스타일이 적용된 표 행, 실제 글머리 기호 목록, 그리고 읽기 순서 = 시각적 순서를 갖춘 PowerPoint 자료로 재구성합니다. 원본의 시각적 복제본이 아니라 접근성을 위해 재구성된 레이아웃입니다. 배포하기 전에 PowerPoint의 접근성 검사기로 확인하세요."
+    },
+    "dashboard": {
+      "aria": "보정 결과 개요 및 섹션 탐색",
+      "score_title": "접근성 점수: 전 → 후"
+    },
+    "tag_to_workbench_title": "이 블록을 전문가 워크벤치로 보냅니다: 대상 명령(경고 포함)을 미리 채워 한 번의 지시로 수정할 수 있게 합니다",
+    "tag_to_workbench_aria": "전문가 워크벤치로 보내기",
+    "pptx_theme_aria": "PowerPoint 내보내기 테마",
+    "pptx_theme_title": "PowerPoint 내보내기에 사용할 슬라이드 테마입니다. 모든 프리셋은 대비 검사를 거쳤으며(WCAG AA), AI 옵션은 주제에 맞춰 주며 어느 쪽이든 가독성은 로컬에서 적용됩니다.",
+    "export_menu": {
+      "button": "내보내기 / 다운로드",
+      "intro": "보정된 문서를 원하는 형식으로 다운로드하세요 — 사용 방식에 맞는 형식을 고르세요.",
+      "tagged_pdf": "태그된 PDF (PDF/UA — 학생에게 제공)",
+      "word": "Word (.docx — 계속 편집)",
+      "pptx": "PowerPoint (.pptx — 발표용)",
+      "html": "HTML (소프트웨어 없이 어디서나 열림)",
+      "group_access": "접근 가능한 형식",
+      "daisy": "DAISY 토킹북 (전체 텍스트)",
+      "daisy_title": "DAISY 3(DTBook) 전체 텍스트 토킹북 패키지입니다. DAISY 리더에서 열면 음성, 점자 또는 큰 글자를 제공합니다. (동기화된 소리 내어 읽기 오디오가 필요하면 아래의 따라 읽기를 사용하세요.)",
+      "readalong": "따라 읽기 전자책 (동기화 오디오)",
+      "readalong_progress": "낭독 중… {done}/{total}",
+      "readalong_title": "따라 읽기 전자책(EPUB3 미디어 오버레이): 각 단락에 대해 음성 합성(TTS)을 생성하고 텍스트와 동기화하여, 읽기 시스템이 단어를 말하는 대로 강조 표시합니다. 음성 호출이 많아 몇 분 정도 걸릴 수 있습니다.",
+      "group_text": "텍스트 및 편집 가능",
+      "odt_title": "OpenDocument Text — LibreOffice 및 Google Docs(그리고 Word)에서 기본으로 열립니다.",
+      "group_audio": "오디오 낭독",
+      "audio": "오디오 낭독 (표준)",
+      "audio_title": "문서를 음성으로 낭독합니다(MP3/WAV).",
+      "audio_sr": "오디오 (스크린 리더 방식)",
+      "audio_sr_title": "같은 음성이지만, 스크린 리더가 하듯이 구조를 안내합니다(제목 수준, 목록 개수, 표 행, 이미지 대체 텍스트)."
+    },
+    "mo": {
+      "confirm": "따라 읽기 전자책을 만드시겠습니까? 음성 합성(TTS)으로 텍스트 섹션 {n}개를 낭독하며 — 약 {n}회의 음성 호출이 필요해 몇 분 정도 걸릴 수 있습니다."
+    }
   },
   "concept_sort": {
     "title": "개념 정렬",
@@ -5241,7 +5325,7 @@
     "plan_hook": "도입",
     "plan_independent": "Independent 연습",
     "col_image": "이미지",
-    "word_sounds_studio": "Word Sounds Studio",
+    "word_sounds_studio": "단어 소리 스튜디오",
     "stop": "중지",
     "expand_header": "헤더 펼치기",
     "collapse_header": "콘텐츠 공간을 더 확보하려면 헤더 접기",
@@ -6882,7 +6966,10 @@
     "pdf_audit_alt_formats_epub_btn": "수정된 문서를 목차 및 접근성 메타데이터가 포함된 ePub 파일로 저장합니다. Kindle, Apple Books 및 대부분의 모바일 리더에서 작동합니다 — 학생들은 글꼴 크기, 색상 및 읽기 속도를 변경할 수 있습니다.",
     "pdf_audit_alt_formats_braille_btn": "점자 프린터에 양각하거나 새로 고침 가능한 점자 디스플레이로 보낼 수 있는 1급 점자 파일(축약되지 않음)을 저장합니다. 2급 축약의 경우 파일을 TVI(시각 장애 학생을 위한 교사)에게 전달하여 마무리하세요.",
     "pdf_audit_alt_formats_text_btn": "모든 서식이 제거된 일반 .txt 파일을 저장합니다 — 스크린 리더, 큰 글자 변환 또는 다른 도구로 붙여넣기에 가장 쉬운 형식입니다.",
-    "pdf_audit_alt_formats_markdown_btn": "문서를 Markdown으로 저장합니다 — 제목이나 링크를 잃지 않고 Canvas, Schoology 또는 D2L 페이지, Google Docs(붙여넣기를 통해), wiki 및 GitHub 스타일 메모에 깔끔하게 들어갑니다."
+    "pdf_audit_alt_formats_markdown_btn": "문서를 Markdown으로 저장합니다 — 제목이나 링크를 잃지 않고 Canvas, Schoology 또는 D2L 페이지, Google Docs(붙여넣기를 통해), wiki 및 GitHub 스타일 메모에 깔끔하게 들어갑니다.",
+    "pdf_audit_alt_formats_daisy_btn": "DAISY 3 전체 텍스트 토킹북 패키지를 저장합니다. DAISY 리더(특수 교육에서 흔히 사용)는 자체 음성, 점자 또는 큰 글자를 전체 탐색 기능과 함께 추가로 제공합니다. 여기서는 텍스트만 제공되며 — 동기화된 소리 내어 읽기는 따라 읽기 전자책을 사용하세요.",
+    "pdf_audit_alt_formats_readalong_btn": "따라 읽기 전자책(EPUB3 미디어 오버레이)을 만듭니다: 각 단락을 음성 합성(TTS)으로 낭독하고 텍스트와 동기화하여 단어가 말해지는 대로 강조 표시됩니다. 섹션당 음성 호출이 한 번씩 발생하므로 몇 분 정도 걸릴 수 있습니다.",
+    "pdf_audit_alt_formats_odt_btn": "OpenDocument Text(.odt) 파일을 저장합니다 — LibreOffice 및 Google Docs에 기본 지원됩니다(Word에서도 열립니다). 학교가 전부 Microsoft 환경은 아니지만 구조가 그대로 유지된 편집 가능한 문서가 필요할 때 사용하세요."
   },
   "groups": {
     "title": "Differentiation 그룹",
@@ -11269,7 +11356,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories 에 life 함께 캐릭터 voices & literary 분석",
     "poettree_title": "PoetTree",
-    "poettree_desc": "쓰기 poems 함께 form scaffolds, rhyme & meter 분석, AI 피드백"
+    "poettree_desc": "쓰기 poems 함께 form scaffolds, rhyme & meter 분석, AI 피드백",
+    "throughline_desc": "수업을 공간형 단원으로 배치하세요: 교수 순서, 선수 학습, 하나의 내보낼 수 있는 파일"
   },
   "sel_hub": {
     "loading": "SEL 허브를 불러오는 중입니다...",
@@ -12380,5 +12468,10 @@
     "byline": "{author} 작 · {words}단어 · 어휘 {used}/{total}",
     "student": "학생",
     "score": "점수: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "미리 보기를 다시 렌더링하면 직접 수정한 내용이 새로 생성된 콘텐츠로 대체됩니다. 계속하고 편집 내용을 삭제하시겠습니까? (취소하면 유지됩니다 — 먼저 빌더에서 내보내거나 닫아 저장하세요.)",
+    "remediation_banner_title": "보정된 문서를 편집하는 중입니다.",
+    "remediation_banner_body": "여기에서 편집한 내용은 빌더를 닫을 때 문서에 다시 저장되므로, 태그된 PDF / Word / PowerPoint 다운로드에 반영됩니다."
   }
 }

@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 Proyek disimpan ({count} rentang); muat nanti untuk melanjutkan",
     "project_saved": "💾 Proyek disimpan; muat nanti untuk melanjutkan pengeditan",
     "search_result_desc": "Hasil Penelusuran Google: {title}",
-    "link_url_prompt": "Masukkan URL tautan:"
+    "link_url_prompt": "Masukkan URL tautan:",
+    "building_accessible_docx": "Membuat file Word yang aksesibel…",
+    "building_accessible_pptx": "Membuat PowerPoint yang aksesibel…",
+    "batch_tagging": "📄 Membuat PDF bertag untuk ZIP — file hasil pindai memakan waktu lebih lama (OCR berjalan per file)…",
+    "builder_edits_preserved": "✋ Suntingan manual Anda dipertahankan — pratinjau tidak dirender ulang. Ekspor atau tutup builder untuk menyimpannya, lalu ubah pengaturan.",
+    "builder_edits_synced": "✏️ Suntingan builder tersimpan ke dalam dokumen yang telah diperbaiki — ekspor PDF Bertag / Word / PowerPoint kini menyertakannya.",
+    "pptx_ai_theme": "🎨 Meminta AI untuk palet warna yang cocok dengan topik (keterbacaan dipastikan secara lokal)…",
+    "make_accessible_fixing": "✨ Audit selesai — memperbaiki secara otomatis (tanpa perlu mengeklik)…",
+    "tagged_pdf_saved_see_report": "📄 PDF Bertag tersimpan — laporan lengkap tersemat di atas tombol unduh (✕ untuk menutup).",
+    "no_open_image_slot": "Tidak ada slot gambar kosong tersisa di pratinjau — seret thumbnail ke gambar tertentu untuk menggantinya.",
+    "extracted_image_inserted": "🖼 Disisipkan ke slot gambar kosong pertama — seret thumbnail jika Anda ingin lokasi yang berbeda.",
+    "html_downloaded": "🌐 HTML terunduh — terbuka di peramban mana pun.",
+    "odt_downloaded": "📄 OpenDocument (.odt) terunduh — terbuka di LibreOffice, Google Docs, atau Word.",
+    "daisy_downloaded": "🔊 Paket buku-bicara DAISY (.zip) terunduh — buka di pembaca DAISY.",
+    "mo_no_voice": "Layanan suara tidak tersedia, jadi audio baca-bersama tidak dapat dibuat saat ini.",
+    "mo_busy": "Ekspor baca-bersama sudah sedang berjalan.",
+    "mo_no_text": "Tidak ada teks terbaca yang ditemukan untuk dinarasikan.",
+    "mo_no_audio": "⚠ E-book baca-bersama tersimpan, tetapi tidak ada audio yang dapat dibuat (layanan suara tidak tersedia). Teks + struktur sinkronisasi tetap utuh.",
+    "mo_done": "E-book baca-bersama terunduh",
+    "audio_unavailable_now": "Audio tidak tersedia saat ini (mungkin ada proses yang sedang berjalan, atau layanan suara nonaktif)."
   },
   "large_file": {
     "modal_title": "Impor Large audio berkas",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator alat",
     "documents_menu_aria": "dokumen menu",
     "open_doc_builder_pdf_aria": "Buka dokumen Builder untuk PDF",
-    "export_slides_tooltip": "Opens dokumen Builder di Slides mode"
+    "export_slides_tooltip": "Opens dokumen Builder di Slides mode",
+    "learning_tools_tooltip": "Alat Pembelajaran (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Target bahasa",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Opsional. Diterapkan ke setiap gambar dalam kuis (pertanyaan + opsi). Kosong = gaya bawaan. Disimpan bersama kuis sehingga tindakan penyempurnaan tetap sesuai dengan merek.",
     "generate_pre_check": "Hasilkan Pre-Periksa",
     "generate_formative": "Hasilkan Formative Periksa",
-    "generate_review": "Hasilkan Spaced Tinjauan"
+    "generate_review": "Hasilkan Spaced Tinjauan",
+    "likert_strongly_disagree": "Sangat tidak setuju",
+    "no_right_answer": "Tidak ada jawaban benar atau salah di sini.",
+    "poll_completed": "Terima kasih telah berbagi pendapat Anda.",
+    "poll_intro": "Tidak ada jawaban benar atau salah di sini — pendapat jujur Anda membantu guru Anda dan membantu Anda.",
+    "mode_poll": "🗣️ Jajak Pendapat (suara siswa)"
   },
   "outline": {
     "title": "visual Organizer",
@@ -4160,7 +4185,8 @@
     },
     "divergence": {
       "semantic": "Sesuai struktur tetapi lemah secara semantik — AI menandai kualitas konten yang tidak dapat dideteksi axe-core",
-      "structural": "Pelanggaran WCAG tingkat kode terdeteksi — axe-core menemukan kegagalan yang dapat diverifikasi mesin"
+      "structural": "Pelanggaran WCAG tingkat kode terdeteksi — axe-core menemukan kegagalan yang dapat diverifikasi mesin",
+      "critical_override": "axe-core menemukan {n} pelanggaran WCAG kritis — tinjau sebelum mempercayai skor gabungan; rata-rata dapat menyembunyikan kegagalan serius"
     },
     "tagtree": {
       "label": "Struktur tag yang sudah ada",
@@ -4278,7 +4304,8 @@
       "std_dev": "standar Deviation",
       "icc_title": "Custom 1−(SD/50) index; tidak textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Heuristik hibrida CV + perbandingan berpasangan di seluruh proses AI; bukan Cronbach's α versi buku teks"
     },
     "score": {
       "total_checks": "Total pemeriksaan dilakukan",
@@ -4436,7 +4463,9 @@
       "title": "Remenghasilkan sebuah PDF dari remediated HTML. Layout reflows — halaman breaks, fonts, dan pagination dapat differ dari asli. Berfungsi well untuk sederhana prose dokumen."
     },
     "tagged_pdf": {
-      "title": "Preserve asli PDF's visual layout byte-identical dan inject aksesibilitas tags ke dalam its struktur tree. Terbaik untuk textbooks, multi-kolom dokumen, dan branded PDFs di mana visual fidelity matters."
+      "title": "Preserve asli PDF's visual layout byte-identical dan inject aksesibilitas tags ke dalam its struktur tree. Terbaik untuk textbooks, multi-kolom dokumen, dan branded PDFs di mana visual fidelity matters.",
+      "office_note": "PDF Bertag berlaku untuk input PDF — gunakan Word/HTML",
+      "office_note_title": "Tag struktur hanya dapat disisipkan ke dalam byte PDF. Untuk input Word/PowerPoint, unduhan Word dan HTML yang aksesibel membawa struktur yang telah diperbaiki."
     },
     "alt_formats": {
       "intro": "Unduh remediated dokumen di dapat diakses alternative format"
@@ -4507,7 +4536,9 @@
       "heading": "versi Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Seret sebuah thumbnail onto apapun gambar placeholder di preview ke insert itu, atau klik \"📷 Unggah\" inside sebuah placeholder dan pilih \"Gunakan extracted gambar\"."
+      "drag_hint": "Seret sebuah thumbnail onto apapun gambar placeholder di preview ke insert itu, atau klik \"📷 Unggah\" inside sebuah placeholder dan pilih \"Gunakan extracted gambar\".",
+      "drag_hint2": "Klik thumbnail untuk menyisipkannya ke slot gambar kosong pertama, atau seret ke placeholder atau gambar tertentu di pratinjau. ×N = gambar yang sama muncul di N halaman (biasanya kop surat atau logo).",
+      "insert_aria": "Sisipkan gambar yang diekstrak ke slot kosong pertama"
     },
     "toolbar": {
       "aria": "teks formatting",
@@ -4543,7 +4574,60 @@
     "violation_one": "{count} pelanggaran",
     "violation_other": "{count} pelanggaran",
     "ai_issue_one": "{count} masalah yang ditandai AI",
-    "ai_issue_other": "{count} masalah yang ditandai AI"
+    "ai_issue_other": "{count} masalah yang ditandai AI",
+    "tagged": {
+      "born_digital_note": "Perhatian: untuk PDF berlapis teks, tag semantik menggunakan asosiasi ActualText alih-alih keterkaitan konten penuh. File jauh lebih aksesibel, tetapi verifikasi di PAC 2024 atau Acrobat sebelum mengeklaim kesesuaian PDF/UA."
+    },
+    "one_click": {
+      "label": "Jadikan Aksesibel",
+      "badge": "sepenuhnya otomatis — audit, perbaiki, verifikasi, ulangi hingga target",
+      "desc": "Satu klik menjalankan seluruh alur secara otomatis dengan pengaturan default; unduhan siap di akhir. Lebih suka kendali penuh? Gunakan \"Jalankan Audit\" di bawah, tinjau hasilnya, lalu klik Perbaiki & Verifikasi sendiri."
+    },
+    "run_audit_label": "Jalankan Audit (langkah 1 dari 2)",
+    "manual_path_explainer": "\"Jalankan Audit\" menilai dokumen dan menunjukkan apa yang perlu diperbaiki — Anda kemudian meninjau dan mengeklik Perbaiki & Verifikasi sendiri (langkah 2). \"Jadikan Aksesibel\" di atas melakukan kedua langkah ditambah pemeriksaan ulang, secara otomatis. \"Ekstraksi Teks\" hanya mengambil teks mentah untuk pembuatan konten.",
+    "tagged_report": {
+      "heading": "Laporan PDF Bertag",
+      "close_aria": "Tutup laporan PDF-bertag",
+      "note": "Panel ini tetap ada sampai Anda menutupnya. Detail yang sama disertakan dalam unduhan Laporan A11y bergaya Adobe."
+    },
+    "docx_export": {
+      "title": "Ubah konten yang telah diperbaiki menjadi dokumen Word dengan gaya judul yang sebenarnya, teks alternatif pada gambar, baris header tabel, struktur daftar, dan hyperlink yang berfungsi. Verifikasi dengan Pemeriksa Aksesibilitas bawaan Word (Review → Check Accessibility) sebelum mendistribusikan."
+    },
+    "pptx_export": {
+      "title": "Bangun ulang konten yang telah diperbaiki sebagai presentasi PowerPoint dengan judul slide yang sebenarnya, teks alternatif pada gambar, baris tabel bergaya header, daftar berpoin sungguhan, dan urutan baca = urutan visual. Tata letak aksesibel yang dibangun ulang — bukan tiruan visual dari aslinya. Verifikasi dengan Pemeriksa Aksesibilitas PowerPoint sebelum mendistribusikan."
+    },
+    "dashboard": {
+      "aria": "Ikhtisar hasil perbaikan dan navigasi bagian",
+      "score_title": "Skor aksesibilitas: sebelum → sesudah"
+    },
+    "tag_to_workbench_title": "Kirim blok ini ke Expert Workbench: mengisi perintah yang ditargetkan terlebih dahulu (termasuk peringatan apa pun) sehingga Anda dapat memperbaikinya dengan satu instruksi",
+    "tag_to_workbench_aria": "Kirim ke Expert Workbench",
+    "pptx_theme_aria": "Tema ekspor PowerPoint",
+    "pptx_theme_title": "Tema slide untuk ekspor PowerPoint. Semua preset telah diperiksa kontrasnya (WCAG AA); opsi AI menyesuaikan dengan topik Anda, dengan keterbacaan dipastikan secara lokal pada kedua cara.",
+    "export_menu": {
+      "button": "Ekspor / Unduh",
+      "intro": "Unduh dokumen yang telah diperbaiki dalam format apa pun — pilih yang sesuai dengan cara penggunaannya.",
+      "tagged_pdf": "PDF Bertag (PDF/UA — berikan kepada siswa)",
+      "word": "Word (.docx — terus menyunting)",
+      "pptx": "PowerPoint (.pptx — presentasikan)",
+      "html": "HTML (terbuka di mana saja, tanpa perangkat lunak)",
+      "group_access": "Format aksesibel",
+      "daisy": "Buku-bicara DAISY (teks lengkap)",
+      "daisy_title": "Paket buku-bicara teks-lengkap DAISY 3 (DTBook). Buka di pembaca DAISY, yang menyediakan ucapan, braille, atau cetak besar. (Untuk audio baca-nyaring tersinkron, gunakan Baca-bersama di bawah.)",
+      "readalong": "E-book baca-bersama (audio tersinkron)",
+      "readalong_progress": "Menarasikan… {done}/{total}",
+      "readalong_title": "E-book baca-bersama (EPUB3 Media Overlays): menghasilkan teks-ke-ucapan untuk setiap paragraf dan menyinkronkannya dengan teks sehingga sistem baca menyoroti kata-kata saat diucapkan. Membuat banyak panggilan suara — bisa memakan beberapa menit.",
+      "group_text": "Teks & dapat disunting",
+      "odt_title": "OpenDocument Text — terbuka secara native di LibreOffice dan Google Docs (dan Word).",
+      "group_audio": "Narasi audio",
+      "audio": "Narasi audio (standar)",
+      "audio_title": "Narasi lisan dari dokumen (MP3/WAV).",
+      "audio_sr": "Audio (gaya pembaca layar)",
+      "audio_sr_title": "Suara yang sama, tetapi mengumumkan struktur seperti yang dilakukan pembaca layar (tingkat judul, jumlah daftar, baris tabel, teks alternatif gambar)."
+    },
+    "mo": {
+      "confirm": "Buat e-book baca-bersama? Ini menarasikan {n} bagian teks dengan teks-ke-ucapan — sekitar {n} panggilan suara, yang bisa memakan beberapa menit."
+    }
   },
   "concept_sort": {
     "title": "Konsep Urutkan",
@@ -6890,7 +6974,10 @@
     "pdf_audit_alt_formats_epub_btn": "Simpan dokumen yang diperbaiki sebagai file ePub dengan daftar isi dan metadata aksesibilitas. Bekerja di Kindle, Apple Books, dan sebagian besar pembaca seluler — siswa dapat mengubah ukuran font, warna, dan kecepatan membaca.",
     "pdf_audit_alt_formats_braille_btn": "Simpan file Braille Kelas 1 (tidak disingkat) yang dapat dicetak timbul pada printer Braille atau dikirim ke tampilan Braille yang dapat diperbarui. Untuk penyingkatan Kelas 2, serahkan file ke TVI (guru untuk siswa dengan kecacatan visual) untuk diselesaikan.",
     "pdf_audit_alt_formats_text_btn": "Simpan file .txt biasa dengan semua format dihapus — format termudah untuk pembaca layar, konversi cetakan besar, atau tempel ke alat lain.",
-    "pdf_audit_alt_formats_markdown_btn": "Simpan dokumen sebagai Markdown — masuk dengan bersih ke halaman Canvas, Schoology, atau D2L, Google Docs (melalui tempel), wiki, dan catatan gaya GitHub tanpa kehilangan judul atau tautan."
+    "pdf_audit_alt_formats_markdown_btn": "Simpan dokumen sebagai Markdown — masuk dengan bersih ke halaman Canvas, Schoology, atau D2L, Google Docs (melalui tempel), wiki, dan catatan gaya GitHub tanpa kehilangan judul atau tautan.",
+    "pdf_audit_alt_formats_daisy_btn": "Simpan paket buku-bicara teks-lengkap DAISY 3. Pembaca DAISY (umum dalam pendidikan khusus) menambahkan ucapan, braille, atau cetak besar mereka sendiri dengan navigasi lengkap. Hanya teks di sini — untuk baca-nyaring tersinkron, gunakan E-book baca-bersama.",
+    "pdf_audit_alt_formats_readalong_btn": "Buat e-book baca-bersama (EPUB3 Media Overlays): setiap paragraf dinarasikan dengan teks-ke-ucapan dan disinkronkan dengan teks sehingga kata-kata disoroti saat diucapkan. Satu panggilan suara per bagian, jadi bisa memakan beberapa menit.",
+    "pdf_audit_alt_formats_odt_btn": "Simpan file OpenDocument Text (.odt) — native untuk LibreOffice dan Google Docs (Word juga bisa membukanya). Gunakan saat sekolah Anda tidak sepenuhnya menggunakan Microsoft tetapi Anda tetap ingin dokumen yang dapat disunting dengan struktur tetap utuh."
   },
   "groups": {
     "title": "Differentiation Grups",
@@ -11277,7 +11364,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring cerita ke life dengan karakter voices & literary analisis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Tulis poems dengan form scaffolds, rhyme & meter analisis, AI umpan balik"
+    "poettree_desc": "Tulis poems dengan form scaffolds, rhyme & meter analisis, AI umpan balik",
+    "throughline_desc": "Susun pelajaran Anda menjadi satu unit spasial: urutan pengajaran, prasyarat, satu berkas yang dapat diekspor"
   },
   "sel_hub": {
     "loading": "Memuat SEL Hub...",
@@ -12597,5 +12685,10 @@
     "byline": "Oleh {author} · {words} kata · {used}/{total} kosakata",
     "student": "Siswa",
     "score": "Skor: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Merender ulang pratinjau akan mengganti suntingan manual Anda dengan konten yang baru dibuat. Lanjutkan dan buang suntingan? (Batal akan mempertahankannya — ekspor atau tutup builder untuk menyimpan terlebih dahulu.)",
+    "remediation_banner_title": "Menyunting dokumen yang telah diperbaiki.",
+    "remediation_banner_body": "Suntingan Anda di sini tersimpan kembali ke dalamnya saat Anda menutup builder, sehingga unduhan PDF Bertag / Word / PowerPoint menyertakannya."
   }
 }

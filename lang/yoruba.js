@@ -1727,7 +1727,26 @@
     "project_saved_multi_other": "💾 A ti fipamọ́ iṣẹ́ ({count} àyè); gbé e wọlé lẹ́yìn-ọ̀-rẹyìn láti tẹ̀síwájú",
     "project_saved": "💾 A ti fipamọ́ iṣẹ́; gbé e wọlé lẹ́yìn-ọ̀-rẹyìn láti tẹ̀síwájú àtúnṣe",
     "search_result_desc": "Àbájáde Ìwáṣẹ́ Google: {title}",
-    "link_url_prompt": "Tẹ URL ọ̀nà-ìjápọ̀ sí:"
+    "link_url_prompt": "Tẹ URL ọ̀nà-ìjápọ̀ sí:",
+    "building_accessible_docx": "Ń kọ́ fáìlì Word tí ó ṣeé wọlé sí…",
+    "building_accessible_pptx": "Ń kọ́ PowerPoint tí ó ṣeé wọlé sí…",
+    "batch_tagging": "📄 Ń ṣẹ̀dá àwọn PDF tí a fi àmì sí fún ZIP — àwọn fáìlì tí a ti ṣàwòrán máa ń gba àkókò gígùn (OCR ń ṣiṣẹ́ lórí fáìlì kọ̀ọ̀kan)…",
+    "builder_edits_preserved": "✋ A pa àwọn àtúnṣe ọwọ́ rẹ mọ́ — a kò tún ìṣàfihàn náà ṣe. Kó jáde tàbí ti olùkọ́ náà pa láti fi wọ́n pamọ́, lẹ́yìn náà yí àwọn ètò padà.",
+    "builder_edits_synced": "✏️ A ti fi àwọn àtúnṣe olùkọ́ pamọ́ sínú àkọsílẹ̀ tí a túnṣe — báyìí àwọn ìkójáde Tagged PDF / Word / PowerPoint ní wọn nínú.",
+    "pptx_ai_theme": "🎨 Ń béèrè lọ́wọ́ AI fún àwọ̀ tí ó bá kókó ọ̀rọ̀ mu (a ń fi ipá mú kíkàwé ní agbègbè)…",
+    "make_accessible_fixing": "✨ A ti parí àyẹ̀wò — ń túnṣe láìfọwọ́yí (kò sí ìtẹ̀ tí a nílò)…",
+    "tagged_pdf_saved_see_report": "📄 A ti fi Tagged PDF pamọ́ — ìròyìn kíkún náà wà ní òkè àwọn bọ́tìnì ìgbàsílẹ̀ (✕ láti yọ kúrò).",
+    "no_open_image_slot": "Kò sí àyè àwòrán tí ó ṣí sílẹ̀ mọ́ nínú ìṣàfihàn — fa àwòrán kékeré náà sí àwòrán kan pàtó láti fi rọ́pò rẹ̀ dípò.",
+    "extracted_image_inserted": "🖼 A ti fi sí àyè àwòrán àkọ́kọ́ tí ó ṣí sílẹ̀ — fa àwòrán kékeré dípò bí o bá fẹ́ ibi mìíràn.",
+    "html_downloaded": "🌐 A ti gba HTML sílẹ̀ — ó ṣí sínú ẹ̀rọ ìṣàwákiri èyíkéyìí.",
+    "odt_downloaded": "📄 A ti gba OpenDocument (.odt) sílẹ̀ — ó ṣí sínú LibreOffice, Google Docs, tàbí Word.",
+    "daisy_downloaded": "🔊 A ti gba ìdìpọ̀ ìwé-àsọ̀rọ̀ DAISY (.zip) sílẹ̀ — ṣí i nínú ẹ̀rọ ìkàwé DAISY.",
+    "mo_no_voice": "Iṣẹ́ ohùn náà kò sí, nítorí náà a kò lè ṣẹ̀dá ohùn àfetísílẹ̀-àti-kíkà lọ́wọ́lọ́wọ́.",
+    "mo_busy": "Ìkójáde àfetísílẹ̀-àti-kíkà kan ti ń ṣiṣẹ́ tẹ́lẹ̀.",
+    "mo_no_text": "Kò sí ọ̀rọ̀ tí a lè kà tí a rí láti sọ.",
+    "mo_no_audio": "⚠ A ti fi ìwé-aṣàwòrán àfetísílẹ̀-àti-kíkà pamọ́, ṣùgbọ́n a kò lè ṣẹ̀dá ohùn kankan (iṣẹ́ ohùn kò sí). Ọ̀rọ̀ náà àti ètò ìbámu wà ní pípé.",
+    "mo_done": "A ti gba ìwé-aṣàwòrán àfetísílẹ̀-àti-kíkà sílẹ̀",
+    "audio_unavailable_now": "Ohùn kò sí lọ́wọ́lọ́wọ́ (iṣẹ́ kan lè máa ṣiṣẹ́, tàbí iṣẹ́ ohùn náà ti pa)."
   },
   "large_file": {
     "modal_title": "Mu wa Large ohun faili",
@@ -1801,7 +1820,8 @@
     "educator_tools_aria": "Educator irinṣẹ",
     "documents_menu_aria": "iwe ṣẹ akojọ ṣayan",
     "open_doc_builder_pdf_aria": "Ṣii iwe ṣẹ Builder fun PDF",
-    "export_slides_tooltip": "Opens iwe ṣẹ Builder ninu Slides ọna"
+    "export_slides_tooltip": "Opens iwe ṣẹ Builder ninu Slides ọna",
+    "learning_tools_tooltip": "Àwọn Irinṣẹ́ Ìkẹ́kọ̀ọ́ (STEM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)"
   },
   "translate": {
     "target_label": "Target ede",
@@ -2205,7 +2225,7 @@
     "pictionary_host_dashboard": "Pẹpẹ olùgbalejò Concept Pictionary",
     "concept_to_draw": "Concept si ya",
     "round_timer": "Olùwọ̀n-àkókò ìpele",
-    "concept_pictionary": "Concept Pictionary",
+    "concept_pictionary": "Pictionary Èròngbà",
     "your_guess": "rẹ guess",
     "remove_columns": "Yọ kuro iwe",
     "add_column": "Fikun iwe",
@@ -3703,7 +3723,12 @@
     "style_tooltip": "Àyàn-fẹ́. Ó wà fún gbogbo àwòrán nínú ìdánwò (ìbéèrè + àwọn àṣàyàn). Òfo = ọ̀nà àìyípadà. A fi pamọ́ pẹ̀lú ìdánwò kí àwọn ìṣe ìtúnṣe lè wà lórí- àmì-òwò.",
     "generate_pre_check": "Ṣẹda Pre-Check",
     "generate_formative": "Ṣẹda Formative Check",
-    "generate_review": "Ṣẹda Spaced Review"
+    "generate_review": "Ṣẹda Spaced Review",
+    "likert_strongly_disagree": "Kò gbà rárá",
+    "no_right_answer": "Kò sí ìdáhùn tí ó tọ́ tàbí tí kò tọ́ níbí.",
+    "poll_completed": "O ṣeun fún pípín èrò rẹ.",
+    "poll_intro": "Kò sí ìdáhùn tí ó tọ́ tàbí tí kò tọ́ níbí — èrò òtítọ́ rẹ ń ran olùkọ́ rẹ lọ́wọ́, ó sì ń ràn ọ́ lọ́wọ́.",
+    "mode_poll": "🗣️ Ìbò (ohùn akẹ́kọ̀ọ́)"
   },
   "outline": {
     "title": "oju Organizer",
@@ -4160,7 +4185,8 @@
     },
     "divergence": {
       "semantic": "Bámu pẹlu apilẹṣẹ ṣugbọn aláìlera ní àyíká ọ̀rọ̀ — AI samisi ìpele àkóónú tí axe-core kò le rí",
-      "structural": "Ìrẹ́jẹ WCAG níbi kódù tí a rí — axe-core rí àwọn ikùnà tí ẹ̀rọ le ṣẹ̀dá"
+      "structural": "Ìrẹ́jẹ WCAG níbi kódù tí a rí — axe-core rí àwọn ikùnà tí ẹ̀rọ le ṣẹ̀dá",
+      "critical_override": "axe-core rí ìrúfin WCAG pàtàkì {n} — ṣàyẹ̀wò wọn kí o tó gba àmì ìdàpọ̀ gbọ́; àpapọ̀ lè bo ìkùnà líle kan"
     },
     "tagtree": {
       "label": "Ìṣètò àmì tó ti wà tẹ́lẹ̀",
@@ -4278,7 +4304,8 @@
       "std_dev": "eto Deviation",
       "icc_title": "Custom 1−(SD/50) index; ko textbook ICC",
       "icc_label": "Pass-to-pass score agreement (heuristic)",
-      "cronbach": "Cross-pass consistency (heuristic)"
+      "cronbach": "Cross-pass consistency (heuristic)",
+      "cronbach_title": "Heuristic ìdàpọ̀ CV + pairwise káàkiri àwọn àfọ̀tánàló AI; kì í ṣe Cronbach's α ti ìwé-ẹ̀kọ́"
     },
     "score": {
       "total_checks": "Àpapọ̀ àyẹ̀wò tí a ṣe",
@@ -4436,7 +4463,9 @@
       "title": "Regenerate PDF lati remediated HTML. Layout reflows — page breaks, fonts, ati pagination may differ lati original. Works well fun rọrun prose iwe ṣẹ."
     },
     "tagged_pdf": {
-      "title": "Preserve original PDF's oju layout byte-identical ati inject accessibility tags sí inú its structure tree. Best fun textbooks, multi-iwe iwe ṣẹ, ati branded PDFs ibi ti oju fidelity matters."
+      "title": "Preserve original PDF's oju layout byte-identical ati inject accessibility tags sí inú its structure tree. Best fun textbooks, multi-iwe iwe ṣẹ, ati branded PDFs ibi ti oju fidelity matters.",
+      "office_note": "Tagged PDF wà fún àwọn ìṣàwọlé PDF — lo Word/HTML",
+      "office_note_title": "Àwọn àmì ètò lè wọ inú àwọn báìtì PDF nìkan ni a lè fi sí. Fún àwọn ìṣàwọlé Word/PowerPoint, àwọn ìgbàsílẹ̀ Word àti HTML tí ó ṣeé wọlé sí ní ètò tí a túnṣe nínú."
     },
     "alt_formats": {
       "intro": "Gba sile remediated iwe ṣẹ ninu accessible alternative apẹẹrẹ"
@@ -4507,7 +4536,9 @@
       "heading": "ẹya Stamp"
     },
     "extracted_images": {
-      "drag_hint": "Fa thumbnail onto any aworan placeholder ninu patunyẹwo si insert it, tabi tẹ \"📷 Gbe sori\" inside placeholder ati yan \"Lo extracted aworan\"."
+      "drag_hint": "Fa thumbnail onto any aworan placeholder ninu patunyẹwo si insert it, tabi tẹ \"📷 Gbe sori\" inside placeholder ati yan \"Lo extracted aworan\".",
+      "drag_hint2": "Tẹ àwòrán kékeré kan láti fi sí àyè àwòrán àkọ́kọ́ tí ó ṣí sílẹ̀, tàbí fa á sí àfidípò tàbí àwòrán pàtó èyíkéyìí nínú ìṣàfihàn náà. ×N = àwòrán kan náà fara hàn lórí ojú-ìwé N (lọ́pọ̀ ìgbà ó jẹ́ orí-lẹ́tà tàbí lógò).",
+      "insert_aria": "Fi àwòrán tí a yọ jáde sí àyè àkọ́kọ́ tí ó ṣí sílẹ̀"
     },
     "toolbar": {
       "aria": "ọrọ formatting",
@@ -4543,7 +4574,60 @@
     "violation_one": "Ìrúfin {count}",
     "violation_other": "Ìrúfin {count}",
     "ai_issue_one": "Ìṣòro {count} tí AI samì sí",
-    "ai_issue_other": "Ìṣòro {count} tí AI samì sí"
+    "ai_issue_other": "Ìṣòro {count} tí AI samì sí",
+    "tagged": {
+      "born_digital_note": "Àkíyèsí: fún àwọn PDF tí ó ní ìpele-ọ̀rọ̀, àwọn àmì ìtumọ̀ ń lo ìbáṣepọ̀ ActualText dípò ìjápọ̀ àkóónú kíkún. Fáìlì náà ṣeé wọlé sí púpọ̀ síi, ṣùgbọ́n ṣàyẹ̀wò nínú PAC 2024 tàbí Acrobat kí o tó sọ pé ó bá PDF/UA mu."
+    },
+    "one_click": {
+      "label": "Sọ Di Ṣeé-wọlé-sí",
+      "badge": "láìfọwọ́yí pátápátá — ṣàyẹ̀wò, túnṣe, ṣàfọ̀tánàló, tún ṣe títí dé àfojúsùn",
+      "desc": "Ìtẹ̀ kan ṣoṣo ń ṣiṣẹ́ gbogbo ìlà-iṣẹ́ náà láìfọwọ́yí pẹ̀lú àwọn ètò ìpilẹ̀; àwọn ìgbàsílẹ̀ ti ṣetán ní òpin. Ṣé o fẹ́ àkóso? Lo \"Ṣe Àyẹ̀wò\" nísàlẹ̀, ṣàyẹ̀wò àbájáde, lẹ́yìn náà tẹ Túnṣe & Ṣàfọ̀tánàló fúnra rẹ."
+    },
+    "run_audit_label": "Ṣe Àyẹ̀wò (ìgbésẹ̀ 1 nínú 2)",
+    "manual_path_explainer": "\"Ṣe Àyẹ̀wò\" ń fún àkọsílẹ̀ náà ní àmì ó sì ń fi ohun tí ó nílò àtúnṣe hàn — lẹ́yìn náà o ṣàyẹ̀wò o sì tẹ Túnṣe & Ṣàfọ̀tánàló fúnra rẹ (ìgbésẹ̀ 2). \"Sọ Di Ṣeé-wọlé-sí\" lókè ń ṣe àwọn ìgbésẹ̀ méjèèjì pẹ̀lú àtúntún-àyẹ̀wò, láìfọwọ́yí. \"Ìyọ Ọ̀rọ̀ Jáde\" kàn ń fa ọ̀rọ̀ àkọ́ṣẹ̀ jáde fún ṣíṣẹ̀dá àkóónú.",
+    "tagged_report": {
+      "heading": "Ìròyìn Tagged PDF",
+      "close_aria": "Yọ ìròyìn Tagged PDF kúrò",
+      "note": "Pánẹ́ẹ̀lì yìí dúró títí tí o fi yọ ọ́ kúrò. Àwọn àlàyé kan náà wà nínú ìgbàsílẹ̀ A11y Report tí ó dàbí ti Adobe."
+    },
+    "docx_export": {
+      "title": "Yí àkóónú tí a túnṣe padà sí àkọsílẹ̀ Word pẹ̀lú àwọn ọ̀nà àkọlé gidi, ọ̀rọ̀ àfidípò lórí àwọn àwòrán, àwọn ọwọ́ orí tábìlì, ètò àtòjọ, àti àwọn ọ̀nà àjápọ̀ tí ń ṣiṣẹ́. Ṣàyẹ̀wò pẹ̀lú Olùṣàyẹ̀wò Ìṣeé-wọlé-sí tí ó wà nínú Word (Review → Check Accessibility) kí o tó pín kiri."
+    },
+    "pptx_export": {
+      "title": "Tún àkóónú tí a túnṣe kọ́ gẹ́gẹ́ bí dékì PowerPoint pẹ̀lú àwọn àkọlé sláìdì gidi, ọ̀rọ̀ àfidípò lórí àwọn àwòrán, àwọn ọwọ́ tábìlì ní àṣà-orí, àwọn àtòjọ ọ̀tọ̀ gidi, àti ètò kíkà = ètò ìran. Àpẹrẹ tí a tún kọ́ tí ó ṣeé wọlé sí — kì í ṣe àdàkọ ìran ti ìpilẹ̀. Ṣàyẹ̀wò pẹ̀lú Olùṣàyẹ̀wò Ìṣeé-wọlé-sí ti PowerPoint kí o tó pín kiri."
+    },
+    "dashboard": {
+      "aria": "Àkópọ̀ àbájáde àtúnṣe àti ìtọ́sọ́nà apá",
+      "score_title": "Àmì ìṣeé-wọlé-sí: ṣáájú → lẹ́yìn"
+    },
+    "tag_to_workbench_title": "Fi bídíkì yìí ránṣẹ́ sí Expert Workbench: ó kún àṣẹ àfojúsùn kan tẹ́lẹ̀ (pẹ̀lú àwọn ìkìlọ̀ èyíkéyìí) kí o lè túnṣe pẹ̀lú àṣẹ kan ṣoṣo",
+    "tag_to_workbench_aria": "Fi ránṣẹ́ sí Expert Workbench",
+    "pptx_theme_aria": "Àkòrí ìkójáde PowerPoint",
+    "pptx_theme_title": "Àkòrí sláìdì fún ìkójáde PowerPoint. A ti ṣàyẹ̀wò ìyàtọ̀ àwọ̀ gbogbo àwọn àpẹrẹ tí a ti ṣètò (WCAG AA); àṣàyàn AI bá kókó ọ̀rọ̀ rẹ mu, pẹ̀lú kíkàwé tí a fi ipá mú ní agbègbè ní ọ̀nàkọ̀nà.",
+    "export_menu": {
+      "button": "Kó Jáde / Gbà Sílẹ̀",
+      "intro": "Gba àkọsílẹ̀ tí a túnṣe sílẹ̀ ní ọ̀nà èyíkéyìí — yan èyí tí ó bá bí a ṣe máa lò ó mu.",
+      "tagged_pdf": "Tagged PDF (PDF/UA — fún àwọn akẹ́kọ̀ọ́)",
+      "word": "Word (.docx — máa bá ṣàtúnṣe lọ)",
+      "pptx": "PowerPoint (.pptx — ṣàfihàn rẹ̀)",
+      "html": "HTML (ó ṣí níbi gbogbo, láìní sọ́fítíwátì)",
+      "group_access": "Àwọn ọ̀nà tí ó ṣeé wọlé sí",
+      "daisy": "Ìwé-àsọ̀rọ̀ DAISY (ọ̀rọ̀ kíkún)",
+      "daisy_title": "Ìdìpọ̀ ìwé-àsọ̀rọ̀ ọ̀rọ̀-kíkún DAISY 3 (DTBook). Ṣí i nínú ẹ̀rọ ìkàwé DAISY, tí ó ń pèsè ọ̀rọ̀-sísọ, bíréìlì, tàbí ìtẹ̀wé ńlá. (Fún ohùn kíkà-sókè tí a ṣe ìbámu, lo Àfetísílẹ̀-àti-kíkà nísàlẹ̀.)",
+      "readalong": "Ìwé-aṣàwòrán àfetísílẹ̀-àti-kíkà (ohùn ìbámu)",
+      "readalong_progress": "Ń sọ… {done}/{total}",
+      "readalong_title": "Ìwé-aṣàwòrán àfetísílẹ̀-àti-kíkà (EPUB3 Media Overlays): ó ń ṣẹ̀dá ọ̀rọ̀-di-ohùn fún àyọkà kọ̀ọ̀kan ó sì ń ṣe ìbámu rẹ̀ pẹ̀lú ọ̀rọ̀ náà kí ẹ̀rọ ìkàwé lè tẹnumọ́ àwọn ọ̀rọ̀ bí a ṣe ń sọ wọ́n. Ó ń ṣe ọ̀pọ̀ ìpè ohùn — ó lè gba ìṣẹ́jú díẹ̀.",
+      "group_text": "Ọ̀rọ̀ & ṣíṣeé-ṣàtúnṣe",
+      "odt_title": "OpenDocument Text — ó ṣí ní tààrà nínú LibreOffice àti Google Docs (àti Word).",
+      "group_audio": "Àsọyé ohùn",
+      "audio": "Àsọyé ohùn (ìpele)",
+      "audio_title": "Àsọyé ọ̀rọ̀-sísọ ti àkọsílẹ̀ náà (MP3/WAV).",
+      "audio_sr": "Ohùn (àṣà aṣàkàwé-ìbòjú)",
+      "audio_sr_title": "Ohùn kan náà, ṣùgbọ́n tí ó ń kéde ètò bí aṣàkàwé-ìbòjú ṣe máa ṣe (àwọn ìpele àkọlé, àwọn iye àtòjọ, àwọn ọwọ́ tábìlì, àwọn ọ̀rọ̀ àfidípò àwòrán)."
+    },
+    "mo": {
+      "confirm": "Ṣé kí a kọ́ ìwé-aṣàwòrán àfetísílẹ̀-àti-kíkà? Èyí ń sọ àwọn apá ọ̀rọ̀ {n} pẹ̀lú ọ̀rọ̀-di-ohùn — nǹkan bí ìpè ohùn {n}, tí ó lè gba ìṣẹ́jú díẹ̀."
+    }
   },
   "concept_sort": {
     "title": "Concept Si",
@@ -6839,7 +6923,61 @@
     "timeline_image_size": "Olùṣàkóso ìwọ̀n fún àwọn àwòrán tí AI ṣẹda nínú àwọn káàdì Timeline (ó han bí àwọn ìṣẹ̀lẹ̀ bá ní àwòrán). Slider ìgbésẹ̀ mẹ́ta: small/medium/large. Títóbi dára fún K-5; medium tàbí small fún àwọn Timeline ìpele AP.",
     "pdf_audit_view_web_audit_btn": "Ó ń fún ojú-ìwé náà ní àmì fún ìráyèsí WCAG 2.1 AA nípa lílo olùṣàyẹ̀wò AI àti ẹ̀rọ axe-core (ẹ̀rọ kan náà tí àwọn olùṣàyẹ̀wò akọ́ṣẹ́mọṣẹ́ ń lò). Kò sí ohun tí a yí padà — lo èyí nígbà tí o bá kàn fẹ́ mọ̀ bí ojú-ìwé náà ṣe wà lónìí.",
     "pdf_audit_results_score_badge": "Àmì ìráyèsí gbogbo-gbòò ti PDF rẹ láti 0 sí 100. Àwọ̀ ewé (80+) sún mọ́ WCAG AA, àwọ̀ àmber (50-79) nílò iṣẹ́, àwọ̀ pupa (<50) ní àwọn ìdènà ńlá fún àwọn akẹ́kọ̀ọ́ tí ń lo àwọn ẹ̀rọ-kíkà-ìbòjú tàbí ẹ̀rọ ìrànlọ́wọ́.",
-    "pdf_audit_alt_formats_braille_btn": "Fi fáìlì Braille Ìpele-1 (tí kò ní ìkáṣọ̀rọ̀) pamọ́ tí a lè tẹ̀ jáde lórí ẹ̀rọ-ìtẹ̀wé Braille tàbí kí a fi ránṣẹ́ sí ẹ̀rọ-ìfihàn Braille aláṣetúnṣe. Fún àwọn ìkáṣọ̀rọ̀ Ìpele-2, fi fáìlì náà lé olùkọ́ TVI (olùkọ́ àwọn akẹ́kọ̀ọ́ tí ojú wọn ò pé) lọ́wọ́ fún ìparí."
+    "pdf_audit_alt_formats_braille_btn": "Fi fáìlì Braille Ìpele-1 (tí kò ní ìkáṣọ̀rọ̀) pamọ́ tí a lè tẹ̀ jáde lórí ẹ̀rọ-ìtẹ̀wé Braille tàbí kí a fi ránṣẹ́ sí ẹ̀rọ-ìfihàn Braille aláṣetúnṣe. Fún àwọn ìkáṣọ̀rọ̀ Ìpele-2, fi fáìlì náà lé olùkọ́ TVI (olùkọ́ àwọn akẹ́kọ̀ọ́ tí ojú wọn ò pé) lọ́wọ́ fún ìparí.",
+    "pdf_audit_view_web_url_input": "Lẹ àdírẹ́sì ojú-ìwé wẹ́ẹ̀bù tí o fẹ́ kí a ṣàyẹ̀wò (fún àpẹẹrẹ https://yourdistrict.org/handbook), lẹ́yìn náà tẹ Fa láti fa HTML rẹ̀ jáde kí o lè ṣàyẹ̀wò ó sì túnṣe rẹ̀.",
+    "pdf_audit_view_web_fetch_btn": "Ó ń gba ojú-ìwé tí ó wà ní URL lókè sílẹ̀ ó sì ń fi HTML rẹ̀ sínú àpótí nísàlẹ̀. Bí àyè náà bá dí fífà, lẹ orísun ojú-ìwé sínú àpótí HTML fúnra rẹ.",
+    "pdf_audit_view_web_html_textarea": "HTML gidi tí a ń ṣàyẹ̀wò — yálà tí Fa fi sí tàbí tí o lẹ fúnra rẹ. O lè ṣàtúnṣe rẹ̀ níbí kí o tó ṣe àyẹ̀wò (fún àpẹẹrẹ, yọ àká ìtọ́sọ́nà tí kì í ṣe tirẹ kúrò).",
+    "pdf_audit_view_web_remediate_btn": "Yóò gba ojú-ìwé náà ní àmì, lẹ́yìn náà yóò tún HTML kọ láti tún ohun tí ó lè tún ṣe (ìyàtọ̀ àwọ̀, àmì èdè, skip-link, àwọn àmì-ipò) yóò sì fún ọ ní ẹ̀dà tí ó ṣeé wọlé tí o lè gbà sílẹ̀. Máa ṣàyẹ̀wò ohun tí ó jáde fúnra rẹ nígbà gbogbo kí o tó tẹ̀ ẹ́ jáde.",
+    "pdf_audit_view_batch_dropzone": "Fa àwọn fáìlì PDF láti orí tábìlì rẹ tàbí àpótí àwọn fáìlì tí o gbà sílẹ̀ wá sí orí àpótí yìí láti fi wọ́n kún ìlà ìṣẹ́jọ. A kò ní kọbi ara sí àwọn fáìlì tí kì í ṣe PDF.",
+    "pdf_audit_view_batch_browse_btn": "Yóò ṣí ohun-èlò yíyàn fáìlì rẹ láti yan PDF kan tàbí jù bẹ́ẹ̀ lọ. Lo èyí bí fífa àwọn fáìlì kò bá rọrùn (ẹ̀rọ ìfọwọ́kàn, ohun-èlò kíkà-ojú-ìwé, àìríran tó dáa, tàbí Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Yóò bẹ̀rẹ̀ àkójọpọ̀ rẹ tí ó kẹ́yìn láti ibi tí ó ti dúró sí — àwọn PDF tí ó ti parí ni a pa mọ́, àwọn tí kò parí nìkan ni a tún ṣiṣẹ́. Lo èyí nígbà tí àkójọpọ̀ bá ge kúrú (tab tí a ti tì, ìsọdọ̀tun, ìbàjẹ́).",
+    "pdf_audit_view_batch_discard_btn": "Yóò ju ìtẹ̀síwájú tí a tọ́jú sílẹ̀ láti inú àkójọpọ̀ rẹ tí ó kẹ́yìn tí ó dáwọ́dúró nù — bánà náà yóò parẹ́, àwọn àbájáde tí a tọ́jú yóò sì parẹ́ kúrò nínú asàwákiri rẹ.",
+    "pdf_audit_view_batch_clear_all_btn": "Yóò yọ gbogbo PDF kúrò nínú ìlà ìṣẹ́jọ kí o lè bẹ̀rẹ̀ láti ìbẹ̀rẹ̀. Ó wà ní àrọ́wọ́tó kìkì kí o tó tẹ Start Batch.",
+    "pdf_audit_view_batch_row_retry_btn": "Yóò tún fáìlì kan ṣoṣo tí ó kùnà yìí ṣiṣẹ́ láìfọwọ́kan àwọn yòókù nínú àkójọpọ̀. Fi èkúté lé X pupa náà ní àkọ́kọ́ láti ka ìdí tí ó fi kùnà — bí ó bá jẹ́ ìṣòro ètò (PDF tí ó bàjẹ́, ìwòye àwòrán nìkan), tún-ṣiṣẹ́ kò ní ràn án lọ́wọ́.",
+    "pdf_audit_view_batch_row_remove_btn": "Yóò yọ PDF kan yìí kúrò nínú ìlà ìṣẹ́jọ kí àkójọpọ̀ lè fò ó. Ó wà ní àrọ́wọ́tó kìkì kí àkójọpọ̀ tó bẹ̀rẹ̀ síṣiṣẹ́.",
+    "pdf_audit_view_batch_stop_btn": "Yóò béèrè kí àkójọpọ̀ dúró lẹ́yìn tí fáìlì tí ó ń ṣiṣẹ́ lórí nísinsìnyí bá parí. Àwọn PDF tí ó ti parí yóò dúró bí ó ti parí — o kò ní pàdánù iṣẹ́ tí ó parí, o sì lè bẹ̀rẹ̀ àwọn yòókù padà lẹ́yìn-ọ̀-rẹ̀.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Yóò tún gbogbo PDF tí ó kùnà sí ìlà ìṣẹ́jọ yóò sì tún wọn ṣiṣẹ́. A kò ní fọwọ́kan àwọn fáìlì tí ó ti yọrí. Ó tọ́ ìgbìyànjú ẹ̀ẹ̀kan bí àwọn àìṣeyọrí bá dà bí àṣìṣe ìkànnì tí kò dúró ṣinṣin; má ṣe máa tún àwọn PDF tí ó bàjẹ́ pátápátá ṣe.",
+    "pdf_audit_view_batch_start_btn": "Yóò bẹ̀rẹ̀ ìṣàyẹ̀wò àti títúnṣe gbogbo PDF tí ó wà nínú ìlà ìṣẹ́jọ. Ìfìdíhàn yóò farahàn ní àkọ́kọ́ pẹ̀lú ìṣirò àwọn ìpè AI (àti iye owó, lórí ètò tí o gbalejò fúnra rẹ) kí o lè pinnu kí o tó bẹ̀rẹ̀ rẹ̀.",
+    "pdf_audit_view_batch_download_zip_btn": "Yóò gba gbogbo PDF tí a túnṣe ní àṣeyọrí sílẹ̀ gẹ́gẹ́ bí fáìlì ZIP kan ṣoṣo. Ó wúlò fún fífún olùkọ́ tàbí olùbáṣepọ̀ àgbègbè ní gbogbo àpótí fáìlì padà ní ẹ̀ẹ̀kan.",
+    "pdf_audit_view_batch_new_batch_btn": "Yóò mú àkójọpọ̀ tí ó parí kúrò kí o lè fi àkójọpọ̀ PDF tuntun sí. Èyíkéyìí ZIP tí o ti gbà sílẹ̀ yóò dúró sórí kọ̀mpútà rẹ — èyí kàn ń tún ìbòjú náà bẹ̀rẹ̀ ni.",
+    "pdf_audit_view_batch_dashboard_btn": "Yóò ṣí pátákó-àkóso ìbámu-òfin tí a lè tẹ̀ jáde nínú tab tuntun — àmì ìpíndọ́gba, iye àwọn PDF tí ó dé 90+, àwọn ìṣòro WCAG tí ó wọ́pọ̀ jùlọ. Ó wúlò fún pínpín pẹ̀lú alábòójútó tàbí dídì mọ́ àkọsílẹ̀ Title II / 504.",
+    "pdf_audit_view_settings_panel": "Àwọn ohun-ìṣàtúntò fún ọ̀nà-iṣẹ́ ìṣàyẹ̀wò àti títúnṣe. Àwọn ètò àkọ́kọ́ bọ́gbọ́n mu — máa yí wọn padà kìkì bí iṣẹ́ déédéé kò bá ń fún ọ ní ohun tí o nílò (ìjìnlẹ̀ púpọ̀ sí i, iye owó tí ó kéré, ibi ìdúró ọ̀tọ̀).",
+    "pdf_audit_view_audit_passes_slider": "Iye àwọn olùṣàyẹ̀wò AI olómìnira tí ó ń wo PDF náà — wọ́n ń fọwọ́sí àwọn ìṣòro gidi, wọ́n sì ń yapa lórí àríyànjiyàn, nítorí náà àwọn olùṣàyẹ̀wò púpọ̀ sí i túmọ̀ sí ìdágìrì èké tí ó kéré. 5 ni iye tí ó dára jù; gbé e sókè fún àwọn ìwé ìbámu-òfin pàtàkì, dín kù fún àyẹ̀wò kíákíá.",
+    "pdf_audit_view_target_score_slider": "Àmì tí o fẹ́ kí PDF tí a túnṣe dé — 90 jẹ́ àmì àdánwò WCAG 2.1 AA tí ó lágbára, 95+ fẹ́rẹ̀ pé pérépéré, 70 jẹ́ ilẹ̀ tí ó wúlò fún àwọn ìwé tí a yàwòrán. Ṣàjọpọ̀ pẹ̀lú Auto-continue láti jẹ́ kí ọ̀nà-iṣẹ́ máa ṣiṣẹ́ títí tí àmì náà yóò fi dé.",
+    "pdf_audit_view_max_fix_passes_slider": "Iye àwọn ìyípo-títúnṣe aládàáṣiṣẹ́ tí a gba ọ̀nà-iṣẹ́ láàyè láti ṣiṣẹ́ kí ó tó dúró. 8 ni iye àkọ́kọ́; dín èyí kù láti díwọ̀n iye owó lórí ètò tí o gbalejò fúnra rẹ, tàbí ṣètò sí 0 láti fò títúnṣe-aládàáṣiṣẹ́ pátápátá (ìṣàyẹ̀wò nìkan).",
+    "pdf_audit_view_auto_continue_toggle": "Nígbà tí ó bá wà ní ṣíṣe, ọ̀nà-iṣẹ́ náà yóò máa ṣe àfikún ìyípo-títúnṣe (títí dé mẹ́ta sí i) títí tí Àmì Àfojúsùn yóò fi dé, lẹ́yìn náà yóò dúró fúnra rẹ̀. Pa á bí o bá fẹ́ ìyípo kan ṣoṣo àti àbájáde kan láti ṣàyẹ̀wò.",
+    "pdf_audit_view_polish_passes_slider": "Àwọn ìyípo ìfọ̀mọ́ àfikún lẹ́yìn àwọn títúnṣe ìṣeéwọlé gidi — ó mú àlàfo, àwọn àkòrí, àti ẹwà ojú mọ́. 0 yóò fò ó, 2 jẹ́ déédéé, 3 wà fún àwọn ìwé tí ó ń lọ sí ìtẹ̀wé tàbí fún àwọn olùgbọ́ òde.",
+    "pdf_audit_view_branding_panel": "Àyànfẹ́ — ó ń darí bí PDF tí a túnṣe yóò ṣe rí: àwọn àwọ̀ àmì-ìdánimọ̀ àti àpẹẹrẹ àpẹrẹ lápapọ̀. Fò ó fún ìrísí ìṣeéwọlé àkọ́kọ́, tàbí gbòòrò sí i bí ìwé náà bá nílò láti bá àmì-ìdánimọ̀ ilé-ìwé tàbí àgbègbè mu.",
+    "pdf_audit_view_brand_mode_auto_btn": "Yóò fa àwọn àwọ̀ àmì-ìdánimọ̀ jáde láti inú PDF tí o gbé sókè kí ẹ̀dà tí a túnṣe lè dà bí ti ìpilẹ̀ṣẹ̀. Àṣàyàn àkọ́kọ́ tí ó dára jù — ó mú kí ìwé náà jẹ́ àdámọ̀ fún àwọn òṣìṣẹ́ àti àwọn ẹbí.",
+    "pdf_audit_view_brand_mode_upload_input": "Gbé ìwé àmì-ìdánimọ̀ ọ̀tọ̀, lógò, tàbí ìtọ́nisọ́nà àpẹrẹ sókè (àwòrán tàbí PDF) ọ̀nà-iṣẹ́ náà yóò sì fa àwọn àwọ̀ àti irú-àkọ jáde láti inú rẹ̀. Ó wúlò nígbà tí PDF ìpilẹ̀ṣẹ̀ bá rí pẹ́lẹ́bẹ́ ṣùgbọ́n tí ó nílò láti bá àmì-ìdánimọ̀ àgbègbè mu.",
+    "pdf_audit_view_brand_mode_none_btn": "Fò àwọn àwọ̀ àmì-ìdánimọ̀ pátápátá, kí o sì lo àwọ̀-àkójọ ìṣeéwọlé tí ó wà ní inú. Yan èyí fún àwọn ìwé-iṣẹ́ gbogbogbòò, tàbí nígbà tí àwọn àwọ̀ ìpilẹ̀ṣẹ̀ bá kùnà ìyàtọ̀ tí o kò sì nílò láti pa ìrísí náà mọ́.",
+    "pdf_audit_results_tab_remediation_btn": "Fi àwọn àbájáde ìṣàyẹ̀wò hàn lẹ́yìn tí AlloFlow ti túnṣe PDF náà. Lo tab yìí láti rí àmì tí ó ti sunwọ̀n sí i àti àwọn ìṣòro tí a ti túnṣe báyìí.",
+    "pdf_audit_results_tab_original_btn": "Padà sí ìṣàyẹ̀wò PDF ìpilẹ̀ṣẹ̀ kí AlloFlow tó túnṣe ohunkóhun. Ó wúlò fún ìfiwéra àmì ṣáájú-àti-lẹ́yìn ní ẹ̀gbẹ́-sí-ẹ̀gbẹ́.",
+    "pdf_audit_results_reliability_details": "Gbòòrò láti rí bí àwọn olùṣàyẹ̀wò AI ṣe ní ìgbẹ́kẹ̀lé sí àmì yìí tó. Ọ̀pọ̀ ìyípo AI ń ṣiṣẹ́ lẹ́gbẹ̀ẹ́ ara wọn — ìfọwọ́sowọ́pọ̀ tí ó péye túmọ̀ sí pé àmì náà ṣeé gbẹ́kẹ̀lé, ìtànká gbòòrò túmọ̀ sí kí o ṣàyẹ̀wò àwọn ìṣòro kọ̀ọ̀kan fúnra rẹ.",
+    "pdf_audit_results_score_breakdown_details": "Gbòòrò láti rí bí a ṣe ṣírò àmì náà gan-an — iye àwọn àyẹ̀wò tí ó ṣiṣẹ́, ohun tí a dín kù fún ìṣòro kọ̀ọ̀kan, àti bí a ṣe ṣàpapọ̀ àmì àfojúsùn AI àti àmì axe-core. Èyí ni ìpele ìfọ́yangàn lẹ́yìn nọ́mbà àkọ́kọ́.",
+    "pdf_audit_results_score_how_ai_details": "Gbòòrò láti rí bí AI ṣe ń pààlà ìṣòro kọ̀ọ̀kan le tó: ìdínkù tí ó tóbi fún àwọn ìṣòro pàtàkì tí ó dí àwọn olùmúlò ohun-èlò kíkà-ojú-ìwé lọ́wọ́, ìdínkù tí ó kéré fún àwọn kéékèèké, àti àwọn àmì tí a gbà padà fún àwọn àyẹ̀wò tí ó kọjá.",
+    "pdf_audit_results_score_how_axe_details": "Gbòòrò láti rí bí olùṣàyẹ̀wò axe-core (ọ̀kan náà tí àwọn alámọ̀ja ìṣàyẹ̀wò ìṣeéwọlé ń lò) ṣe fún PDF rẹ ní àmì, pẹ̀lú àwọn ID òfin WCAG gan-an tí ó kùnà.",
+    "pdf_audit_results_issue_explain": "Tẹ̀ ẹ́ láti ka ohun tí ìṣòro yìí ń dí lọ́wọ́ fún àwọn akẹ́kọ̀ọ́ àti bí òfin WCAG ṣe ń lò. Ó ní àjápọ̀ sí àlàyé WCAG osise bí o bá fẹ́ jìn sí i.",
+    "pdf_audit_results_image_failures_details": "Gbòòrò láti rí èyíkéyìí àwọn àwòrán tí ó subú nígbà títúnṣe. Ìlà kọ̀ọ̀kan ní bọ́tìnnì Atúnmọ̀ tí ìtẹ̀-ẹ̀ẹ̀kan kí àwòrán kankan má bàa pàdánù lọ́nà ìdákẹ́jẹ́ẹ́.",
+    "pdf_audit_results_image_regenerate_btn": "Yóò tún àwòrán tí ó sọnù yìí dá pẹ̀lú AI ní ìbámu pẹ̀lú àpèjúwe rẹ̀ tí a tọ́jú. Àwòrán tuntun náà yóò padà wọ inú ìwé náà tààrà — kò sí ìgbé-sókè ọwọ́ tí ó pọn dandan.",
+    "pdf_audit_view_report_menu_btn": "Ṣí àkójọ àṣàyàn ìròyìn láti gba ìròyìn ìṣeéwọlé sílẹ̀ ní onírúurú ọ̀nà — àpẹrẹ Adobe fún àwọn òṣìṣẹ́ ìbámu-òfin, PDF tí a ṣe àpẹrẹ fún pínpín gbogbogbòò, JSON fún ìwádìí, tàbí ipa-ọ̀nà tí a fọwọ́sí fún àkọsílẹ̀ ìṣàyẹ̀wò.",
+    "pdf_audit_view_adobe_report_btn": "Gba ìròyìn tí a ṣe àpẹrẹ bíi Adobe Accessibility Checker sílẹ̀, tí a fún ní àmì lòdì sí PDF/UA-1 (ìlànà ìṣeéwọlé àpapọ̀ fún àwọn PDF). Ó dára jù fún pínpín pẹ̀lú àwọn òṣìṣẹ́ ìbámu-òfin tàbí dídì mọ́ ìfisùn Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Ṣàyẹ̀wò àwọn ọ̀rọ̀ tí ó sọnù nígbà ìfipamọ́ tí ó kẹ́yìn kí o tó pinnu bóyá láti ṣe ìyípo ìmúpadàbọ̀sípò. Kíkà-nìkan — kò sí ohun tí a yí padà títí tí o yóò fi yan láti mú padàbọ̀.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Yóò so àwọn ọ̀rọ̀ orísun tí ó sọnù padà sínú ìwé náà yóò sì tún PDF tí a fi àmì sí kọ́. Àwọn ọ̀rọ̀ tí a kò lè fi sí àyè láìséwu yóò parí sí abala Ìmúpadà Àkóónú kí ohunkóhun má bàa sọnù — iye àjẹkù ṣáájú àti lẹ́yìn ni a fihàn nígbà gbogbo kí o lè rí bóyá ó ràn lọ́wọ́.",
+    "pdf_audit_view_formatted_report_btn": "Ṣí ìròyìn ìṣeéwọlé ṣáájú/lẹ́yìn tí a lè tẹ̀ jáde nínú tab tuntun — tẹ Save as PDF nínú bánà náà láti pa ẹ̀dà mọ́ fún àkọsílẹ̀ rẹ tàbí ìpàdé òbí.",
+    "pdf_audit_view_html_report_btn": "Gba ìròyìn ṣáájú/lẹ́yìn sílẹ̀ gẹ́gẹ́ bí fáìlì HTML tí o lè gbalejò lórí ojú-òpó tàbí ṣàtúnṣe. Àkóónú bá ẹ̀dà PDF tí a lè tẹ̀ jáde mu.",
+    "pdf_audit_view_json_data_btn": "Gbé àwọn nọ́mbà ìṣàyẹ̀wò àìṣàtúnṣe àti dátà òfin-sí-òfin jáde gẹ́gẹ́ bí JSON. Lo èyí nígbà tí o bá fẹ́ ṣàyẹ̀wò àwọn àbájáde ìṣeéwọlé nínú ìwé-ìṣirò, ìwé-àkọsílẹ̀ ìwádìí, tàbí ohun-èlò mìíràn.",
+    "pdf_audit_view_audit_trail_signed_btn": "Ṣe ipa-ọ̀nà ìṣàyẹ̀wò tí ó ń fọ̀rọ̀ ara rẹ̀ wò (fáìlì HTML pẹ̀lú bọ́tìnnì Verify Integrity tí ó wà ní inú tí ó ń ṣàwárí ìbàjẹ́). Ó dára fún ẹ̀rí ìbámu-òfin — ṣàkíyèsí pé ìfọwọ́sí ti ìhà-asàwákiri ni, kì í ṣe èyí tí ó dè lóòfin.",
+    "pdf_audit_view_save_project_btn": "Yóò pa iṣẹ́ títúnṣe rẹ mọ́ — HTML tí ó ṣeé wọlé, àwọn àmì, àwọn ètò, ìtẹ̀síwájú ojú-ìwé-sí-ojú-ìwé — sínú fáìlì tí ó ṣeé gbé. Ṣí i padà pẹ̀lú Load Project láti máa bá ṣàtúnṣe láìtún AI ṣiṣẹ́.",
+    "pdf_audit_view_load_project_btn": "Ṣí fáìlì iṣẹ́-àkànṣe tí o pa mọ́ tẹ́lẹ̀ padà. Ó mú HTML tí a túnṣe, àwọn àmì, àti àwọn ibi ojú-ìwé tí ó ti parí padà — ó bẹ̀rẹ̀ gan-an láti ibi tí o ti dúró sí.",
+    "pdf_audit_view_save_template_btn": "Pa ètò ìṣeéwọlé ìwé náà mọ́ (àyọnà àkòrí, àwọn tábìlì, àwọn àkójọ, àwọn àmì-ipò) gẹ́gẹ́ bí àwòṣe tí a lè tún lò. Lò ó nínú Document Builder láti bẹ̀rẹ̀ àwọn ìwé tuntun — IEP, syllabi — tí a ti ṣètò tẹ́lẹ̀ fún ìṣeéwọlé.",
+    "pdf_audit_alt_formats_summary": "Gbòòrò fún àwọn ọ̀nà mìíràn — ePub, Braille ẹ̀rọ, ọ̀rọ̀ pẹ́lẹ́bẹ́, Markdown — fún àwọn akẹ́kọ̀ọ́ tí ó nílò irú fáìlì tí ó yàtọ̀ sí PDF tàbí HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Pa ìwé tí a túnṣe mọ́ gẹ́gẹ́ bí fáìlì ePub pẹ̀lú àkójọ àkóónú àti dátà-ìsọfúnni ìṣeéwọlé. Ó ń ṣiṣẹ́ lórí Kindle, Apple Books, àti ọ̀pọ̀ àwọn olùkà alágbèéká — àwọn akẹ́kọ̀ọ́ lè yí ìwọ̀n irú-àkọ, àwọ̀, àti ìyára kíkà padà.",
+    "pdf_audit_alt_formats_text_btn": "Pa fáìlì .txt pẹ́lẹ́bẹ́ mọ́ pẹ̀lú gbogbo àpẹrẹ tí a yọ kúrò — ọ̀nà tí ó rọrùn jù fún àwọn ohun-èlò kíkà-ojú-ìwé, ìyípadà sí ìtẹ̀wé ńlá, tàbí líẹ̀ mọ́ ohun-èlò mìíràn.",
+    "pdf_audit_alt_formats_markdown_btn": "Pa ìwé náà mọ́ gẹ́gẹ́ bí Markdown — ó wọ inú àwọn ojú-ìwé Canvas, Schoology, tàbí D2L, Google Docs (nípasẹ̀ líẹ̀), wikis, àti àwọn àkọsílẹ̀ ará GitHub mọ́ láìpàdánù àwọn àkòrí tàbí àjápọ̀.",
+    "pdf_audit_alt_formats_daisy_btn": "Pa àpótí ìwé-sọ̀rọ̀ ọ̀rọ̀-kíkún DAISY 3 mọ́. Àwọn olùkà DAISY (tí ó wọ́pọ̀ nínú ẹ̀kọ́ pàtàkì) ń fi ọ̀rọ̀-sísọ, braille, tàbí ìtẹ̀wé ńlá tiwọn kún pẹ̀lú àdarí kíkún. Ọ̀rọ̀-nìkan níhìn-ín — fún kíkà-síta tí a so pọ̀, lo Read-along ebook.",
+    "pdf_audit_alt_formats_readalong_btn": "Ṣe ìwé kíkà-papọ̀ (EPUB3 Media Overlays): a ń ka àbálà kọ̀ọ̀kan pẹ̀lú ọ̀rọ̀-sí-ọ̀rọ̀ a sì so ó pọ̀ mọ́ ọ̀rọ̀ náà kí àwọn ọ̀rọ̀ lè tànmọ́lẹ̀ bí a ti ń sọ wọ́n. Ìpè ohùn kan fún abala kọ̀ọ̀kan, nítorí náà ó lè gba ìṣẹ́jú díẹ̀.",
+    "pdf_audit_alt_formats_odt_btn": "Pa fáìlì OpenDocument Text (.odt) mọ́ — abínibí sí LibreOffice àti Google Docs (Word ń ṣí i pẹ̀lú). Lò ó nígbà tí ilé-ìwé rẹ kò bá jẹ́ Microsoft-pátápátá ṣùgbọ́n tí o ṣì fẹ́ ìwé tí ó ṣeé ṣàtúnṣe pẹ̀lú ètò rẹ̀ tí ó wà ní pípé."
   },
   "groups": {
     "title": "Àwọn Ẹgbẹ́ Ìyàtọ̀",
@@ -7331,7 +7469,7 @@
     "lang_options": {
       "english_only": "English Nìkan",
       "only_suffix": "{lang} Nìkan",
-      "plus_english": "{lang} + English",
+      "plus_english": "{lang} + Gẹ̀ẹ́sì",
       "all_plus_english": "gbogbo ({langs}) + English"
     },
     "settings": {
@@ -9646,7 +9784,7 @@
   },
   "splash": {
     "tagline": "Adaptive ipele, Layers, & jade ➔ Flexible Learning ṣayan fun Whole-akẹkọọ Education",
-    "rights": "AGPLv3 Licensed • Copyright © 2026 Aaron Pomeranz, PsyD",
+    "rights": "Iwé-àṣẹ AGPLv3 • Ẹ̀tọ̀ Òǹkọ̀wé © 2026 Aaron Pomeranz, PsyD",
     "udl_tagline": "Informed by Universal Design fun Learning",
     "initializing": "Ń bẹ̀rẹ̀...",
     "loading_resources": "Loading awọn ohun elo...",
@@ -11226,7 +11364,8 @@
     "litlab_title": "LitLab",
     "litlab_desc": "Bring stories si life pẹlu oluyaworan voices & literary analysis",
     "poettree_title": "PoetTree",
-    "poettree_desc": "Kọ poems pẹlu form scaffolds, rhyme & meter analysis, AI èsì"
+    "poettree_desc": "Kọ poems pẹlu form scaffolds, rhyme & meter analysis, AI èsì",
+    "throughline_desc": "Ṣètò àwọn ẹ̀kọ́ rẹ sínú ẹ̀ka àlàfo kan: ìlẹ̀sẹẹsẹ ìkọ́ni, àwọn ohun tí ó ṣáájú, fáìlì kan tí a lè gbé jáde"
   },
   "sel_hub": {
     "loading": "Ń kó SEL Hub wọlé...",
@@ -12546,5 +12685,10 @@
     "byline": "Láti ọwọ́ {author} · ọ̀rọ̀ {words} · {used}/{total} ọ̀rọ̀-ìpèsè",
     "student": "Akẹ́kọ̀ọ́",
     "score": "Àmì: {score}"
+  },
+  "export_preview": {
+    "rerender_confirm": "Títún ìṣàfihàn náà ṣe yóò fi àkóónú tuntun tí a ṣẹ̀dá rọ́pò àwọn àtúnṣe ọwọ́ rẹ. Ṣé kí o tẹ̀síwájú kí o sì kọ àwọn àtúnṣe sílẹ̀? (Fagilé ń pa wọ́n mọ́ — kó jáde tàbí ti olùkọ́ náà láti fi pamọ́ ní àkọ́kọ́.)",
+    "remediation_banner_title": "Ń ṣàtúnṣe àkọsílẹ̀ tí a túnṣe.",
+    "remediation_banner_body": "A fi àwọn àtúnṣe rẹ níbí pamọ́ sínú rẹ̀ nígbà tí o bá ti olùkọ́ náà, nítorí náà àwọn ìgbàsílẹ̀ Tagged PDF / Word / PowerPoint ní wọn nínú."
   }
 }
