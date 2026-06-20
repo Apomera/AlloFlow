@@ -19163,9 +19163,16 @@ test('no a11y violations', async () => {
                 if (val == null) return null;
                 var labelStr = key.replace(/([A-Z])/g, ' $1').replace(/^./, function(c) { return c.toUpperCase(); });
                 if (typeof val === 'string') {
+                  // Code-flavoured fields (example/code/query/syntax) render as a
+                  // real dark code block (matching the Build-tab editor tokens) so
+                  // code reads AS code across the ~100 reference topics, not as
+                  // plain inline monospace on the light card.
+                  var _isCode = /example|code|query|syntax/i.test(key);
                   return h('div', { key: key, style: { marginBottom: '6px' } },
-                    h('strong', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' } }, labelStr + ': '),
-                    h('span', { style: { fontSize: '12px', color: '#1e293b', whiteSpace: 'pre-wrap', fontFamily: /example|code|query|syntax/i.test(key) ? 'ui-monospace, Menlo, monospace' : 'inherit' } }, val)
+                    h('strong', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', display: _isCode ? 'block' : 'inline', marginBottom: _isCode ? '3px' : 0 } }, labelStr + (_isCode ? '' : ': ')),
+                    _isCode
+                      ? h('pre', { style: { margin: 0, fontSize: '12px', color: '#e2e8f0', background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '8px 10px', whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, Menlo, monospace', overflowX: 'auto' } }, val)
+                      : h('span', { style: { fontSize: '12px', color: '#1e293b', whiteSpace: 'pre-wrap', fontFamily: 'inherit' } }, val)
                   );
                 }
                 if (Array.isArray(val)) {
@@ -19281,7 +19288,7 @@ test('no a11y violations', async () => {
                       best: Math.max(quizScore.best, correctNow ? quizScore.streak + 1 : quizScore.streak)
                     };
                     saveQuizScore(nextScore);
-                    if (correctNow && awardXP) awardXP(5, 'quiz');
+                    if (correctNow && awardXP) awardXP('appLab', 5, 'quiz');
                     if (announceToSR) announceToSR(correctNow ? 'Correct!' : 'Incorrect. Correct answer was: ' + correctAnswer);
                   },
                   style: { padding: '12px 14px', borderRadius: '10px', border: '2px solid ' + border, background: bg,
@@ -19483,7 +19490,7 @@ test('no a11y violations', async () => {
                     p.difficulty && h('span', { style: { fontSize: '10px', background: p.difficulty === 'Beginner' ? '#dcfce7' : p.difficulty === 'Advanced' ? '#fee2e2' : '#fef3c7', color: p.difficulty === 'Beginner' ? '#166534' : p.difficulty === 'Advanced' ? '#991b1b' : '#92400e', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 } }, p.difficulty)
                   ),
                   p.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0', lineHeight: 1.5 } }, p.description),
-                  p.prompt && h('button', { onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast({ type: 'success', text: 'Loaded into Build tab' }); },
+                  p.prompt && h('button', { onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast('Loaded into Build tab', 'success'); },
                     style: btn(PURPLE, '#fff', false) }, '🚀 Build This'),
                   p.skills && h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '8px' } }, h('strong', null, 'Skills: '), Array.isArray(p.skills) ? p.skills.join(', ') : p.skills)
                 );
@@ -19501,7 +19508,7 @@ test('no a11y violations', async () => {
                   h('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e293b', margin: '0 0 6px 0' } }, s.name || s.title),
                   s.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0' } }, s.description),
                   s.code && h('pre', { style: { fontSize: '11px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '10px', borderRadius: '8px', overflowX: 'auto', maxHeight: '240px' } }, s.code),
-                  s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); setHistory([s.code]); setHistoryIdx(0); goToTab('build'); if (addToast) addToast({ type: 'success', text: 'Loaded ' + (s.name || 'template') }); },
+                  s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); setHistory([s.code]); setHistoryIdx(0); goToTab('build'); if (addToast) addToast('Loaded ' + (s.name || 'template'), 'success'); },
                     style: Object.assign({}, btn(PURPLE, '#fff', false), { marginTop: '8px' }) }, '📥 Load in Build')
                 );
               })
@@ -19864,7 +19871,7 @@ test('no a11y violations', async () => {
                 return h('div', { key: app.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' } },
                   h('div', null,
                     h('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1e293b' } }, app.title),
-                    h('div', { style: { fontSize: '10px', color: '#9ca3af' } }, new Date(app.created).toLocaleDateString())
+                    h('div', { style: { fontSize: '10px', color: '#6b7280' } }, new Date(app.created).toLocaleDateString())
                   ),
                   h('div', { style: { display: 'flex', gap: '4px' } },
                     h('button', { onClick: function() { setHtml(app.html); setEditHtml(app.html); setPrompt(app.prompt || ''); setHistory([app.html]); setHistoryIdx(0); setShowGallery(false); },
@@ -19918,7 +19925,7 @@ test('no a11y violations', async () => {
             h('div', { style: { marginTop: '10px', padding: '8px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
               h('p', { style: { fontSize: '10px', color: '#a5b4fc', fontWeight: 600, marginBottom: '4px' } }, '\uD83D\uDCA1 How does this relate to real software engineering?'),
               h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
-                'This app was built using a hierarchical multi-agent architecture. An Architect AI decomposed the app into independent sections, then EACH section was built, reviewed, and fixed by separate AI agents working in parallel \u2014 just like how professional software teams work. '
+                'This app was built using a hierarchical multi-agent architecture. An Architect AI decomposed the app into independent sections, then EACH section was built, reviewed, and fixed by separate specialist AI agents, one section at a time \u2014 just like how professional software teams work. '
                 + 'This is called "component-based architecture" \u2014 the same pattern used by React, Vue, and Angular. Each component is small enough for an AI to build perfectly, and the Assembler combines them into a working whole. '
                 + 'The result is higher quality than a single AI trying to build everything at once, because each agent focuses on one thing and does it well.'
               )
@@ -19998,7 +20005,7 @@ test('no a11y violations', async () => {
         isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' } }, '\uD83D\uDCA1'),
           h('p', { style: { fontSize: '14px', fontWeight: 600 } }, genStep || 'Generating your app...'),
-          h('p', { style: { fontSize: '11px', color: '#9ca3af' } }, 'This usually takes 5-15 seconds')
+          h('p', { style: { fontSize: '11px', color: '#6b7280' } }, 'This usually takes 5-15 seconds')
         ),
 
         // \u2550\u2550 PROMPT-CRAFT INQUIRY widget (H7b'') \u2550\u2550
