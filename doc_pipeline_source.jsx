@@ -18046,7 +18046,11 @@ tr { page-break-inside: avoid; }
           const pageElemRef = context.register(pageElemDict);
           pageElemRefs.push(pageElemRef);
           parentTreeNums.push(PDFNumber.of(pi));
-          parentTreeNums.push(pageElemRef);
+          // The ParentTree value for PAGE CONTENT (the page's /StructParents key) must be an ARRAY
+          // indexed by MCID, so MCID 0 → this /P StructElem — exactly what Stage 4 does with
+          // parentArrayRef. A BARE StructElem ref here left veraPDF unable to resolve the content's
+          // MCID 0 to a tag → "§7.1 content neither Artifact nor tagged". (2026-06-19 scanned-tagging fix)
+          parentTreeNums.push(context.obj([pageElemRef]));
         } catch(elemErr) { try { warnLog('[createTaggedPdf] page StructElem build failed p' + (pi+1) + ': ' + (elemErr && elemErr.message)); } catch(_) {} }
       }
     }
