@@ -2417,7 +2417,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1' }, '\u2728 Infinite Question Bank'),
-                h('div', { className: 'text-[10px] text-violet-700 mt-0.5' }, 'Static questions never run out \u2014 Gemini generates fresh ones on top.')
+                h('div', { className: 'text-[10px] text-violet-700 mt-0.5' }, 'Static questions never run out \u2014 Gemini generates fresh ones on top.'),
+                h('div', { className: 'text-[10px] text-amber-700 mt-0.5 font-semibold' }, '\u26a0\ufe0f AI-generated questions can be wrong (even the marked answer) \u2014 if one looks off, tell your teacher.')
               ),
               h('button', {
                 onClick: function() {
