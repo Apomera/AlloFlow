@@ -1509,6 +1509,36 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Edwin Hubble's 1936 scheme sorts galaxies by SHAPE — it is NOT a timeline. Galaxies do not evolve along the fork from one type to the next.")
               ),
 
+              // ── Cosmological redshift mini-visual (Hubble's law) ──
+              React.createElement("div", { className: "mb-3 p-2.5 rounded-lg border border-indigo-200 bg-white" },
+                React.createElement("p", { className: "text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-1" }, "Cosmological redshift — farther = faster = redder"),
+                (function() {
+                  var W = 360, rowH = 24, gap = 20, lines = [0.22, 0.41, 0.63];
+                  var spectrum = function(y, shift, label) {
+                    return React.createElement("g", { key: label },
+                      React.createElement("text", { x: 2, y: y - 3, fontSize: 8, fill: "#475569", fontWeight: 700 }, label),
+                      React.createElement("rect", { x: 0, y: y, width: W, height: rowH, rx: 3, fill: "url(#galSpecGrad)" }),
+                      lines.map(function(lp, i) {
+                        var x = (lp + shift * (1 - lp)) * W;
+                        return React.createElement("rect", { key: i, x: x, y: y, width: 2, height: rowH, fill: "#0f172a", opacity: 0.85 });
+                      })
+                    );
+                  };
+                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + (2 * rowH + gap + 12), className: "w-full", style: { maxHeight: '108px' }, role: "img", "aria-label": "Two spectra: a nearby galaxy's absorption lines, and a distant galaxy's same lines shifted toward the red end (redshift)." },
+                    React.createElement("defs", null,
+                      React.createElement("linearGradient", { id: "galSpecGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#7c3aed" }),
+                        React.createElement("stop", { offset: "28%", stopColor: "#2563eb" }),
+                        React.createElement("stop", { offset: "52%", stopColor: "#16a34a" }),
+                        React.createElement("stop", { offset: "74%", stopColor: "#eab308" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#dc2626" }))),
+                    spectrum(11, 0, "🪐 Nearby galaxy (rest frame)"),
+                    spectrum(11 + rowH + gap, 0.22, "🌌 Distant galaxy (redshifted)")
+                  );
+                })(),
+                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Each dark line is the fingerprint of the same element. In a more distant galaxy those lines sit farther toward red — expanding space stretched the light on its way here (Hubble's law: recession speed ∝ distance).")
+              ),
+
               // ── Cosmic myth-busters ──
               React.createElement("div", { className: "mb-3 p-2.5 rounded-lg border border-amber-200 bg-amber-50 text-[11px] text-amber-900 leading-relaxed" },
                 React.createElement("p", { className: "font-bold mb-1" }, "⚠ Cosmic myth-busters"),
