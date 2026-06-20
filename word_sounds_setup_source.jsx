@@ -135,10 +135,10 @@
     function loadPhonemeVoicePack() {
         try {
             const raw = localStorage.getItem(PHONEME_PACK_STORAGE_KEY);
-            if (!raw) return { name: 'My Voice Pack', clips: {}, kind: 'teacher-model', consent: false };
+            if (!raw) return { name: 'My Voice Pack', clips: {}, kind: 'teacher-model', consent: false, history: {} };
             const p = JSON.parse(raw);
-            return { name: (p && p.name) || 'My Voice Pack', clips: (p && p.clips && typeof p.clips === 'object') ? p.clips : {}, kind: (p && p.kind === 'student-voice') ? 'student-voice' : 'teacher-model', consent: !!(p && p.consent) };
-        } catch (e) { return { name: 'My Voice Pack', clips: {}, kind: 'teacher-model', consent: false }; }
+            return { name: (p && p.name) || 'My Voice Pack', clips: (p && p.clips && typeof p.clips === 'object') ? p.clips : {}, kind: (p && p.kind === 'student-voice') ? 'student-voice' : 'teacher-model', consent: !!(p && p.consent), history: (p && p.history && typeof p.history === 'object') ? p.history : {} };
+        } catch (e) { return { name: 'My Voice Pack', clips: {}, kind: 'teacher-model', consent: false, history: {} }; }
     }
     function applyPhonemeVoicePackToBank(clips) {
         try {
@@ -218,6 +218,7 @@
         const [cleanOn, setCleanOn] = React.useState(true); // auto trim-silence + normalize on record
         const [checks, setChecks] = React.useState({}); // { key: { state:'checking'|'done'|'error', match, clipped, note } }
         const [selfChecks, setSelfChecks] = React.useState({}); // { key: 'good' | 'retry' } — the student's OWN judgment (metacognition; on-device only)
+        const [view, setView] = React.useState('record'); // 'record' | 'progress'
         const recorderRef = React.useRef(null);
         const fileInputRef = React.useRef(null);
         const clips = pack.clips || {};
@@ -229,6 +230,30 @@
         const recordedCount = allKeys.filter((k) => clips[k]).length;
         const setKind = (k) => setPack((prev) => Object.assign({}, prev, { kind: k }));
         const giveConsent = () => setPack((prev) => Object.assign({}, prev, { consent: true }));
+        // Longitudinal practice log: one lightweight dated entry per recording
+        // (metadata only — no extra audio), capped to the last 20 attempts/sound.
+        // The AI verdict and the student's self-rating attach to the latest entry
+        // as they arrive, so the Progress tab can show a sound improve over time.
+        const logAttempt = (key) => {
+            setPack((prev) => {
+                const hist = Object.assign({}, prev.history || {});
+                const arr = (hist[key] || []).slice(-19);
+                arr.push({ ts: Date.now(), ai: null, self: null });
+                hist[key] = arr;
+                return Object.assign({}, prev, { history: hist });
+            });
+        };
+        const updateLatestAttempt = (key, patch) => {
+            setPack((prev) => {
+                const arr = (prev.history && prev.history[key]) || [];
+                if (!arr.length) return prev;
+                const hist = Object.assign({}, prev.history);
+                const na = arr.slice();
+                na[na.length - 1] = Object.assign({}, na[na.length - 1], patch);
+                hist[key] = na;
+                return Object.assign({}, prev, { history: hist });
+            });
+        };
         const runAiCheck = (key, dataUri) => {
             if (!aiAvailable || !dataUri) return;
             setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'checking' } }));
@@ -237,7 +262,7 @@
             const prompt = 'You are a kind phonics articulation coach for a young child. The TARGET is the English phoneme /' + key + '/' + (ex ? ' as in "' + ex + '"' : '') + '.' + (cue ? ' A clean version: ' + cue : '') + ' Listen to the short recording and judge ONLY the sound it contains, against your knowledge of how that phoneme should sound. IGNORE the speaker\'s voice, age and accent — many correct voices are fine. Reply with strict JSON and nothing else: {"match": true or false, "clipped": true or false, "note": "one short, specific, encouraging fix the child can do, 12 words max"}. "clipped" is true when the sound is clean with no extra vowel (e.g. /p/ not "puh").';
             Promise.resolve().then(() => window.callGeminiAudio(prompt, dataUri, {})).then((resp) => {
                 const parsed = parsePhonemePackJsonLoose(resp);
-                if (parsed) setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: parsed.match, clipped: parsed.clipped, note: parsed.note || '' } }));
+                if (parsed) { setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: parsed.match, clipped: parsed.clipped, note: parsed.note || '' } })); updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }); }
                 else setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: null, note: 'Could not analyze the clip.' } }));
             }).catch(() => setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'error', note: 'AI check failed.' } })));
         };
@@ -259,6 +284,7 @@
                     const clip = finalClip;
                     setPack((prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
                     setStatus('✓ Recorded /' + key + '/. Tap 🔊 to hear it, then Save & Use.');
+                    logAttempt(key);
                     if (aiCheckOn) runAiCheck(key, clip);
                 }
                 if (recorderRef.current === ctrl) recorderRef.current = null;
@@ -286,7 +312,7 @@
                 a.play().catch(playMine);
             } catch (e) { try { const b = new Audio(mine); b.play().catch(() => {}); } catch (e2) {} }
         };
-        const rateSelf = (key, val) => setSelfChecks((prev) => Object.assign({}, prev, { [key]: prev[key] === val ? null : val }));
+        const rateSelf = (key, val) => { const newVal = (selfChecks[key] === val) ? null : val; setSelfChecks((prev) => Object.assign({}, prev, { [key]: newVal })); updateLatestAttempt(key, { self: newVal }); };
         const wordReady = (w) => w.keys.every((k) => clips[k]);
         const playWord = (w) => {
             // The payoff: blend a real word from the student's OWN recorded clips.
@@ -306,7 +332,7 @@
         const clearClip = (key) => { setPack((prev) => { const c = Object.assign({}, prev.clips); delete c[key]; return Object.assign({}, prev, { clips: c }); }); setChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); setSelfChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); };
         const persist = (next) => {
             try {
-                localStorage.setItem(PHONEME_PACK_STORAGE_KEY, JSON.stringify({ version: 1, type: 'alloPhonemePack', kind: next.kind || 'teacher-model', consent: !!next.consent, name: next.name, clips: next.clips }));
+                localStorage.setItem(PHONEME_PACK_STORAGE_KEY, JSON.stringify({ version: 1, type: 'alloPhonemePack', kind: next.kind || 'teacher-model', consent: !!next.consent, name: next.name, clips: next.clips, history: next.history || {} }));
                 return true;
             } catch (e) { return false; }
         };
@@ -317,7 +343,7 @@
         };
         const exportPack = () => {
             try {
-                const data = { version: 1, type: 'alloPhonemePack', kind: kind, name: pack.name || 'My Voice Pack', exportDate: new Date().toISOString(), phonemes: pack.clips };
+                const data = { version: 1, type: 'alloPhonemePack', kind: kind, name: pack.name || 'My Voice Pack', exportDate: new Date().toISOString(), phonemes: pack.clips, history: pack.history || {} };
                 const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -336,7 +362,7 @@
                     const data = JSON.parse(e.target.result);
                     const incoming = (data && (data.phonemes || data.clips)) || null;
                     if (!incoming || typeof incoming !== 'object') { setStatus('That file is not a phoneme pack.'); return; }
-                    setPack((prev) => Object.assign({}, prev, { name: (data && data.name) || prev.name, kind: (data && data.kind === 'student-voice') ? 'student-voice' : prev.kind, consent: (data && data.kind === 'student-voice') ? false : prev.consent, clips: Object.assign({}, prev.clips, incoming) }));
+                    setPack((prev) => Object.assign({}, prev, { name: (data && data.name) || prev.name, kind: (data && data.kind === 'student-voice') ? 'student-voice' : prev.kind, consent: (data && data.kind === 'student-voice') ? false : prev.consent, clips: Object.assign({}, prev.clips, incoming), history: Object.assign({}, prev.history || {}, (data && data.history && typeof data.history === 'object') ? data.history : {}) }));
                     setStatus('📥 Imported ' + Object.keys(incoming).length + ' sounds. Tap Save & Use to apply them.');
                 } catch (err) { setStatus('Could not read that file.'); }
             };
@@ -386,6 +412,39 @@
                         </div>
                     ) : null}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div className="flex gap-1">
+                            <button type="button" onClick={() => setView('record')} className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${view === 'record' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>🎙️ {T('word_sounds.voice_pack_tab_record', 'Record')}</button>
+                            <button type="button" onClick={() => setView('progress')} className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${view === 'progress' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>📈 {T('word_sounds.voice_pack_tab_progress', 'Progress')}</button>
+                        </div>
+                        {view === 'progress' ? (() => {
+                            const histKeys = allKeys.filter((k) => pack.history && pack.history[k] && pack.history[k].length);
+                            if (!histKeys.length) return <div className="text-xs text-slate-500 italic p-3 rounded-xl bg-slate-50 border border-slate-200">{T('word_sounds.voice_pack_progress_empty', 'Record sounds (with the 😀 / 🤔 self-rating, or the 🎯 AI coach on) to build a practice log here. Every recording is logged so you can see a sound improve over time.')}</div>;
+                            const isGood = (e) => (e.ai && e.ai.match === true && e.ai.clipped !== false) || e.self === 'good';
+                            const isBad = (e) => (e.ai && (e.ai.match === false || e.ai.clipped === false)) || e.self === 'retry';
+                            const totalAttempts = histKeys.reduce((s, k) => s + pack.history[k].length, 0);
+                            const improving = histKeys.filter((k) => { const a = pack.history[k]; return a.length >= 2 && !isGood(a[0]) && isGood(a[a.length - 1]); }).length;
+                            return (
+                                <div className="space-y-3">
+                                    <div className="text-[10px] text-slate-500 leading-snug">{T('word_sounds.voice_pack_progress_legend', 'A practice log, not a test: each dot is one recording, oldest to newest. Green = sounded right (the student or the AI coach), amber = keep practicing, grey = not yet judged.')}</div>
+                                    <div className="text-[11px] font-semibold text-slate-600">{histKeys.length} {T('word_sounds.voice_pack_progress_sounds', 'sounds practiced')} · {totalAttempts} {T('word_sounds.voice_pack_progress_recordings', 'recordings')}{improving > 0 ? (' · ' + improving + ' ' + T('word_sounds.voice_pack_progress_improving', 'improving')) : ''}</div>
+                                    {histKeys.map((k) => {
+                                        const arr = pack.history[k];
+                                        const lbl = k === 'oo_short' ? 'oo' : k;
+                                        const last = arr[arr.length - 1];
+                                        return (
+                                            <div key={k} className="flex items-center gap-2">
+                                                <div className="w-10 font-black text-slate-800 text-sm shrink-0">/{lbl}/</div>
+                                                <div className="flex items-center gap-1 flex-wrap flex-1 min-w-0">
+                                                    {arr.map((e, i) => { const cls = isGood(e) ? 'bg-emerald-500' : (isBad(e) ? 'bg-amber-400' : 'bg-slate-300'); return <span key={i} title={new Date(e.ts).toLocaleDateString() + (e.ai ? (e.ai.match ? ' · AI: matches' : ' · AI: keep practicing') : '') + (e.self === 'good' ? ' · me: ok' : (e.self === 'retry' ? ' · me: try again' : ''))} className={`inline-block w-2.5 h-2.5 rounded-full ${cls}`}></span>; })}
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 shrink-0">{arr.length}× · {new Date(last.ts).toLocaleDateString()}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })() : (
+                        <div className="space-y-4">
                         {(() => {
                             const readyWords = PHONEME_PACK_WORDS.filter(wordReady);
                             return (
@@ -439,6 +498,8 @@
                                 </div>
                             </div>
                         ))}
+                        </div>
+                        )}
                     </div>
                     {status ? <div className="px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100" role="status" aria-live="polite">{status}</div> : null}
                     <div className="flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap">
