@@ -1643,6 +1643,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 )
               )
             ),
+            // Full gearing MATRIX — every chainring × cog at once, as gear inches (the classic
+            // single-number gear size = ratio × wheel diameter). Reveals the bike's total range,
+            // gaps and overlaps; the cadence curve below is just ONE cell of this. Click to select.
+            (function() {
+              var wheelIn = 2 * bike.wheelR * 39.3701;
+              var giOf = function(ct, cg) { return (ct / cg) * wheelIn; };
+              var allGi = [];
+              bike.chainringT.forEach(function(ct) { bike.cassetteT.forEach(function(cg) { allGi.push(giOf(ct, cg)); }); });
+              var giMin = Math.min.apply(null, allGi), giMax = Math.max.apply(null, allGi);
+              var heat = function(gi) { var t = giMax > giMin ? (gi - giMin) / (giMax - giMin) : 0.5; return 'hsl(' + Math.round(140 - t * 140) + ', 72%, 87%)'; };
+              return h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-1' }, 'Gearing Matrix — gear inches (every ring × cog)'),
+                h('div', { className: 'text-[11px] text-slate-600 mb-3' }, 'Lower = easier (climbing); higher = faster (top speed). Green→red = easy→hard. Click any cell to select that gear.'),
+                h('div', { className: 'overflow-x-auto' },
+                  h('table', { className: 'border-collapse text-[11px]' },
+                    h('thead', null,
+                      h('tr', null,
+                        h('th', { className: 'p-1 text-slate-500 font-mono text-right' }, 'ring \ cog'),
+                        bike.cassetteT.map(function(cg, j) { return h('th', { key: j, className: 'p-1 text-center font-mono font-bold ' + (j === cogIdx ? 'text-fuchsia-600' : 'text-slate-500') }, cg); })
+                      )
+                    ),
+                    h('tbody', null,
+                      bike.chainringT.map(function(ct, i) {
+                        return h('tr', { key: i },
+                          h('td', { className: 'p-1 text-right font-mono font-bold ' + (i === ringIdx ? 'text-violet-600' : 'text-slate-500') }, ct + 'T'),
+                          bike.cassetteT.map(function(cg, j) {
+                            var gi = giOf(ct, cg), isCur = i === ringIdx && j === cogIdx;
+                            return h('td', { key: j, onClick: function() { setRingIdx(i); setCogIdx(j); },
+                              className: 'p-1 text-center font-mono cursor-pointer ' + (isCur ? 'ring-2 ring-violet-600 font-black text-slate-900' : 'text-slate-700 hover:opacity-80'),
+                              style: { background: heat(gi) } }, Math.round(gi));
+                          })
+                        );
+                      })
+                    )
+                  )
+                )
+              );
+            })(),
             // Cadence→speed curve
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, 'Speed vs. Cadence (this gear)'),

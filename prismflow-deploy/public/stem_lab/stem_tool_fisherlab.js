@@ -9612,6 +9612,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#a78bfa' } }, (lifeLog || []).length),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Total keepers'))
           )),
+        // Life-list histogram — catches by species (only renders once you've caught something).
+        (function() {
+          var sc = loadState().speciesCaught || {};
+          var ids = Object.keys(sc);
+          if (!ids.length) return null;
+          var ALL = MAINE_SPECIES.concat(CHESAPEAKE_SPECIES, PNW_SPECIES, GREATLAKES_SPECIES);
+          var lookup = {}; ALL.forEach(function(s) { lookup[s.id] = s; });
+          var rows = ids.map(function(id) { return { id: id, n: sc[id], sp: lookup[id] || { emoji: '🦞', name: id.charAt(0).toUpperCase() + id.slice(1) } }; }).sort(function(a, b) { return b.n - a.n; });
+          var maxN = Math.max.apply(null, rows.map(function(r) { return r.n; })) || 1;
+          return h('div', { style: cardStyle },
+            h('div', { style: headerStyle }, '🐟 Life list — catches by species'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              rows.map(function(r) {
+                return h('div', { key: r.id, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('span', { style: { width: 130, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (r.sp.emoji || '🐟') + ' ' + (r.sp.name || r.id)),
+                  h('div', { style: { flex: 1, height: 14, background: 'rgba(15,23,42,0.55)', borderRadius: 4, overflow: 'hidden' } },
+                    h('div', { style: { height: '100%', width: Math.round(r.n / maxN * 100) + '%', background: 'linear-gradient(90deg,#38bdf8,#0ea5e9)', borderRadius: 4 } })),
+                  h('span', { style: { width: 22, textAlign: 'right', fontSize: 12, fontWeight: 800, color: '#7dd3fc' } }, r.n));
+              })
+            )
+          );
+        })(),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'Missions (v1)'),
           MISSIONS.map(function(m, i) {

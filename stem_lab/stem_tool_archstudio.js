@@ -1574,6 +1574,28 @@
             )
           ),
 
+          // Cost-by-material breakdown — which materials are eating the budget (count × unit cost).
+          budgetEnabled && (function() {
+            var byMat = {};
+            blocks.forEach(function(b) { var mid = b.material || 'stone'; byMat[mid] = (byMat[mid] || 0) + 1; });
+            var rows = materials.filter(function(m) { return byMat[m.id]; }).map(function(m) { return { m: m, count: byMat[m.id], cost: byMat[m.id] * (matCostLookup[m.id] || 0) }; }).sort(function(a, b) { return b.cost - a.cost; });
+            if (!rows.length) return null;
+            var sum = rows.reduce(function(s, r) { return s + r.cost; }, 0) || 1;
+            return el('div', { style: { marginTop: 6 } },
+              el('div', { style: { fontSize: 9, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 } }, 'Cost by material'),
+              el('div', { style: { display: 'flex', height: 10, borderRadius: 4, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' } },
+                rows.map(function(r) { return el('div', { key: r.m.id, title: r.m.label + ': ' + r.count + ' x $' + (matCostLookup[r.m.id] || 0) + ' = $' + r.cost, style: { width: (r.cost / sum * 100) + '%', background: r.m.color } }); })
+              ),
+              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 } },
+                rows.map(function(r) {
+                  return el('div', { key: r.m.id, style: { display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                    el('span', { style: { width: 8, height: 8, borderRadius: 2, background: r.m.color, display: 'inline-block', border: '1px solid rgba(148,163,184,0.4)' } }),
+                    el('span', null, r.m.icon + ' ' + r.count + 'x  $' + r.cost));
+                })
+              )
+            );
+          })(),
+
           // Layer View
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDC2\uFE0F Layer View'),

@@ -3125,6 +3125,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', null,
               h('div', { style: { fontSize: 11, color: T.dim } }, 'Total time'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.text, fontFamily: 'monospace' } }, Math.round(lifetimeHours).toLocaleString() + ' hr'))),
+          // Lifetime-cost composition — setup vs ongoing vs the emergency reserve people forget.
+          (function() {
+            var setup = p.firstYear, ongoing = p.annual * Math.max(0, costYears - 1), reserve = p.emergencyFund;
+            var total = setup + ongoing + reserve || 1;
+            var segs = [
+              { label: 'First-year setup', v: setup, color: T.warm || '#f59e0b' },
+              { label: 'Ongoing (' + Math.max(0, costYears - 1) + ' yr × $' + p.annual.toLocaleString() + ')', v: ongoing, color: T.accentHi || '#0891b2' },
+              { label: 'Emergency reserve', v: reserve, color: T.danger || '#dc2626' }
+            ];
+            return h('div', { style: { marginTop: 14 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'True total commitment: $' + total.toLocaleString()),
+              h('div', { style: { display: 'flex', height: 18, borderRadius: 5, overflow: 'hidden', border: '1px solid ' + T.border } },
+                segs.map(function(s) { return h('div', { key: s.label, title: s.label + ': $' + s.v.toLocaleString(), style: { width: (s.v / total * 100) + '%', background: s.color } }); })
+              ),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6 } },
+                segs.map(function(s) {
+                  return h('div', { key: s.label, style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: T.muted } },
+                    h('span', { style: { width: 10, height: 10, borderRadius: 2, background: s.color, display: 'inline-block' } }),
+                    h('span', null, s.label + ' — $' + s.v.toLocaleString() + ' (' + Math.round(s.v / total * 100) + '%)'));
+                })
+              ),
+              h('div', { style: { marginTop: 6, fontSize: 11, color: T.muted, fontStyle: 'italic' } }, 'The "lifetime cost" figure above leaves out the emergency reserve — a real cost you should bank before adopting.')
+            );
+          })(),
           h('p', { style: { margin: '12px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } }, p.notes)),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'What\'s NOT in these numbers'),
