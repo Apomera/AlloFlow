@@ -987,20 +987,23 @@ const executeSaveFile = (deps) => {
               addToast(t('student.adventure_saved'), "info");
           }
       }
-      // ── FERPA voice-export gate ──
-      // A saved project can carry a child's recorded voice: Oral Fluency
-      // read-aloud clips (history fluency-record .audioRecording) and SEL/HOWL
-      // voice check-ins (selToolData). A recorded voice is identifiable,
-      // biometric-class FERPA data, so warn + mark the file CONFIDENTIAL before
-      // it leaves the device (mirrors the Symbol Studio backup pattern; auto
-      // cloud-sync already strips fluency audio via sanitizeHistoryForCloud).
-      // Fires ONLY when audio is actually present — normal saves are unaffected.
+      // ── FERPA export gate ──
+      // A saved project can carry identifiable, FERPA-protected student data:
+      //   • a child's recorded VOICE (Oral Fluency clips, SEL voice check-ins), and
+      //   • SEL mental-health TEXT — journals, reflections, or a safety plan in
+      //     selToolData / selProgress.
+      // Warn + mark the file CONFIDENTIAL before it leaves the device (mirrors the
+      // Symbol Studio backup pattern; auto cloud-sync already strips fluency audio).
+      // Fires ONLY when such data is actually present — ordinary lesson saves are
+      // unaffected (empty SEL data {} does not match).
       let outName = filename;
       const _hasVoice = dataStr.indexOf('data:audio') !== -1 || /"audioRecording"\s*:\s*"/.test(dataStr);
-      if (_hasVoice) {
-          const _ok = (typeof window !== 'undefined' && typeof window.confirm === 'function')
-              ? window.confirm("This project file contains a student's voice recording (an Oral Fluency read-aloud and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?")
-              : true;
+      const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr);
+      if (_hasVoice || _hasSelText) {
+          const _msg = _hasVoice
+              ? "This project file contains a student's voice recording (an Oral Fluency read-aloud and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?"
+              : "This project file includes SEL activity data, which can contain a student's reflections, journal entries, or safety plan — identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?";
+          const _ok = (typeof window !== 'undefined' && typeof window.confirm === 'function') ? window.confirm(_msg) : true;
           if (!_ok) { try { addToast(t('toasts.save_cancelled') || 'Save cancelled.', 'info'); } catch (_) {} return; }
           if (!/CONFIDENTIAL/i.test(outName)) {
               const _dot = outName.lastIndexOf('.');

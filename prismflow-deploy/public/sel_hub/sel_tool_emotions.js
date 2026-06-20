@@ -18146,7 +18146,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: P.text2, fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -18166,8 +18166,8 @@ window.SelHub = window.SelHub || {
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
-              h('h3', { style: { margin: '0 0 8px 0', color: P.text, fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: P.textMuted, fontSize: 13 } }, popBadge.desc),
+              h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: '#3b82f6', fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -18189,8 +18189,8 @@ window.SelHub = window.SelHub || {
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : P.card, border: '1px solid ' + (earned ? '#3b82f6' : P.border), opacity: earned ? 1 : 0.4 }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? P.text3 : P.textMuted } }, badge.name),
-                  h('div', { style: { fontSize: 11, color: P.textMuted, marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : P.textMuted } }, badge.name),
+                  h('div', { style: { fontSize: 11, color: earned ? '#cbd5e1' : P.textMuted, marginTop: 2 } }, badge.desc)
                 );
               })
             ),
@@ -19480,18 +19480,18 @@ window.SelHub = window.SelHub || {
           mixResult && mixResult !== 'custom' && h('div', { style: { padding: 24, borderRadius: 16, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '2px solid #8b5cf666', textAlign: 'center', marginBottom: 20 } },
             h('div', { style: { fontSize: 48, marginBottom: 8 } }, mixResult.emoji),
             h('p', { style: { fontSize: 10, color: ST('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Emotion Mix Result'),
-            h('h4', { style: { margin: '0 0 8px 0', color: P.text, fontSize: 22 } }, mixResult.result),
+            h('h4', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 22 } }, mixResult.result),
             (function() {
               var fam1 = EMOTION_FAMILIES.find(function(f) { return f.id === mixEmotion1; });
               var fam2 = EMOTION_FAMILIES.find(function(f) { return f.id === mixEmotion2; });
-              return h('p', { style: { fontSize: 12, color: P.textMuted, marginBottom: 12 } },
+              return h('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } },
                 (fam1 ? fam1.emoji + ' ' + fam1.label : mixEmotion1) + ' + ' + (fam2 ? fam2.emoji + ' ' + fam2.label : mixEmotion2)
               );
             })(),
-            h('p', { style: { fontSize: 14, color: P.text3, lineHeight: 1.6 } }, mixResult.desc[band]),
+            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6 } }, mixResult.desc[band]),
             h('button', { 'aria-label': 'Try Another Mix',
               onClick: function() { upd({ mixEmotion1: null, mixEmotion2: null, mixResult: null, mixAiCustom: null }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: P.border, color: P.text, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.15)', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, 'Try Another Mix')
           ),
 
