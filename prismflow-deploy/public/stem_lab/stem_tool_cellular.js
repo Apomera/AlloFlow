@@ -238,6 +238,7 @@
     var sBrush = useState(1); var brush = sBrush[0], setBrush = sBrush[1]; // 1 draw, 0 erase
     var sCursor = useState([13, 18]); var cursor = sCursor[0], setCursor = sCursor[1];
     var sStamp = useState('glider'); var stampKey = sStamp[0], setStampKey = sStamp[1];
+    var sPopHist = useState([]); var popHist = sPopHist[0], setPopHist = sPopHist[1]; // live-cell count per generation (capped)
 
     // Elementary CA
     var CA_COLS = 81, CA_ROWS = 60, CA_PX = 6;
@@ -284,6 +285,16 @@
     useEffect(function () {
       if (running && countPop(grid) === 0) { setRunning(false); announce('All cells died — paused.'); }
     }, [grid, running, announce]);
+
+    // record live-cell population per generation for the population sparkline.
+    // Keyed on `gen` (grid updates in the same batched render) so painting between
+    // generations doesn't double-count; gen===0 (reset/clear/new pattern) restarts it.
+    useEffect(function () {
+      setPopHist(function (h) {
+        var p = countPop(grid);
+        return gen === 0 ? [p] : h.concat([p]).slice(-90);
+      });
+    }, [gen]);
 
     // record generations-run milestone whenever gen advances past thresholds
     useEffect(function () {
@@ -459,6 +470,19 @@
           h('div', { 'aria-hidden': 'true', style: { fontSize: '11px', color: C.sub, maxWidth: '230px', lineHeight: 1.4 } },
             'A cell lives with 2–3 neighbours, is born with exactly 3, otherwise dies.')
         ),
+        popHist.length > 1 && (function () {
+          var W = 320, H = 44, pad = 3, n = popHist.length;
+          var maxP = Math.max.apply(null, popHist) || 1;
+          var sx = function (i) { return pad + (n === 1 ? 0 : i / (n - 1)) * (W - 2 * pad); };
+          var sy = function (p) { return pad + (1 - p / maxP) * (H - 2 * pad); };
+          var pts = popHist.map(function (p, i) { return sx(i).toFixed(1) + ',' + sy(p).toFixed(1); }).join(' ');
+          return h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('div', { style: { fontSize: '10px', color: C.sub, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' } }, 'Population history'),
+            h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { flex: 1, height: H + 'px', maxWidth: '100%' }, role: 'img', 'aria-label': 'Live-cell population over the last ' + n + ' generations; currently ' + pop + ', peak ' + maxP + '.' },
+              h('polyline', { points: pts, fill: 'none', stroke: '#22c55e', strokeWidth: 1.5 }),
+              h('circle', { cx: sx(n - 1), cy: sy(popHist[n - 1]), r: 2.5, fill: '#22c55e' })),
+            h('div', { style: { fontSize: '10px', color: C.sub, fontWeight: 700, whiteSpace: 'nowrap' } }, 'peak ' + maxP));
+        })(),
         renderLifeGrid(),
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
           btn(running ? '⏸ Pause' : '▶ Play', toggleRun, { primary: true, title: running ? 'Pause the simulation' : 'Run the simulation' }),

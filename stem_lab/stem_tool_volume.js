@@ -845,7 +845,8 @@ window.StemLab = window.StemLab || {
               ? { correct: true, msg: '\u2705 Correct! '+challenge.l+'\u00d7'+challenge.w+'\u00d7'+challenge.h+' = '+challenge.answer + (newStreak >= 3 ? '  \uD83D\uDD25 ' + newStreak + ' streak!' : '') }
               : { correct: false, msg: '\u274c Try V = L \u00d7 W \u00d7 H = '+challenge.l+' \u00d7 '+challenge.w+' \u00d7 '+challenge.h+' = '+challenge.answer },
             score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
-            streak: newStreak
+            streak: newStreak,
+            attemptHist: (_v.attemptHist || []).concat([ok ? 1 : 0]).slice(-24)
           });
           if (ok) {
             awardStemXP('volume', 5, 'cube volume');
@@ -877,7 +878,8 @@ window.StemLab = window.StemLab || {
                 ? { correct: true, msg: '\u2705 Correct! '+tgtP.l+'\u00d7'+tgtP.w+'\u00d7'+tgtP.h+' = '+tgtVol+' cubes' + (newStreak2 >= 3 ? '  \uD83D\uDD25 ' + newStreak2 + ' streak!' : '') }
                 : { correct: false, msg: '\u274c Build a solid '+tgtP.l+'\u00d7'+tgtP.w+'\u00d7'+tgtP.h+' prism ('+tgtVol+' cubes). You have '+vol+'.' },
               score: { correct: score.correct + (isRect ? 1 : 0), total: score.total + 1 },
-              streak: newStreak2
+              streak: newStreak2,
+              attemptHist: (_v.attemptHist || []).concat([isRect ? 1 : 0]).slice(-24)
             });
             if (isRect) {
               awardStemXP('volume', 5, 'prism build');
@@ -1278,7 +1280,9 @@ window.StemLab = window.StemLab || {
           h('h3', { className: 'text-lg font-bold text-emerald-800' }, '\uD83D\uDCE6 3D Volume Explorer'),
           h('div', { className: 'flex items-center gap-2 ml-2' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, score.correct + '/' + score.total),
-            streak >= 2 && h('div', { 
+            (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: 'Recent attempts (newest at right)', role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
+              _v.attemptHist.slice(-12).map(function (v, i) { return h('span', { key: i, className: 'inline-block w-1 h-3.5 rounded-sm ' + (v ? 'bg-emerald-500' : 'bg-rose-400') }); })),
+            streak >= 2 && h('div', {
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
             earnedCount > 0 && h('button', { onClick: function() { upd({ showBadges: !showBadges }); },

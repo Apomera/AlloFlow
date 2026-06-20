@@ -409,9 +409,13 @@ window.StemLab = window.StemLab || {
           return Math.PI * rc * rc + Math.PI * rc * Math.sqrt(rc * rc + h * h);
         }
         if (s === 'pyramid') {
+          // base + 4 triangular faces. The two faces with base l use slant √(h²+(w/2)²); the two with
+          // base w use √(h²+(l/2)²). Lateral = 2·(½·l·slantW) + 2·(½·w·slantL) = l·slantW + w·slantL.
+          // (The old form used one slant × the full base perimeter, ~doubling the lateral area.)
           var base = l * w;
-          var slant = Math.sqrt(h * h + (Math.max(l, w) / 2) * (Math.max(l, w) / 2));
-          return base + 2 * l * slant + 2 * w * slant; // approximate
+          var slantW = Math.sqrt(h * h + (w / 2) * (w / 2));
+          var slantL = Math.sqrt(h * h + (l / 2) * (l / 2));
+          return base + l * slantW + w * slantL;
         }
         return 2 * (l * w + l * h + w * h);
       }
@@ -598,7 +602,7 @@ window.StemLab = window.StemLab || {
               }, h('div', { style: {
                 position: 'absolute', width: '100%', height: cubeUnit+'px',
                 transform: 'rotateX(90deg) translateZ('+cubeUnit/2+'px)',
-                background: 'transparent', border: 'none', boxSizing: 'border-box'
+                background: 'hsla(220,15%,60%,0.10)', border: '1px dashed hsla(220,20%,60%,0.22)', boxSizing: 'border-box'
               }})));
             })(p[0], p[1], p[2]+1);
           }
@@ -841,7 +845,8 @@ window.StemLab = window.StemLab || {
               ? { correct: true, msg: '\u2705 Correct! '+challenge.l+'\u00d7'+challenge.w+'\u00d7'+challenge.h+' = '+challenge.answer + (newStreak >= 3 ? '  \uD83D\uDD25 ' + newStreak + ' streak!' : '') }
               : { correct: false, msg: '\u274c Try V = L \u00d7 W \u00d7 H = '+challenge.l+' \u00d7 '+challenge.w+' \u00d7 '+challenge.h+' = '+challenge.answer },
             score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
-            streak: newStreak
+            streak: newStreak,
+            attemptHist: (_v.attemptHist || []).concat([ok ? 1 : 0]).slice(-24)
           });
           if (ok) {
             awardStemXP('volume', 5, 'cube volume');
@@ -873,7 +878,8 @@ window.StemLab = window.StemLab || {
                 ? { correct: true, msg: '\u2705 Correct! '+tgtP.l+'\u00d7'+tgtP.w+'\u00d7'+tgtP.h+' = '+tgtVol+' cubes' + (newStreak2 >= 3 ? '  \uD83D\uDD25 ' + newStreak2 + ' streak!' : '') }
                 : { correct: false, msg: '\u274c Build a solid '+tgtP.l+'\u00d7'+tgtP.w+'\u00d7'+tgtP.h+' prism ('+tgtVol+' cubes). You have '+vol+'.' },
               score: { correct: score.correct + (isRect ? 1 : 0), total: score.total + 1 },
-              streak: newStreak2
+              streak: newStreak2,
+              attemptHist: (_v.attemptHist || []).concat([isRect ? 1 : 0]).slice(-24)
             });
             if (isRect) {
               awardStemXP('volume', 5, 'prism build');
@@ -977,7 +983,7 @@ window.StemLab = window.StemLab || {
         var u = Math.min(50, 280 / maxDim);
         // Container size
         var contW = (2 * (l + w)) * u + 60;
-        var contH = (2 * w + hh) * u + 60;
+        var contH = (2 * (w + hh)) * u + 60; // flat net spans Top(w)+Front(h)+Bottom(w)+Back(h) — Back face was overflowing the panel
         var t = netFold; // 0 (flat) to 1 (folded)
         // Each face has an unfolded position and a rotation that morphs toward folded
         // We render six faces as positioned divs and rotate each by t * 90deg around
@@ -1274,7 +1280,9 @@ window.StemLab = window.StemLab || {
           h('h3', { className: 'text-lg font-bold text-emerald-800' }, '\uD83D\uDCE6 3D Volume Explorer'),
           h('div', { className: 'flex items-center gap-2 ml-2' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, score.correct + '/' + score.total),
-            streak >= 2 && h('div', { 
+            (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: 'Recent attempts (newest at right)', role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
+              _v.attemptHist.slice(-12).map(function (v, i) { return h('span', { key: i, className: 'inline-block w-1 h-3.5 rounded-sm ' + (v ? 'bg-emerald-500' : 'bg-rose-400') }); })),
+            streak >= 2 && h('div', {
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
             earnedCount > 0 && h('button', { onClick: function() { upd({ showBadges: !showBadges }); },
@@ -1334,7 +1342,8 @@ window.StemLab = window.StemLab || {
                 challenge: null, answer: '', feedback: null, showLayers: null,
                 builderChallenge: null, builderFeedback: null,
                 paintSurfaceArea: false,
-                wpAnswer: '', wpFeedback: null, wpCtxIdx: 0
+                wpAnswer: '', wpFeedback: null, wpCtxIdx: 0,
+                shape: 'prism', showCrossSection: false, showNet: false, showCompare: false, netFold: 0
               });
               announceToSR('Volume explorer reset');
             },
@@ -1799,6 +1808,57 @@ window.StemLab = window.StemLab || {
           )
         ),
 
+        // === H7b'' inquiry widget: volume predictor ===
+        (function() {
+          var iq = _v._volPred || { lpred: 3, wpred: 3, hpred: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd({ _volPred: Object.assign({}, iq, patch) }); }
+          var predicted = iq.lpred * iq.wpred * iq.hpred;
+          var actual = (dims.l || 1) * (dims.w || 1) * (dims.h || 1);
+          var diff = Math.abs(predicted - actual);
+          var state = diff < 2 ? 'close' : (diff < 8 ? 'mid' : 'far');
+          var sm = {
+            close: { label: '🎯 Close match', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            mid:   { label: '🟡 In the ballpark', color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
+            far:   { label: '🔴 Far off', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
+          }[state];
+          return h('div', { className: 'mt-3 mb-3 p-3 rounded-xl bg-white border border-indigo-200' },
+            h('h4', { className: 'text-sm font-black text-indigo-700 mb-1' }, '📊 Volume predictor — sense-check'),
+            h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' }, 'Adjust your PREDICTED dimensions, compare to actual prism. Discrete outcome: close/mid/far. No score, no reveal.'),
+            h('div', { className: 'mb-2 p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+              h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
+              h('div', { className: 'text-[10px] text-slate-700 font-mono mt-1' }, 'Pred: ' + iq.lpred + '×' + iq.wpred + '×' + iq.hpred + ' = ' + predicted + '   |   Actual: ' + actual)
+            ),
+            h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+              [{ k: 'lpred', l: 'L pred' }, { k: 'wpred', l: 'W pred' }, { k: 'hpred', l: 'H pred' }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'vp-' + s.k, className: 'block text-[10px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-indigo-700' }, iq[s.k])),
+                  h('input', { id: 'vp-' + s.k, type: 'range', min: 1, max: 10, step: 1, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    className: 'w-full', 'aria-label': s.l }));
+              })
+            ),
+            h('div', { className: 'flex gap-2 items-center flex-wrap mb-2' },
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: predicted, a: actual, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+              h('button', { onClick: function() { setIQ({ lpred: 3, wpred: 3, hpred: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset'),
+              (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+            ),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: How do you build intuition for predicting volume?',
+              className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, '🤔 Stuck — show open prompts'),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
+              h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                h('li', null, 'Which dimension affects volume the most?'),
+                h('li', null, 'Try halving one dimension — what happens to volume?'),
+                h('li', null, 'When are predictions hardest? When easiest?'))),
+            h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-emerald-800 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
+              'I understand — explain in own words'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how each dimension contributes to total volume.',
+              className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
+            h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.')
+          );
+        })(),
+
         // Challenge buttons (skip in word mode — it has its own challenge built in)
         !isWord && h('div', { className: 'flex gap-2 flex-wrap' },
           mode === 'slider' ? h(React.Fragment, null,
@@ -2094,7 +2154,7 @@ window.StemLab = window.StemLab || {
                 c2.scale(2, 2);
                 var start = performance.now();
                 function drawVol() {
-                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._volAnim); return; }
+                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._volAnim); if (cvEl._volRO) cvEl._volRO.disconnect(); return; }
                   var t = (performance.now() - start) / 1000;
                   c2.fillStyle = '#020210';
                   c2.fillRect(0, 0, W, H);
@@ -2121,10 +2181,9 @@ window.StemLab = window.StemLab || {
                     c2.fillStyle = s.color + '40';
                     // Draw shape (simplified)
                     if (s.name === 'Cube') {
-                      // Iso cube
+                      // Iso cube with interior Y edges so it reads as 3D, not flat hexagon
                       var pts = [];
                       var cos30 = Math.cos(Math.PI / 6 + rot);
-                      var sin30 = Math.sin(Math.PI / 6 + rot);
                       pts = [
                         { x: 0, y: -sz }, { x: sz * cos30, y: -sz / 2 }, { x: sz * cos30, y: sz / 2 }, { x: 0, y: sz },
                         { x: -sz * cos30, y: sz / 2 }, { x: -sz * cos30, y: -sz / 2 }
@@ -2133,16 +2192,23 @@ window.StemLab = window.StemLab || {
                       pts.forEach(function(p, pi) { if (pi === 0) c2.moveTo(p.x, p.y); else c2.lineTo(p.x, p.y); });
                       c2.closePath();
                       c2.fill(); c2.stroke();
+                      // Interior Y: 3 edges from the near-corner (centre) to alternating outer vertices
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[0].x, pts[0].y); c2.stroke();
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[2].x, pts[2].y); c2.stroke();
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[4].x, pts[4].y); c2.stroke();
                     } else if (s.name === 'Sphere') {
                       c2.beginPath();
                       c2.arc(0, 0, sz, 0, Math.PI * 2);
                       c2.fill(); c2.stroke();
-                      // Equator + meridian
+                      // Equator + two phase-offset meridians for continuous spin
                       c2.beginPath();
                       c2.ellipse(0, 0, sz, sz * 0.3, 0, 0, Math.PI * 2);
                       c2.stroke();
                       c2.beginPath();
                       c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.cos(rot)), sz, 0, 0, Math.PI * 2);
+                      c2.stroke();
+                      c2.beginPath();
+                      c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.sin(rot)), sz, 0, 0, Math.PI * 2);
                       c2.stroke();
                     } else if (s.name === 'Cylinder') {
                       c2.beginPath();
@@ -2154,6 +2220,9 @@ window.StemLab = window.StemLab || {
                       c2.beginPath();
                       c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
                       c2.fill(); c2.stroke();
+                      // Back edge: vertical seam swinging horizontally to show vertical-axis spin
+                      var cylBackX = Math.sin(rot) * sz * 0.7;
+                      c2.beginPath(); c2.moveTo(cylBackX, -sz); c2.lineTo(cylBackX, sz); c2.stroke();
                     } else if (s.name === 'Cone') {
                       c2.beginPath();
                       c2.moveTo(0, -sz);
@@ -2164,6 +2233,9 @@ window.StemLab = window.StemLab || {
                       c2.beginPath();
                       c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
                       c2.fill(); c2.stroke();
+                      // Back ridge: line from apex to a swinging point on the base ellipse
+                      var coneBackX = Math.sin(rot) * sz * 0.7;
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(coneBackX, sz); c2.stroke();
                     } else if (s.name === 'Pyramid') {
                       c2.beginPath();
                       c2.moveTo(0, -sz);
@@ -2171,17 +2243,41 @@ window.StemLab = window.StemLab || {
                       c2.lineTo(sz * 0.7, sz);
                       c2.closePath();
                       c2.fill(); c2.stroke();
-                      c2.beginPath();
-                      c2.moveTo(0, -sz); c2.lineTo(0, sz);
-                      c2.stroke();
+                      // Two phase-offset edges from apex to swinging base points
+                      // (a 4-sided pyramid has 4 apex→base edges; show 2 of them rotating)
+                      var pyrX1 = Math.sin(rot) * sz * 0.7;
+                      var pyrX2 = Math.sin(rot + Math.PI / 2) * sz * 0.7;
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(pyrX1, sz); c2.stroke();
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(pyrX2, sz); c2.stroke();
                     } else if (s.name === 'Prism') {
-                      // Triangular prism
+                      // Triangular prism: front face triangle + depth edges from each vertex
                       c2.beginPath();
                       c2.moveTo(-sz, sz / 2);
                       c2.lineTo(0, -sz / 2);
                       c2.lineTo(sz, sz / 2);
                       c2.closePath();
                       c2.fill(); c2.stroke();
+                      var prismDx = Math.cos(rot) * sz * 0.35;
+                      var prismDy = Math.sin(rot) * sz * 0.15;
+                      var prismVerts = [
+                        { x: -sz, y: sz / 2 },
+                        { x: 0, y: -sz / 2 },
+                        { x: sz, y: sz / 2 }
+                      ];
+                      // Depth edges
+                      prismVerts.forEach(function(v) {
+                        c2.beginPath();
+                        c2.moveTo(v.x, v.y);
+                        c2.lineTo(v.x + prismDx, v.y + prismDy);
+                        c2.stroke();
+                      });
+                      // Back face outline (offset triangle)
+                      c2.beginPath();
+                      c2.moveTo(prismVerts[0].x + prismDx, prismVerts[0].y + prismDy);
+                      c2.lineTo(prismVerts[1].x + prismDx, prismVerts[1].y + prismDy);
+                      c2.lineTo(prismVerts[2].x + prismDx, prismVerts[2].y + prismDy);
+                      c2.closePath();
+                      c2.stroke();
                     }
                     c2.restore();
                     c2.font = 'bold 10px sans-serif'; c2.fillStyle = s.color; c2.textAlign = 'center';
@@ -2194,8 +2290,10 @@ window.StemLab = window.StemLab || {
                 drawVol();
                 var ro = new ResizeObserver(function() {
                   W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                  cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H * 2;
+                  c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative
                 });
+                cvEl._volRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
                 ro.observe(cvEl);
               },
               style: { width: '100%', height: '100%', display: 'block' }

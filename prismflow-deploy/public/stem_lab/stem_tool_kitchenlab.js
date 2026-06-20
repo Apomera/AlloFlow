@@ -2411,7 +2411,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             recipeMaxPanTempF: Math.max(prior.recipeMaxPanTempF || 0, newTemp),
             recipeFoodInternalF: newFood,
             recipeActiveTimeSec: newActiveTime,
-            recipeLastTickAt: now
+            recipeLastTickAt: now,
+            // pan + food internal temp per tick → the cooking temperature trace
+            recipeTempHistory: (prior.recipeTempHistory || []).concat([{ pan: Math.round(newTemp), food: Math.round(newFood) }]).slice(-120)
           };
           // Competition mode: accumulate burner-level samples for the
           // "heat efficient" constraint, and trip the deadline if we run
@@ -2507,6 +2509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           recipeItemAddTimes: {},
           recipeActiveTimeSec: 0,
           recipeHeatRemovedAt: null,
+          recipeTempHistory: [],
           recipeJudgement: null,
           // Reset pot state for multi-pot recipes
           potState: 'cold', potStartedAt: null, potPastaInAt: null,
@@ -2795,6 +2798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           recipeItemAddTimes: {},
           recipeActiveTimeSec: 0,
           recipeHeatRemovedAt: null,
+          recipeTempHistory: [],
           recipeJudgement: null,
           competitionActive: true,
           competitionConstraints: constraints.map(function(c) { return c.id; }),
@@ -3701,6 +3705,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               (compResult.penaltyTotal < 0 ? ' ' + compResult.penaltyTotal + ' penalty' : '')) : null,
             h('div', { style: { fontSize: 48, fontWeight: 900, color: gradeColor, marginTop: 4 } }, 'Grade: ' + j.grade),
             h('div', { style: { fontSize: 17, color: '#fde68a', marginTop: 18, fontWeight: 700, lineHeight: 1.4 } }, j.verdict)),
+
+          // Temperature trace — pan + food internal temp over the cook (the "when did I overheat?" view).
+          (d.recipeTempHistory && d.recipeTempHistory.length > 1) && (function() {
+            var hist = d.recipeTempHistory, n = hist.length;
+            var allT = hist.reduce(function(a, p) { a.push(p.pan, p.food); return a; }, []);
+            var maxT = Math.max.apply(null, allT.concat([250])), minT = 40;
+            var W = 360, H = 150, pl = 34, pb = 20, pt = 24, pr = 8;
+            var sx = function(i) { return pl + (n === 1 ? 0 : i / (n - 1)) * (W - pl - pr); };
+            var sy = function(t) { return pt + (1 - (t - minT) / (maxT - minT)) * (H - pt - pb); };
+            var line = function(key) { return hist.map(function(p, i) { return sx(i).toFixed(1) + ',' + sy(p[key]).toFixed(1); }).join(' '); };
+            var panPeak = Math.round(Math.max.apply(null, hist.map(function(p) { return p.pan; })));
+            var refs = [{ t: 212, label: 'Boil', c: '#38bdf8' }, { t: 310, label: 'Maillard', c: '#f97316' }];
+            return h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🌡️ Temperature trace'),
+              h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Pan and food internal temperature over the cook; pan peaked at ' + panPeak + ' degrees Fahrenheit.' },
+                refs.filter(function(r) { return r.t < maxT; }).map(function(r) {
+                  return h('g', { key: r.t },
+                    h('line', { x1: pl, y1: sy(r.t), x2: W - pr, y2: sy(r.t), stroke: r.c, strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.5 }),
+                    h('text', { x: W - pr, y: sy(r.t) - 2, textAnchor: 'end', fontSize: 7, fill: r.c }, r.label + ' ' + r.t + '°'));
+                }),
+                h('polyline', { points: line('pan'), fill: 'none', stroke: '#fb923c', strokeWidth: 2 }),
+                h('polyline', { points: line('food'), fill: 'none', stroke: '#ef4444', strokeWidth: 2 }),
+                h('text', { x: pl, y: 12, fontSize: 9, fill: '#fb923c', fontWeight: 700 }, '— Pan'),
+                h('text', { x: pl + 42, y: 12, fontSize: 9, fill: '#ef4444', fontWeight: 700 }, '— Food internal'),
+                h('text', { x: (pl + W - pr) / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fill: 'var(--allo-stem-text-soft, #94a3b8)' }, 'Cook time →'),
+                h('text', { x: pl - 3, y: sy(maxT) + 6, textAnchor: 'end', fontSize: 7, fill: '#64748b' }, Math.round(maxT) + '°'),
+                h('text', { x: pl - 3, y: sy(minT), textAnchor: 'end', fontSize: 7, fill: '#64748b' }, minT + '°')
+              ),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, lineHeight: 1.5 } }, 'See where the pan crossed key thresholds — and how the food\'s internal temp lagged behind the pan.')
+            );
+          })(),
 
           // ─── Competition constraint results ───
           compResult ? h('div', { style: cardStyle() },
