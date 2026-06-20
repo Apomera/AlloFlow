@@ -191,6 +191,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               var t = _vizTick.current;
               var ls = _vizLiveState.current;
               if (ls.tab !== 'visualize') { _vizAnimId.current = requestAnimationFrame(frame); return; }
+              if (!cv.isConnected) { _vizLoopRunning.current = false; if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current); return; }
               var r = cv.getBoundingClientRect();
               var W = r.width, H = r.height;
               // Clear
