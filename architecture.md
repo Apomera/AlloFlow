@@ -796,8 +796,11 @@ catalogs, and a11y baselines. Not covered:
   actually updates (would catch manifest/pack-load issues).
 - **RTL rendering.** Arabic/Hebrew packs exist and `dir="rtl"` is wired,
   but no test confirms it propagates and `ms-*`/`me-*` classes behave.
-- **PDF pipeline output validation.** `check_pdf_pipeline.cjs` static check
-  exists; no test generates a PDF and asserts non-empty/non-corrupt output.
+- **PDF pipeline output validation.** Now well covered: `check_pdf_pipeline.cjs`
+  static check plus a large `tests/doc_pipeline_*.test.js` suite and e2e golden
+  masters (`tests/e2e/pdf_tag_tree_golden.spec.ts`,
+  `tests/e2e/pdf_validator_golden.spec.ts`, `tests/compare_tagged_pdf_perf.test.js`)
+  that assert tagged-PDF structure and PDF/UA output.
 - **React state propagation across Context boundaries** (jsdom unit-level).
 - **CDN fallback chain.** Cloudflare → GitHub raw fallback path is not
   exercised under failure conditions.

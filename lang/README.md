@@ -5,6 +5,29 @@ users when they pick a non-English language. Each pack is a JSON object
 matching the shape of `ui_strings.js` + the `help_mode.*` keys from
 `help_strings.js`.
 
+## Current coverage (June 2026)
+
+**56 packs are built and maintained** (`lang/*.js`, mirrored to
+`prismflow-deploy/public/lang/`) — far beyond the priority tiers listed below.
+They have been heavily hand-corrected: half-translated "Spanglish" eliminated in
+safety strings, a content-module sweep, full `behavior_lens` coverage, and a
+new-key fill bringing all non-PPS packs to ~87%+ translated (honest English is
+kept only for international scientific/Latin nomenclature + brand/format tokens).
+See [PACK_QUALITY_STATUS.md](PACK_QUALITY_STATUS.md) for the running log.
+
+Two correction paths complement the build pipeline below:
+- **Quality/validation tooling** in [`../dev-tools/i18n/`](../dev-tools/i18n/) —
+  gap reports, key merging, and the blocking `check_safety_string_spanglish.cjs`
+  (`npm run verify:spanglish`) + `../dev-tools/check_lang_json.cjs`
+  (`npm run verify:lang-json`) gates.
+- **Community corrections** — multilingual users submit fixes in-app
+  (`translation_feedback_module.js` → Cloudflare worker `/submitTranslation`),
+  applied via `../dev-tools/i18n/ingest_translation_feedback.cjs --apply` behind a
+  manual review gate.
+
+The **PPS cluster** (acholi, karen, chin_hakha, chin_falam, marshallese, lao,
+maay_maay) is intentional English passthrough.
+
 ## How the runtime picks a pack
 
 When a user selects a language, the runtime in `AlloFlowANTI.txt` (the

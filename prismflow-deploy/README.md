@@ -38,7 +38,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 | Main Interface | Live Session | STEM Lab |
 |:-:|:-:|:-:|
-| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 65 interactive simulation tiles](docs/screenshots/stem-lab.png) |
+| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 108 interactive simulation tiles](docs/screenshots/stem-lab.png) |
 
 | Adventure Mode | BehaviorLens | Word Sounds |
 |:-:|:-:|:-:|
@@ -101,9 +101,9 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 ---
 
-## 🧮 STEM Lab (65 Interactive Simulations)
+## 🧮 STEM Lab (108 Interactive Simulations)
 
-The STEM Lab is a dynamically-loaded suite of **65 browser-based interactive tools** spanning:
+The STEM Lab is a dynamically-loaded suite of **108 browser-based interactive tools** spanning:
 
 | Domain | Tools |
 |--------|-------|
@@ -121,9 +121,9 @@ Each tool supports **Generate Drill** for instant related practice sets and save
 
 ---
 
-## 💚 SEL Hub (24 Interactive Tools)
+## 💚 SEL Hub (70 Interactive Tools)
 
-The SEL Hub provides **24 social-emotional learning tools** aligned with CASEL's 5 core competencies:
+The SEL Hub provides **70 social-emotional learning tools** aligned with CASEL's 5 core competencies:
 
 | Competency | Tools |
 |------------|-------|
@@ -214,7 +214,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
 | **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (65 tools), SEL Hub (24 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (108 tools), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
@@ -235,7 +235,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx`, ~55K lines) dynamically loads spoke modules on demand: STEM Lab (65 tools), SEL Hub (24 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Games, Doc Pipeline, AI Backend, and more. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~29K lines) dynamically loads ~250 spoke modules on demand: STEM Lab (108 tools), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)

@@ -40,7 +40,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 | Main Interface | Live Session | STEM Lab |
 |:-:|:-:|:-:|
-| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 65 interactive simulation tiles](docs/screenshots/stem-lab.png) |
+| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 108 interactive simulation tiles](docs/screenshots/stem-lab.png) |
 
 | Adventure Mode | BehaviorLens | Word Sounds |
 |:-:|:-:|:-:|
@@ -64,6 +64,8 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 | **Standards Alignment** | Align to CCSS, NGSS, CASEL, or any state standard; AI audits its own output for compliance |
 | **Smart Profiles** | Save configurations (e.g., "Grade 5 + ESL") for one-click switching across lessons |
 | **Multimodal Input** | Source from text paste, URL, PDF/image OCR, audio/video transcription, or AI generation |
+| **Cinematic Studio** | Agentic document → video generator: source-grounded storyboard JSON, captions + translation, and client-side rendering (WebCodecs / Remotion) — no server, free to run (Educator Hub → 🎬) |
+| **Professional Development** | Community-authored PD modules with AI co-authoring, completion tracking, and certificates (Educator Hub → Community Catalog → Professional Development) |
 
 ### 🎮 For Students
 
@@ -99,13 +101,13 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 | **17 Assessment Presets** | WISC-V, WIAT-4, BASC-3 (Parent & Teacher), Vineland-3, BRIEF-2, Conners-4, WJ-IV COG & ACH, KABC-II, DAS-II, CELF-5, KTEA-3, SRS-2, GARS-3, BOT-2 |
 | **Student Analytics (RTI)** | Automated Tier 1/2/3 classification with aimline monitoring (4-week warning, 6-week critical alerts); ORF, Math Fluency, and Literacy CBM probes; Pearson correlation analysis; anomaly flagging; CSV export |
 | **Math Fluency Probes** | K–8 grade-normed DCPM arithmetic drills (addition, subtraction, multiplication, division) with error analysis and frustration detection |
-| **PDF Accessibility Pipeline** | Upload any PDF → up to 10-auditor triangulated AI audit (user-configurable, with stakeholder-perspective variants: screen-reader user, disability-rights advocate, Section 508, Title II ADA, JAWS/NVDA tester, etc.) → statistical agreement analysis (ICC-like, Cronbach-like) → one-click WCAG remediation via Vision API + Tesseract.js OCR for scanned/encrypted PDFs → axe-core 4.10 verification → self-healing auto-fix loop with regression-revert + SEM-based plateau detection → preview/edit with themes, brand matching, and AI image tools → export as accessible PDF, HTML, or audio |
+| **PDF Accessibility Pipeline** | Upload any PDF → up to 10-auditor triangulated AI audit (user-configurable, with stakeholder-perspective variants: screen-reader user, disability-rights advocate, Section 508, Title II ADA, JAWS/NVDA tester, etc.) → statistical agreement analysis (ICC-like, Cronbach-like) → one-click WCAG remediation via Vision API + Tesseract.js OCR (Gemini Vision fallback) for scanned/encrypted PDFs → axe-core 4.10 verification → self-healing auto-fix loop with regression-revert + SEM-based plateau detection → **native tagged-PDF output** (real `/StructTreeRoot` via pdf-lib, font embedding per PDF/UA §7.21.4.1) → independent **PDF/UA-1 (ISO 14289-1) validation** in-browser (veraPDF via CheerpJ) with a validate→repair→re-validate closed loop → preview/edit with themes, brand matching, and AI image tools → **PII redaction** (true text removal) and **fillable AcroForm worksheets** → export as accessible PDF, HTML, ePub3, DAISY, ODT, or audio |
 
 ---
 
-## 🧮 STEM Lab (65 Interactive Simulations)
+## 🧮 STEM Lab (108 Interactive Simulations)
 
-The STEM Lab is a dynamically-loaded suite of **65 browser-based interactive tools** spanning:
+The STEM Lab is a dynamically-loaded suite of **108 browser-based interactive tools** spanning:
 
 | Domain | Tools |
 |--------|-------|
@@ -123,9 +125,9 @@ Each tool supports **Generate Drill** for instant related practice sets and save
 
 ---
 
-## 💚 SEL Hub (24 Interactive Tools)
+## 💚 SEL Hub (70 Interactive Tools)
 
-The SEL Hub provides **24 social-emotional learning tools** aligned with CASEL's 5 core competencies:
+The SEL Hub provides **70 social-emotional learning tools** aligned with CASEL's 5 core competencies:
 
 | Competency | Tools |
 |------------|-------|
@@ -217,7 +219,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
 | **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (65 tools), SEL Hub (24 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (108 tools), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
@@ -241,7 +243,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx`, ~55K lines) dynamically loads spoke modules on demand: STEM Lab (65 tools), SEL Hub (24 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Games, Doc Pipeline, AI Backend, and more. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~29K lines) dynamically loads ~250 spoke modules on demand: STEM Lab (108 tools), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. Modules are served from the Cloudflare Pages CDN; `build.js` handles URL resolution. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)
@@ -270,7 +272,7 @@ Run with `node tests/clinical_tests.js` — zero dependencies, just Node.js. See
 
 Contributions are welcome — especially new STEM/SEL tools, accessibility improvements, clinical test cases, and additional language support.
 
-1. Read [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules (Hub-and-Spoke pattern, CDN hash pinning, plugin templates).
+1. Read [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules (Hub-and-Spoke pattern, Cloudflare CDN module resolution, plugin templates).
 2. Read [architecture.md](./architecture.md) for a full technical overview.
 3. Open a descriptive PR explaining which UDL checkpoint or clinical workflow your change enhances.
 

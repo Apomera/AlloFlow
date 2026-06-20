@@ -1,10 +1,10 @@
 # AlloFlow Document Accessibility Remediation Pipeline
 ## Architecture Guide for Collaborators
 
-> **Canonical architecture reference.** This is the authoritative document for the remediation pipeline as of April 2026. `PDF_Pipeline_Architecture.md` is a deprecated historical snapshot and should not be used for new work.
+> **Canonical architecture reference.** This is the authoritative document for the remediation pipeline. `PDF_Pipeline_Architecture.md` is a deprecated historical snapshot and should not be used for new work.
 
 **Author:** Aaron Pomeranz, PsyD  
-**Version:** April 2026  
+**Version:** June 2026 (adds the native tagged-PDF emit, independent PDF/UA-1 / veraPDF validation, font-embedding tier, dual-engine OCR, and autonomous retry to the April baseline)  
 **Status:** Canonical  
 **Purpose:** This document explains how the remediation pipeline works in plain language so that accessibility experts, learning designers, and institutional partners can understand, evaluate, and help improve the system.
 
@@ -12,7 +12,7 @@
 
 ## What the Pipeline Does
 
-The pipeline takes an inaccessible PDF (or DOCX/PPTX) and produces a fully accessible HTML document that meets WCAG 2.1 Level AA standards. It does this through a 6-phase process that combines deterministic rule-based fixes, AI-powered remediation, and automated verification.
+The pipeline takes an inaccessible PDF (or DOCX/PPTX) and produces a fully accessible document — both semantic HTML (WCAG 2.1 AA) and a **native tagged PDF** (PDF/UA-1) — through a 7-phase process that combines deterministic rule-based fixes, AI-powered remediation, automated verification, and independent PDF/UA validation.
 
 **In simple terms:** Upload an inaccessible document, get back an accessible one with a detailed audit report showing what was fixed and what remains.
 
@@ -24,7 +24,7 @@ The pipeline uses three complementary approaches, applied in order:
 
 ### Layer 1: Deterministic Fixes (Zero AI Cost)
 
-**39 rule-based fixes** that run as simple find-and-replace operations on the HTML. These are fast, free, and 100% reliable because they follow exact rules — no AI judgment needed.
+A composed suite of **deterministic, rule-based fixes** (entry point `runDeterministicWcagFixes()`) that run on the HTML with no AI judgment needed — fast, free, and reliable. Several are genuinely **context/geometry-aware**, not blind find-and-replace: e.g. `<th>` scope is assigned by analyzing table geometry (row vs. column headers) rather than a blanket `scope="col"`, and heading hierarchy is repaired with a strict skip-collapse pass. The numbered catalog below is an illustrative list of the violation classes handled, not a literal 1-to-1 registry of functions.
 
 Examples:
 - If `<html>` is missing a `lang` attribute, add `lang="en"`
@@ -35,7 +35,7 @@ Examples:
 - If a skip-to-content link is missing, inject one
 - If an ARIA role is invalid (e.g., `role="content-info"`), correct it to `role="contentinfo"`
 
-**Why this matters for experts:** These fixes handle the "low-hanging fruit" that accounts for ~60% of common WCAG violations. They run before any AI processing, so the AI can focus on harder problems. If you identify a new common violation pattern, it can be added as fix #40 — no AI retraining needed, just a regex rule.
+**Why this matters for experts:** These fixes handle the "low-hanging fruit" that accounts for ~60% of common WCAG violations. They run before any AI processing, so the AI can focus on harder problems. If you identify a new common violation pattern, it can be added as a new deterministic fix — no AI retraining needed, just a rule.
 
 **Full list of deterministic fixes:**
 
@@ -85,7 +85,7 @@ Examples:
 
 ### Layer 2: Surgical AI Micro-Tools (Targeted, Low-Cost)
 
-**23 precision tools** that are *diagnosed* by AI but *executed* deterministically. The AI looks at the document and says "image #3 needs better alt text: 'University of Southern Maine campus aerial view'" — then the tool mechanically applies that specific fix.
+**34 precision tools** (the `SURGICAL_TOOL_REGISTRY`) that are *diagnosed* by AI but *executed* deterministically. The AI looks at the document and says "image #3 needs better alt text: 'University of Southern Maine campus aerial view'" — then the tool mechanically applies that specific fix.
 
 This is the key architectural insight: **AI decides WHAT to fix, but a deterministic tool does the fixing.** This prevents the AI from accidentally breaking other parts of the document.
 
@@ -124,6 +124,8 @@ This is the key architectural insight: **AI decides WHAT to fix, but a determini
 | `fix_list_wrap` | Wraps orphaned list items in proper containers |
 | `fix_skip_nav` | Adds skip-to-content link |
 | `fix_text_spacing` | Adds CSS for proper text spacing |
+
+*The table above is a representative subset. The live registry has **34** tools — additions since include a table-refinement family (`fix_table_header_col`, `fix_table_mark_layout`, `fix_table_merge_row`, `fix_table_unmerge_cell`, `fix_complex_table`), landmark builders (`fix_add_nav`, `fix_add_aside`, `fix_add_header`, `fix_add_footer`), `fix_color_contrast`, and `fix_svg_accessibility`. `SURGICAL_TOOL_REGISTRY` in `doc_pipeline_source.jsx` is the source of truth.*
 
 **Why this matters for experts:** If you notice the AI consistently misdiagnoses a certain violation type, the fix is in the diagnosis prompt — not in the tool itself. You can also add new micro-tools for institution-specific patterns (e.g., a tool that recognizes your university's specific course catalog structure).
 
@@ -226,6 +228,8 @@ For each pass (up to 8 by default):
 
 **Plateau detection** uses the Standard Error of Mean from the 3 parallel audits. If the score improvement is less than 1.5× SEM, it's indistinguishable from measurement noise, and the loop stops rather than wasting API calls.
 
+**Hands-off / autonomous mode.** `runAutonomousRemediation()` wraps the loop as a self-driving, bounded (default 5-pass) orchestration with target-score gating, plateau detection (stops after 2 non-improving passes), and permanent-failure skipping. Chunk-level transforms additionally auto-retry transient failures (timeout / quota / RECITATION) with backoff, and every bare PDF.js/OCR/network await is wrapped with a per-request `AbortController` timeout — so a hung call can't stall the whole run. This is the reliability work behind "it works every time" for institutional use.
+
 ---
 
 ## What the Pipeline Produces
@@ -252,10 +256,10 @@ A professional PDF-ready report containing:
 - Knowbility referral for documents needing expert human review
 
 ### Alternative Formats
-- **ePub 3.0** — for e-readers, mobile devices, Kindle
-- **Electronic Braille (BRF)** — Grade 1 ASCII Braille with capital/number indicators
-- **Plain Text** — stripped of all formatting
-- **Markdown** — headings, lists, links preserved in lightweight format
+- **ePub 3.0** — read-along EPUB3 with Media Overlays, for e-readers / mobile devices
+- **DAISY** — Digital Accessible Information System, for dedicated assistive readers
+- **ODT** — OpenDocument Text (LibreOffice / Google Docs)
+- **Accessible PDF** and **HTML** — the primary outputs (see "How the Output Works")
 
 ### Batch Processing
 - Process multiple PDFs in sequence with automatic retry
@@ -274,7 +278,7 @@ The current deduction weights (-15/-10/-5/-2) are based on WCAG severity and ind
 **How to adjust:** Change the severity weights in the `AUDIT_RUBRIC_PROMPT` and the score recalculation blocks. This is a text change, not a code change.
 
 ### 2. Deterministic Fix Priorities
-The 39 fixes run in order. An expert might identify that certain fixes should run earlier (or later) to avoid conflicts. They might also identify new patterns specific to their institution's documents.
+The deterministic fixes run in order. An expert might identify that certain fixes should run earlier (or later) to avoid conflicts. They might also identify new patterns specific to their institution's documents.
 
 **How to adjust:** Each fix is a numbered block that can be reordered, modified, or extended. New fixes follow the same pattern: regex match → transform → count.
 
@@ -315,9 +319,23 @@ Gemini's vision capabilities can evaluate the visual design of remediated docume
 
 The pipeline uses HTML as its working format internally because HTML provides full semantic control over accessibility features (landmarks, ARIA attributes, heading hierarchy, table structure) that the original PDF format lacks. However, from the user's perspective:
 
-- **PDF in → PDF out.** The user uploads a PDF and can save the remediated version as a PDF via the built-in print-to-PDF function. The output PDF is a tagged, accessible PDF generated from the semantically correct HTML.
-- **Multiple output formats available.** The same remediated document can also be downloaded as ePub (e-readers), Electronic Braille (BRF), Plain Text, Markdown, or kept as HTML.
+- **PDF in → PDF out, as a *native tagged PDF*.** The remediated HTML is converted to a real accessible PDF by `createTaggedPdf()` (using **pdf-lib**) — **not** a browser print-to-PDF. It builds an actual PDF `/StructTreeRoot` from the remediated structure (headings, lists, tables with cell `/Scope`, figures with `/Alt`), sets `MarkInfo/Marked`, document `/Lang`, and title, and tags link annotations. `window.print()` survives only as an optional preview, not the export path.
+- **Fonts are embedded (PDF/UA §7.21.4.1).** A dedicated stage substitutes metric-compatible embeddable fonts (Liberation/DejaVu), subsets them via **fontkit**, and writes `FontFile2` into the font dictionary. Non-embedded fonts are treated as a first-class veto on the PDF/UA pass claim.
+- **Multiple output formats available.** The same remediated document can also be downloaded as read-along **ePub 3.0**, **DAISY**, **ODT**, accessible PDF, or kept as HTML.
 - **The original PDF is not modified.** The pipeline creates a new, accessible version rather than editing the original file. This preserves the original for reference.
+- **Provenance disclosure.** Remediated output carries a machine-generated disclosure (original filename, page count, transform date, WCAG 2.1 AA); content-altering PDF/UA repairs (font substitution, artifact-marking) are surfaced as "REVIEW" notices.
+
+---
+
+## PDF/UA-1 Validation (ISO 14289-1)
+
+Beyond the HTML-level axe-core + AI scoring, the pipeline includes two client-side PDF/UA validators — the independent check institutional partners can re-run themselves:
+
+1. **Automatic post-export self-check.** `view_pdf_validator_module.js` re-parses the produced PDF bytes (via `window.PDFLib`) on every export and surfaces a structural Conformance Report.
+2. **Independent veraPDF (on-demand).** The real Java **veraPDF** validator runs entirely in-browser via **CheerpJ** (one-time ~25 MB JVM download) in a companion window, reporting clause-level ISO 14289-1 failures (e.g. "§7.21.4.1 test 1"). Bytes never leave the browser.
+3. **veraPDF closed-loop auto-fix.** An optional "Auto-fix remaining issues" flow validates → repairs → re-validates up to 5 iterations, then re-downloads the corrected PDF.
+
+This is the independent, third-party-standard validation layer (not AlloFlow's own scoring) — important for institutions that need to verify conformance with a tool they trust.
 
 ---
 
@@ -327,7 +345,7 @@ The pipeline uses HTML as its working format internally because HTML provides fu
 
 2. **Complex interactive content** — Forms with complex validation logic, embedded multimedia players, and JavaScript-dependent widgets may need manual remediation.
 
-3. **Scanned image-only PDFs** — PDFs that are purely scanned images (no text layer) require OCR first. The pipeline detects this and can extract text via Gemini Vision, but OCR accuracy depends on scan quality.
+3. **Scanned image-only PDFs** — PDFs that are purely scanned images (no text layer) require OCR first. The pipeline detects this (low text density per page) and OCRs client-side via **Tesseract.js** (deterministic, on-device, no hallucination), with **Gemini Vision** as a fallback and word-level reconciliation between the two engines; document language is auto-detected first. OCR accuracy still depends on scan quality.
 
 ---
 
@@ -343,7 +361,7 @@ Input: PDF/DOCX/PPTX
   │   └── Style Seed applied to transform prompt (unified STYLE_SEEDS system)
   │
   ├── Phase 3: HTML generation
-  │   ├── 3a: 39 deterministic fixes (zero API cost)
+  │   ├── 3a: deterministic fixes (runDeterministicWcagFixes, zero API cost)
   │   ├── 3b: AI transform to semantic HTML
   │   └── 3c: Surgical micro-tools (AI diagnosis → deterministic execution)
   │
@@ -357,12 +375,18 @@ Input: PDF/DOCX/PPTX
   │   ├── 3 parallel AI audits + axe-core
   │   └── Plateau/regression/target detection
   │
-  └── Phase 6: Final audit + blended scoring
-      ├── Full chunked AI audit + structural pass detection
-      ├── axe-core verification
-      └── 50/50 blended score
+  ├── Phase 6: Final audit + blended scoring
+  │   ├── Full chunked AI audit + structural pass detection
+  │   ├── axe-core verification
+  │   └── 50/50 blended score
   │
-Output: Accessible HTML + Audit Report + Alternative Formats
+  └── Phase 7: Native tagged-PDF emit + PDF/UA validation
+      ├── createTaggedPdf (pdf-lib): /StructTreeRoot, MarkInfo, /Lang, /Alt, /Scope
+      ├── Font embedding (fontkit, ISO 14289-1 §7.21.4.1)
+      ├── Post-export self-check (view_pdf_validator_module.js)
+      └── Optional independent veraPDF (CheerpJ) + closed-loop auto-fix
+  │
+Output: Native tagged PDF + Accessible HTML + Audit Report + ePub3/DAISY/ODT
 ```
 
 ---
@@ -371,8 +395,10 @@ Output: Accessible HTML + Audit Report + Alternative Formats
 
 | File | Size | Purpose |
 |------|------|---------|
-| `doc_pipeline_source.jsx` | ~8,500 lines | All pipeline logic — auditing, fixes, scoring, reports, exports |
+| `doc_pipeline_source.jsx` | ~26,000 lines | Core pipeline logic — auditing, fixes, scoring, native tagged-PDF emit, font embedding, OCR, reports, exports |
 | `doc_pipeline_module.js` | compiled | Browser-ready version loaded via CDN |
+| `view_pdf_audit_source.jsx` | ~12,800 lines | Audit/remediation UI, tagging export, veraPDF (CheerpJ) integration + closed-loop auto-fix, format exports |
+| `view_pdf_validator_module.js` | module | In-browser post-export PDF/UA structural self-check (Conformance Report) |
 | `AlloFlowANTI.txt` (pipeline UI sections) | ~3,500 lines | Score display, audit panels, preview, style seed picker, AI restyle, settings |
 
 ---

@@ -5,7 +5,27 @@ description: Full production deployment pipeline for AlloFlow — push, build, s
 
 # Deploy Pipeline Skill
 
-## Quick Reference
+## Canonical path: `./deploy.sh`
+
+The supported, one-shot deploy is the repo-root script:
+
+```bash
+./deploy.sh "commit message"
+```
+
+It runs a 10-step pipeline: a **pre-flight render gate** (Step 0.6 — runs
+`check_render_refs`, `check_keyless_map`, `check_stem_render`, `check_sel_render`,
+`check_module_render`, `check_aria_handler`; the same blockers as
+`npm run verify:gate`), then commit → push → `build.js --mode=prod --force` →
+mirror link files → `npm run build` (prismflow-deploy) → stamp SW →
+`firebase deploy` → Codeberg mirror → **post-deploy verification** against
+Firebase (`prismflow-911fe.web.app`) and the Cloudflare CDN
+(`alloflow-cdn.pages.dev`).
+
+Run `npm run verify:gate` yourself first if you want to catch render-crash
+regressions before committing. The manual steps below are the fallback.
+
+## Quick Reference (manual fallback)
 
 ```bash
 # Full deploy from scratch (from repo root):
@@ -34,7 +54,9 @@ node build.js --mode=prod
 **What it does:**
 - Auto-detects latest git hash
 - Reads `AlloFlowANTI.txt` (the source of truth)
-- Writes `prismflow-deploy/src/App.jsx` with CDN hash substitutions (`@{HASH}`)
+- Writes `prismflow-deploy/src/App.jsx`, rewriting `pluginCdnBase` + module URLs
+  to the hashless Cloudflare base (`alloflow-cdn.pages.dev/<file>`) and stamping
+  a `?v=<short-hash>` cache-buster
 - Logs the hash for verification
 
 **Verify:** Output shows `Auto-detected git hash: {HASH}` matching your latest commit
@@ -61,8 +83,10 @@ npx firebase deploy --only hosting
 ### 6. Post-deploy verification
 - **Hard refresh** (Ctrl+Shift+R) the live site
 - Check console for: `[AlloFlow] UI_STRINGS loaded: X top-level keys`
-- Check console for: `[CDN] ... Registration: SUCCESS` for all 4 modules
-- Verify the commit hash in CDN URLs matches your push
+- Check console for `[CDN] <Name>` logs and confirm `window.AlloModules.<Name>`
+  is defined for the modules you touched
+- Verify the `?v=<short-hash>` on CDN URLs matches your push (deploy.sh Step 10
+  does this automatically)
 
 ## Error Recovery
 
@@ -72,10 +96,12 @@ npx firebase deploy --only hosting
 | `npm run build` fails with compilation error | Fix the error in `AlloFlowANTI.txt`, re-run build.js |
 | Firebase deploy fails with auth error | Run `npx firebase login` |
 | SW stamp fails (`__BUILD_TS__` not found) | The build already ran once — rebuild first |
-| CDN shows stale content after deploy | jsDelivr caches by hash; ensure `build.js` used latest hash |
+| CDN shows stale content after deploy | Cloudflare Pages rebuilds async (~1-2 min) on push to `main`; hard-refresh and confirm the `?v=` hash matches HEAD |
 
 ## Important Notes
 - **Source of truth**: `AlloFlowANTI.txt` → everything flows from this
 - **Never edit** `prismflow-deploy/src/App.jsx` directly — it's generated
-- **CDN modules** (stem_lab, word_sounds, etc.) update when pushed to `main` — the CDN hash in `App.jsx` pins them
+- **CDN modules** (stem_lab, word_sounds, etc.) are served hashless from
+  Cloudflare Pages (`alloflow-cdn.pages.dev`); pushing to `main` triggers a
+  Cloudflare rebuild (~1-2 min). A `?v=<short-hash>` query param busts caches.
 - **GitHub Pages** (website) updates automatically on push to `main`

@@ -8,13 +8,14 @@
 > [architecture.md](architecture.md). The two documents pair deliberately:
 > feature inventory for product/educator review, architecture for engineering review.
 
-**Generated:** 2026-05-09 (last revised May 15, 2026 — May 14-15 annotation-suite + doc-pipeline-polish + physics-lab + flightsim additions integrated)
-**Codebase scale:** ~656,000 lines of non-redundant source code, 1 maintainer (Aaron Pomeranz, PsyD)
-**Monolith size:** ~24,000 lines (`AlloFlowANTI.txt`) after May 10 2026 refactor session (down from 26,754 at initial inventory)
-**Total user-facing features:** ~570+ documented (was ~177 in initial draft; deepened across 10 review passes — most recent May 14-15 added the annotation suite (§10), in-doc theme switcher in exports, image-size controls across 3 resource types, expanded physics-lab pedagogy, and the resolved Skylab takeoff bug)
+**Generated:** 2026-05-09 (headline counts last reconciled June 20, 2026 — see §13.12 for the running delta table; the dated entries in §3–§12 are point-in-time snapshots)
+**Codebase scale:** ~880,000+ lines of non-redundant source code, 1 maintainer (Aaron Pomeranz, PsyD)
+**Monolith size:** ~29,000 lines (`AlloFlowANTI.txt`, ~1.5 MB) — continued to shrink as heavy features were extracted into ~250 CDN modules (was ~24K in May, 26,754 at initial inventory)
+**Total user-facing features:** ~720+ documented (was ~177 in initial draft; deepened across 10+ review passes)
 - ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
-- **95 STEM Lab tools** across 9 subject areas (on-disk file count May 14 2026; PrintingPress added May 10 for King Middle demo. Multi-module sub-feature counts: DNA Lab 11, Chemistry 8, Punnett 8, Optics 8, Baking 7, PrintingPress 7, Economics 5)
-- **34 SEL Hub items** (32 tools + 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. **5 tools gained generative-AI Rehearse tabs May 11-14** (Upstander, Restorative Circle, Self-Advocacy, Coping, Friendship) — see §5.8 for the cross-cutting safety pipeline that protects 33 student-free-text AI surfaces across 18 SEL Hub tools + 1 STEM Lab surface (defense-in-depth pre-flight regex gate layered on top of existing assessSafety LLM checks).
+- **108 STEM Lab tools** across 9 subject areas (on-disk `stem_lab/stem_tool_*.js` count, June 2026; grew from 95 in May via the STEM enhancement waves)
+- **70 SEL Hub tools** (+ 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. See §5.8 for the cross-cutting safety pipeline (defense-in-depth pre-flight regex gate layered on top of the assessSafety LLM checks).
+- **New June 2026 subsystems** (built after the bulk of §3–§12 was written): Cinematic Studio (`cinematic_studio_module.js` — agentic document→video, client-side WebCodecs/Remotion), in-app Professional Development (`pd_core_module.js` + `catalog/pd/`), Research Hub + 3 Research Lanes (`research_lane_*_module.js`), Lumen, Dynamic Assessment, Live Polling, Translation Feedback (`translation_feedback_module.js`), Generate-Unit/Throughline (`mind_map_module.js`), footnotes + APA/MLA/Chicago `DOC_MODES`, PDF redaction + fillable AcroForm worksheets, and native tagged-PDF + veraPDF/PDF-UA validation in the doc pipeline.
 - ~290 deep-feature enumerations inside major subsystems (Doc Pipeline 35+ exports, Behavior Lens 15+, Symbol Studio 10+, AlloHaven 4+18, AlloBot Sage 19+5+3, Quiz subsystem 4 modes + AI grader + live aggregator, Adventure 7 components + handlers, Voice + TTS multi-provider, Adaptive Controller gamepad layer, 28 view modules, 20 infrastructure modules, **5 SEL Hub Rehearse tabs with multi-turn role-play + scene generation + break-character coach + end-reflect**, etc.)
 **Inventory completeness:** ~99% — remaining gaps are translation-string libraries, individual quest content, and per-tool internal sub-modes that are largely cosmetic. Every major subsystem and every CDN module is now documented with discoverability.
 **Bugs fixed during this audit:** 6 net new (Report Writer never loaded, Immersive Reader null overwrites, Teacher Dashboard 10 components unregistered, WordSoundsReviewPanel duplicate registration, view_misc_modals null registrations, GeminiBridgeView deleted-but-consumed) + additional May 11-15 fixes (ExportPreviewView missing `history` prop, doc_pipeline missing `setError`/`pdfBatchSummary`, teacher `LearnerProgressView` missing `isTeacherMode`, word_sounds probe-mode `probeActivity` crash, Space Colony minimap `ctx` typo, Crisis Companion exit-button silent no-op, misleading "monitored for your safety" copy in 5 tools, **launch pad Learning Tools modal showed only after second click** (setTimeout race), **Physics target-destruction mode stale closure** (first-target-disappears + projectile-passes-through-targets, 2-in-1), **Skylab takeoff bleached ground + jolt + missing motion cue**, **Tier 1 bug-fix pass (May 15) on annotation-suite drag**: Rules-of-Hooks violation in NoteBubble/VoiceNoteBubble, drag flooding undo stack with intermediate positions, missing right/bottom drag clamp) — see §7
@@ -87,7 +88,7 @@ grep -n "expandedTools.includes('X')" AlloFlowANTI.txt
 
 ## 2. Architectural primer
 
-AlloFlow is a **hub-and-spoke React app** that runs as a single Gemini Canvas artifact. The host monolith (`AlloFlowANTI.txt`, compiled to `App.jsx`) is the artifact itself; CDN modules load via `<script>` tags from `cdn.jsdelivr.net/gh/Apomera/AlloFlow@<git-hash>/`.
+AlloFlow is a **hub-and-spoke React app** that runs as a single Gemini Canvas artifact. The host monolith (`AlloFlowANTI.txt`, compiled to `App.jsx`) is the artifact itself; CDN modules load via `<script>` tags from the hashless Cloudflare Pages CDN (`alloflow-cdn.pages.dev/<file>`, with a `?v=<git-hash>` cache-buster). (Earlier builds used `cdn.jsdelivr.net/gh/Apomera/AlloFlow@<git-hash>/`; jsDelivr was dropped in 2026 after GitHub 429s.)
 
 **Key state gates** (declared in `AlloFlowANTI.txt`):
 - `activeView` — string keying which content view renders in the right pane (`'simplified'`, `'glossary'`, `'quiz'`, `'dbq'`, `'adventure'`, etc., 26 values)
@@ -101,7 +102,7 @@ AlloFlow is a **hub-and-spoke React app** that runs as a single Gemini Canvas ar
 - `window.SelHub.registerTool(id, config)` — SEL tools same pattern
 - `window.AlloModules.X` — top-level CDN module exports (e.g., `PdfAuditView`, `BridgeSendModal`, `GroupSessionModal`)
 
-**Module loading** happens eagerly in AlloFlowContent's first useEffect via `loadModule(name, url)` — script tags inserted into `<head>` with jsdelivr CDN URLs pinned to a specific git hash (rewritten by `build.js --mode=prod`). Fallback to `raw.githubusercontent.com` if jsdelivr 404s.
+**Module loading** happens via `loadModule(name, url)` — script tags inserted into `<head>` with hashless Cloudflare Pages CDN URLs (`alloflow-cdn.pages.dev/<file>`, `?v=<git-hash>` cache-buster, rewritten by `build.js --mode=prod`). Core modules load eagerly; STEM/SEL plugins load lazily on first hub-open (`window.__alloEnsureStemPluginsLoaded` / `__alloEnsureSelPluginsLoaded`). Fallback to `raw.githubusercontent.com` if the CDN fails.
 
 **Top-level CDN modules:** 98 (post-Round-8). Of these, 9 were created in May 2026 extraction sessions (this session). The rest are older.
 
@@ -1165,7 +1166,7 @@ Five latent bugs surfaced by extraction work and fixed:
 ### CDN module loading
 - Eager load via `loadModule(name, url)` in AlloFlowContent's first useEffect
 - URLs pinned to git hash via `build.js --mode=prod` rewrite
-- Fallback chain: jsdelivr CDN → raw.githubusercontent.com → fail-soft (host shim renders nothing)
+- Fallback chain: Cloudflare Pages CDN → raw.githubusercontent.com → fail-soft (host shim renders nothing)
 - 98 top-level modules at build time (May 9, 2026)
 
 ### Distribution model
@@ -1522,7 +1523,7 @@ remain for per-instance review.
 | Metric | Previous (May 14) | Current (May 17) | Delta |
 |---|---|---|---|
 | Documented user-facing features | ~570+ | **~720+** | +150 |
-| STEM Lab tools | 95 | **104** | +9 |
+| STEM Lab tools | 95 | **108** | +13 |
 | 20K+ MILESTONE curriculum tools | 0 | **8** | +8 |
 | SEL Hub items | 34 | **70+ (with personalization Kit tools)** | substantial |
 | Total source lines (approx) | ~656K | **~880K+** | +224K |
@@ -1606,7 +1607,7 @@ placeholders, prefers-reduced-motion gaps, transition durations.
 ---
 
 **End of inventory.** Total documented features: **~720+** user-facing across
-~165+ files (104 STEM Lab tools + 70+ SEL Hub items + 98 monolith CDN
+~250+ files (108 STEM Lab tools + 70 SEL Hub tools + ~250 monolith CDN
 modules + 1 annotation suite cross-cutting + expanded doc pipeline export
 runtime + 10 rounds of teacher dashboard expansion + tool catalog single
 source of truth + ~360 personalized student kit tools, with overlap).

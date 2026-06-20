@@ -51,3 +51,24 @@ The file is a flat JSON object with nested sections:
 4. **Keys must be double-quoted strings**
 5. **After every edit**: run the validation script above
 6. **Test locally**: The app fetches from GitHub raw URL, so changes won't appear until pushed to `main`
+
+## Propagating new strings to the 56 language packs
+
+`ui_strings.js` is the **English master**. There are 56 pre-built translation
+packs in `lang/*.js` (mirrored to `prismflow-deploy/public/lang/`) that must
+gain any key you add here, or non-English users see English fallback. The
+toolchain (see `dev-tools/i18n/README.md` and `lang/README.md` for full detail):
+
+- `npm run build:lang:resume` — adds new keys to every existing pack via the
+  Gemini builder, preserving existing translations verbatim.
+- `npm run build:lang:manifest` — regenerates `lang/manifest.json`.
+- Validators (run by the deploy gate): `dev-tools/check_lang_json.cjs`
+  (`verify:translations`-adjacent; ensures every pack is valid JSON) and
+  `dev-tools/i18n/check_safety_string_spanglish.cjs` (blocks half-translated
+  `alerts.*`/`confirms.*` safety strings).
+- Community translation corrections arrive via the Cloudflare worker
+  (`/submitTranslation`) and are applied with
+  `dev-tools/i18n/ingest_translation_feedback.cjs --apply` (manual review gate).
+
+Document any `{placeholders}` on the source line — the builder and validators
+key on them.

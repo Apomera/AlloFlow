@@ -8,7 +8,7 @@
 
 ## Elevator pitch
 
-AlloFlow is a single-creator AI lesson-design + student-experience platform with **~520 documented features** across **~656,000 lines of source**, distributed primarily as a Gemini Canvas artifact (so districts using Canvas pay $0 — Google Education Gemini quotas cover all inference). Self-hosted Firebase deployment is also supported; that path runs on the Gemini API free tier for typical classroom use, with Blaze pay-as-you-go pricing applying to heavy usage like batch PDF remediation. AlloFlow includes 95 STEM Lab tools, 33 SEL Hub tools mapped to CASEL, a full WCAG 2.1 AA / VPAT 2.5 accessibility infrastructure, LTI 1.3 LMS integration, multi-provider TTS with offline fallback, gamepad/adaptive-controller support, a clinical Behavior Lens (FBA + BIP), Symbol Studio (a Boardmaker alternative), and a 7,000+ line PDF accessibility audit + remediation pipeline with an autonomous-agent Expert Workbench.
+AlloFlow is a single-creator AI lesson-design + student-experience platform with **~720+ documented features** across **~880,000+ lines of source**, distributed primarily as a Gemini Canvas artifact (so districts using Canvas pay $0 — Google Education Gemini quotas cover all inference). Self-hosted Firebase deployment is also supported; that path runs on the Gemini API free tier for typical classroom use, with Blaze pay-as-you-go pricing applying to heavy usage like batch PDF remediation. AlloFlow includes 108 STEM Lab tools, 70 SEL Hub tools mapped to CASEL, a full WCAG 2.1 AA / VPAT 2.5 accessibility infrastructure, LTI 1.3 LMS integration, multi-provider TTS with offline fallback, gamepad/adaptive-controller support, a clinical Behavior Lens (FBA + BIP), Symbol Studio (a Boardmaker alternative), a Cinematic Studio (agentic document→video, rendered client-side), in-app community Professional Development, and a 7,000+ line PDF accessibility audit + remediation pipeline (native tagged-PDF output + independent veraPDF/PDF-UA validation) with an autonomous-agent Expert Workbench.
 
 The creator is a school psychologist (PsyD), so SEL, FBA/BIP, accessibility, and special-education depth are unusually strong relative to teacher-built or VC-funded competitors that lead with classroom-content generation.
 
@@ -43,8 +43,8 @@ Numbers below are documented user-facing features, not internal helpers. AlloFlo
 | **Text differentiation (Lexile/grade)** | ✅ + bilingual + simplified + immersive reader | ✅ | ✅ | ✅ (the core feature) | Limited | Partial | No | Partial |
 | **Image generation** | ✅ Imagen + img2img refinement | ✅ | Limited | No | Limited | No | No | No |
 | **Quiz generation** | ✅ 4 strategy modes (exit ticket / pre-check / formative / spaced review) + AI grading + live aggregation | ✅ | ✅ | ✅ | ✅ | ✅ | Limited | Limited |
-| **STEM-specific tools** | **95 tools** (math, bio, chem, physics, earth/space, eng, CS, arts, life skills) | ~10 STEM tools | Generic | Generic | Generic | Generic | Generic | Math + general tutoring |
-| **SEL/CASEL tools** | **33 tools** mapped to CASEL competencies | ~5 SEL prompts | No | No | Limited | No | No | No |
+| **STEM-specific tools** | **108 tools** (math, bio, chem, physics, earth/space, eng, CS, arts, life skills) | ~10 STEM tools | Generic | Generic | Generic | Generic | Generic | Math + general tutoring |
+| **SEL/CASEL tools** | **70 tools** mapped to CASEL competencies | ~5 SEL prompts | No | No | Limited | No | No | No |
 | **PDF accessibility audit + remediation** | ✅ **7,000+ line modal**: axe-core audit, 3-tier surgical fix system, Expert Workbench autonomous agent, PDF/UA tagging | No | No | No | No | No | No | No |
 | **WCAG 2.1 AA across all features** | ✅ Per-tool conformance ledger + VPAT 2.5 | Partial | Partial | Partial | Partial | Partial | Partial | Partial |
 | **Adaptive controller / gamepad support** | ✅ Full gamepad-as-mouse layer | No | No | No | No | No | No | No |
@@ -73,7 +73,7 @@ Honest take — what AlloFlow is *not* yet competitive on:
 | **Brand recognition** | MagicSchool, Khanmigo | Years of marketing + funded sales orgs |
 | **District procurement story** | MagicSchool | They have the BAAs, SOC2, FERPA paperwork in production-grade form |
 | **Customer support** | All paid SaaS | AlloFlow is solo-built; help is GitHub Issues + AlloBot |
-| **Live-session polish** | Curipod | Curipod's whole product is one beautiful thing; AlloFlow's live session is one of 520 things |
+| **Live-session polish** | Curipod | Curipod's whole product is one beautiful thing; AlloFlow's live session is one of ~720 things |
 | **Onboarding-to-first-success speed** | Diffit | Diffit asks one question and gives you a worksheet in 15 seconds |
 | **Per-tool depth in a single niche** | Khanmigo (math), Brisk (grading) | Specialists outperform generalists in their lane |
 | **Production stability across all features** | All paid SaaS | AlloFlow has Ready / Beta / Experimental tiers; some tools need more polish |
@@ -90,11 +90,11 @@ These features either don't exist anywhere else or exist only as inferior implem
 
 3. **Symbol Studio** — AI-generated PCS-style symbols with image-to-image refinement. Boardmaker (the incumbent) costs $$$$ and uses static libraries. AlloFlow generates symbols on demand and adapts to student preferences.
 
-4. **WCAG 2.1 AA across 200+ tools** — most competitors stop at "we tested the main pages." AlloFlow has a per-tool conformance ledger plus a published VPAT 2.5.
+4. **WCAG 2.1 AA across 178+ hub tools** (108 STEM + 70 SEL) plus the monolith — most competitors stop at "we tested the main pages." AlloFlow has a per-tool conformance ledger plus a published VPAT 2.5.
 
 5. **Adaptive controller support** — gamepad-as-mouse layer with vibration feedback and aria-label-aware target detection. Critical for students with motor impairments. Almost no ed-tech ships this.
 
-6. **95 STEM Lab tools as one bundled toolkit** — no competitor approaches this breadth. WeldLab, RoadReady, FirstResponseLab, NutritionLab, BirdLab, etc. — most aren't even categories competitors recognize as ed-tech.
+6. **108 STEM Lab tools as one bundled toolkit** — no competitor approaches this breadth. WeldLab, RoadReady, FirstResponseLab, NutritionLab, BirdLab, etc. — most aren't even categories competitors recognize as ed-tech.
 
 7. **Built-in offline TTS fallback (Kokoro)** — works when the network is down or quota is exhausted. Critical for low-connectivity schools.
 

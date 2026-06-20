@@ -9,20 +9,22 @@ Thank you for contributing to AlloFlow! This project exists because educators an
 AlloFlow uses a **Hub-and-Spoke** architecture: a single monolithic orchestrator loads lightweight spoke modules on demand, keeping memory usage low on school Chromebooks.
 
 ```
-AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~67K lines)
+AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~29K lines)
 ├── word_sounds_module.js            ← Phonemic awareness studio
-├── stem_lab_module.js               ← STEM Lab host + inline fallbacks
-│   ├── stem_tool_dna.js             ← Extracted STEM plugin
-│   ├── stem_tool_physics.js         ← Extracted STEM plugin
-│   ├── stem_tool_cyberdefense.js    ← Extracted STEM plugin
-│   └── stem_tool_*.js               ← (32 extracted, more in progress)
+├── stem_lab/stem_lab_module.js      ← STEM Lab host + inline fallbacks
+│   ├── stem_tool_dna.js             ← STEM plugin
+│   ├── stem_tool_physics.js         ← STEM plugin
+│   ├── stem_tool_cyberdefense.js    ← STEM plugin
+│   └── stem_tool_*.js               ← 108 STEM plugins total
+├── sel_hub/sel_tool_*.js            ← 70 SEL plugins
 ├── behavior_lens_module.js          ← Clinical FBA/BIP suite
 ├── report_writer_module.js          ← Psychoeducational report wizard
 ├── symbol_studio_module.js          ← AAC & visual communication
 ├── student_analytics_module.js      ← RTI probes & dashboards
 ├── math_fluency_module.js           ← CBM math fluency probes
+├── (~250 other *_module.js spokes)  ← cinematic_studio, pd_core, doc_pipeline, etc.
 ├── help_strings.js                  ← Contextual help content
-├── ui_strings.js                    ← i18n strings (40+ languages)
+├── ui_strings.js                    ← English i18n master (56 lang packs in lang/)
 └── audio_bank.json                  ← Pre-recorded phoneme audio
 ```
 
@@ -30,20 +32,17 @@ AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~67K lines)
 
 ## 1. The Core Orchestrator (`AlloFlowANTI.txt` / `App.jsx`)
 
-The core UI, state management, and primary interaction tools live in the single ~67K-line `AlloFlowANTI.txt` file (which compiles to `App.jsx`).
+The core UI, state management, and primary interaction tools live in the single ~29K-line `AlloFlowANTI.txt` file (which compiles to `App.jsx`). It used to be ~67K lines; it shrank as heavy features were extracted into ~250 CDN modules.
 
 **Rules:**
 - **Do NOT split** the core file into standard React components (e.g., `Button.jsx`). AlloFlow must remain deployable as a single unified bundle for offline School Box instances.
-- **Navigate** the file using `// @section SECTION_NAME` markers — searchable via `Ctrl+F` or `Select-String` in PowerShell.
-- **Do NOT use `grep` / ripgrep** on this file — it contains emoji (non-ASCII bytes) that cause ripgrep to return zero results silently. Use PowerShell `Select-String` or the IDE's built-in search instead.
+- **Navigate by symbol.** The old `// @section` markers are essentially gone (one remains) — search for the component/const name directly (e.g. `AlloFlowContent`, `GEMINI_MODELS`, `export default function WrappedApp`).
 
-**Finding sections:**
-```powershell
-# List all sections
-Select-String -Path AlloFlowANTI.txt -Pattern "// @section "
-
-# Jump to a specific section
-Select-String -Path AlloFlowANTI.txt -Pattern "@section ALLOBOT"
+**Finding code:**
+```bash
+# grep / ripgrep work fine on this file (the old "emoji breaks ripgrep" issue
+# no longer applies). PowerShell Select-String also works.
+grep -n "AlloFlowContent" AlloFlowANTI.txt
 ```
 
 ---
@@ -55,7 +54,7 @@ Heavy modules load dynamically at runtime. Each spoke is a self-contained JS fil
 | Module File | Purpose | Access |
 |-------------|---------|--------|
 | `word_sounds_module.js` | Phonemic awareness, 8 activity types, ORF | All users |
-| `stem_lab_module.js` | STEM Lab host (55 tools) | All users |
+| `stem_lab/stem_lab_module.js` | STEM Lab host (108 plugin tools) | All users |
 | `behavior_lens_module.js` | FBA/BIP clinical suite, ABC data, IOA | TeacherGate |
 | `report_writer_module.js` | Psychoeducational report wizard | TeacherGate |
 | `symbol_studio_module.js` | AAC boards, visual schedules, social stories | TeacherGate |
@@ -97,47 +96,42 @@ STEM Lab tools use a **plugin pattern** — each tool is a self-contained IIFE t
 })();
 ```
 
-2. Add the file to the `toolModules` array in `AlloFlowANTI.txt` (search for `@section` near the plugin loader):
+2. Add the filename to the `stemToolModules` array in `AlloFlowANTI.txt` (search for `stemToolModules`; the plugins are lazy-loaded on first hub-open via `window.__alloEnsureStemPluginsLoaded`):
 ```js
-var toolModules = [
+var stemToolModules = [
   // ... existing tools ...
   'stem_lab/stem_tool_yourname.js'
 ];
 ```
 
-3. Also add it to the same array in `prismflow-deploy/src/App.jsx` to keep both files in sync.
+3. **Do not** hand-edit `prismflow-deploy/src/App.jsx` — `build.js` regenerates it from `AlloFlowANTI.txt` on every build. Just edit the monolith.
 
-4. **Update the commit-hash pinned CDN URL** after merging — the loader uses:
-```
-https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@{COMMIT_HASH}/stem_lab/stem_tool_yourname.js
-```
-See [Pinned Dependencies](#4-pinned-dependency-injection) below.
+4. **No CDN-URL editing needed.** The loader prefixes each filename with `pluginCdnBase`, which `build.js --mode=prod` rewrites to the hashless Cloudflare base (`https://alloflow-cdn.pages.dev/`). Commit the new plugin file so it ships — see [CDN Modules](#4-cdn-module-resolution) below.
 
 ### Finding existing STEM tools
-```powershell
-# List all registered tools
-Select-String -Path stem_lab/stem_lab_module.js -Pattern "@tool "
+```bash
+# List all registered tool IDs (each plugin calls registerTool)
+grep -rl "window.StemLab.registerTool" stem_lab/
 ```
 
 ---
 
-## 4. Pinned Dependency Injection (CRITICAL)
+## 4. CDN Module Resolution
 
-AlloFlow does **not** use floating `latest` CDN tags. Every spoke module URL is pinned to an exact commit hash, ensuring deterministic offline execution:
+Spoke modules are served from **Cloudflare Pages** (`https://alloflow-cdn.pages.dev/<file>`), **hashless**. You do **not** hand-edit CDN URLs:
+
+- `build.js --mode=prod` rewrites `pluginCdnBase` (and every module URL) to the Cloudflare base automatically, and stamps a `?v=<short-commit-hash>` query param as the cache-buster.
+- Cloudflare rebuilds from `main` on push (async, ~1-2 min); the `?v=` param + service-worker timestamp force clients to pick up new code.
 
 ```js
-// ✅ Correct — pinned to exact commit
-loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1b2c3d/stem_lab/stem_lab_module.js');
-
-// ❌ Wrong — floating tag, breaks offline determinism
-loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/stem_lab/stem_lab_module.js');
+// In AlloFlowANTI.txt the source looks like this — a bare base, no hash:
+var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
+// build.js handles versioning. Do NOT paste commit hashes into URLs by hand.
 ```
 
-**After merging a PR that modifies any spoke module:**
-1. Note the merge commit hash (e.g., `a1b2c3d`)
-2. Update the hash in `AlloFlowANTI.txt` — search for `pluginCdnBase` and all `loadModule(` calls
-3. Update the same hashes in `prismflow-deploy/src/App.jsx`
-4. Commit both files together
+(History: AlloFlow used jsDelivr `@{commit-hash}` URLs until 2026, when jsDelivr began returning GitHub 429s; the project moved to Cloudflare Pages. Any `cdn.jsdelivr.net` strings left in `build.js`'s legacy MODULES table are unused.)
+
+**After merging a PR that modifies any spoke module:** just commit + push the module file and run `./deploy.sh` (or `build.js --mode=prod`). No manual hash bookkeeping.
 
 ---
 
@@ -161,11 +155,18 @@ In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercept
 ## 6. Development Workflow
 
 1. **Fork & clone** the repository.
-2. For Firebase cloud deployment, `cd prismflow-deploy && npm install && npm run build && firebase deploy`.
+2. **Deploy:** the canonical one-shot is `./deploy.sh "message"` from the repo root (it runs the pre-flight render-crash gate, commits/pushes, builds, deploys to Firebase, and verifies against the Cloudflare CDN). For a manual Firebase build, `cd prismflow-deploy && npm install && npm run build && firebase deploy`.
 3. For School Box local testing, `docker-compose up -d` from the repo root.
 4. If testing service worker cache changes in Chrome, disable QUIC: `chrome://flags/#enable-quic` → Disabled → Relaunch.
 5. For AI backend changes, verify Ollama endpoints (`http://localhost:11434`) parse prompts correctly.
 6. Open a descriptive pull request explaining which UDL checkpoint or clinical workflow your change enhances.
+
+### Testing
+
+- `npm test` — the Vitest suite (runs `vitest run`).
+- `npm run verify:gate` — the blocking static gate (render-crash checks, i18n JSON, module registry, build smoke). Run this before deploying; `deploy.sh` runs it too.
+- `npm run test:e2e` — Playwright end-to-end specs (PDF golden masters, etc.).
+- See `dev-tools/README.md` for the full list of `verify:*` checks.
 
 ---
 
@@ -173,7 +174,7 @@ In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercept
 
 - **Accessibility first** — ARIA labels on every interactive element; all games must be keyboard-navigable.
 - **Zero PII logging** — No `console.log` of student names, IDs, scores, or clinical data.
-- **No floating CDN tags** — Always pin to a commit hash.
+- **Don't hand-edit CDN URLs** — `build.js` resolves modules to the Cloudflare base + a `?v=` cache-buster automatically (see §4).
 - **Restorative language** — Clinical tools must use person-first, affirming language throughout.
 - **FERPA by design** — Never add features that transmit student data to third-party services.
 
