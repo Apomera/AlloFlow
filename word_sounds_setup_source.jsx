@@ -27,7 +27,8 @@
     // activity with ZERO change to the AI layer. This editor records/edits those
     // clips, applies them live (Proxy set-trap), persists them, and lets a teacher
     // export/import a portable JSON pack to reuse or share.
-    const PHONEME_PACK_STORAGE_KEY = 'allo_phoneme_voice_pack_v1';
+    const PHONEME_PACK_STORAGE_KEY = 'allo_phoneme_voice_pack_v1'; // legacy single pack (migrated into the library)
+    const PHONEME_PACK_LIB_KEY = 'allo_phoneme_voice_packs_v1';    // library: { activeId, packs: [{ id, name, kind, consent, clips, history, studentName, studentId }] }
     const PHONEME_PACK_GROUPS = {
         'Consonants': ['b','c','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z'],
         'Digraphs': ['sh','zh','ch','th','wh','ph','ck','ng','q'],
@@ -148,6 +149,53 @@
             return n;
         } catch (e) { return 0; }
     }
+    // ── Voice Pack LIBRARY (Phase 1): manage several named packs on one device.
+    // Each pack carries an optional studentName/studentId slot so a later phase
+    // can bind packs to the class roster without a data-model change.
+    function genPhonemePackId() {
+        try { return 'pk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); } catch (e) { return 'pk_' + Math.floor((typeof performance !== 'undefined' && performance.now ? performance.now() : 0)); }
+    }
+    function normalizePhonemePack(p) {
+        p = p || {};
+        return {
+            id: p.id || genPhonemePackId(),
+            name: p.name || 'Voice Pack',
+            kind: p.kind === 'student-voice' ? 'student-voice' : 'teacher-model',
+            consent: p.consent === true,
+            clips: (p.clips && typeof p.clips === 'object') ? p.clips : {},
+            history: (p.history && typeof p.history === 'object') ? p.history : {},
+            studentName: typeof p.studentName === 'string' ? p.studentName : '',
+            studentId: p.studentId || null,
+        };
+    }
+    function loadVoicePackLibrary() {
+        try {
+            const raw = localStorage.getItem(PHONEME_PACK_LIB_KEY);
+            if (raw) {
+                const lib = JSON.parse(raw);
+                if (lib && Array.isArray(lib.packs) && lib.packs.length) {
+                    const packs = lib.packs.filter((p) => p && p.id).map(normalizePhonemePack);
+                    if (packs.length) {
+                        const activeId = packs.find((p) => p.id === lib.activeId) ? lib.activeId : packs[0].id;
+                        return { activeId, packs };
+                    }
+                }
+            }
+            // migrate a legacy single pack, if it has any content
+            const legacy = loadPhonemeVoicePack();
+            if (legacy && (Object.keys(legacy.clips || {}).length || Object.keys(legacy.history || {}).length)) {
+                const p = normalizePhonemePack(Object.assign({ id: 'pk_legacy' }, legacy));
+                return { activeId: p.id, packs: [p] };
+            }
+        } catch (e) {}
+        const p = normalizePhonemePack({ name: 'My Voice Pack' });
+        return { activeId: p.id, packs: [p] };
+    }
+    function getActiveVoicePackClips() {
+        const lib = loadVoicePackLibrary();
+        const a = lib.packs.find((p) => p.id === lib.activeId) || lib.packs[0];
+        return (a && a.clips) || {};
+    }
     function phonemeReferenceClip(key) {
         // The DEFAULT pre-recorded clip for a phoneme, read from the raw audio
         // bank via window.getAudio — this reads _AUDIO_BANK directly, so it is the
@@ -211,7 +259,14 @@
     }
     const PhonemeVoicePackEditor = ({ onClose, t }) => {
         const T = (k, fb) => (typeof t === 'function' ? t(k, fb) : fb);
-        const [pack, setPack] = React.useState(() => loadPhonemeVoicePack());
+        const [lib, setLib] = React.useState(() => loadVoicePackLibrary());
+        // `pack` = the active library entry; `setPack` mutates just that entry so
+        // every existing setPack((prev) => ...) call keeps working unchanged.
+        const pack = lib.packs.find((p) => p.id === lib.activeId) || lib.packs[0] || { name: 'My Voice Pack', clips: {}, kind: 'teacher-model', consent: false, history: {}, studentName: '', studentId: null };
+        const setPack = (updater) => setLib((prev) => {
+            const id = prev.activeId;
+            return Object.assign({}, prev, { packs: prev.packs.map((p) => p.id === id ? (typeof updater === 'function' ? updater(p) : Object.assign({}, p, updater)) : p) });
+        });
         const [recordingKey, setRecordingKey] = React.useState(null);
         const [status, setStatus] = React.useState('');
         const [aiCheckOn, setAiCheckOn] = React.useState(false);
@@ -230,6 +285,19 @@
         const recordedCount = allKeys.filter((k) => clips[k]).length;
         const setKind = (k) => setPack((prev) => Object.assign({}, prev, { kind: k }));
         const giveConsent = () => setPack((prev) => Object.assign({}, prev, { consent: true }));
+        const setStudentName = (name) => setPack((prev) => Object.assign({}, prev, { studentName: name }));
+        const selectPack = (id) => { setLib((prev) => Object.assign({}, prev, { activeId: id })); setChecks({}); setSelfChecks({}); setStatus(''); setView('record'); };
+        const newPack = () => { const id = genPhonemePackId(); setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: 'New Pack' })]) })); setChecks({}); setSelfChecks({}); setStatus('New pack created. Name it, pick Teacher or Student, then record.'); setView('record'); };
+        const deletePack = () => {
+            if (lib.packs.length <= 1) { setStatus('Keep at least one pack. Clear individual sounds with 🗑️ instead.'); return; }
+            if (typeof window !== 'undefined' && !window.confirm('Delete pack "' + (pack.name || '') + '"? Its recordings and progress log will be gone.')) return;
+            setLib((prev) => {
+                const rest = prev.packs.filter((p) => p.id !== prev.activeId);
+                const packs = rest.length ? rest : [normalizePhonemePack({ id: genPhonemePackId(), name: 'My Voice Pack' })];
+                return { activeId: packs[0].id, packs };
+            });
+            setChecks({}); setSelfChecks({}); setStatus('');
+        };
         // Longitudinal practice log: one lightweight dated entry per recording
         // (metadata only — no extra audio), capped to the last 20 attempts/sound.
         // The AI verdict and the student's self-rating attach to the latest entry
@@ -330,20 +398,17 @@
             next();
         };
         const clearClip = (key) => { setPack((prev) => { const c = Object.assign({}, prev.clips); delete c[key]; return Object.assign({}, prev, { clips: c }); }); setChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); setSelfChecks((prev) => { const c = Object.assign({}, prev); delete c[key]; return c; }); };
-        const persist = (next) => {
-            try {
-                localStorage.setItem(PHONEME_PACK_STORAGE_KEY, JSON.stringify({ version: 1, type: 'alloPhonemePack', kind: next.kind || 'teacher-model', consent: !!next.consent, name: next.name, clips: next.clips, history: next.history || {} }));
-                return true;
-            } catch (e) { return false; }
+        const persist = () => {
+            try { localStorage.setItem(PHONEME_PACK_LIB_KEY, JSON.stringify(lib)); return true; } catch (e) { return false; }
         };
         const savePack = () => {
             const applied = applyPhonemeVoicePackToBank(pack.clips);
-            const ok = persist(pack);
+            const ok = persist();
             setStatus(ok ? ('✅ Saved and active now (' + applied + ' sounds). Word Sounds will use this voice.') : ('Active for this session (' + applied + ' sounds), but the pack was too large for browser storage — use Export to keep it as a file.'));
         };
         const exportPack = () => {
             try {
-                const data = { version: 1, type: 'alloPhonemePack', kind: kind, name: pack.name || 'My Voice Pack', exportDate: new Date().toISOString(), phonemes: pack.clips, history: pack.history || {} };
+                const data = { version: 1, type: 'alloPhonemePack', kind: kind, name: pack.name || 'My Voice Pack', studentName: pack.studentName || '', studentId: pack.studentId || null, exportDate: new Date().toISOString(), phonemes: pack.clips, history: pack.history || {} };
                 const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -362,8 +427,10 @@
                     const data = JSON.parse(e.target.result);
                     const incoming = (data && (data.phonemes || data.clips)) || null;
                     if (!incoming || typeof incoming !== 'object') { setStatus('That file is not a phoneme pack.'); return; }
-                    setPack((prev) => Object.assign({}, prev, { name: (data && data.name) || prev.name, kind: (data && data.kind === 'student-voice') ? 'student-voice' : prev.kind, consent: (data && data.kind === 'student-voice') ? false : prev.consent, clips: Object.assign({}, prev.clips, incoming), history: Object.assign({}, prev.history || {}, (data && data.history && typeof data.history === 'object') ? data.history : {}) }));
-                    setStatus('📥 Imported ' + Object.keys(incoming).length + ' sounds. Tap Save & Use to apply them.');
+                    const id = genPhonemePackId();
+                    setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: (data && data.name) || 'Imported Pack', kind: (data && data.kind === 'student-voice') ? 'student-voice' : 'teacher-model', consent: false, clips: incoming, history: (data && data.history && typeof data.history === 'object') ? data.history : {}, studentName: (data && data.studentName) || '' })]) }));
+                    setChecks({}); setSelfChecks({});
+                    setStatus('📥 Imported as a new pack (' + Object.keys(incoming).length + ' sounds). Tap Save & Use to apply.');
                 } catch (err) { setStatus('Could not read that file.'); }
             };
             reader.readAsText(file);
@@ -385,6 +452,15 @@
                             <p className="text-xs text-white/80">{recordedCount} / {allKeys.length} {T('word_sounds.voice_pack_recorded', 'sounds recorded')}</p>
                         </div>
                         <button type="button" onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-white/20 transition-colors text-xl leading-none">✕</button>
+                    </div>
+                    <div className="px-5 py-2 border-b border-slate-200 flex items-center gap-2 flex-wrap text-xs bg-slate-50">
+                        <span className="font-bold text-slate-500 uppercase tracking-wider">{T('word_sounds.voice_pack_pack_label', 'Pack')}</span>
+                        <select value={lib.activeId} onChange={(e) => selectPack(e.target.value)} aria-label="Active pack" className="border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold bg-white max-w-[180px]">
+                            {lib.packs.map((p) => <option key={p.id} value={p.id}>{(p.kind === 'student-voice' ? '🧒 ' : '🎓 ') + (p.name || 'Untitled') + (p.studentName ? ' — ' + p.studentName : '')}</option>)}
+                        </select>
+                        <button type="button" onClick={newPack} className="px-2 py-1 rounded-lg bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100">➕ {T('word_sounds.voice_pack_new', 'New')}</button>
+                        <button type="button" onClick={deletePack} disabled={lib.packs.length <= 1} className={`px-2 py-1 rounded-lg border font-bold ${lib.packs.length <= 1 ? 'text-slate-300 border-slate-200 cursor-not-allowed' : 'text-rose-600 border-rose-200 hover:bg-rose-50'}`}>🗑️ {T('word_sounds.voice_pack_delete', 'Delete')}</button>
+                        {isStudent ? <input type="text" value={pack.studentName || ''} onChange={(e) => setStudentName(e.target.value)} placeholder={T('word_sounds.voice_pack_student_name', 'Student name (optional)')} aria-label="Student name" className="border border-slate-300 rounded-lg px-2 py-1 text-xs ml-auto min-w-[120px]" /> : null}
                     </div>
                     <div className="px-5 py-2.5 border-b border-slate-200 flex items-center gap-3 flex-wrap text-xs">
                         <div className="inline-flex rounded-lg border border-slate-300 overflow-hidden" role="group" aria-label="Pack type">
@@ -594,8 +670,8 @@
         // its defaults on each page load). No-op when no pack is saved.
         React.useEffect(() => {
             try {
-                const saved = loadPhonemeVoicePack();
-                if (saved && saved.clips && Object.keys(saved.clips).length) applyPhonemeVoicePackToBank(saved.clips);
+                const savedClips = getActiveVoicePackClips();
+                if (savedClips && Object.keys(savedClips).length) applyPhonemeVoicePackToBank(savedClips);
             } catch (e) {}
         }, []);
         const [generatedCount, setGeneratedCount] = React.useState(0);
