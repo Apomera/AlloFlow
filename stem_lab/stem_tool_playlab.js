@@ -3182,6 +3182,21 @@ window.StemLab = window.StemLab || {
         gfx.font = 'bold 10px system-ui';
         gfx.fillText('LOS', losPx, marginT + fieldPxH + 14);
 
+        // ── Persistent down & distance HUD (top-left) — always on, not just in
+        // the post-play outcome banner, so the situation is readable mid-setup. ──
+        (function() {
+          var dn = d.down || 1, ytg = d.yardsToGoal != null ? d.yardsToGoal : 75;
+          var ord = dn === 1 ? '1st' : dn === 2 ? '2nd' : dn === 3 ? '3rd' : '4th';
+          var full = '🏈 ' + ord + ' down · ' + ytg + ' yd to goal';
+          gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'left'; gfx.textBaseline = 'middle';
+          var tw = gfx.measureText(full).width;
+          gfx.fillStyle = 'rgba(15,23,42,0.72)';
+          gfx.fillRect(marginL + 4, marginT + 4, tw + 12, 18);
+          gfx.fillStyle = '#fde68a';
+          gfx.fillText(full, marginL + 9, marginT + 13);
+          gfx.textBaseline = 'alphabetic';
+        })();
+
         // ── Coverage zones ──
         if (d.showZones) {
           zones.forEach(function(z) {
