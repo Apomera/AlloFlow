@@ -17597,9 +17597,18 @@ tr { page-break-inside: avoid; }
     // Checker as "orphaned semantic elements with no content linkage." This pass
     // retro-patches each leaf with /K → MCR(page, MCID 0) — the page-wrap MCID
     // that Stage-3 already generates per-page. Every leaf shares MCID 0 on its
-    // assigned page, which is structurally degenerate (no per-leaf granularity)
-    // but VALID per PDF spec, and /ActualText still wins for SR reading order
-    // per spec §14.9.4, so the SR experience is unchanged.
+    // assigned page, which is structurally degenerate (no per-leaf granularity):
+    // MULTIPLE struct elements then claim the same single marked-content sequence.
+    // CORRECTION (2026-06-20, verified via dev-tools/demo/inspect_structtree.cjs): this is
+    // NOT "valid per PDF spec" — ISO 32000 §14.7.4 expects one MCID to belong to one element,
+    // so PAC 2024 / Adobe may flag the multiply-claimed MCID (veraPDF does NOT — confirmed
+    // blind spot, scanned fixtures pass 106/0). What saves the actual SR experience is that
+    // every SEMANTIC text leaf carries correct /ActualText (empirically: all H1/H2/P/TH/TD read
+    // their own text; the only leaves without it are the legitimate per-page MCID-0 owners),
+    // and §14.9.4 makes /ActualText authoritative for reading order — so the SR experience is
+    // correct DESPITE the degenerate MCID. The spec-clean fix (per-leaf MCIDs) was attempted at
+    // b0d24ae3 and reverted for an unexplained content-loss regression, so this multiply-claim +
+    // /ActualText combination is the deliberate, SR-correct trade-off, not a clean tag tree.
     //
     // Slice 1 (single-page): all leaves point to pages[0].ref MCID 0.
     // Slice 2 (multi-page): leaves are distributed PROPORTIONALLY across pages

@@ -32,6 +32,8 @@ const PDF = process.argv[2] || 'C:/tmp/scanned_tagged_out.pdf';
     const owners = {};          // "pgIdx:mcid" -> [roles]
     const topRoles = [];        // immediate children roles of StructTreeRoot
     let mcCount = 0;
+    let roleLeaves = 0, withActualText = 0; // §14.9.4: /ActualText overrides marked-content for SR reading
+    const atSamples = [];
 
     const deref = (v) => (v instanceof PDFRef ? ctx.lookup(v) : v);
     const sname = (d, k) => { const v = d.get(PDFName.of(k)); return v ? v.toString() : null; };
@@ -53,6 +55,18 @@ const PDF = process.argv[2] || 'C:/tmp/scanned_tagged_out.pdf';
       if (type === '/MCR') { record(elem.get(PDFName.of('Pg')) || inhPg, elem.get(PDFName.of('MCID')), '(MCR)'); return; }
       const role = sname(elem, 'S');
       if (top && role) topRoles.push(role);
+      // does this element carry /ActualText (which §14.9.4 says wins for SR reading)?
+      const at = elem.get(PDFName.of('ActualText'));
+      // a "text leaf" = a role element whose /K is a single MCID (multiply-claimed), not child elements
+      const kRaw = elem.get(PDFName.of('K'));
+      const kd = deref(kRaw);
+      const isMcidLeaf = (kd instanceof PDFNumber) || (kd instanceof PDFDict && sname(kd, 'Type') === '/MCR') ||
+        (kd instanceof PDFArray && kd.asArray().length && (() => { const e0 = deref(kd.asArray()[0]); return (e0 instanceof PDFNumber) || (e0 instanceof PDFDict && sname(e0, 'Type') === '/MCR'); })());
+      if (role && role !== '/Document' && role !== '/Sect' && isMcidLeaf) {
+        roleLeaves++;
+        if (at) { withActualText++; if (atSamples.length < 12) atSamples.push(role + ' ✓ "' + String(at).slice(0, 30) + '"'); }
+        else if (atSamples.length < 12) atSamples.push(role + ' ✗ NO ActualText');
+      }
       const pg = elem.get(PDFName.of('Pg')) || inhPg;
       walkK(elem.get(PDFName.of('K')), pg, role);
     }
@@ -77,7 +91,7 @@ const PDF = process.argv[2] || 'C:/tmp/scanned_tagged_out.pdf';
     try { const pt = stRoot.lookup(PDFName.of('ParentTree'), PDFDict); const nums = pt && pt.lookup(PDFName.of('Nums'), PDFArray); if (nums) ptInfo = 'Nums entries: ' + (nums.asArray().length / 2); } catch (e) {}
 
     const dups = Object.entries(owners).filter(([k, v]) => v.length > 1).map(([k, v]) => ({ pageMcid: k, owners: v }));
-    return { pages: pages.length, topRoles, distinctMC: Object.keys(owners).length, totalMCrefs: mcCount, multiplyClaimed: dups.length, dups: dups.slice(0, 25), parentTree: ptInfo };
+    return { pages: pages.length, topRoles, distinctMC: Object.keys(owners).length, totalMCrefs: mcCount, multiplyClaimed: dups.length, dups: dups.slice(0, 25), parentTree: ptInfo, roleLeaves, withActualText, actualTextSamples: atSamples };
   }, b64);
 
   console.log(JSON.stringify(out, null, 2));
