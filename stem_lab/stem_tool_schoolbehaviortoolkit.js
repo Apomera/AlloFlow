@@ -1726,6 +1726,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         return h('div', null,
           panelHeader('🔬 FBA Process — the upstream of every Tier 3 BIP',
             'Functional Behavior Assessment is the systematic process for identifying WHY a behavior is happening. Without an FBA, the BIP is just a guess. Five steps from indirect assessment through hypothesis testing to BIP development.'),
+          // ── FBA -> Function Statement -> BIP pipeline, drawn. The tool's
+          // central thesis ("the FBA names the function; the BIP is the plan;
+          // every component traces back to the function statement") rendered as
+          // flat card lists with no flow. This makes the spine visible. ──
+          (function() {
+            var arrow = function(k) { return h('span', { key: k, style: { color: '#64748b', fontWeight: 800, fontSize: 13 } }, '→'); };
+            var bigArrowStyle = { color: '#fbbf24', fontWeight: 800, fontSize: 16, margin: '0 1px' };
+            var chip = function(s) {
+              return h('div', { key: 'fc-' + s.step, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + s.color + '66', minWidth: 60 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 3 } },
+                  h('span', { style: { fontSize: 13 } }, s.icon),
+                  h('span', { style: { fontSize: 10, fontWeight: 800, color: s.color } }, s.step)),
+                h('span', { style: { fontSize: 8.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', lineHeight: 1.2 } }, s.name));
+            };
+            var seq = [];
+            FBA_STEPS.forEach(function(s, i) { if (i) seq.push(arrow('a' + i)); seq.push(chip(s)); });
+            var fnBox = h('div', { key: 'fn', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', borderRadius: 8, background: 'rgba(251,191,36,0.12)', border: '1.5px solid #fbbf24', minWidth: 70 } },
+              h('span', { style: { fontSize: 13 } }, '🎯'),
+              h('span', { style: { fontSize: 9, fontWeight: 800, color: '#fbbf24', textAlign: 'center', lineHeight: 1.2 } }, 'Function statement'));
+            var bipBox = h('div', { key: 'bip', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', borderRadius: 8, background: 'rgba(96,165,250,0.12)', border: '1.5px solid #60a5fa', minWidth: 62 } },
+              h('span', { style: { fontSize: 13 } }, '📋'),
+              h('span', { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textAlign: 'center', lineHeight: 1.2 } }, 'BIP (8 parts)'));
+            return h('div', { style: { marginBottom: 14, padding: '12px 10px', borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 4, rowGap: 8 } },
+                seq.concat([
+                  h('span', { key: 'ba1', style: bigArrowStyle }, '⇒'), fnBox,
+                  h('span', { key: 'ba2', style: bigArrowStyle }, '⇒'), bipBox
+                ])),
+              h('div', { style: { fontSize: 9.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 8, fontStyle: 'italic' } }, 'The 5 FBA steps produce one function statement — the spine every BIP strategy must trace back to.')
+            );
+          })(),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             FBA_STEPS.map(function(s) {
               return h('div', { key: 'fba-' + s.step,
