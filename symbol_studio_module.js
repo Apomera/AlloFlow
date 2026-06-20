@@ -4243,8 +4243,8 @@
           ),
           // Clinical note
           e('div', { style: { maxWidth: '420px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px 14px', fontSize: '11px', color: '#1e40af' } },
-            e('strong', null, 'Clinical note: '),
-            'Symbol Search trains receptive auditory-to-visual mapping — the core skill AAC learners need to locate symbols from spoken input. ',
+            e('strong', null, 'Practice note: '),
+            'Symbol Search gives practice with auditory-to-visual matching — a skill that can support locating symbols from spoken input. ',
             'Listen & Build adds sequential symbol construction for multi-word utterances. ',
             'Results feed into Word Garden familiarity tracking and IEP goal recording.'
           )
@@ -4914,7 +4914,7 @@
           filtered.length === 0 ? e('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } }, e('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'), e('p', { style: { fontSize: '13px' } }, gardenSearch ? 'No words match "' + gardenSearch + '"' : 'No words at this growth level yet'))
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px' } }, gridItems),
           total > 0 && e('div', { style: { display: 'flex', gap: '6px', margin: '8px 0', flexWrap: 'wrap' } },
-            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print clinical report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Clinical Report'),
+            e('button', { onClick: function () { printGardenReport(bank, counts, total); }, 'aria-label': 'Print practice report', style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { fontSize: '11px' }) }, '📊 Practice Report'),
             e('button', { onClick: function () { printGardenHomeNote(bank, counts, total); }, 'aria-label': 'Print home note for family', style: Object.assign({}, S.btn('#dcfce7', '#15803d', false), { fontSize: '11px' }) }, '🏠 Home Note'),
             e('button', { onClick: function () { exportGardenCSV(bank, counts, total); }, 'aria-label': 'Export research CSV', style: Object.assign({}, S.btn('#dbeafe', '#1d4ed8', false), { fontSize: '11px' }) }, '🔬 Research CSV'))));
     }
@@ -7296,7 +7296,7 @@
               e('p', { style: { fontWeight: 600 } }, 'Create an AI-illustrated Social Story'),
               e('div', { style: { maxWidth: '420px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
                 e('p', null, 'Describe a social situation and AlloFlow writes a Carol Gray-format story, then generates a custom illustration for every page.'),
-                e('p', null, 'Add a Student Avatar to make every illustration feature your specific student — no other tool does this.')
+                e('p', null, 'Add a Student Avatar to make every illustration feature your specific student.')
               )
             )
       );

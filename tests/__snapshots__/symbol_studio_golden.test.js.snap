@@ -1086,7 +1086,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 </button>
 </div>
 <div style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap">
-<button aria-label="Print clinical report" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">📊 Clinical Report</button>
+<button aria-label="Print practice report" style="padding:8px 14px;background:#f3f4f6;color:#374151;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">📊 Practice Report</button>
 <button aria-label="Print home note for family" style="padding:8px 14px;background:#dcfce7;color:#15803d;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">🏠 Home Note</button>
 <button aria-label="Export research CSV" style="padding:8px 14px;background:#dbeafe;color:#1d4ed8;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap">🔬 Research CSV</button>
 </div>
@@ -2245,7 +2245,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 <p style="font-weight:600">Create an AI-illustrated Social Story</p>
 <div style="max-width:420px;font-size:13px;line-height:1.7;text-align:center">
 <p>Describe a social situation and AlloFlow writes a Carol Gray-format story, then generates a custom illustration for every page.</p>
-<p>Add a Student Avatar to make every illustration feature your specific student — no other tool does this.</p>
+<p>Add a Student Avatar to make every illustration feature your specific student.</p>
 </div>
 </div>
 </div>
