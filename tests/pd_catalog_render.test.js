@@ -277,3 +277,31 @@ describe('certificate + completion history', () => {
     expect(hist[0].moduleTitle).toBe('M1 (retake)');                  // newest kept
   });
 });
+
+describe('runner resume + home history (render)', () => {
+  it('PdRunner resumes from saved progress', () => {
+    const { CC } = loadWithCore();
+    const KEY = 'alloflow_pd_progress::udl-representation-quickstart';
+    globalThis.localStorage.setItem(KEY, JSON.stringify({ idx: 1, rawById: { 'read-representation': { acknowledged: true } }, done: false }));
+    try {
+      const html = render(CC.PdRunner, { module: SEED, addToast() {}, onExit() {} });
+      expect(html).toContain('step 2 of 3');                 // resumed at the quiz
+      expect(html).toContain('Resumed where you left off');
+      expect(html).toContain('Start over');
+    } finally {
+      globalThis.localStorage.removeItem(KEY);
+    }
+  });
+
+  it('PdHome surfaces a "My learning" entry point when history exists', () => {
+    const { CC } = loadWithCore();
+    try { globalThis.localStorage.removeItem('alloflow_pd_history'); } catch (_e) {}
+    CC._recordPdCompletion({ moduleId: 'm9', moduleTitle: 'M9', complete: true, completedAt: '2026-06-20', passed: 1, total: 1 });
+    try {
+      const html = render(CC.PdHome, { addToast() {} });
+      expect(html).toContain('My learning (1)');
+    } finally {
+      globalThis.localStorage.removeItem('alloflow_pd_history');
+    }
+  });
+});

@@ -937,11 +937,12 @@
           className: 'px-3 py-1.5 text-sm font-semibold border border-slate-300 text-slate-700 rounded disabled:opacity-40',
         }, 'Back'),
         e('div', { className: 'flex items-center gap-3' },
-          !canNext && e('span', { className: 'text-xs text-slate-500', 'aria-live': 'polite' },
+          !canNext && e('span', { id: 'pd-gate-hint', className: 'text-xs text-slate-500', 'aria-live': 'polite' },
             gate.reason === 'incomplete' ? 'Finish this activity to continue.' : 'Reach the passing score to continue.'),
           e('button', {
             onClick: function () { if (!canNext) return; if (isLast) setDone(true); else setIdx(idx + 1); },
             disabled: !canNext,
+            'aria-describedby': !canNext ? 'pd-gate-hint' : undefined,
             className: 'px-4 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed',
           }, isLast ? 'Finish' : 'Next')
         )
