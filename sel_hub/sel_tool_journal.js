@@ -717,6 +717,7 @@ window.SelHub = window.SelHub || {
           var badge = BADGES.find(function(b) { return b.id === badgeId; });
           if (badge) {
             upd('showBadgePopup', badgeId);
+            if (announceToSR) announceToSR('Badge earned: ' + badge.name);
             if (soundEnabled) sfxBadge();
             if (celebrate) celebrate();
             awardXP(25);

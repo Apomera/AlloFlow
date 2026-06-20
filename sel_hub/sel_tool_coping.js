@@ -26284,6 +26284,7 @@ window.SelHub = window.SelHub || {
           upd('showBadgePopup', badgeId);
           if (soundEnabled) sfxBadge();
           addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
+          if (announceToSR) announceToSR('Badge earned: ' + badge.name);
           awardXP(25);
           setTimeout(function() { upd('showBadgePopup', null); }, 3000);
         }
