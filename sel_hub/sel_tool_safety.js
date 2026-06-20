@@ -764,7 +764,7 @@ window.SelHub = window.SelHub || {
         },
           tabs.map(function(t) {
             var isActive = activeTab === t.id;
-            return h('button', { 'aria-label': 'Toggle sound',
+            return h('button', {
               key: t.id,
               onClick: function() {
                 upd('activeTab', t.id);
@@ -1057,7 +1057,7 @@ window.SelHub = window.SelHub || {
                 ),
                 // "I knew this" / "I learned something new" tracking
                 !isTracked && h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
-                  h('button', { 'aria-label': 'Toggle sound',
+                  h('button', {
                     onClick: function(e) {
                       e.stopPropagation();
                       var newTracked = Object.assign({}, dsTracked);
@@ -1313,11 +1313,12 @@ window.SelHub = window.SelHub || {
               var isCompleted = scenCompleted[scen.id] != null;
               var ratingColors = { 1: '#ef4444', 2: '#f59e0b', 3: '#22c55e' };
               return h('div', { key: i },
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', {
                   onClick: function() {
                     if (isCompleted) return;
                     upd('scenChoice', i);
                     if (soundEnabled) { choice.rating === 3 ? sfxCorrect() : sfxReveal(); }
+                    announceSR((choice.rating === 3 ? 'Great choice. ' : choice.rating === 2 ? 'Good thinking, but. ' : 'Let us think about this. ') + choice.feedback);
                     // Mark completed
                     var newCompleted = Object.assign({}, scenCompleted);
                     newCompleted[scen.id] = { choice: i, rating: choice.rating };
@@ -1471,11 +1472,12 @@ window.SelHub = window.SelHub || {
               var starStr = '';
               for (var si = 0; si < resp.stars; si++) starStr += '\u2B50';
               return h('div', { key: i },
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', {
                   onClick: function() {
                     if (isCompleted) return;
                     upd('assertChoice', i);
                     if (soundEnabled) { resp.stars === 3 ? sfxCorrect() : sfxReveal(); }
+                    announceSR((resp.stars === 3 ? 'Assertive. Great choice. ' : resp.style === 'passive' ? 'Passive. Let us think about this. ' : 'Aggressive. There is a better way. ') + resp.feedback);
                     var newCompleted = Object.assign({}, assertCompleted);
                     newCompleted[assertScen.id] = { choice: i, stars: resp.stars, style: resp.style };
                     upd('assertCompleted', newCompleted);
@@ -1759,7 +1761,7 @@ window.SelHub = window.SelHub || {
                   var showResult = isFlagAnswered;
                   var bgColor = flag === 'green' ? '#22c55e' : '#ef4444';
                   var borderColor = showResult ? (isCorrectAnswer ? bgColor : (isSelected && !isCorrectAnswer ? '#f59e0b' : '#334155')) : '#334155';
-                  return h('button', { 'aria-label': 'Toggle sound',
+                  return h('button', {
                     key: flag,
                     onClick: function() {
                       if (isFlagAnswered) return;
@@ -1769,6 +1771,7 @@ window.SelHub = window.SelHub || {
                       var newCorrect = flagCorrect + (correct ? 1 : 0);
                       upd({ flagAnswered: newAnswered, flagChoice: flag, flagCorrect: newCorrect });
                       if (soundEnabled) { correct ? sfxCorrect() : sfxReveal(); }
+                      announceSR((correct ? 'You got it. ' : 'Actually, this is a ' + (currentFlag.flag === 'red' ? 'red flag, unsafe. ' : 'green flag, safe. ')) + currentFlag.explain);
                       awardXP(correct ? 10 : 3);
                       if (Object.keys(newAnswered).length >= totalFlags) {
                         upd('flagDone', true);
