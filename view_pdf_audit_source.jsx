@@ -6341,11 +6341,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       {/* "What now?" strip (2026-06-12): 308 elements below — give
                           the first action explicitly. Additions-only. */}
-                      <div data-help-key="pdf_audit_results_whatnow" className="bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap" role="note">
-                        <span className="font-black text-emerald-800">{t('pdf_audit.whatnow.lead') || 'What now?'}</span>
-                        <span>{_inputIsPdf
-                          ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
-                          : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')}</span>
+                      <div data-help-key="pdf_audit_results_whatnow" className={'bg-white border rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap ' + ((pdfFixResult && pdfFixResult.fidelityLimited) ? 'border-amber-300' : 'border-emerald-200')} role="note">
+                        <span className={'font-black ' + ((pdfFixResult && pdfFixResult.fidelityLimited) ? 'text-amber-800' : 'text-emerald-800')}>{t('pdf_audit.whatnow.lead') || 'What now?'}</span>
+                        {/* Integrity-aware (2026-06-20): when content fidelity is in question (low coverage,
+                            a changed number, a dropped table/link), do NOT call the output "share-ready"
+                            or the fidelity notes "optional polish" — lead with verifying the content. */}
+                        <span>{(pdfFixResult && pdfFixResult.fidelityLimited)
+                          ? (t('pdf_audit.whatnow.fidelity') || ('⚠ Before sharing: some source content may not have carried over (see the fidelity notes below). 1️⃣ Open Compare/Diff and confirm scores, numbers, dates, and key text match the original. 2️⃣ Only then grab the ' + (_inputIsPdf ? 'Tagged PDF' : 'Word file') + ' from Downloads.'))
+                          : (_inputIsPdf
+                            ? (t('pdf_audit.whatnow.pdf') || '1️⃣ Scroll to Downloads and grab the Tagged PDF — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.')
+                            : (t('pdf_audit.whatnow.office') || '1️⃣ Scroll to Downloads and grab the Word file — that’s your share-ready copy. 2️⃣ Optional: open Compare to see before/after. 3️⃣ Anything flagged below is optional polish.'))}</span>
                         <button onClick={() => { try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="ml-auto px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-bold hover:bg-emerald-700 shrink-0">📥 {t('pdf_audit.whatnow.go') || 'Take me to Downloads'}</button>
                         {/* The reverse door, surfaced (2026-06-11): the Full
                             Differentiation Pipeline button existed deep in the
@@ -6959,8 +6964,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && (
                                 <ul className="mt-2 space-y-1">
                                   {pdfFixResult.fidelityNotes.map((n, i) => (
-                                    <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : 'text-sky-800')}>
-                                      <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'tables' ? '▦' : '🔗'}</span>
+                                    <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : n.kind === 'numeric' ? 'text-amber-800 font-semibold' : 'text-sky-800')}>
+                                      <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'numeric' ? '🔢' : n.kind === 'tables' ? '▦' : '🔗'}</span>
                                       <span>{n.msg}</span>
                                     </li>
                                   ))}

@@ -4451,11 +4451,16 @@ var createDocPipeline = function(deps) {
       if (b) return b[1];
       return '';
     };
+    // Ranges are STORED with an `html` field (saveMultiSessionRange's rangeData). The original merge
+    // read `remediatedHtml`, which was NEVER written → every section merged EMPTY and the teacher was
+    // handed a blank multi-session document. Read `html`, falling back to `remediatedHtml` for any
+    // legacy/foreign record. (2026-06-20 data-loss fix)
+    const _rangeHtml = (rg) => (rg && (rg.html || rg.remediatedHtml)) || '';
     const firstRange = sorted[0];
     const lastRange = sorted[sorted.length - 1];
-    const preamble = _extractPreamble(firstRange.remediatedHtml) ||
+    const preamble = _extractPreamble(_rangeHtml(firstRange)) ||
       '<!DOCTYPE html>\n<html lang="en">\n<head><meta charset="UTF-8"><title>Multi-session remediated document</title></head>\n<body>\n<main id="main-content" role="main">\n';
-    const postamble = _extractPostamble(lastRange.remediatedHtml) || '\n</main>\n</body>\n</html>\n';
+    const postamble = _extractPostamble(_rangeHtml(lastRange)) || '\n</main>\n</body>\n</html>\n';
     const _boundary = (prevEnd, nextStart) => {
       const gapStart = prevEnd + 1;
       const gapEnd = nextStart - 1;
@@ -4480,7 +4485,7 @@ var createDocPipeline = function(deps) {
         '<section data-page-range="' + r.pages[0] + '-' + r.pages[1] + '"' +
         (r.completedAt ? ' data-completed-at="' + new Date(r.completedAt).toISOString() + '"' : '') +
         '>\n' +
-        _extractBodyContent(r.remediatedHtml) +
+        _extractBodyContent(_rangeHtml(r)) +
         '\n</section>'
       );
       if (i < sorted.length - 1) {
@@ -15688,6 +15693,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // actually fine (e.g. an 88% reading where ~12% was just rejoined hyphens / collapsed space).
       let integrityCoverage = null;
       let integrityWarning = null;
+      let _numericLossWarn = null; // (2026-06-20) numeric value-fidelity losses — carried out of the
+      // integrity try so they can ALSO be pushed into the persistent fidelity panel + fidelityLimited,
+      // not just integrityWarning. A silently-changed NUMBER is the worst case for an assessment report;
+      // it must escalate the persistent banner, never sit under a clean-looking score.
       try {
         // Rejoin "exam-\nple" -> "example" (hyphen immediately after a letter, then whitespace,
         // then a letter — leaves real compounds like "well-being" untouched) + collapse whitespace.
@@ -15744,6 +15753,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             const _vsample = _lostVals.slice(0, 8).join(', ') + (_lostVals.length > 8 ? ', …' : '');
             const _valWarn = _lostVals.length + ' source numeric value(s) not found unchanged in the output (' + _vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.';
             integrityWarning = integrityWarning ? (integrityWarning + ' ' + _valWarn) : _valWarn;
+            _numericLossWarn = _valWarn; // also surface in the persistent fidelity panel + fidelityLimited (below)
             if (!_silentMode) addToast('⚠ ' + _valWarn, 'warning');
             warnLog('[Integrity] VALUE-FIDELITY — ' + _valWarn);
           }
@@ -15761,6 +15771,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml);
         _structuralFidelityNotes.forEach((n) => warnLog('[Fidelity] ' + n.msg));
       } catch (_sfErr) { warnLog('[Fidelity] structural net failed (non-critical): ' + (_sfErr && _sfErr.message)); }
+      // A changed NUMBER is the highest-stakes fidelity loss for an assessment report, but the bulk
+      // char-coverage % barely moves on it and the structural nets don't look for it. Push it into the
+      // SAME persistent notes the panel renders + that drive fidelityLimited, so the score carries the
+      // amber asterisk and the panel lists the specific values — instead of it living only in a toast.
+      if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
 
       // ── Triage: flag documents that need expert remediation ──
       let axeViolations = axeResults ? axeResults.totalViolations : 0;       // let: re-audit after recovery mutations may reassign (recov-score-order)
@@ -16042,10 +16057,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // "pages 1-30 done" and the Merge button can stitch completed ranges later.
       if (_pageRange && _result && _result.accessibleHtml) {
         try {
+          // The fingerprint MUST match the load-side _multiSessionId (AlloFlowANTI useEffect), which
+          // keys on pendingPdfFile.size (REAL bytes) + pdfAuditResult.pageCount (FULL doc). The save was
+          // keying on a base64-length ESTIMATE + the RANGE-length pageCount → a DIFFERENT sessionId, so
+          // the saved range was orphaned and the next session never found it. (2026-06-20 data-loss fix)
           const _msMeta = {
             fileName: _fileName,
-            fileSize: (_base64 && _base64.length) ? Math.round(_base64.length * 0.75) : 0,
-            pageCount: pageCount,
+            fileSize: (pendingPdfFile && pendingPdfFile.size) || 0,
+            pageCount: fullPageCount,
           };
           const _msSessionId = _multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount);
           saveMultiSessionRange(_msSessionId, _msMeta, {
