@@ -2238,13 +2238,13 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 </textarea>
 </div>
 <button disabled="" aria-label="Generate social story" style="padding:8px 14px;background:#d1d5db;color:#6b7280;border:none;border-radius:7px;font-weight:600;font-size:12px;cursor:not-allowed;white-space:nowrap">✨ Create Social Story</button>
-<p style="font-size:10px;color:#6b7280">Uses Carol Gray format — descriptive, perspective, and directive sentences. Illustrations auto-generate for each page.</p>
+<p style="font-size:10px;color:#6b7280">Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.</p>
 </div>
 <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b7280;flex-direction:column;gap:10px;padding:20px">
 <div style="font-size:52px">📖</div>
 <p style="font-weight:600">Create an AI-illustrated Social Story</p>
 <div style="max-width:420px;font-size:13px;line-height:1.7;text-align:center">
-<p>Describe a social situation and AlloFlow writes a Carol Gray-format story, then generates a custom illustration for every page.</p>
+<p>Describe a social situation and AlloFlow drafts a Carol Gray-informed story (review and edit before use), then generates a custom illustration for every page.</p>
 <p>Add a Student Avatar to make every illustration feature your specific student.</p>
 </div>
 </div>

@@ -7239,7 +7239,7 @@
             e('textarea', { value: storyDetails, onChange: function (ev) { setStoryDetails(ev.target.value); }, placeholder: 'e.g. Marcus is 7, has autism, loves trains', 'aria-label': 'Additional context for social story', style: Object.assign({}, S.textarea, { height: '55px' }) })
           ),
           e('button', { onClick: generateStory, disabled: !storySituation.trim() || storyGenerating || isIllustrating, 'aria-label': 'Generate social story', style: S.btn(PURPLE, '#fff', !storySituation.trim() || storyGenerating || isIllustrating) }, storyGenerating ? '⏳ Writing story...' : (isIllustrating ? '🎨 Illustrating...' : '✨ Create Social Story')),
-          e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Uses Carol Gray format — descriptive, perspective, and directive sentences. Illustrations auto-generate for each page.'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280' } }, 'Carol Gray-informed draft (descriptive, perspective, and directive sentences) — review and edit for fidelity before use. Illustrations auto-generate for each page.'),
           hasStory && e('div', { style: { borderTop: '1px solid #e5e7eb', paddingTop: '10px' } },
             e('button', { onClick: function () { window.print(); }, 'aria-label': '️ Print Story', style: Object.assign({}, S.btn('#dbeafe', '#1e40af', false), { width: '100%' }) }, '🖨️ Print Story')
           )
@@ -7295,7 +7295,7 @@
               e('div', { style: { fontSize: '52px' } }, '📖'),
               e('p', { style: { fontWeight: 600 } }, 'Create an AI-illustrated Social Story'),
               e('div', { style: { maxWidth: '420px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
-                e('p', null, 'Describe a social situation and AlloFlow writes a Carol Gray-format story, then generates a custom illustration for every page.'),
+                e('p', null, 'Describe a social situation and AlloFlow drafts a Carol Gray-informed story (review and edit before use), then generates a custom illustration for every page.'),
                 e('p', null, 'Add a Student Avatar to make every illustration feature your specific student.')
               )
             )
