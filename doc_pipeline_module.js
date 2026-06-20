@@ -17851,6 +17851,13 @@ tr { page-break-inside: avoid; }
           const _scriptKey = _detectScript(ocrText);
           let _uniFont = null;
           if (_scriptKey) { try { _uniFont = await _getUnicodeFont(_scriptKey); } catch(_) { _uniFont = null; } }
+          // If no embedded font was obtained but the text is Latin, route to the embedded NotoSans
+          // ('latinext') rather than the non-embedded base-14 Helvetica — base-14 fonts FAIL PDF/UA
+          // §7.21.4.1 (font programs must be embedded). Ensures every Latin/English scanned text layer
+          // ships an EMBEDDED font, not just extended-Latin docs. (2026-06-19 scanned-tagging font fix)
+          if (!_uniFont && ocrText && /[A-Za-z]/.test(ocrText)) {
+            try { _uniFont = await _getUnicodeFont('latinext'); } catch(_) { _uniFont = null; }
+          }
           // ── Per-word positioned layer (when Tesseract word boxes are present) ──
           // Draw each word at its real (x,y) with font size from the box height, so
           // Ctrl+F highlight + drag-select align with the scanned image. Guarded on
