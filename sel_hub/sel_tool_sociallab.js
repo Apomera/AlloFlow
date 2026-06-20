@@ -261,7 +261,7 @@ window.SelHub = window.SelHub || {
   // ═══════════════════════════════════════════════════════════════
 
   window.SelHub.registerTool('sociallab', {
-    title: 'Social Skills Lab',
+    title: 'Social Skills Roleplay',
     icon: '🎭',
     category: 'relationship-skills',
     description: 'Practice real social situations — choose responses in scenarios or roleplay conversations with an AI peer',

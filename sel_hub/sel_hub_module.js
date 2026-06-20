@@ -1216,12 +1216,13 @@
         { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-regulation' },
         { id: 'upstander', icon: '\uD83E\uDDB8', label: 'Upstander Training', desc: 'Learn to stand up for others safely — bystander to upstander skills.', color: 'red', recommendedRange: '2-12', _cat: 'social-awareness' },
         { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-direction' },
+        { id: 'execfunction', icon: '\uD83E\uDDE0', label: 'Executive Function', desc: 'Strategies for the harder parts of getting things done: starting tasks, holding focus, planning ahead, and tracking time.', color: 'cyan', recommendedRange: '3-12', _cat: 'self-direction' },
         { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Self-Advocacy', desc: 'Learn to speak up for your needs, rights, and goals.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
         { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'stewardship' },
         { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', _cat: 'responsible-decision-making' },
         { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations and audio.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
-        { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Lab', desc: 'Practice social scenarios and AI peer roleplay.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
+        { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Roleplay', desc: 'Practice social scenarios and AI peer roleplay with branching dialogue.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
         { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Mediate a real conflict with two AI characters who have personalities, moods, and reasons of their own. Practice restorative principles in an immersive scene.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
         { id: 'digitalWellbeing', icon: '\uD83D\uDCF1', label: 'Digital Wellbeing Studio', desc: 'Self-check your relationship with social media and AI chatbots, build healthier phone habits, recover from cyberbullying, spot manipulation in the feed, navigate chatbot relationships safely, and find help when you need it.', color: 'cyan', recommendedRange: '5-12', _cat: 'self-regulation' },
@@ -1325,6 +1326,7 @@
         // (No tool is currently rated 'contested'; the tier stays reserved for
         // mechanisms that are popular but scientifically disputed.)
         growthmindset: { tier: 'emerging', note: 'Mindset interventions are popular; effects are real but small and debated (Sisk et al. 2018 meta-analysis; Yeager et al. 2019 found small, targeted effects).' },
+        execfunction: { tier: 'emerging', note: 'Executive-function strategy instruction has real but modest, mixed support (Dawson & Guare; Barkley); this is a structured scaffold, not a clinical intervention.' },
         // Practice: structured practice / heuristic, not an empirical efficacy claim
         strengths: { tier: 'practice' },
         viaStrengths: { tier: 'practice', note: 'Reflective self-sort, not the validated VIA survey at viacharacter.org.' },
@@ -1349,6 +1351,7 @@
         teamwork: { tier: 'practice' },
         friendship: { tier: 'practice' },
         advocacy: { tier: 'practice' },
+        crisiscompanion: { tier: 'practice', note: 'Structured peer-support and crisis-coping scaffold aligned with 988 / AFSP / NEDA guidance; not a clinical assessment or treatment.' },
         civicAction: { tier: 'practice' },
         voicedetective: { tier: 'practice' },
         transitions: { tier: 'practice' },
@@ -1856,6 +1859,14 @@
               // Inline builder
               builderOpen && (function () {
                 var registry = (window.SelHub && window.SelHub.getRegisteredTools) ? window.SelHub.getRegisteredTools() : [];
+                // Station Builder hardening: only offer tools that actually have a grid
+                // card. A registered-but-uncarded tool (e.g. a deprecated duplicate) would
+                // otherwise be saveable into a Station and then silently fail to render in
+                // the card-filtered grid; excluding it here keeps custom Stations reachable
+                // end-to-end and is robust to future registry drift.
+                var _cardedIds = {};
+                _allSelTools.forEach(function (t) { if (t && t.id && !t.category) _cardedIds[t.id] = true; });
+                registry = registry.filter(function (tool) { return _cardedIds[tool.id]; });
                 var QUEST_PRESETS = [
                   { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
                     var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
