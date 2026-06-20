@@ -1287,7 +1287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
       // Note name label below
       c.font = '9px sans-serif';
-      c.fillStyle = isDk ? '#94a3b8' : '#94a3b8';
+      c.fillStyle = isDk ? '#94a3b8' : '#475569';
       c.textAlign = 'center';
       c.fillText(info.str, nx, staffBottom + lineGap * 3.5);
     }

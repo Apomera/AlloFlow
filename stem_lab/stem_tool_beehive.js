@@ -18647,7 +18647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var lx = mx + li * (pw / 4);
                   cCtx.fillStyle = line.color;
                   cCtx.fillRect(lx, cH - 10, 8, 8);
-                  cCtx.fillStyle = dk ? '#94a3b8' : '#94a3b8';
+                  cCtx.fillStyle = dk ? '#94a3b8' : '#475569';
                   cCtx.fillText(line.label, lx + 11, cH - 3);
                 });
               },

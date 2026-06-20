@@ -843,7 +843,7 @@ var d = (labToolData.probability) || {};
 
           var _accent = isDark || isContrast ? '#c4b5fd' : '#7c3aed';
 
-          var _muted = isDark || isContrast ? '#94a3b8' : '#94a3b8';
+          var _muted = isDark || isContrast ? '#94a3b8' : '#475569';
 
           var _btnBg = isDark || isContrast ? '#7c3aed' : '#8b5cf6';
 
@@ -2217,7 +2217,7 @@ var d = (labToolData.probability) || {};
                       );
                     })
                   ),
-                  React.createElement("p", { className: "text-[11px] mt-2 italic", style: { color: isDark||isContrast?'#94a3b8':'#94a3b8' } },
+                  React.createElement("p", { className: "text-[11px] mt-2 italic", style: { color: isDark||isContrast?'#94a3b8':'#475569' } },
                     '\uD83D\uDCA1 Multiply the two probabilities to get the joint probability. These events are independent, so P(A\u2229B) = P(A) \u00D7 P(B).'
                   )
                 )
