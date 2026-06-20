@@ -974,6 +974,31 @@ window.StemLab = window.StemLab || {
                   h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, '😱 Cherry-picked window'), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, '"Revenue DOUBLED!"')),
                   h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, '✅ Full history'), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, 'Down from $3M — not "doubled"')));
               }
+              if (dlScenario === 5) { // 3D pie distortion: same data, but a 3D tilt makes the front 30% slice look bigger than the back 35% ones
+                var slices = [{ v: 30, c: '#6366f1' }, { v: 35, c: '#10b981' }, { v: 35, c: '#f59e0b' }];
+                var pie = function() {
+                  var cx = 50, cy = 50, r = 44, ang = Math.PI * 0.2, paths = []; // start so the 30% slice sits at the bottom (front under tilt)
+                  slices.forEach(function(s, i) {
+                    var a1 = ang + (s.v / 100) * Math.PI * 2;
+                    var x0 = cx + r * Math.cos(ang), y0 = cy + r * Math.sin(ang);
+                    var x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+                    var large = (a1 - ang) > Math.PI ? 1 : 0;
+                    paths.push(h('path', { key: i, d: 'M' + cx + ',' + cy + ' L' + x0.toFixed(1) + ',' + y0.toFixed(1) + ' A' + r + ',' + r + ' 0 ' + large + ' 1 ' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Z', fill: s.c, stroke: '#fff', strokeWidth: 1.5 }));
+                    ang = a1;
+                  });
+                  return h('svg', { width: 92, height: 92, viewBox: '0 0 100 100', 'aria-hidden': 'true', style: { display: 'block' } }, paths);
+                };
+                return h('div', { className: 'grid grid-cols-2 gap-3 my-3 items-end' },
+                  h('div', { className: 'text-center' },
+                    h('div', { className: 'text-[10px] font-bold text-red-600 mb-2' }, '😱 Same pie, 3D-tilted'),
+                    h('div', { style: { perspective: '240px', display: 'flex', justifyContent: 'center', height: 80 } },
+                      h('div', { style: { transform: 'rotateX(58deg)', transformOrigin: 'center bottom' } }, pie())),
+                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, 'front 30% slice looks the biggest')),
+                  h('div', { className: 'text-center' },
+                    h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-2' }, '✅ Flat 2D'),
+                    h('div', { style: { display: 'flex', justifyContent: 'center' } }, pie()),
+                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, 'the two 35% slices are actually biggest')));
+              }
               return null;
             })(),
             h('p', { className: 'text-xs font-bold text-slate-600 mt-3 mb-2' }, dlCurrent.question),
