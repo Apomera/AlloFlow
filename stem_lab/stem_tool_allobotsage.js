@@ -3622,6 +3622,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             // \u2500\u2500 Confidence calibration summary (if any confidence was set) \u2500\u2500
             totalCalibrated > 0 && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
               h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '\uD83E\uDDE0 Confidence Calibration'),
+              // Calibration CHART: accuracy by stated confidence. Well-calibrated
+              // = bars RISE from Guessing -> Knew it (the dashed reference). A
+              // low "Knew it" bar = overconfidence; a high "Guessing" bar = you
+              // knew more than you thought. Makes the 3 percentages a picture.
+              (function() {
+                var order = [
+                  { level: 'low',  label: 'Guessing',    icon: '\uD83E\uDD37' },
+                  { level: 'med',  label: 'Pretty sure', icon: '\uD83E\uDD14' },
+                  { level: 'high', label: 'Knew it',     icon: '\uD83D\uDD25' }
+                ];
+                var W = 240, Hh = 100, padL = 8, padB = 24, padT = 8, bw = 50, gap = 22;
+                var sy = function(p) { return padT + (Hh - padT - padB) * (1 - p / 100); };
+                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 300, display: 'block', margin: '0 auto 8px' }, role: 'img', 'aria-label': 'Accuracy by stated confidence; well-calibrated bars rise from Guessing to Knew it.' },
+                  h('line', { x1: padL + bw / 2, y1: sy(50), x2: padL + 2 * (bw + gap) + bw / 2, y2: sy(90), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }),
+                  order.map(function(o, i) {
+                    var rc = runConfidence[o.level], tot = rc.right + rc.wrong, x = padL + i * (bw + gap);
+                    if (tot === 0) return h('text', { key: i, x: x + bw / 2, y: sy(0) - 4, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, '\u2014');
+                    var pct = Math.round(rc.right / tot * 100), col = pct >= 70 ? '#16a34a' : '#f59e0b';
+                    return h('g', { key: i },
+                      h('rect', { x: x, y: sy(pct), width: bw, height: (Hh - padB) - sy(pct), rx: 3, fill: col, opacity: 0.85 }),
+                      h('text', { x: x + bw / 2, y: sy(pct) - 3, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: col }, pct + '%'),
+                      h('text', { x: x + bw / 2, y: Hh - padB + 12, textAnchor: 'middle', fontSize: 10 }, o.icon),
+                      h('text', { x: x + bw / 2, y: Hh - padB + 21, textAnchor: 'middle', fontSize: 7.5, fill: '#64748b' }, o.label));
+                  }),
+                  h('text', { x: W - 2, y: sy(90) - 3, textAnchor: 'end', fontSize: 7, fill: '#94a3b8', fontStyle: 'italic' }, 'well-calibrated \u2192')
+                );
+              })(),
               h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                 [
                   { level: 'high', icon: '\uD83D\uDD25', label: 'Knew it' },
