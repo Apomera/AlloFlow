@@ -6789,7 +6789,7 @@
     "add_state_variable": "Add State Variable",
     "story_mode_label": "Peaceful Mode",
     "story_mode_desc": "Reduces combat/danger. Focuses on exploration and puzzles.",
-    "social_story_mode_label": "Social Story Mode (SEL)",
+    "social_story_mode_label": "Social Scenario Mode (SEL role-play)",
     "social_story_mode_desc": "Focus on social-emotional skills and conflict resolution.",
     "social_story_focus_label": "Target Social Skill / Focus:",
     "social_story_focus_placeholder": "e.g., Sharing toys, managing frustration, turn-taking...",
