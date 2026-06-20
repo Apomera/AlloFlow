@@ -39,6 +39,7 @@
 <div id="report"></div>
 <p class="muted">Runs entirely in your browser — nothing is uploaded. Independent check against ISO 14289-1; not a legal compliance certificate.</p>
 
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cjrtnc.leaningtech.com/3.1/cj3loader.js"></script>
 <script>
   // CheerpJ maps the web server root to /app/, so this is the jar's path UNDER
@@ -95,6 +96,50 @@
     return await validatePath('/str/input.pdf');
   }
 
+  // ── Closed-loop remediation: validate → targeted pdf-lib repair → re-validate → loop until green ──
+  // Repairs run with pdf-lib (loaded in this window) — the same catalog-level recipes AlloFlow could
+  // run inline. Extensible: add a branch per veraPDF rule. Returns the repaired bytes + a per-iteration
+  // log so the caller can ship the green file. (PDFBox-via-CheerpJ can be added for heavier repairs.)
+  async function _applyRepairs(bytes, failedRules) {
+    const PL = window.PDFLib; if (!PL) return { bytes: bytes, applied: [] };
+    const { PDFDocument, PDFName, PDFBool, PDFString } = PL;
+    let doc;
+    try { doc = await PDFDocument.load(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)); }
+    catch (e) { return { bytes: bytes, applied: [] }; }
+    const cat = doc.catalog;
+    const ensure = (key) => { let dd = cat.lookup(PDFName.of(key)); if (!dd || !dd.set) { dd = doc.context.obj({}); cat.set(PDFName.of(key), dd); } return dd; };
+    const applied = [];
+    for (const f of failedRules) {
+      const id = '§' + f.clause + 't' + f.testNumber;
+      try {
+        if (f.clause === '7.1' && f.testNumber === 10) { ensure('ViewerPreferences').set(PDFName.of('DisplayDocTitle'), PDFBool.True); applied.push(id + ':DisplayDocTitle'); }
+        else if (f.clause === '6.2' && f.testNumber === 1) { ensure('MarkInfo').set(PDFName.of('Marked'), PDFBool.True); applied.push(id + ':MarkInfo'); }
+        else if ((f.clause === '7.2' || f.clause === '3.1') && !cat.lookup(PDFName.of('Lang'))) { cat.set(PDFName.of('Lang'), PDFString.of('en')); applied.push(id + ':Lang'); }
+      } catch (e) {}
+    }
+    const out = await doc.save();
+    return { bytes: out, applied: [...new Set(applied)] };
+  }
+
+  async function remediate(bytes, maxIters) {
+    maxIters = maxIters || 5;
+    let cur = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    const log = []; let verdict = null;
+    for (let i = 1; i <= maxIters; i++) {
+      verdict = await validateBytes(cur);
+      const step = { iter: i, failedRules: verdict.failedRules.length, rules: verdict.failedRules.map((f) => '§' + f.clause + 't' + f.testNumber) };
+      log.push(step);
+      if (verdict.compliant) break;
+      const rep = await _applyRepairs(cur, verdict.failedRules);
+      step.applied = rep.applied;
+      if (!rep.applied.length) break; // no recipe for the remaining rules — stop (ship best-effort)
+      cur = rep.bytes;
+    }
+    let b = ''; for (let i = 0; i < cur.length; i += 8192) b += String.fromCharCode.apply(null, cur.subarray(i, i + 8192));
+    return { compliant: !!(verdict && verdict.compliant), verdict: verdict, log: log, repairedB64: btoa(b) };
+  }
+  window.__remediate = remediate; // for headless tests
+
   function render(r) {
     $('report').innerHTML =
       (r.compliant ? '<b class="pass">✅ PASSES PDF/UA-1</b>' : '<b class="fail">❌ FAILS PDF/UA-1</b>') +
@@ -150,6 +195,15 @@
         (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', result: r }, '*');
       } catch (e) {
         (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, '*');
+      }
+    }
+    // Closed-loop remediation: validate → repair → re-validate → loop, return the green (or best-effort) PDF.
+    if (d.type === 'verapdf-remediate' && d.bytes && ready) {
+      try {
+        const r = await remediate(d.bytes, d.maxIters);
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', result: r }, '*');
+      } catch (e) {
+        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, '*');
       }
     }
   });
