@@ -91,7 +91,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       size: '~12 cm', lifespan: '~1 year',
       habitat: ['reef', 'tidepool'], prey: ['crab', 'shrimp', 'small fish'],
       tactics: ['ambush', 'venom-strike'],
-      weird: 'Carries enough tetrodotoxin to kill 26 adult humans. Blue rings flash as warning only when threatened.',
+      weird: 'Carries enough tetrodotoxin to kill several adults. Blue rings flash as warning only when threatened.',
       conservation: 'Not formally assessed; Indo-Pacific tidepools',
       notes: 'Tiny but lethal. The blue iridophore rings are aposematic — warning coloration that triggers only when alarmed. Otherwise the animal is drab-camouflaged. Tetrodotoxin produced by symbiotic bacteria in its salivary glands. There is no antivenom.' },
     { id: 'coconut', name: 'Coconut Octopus', scientific: 'Amphioctopus marginatus', emoji: '🥥', group: 'octopus',
@@ -152,7 +152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       notes: 'Lives at 400-1200m depth in the mesopelagic zone. The eye is the largest in the animal kingdom (~25-30 cm diameter) — likely adapted to detect the bioluminescent halos of approaching sperm whales (the giant squid\'s main predator). Most specimens come from beachings or sperm whale stomach contents. Edmund Kean Ohio State + Tsunemi Kubodera (Japan) led the breakthrough live filming.' },
     { id: 'colossal', name: 'Colossal Squid', scientific: 'Mesonychoteuthis hamiltoni', emoji: '🦑', group: 'squid',
       intelligence: 5, camouflageRank: 4, jetSpeed: 6,
-      size: '~10 m total, up to 500 kg — heaviest invertebrate ever', lifespan: '~2-5 years',
+      size: '~10 m total, up to 750 kg — heaviest invertebrate ever', lifespan: '~2-5 years',
       habitat: ['deep'], prey: ['toothfish', 'fish', 'other squid'],
       tactics: ['ambush', 'venom-strike'],
       weird: 'Tentacles have rotating ARMORED HOOKS as well as suckers. Built differently from giant squid — shorter + heavier + more aggressive predator.',
@@ -12308,6 +12308,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var lastTime = performance.now();
 
         function loop() {
+          // Self-terminate if the canvas detached (e.g. left via Back) before the
+          // ref-null teardown fires — without this the loop + the whole 3D scene
+          // keep running forever against a detached canvas.
+          if (!canvasEl.isConnected) { cancelAnimationFrame(animId); return; }
           var rawDt = clock.getDelta();
           var dt = Math.min(0.05, rawDt);
           var now = Date.now();
@@ -14961,17 +14965,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('circle', { cx: 140, cy: 60, r: 18, fill: 'rgba(255,255,255,0.85)' }),
               h('circle', { cx: 140, cy: 60, r: 10, fill: '#1c1410' }));
           }
+          // Composite the skin patch ONTO the substrate so camouflage is VISIBLE:
+          // the octopus body (skin hex + pattern + iridescence, clipped to an
+          // organic ellipse) sits on a sceneBg-coloured environment. A high match
+          // melts the body into the background (the whole point of the tool); a
+          // low match makes it pop. sceneBg was a DEAD param before this — the
+          // namesake feature was rendering on the bare page background.
+          var clipId = 'ccoClip_' + Math.round(c) + '_' + Math.round(i) + '_' + Math.round(l) + '_' + pat;
           return h('svg', { width: 200, height: 130, viewBox: '0 0 200 130', 'aria-hidden': 'true',
             style: { borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)' } },
-            h('rect', { x: 0, y: 0, width: 200, height: 130, fill: hex }),
-            patElements,
-            iridAlpha > 0 ? h('rect', { x: 0, y: 0, width: 200, height: 130,
-              fill: 'url(#iridGradient' + Math.round(i) + ')', opacity: iridAlpha }) : null,
             h('defs', null,
+              h('clipPath', { id: clipId }, h('ellipse', { cx: 100, cy: 65, rx: 74, ry: 46 })),
               h('linearGradient', { id: 'iridGradient' + Math.round(i), x1: 0, y1: 0, x2: 1, y2: 1 },
                 h('stop', { offset: '0%', stopColor: '#0ea5e9' }),
                 h('stop', { offset: '50%', stopColor: '#a78bfa' }),
-                h('stop', { offset: '100%', stopColor: '#10b981' })))
+                h('stop', { offset: '100%', stopColor: '#10b981' }))),
+            // substrate — the environment the octopus is resting on
+            h('rect', { x: 0, y: 0, width: 200, height: 130, fill: sceneBg || '#1a2744' }),
+            h('g', { opacity: 0.16, 'aria-hidden': 'true' },
+              h('circle', { cx: 24, cy: 24, r: 9, fill: 'rgba(0,0,0,0.5)' }),
+              h('circle', { cx: 178, cy: 30, r: 7, fill: 'rgba(255,255,255,0.45)' }),
+              h('circle', { cx: 30, cy: 104, r: 8, fill: 'rgba(255,255,255,0.4)' }),
+              h('circle', { cx: 172, cy: 108, r: 10, fill: 'rgba(0,0,0,0.5)' })),
+            // the octopus body — skin colour + pattern + iridescence, clipped to
+            // an organic ellipse so it reads as an animal sitting on the substrate
+            h('g', { clipPath: 'url(#' + clipId + ')' },
+              h('rect', { x: 0, y: 0, width: 200, height: 130, fill: hex }),
+              patElements,
+              iridAlpha > 0 ? h('rect', { x: 0, y: 0, width: 200, height: 130,
+                fill: 'url(#iridGradient' + Math.round(i) + ')', opacity: iridAlpha }) : null),
+            // faint mantle outline so the silhouette stays findable at high match
+            h('ellipse', { cx: 100, cy: 65, rx: 74, ry: 46, fill: 'none', stroke: 'rgba(0,0,0,0.2)', strokeWidth: 1, 'aria-hidden': 'true' })
           );
         }
         return h('div', null,
@@ -16583,7 +16607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                   sorted.map(function(a) {
                     var r = sel.ratings[a.id];
-                    var ratingColor = r === 3 ? '#fbbf24' : r === 2 ? '#86efac' : r === 1 ? '#94a3b8' : '#475569';
+                    var ratingColor = r === 3 ? '#fbbf24' : r === 2 ? '#86efac' : r === 1 ? '#94a3b8' : '#64748b';
                     return h('div', { key: a.id,
                       style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
                         borderLeft: '3px solid ' + a.color, padding: '10px 14px', borderRadius: 8 } },
