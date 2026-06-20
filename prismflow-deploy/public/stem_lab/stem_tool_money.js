@@ -3028,11 +3028,12 @@ window.StemLab = window.StemLab || {
                   // Progress bar
                   React.createElement("div", { className: "mb-4" },
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Progress"),
-                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-600" }, Math.min(100, Math.round(sgHave / Math.max(1, sgTarget) * 100)) + "%")
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, "Progress" + (sgRemaining > 0 ? " · " + cur.symbol + Math.round(sgRemaining).toLocaleString() + " to go" : "")),
+                      React.createElement("span", { className: "text-[11px] font-bold " + (sgHave >= sgTarget ? "text-amber-500" : "text-emerald-600") }, (sgHave >= sgTarget ? "🎉 " : "") + Math.min(100, Math.round(sgHave / Math.max(1, sgTarget) * 100)) + "%")
                     ),
-                    React.createElement("div", { className: "h-4 bg-slate-100 rounded-full overflow-hidden" },
-                      React.createElement("div", { style: { width: Math.min(100, sgHave / Math.max(1, sgTarget) * 100) + '%', transition: 'width 0.3s' }, className: "h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full" })
+                    React.createElement("div", { className: "relative h-4 bg-slate-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { style: { width: Math.min(100, sgHave / Math.max(1, sgTarget) * 100) + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (sgHave >= sgTarget ? "bg-gradient-to-r from-amber-300 to-yellow-400" : "bg-gradient-to-r from-emerald-400 to-green-500") }),
+                      [25, 50, 75].map(function (_m) { return React.createElement("div", { key: 'mk' + _m, className: "absolute top-0 h-full w-px bg-white/70", style: { left: _m + '%' } }); })
                     )
                   ),
                   // Results
