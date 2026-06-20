@@ -994,6 +994,13 @@
 
   // ----- Register -------------------------------------------------------------
 
+  // Idiomatic compound-component attachment: expose the PD sub-views on the
+  // catalog component so they can be unit-rendered in tests without a network
+  // round-trip (harmless in production — just properties on the function).
+  CommunityCatalog.PdHome = PdHome;
+  CommunityCatalog.PdRunner = PdRunner;
+  CommunityCatalog.PdSubmit = PdSubmit;
+
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.CommunityCatalog = CommunityCatalog;
   console.log('[CDN] CommunityCatalog loaded');

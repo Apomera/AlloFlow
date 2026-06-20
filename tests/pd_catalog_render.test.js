@@ -23,6 +23,8 @@ const React = require(resolve(MODULES_DIR, 'react'));
 const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
 
 const SRC = readFileSync(resolve(process.cwd(), 'catalog_module.js'), 'utf8');
+const PD_CORE_SRC = readFileSync(resolve(process.cwd(), 'pd_core_module.js'), 'utf8');
+const SEED = JSON.parse(readFileSync(resolve(process.cwd(), 'catalog/pd/approved/udl-representation-quickstart.json'), 'utf8'));
 
 beforeAll(() => {
   // Minimal ambient globals the module touches at load/render time (no-ops are
@@ -47,8 +49,14 @@ beforeAll(() => {
 
 // Fresh evaluation each call so the IIFE dedup guard re-registers; returns the
 // CommunityCatalog component. `pdIntent` sets the deep-link flag before render.
-function loadCommunityCatalog(pdIntent) {
+// `withPdCore` also loads pd_core_module.js into the same window so PdRunner's
+// window.AlloModules.PdCore lookup resolves.
+function loadCommunityCatalog(pdIntent, withPdCore) {
   const win = { React: React, AlloModules: {}, __alloPdIntent: !!pdIntent };
+  if (withPdCore) {
+    // eslint-disable-next-line no-new-func
+    new Function('window', 'module', PD_CORE_SRC)(win, { exports: {} });
+  }
   // eslint-disable-next-line no-new-func
   new Function('window', SRC)(win);
   return win.AlloModules.CommunityCatalog;
@@ -87,5 +95,25 @@ describe('CommunityCatalog PD tab', () => {
     const CC = loadCommunityCatalog(false);
     const html = render(CC, { isOpen: false, onClose() {}, addToast() {} });
     expect(html).toBe('');
+  });
+});
+
+describe('PdRunner (rendered directly with PdCore + the seed module)', () => {
+  it('renders the first activity, progress, and a Next button', () => {
+    const CC = loadCommunityCatalog(false, true);
+    expect(typeof CC.PdRunner).toBe('function');
+    const html = render(CC.PdRunner, { module: SEED, addToast() {}, onExit() {} });
+    expect(html).toContain(SEED.metadata.title);                 // header title
+    expect(html).toContain('1 / 3');                              // progress (3 activities)
+    expect(html).toContain('read this');                         // first activity is a read (acknowledge)
+    expect(html).toContain('Next');
+    // The read gate is unmet on first render, so the hint shows.
+    expect(html).toContain('Finish this activity to continue');
+  });
+
+  it('shows a clear loading state if the PD engine is absent', () => {
+    const CC = loadCommunityCatalog(false, false); // no PdCore loaded
+    const html = render(CC.PdRunner, { module: SEED, addToast() {}, onExit() {} });
+    expect(html).toContain('Loading the PD engine');
   });
 });
