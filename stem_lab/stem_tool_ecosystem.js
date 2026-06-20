@@ -3139,7 +3139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               }
             }, simPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
             // Start/stop ambient on pause/resume — first button triggers on click above
-            !simPaused && !_ecoAmbient && (function() { startEcoAmbient(true, 30); return null; })(),
+            !simPaused && !_ecoAmbient && (function() { setTimeout(function() { if (!_ecoAmbient) startEcoAmbient(true, 30); }, 0); return null; })(),
             h('div', { className: 'flex items-center gap-2 flex-1' },
               h('span', { className: 'text-[11px] font-semibold text-slate-700 dark:text-slate-200' }, 'Speed:'),
               h('input', {
