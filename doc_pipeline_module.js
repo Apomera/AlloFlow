@@ -7,6 +7,16 @@ if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] 
 var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
 var processMathHTML = window.processMathHTML || function(t) { return t; };
 
+// ── Scoring helpers (credibility fixes C + D, 2026-06-20) ───────────────────
+// C (count-aware): weight a violation's deduction by HOW MANY instances occur (the per-issue
+// `count`), sub-linearly and capped at 3× — so a doc with 80 missing-alt images is scored worse
+// than one with a single lapse. The `count` was previously displayed but never affected the score.
+// Defaults to 1× when an issue carries no count (back-compat).
+// (D is applied at each call site: the unverified model-asserted "passes" no longer buy back
+// deductions — the old `pass factor` discount of up to 40% on UNVERIFIED self-praise was removed.)
+var _alloIssueWeight = function (count) { return Math.min(3, 1 + Math.log2(Math.max(1, Math.floor(Number(count) || 1)))); };
+var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, iss) { return s + base * _alloIssueWeight(iss && iss.count); }, 0); };
+
 // Factory: returns all pipeline functions bound to provided deps
 // State access: functions read window.__docPipelineState (updated every render by monolith)
 // This avoids stale closures — each function call reads fresh state from the window ref.
@@ -6970,11 +6980,8 @@ Return ONLY valid JSON:
         const modCount = (a.moderate || []).length;
         const minCount = (a.minor || []).length;
         const passCount = (a.passes || []).length;
-        const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-        const issueCount = critCount + seriousCount + modCount + minCount;
-        const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-        const pf = 1 - (passRatio * 0.4);
-        const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
+        const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
+        const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back (was rawDed * (1 - passRatio*0.4))
         // If Gemini's score diverges significantly from the rubric calculation, override it
         if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
           warnLog(`[PDF Audit] Auditor score ${a.score} overridden to ${calculatedScore} (${critCount}C/${seriousCount}S/${modCount}M/${minCount}m, ${passCount} passes)`);
@@ -7001,11 +7008,8 @@ Return ONLY valid JSON:
           const modCount = (a.moderate || []).length;
           const minCount = (a.minor || []).length;
           const passCount = (a.passes || []).length;
-          const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-          const issueCount = critCount + seriousCount + modCount + minCount;
-        const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-        const pf = 1 - (passRatio * 0.4);
-          const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
+          const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
+          const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back
           if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) a.score = calculatedScore;
         });
         parsedAudits.push(...extraParsed);
@@ -7338,11 +7342,8 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
       const modCount = (a.moderate || []).length;
       const minCount = (a.minor || []).length;
       const passCount = (a.passes || []).length;
-      const rawDed = critCount * 15 + seriousCount * 10 + modCount * 5 + minCount * 2;
-      const issueCount = critCount + seriousCount + modCount + minCount;
-        const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-        const pf = 1 - (passRatio * 0.4);
-      const calculatedScore = Math.max(0, 100 - Math.round(rawDed * pf));
+      const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
+      const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back
       if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
         a.score = calculatedScore;
       }
@@ -8959,13 +8960,9 @@ Return ONLY JSON:
           const _nh = _normLocatorText(htmlContent); // normalize the haystack ONCE, not per-issue (review: avoids O(n²))
           parsed.issues.forEach((iss) => { try { iss.locator = _resolveIssueLocator(iss.location, _nh, iss.pages); } catch (_) {} });
           try { const _ex = parsed.issues.filter((i) => i.locator && i.locator.kind === 'exact').length; warnLog('[audit] issue locators: ' + _ex + '/' + parsed.issues.length + ' resolved to an exact text anchor'); } catch (_) {}
-          const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
-          // Pass credit: ratio of passes to total checks — more passes = more proportional credit
-          const pc = (parsed.passes || []).length;
-          const ic = parsed.issues.length;
-          const passRatio = pc > 0 ? pc / (pc + ic) : 0;
-          const pf = 1 - (passRatio * 0.4);
-          const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions * pf));
+          const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0) * _alloIssueWeight(i && i.count), 0); // C: count-weighted
+          // D: unverified model-asserted "passes" no longer buy back deductions (removed the up-to-40% pass-factor discount).
+          const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions));
           if (Math.abs((parsed.score || 0) - calculatedScore) > 12) {
             // Transparency: don't silently overwrite the auditor's number. Log the
             // divergence and keep the AI-reported score so the report can disclose
@@ -9141,11 +9138,10 @@ HTML section ${chunkNum}/${chunks.length}:
       try { const _ex = mergedIssues.filter((i) => i.locator && i.locator.kind === 'exact').length; warnLog('[Output Audit] issue locators: ' + _ex + '/' + mergedIssues.length + ' resolved to an exact text anchor'); } catch (_) {}
       const passCount = mergedPassList.length;
       // Score from merged deductions — each unique violation type counted ONCE
-      const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0), 0);
-      // Pass credit: ratio of passes to total checks — proportional to document quality
+      const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0) * _alloIssueWeight(i && i.count), 0); // C: count-weighted
       const issueCount = mergedIssues.length;
-      const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0;
-      const passFactor = 1 - (passRatio * 0.4);
+      const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0; // informational only
+      const passFactor = 1; // D: unverified passes no longer buy back deductions (was 1 - passRatio*0.4)
       const adjustedDeductions = Math.round(rawDeductions * passFactor);
       const mergedScore = Math.max(0, 100 - adjustedDeductions);
       // Summary from first chunk (has the global perspective)
