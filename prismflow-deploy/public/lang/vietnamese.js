@@ -23,7 +23,7 @@
     "scaffolds_title": "Khung hỗ trợ viết",
     "scaffolds_text": "Hệ thống hỗ trợ viết toàn diện với chấm điểm bằng AI và cấu trúc câu tùy chỉnh được. Hoàn hảo cho giảng dạy viết phân hóa.\n### Loại khung\n• **Mở đầu câu**: Lời nhắc dạng danh sách để giúp học sinh bắt đầu suy nghĩ.\n• **Khung đoạn**: Đoạn văn điền vào chỗ trống kiểu cloze cho lập luận có cấu trúc.\n• **Lời nhắc thảo luận**: Mở đầu cuộc trò chuyện cho thảo luận hợp tác.\n• **Chỉ dẫn tùy chỉnh**: Điều chỉnh các khung theo các chức năng tu từ cụ thể (ví dụ: 'đồng tình/phản đối', 'nguyên nhân và kết quả').\n### Hệ thống Tiêu chí đánh giá & Đánh giá\n• **Tiêu chí tự tạo**: AI tạo các tiêu chí dựa trên tiêu chuẩn phù hợp với nội dung của bạn.\n• **Danh sách tự đánh giá**: Tiêu chí thành công hướng tới học sinh cho việc tự giám sát.\n• **Đánh giá thông thạo**: Đánh giá hiểu biết của học sinh với chấm điểm tiêu chí có cấu trúc.\n• **Phóng to tiêu chí**: Mở rộng chế độ xem tiêu chí để xem chi tiết.\n### Trình chấm điểm AI tự động\n• **Phản hồi tức thì**: Gửi bản nháp của học sinh để được đánh giá bằng AI tức thì.\n• **Chấm điểm theo tiêu chí**: Chấm điểm mỗi phản hồi theo các điểm tiêu chí.\n• **Tỏa sáng & Phát triển**: Cung cấp lời khen cụ thể (\"tỏa sáng\") và gợi ý cải thiện (\"phát triển\").\n• **Phản hồi TTS**: Allobot đọc to kết quả chấm điểm để dễ tiếp cận.\n• **Phần thưởng XP**: Học sinh kiếm được XP Thông thạo (100 điểm) cho các bản nháp hoàn thành.\n### Tùy chọn nhập\n• **Đọc chính tả bằng giọng**: Học sinh có thể đọc các phản hồi bằng nút micro FAB.\n• **Chế độ chỉnh sửa**: Giáo viên có thể tùy chỉnh các mở đầu câu và lời nhắc.\n• **Đặt lại & Thử lại**: Xóa bài làm học sinh để thử lại từ đầu.\n### Mẹo chuyên nghiệp\nDùng nút 'Bắt đầu kiểm tra' để khởi tạo vòng chấm điểm AI: học sinh có thể sửa đổi dựa trên phản hồi và nộp lại!\n### Liên kết UDL\n• **Hành động & Biểu hiện**: Tối ưu cho việc xây dựng và sáng tác (Hướng dẫn 5), cung cấp các cấp độ hỗ trợ phân hóa cho luyện tập và biểu diễn.",
     "quiz_title": "Bài kiểm tra có gamification",
-    "quiz_text": "Đánh giá có gamification với nhiều chế độ cạnh tranh và đắm chìm. Từ trận chiến lớp học trực tiếp đến phòng giải đố dựa trên câu đố.\n### Chế độ trò chơi\n• **Trực tiếp**: Phiên đồng bộ thời gian thực với theo dõi điểm và mã phiên để học sinh tham gia.\n• **Đối đầu đội**: Cạnh tranh theo đội với các nhóm mã hóa màu và chấm điểm hợp tác.\n• **Trận đánh boss**: Lớp vs boss AI: trả lời đúng để gây sát thương và đánh bại boss cùng nhau!\n• **Phòng giải đố**: Câu đố theo chủ đề đắm chìm với manh mối, mật mã, cửa khóa và thử thách thoát cuối cùng.\n• **Chế độ ôn tập**: Luyện tập tự định với phản hồi tức thì.\n### Loại câu hỏi\n• **Trắc nghiệm**: MCQ tiêu chuẩn với số câu hỏi có thể cấu hình.\n• **Câu hỏi suy ngẫm**: Trả lời mở cho tư duy sâu hơn.\n• **Điền vào chỗ trống**: Hoàn thành câu với các thuật ngữ then chốt còn thiếu.\n• **Ghép cặp**: Kết nối các khái niệm liên quan.\n• **Câu đố mật mã**: Giải mã các thông điệp được mã hóa trong chế độ Phòng giải đố.\n### Tính năng gamification\n• **Bảng xếp hạng**: Xếp hạng thời gian thực trong các phiên trực tiếp.\n• **Màu đội**: Danh tính đội được phân công tự động cho các cuộc cạnh tranh nhóm.\n• **Hệ thống manh mối**: Tiêu tốn các token manh mối cho gợi ý trong Phòng giải đố (nguồn cung hạn chế!).\n• **Theo dõi hoàn thành**: Theo dõi việc hoàn thành phòng giải đố và điểm bài kiểm tra qua các phiên.\n### Trình chấm điểm AI tự động\n• **Chấm điểm suy ngẫm**: AI đánh giá các câu trả lời mở với phản hồi dựa trên tiêu chí.\n• **Điểm tức thì**: Chấm điểm tự động với phản hồi cá nhân cho mỗi câu trả lời.\n### Phân phối phân hóa trực tiếp\n• **Ghi đè nhóm**: Gán các tài nguyên hoặc phiên bản ngôn ngữ khác nhau cho các nhóm học sinh cụ thể giữa phiên.\n• **Đẩy có mục tiêu**: Gửi bài kiểm tra có khung hỗ trợ cho học sinh Cấp 3 trong khi phần còn lại làm việc trên tài liệu tiêu chuẩn.\n• **Chuyển đổi thời gian thực**: Không cần kết thúc phiên: phân hóa ngay lập tức từ bảng điều khiển giáo viên.\n### Tính năng cho giáo viên\n• **Chế độ Trình bày**: Chiếu câu hỏi toàn màn hình cho thảo luận cả lớp.\n• **Mã phiên**: Tạo mã tham gia cho học sinh kết nối từ bất kỳ thiết bị nào.\n• **Hiển thị/Ẩn đáp án**: Bật/tắt khả năng hiển thị đáp án trong khi ôn tập.\n• **Mức DOK**: Liên kết câu hỏi với tiêu chuẩn Độ sâu Kiến thức.\n### Mẹo chuyên nghiệp\nDùng chế độ Phòng giải đố để thúc đẩy sự gắn kết: học sinh giải các câu đố để 'thoát' trong khi thể hiện sự thành thạo nội dung.\n### Liên kết UDL\n• **Gắn kết**: Tối ưu thử thách (Hướng dẫn 8.2) thông qua độ khó tăng dần và vòng phản hồi có gamification.",
+    "quiz_text": "Đánh giá có yếu tố trò chơi hóa với nhiều chế độ cạnh tranh và đắm chìm. Từ trận chiến lớp học trực tiếp đến phòng giải đố dựa trên câu đố.\n### Chế độ trò chơi\n• **Trực tiếp**: Phiên đồng bộ thời gian thực với theo dõi điểm và mã phiên để học sinh tham gia.\n• **Đối đầu đội**: Cạnh tranh theo đội với các nhóm mã hóa màu và chấm điểm hợp tác.\n• **Trận đánh boss**: Lớp vs boss AI — trả lời đúng để gây sát thương và đánh bại boss cùng nhau!\n• **Phòng giải đố**: Câu đố theo chủ đề đắm chìm với manh mối, mật mã, cửa khóa và thử thách thoát cuối cùng.\n• **Chế độ ôn tập**: Luyện tập theo nhịp độ riêng với phản hồi tức thì.\n### Loại câu hỏi\n• **Trắc nghiệm**: MCQ tiêu chuẩn với số câu hỏi có thể cấu hình.\n• **Câu hỏi suy ngẫm**: Trả lời mở cho tư duy sâu hơn.\n• **Điền vào chỗ trống**: Hoàn thành câu với các thuật ngữ then chốt còn thiếu.\n• **Ghép cặp**: Kết nối các khái niệm liên quan.\n• **Câu đố mật mã**: Giải mã các thông điệp được mã hóa trong chế độ Phòng giải đố.\n### Tính năng trò chơi hóa\n• **Bảng xếp hạng**: Xếp hạng thời gian thực trong các phiên trực tiếp.\n• **Màu đội**: Danh tính đội được phân công tự động cho các cuộc cạnh tranh nhóm.\n• **Hệ thống manh mối**: Tiêu tốn các token manh mối cho gợi ý trong Phòng giải đố (nguồn cung hạn chế!).\n• **Theo dõi hoàn thành**: Theo dõi việc hoàn thành phòng giải đố và điểm bài kiểm tra qua các phiên.\n### Trình chấm điểm AI tự động\n• **Chấm điểm suy ngẫm**: AI đánh giá các câu trả lời mở với phản hồi dựa trên tiêu chí.\n• **Điểm tức thì**: Chấm điểm tự động với phản hồi cá nhân cho mỗi câu trả lời.\n### Phân phối phân hóa trực tiếp\n• **Ghi đè nhóm**: Gán các tài nguyên hoặc phiên bản ngôn ngữ khác nhau cho các nhóm học sinh cụ thể giữa phiên.\n• **Đẩy có mục tiêu**: Gửi bài kiểm tra có khung hỗ trợ cho học sinh Cấp 3 trong khi phần còn lại làm việc trên tài liệu tiêu chuẩn.\n• **Chuyển đổi thời gian thực**: Không cần kết thúc phiên — phân hóa ngay lập tức từ bảng điều khiển giáo viên.\n### Tính năng cho giáo viên\n• **Chế độ Trình bày**: Chiếu câu hỏi toàn màn hình cho thảo luận cả lớp.\n• **Mã phiên**: Tạo mã tham gia cho học sinh kết nối từ bất kỳ thiết bị nào.\n• **Hiển thị/Ẩn đáp án**: Bật/tắt khả năng hiển thị đáp án trong khi ôn tập.\n• **Mức DOK**: Liên kết câu hỏi với tiêu chuẩn Độ sâu Kiến thức.\n### Mẹo chuyên nghiệp\nDùng chế độ Phòng giải đố để thúc đẩy sự gắn kết — học sinh giải các câu đố để 'thoát' trong khi thể hiện sự thành thạo nội dung.\n### Liên kết UDL\n• **Gắn kết**: Tối ưu thử thách (Hướng dẫn 8.2) thông qua độ khó tăng dần và vòng phản hồi có yếu tố trò chơi hóa.",
     "brainstorm_title": "Động cơ Ý tưởng",
     "brainstorm_text": "Trình tạo ý tưởng và mô phỏng đa năng. Tạo các điểm thu hút gắn kết và hoạt động HOẶC tạo các mô phỏng Canvas tương tác.\n### Chế độ tạo ý tưởng\n• **Chỉ dẫn tùy chỉnh**: Thêm các khu vực trọng tâm hoặc ngữ cảnh cụ thể cho ý tưởng.\n• **Kết nối thế giới thực**: Các hoạt động liên kết nội dung với nghề nghiệp và cuộc sống hàng ngày.\n• **Điểm thu hút thảo luận**: Các câu hỏi khiêu khích để khơi gợi cuộc trò chuyện trong lớp.\n• **Ý tưởng dựa trên dự án**: Các khái niệm dự án dài hạn với câu hỏi định hướng.\n### Gemini Canvas (Trình tạo mô phỏng)\nTạo các mô phỏng Canvas tương tác với tinh chỉnh AI lặp lại:\n• **Loại mô phỏng**: Thành phần React, trực quan hóa Python, mô phỏng Vật lý, chatbot tùy chỉnh.\n• **Thanh trượt số bước** (1-10): Càng nhiều bước = lời nhắc được tinh chỉnh hơn cho khám phá sâu hơn.\n• **Nút lời nhắc Canvas**: Tự động khởi chạy Gemini Canvas với mã mô phỏng của bạn.\n### Thẻ ý tưởng được tạo\nMỗi ý tưởng bao gồm:\n• **Tiêu đề & Mô tả**: Tổng quan hoạt động cốt lõi.\n• **Trường kết nối**: Cách nó liên kết với nội dung của bạn.\n• **Hướng dẫn giáo viên**: Tạo hướng dẫn triển khai từng bước cho mỗi ý tưởng.\n• **Chế độ chỉnh sửa**: Sửa đổi bất kỳ trường nào sau khi tạo.\n### Mẹo chuyên nghiệp\nDùng chế độ mô phỏng Python để tạo các công cụ luyện toán tự chấm điểm: học sinh nhập giá trị và nhận phản hồi tức thì!\n### Liên kết UDL\n• **Gắn kết**: Tối ưu sự liên quan, giá trị và tính xác thực (Hướng dẫn 7) bằng cách kết nối học tập với các vấn đề thế giới thực và trải nghiệm tương tác.",
     "persona_title": "Trò chuyện Nhân vật",
@@ -35,7 +35,7 @@
     "math_title": "Giải STEM",
     "math_text": "Trình giải Bài toán STEM toàn diện vượt ra ngoài các bài toán có lời văn. Bao gồm 10 lĩnh vực với 4 chế độ giải khác nhau, hỗ trợ phương trình LaTeX và phương tiện trực quan tự tạo.\n### Tùy chọn bảng\n• **Lĩnh vực môn học**: Chọn từ 10 môn:\n  - Toán tổng quát, Đại số, Hình học, Giải tích\n  - Hóa học, Vật lý, Sinh học, Khoa học Trái đất\n  - Khoa học Máy tính, Kinh tế học\n• **Chế độ giải**: Chọn cách tiếp cận giảng dạy của bạn:\n  - **Tạo bộ bài**: Tạo nhiều bài luyện với đáp án\n  - **Từng bước**: Lời giải chi tiết với lời giải thích\n  - **Khái niệm**: Tập trung vào hiểu \"tại sao\" trước \"như thế nào\"\n  - **Ứng dụng thế giới thực**: Các bối cảnh và kịch bản xác thực\n• **Số lượng bài**: Đặt số bài cần tạo (cho chế độ Bộ bài)\n### Tính năng đầu ra\n• **Bài có ngữ cảnh**: Bài toán có lời văn sử dụng các nhân vật/chủ đề từ văn bản nguồn của bạn\n• **Lời giải đầy đủ**: Lời giải thích từng bước hoàn chỉnh với lập luận rõ ràng\n• **Phương trình LaTeX**: Ký hiệu toán đẹp được dựng nội dòng\n• **Phương tiện trực quan**: Đồ thị và sơ đồ SVG tự tạo cho các bài có thể áp dụng\n### Mẹo chuyên nghiệp\nDùng chế độ \"Ứng dụng thế giới thực\" trong Kinh tế học hoặc Khoa học Trái đất để tạo các thử thách STEM liên môn!\n### Liên kết UDL\n• **Biểu hiện**: Xây dựng sự lưu loát với các cấp độ hỗ trợ phân hóa (Hướng dẫn 5.3) bằng cách cung cấp nhiều chế độ giải từ khái niệm đến quy trình.",
     "adventure_title": "Chế độ Phiêu lưu",
-    "adventure_text": "Chế độ Phiêu lưu biến nội dung thành các trải nghiệm tương tác đắm chìm. Chọn từ nhiều chế độ mô phỏng với gamification sâu sắc cho việc học thực sự hấp dẫn.\n### Chế độ đầu vào\n• **Trắc nghiệm**: Chọn từ 4 lựa chọn do AI tạo mỗi lượt (thân thiện với người mới bắt đầu).\n• **Chế độ Tranh luận**: Thuyết phục các nhân vật bằng lập luận: động lượng thay đổi dựa trên logic.\n• **Mô phỏng Hệ thống**: Quản lý các phe phái, tài nguyên và quyết định chính sách vĩ mô.\n### Loại mô phỏng\n• **Phiêu lưu Tiêu chuẩn**: Tường thuật phân nhánh tự chọn cuộc phiêu lưu cổ điển.\n• **Câu chuyện Xã hội (SEL)**: Các kịch bản với thử thách cảm xúc xã hội: tình bạn, làm việc nhóm, quản lý sự thất vọng.\n• **Chế độ Câu chuyện**: Tập trung tường thuật với các đoạn mô tả và phát triển nhân vật.\n### Tính năng gamification\n• **Hệ thống XP & Năng lượng**: Kiếm XP Phiêu lưu khi bạn tiến bộ; năng lượng cạn kiệt với các lựa chọn rủi ro.\n• **Chế độ Xúc xắc D20**: Các hành động rủi ro kích hoạt lăn xúc xắc: dạy xác suất và đánh giá rủi ro.\n• **Cấp độ khó**: Câu chuyện (tập trung tường thuật), Bình thường (cân bằng), Hardcore (hình phạt nghiêm khắc, cạn kiệt tài nguyên).\n• **Tiến triển cấp độ**: Tiến qua các cấp độ phiêu lưu với độ phức tạp tăng dần.\n### Hệ thống Phe phái & Tài nguyên\n• **Theo dõi tài nguyên**: Vàng, Sức khỏe, Tinh thần hoặc các biến tùy chỉnh với hậu quả thực sự.\n• **Chế độ AI hoặc Thủ công**: Để AI quản lý tài nguyên hoặc tự xác định giá trị khởi đầu.\n• **Hậu quả**: Các hành động làm cạn hoặc bổ sung tài nguyên: cần tư duy chiến lược!\n### Chế độ Dân chủ (Cả lớp)\n• **Bỏ phiếu lớp**: Chiếu cuộc phiêu lưu lên bảng và để học sinh bỏ phiếu về con đường nào sẽ đi.\n• **Quyền tự quyết tập thể**: Lựa chọn phổ biến nhất sẽ tiến triển câu chuyện: dạy ra quyết định dân chủ.\n• **Chế độ Trình bày**: Hoàn hảo cho giảng dạy cả lớp nơi mọi người tham gia vào một câu chuyện chung.\n### Tính năng tương tác\n• **Trả lời tự do**: Gõ bất kỳ hành động nào tự do: AI thích ứng động với các đầu vào sáng tạo.\n• **Chế độ Đắm chìm**: Trải nghiệm điện ảnh toàn màn hình cho sự đắm chìm hoàn toàn.\n• **Tự đọc TTS**: Tường thuật câu chuyện được đọc tự động.\n• **Xuất Sách truyện**: Xuất các cuộc phiêu lưu được minh họa dưới dạng HTML với nghệ thuật cảnh do AI tạo.\n### Mẹo chuyên nghiệp\nDùng chế độ Mô phỏng Hệ thống để dạy kinh tế, công dân hoặc sinh thái thông qua các quyết định quản lý tài nguyên thực hành.\n### Liên kết UDL\n• **Gắn kết**: Thúc đẩy hợp tác và cộng đồng (Hướng dẫn 8) thông qua các kịch bản xã hội và chiến lược mô phỏng.",
+    "adventure_text": "Chế độ Phiêu lưu biến nội dung thành các trải nghiệm tương tác đắm chìm. Chọn từ nhiều chế độ mô phỏng với yếu tố trò chơi hóa sâu sắc cho việc học thực sự hấp dẫn.\n### Chế độ đầu vào\n• **Trắc nghiệm**: Chọn từ 4 lựa chọn do AI tạo mỗi lượt (thân thiện với người mới bắt đầu).\n• **Chế độ Tranh luận**: Thuyết phục các nhân vật bằng lập luận — động lượng thay đổi dựa trên logic.\n• **Mô phỏng Hệ thống**: Quản lý các phe phái, tài nguyên và quyết định chính sách vĩ mô.\n### Loại mô phỏng\n• **Phiêu lưu Tiêu chuẩn**: Tường thuật phân nhánh tự chọn cuộc phiêu lưu cổ điển.\n• **Câu chuyện Xã hội (SEL)**: Các kịch bản với thử thách cảm xúc xã hội — tình bạn, làm việc nhóm, quản lý sự thất vọng.\n• **Chế độ Câu chuyện**: Tập trung tường thuật với các đoạn mô tả và phát triển nhân vật.\n### Tính năng trò chơi hóa\n• **Hệ thống XP & Năng lượng**: Kiếm XP Phiêu lưu khi bạn tiến bộ; năng lượng cạn kiệt với các lựa chọn rủi ro.\n• **Chế độ Xúc xắc D20**: Các hành động rủi ro kích hoạt lăn xúc xắc — dạy xác suất và đánh giá rủi ro.\n• **Cấp độ khó**: Câu chuyện (tập trung tường thuật), Bình thường (cân bằng), Hardcore (Khắc nghiệt) (hình phạt nghiêm khắc, cạn kiệt tài nguyên).\n• **Tiến triển cấp độ**: Tiến qua các cấp độ phiêu lưu với độ phức tạp tăng dần.\n### Hệ thống Phe phái & Tài nguyên\n• **Theo dõi tài nguyên**: Vàng, Sức khỏe, Tinh thần hoặc các biến tùy chỉnh với hậu quả thực sự.\n• **Chế độ AI hoặc Thủ công**: Để AI quản lý tài nguyên hoặc tự xác định giá trị khởi đầu.\n• **Hậu quả**: Các hành động làm cạn hoặc bổ sung tài nguyên — cần tư duy chiến lược!\n### Chế độ Dân chủ (Cả lớp)\n• **Bỏ phiếu lớp**: Chiếu cuộc phiêu lưu lên bảng và để học sinh bỏ phiếu về con đường nào sẽ đi.\n• **Quyền tự quyết tập thể**: Lựa chọn phổ biến nhất sẽ tiến triển câu chuyện — dạy ra quyết định dân chủ.\n• **Chế độ Trình bày**: Hoàn hảo cho giảng dạy cả lớp nơi mọi người tham gia vào một câu chuyện chung.\n### Tính năng tương tác\n• **Trả lời tự do**: Gõ bất kỳ hành động nào tự do — AI thích ứng động với các đầu vào sáng tạo.\n• **Chế độ Đắm chìm**: Trải nghiệm điện ảnh toàn màn hình cho sự đắm chìm hoàn toàn.\n• **Tự đọc TTS**: Tường thuật câu chuyện được đọc tự động.\n• **Xuất Sách truyện**: Xuất các cuộc phiêu lưu được minh họa dưới dạng HTML với nghệ thuật cảnh do AI tạo.\n### Mẹo chuyên nghiệp\nDùng chế độ Mô phỏng Hệ thống để dạy kinh tế, công dân hoặc sinh thái thông qua các quyết định quản lý tài nguyên thực hành.\n### Liên kết UDL\n• **Gắn kết**: Thúc đẩy hợp tác và cộng đồng (Hướng dẫn 8) thông qua các kịch bản xã hội và chiến lược mô phỏng.",
     "alignment_title": "Báo cáo liên kết",
     "alignment_text": "Đảm bảo bài học của bạn đạt mục tiêu. Báo cáo này tự động đối chiếu các tài nguyên được tạo với Tiêu chuẩn Common Core và Hướng dẫn UDL, xác định điểm mạnh và lỗ hổng.\n### Trình tìm tiêu chuẩn AI\n• **Tìm kiếm thông minh**: Nhập một chủ đề hoặc kỹ năng và AI gợi ý các tiêu chuẩn CCSS, NGSS hoặc TEKS phù hợp.\n• **Tư vấn AI**: Nhận tư vấn chiến lược về cách nội dung của bạn giải quyết các tiêu chuẩn cụ thể.\n• **Đa khung**: Hỗ trợ Common Core ELA/Toán, NGSS và các khung cụ thể của tiểu bang.\n### Kiểm tra liên kết\n• **Hướng dẫn UDL của CAST**: Kiểm tra Gắn kết, Trình bày và Hành động/Biểu hiện.\n• **Xác minh tiêu chuẩn**: Đối chiếu với Common Core, NGSS hoặc Tiêu chuẩn Bang.\n• **Phân tích lỗ hổng**: Xác định các yếu tố thiếu hoặc điểm yếu trong giáo án của bạn.\n• **Đề xuất**: Lời khuyên có thể hành động để cải thiện liên kết.\n### Mẹo chuyên nghiệp\n• Dùng Phân tích Lỗ hổng để biện minh yêu cầu tài nguyên hoặc thời gian lập kế hoạch đồng đội với ban điều hành.\n### Liên kết UDL\n• **Hành động & Biểu hiện**: Nâng cao khả năng giám sát tiến độ (Hướng dẫn 6.4) bằng cách thiết lập các mục tiêu rõ ràng và tiêu chí thành công.",
     "lesson_plan_title": "Giáo án",
@@ -1695,7 +1695,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Chuỗi tập trung {minutes} phút! Cứ tiếp tục nhé!",
+    "streak_saved": "Chào mừng trở lại! Chuỗi {minutes} phút của bạn đã được lưu.",
+    "points_awarded": "Đã trao điểm!",
+    "welcome_name": "Chào mừng, {name}!",
+    "element_not_found": "Không tìm thấy phần tử: {id}",
+    "overlay_set": "Lớp phủ: {mode}",
+    "synced_resource": "Đã đồng bộ: {title}",
+    "group_resource": "Tài nguyên nhóm: {title}",
+    "preset_saved": "Đã lưu cài đặt sẵn \"{name}\"!",
+    "translated_resources": "Đã dịch thành công {count} tài nguyên!",
+    "bingo_cards_count": "Đã tạo {count} thẻ BINGO!",
+    "sound_enabled": "Đã bật âm thanh",
+    "sound_muted": "Đã tắt âm thanh",
+    "democracy_mode_on": "Đã bật Chế độ dân chủ: bỏ phiếu cả lớp BẬT",
+    "democracy_mode_off": "Đã tắt Chế độ dân chủ: chơi một mình",
+    "resource_moved_up": "Đã di chuyển {title} lên",
+    "resource_moved_down": "Đã di chuyển {title} xuống",
+    "panels_regenerated": "Đã tạo lại {count} bảng!",
+    "settings_undone": "Đã hoàn tác: {label}. Đã khôi phục cài đặt. (Các tài nguyên đã tạo không bị ảnh hưởng.)",
+    "concept_added": "Đã thêm khái niệm: {text}",
+    "lesson_not_found": "Không tìm thấy bài học trong đơn vị này.",
+    "probe_complete": "Hoàn thành khảo sát: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Đã cập nhật cài đặt: {changes}",
+    "change_format": "Định dạng: {value}",
+    "change_tone": "Giọng điệu: {value}",
+    "change_length": "Độ dài: ~{value} từ",
+    "change_language": "Ngôn ngữ: {value}",
+    "change_interest": "Đã thêm sở thích: {value}",
+    "backup_saved": "💾 Một bản sao lưu của phiên này đã được lưu vào mục Tải xuống của bạn (một tệp dự án). Hiện tại không cần làm gì với nó; nếu sau này bạn cần quay lại, \"Tải dự án\" sẽ khôi phục mọi thứ.",
+    "backup_saved_score": " (điểm {score})",
+    "project_saved_multi_one": "💾 Đã lưu dự án ({count} phạm vi); tải lại sau để tiếp tục",
+    "project_saved_multi_other": "💾 Đã lưu dự án ({count} phạm vi); tải lại sau để tiếp tục",
+    "project_saved": "💾 Đã lưu dự án; tải lại sau để tiếp tục chỉnh sửa",
+    "search_result_desc": "Kết quả Tìm kiếm của Google: {title}",
+    "link_url_prompt": "Nhập URL liên kết:"
   },
   "large_file": {
     "modal_title": "Nhập tệp âm thanh lớn",
@@ -1711,7 +1746,8 @@
     "cancel_transcription": "Hủy phiên âm",
     "chunk_info": "Âm thanh được chia thành các đoạn 5 phút để xử lý",
     "chunk_progress": "Đoạn {current} trên {total}",
-    "audio_only_error": "Hiện tại chỉ các tệp âm thanh (MP3, WAV, v.v.) được hỗ trợ cho phiên âm theo đoạn."
+    "audio_only_error": "Hiện tại chỉ các tệp âm thanh (MP3, WAV, v.v.) được hỗ trợ cho phiên âm theo đoạn.",
+    "starting": "Đang bắt đầu..."
   },
   "formatting": {
     "bold": "Đậm (**văn bản**)",
@@ -1815,7 +1851,8 @@
     "open_storyforge_aria": "Mở StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Câu hỏi dựa trên tài liệu",
-    "open_stem_lab_explore_aria": "Mở khám phá Phòng STEM"
+    "open_stem_lab_explore_aria": "Mở khám phá Phòng STEM",
+    "stem_lab_explore": "Khám phá"
   },
   "history": {
     "load_project": "Tải dự án",
@@ -4491,7 +4528,25 @@
       "resolved_tip": "Các vấn đề từ kiểm toán ban đầu không còn được tìm thấy trong kiểm toán xác minh",
       "persisted_tip": "Các vấn đề từ kiểm toán ban đầu vẫn còn sau khi sửa",
       "introduced_tip": "Các vấn đề mới không tồn tại trước khi sửa"
-    }
+    },
+    "reattach_mismatch": "Tệp PDF đính kèm lại khác với tệp đã được kiểm tra{detail}. Vẫn sẽ tiếp tục; kết quả có thể không nhất quán với bản kiểm tra gốc.",
+    "reattach_name_detail": " (tên: \"{new}\" so với \"{old}\")",
+    "reattach_size_detail": " (kích thước: {new} so với {old} byte)",
+    "audit_failed_kept": "{label}: kiểm tra thất bại; đã giữ lại phiên bản trước.",
+    "score_dropped_kept": "{label}: điểm sẽ giảm ({prev} → {next}{axe}). Đã giữ lại phiên bản trước.",
+    "axe_only_comparison": ", chỉ so sánh bằng axe",
+    "axe_only_committed": "{label}: không có xác minh bằng AI; chỉ xác nhận bằng điểm axe-core xác định.",
+    "reinserted_ai": "{count} đã chèn lại (AI)",
+    "reinserted_sentence": "{count} đã chèn lại (câu)",
+    "reinserted_fuzzy": "{count} đã chèn lại (gần đúng)",
+    "in_recovery_appendix": "{count} trong phụ lục khôi phục",
+    "duplicates_removed_one": "Đã xóa {count} bản trùng lặp",
+    "duplicates_removed_other": "Đã xóa {count} bản trùng lặp",
+    "auto_continue_round": "Vòng tiếp tục tự động {round}/{max}: {detail}, điểm {score}/100 (mục tiêu {target})...",
+    "violation_one": "{count} vi phạm",
+    "violation_other": "{count} vi phạm",
+    "ai_issue_one": "{count} vấn đề do AI gắn cờ",
+    "ai_issue_other": "{count} vấn đề do AI gắn cờ"
   },
   "concept_sort": {
     "title": "Tri ý Phân loại",
@@ -4565,7 +4620,8 @@
     "card_visuals_label": "Hình ảnh thẻ",
     "card_visuals_auto": "Tự động (chỉ trên các mục ngắn)",
     "card_visuals_always": "Luôn tạo hình ảnh",
-    "card_visuals_never": "Không bao giờ (thẻ chỉ văn bản)"
+    "card_visuals_never": "Không bao giờ (thẻ chỉ văn bản)",
+    "explanation_unavailable": "Hiện không thể tạo lời giải thích. Vui lòng thử lại sau giây lát."
   },
   "dbq": {
     "title": "Phân tích Tài liệu (DBQ)",
@@ -4971,7 +5027,12 @@
       "error_check": "Kiểm tra liên kết thất bại.",
       "regenerated_success": "Đã tạo lại văn bản với các cải tiến!",
       "regen_failed": "Tạo lại thất bại."
-    }
+    },
+    "skill_check": "Kiểm tra kỹ năng",
+    "desc_skill_check": "Xác minh mức độ thành thạo của bạn so với các tiêu chuẩn.",
+    "desc_parent": "Xem điều này phù hợp với mục tiêu của trường như thế nào",
+    "desc_6dim": "Kiểm tra chương trình học theo 6 khía cạnh",
+    "desc_5dim": "Kiểm tra chương trình học theo 5 khía cạnh (thêm tiêu chuẩn để kiểm tra đầy đủ)"
   },
   "standards": {
     "target_standard": "Tiêu chuẩn Mục tiêu",
@@ -5183,7 +5244,34 @@
     "plan_hook": "Điểm Thu hút",
     "plan_independent": "Luyện tập Độc lập",
     "col_image": "Hình ảnh",
-    "word_sounds_studio": "Word Sounds"
+    "word_sounds_studio": "Word Sounds",
+    "stop": "Dừng",
+    "expand_header": "Mở rộng tiêu đề",
+    "collapse_header": "Thu gọn tiêu đề để có thêm không gian cho nội dung",
+    "collapse_header_short": "Thu gọn tiêu đề",
+    "step_x_of_y": "Bước {current} trên {total}",
+    "english_translation": "Bản dịch tiếng Anh",
+    "source_references": "Tham chiếu văn bản nguồn",
+    "activity_probe": "Khảo sát {activity}",
+    "word_sounds_count": "Word Sounds ({count} từ)",
+    "quick_practice_mode": "Chế độ luyện tập nhanh",
+    "new_option": "Tùy chọn mới",
+    "meta_lesson_extensions": "Phần mở rộng bài học",
+    "title_extension_ideas": "Ý tưởng mở rộng",
+    "meta_full_chat_log": "Nhật ký trò chuyện đầy đủ",
+    "title_udl_consultation_log": "Nhật ký tư vấn UDL",
+    "meta_actionable_steps": "Các bước khả thi (tóm tắt bằng AI)",
+    "title_differentiation_strategy": "Chiến lược phân hóa",
+    "meta_udl_guide_advice": "Lời khuyên của Hướng dẫn UDL",
+    "title_stem_assessment": "Đánh giá STEM",
+    "title_explore_challenge": "Thử thách khám phá",
+    "title_fluency_maze": "🏰 Mê cung trôi chảy",
+    "title_storyforge_config": "📖 Bài tập StoryForge",
+    "title_storyforge_submission": "📖 Bài nộp truyện",
+    "title_poettree_config": "🌳 Bài tập PoetTree",
+    "title_poettree_submission": "🌳 Bài nộp thơ",
+    "title_litlab_config": "🎭 Bài tập LitLab",
+    "title_litlab_submission": "🎭 Bài nộp trình diễn"
   },
   "persona": {
     "title": "Chế độ Phỏng vấn",
@@ -7333,7 +7421,10 @@
     "analyzing_topology": "Đóng vai Nhà thiết kế Chương trình: Đang phân tích cấu trúc nội dung...",
     "brainstorming": "Đang động não ý tưởng...",
     "retrying_citations": "Đang thử lại để có trích dẫn tốt hơn...",
-    "translating": "Đang dịch…"
+    "translating": "Đang dịch…",
+    "preparing_translation": "Đang chuẩn bị dịch sang {lang}...",
+    "translating_item": "Đang dịch {current}/{total}: {title}...",
+    "generating_panel": "Đang tạo bảng {current}/{total}..."
   },
   "process": {
     "source_missing": "Vui lòng cung cấp văn bản nguồn trước.",
@@ -10158,7 +10249,8 @@
     "loading_resources": "Đang tải tài nguyên...",
     "preparing_workspace": "Đang chuẩn bị không gian làm việc của bạn...",
     "almost_ready": "Gần xong...",
-    "loading_screen_aria": "Màn hình tải AlloFlow"
+    "loading_screen_aria": "Màn hình tải AlloFlow",
+    "preparing_environment": "Đang chuẩn bị môi trường học tập của bạn..."
   },
   "educator_hub": {
     "title": "Công cụ Giáo dục",
@@ -10275,7 +10367,12 @@
   "lms": {
     "dismiss_banner_aria": "Bỏ qua banner LMS",
     "dismiss_button": "Bỏ qua",
-    "audit_queue_help": "Nhấp vào một tài liệu để lấy và tải nó vào pipeline khả năng tiếp cận. Một số tệp LMS có thể yêu cầu bạn đăng nhập vào LMS trong trình duyệt này."
+    "audit_queue_help": "Nhấp vào một tài liệu để lấy và tải nó vào pipeline khả năng tiếp cận. Một số tệp LMS có thể yêu cầu bạn đăng nhập vào LMS trong trình duyệt này.",
+    "queued_one": "{count} tài liệu trong hàng đợi từ LMS",
+    "queued_other": "{count} tài liệu trong hàng đợi từ LMS",
+    "fetching": "Đang tải {name}...",
+    "loaded_ready": "Đã tải {name}; sẵn sàng để kiểm tra",
+    "fetch_failed": "Không tải được {name}: {error}. Tệp có thể yêu cầu xác thực LMS."
   },
   "annotation": {
     "undo_tooltip": "Hoàn tác chú thích cuối ({count} có sẵn) — Ctrl/Cmd+Z",
@@ -10295,7 +10392,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Hỗ trợ Trực quan từ giáo viên của bạn"
+    "teacher_modal_aria": "Hỗ trợ Trực quan từ giáo viên của bạn",
+    "now": "BÂY GIỜ",
+    "read_aloud": "Đọc to"
   },
   "canvas_settings": {
     "title": "Cài đặt Nâng cao",
@@ -10312,7 +10411,12 @@
     "read_all_button": "Đọc Tất cả",
     "stop_button": "Dừng",
     "focus_narration_label": "Tường thuật Tiêu điểm Bàn phím",
-    "focus_narration_on_hint": "Tab để nghe các điều khiển"
+    "focus_narration_on_hint": "Tab để nghe các điều khiển",
+    "reading": "Đang đọc...",
+    "item_aria": "Nhấp để nghe: {text}",
+    "footer_stats": "{count} mục · Nhấp vào bất kỳ mục nào để nghe · Thuyết minh bằng Tab {state}",
+    "narration_on": "BẬT",
+    "narration_off": "TẮT"
   },
   "teacher": {
     "local_only": "Chỉ cục bộ",
@@ -11241,7 +11345,61 @@
     "wizard_topic_input_title": "Nhập chủ đề",
     "wizard_url_input_title": "Nhập URL",
     "wizard_search_input_title": "Truy vấn tìm kiếm",
-    "onboarding_hint": "💡 Nhấp <strong>?</strong> bất kỳ lúc nào để được trợ giúp!"
+    "onboarding_hint": "💡 Nhấp <strong>?</strong> bất kỳ lúc nào để được trợ giúp!",
+    "pdf_audit_view_web_url_input": "Dán địa chỉ trang web bạn muốn kiểm tra (ví dụ: https://yourdistrict.org/handbook), sau đó nhấp vào Lấy để tải HTML của nó để có thể kiểm tra và khắc phục.",
+    "pdf_audit_view_web_fetch_btn": "Tải xuống trang từ URL ở trên và đặt HTML của nó vào ô bên dưới. Nếu trang web chặn việc tải xuống, hãy tự dán nguồn trang vào ô HTML.",
+    "pdf_audit_view_web_html_textarea": "HTML đang được kiểm tra — được đặt bởi Lấy hoặc do bạn dán. Bạn có thể chỉnh sửa nó ở đây trước khi kiểm tra (ví dụ: xóa thanh điều hướng không thuộc về bạn).",
+    "pdf_audit_view_web_audit_btn": "Chấm điểm trang theo WCAG 2.1 AA bằng cả người kiểm tra AI và công cụ axe-core (cùng công cụ mà người kiểm tra chuyên nghiệp sử dụng). Không có gì bị thay đổi — sử dụng khi bạn chỉ muốn biết tình trạng trang hôm nay.",
+    "pdf_audit_view_web_remediate_btn": "Chấm điểm trang, sau đó viết lại HTML để sửa những gì có thể (độ tương phản, thẻ ngôn ngữ, liên kết bỏ qua, mốc) và cho bạn một bản sao có thể truy cập để tải xuống. Luôn tự kiểm tra lại kết quả trước khi xuất bản.",
+    "pdf_audit_view_batch_dropzone": "Kéo các tệp PDF từ máy tính để bàn hoặc thư mục tải xuống của bạn trực tiếp vào ô này để thêm chúng vào hàng đợi hàng loạt. Các tệp không phải PDF bị bỏ qua.",
+    "pdf_audit_view_batch_browse_btn": "Mở bộ chọn tệp để chọn một hoặc nhiều PDF. Sử dụng cái này nếu kéo tệp không dễ dàng (thiết bị cảm ứng, trình đọc màn hình, thị lực kém hoặc Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Tiếp tục lô cuối cùng của bạn từ nơi nó dừng lại — các PDF đã hoàn thành được giữ lại và chỉ những cái chưa hoàn thành mới chạy lại. Sử dụng khi một lô bị cắt ngắn (tab đã đóng, tải lại, sự cố).",
+    "pdf_audit_view_batch_discard_btn": "Loại bỏ tiến trình đã lưu của lô bị gián đoạn trước đó — biểu ngữ biến mất và các kết quả được lưu trong bộ nhớ cache bị xóa khỏi trình duyệt của bạn.",
+    "pdf_audit_view_batch_clear_all_btn": "Loại bỏ mọi PDF khỏi hàng đợi để bạn có thể bắt đầu lại. Chỉ có sẵn trước khi bạn nhấn Bắt đầu lô.",
+    "pdf_audit_view_batch_row_retry_btn": "Chạy lại chỉ tệp thất bại này mà không động đến phần còn lại của lô. Trước tiên hãy di chuột qua dấu X đỏ để đọc lý do tại sao nó thất bại — nếu là cấu trúc (PDF bị hỏng, quét chỉ hình ảnh), thử lại sẽ không giúp được.",
+    "pdf_audit_view_batch_row_remove_btn": "Loại bỏ PDF này khỏi hàng đợi để lô bỏ qua nó. Chỉ có sẵn trước khi lô đang chạy.",
+    "pdf_audit_view_batch_stop_btn": "Yêu cầu lô dừng lại sau khi tệp đang xử lý hiện tại hoàn thành. Các PDF đã hoàn thành vẫn được hoàn thành — bạn sẽ không mất công việc đã hoàn thành và có thể tiếp tục phần còn lại sau.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Đưa lại mọi PDF thất bại vào hàng đợi và chạy lại chúng. Các tệp đã thành công không bị động đến. Đáng thử một lần nếu các thất bại trông giống lỗi mạng chập chờn; đừng cố chấp với PDF thực sự bị hỏng.",
+    "pdf_audit_view_batch_start_btn": "Bắt đầu kiểm tra và sửa từng PDF trong hàng đợi. Một xác nhận xuất hiện trước với ước tính các cuộc gọi AI (và chi phí, trên gói tự lưu trữ) để bạn có thể quyết định trước khi khởi động.",
+    "pdf_audit_view_batch_download_zip_btn": "Tải xuống mọi PDF đã được sửa thành công dưới dạng một tệp ZIP duy nhất. Tiện lợi để trả lại toàn bộ thư mục cho giáo viên hoặc liên hệ học khu cùng một lúc.",
+    "pdf_audit_view_batch_new_batch_btn": "Xóa lô đã hoàn thành để bạn có thể thả vào một bộ PDF mới. Bất kỳ ZIP nào bạn đã tải xuống đều ở lại trên máy tính của bạn — điều này chỉ đặt lại màn hình.",
+    "pdf_audit_view_batch_dashboard_btn": "Mở bảng điều khiển tuân thủ có thể in trong tab mới — điểm trung bình, có bao nhiêu PDF đạt 90+, các vấn đề WCAG phổ biến nhất. Hữu ích để chia sẻ với quản trị viên hoặc đính kèm vào hồ sơ Title II / 504.",
+    "pdf_audit_view_settings_panel": "Núm điều chỉnh cho quy trình kiểm tra và khắc phục. Giá trị mặc định là hợp lý — chỉ thay đổi nếu lần chạy tiêu chuẩn không cho bạn những gì bạn cần (kỹ lưỡng hơn, chi phí thấp hơn, điểm dừng khác).",
+    "pdf_audit_view_audit_passes_slider": "Có bao nhiêu người kiểm tra AI độc lập xem PDF — họ đồng ý về các vấn đề thực sự và bất đồng về tiếng ồn, vì vậy nhiều người kiểm tra hơn có nghĩa là ít báo động giả hơn. 5 là điểm ngọt; nâng lên cho tài liệu tuân thủ rủi ro cao, hạ xuống cho kiểm tra nhanh.",
+    "pdf_audit_view_target_score_slider": "Điểm bạn muốn PDF đã khắc phục đạt được — 90 là một lần vượt qua WCAG 2.1 AA chắc chắn, 95+ là gần như hoàn hảo, 70 là sàn hữu ích cho các tài liệu được quét. Kết hợp với Tự động tiếp tục để pipeline tiếp tục làm việc cho đến khi đạt điểm.",
+    "pdf_audit_view_max_fix_passes_slider": "Có bao nhiêu vòng tự động sửa pipeline được phép chạy trước khi dừng. 8 là mặc định; hạ thấp để giới hạn chi phí trên gói tự lưu trữ, hoặc đặt thành 0 để bỏ qua hoàn toàn tự động sửa (chỉ kiểm tra).",
+    "pdf_audit_view_auto_continue_toggle": "Khi bật, pipeline tiếp tục thực hiện các vòng sửa bổ sung (tối đa thêm 3 vòng) cho đến khi đạt được Điểm mục tiêu, sau đó dừng lại. Tắt nếu bạn muốn chính xác một lần chạy và một kết quả duy nhất để kiểm tra.",
+    "pdf_audit_view_polish_passes_slider": "Các vòng dọn dẹp bổ sung sau khi sửa khả năng truy cập thực sự — thắt chặt khoảng cách, tiêu đề, đánh bóng trực quan. 0 bỏ qua, 2 là tiêu chuẩn, 3 dành cho tài liệu in ấn hoặc đối tượng bên ngoài.",
+    "pdf_audit_view_branding_panel": "Tùy chọn — kiểm soát cách PDF đã khắc phục trông như thế nào: màu thương hiệu và phong cách thiết kế tổng thể. Bỏ qua cho diện mạo có thể truy cập mặc định, hoặc mở rộng nếu tài liệu cần khớp với thương hiệu trường học hoặc học khu.",
+    "pdf_audit_view_brand_mode_auto_btn": "Lấy ra màu thương hiệu từ PDF bạn đã tải lên để phiên bản đã khắc phục trông giống bản gốc. Mặc định tốt nhất — giữ tài liệu có thể nhận ra cho nhân viên và gia đình.",
+    "pdf_audit_view_brand_mode_upload_input": "Tải lên một bảng thương hiệu, logo hoặc hướng dẫn phong cách riêng (hình ảnh hoặc PDF) và pipeline sẽ lấy ra màu sắc và phông chữ từ nó. Hữu ích khi PDF gốc trông đơn giản nhưng cần khớp với thương hiệu học khu.",
+    "pdf_audit_view_brand_mode_none_btn": "Bỏ qua hoàn toàn các màu thương hiệu và sử dụng bảng màu có thể truy cập tích hợp. Chọn cái này cho các bài tập chung chung, hoặc khi màu sắc gốc không vượt qua độ tương phản và bạn không cần bảo toàn vẻ ngoài.",
+    "pdf_audit_results_tab_remediation_btn": "Hiển thị kết quả kiểm tra sau khi AlloFlow đã khắc phục PDF. Sử dụng tab này để xem điểm cải thiện và các vấn đề nào hiện đã được sửa.",
+    "pdf_audit_results_tab_original_btn": "Chuyển lại kiểm tra PDF gốc trước khi AlloFlow sửa bất cứ điều gì. Hữu ích để so sánh điểm trước-vs-sau cạnh nhau.",
+    "pdf_audit_results_score_badge": "Điểm khả năng truy cập tổng thể của PDF của bạn từ 0 đến 100. Xanh lá (80+) gần với WCAG AA, vàng cam (50-79) cần cải thiện, đỏ (<50) có rào cản lớn cho học sinh sử dụng trình đọc màn hình hoặc công nghệ hỗ trợ.",
+    "pdf_audit_results_reliability_details": "Mở rộng để xem những người kiểm tra AI tự tin như thế nào về điểm số này. Nhiều lần chạy AI song song — sự đồng ý chặt chẽ có nghĩa là điểm số đáng tin cậy, sự khác biệt rộng có nghĩa là tự xem xét các vấn đề riêng lẻ.",
+    "pdf_audit_results_score_breakdown_details": "Mở rộng để xem chính xác cách tính điểm — có bao nhiêu kiểm tra đã chạy, đã trừ gì cho mỗi vấn đề và điểm rubric AI và axe-core được tính trung bình như thế nào. Đây là lớp minh bạch đằng sau con số tiêu đề.",
+    "pdf_audit_results_score_how_ai_details": "Mở rộng để xem AI chấm điểm khắt khe đến mức nào cho mỗi vấn đề: trừ nhiều hơn cho các vấn đề nghiêm trọng chặn người dùng trình đọc màn hình, trừ ít hơn cho những vấn đề nhỏ và lấy lại điểm cho các kiểm tra đã vượt qua.",
+    "pdf_audit_results_score_how_axe_details": "Mở rộng để xem trình kiểm tra axe-core (cùng động cơ mà các kiểm toán viên truy cập chuyên nghiệp sử dụng) đã chấm điểm PDF của bạn như thế nào, với các ID quy tắc WCAG chính xác đã thất bại.",
+    "pdf_audit_results_issue_explain": "Nhấp để đọc vấn đề này thực sự chặn điều gì đối với học sinh và quy tắc WCAG áp dụng như thế nào. Bao gồm liên kết đến giải thích WCAG chính thức nếu bạn muốn đi sâu hơn.",
+    "pdf_audit_results_image_failures_details": "Mở rộng để xem bất kỳ hình ảnh nào bị mất trong quá trình khắc phục. Mỗi hàng cung cấp nút Tái tạo một cú nhấp chuột để không có hình nào bị mất âm thầm.",
+    "pdf_audit_results_image_regenerate_btn": "Tái tạo hình ảnh bị thiếu này bằng AI dựa trên mô tả được lưu trữ của nó. Hình ảnh mới hạ cánh trực tiếp trở lại tài liệu — không cần tải lên thủ công.",
+    "pdf_audit_view_report_menu_btn": "Mở menu báo cáo để tải xuống báo cáo khả năng truy cập ở các định dạng khác nhau — kiểu Adobe cho cán bộ tuân thủ, PDF được định dạng cho chia sẻ chung, JSON cho nghiên cứu, hoặc dấu vết có chữ ký cho hồ sơ kiểm toán.",
+    "pdf_audit_view_adobe_report_btn": "Tải xuống báo cáo được định dạng như Adobe Accessibility Checker, được chấm điểm theo PDF/UA-1 (tiêu chuẩn khả năng truy cập liên bang cho PDF). Tốt nhất để chia sẻ với các cán bộ tuân thủ hoặc đính kèm vào nộp Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Xem xét các từ đã biến mất trong lần lưu cuối cùng trước khi quyết định chạy một lượt khôi phục. Chỉ đọc — không có gì bị thay đổi cho đến khi bạn chọn khôi phục.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Ghép các từ nguồn bị thiếu trở lại vào tài liệu và xây dựng lại PDF đã gắn thẻ. Các từ không thể được đặt một cách an toàn sẽ kết thúc trong phần Khôi phục Nội dung để không có gì bị mất — số lượng còn lại trước và sau luôn được hiển thị để bạn có thể thấy nó có giúp ích hay không.",
+    "pdf_audit_view_formatted_report_btn": "Mở báo cáo khả năng truy cập trước/sau có thể in trong tab mới — nhấp vào Lưu dưới dạng PDF trong biểu ngữ để giữ một bản sao cho hồ sơ của bạn hoặc cuộc họp phụ huynh.",
+    "pdf_audit_view_html_report_btn": "Tải xuống báo cáo trước/sau dưới dạng tệp HTML mà bạn có thể lưu trữ trên một trang web hoặc chỉnh sửa. Nội dung khớp với phiên bản PDF có thể in.",
+    "pdf_audit_view_json_data_btn": "Xuất các số kiểm tra thô và dữ liệu theo từng quy tắc dưới dạng JSON. Sử dụng khi bạn muốn phân tích kết quả khả năng truy cập trong bảng tính, sổ tay nghiên cứu hoặc công cụ khác.",
+    "pdf_audit_view_audit_trail_signed_btn": "Tạo dấu vết kiểm tra tự xác minh (tệp HTML với nút Xác minh tính toàn vẹn được tích hợp phát hiện sửa đổi). Tốt làm bằng chứng tuân thủ — lưu ý đây là chữ ký phía trình duyệt, không có ràng buộc pháp lý.",
+    "pdf_audit_view_save_project_btn": "Lưu công việc khắc phục của bạn — HTML có thể truy cập, điểm số, cài đặt, tiến trình từng trang — vào tệp di động. Mở lại bằng Tải Dự án để tiếp tục chỉnh sửa mà không cần chạy lại AI.",
+    "pdf_audit_view_load_project_btn": "Mở lại tệp dự án mà bạn đã lưu trước đó. Đưa trở lại HTML đã khắc phục, điểm số và bất kỳ phạm vi trang nào đã hoàn thành — tiếp tục chính xác từ nơi bạn đã dừng.",
+    "pdf_audit_view_save_template_btn": "Lưu cấu trúc có thể truy cập của tài liệu (dàn ý tiêu đề, bảng, danh sách, mốc) dưới dạng mẫu có thể tái sử dụng. Sử dụng nó trong Document Builder để bắt đầu các tài liệu mới — IEP, đề cương — đã được cấu trúc trước cho khả năng truy cập.",
+    "pdf_audit_alt_formats_summary": "Mở rộng cho các định dạng thay thế — ePub, chữ nổi điện tử, văn bản thuần, Markdown — cho học sinh cần loại tệp khác với PDF hoặc HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Lưu tài liệu đã khắc phục dưới dạng tệp ePub với mục lục và siêu dữ liệu khả năng truy cập. Hoạt động trên Kindle, Apple Books và hầu hết các trình đọc di động — học sinh có thể thay đổi kích thước phông chữ, màu sắc và tốc độ đọc.",
+    "pdf_audit_alt_formats_braille_btn": "Lưu tệp Chữ nổi Cấp 1 (không rút gọn) có thể được dập nổi trên máy in chữ nổi hoặc gửi đến màn hình chữ nổi có thể làm mới. Đối với rút gọn Cấp 2, hãy giao tệp cho TVI (giáo viên cho học sinh khuyết tật thị giác) để hoàn thiện.",
+    "pdf_audit_alt_formats_text_btn": "Lưu tệp .txt thuần với tất cả định dạng đã bị xóa — định dạng dễ nhất cho trình đọc màn hình, chuyển đổi sang chữ in lớn hoặc dán vào công cụ khác.",
+    "pdf_audit_alt_formats_markdown_btn": "Lưu tài liệu dưới dạng Markdown — vào sạch sẽ các trang Canvas, Schoology hoặc D2L, Google Docs (qua dán), wiki và ghi chú kiểu GitHub mà không bị mất tiêu đề hoặc liên kết."
   },
   "a11y_lab": {
     "tabs": {
@@ -12077,5 +12235,27 @@
     "no_match": "Không có lệnh phù hợp. Trò chuyện với bot (và sắp tới là giọng nói) hiểu được các yêu cầu tự do.",
     "placeholder": "Nhập một lệnh — “chữ to hơn”, “trung tâm giáo viên”, “đọc trang này”…",
     "run": "chạy"
+  },
+  "voice_engine": {
+    "preparing": "Đang chuẩn bị công cụ giọng nói...",
+    "downloading_model": "Đang tải mô hình giọng nói",
+    "loading_memory": "Đang tải vào bộ nhớ",
+    "loading_model_memory": "Đang tải mô hình giọng nói vào bộ nhớ"
+  },
+  "voice_control": {
+    "listening": "Đang nghe; nói “stop listening” để kết thúc",
+    "stop_aria": "Dừng điều khiển bằng giọng nói"
+  },
+  "dynamic_assessment": {
+    "return_title": "Tài nguyên này được tạo bởi Đánh giá động. Nhấp để mở lại mô-đun Đánh giá động.",
+    "return_aria": "Quay lại Đánh giá động",
+    "return_label": "Quay lại Đánh giá động",
+    "item_badge": "mục {num}"
+  },
+  "story_gallery": {
+    "title": "Thư viện truyện",
+    "byline": "Bởi {author} · {words} từ · {used}/{total} từ vựng",
+    "student": "Học sinh",
+    "score": "Điểm: {score}"
   }
 }

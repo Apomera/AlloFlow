@@ -58,7 +58,7 @@
     "note_taking_text": "Strukturalne szablony robienia notatek, które uczą uczniów *jak* robić notatki, a nie tylko *co* pisać. Zawiera Cornell, organizatory graficzne, podwójne wpisy i dzienniki uczenia się."
   },
   "launch_pad": {
-    "subtitle": "Wybierz swój ścieżka nauki",
+    "subtitle": "Wybierz swoją ścieżkę nauki",
     "full_title": "Pełna platforma",
     "full_desc": "Pełny dostęp do wszystkich funkcji AlloFlow — lekcji, STEM Lab i narzędzi",
     "guided_title": "Tryb prowadzony",
@@ -1691,7 +1691,42 @@
     "whisper_load_failed": "Ładowanie Whisper nie powiodło się. Przełączam na inne silniki.",
     "backup_failed": "Tworzenie kopii zapasowej nie powiodło się. Spróbuj ponownie.",
     "invalid_backup_file": "To nie jest prawidłowy plik kopii zapasowej AlloHaven.",
-    "could_not_read_file": "Nie udało się odczytać tego pliku. Czy to kopia zapasowa JSON?"
+    "could_not_read_file": "Nie udało się odczytać tego pliku. Czy to kopia zapasowa JSON?",
+    "focus_streak": "{flames} {minutes}-minutowa seria skupienia! Tak trzymaj!",
+    "streak_saved": "Witaj ponownie! Twoja {minutes}-minutowa seria została zapisana.",
+    "points_awarded": "Przyznano punkty!",
+    "welcome_name": "Witaj, {name}!",
+    "element_not_found": "Nie znaleziono elementu: {id}",
+    "overlay_set": "Nakładka: {mode}",
+    "synced_resource": "Zsynchronizowano: {title}",
+    "group_resource": "Zasób grupy: {title}",
+    "preset_saved": "Zapisano ustawienie wstępne \"{name}\"!",
+    "translated_resources": "Pomyślnie przetłumaczono {count} zasobów!",
+    "bingo_cards_count": "Wygenerowano {count} kart BINGO!",
+    "sound_enabled": "Dźwięk włączony",
+    "sound_muted": "Dźwięk wyciszony",
+    "democracy_mode_on": "Tryb demokracji włączony: głosowanie klasy WŁĄCZONE",
+    "democracy_mode_off": "Tryb demokracji wyłączony: gra samodzielna",
+    "resource_moved_up": "Przeniesiono {title} w górę",
+    "resource_moved_down": "Przeniesiono {title} w dół",
+    "panels_regenerated": "Wygenerowano ponownie {count} paneli!",
+    "settings_undone": "Cofnięto: {label}. Przywrócono ustawienia. (Wygenerowane zasoby nie są naruszone.)",
+    "concept_added": "Dodano pojęcie: {text}",
+    "lesson_not_found": "Nie znaleziono lekcji w tej jednostce.",
+    "probe_complete": "Sprawdzian ukończony: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Zaktualizowano ustawienia: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Ton: {value}",
+    "change_length": "Długość: ~{value} słów",
+    "change_language": "Język: {value}",
+    "change_interest": "Dodano zainteresowanie: {value}",
+    "backup_saved": "💾 Kopia zapasowa tej sesji została zapisana w Twoich Pobranych (plik projektu). Nie musisz teraz nic z nią robić; jeśli kiedykolwiek będziesz musiał wrócić, \"Wczytaj projekt\" przywróci wszystko.",
+    "backup_saved_score": " (wynik {score})",
+    "project_saved_multi_one": "💾 Projekt zapisany ({count} zakres); wczytaj go później, aby kontynuować",
+    "project_saved_multi_other": "💾 Projekt zapisany ({count} zakresów); wczytaj go później, aby kontynuować",
+    "project_saved": "💾 Projekt zapisany; wczytaj go później, aby kontynuować edycję",
+    "search_result_desc": "Wynik wyszukiwania Google: {title}",
+    "link_url_prompt": "Wprowadź adres URL linku:"
   },
   "large_file": {
     "modal_title": "Importuj duży plik audio",
@@ -1707,7 +1742,8 @@
     "cancel_transcription": "Anuluj transkrypcję",
     "chunk_info": "Audio is split into 5-minute chunks for processing",
     "chunk_progress": "Fragment {current} z {total}",
-    "audio_only_error": "Obecnie tylko pliki audio (MP3, WAV itp.) są obsługiwane w przypadku transkrypcji fragmentowej."
+    "audio_only_error": "Obecnie tylko pliki audio (MP3, WAV itp.) są obsługiwane w przypadku transkrypcji fragmentowej.",
+    "starting": "Rozpoczynanie..."
   },
   "formatting": {
     "bold": "Pogrubienie (**tekst**)",
@@ -1811,7 +1847,8 @@
     "open_storyforge_aria": "Otwórz StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Udokumentowane-zorientowane pytania",
-    "open_stem_lab_explore_aria": "Otwórz STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Otwórz STEM Lab Explore",
+    "stem_lab_explore": "Odkrywaj"
   },
   "history": {
     "load_project": "Załaduj projekt",
@@ -4487,7 +4524,25 @@
       "resolved_tip": "Problemy z pierwotnego audytu nie znalezione w audycie weryfikacyjnym",
       "persisted_tip": "Problemy z pierwotnego audytu nadal obecne po naprawie",
       "introduced_tip": "Nowe problemy, które nie istniały przed naprawą"
-    }
+    },
+    "reattach_mismatch": "Ponownie dołączony plik PDF różni się od skontrolowanego{detail}. Mimo to kontynuujemy; wyniki mogą być niespójne z pierwotną kontrolą.",
+    "reattach_name_detail": " (nazwa: \"{new}\" vs \"{old}\")",
+    "reattach_size_detail": " (rozmiar: {new} vs {old} bajtów)",
+    "audit_failed_kept": "{label}: kontrola nie powiodła się; zachowano poprzednią wersję.",
+    "score_dropped_kept": "{label}: wynik by spadł ({prev} → {next}{axe}). Zachowano poprzednią wersję.",
+    "axe_only_comparison": ", porównanie tylko axe",
+    "axe_only_committed": "{label}: weryfikacja SI niedostępna; zatwierdzono tylko deterministycznym wynikiem axe-core.",
+    "reinserted_ai": "{count} ponownie wstawiono (SI)",
+    "reinserted_sentence": "{count} ponownie wstawiono (zdanie)",
+    "reinserted_fuzzy": "{count} ponownie wstawiono (przybliżone)",
+    "in_recovery_appendix": "{count} w załączniku odzyskiwania",
+    "duplicates_removed_one": "Usunięto {count} duplikat",
+    "duplicates_removed_other": "Usunięto {count} duplikatów",
+    "auto_continue_round": "Runda automatycznej kontynuacji {round}/{max}: {detail}, wynik {score}/100 (cel {target})...",
+    "violation_one": "{count} naruszenie",
+    "violation_other": "{count} naruszeń",
+    "ai_issue_one": "{count} problem oznaczony przez SI",
+    "ai_issue_other": "{count} problemów oznaczonych przez SI"
   },
   "concept_sort": {
     "title": "Sortowanie pojęć",
@@ -4561,7 +4616,8 @@
     "card_visuals_label": "Wizualizacje kart",
     "card_visuals_auto": "Auto (tylko przy krótkich elementach)",
     "card_visuals_always": "Zawsze generuj obrazy",
-    "card_visuals_never": "Nigdy (tylko tekstowe punkty)"
+    "card_visuals_never": "Nigdy (tylko tekstowe punkty)",
+    "explanation_unavailable": "Nie udało się teraz wygenerować wyjaśnienia. Spróbuj ponownie za chwilę."
   },
   "dbq": {
     "title": "Analiza dokumentów (DBQ)",
@@ -4967,7 +5023,12 @@
       "error_check": "Nie udało się sprawdzić odpowiedniość.",
       "regenerated_success": "Tekst wygenerowany ponownie z ulepszeniami!",
       "regen_failed": "Regeneracja nie udała się."
-    }
+    },
+    "skill_check": "Sprawdzenie umiejętności",
+    "desc_skill_check": "Sprawdź swoje opanowanie względem standardów.",
+    "desc_parent": "Zobacz, jak to pasuje do celów szkoły",
+    "desc_6dim": "Kontroluje program nauczania w 6 wymiarach",
+    "desc_5dim": "Kontroluje program nauczania w 5 wymiarach (dodaj standardy, aby uzyskać pełną kontrolę)"
   },
   "standards": {
     "target_standard": "Docelowy standard",
@@ -5179,7 +5240,34 @@
     "plan_hook": "Zaczep",
     "plan_independent": "Niezależna praktyka",
     "col_image": "Obraz",
-    "word_sounds_studio": "Word Sounds"
+    "word_sounds_studio": "Word Sounds",
+    "stop": "Zatrzymaj",
+    "expand_header": "Rozwiń nagłówek",
+    "collapse_header": "Zwiń nagłówek, aby dać więcej miejsca treści",
+    "collapse_header_short": "Zwiń nagłówek",
+    "step_x_of_y": "Krok {current} z {total}",
+    "english_translation": "Tłumaczenie angielskie",
+    "source_references": "Odniesienia do tekstu źródłowego",
+    "activity_probe": "Sprawdzian: {activity}",
+    "word_sounds_count": "Word Sounds ({count} słów)",
+    "quick_practice_mode": "Tryb szybkiej praktyki",
+    "new_option": "Nowa opcja",
+    "meta_lesson_extensions": "Rozszerzenia lekcji",
+    "title_extension_ideas": "Pomysły na rozszerzenie",
+    "meta_full_chat_log": "Pełny dziennik czatu",
+    "title_udl_consultation_log": "Dziennik konsultacji UDL",
+    "meta_actionable_steps": "Wykonalne kroki (podsumowanie SI)",
+    "title_differentiation_strategy": "Strategia różnicowania",
+    "meta_udl_guide_advice": "Porady przewodnika UDL",
+    "title_stem_assessment": "Ocena STEM",
+    "title_explore_challenge": "Wyzwanie eksploracyjne",
+    "title_fluency_maze": "🏰 Labirynt płynności",
+    "title_storyforge_config": "📖 Zadanie StoryForge",
+    "title_storyforge_submission": "📖 Przesłanie opowiadania",
+    "title_poettree_config": "🌳 Zadanie PoetTree",
+    "title_poettree_submission": "🌳 Przesłanie wiersza",
+    "title_litlab_config": "🎭 Zadanie LitLab",
+    "title_litlab_submission": "🎭 Przesłanie występu"
   },
   "persona": {
     "title": "Tryb wywiad",
@@ -6761,7 +6849,61 @@
     "scaffolds_panel_hide": "Ukryj panel wsparcia.",
     "scaffolds_request": "Poproś o dodatkowe wsparcie AI dla obecnego zadania.",
     "scaffolds_clear": "Wyczyść wszystkie wskazówki wsparcia.",
-    "scaffolds_difficulty": "Dostosuj poziom trudności wsparcia AI."
+    "scaffolds_difficulty": "Dostosuj poziom trudności wsparcia AI.",
+    "pdf_audit_view_web_url_input": "Wklej adres strony internetowej, którą chcesz sprawdzić (na przykład https://twoj-okreg.org/podrecznik), a następnie kliknij Pobierz, aby pobrać jej kod HTML, by móc go zaudytować i poprawić.",
+    "pdf_audit_view_web_fetch_btn": "Pobiera stronę z podanego wyżej URL i wkleja jej HTML do pola poniżej. Jeśli strona blokuje pobieranie, sam wklej źródło strony do pola HTML.",
+    "pdf_audit_view_web_html_textarea": "HTML, który jest audytowany — albo pobrany przez Pobierz, albo wklejony przez Ciebie. Możesz go tutaj edytować przed audytem (na przykład usunąć pasek nawigacji, który do Ciebie nie należy).",
+    "pdf_audit_view_web_audit_btn": "Ocenia stronę według WCAG 2.1 AA, używając zarówno audytora AI, jak i silnika axe-core (tego samego, którego używają profesjonalni audytorzy). Nic nie jest zmieniane — użyj tej opcji, gdy chcesz tylko wiedzieć, w jakim stanie strona jest dziś.",
+    "pdf_audit_view_web_remediate_btn": "Ocenia stronę, a następnie przepisuje HTML, naprawiając to, co może (kontrast, znacznik języka, link pomijający, punkty orientacyjne) i daje Ci dostępną kopię do pobrania. Zawsze sam sprawdź wynik przed publikacją.",
+    "pdf_audit_view_batch_dropzone": "Przeciągnij pliki PDF z pulpitu lub folderu pobierania bezpośrednio na to pole, aby dodać je do kolejki wsadowej. Pliki inne niż PDF są ignorowane.",
+    "pdf_audit_view_batch_browse_btn": "Otwiera selektor plików, abyś mógł wybrać jeden lub więcej plików PDF. Użyj tej opcji, jeśli przeciąganie plików nie jest łatwe (urządzenie dotykowe, czytnik ekranu, słaby wzrok lub Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Wznawia ostatnią partię tam, gdzie się zatrzymała — już zakończone pliki PDF są zachowane, a tylko te, które się nie zakończyły, są uruchamiane ponownie. Użyj tego, gdy partia została przerwana (zamknięta karta, przeładowanie, awaria).",
+    "pdf_audit_view_batch_discard_btn": "Odrzuca zapisany postęp ostatniej przerwanej partii — baner znika, a wyniki z pamięci podręcznej są usuwane z przeglądarki.",
+    "pdf_audit_view_batch_clear_all_btn": "Usuwa każdy plik PDF z kolejki, abyś mógł zacząć od nowa. Dostępne tylko przed naciśnięciem Rozpocznij partię.",
+    "pdf_audit_view_batch_row_retry_btn": "Uruchamia ponownie tylko ten jeden plik, który zawiódł, bez naruszania reszty partii. Najpierw najedź na czerwony X, aby przeczytać, dlaczego nie powiódł się — jeśli to problem strukturalny (uszkodzony PDF, skan tylko obrazu), ponowna próba nie pomoże.",
+    "pdf_audit_view_batch_row_remove_btn": "Usuwa ten jeden plik PDF z kolejki, aby partia go pominęła. Dostępne tylko przed uruchomieniem partii.",
+    "pdf_audit_view_batch_stop_btn": "Prosi partię o zatrzymanie po zakończeniu pliku, nad którym aktualnie pracuje. Już ukończone pliki PDF pozostają ukończone — nie stracisz wykonanej pracy i możesz wznowić resztę później.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Ponownie kolejkuje każdy plik PDF, który się nie powiódł, i uruchamia je ponownie. Pliki, które już się powiodły, nie są naruszane. Warto spróbować raz, jeśli awarie wyglądają na niestabilne błędy sieci; nie nalegaj z naprawdę zepsutymi plikami PDF.",
+    "pdf_audit_view_batch_start_btn": "Rozpoczyna audyt i naprawę każdego pliku PDF w kolejce. Najpierw pojawia się potwierdzenie z szacowaną liczbą wywołań AI (i kosztem, w planie samodzielnie hostowanym), abyś mógł zdecydować przed uruchomieniem.",
+    "pdf_audit_view_batch_download_zip_btn": "Pobiera każdy pomyślnie naprawiony plik PDF jako pojedyncze archiwum ZIP. Wygodne, aby przekazać cały folder nauczycielowi lub kontaktowi okręgowemu za jednym razem.",
+    "pdf_audit_view_batch_new_batch_btn": "Czyści zakończoną partię, abyś mógł wrzucić nowy zestaw plików PDF. Każdy ZIP, który już pobrałeś, pozostaje na Twoim komputerze — to tylko resetuje ekran.",
+    "pdf_audit_view_batch_dashboard_btn": "Otwiera drukowalny pulpit zgodności w nowej karcie — średni wynik, ile plików PDF osiągnęło 90+, najczęstsze problemy WCAG. Przydatne do udostępnienia administratorowi lub dołączenia do akt Title II / 504.",
+    "pdf_audit_view_settings_panel": "Pokrętła regulacyjne dla potoku audytu i naprawy. Domyślne wartości są rozsądne — zmieniaj je tylko, gdy standardowe uruchomienie nie daje tego, czego potrzebujesz (większa dokładność, niższy koszt, inny punkt zatrzymania).",
+    "pdf_audit_view_audit_passes_slider": "Ilu niezależnych audytorów AI ogląda PDF — zgadzają się co do prawdziwych problemów, a różnią się co do szumu, więc więcej audytorów oznacza mniej fałszywych alarmów. 5 to złoty środek; podnieś dla dokumentów o wysokim ryzyku zgodności, obniż dla szybkich kontroli.",
+    "pdf_audit_view_target_score_slider": "Wynik, który chcesz, aby naprawiony PDF osiągnął — 90 to solidne zaliczenie WCAG 2.1 AA, 95+ jest prawie idealne, 70 jest użyteczną dolną granicą dla skanowanych dokumentów. Połącz z Auto-kontynuacją, aby potok pracował, dopóki wynik nie zostanie osiągnięty.",
+    "pdf_audit_view_max_fix_passes_slider": "Ile rund auto-naprawy potok może wykonać przed zatrzymaniem. 8 to domyślna wartość; obniż, aby ograniczyć koszt w planie samodzielnie hostowanym, lub ustaw na 0, aby całkowicie pominąć auto-naprawę (tylko audyt).",
+    "pdf_audit_view_auto_continue_toggle": "Gdy włączone, potok wykonuje dodatkowe rundy poprawek (do 3 więcej), aż osiągnie Wynik Docelowy, a następnie sam się zatrzymuje. Wyłącz, jeśli chcesz dokładnie jednego przebiegu i jednego wyniku do inspekcji.",
+    "pdf_audit_view_polish_passes_slider": "Dodatkowe rundy porządkowania po prawdziwych poprawkach dostępności — wygładza odstępy, nagłówki, wizualne wykończenie. 0 pomija, 2 to standard, 3 jest dla dokumentów idących do druku lub odbiorców zewnętrznych.",
+    "pdf_audit_view_branding_panel": "Opcjonalne — kontroluje, jak wygląda naprawiony PDF: kolory marki i ogólny styl projektu. Pomiń dla domyślnego dostępnego wyglądu lub rozwiń, jeśli dokument musi pasować do marki szkoły lub okręgu.",
+    "pdf_audit_view_brand_mode_auto_btn": "Wyciąga kolory marki z PDF-a, który załadowałeś, aby naprawiona wersja wyglądała jak oryginał. Najlepsza domyślna — utrzymuje dokument rozpoznawalny dla personelu i rodzin.",
+    "pdf_audit_view_brand_mode_upload_input": "Załaduj osobną kartę marki, logo lub przewodnik stylu (obraz lub PDF), a potok wyciągnie z niego kolory i czcionki. Przydatne, gdy oryginalny PDF wygląda prosto, ale musi pasować do marki okręgu.",
+    "pdf_audit_view_brand_mode_none_btn": "Pomiń kolory marki w całości i użyj wbudowanej dostępnej palety. Wybierz to dla ogólnych arkuszy roboczych lub gdy oryginalne kolory nie spełniają kontrastu i nie musisz zachować wyglądu.",
+    "pdf_audit_results_tab_remediation_btn": "Pokaż wyniki audytu po tym, jak AlloFlow naprawił PDF. Użyj tej karty, aby zobaczyć poprawiony wynik i jakie problemy są teraz naprawione.",
+    "pdf_audit_results_tab_original_btn": "Wróć do audytu oryginalnego PDF-a sprzed napraw AlloFlow. Przydatne do porównywania wyników przed-vs-po obok siebie.",
+    "pdf_audit_results_score_badge": "Ogólny wynik dostępności Twojego PDF-a od 0 do 100. Zielony (80+) jest blisko WCAG AA, bursztyn (50-79) wymaga pracy, czerwony (<50) ma poważne bariery dla uczniów używających czytników ekranu lub technologii wspomagających.",
+    "pdf_audit_results_reliability_details": "Rozwiń, aby zobaczyć, jak pewni byli audytorzy AI co do tego wyniku. Wiele przebiegów AI działa równolegle — ścisła zgoda oznacza, że wynikowi można ufać, szeroki rozrzut oznacza, że trzeba samemu przejrzeć poszczególne problemy.",
+    "pdf_audit_results_score_breakdown_details": "Rozwiń, aby zobaczyć dokładnie, jak obliczono wynik — ile kontroli przebiegło, co odjęto za każdy problem i jak uśredniono wyniki rubryki AI i axe-core. To jest warstwa przejrzystości za nagłówkową liczbą.",
+    "pdf_audit_results_score_how_ai_details": "Rozwiń, aby zobaczyć, jak surowo AI ocenia każdy problem: większe odjęcia za krytyczne problemy blokujące użytkowników czytników ekranu, mniejsze za drobne, i punkty odzyskane za zaliczone kontrole.",
+    "pdf_audit_results_score_how_axe_details": "Rozwiń, aby zobaczyć, jak weryfikator axe-core (ten sam silnik, którego używają profesjonalni audytorzy dostępności) ocenił Twój PDF, z dokładnymi identyfikatorami reguł WCAG, które nie powiodły się.",
+    "pdf_audit_results_issue_explain": "Kliknij, aby przeczytać, co ten problem faktycznie blokuje dla uczniów i jak stosuje się reguła WCAG. Zawiera link do oficjalnego wyjaśnienia WCAG, jeśli chcesz zgłębić temat.",
+    "pdf_audit_results_image_failures_details": "Rozwiń, aby zobaczyć obrazy, które zostały utracone podczas naprawy. Każdy wiersz oferuje przycisk Regeneruj jednym kliknięciem, aby żadna rycina nie została po cichu utracona.",
+    "pdf_audit_results_image_regenerate_btn": "Odtwarza ten brakujący obraz przy użyciu AI na podstawie zapisanego opisu. Nowy obraz trafia bezpośrednio z powrotem do dokumentu — bez potrzeby ręcznego przesyłania.",
+    "pdf_audit_view_report_menu_btn": "Otwórz menu raportów, aby pobrać raport dostępności w różnych formatach — styl Adobe dla urzędników ds. zgodności, sformatowany PDF do ogólnego udostępniania, JSON do badań lub podpisany ślad do ewidencji audytu.",
+    "pdf_audit_view_adobe_report_btn": "Pobierz raport w formacie Adobe Accessibility Checker, oceniany według PDF/UA-1 (federalnego standardu dostępności dla PDF-ów). Najlepszy do udostępniania urzędnikom ds. zgodności lub dołączania do zgłoszenia Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Przejrzyj słowa, które zniknęły podczas ostatniego zapisu, zanim zdecydujesz się uruchomić przebieg przywracania. Tylko do odczytu — nic nie jest zmieniane, dopóki nie zdecydujesz się przywrócić.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Wstaw brakujące słowa źródłowe z powrotem do dokumentu i przebuduj otagowany PDF. Słowa, których nie można bezpiecznie umieścić, trafiają do sekcji Odzyskanie Treści, aby nic nie zostało utracone — liczba pozostałości przed i po jest zawsze pokazywana, abyś widział, czy pomogło.",
+    "pdf_audit_view_formatted_report_btn": "Otwiera drukowalny raport dostępności przed/po w nowej karcie — kliknij Zapisz jako PDF w banerze, aby zachować kopię dla swoich akt lub spotkania z rodzicami.",
+    "pdf_audit_view_html_report_btn": "Pobierz raport przed/po jako plik HTML, który możesz hostować na stronie lub edytować. Treść odpowiada drukowalnej wersji PDF.",
+    "pdf_audit_view_json_data_btn": "Eksportuj surowe liczby audytu i dane reguła-po-regule jako JSON. Użyj, gdy chcesz analizować wyniki dostępności w arkuszu kalkulacyjnym, notatniku badawczym lub innym narzędziu.",
+    "pdf_audit_view_audit_trail_signed_btn": "Generuje samoweryfikujący się ślad audytu (plik HTML z wbudowanym przyciskiem Zweryfikuj Integralność, który wykrywa manipulację). Dobre jako dowód zgodności — pamiętaj, że to podpis po stronie przeglądarki, nie wiążący prawnie.",
+    "pdf_audit_view_save_project_btn": "Zapisuje Twoją pracę naprawczą — dostępny HTML, wyniki, ustawienia, postęp strona po stronie — do przenośnego pliku. Otwórz ponownie za pomocą Wczytaj Projekt, aby kontynuować edycję bez ponownego uruchamiania AI.",
+    "pdf_audit_view_load_project_btn": "Otwórz ponownie plik projektu, który zapisałeś wcześniej. Przywraca naprawiony HTML, wyniki i wszelkie zakresy stron, które już zostały ukończone — podejmuje dokładnie tam, gdzie skończyłeś.",
+    "pdf_audit_view_save_template_btn": "Zapisz dostępną strukturę dokumentu (kontur nagłówków, tabele, listy, punkty orientacyjne) jako szablon wielokrotnego użytku. Użyj go w Konstruktorze Dokumentów, aby rozpoczynać nowe dokumenty — IEP, programy nauczania — już wstępnie ustrukturyzowane pod kątem dostępności.",
+    "pdf_audit_alt_formats_summary": "Rozwiń dla formatów alternatywnych — ePub, elektroniczny Braille, zwykły tekst, Markdown — dla uczniów, którzy potrzebują innego typu pliku niż PDF lub HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Zapisz naprawiony dokument jako plik ePub ze spisem treści i metadanymi dostępności. Działa na Kindle, Apple Books i większości czytników mobilnych — uczniowie mogą zmieniać rozmiar czcionki, kolor i prędkość czytania.",
+    "pdf_audit_alt_formats_braille_btn": "Zapisz plik brajla I stopnia (bez skrótów), który można wytłoczyć na drukarce brajlowskiej lub wysłać do odświeżalnego wyświetlacza brajlowskiego. Dla skrótów II stopnia przekaż plik nauczycielowi uczniów z niepełnosprawnościami wzroku do dokończenia.",
+    "pdf_audit_alt_formats_text_btn": "Zapisz zwykły plik .txt z całkowicie usuniętym formatowaniem — najłatwiejszy format dla czytników ekranu, konwersji do dużego druku lub wklejania do innego narzędzia.",
+    "pdf_audit_alt_formats_markdown_btn": "Zapisz dokument jako Markdown — wkleja się czysto do stron Canvas, Schoology lub D2L, Google Docs (przez wklejanie), wiki i notatek w stylu GitHub bez utraty nagłówków lub linków."
   },
   "groups": {
     "title": "Grupy różnicowania",
@@ -8275,7 +8417,10 @@
     "analyzing_topology": "Działam jako projektant programu nauczania: analiza topologii treści...",
     "brainstorming": "Brainstorm pomysłów...",
     "retrying_citations": "Ponowna próba dla lepszych cytatów...",
-    "translating": "Tłumaczenie…"
+    "translating": "Tłumaczenie…",
+    "preparing_translation": "Przygotowywanie tłumaczenia na {lang}...",
+    "translating_item": "Tłumaczenie {current}/{total}: {title}...",
+    "generating_panel": "Generowanie panelu {current}/{total}..."
   },
   "process": {
     "source_missing": "Proszę najpierw podać tekst źródłowy.",
@@ -9571,7 +9716,8 @@
     "loading_resources": "Ładowanie zasobów...",
     "preparing_workspace": "Przygotowywanie przestrzeni roboczej...",
     "almost_ready": "Prawie gotowe...",
-    "loading_screen_aria": "Ekran ładowania AlloFlow"
+    "loading_screen_aria": "Ekran ładowania AlloFlow",
+    "preparing_environment": "Przygotowywanie Twojego środowiska nauki..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -11218,7 +11364,12 @@
   "lms": {
     "dismiss_banner_aria": "Zamknij baner LMS",
     "dismiss_button": "Zamknij",
-    "audit_queue_help": "Kliknij dokument, aby go pobrać i załadować do potoku dostępności. Niektóre pliki LMS mogą wymagać zalogowania do LMS w tej przeglądarce."
+    "audit_queue_help": "Kliknij dokument, aby go pobrać i załadować do potoku dostępności. Niektóre pliki LMS mogą wymagać zalogowania do LMS w tej przeglądarce.",
+    "queued_one": "{count} dokument w kolejce z LMS",
+    "queued_other": "{count} dokumentów w kolejce z LMS",
+    "fetching": "Pobieranie {name}...",
+    "loaded_ready": "{name} wczytano; gotowe do kontroli",
+    "fetch_failed": "Nie udało się pobrać {name}: {error}. Plik może wymagać uwierzytelnienia LMS."
   },
   "annotation": {
     "undo_tooltip": "Cofnij ostatnią adnotację ({count} dostępnych) — Ctrl/Cmd+Z",
@@ -11238,7 +11389,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Wizualna wsparcie od twojego nauczyciela"
+    "teacher_modal_aria": "Wizualna wsparcie od twojego nauczyciela",
+    "now": "TERAZ",
+    "read_aloud": "Czytaj na głos"
   },
   "canvas_settings": {
     "title": "Ustawienia zaawansowane",
@@ -11255,7 +11408,12 @@
     "read_all_button": "Czytaj wszystko",
     "stop_button": "Stop",
     "focus_narration_label": "Narracja skupienia klawiatury",
-    "focus_narration_on_hint": "Tab, aby usłyszeć kontrolki"
+    "focus_narration_on_hint": "Tab, aby usłyszeć kontrolki",
+    "reading": "Czytanie...",
+    "item_aria": "Kliknij, aby usłyszeć: {text}",
+    "footer_stats": "{count} elementów · Kliknij dowolny element, aby go usłyszeć · Narracja Tab {state}",
+    "narration_on": "WŁ",
+    "narration_off": "WYŁ"
   },
   "teacher": {
     "local_only": "Tylko lokalnie",
@@ -12431,5 +12589,27 @@
     "no_match": "Brak pasującego polecenia. Czat z botem (a wkrótce głos) rozumie dowolne prośby.",
     "placeholder": "Wpisz polecenie — „większy tekst”, „centrum nauczyciela”, „przeczytaj tę stronę”…",
     "run": "uruchom"
+  },
+  "voice_engine": {
+    "preparing": "Przygotowywanie silnika głosowego...",
+    "downloading_model": "Pobieranie modelu głosowego",
+    "loading_memory": "Wczytywanie do pamięci",
+    "loading_model_memory": "Wczytywanie modelu głosowego do pamięci"
+  },
+  "voice_control": {
+    "listening": "Słucham; powiedz „stop listening”, aby zakończyć",
+    "stop_aria": "Zatrzymaj sterowanie głosowe"
+  },
+  "dynamic_assessment": {
+    "return_title": "Ten zasób został wygenerowany przez Ocenę Dynamiczną. Kliknij, aby ponownie otworzyć moduł Oceny Dynamicznej.",
+    "return_aria": "Powrót do Oceny Dynamicznej",
+    "return_label": "Powrót do Oceny Dynamicznej",
+    "item_badge": "element {num}"
+  },
+  "story_gallery": {
+    "title": "Galeria opowiadań",
+    "byline": "Autor: {author} · {words} słów · {used}/{total} słownictwa",
+    "student": "Uczeń",
+    "score": "Wynik: {score}"
   }
 }

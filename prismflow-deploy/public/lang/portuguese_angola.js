@@ -32,7 +32,7 @@
     "math_title": "Solucionador STEM",
     "math_text": "um comprehensive STEM Problem Solver esse goes beyond palavra problems. Covers 10 subject área com 4 different solution modo, LaTeX equação apoio, e auto-gerado visual aids.\n### painel opções\n• **Subject área**: Escolher de 10 disciplines: - General Math, Algebra, Geometry, Calculus - Chemistry, Physics, Biology, Earth Science - Computer Science, Economics\n• **Solution modo**: Pick seu instructional approach: - **Problem Definir Generator**: Criar múltipla praticar problems com resposta - **passo-by-passo**: detalhado worked solutions com explanations - **Conceptual**: Focus em understanding \"why\" antes \"como\" - **Real-World Application**: Authentic contexts e scenarios\n• **Problem Quantity**: Definir como many problems para gerar (para Problem Definir modo)\n### saída funcionalidades\n• **Contextualized Problems**: palavra problems usar personagem/tema de seu fonte texto\n• **Worked Solutions**: Concluir passo-by-passo explanations com clear reasoning\n• **LaTeX equação**: Beautiful mathematical notation rendered inline\n• **visual Aids**: Auto-gerado SVG gráfico e diagrama para applicable problems\n### Pro dica Usar \"Real-World Application\" modo em Economics ou Earth Science para criar cross-curricular STEM desafio!\n### UDL Connection\n• **Expression**: Constrói fluency com graduated nível de apoio (Guideline 5.3) by offering múltipla solution modo de conceptual para procedural.",
     "adventure_title": "Aventura modo",
-    "adventure_text": "Aventura modo transforma conteúdo em imersivo interativo experiências. Escolher de múltipla simulação modo com profundo gamificação para verdadeiramente envolvente aprendizagem.\n### entrada modo\n• **Escolha Múltipla**: Seleccionar de 4 AI-gerado opções per turn (beginner-amigável).\n• **Debate modo**: Persuade personagem com arguments•momentum shifts based em logic.\n• **sistema Simulação**: Manage factions, recursos, e macro-nível policy decisions.\n### Simulação Types\n• **padrão Aventura**: Classic escolher-seu-own-aventura branching narrativas.\n• **Social história (SEL)**: Scenarios com social-emotional desafio•friendship, equipawork, frustration management.\n• **história modo**: Narrativa focus com descriptive passages e personagem development.\n### Gamificação funcionalidades\n• **XP & energia sistema**: Earn Aventura XP como você progresso; energia depletes com riscoy escolhas.\n• **D20 Dice Chance modo**: Risky actions trigger dice rolls•teaches probability e risco avaliação.\n• **dificuldade nível**: história (narrativa focus), Normal (balanced), Hardcore (strict penalties, recursos depletion).\n• **nível Progression**: Advance through aventura nível com increasing complexidade.\n### Faction & recursos sistema\n• **recursos Rastreio**: ouro, Health, Morale, ou personalizado variável com real consequences.\n• **AI ou manual modo**: Let AI manage recursos ou define seu own starting valor.\n• **Consequences**: Actions drain ou replenish recursos•strategic thinking obrigatório!\n### Democracy modo (Whole-turma)\n• **turma Voting**: Project o aventura em o board e let aluno vote em que path para take.\n• **Collective Agency**: O most popular escolha advances o história•teaches democratic decision-making.\n• **Presentation modo**: Perfect para whole-turma instrução onde everyone participates em um shared narrativa.\n### interativo funcionalidades\n• **Free Response**: Type qualquer action freely•AI adapts dynamically para creative entrada.\n• **Imersivo modo**: Fullscreen cinematic experiência para concluir immersion.\n• **Auto-Ler TTS**: história narration ler aloud automatically.\n• **livro de histórias Exportar**: Exportar illustrated aventuras como HTML com AI-gerado cena art.\n### Pro dica Usar sistema Simulação modo para teach economics, civics, ou ecology through hands-em recursos management decisions.\n### UDL Connection\n• **Engagement**: Foster collaboration e community (Guideline 8) through simulated social e strategic scenarios.",
+    "adventure_text": "O Modo Aventura transforma o conteúdo em experiências interativas e imersivas. Escolha entre vários modos de simulação com gamificação profunda para uma aprendizagem verdadeiramente envolvente.\n### Modos de Entrada\n• **Escolha Múltipla**: Selecione entre 4 opções geradas por IA por cada jogada (ideal para principiantes).\n• **Modo de Debate**: Persuada as personagens com argumentos•mudanças de impulso baseadas na lógica.\n• **Simulação de Sistema**: Faça a gestão de fações, recursos e decisões políticas de nível macro.\n### Tipos de Simulação\n• **Aventura Padrão**: Narrativas ramificadas clássicas em que escolhe a sua própria aventura.\n• **História Social (SEL)**: Cenários com desafios socioemocionais•amizade, trabalho de equipa, gestão da frustração.\n• **Modo História**: Foco narrativo com passagens descritivas e desenvolvimento das personagens.\n### Funcionalidades de Gamificação\n• **Sistema de XP e Energia**: Ganhe XP de Aventura à medida que progride; a energia esgota-se com escolhas arriscadas.\n• **Modo de Sorte com Dado D20**: Ações arriscadas desencadeiam lançamentos de dados•ensina probabilidade e avaliação de risco.\n• **Níveis de Dificuldade**: História (foco narrativo), Normal (equilibrado), Extremo (penalizações severas, esgotamento de recursos).\n• **Progressão de Níveis**: Avance pelos níveis de aventura com complexidade crescente.\n### Sistema de Fações e Recursos\n• **Rastreio de Recursos**: Ouro, Saúde, Moral ou variáveis personalizadas com consequências reais.\n• **Modo de IA ou Manual**: Deixe a IA gerir os recursos ou defina os seus próprios valores iniciais.\n• **Consequências**: As ações esgotam ou repõem recursos•é necessário pensamento estratégico!\n### Modo Democracia (Turma Inteira)\n• **Votação da Turma**: Projete a aventura no quadro e deixe os alunos votarem no caminho a seguir.\n• **Agência Coletiva**: A escolha mais popular faz a história avançar•ensina a tomada de decisões democrática.\n• **Modo de Apresentação**: Perfeito para o ensino com a turma inteira, em que todos participam numa narrativa partilhada.\n### Funcionalidades Interativas\n• **Resposta Livre**: Escreva qualquer ação livremente•a IA adapta-se dinamicamente a contribuições criativas.\n• **Modo Imersivo**: Experiência cinematográfica em ecrã inteiro para uma imersão completa.\n• **Leitura Automática TTS**: A narração da história é lida em voz alta automaticamente.\n• **Exportação de Livro de Histórias**: Exporte aventuras ilustradas como HTML com arte de cena gerada por IA.\n### Dica Pro\nUse o modo de Simulação de Sistema para ensinar economia, cidadania ou ecologia através de decisões práticas de gestão de recursos.\n### Ligação ao UDL\n• **Envolvimento**: Promova a colaboração e a comunidade (Diretriz 8) através de cenários sociais e estratégicos simulados.",
     "alignment_title": "Alinhamento Report",
     "alignment_text": "Ensure seu lição hits o mark. este report automatically cross-references seu gerado recursos against Common Core padrão e UDL Guidelines, identifying strengths e gaps.\n### AI padrão Finder\n• **Smart Pesquisar**: Introduzir um topic ou competência e AI suggests correspondência CCSS, NGSS, ou TEKS padrão.\n• **AI Consultation**: Get estratégia advice em como seu conteúdo addresses específico padrão.\n• **Multi-Framework**: apoio Common Core ELA/Math, NGSS, e state-específico frameworks.\n### Alinhamento Checks\n• **CAST UDL Guidelines**: Checks para Engagement, Representation, e Action/Expression.\n• **padrão Verification**: Cross-referência com Common Core, NGSS, ou State padrão.\n• **Gap Analysis**: Identifies missing elements ou weak ponto em seu lição plan.\n• **Suggestions**: Actionable advice para improve alinhamento.\n### Pro dica\n• Usar o Gap Analysis para justify recursos requests ou co-planning time para administration.\n### UDL Connection\n• **Action & Expression**: Enhance capacity para monitoring progresso (Guideline 6.4) by establishing clear objectivo e sucesso criteria.",
     "lesson_plan_title": "lição Plan",
@@ -59,7 +59,7 @@
     "note_taking_text": "Modelos estruturados para tirar apontamentos que ensinam os alunos *como* tomar notas, não apenas *o que* escrever."
   },
   "launch_pad": {
-    "subtitle": "Escolher seu aprendizagem caminho",
+    "subtitle": "Escolha o seu percurso de aprendizagem",
     "full_title": "Plataforma Completa",
     "full_desc": "Concluir acesso para todos AlloFlow funcionalidades — lição, STEM laboratório, e ferramentas",
     "guided_title": "Guided modo",
@@ -420,7 +420,7 @@
     "auto_grade": "Auto classee",
     "bridge_message_display": "Bridge mensagem Display",
     "bridge_mode_send_panel": "Bridge modo Enviar painel",
-    "cancel": "Cancelarar",
+    "cancel": "Cancelar",
     "check": "Verificar resposta",
     "check_answer": "Verificar resposta",
     "check_answers": "Verificar respostas",
@@ -547,7 +547,7 @@
     "groups": "Grupos",
     "groups_new_group_placeholder": "Nome do novo grupo",
     "hear_all_words": "Hear todos palavra",
-    "help": "ajuda",
+    "help": "Ajuda",
     "hidden_input": "Hidden entrada",
     "hide": "Ocultar",
     "history": "Histórico",
@@ -570,7 +570,7 @@
     "modals_save_project_placeholder": "A Minha Lição Fantástica",
     "new_game_setup": "novo jogo setup",
     "new_group_name": "Novo nome de grupo",
-    "next": "seguinte",
+    "next": "Seguinte",
     "on_close": "Em fechar",
     "on_ideas": "Em ideas",
     "open_in_new_tab": "Abrir em novo separador",
@@ -619,7 +619,7 @@
     "session_default_placeholder": "sessão.default_placeholder",
     "session_goal_slider": "sessão objectivo slider",
     "set_label_challenge_mode_from_scratch": "Definir label desafio modo: de Scratch",
-    "settings": "definições",
+    "settings": "Definições",
     "show": "Mostrar",
     "show_math_answers": "Mostrar math resposta",
     "skip": "Ignorar",
@@ -719,9 +719,9 @@
     "resource": "recursos",
     "loading": "A carregar...",
     "processing": "A processar...",
-    "error": "erro",
+    "error": "Erro",
     "error_details": "erro detalhe",
-    "success": "sucesso",
+    "success": "Sucesso",
     "fetch": "Obter",
     "send": "Enviar",
     "done": "Concluído",
@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "O carregamento do Whisper falhou. A recorrer a outros motores.",
     "backup_failed": "A cópia de segurança falhou. Tente novamente.",
     "invalid_backup_file": "Não é um ficheiro de cópia de segurança AlloHaven válido.",
-    "could_not_read_file": "Não foi possível ler esse ficheiro. É uma cópia de segurança JSON?"
+    "could_not_read_file": "Não foi possível ler esse ficheiro. É uma cópia de segurança JSON?",
+    "focus_streak": "{flames} Sequência de concentração de {minutes} minutos! Continua assim!",
+    "streak_saved": "Bem-vindo de volta! A tua sequência de {minutes} min foi guardada.",
+    "points_awarded": "Pontos atribuídos!",
+    "welcome_name": "Bem-vindo, {name}!",
+    "element_not_found": "Elemento não encontrado: {id}",
+    "overlay_set": "Sobreposição: {mode}",
+    "synced_resource": "Sincronizado: {title}",
+    "group_resource": "Recurso do grupo: {title}",
+    "preset_saved": "Predefinição \"{name}\" guardada!",
+    "translated_resources": "{count} recursos traduzidos com sucesso!",
+    "bingo_cards_count": "{count} cartões de BINGO gerados!",
+    "sound_enabled": "Som ativado",
+    "sound_muted": "Som silenciado",
+    "democracy_mode_on": "Modo democracia ativado: votação da turma ATIVADA",
+    "democracy_mode_off": "Modo democracia desativado: jogo individual",
+    "resource_moved_up": "{title} movido para cima",
+    "resource_moved_down": "{title} movido para baixo",
+    "panels_regenerated": "{count} painéis regenerados!",
+    "settings_undone": "Anulado: {label}. Definições restauradas. (Os recursos gerados não são afetados.)",
+    "concept_added": "Conceito adicionado: {text}",
+    "lesson_not_found": "Lição não encontrada nesta unidade.",
+    "probe_complete": "Sondagem concluída: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Definições atualizadas: {changes}",
+    "change_format": "Formato: {value}",
+    "change_tone": "Tom: {value}",
+    "change_length": "Comprimento: ~{value} palavras",
+    "change_language": "Idioma: {value}",
+    "change_interest": "Interesse adicionado: {value}",
+    "backup_saved": "💾 Foi guardada uma cópia de segurança desta sessão nas tuas Transferências (um ficheiro de projeto). Não tens de fazer nada com ela agora; se um dia precisares de voltar, \"Carregar Projeto\" repõe tudo.",
+    "backup_saved_score": " (pontuação {score})",
+    "project_saved_multi_one": "💾 Projeto guardado ({count} intervalo); carrega-o mais tarde para continuar",
+    "project_saved_multi_other": "💾 Projeto guardado ({count} intervalos); carrega-o mais tarde para continuar",
+    "project_saved": "💾 Projeto guardado; carrega-o mais tarde para continuar a editar",
+    "search_result_desc": "Resultado da Pesquisa do Google: {title}",
+    "link_url_prompt": "Introduz o URL da ligação:"
   },
   "large_file": {
     "modal_title": "Importar Large áudio ficheiro",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Cancelarar Transcription",
     "chunk_info": "áudio é split em 5-minute chunks para processing",
     "chunk_progress": "Chunk {current} de {total}",
-    "audio_only_error": "Currently apenas áudio ficheiro (MP3, WAV, etc.) são supported para chunked transcription."
+    "audio_only_error": "Currently apenas áudio ficheiro (MP3, WAV, etc.) são supported para chunked transcription.",
+    "starting": "A iniciar..."
   },
   "formatting": {
     "bold": "Bold (**texto**)",
@@ -1783,7 +1819,7 @@
     "collapse_tooltip": "Collapse todos cartão",
     "ai_guide": "Guia e Assistente AI",
     "ai_guide_sub": "Pedagogia, Navegação e Configuração Automática",
-    "ai_guide_welcome": "Olá! I'm seu AI Guide. I pode ajuda com UDL estratégias, navegar o app para você, ou auto-setup seu lição definições. só ask!",
+    "ai_guide_welcome": "Olá! Sou o seu Guia de IA. Posso ajudar com estratégias de UDL, navegar pela aplicação por si, ou configurar automaticamente as definições da sua lição. É só pedir!",
     "tool_analysis": "Analisar fonte Material",
     "tool_glossary": "glossário & língua Selection",
     "tool_simplified": "texto Adaptation",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Abrir StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "documento-Based pergunta",
-    "open_stem_lab_explore_aria": "Abrir STEM laboratório Explorar"
+    "open_stem_lab_explore_aria": "Abrir STEM laboratório Explorar",
+    "stem_lab_explore": "Explorar"
   },
   "history": {
     "load_project": "Carregar Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight cor",
       "insert_table_aria": "Insert tabela",
       "insert_table_title": "Insert acessível tabela"
-    }
+    },
+    "reattach_mismatch": "O PDF reanexado difere do que foi auditado{detail}. O processo continuará mesmo assim; os resultados podem ser inconsistentes com a auditoria original.",
+    "reattach_name_detail": " (nome: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (tamanho: {new} vs. {old} bytes)",
+    "audit_failed_kept": "{label}: a auditoria falhou; a versão anterior foi mantida.",
+    "score_dropped_kept": "{label}: a pontuação teria descido ({prev} → {next}{axe}). A versão anterior foi mantida.",
+    "axe_only_comparison": ", comparação apenas com axe",
+    "axe_only_committed": "{label}: verificação por IA indisponível; confirmado apenas com a pontuação determinística do axe-core.",
+    "reinserted_ai": "{count} reinseridos (IA)",
+    "reinserted_sentence": "{count} reinseridos (frase)",
+    "reinserted_fuzzy": "{count} reinseridos (aproximado)",
+    "in_recovery_appendix": "{count} no apêndice de recuperação",
+    "duplicates_removed_one": "{count} duplicado removido",
+    "duplicates_removed_other": "{count} duplicados removidos",
+    "auto_continue_round": "Ronda de continuação automática {round}/{max}: {detail}, pontuação {score}/100 (meta {target})...",
+    "violation_one": "{count} violação",
+    "violation_other": "{count} violações",
+    "ai_issue_one": "{count} problema sinalizado pela IA",
+    "ai_issue_other": "{count} problemas sinalizados pela IA"
   },
   "concept_sort": {
     "title": "Concept Ordenar",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "cartão visual",
     "card_visuals_auto": "Auto (apenas em curto item)",
     "card_visuals_always": "Always gerar imagem",
-    "card_visuals_never": "Never (texto-apenas cartão)"
+    "card_visuals_never": "Never (texto-apenas cartão)",
+    "explanation_unavailable": "Não foi possível gerar uma explicação agora. Tenta novamente dentro de instantes."
   },
   "dbq": {
     "title": "documento Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Não foi possível verificar o alinhamento.",
       "regenerated_success": "texto regenerated com improvements!",
       "regen_failed": "Falha na regeneração."
-    }
+    },
+    "skill_check": "Verificação de competências",
+    "desc_skill_check": "Verifica o teu domínio em relação aos padrões.",
+    "desc_parent": "Veja como isto se alinha com os objetivos da escola",
+    "desc_6dim": "Audita o currículo em 6 dimensões",
+    "desc_5dim": "Audita o currículo em 5 dimensões (adicione padrões para a auditoria completa)"
   },
   "standards": {
     "target_standard": "Target padrão",
@@ -5188,7 +5249,34 @@
     "plan_hook": "Gancho",
     "plan_independent": "Independent praticar",
     "col_image": "imagem",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Parar",
+    "expand_header": "Expandir cabeçalho",
+    "collapse_header": "Recolher o cabeçalho para dar mais espaço ao conteúdo",
+    "collapse_header_short": "Recolher cabeçalho",
+    "step_x_of_y": "Passo {current} de {total}",
+    "english_translation": "Tradução inglesa",
+    "source_references": "Referências do texto de origem",
+    "activity_probe": "Sondagem de {activity}",
+    "word_sounds_count": "Word Sounds ({count} palavras)",
+    "quick_practice_mode": "Modo de prática rápida",
+    "new_option": "Nova opção",
+    "meta_lesson_extensions": "Extensões da lição",
+    "title_extension_ideas": "Ideias de extensão",
+    "meta_full_chat_log": "Registo completo do chat",
+    "title_udl_consultation_log": "Registo de consulta UDL",
+    "meta_actionable_steps": "Passos acionáveis (resumo de IA)",
+    "title_differentiation_strategy": "Estratégia de diferenciação",
+    "meta_udl_guide_advice": "Conselhos do Guia UDL",
+    "title_stem_assessment": "Avaliação STEM",
+    "title_explore_challenge": "Desafio de exploração",
+    "title_fluency_maze": "🏰 Labirinto de fluência",
+    "title_storyforge_config": "📖 Tarefa do StoryForge",
+    "title_storyforge_submission": "📖 Envio de história",
+    "title_poettree_config": "🌳 Tarefa do PoetTree",
+    "title_poettree_submission": "🌳 Envio de poema",
+    "title_litlab_config": "🎭 Tarefa do LitLab",
+    "title_litlab_submission": "🎭 Envio de apresentação"
   },
   "persona": {
     "title": "Interview modo",
@@ -6748,7 +6836,61 @@
     "brainstorm_worksheet": "aluno-facing worksheet ver de um brainstormed idea — strips out o professor-side metadata (modol rationale, prompt history, geração timing) e renders só o cover imagem (se present), o title, e o body texto em um clean, printable layout. Useful para: handing back como um paper artifact, embedding em um lição PDF, ou projecting o idea em o smartboard para turma discussion without o AI 'plumbing' visível. dica: brainstorm ideas often tem rico generative-AI contexto attached; o worksheet ver é o que aluno ver, while o full painel é o que professor ver. Toggling este abrir em o professor ver é um rápido way para previsão o que aluno irá actually receber.",
     "concept_sort_image_scale": "visual-size slider para o AI-gerado cartão imagem em Concept Ordenar (visível apenas quando em least one cartão tem um imagem). Adjusts thumbnail pixel size across small / medium / large / xl ranges. Persists com o ordenar so size escolha rides o printed PDF + o digital ordenar. dica: larger sizes (large / xl) são o right call para K-2 classerooms onde imagem-como-anchor é o primary scaffold; smaller sizes (small / medium) fit mais cartão em screen para older aluno quem pode ler o labels e usar o imagem como um secondary cue. O slider é hidden quando no cartão tem imagem so ele doesn't take up space.",
     "glossary_pronounce_term": "Pronunciation ajudaer botão per glossário termo — mostra IPA notation (/əˈ/-estilo), syllable breakdown, e pronunciation guide para o termo. Especially useful para: ELL aluno aprendizagem English conteúdo vocabulário, Tier 3 académico vocabulário com non-obvious pronunciation (mitochondria, hyperbole, antecedent), e conteúdo área glossaries onde o palavra may não aparecer em everyday speech. Pairs com o áudio descarregar botão alongside ele para full pronunciation apoio. dica: encourage aluno para praticar o IPA out loud — knowing esse 'mi-toh-KON-dree-uh' é o stress pattern é o difference entre confident participation e silent avoidance durante turma discussion.",
-    "timeline_image_size": "Resize control para o AI-gerado imagem embedded em timeline event cartão (visível apenas quando events tem imagem). Three-passo slider: small / medium / large. Persists com o timeline so size escolha rides o printed PDF + o em-jogo draggable cartão. dica: larger sizes work well para K-5 timelines onde visual anchors matter most (life cycles, historical events, história plots). Para dense AP-nível timelines com 15+ events, medium ou small lets o full sequence fit em one printable página without aluno having para flip back e forth."
+    "timeline_image_size": "Resize control para o AI-gerado imagem embedded em timeline event cartão (visível apenas quando events tem imagem). Three-passo slider: small / medium / large. Persists com o timeline so size escolha rides o printed PDF + o em-jogo draggable cartão. dica: larger sizes work well para K-5 timelines onde visual anchors matter most (life cycles, historical events, história plots). Para dense AP-nível timelines com 15+ events, medium ou small lets o full sequence fit em one printable página without aluno having para flip back e forth.",
+    "pdf_audit_view_web_url_input": "Cole o endereço da página web que você quer verificar (por exemplo https://seudistrito.org/manual), depois clique em Buscar para baixar o HTML dela e poder auditar e remediar.",
+    "pdf_audit_view_web_fetch_btn": "Baixa a página da URL acima e coloca o HTML dela na caixa abaixo. Se o site bloquear o download, cole você mesmo o código-fonte da página na caixa HTML.",
+    "pdf_audit_view_web_html_textarea": "O HTML que está sendo auditado — colocado por Buscar ou colado por você. Você pode editá-lo aqui antes de auditar (por exemplo, remover uma barra de navegação que não é sua).",
+    "pdf_audit_view_web_audit_btn": "Pontua a página segundo a WCAG 2.1 AA usando tanto um auditor de IA como o motor axe-core (o mesmo motor que os auditores profissionais usam). Nada é alterado — use isto quando apenas quiser saber o estado atual da página.",
+    "pdf_audit_view_web_remediate_btn": "Pontua a página, depois reescreve o HTML para corrigir o que puder (contraste, tag de idioma, link de pulo, landmarks) e te dá uma cópia acessível para baixar. Sempre revise o resultado você mesmo antes de publicar.",
+    "pdf_audit_view_batch_dropzone": "Arraste arquivos PDF do seu desktop ou pasta de downloads direto para esta caixa para adicioná-los à fila do lote. Arquivos não-PDF são ignorados.",
+    "pdf_audit_view_batch_browse_btn": "Abre seu seletor de arquivos para escolher um ou mais PDFs. Use isso se arrastar arquivos não for fácil (dispositivo touch, leitor de tela, baixa visão, ou um Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Retoma seu último lote de onde parou — PDFs já concluídos são mantidos e só os que não terminaram são reexecutados. Use isso quando um lote foi cortado (aba fechada, recarga, queda).",
+    "pdf_audit_view_batch_discard_btn": "Descarta o progresso salvo do seu último lote interrompido — o banner some e os resultados em cache são excluídos do seu navegador.",
+    "pdf_audit_view_batch_clear_all_btn": "Remove todos os PDFs da fila para você começar de novo. Só disponível antes de pressionar Iniciar Lote.",
+    "pdf_audit_view_batch_row_retry_btn": "Reexecuta apenas este arquivo que falhou sem mexer no resto do lote. Passe o cursor sobre o X vermelho primeiro para ler por que falhou — se for estrutural (PDF corrompido, escaneamento só de imagem), tentar de novo não vai ajudar.",
+    "pdf_audit_view_batch_row_remove_btn": "Remove este PDF da fila para o lote pulá-lo. Só disponível antes do lote estar rodando.",
+    "pdf_audit_view_batch_stop_btn": "Pede ao lote para parar depois que o arquivo em que está trabalhando agora terminar. PDFs já concluídos continuam concluídos — você não perderá trabalho terminado, e pode retomar o resto depois.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Recoloca na fila cada PDF que falhou e os executa de novo. Arquivos já bem-sucedidos não são tocados. Vale uma tentativa se as falhas parecem erros de rede intermitentes; não insista com PDFs realmente quebrados.",
+    "pdf_audit_view_batch_start_btn": "Inicia a auditoria e correção de cada PDF na fila. Aparece primeiro uma confirmação com uma estimativa de chamadas de IA (e custo, no plano auto-hospedado) para você decidir antes de disparar.",
+    "pdf_audit_view_batch_download_zip_btn": "Baixa cada PDF remediado com sucesso como um único arquivo ZIP. Útil para entregar uma pasta inteira a um professor ou contato do distrito de uma vez.",
+    "pdf_audit_view_batch_new_batch_btn": "Limpa o lote concluído para você poder soltar um novo conjunto de PDFs. Qualquer ZIP que você já baixou continua no seu computador — isso só reinicia a tela.",
+    "pdf_audit_view_batch_dashboard_btn": "Abre um painel de conformidade imprimível em uma nova aba — pontuação média, quantos PDFs alcançaram 90+, os problemas WCAG mais comuns. Útil para compartilhar com um administrador ou anexar a um registro Title II / 504.",
+    "pdf_audit_view_settings_panel": "Botões de ajuste para o pipeline de auditoria e remediação. Os padrões são sensatos — só altere se a execução padrão não estiver dando o que você precisa (mais minúcia, custo menor, ponto de parada diferente).",
+    "pdf_audit_view_audit_passes_slider": "Quantos auditores de IA independentes olham o PDF — eles concordam nos problemas reais e discordam no ruído, então mais auditores significam menos alarmes falsos. 5 é o ponto ideal; aumente para documentos de conformidade de alto risco, diminua para verificações rápidas.",
+    "pdf_audit_view_target_score_slider": "A pontuação que você quer que o PDF remediado atinja — 90 é um sólido WCAG 2.1 AA aprovado, 95+ é quase perfeito, 70 é um piso útil para documentos escaneados. Combine com Continuar automaticamente para deixar o pipeline trabalhar até atingir a pontuação.",
+    "pdf_audit_view_max_fix_passes_slider": "Quantas rodadas de auto-correção o pipeline pode executar antes de parar. 8 é o padrão; abaixe para limitar o custo no plano auto-hospedado, ou coloque em 0 para pular a auto-correção totalmente (só auditoria).",
+    "pdf_audit_view_auto_continue_toggle": "Quando ligado, o pipeline continua fazendo rodadas extras de correção (até 3 a mais) até atingir a Pontuação Alvo, depois para sozinho. Desligue se você quer exatamente uma passagem e um único resultado para inspecionar.",
+    "pdf_audit_view_polish_passes_slider": "Rodadas extras de limpeza depois das correções reais de acessibilidade — ajusta espaçamento, cabeçalhos, polimento visual. 0 pula, 2 é padrão, 3 é para documentos indo para impressão ou audiências externas.",
+    "pdf_audit_view_branding_panel": "Opcional — controla como o PDF remediado fica: cores de marca e estilo geral de design. Pule para o visual acessível padrão, ou expanda se o documento precisa combinar com a marca de uma escola ou distrito.",
+    "pdf_audit_view_brand_mode_auto_btn": "Extrai cores de marca do PDF que você subiu para a versão remediada parecer com o original. Melhor padrão — mantém o documento reconhecível para a equipe e as famílias.",
+    "pdf_audit_view_brand_mode_upload_input": "Suba uma folha de marca separada, logotipo ou guia de estilo (imagem ou PDF) e o pipeline extrai cores e fontes dele. Útil quando o PDF original tem visual simples mas precisa combinar com a marca do distrito.",
+    "pdf_audit_view_brand_mode_none_btn": "Pule cores de marca completamente e use a paleta acessível embutida. Escolha isso para fichas genéricas, ou quando as cores originais falham no contraste e você não precisa preservar o visual.",
+    "pdf_audit_results_tab_remediation_btn": "Mostra os resultados da auditoria depois que o AlloFlow remediou o PDF. Use esta aba para ver a pontuação melhorada e quais problemas agora estão corrigidos.",
+    "pdf_audit_results_tab_original_btn": "Volta para a auditoria do PDF original antes do AlloFlow corrigir qualquer coisa. Útil para comparar pontuações antes-vs-depois lado a lado.",
+    "pdf_audit_results_score_badge": "A pontuação geral de acessibilidade do seu PDF de 0 a 100. Verde (80+) está perto de WCAG AA, âmbar (50-79) precisa de trabalho, vermelho (<50) tem barreiras grandes para alunos que usam leitores de ecrã ou tecnologia de apoio.",
+    "pdf_audit_results_reliability_details": "Expanda para ver quão confiantes os auditores de IA estavam nesta pontuação. Várias passagens de IA rodam em paralelo — concordância estreita significa que a pontuação é confiável, ampla divergência significa revisar os problemas individualmente você mesmo.",
+    "pdf_audit_results_score_breakdown_details": "Expanda para ver exatamente como a pontuação foi calculada — quantas verificações rodaram, o que foi deduzido por problema, e como as pontuações da rubrica de IA e do axe-core foram tiradas em média. Esta é a camada de transparência por trás do número manchete.",
+    "pdf_audit_results_score_how_ai_details": "Expanda para ver quão duramente a IA pontua cada problema: deduções maiores para problemas críticos que bloqueiam usuários de leitores de tela, deduções menores para os menores, e pontos recuperados por verificações que passam.",
+    "pdf_audit_results_score_how_axe_details": "Expanda para ver como o verificador axe-core (o mesmo motor que auditores de acessibilidade profissionais usam) pontuou seu PDF, com os IDs exatos das regras WCAG que falharam.",
+    "pdf_audit_results_issue_explain": "Clique para ler o que este problema realmente bloqueia para os alunos e como a regra WCAG se aplica. Inclui um link para a explicação oficial WCAG se você quiser ir mais fundo.",
+    "pdf_audit_results_image_failures_details": "Expanda para ver qualquer imagem que caiu durante a remediação. Cada linha oferece um botão Regenerar de um clique para nenhuma figura ser silenciosamente perdida.",
+    "pdf_audit_results_image_regenerate_btn": "Recria esta imagem ausente usando IA com base em sua descrição armazenada. A nova imagem aterrissa direto de volta no documento — sem necessidade de upload manual.",
+    "pdf_audit_view_report_menu_btn": "Abre o menu de relatório para baixar um relatório de acessibilidade em formatos diferentes — estilo Adobe para responsáveis de conformidade, PDF formatado para compartilhamento geral, JSON para pesquisa, ou um rastro assinado para registros de auditoria.",
+    "pdf_audit_view_adobe_report_btn": "Baixa um relatório formatado como o Verificador de Acessibilidade da Adobe, pontuado contra PDF/UA-1 (o padrão federal de acessibilidade para PDFs). Melhor para compartilhar com responsáveis de conformidade ou anexar a uma submissão Title II / 504.",
+    "pdf_audit_view_tierb_diff_view_btn": "Revise as palavras que sumiram durante o último salvamento antes de decidir rodar uma passagem de restauração. Somente leitura — nada é alterado até você escolher restaurar.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Reinsere as palavras-fonte ausentes de volta no documento e reconstrói o PDF marcado. Palavras que não podem ser colocadas com segurança vão para uma seção de Recuperação de Conteúdo para nada ser perdido — a contagem residual antes e depois é sempre mostrada para você ver se ajudou.",
+    "pdf_audit_view_formatted_report_btn": "Abre um relatório de acessibilidade antes/depois imprimível em uma nova aba — clique em Salvar como PDF no banner para guardar uma cópia para seus registros ou uma reunião com os pais.",
+    "pdf_audit_view_html_report_btn": "Baixa o relatório antes/depois como um arquivo HTML que você pode hospedar em um site ou editar. O conteúdo corresponde à versão PDF imprimível.",
+    "pdf_audit_view_json_data_btn": "Exporta os números brutos da auditoria e os dados regra-por-regra como JSON. Use isso quando você quer analisar resultados de acessibilidade em uma planilha, caderno de pesquisa ou outra ferramenta.",
+    "pdf_audit_view_audit_trail_signed_btn": "Gera um rastro de auditoria autoverificável (um arquivo HTML com um botão Verificar Integridade embutido que detecta adulteração). Bom como evidência de conformidade — note que é uma assinatura do lado do navegador, não legalmente vinculante.",
+    "pdf_audit_view_save_project_btn": "Salva seu trabalho de remediação — HTML acessível, pontuações, configurações, progresso página por página — em um arquivo portátil. Reabra com Carregar Projeto para continuar editando sem rodar a IA novamente.",
+    "pdf_audit_view_load_project_btn": "Reabre um arquivo de projeto que você salvou antes. Traz de volta o HTML remediado, as pontuações e quaisquer intervalos de páginas já concluídos — retoma exatamente onde você parou.",
+    "pdf_audit_view_save_template_btn": "Salva a estrutura acessível do documento (esquema de cabeçalhos, tabelas, listas, landmarks) como um modelo reutilizável. Use no Document Builder para iniciar novos documentos — PEIs, programas — já pré-estruturados para acessibilidade.",
+    "pdf_audit_alt_formats_summary": "Expanda para formatos alternativos — ePub, Braille eletrônico, texto simples, Markdown — para alunos que precisam de um tipo de arquivo diferente de PDF ou HTML.",
+    "pdf_audit_alt_formats_epub_btn": "Salva o documento remediado como um arquivo ePub com sumário e metadados de acessibilidade. Funciona em Kindle, Apple Books e na maioria dos leitores móveis — alunos podem mudar tamanho de fonte, cor e velocidade de leitura.",
+    "pdf_audit_alt_formats_braille_btn": "Guarda um ficheiro Braille de Grau 1 (sem contrações) que pode ser impresso em relevo numa impressora Braille ou enviado para uma linha Braille atualizável. Para as contrações de Grau 2, entregue o ficheiro a um TVI (professor de alunos com deficiência visual) para finalização.",
+    "pdf_audit_alt_formats_text_btn": "Salva um arquivo .txt simples com toda formatação removida — o formato mais fácil para leitores de tela, conversão para letra grande, ou colar em outra ferramenta.",
+    "pdf_audit_alt_formats_markdown_btn": "Salva o documento como Markdown — entra limpinho em páginas do Canvas, Schoology ou D2L, Google Docs (colando), wikis e notas estilo GitHub sem perder cabeçalhos ou links."
   },
   "groups": {
     "title": "Grupos de diferenciação",
@@ -8262,7 +8404,10 @@
     "analyzing_topology": "Acting como Curriculum Designer: Analyzing conteúdo topology...",
     "brainstorming": "A fazer brainstorming de ideias...",
     "retrying_citations": "Retrying para melhor citations...",
-    "translating": "A traduzir…"
+    "translating": "A traduzir…",
+    "preparing_translation": "A preparar a tradução para {lang}...",
+    "translating_item": "A traduzir {current}/{total}: {title}...",
+    "generating_panel": "A gerar painel {current}/{total}..."
   },
   "process": {
     "source_missing": "por favor provide fonte texto primeiro.",
@@ -9558,7 +9703,8 @@
     "loading_resources": "A carregar recursos...",
     "preparing_workspace": "Preparing seu workspace...",
     "almost_ready": "Quase pronto...",
-    "loading_screen_aria": "Ecrã de carregamento do AlloFlow"
+    "loading_screen_aria": "Ecrã de carregamento do AlloFlow",
+    "preparing_environment": "A preparar o teu ambiente de aprendizagem..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -11204,7 +11350,12 @@
   "lms": {
     "dismiss_banner_aria": "Dispensar faixa do LMS",
     "dismiss_button": "Dispensar",
-    "audit_queue_help": "Clicar um documento para obter e carregar ele em o accessibility pipeline. algum LMS ficheiro may require você para ser logged em para o LMS em este browser."
+    "audit_queue_help": "Clicar um documento para obter e carregar ele em o accessibility pipeline. algum LMS ficheiro may require você para ser logged em para o LMS em este browser.",
+    "queued_one": "{count} documento em fila do LMS",
+    "queued_other": "{count} documentos em fila do LMS",
+    "fetching": "A obter {name}...",
+    "loaded_ready": "{name} carregado; pronto para auditoria",
+    "fetch_failed": "Falha ao obter {name}: {error}. O ficheiro pode exigir autenticação no LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo último annotation ({count} disponível) — Ctrl/Cmd+Z",
@@ -11224,7 +11375,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "visual apoio de seu professor"
+    "teacher_modal_aria": "visual apoio de seu professor",
+    "now": "AGORA",
+    "read_aloud": "Ler em voz alta"
   },
   "canvas_settings": {
     "title": "avançado definições",
@@ -11241,7 +11394,12 @@
     "read_all_button": "Ler todos",
     "stop_button": "Parar",
     "focus_narration_label": "Narração do Foco do Teclado",
-    "focus_narration_on_hint": "Tab para ouvir os controlos"
+    "focus_narration_on_hint": "Tab para ouvir os controlos",
+    "reading": "A ler...",
+    "item_aria": "Clica para ouvir: {text}",
+    "footer_stats": "{count} itens · Clica em qualquer item para o ouvir · Narração por Tab {state}",
+    "narration_on": "ATIVADA",
+    "narration_off": "DESATIVADA"
   },
   "teacher": {
     "local_only": "Local apenas",
@@ -12208,5 +12366,27 @@
     "no_match": "Nenhum comando correspondente. O chat do bot (e em breve a voz) compreende pedidos em linguagem livre.",
     "placeholder": "Escreva um comando — “texto maior”, “centro do educador”, “ler esta página”…",
     "run": "executar"
+  },
+  "voice_engine": {
+    "preparing": "A preparar o motor de voz...",
+    "downloading_model": "A transferir o modelo de voz",
+    "loading_memory": "A carregar na memória",
+    "loading_model_memory": "A carregar o modelo de voz na memória"
+  },
+  "voice_control": {
+    "listening": "A ouvir; diz “stop listening” para terminar",
+    "stop_aria": "Parar o controlo por voz"
+  },
+  "dynamic_assessment": {
+    "return_title": "Este recurso foi gerado pela Avaliação Dinâmica. Clica para reabrir o módulo de Avaliação Dinâmica.",
+    "return_aria": "Voltar à Avaliação Dinâmica",
+    "return_label": "Voltar à Avaliação Dinâmica",
+    "item_badge": "item {num}"
+  },
+  "story_gallery": {
+    "title": "Galeria de histórias",
+    "byline": "Por {author} · {words} palavras · {used}/{total} vocabulário",
+    "student": "Aluno",
+    "score": "Pontuação: {score}"
   }
 }

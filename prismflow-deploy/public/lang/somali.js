@@ -398,7 +398,7 @@
     "end": "Dhammaad",
     "resource": "Khayraad",
     "loading": "Waa la soo dejinayaa...",
-    "processing": "Waa la qabanqaabinayaa...",
+    "processing": "Waa la habaynayaa...",
     "error": "Khalad",
     "error_details": "Faahfaahinta Khaladka",
     "success": "Guul",
@@ -618,7 +618,8 @@
     "open_storyforge_aria": "Fur StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Su'aalo ku Saleysan Dukumeentiga",
-    "open_stem_lab_explore_aria": "Fur Sahminta STEM Lab"
+    "open_stem_lab_explore_aria": "Fur Sahminta STEM Lab",
+    "stem_lab_explore": "Sahmin"
   },
   "toolbar": {
     "show_bot": "Tus Kaalmiyaha AI",
@@ -652,7 +653,8 @@
     "loading_resources": "Khayraadka waa la soo dejinayaa...",
     "preparing_workspace": "Goobta shaqadaada waa la diyaarinayaa...",
     "almost_ready": "Ku dhowaan diyaar...",
-    "loading_screen_aria": "Shaashadda AlloFlow ee soo dejinta"
+    "loading_screen_aria": "Shaashadda AlloFlow ee soo dejinta",
+    "preparing_environment": "Diyaarinaya deegaankaaga waxbarashada..."
   },
   "entry": {
     "placeholder": "tusaale Gorgor Cas",
@@ -895,7 +897,8 @@
     "cancel_transcription": "Jooji Qorista",
     "chunk_info": "Codka waxaa loo qaybiyaa qaybo 5-daqiiqo ah si loo qabto",
     "chunk_progress": "Qayb {current} ee {total}",
-    "audio_only_error": "Hadda waxaa kaliya la taageero faylasha codka (MP3, WAV, iwm) ee qorista qaybsan."
+    "audio_only_error": "Hadda waxaa kaliya la taageero faylasha codka (MP3, WAV, iwm) ee qorista qaybsan.",
+    "starting": "Bilaabaya..."
   },
   "formatting": {
     "bold": "Adag (**qoraal**)",
@@ -1175,7 +1178,12 @@
     "read_all_button": "Akhri Dhammaan",
     "stop_button": "Jooji",
     "focus_narration_label": "Sheekaynta Diiradda Kibootku",
-    "focus_narration_on_hint": "Riix Tab si aad u maqasho kontoroolada"
+    "focus_narration_on_hint": "Riix Tab si aad u maqasho kontoroolada",
+    "reading": "Akhrinaya...",
+    "item_aria": "Guji si aad u maqasho: {text}",
+    "footer_stats": "{count} shay · Guji shay kasta si aad u maqasho · Sheekaynta Tab {state}",
+    "narration_on": "SHIDAN",
+    "narration_off": "DEMMAN"
   },
   "roles": {
     "title": "Ku soo dhowoow AlloFlow",
@@ -1714,7 +1722,10 @@
     "analyzing_topology": "Anigoo u shaqaynaya Naqshadeeyaha Manhajka: Falanqaynta qaab-dhismeedka nuxurka...",
     "brainstorming": "Fikradaha waa la soo saarayaa...",
     "retrying_citations": "Tixraacyo wanaagsan ayaa mar kale loo isku dayayaa...",
-    "translating": "Waa la tarjumaynayaa…"
+    "translating": "Waa la tarjumaynayaa…",
+    "preparing_translation": "Diyaarinaya turjumaadda {lang}...",
+    "translating_item": "Turjumaya {current}/{total}: {title}...",
+    "generating_panel": "Soo saaraya guddiga {current}/{total}..."
   },
   "progression": {
     "title": "Horumarka Manhajka",
@@ -1764,7 +1775,34 @@
     "plan_hook": "Soo-jiidasho",
     "plan_independent": "Ku-celcelis Madax-bannaan",
     "col_image": "Sawir",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Jooji",
+    "expand_header": "Balaari madaxa",
+    "collapse_header": "Soo koob madaxa si aad u siiso macluumaadka meel dheeraad ah",
+    "collapse_header_short": "Soo koob madaxa",
+    "step_x_of_y": "Tallaabada {current} ee {total}",
+    "english_translation": "Turjumaadda Ingiriisiga",
+    "source_references": "Tixraacyada qoraalka asalka ah",
+    "activity_probe": "Baaritaanka {activity}",
+    "word_sounds_count": "Word Sounds ({count} eray)",
+    "quick_practice_mode": "Habka tababbarka degdega ah",
+    "new_option": "Doorasho cusub",
+    "meta_lesson_extensions": "Kordhinta casharka",
+    "title_extension_ideas": "Fikradaha kordhinta",
+    "meta_full_chat_log": "Diiwaanka sheekaysiga oo dhan",
+    "title_udl_consultation_log": "Diiwaanka la-tashiga UDL",
+    "meta_actionable_steps": "Tallaabooyin la qaadi karo (kooban AI)",
+    "title_differentiation_strategy": "Istaraatiijiyadda kala duwanaynta",
+    "meta_udl_guide_advice": "Talada Hagaha UDL",
+    "title_stem_assessment": "Qiimaynta STEM",
+    "title_explore_challenge": "Caqabadda sahaminta",
+    "title_fluency_maze": "🏰 Marinka fasaaxadda",
+    "title_storyforge_config": "📖 Hawsha StoryForge",
+    "title_storyforge_submission": "📖 Gudbinta sheekada",
+    "title_poettree_config": "🌳 Hawsha PoetTree",
+    "title_poettree_submission": "🌳 Gudbinta gabayga",
+    "title_litlab_config": "🎭 Hawsha LitLab",
+    "title_litlab_submission": "🎭 Gudbinta bandhigga"
   },
   "fullpack": {
     "button_label": "Samee Xirmo Kheyraad Dhameystiran",
@@ -2540,7 +2578,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Taxane diirad ah oo {minutes} daqiiqo ah! Sii wad!",
+    "streak_saved": "Ku soo dhawoow! Taxanahaagii {minutes} daqiiqo waa la kaydiyay.",
+    "points_awarded": "Dhibcaha waa la bixiyay!",
+    "welcome_name": "Ku soo dhawoow, {name}!",
+    "element_not_found": "Curiyaha lama helin: {id}",
+    "overlay_set": "Daboolka: {mode}",
+    "synced_resource": "La isku waafajiyay: {title}",
+    "group_resource": "Kheyraadka kooxda: {title}",
+    "preset_saved": "Habayntii hore \"{name}\" waa la kaydiyay!",
+    "translated_resources": "Si guul leh ayaa loo turjumay {count} kheyraad!",
+    "bingo_cards_count": "Waxaa la sameeyay {count} kaarka BINGO!",
+    "sound_enabled": "Codka waa la shiday",
+    "sound_muted": "Codka waa la aamusiiyay",
+    "democracy_mode_on": "Habka dimuqraadiyadda waa la shiday: codbixinta fasalka WAA SHIDAN",
+    "democracy_mode_off": "Habka dimuqraadiyadda waa la demiyay: ciyaar keligaa",
+    "resource_moved_up": "{title} kor loo qaaday",
+    "resource_moved_down": "{title} hoos loo dhigay",
+    "panels_regenerated": "{count} guddi ayaa dib loo sameeyay!",
+    "settings_undone": "La burisay: {label}. Dejintii waa la soo celiyay. (Kheyraadka la sameeyay ma saameynayaan.)",
+    "concept_added": "Fikrad la daray: {text}",
+    "lesson_not_found": "Casharka lagama helin cutubkan.",
+    "probe_complete": "Baaritaanku waa dhammaaday: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Dejinta waa la cusbooneysiiyay: {changes}",
+    "change_format": "Qaab: {value}",
+    "change_tone": "Cod: {value}",
+    "change_length": "Dherer: ~{value} eray",
+    "change_language": "Luqad: {value}",
+    "change_interest": "Xiiso la daray: {value}",
+    "backup_saved": "💾 Nuqul kaydin ah oo fadhigan ah ayaa lagu kaydiyay Soo-dejintaada (faylka mashruuca). Hadda waxba kama qaban; haddii aad waligaa u baahato inaad ku soo noqoto, \"Soo Raran Mashruuca\" wax walba wuu soo celin.",
+    "backup_saved_score": " (dhibco {score})",
+    "project_saved_multi_one": "💾 Mashruuca waa la kaydiyay ({count} kala duwan); soo raran ka dib si aad u sii wadato",
+    "project_saved_multi_other": "💾 Mashruuca waa la kaydiyay ({count} kala duwan); soo raran ka dib si aad u sii wadato",
+    "project_saved": "💾 Mashruuca waa la kaydiyay; soo raran ka dib si aad u sii wadato wax ka beddelka",
+    "search_result_desc": "Natiijada Raadinta Google: {title}",
+    "link_url_prompt": "Geli URL-ka xiriiriyaha:"
   },
   "analysis": {
     "title": "Falanqee Qalabka Isha",
@@ -4696,7 +4769,12 @@
       "error_check": "Hubinta habsamida way fashilantay.",
       "regenerated_success": "Qoraalka waxaa la dib u sameeyay hagaajinta!",
       "regen_failed": "Dib-u-samayntu way fashilantay."
-    }
+    },
+    "skill_check": "Hubinta xirfadda",
+    "desc_skill_check": "Hubi heerkaaga marka loo eego heerarka.",
+    "desc_parent": "Arag sida tani ula jaanqaadeyso yoolalka dugsiga",
+    "desc_6dim": "Wuxuu hubiyaa manhajka 6 cabbir",
+    "desc_5dim": "Wuxuu hubiyaa manhajka 5 cabbir (ku dar heerar si loo helo hubin buuxda)"
   },
   "standards": {
     "target_standard": "Heerka Bartilmaameedka",
@@ -4956,7 +5034,8 @@
     "card_visuals_label": "Muuqaalada kaadhka",
     "card_visuals_auto": "Toos (kaliya shayada gaaban)",
     "card_visuals_always": "Had iyo jeer samee sawiro",
-    "card_visuals_never": "Weligaa (kaadhka qoraal kaliya ah)"
+    "card_visuals_never": "Weligaa (kaadhka qoraal kaliya ah)",
+    "explanation_unavailable": "Hadda lama soo saari karin sharraxaad. Fadlan isku day mar kale daqiiqad ka dib."
   },
   "concept_map": {
     "toolbar": {
@@ -5723,7 +5802,7 @@
     "math_title": "Xal-saaraha STEM",
     "math_text": "Xal-yaqaan dhibaatooyinka STEM oo dhammaystiran oo gudbaya dhibaatooyinka hadalka. Wuxuu daboolayaa 10 dhinac mawduuc oo leh 4 habab xal kala duwan, taageerada qaaciidooyinka LaTeX, iyo gargaarka muuqaalka ee la abuuray toos.\n### Doorashooyinka Guddiga\n• **Dhinaca Mawduuca**: Ka dooro 10 takhasus:\n  - Xisaabta Guud, Aljabra, Joomatari, Calculus\n  - Kiimiko, Fiisigis, Bayooloji, Cilmiga Dhulka\n  - Cilmiga Kombiyuutarka, Dhaqaalaha\n• **Habka Xalka**: Dooro habkaaga waxbarid:\n  - **Abuurka Mashaariicda Mashaariicda**: Abuur mashaariic dhowr ah oo ku celcelis ah oo leh jawaabo\n  - **Tallaabo-tallaabo**: Xalal faahfaahsan oo la shaqeeyey oo leh sharaxaado\n  - **Fikrad ahaan**: Diiraddu saar fahamka \"maxay\" ka hor \"sidee\"\n  - **Codsiga Dunida Dhabta ah**: Macno guud iyo masraxyo dhab ah\n• **Qaddarka Dhibaatada**: Dej immisa dhibaato ay tahay in la abuuro\n### Astaamaha Soo Saarista\n• **Dhibaatooyin Macno-guud leh**: Dhibaatooyinka hadalka waxay isticmaalaan shakhsiyaadka/mawduucyada ka soo jeeda qoraalkaaga ilaha\n• **Xalal La Shaqeeyey**: Sharaxaado dhamaystiran oo tallaabo-tallaabo ah oo leh sabab cad\n• **Qaaciidooyinka LaTeX**: Calaamadaha xisaabeed quruxsan oo soo bandhig sadar leh\n• **Gargaarka Muuqaalka**: Garaafyo SVG iyo jaantusyo si toos ah loo abuuray mashaariicda la fulin karo\n### Talo Khabiir\nIsticmaal habka \"Codsiga Dunida Dhabta ah\" Dhaqaalaha ama Cilmiga Dhulka si aad u abuurtid caqabadaha STEM ee kala-takhasusyo!\n### Xidhiidhka UDL\n• **Muujinta**: Wuxuu dhisaa fasiraadda heerar taageero oo kor u kacaya (Hagis 5.3) iyada oo la bixinayo hababka xalka oo badan ee fikrad ilaa habsocod.",
     "adventure_title": "Habka Halganka",
-    "adventure_text": "Habka Tababarka wuxuu u beddelaa nuxurka khibradaha isdhexgalka ah ee bedelaada. Ka dooro habab kala duwan oo qaab-dhismeed leh oo leh ciyaarsiinta qoto dheer si aad u barato si dhab ah u soo jiidasho leh.\n### Habka Galinta\n• **Doorasho Badan**: Ka dooro 4 doorasho oo AI abuuray dhibcood kasta (mid u shaqeeya kuwa bilowga ah).\n• **Habka Doodda**: Ku qancin shakhsiyaadka doodaha - kororka isbeddelayaa iyadoo loo eegayo macquulnimada.\n• **Hab-dhismeedka Habka**: Maamul ururada, kheyraadka, iyo go'aamada macquulka ah ee heerka macroka.\n### Noocyada Hab-dhismeedka\n• **Tababar Caadi**: Sheekooyin kobi loo isticmaalo qaab-dhismeed asal ah oo qaab-laambaystaha leh.\n• **Sheeko Bulsho (SEL)**: Xaaladaha leh caqabado bulsho-shucuureed - saaxiibtinimo, shaqo-koox, maaraynta yaab.\n• **Habka Sheekada**: Tixraac sheekoyin oo leh qaybo sharaxaad iyo horumarinta shakhsiyaadka.\n### Astaamaha Ciyaarsiinta\n• **XP iyo Habka Tamarta**: Hel XP Tababar markaad horumarayso; tamarta way dhammaanaysaa kalmadaha khatara ah.\n• **Habka Fursadda Lammaanaha D20**: Falalka khatarta ah waxay kicinayaan duulista lammaanaha - waxay barataa suurtagalnimo iyo qiimeynta khatarta.\n• **Heerarka Adkaaha**: Sheeko (tixraac sheeko), Caadi (dheelitiran), Adag (cisigaal adag, kheyraad la dhamayn).\n• **Horumarka Heerka**: Ka horumar heerarka tababarka oo leh adkaaha sii kordhaya.\n### Habka Ururka iyo Kheyraadka\n• **Raadinta Kheyraadka**: Dahab, Caafimaad, Niyad-jab, ama doorsoomayaal gaar ah oo leh cawaaqib dhab ah.\n• **Habka AI ama Gacanta**: U oggolow AI inay maamusho kheyraadka ama qeex qiimaha bilowga ah ee adiga.\n• **Cawaaqibka**: Falalka way miirayaan ama hagaajiyaan kheyraadka - feker istraatiijiyadeed ayaa loo baahan yahay!\n### Habka Dimoqraadiga (Fasalka Oo Dhan)\n• **Codbixinta Fasalka**: Sawir tababarka boodhka oo ardayda u oggolow inay u codeeyaan dariiqa loo qaado.\n• **Wakaaladda Wadareed**: Doorashada ugu caansan ayaa sii horumarinaysa sheekada - waxay barataa go'aamo dimoqraadi ah.\n• **Habka Bandhigga**: Mid ku habboon waxbarashada fasalka oo dhan halkaas oo qof walba uu ka qaybqaadanayo sheekada wadaagga.\n### Astaamaha Isdhexgalka\n• **Jawaab Bilaash ah**: Qor wax kasta oo bilaash ah - AI si dabacsan ayuu ula qabsadaa galinta hal-abuurka leh.\n### Talo Khabiir\nIsticmaal habka shabakadda habka si aad u barato dhaqaalaha, muwaadinnimada, ama ecology iyada oo loo marayo go'aamada maaraynta kheyraadka gacanta ah.\n### Xidhiidhka UDL\n• **Ka qaybgalka**: Kobcin iskaashiga iyo bulshada (Hagis 8) iyada oo loo marayo xaaladaha bulshada iyo istraatijiyadeed ee la barbar yiil.",
+    "adventure_text": "Habka Tacaburka wuxuu nuxurka u beddelaa khibrado is-dhexgal ah oo qoto dheer. Ka dooro habab badan oo jilitaan ah oo leh ciyaarsiin qoto dheer si waxbarashadu si dhab ah u soo jiidasho leh.\n### Habka Galinta\n• **Doorasho Badan**: Ka dooro 4 doorasho oo AI soo abuuray mar walba (mid kuwa bilowga ah u fudud).\n• **Habka Doodda**: Ku qancin jilayaasha doodo - kuruxsanaanta wuxuu isbeddelaa iyadoo lagu salaynayo macquulnimada.\n• **Jilitaanka Nidaamka**: Maamul kooxaha, kheyraadka, iyo go'aamada siyaasadeed ee heerka sare.\n### Noocyada Jilitaanka\n• **Tacabur Caadi ah**: Sheekooyin laanqaale ah oo qadiimi ah oo aad adigu doorato.\n• **Sheeko Bulsho (SEL)**: Xaalado leh caqabado bulsho-shucuureed - saaxiibtinimo, shaqo-wadaag, iyo maaraynta xanaaqa.\n• **Habka Sheekada**: Diirad sheeko oo leh qaybo sharraxaad iyo horumarinta jilayaasha.\n### Astaamaha Ciyaarsiinta\n• **Nidaamka XP iyo Tamarta**: Hel XP Tacabur markaad horumarayso; tamartu way yaraataa marka aad doorato wax khatar ah.\n• **Habka Fursadda Laadhuuga D20**: Falalka khatarta ah waxay kiciyaan tuurista laadhuuga - waxay bartaa suurtagalnimada iyo qiimaynta khatarta.\n• **Heerarka Adkaanta**: Sheeko (diirad sheeko), Caadi (dheelitiran), Adag (ciqaab adag, dhammaynta kheyraadka).\n• **Horumarka Heerka**: Ka horumar heerarka tacaburka oo leh adkaan sii kordhaysa.\n### Nidaamka Kooxaha iyo Kheyraadka\n• **Raadinta Kheyraadka**: Dahab, Caafimaad, Niyad, ama doorsoomayaal gaar ah oo leh cawaaqib dhab ah.\n• **Habka AI ama Gacanta**: U oggolow AI inay maamusho kheyraadka ama qeex qiimahaaga bilowga ah.\n• **Cawaaqibka**: Falalku way miirayaan ama buuxiyaan kheyraadka - fekerka istaraatiijiga ah ayaa loo baahan yahay!\n### Habka Dimoqraadiga (Fasalka Oo Dhan)\n• **Codbixinta Fasalka**: Ku soo bandhig tacaburka sabuuradda oo ardayda u oggolow inay u codeeyaan dariiqa la qaadayo.\n• **Awood Wadareed**: Doorashada ugu caansan ayaa sheekada sii horumarisa - waxay bartaa go'aan-qaadashada dimoqraadiga ah.\n• **Habka Bandhigga**: Mid u habboon waxbarashada fasalka oo dhan halkaas oo qof walba ka qaybqaadanayo sheeko wadaag ah.\n### Astaamaha Is-dhexgalka\n• **Jawaab Furan**: Si xor ah u qor fal kasta - AI si firfircoon ayuu ula qabsadaa galinta hal-abuurka leh.\n• **Habka Qototdheer**: Khibrad shaneemo ah oo shaashad-buuxa ah oo loogu talagalay qoto-dheeraansho dhammaystiran.\n• **Akhrinta Toosan ee TTS**: Sheekada si toos ah ayaa loogu akhriyaa cod dheer.\n• **Soo-saarista Buug-sheeko**: U soo saar tacaburrada sawiro leh sidii HTML oo leh farshaxan goob oo AI soo abuuray.\n### Talo Khabiir\nIsticmaal habka Jilitaanka Nidaamka si aad ku barato dhaqaalaha, muwaadinnimada, ama cilmiga deegaanka adigoo maraya go'aamada maaraynta kheyraadka ee gacanta lagu qabto.\n### Xidhiidhka UDL\n• **Ka-qaybgalka**: Kobci iskaashiga iyo bulshada (Hagis 8) iyadoo loo marayo xaalado bulsho iyo istaraatiiji ah oo la jiliyay.",
     "alignment_title": "Warbixinta Habsamida",
     "alignment_text": "Hubi in casharkaagu ku habboon yahay. Warbixintani waxay si toos ah u barbar-dhigtaa kheyraadkaaga la abuuray Hagiyada Common Core iyo Hagiyada UDL, oo aqoonsanaysa awoodaha iyo qaladaadka.\n### Helaha Hagiyada AI\n• **Raadinta Caqliga ah**: Geli mawduuc ama xirfad oo AI wuxuu kuu soo jeedinayaa hagiyada ku habboon CCSS, NGSS, ama TEKS.\n• **La-talin AI**: Hel la-talin istraatijiyadeed sida nuxurkaagu uga jawaabayo hagiyada gaarka ah.\n• **Qaabab-fareem badan**: Wuxuu taageeraa Common Core ELA/Xisaab, NGSS, iyo qaababka gaar ah ee gobolka.\n### Hubinta Isku-habaynta\n• **Hagiyada CAST UDL**: Wuxuu hubaa ka qaybgalka, matalaadda, iyo falalka/ka muujinta.\n• **Xaqiijinta Hagiyada**: Tixraac dhex-leh Common Core, NGSS, ama Hagiyada Gobolka.\n• **Falanqaynta Faragelinta**: Wuxuu aqoonsanaa walxaha maqan ama dhibcaha daciifka ah ee qorshahaaga casharka.\n• **Soo jeedinta**: Talo la qaadan karo si loo hagaajiyo isku-habaynta.\n### Talo Khabiir\n• Isticmaal falanqaynta faragelinta si aad u xaqiijiso codsiyada kheyraadka ama waqtiga qorsheynta la-jirka maamulka.\n### Xidhiidhka UDL\n• **Falalka iyo Ka Muujinta**: Kordhin awoodda la-socoshada horumarka (Hagis 6.4) iyada oo la dejinayo yoolal cad iyo shuruudaha guul.",
     "lesson_plan_title": "Qorshaha Casharka",
@@ -6400,10 +6479,17 @@
   "lms": {
     "dismiss_banner_aria": "Saar baararka LMS",
     "dismiss_button": "Saar",
-    "audit_queue_help": "Riix dukumeenti si aad u soo qaado oo aad u soo dejiso pipeline-ka helitaanka. Faylasha LMS qaarkood waxay u baahan karaan inaad ku jirto LMS-ka brawsarkan."
+    "audit_queue_help": "Riix dukumeenti si aad u soo qaado oo aad u soo dejiso pipeline-ka helitaanka. Faylasha LMS qaarkood waxay u baahan karaan inaad ku jirto LMS-ka brawsarkan.",
+    "queued_one": "{count} dokumenti ayaa safka ku jira ee LMS",
+    "queued_other": "{count} dokumenti ayaa safka ku jira ee LMS",
+    "fetching": "Soo qaadanaya {name}...",
+    "loaded_ready": "{name} waa la soo raray; diyaar u ah hubinta",
+    "fetch_failed": "Lama soo qaadan karin {name}: {error}. Faylku wuxuu u baahan karaa xaqiijinta LMS."
   },
   "visual_support": {
-    "teacher_modal_aria": "Taageero Muuqaal ah oo macallinkaaga"
+    "teacher_modal_aria": "Taageero Muuqaal ah oo macallinkaaga",
+    "now": "HADDA",
+    "read_aloud": "Kor u akhri"
   },
   "note_taking": {
     "template_label": "Nooca qaabka",
@@ -6880,7 +6966,25 @@
       "resolved_tip": "Arrimaha ka soo jeeda hubinta asalka ah ee aan dib looga heli karin hubinta xaqiijinta",
       "persisted_tip": "Arrimaha hubinta asalka ah ee wali jira hagaajinta ka dib",
       "introduced_tip": "Arrimo cusub oo aan jirin ka hor hagaajinta"
-    }
+    },
+    "reattach_mismatch": "PDF-ka dib loo lifaaqay wuu ka duwan yahay kii la hubiyay{detail}. Si kastaba ha noqotee waa la sii wadi doonaa; natiijooyinku ma waafaqsana karaan hubintii asalka ahayd.",
+    "reattach_name_detail": " (magac: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (cabbir: {new} vs. {old} bytes)",
+    "audit_failed_kept": "{label}: hubintu way fashilantay; waxaa la hayaa nooca hore.",
+    "score_dropped_kept": "{label}: dhibcuhu way hoos u dhici lahaayeen ({prev} → {next}{axe}). Waxaa la hayaa nooca hore.",
+    "axe_only_comparison": ", isbarbardhig axe oo keliya",
+    "axe_only_committed": "{label}: xaqiijinta AI lama heli karo; waxaa lagu xaqiijiyay dhibcaha go'an ee axe-core oo keliya.",
+    "reinserted_ai": "{count} dib loo geliyay (AI)",
+    "reinserted_sentence": "{count} dib loo geliyay (jumlad)",
+    "reinserted_fuzzy": "{count} dib loo geliyay (qiyaas)",
+    "in_recovery_appendix": "{count} ku jira lifaaqa soo-kabashada",
+    "duplicates_removed_one": "{count} nuqul la saaray",
+    "duplicates_removed_other": "{count} nuqul la saaray",
+    "auto_continue_round": "Wareegga sii-socoshada otomaatigga ah {round}/{max}: {detail}, dhibco {score}/100 (bartilmaameed {target})...",
+    "violation_one": "{count} xadgudub",
+    "violation_other": "{count} xadgudub",
+    "ai_issue_one": "{count} arrin AI calaamadeysay",
+    "ai_issue_other": "{count} arrin AI calaamadeysay"
   },
   "about": {
     "title": "Ku saabsan AlloFlow v1.0",
@@ -12283,5 +12387,27 @@
     "no_match": "Ma jiro amar u dhigma. Sheekada bot-ka (iyo dhowaan codka) waxay fahmaan codsiyo qaab-furan.",
     "placeholder": "Qor amar — “qoraal weyn”, “xarunta macallinka”, “bogga ii akhri”…",
     "run": "socodsii"
+  },
+  "voice_engine": {
+    "preparing": "Diyaarinaya mishiinka codka...",
+    "downloading_model": "Soo dejinaya moodelka codka",
+    "loading_memory": "Ku rarista xusuusta",
+    "loading_model_memory": "Moodelka codka ku rarista xusuusta"
+  },
+  "voice_control": {
+    "listening": "Dhageysanaya; dheh “stop listening” si aad u dhammeyso",
+    "stop_aria": "Jooji xakamaynta codka"
+  },
+  "dynamic_assessment": {
+    "return_title": "Kheyraadkan waxaa soo saaray Qiimaynta Firfircoon. Guji si aad dib u furto moodalka Qiimaynta Firfircoon.",
+    "return_aria": "Ku noqo Qiimaynta Firfircoon",
+    "return_label": "Ku noqo Qiimaynta Firfircoon",
+    "item_badge": "shay {num}"
+  },
+  "story_gallery": {
+    "title": "Bandhigga sheekooyinka",
+    "byline": "{author} qoray · {words} eray · {used}/{total} ereybixin",
+    "student": "Arday",
+    "score": "Dhibco: {score}"
   }
 }

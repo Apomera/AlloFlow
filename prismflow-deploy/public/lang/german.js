@@ -19,7 +19,7 @@
     "scaffolds_title": "Schreibgerüste",
     "scaffolds_text": "Umfassendes Schreibunterstützungssystem mit AI-gestützter Bewertung und anpassbaren Satzstrukturen. Ideal für differenzierten Schreibunterricht.\n### Gerüsttypen\n• **Satzanfänge**: Listenbasierte Impulse, um Lernenden den Einstieg in ihre Gedanken zu erleichtern.\n• **Absatzgerüste**: Lückentext-Absätze für strukturierte Argumentationen.\n• **Diskussionsimpulse**: Gesprächsanlässe für kollaborative Diskussionen.\n• **Individuelle Anweisungen**: Passen Sie Gerüste an bestimmte rhetorische Funktionen an (z. B. „Zustimmen/Widersprechen\", „Ursache und Wirkung\").\n### Rubrik- und Bewertungssystem\n• **Automatisch erstellte Rubriken**: Die AI erzeugt kriterienbasierte Rubriken, die auf Ihre Inhalte abgestimmt sind.\n• **Selbsteinschätzungs-Checklisten**: Erfolgskriterien für Lernende zur eigenen Kontrolle.\n• **Beherrschungsbewertung**: Beurteilen Sie das Verständnis der Lernenden mit strukturierter Rubrikbewertung.\n• **Rubrik-Zoom**: Vergrößerte Rubrikansicht zur detaillierten Kriterienprüfung.\n### AI-Auto-Bewerter\n• **Sofortige Rückmeldung**: Lassen Sie Schülerentwürfe einreichen, um eine AI-gestützte Bewertung umgehend zu erhalten.\n• **Kriterienbasierte Punktevergabe**: Jede Antwort wird anhand der Rubrikkriterien bewertet.\n• **„Glow & Grow\"**: Liefert konkretes Lob („Glow\") und Verbesserungsvorschläge („Grow\").\n• **TTS-Rückmeldung**: AlloBot liest Bewertungsergebnisse zur besseren Zugänglichkeit vor.\n• **XP-Belohnungen**: Lernende erhalten Mastery XP (100 Punkte) für abgeschlossene Entwürfe.\n### Eingabemöglichkeiten\n• **Sprachdiktat**: Lernende können Antworten über die FAB-Mikrofontaste diktieren.\n• **Bearbeitungsmodus**: Lehrkräfte können Satzanfänge und Impulse anpassen.\n• **Zurücksetzen & Erneut versuchen**: Arbeit löschen, um einen neuen Versuch zu starten.\n### Profi-Tipp\nVerwenden Sie die Schaltfläche „Prüfung starten\", um die AI-Bewertungsschleife zu aktivieren - Lernende können auf Basis des Feedbacks überarbeiten und erneut einreichen!\n### UDL-Bezug\n• **Handlung & Ausdruck**: Optimiert für Konstruktion und Komposition (Richtlinie 5), mit abgestuften Unterstützungsstufen für Übung und Leistung.",
     "quiz_title": "Gamifiziert Quiz",
-    "quiz_text": "Gamifizierte Leistungsüberprüfung mit mehreren kompetitiven und immersiven Modi - von Live-Klassenduellen bis zu rätselbasierten Escape Rooms.\n### Spielmodi\n• **Live-Quiz**: Synchrone Sitzungen in Echtzeit mit Punkteverfolgung und Sitzungscodes für die Teilnahme.\n• **Team Showdown**: Teambasierter Wettkampf mit farblich gekennzeichneten Gruppen und gemeinsamer Wertung.\n• **Boss Battle**: Klasse gegen AI-Boss - korrekte Antworten verursachen Schaden und besiegen den Boss gemeinsam!\n• **Escape Room**: Immersive Themenrätsel mit Hinweisen, Chiffren, verschlossenen Türen und einer abschließenden Fluchtherausforderung.\n• **Wiederholungsmodus**: Üben im eigenen Tempo mit sofortiger Rückmeldung.\n### Fragetypen\n• **Multiple Choice**: Standard-MCQ mit konfigurierbarer Fragenanzahl.\n• **Reflexionsfragen**: Offene Antworten für tiefergehendes Nachdenken.\n• **Lückentext**: Sätze mit fehlenden Schlüsselbegriffen vervollständigen.\n• **Zuordnung**: Verwandte Konzepte miteinander verbinden.\n• **Chiffrierrätsel**: Verschlüsselte Botschaften im Escape-Room-Modus entschlüsseln.\n### Gamification-Funktionen\n• **Bestenlisten**: Echtzeit-Rangliste während Live-Sitzungen.\n• **Teamfarben**: Automatisch zugewiesene Teamidentitäten für Gruppenwettbewerbe.\n• **Hinweissystem**: Hinweismarken einsetzen für Tipps im Escape Room (begrenzter Vorrat!).\n• **Abschlussverfolgung**: Erfasst absolvierte Escape Rooms und Quiz-Ergebnisse sitzungsübergreifend.\n### AI-Auto-Bewerter\n• **Reflexionsbewertung**: Die AI bewertet offene Antworten mit rubrikbasiertem Feedback.\n• **Sofortige Ergebnisse**: Automatische Bewertung mit personalisierter Rückmeldung zu jeder Antwort.\n### Live-differenzierte Bereitstellung\n• **Gruppenüberschreibungen**: Weisen Sie bestimmten Schülergruppen mitten in der Sitzung andere Ressourcen oder Sprachversionen zu.\n• **Gezieltes Zustellen**: Schicken Sie Tier-3-Lernenden ein gestütztes Quiz, während der Rest mit dem Standardmaterial arbeitet.\n• **Echtzeit-Umschaltung**: Sie müssen die Sitzung nicht beenden - differenzieren Sie spontan vom Lehrer-Dashboard aus.\n### Lehrerfunktionen\n• **Präsentationsmodus**: Fragen im Vollbild für die Diskussion in der ganzen Klasse projizieren.\n• **Sitzungscodes**: Beitrittscodes erzeugen, damit Lernende von jedem Gerät teilnehmen können.\n• **Antworten ein-/ausblenden**: Sichtbarkeit des Lösungsschlüssels während der Besprechung umschalten.\n• **DOK-Stufen**: Fragen an Depth-of-Knowledge-Standards ausrichten.\n### Profi-Tipp\nNutzen Sie den Escape-Room-Modus zur Steigerung des Engagements - Lernende lösen Rätsel zum „Entkommen\" und zeigen dabei ihr Inhaltsverständnis.\n### UDL-Bezug\n• **Engagement**: Optimiert die Herausforderung (Richtlinie 8.2) durch schrittweise Steigerung und gamifizierte Rückmeldeschleifen.",
+    "quiz_text": "Gamifizierte Leistungsüberprüfung mit mehreren kompetitiven und immersiven Modi - von Live-Klassenduellen bis zu rätselbasierten Escape Rooms.\n### Spielmodi\n• **Live-Quiz**: Synchrone Sitzungen in Echtzeit mit Punkteverfolgung und Sitzungscodes für die Teilnahme.\n• **Team Showdown**: Teambasierter Wettkampf mit farblich gekennzeichneten Gruppen und gemeinsamer Wertung.\n• **Boss Battle**: Klasse gegen KI-Boss - korrekte Antworten verursachen Schaden und besiegen den Boss gemeinsam!\n• **Escape Room**: Immersive Themenrätsel mit Hinweisen, Chiffren, verschlossenen Türen und einer abschließenden Fluchtherausforderung.\n• **Wiederholungsmodus**: Üben im eigenen Tempo mit sofortiger Rückmeldung.\n### Fragetypen\n• **Multiple Choice**: Standard-MCQ mit konfigurierbarer Fragenanzahl.\n• **Reflexionsfragen**: Offene Antworten für tiefergehendes Nachdenken.\n• **Lückentext**: Sätze mit fehlenden Schlüsselbegriffen vervollständigen.\n• **Zuordnung**: Verwandte Konzepte miteinander verbinden.\n• **Chiffrierrätsel**: Verschlüsselte Botschaften im Escape-Room-Modus entschlüsseln.\n### Gamification-Funktionen\n• **Bestenlisten**: Echtzeit-Rangliste während Live-Sitzungen.\n• **Teamfarben**: Automatisch zugewiesene Teamidentitäten für Gruppenwettbewerbe.\n• **Hinweissystem**: Hinweismarken einsetzen für Tipps im Escape Room (begrenzter Vorrat!).\n• **Abschlussverfolgung**: Erfasst absolvierte Escape Rooms und Quiz-Ergebnisse sitzungsübergreifend.\n### KI-Auto-Bewerter\n• **Reflexionsbewertung**: Die KI bewertet offene Antworten mit rubrikbasiertem Feedback.\n• **Sofortige Ergebnisse**: Automatische Bewertung mit personalisierter Rückmeldung zu jeder Antwort.\n### Live-differenzierte Bereitstellung\n• **Gruppenüberschreibungen**: Weisen Sie bestimmten Schülergruppen mitten in der Sitzung andere Ressourcen oder Sprachversionen zu.\n• **Gezieltes Zustellen**: Schicken Sie Tier-3-Lernenden ein gestütztes Quiz, während der Rest mit dem Standardmaterial arbeitet.\n• **Echtzeit-Umschaltung**: Sie müssen die Sitzung nicht beenden - differenzieren Sie spontan vom Lehrer-Dashboard aus.\n### Lehrerfunktionen\n• **Präsentationsmodus**: Fragen im Vollbild für die Diskussion in der ganzen Klasse projizieren.\n• **Sitzungscodes**: Beitrittscodes erzeugen, damit Lernende von jedem Gerät teilnehmen können.\n• **Antworten ein-/ausblenden**: Sichtbarkeit des Lösungsschlüssels während der Besprechung umschalten.\n• **DOK-Stufen**: Fragen an Depth-of-Knowledge-Standards ausrichten.\n### Profi-Tipp\nNutzen Sie den Escape-Room-Modus zur Steigerung des Engagements - Lernende lösen Rätsel zum „Entkommen\" und zeigen dabei ihr Inhaltsverständnis.\n### UDL-Bezug\n• **Engagement**: Optimiert die Herausforderung (Richtlinie 8.2) durch schrittweise Steigerung und gamifizierte Rückmeldeschleifen.",
     "brainstorm_title": "Ideen-Maschine",
     "brainstorm_text": "Doppelzweck-Ideen- und Simulationsgenerator. Erstellen Sie Engagement-Hooks und Aktivitäten ODER generieren Sie interaktive Canvas-Simulationen.\n### Ideenfindungsmodus\n• **Benutzerdefinierte Anweisungen**: Fügen Sie spezifische Fokusbereiche oder Kontext für Ideen hinzu.\n• **Verbindungen zur realen Welt**: Aktivitäten, die Inhalte mit Karrieren und Alltag verbinden.\n• **Diskussionshaken**: Provokative Fragen, um Klassengespräche anzustoßen.\n• **Projektbasierte Ideen**: Langfristige Projektkonzepte mit Leitfragen.\n### Gemini Canvas (Simulationsgenerator)\nGenerieren Sie interaktive Canvas-Simulationen mit iterativer KI-Verfeinerung:\n• **Simulationstypen**: React-Komponenten, Python-Visualisierungen, Physik-Simulationen, benutzerdefinierte Chatbots.\n• **Schrittanzahl-Schieberegler** (1-10): Mehr Schritte = verfeinertere Prompts für tiefere Erkundung.\n• **Canvas-Prompt-Schaltfläche**: Startet automatisch Gemini Canvas mit Ihrem Simulationscode.\n### Generierte Ideenkarten\nJede Idee enthält:\n• **Titel & Beschreibung**: Übersicht der Kernaktivität.\n• **Verbindungsfeld**: Wie sie mit Ihrem Inhalt verknüpft ist.\n• **Lehrerleitfaden**: Generieren Sie schrittweise Implementierungsanweisungen pro Idee.\n• **Bearbeitungsmodus**: Ändern Sie nach der Generierung jedes Feld.\n### Profi-Tipp\nVerwenden Sie den Python-Simulationsmodus, um automatisch bewertete Mathematikübungstools zu erstellen - Schüler geben Werte ein und erhalten sofortiges Feedback!\n### UDL-Verbindung\n• **Engagement**: Optimieren Sie Relevanz, Wert und Authentizität (Richtlinie 7), indem Sie Lernen mit realen Problemen und interaktiven Erfahrungen verbinden.",
     "persona_title": "Persona-Chat",
@@ -58,7 +58,7 @@
     "note_taking_text": "Strukturierte Notizvorlagen, die Schülern beibringen, *wie* man Notizen macht, nicht nur *was* zu schreiben ist. Beinhaltet Cornell, grafische Organizer, doppelte Eingabe und Lerntagebücher."
   },
   "launch_pad": {
-    "subtitle": "Wählen dein Lernen pathway",
+    "subtitle": "Wählen Sie Ihren Lernpfad",
     "full_title": "Voll Platform",
     "full_desc": "Abschließen access zu alle AlloFlow Funktions — Lektions, STEM Lab, und Werkzeugs",
     "guided_title": "Guided Modus",
@@ -370,7 +370,7 @@
     "placeholder_type_a_language_name_e_g_hindi_swahili_haitian_cre": "Typ ein Sprache Name (z. B. Hindi, Swahili, Haitian Creole...)",
     "placeholder_type_or_tap_letters": "Typ oder tippen letters...",
     "placeholder_type_the_word": "Typ die Wort...",
-    "play_all_remaining_words_aloud": "Abspielen alle remaining Worts aloud",
+    "play_all_remaining_words_aloud": "Alle verbleibenden Wörter vorlesen",
     "play_all_sounds": "Abspielen alle Tons",
     "play_phoneme_sequence": "Abspielen phoneme sequence",
     "play_tts": "Abspielen TTS",
@@ -994,8 +994,8 @@
     "definition_failed": "Definition fehlgeschlagen.",
     "phonics_parse_failed": "Fehlgeschlagen zu parse phonics Daten.",
     "phonics_analysis_failed": "Fehlgeschlagen zu analysieren Wort phonics.",
-    "text_not_found": "Could nicht finden Text zu replace.",
-    "text_exact_not_found": "Could nicht finden exact Text zu replace.",
+    "text_not_found": "Der zu ersetzende Text konnte nicht gefunden werden.",
+    "text_exact_not_found": "Der genaue zu ersetzende Text konnte nicht gefunden werden.",
     "text_updated": "Text aktualisiert!",
     "group_create_failed": "Fehlgeschlagen zu erstellen Gruppe",
     "group_resource_assigned": "Ressource assigned zu Gruppe",
@@ -1164,7 +1164,7 @@
     "annotation_suite_not_ready_try": "Annichtation suite nicht leseny — erneut versuchen in ein moment.",
     "could_not_import": "Could nicht importieren:",
     "imported": "Importierened",
-    "could_not_parse_file_must": "Could nicht parse die Datei. Muss be ein valid Anmerkungs JSON.",
+    "could_not_parse_file_must": "Die Datei konnte nicht verarbeitet werden. Sie muss ein gültiges Anmerkungs-JSON sein.",
     "not_valid_alloflow_project": "Nicht ein valid AlloFlow project",
     "loaded": "📂 Ladened:",
     "failed": "Fehlgeschlagen:",
@@ -1270,7 +1270,7 @@
     "could_read_handwriting_try_clearer": "Could nicht lesen handschreiben — versuchen ein leerener photo",
     "writing_sprint_complete": "Schreiben sdrucken abschließen!",
     "draft_saved": "Draft speichernd!",
-    "could_save_draft_u2014_browser": "Could nicht speichern draft \\u2014 browser storage kann be voll. Exportieren dein story as JSON zu avoid losing Arbeit!",
+    "could_save_draft_u2014_browser": "Entwurf konnte nicht gespeichert werden \\u2014 der Browser-Speicher ist möglicherweise voll. Exportiere deine Geschichte als JSON, um keine Arbeit zu verlieren!",
     "draft_restored_2": "Entwurf wiederhergestellt!",
     "assignment_loaded_from_teacher": "Aufgabe ladened von Lehrer!",
     "storyforge_assignment_saved_lesson": "StoryForge Aufgabe speichernd zu Lektion!",
@@ -1336,7 +1336,7 @@
     "momentum_sequence_generated": "Momentum sequence generiert 🚀",
     "quiz_results_copied": "Quiz Ergebniss kopiert ✅",
     "model_auto_filled_from_abc": "Modusl auto-filled von ABC Daten ✅",
-    "could_parse_ai_response_try": "Could nicht parse AI Antwort — versuchen manually",
+    "could_parse_ai_response_try": "AI-Antwort konnte nicht verarbeitet werden — versuche es manuell",
     "ai_analysis_failed": "AI Analyse fehlgeschlagen",
     "pathways_model_copied": "Pathways Modusl kopiert ✅",
     "dead_man_let_reframe_as": "ein dead man CAN do das — let's reframe it as ein aktiv Verhalten!",
@@ -1494,7 +1494,7 @@
     "sweep_complete": "Swirep abschließen!",
     "sweep_failed": "Swirep fehlgeschlagen:",
     "fix_remaining_failed": "Fix remaining fehlgeschlagen:",
-    "remediated_content_verify_yet_run": "Nein remediated Inhalt zu verify yet — ausführen remediation erste, dann re-prüfen fidelity.",
+    "remediated_content_verify_yet_run": "Noch kein behobener Inhalt zum Überprüfen — führe zuerst die Behebung durch, dann prüfe die Treue erneut.",
     "image_regeneration_unavailable": "Bild reGenerierung unverfügbar",
     "diff_engine_failed_load_network": "Diff engine fehlgeschlagen zu laden (network bgesperrt?). Prüfen dein connection und erneut versuchen.",
     "report_opened_with_save_as": "Bericht öffnened mit Speichern as PDF button",
@@ -1697,7 +1697,42 @@
     "whisper_load_failed": "Whisper-Modell konnte nicht geladen werden",
     "backup_failed": "Sicherung fehlgeschlagen. Bitte erneut versuchen.",
     "invalid_backup_file": "Ungültige Sicherungsdatei",
-    "could_not_read_file": "Datei konnte nicht gelesen werden"
+    "could_not_read_file": "Datei konnte nicht gelesen werden",
+    "focus_streak": "{flames} {minutes}-minütige Fokus-Serie! Mach weiter so!",
+    "streak_saved": "Willkommen zurück! Deine {minutes}-Minuten-Serie wurde gespeichert.",
+    "points_awarded": "Punkte vergeben!",
+    "welcome_name": "Willkommen, {name}!",
+    "element_not_found": "Element nicht gefunden: {id}",
+    "overlay_set": "Overlay: {mode}",
+    "synced_resource": "Synchronisiert: {title}",
+    "group_resource": "Gruppenressource: {title}",
+    "preset_saved": "Voreinstellung \"{name}\" gespeichert!",
+    "translated_resources": "{count} Ressourcen erfolgreich übersetzt!",
+    "bingo_cards_count": "{count} BINGO-Karten erstellt!",
+    "sound_enabled": "Ton eingeschaltet",
+    "sound_muted": "Ton stummgeschaltet",
+    "democracy_mode_on": "Demokratiemodus aktiviert: Klassenabstimmung EIN",
+    "democracy_mode_off": "Demokratiemodus deaktiviert: Einzelspiel",
+    "resource_moved_up": "{title} nach oben verschoben",
+    "resource_moved_down": "{title} nach unten verschoben",
+    "panels_regenerated": "{count} Panels neu generiert!",
+    "settings_undone": "Rückgängig gemacht: {label}. Einstellungen wiederhergestellt. (Generierte Ressourcen sind nicht betroffen.)",
+    "concept_added": "Konzept hinzugefügt: {text}",
+    "lesson_not_found": "Lektion in dieser Einheit nicht gefunden.",
+    "probe_complete": "Test abgeschlossen: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Einstellungen aktualisiert: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Ton: {value}",
+    "change_length": "Länge: ~{value} Wörter",
+    "change_language": "Sprache: {value}",
+    "change_interest": "Interesse hinzugefügt: {value}",
+    "backup_saved": "💾 Eine Sicherung dieser Sitzung wurde in deinen Downloads gespeichert (eine Projektdatei). Du musst jetzt nichts damit tun; falls du jemals zurückkehren musst, stellt \"Projekt laden\" alles wieder her.",
+    "backup_saved_score": " (Punktzahl {score})",
+    "project_saved_multi_one": "💾 Projekt gespeichert ({count} Bereich); lade es später, um fortzufahren",
+    "project_saved_multi_other": "💾 Projekt gespeichert ({count} Bereiche); lade es später, um fortzufahren",
+    "project_saved": "💾 Projekt gespeichert; lade es später, um die Bearbeitung fortzusetzen",
+    "search_result_desc": "Google-Suchergebnis: {title}",
+    "link_url_prompt": "Link-URL eingeben:"
   },
   "large_file": {
     "modal_title": "Importieren Groß Audio Datei",
@@ -1713,7 +1748,8 @@
     "cancel_transcription": "Abbrechen Transcription",
     "chunk_info": "Audio ist split in 5-Minute chunks für processing",
     "chunk_progress": "Chunk {current} von {total}",
-    "audio_only_error": "Currently nur Audio Dateis (MP3, WAV, usw.) sind supported für chunked transcription."
+    "audio_only_error": "Currently nur Audio Dateis (MP3, WAV, usw.) sind supported für chunked transcription.",
+    "starting": "Wird gestartet..."
   },
   "formatting": {
     "bold": "Fett (**Text**)",
@@ -1788,7 +1824,7 @@
     "collapse_tooltip": "Collapse alle cards",
     "ai_guide": "KI-Anleitung & Assistent",
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Festlegenup",
-    "ai_guide_welcome": "Hallo! Ich'm dein AI Guide. Ich kann Hilfe mit UDL strategies, navigate die app für du, oder auto-festlegenup dein Lektionseinstellungen. Frag einfach!",
+    "ai_guide_welcome": "Hallo! Ich bin Ihr KI-Assistent. Ich kann Ihnen bei UDL-Strategien helfen, für Sie durch die App navigieren oder Ihre Unterrichtseinstellungen automatisch einrichten. Fragen Sie einfach!",
     "tool_analysis": "Analyze Quellmaterial",
     "tool_glossary": "Glossar & Sprache Auswählenion",
     "tool_simplified": "Textanpassung",
@@ -1817,7 +1853,8 @@
     "open_storyforge_aria": "Öffnen StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Basierend Frages",
-    "open_stem_lab_explore_aria": "Öffnen STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Öffnen STEM Lab Explore",
+    "stem_lab_explore": "Erkunden"
   },
   "history": {
     "load_project": "Laden Project",
@@ -2089,7 +2126,7 @@
     "close_voice_note": "Schließen Stimme note",
     "delete_voice_note": "Löschen Stimme note",
     "cancel_recording": "Abbrechen recording",
-    "stop_save_recording": "Stop recording and speichern",
+    "stop_save_recording": "Aufnahme beenden und speichern",
     "delete_highlight": "Löschen highlight",
     "delete_drawing": "Löschen drawing",
     "note_template": "Notiz template",
@@ -2915,7 +2952,7 @@
       "zone_pizza": "Pizza"
     },
     "diagnosis": {
-      "tagline": "Something wirnt wrong in die bake. Which explanation fits beste?",
+      "tagline": "Beim Backen ist etwas schiefgelaufen. Welche Erklärung passt am besten?",
       "symptom": "Symptom",
       "pick_cause": "Wähle die wahrscheinlichste Ursache",
       "check": "Prüfen Antwort",
@@ -3635,7 +3672,7 @@
       "error_auto_search": "Suchen fehlgeschlagen. Bitte erneut versuchen.",
       "copy_paste_instruction": "Bitte kopieren die URL von die neu tab und einfügen it here.",
       "article_imported": "Article importierened und cleaned!",
-      "error_extract": "Could nicht extract Text. Die URL might be invalid oder blocking access.",
+      "error_extract": "Text konnte nicht extrahiert werden. Die URL ist möglicherweise ungültig oder blockiert den Zugriff.",
       "error_read_file": "Fehlgeschlagen zu lesen Text Datei."
     },
     "hide_answer": "Ausblenden Antwort",
@@ -4214,8 +4251,8 @@
     },
     "unavailable": {
       "title": "Audit Unverfügbar",
-      "body": "Die AI Barrierefreiheit audit could nicht abschließen. dies ist usually caverwendend by ein temporary APIch issue, rate limiting, oder ein sehr groß/komplex PDF.",
-      "proceed_hint": "Du kann still proceed — Fix & Verify wird verwandeln die document und ausführen ein voll audit afterward."
+      "body": "Das AI-Barrierefreiheits-Audit konnte nicht abgeschlossen werden. Dies wird üblicherweise durch ein vorübergehendes API-Problem, eine Ratenbegrenzung oder ein sehr großes/komplexes PDF verursacht.",
+      "proceed_hint": "Du kannst trotzdem fortfahren — Fix & Verify wandelt das Dokument um und führt anschließend ein vollständiges Audit durch."
     },
     "tabs": {
       "aria": "Audit Ansicht",
@@ -4493,7 +4530,25 @@
       "resolved_tip": "Probleme aus der ursprünglichen Prüfung, die in der Verifikationsprüfung nicht mehr gefunden werden",
       "persisted_tip": "Probleme aus der ursprünglichen Prüfung, die nach der Korrektur noch vorhanden sind",
       "introduced_tip": "Neue Probleme, die vor der Korrektur nicht existierten"
-    }
+    },
+    "reattach_mismatch": "Das erneut angehängte PDF unterscheidet sich vom geprüften{detail}. Es wird trotzdem fortgefahren; die Ergebnisse können von der ursprünglichen Prüfung abweichen.",
+    "reattach_name_detail": " (Name: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (Größe: {new} vs. {old} Bytes)",
+    "audit_failed_kept": "{label}: Prüfung fehlgeschlagen; vorherige Version beibehalten.",
+    "score_dropped_kept": "{label}: Die Punktzahl wäre gesunken ({prev} → {next}{axe}). Vorherige Version beibehalten.",
+    "axe_only_comparison": ", nur axe-Vergleich",
+    "axe_only_committed": "{label}: KI-Überprüfung nicht verfügbar; nur mit der deterministischen axe-core-Punktzahl bestätigt.",
+    "reinserted_ai": "{count} wieder eingefügt (KI)",
+    "reinserted_sentence": "{count} wieder eingefügt (Satz)",
+    "reinserted_fuzzy": "{count} wieder eingefügt (ungefähr)",
+    "in_recovery_appendix": "{count} im Wiederherstellungsanhang",
+    "duplicates_removed_one": "{count} Duplikat entfernt",
+    "duplicates_removed_other": "{count} Duplikate entfernt",
+    "auto_continue_round": "Automatische Fortsetzungsrunde {round}/{max}: {detail}, Punktzahl {score}/100 (Ziel {target})...",
+    "violation_one": "{count} Verstoß",
+    "violation_other": "{count} Verstöße",
+    "ai_issue_one": "{count} von der KI markiertes Problem",
+    "ai_issue_other": "{count} von der KI markierte Probleme"
   },
   "concept_sort": {
     "title": "Konzept-Sortierung",
@@ -4567,7 +4622,8 @@
     "card_visuals_label": "Kartenbilder",
     "card_visuals_auto": "Auto (nur auf short Elemente)",
     "card_visuals_always": "Always generieren Bilds",
-    "card_visuals_never": "Never (Text-nur cards)"
+    "card_visuals_never": "Never (Text-nur cards)",
+    "explanation_unavailable": "Es konnte gerade keine Erklärung generiert werden. Bitte versuche es gleich noch einmal."
   },
   "dbq": {
     "title": "Document Analyse (DBQ)",
@@ -4973,7 +5029,12 @@
       "error_check": "Fehlgeschlagen zu prüfen Ausrichtung.",
       "regenerated_success": "Text neu generierend mit improvements!",
       "regen_failed": "ReGenerierung fehlgeschlagen."
-    }
+    },
+    "skill_check": "Kompetenzprüfung",
+    "desc_skill_check": "Überprüfe deine Beherrschung anhand der Standards.",
+    "desc_parent": "Sehen Sie, wie dies zu den Schulzielen passt",
+    "desc_6dim": "Prüft den Lehrplan anhand von 6 Dimensionen",
+    "desc_5dim": "Prüft den Lehrplan anhand von 5 Dimensionen (Standards für die vollständige Prüfung hinzufügen)"
   },
   "standards": {
     "target_standard": "Tarerhalten Standard",
@@ -5185,7 +5246,34 @@
     "plan_hook": "Einstieg",
     "plan_independent": "Ichndependent Practice",
     "col_image": "Bild",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Stopp",
+    "expand_header": "Kopfzeile erweitern",
+    "collapse_header": "Kopfzeile einklappen, um dem Inhalt mehr Platz zu geben",
+    "collapse_header_short": "Kopfzeile einklappen",
+    "step_x_of_y": "Schritt {current} von {total}",
+    "english_translation": "Englische Übersetzung",
+    "source_references": "Quelltextverweise",
+    "activity_probe": "{activity}-Test",
+    "word_sounds_count": "Word Sounds ({count} Wörter)",
+    "quick_practice_mode": "Schnellübungsmodus",
+    "new_option": "Neue Option",
+    "meta_lesson_extensions": "Unterrichtserweiterungen",
+    "title_extension_ideas": "Erweiterungsideen",
+    "meta_full_chat_log": "Vollständiges Chat-Protokoll",
+    "title_udl_consultation_log": "UDL-Beratungsprotokoll",
+    "meta_actionable_steps": "Umsetzbare Schritte (KI-Zusammenfassung)",
+    "title_differentiation_strategy": "Differenzierungsstrategie",
+    "meta_udl_guide_advice": "Rat des UDL-Leitfadens",
+    "title_stem_assessment": "STEM-Bewertung",
+    "title_explore_challenge": "Erkundungs-Challenge",
+    "title_fluency_maze": "🏰 Flüssigkeits-Labyrinth",
+    "title_storyforge_config": "📖 StoryForge-Aufgabe",
+    "title_storyforge_submission": "📖 Geschichten-Einreichung",
+    "title_poettree_config": "🌳 PoetTree-Aufgabe",
+    "title_poettree_submission": "🌳 Gedicht-Einreichung",
+    "title_litlab_config": "🎭 LitLab-Aufgabe",
+    "title_litlab_submission": "🎭 Aufführungs-Einreichung"
   },
   "persona": {
     "title": "IchnterAnsicht Modus",
@@ -6745,7 +6833,61 @@
     "brainstorm_worksheet": "Schuelerseitige Arbeitsblatt-Ansicht einer Brainstorming-Idee: zeigt nur Titelbild, Titel und Inhalt in druckfertigem Layout. Die Lehrkraft-Metadaten werden ausgeblendet.",
     "concept_sort_image_scale": "Schieberegler zur Bildgroesse der AI-generierten Kartenbilder im Concept Sort (klein, mittel, gross, XL). Nur sichtbar, wenn mindestens eine Karte ein Bild enthaelt; die Auswahl wird auch beim PDF-Druck uebernommen.",
     "glossary_pronounce_term": "Pronunciation Hilfeer Schaltfläche pro Glossar Begriff — anzeigens IchPA nichtation (/əˈ/-Stil), syllable breakdown, und pronunciation guide für die Begriff. Especially verwendenful für: ELL Schülers Lernen English Inhalt Vokabular, Stufe 3 academic Vokabular mit neinn-obvious pronunciation (mitochondria, hyperbole, antecedent), und Inhalt area glossaries wo die Wort kann nicht erscheinen in everyTag speech. Pairs mit die Audio downladen Schaltfläche alongside it für voll pronunciation Unterstützung. Tipp: encourage Schülers zu practice die IchPA out loud — kneinwing das 'mi-toh-KON-dree-uh' ist die stress pattern ist die difference zwischen confident participation und silent avoidance während Klasse discussion.",
-    "timeline_image_size": "Schieberegler zur Bildgroesse der AI-generierten Bilder in den Ereigniskarten der Timeline (klein, mittel, gross). Nur sichtbar, wenn Ereignisse Bilder enthalten; die Einstellung wird in den PDF-Druck uebernommen."
+    "timeline_image_size": "Schieberegler zur Bildgroesse der AI-generierten Bilder in den Ereigniskarten der Timeline (klein, mittel, gross). Nur sichtbar, wenn Ereignisse Bilder enthalten; die Einstellung wird in den PDF-Druck uebernommen.",
+    "pdf_audit_view_web_url_input": "Fügen Sie die Adresse der Webseite ein, die Sie prüfen möchten (zum Beispiel https://ihrdistrikt.org/handbuch), und klicken Sie dann auf Abrufen, um das HTML zu laden, damit Sie es auditieren und korrigieren können.",
+    "pdf_audit_view_web_fetch_btn": "Lädt die Seite von der URL oben herunter und legt deren HTML in das Feld darunter. Wenn die Website das Abrufen blockiert, fügen Sie den Quelltext der Seite selbst in das HTML-Feld ein.",
+    "pdf_audit_view_web_html_textarea": "Das HTML, das auditiert wird — entweder von Abrufen eingefügt oder von Ihnen eingefügt. Sie können es hier vor dem Audit bearbeiten (zum Beispiel eine Navigationsleiste entfernen, die nicht zu Ihnen gehört).",
+    "pdf_audit_view_web_audit_btn": "Bewertet die Seite nach WCAG 2.1 AA mit sowohl einem KI-Auditor als auch der axe-core-Engine (dieselbe Engine, die professionelle Auditoren verwenden). Nichts wird verändert — verwenden Sie dies, wenn Sie nur wissen möchten, wie die Seite heute dasteht.",
+    "pdf_audit_view_web_remediate_btn": "Bewertet die Seite, schreibt dann das HTML um, um zu korrigieren, was es kann (Kontrast, Sprach-Tag, Skip-Link, Landmarks) und gibt Ihnen eine zugängliche Kopie zum Download. Überprüfen Sie das Ergebnis immer selbst vor der Veröffentlichung.",
+    "pdf_audit_view_batch_dropzone": "Ziehen Sie PDF-Dateien von Ihrem Desktop oder Download-Ordner direkt auf dieses Feld, um sie zur Stapel-Warteschlange hinzuzufügen. Nicht-PDF-Dateien werden ignoriert.",
+    "pdf_audit_view_batch_browse_btn": "Öffnet Ihren Dateiauswahl-Dialog, um eine oder mehrere PDFs auszuwählen. Verwenden Sie dies, wenn das Ziehen von Dateien nicht einfach ist (Touchgerät, Screenreader, Sehbehinderung oder ein Chromebook).",
+    "pdf_audit_view_batch_resume_btn": "Setzt Ihren letzten Stapel dort fort, wo er aufgehört hat — bereits fertige PDFs bleiben erhalten und nur die, die nicht fertig wurden, werden erneut ausgeführt. Verwenden Sie dies, wenn ein Stapel unterbrochen wurde (Tab geschlossen, Neuladen, Absturz).",
+    "pdf_audit_view_batch_discard_btn": "Verwirft den gespeicherten Fortschritt Ihres letzten unterbrochenen Stapels — das Banner verschwindet und gecachte Ergebnisse werden aus Ihrem Browser gelöscht.",
+    "pdf_audit_view_batch_clear_all_btn": "Entfernt jedes PDF aus der Warteschlange, damit Sie neu beginnen können. Nur verfügbar, bevor Sie auf Stapel starten drücken.",
+    "pdf_audit_view_batch_row_retry_btn": "Führt nur diese eine fehlgeschlagene Datei erneut aus, ohne den Rest des Stapels zu berühren. Schweben Sie zuerst über das rote X, um zu lesen, warum es fehlgeschlagen ist — wenn es strukturell ist (beschädigtes PDF, reines Bildscan), hilft ein erneuter Versuch nicht.",
+    "pdf_audit_view_batch_row_remove_btn": "Entfernt dieses eine PDF aus der Warteschlange, sodass der Stapel es überspringt. Nur verfügbar, bevor der Stapel läuft.",
+    "pdf_audit_view_batch_stop_btn": "Bittet den Stapel anzuhalten, nachdem die gerade bearbeitete Datei fertig ist. Bereits abgeschlossene PDFs bleiben fertig — Sie verlieren keine fertige Arbeit, und Sie können den Rest später fortsetzen.",
+    "pdf_audit_view_batch_retry_all_failed_btn": "Stellt jedes fehlgeschlagene PDF wieder in die Warteschlange und führt sie erneut aus. Bereits erfolgreiche Dateien werden nicht angerührt. Einen Versuch wert, wenn Fehlschläge nach flüchtigen Netzwerkfehlern aussehen; bestehen Sie nicht auf wirklich kaputten PDFs.",
+    "pdf_audit_view_batch_start_btn": "Startet das Auditieren und Korrigieren jedes PDFs in der Warteschlange. Eine Bestätigung erscheint zuerst mit einer Schätzung der KI-Aufrufe (und Kosten, im selbst gehosteten Plan), damit Sie vor dem Start entscheiden können.",
+    "pdf_audit_view_batch_download_zip_btn": "Lädt jedes erfolgreich korrigierte PDF als eine einzige ZIP-Datei herunter. Praktisch, um einen ganzen Ordner auf einmal an eine Lehrkraft oder einen Distriktkontakt zurückzugeben.",
+    "pdf_audit_view_batch_new_batch_btn": "Leert den fertigen Stapel, damit Sie einen neuen Satz PDFs hineinziehen können. Jedes ZIP, das Sie bereits heruntergeladen haben, bleibt auf Ihrem Computer — dies setzt nur den Bildschirm zurück.",
+    "pdf_audit_view_batch_dashboard_btn": "Öffnet ein druckbares Compliance-Dashboard in einem neuen Tab — durchschnittliche Punktzahl, wie viele PDFs 90+ erreicht haben, die häufigsten WCAG-Probleme. Nützlich zum Teilen mit einem Administrator oder zum Anhängen an eine Title II / 504-Akte.",
+    "pdf_audit_view_settings_panel": "Stellknöpfe für die Audit- und Remediation-Pipeline. Die Standardwerte sind vernünftig — ändern Sie diese nur, wenn der Standardlauf nicht das liefert, was Sie brauchen (mehr Gründlichkeit, geringere Kosten, anderer Haltepunkt).",
+    "pdf_audit_view_audit_passes_slider": "Wie viele unabhängige KI-Auditoren das PDF betrachten — sie stimmen bei echten Problemen überein und sind bei Rauschen uneinig, also bedeuten mehr Auditoren weniger Fehlalarme. 5 ist der Sweetspot; erhöhen für hochriskante Compliance-Dokumente, verringern für Schnellprüfungen.",
+    "pdf_audit_view_target_score_slider": "Die Punktzahl, die das korrigierte PDF erreichen soll — 90 ist ein solides WCAG 2.1 AA Bestanden, 95+ ist nahezu perfekt, 70 ist ein nützlicher Boden für gescannte Dokumente. Kombinieren Sie mit Auto-Fortsetzen, damit die Pipeline weiterarbeitet, bis die Punktzahl erreicht ist.",
+    "pdf_audit_view_max_fix_passes_slider": "Wie viele Auto-Fix-Runden die Pipeline laufen darf, bevor sie stoppt. 8 ist Standard; verringern, um Kosten auf dem selbst gehosteten Plan zu begrenzen, oder auf 0 setzen, um Auto-Fix ganz zu überspringen (nur Audit).",
+    "pdf_audit_view_auto_continue_toggle": "Wenn aktiviert, macht die Pipeline weiter mit zusätzlichen Korrekturrunden (bis zu 3 weitere), bis die Zielpunktzahl erreicht ist, und stoppt dann von selbst. Ausschalten, wenn Sie genau einen Durchgang und ein einzelnes Ergebnis zum Prüfen möchten.",
+    "pdf_audit_view_polish_passes_slider": "Zusätzliche Aufräumrunden nach den eigentlichen Barrierefreiheits-Korrekturen — strafft Abstände, Überschriften, visuelle Politur. 0 überspringt, 2 ist Standard, 3 ist für Dokumente, die in den Druck oder zu externen Zielgruppen gehen.",
+    "pdf_audit_view_branding_panel": "Optional — steuert, wie das korrigierte PDF aussieht: Markenfarben und Gesamtdesignstil. Überspringen für das standardmäßige zugängliche Aussehen, oder ausklappen, wenn das Dokument der Marke einer Schule oder eines Distrikts entsprechen muss.",
+    "pdf_audit_view_brand_mode_auto_btn": "Zieht Markenfarben aus dem PDF, das Sie hochgeladen haben, damit die korrigierte Version wie das Original aussieht. Beste Voreinstellung — hält das Dokument für Personal und Familien wiedererkennbar.",
+    "pdf_audit_view_brand_mode_upload_input": "Laden Sie ein separates Markenblatt, Logo oder einen Styleguide (Bild oder PDF) hoch, und die Pipeline zieht daraus Farben und Schriften. Nützlich, wenn das Original-PDF schlicht aussieht, aber dem Distrikt-Branding entsprechen muss.",
+    "pdf_audit_view_brand_mode_none_btn": "Überspringen Sie Markenfarben ganz und verwenden Sie die eingebaute barrierefreie Palette. Wählen Sie dies für generische Arbeitsblätter, oder wenn die Originalfarben den Kontrast nicht bestehen und Sie das Aussehen nicht erhalten müssen.",
+    "pdf_audit_results_tab_remediation_btn": "Zeigt die Audit-Ergebnisse, nachdem AlloFlow das PDF korrigiert hat. Verwenden Sie diesen Tab, um die verbesserte Punktzahl und welche Probleme jetzt behoben sind zu sehen.",
+    "pdf_audit_results_tab_original_btn": "Wechselt zurück zum Audit des Original-PDFs, bevor AlloFlow irgendetwas korrigiert hat. Nützlich, um Vorher-Nachher-Punktzahlen nebeneinander zu vergleichen.",
+    "pdf_audit_results_score_badge": "Die Gesamt-Barrierefreiheitspunktzahl Ihres PDFs von 0 bis 100. Grün (80+) ist nahe an WCAG AA, gelb (50-79) braucht Arbeit, rot (<50) hat große Barrieren für Schüler, die Screenreader oder Hilfstechnologien verwenden.",
+    "pdf_audit_results_reliability_details": "Ausklappen, um zu sehen, wie sicher die KI-Auditoren bei dieser Punktzahl waren. Mehrere KI-Durchgänge laufen parallel — enge Übereinstimmung bedeutet, dass die Punktzahl vertrauenswürdig ist, weite Streuung bedeutet, dass Sie die einzelnen Probleme selbst durchgehen sollten.",
+    "pdf_audit_results_score_breakdown_details": "Ausklappen, um genau zu sehen, wie die Punktzahl berechnet wurde — wie viele Prüfungen liefen, was pro Problem abgezogen wurde, und wie die KI-Rubrik- und axe-core-Punktzahlen gemittelt wurden. Das ist die Transparenzebene hinter der Schlagzeilen-Zahl.",
+    "pdf_audit_results_score_how_ai_details": "Ausklappen, um zu sehen, wie streng die KI jedes Problem benotet: größere Abzüge für kritische Probleme, die Screenreader-Nutzer blockieren, kleinere Abzüge für geringfügige, und wiedergewonnene Punkte für bestandene Prüfungen.",
+    "pdf_audit_results_score_how_axe_details": "Ausklappen, um zu sehen, wie der axe-core-Prüfer (dieselbe Engine, die professionelle Barrierefreiheits-Auditoren verwenden) Ihr PDF benotet hat, mit den genauen WCAG-Regel-IDs, die fehlgeschlagen sind.",
+    "pdf_audit_results_issue_explain": "Klicken Sie, um zu lesen, was dieses Problem tatsächlich für Schüler blockiert und wie die WCAG-Regel zutrifft. Enthält einen Link zur offiziellen WCAG-Erklärung, falls Sie tiefer einsteigen möchten.",
+    "pdf_audit_results_image_failures_details": "Ausklappen, um Bilder zu sehen, die während der Remediation verloren gingen. Jede Zeile bietet eine Ein-Klick-Regenerieren-Schaltfläche, damit keine Abbildung still verloren geht.",
+    "pdf_audit_results_image_regenerate_btn": "Erzeugt dieses fehlende Bild mit KI auf Basis seiner gespeicherten Beschreibung neu. Das neue Bild landet direkt zurück im Dokument — kein manueller Upload nötig.",
+    "pdf_audit_view_report_menu_btn": "Öffnet das Report-Menü, um einen Barrierefreiheitsbericht in verschiedenen Formaten herunterzuladen — Adobe-Stil für Compliance-Beauftragte, formatiertes PDF für allgemeines Teilen, JSON für Forschung, oder eine signierte Spur für Audit-Aufzeichnungen.",
+    "pdf_audit_view_adobe_report_btn": "Lädt einen Bericht im Format des Adobe Accessibility Checkers herunter, bewertet gegen PDF/UA-1 (den föderalen Barrierefreiheitsstandard für PDFs). Am besten zum Teilen mit Compliance-Beauftragten oder zum Anhängen an eine Title II / 504-Einreichung.",
+    "pdf_audit_view_tierb_diff_view_btn": "Überprüfen Sie die Wörter, die beim letzten Speichern verloren gingen, bevor Sie entscheiden, einen Wiederherstellungslauf zu starten. Schreibgeschützt — nichts wird verändert, bis Sie sich für Wiederherstellen entscheiden.",
+    "pdf_audit_view_tierb_rerun_restore_btn": "Fügt die fehlenden Quellwörter wieder ins Dokument ein und baut das getaggte PDF neu auf. Wörter, die nicht sicher platziert werden können, landen in einem Inhalts-Wiederherstellungsabschnitt, damit nichts verloren geht — die Rest-Zahl vorher und nachher wird immer angezeigt, damit Sie sehen, ob es geholfen hat.",
+    "pdf_audit_view_formatted_report_btn": "Öffnet einen druckbaren Vorher/Nachher-Barrierefreiheitsbericht in einem neuen Tab — klicken Sie im Banner auf Als PDF speichern, um eine Kopie für Ihre Unterlagen oder eine Elternkonferenz aufzubewahren.",
+    "pdf_audit_view_html_report_btn": "Lädt den Vorher/Nachher-Bericht als HTML-Datei herunter, die Sie auf einer Website hosten oder bearbeiten können. Der Inhalt entspricht der druckbaren PDF-Version.",
+    "pdf_audit_view_json_data_btn": "Exportiert die rohen Audit-Zahlen und Regel-für-Regel-Daten als JSON. Verwenden Sie dies, wenn Sie Barrierefreiheitsergebnisse in einer Tabelle, einem Forschungsnotizbuch oder einem anderen Werkzeug analysieren möchten.",
+    "pdf_audit_view_audit_trail_signed_btn": "Erzeugt eine selbstverifizierende Audit-Spur (eine HTML-Datei mit eingebautem Integrität-Verifizieren-Button, der Manipulationen erkennt). Gut als Compliance-Nachweis — beachten Sie, dass es eine browserseitige Signatur ist, nicht rechtsverbindlich.",
+    "pdf_audit_view_save_project_btn": "Speichert Ihre Remediation-Arbeit — zugängliches HTML, Punktzahlen, Einstellungen, Seite-für-Seite-Fortschritt — in einer portablen Datei. Erneut öffnen mit Projekt laden, um ohne erneutes Ausführen der KI weiterzubearbeiten.",
+    "pdf_audit_view_load_project_btn": "Öffnet eine Projektdatei, die Sie früher gespeichert haben, erneut. Bringt das korrigierte HTML, die Punktzahlen und alle bereits abgeschlossenen Seitenbereiche zurück — setzt genau dort an, wo Sie aufgehört haben.",
+    "pdf_audit_view_save_template_btn": "Speichert die zugängliche Struktur des Dokuments (Überschriften-Gliederung, Tabellen, Listen, Landmarks) als wiederverwendbare Vorlage. Verwenden Sie sie im Dokumenten-Builder, um neue Dokumente zu starten — IEPs, Lehrpläne — bereits barrierefrei vorstrukturiert.",
+    "pdf_audit_alt_formats_summary": "Ausklappen für alternative Formate — ePub, elektronische Braille, einfacher Text, Markdown — für Schüler, die einen anderen Dateityp als PDF oder HTML benötigen.",
+    "pdf_audit_alt_formats_epub_btn": "Speichert das korrigierte Dokument als ePub-Datei mit Inhaltsverzeichnis und Barrierefreiheits-Metadaten. Funktioniert auf Kindle, Apple Books und den meisten mobilen Lesegeräten — Schüler können Schriftgröße, Farbe und Lesegeschwindigkeit ändern.",
+    "pdf_audit_alt_formats_braille_btn": "Speichert eine Grade-1-Braille-Datei (unverkürzt), die auf einem Brailledrucker geprägt oder an eine Braillezeile gesendet werden kann. Für Grade-2-Kürzungen geben Sie die Datei an einen TVI (Lehrer für Schüler mit Sehbehinderungen) zur Fertigstellung.",
+    "pdf_audit_alt_formats_text_btn": "Speichert eine einfache .txt-Datei mit entfernter gesamter Formatierung — das einfachste Format für Screenreader, Großdruck-Konvertierung oder zum Einfügen in ein anderes Werkzeug.",
+    "pdf_audit_alt_formats_markdown_btn": "Speichert das Dokument als Markdown — fügt sich sauber in Canvas-, Schoology- oder D2L-Seiten ein, Google Docs (per Einfügen), Wikis und GitHub-artige Notizen, ohne Überschriften oder Links zu verlieren."
   },
   "groups": {
     "title": "Differentiation Gruppes",
@@ -6988,7 +7130,7 @@
       "energy_desc": "Stellt Energie wieder her."
     },
     "shop": "Abenteuer Shop",
-    "shop_desc": "Spend dein schwirr-earned galt!",
+    "shop_desc": "Gib dein hart verdientes Gold aus!",
     "global_xp": "Globale XP",
     "xp_earn_tip": "Galt ist automatically granted basierend auf dein Global XP.",
     "buy_now": "Buy Neinw",
@@ -7193,7 +7335,7 @@
     "persona_submit_btn": "Senden dein Nachricht zu die persona Charakter. Dein Frage oder Antwort ist analysierend für relevance und depth. Die AI persona wird respond audanntically basierend auf ihr historical conText, kneinwledge, und personality. Wirll-crafted Frages das anzeigen historical understanding earn bonus XP.",
     "persona_close": "Schließen die persona Gespräch Bereich. Dein chat Verlauf und earned XP sind automatically speichernd. Du kann fortfestlegenzen dies Gespräch later von die Verlauf tab.",
     "persona_close_title": "Schließen Persona Chat",
-    "persona_reflection_input": "Schreiben dein reflection auf die Gespräch für Bewertung. Reflect auf was du learned über die historical figure, how ihr perspective differs von Modusrn AnsichtPunkte, und how dies Gespräch changed dein understanding. Reflections sind evaluated verwendend ein rubric aligned zu historical thinking skills und kann earn signifikannt XP.",
+    "persona_reflection_input": "Schreibe deine Reflexion über das Gespräch für die Bewertung. Reflektiere darüber, was du über die historische Persönlichkeit gelernt hast, wie sich ihre Perspektive von modernen Sichtweisen unterscheidet und wie dieses Gespräch dein Verständnis verändert hat. Reflexionen werden anhand eines Bewertungsrasters bewertet, das an historische Denkfähigkeiten angelehnt ist, und können erhebliche XP einbringen.",
     "persona_conclude": "End die Gespräch und generieren ein umfassend Zusammenfassung von dein discussion. Die Zusammenfassung enthält: Schlüssel Themas covered, historical insights gained, Qualität von dein Frages, empathy demonstrated, und XP earned. dies Zusammenfassung kann be exportierened für Bewertung, hinzufügened zu Schüler portfolios, oder verwendend as ein schreiben prompt für reflection Aktivitäten.",
     "persona_save_chat": "Speichern Sie dieses Gespräch, um es später erneut anzusehen oder zu teilen. Gespeicherte Chats erhalten den vollständigen Dialog, gesammelte XP, Zeitstempel und alle Reflexionen. Verwenden Sie gespeicherte Chats für Schülerportfolios, Bewertungsnachweise, Klassendiskussionen oder als Musterbeispiele. Gespeicherte Gespräche können als PDF exportiert oder mit anderen Schülerinnen und Schülern geteilt werden.",
     "persona_topic_spark": "Erhalten ein Gespräch startener oder Thema suggestion wenn du're nicht sure was zu ask. Die system generierens historically relevant Frages basierend auf die persona's zurückground, expertise, und Zeit period. Großartig für overcoming schreibenr's block oder discovering neu angles zu explore in dein historical inquiry.",
@@ -7618,7 +7760,7 @@
       "history_saved_toast": "Voll Gespräch speichernd zu Verlauf!",
       "advice_title": "Differenzierungsstrategie",
       "advice_saved_raw": "Advice speichernd (raw).",
-      "start_scratch": "Ich see wir're startening von scratch! was kind von Lektion would du like zu bauen? Tell me die **Thema**, **Klassenstufe**, und **Stil** (z. B., 'ein funny story über Gravity für 1st Graders' oder 'ein rigorous article auf Die Civil War für Hoch School'). Ich'll configure die source generator für du."
+      "start_scratch": "Ich sehe, wir fangen bei null an! Was für eine Lektion möchtest du erstellen?\n\nNenne mir das **Thema**, die **Klassenstufe** und den **Stil** (z. B. 'Eine lustige Geschichte über die Schwerkraft für Erstklässler' oder 'Ein anspruchsvoller Artikel über den Bürgerkrieg für die Oberstufe').\n\nIch werde den Quellengenerator für dich konfigurieren."
     },
     "blueprint": {
       "analyzing": "Analyzing conText und designing ein Lektion bluedrucken... (Du'll be able zu reAnsicht und modify die Plan vor wir generieren die Ressources).",
@@ -8211,7 +8353,7 @@
     "empty_plan": "Nein steps in dies Plan.",
     "placeholder_instruction": "Spezifisch instructions für dies step...",
     "remove_step_tooltip": "Entfernen Step",
-    "cancel_msg": "Bluedrucken abbrechenled. was would du like zu do instead?",
+    "cancel_msg": "Blueprint abgebrochen. Was möchtest du stattdessen tun?",
     "execution_complete": "Bluedrucken Abschließen!",
     "execution_error": "Bluedrucken execution interrupted.",
     "tools": {
@@ -8259,7 +8401,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing Inhalt topology...",
     "brainstorming": "Ideen werden gesammelt...",
     "retrying_citations": "Reversuchening für better citations...",
-    "translating": "Wird überfestlegenzt…"
+    "translating": "Wird überfestlegenzt…",
+    "preparing_translation": "Übersetzung nach {lang} wird vorbereitet...",
+    "translating_item": "Übersetze {current}/{total}: {title}...",
+    "generating_panel": "Panel {current}/{total} wird generiert..."
   },
   "process": {
     "source_missing": "Bitte bereitstellen QuellText erste.",
@@ -8319,7 +8464,7 @@
     "article_imported": "Article importierened und cleaned!",
     "copy_paste_instruction": "Bitte kopieren die URL von die neu tab und einfügen it here.",
     "error_auto_search": "Suchen fehlgeschlagen. Bitte erneut versuchen.",
-    "error_extract": "Could nicht extract Text. Die URL might be invalid oder blocking access.",
+    "error_extract": "Text konnte nicht extrahiert werden. Die URL ist möglicherweise ungültig oder blockiert den Zugriff.",
     "error_no_urls": "Could nicht finden spezifisch URLs. Bitte versuchen ein anders Thema.",
     "error_read_file": "Fehlgeschlagen zu lesen Text Datei.",
     "search_failed": "Suchen fehlgeschlagen.",
@@ -9555,7 +9700,8 @@
     "loading_resources": "Ressourcen werden geladen...",
     "preparing_workspace": "Arbeitsbereich wird vorbereitet...",
     "almost_ready": "Fast bereit...",
-    "loading_screen_aria": "AlloFlow-Ladebildschirm"
+    "loading_screen_aria": "AlloFlow-Ladebildschirm",
+    "preparing_environment": "Deine Lernumgebung wird vorbereitet..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -11107,7 +11253,7 @@
     "community_catalog_desc": "Browse öffnen-licensed Lektions von die AlloFlow community, oder absendenen dein own für reAnsicht",
     "magnifying_glass_emoji_aria": "Lupe",
     "accessibility_lab_title": "Barrierefreiheit Lab",
-    "accessibility_lab_desc": "Verify die Schüler experience: Vorschau as Schüler, Tastatur-nur tour, Live-WCAG audit (axe-core) mit violations framed by Schüler impact, Bildschirm-lesener anneinuncement Vorschau, und disability simulators (niedrig-vision, Farbe-blindness, dyslexia, motor delay).",
+    "accessibility_lab_desc": "Überprüfe das Schülererlebnis: Vorschau als Schüler, reine Tastatur-Tour, Live-WCAG-Audit (axe-core) mit Verstößen, die nach Auswirkung auf die Schüler eingeordnet sind, Vorschau der Screenreader-Ansagen und Behinderungssimulatoren (Sehschwäche, Farbenblindheit, Legasthenie, motorische Verzögerung).",
     "dynamic_assessment_title": "Dynamic Bewertung",
     "dynamic_assessment_desc": "Erstellen dynamic, Standard-aligned Bewertung tasks für diagneinstic prüfens"
   },
@@ -11202,7 +11348,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS-Banner schließen",
     "dismiss_button": "Schließen",
-    "audit_queue_help": "Klicken ein document zu fetch und laden it in die Barrierefreiheit pipeline. Einige LMS Dateis kann require du zu be logged in zu die LMS in dies browser."
+    "audit_queue_help": "Klicken ein document zu fetch und laden it in die Barrierefreiheit pipeline. Einige LMS Dateis kann require du zu be logged in zu die LMS in dies browser.",
+    "queued_one": "{count} Dokument aus dem LMS in der Warteschlange",
+    "queued_other": "{count} Dokumente aus dem LMS in der Warteschlange",
+    "fetching": "{name} wird abgerufen...",
+    "loaded_ready": "{name} geladen; bereit zur Prüfung",
+    "fetch_failed": "{name} konnte nicht abgerufen werden: {error}. Die Datei erfordert möglicherweise eine LMS-Authentifizierung."
   },
   "annotation": {
     "undo_tooltip": "Undo letzte Anmerkung ({count} verfügbar) — Ctrl/Cmd+Z",
@@ -11222,7 +11373,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visuell Unterstützung von dein Lehrer"
+    "teacher_modal_aria": "Visuell Unterstützung von dein Lehrer",
+    "now": "JETZT",
+    "read_aloud": "Vorlesen"
   },
   "canvas_settings": {
     "title": "Fortgeschritten Einstellungen",
@@ -11239,7 +11392,12 @@
     "read_all_button": "Alles lesen",
     "stop_button": "Stopp",
     "focus_narration_label": "Tastaturfokus-Erzählung",
-    "focus_narration_on_hint": "Tab drücken, um Steuerungen zu hören"
+    "focus_narration_on_hint": "Tab drücken, um Steuerungen zu hören",
+    "reading": "Wird gelesen...",
+    "item_aria": "Klicken zum Anhören: {text}",
+    "footer_stats": "{count} Elemente · Klicke auf ein beliebiges Element, um es anzuhören · Tab-Erzählung {state}",
+    "narration_on": "EIN",
+    "narration_off": "AUS"
   },
   "teacher": {
     "local_only": "Local nur",
@@ -11338,7 +11496,7 @@
   "notes_feedback": {
     "title": "Feedzurück auf dein Notizs",
     "dismiss_aria": "Dismiss feedzurück",
-    "strength_label": "was du did wirll",
+    "strength_label": "Was du gut gemacht hast",
     "growth_label": "One thing zu versuchen nächste Zeit",
     "source_label": "Über die QuellText",
     "no_xp_hint": "Du've alleseny earned XP von dies enversuchen vor. Keep going — neu improvements earn mehr XP.",
@@ -11382,7 +11540,7 @@
     },
     "dialog": {
       "title": "Barrierefreiheit Lab",
-      "subtitle": "Verify die Schüler experience: Vorschau, audit, anhören, simulate.",
+      "subtitle": "Überprüfe das Schülererlebnis: Vorschau, Audit, Anhören, Simulieren.",
       "close": "Schließen",
       "close_aria": "Schließen Barrierefreiheit Lab",
       "coming_soon": "Coming in ein future phase",
@@ -11391,7 +11549,7 @@
     "preview": {
       "heading": "PreAnsicht ein Lektion as dein Schüler",
       "select_intro": "Wählen ein speichernd Lektion zu Vorschau mit Schüler Barrierefreiheit Einstellungen angewirndet (font, size, contrast, line spacing). dies anzeigens du was die Inhalt looks like für Schülers verwendend accommodations.",
-      "no_lessons": "Nein speichernd Lektions yet. Generieren ein Lektion in Lehrer Modus erste, dann come zurück zu Vorschau it.",
+      "no_lessons": "Noch keine gespeicherten Lektionen. Erstelle zuerst eine Lektion im Lehrermodus, dann komm zurück, um sie in der Vorschau anzusehen.",
       "untitled": "(unTiteld)",
       "back": "← Zurück zu Lektion Liste",
       "previewing_prefix": "PreAnsichting:",
@@ -11403,8 +11561,8 @@
       "read_aloud": "🔊 Lesen aloud",
       "read_aloud_unavailable": "Lesen aloud ist nicht verfügbar in dies bauen.",
       "read_aloud_empty": "Nichthing zu lesen in die aktuell Vorschau.",
-      "read_aloud_error": "Could nicht starten lesen-aloud:",
-      "unmapped_theme_note": "Notiz: die app ist currently verwendend ein lesening Thema (warm, blue, green, rose, oder dyslexia overlay) das ist nicht repregesendeted in dies Vorschau yet. Switch it in die main Barrierefreiheit Einstellungen zu Vorschau it accurately.",
+      "read_aloud_error": "Vorlesen konnte nicht gestartet werden: ",
+      "unmapped_theme_note": "Hinweis: Die App verwendet derzeit ein Lese-Thema (Warm, Blau, Grün, Rosé oder Legasthenie-Overlay), das in dieser Vorschau noch nicht dargestellt wird. Wechsle es in den allgemeinen Barrierefreiheitseinstellungen, um es korrekt in der Vorschau anzuzeigen.",
       "pane_aria": "Schüler Vorschau pane",
       "apply_button": "Anwenden these Einstellungen zu die app",
       "reset_button": "Zurückfestlegenzen zu app Standards",
@@ -11412,7 +11570,7 @@
       "apply_success": "Angewirndet zu die Live-app für alle Schülers verwendend dies device.",
       "apply_error": "Could nicht anwenden Einstellungen:",
       "reset_success": "Zurückfestlegenzen zu die Live-app's aktuell Einstellungen.",
-      "tip": "Tipp: switch die Thema zu Hoch contrast und versuchen Extra Groß font zu simulate niedrig-vision usage. Switch die font zu ÖffnenDyslexic zu simulate ein dyslexia-friendly Ansicht."
+      "tip": "Tipp: Wechsle das Thema auf Hoher Kontrast und probiere die Schriftgröße Extragroß aus, um die Nutzung bei Sehschwäche zu simulieren. Wechsle die Schriftart auf OpenDyslexic, um eine legasthenikerfreundliche Ansicht zu simulieren."
     },
     "keyboard": {
       "heading": "Tastatur Barrierefreiheit audit",
@@ -11422,7 +11580,7 @@
       "show_overlay": "🔢 Anzeigen tab-order overlay",
       "hide_overlay": "🔢 Ausblenden tab-order overlay",
       "overlay_active": "Tab-order overlay ist aktiv. Anzahled red schlechtges anzeigen die tab sequence auf die Seite behind dies lab. Schließen die lab oder klicken die umschalten above zu ausblenden.",
-      "idle": "Klicken \"Ausführen Tastatur skann\" zu audit die aktuell Ansicht. Die lab modal itself ist excluded von die skann; was erhaltens audited ist die underlying app surface (die Lektion, sidebar, controls, usw. behind die lab).",
+      "idle": "Klicke auf \"Tastatur-Scan ausführen\", um die aktuelle Ansicht zu prüfen. Das Lab-Modal selbst ist vom Scan ausgenommen; geprüft wird die darunterliegende App-Oberfläche (die Lektion, Seitenleiste, Steuerelemente usw. hinter dem Lab).",
       "scan_result_prefix": "Tastatur skann:",
       "scan_result_middle": "focusable elements,",
       "scan_result_suffix": "issues",
@@ -11452,7 +11610,7 @@
       "error_suffix": ". Prüfen dein network connection (axe-core ladens von cdn.jsdelivr.net) und erneut versuchen.",
       "error_toast_prefix": "Audit fehlgeschlagen:",
       "unknown_error": "unkneinwn Fehler",
-      "idle": "Klicken \"Ausführen audit\" zu skann die aktuell Ansicht für WCAG 2.1 ein und AA violations. Die erste ausführen takes ~2 Sekundes zu laden axe-core (~350 KB minified) von ein CDN; subsequent ausführens sind instant.",
+      "idle": "Klicke auf \"Audit ausführen\", um die aktuelle Ansicht auf Verstöße gegen WCAG 2.1 A und AA zu prüfen. Der erste Durchlauf dauert ~2 Sekunden, um axe-core (~350 KB minimiert) von einem CDN zu laden; nachfolgende Durchläufe sind sofort.",
       "complete_prefix": "Audit abschließen:",
       "complete_violations_middle": "violations über",
       "complete_elements_middle": "elements;",
@@ -11483,17 +11641,17 @@
       "incomplete_heading": "Brauchens manual reAnsicht",
       "incomplete_help": "These rules could nicht be automatically verified by axe-core. Sie commonly involve things like Farbe contrast auf gradient zurückgrounds, scrolling regions, oder Farbe meaning. ein human brauchens zu look und decide.",
       "rules": {
-        "color_contrast": "Einige Text auf dies Seite does nicht have eneinugh contrast against sein zurückground. Schülers mit niedrig vision (über 1 in 12 people) would have trouble lesening it.",
+        "color_contrast": "Etwas Text auf dieser Seite hat nicht genug Kontrast zum Hintergrund. Schüler mit Sehschwäche (etwa 1 von 12 Personen) hätten Schwierigkeiten, ihn zu lesen.",
         "color_contrast_enhanced": "Einige Text does nicht meet die hocher AAA contrast Standard. AA-Stufe Schülers kann still lesen it; AAA ist die stricter target.",
         "image_alt": "Einige Bilds do nicht have alt Text. Schülers who verwenden Bildschirm leseners (blind oder niedrig-vision Schülers) wird hear nichthing oder nur ein DateiName wenn dies Bild erscheint.",
-        "input_image_alt": "ein Bild Schaltfläche ist missing alt Text. Bildschirm lesener verwendenrs wird nicht kneinw was die Schaltfläche does.",
+        "input_image_alt": "Einer Bild-Schaltfläche fehlt der Alt-Text. Screenreader-Nutzer wissen nicht, was die Schaltfläche bewirkt.",
         "button_name": "ein Schaltfläche has nein Name ein Bildschirm lesener kann anneinunce. Die Schüler would hear nur \"button\" mit nein conText.",
         "link_name": "ein link has nein Text oder aria-label. Bildschirm lesener verwendenrs wird nicht kneinw wo it leads.",
         "label": "ein form input has nein label. Schülers verwendend Bildschirm leseners oder speech recognition wird nicht kneinw was zu eingeben.",
         "aria_required_attr": "ein element has ein ARIchA role aber ist missing erforderlich attributes. Bildschirm lesener verwendenrs kann erhalten confusing oder nein Informationen.",
         "aria_roles": "ein element verwendens ein ARIchA role das ist nicht valid. Bildschirm leseners kann igneinre it oder behave unexpectedly.",
         "aria_valid_attr": "ein element has ein invalid ARIchA attribute. Die Barrierefreiheit Hinwiris ist being igneinred.",
-        "aria_valid_attr_value": "ein ARIchA attribute has ein invalid value. Die Barrierefreiheit Hinwiris ist being igneinred.",
+        "aria_valid_attr_value": "Ein ARIA-Attribut hat einen ungültigen Wert. Der Barrierefreiheitshinweis wird ignoriert.",
         "duplicate_id": "Two elements teilen die gleich id. Bildschirm leseners und labels kann attach zu die wrong one.",
         "duplicate_id_aria": "Duplicate IchDs sind interfering mit ARIchA labeling.",
         "document_title": "Die Seite has nein <title>. Bildschirm leseners und tab listings wird nicht identifizieren it.",
@@ -11509,14 +11667,14 @@
         "meta_viewport": "Die Ansichtport meta Tag prevents zooming. Schülers who brauchen zu zoom in wird be bgesperrt von doing so.",
         "tabindex": "ein element has tabindex großartiger als 0. dies breaks natural Tastatur tab order.",
         "scrollable_region_focusable": "ein scrollable region kann nicht be focverwendend mit die Tastatur. Tastatur-nur verwendenrs kann nicht scroll it.",
-        "autocomplete_valid": "ein form field has ein invalid autoabschließen value. Einige assistive tech relies auf these zu fill in fields automatically.",
+        "autocomplete_valid": "Ein Formularfeld hat einen ungültigen Autocomplete-Wert. Manche Hilfstechnologien verlassen sich darauf, um Felder automatisch auszufüllen.",
         "role_img_alt": "ein element mit role=\"img\" has nein zugänglich Name. Bildschirm lesener verwendenrs wird hear nichthing.",
         "svg_img_alt": "ein SVG verwendend as ein Bild has nein zugänglich Name."
       }
     },
     "screenreader": {
       "heading": "Bildschirm-lesener anneinuncement Vorschau",
-      "description": "Bauen die Liste von was ein Bildschirm lesener would anneinunce während moving durch die Seite in lesening order, dann anhören. Headings, landmarks, links, form controls, und Bilds mit alt Text sind included. Die lab modal itself ist excluded. Verwendens dein browser's built-in speech synthesis (die gleich kind von TTS engine real Bildschirm leseners verwenden, so die Audio Qualität ist repregesendetative von was Schülers actually hear).",
+      "description": "Erstelle die Liste dessen, was ein Screenreader ansagen würde, während er die Seite in Lesereihenfolge durchläuft, und höre dann zu. Überschriften, Landmarks, Links, Formularsteuerelemente und Bilder mit Alt-Text sind enthalten. Das Lab-Modal selbst ist ausgenommen. Verwendet die in deinen Browser eingebaute Sprachsynthese (dieselbe Art von TTS-Engine, die echte Screenreader nutzen, sodass die Audioqualität repräsentativ für das ist, was Schüler tatsächlich hören).",
       "no_speech_warning": "Dur browser does nicht expose die Wirb Speech APIch. Versuchen Chrome, Edge, oder Firefox. Die Liste wird still bauen; du nur wird nicht hear die Audio.",
       "build": "🔊 Bauen anneinuncement queue",
       "rescan": "Re-skann Seite",
@@ -12206,5 +12364,27 @@
     "no_match": "Kein passender Befehl. Der Bot-Chat (und bald die Sprachsteuerung) versteht frei formulierte Anfragen.",
     "placeholder": "Gib einen Befehl ein — „größerer Text“, „Educator Hub“, „diese Seite vorlesen“…",
     "run": "ausführen"
+  },
+  "voice_engine": {
+    "preparing": "Sprach-Engine wird vorbereitet...",
+    "downloading_model": "Sprachmodell wird heruntergeladen",
+    "loading_memory": "Wird in den Speicher geladen",
+    "loading_model_memory": "Sprachmodell wird in den Speicher geladen"
+  },
+  "voice_control": {
+    "listening": "Hört zu; sage „stop listening“, um zu beenden",
+    "stop_aria": "Sprachsteuerung stoppen"
+  },
+  "dynamic_assessment": {
+    "return_title": "Diese Ressource wurde durch Dynamische Bewertung erstellt. Klicke, um das Modul für Dynamische Bewertung erneut zu öffnen.",
+    "return_aria": "Zurück zur Dynamischen Bewertung",
+    "return_label": "Zurück zur Dynamischen Bewertung",
+    "item_badge": "Element {num}"
+  },
+  "story_gallery": {
+    "title": "Geschichtengalerie",
+    "byline": "Von {author} · {words} Wörter · {used}/{total} Vokabeln",
+    "student": "Schüler",
+    "score": "Punktzahl: {score}"
   }
 }
