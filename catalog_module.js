@@ -1687,7 +1687,19 @@
       e('div', {
         className: contentClass, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Community Catalog',
         tabIndex: -1, ref: dialogRef,
-        onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); } },
+        onKeyDown: function (ev) {
+          if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); return; }
+          if (ev.key !== 'Tab') return;
+          // Keep keyboard focus inside the modal (focus trap).
+          var root = dialogRef.current;
+          if (!root || !root.querySelectorAll) return;
+          var f = root.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (!f.length) return;
+          var first = f[0], last = f[f.length - 1];
+          var active = (typeof document !== 'undefined') ? document.activeElement : null;
+          if (ev.shiftKey) { if (active === first || active === root) { ev.preventDefault(); last.focus(); } }
+          else if (active === last) { ev.preventDefault(); first.focus(); }
+        },
       },
         // Header
         e('div', { className: headerClass },
