@@ -1831,7 +1831,19 @@ const useTranslation = (targetLanguage, apiKey) => {
           }
           return undefined;
       }
-      if (params && typeof result === 'string') {
+      // Defensive: a key path can resolve to a STRING-GROUP OBJECT instead of a leaf string — e.g.
+      // a partial key ('pdf_audit.fidelity' rather than '...fidelity.heading'), or a lang pack where
+      // the i18n extractor mis-nested a leaf as its parent group ({heading, run_title, run_aria, ...}).
+      // Returning that object renders it as a React child and crashes the WHOLE app with "Objects are
+      // not valid as a React child". Never return a non-string: treat it as a miss so the caller's
+      // `|| 'English fallback'` (or React's render-nothing for undefined) supplies a safe value.
+      if (typeof result !== 'string') {
+          if (typeof window !== 'undefined' && (window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1')) {
+              console.warn('[i18n] key resolved to a non-string (group) value — returning undefined:', keyString);
+          }
+          return undefined;
+      }
+      if (params) {
           Object.keys(params).forEach(key => {
               result = result.replace(`{${key}}`, params[key]);
           });
