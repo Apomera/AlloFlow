@@ -638,7 +638,8 @@
     "open_storyforge_aria": "פתח את StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "שאלות מבוססות מסמך",
-    "open_stem_lab_explore_aria": "פתח את STEM Lab Explore"
+    "open_stem_lab_explore_aria": "פתח את STEM Lab Explore",
+    "stem_lab_explore": "חקור"
   },
   "toolbar": {
     "show_bot": "הצג סייען AI",
@@ -697,7 +698,8 @@
     "loading_resources": "טוען משאבים...",
     "preparing_workspace": "מכין את סביבת העבודה שלך...",
     "almost_ready": "כמעט מוכן...",
-    "loading_screen_aria": "מסך טעינה של AlloFlow"
+    "loading_screen_aria": "מסך טעינה של AlloFlow",
+    "preparing_environment": "מכין את סביבת הלמידה שלך..."
   },
   "entry": {
     "placeholder": "לדוגמה, בז אדום",
@@ -940,7 +942,8 @@
     "cancel_transcription": "בטל תמלול",
     "chunk_info": "השמע מחולק לחלקים של 5 דקות לעיבוד",
     "chunk_progress": "חלק {current} מתוך {total}",
-    "audio_only_error": "כרגע רק קבצי שמע (MP3, WAV וכו') נתמכים לתמלול בחלקים."
+    "audio_only_error": "כרגע רק קבצי שמע (MP3, WAV וכו') נתמכים לתמלול בחלקים.",
+    "starting": "מתחיל..."
   },
   "formatting": {
     "bold": "מודגש (**טקסט**)",
@@ -1220,7 +1223,12 @@
     "read_all_button": "קרא הכל",
     "stop_button": "עצור",
     "focus_narration_label": "הקראת מיקוד מקלדת",
-    "focus_narration_on_hint": "לחץ Tab כדי לשמוע פקדים"
+    "focus_narration_on_hint": "לחץ Tab כדי לשמוע פקדים",
+    "reading": "קורא...",
+    "item_aria": "לחץ כדי לשמוע: {text}",
+    "footer_stats": "{count} פריטים · לחץ על כל פריט כדי לשמוע אותו · קריינות Tab {state}",
+    "narration_on": "פעיל",
+    "narration_off": "כבוי"
   },
   "roles": {
     "title": "ברוכים הבאים ל-AlloFlow",
@@ -1734,7 +1742,10 @@
     "analyzing_topology": "פועל כמעצב תכנית לימודים: מנתח טופולוגיית תוכן...",
     "brainstorming": "מסעיר רעיונות...",
     "retrying_citations": "מנסה שוב לציטוטים טובים יותר...",
-    "translating": "מתרגם…"
+    "translating": "מתרגם…",
+    "preparing_translation": "מכין תרגום ל{lang}...",
+    "translating_item": "מתרגם {current}/{total}: {title}...",
+    "generating_panel": "יוצר לוח {current}/{total}..."
   },
   "progression": {
     "title": "התקדמות תכנית לימודים",
@@ -1784,7 +1795,34 @@
     "plan_hook": "פתיח",
     "plan_independent": "תרגול עצמאי",
     "col_image": "תמונה",
-    "word_sounds_studio": "סטודיו Word Sounds"
+    "word_sounds_studio": "סטודיו Word Sounds",
+    "stop": "עצור",
+    "expand_header": "הרחב כותרת",
+    "collapse_header": "כווץ את הכותרת כדי לתת לתוכן יותר מקום",
+    "collapse_header_short": "כווץ כותרת",
+    "step_x_of_y": "שלב {current} מתוך {total}",
+    "english_translation": "תרגום לאנגלית",
+    "source_references": "הפניות לטקסט המקור",
+    "activity_probe": "בדיקת {activity}",
+    "word_sounds_count": "Word Sounds ({count} מילים)",
+    "quick_practice_mode": "מצב תרגול מהיר",
+    "new_option": "אפשרות חדשה",
+    "meta_lesson_extensions": "הרחבות שיעור",
+    "title_extension_ideas": "רעיונות להרחבה",
+    "meta_full_chat_log": "יומן צ'אט מלא",
+    "title_udl_consultation_log": "יומן ייעוץ UDL",
+    "meta_actionable_steps": "צעדים מעשיים (סיכום בינה מלאכותית)",
+    "title_differentiation_strategy": "אסטרטגיית בידול",
+    "meta_udl_guide_advice": "עצת מדריך UDL",
+    "title_stem_assessment": "הערכת STEM",
+    "title_explore_challenge": "אתגר חקירה",
+    "title_fluency_maze": "🏰 מבוך השטף",
+    "title_storyforge_config": "📖 מטלת StoryForge",
+    "title_storyforge_submission": "📖 הגשת סיפור",
+    "title_poettree_config": "🌳 מטלת PoetTree",
+    "title_poettree_submission": "🌳 הגשת שיר",
+    "title_litlab_config": "🎭 מטלת LitLab",
+    "title_litlab_submission": "🎭 הגשת מופע"
   },
   "fullpack": {
     "button_label": "ייצר חבילת משאבים מלאה",
@@ -2560,7 +2598,42 @@
     "backup_failed": "הגיבוי נכשל. נסה שוב.",
     "invalid_backup_file": "אינו קובץ גיבוי תקין של AlloHaven.",
     "could_not_read_file": "לא ניתן לקרוא את הקובץ הזה. האם זה גיבוי JSON?",
-    "tts_failed": "ההקראה נכשלה. נסה שוב."
+    "tts_failed": "ההקראה נכשלה. נסה שוב.",
+    "focus_streak": "{flames} רצף ריכוז של {minutes} דקות! המשך כך!",
+    "streak_saved": "ברוך שובך! רצף {minutes} הדקות שלך נשמר.",
+    "points_awarded": "הוענקו נקודות!",
+    "welcome_name": "ברוך הבא, {name}!",
+    "element_not_found": "הרכיב לא נמצא: {id}",
+    "overlay_set": "שכבת-על: {mode}",
+    "synced_resource": "סונכרן: {title}",
+    "group_resource": "משאב קבוצה: {title}",
+    "preset_saved": "ההגדרה הקבועה מראש \"{name}\" נשמרה!",
+    "translated_resources": "{count} משאבים תורגמו בהצלחה!",
+    "bingo_cards_count": "נוצרו {count} כרטיסי BINGO!",
+    "sound_enabled": "הקול הופעל",
+    "sound_muted": "הקול הושתק",
+    "democracy_mode_on": "מצב דמוקרטיה הופעל: הצבעת הכיתה מופעלת",
+    "democracy_mode_off": "מצב דמוקרטיה כובה: משחק יחיד",
+    "resource_moved_up": "{title} הועבר למעלה",
+    "resource_moved_down": "{title} הועבר למטה",
+    "panels_regenerated": "{count} לוחות נוצרו מחדש!",
+    "settings_undone": "בוטל: {label}. ההגדרות שוחזרו. (משאבים שנוצרו אינם מושפעים.)",
+    "concept_added": "מושג נוסף: {text}",
+    "lesson_not_found": "השיעור לא נמצא ביחידה זו.",
+    "probe_complete": "הבדיקה הושלמה: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "ההגדרות עודכנו: {changes}",
+    "change_format": "תבנית: {value}",
+    "change_tone": "טון: {value}",
+    "change_length": "אורך: ~{value} מילים",
+    "change_language": "שפה: {value}",
+    "change_interest": "תחום עניין נוסף: {value}",
+    "backup_saved": "💾 גיבוי של הפעלה זו נשמר בהורדות שלך (קובץ פרויקט). אין צורך לעשות איתו דבר כעת; אם אי פעם תצטרך לחזור, \"טען פרויקט\" משחזר הכול.",
+    "backup_saved_score": " (ניקוד {score})",
+    "project_saved_multi_one": "💾 הפרויקט נשמר ({count} טווח); טען אותו מאוחר יותר כדי להמשיך",
+    "project_saved_multi_other": "💾 הפרויקט נשמר ({count} טווחים); טען אותו מאוחר יותר כדי להמשיך",
+    "project_saved": "💾 הפרויקט נשמר; טען אותו מאוחר יותר כדי להמשיך לערוך",
+    "search_result_desc": "תוצאת חיפוש Google: {title}",
+    "link_url_prompt": "הזן את כתובת ה-URL של הקישור:"
   },
   "analysis": {
     "title": "ניתוח חומר מקור",
@@ -3526,7 +3599,12 @@
       "error_check": "בדיקת ההתאמה נכשלה.",
       "regenerated_success": "הטקסט יוצר מחדש עם שיפורים!",
       "regen_failed": "ייצור מחדש נכשל."
-    }
+    },
+    "skill_check": "בדיקת מיומנות",
+    "desc_skill_check": "אמת את השליטה שלך מול התקנים.",
+    "desc_parent": "ראו כיצד זה מתיישב עם מטרות בית הספר",
+    "desc_6dim": "מבקר את תכנית הלימודים ב-6 ממדים",
+    "desc_5dim": "מבקר את תכנית הלימודים ב-5 ממדים (הוסיפו תקנים לבדיקה מלאה)"
   },
   "standards": {
     "target_standard": "תקן יעד",
@@ -4976,7 +5054,8 @@
     "card_visuals_label": "ויזואלי כרטיסים",
     "card_visuals_auto": "אוטומטי (רק על פריטים קצרים)",
     "card_visuals_always": "תמיד ייצר תמונות",
-    "card_visuals_never": "אף פעם (כרטיסי טקסט בלבד)"
+    "card_visuals_never": "אף פעם (כרטיסי טקסט בלבד)",
+    "explanation_unavailable": "לא ניתן ליצור הסבר כרגע. אנא נסה שוב בעוד רגע."
   },
   "concept_map": {
     "toolbar": {
@@ -8361,7 +8440,12 @@
   "lms": {
     "dismiss_banner_aria": "סגור באנר LMS",
     "dismiss_button": "סגור",
-    "audit_queue_help": "לחץ על מסמך כדי לאחזר ולטעון אותו לצינור הנגישות. ייתכן שחלק מקבצי ה-LMS ידרשו ממך להיות מחובר ל-LMS בדפדפן זה."
+    "audit_queue_help": "לחץ על מסמך כדי לאחזר ולטעון אותו לצינור הנגישות. ייתכן שחלק מקבצי ה-LMS ידרשו ממך להיות מחובר ל-LMS בדפדפן זה.",
+    "queued_one": "{count} מסמך בתור מ-LMS",
+    "queued_other": "{count} מסמכים בתור מ-LMS",
+    "fetching": "מאחזר את {name}...",
+    "loaded_ready": "{name} נטען; מוכן לבדיקה",
+    "fetch_failed": "אחזור {name} נכשל: {error}. ייתכן שהקובץ דורש אימות LMS."
   },
   "annotation": {
     "undo_tooltip": "בטל הערה אחרונה ({count} זמינות) — Ctrl/Cmd+Z",
@@ -8373,7 +8457,9 @@
     "list_button": "📋 רשימה"
   },
   "visual_support": {
-    "teacher_modal_aria": "תמיכה חזותית מהמורה שלך"
+    "teacher_modal_aria": "תמיכה חזותית מהמורה שלך",
+    "now": "עכשיו",
+    "read_aloud": "הקרא בקול"
   },
   "canvas_settings": {
     "title": "הגדרות מתקדמות",
@@ -8897,7 +8983,7 @@
     "parent_redirected": "הופנה ברוגע",
     "parent_gave_break": "נתן הפסקה",
     "parent_used_timer": "השתמש בטיימר",
-    "parent_first_then": "Used ראשון-then שפות",
+    "parent_first_then": "השתמש בשפת \"קודם-ואז\"",
     "parent_ignored": "Ignored the התנהגות",
     "parent_removed_item": "הסיר את הפריט/הפעילות",
     "parent_visual_schedule": "Used a חזותי schedule",
@@ -9020,7 +9106,7 @@
       "added_n_entries_to_abc_data": "נוספו N רשומות לנתוני ABC!",
       "ai_analysis_failed": "בינה מלאכותית analysis failed",
       "ai_customization_failed": "בינה מלאכותית customization failed",
-      "ai_draft_failed": "בינה מלאכותית draft failed",
+      "ai_draft_failed": "יצירת טיוטת ה-AI נכשלה",
       "ai_edit_failed": "בינה מלאכותית ערוך failed",
       "ai_not_available": "בינה מלאכותית not זמין",
       "ai_suggestion_applied": "בינה מלאכותית suggestion applied ✨",
@@ -9165,7 +9251,7 @@
       "reinforce_now": "🎉 חזק/י עכשיו!",
       "reinforcers_recommended": "הומלצו מחזקים ✨",
       "replacement_plan_added": "תוכנית החלופה נוספה",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report הופק — השתמש הדפס/שמור as PDF in the חדש tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "הדוח הופק — השתמש ב\"הדפס/שמור כ-PDF\" בלשונית החדשה!",
       "reset_to_default_template": "אפס to ברירת מחדל template",
       "reset_to_defaults": "אפס to defaults",
       "response_failed_try_again": "התגובה נכשלה — נסה שוב",
@@ -9232,7 +9318,7 @@
       "add_abc_entries_to_see_progress_over_time": "הוסף רשומות ABC כדי לראות התקדמות לאורך זמן",
       "add_abc_entries_to_see_visual_trend_data": "הוסף רשומות ABC כדי לראות נתוני מגמה חזותיים.",
       "add_connections_to_build_the_relationship_map": "הוסף קשרים כדי לבנות את מפת היחסים.",
-      "add_data_points_above_or_paste_csv_data_to_get_sta": "הוסף נתונים נקודות above or הדבק CSV נתונים to get started.",
+      "add_data_points_above_or_paste_csv_data_to_get_sta": "הוסף נקודות נתונים למעלה או הדבק נתוני CSV כדי להתחיל.",
       "additional_context_optional": "הקשר נוסף (אופציונלי)",
       "ai_analysis": "בינה מלאכותית Analysis",
       "ai_context_available": "בינה מלאכותית Context זמין",
@@ -9263,7 +9349,7 @@
       "chaining_method": "שיטת שרשור",
       "checkins": "צ'ק-אינים",
       "choose_the_right_differential_reinforcement_strate": "בחרו את אסטרטגיית החיזוק הדיפרנציאלי הנכונה",
-      "click_ai_generate_checklist_to_create_items_based": "לחץ \"בינה מלאכותית הפק Checklist\" to צור פריטים based on the BIP",
+      "click_ai_generate_checklist_to_create_items_based": "לחץ על \"AI הפק רשימת בדיקה\" כדי ליצור פריטים על בסיס ה-BIP",
       "click_load_student_workspaces_and_select_multiple": "לחצו על \"טען סביבות עבודה של תלמידים\" ובחרו קבצי .json מרובים שנשמרו מ-BehaviorLens",
       "collect_some_abc_data_first_to_generate_a_meaningf": "אספו תחילה נתוני ABC כדי ליצור חבילה משמעותית.",
       "communication_log": "יומן תקשורת",
@@ -9278,7 +9364,7 @@
       "data_quality_score": "נתונים Quality ציונים",
       "data_to_include": "נתונים to כלול",
       "day_streak": "רצף ימים",
-      "define_the_behaviors_settings_or_students_for_stag": "Define the התנהגות, הגדרות, or תלמידים for staggered התערבויות.",
+      "define_the_behaviors_settings_or_students_for_stag": "הגדר את ההתנהגויות, הסביבות או התלמידים עבור התערבות מדורגת.",
       "describe_your_research_question_and_let_ai_recomme": "תארו את שאלת המחקר שלכם ותנו ל-AI להמליץ על העיצוב הטוב ביותר.",
       "discrete_trial_training_with_mastery_tracking_and": "אימון ניסוי דיסקרטי עם מעקב שליטה וקידום אוטומטי",
       "document_whether_interventions_are_implemented_as": "תעדו האם ההתערבויות מיושמות כפי שתוכננו",
@@ -9360,7 +9446,7 @@
       "optional_message": "אופציונלי הודעות",
       "or_explore_the_pd_learning_path": "או חקרו את מסלול הלמידה של PD →",
       "parent": "הורים",
-      "paste_one_value_per_line_supports_formats_5_sessio": "הדבק one ערכים per קווים. תמיכה פורמטים: \"5\", \"מפגשים 1: 5\", or \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "הדבק ערך אחד בכל שורה. תומך בפורמטים: \"5\", \"מפגש 1: 5\", או \"1,5\"",
       "pd_learning_path": "מסלול למידה מקצועי",
       "please_use_chrome_edge_or_safari_for_voice_input": "נא השתמש Chrome, Edge, or Safari for קול קלט.",
       "practice_clinical_reasoning_with_aigenerated_case": "תרגלו חשיבה קלינית עם מקרי בוחן שנוצרו על ידי AI. קבלו משוב ברמת מומחה על תגובותיכם.",
@@ -9409,7 +9495,7 @@
       "tap_each_item_when_student_engages_with_it": "הקש על כל פריט כאשר התלמיד מתקשר אתו",
       "target_behavior": "Target התנהגות",
       "task_analysis": "ניתוח משימה",
-      "taskskill_name": "Task/מיומנויות Name",
+      "taskskill_name": "שם המשימה/המיומנות",
       "teacher": "מורים",
       "team_collaboration_notes": "הערות שיתוף פעולה צוותי",
       "test_your_behavioral_analysis_knowledge_80_to_earn": "בחנו את הידע שלכם בניתוח התנהגותי — 80% כדי לזכות בתג שלכם",
@@ -9471,7 +9557,7 @@
       "card_desc": "שוחחו עם AI על אסטרטגיות התנהגות, FBA, BIP ותכנון התערבות",
       "empty_desc": "אני יכול לעזור עם אסטרטגיות FBA, רעיונות להתערבות, פרשנות נתונים, טכניקות הרגעה ועוד.",
       "empty_title": "שאלו אותי כל דבר על ניתוח התנהגות!",
-      "placeholder": "Ask about התנהגות, אסטרטגיות, FBA, BIP...",
+      "placeholder": "שאל על התנהגויות, אסטרטגיות, FBA, BIP...",
       "subtitle": "עוזר ניתוח התנהגותי מבוסס AI",
       "title": "שאל את AlloBot"
     },
@@ -9604,7 +9690,7 @@
       "document_baseline_frequency_for_flagged_students": "תעדו תדירות בסיס לתלמידים מסומנים",
       "document_outcomes_and_lessons_learned": "תעדו תוצאות ולקחים שנלמדו",
       "document_the_confirmed_function": "תעדו את הפונקציה המאושרת",
-      "document_the_hypothesis_in_session_notes": "מסמכים the השערה in מפגשים notes",
+      "document_the_hypothesis_in_session_notes": "תעד את ההשערה בהערות המפגש",
       "dr_schedule": "לוח DR",
       "dr_strategy": "DR אסטרטגיה",
       "draft_progress_narrative": "Draft התקדמות narrative",
@@ -9667,7 +9753,7 @@
       "level_mean": "רמות (Mean)",
       "maintenance_tracker": "מעקב שימור",
       "make_tier_movement_decision_stay_fade_intensify": "קבלו החלטת תזוזה בין רמות (להישאר / להחליש / להעצים)",
-      "map_antecedent_behavior_consequence_pathways": "Map קדמות → התנהגות → תוצאות pathways",
+      "map_antecedent_behavior_consequence_pathways": "מפה מסלולי קדם → התנהגות → תוצאה",
       "map_each_target_behavior_to_a_replacement": "מפו כל התנהגות מטרה לחלופה",
       "materials_access": "Materials גישה",
       "measure_effect_size_of_interventions": "מדדו גודל אפקט של התערבויות",
@@ -9788,7 +9874,7 @@
       "tier_3_intensive": "שכבה 3 — אינטנסיבית",
       "tier_3_intensive_support": "Tier 3: Intensive תמיכה",
       "time_commitment": "מחויבות זמן",
-      "tips_for_quality_data": "טיפים for Quality נתונים",
+      "tips_for_quality_data": "טיפים לנתונים איכותיים",
       "today": "היום",
       "tough": "קשה",
       "triangulate_with_observation_data": "בצע שילוב משולש עם נתוני תצפית",
@@ -10396,7 +10482,25 @@
       "resolved_tip": "בעיות מהביקורת המקורית שלא נמצאו עוד בביקורת האימות",
       "persisted_tip": "בעיות מהביקורת המקורית שעדיין קיימות לאחר התיקון",
       "introduced_tip": "בעיות חדשות שלא היו קיימות לפני התיקון"
-    }
+    },
+    "reattach_mismatch": "ה-PDF שצורף מחדש שונה מזה שנבדק{detail}. בכל זאת יימשך; התוצאות עשויות להיות לא עקביות עם הבדיקה המקורית.",
+    "reattach_name_detail": " (שם: \"{new}\" מול \"{old}\")",
+    "reattach_size_detail": " (גודל: {new} מול {old} בתים)",
+    "audit_failed_kept": "{label}: הבדיקה נכשלה; הגרסה הקודמת נשמרה.",
+    "score_dropped_kept": "{label}: הניקוד היה יורד ({prev} → {next}{axe}). הגרסה הקודמת נשמרה.",
+    "axe_only_comparison": ", השוואת axe בלבד",
+    "axe_only_committed": "{label}: אימות בינה מלאכותית אינו זמין; אושר רק עם ניקוד axe-core דטרמיניסטי.",
+    "reinserted_ai": "{count} הוכנסו מחדש (בינה מלאכותית)",
+    "reinserted_sentence": "{count} הוכנסו מחדש (משפט)",
+    "reinserted_fuzzy": "{count} הוכנסו מחדש (משוער)",
+    "in_recovery_appendix": "{count} בנספח השחזור",
+    "duplicates_removed_one": "{count} כפיל הוסר",
+    "duplicates_removed_other": "{count} כפילים הוסרו",
+    "auto_continue_round": "סבב המשך אוטומטי {round}/{max}: {detail}, ניקוד {score}/100 (יעד {target})...",
+    "violation_one": "{count} הפרה",
+    "violation_other": "{count} הפרות",
+    "ai_issue_one": "{count} בעיה שסומנה על ידי בינה מלאכותית",
+    "ai_issue_other": "{count} בעיות שסומנו על ידי בינה מלאכותית"
   },
   "stem": {
     "common": {
@@ -12485,5 +12589,27 @@
     "no_match": "אין פקודה תואמת. צ'אט הבוט (ובקרוב גם הקול) מבין בקשות בניסוח חופשי.",
     "placeholder": "הקלידו פקודה — „טקסט גדול יותר”, „מרכז מחנכים”, „הקרא את העמוד הזה”…",
     "run": "הרץ"
+  },
+  "voice_engine": {
+    "preparing": "מכין את מנוע הקול...",
+    "downloading_model": "מוריד את מודל הקול",
+    "loading_memory": "טוען לזיכרון",
+    "loading_model_memory": "טוען את מודל הקול לזיכרון"
+  },
+  "voice_control": {
+    "listening": "מקשיב; אמור “stop listening” כדי לסיים",
+    "stop_aria": "עצור בקרה קולית"
+  },
+  "dynamic_assessment": {
+    "return_title": "משאב זה נוצר על ידי הערכה דינמית. לחץ כדי לפתוח מחדש את מודול ההערכה הדינמית.",
+    "return_aria": "חזרה להערכה דינמית",
+    "return_label": "חזרה להערכה דינמית",
+    "item_badge": "פריט {num}"
+  },
+  "story_gallery": {
+    "title": "גלריית סיפורים",
+    "byline": "מאת {author} · {words} מילים · {used}/{total} אוצר מילים",
+    "student": "תלמיד",
+    "score": "ניקוד: {score}"
   }
 }

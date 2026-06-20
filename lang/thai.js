@@ -619,7 +619,8 @@
     "open_storyforge_aria": "เปิด StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "คำถามอิงเอกสาร",
-    "open_stem_lab_explore_aria": "เปิด STEM Lab Explore"
+    "open_stem_lab_explore_aria": "เปิด STEM Lab Explore",
+    "stem_lab_explore": "สำรวจ"
   },
   "meta": {
     "engagement_ideas": "ไอเดียการมีส่วนร่วม",
@@ -715,7 +716,8 @@
     "cancel_transcription": "ยกเลิกการถอดเสียง",
     "chunk_info": "เสียงถูกแบ่งเป็นส่วน 5 นาทีเพื่อประมวลผล",
     "chunk_progress": "ส่วนที่ {current} จาก {total}",
-    "audio_only_error": "ขณะนี้รองรับเฉพาะไฟล์เสียง (MP3, WAV, ฯลฯ) สำหรับการถอดเสียงแบบแบ่งส่วน"
+    "audio_only_error": "ขณะนี้รองรับเฉพาะไฟล์เสียง (MP3, WAV, ฯลฯ) สำหรับการถอดเสียงแบบแบ่งส่วน",
+    "starting": "กำลังเริ่ม..."
   },
   "formatting": {
     "bold": "ตัวหนา (**text**)",
@@ -773,7 +775,8 @@
     "loading_resources": "กำลังโหลดทรัพยากร...",
     "preparing_workspace": "กำลังเตรียมพื้นที่ทำงานของคุณ...",
     "almost_ready": "ใกล้พร้อมแล้ว...",
-    "loading_screen_aria": "หน้าจอกำลังโหลดของ AlloFlow"
+    "loading_screen_aria": "หน้าจอกำลังโหลดของ AlloFlow",
+    "preparing_environment": "กำลังเตรียมสภาพแวดล้อมการเรียนรู้ของคุณ..."
   },
   "tools": {
     "source": "เนื้อหาต้นฉบับ",
@@ -1068,7 +1071,12 @@
     "read_all_button": "อ่านทั้งหมด",
     "stop_button": "หยุด",
     "focus_narration_label": "การบรรยายโฟกัสด้วยคีย์บอร์ด",
-    "focus_narration_on_hint": "กด Tab เพื่อฟังปุ่มควบคุม"
+    "focus_narration_on_hint": "กด Tab เพื่อฟังปุ่มควบคุม",
+    "reading": "กำลังอ่าน...",
+    "item_aria": "คลิกเพื่อฟัง: {text}",
+    "footer_stats": "{count} รายการ · คลิกที่รายการใดก็ได้เพื่อฟัง · การบรรยาย Tab {state}",
+    "narration_on": "เปิด",
+    "narration_off": "ปิด"
   },
   "guided": {
     "indicator_title": "โหมดมีไกด์",
@@ -2878,7 +2886,42 @@
     "whisper_load_failed": "การโหลด Whisper ล้มเหลว กลับไปใช้เอนจินอื่น",
     "backup_failed": "การสำรองข้อมูลล้มเหลว ลองอีกครั้ง",
     "invalid_backup_file": "ไม่ใช่ไฟล์สำรอง AlloHaven ที่ถูกต้อง",
-    "could_not_read_file": "ไม่สามารถอ่านไฟล์นั้นได้ เป็นไฟล์สำรอง JSON ใช่ไหม?"
+    "could_not_read_file": "ไม่สามารถอ่านไฟล์นั้นได้ เป็นไฟล์สำรอง JSON ใช่ไหม?",
+    "focus_streak": "{flames} สถิติโฟกัสต่อเนื่อง {minutes} นาที! ทำต่อไปแบบนี้!",
+    "streak_saved": "ยินดีต้อนรับกลับมา! บันทึกสถิติต่อเนื่อง {minutes} นาทีของคุณแล้ว",
+    "points_awarded": "มอบคะแนนแล้ว!",
+    "welcome_name": "ยินดีต้อนรับ, {name}!",
+    "element_not_found": "ไม่พบองค์ประกอบ: {id}",
+    "overlay_set": "การซ้อนทับ: {mode}",
+    "synced_resource": "ซิงค์แล้ว: {title}",
+    "group_resource": "ทรัพยากรกลุ่ม: {title}",
+    "preset_saved": "บันทึกพรีเซ็ต \"{name}\" แล้ว!",
+    "translated_resources": "แปลทรัพยากร {count} รายการสำเร็จแล้ว!",
+    "bingo_cards_count": "สร้างการ์ด BINGO {count} ใบแล้ว!",
+    "sound_enabled": "เปิดเสียงแล้ว",
+    "sound_muted": "ปิดเสียงแล้ว",
+    "democracy_mode_on": "เปิดโหมดประชาธิปไตย: การโหวตของชั้นเรียนเปิดอยู่",
+    "democracy_mode_off": "ปิดโหมดประชาธิปไตย: เล่นคนเดียว",
+    "resource_moved_up": "ย้าย {title} ขึ้น",
+    "resource_moved_down": "ย้าย {title} ลง",
+    "panels_regenerated": "สร้างแผง {count} แผงใหม่แล้ว!",
+    "settings_undone": "เลิกทำแล้ว: {label} กู้คืนการตั้งค่าแล้ว (ทรัพยากรที่สร้างไว้ไม่ได้รับผลกระทบ)",
+    "concept_added": "เพิ่มแนวคิดแล้ว: {text}",
+    "lesson_not_found": "ไม่พบบทเรียนในหน่วยนี้",
+    "probe_complete": "การตรวจสอบเสร็จสมบูรณ์: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "อัปเดตการตั้งค่าแล้ว: {changes}",
+    "change_format": "รูปแบบ: {value}",
+    "change_tone": "โทน: {value}",
+    "change_length": "ความยาว: ~{value} คำ",
+    "change_language": "ภาษา: {value}",
+    "change_interest": "เพิ่มความสนใจแล้ว: {value}",
+    "backup_saved": "💾 บันทึกข้อมูลสำรองของเซสชันนี้ไว้ในดาวน์โหลดของคุณแล้ว (ไฟล์โปรเจกต์) ตอนนี้ไม่ต้องทำอะไรกับมัน หากต้องการกลับมาในภายหลัง \"โหลดโปรเจกต์\" จะกู้คืนทุกอย่าง",
+    "backup_saved_score": " (คะแนน {score})",
+    "project_saved_multi_one": "💾 บันทึกโปรเจกต์แล้ว ({count} ช่วง) โหลดในภายหลังเพื่อดำเนินการต่อ",
+    "project_saved_multi_other": "💾 บันทึกโปรเจกต์แล้ว ({count} ช่วง) โหลดในภายหลังเพื่อดำเนินการต่อ",
+    "project_saved": "💾 บันทึกโปรเจกต์แล้ว โหลดในภายหลังเพื่อแก้ไขต่อ",
+    "search_result_desc": "ผลการค้นหาของ Google: {title}",
+    "link_url_prompt": "ป้อน URL ของลิงก์:"
   },
   "wizard": {
     "title": "เริ่มต้นด่วน",
@@ -3390,7 +3433,10 @@
     "analyzing_topology": "บทบาทผู้ออกแบบหลักสูตร: กำลังวิเคราะห์โครงสร้างเนื้อหา...",
     "brainstorming": "กำลังระดมสมอง...",
     "retrying_citations": "กำลังลองใหม่เพื่อการอ้างอิงที่ดีกว่า...",
-    "translating": "กำลังแปล..."
+    "translating": "กำลังแปล...",
+    "preparing_translation": "กำลังเตรียมการแปลเป็น {lang}...",
+    "translating_item": "กำลังแปล {current}/{total}: {title}...",
+    "generating_panel": "กำลังสร้างแผง {current}/{total}..."
   },
   "output": {
     "analysis_complexity": "ความซับซ้อนของข้อความ",
@@ -3428,7 +3474,34 @@
     "plan_hook": "เปิดบทเรียน",
     "plan_independent": "ฝึกอิสระ",
     "col_image": "ภาพ",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "หยุด",
+    "expand_header": "ขยายส่วนหัว",
+    "collapse_header": "ยุบส่วนหัวเพื่อให้พื้นที่เนื้อหามากขึ้น",
+    "collapse_header_short": "ยุบส่วนหัว",
+    "step_x_of_y": "ขั้นตอนที่ {current} จาก {total}",
+    "english_translation": "คำแปลภาษาอังกฤษ",
+    "source_references": "การอ้างอิงข้อความต้นฉบับ",
+    "activity_probe": "การตรวจสอบ {activity}",
+    "word_sounds_count": "Word Sounds ({count} คำ)",
+    "quick_practice_mode": "โหมดฝึกฝนด่วน",
+    "new_option": "ตัวเลือกใหม่",
+    "meta_lesson_extensions": "ส่วนขยายบทเรียน",
+    "title_extension_ideas": "ไอเดียส่วนขยาย",
+    "meta_full_chat_log": "บันทึกแชทแบบเต็ม",
+    "title_udl_consultation_log": "บันทึกการปรึกษา UDL",
+    "meta_actionable_steps": "ขั้นตอนที่ปฏิบัติได้ (สรุปด้วย AI)",
+    "title_differentiation_strategy": "กลยุทธ์การจำแนกความแตกต่าง",
+    "meta_udl_guide_advice": "คำแนะนำคู่มือ UDL",
+    "title_stem_assessment": "การประเมิน STEM",
+    "title_explore_challenge": "ความท้าทายการสำรวจ",
+    "title_fluency_maze": "🏰 เขาวงกตความคล่องแคล่ว",
+    "title_storyforge_config": "📖 งาน StoryForge",
+    "title_storyforge_submission": "📖 การส่งเรื่องราว",
+    "title_poettree_config": "🌳 งาน PoetTree",
+    "title_poettree_submission": "🌳 การส่งบทกวี",
+    "title_litlab_config": "🎭 งาน LitLab",
+    "title_litlab_submission": "🎭 การส่งการแสดง"
   },
   "fullpack": {
     "button_label": "สร้างชุดทรัพยากรเต็มรูปแบบ",
@@ -3724,7 +3797,12 @@
       "error_check": "ตรวจสอบการสอดคล้องล้มเหลว",
       "regenerated_success": "สร้างข้อความใหม่พร้อมการปรับปรุงแล้ว!",
       "regen_failed": "การสร้างใหม่ล้มเหลว"
-    }
+    },
+    "skill_check": "การตรวจสอบทักษะ",
+    "desc_skill_check": "ตรวจสอบความเชี่ยวชาญของคุณเทียบกับมาตรฐาน",
+    "desc_parent": "ดูว่าสิ่งนี้สอดคล้องกับเป้าหมายของโรงเรียนอย่างไร",
+    "desc_6dim": "ตรวจสอบหลักสูตรใน 6 มิติ",
+    "desc_5dim": "ตรวจสอบหลักสูตรใน 5 มิติ (เพิ่มมาตรฐานเพื่อการตรวจสอบที่สมบูรณ์)"
   },
   "standards": {
     "target_standard": "มาตรฐานเป้าหมาย",
@@ -5397,7 +5475,8 @@
     "card_visuals_label": "ภาพการ์ด",
     "card_visuals_auto": "อัตโนมัติ (เฉพาะรายการสั้น)",
     "card_visuals_always": "สร้างภาพเสมอ",
-    "card_visuals_never": "ไม่เคย (การ์ดข้อความเท่านั้น)"
+    "card_visuals_never": "ไม่เคย (การ์ดข้อความเท่านั้น)",
+    "explanation_unavailable": "ไม่สามารถสร้างคำอธิบายได้ในขณะนี้ โปรดลองอีกครั้งในอีกสักครู่"
   },
   "concept_map": {
     "toolbar": {
@@ -7844,7 +7923,12 @@
     "connect": "เชื่อมต่อ",
     "dismiss_banner_aria": "ปิดแบนเนอร์ LMS",
     "dismiss_button": "ปิด",
-    "audit_queue_help": "คลิกที่เอกสารเพื่อดึงและโหลดเข้าสู่ไปป์ไลน์การเข้าถึง ไฟล์ LMS บางไฟล์อาจต้องให้คุณเข้าสู่ระบบ LMS ในเบราว์เซอร์นี้"
+    "audit_queue_help": "คลิกที่เอกสารเพื่อดึงและโหลดเข้าสู่ไปป์ไลน์การเข้าถึง ไฟล์ LMS บางไฟล์อาจต้องให้คุณเข้าสู่ระบบ LMS ในเบราว์เซอร์นี้",
+    "queued_one": "{count} เอกสารอยู่ในคิวจาก LMS",
+    "queued_other": "{count} เอกสารอยู่ในคิวจาก LMS",
+    "fetching": "กำลังดึง {name}...",
+    "loaded_ready": "โหลด {name} แล้ว พร้อมสำหรับการตรวจสอบ",
+    "fetch_failed": "ดึง {name} ไม่สำเร็จ: {error} ไฟล์อาจต้องการการยืนยันตัวตน LMS"
   },
   "annotation": {
     "title": "ชุดเครื่องมือคำอธิบาย",
@@ -7870,7 +7954,9 @@
   },
   "visual_support": {
     "title": "สนับสนุนด้วยภาพ",
-    "teacher_modal_aria": "สื่อสนับสนุนภาพจากครูของคุณ"
+    "teacher_modal_aria": "สื่อสนับสนุนภาพจากครูของคุณ",
+    "now": "ตอนนี้",
+    "read_aloud": "อ่านออกเสียง"
   },
   "canvas_settings": {
     "title": "การตั้งค่า Canvas",
@@ -9314,7 +9400,25 @@
       "highlight_color": "สีไฮไลต์",
       "insert_table_aria": "แทรกตาราง",
       "insert_table_title": "แทรกตารางที่เข้าถึงได้"
-    }
+    },
+    "reattach_mismatch": "PDF ที่แนบใหม่แตกต่างจากที่ตรวจสอบ{detail} จะดำเนินการต่อไปอยู่ดี ผลลัพธ์อาจไม่สอดคล้องกับการตรวจสอบเดิม",
+    "reattach_name_detail": " (ชื่อ: \"{new}\" เทียบกับ \"{old}\")",
+    "reattach_size_detail": " (ขนาด: {new} เทียบกับ {old} ไบต์)",
+    "audit_failed_kept": "{label}: การตรวจสอบล้มเหลว เก็บเวอร์ชันก่อนหน้าไว้",
+    "score_dropped_kept": "{label}: คะแนนจะลดลง ({prev} → {next}{axe}) เก็บเวอร์ชันก่อนหน้าไว้",
+    "axe_only_comparison": ", เปรียบเทียบ axe เท่านั้น",
+    "axe_only_committed": "{label}: ไม่สามารถใช้การยืนยันด้วย AI ได้ ยืนยันด้วยคะแนน axe-core แบบกำหนดได้เท่านั้น",
+    "reinserted_ai": "{count} แทรกใหม่ (AI)",
+    "reinserted_sentence": "{count} แทรกใหม่ (ประโยค)",
+    "reinserted_fuzzy": "{count} แทรกใหม่ (โดยประมาณ)",
+    "in_recovery_appendix": "{count} ในภาคผนวกการกู้คืน",
+    "duplicates_removed_one": "ลบรายการซ้ำ {count} รายการแล้ว",
+    "duplicates_removed_other": "ลบรายการซ้ำ {count} รายการแล้ว",
+    "auto_continue_round": "รอบดำเนินการต่ออัตโนมัติ {round}/{max}: {detail}, คะแนน {score}/100 (เป้าหมาย {target})...",
+    "violation_one": "{count} การละเมิด",
+    "violation_other": "{count} การละเมิด",
+    "ai_issue_one": "{count} ปัญหาที่ AI ตั้งค่าสถานะ",
+    "ai_issue_other": "{count} ปัญหาที่ AI ตั้งค่าสถานะ"
   },
   "stem": {
     "common": {
@@ -10372,7 +10476,7 @@
       "subtitle": "เครื่องมือประเมินพฤติกรรมเชิงหน้าที่ การเก็บข้อมูล ABC และแผนแทรกแซงพฤติกรรม",
       "open_btn": "เปิด BehaviorLens",
       "select_student": "เลือกนักเรียน",
-      "choose_student": ": Choose a student:",
+      "choose_student": "— เลือกนักเรียน —",
       "pick_adjective": ": Adjective:",
       "pick_animal": ": Animal:",
       "no_codename": "เลือกชื่อรหัส...",
@@ -12931,5 +13035,27 @@
     "no_match": "ไม่มีคำสั่งที่ตรงกัน แชตบอต (และในไม่ช้าก็เสียง) เข้าใจคำขอแบบอิสระ",
     "placeholder": "พิมพ์คำสั่ง — “ขยายตัวอักษร”, “educator hub”, “อ่านหน้านี้”…",
     "run": "เรียกใช้"
+  },
+  "voice_engine": {
+    "preparing": "กำลังเตรียมเอนจินเสียง...",
+    "downloading_model": "กำลังดาวน์โหลดโมเดลเสียง",
+    "loading_memory": "กำลังโหลดลงในหน่วยความจำ",
+    "loading_model_memory": "กำลังโหลดโมเดลเสียงลงในหน่วยความจำ"
+  },
+  "voice_control": {
+    "listening": "กำลังฟัง พูด “stop listening” เพื่อจบ",
+    "stop_aria": "หยุดการควบคุมด้วยเสียง"
+  },
+  "dynamic_assessment": {
+    "return_title": "ทรัพยากรนี้สร้างโดยการประเมินแบบไดนามิก คลิกเพื่อเปิดโมดูลการประเมินแบบไดนามิกอีกครั้ง",
+    "return_aria": "กลับไปยังการประเมินแบบไดนามิก",
+    "return_label": "กลับไปยังการประเมินแบบไดนามิก",
+    "item_badge": "รายการ {num}"
+  },
+  "story_gallery": {
+    "title": "แกลเลอรีเรื่องราว",
+    "byline": "โดย {author} · {words} คำ · {used}/{total} คำศัพท์",
+    "student": "นักเรียน",
+    "score": "คะแนน: {score}"
   }
 }

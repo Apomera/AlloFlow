@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper ਲੋਡ ਅਸਫਲ ਹੋਇਆ। ਹੋਰ ਇੰਜਣਾਂ 'ਤੇ ਵਾਪਸ ਜਾ ਰਿਹਾ ਹੈ।",
     "backup_failed": "ਬੈਕਅੱਪ ਅਸਫਲ ਹੋਇਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     "invalid_backup_file": "ਇਹ ਇੱਕ ਵੈਧ AlloHaven ਬੈਕਅੱਪ ਫਾਈਲ ਨਹੀਂ ਹੈ।",
-    "could_not_read_file": "ਉਹ ਫਾਈਲ ਪੜ੍ਹੀ ਨਹੀਂ ਜਾ ਸਕੀ। ਕੀ ਇਹ ਇੱਕ JSON ਬੈਕਅੱਪ ਹੈ?"
+    "could_not_read_file": "ਉਹ ਫਾਈਲ ਪੜ੍ਹੀ ਨਹੀਂ ਜਾ ਸਕੀ। ਕੀ ਇਹ ਇੱਕ JSON ਬੈਕਅੱਪ ਹੈ?",
+    "focus_streak": "{flames} {minutes} ਮਿੰਟ ਦੀ ਫੋਕਸ ਸਟ੍ਰੀਕ! ਇਵੇਂ ਹੀ ਜਾਰੀ ਰੱਖੋ!",
+    "streak_saved": "ਵਾਪਸੀ 'ਤੇ ਸੁਆਗਤ ਹੈ! ਤੁਹਾਡੀ {minutes} ਮਿੰਟ ਦੀ ਸਟ੍ਰੀਕ ਸੰਭਾਲੀ ਗਈ।",
+    "points_awarded": "ਅੰਕ ਦਿੱਤੇ ਗਏ!",
+    "welcome_name": "ਸੁਆਗਤ ਹੈ, {name}!",
+    "element_not_found": "ਤੱਤ ਨਹੀਂ ਮਿਲਿਆ: {id}",
+    "overlay_set": "ਓਵਰਲੇ: {mode}",
+    "synced_resource": "ਸਿੰਕ ਕੀਤਾ ਗਿਆ: {title}",
+    "group_resource": "ਗਰੁੱਪ ਸਰੋਤ: {title}",
+    "preset_saved": "ਪ੍ਰੀਸੈੱਟ \"{name}\" ਸੰਭਾਲਿਆ ਗਿਆ!",
+    "translated_resources": "{count} ਸਰੋਤ ਸਫਲਤਾਪੂਰਵਕ ਅਨੁਵਾਦ ਕੀਤੇ ਗਏ!",
+    "bingo_cards_count": "{count} BINGO ਕਾਰਡ ਤਿਆਰ ਕੀਤੇ ਗਏ!",
+    "sound_enabled": "ਆਵਾਜ਼ ਚਾਲੂ",
+    "sound_muted": "ਆਵਾਜ਼ ਮਿਊਟ",
+    "democracy_mode_on": "ਲੋਕਤੰਤਰ ਮੋਡ ਚਾਲੂ: ਕਲਾਸ ਵੋਟਿੰਗ ਚਾਲੂ",
+    "democracy_mode_off": "ਲੋਕਤੰਤਰ ਮੋਡ ਬੰਦ: ਇਕੱਲੀ ਖੇਡ",
+    "resource_moved_up": "{title} ਨੂੰ ਉੱਪਰ ਲਿਜਾਇਆ ਗਿਆ",
+    "resource_moved_down": "{title} ਨੂੰ ਹੇਠਾਂ ਲਿਜਾਇਆ ਗਿਆ",
+    "panels_regenerated": "{count} ਪੈਨਲ ਮੁੜ ਤਿਆਰ ਕੀਤੇ ਗਏ!",
+    "settings_undone": "ਅਣਕੀਤਾ ਗਿਆ: {label}। ਸੈਟਿੰਗਾਂ ਬਹਾਲ ਕੀਤੀਆਂ ਗਈਆਂ। (ਤਿਆਰ ਕੀਤੇ ਸਰੋਤ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਹੁੰਦੇ।)",
+    "concept_added": "ਸੰਕਲਪ ਜੋੜਿਆ ਗਿਆ: {text}",
+    "lesson_not_found": "ਇਸ ਯੂਨਿਟ ਵਿੱਚ ਪਾਠ ਨਹੀਂ ਮਿਲਿਆ।",
+    "probe_complete": "ਜਾਂਚ ਪੂਰੀ: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "ਸੈਟਿੰਗਾਂ ਅੱਪਡੇਟ ਕੀਤੀਆਂ ਗਈਆਂ: {changes}",
+    "change_format": "ਫਾਰਮੈਟ: {value}",
+    "change_tone": "ਸੁਰ: {value}",
+    "change_length": "ਲੰਬਾਈ: ~{value} ਸ਼ਬਦ",
+    "change_language": "ਭਾਸ਼ਾ: {value}",
+    "change_interest": "ਦਿਲਚਸਪੀ ਜੋੜੀ ਗਈ: {value}",
+    "backup_saved": "💾 ਇਸ ਸੈਸ਼ਨ ਦਾ ਬੈਕਅੱਪ ਤੁਹਾਡੇ ਡਾਊਨਲੋਡ ਵਿੱਚ ਸੰਭਾਲਿਆ ਗਿਆ (ਇੱਕ ਪ੍ਰੋਜੈਕਟ ਫਾਈਲ)। ਹੁਣ ਇਸ ਨਾਲ ਕੁਝ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ; ਜੇ ਕਦੇ ਵਾਪਸ ਆਉਣਾ ਪਵੇ, ਤਾਂ \"ਪ੍ਰੋਜੈਕਟ ਲੋਡ ਕਰੋ\" ਸਭ ਕੁਝ ਵਾਪਸ ਲੈ ਆਉਂਦਾ ਹੈ।",
+    "backup_saved_score": " (ਸਕੋਰ {score})",
+    "project_saved_multi_one": "💾 ਪ੍ਰੋਜੈਕਟ ਸੰਭਾਲਿਆ ਗਿਆ ({count} ਰੇਂਜ); ਜਾਰੀ ਰੱਖਣ ਲਈ ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਲੋਡ ਕਰੋ",
+    "project_saved_multi_other": "💾 ਪ੍ਰੋਜੈਕਟ ਸੰਭਾਲਿਆ ਗਿਆ ({count} ਰੇਂਜ); ਜਾਰੀ ਰੱਖਣ ਲਈ ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਲੋਡ ਕਰੋ",
+    "project_saved": "💾 ਪ੍ਰੋਜੈਕਟ ਸੰਭਾਲਿਆ ਗਿਆ; ਸੰਪਾਦਨ ਜਾਰੀ ਰੱਖਣ ਲਈ ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਲੋਡ ਕਰੋ",
+    "search_result_desc": "Google ਖੋਜ ਨਤੀਜਾ: {title}",
+    "link_url_prompt": "ਲਿੰਕ ਦਾ URL ਦਾਖਲ ਕਰੋ:"
   },
   "large_file": {
     "modal_title": "ਆਯਾਤ ਕਰੋ Large ਆਡੀਓ ਫਾਈਲ",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "ਰੱਦ ਕਰੋ Transcription",
     "chunk_info": "ਆਡੀਓ ਹੈ split ਵਿੱਚ 5-minute chunks ਲਈ processing",
     "chunk_progress": "Chunk {current} ਦਾ {total}",
-    "audio_only_error": "Currently ਸਿਰਫ਼ ਆਡੀਓ ਫਾਈਲ (MP3, WAV, etc.) ਹਨ supported ਲਈ chunked transcription."
+    "audio_only_error": "Currently ਸਿਰਫ਼ ਆਡੀਓ ਫਾਈਲ (MP3, WAV, etc.) ਹਨ supported ਲਈ chunked transcription.",
+    "starting": "ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ..."
   },
   "formatting": {
     "bold": "Bold (**ਟੈਕਸਟ**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "ਖੋਲ੍ਹੋ StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ਦਸਤਾਵੇਜ਼-ਆਧਾਰਿਤ ਸਵਾਲ",
-    "open_stem_lab_explore_aria": "ਖੋਲ੍ਹੋ STEM ਪ੍ਰਯੋਗਸ਼ਾਲਾ ਪੜਚੋਲ ਕਰੋ"
+    "open_stem_lab_explore_aria": "ਖੋਲ੍ਹੋ STEM ਪ੍ਰਯੋਗਸ਼ਾਲਾ ਪੜਚੋਲ ਕਰੋ",
+    "stem_lab_explore": "ਪੜਚੋਲ ਕਰੋ"
   },
   "history": {
     "load_project": "ਲੋਡ ਕਰੋ Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight ਰੰਗ",
       "insert_table_aria": "Insert ਸਾਰਣੀ",
       "insert_table_title": "Insert ਪਹੁੰਚਯੋਗ ਸਾਰਣੀ"
-    }
+    },
+    "reattach_mismatch": "ਮੁੜ ਨੱਥੀ ਕੀਤਾ PDF ਆਡਿਟ ਕੀਤੇ ਨਾਲੋਂ ਵੱਖਰਾ ਹੈ{detail}। ਫਿਰ ਵੀ ਜਾਰੀ ਰਹੇਗਾ; ਨਤੀਜੇ ਮੂਲ ਆਡਿਟ ਨਾਲ ਅਸੰਗਤ ਹੋ ਸਕਦੇ ਹਨ।",
+    "reattach_name_detail": " (ਨਾਮ: \"{new}\" ਬਨਾਮ \"{old}\")",
+    "reattach_size_detail": " (ਆਕਾਰ: {new} ਬਨਾਮ {old} ਬਾਈਟ)",
+    "audit_failed_kept": "{label}: ਆਡਿਟ ਅਸਫਲ; ਪਿਛਲਾ ਸੰਸਕਰਣ ਰੱਖਿਆ ਗਿਆ।",
+    "score_dropped_kept": "{label}: ਸਕੋਰ ਘਟ ਜਾਂਦਾ ({prev} → {next}{axe})। ਪਿਛਲਾ ਸੰਸਕਰਣ ਰੱਖਿਆ ਗਿਆ।",
+    "axe_only_comparison": ", ਸਿਰਫ਼ axe ਤੁਲਨਾ",
+    "axe_only_committed": "{label}: AI ਤਸਦੀਕ ਉਪਲਬਧ ਨਹੀਂ; ਸਿਰਫ਼ ਨਿਰਧਾਰਕ axe-core ਸਕੋਰ ਨਾਲ ਪੁਸ਼ਟੀ ਕੀਤੀ ਗਈ।",
+    "reinserted_ai": "{count} ਮੁੜ ਸ਼ਾਮਲ (AI)",
+    "reinserted_sentence": "{count} ਮੁੜ ਸ਼ਾਮਲ (ਵਾਕ)",
+    "reinserted_fuzzy": "{count} ਮੁੜ ਸ਼ਾਮਲ (ਅਨੁਮਾਨਿਤ)",
+    "in_recovery_appendix": "{count} ਰਿਕਵਰੀ ਅੰਤਿਕਾ ਵਿੱਚ",
+    "duplicates_removed_one": "{count} ਡੁਪਲੀਕੇਟ ਹਟਾਇਆ ਗਿਆ",
+    "duplicates_removed_other": "{count} ਡੁਪਲੀਕੇਟ ਹਟਾਏ ਗਏ",
+    "auto_continue_round": "ਆਟੋ-ਜਾਰੀ ਰਾਊਂਡ {round}/{max}: {detail}, ਸਕੋਰ {score}/100 (ਟੀਚਾ {target})...",
+    "violation_one": "{count} ਉਲੰਘਣਾ",
+    "violation_other": "{count} ਉਲੰਘਣਾਵਾਂ",
+    "ai_issue_one": "{count} AI-ਚਿੰਨ੍ਹਿਤ ਸਮੱਸਿਆ",
+    "ai_issue_other": "{count} AI-ਚਿੰਨ੍ਹਿਤ ਸਮੱਸਿਆਵਾਂ"
   },
   "concept_sort": {
     "title": "ਸੰਕਲਪ ਕ੍ਰਮਬੱਧ ਕਰੋ",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "ਕਾਰਡ ਦ੍ਰਿਸ਼ਟੀ",
     "card_visuals_auto": "Auto (ਸਿਰਫ਼ ਉੱਤੇ ਛੋਟਾ ਆਈਟਮ)",
     "card_visuals_always": "Always ਤਿਆਰ ਕਰੋ ਚਿੱਤਰ",
-    "card_visuals_never": "Never (ਟੈਕਸਟ-ਸਿਰਫ਼ ਕਾਰਡ)"
+    "card_visuals_never": "Never (ਟੈਕਸਟ-ਸਿਰਫ਼ ਕਾਰਡ)",
+    "explanation_unavailable": "ਇਸ ਵੇਲੇ ਵਿਆਖਿਆ ਤਿਆਰ ਨਹੀਂ ਹੋ ਸਕੀ। ਕਿਰਪਾ ਕਰਕੇ ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
   },
   "dbq": {
     "title": "ਦਸਤਾਵੇਜ਼ ਵਿਸ਼ਲੇਸ਼ਣ (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed ਨੂੰ ਜਾਂਚ ਅਲਾਈਨਮੈਂਟ.",
       "regenerated_success": "ਟੈਕਸਟ regenerated ਨਾਲ improvements!",
       "regen_failed": "ਮੁੜ-ਜਨਰੇਸ਼ਨ ਅਸਫਲ ਰਹੀ।"
-    }
+    },
+    "skill_check": "ਹੁਨਰ ਜਾਂਚ",
+    "desc_skill_check": "ਮਿਆਰਾਂ ਦੇ ਮੁਕਾਬਲੇ ਆਪਣੀ ਮੁਹਾਰਤ ਦੀ ਤਸਦੀਕ ਕਰੋ।",
+    "desc_parent": "ਦੇਖੋ ਕਿ ਇਹ ਸਕੂਲ ਦੇ ਟੀਚਿਆਂ ਨਾਲ ਕਿਵੇਂ ਮੇਲ ਖਾਂਦਾ ਹੈ",
+    "desc_6dim": "ਪਾਠਕ੍ਰਮ ਦਾ 6 ਪਹਿਲੂਆਂ ਵਿੱਚ ਆਡਿਟ ਕਰਦਾ ਹੈ",
+    "desc_5dim": "ਪਾਠਕ੍ਰਮ ਦਾ 5 ਪਹਿਲੂਆਂ ਵਿੱਚ ਆਡਿਟ ਕਰਦਾ ਹੈ (ਪੂਰੇ ਆਡਿਟ ਲਈ ਮਿਆਰ ਜੋੜੋ)"
   },
   "standards": {
     "target_standard": "ਟੀਚਾ ਮਿਆਰ",
@@ -5180,7 +5241,34 @@
     "plan_hook": "ਹੁੱਕ",
     "plan_independent": "Independent ਅਭਿਆਸ ਕਰੋ",
     "col_image": "ਚਿੱਤਰ",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "ਰੋਕੋ",
+    "expand_header": "ਹੈਡਰ ਫੈਲਾਓ",
+    "collapse_header": "ਸਮੱਗਰੀ ਨੂੰ ਵੱਧ ਥਾਂ ਦੇਣ ਲਈ ਹੈਡਰ ਸਮੇਟੋ",
+    "collapse_header_short": "ਹੈਡਰ ਸਮੇਟੋ",
+    "step_x_of_y": "ਕਦਮ {current} / {total}",
+    "english_translation": "ਅੰਗਰੇਜ਼ੀ ਅਨੁਵਾਦ",
+    "source_references": "ਸਰੋਤ ਪਾਠ ਹਵਾਲੇ",
+    "activity_probe": "{activity} ਜਾਂਚ",
+    "word_sounds_count": "Word Sounds ({count} ਸ਼ਬਦ)",
+    "quick_practice_mode": "ਤੇਜ਼ ਅਭਿਆਸ ਮੋਡ",
+    "new_option": "ਨਵਾਂ ਵਿਕਲਪ",
+    "meta_lesson_extensions": "ਪਾਠ ਵਿਸਥਾਰ",
+    "title_extension_ideas": "ਵਿਸਥਾਰ ਵਿਚਾਰ",
+    "meta_full_chat_log": "ਪੂਰਾ ਚੈਟ ਲਾਗ",
+    "title_udl_consultation_log": "UDL ਸਲਾਹ ਲਾਗ",
+    "meta_actionable_steps": "ਕਾਰਜਯੋਗ ਕਦਮ (AI ਸਾਰ)",
+    "title_differentiation_strategy": "ਵਖਰੇਵਾਂ ਰਣਨੀਤੀ",
+    "meta_udl_guide_advice": "UDL ਗਾਈਡ ਸਲਾਹ",
+    "title_stem_assessment": "STEM ਮੁਲਾਂਕਣ",
+    "title_explore_challenge": "ਪੜਚੋਲ ਚੁਣੌਤੀ",
+    "title_fluency_maze": "🏰 ਰਵਾਨਗੀ ਭੁਲੱਕੜ",
+    "title_storyforge_config": "📖 StoryForge ਅਸਾਈਨਮੈਂਟ",
+    "title_storyforge_submission": "📖 ਕਹਾਣੀ ਜਮ੍ਹਾਂ",
+    "title_poettree_config": "🌳 PoetTree ਅਸਾਈਨਮੈਂਟ",
+    "title_poettree_submission": "🌳 ਕਵਿਤਾ ਜਮ੍ਹਾਂ",
+    "title_litlab_config": "🎭 LitLab ਅਸਾਈਨਮੈਂਟ",
+    "title_litlab_submission": "🎭 ਪ੍ਰਦਰਸ਼ਨ ਜਮ੍ਹਾਂ"
   },
   "persona": {
     "title": "Interview ਮੋਡ",
@@ -8254,7 +8342,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing ਸਮੱਗਰੀ topology...",
     "brainstorming": "ਵਿਚਾਰਾਂ ਉੱਤੇ ਮੰਥਨ ਹੋ ਰਿਹਾ ਹੈ...",
     "retrying_citations": "Retrying ਲਈ ਬਿਹਤਰ citations...",
-    "translating": "ਅਨੁਵਾਦ ਹੋ ਰਿਹਾ ਹੈ…"
+    "translating": "ਅਨੁਵਾਦ ਹੋ ਰਿਹਾ ਹੈ…",
+    "preparing_translation": "{lang} ਵਿੱਚ ਅਨੁਵਾਦ ਤਿਆਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+    "translating_item": "{current}/{total} ਅਨੁਵਾਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ: {title}...",
+    "generating_panel": "ਪੈਨਲ {current}/{total} ਤਿਆਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."
   },
   "process": {
     "source_missing": "ਕਿਰਪਾ ਕਰਕੇ provide ਸਰੋਤ ਟੈਕਸਟ ਪਹਿਲਾ.",
@@ -9550,7 +9641,8 @@
     "loading_resources": "Loading ਸਰੋਤ...",
     "preparing_workspace": "Preparing ਤੁਹਾਡਾ workspace...",
     "almost_ready": "ਲਗਭਗ ਤਿਆਰ...",
-    "loading_screen_aria": "AlloFlow loading ਸਕ੍ਰੀਨ"
+    "loading_screen_aria": "AlloFlow loading ਸਕ੍ਰੀਨ",
+    "preparing_environment": "ਤੁਹਾਡਾ ਸਿੱਖਣ ਦਾ ਮਾਹੌਲ ਤਿਆਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9562,7 +9654,7 @@
     "obs_momentary": "Momentary ਸਮਾਂ Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional ਵਿਵਹਾਰ ਮੁਲਾਂਕਣ, ABC ਡਾਟਾ collection, ਅਤੇ ਵਿਵਹਾਰ ਦਖਲ ਯੋਜਨਾ ਔਜ਼ਾਰ.",
+      "subtitle": "Functional ਵਿਵਹਾਰ ਮੁਲਾਂਕਣ (FBA), ABC ਡਾਟਾ ਇਕੱਠ, ਅਤੇ ਵਿਵਹਾਰ ਦਖਲ ਯੋਜਨਾ (BIP) ਔਜ਼ਾਰ।",
       "open_btn": "ਖੋਲ੍ਹੋ BehaviorLens",
       "select_student": "ਚੁਣੋ ਵਿਦਿਆਰਥੀ",
       "choose_student": "— ਚੁਣੋ ਇੱਕ ਵਿਦਿਆਰਥੀ —",
@@ -9705,7 +9797,7 @@
       "prefassess_title": "Preference ਮੁਲਾਂਕਣ",
       "progress_desc": "ਇਕੱਠੇ ਕੀਤੇ ਵਿਵਹਾਰਕ ਡਾਟੇ ਤੋਂ IEP-ਤਿਆਰ ਪ੍ਰਗਤੀ ਨਿਗਰਾਨੀ ਪੈਰੇ",
       "progress_title": "ਤਰੱਕੀ ਬਿਰਤਾਂਤ",
-      "progressreport_desc": "AI-generated ਕੀਤਾ ਗਿਆ ਤਰੱਕੀ reports ਨਾਲ ਡਾਟਾ summaries, trend ਵਿਸ਼ਲੇਸ਼ਣ, ਟੀਚਾ ਤਰੱਕੀ, ਅਤੇ ਮਾਪੇ-ਦੋਸਤਾਨਾ ਭਾਸ਼ਾ ਵਿਕਲਪ",
+      "progressreport_desc": "ਡਾਟਾ ਸਾਰਾਂਸ਼, ਰੁਝਾਨ ਵਿਸ਼ਲੇਸ਼ਣ, ਟੀਚਾ ਤਰੱਕੀ, ਅਤੇ ਮਾਪੇ-ਦੋਸਤਾਨਾ ਭਾਸ਼ਾ ਵਿਕਲਪ ਨਾਲ AI ਦੁਆਰਾ ਤਿਆਰ ਤਰੱਕੀ ਰਿਪੋਰਟਾਂ",
       "progressreport_title": "ਤਰੱਕੀ Reports",
       "qualitycheck_desc": "ਖਾਸ ਸੁਧਾਰ ਸੁਝਾਵਾਂ ਨਾਲ ਤੁਹਾਡੀਆਂ ABC ਐਂਟਰੀਆਂ ਦੀ AI-ਸੰਚਾਲਿਤ ਸਮੀਖਿਆ",
       "qualitycheck_title": "ਡਾਟਾ ਗੁਣਵੱਤਾ ਜਾਂਚ",
@@ -9737,7 +9829,7 @@
       "sessionnotes_title": "ਸੈਸ਼ਨ ਨੋਟਸ",
       "sessiontracker_desc": "ਦਰ ਗਣਨਾ ਨਾਲ ਯੋਜਨਾਬੱਧ ਸੈਸ਼ਨ-ਅਧਾਰਿਤ ਵਿਵਹਾਰਕ ਮਾਪ",
       "sessiontracker_title": "ਸੈਸ਼ਨ ਡਾਟਾ Tracker",
-      "snapshot_desc": "ਨਿਰਯਾਤ ਕਰੋ & ਆਯਾਤ ਕਰੋ JSON snapshots ਲਈ ਮਾਪੇ–ਅਧਿਆਪਕ ਡਾਟਾ exchange",
+      "snapshot_desc": "ਮਾਪੇ–ਅਧਿਆਪਕ ਡਾਟਾ ਵਟਾਂਦਰੇ ਲਈ JSON ਸਨੈਪਸ਼ਾਟ ਨਿਰਯਾਤ ਅਤੇ ਆਯਾਤ ਕਰੋ",
       "snapshot_title": "ਵਿਦਿਆਰਥੀ ਸਨੈਪਸ਼ਾਟ ਅਦਲਾ-ਬਦਲੀ",
       "socialvalidity_desc": "ਇਲਾਜ ਦੀ ਸਵੀਕਾਰਯੋਗਤਾ ਮਾਪਣ ਲਈ TARF ਅਤੇ IRP-15 ਸਕੇਲ — ਪ੍ਰਕਾਸ਼ਨ ਲਈ ਲੋੜੀਂਦਾ",
       "socialvalidity_title": "ਸਮਾਜਿਕ Validity",
@@ -9937,7 +10029,7 @@
     "reinforcer_sensory": "🌀 ਸੰਵੇਦੀ",
     "quiz_fba_purpose": "FBA ਦਾ ਮੁੱਖ ਉਦੇਸ਼ ਕੀ ਹੈ?",
     "quiz_replacement": "ਕੀ ਹੈ ਇੱਕ replacement ਵਿਵਹਾਰ?",
-    "search_placeholder": "ਖੋਜੋ antecedent, ਵਿਵਹਾਰ, consequence, ਨੋਟਸ, ਸੈਟਿੰਗ...",
+    "search_placeholder": "antecedent (ਪੂਰਵ-ਘਟਨਾ), ਵਿਵਹਾਰ, consequence (ਨਤੀਜਾ), ਨੋਟਸ, ਸਥਾਨ ਖੋਜੋ...",
     "quick_fill_placeholder": "ਜਿਵੇਂ \"ਵਿਦਿਆਰਥੀ ਨੇ ਗਣਿਤ ਦੌਰਾਨ ਕੰਮ ਦਿਖਾਉਣ ਲਈ ਕਹੇ ਜਾਣ 'ਤੇ ਕਾਗਜ਼ ਸੁੱਟਿਆ, ਅਧਿਆਪਕ ਨੇ ਸ਼ਾਂਤੀ ਨਾਲ ਮੁੜ-ਨਿਰਦੇਸ਼ਿਤ ਕੀਤਾ\"",
     "nl_edit_placeholder": "ਜਿਵੇਂ \"ਨਤੀਜੇ ਨੂੰ ਅਧਿਆਪਕ ਨੇ ਮੁੜ-ਨਿਰਦੇਸ਼ਿਤ ਕੀਤਾ ਵਿੱਚ ਬਦਲੋ\"",
     "now": "ਹੁਣ",
@@ -10037,7 +10129,7 @@
     "cycle_de_escalation": "ਡੀ-ਐਸਕੇਲੇਸ਼ਨ",
     "cycle_recovery": "ਮੁੜ ਸ਼ਾਂਤ",
     "quiz_opt_punish": "ਨੂੰ punish ਵਿਦਿਆਰਥੀ",
-    "quiz_opt_identify_why": "ਨੂੰ ਪਛਾਣੋ WHY ਇੱਕ ਵਿਵਹਾਰ occurs",
+    "quiz_opt_identify_why": "ਇਹ ਪਛਾਣਨ ਲਈ ਕਿ ਵਿਵਹਾਰ ਕਿਉਂ (WHY) ਵਾਪਰਦਾ ਹੈ",
     "quiz_opt_any_stops": "ਕੋਈ ਵੀ ਵਿਵਹਾਰ ਜੋ ਸਮੱਸਿਆ ਨੂੰ ਰੋਕਦਾ ਹੈ",
     "analysis": {
       "hypothesized_function": "ਅਨੁਮਾਨਿਤ ਕਾਰਜ",
@@ -10110,7 +10202,7 @@
       "topic_purpose_of_contact": "ਵਿਸ਼ਾ / ਸੰਪਰਕ ਦਾ ਮਕਸਦ",
       "type_full_name": "ਕਿਸਮ ਪੂਰਾ name",
       "type_language_eg_spanish_arabic_somali": "ਭਾਸ਼ਾ ਟਾਈਪ ਕਰੋ (ਜਿਵੇਂ, ਸਪੈਨਿਸ਼, ਅਰਬੀ, ਸੋਮਾਲੀ)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "ਕਿਸਮ ਤੁਹਾਡਾ ਨਿਰੀਖਣ, note, ਜਾਂ ਕਲਿੱਕ ਕਰੋ mic ਨੂੰ dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "ਆਪਣਾ ਨਿਰੀਖਣ ਜਾਂ ਨੋਟ ਲਿਖੋ, ਜਾਂ ਬੋਲ ਕੇ ਲਿਖਣ ਲਈ mic 'ਤੇ ਕਲਿੱਕ ਕਰੋ...",
       "type_your_response_here_be_thorough_and_use_profes": "ਆਪਣਾ ਜਵਾਬ ਇੱਥੇ ਟਾਈਪ ਕਰੋ। ਪੂਰੀ ਤਰ੍ਹਾਂ ਅਤੇ ਪੇਸ਼ੇਵਰ ਭਾਸ਼ਾ ਦੀ ਵਰਤੋਂ ਕਰੋ...",
       "what_behavior_will_change": "ਕੀ ਵਿਵਹਾਰ ਹੋਵੇਗਾ ਬਦਲਾਅ?",
       "what_could_you_or_a_grownup_do_differently": "ਤੁਸੀਂ ਜਾਂ ਕੋਈ ਵੱਡਾ ਵਿਅਕਤੀ ਕੀ ਵੱਖਰਾ ਕਰ ਸਕਦਾ ਹੈ?",
@@ -10383,7 +10475,7 @@
       "data_quality_score": "ਡਾਟਾ ਗੁਣਵੱਤਾ ਅੰਕ",
       "data_to_include": "ਡਾਟਾ ਨੂੰ ਸ਼ਾਮਲ ਕਰੋ",
       "day_streak": "ਦਿਨ ਲੜੀ",
-      "define_the_behaviors_settings_or_students_for_stag": "Define ਵਿਵਹਾਰ, ਸੈਟਿੰਗਾਂ, ਜਾਂ ਵਿਦਿਆਰਥੀ ਲਈ staggered ਦਖਲ.",
+      "define_the_behaviors_settings_or_students_for_stag": "ਪੜਾਅਵਾਰ (staggered) ਦਖਲ ਲਈ ਵਿਵਹਾਰ, ਸਥਾਨ, ਜਾਂ ਵਿਦਿਆਰਥੀ ਪਰਿਭਾਸ਼ਿਤ ਕਰੋ।",
       "describe_your_research_question_and_let_ai_recomme": "ਆਪਣਾ ਖੋਜ ਸਵਾਲ ਦੱਸੋ ਅਤੇ AI ਨੂੰ ਸਭ ਤੋਂ ਵਧੀਆ ਡਿਜ਼ਾਈਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਨ ਦਿਓ।",
       "discrete_trial_training_with_mastery_tracking_and": "ਮੁਹਾਰਤ ਟ੍ਰੈਕਿੰਗ ਅਤੇ ਆਟੋ-ਅਡਵਾਂਸ ਨਾਲ DTT ਸਿਖਲਾਈ",
       "document_whether_interventions_are_implemented_as": "ਦਸਤਾਵੇਜ਼ ਕਰੋ ਕਿ ਕੀ ਦਖਲ ਡਿਜ਼ਾਈਨ ਅਨੁਸਾਰ ਲਾਗੂ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ",
@@ -10402,7 +10494,7 @@
       "from_abc_data": "ਤੋਂ ABC ਡਾਟਾ:",
       "full_student_summary": "ਪੂਰਾ ਵਿਦਿਆਰਥੀ ਸੰਖੇਪ",
       "functional_communication_training_planning_tool": "FCT ਸਿਖਲਾਈ ਯੋਜਨਾਬੰਦੀ ਟੂਲ",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "ਤਿਆਰ ਕਰੋ ਇੱਕ multi-week ਦਖਲ ਯੋਜਨਾ ਆਧਾਰਿਤ ਉੱਤੇ ਤੁਹਾਡਾ collected ABC ਡਾਟਾ ਅਤੇ AI ਵਿਸ਼ਲੇਸ਼ਣ.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "ਆਪਣੇ ਇਕੱਠੇ ਕੀਤੇ ABC ਡਾਟਾ ਅਤੇ AI ਵਿਸ਼ਲੇਸ਼ਣ ਦੇ ਆਧਾਰ 'ਤੇ ਕਈ-ਹਫ਼ਤਿਆਂ ਦੀ ਦਖਲ ਯੋਜਨਾ ਤਿਆਰ ਕਰੋ।",
       "generate_a_professional_printready_progress_report": "ਇਨਲਾਈਨ ਚਾਰਟਾਂ, ਡਾਟਾ ਸੰਖੇਪਾਂ, ਅਤੇ AI ਸਿਫ਼ਾਰਸ਼ਾਂ ਨਾਲ ਇੱਕ ਪੇਸ਼ੇਵਰ, ਪ੍ਰਿੰਟ-ਤਿਆਰ ਪ੍ਰਗਤੀ ਰਿਪੋਰਟ ਪੈਦਾ ਕਰੋ। ਬ੍ਰਾਊਜ਼ਰ ਪ੍ਰਿੰਟ ਰਾਹੀਂ ਇੱਕ-ਕਲਿੱਕ PDF ਐਕਸਪੋਰਟ।",
       "generate_a_unique_scenario_tailored_to_your_traini": "ਤੁਹਾਡੀਆਂ ਸਿਖਲਾਈ ਲੋੜਾਂ ਅਨੁਸਾਰ ਇੱਕ ਵਿਲੱਖਣ ਦ੍ਰਿਸ਼ ਤਿਆਰ ਕਰੋ।",
       "generate_compliant_iep_behavioral_goals_from_obser": "ਤਿਆਰ ਕਰੋ compliant IEP behavioral ਟੀਚਾ ਤੋਂ ਨਿਰੀਖਣ ਡਾਟਾ ਨਾਲ present ਪੱਧਰ, SMART ਟੀਚਾ, ਅਤੇ ਤਰੱਕੀ monitoring.",
@@ -10465,7 +10557,7 @@
       "optional_message": "ਵਿਕਲਪਿਕ ਸੁਨੇਹਾ",
       "or_explore_the_pd_learning_path": "ਜਾਂ ਪੜਚੋਲ ਕਰੋ PD ਸਿੱਖਣਾ Path →",
       "parent": "ਮਾਪੇ",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ਚਿਪਕਾਓ one ਮੁੱਲ per ਲਾਈਨ. ਸਹਾਇਤਾ ਫਾਰਮੈਟ: \"5\", \"ਸੈਸ਼ਨ 1: 5\", ਜਾਂ \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "ਪ੍ਰਤੀ ਲਾਈਨ ਇੱਕ ਮੁੱਲ ਚਿਪਕਾਓ। ਇਹ ਫਾਰਮੈਟ ਸਮਰਥਿਤ ਹਨ: \"5\", \"ਸੈਸ਼ਨ 1: 5\", ਜਾਂ \"1,5\"",
       "pd_learning_path": "PD ਸਿੱਖਣਾ Path",
       "please_use_chrome_edge_or_safari_for_voice_input": "ਕਿਰਪਾ ਕਰਕੇ ਵਰਤੋ Chrome, Edge, ਜਾਂ Safari ਲਈ ਆਵਾਜ਼ ਇਨਪੁੱਟ.",
       "practice_clinical_reasoning_with_aigenerated_case": "AI-ਜਨਰੇਟ ਕੇਸ ਅਧਿਐਨਾਂ ਨਾਲ ਕਲੀਨਿਕਲ ਤਰਕ ਦਾ ਅਭਿਆਸ ਕਰੋ। ਆਪਣੇ ਜਵਾਬਾਂ 'ਤੇ ਮਾਹਿਰ-ਪੱਧਰੀ ਫੀਡਬੈਕ ਪ੍ਰਾਪਤ ਕਰੋ।",
@@ -10480,10 +10572,10 @@
       "publicationstandard_singlecase_design_graphs": "ਪ੍ਰਕਾਸ਼ਨ-ਮਿਆਰੀ ਇਕਹਿਰੇ-ਕੇਸ ਡਿਜ਼ਾਈਨ ਗ੍ਰਾਫ਼",
       "quick_switch": "ਤੇਜ਼ ਬਦਲੋ",
       "range": "ਰੇਂਜ",
-      "read_through_the_module_content_above_then_click_c": "ਪੜ੍ਹੋ ਰਾਹੀਂ module ਸਮੱਗਰੀ above, ਫਿਰ ਕਲਿੱਕ ਕਰੋ ਪੂਰਾ ਕਰੋ below.",
+      "read_through_the_module_content_above_then_click_c": "ਉੱਪਰ ਦਿੱਤੀ ਮੋਡੀਊਲ ਸਮੱਗਰੀ ਪੜ੍ਹੋ, ਫਿਰ ਹੇਠਾਂ ਪੂਰਾ ਕਰੋ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।",
       "realtime_calming_tools_for_inthemoment_support": "ਉਸ ਪਲ ਦੀ ਸਹਾਇਤਾ ਲਈ ਅਸਲ-ਸਮੇਂ ਦੇ ਸ਼ਾਂਤ ਕਰਨ ਵਾਲੇ ਟੂਲ",
       "recent_moods": "ਹਾਲੀਆ ਮਨੋਦਸ਼ਾਵਾਂ:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record ਸੈਸ਼ਨ ਨਾਲ ਸੈਸ਼ਨ ਡਾਟਾ Tracker, ਜਾਂ ਬਦਲੋ ਨੂੰ ਮੈਨੁਅਲ Entry ਮੋਡ.",
+      "record_sessions_with_the_session_data_tracker_or_s": "ਸੈਸ਼ਨ ਡਾਟਾ ਟ੍ਰੈਕਰ ਨਾਲ ਸੈਸ਼ਨ ਰਿਕਾਰਡ ਕਰੋ, ਜਾਂ ਮੈਨੁਅਲ ਐਂਟਰੀ ਮੋਡ 'ਤੇ ਬਦਲੋ।",
       "recording": "ਰਿਕਾਰਡ ਹੋ ਰਿਹਾ ਹੈ...",
       "relationship_map": "ਰਿਸ਼ਤਾ ਨਕਸ਼ਾ",
       "remember_cultural_humility_is_a_lifelong_practice": "ਯਾਦ ਰੱਖੋ: ਸੱਭਿਆਚਾਰਕ ਨਿਮਰਤਾ ਇੱਕ ਜੀਵਨ ਭਰ ਦਾ ਅਭਿਆਸ ਹੈ। ਹਰ ਚਿੰਤਨ ਤੁਹਾਨੂੰ ਵਧੇਰੇ ਬਰਾਬਰੀ ਵਾਲਾ ਅਭਿਆਸਕਰਤਾ ਬਣਾਉਂਦਾ ਹੈ।",
@@ -10511,7 +10603,7 @@
       "summary": "ਸੰਖੇਪ:",
       "systematic_behavioral_measurement_across_sessions": "ਸੈਸ਼ਨਾਂ ਦੌਰਾਨ ਵਿਵਸਥਿਤ ਵਿਵਹਾਰਕ ਮਾਪ",
       "systematic_reinforcer_identification_using_evidenc": "ਸਬੂਤ-ਆਧਾਰਿਤ ਪ੍ਰੋਟੋਕੋਲ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਵਿਵਸਥਿਤ ਰੀਨਫੋਰਸਰ ਪਛਾਣ",
-      "tap_each_item_when_student_engages_with_it": "Tap ਹਰ ਆਈਟਮ ਜਦੋਂ ਵਿਦਿਆਰਥੀ engages ਨਾਲ it",
+      "tap_each_item_when_student_engages_with_it": "ਹਰ ਆਈਟਮ 'ਤੇ ਟੈਪ ਕਰੋ ਜਦੋਂ ਵਿਦਿਆਰਥੀ ਉਸ ਨਾਲ ਜੁੜਦਾ ਹੈ",
       "target_behavior": "ਟੀਚਾ ਵਿਵਹਾਰ",
       "task_analysis": "Task ਵਿਸ਼ਲੇਸ਼ਣ",
       "taskskill_name": "ਕੰਮ/ਹੁਨਰ ਨਾਮ",
@@ -10521,7 +10613,7 @@
       "top_behavior": "Top ਵਿਵਹਾਰ",
       "total_contacts": "ਕੁੱਲ ਸੰਪਰਕ",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ਵਿਵਹਾਰ frequency ਉੱਪਰ ਸਮਾਂ ਨਾਲ aim ਲਾਈਨ, phase ਤਬਦੀਲੀਆਂ, ਅਤੇ trend ਵਿਸ਼ਲੇਸ਼ਣ.",
+      "track_behavior_frequency_over_time_with_aim_lines": "ਟੀਚਾ ਲਾਈਨਾਂ, ਪੜਾਅ ਤਬਦੀਲੀਆਂ, ਅਤੇ ਰੁਝਾਨ ਵਿਸ਼ਲੇਸ਼ਣ ਨਾਲ ਸਮੇਂ ਦੇ ਨਾਲ ਵਿਵਹਾਰ ਦੀ ਬਾਰੰਬਾਰਤਾ ਟ੍ਰੈਕ ਕਰੋ।",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track ਵਿਵਹਾਰ at home ਵਰਤਦੇ ਹੋਏ ਸਾਦਾ, everyday ਭਾਸ਼ਾ. ਇਹ ਮਦਦ ਤੁਹਾਡਾ child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "ਆਪਣੀਆਂ ਭਾਵਨਾਵਾਂ ਨੂੰ ਟਰੈਕ ਕਰੋ, ਬੈਜ ਕਮਾਓ, ਅਤੇ ਲੜੀਆਂ ਬਣਾਓ!",
       "transform_deficitbased_language_into_assetfocused": "ਘਾਟ-ਆਧਾਰਿਤ ਭਾਸ਼ਾ ਨੂੰ ਸੰਪੱਤੀ-ਕੇਂਦ੍ਰਿਤ ਵਰਣਨ ਵਿੱਚ ਬਦਲੋ",
@@ -11196,7 +11288,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS ਬੈਨਰ ਖਾਰਜ ਕਰੋ",
     "dismiss_button": "ਖਾਰਜ",
-    "audit_queue_help": "ਕਿਸੇ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਇਸ ਨੂੰ ਪਹੁੰਚਯੋਗਤਾ ਪਾਈਪਲਾਈਨ ਵਿੱਚ ਲੋਡ ਕਰਨ ਲਈ ਉਸ 'ਤੇ ਕਲਿੱਕ ਕਰੋ। ਕੁਝ LMS ਫਾਈਲਾਂ ਲਈ ਤੁਹਾਨੂੰ ਇਸ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ LMS ਵਿੱਚ ਲੌਗ ਇਨ ਹੋਣ ਦੀ ਲੋੜ ਹੋ ਸਕਦੀ ਹੈ।"
+    "audit_queue_help": "ਕਿਸੇ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਇਸ ਨੂੰ ਪਹੁੰਚਯੋਗਤਾ ਪਾਈਪਲਾਈਨ ਵਿੱਚ ਲੋਡ ਕਰਨ ਲਈ ਉਸ 'ਤੇ ਕਲਿੱਕ ਕਰੋ। ਕੁਝ LMS ਫਾਈਲਾਂ ਲਈ ਤੁਹਾਨੂੰ ਇਸ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ LMS ਵਿੱਚ ਲੌਗ ਇਨ ਹੋਣ ਦੀ ਲੋੜ ਹੋ ਸਕਦੀ ਹੈ।",
+    "queued_one": "LMS ਤੋਂ {count} ਦਸਤਾਵੇਜ਼ ਕਤਾਰ ਵਿੱਚ",
+    "queued_other": "LMS ਤੋਂ {count} ਦਸਤਾਵੇਜ਼ ਕਤਾਰ ਵਿੱਚ",
+    "fetching": "{name} ਪ੍ਰਾਪਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+    "loaded_ready": "{name} ਲੋਡ ਹੋਇਆ; ਆਡਿਟ ਲਈ ਤਿਆਰ",
+    "fetch_failed": "{name} ਪ੍ਰਾਪਤ ਕਰਨ ਵਿੱਚ ਅਸਫਲ: {error}। ਫਾਈਲ ਨੂੰ LMS ਪ੍ਰਮਾਣੀਕਰਨ ਦੀ ਲੋੜ ਹੋ ਸਕਦੀ ਹੈ।"
   },
   "annotation": {
     "undo_tooltip": "Undo ਆਖਰੀ annotation ({count} ਉਪਲਬਧ) — Ctrl/Cmd+Z",
@@ -11216,7 +11313,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "ਦ੍ਰਿਸ਼ਟੀ ਸਹਾਇਤਾ ਤੋਂ ਤੁਹਾਡਾ ਅਧਿਆਪਕ"
+    "teacher_modal_aria": "ਦ੍ਰਿਸ਼ਟੀ ਸਹਾਇਤਾ ਤੋਂ ਤੁਹਾਡਾ ਅਧਿਆਪਕ",
+    "now": "ਹੁਣ",
+    "read_aloud": "ਉੱਚੀ ਆਵਾਜ਼ ਵਿੱਚ ਪੜ੍ਹੋ"
   },
   "canvas_settings": {
     "title": "ਉੱਨਤ ਸੈਟਿੰਗਾਂ",
@@ -11233,7 +11332,12 @@
     "read_all_button": "ਪੜ੍ਹੋ ਸਾਰੇ",
     "stop_button": "ਰੋਕੋ",
     "focus_narration_label": "ਕੀਬੋਰਡ ਫੋਕਸ Narration",
-    "focus_narration_on_hint": "Tab ਨੂੰ hear controls"
+    "focus_narration_on_hint": "Tab ਨੂੰ hear controls",
+    "reading": "ਪੜ੍ਹਿਆ ਜਾ ਰਿਹਾ ਹੈ...",
+    "item_aria": "ਸੁਣਨ ਲਈ ਕਲਿੱਕ ਕਰੋ: {text}",
+    "footer_stats": "{count} ਆਈਟਮਾਂ · ਕਿਸੇ ਵੀ ਆਈਟਮ ਨੂੰ ਸੁਣਨ ਲਈ ਕਲਿੱਕ ਕਰੋ · Tab ਵਰਣਨ {state}",
+    "narration_on": "ਚਾਲੂ",
+    "narration_off": "ਬੰਦ"
   },
   "teacher": {
     "local_only": "Local ਸਿਰਫ਼",
@@ -12409,5 +12513,27 @@
     "no_match": "ਕੋਈ ਮੇਲ ਖਾਂਦੀ ਕਮਾਂਡ ਨਹੀਂ। ਬੋਟ ਚੈਟ (ਅਤੇ ਜਲਦੀ ਆਵਾਜ਼) ਖੁੱਲ੍ਹੀਆਂ ਬੇਨਤੀਆਂ ਸਮਝਦੀ ਹੈ।",
     "placeholder": "ਇੱਕ ਕਮਾਂਡ ਟਾਈਪ ਕਰੋ — “ਟੈਕਸਟ ਵੱਡਾ”, “ਐਜੂਕੇਟਰ ਹੱਬ”, “ਇਹ ਪੰਨਾ ਪੜ੍ਹੋ”…",
     "run": "ਚਲਾਓ"
+  },
+  "voice_engine": {
+    "preparing": "ਵੌਇਸ ਇੰਜਣ ਤਿਆਰ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+    "downloading_model": "ਵੌਇਸ ਮਾਡਲ ਡਾਊਨਲੋਡ ਹੋ ਰਿਹਾ ਹੈ",
+    "loading_memory": "ਮੈਮੋਰੀ ਵਿੱਚ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ",
+    "loading_model_memory": "ਵੌਇਸ ਮਾਡਲ ਮੈਮੋਰੀ ਵਿੱਚ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ"
+  },
+  "voice_control": {
+    "listening": "ਸੁਣ ਰਿਹਾ ਹੈ; ਖਤਮ ਕਰਨ ਲਈ “stop listening” ਕਹੋ",
+    "stop_aria": "ਵੌਇਸ ਕੰਟਰੋਲ ਰੋਕੋ"
+  },
+  "dynamic_assessment": {
+    "return_title": "ਇਹ ਸਰੋਤ ਡਾਇਨਾਮਿਕ ਅਸੈਸਮੈਂਟ ਦੁਆਰਾ ਤਿਆਰ ਕੀਤਾ ਗਿਆ ਸੀ। ਡਾਇਨਾਮਿਕ ਅਸੈਸਮੈਂਟ ਮੋਡੀਊਲ ਮੁੜ ਖੋਲ੍ਹਣ ਲਈ ਕਲਿੱਕ ਕਰੋ।",
+    "return_aria": "ਡਾਇਨਾਮਿਕ ਅਸੈਸਮੈਂਟ 'ਤੇ ਵਾਪਸ ਜਾਓ",
+    "return_label": "ਡਾਇਨਾਮਿਕ ਅਸੈਸਮੈਂਟ 'ਤੇ ਵਾਪਸ ਜਾਓ",
+    "item_badge": "ਆਈਟਮ {num}"
+  },
+  "story_gallery": {
+    "title": "ਕਹਾਣੀ ਗੈਲਰੀ",
+    "byline": "{author} ਦੁਆਰਾ · {words} ਸ਼ਬਦ · {used}/{total} ਸ਼ਬਦਾਵਲੀ",
+    "student": "ਵਿਦਿਆਰਥੀ",
+    "score": "ਸਕੋਰ: {score}"
   }
 }

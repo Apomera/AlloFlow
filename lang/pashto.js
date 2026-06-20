@@ -630,7 +630,8 @@
     "open_storyforge_aria": "کھاولیں StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ساوانهت لیست په انهوثائق",
-    "open_stem_lab_explore_aria": "کھاولیں استکشاف مختبر STEM"
+    "open_stem_lab_explore_aria": "کھاولیں استکشاف مختبر STEM",
+    "stem_lab_explore": "سپړنه"
   },
   "toolbar": {
     "show_bot": "د AI مرستندوی وښیئ",
@@ -689,7 +690,8 @@
     "loading_resources": "سرچینې بارېږی...",
     "preparing_workspace": "ستاسو کاری ځای چمتو کیږی...",
     "almost_ready": "نږدې چمتو دی...",
-    "loading_screen_aria": "د AlloFlow بار کولو پرده"
+    "loading_screen_aria": "د AlloFlow بار کولو پرده",
+    "preparing_environment": "ستا د زده‌کړې چاپیریال چمتو کیږي..."
   },
   "entry": {
     "placeholder": "د بیلګې په توګه: سور باز",
@@ -932,7 +934,8 @@
     "cancel_transcription": "څخهساوخ کړئ تفریغ",
     "chunk_info": "د پروسس کولو لپاره غږ په 5 دقیقو برخو ویشل کیږي",
     "chunk_progress": "جزء {current} څخه {total}",
-    "audio_only_error": "اوس مهال یوازې د غږ فایلونه (MP3، WAV، نور) د برخو په لیږد کې ملاتړ کیږي."
+    "audio_only_error": "اوس مهال یوازې د غږ فایلونه (MP3، WAV، نور) د برخو په لیږد کې ملاتړ کیږي.",
+    "starting": "پیلیږي..."
   },
   "formatting": {
     "bold": "بولډ (**متن**)",
@@ -1212,7 +1215,12 @@
     "read_all_button": "ټول ولولئ",
     "stop_button": "ودرول",
     "focus_narration_label": "د کیبورډ فوکس روایت",
-    "focus_narration_on_hint": "د کنټرولونو اوریدلو لپاره Tab فشار کړئ"
+    "focus_narration_on_hint": "د کنټرولونو اوریدلو لپاره Tab فشار کړئ",
+    "reading": "لوستل کیږي...",
+    "item_aria": "د اوریدلو لپاره کلیک وکړه: {text}",
+    "footer_stats": "{count} توکي · هر توکی د اوریدلو لپاره کلیک وکړه · د Tab روایت {state}",
+    "narration_on": "فعال",
+    "narration_off": "غیرفعال"
   },
   "roles": {
     "title": "AlloFlow ته ښه راغنهست",
@@ -2310,7 +2318,42 @@
     "whisper_load_failed": "د Whisper پورته کول ناکام شول. نورو انجنونو ته راګرځی.",
     "backup_failed": "بیک اپ ناکام شو. بیا هڅه وکړئ.",
     "invalid_backup_file": "د AlloHaven بیک اپ معتبر فایل نه دی.",
-    "could_not_read_file": "هغه فایل نه شو لوستل کیدلی. ایا دا د JSON بیک اپ دی؟"
+    "could_not_read_file": "هغه فایل نه شو لوستل کیدلی. ایا دا د JSON بیک اپ دی؟",
+    "focus_streak": "{flames} د {minutes} دقیقو د تمرکز لړۍ! همداسې دوام ورکړه!",
+    "streak_saved": "بیرته ښه راغلې! ستا د {minutes} دقیقو لړۍ خوندي شوه.",
+    "points_awarded": "ټکي ورکړل شول!",
+    "welcome_name": "ښه راغلې، {name}!",
+    "element_not_found": "عنصر و نه موندل شو: {id}",
+    "overlay_set": "پوښښ: {mode}",
+    "synced_resource": "همغږی شو: {title}",
+    "group_resource": "د ډلې سرچینه: {title}",
+    "preset_saved": "مخکې‌ټاکل شوی «{name}» خوندي شو!",
+    "translated_resources": "{count} سرچینې په بریالیتوب سره وژباړل شوې!",
+    "bingo_cards_count": "{count} BINGO کارتونه جوړ شول!",
+    "sound_enabled": "غږ فعال شو",
+    "sound_muted": "غږ بند شو",
+    "democracy_mode_on": "د دموکراسۍ حالت فعال شو: د ټولګي رایه‌اخیستنه فعاله",
+    "democracy_mode_off": "د دموکراسۍ حالت غیرفعال شو: یوازېنۍ لوبه",
+    "resource_moved_up": "{title} پورته یوړل شو",
+    "resource_moved_down": "{title} ښکته یوړل شو",
+    "panels_regenerated": "{count} پینلونه بیا جوړ شول!",
+    "settings_undone": "بیرته شو: {label}. تنظیمات بیا راژوندي شول. (جوړ شوې سرچینې اغیزمنې نه دي.)",
+    "concept_added": "مفهوم اضافه شو: {text}",
+    "lesson_not_found": "په دې څپرکي کې درس و نه موندل شو.",
+    "probe_complete": "ازموینه بشپړه شوه: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "تنظیمات تازه شول: {changes}",
+    "change_format": "بڼه: {value}",
+    "change_tone": "غږ: {value}",
+    "change_length": "اوږدوالی: ~{value} کلمې",
+    "change_language": "ژبه: {value}",
+    "change_interest": "علاقه اضافه شوه: {value}",
+    "backup_saved": "💾 د دې غونډې بیک‌اپ ستا په ښکته‌کولو کې خوندي شو (د پروژې فایل). اوس اړتیا نشته چې ورسره کوم کار وکړې؛ که کله هم بیرته راتلو ته اړ شوې، «پروژه پورته کړئ» هرڅه بیرته راولي.",
+    "backup_saved_score": " (نمره {score})",
+    "project_saved_multi_one": "💾 پروژه خوندي شوه ({count} حد)؛ د دوام لپاره وروسته یې پورته کړه",
+    "project_saved_multi_other": "💾 پروژه خوندي شوه ({count} حدونه)؛ د دوام لپاره وروسته یې پورته کړه",
+    "project_saved": "💾 پروژه خوندي شوه؛ د سمون دوام لپاره وروسته یې پورته کړه",
+    "search_result_desc": "د Google لټون پایله: {title}",
+    "link_url_prompt": "د لینک URL دننه کړه:"
   },
   "process": {
     "source_missing": "لطفاً تپهانا متن منبع یالًا.",
@@ -2367,7 +2410,10 @@
     "analyzing_topology": "عمل کمصمم نصاب: در حال تحلیل طاوباولجیا محتاوى...",
     "brainstorming": "در حال عټولګی ذهنی للأفکار...",
     "retrying_citations": "د غوره استشهاداتو لپاره بیا هڅه...",
-    "translating": "در حال ژباړه…"
+    "translating": "در حال ژباړه…",
+    "preparing_translation": "{lang} ته ژباړه چمتو کیږي...",
+    "translating_item": "{current}/{total} ژباړل کیږي: {title}...",
+    "generating_panel": "پینل {current}/{total} جوړیږي..."
   },
   "progression": {
     "title": "پهمختګ نصاب",
@@ -2417,7 +2463,34 @@
     "plan_hook": "مثیر",
     "plan_independent": "خپلواک تمرین",
     "col_image": "تصاویر",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "ودروه",
+    "expand_header": "سرلیک پراخه کړه",
+    "collapse_header": "سرلیک راونغاړه ترڅو منځپانګې ته ډیر ځای ورکړې",
+    "collapse_header_short": "سرلیک راونغاړه",
+    "step_x_of_y": "ګام {current} د {total}",
+    "english_translation": "انګلیسي ژباړه",
+    "source_references": "د سرچینې متن حوالې",
+    "activity_probe": "د {activity} ازموینه",
+    "word_sounds_count": "Word Sounds ({count} کلمې)",
+    "quick_practice_mode": "د چټک تمرین حالت",
+    "new_option": "نوی انتخاب",
+    "meta_lesson_extensions": "د درس پراختیاوې",
+    "title_extension_ideas": "د پراختیا نظرونه",
+    "meta_full_chat_log": "بشپړ د چټ لاګ",
+    "title_udl_consultation_log": "د UDL مشورې لاګ",
+    "meta_actionable_steps": "د عمل وړ ګامونه (د AI لنډیز)",
+    "title_differentiation_strategy": "د توپیر ستراتیژي",
+    "meta_udl_guide_advice": "د UDL لارښود مشوره",
+    "title_stem_assessment": "د STEM ارزونه",
+    "title_explore_challenge": "د سپړنې ننګونه",
+    "title_fluency_maze": "🏰 د روانۍ ماز",
+    "title_storyforge_config": "📖 د StoryForge دنده",
+    "title_storyforge_submission": "📖 د کیسې وړاندې کول",
+    "title_poettree_config": "🌳 د PoetTree دنده",
+    "title_poettree_submission": "🌳 د شعر وړاندې کول",
+    "title_litlab_config": "🎭 د LitLab دنده",
+    "title_litlab_submission": "🎭 د اجرا وړاندې کول"
   },
   "fullpack": {
     "button_label": "د سرچینو بشپړ پاکټ جوړ کړئ",
@@ -3518,7 +3591,12 @@
       "error_check": "د سمون کتنه پاتې راغله.",
       "regenerated_success": "هاو شوت بیا جوړونه متن سره تحسینات!",
       "regen_failed": "ناکامت بیا إنشاء."
-    }
+    },
+    "skill_check": "د مهارت ازموینه",
+    "desc_skill_check": "خپل مهارت د معیارونو په وړاندې تایید کړه.",
+    "desc_parent": "وګورئ چې دا څنګه د ښوونځي له موخو سره سمون لري",
+    "desc_6dim": "نصاب په ۶ ابعادو کې پلټي",
+    "desc_5dim": "نصاب په ۵ ابعادو کې پلټي (د بشپړې پلټنې لپاره معیارونه اضافه کړئ)"
   },
   "standards": {
     "target_standard": "سرهیار مستهدف",
@@ -4968,7 +5046,8 @@
     "card_visuals_label": "مرئیات بطاقات",
     "card_visuals_auto": "اتومات (یوازې په لنډو توکو)",
     "card_visuals_always": "جوړونه تصاویر تل",
-    "card_visuals_never": "هیڅکله (یوازې متن کارتونه)"
+    "card_visuals_never": "هیڅکله (یوازې متن کارتونه)",
+    "explanation_unavailable": "اوس مهال تشریح نشي جوړیدلی. مهرباني وکړئ یوه شیبه وروسته بیا هڅه وکړئ."
   },
   "concept_map": {
     "toolbar": {
@@ -5803,7 +5882,25 @@
       "resolved_tip": "د اصلی پلټنې ستونزې اوس د تایید پلټنې کې نه ښکاری",
       "persisted_tip": "د اصلی پلټنې ستونزې د اصلاح وروسته نههم شته دی",
       "introduced_tip": "نوې ستونزې چې د اصلاح څخه دمخه نه وې"
-    }
+    },
+    "reattach_mismatch": "بیا تړل شوی PDF د هغه سره چې پلټل شوی توپیر لري{detail}. بیا هم دوام به ورکوي؛ پایلې ممکن د اصلي پلټنې سره سمون و نه لري.",
+    "reattach_name_detail": " (نوم: «{new}» په مقابل کې «{old}»)",
+    "reattach_size_detail": " (اندازه: {new} په مقابل کې {old} بایټه)",
+    "audit_failed_kept": "{label}: پلټنه ناکامه شوه؛ پخوانۍ نسخه وساتل شوه.",
+    "score_dropped_kept": "{label}: نمره به راټیټه شوې وای ({prev} → {next}{axe}). پخوانۍ نسخه وساتل شوه.",
+    "axe_only_comparison": "، یوازې د axe پرتله",
+    "axe_only_committed": "{label}: د AI تایید شتون نلري؛ یوازې د قطعي axe-core نمرې سره تایید شو.",
+    "reinserted_ai": "{count} بیا داخل شول (AI)",
+    "reinserted_sentence": "{count} بیا داخل شول (جمله)",
+    "reinserted_fuzzy": "{count} بیا داخل شول (نږدې)",
+    "in_recovery_appendix": "{count} د بیارغونې په ضمیمه کې",
+    "duplicates_removed_one": "{count} نقل لرې شو",
+    "duplicates_removed_other": "{count} نقلونه لرې شول",
+    "auto_continue_round": "د اتوماتیک دوام پړاو {round}/{max}: {detail}، نمره {score}/100 (هدف {target})...",
+    "violation_one": "{count} سرغړونه",
+    "violation_other": "{count} سرغړونې",
+    "ai_issue_one": "{count} د AI نښه شوې ستونزه",
+    "ai_issue_other": "{count} د AI نښه شوې ستونزې"
   },
   "persona": {
     "title": "د مرکې حالت",
@@ -9641,7 +9738,12 @@
   "lms": {
     "dismiss_banner_aria": "د LMS بینر بند کړئ",
     "dismiss_button": "وتړئ",
-    "audit_queue_help": "په یوه سند کلیک وکړئ ترڅو یې راوړئ او د لاسرسي پایپ لاین کې یې بار کړئ. ځینې د LMS فایلونه ښایي په دې براوزر کې د LMS ته د ننوتلو غوښتنه وکړي."
+    "audit_queue_help": "په یوه سند کلیک وکړئ ترڅو یې راوړئ او د لاسرسي پایپ لاین کې یې بار کړئ. ځینې د LMS فایلونه ښایي په دې براوزر کې د LMS ته د ننوتلو غوښتنه وکړي.",
+    "queued_one": "{count} سند د LMS څخه په کتار کې",
+    "queued_other": "{count} سندونه د LMS څخه په کتار کې",
+    "fetching": "{name} ترلاسه کیږي...",
+    "loaded_ready": "{name} پورته شو؛ د پلټنې لپاره چمتو",
+    "fetch_failed": "{name} ترلاسه کول ناکام شول: {error}. فایل ممکن د LMS تصدیق ته اړتیا ولري."
   },
   "annotation": {
     "undo_tooltip": "وروستی تبصره بیرته راګرځوئ ({count} شته) — Ctrl/Cmd+Z",
@@ -9653,7 +9755,9 @@
     "list_button": "📋 لیست"
   },
   "visual_support": {
-    "teacher_modal_aria": "دعم بصری څخه ښوونکیک"
+    "teacher_modal_aria": "دعم بصری څخه ښوونکیک",
+    "now": "اوس",
+    "read_aloud": "په لوړ غږ ولوله"
   },
   "canvas_settings": {
     "title": "پرمختللي تنظیمات",
@@ -9832,9 +9936,9 @@
       "cumrecord_title": "سجل تراکمی",
       "deescalate_desc": "د سا اخیستلو تمرینونه، بصري ټایمرونه، حسي وقفې، او ځمکني کول — په ریښتیني وخت کې د ارامولو ملاتړ",
       "deescalate_title": "وسایل نزع تصعید",
-      "drstrategy_desc": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+      "drstrategy_desc": "د سمې تفاضلي تقویې ستراتیژۍ غوره کول (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "د DR ستراتیژۍ انتخاب کوونکی",
-      "dtt_desc": "Discrete Trial Training — د هرې ازموینې ثبت د تسلط معیارونو او اوتومات مخکې تګ سره",
+      "dtt_desc": "Discrete Trial Training — د هرې ازموینې پر بنسټ ثبت د تسلط معیارونو او اوتومات مخکې تګ سره",
       "dtt_title": "د DTT ډیټا پاڼه",
       "effectsize_desc": "د بصری پړاو پرتلې سره د مداخلې اغېزمنتیا د اندازه کولو لپاره Tau-U، NAP، او PND محاسبه کړئ",
       "effectsize_title": "د اغیز اندازې محاسبه",
@@ -10549,7 +10653,7 @@
       "communication_log": "سجلّ تاواصل",
       "conditional_probability": "انهحهاو شوال شرطی",
       "create_your_first_replacement_behavior_plan": "د بدیل چلند خپل لومړنی پلان جوړ کړئ.",
-      "crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": "CRF (هر ځل) ← FR-2 ← FR-3 ← FR-5 ← VR-5 ← VR-8 ← طبیعي تقویه",
+      "crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": "CRF (هر ځل) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → طبیعي تقویه",
       "crossstudent_comparison": "د زده کوونکو ترمنځ پرتله",
       "cultural_context_reflection": "تأمّل شرایط ثقازه",
       "cumulative_record": "سجلّ تراکمی",
@@ -10560,7 +10664,7 @@
       "day_streak": "د ورځو لړۍ",
       "define_the_behaviors_settings_or_students_for_stag": "حدّد راودایات یا تنظیمات یا ساحه للتدخّل مُدرَّج.",
       "describe_your_research_question_and_let_ai_recomme": "ټولګی ساوال بحثک اودع هوښیارتیا مصنوعی یاوصی بأفضل تصمیم.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training سره تتبّع إتقان اوالتقدّم تلقائی",
+      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training د تسلط تعقیب او اوتومات مخکې تګ سره",
       "document_whether_interventions_are_implemented_as": "اوثّق ما که کانت تدخّنهت تُنفَّذ کما صُمِّمت",
       "done": "هاو شوّ",
       "drop_a_snapshot_file_here": "د سنیپ شاټ فایل دلته وغورځوئ",
@@ -12299,5 +12403,27 @@
     "no_match": "هیڅ سمون لرونکی امر نشته. د بوټ چټ (او ژر تر ژره غږ) آزاد غوښتنې پوهیږي.",
     "placeholder": "یو امر ولیکه — “لوی متن”، “د ښوونکي مرکز”، “دا پاڼه ولوله”…",
     "run": "چلوه"
+  },
+  "voice_engine": {
+    "preparing": "د غږ انجڼ چمتو کیږي...",
+    "downloading_model": "د غږ ماډل ښکته کیږي",
+    "loading_memory": "حافظې ته پورته کیږي",
+    "loading_model_memory": "د غږ ماډل حافظې ته پورته کیږي"
+  },
+  "voice_control": {
+    "listening": "اوري؛ د پای ته رسولو لپاره «stop listening» ووایه",
+    "stop_aria": "غږیز کنټرول ودروه"
+  },
+  "dynamic_assessment": {
+    "return_title": "دا سرچینه د متحرکې ارزونې له خوا جوړه شوه. د متحرکې ارزونې ماډل بیا پرانیستلو لپاره کلیک وکړه.",
+    "return_aria": "متحرکې ارزونې ته بیرته",
+    "return_label": "متحرکې ارزونې ته بیرته",
+    "item_badge": "توکی {num}"
+  },
+  "story_gallery": {
+    "title": "د کیسو ګالري",
+    "byline": "لیکوال {author} · {words} کلمې · {used}/{total} لغتونه",
+    "student": "زده‌کوونکی",
+    "score": "نمره: {score}"
   }
 }

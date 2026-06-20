@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Ugupakira kwa Whisper kuranse. Birashika ku zindi motori.",
     "backup_failed": "Ihishwa ryaranse. Gerageza nanone.",
     "invalid_backup_file": "Si idosiye y'ihishwa rya AlloHaven yemewe.",
-    "could_not_read_file": "Sinashobora gusoma iyo dosiye. Mbega ni ihishwa rya JSON?"
+    "could_not_read_file": "Sinashobora gusoma iyo dosiye. Mbega ni ihishwa rya JSON?",
+    "focus_streak": "{flames} Urukurikirane rwo kwitonda rw'iminota {minutes}! Komeza gutyo!",
+    "streak_saved": "Murakaza neza! Urukurikirane rwawe rw'iminota {minutes} rwabitswe.",
+    "points_awarded": "Amanota yatanzwe!",
+    "welcome_name": "Murakaza neza, {name}!",
+    "element_not_found": "Ikintu ntikiboneka: {id}",
+    "overlay_set": "Urwego: {mode}",
+    "synced_resource": "Byahuzwe: {title}",
+    "group_resource": "Umutungo w'itsinda: {title}",
+    "preset_saved": "Igenamiterere \"{name}\" ryabitswe!",
+    "translated_resources": "Imitungo {count} yahinduwe neza!",
+    "bingo_cards_count": "Hakozwe amakarita {count} ya BINGO!",
+    "sound_enabled": "Ijwi ryakanuwe",
+    "sound_muted": "Ijwi ryacecekejwe",
+    "democracy_mode_on": "Uburyo bwa demokarasi bwakanuwe: gutora kw'ishuri BIKORA",
+    "democracy_mode_off": "Uburyo bwa demokarasi bwazimijwe: gukina wenyine",
+    "resource_moved_up": "{title} yazamuwe hejuru",
+    "resource_moved_down": "{title} yamanuwe hasi",
+    "panels_regenerated": "Amapaneli {count} yongeye gukorwa!",
+    "settings_undone": "Byasubijweho: {label}. Igenamiterere ryagaruwe. (Imitungo yakozwe ntihagira icyo ihindurwa.)",
+    "concept_added": "Igitekerezo cyongewemo: {text}",
+    "lesson_not_found": "Isomo ntiriboneka muri iki gice.",
+    "probe_complete": "Igenzura ryarangiye: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Igenamiterere ryavuguruwe: {changes}",
+    "change_format": "Imiterere: {value}",
+    "change_tone": "Ijwi: {value}",
+    "change_length": "Uburebure: ~{value} amagambo",
+    "change_language": "Ururimi: {value}",
+    "change_interest": "Inyungu yongewemo: {value}",
+    "backup_saved": "💾 Kopi y'ubwizigame y'iki gikorwa yabitswe muri Ibyo Wakuruye (dosiye y'umushinga). Nta cyo ugomba kuyikora ubu; niba uzakenera kugaruka umunsi umwe, \"Kuramo Umushinga\" igarura byose.",
+    "backup_saved_score": " (amanota {score})",
+    "project_saved_multi_one": "💾 Umushinga wabitswe (ibice {count}); uzawukuremo nyuma kugira ngo ukomeze",
+    "project_saved_multi_other": "💾 Umushinga wabitswe (ibice {count}); uzawukuremo nyuma kugira ngo ukomeze",
+    "project_saved": "💾 Umushinga wabitswe; uzawukuremo nyuma kugira ngo ukomeze guhindura",
+    "search_result_desc": "Igisubizo cyo Gushaka kuri Google: {title}",
+    "link_url_prompt": "Injiza URL y'ihuza:"
   },
   "large_file": {
     "modal_title": "Inyinjiza Idosiye Nini ya Audio",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Hagarika Transcription",
     "chunk_info": "Audio igabanyirizwa mu chunks z'amaminota 5 ku gutunganya",
     "chunk_progress": "Chunk {current} muri {total}",
-    "audio_only_error": "Ubu ni idosiye z'ijwi gusa (MP3, WAV, n'izindi) zishyigikiwe ku chunked transcription."
+    "audio_only_error": "Ubu ni idosiye z'ijwi gusa (MP3, WAV, n'izindi) zishyigikiwe ku chunked transcription.",
+    "starting": "Iratangira..."
   },
   "formatting": {
     "bold": "Bold (**inyandiko**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Yugurura StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "inyandiko-Bishingiye ikibazo",
-    "open_stem_lab_explore_aria": "Yugurura STEM laboratwari Sesengura"
+    "open_stem_lab_explore_aria": "Yugurura STEM laboratwari Sesengura",
+    "stem_lab_explore": "Shakashaka"
   },
   "history": {
     "load_project": "Pakira Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Ibara rya highlight",
       "insert_table_aria": "Shyiramo table",
       "insert_table_title": "Shyiramo accessible table"
-    }
+    },
+    "reattach_mismatch": "PDF yongeye gushyirwaho itandukanye n'iyagenzuwe{detail}. Bizakomeza uko byagenda kose; ibisubizo bishobora kutahuza n'igenzura ry'umwimerere.",
+    "reattach_name_detail": " (izina: \"{new}\" na \"{old}\")",
+    "reattach_size_detail": " (ingano: {new} na {old} bayite)",
+    "audit_failed_kept": "{label}: igenzura ryananiranye; verisiyo ya mbere yabitswe.",
+    "score_dropped_kept": "{label}: amanota yari kugabanuka ({prev} → {next}{axe}). Verisiyo ya mbere yabitswe.",
+    "axe_only_comparison": ", igereranya rya axe gusa",
+    "axe_only_committed": "{label}: kugenzura kwa AI ntibishoboka; byemejwe gusa hakoreshejwe amanota adahinduka ya axe-core.",
+    "reinserted_ai": "{count} byongeye gushyirwamo (AI)",
+    "reinserted_sentence": "{count} byongeye gushyirwamo (interuro)",
+    "reinserted_fuzzy": "{count} byongeye gushyirwamo (hafi)",
+    "in_recovery_appendix": "{count} mu mugereka wo kugarura",
+    "duplicates_removed_one": "Igisubiranya {count} cyakuwemo",
+    "duplicates_removed_other": "Ibisubiranya {count} byakuwemo",
+    "auto_continue_round": "Igihembwe cyo gukomeza byikora {round}/{max}: {detail}, amanota {score}/100 (intego {target})...",
+    "violation_one": "Kurenga {count}",
+    "violation_other": "Kurenga {count}",
+    "ai_issue_one": "Ikibazo {count} cyagaragajwe na AI",
+    "ai_issue_other": "Ibibazo {count} byagaragajwe na AI"
   },
   "concept_sort": {
     "title": "Igitekerezo Shira mu rutonde",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "ikarata ibibonwa",
     "card_visuals_auto": "Auto (only kuri bigufi ikintu)",
     "card_visuals_always": "Always kora ifoto",
-    "card_visuals_never": "Never (inyandiko-only ikarata)"
+    "card_visuals_never": "Never (inyandiko-only ikarata)",
+    "explanation_unavailable": "Ntibishobotse gukora ibisobanuro ubu. Nyamuneka ongera ugerageze nyuma y'akanya."
   },
   "dbq": {
     "title": "Isesengura ry'Inyandiko (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed ku check guhuza.",
       "regenerated_success": "inyandiko regenerated hamwe na improvements!",
       "regen_failed": "Ugusubirako ntivyashobotse."
-    }
+    },
+    "skill_check": "Igenzura ry'ubumenyi",
+    "desc_skill_check": "Genzura ubuhanga bwawe ugereranyije n'ibipimo.",
+    "desc_parent": "Reba uko ibi bihuye n'intego z'ishuri",
+    "desc_6dim": "Igenzura integanyanyigisho mu byiciro 6",
+    "desc_5dim": "Igenzura integanyanyigisho mu byiciro 5 (ongeraho ibipimo kugira ngo ugenzure byuzuye)"
   },
   "standards": {
     "target_standard": "Intumbero urwego",
@@ -5180,7 +5241,34 @@
     "plan_hook": "Itangiro",
     "plan_independent": "Independent kora imyitozo",
     "col_image": "ifoto",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Hagarika",
+    "expand_header": "Agura umutwe",
+    "collapse_header": "Funga umutwe kugira ngo ibirimo bibone umwanya winshi",
+    "collapse_header_short": "Funga umutwe",
+    "step_x_of_y": "Intambwe {current} kuri {total}",
+    "english_translation": "Ubuhinduzi bw'Icyongereza",
+    "source_references": "Inkomoko z'Umwandiko",
+    "activity_probe": "Igenzura rya {activity}",
+    "word_sounds_count": "Word Sounds (amagambo {count})",
+    "quick_practice_mode": "Uburyo bwo Kwimenyereza Vuba",
+    "new_option": "Ihitamo rishya",
+    "meta_lesson_extensions": "Ibyongerwa ku Isomo",
+    "title_extension_ideas": "Ibitekerezo byo Kwongera",
+    "meta_full_chat_log": "Ibyanditswe Byose by'Ikiganiro",
+    "title_udl_consultation_log": "Ibyanditswe by'Inama za UDL",
+    "meta_actionable_steps": "Intambwe Zishoboka Gukorwa (Incamake ya AI)",
+    "title_differentiation_strategy": "Ingamba zo Gutandukanya",
+    "meta_udl_guide_advice": "Inama z'Umuyobozi wa UDL",
+    "title_stem_assessment": "Isuzuma rya STEM",
+    "title_explore_challenge": "Imbogamizi yo Gushakashaka",
+    "title_fluency_maze": "🏰 Akayira ko Gusoma Neza",
+    "title_storyforge_config": "📖 Umurimo wa StoryForge",
+    "title_storyforge_submission": "📖 Gutanga Inkuru",
+    "title_poettree_config": "🌳 Umurimo wa PoetTree",
+    "title_poettree_submission": "🌳 Gutanga Igisigo",
+    "title_litlab_config": "🎭 Umurimo wa LitLab",
+    "title_litlab_submission": "🎭 Gutanga Imikino"
   },
   "persona": {
     "title": "Interview Uburyo",
@@ -8257,7 +8345,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing ibirimwo topology...",
     "brainstorming": "Birikuru gutoranya iciyumviro...",
     "retrying_citations": "Retrying kuri vyiza kuruta citations...",
-    "translating": "Birikuru guhindura ururimi…"
+    "translating": "Birikuru guhindura ururimi…",
+    "preparing_translation": "Itegura ubuhinduzi mu {lang}...",
+    "translating_item": "Ihindura {current}/{total}: {title}...",
+    "generating_panel": "Ikora ipaneli {current}/{total}..."
   },
   "process": {
     "source_missing": "nakwinginze provide imvo inyandiko ca mbere.",
@@ -9553,7 +9644,8 @@
     "loading_resources": "Loading umutungo...",
     "preparing_workspace": "Preparing cawe workspace...",
     "almost_ready": "Hasigaye gato bibe bimaze...",
-    "loading_screen_aria": "AlloFlow loading icyuma"
+    "loading_screen_aria": "AlloFlow loading icyuma",
+    "preparing_environment": "Itegura ahantu hawe ho kwiga..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9575,9 +9667,9 @@
       "randomize": "Yikorere",
       "select_student_first": "Hitamwo umunyeshure above ku get started",
       "abc_title": "ABC amakuru",
-      "abc_desc": "Record antecedent, ingendo, na consequence kwitegereza",
+      "abc_desc": "Andika ivyitegerejwe vy'ivyabanje (antecedent), inyifato, n'inkurikizi",
       "obs_title": "Mu buryo butaziguye kwitegereza",
-      "obs_desc": "Igihe nyaco interval, frequency, canke duration recording",
+      "obs_desc": "Gufata amakuru ako kanya ku ntera (interval), incuro (frequency), canke igihe kimara (duration)",
       "analysis_title": "Isesengura AI",
       "analysis_desc": "AI-powered ingendo pattern analysis & recommendations",
       "overview_title": "Incamake",
@@ -9611,13 +9703,13 @@
       "triangulation_title": "Igereranya ry'Inkomoko Nyinshi",
       "triangulation_desc": "Cross-icyitegererezo 3+ amakuru sources kuri convergence",
       "impact_title": "Mubaze Ingaruka",
-      "impact_desc": "Quantify ingendo frequency, duration, na annual cost",
+      "impact_desc": "Gupima incuro y'inyifato, igihe imara, n'ikiguzi co ku mwaka",
       "crisis_title": "Crisis Umugambi",
       "crisis_desc": "Mukoresha agakora amabwirizwa y'urwego rutatu mu bihe vy'ikibazo",
       "traffic_title": "Itara ry'Ibarabara",
       "traffic_desc": "umunyeshure-facing red/yellow/green ingendo zone poster",
       "datasheet_title": "amakuru Sheet",
-      "datasheet_desc": "Printable frequency, duration, ABC, canke latency amakuru sheets",
+      "datasheet_desc": "Impapuro z'amakuro zicapurwa z'incuro, igihe kimara, ABC, canke latency",
       "homenote_title": "Akete k'I muhira",
       "homenote_desc": "AI-drafted umuvyeyi communication hamwe na ijwi selector",
       "fidelity_title": "Urutonde rwo Kugumya Ukuri",
@@ -9940,7 +10032,7 @@
     "reinforcer_sensory": "🌀 Amazimwe",
     "quiz_fba_purpose": "iki ni primary purpose ca FBA?",
     "quiz_replacement": "iki ni replacement ingendo?",
-    "search_placeholder": "Rondera antecedent, ingendo, consequence, notes, ihirahirwa...",
+    "search_placeholder": "Rondera antecedent, inyifato, inkurikizi, ibisobanuro, aho biba...",
     "quick_fill_placeholder": "e.g. \"umunyeshure threw paper during imibare igihe asked ku erekana work, umwigisha redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"guhindura consequence ku umwigisha redirected\"",
     "now": "ubu",
@@ -10524,7 +10616,7 @@
       "top_behavior": "Top ingendo",
       "total_contacts": "Igiteranyo c'Abakwiriwe",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ingendo frequency hejuru time hamwe na aim umurongo, phase ihinduka, na trend analysis.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Gukurikirana incuro y'inyifato mu gihe ukoresheje imirongo y'intumbero (aim lines), ihinduka ry'ibice (phase changes), n'isesengura ry'ingendo (trend analysis).",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track ingendo at home gukoresha vyoroshe, everyday ururimi. Iki ubufashas cawe child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track cawe feelings, earn ikimenyetso, na kwubaka streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-bishingiye ururimi mu asset-focused descriptions",
@@ -10709,7 +10801,7 @@
       "developing": "Iratera Imbere",
       "discontinue": "Hagarika",
       "dismiss": "Vanaho",
-      "document_baseline_frequency_for_flagged_students": "inyandiko baseline frequency kuri flagged umunyeshure",
+      "document_baseline_frequency_for_flagged_students": "Andika incuro y'urufatiro (baseline) ku banyeshure baranzwe",
       "document_outcomes_and_lessons_learned": "inyandiko outcomes na isomo learned",
       "document_the_confirmed_function": "inyandiko confirmed function",
       "document_the_hypothesis_in_session_notes": "inyandiko hypothesis muri igihe notes",
@@ -10775,7 +10867,7 @@
       "level_mean": "urwego (Mean)",
       "maintenance_tracker": "Ukurikirana Ugukomeza",
       "make_tier_movement_decision_stay_fade_intensify": "Kora tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → ingendo → consequence pathways",
+      "map_antecedent_behavior_consequence_pathways": "Shira ku rutonde inzira: antecedent → inyifato → inkurikizi",
       "map_each_target_behavior_to_a_replacement": "Map buri intumbero ingendo ku replacement",
       "materials_access": "Ibikoresho Kwinjira",
       "measure_effect_size_of_interventions": "Pima effect size ca interventions",
@@ -10812,10 +10904,10 @@
       "percentage": "kw'ijana",
       "phone": "Telefone",
       "phone_call": "Guhamagara",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Umugambi reinforcement schedule kuri replacement ingendo",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Tegura urutonde rw'ugushimangira (reinforcement) ku nyifato zisubirira izindi",
       "plan_data_collection_methods_and_frequency": "Umugambi amakuru collection methods na frequency",
       "plan_fidelity_monitoring": "Umugambi Fidelity Monitoring",
-      "plan_reinforcement_for_replacement_behaviors": "Umugambi reinforcement kuri replacement ingendo",
+      "plan_reinforcement_for_replacement_behaviors": "Tegura ugushimangira (reinforcement) ku nyifato zisubirira izindi",
       "plan_replacement_behaviors": "Umugambi Replacement ingendo",
       "plan_weekly_progress_monitoring_data_collection": "Umugambi weekly iterambere monitoring amakuru collection",
       "positivecorrective_ratio": "Ratio Nziza:Yo Gukosora",
@@ -10857,7 +10949,7 @@
       "sensory": "Inkoramutima",
       "sensory_break_menu": "Sensory Break menu",
       "sensoryautomatic": "Sensory/cikora cononyene",
-      "sensoryautomatic_function": "Sensory/cikora cononyene Function",
+      "sensoryautomatic_function": "Imikorere yo kwiyumva/Iyikora yonyene (Sensory/Automatic)",
       "sensoryrelated": "Bijyanye na Sensory",
       "session_tracker": "igihe Tracker",
       "set_a_6week_intervention_cycle": "Shiraho 6-week intervention cycle",
@@ -10953,7 +11045,7 @@
       "incorrect": "Kibi",
       "independent": "Wenyine",
       "intensity": "Ubukana",
-      "interval_and_latency_recording": "Interval na latency recording",
+      "interval_and_latency_recording": "Gufata amakuru y'intera (interval) na latency",
       "level": "urwego",
       "mastered": "Byagezweho",
       "momentary_time_sampling": "Ugufata akarorero k'umwanya muto",
@@ -11001,7 +11093,7 @@
       "tip_good_coverage": "vyiza coverage across days.",
       "tip_good_diversity": "vyiza diversity across antecedents.",
       "tip_great_volume": "Gikomeye ingano ca entries kuri analysis.",
-      "tip_last_entry_ago": "ca nyuma entry was recorded while ago.",
+      "tip_last_entry_ago": "Iyandikwa rya nyuma ryakozwe haraciye igihe.",
       "tip_missing_fields": "Bimwe entries ni missing gikenewe fields.",
       "tip_spread_days": "Entries ni well spread across days.",
       "volume": "ingano"
@@ -11014,7 +11106,7 @@
       "step_collect_more": "Collect vyinshi amakuru",
       "step_collect_more_desc": "Ongerako vyinshi kwitegereza igihe ku strengthen dataset.",
       "step_hypothesis": "Ikigereranyo",
-      "step_hypothesis_desc": "Draft working hypothesis ca ingendo function.",
+      "step_hypothesis_desc": "Andika integuro y'ingingo (hypothesis) y'imikorere y'inyifato.",
       "step_record_abc": "Record ABC amakuru",
       "step_record_abc_desc": "inyandiko antecedents, ingendo, na consequences.",
       "step_report": "Icegeranyo",
@@ -11199,7 +11291,12 @@
   "lms": {
     "dismiss_banner_aria": "Sibisha icapfundo ca LMS",
     "dismiss_button": "Kurahu",
-    "audit_queue_help": "Kanda inyandiko kugira uyizane no kuyishira mu audit pipeline. Bimwe mu LMS idosiye bishobora gusaba ko winjira muri LMS muri iyi browser."
+    "audit_queue_help": "Kanda inyandiko kugira uyizane no kuyishira mu audit pipeline. Bimwe mu LMS idosiye bishobora gusaba ko winjira muri LMS muri iyi browser.",
+    "queued_one": "Inyandiko {count} iri ku murongo wa LMS",
+    "queued_other": "Inyandiko {count} ziri ku murongo wa LMS",
+    "fetching": "Ikura {name}...",
+    "loaded_ready": "{name} yapakiye; yiteguye kugenzurwa",
+    "fetch_failed": "Kuzana {name} byanze: {error}. Idosiye ishobora gusaba kwemeza kwa LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo ca nyuma annotation ({count} kirahari) — Ctrl/Cmd+Z",
@@ -11219,7 +11316,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "ibibonwa imfashanyo kuva cawe umwigisha"
+    "teacher_modal_aria": "ibibonwa imfashanyo kuva cawe umwigisha",
+    "now": "UBU",
+    "read_aloud": "Soma Wumvikana"
   },
   "canvas_settings": {
     "title": "co hejuru ihirahirwa",
@@ -11236,7 +11335,12 @@
     "read_all_button": "Soma vyose",
     "stop_button": "Hagarika",
     "focus_narration_label": "Ukuvuga Aho Klaviye Ihagaze",
-    "focus_narration_on_hint": "Tab ku hear controls"
+    "focus_narration_on_hint": "Tab ku hear controls",
+    "reading": "Irasoma...",
+    "item_aria": "Kanda kugira ngo wumve: {text}",
+    "footer_stats": "Ibintu {count} · Kanda ikintu icyo ari cyo cyose kugira ngo ukyumve · Gusoma kwa Tab {state}",
+    "narration_on": "BIKORA",
+    "narration_off": "NTIBIKORA"
   },
   "teacher": {
     "local_only": "Aha gusa",
@@ -12412,5 +12516,27 @@
     "no_match": "Nta tegeko rihuye. Ikiganiro ca bot (n'ijwi vuba) bitahura ivyifuzo vy'uburyo bwose.",
     "placeholder": "Andika itegeko — “inyandiko nini”, “ihuriro ry'abigisha”, “soma uru rupapuro”…",
     "run": "kora"
+  },
+  "voice_engine": {
+    "preparing": "Itegura moteri y'ijwi...",
+    "downloading_model": "Ikuramo icyitegererezo cy'ijwi",
+    "loading_memory": "Ishyira mu bubiko",
+    "loading_model_memory": "Ishyira icyitegererezo cy'ijwi mu bubiko"
+  },
+  "voice_control": {
+    "listening": "Iratega amatwi; vuga “stop listening” kugira ngo urangize",
+    "stop_aria": "Hagarika kugenzura n'ijwi"
+  },
+  "dynamic_assessment": {
+    "return_title": "Uyu mutungo wakozwe na Isuzuma Rihinduka. Kanda kugira ngo wongere ufungure modile y'Isuzuma Rihinduka.",
+    "return_aria": "Subira ku Isuzuma Rihinduka",
+    "return_label": "Subira ku Isuzuma Rihinduka",
+    "item_badge": "ikintu {num}"
+  },
+  "story_gallery": {
+    "title": "Imurikagurisha ry'Inkuru",
+    "byline": "Na {author} · amagambo {words} · {used}/{total} amagambo",
+    "student": "Umunyeshuri",
+    "score": "Amanota: {score}"
   }
 }

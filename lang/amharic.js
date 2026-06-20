@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper መጫን አልተሳካም። ወደ ሌሎች ሞተሮች በመመለስ ላይ።",
     "backup_failed": "የመጠባበቂያ ቅጂ አልተሳካም። እንደገና ይሞክሩ።",
     "invalid_backup_file": "ልክ የሆነ የAlloHaven የመጠባበቂያ ፋይል አይደለም።",
-    "could_not_read_file": "ያንን ፋይል ማንበብ አልተቻለም። JSON የመጠባበቂያ ቅጂ ነው?"
+    "could_not_read_file": "ያንን ፋይል ማንበብ አልተቻለም። JSON የመጠባበቂያ ቅጂ ነው?",
+    "focus_streak": "{flames} የ{minutes} ደቂቃ የትኩረት ተከታታይነት! እንዲሁ ቀጥል!",
+    "streak_saved": "እንኳን ደህና ተመለስክ! የ{minutes} ደቂቃ ተከታታይነትህ ተቀምጧል።",
+    "points_awarded": "ነጥቦች ተሰጥተዋል!",
+    "welcome_name": "እንኳን ደህና መጣህ፣ {name}!",
+    "element_not_found": "ኤለመንቱ አልተገኘም፦ {id}",
+    "overlay_set": "ሽፋን፦ {mode}",
+    "synced_resource": "ተመሳስሏል፦ {title}",
+    "group_resource": "የቡድን ግብአት፦ {title}",
+    "preset_saved": "ቅድመ-ቅንብር \"{name}\" ተቀምጧል!",
+    "translated_resources": "{count} ግብአቶች በተሳካ ሁኔታ ተተርጉመዋል!",
+    "bingo_cards_count": "{count} የBINGO ካርዶች ተፈጥረዋል!",
+    "sound_enabled": "ድምፅ በርቷል",
+    "sound_muted": "ድምፅ ተዘግቷል",
+    "democracy_mode_on": "የዲሞክራሲ ሁነታ በርቷል፦ የክፍል ድምፅ መስጠት በርቷል",
+    "democracy_mode_off": "የዲሞክራሲ ሁነታ ጠፍቷል፦ ብቻን መጫወት",
+    "resource_moved_up": "{title} ወደ ላይ ተንቀሳቅሷል",
+    "resource_moved_down": "{title} ወደ ታች ተንቀሳቅሷል",
+    "panels_regenerated": "{count} ፓነሎች እንደገና ተፈጥረዋል!",
+    "settings_undone": "ተቀልብሷል፦ {label}። ቅንብሮች ተመልሰዋል። (የተፈጠሩ ግብአቶች አይነኩም።)",
+    "concept_added": "ጽንሰ-ሐሳብ ታክሏል፦ {text}",
+    "lesson_not_found": "በዚህ ክፍል ውስጥ ትምህርቱ አልተገኘም።",
+    "probe_complete": "ምርመራ ተጠናቋል፦ {correct}/{total} ({accuracy}%)",
+    "settings_updated": "ቅንብሮች ተዘምነዋል፦ {changes}",
+    "change_format": "ቅርጸት፦ {value}",
+    "change_tone": "ቃና፦ {value}",
+    "change_length": "ርዝመት፦ ~{value} ቃላት",
+    "change_language": "ቋንቋ፦ {value}",
+    "change_interest": "ፍላጎት ታክሏል፦ {value}",
+    "backup_saved": "💾 የዚህ ክፍለ-ጊዜ ምትኬ ወደ ውርዶችህ ተቀምጧል (የፕሮጀክት ፋይል)። አሁን ምንም ማድረግ አያስፈልግም፤ ወደፊት መመለስ ካስፈለገህ፣ \"ፕሮጀክት ጫን\" ሁሉንም ይመልሳል።",
+    "backup_saved_score": " (ነጥብ {score})",
+    "project_saved_multi_one": "💾 ፕሮጀክት ተቀምጧል ({count} ክልል)፤ ለመቀጠል በኋላ ጫነው",
+    "project_saved_multi_other": "💾 ፕሮጀክት ተቀምጧል ({count} ክልሎች)፤ ለመቀጠል በኋላ ጫነው",
+    "project_saved": "💾 ፕሮጀክት ተቀምጧል፤ አርትዖትን ለመቀጠል በኋላ ጫነው",
+    "search_result_desc": "የGoogle ፍለጋ ውጤት፦ {title}",
+    "link_url_prompt": "የአገናኝ URL አስገባ፦"
   },
   "large_file": {
     "modal_title": "አስገባ Large ድምጽ ፋይል",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "ይቅር Transcription",
     "chunk_info": "ድምጽ ነው split ወደ ውስጥ 5-minute chunks ለ processing",
     "chunk_progress": "Chunk {current} የ {total}",
-    "audio_only_error": "Currently ብቻ ድምጽ ፋይል (MP3, WAV, etc.) ናቸው supported ለ chunked transcription."
+    "audio_only_error": "Currently ብቻ ድምጽ ፋይል (MP3, WAV, etc.) ናቸው supported ለ chunked transcription.",
+    "starting": "በመጀመር ላይ..."
   },
   "formatting": {
     "bold": "Bold (**ጽሑፍ**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "ክፈት StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ሰነድ-መሠረት ያደረገ ጥያቄ",
-    "open_stem_lab_explore_aria": "ክፈት STEM ላቦራቶሪ ቃኝ"
+    "open_stem_lab_explore_aria": "ክፈት STEM ላቦራቶሪ ቃኝ",
+    "stem_lab_explore": "ዳስስ"
   },
   "history": {
     "load_project": "ጫን Project",
@@ -4488,7 +4525,25 @@
       "resolved_tip": "ከመጀመሪያው ኦዲት ውስጥ ያሉ ችግሮች በማረጋገጫ ኦዲቱ ላይ አይገኙም",
       "persisted_tip": "ከመጀመሪያው ኦዲት ውስጥ ያሉ ችግሮች ከእርማት በኋላም ይገኛሉ",
       "introduced_tip": "ከእርማት በፊት ያልነበሩ አዳዲስ ችግሮች"
-    }
+    },
+    "reattach_mismatch": "እንደገና የተያያዘው PDF ከተመረመረው የተለየ ነው{detail}። ለማንኛውም ይቀጥላል፤ ውጤቶቹ ከመጀመሪያው ምርመራ ጋር ላይጣጣሙ ይችላሉ።",
+    "reattach_name_detail": " (ስም፦ \"{new}\" በተቃራኒ \"{old}\")",
+    "reattach_size_detail": " (መጠን፦ {new} በተቃራኒ {old} ባይት)",
+    "audit_failed_kept": "{label}፦ ምርመራ አልተሳካም፤ የቀድሞው ስሪት ተጠብቋል።",
+    "score_dropped_kept": "{label}፦ ነጥቡ ይቀንስ ነበር ({prev} → {next}{axe})። የቀድሞው ስሪት ተጠብቋል።",
+    "axe_only_comparison": "፣ የaxe ብቻ ንፅፅር",
+    "axe_only_committed": "{label}፦ የAI ማረጋገጫ የለም፤ በተወሰነው የaxe-core ነጥብ ብቻ ተረጋግጧል።",
+    "reinserted_ai": "{count} እንደገና ገብቷል (AI)",
+    "reinserted_sentence": "{count} እንደገና ገብቷል (ዓረፍተ ነገር)",
+    "reinserted_fuzzy": "{count} እንደገና ገብቷል (ግምታዊ)",
+    "in_recovery_appendix": "{count} በማገገሚያ አባሪ ውስጥ",
+    "duplicates_removed_one": "{count} ድግግሞሽ ተወግዷል",
+    "duplicates_removed_other": "{count} ድግግሞሾች ተወግደዋል",
+    "auto_continue_round": "በራስ-ሰር የመቀጠል ዙር {round}/{max}፦ {detail}፣ ነጥብ {score}/100 (ዒላማ {target})...",
+    "violation_one": "{count} ጥሰት",
+    "violation_other": "{count} ጥሰቶች",
+    "ai_issue_one": "{count} በAI የተለየ ችግር",
+    "ai_issue_other": "{count} በAI የተለዩ ችግሮች"
   },
   "concept_sort": {
     "title": "ጽንሰ-ሐሳብ ደርድር",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "ካርድ እይታ",
     "card_visuals_auto": "Auto (ብቻ ላይ አጭር እቃ)",
     "card_visuals_always": "Always አመንጭ ምስል",
-    "card_visuals_never": "Never (ጽሑፍ-ብቻ ካርድ)"
+    "card_visuals_never": "Never (ጽሑፍ-ብቻ ካርድ)",
+    "explanation_unavailable": "አሁን ማብራሪያ ማመንጨት አልተቻለም። እባክህ ከትንሽ ጊዜ በኋላ እንደገና ሞክር።"
   },
   "dbq": {
     "title": "ሰነድ ትንተና (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed ወደ ማረጋገጥ ማስተካከያ.",
       "regenerated_success": "ጽሑፍ regenerated ከ improvements!",
       "regen_failed": "እንደገና ማመንጨት አልተሳካም።"
-    }
+    },
+    "skill_check": "የክህሎት ምርመራ",
+    "desc_skill_check": "ብቃትህን ከደረጃዎች አንፃር አረጋግጥ።",
+    "desc_parent": "ይህ ከትምህርት ቤቱ ግቦች ጋር እንዴት እንደሚጣጣም ይመልከቱ",
+    "desc_6dim": "ሥርዓተ ትምህርቱን በ6 ልኬቶች ይመረምራል",
+    "desc_5dim": "ሥርዓተ ትምህርቱን በ5 ልኬቶች ይመረምራል (ለሙሉ ምርመራ ደረጃዎችን ጨምር)"
   },
   "standards": {
     "target_standard": "ግብ መስፈርት",
@@ -5180,7 +5241,34 @@
     "plan_hook": "መሳቢያ",
     "plan_independent": "Independent ተለማመድ",
     "col_image": "ምስል",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "አቁም",
+    "expand_header": "ራስጌን አስፋ",
+    "collapse_header": "ለይዘቱ ተጨማሪ ቦታ ለመስጠት ራስጌን አጥፋ",
+    "collapse_header_short": "ራስጌን አጥፋ",
+    "step_x_of_y": "ደረጃ {current} ከ{total}",
+    "english_translation": "የእንግሊዝኛ ትርጉም",
+    "source_references": "የምንጭ ጽሑፍ ማጣቀሻዎች",
+    "activity_probe": "የ{activity} ምርመራ",
+    "word_sounds_count": "Word Sounds ({count} ቃላት)",
+    "quick_practice_mode": "ፈጣን የልምምድ ሁነታ",
+    "new_option": "አዲስ አማራጭ",
+    "meta_lesson_extensions": "የትምህርት ቅጥያዎች",
+    "title_extension_ideas": "የቅጥያ ሐሳቦች",
+    "meta_full_chat_log": "ሙሉ የውይይት መዝገብ",
+    "title_udl_consultation_log": "የUDL ምክክር መዝገብ",
+    "meta_actionable_steps": "ተግባራዊ ሊሆኑ የሚችሉ ደረጃዎች (የAI ማጠቃለያ)",
+    "title_differentiation_strategy": "የልዩነት ስትራቴጂ",
+    "meta_udl_guide_advice": "የUDL መመሪያ ምክር",
+    "title_stem_assessment": "የSTEM ምዘና",
+    "title_explore_challenge": "የዳሰሳ ፈተና",
+    "title_fluency_maze": "🏰 የቅልጥፍና ላቢሪንት",
+    "title_storyforge_config": "📖 የStoryForge ምድብ",
+    "title_storyforge_submission": "📖 የታሪክ ማስረከቢያ",
+    "title_poettree_config": "🌳 የPoetTree ምድብ",
+    "title_poettree_submission": "🌳 የግጥም ማስረከቢያ",
+    "title_litlab_config": "🎭 የLitLab ምድብ",
+    "title_litlab_submission": "🎭 የአቀራረብ ማስረከቢያ"
   },
   "persona": {
     "title": "Interview ሁነታ",
@@ -8257,7 +8345,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing ይዘት topology...",
     "brainstorming": "ሃሳቦችን እያፈለቀ ነው...",
     "retrying_citations": "Retrying ለ የተሻለ citations...",
-    "translating": "እየተተረጎመ ነው…"
+    "translating": "እየተተረጎመ ነው…",
+    "preparing_translation": "ወደ {lang} ትርጉም በማዘጋጀት ላይ...",
+    "translating_item": "{current}/{total} በመተርጎም ላይ፦ {title}...",
+    "generating_panel": "ፓነል {current}/{total} በማመንጨት ላይ..."
   },
   "process": {
     "source_missing": "እባክዎ provide ምንጭ ጽሑፍ መጀመሪያ.",
@@ -9553,7 +9644,8 @@
     "loading_resources": "Loading ሀብቶች...",
     "preparing_workspace": "Preparing የእርስዎ workspace...",
     "almost_ready": "ሊዘጋጅ ተቃርቧል...",
-    "loading_screen_aria": "AlloFlow loading ስክሪን"
+    "loading_screen_aria": "AlloFlow loading ስክሪን",
+    "preparing_environment": "የመማሪያ አካባቢህን በማዘጋጀት ላይ..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9565,7 +9657,7 @@
     "obs_momentary": "Momentary ጊዜ Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional ባህሪ ግምገማ, ABC ውሂብ collection, እና ባህሪ ጣልቃ ገብነት ዕቅድ መሳሪያዎች.",
+      "subtitle": "የFunctional Behavior Assessment (FBA)፣ የABC ውሂብ አሰባሰብ፣ እና የBehavior Intervention Plan (BIP) መሳሪያዎች።",
       "open_btn": "ክፈት BehaviorLens",
       "select_student": "ምረጥ ተማሪ",
       "choose_student": "— ምረጥ አንድ ተማሪ —",
@@ -9662,7 +9754,7 @@
       "deescalate_title": "የማረጋጊያ መሣሪያ ስብስብ",
       "drstrategy_desc": "ትክክለኛውን የልዩነት ማጠናከሪያ ስልት ይምረጡ (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "DR ስልት Selector",
-      "dtt_desc": "Discrete Trial Training — በሙከራ-በሙከራ ምዝገባ ከመማር መስፈርቶች እና ራስ-ሰር መሄድ ጋር",
+      "dtt_desc": "Discrete Trial Training — ከብቃት መስፈርቶች እና ራስ-ሰር ማስቀደም ጋር በሙከራ-በሙከራ ምዝገባ",
       "dtt_title": "DTT ውሂብ Sheet",
       "effectsize_desc": "በእይታ ምዕራፍ ንጽጽር የጣልቃ ገብነት ውጤታማነትን ለመለካት Tau-U, NAP, እና PND ያስሉ",
       "effectsize_title": "የውጤት መጠን ካልኩሌተር",
@@ -9673,7 +9765,7 @@
       "fbaworkflow_title": "FBA የስራ ፍሰት መመሪያ",
       "fcttemplate_desc": "Functional Communication Training እቅድ ከመጥፋት ምርጫ ጋር",
       "fcttemplate_title": "FCT አብነት",
-      "gamify_desc": "ለተማሪ የተኮረ የስሜት ተከታታይ ከ-streaks፣ ባጅዎች፣ quests እና የነፀብራቅ ጆርናል ጋር",
+      "gamify_desc": "ለተማሪ የተኮረ የስሜት መከታተያ ከተከታታይ ጅረቶች (streaks)፣ ባጅዎች፣ ተልዕኮዎች (quests) እና የነጸብራቅ ማስታወሻ ደብተር ጋር",
       "gamify_title": "My እድገት ተልዕኮ",
       "glossary_desc": "25+ ሊፈለጉ የሚችሉ የABA ቃላት ከቀላል-ቋንቋ ትርጉሞች እና ከእውነተኛ-ዓለም ምሳሌዎች ጋር",
       "glossary_title": "ABA ጽንሰ-ሐሳብ መዝገበ ቃላት",
@@ -9685,7 +9777,7 @@
       "iepprep_title": "IEP ስብሰባ ዝግጅት",
       "intervention_desc": "በAI-የመነጨ የበርካታ ሳምንት የጣልቃ ገብነት እቅድ ሊለኩ የሚችሉ ግቦች እና ግቦች ጋር",
       "intervention_title": "ጣልቃ ገብነት ዕቅድ",
-      "ioacalc_desc": "Inter-Observer Agreement በ6 ዘዴዎች — ነጥብ-በ-ነጥብ፣ የጊዜ ክፍተት፣ ነጥብ ያገኘ/ያላገኘ፣ ትክክለኛ ቆጠራ",
+      "ioacalc_desc": "Inter-Observer Agreement (IOA) በ6 ዘዴዎች — ነጥብ-በ-ነጥብ፣ የጊዜ ክፍተት፣ ነጥብ ያገኘ/ያላገኘ፣ ትክክለኛ ቆጠራ",
       "ioacalc_title": "IOA ካልኩሌተር",
       "latency_desc": "ከ-አማካይ፣ መካከለኛ እና የክልል ስታቲስቲክስ ጋር የመነቃቃት-ወደ-ምላሽ ጊዜ መለኪያ",
       "latency_title": "የመዘግየት መዝጋቢ",
@@ -9708,7 +9800,7 @@
       "prefassess_title": "Preference ግምገማ",
       "progress_desc": "ከተከማቸ የባህሪ ዳታ የIEP-ዝግጁ የእድገት ክትትል አንቀጾች",
       "progress_title": "እድገት ትረካ",
-      "progressreport_desc": "AI-generated እድገት reports ከ ውሂብ summaries, trend ትንተና, ግብ እድገት, እና ወላጅ-ወዳጃዊ ቋንቋ አማራጮች",
+      "progressreport_desc": "በAI የተመነጩ የእድገት ሪፖርቶች ከውሂብ ማጠቃለያዎች፣ የዝንባሌ ትንተና፣ የግብ እድገት፣ እና ለወላጅ ምቹ የቋንቋ አማራጭ ጋር",
       "progressreport_title": "እድገት Reports",
       "qualitycheck_desc": "በAI-የተደገፈ የABC ግቤቶችዎ ግምገማ ከተወሰኑ የማሻሻያ ጥቆማዎች ጋር",
       "qualitycheck_title": "ውሂብ ጥራት ማረጋገጥ",
@@ -9940,7 +10032,7 @@
     "reinforcer_sensory": "🌀 ስሜት",
     "quiz_fba_purpose": "የFBA ዋና ዓላማ ምንድን ነው?",
     "quiz_replacement": "ምን ነው አንድ replacement ባህሪ?",
-    "search_placeholder": "ፈልግ antecedent, ባህሪ, consequence, ማስታወሻዎች, ቅንብር...",
+    "search_placeholder": "antecedent፣ ባህሪ፣ consequence፣ ማስታወሻዎች፣ ሁኔታ ይፈልጉ...",
     "quick_fill_placeholder": "ለምሳሌ \"ተማሪው ሥራውን እንዲያሳይ ሲጠየቅ በሂሳብ ጊዜ ወረቀት ጣለ፣ አስተማሪው በእርጋታ መልሶ አስተካከለ\"",
     "nl_edit_placeholder": "ለምሳሌ \"ውጤቱን ወደ አስተማሪ መልሶ አስተካከለ ቀይር\"",
     "now": "አሁን",
@@ -10040,7 +10132,7 @@
     "cycle_de_escalation": "ማረጋጋት",
     "cycle_recovery": "ማገገም",
     "quiz_opt_punish": "ወደ punish ተማሪ",
-    "quiz_opt_identify_why": "ወደ መለየት WHY አንድ ባህሪ occurs",
+    "quiz_opt_identify_why": "አንድ ባህሪ ለምን (WHY) እንደሚከሰት ለመለየት",
     "quiz_opt_any_stops": "ችግሩን የሚያቆም ማንኛውም ባህሪ",
     "analysis": {
       "hypothesized_function": "የተገመተ ተግባር",
@@ -10113,7 +10205,7 @@
       "topic_purpose_of_contact": "ርዕስ / የግንኙነቱ ዓላማ",
       "type_full_name": "ዓይነት ሙሉ name",
       "type_language_eg_spanish_arabic_somali": "ቋንቋ ያስገቡ (ለምሳሌ፣ ስፓኒሽ፣ አረብኛ፣ ሶማልኛ)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "ዓይነት የእርስዎ ምልከታ, note, ወይም ጠቅ ያድርጉ mic ወደ dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "ምልከታዎን ወይም ማስታወሻዎን ይተይቡ፣ ወይም ለመናገር ማይኩን ጠቅ ያድርጉ...",
       "type_your_response_here_be_thorough_and_use_profes": "ምላሽዎን እዚህ ይተይቡ። ዝርዝር ይሁኑ እና ሙያዊ ቋንቋ ይጠቀሙ...",
       "what_behavior_will_change": "ምን ባህሪ ይሆናል ለውጥ?",
       "what_could_you_or_a_grownup_do_differently": "አንተ ወይም አዋቂ ሰው በተለየ መንገድ ምን ማድረግ ይችላል?",
@@ -10308,7 +10400,7 @@
       "triangulation_complete": "Triangulation አጠናቅቅ ✨",
       "wizard_failed": "መመሪያ failed",
       "workspace_loaded_n_entries_n_notes": "የሥራ ቦታ ተጭኗል (N ግቤቶች፣ N ማስታወሻዎች) 📂",
-      "you_have_unsaved_changes_consider_saving_your_work": "💡 እርስዎ አለው unአስቀምጥ ለውጦች — ማሰብ saving የእርስዎ workspace.",
+      "you_have_unsaved_changes_consider_saving_your_work": "💡 ያልተቀመጡ ለውጦች አሉዎት — የስራ ቦታዎን ማስቀመጥ ያስቡበት።",
       "autofilled_from_phase_tagged_entries": "ከምዕራፍ-መለያ ግቤቶች በራስ-ሰር ተሞልቷል።",
       "enter_task_name": "አስገባ አንድ task name.",
       "need_2_baseline_2_intervention_entries_with_phase_tags": "ቢያንስ 2 መነሻ እና 2 የጣልቃ ገብነት ግቤቶች ከምዕራፍ መለያዎች ጋር ያስፈልጋሉ።",
@@ -10340,7 +10432,7 @@
       "add_abc_entries_to_see_progress_over_time": "ጨምር ABC entries ወደ እይ እድገት በላይ ጊዜ",
       "add_abc_entries_to_see_visual_trend_data": "የእይታ አዝማሚያ ውሂብን ለማየት የ ABC ግቤቶችን ያክሉ።",
       "add_connections_to_build_the_relationship_map": "የግንኙነት ካርታውን ለመገንባት ግንኙነቶችን ያክሉ።",
-      "add_data_points_above_or_paste_csv_data_to_get_sta": "ጨምር ውሂብ ነጥብ above ወይም ለጥፍ CSV ውሂብ ወደ get started.",
+      "add_data_points_above_or_paste_csv_data_to_get_sta": "ለመጀመር ከላይ የውሂብ ነጥቦችን ይጨምሩ ወይም የCSV ውሂብ ይለጥፉ።",
       "additional_context_optional": "Additional አውድ (አማራጭ)",
       "ai_analysis": "AI ትንተና",
       "ai_context_available": "AI አውድ ይገኛል",
@@ -10386,9 +10478,9 @@
       "data_quality_score": "ውሂብ ጥራት ውጤት",
       "data_to_include": "ውሂብ ወደ አካትት",
       "day_streak": "የቀን ተከታታይነት",
-      "define_the_behaviors_settings_or_students_for_stag": "Define ባህሪ, ቅንብሮች, ወይም ተማሪ ለ staggered ጣልቃ ገብነት.",
+      "define_the_behaviors_settings_or_students_for_stag": "ለተደራራቢ (staggered) ጣልቃ ገብነት ባህሪያቱን፣ ሁኔታዎቹን ወይም ተማሪዎቹን ይግለጹ።",
       "describe_your_research_question_and_let_ai_recomme": "የምርምር ጥያቄዎን ይግለጹ እና AI ምርጡን ንድፍ እንዲመክር ይፍቀዱ።",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training ከመካን ክትትል እና በራስ-ሰር ማስቀደም ጋር",
+      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training ከብቃት ክትትል እና ራስ-ሰር ማስቀደም ጋር",
       "document_whether_interventions_are_implemented_as": "ጣልቃ ገብነቶች እንደተነደፉ መተግበራቸውን ይመዝግቡ",
       "done": "ተጠናቋል",
       "drop_a_snapshot_file_here": "የቅጽበታዊ ገጽ እይታ ፋይል እዚህ ይጣሉ",
@@ -10405,7 +10497,7 @@
       "from_abc_data": "ከ ABC ውሂብ:",
       "full_student_summary": "ሙሉ ተማሪ ማጠቃለያ",
       "functional_communication_training_planning_tool": "Functional Communication Training የእቅድ መሣሪያ",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "አመንጭ አንድ multi-week ጣልቃ ገብነት ዕቅድ መሠረት ያደረገ ላይ የእርስዎ collected ABC ውሂብ እና AI ትንተና.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "በሰበሰቡት የABC ውሂብ እና የAI ትንተና ላይ ተመስርቶ የብዙ-ሳምንት ጣልቃ ገብነት ዕቅድ ያመንጩ።",
       "generate_a_professional_printready_progress_report": "ከመስመር ቻርቶች፣ የውሂብ ማጠቃለያዎች እና የAI ምክሮች ጋር ሙያዊ፣ ለህትመት-ዝግጁ የእድገት ሪፖርት ይፍጠሩ። በአሳሽ ህትመት በኩል በአንድ-ጠቅታ PDF ኤክስፖርት።",
       "generate_a_unique_scenario_tailored_to_your_traini": "ለሥልጠና ፍላጎቶችዎ የተበጀ ልዩ ሁኔታ ያመንጩ።",
       "generate_compliant_iep_behavioral_goals_from_obser": "አመንጭ compliant IEP behavioral ግብ ከ ምልከታ ውሂብ ከ present ደረጃ, SMART ግብ, እና እድገት monitoring.",
@@ -10443,7 +10535,7 @@
       "measure_time_between_stimulus_presentation_and_beh": "በማነቃቂያ አቀራረብ እና በባህሪ ምላሽ መካከል ያለውን ጊዜ ይለኩ",
       "median": "መካከለኛ",
       "methods_used": "ጥቅም ላይ የዋሉ ዘዴዎች",
-      "modify_the_environment_to_prevent_behaviors_before": "አስተካክል environment ወደ prevent ባህሪ በፊት እነሱ ጀምር",
+      "modify_the_environment_to_prevent_behaviors_before": "ባህሪያት ከመጀመራቸው በፊት ለመከላከል አካባቢውን ያስተካክሉ",
       "mtssrti_tier_manager": "MTSS/RTI የደረጃ አስተዳዳሪ",
       "my_progress_quest": "My እድገት ተልዕኮ",
       "natural_language_abc_entry": "የተፈጥሮ ቋንቋ ABC ግቤት",
@@ -10468,7 +10560,7 @@
       "optional_message": "አማራጭ መልዕክት",
       "or_explore_the_pd_learning_path": "ወይም ቃኝ PD መማር Path →",
       "parent": "ወላጅ",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ለጥፍ one ዋጋ per መስመር. ድጋፍ ቅርጸት: \"5\", \"ክፍለ ጊዜ 1: 5\", ወይም \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "በአንድ መስመር አንድ ዋጋ ይለጥፉ። የሚደገፉ ቅርጸቶች: \"5\"፣ \"ክፍለ ጊዜ 1: 5\"፣ ወይም \"1,5\"",
       "pd_learning_path": "PD መማር Path",
       "please_use_chrome_edge_or_safari_for_voice_input": "እባክዎ ተጠቀም Chrome, Edge, ወይም Safari ለ ድምጽ ግቤት.",
       "practice_clinical_reasoning_with_aigenerated_case": "በAI-በተፈጠሩ የጉዳይ ጥናቶች ክሊኒካዊ ምክንያትን ይለማመዱ። በምላሾችዎ ላይ የባለሙያ-ደረጃ ግብረመልስ ያግኙ።",
@@ -10483,10 +10575,10 @@
       "publicationstandard_singlecase_design_graphs": "የህትመት-ደረጃ ነጠላ-ጉዳይ ንድፍ ግራፎች",
       "quick_switch": "ፈጣን ቀይር",
       "range": "ክልል",
-      "read_through_the_module_content_above_then_click_c": "አንብብ በኩል module ይዘት above, ከዚያ ጠቅ ያድርጉ አጠናቅቅ below.",
+      "read_through_the_module_content_above_then_click_c": "ከላይ ያለውን የሞጁል ይዘት ያንብቡ፣ ከዚያም ከታች ያለውን አጠናቅቅ የሚለውን ጠቅ ያድርጉ።",
       "realtime_calming_tools_for_inthemoment_support": "በ-ቅጽበት-ውስጥ ድጋፍ ለ-ቅጽበታዊ የማረጋጊያ መሳሪያዎች",
       "recent_moods": "የቅርብ ጊዜ ስሜቶች፡",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record ክፍለ ጊዜ ከ ክፍለ ጊዜ ውሂብ Tracker, ወይም ቀይር ወደ በእጅ Entry ሁነታ.",
+      "record_sessions_with_the_session_data_tracker_or_s": "ክፍለ ጊዜዎችን በክፍለ ጊዜ ውሂብ መከታተያ ይመዝግቡ፣ ወይም ወደ በእጅ ማስገቢያ ሁነታ ይቀይሩ።",
       "recording": "በመመዝገብ ላይ...",
       "relationship_map": "የግንኙነት ካርታ",
       "remember_cultural_humility_is_a_lifelong_practice": "አስታውሱ፦ የባህል ትህትና የዕድሜ ልክ ልምምድ ነው። እያንዳንዱ ነጸብራቅ የበለጠ ፍትሃዊ ባለሙያ ያደርግዎታል።",
@@ -10514,7 +10606,7 @@
       "summary": "ማጠቃለያ:",
       "systematic_behavioral_measurement_across_sessions": "በ-ክፍለ ጊዜዎች መካከል ስልታዊ የባህሪ መለኪያ",
       "systematic_reinforcer_identification_using_evidenc": "በ-ማስረጃ-ላይ የተመሰረቱ ፕሮቶኮሎችን በመጠቀም ስልታዊ የማጠናከሪያ መለያ",
-      "tap_each_item_when_student_engages_with_it": "Tap እያንዳንዱ እቃ ሲ ተማሪ engages ከ it",
+      "tap_each_item_when_student_engages_with_it": "ተማሪው እያንዳንዱን እቃ ሲጠቀምበት ነካ ያድርጉት",
       "target_behavior": "ግብ ባህሪ",
       "task_analysis": "Task ትንተና",
       "taskskill_name": "የተግባር/ችሎታ ስም",
@@ -10524,14 +10616,14 @@
       "top_behavior": "Top ባህሪ",
       "total_contacts": "ጠቅላላ ግንኙነቶች",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ባህሪ frequency በላይ ጊዜ ከ aim መስመር, phase ለውጦች, እና trend ትንተና.",
-      "track_behaviors_at_home_using_simple_everyday_lang": "Track ባህሪ at home በመጠቀም ቀላል, everyday ቋንቋ. ይህ እርዳታ የእርስዎ child\\",
+      "track_behavior_frequency_over_time_with_aim_lines": "የባህሪ ድግግሞሽን በጊዜ ሂደት ከዓላማ መስመሮች፣ ከምዕራፍ ለውጦች እና ከዝንባሌ ትንተና ጋር ይከታተሉ።",
+      "track_behaviors_at_home_using_simple_everyday_lang": "ቀላል የዕለት ተዕለት ቋንቋ በመጠቀም ባህሪያትን በቤት ውስጥ ይከታተሉ። ይህ ልጅዎን ይረዳል\\",
       "track_your_feelings_earn_badges_and_build_streaks": "ስሜቶችዎን ይከታተሉ፣ ባጆችን ያግኙ፣ እና ተከታታይ ድሎችን ይገንቡ!",
       "transform_deficitbased_language_into_assetfocused": "በ-ድክመት-ላይ የተመሰረተ ቋንቋን ወደ ሀብት-ያተኮረ መግለጫዎች ይለውጡ",
       "translate_to_any_language": "Translate ወደ ማንኛውም ቋንቋ:",
       "treatment_integrity": "የሕክምና ታማኝነት",
       "trend": "አዝማሚያ",
-      "type_or_paste_your_observation_notes_in_everyday_e": "ዓይነት ወይም ለጥፍ የእርስዎ ምልከታ ማስታወሻዎች ውስጥ everyday English. AI ይሆናል መዋቅር them ወደ ውስጥ proper ABC entries.",
+      "type_or_paste_your_observation_notes_in_everyday_e": "የምልከታ ማስታወሻዎችዎን በዕለት ተዕለት እንግሊዝኛ ይተይቡ ወይም ይለጥፉ። AI ወደ ትክክለኛ የABC ግቤቶች ያዋቅራቸዋል።",
       "use_these_criteria_when_examining_your_graph": "ግራፍዎን ሲመረምሩ እነዚህን መስፈርቶች ይጠቀሙ፦",
       "use_this_flow_to_hypothesize_the_function_of_a_cha": "የፈታኝ ባህሪን ተግባር ለመገመት ይህን ፍሰት ይጠቀሙ።",
       "visual_multitiered_system_of_supports_assign_stude": "ምስላዊ ባለብዙ ደረጃ የድጋፍ ስርዓት። ተማሪዎችን ለደረጃዎች ይመድቡ፣ በ AI የሚሰሩ የመመደብ ምክሮችን ያግኙ።",
@@ -10776,7 +10868,7 @@
       "maintenance_tracker": "የጥገና መከታተያ",
       "make_tier_movement_decision_stay_fade_intensify": "የደረጃ እንቅስቃሴ ውሳኔ ያድርጉ (ይቆዩ / ይቀንሱ / ያጠናክሩ)",
       "map_antecedent_behavior_consequence_pathways": "የቀዳሚ → ባህሪ → ውጤት መንገዶችን ያዛምዱ",
-      "map_each_target_behavior_to_a_replacement": "Map እያንዳንዱ ግብ ባህሪ ወደ አንድ replacement",
+      "map_each_target_behavior_to_a_replacement": "እያንዳንዱን ዒላማ ባህሪ ከተተኪ ባህሪ ጋር ያዛምዱ",
       "materials_access": "ቁሳቁሶች መዳረሻ",
       "measure_effect_size_of_interventions": "የጣልቃ ገብነቶችን የውጤት መጠን ይለኩ",
       "model": "ሁነታ",
@@ -11199,7 +11291,12 @@
   "lms": {
     "dismiss_banner_aria": "የ LMS ባነር አሰናብት",
     "dismiss_button": "አሰናብት",
-    "audit_queue_help": "ሰነድ ጠቅ በማድረግ ወደ ተደራሽነት pipeline ለማምጣት እና ለመጫን ይጫኑት። አንዳንድ የ LMS ፋይሎች በዚህ አሳሽ ውስጥ ወደ LMS እንዲገቡ ሊጠይቁ ይችላሉ።"
+    "audit_queue_help": "ሰነድ ጠቅ በማድረግ ወደ ተደራሽነት pipeline ለማምጣት እና ለመጫን ይጫኑት። አንዳንድ የ LMS ፋይሎች በዚህ አሳሽ ውስጥ ወደ LMS እንዲገቡ ሊጠይቁ ይችላሉ።",
+    "queued_one": "{count} ሰነድ ከLMS ተሰልፏል",
+    "queued_other": "{count} ሰነዶች ከLMS ተሰልፈዋል",
+    "fetching": "{name} በማምጣት ላይ...",
+    "loaded_ready": "{name} ተጭኗል፤ ለምርመራ ዝግጁ",
+    "fetch_failed": "{name} ማምጣት አልተሳካም፦ {error}። ፋይሉ የLMS ማረጋገጫ ሊፈልግ ይችላል።"
   },
   "annotation": {
     "undo_tooltip": "Undo መጨረሻ annotation ({count} ይገኛል) — Ctrl/Cmd+Z",
@@ -11219,7 +11316,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "እይታ ድጋፍ ከ የእርስዎ መምህር"
+    "teacher_modal_aria": "እይታ ድጋፍ ከ የእርስዎ መምህር",
+    "now": "አሁን",
+    "read_aloud": "ድምፅ አውጥቶ ማንበብ"
   },
   "canvas_settings": {
     "title": "የላቀ ቅንብሮች",
@@ -11236,7 +11335,12 @@
     "read_all_button": "አንብብ ሁሉም",
     "stop_button": "አቁም",
     "focus_narration_label": "Keyboard ትኩረት Narration",
-    "focus_narration_on_hint": "Tab ወደ hear controls"
+    "focus_narration_on_hint": "Tab ወደ hear controls",
+    "reading": "በማንበብ ላይ...",
+    "item_aria": "ለመስማት ጠቅ አድርግ፦ {text}",
+    "footer_stats": "{count} ንጥሎች · ለመስማት ማንኛውንም ንጥል ጠቅ አድርግ · የTab ትረካ {state}",
+    "narration_on": "በርቷል",
+    "narration_off": "ጠፍቷል"
   },
   "teacher": {
     "local_only": "Local ብቻ",
@@ -12412,5 +12516,27 @@
     "no_match": "የተዛመደ ትዕዛዝ የለም። የቦት ውይይቱ (እና በቅርቡ ድምፅ) ነፃ-ቅርጽ ጥያቄዎችን ይረዳል።",
     "placeholder": "ትዕዛዝ ይተይቡ — “ትልቅ ጽሑፍ”፣ “educator hub”፣ “ይህን ገጽ አንብብ”…",
     "run": "አስኪድ"
+  },
+  "voice_engine": {
+    "preparing": "የድምፅ ሞተርን በማዘጋጀት ላይ...",
+    "downloading_model": "የድምፅ ሞዴል በማውረድ ላይ",
+    "loading_memory": "ወደ ማህደረ ትውስታ በመጫን ላይ",
+    "loading_model_memory": "የድምፅ ሞዴልን ወደ ማህደረ ትውስታ በመጫን ላይ"
+  },
+  "voice_control": {
+    "listening": "በማዳመጥ ላይ፤ ለማጠናቀቅ “stop listening” በል",
+    "stop_aria": "የድምፅ መቆጣጠሪያን አቁም"
+  },
+  "dynamic_assessment": {
+    "return_title": "ይህ ግብአት በተለዋዋጭ ምዘና ተፈጥሯል። የተለዋዋጭ ምዘና ሞጁልን እንደገና ለመክፈት ጠቅ አድርግ።",
+    "return_aria": "ወደ ተለዋዋጭ ምዘና ተመለስ",
+    "return_label": "ወደ ተለዋዋጭ ምዘና ተመለስ",
+    "item_badge": "ንጥል {num}"
+  },
+  "story_gallery": {
+    "title": "የታሪክ ማዕከለ-ስዕላት",
+    "byline": "በ{author} · {words} ቃላት · {used}/{total} የቃላት ዝርዝር",
+    "student": "ተማሪ",
+    "score": "ነጥብ፦ {score}"
   }
 }

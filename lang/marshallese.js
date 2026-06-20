@@ -1698,7 +1698,42 @@
     "whisper_load_failed": "Whisper load ear jab tōprak. Ej oktak ñan engine ko jet.",
     "backup_failed": "Backup ear jab tōprak. Bar kajjeoñ.",
     "invalid_backup_file": "Ejjab juon valid AlloHaven backup file.",
-    "could_not_read_file": "Ear jab maroñ read file in. Ej juon JSON backup ke?"
+    "could_not_read_file": "Ear jab maroñ read file in. Ej juon JSON backup ke?",
+    "focus_streak": "{flames} {minutes} minit in jiroñ ekkar! Wōnṃaanḷọk āinwōt in!",
+    "streak_saved": "Eṃṃan aṃ rọọltok! Kar kōjparok aṃ {minutes} minit ekkar.",
+    "points_awarded": "Kar leḷọk poin ko!",
+    "welcome_name": "Eṃṃan aṃ itok, {name}!",
+    "element_not_found": "Jab lo element eo: {id}",
+    "overlay_set": "Kein kalibubu: {mode}",
+    "synced_resource": "Kar koppālōk: {title}",
+    "group_resource": "Kein jerbal in kumi: {title}",
+    "preset_saved": "Kar kōjparok preset \"{name}\"!",
+    "translated_resources": "Kar ukōt {count} kein jerbal ko ilo jeraaṃṃan!",
+    "bingo_cards_count": "Kar kōṃṃan {count} kaat in BINGO!",
+    "sound_enabled": "Kar kōjjeḷā ainikien",
+    "sound_muted": "Kar kōkkar ainikien",
+    "democracy_mode_on": "Kar kōjjeḷā wāween democracy: voot in klaaj ej kōjjeḷā",
+    "democracy_mode_off": "Kar kōkkar wāween democracy: kukure make iaaṃ",
+    "resource_moved_up": "Kar kōṃakūt {title} lōñḷọk",
+    "resource_moved_down": "Kar kōṃakūt {title} laḷḷọk",
+    "panels_regenerated": "Kar bar kōṃṃan {count} panel!",
+    "settings_undone": "Kar kajeptak: {label}. Kar kajepḷaak settings ko. (Kein jerbal ko kar kōṃṃani rejjab jelōt.)",
+    "concept_added": "Kar kobaik ḷōmṇak: {text}",
+    "lesson_not_found": "Jab lo katak ilo unit in.",
+    "probe_complete": "Etal im ṃōj etale: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Kar kōkāāl settings ko: {changes}",
+    "change_format": "Wāween: {value}",
+    "change_tone": "Ainikien: {value}",
+    "change_length": "Aetokan: ~{value} naan",
+    "change_language": "Kajin: {value}",
+    "change_interest": "Kar kobaik itok-limo: {value}",
+    "backup_saved": "💾 Kar kōjparok juon backup in jerbal in ilo Download ko aṃ (juon project file). Kiiō ejjeḷọk men in kōṃṃane ñane; eḷaññe kwōj aikuj rọọltok jabdewōt iien, \"Load Project\" enaaj kajepḷaak aolep men.",
+    "backup_saved_score": " (kuṇaṇa {score})",
+    "project_saved_multi_one": "💾 Kar kōjparok project ({count} jepak); load e tokālik ñan wōnṃaanḷọk",
+    "project_saved_multi_other": "💾 Kar kōjparok project ({count} jepak); load e tokālik ñan wōnṃaanḷọk",
+    "project_saved": "💾 Kar kōjparok project; load e tokālik ñan wōnṃaanḷọk in ukōt",
+    "search_result_desc": "Tōprak in Pukot an Google: {title}",
+    "link_url_prompt": "Likūt URL in link eo:"
   },
   "large_file": {
     "modal_title": "Import Large Audio fail",
@@ -1714,7 +1749,8 @@
     "cancel_transcription": "Kajeor Transcription",
     "chunk_info": "Audio ej split into 5-minute chunks ñan processing",
     "chunk_progress": "Chunk {current} in {total}",
-    "audio_only_error": "Currently only audio fail (MP3, WAV, etc.) rej supported ñan chunked transcription."
+    "audio_only_error": "Currently only audio fail (MP3, WAV, etc.) rej supported ñan chunked transcription.",
+    "starting": "Ej jino..."
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -1818,7 +1854,8 @@
     "open_storyforge_aria": "Kapeḷḷọk StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based kajjitōk",
-    "open_stem_lab_explore_aria": "Kapeḷḷọk STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Kapeḷḷọk STEM Lab Explore",
+    "stem_lab_explore": "Etale"
   },
   "history": {
     "load_project": "Load Project",
@@ -4494,7 +4531,25 @@
       "highlight_color": "Highlight color",
       "insert_table_aria": "Insert table",
       "insert_table_title": "Insert accessible table"
-    }
+    },
+    "reattach_mismatch": "PDF eo kar bar koba ej oktak jān eo kar etale{detail}. Enaaj wōnṃaanḷọk wōt; tōprak ko remaroñ jab ekkar ñan etale eo ṃokta.",
+    "reattach_name_detail": " (āt: \"{new}\" ṇae \"{old}\")",
+    "reattach_size_detail": " (kilep: {new} ṇae {old} bytes)",
+    "audit_failed_kept": "{label}: etale eo ear jab tōprak; kar kōjparok version eo ṃokta.",
+    "score_dropped_kept": "{label}: kuṇaṇa enaaj kar wōtlọk ({prev} → {next}{axe}). Kar kōjparok version eo ṃokta.",
+    "axe_only_comparison": ", keidi axe wōt",
+    "axe_only_committed": "{label}: ejjeḷọk AI in kaṃool; kar kaṃool kōn kuṇaṇa axe-core wōt.",
+    "reinserted_ai": "{count} kar bar likūt (AI)",
+    "reinserted_sentence": "{count} kar bar likūt (sentence)",
+    "reinserted_fuzzy": "{count} kar bar likūt (epaake)",
+    "in_recovery_appendix": "{count} ilo appendix in jepḷaak",
+    "duplicates_removed_one": "Kar joḷọk {count} men in āinwōt",
+    "duplicates_removed_other": "Kar joḷọk {count} men in āinwōt",
+    "auto_continue_round": "Round in wōnṃaanḷọk make {round}/{max}: {detail}, kuṇaṇa {score}/100 (mejānkajjik {target})...",
+    "violation_one": "{count} kọkkure",
+    "violation_other": "{count} kọkkure",
+    "ai_issue_one": "{count} apañ eo AI ear kakōḷḷe",
+    "ai_issue_other": "{count} apañ ko AI ear kakōḷḷe"
   },
   "concept_sort": {
     "title": "Concept Sort",
@@ -4568,7 +4623,8 @@
     "card_visuals_label": "Card visuals",
     "card_visuals_auto": "Auto (only ioon short items)",
     "card_visuals_always": "Always generate pija",
-    "card_visuals_never": "Never (text-only cards)"
+    "card_visuals_never": "Never (text-only cards)",
+    "explanation_unavailable": "Jab maroñ kōṃṃan juon kōmļ̣eļ̣e kiiō. Jouj im bar kajjioñ tokālik jidik."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -4974,7 +5030,12 @@
       "error_check": "Failed ñan check alignment.",
       "regenerated_success": "Text regenerated ippan improvements!",
       "regen_failed": "Regeneration failed."
-    }
+    },
+    "skill_check": "Etale jeḷā-ṃaroñ",
+    "desc_skill_check": "Kaṃool aṃ jeḷā ṇae standard ko.",
+    "desc_parent": "Lale ewi wāween an in ekkar ñan mejānkajjik ko an jikuuḷ",
+    "desc_6dim": "Ej etale curriculum ilo 6 wāween",
+    "desc_5dim": "Ej etale curriculum ilo 5 wāween (kobaik standard ko ñan etale eo eobrak)"
   },
   "standards": {
     "target_standard": "Target Standard",
@@ -5194,7 +5255,34 @@
     "plan_hook": "Hook",
     "plan_independent": "Independent Practice",
     "col_image": "pija",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Bōjrak",
+    "expand_header": "Kōḷapḷọk header",
+    "collapse_header": "Kaddikḷọk header ñan leḷọk jikin eḷapḷọk ñan content",
+    "collapse_header_short": "Kaddikḷọk header",
+    "step_x_of_y": "Buñtōn {current} / {total}",
+    "english_translation": "Ukok in Kajin Pālle",
+    "source_references": "Jikin Eoktak ko an Jeje Eo",
+    "activity_probe": "Etale {activity}",
+    "word_sounds_count": "Word Sounds ({count} naan)",
+    "quick_practice_mode": "Wāween Iminene Ṃōkaj",
+    "new_option": "Kāālet ekāāl",
+    "meta_lesson_extensions": "Kōḷapḷọk in Katak",
+    "title_extension_ideas": "Ḷōmṇak in Kōḷapḷọk",
+    "meta_full_chat_log": "Log in Kōnono Eobrak",
+    "title_udl_consultation_log": "Log in Pepe UDL",
+    "meta_actionable_steps": "Buñtōn ko Remaroñ Kōṃṃani (Kadu an AI)",
+    "title_differentiation_strategy": "Wāween Kōjenolọk",
+    "meta_udl_guide_advice": "Naan in Kakapilōk UDL",
+    "title_stem_assessment": "Etale STEM",
+    "title_explore_challenge": "Aitwerōk in Etale",
+    "title_fluency_maze": "🏰 Maze in Jeḷā Kōnono",
+    "title_storyforge_config": "📖 Jerbal in StoryForge",
+    "title_storyforge_submission": "📖 Jilkinḷọk Bwebwenato",
+    "title_poettree_config": "🌳 Jerbal in PoetTree",
+    "title_poettree_submission": "🌳 Jilkinḷọk Al",
+    "title_litlab_config": "🎭 Jerbal in LitLab",
+    "title_litlab_submission": "🎭 Jilkinḷọk Kōṃṃan"
   },
   "persona": {
     "title": "Interview Mode",
@@ -8268,7 +8356,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing content topology...",
     "brainstorming": "Brainstorming ideas...",
     "retrying_citations": "Retrying ñan better citations...",
-    "translating": "Translating…"
+    "translating": "Translating…",
+    "preparing_translation": "Ej kōppojak ukok ñan {lang}...",
+    "translating_item": "Ej ukōt {current}/{total}: {title}...",
+    "generating_panel": "Ej kōṃṃan panel {current}/{total}..."
   },
   "process": {
     "source_missing": "Please provide source text first.",
@@ -9564,7 +9655,8 @@
     "loading_resources": "Loading resources...",
     "preparing_workspace": "Preparing eo am workspace...",
     "almost_ready": "Almost ready...",
-    "loading_screen_aria": "AlloFlow loading screen"
+    "loading_screen_aria": "AlloFlow loading screen",
+    "preparing_environment": "Ej kōppojak jikin katak eo aṃ..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -11210,7 +11302,12 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "Klik a document ñan fetch im load it into eo accessibility pipeline. Some LMS fail may require kwe ñan be logged ilo ñan eo LMS ilo in browser."
+    "audit_queue_help": "Klik a document ñan fetch im load it into eo accessibility pipeline. Some LMS fail may require kwe ñan be logged ilo ñan eo LMS ilo in browser.",
+    "queued_one": "{count} jeje ej kōttar jān LMS",
+    "queued_other": "{count} jeje ej kōttar jān LMS",
+    "fetching": "Ej bōktok {name}...",
+    "loaded_ready": "Kar load {name}; pojak ñan etale",
+    "fetch_failed": "Ear jab maroñ bōktok {name}: {error}. Faaiḷ eo emaroñ aikuj LMS authentication."
   },
   "annotation": {
     "undo_tooltip": "Undo last annotation ({count} available) — Ctrl/Cmd+Z",
@@ -11230,7 +11327,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visual Support from eo am rūkaki"
+    "teacher_modal_aria": "Visual Support from eo am rūkaki",
+    "now": "KIIŌ",
+    "read_aloud": "Riit Ainikien Ḷapḷap"
   },
   "canvas_settings": {
     "title": "Advanced Settings",
@@ -11247,7 +11346,12 @@
     "read_all_button": "Riit aolep",
     "stop_button": "Bōjrak",
     "focus_narration_label": "Keyboard Focus Narration",
-    "focus_narration_on_hint": "Tab ñan hear controls"
+    "focus_narration_on_hint": "Tab ñan hear controls",
+    "reading": "Ej riit...",
+    "item_aria": "Kile ñan roñ: {text}",
+    "footer_stats": "{count} men · Kile jabdewōt men ñan roñ · Bwebwenato in Tab {state}",
+    "narration_on": "PELD",
+    "narration_off": "KILŌK"
   },
   "teacher": {
     "local_only": "Local only",
@@ -12225,5 +12329,27 @@
     "no_match": "Ejjeḷọk command ejjet. Chat in bot eo (im ṃōttan iien ainikien) ej meḷeḷe kajjitōk ko reanemkwōj.",
     "placeholder": "Taip juon command — “leta eḷapḷọk”, “educator hub”, “riit peij in”…",
     "run": "kōṃṃan"
+  },
+  "voice_engine": {
+    "preparing": "Ej kōppojak engine in ainikien...",
+    "downloading_model": "Ej download model in ainikien",
+    "loading_memory": "Ej load ñan memory",
+    "loading_model_memory": "Ej load model in ainikien ñan memory"
+  },
+  "voice_control": {
+    "listening": "Ej roñjake; ba “stop listening” ñan kaṃōj",
+    "stop_aria": "Bōjrak control in ainikien"
+  },
+  "dynamic_assessment": {
+    "return_title": "Kein jerbal in kar kōṃṃane jān Dynamic Assessment. Kile ñan bar kapeḷḷọk Dynamic Assessment module.",
+    "return_aria": "Rọọl ñan Dynamic Assessment",
+    "return_label": "Rọọl ñan Dynamic Assessment",
+    "item_badge": "men {num}"
+  },
+  "story_gallery": {
+    "title": "Jikin Kōllajrak Bwebwenato",
+    "byline": "Jān {author} · {words} naan · {used}/{total} naan",
+    "student": "Ri-jikuuḷ",
+    "score": "Kuṇaṇa: {score}"
   }
 }

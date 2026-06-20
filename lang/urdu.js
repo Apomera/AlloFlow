@@ -630,7 +630,8 @@
     "open_storyforge_aria": "کھاورلیں StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ساورانہیںت فہرست پر انہیںورثائق",
-    "open_stem_lab_explore_aria": "کھاورلیں استکشاف مختبر STEM"
+    "open_stem_lab_explore_aria": "کھاورلیں استکشاف مختبر STEM",
+    "stem_lab_explore": "دریافت کریں"
   },
   "toolbar": {
     "show_bot": "AI اسسٹنٹ دکھائیں",
@@ -689,7 +690,8 @@
     "loading_resources": "وسائل لوڈ ہو رہے ہیں...",
     "preparing_workspace": "آپ کا کام کرنے کا عنہیںقہ تیار ہو رہا ہے...",
     "almost_ready": "تقریباً تیار...",
-    "loading_screen_aria": "AlloFlow لوڈنگ اسکرین"
+    "loading_screen_aria": "AlloFlow لوڈنگ اسکرین",
+    "preparing_environment": "آپ کا سیکھنے کا ماحول تیار کیا جا رہا ہے..."
   },
   "entry": {
     "placeholder": "مثنہیںً سرخ شاہین",
@@ -932,7 +934,8 @@
     "cancel_transcription": "سے سرخ کریں تفریغ",
     "chunk_info": "کارروائی کے لیے آڈیو کو 5 منٹ کے ٹکڑوں میں تقسیم کیا جاتا ہے",
     "chunk_progress": "جزء {current} سے {total}",
-    "audio_only_error": "فی الحال صرف آڈیو فائلوں (MP3، WAV، وغیرہ) کے لیے ٹکڑوں میں ٹرانسکرپشن کی سہولت دستیاب ہے۔"
+    "audio_only_error": "فی الحال صرف آڈیو فائلوں (MP3، WAV، وغیرہ) کے لیے ٹکڑوں میں ٹرانسکرپشن کی سہولت دستیاب ہے۔",
+    "starting": "شروع ہو رہا ہے..."
   },
   "formatting": {
     "bold": "موٹا (**متن**)",
@@ -1212,7 +1215,12 @@
     "read_all_button": "سب پڑھیں",
     "stop_button": "روکیں",
     "focus_narration_label": "کی بورڈ فوکس داستان گوئی",
-    "focus_narration_on_hint": "کنٹرولز سننے کے لیے Tab دبائیں"
+    "focus_narration_on_hint": "کنٹرولز سننے کے لیے Tab دبائیں",
+    "reading": "پڑھا جا رہا ہے...",
+    "item_aria": "سننے کے لیے کلک کریں: {text}",
+    "footer_stats": "{count} آئٹمز · کسی بھی آئٹم کو سننے کے لیے کلک کریں · Tab بیانیہ {state}",
+    "narration_on": "آن",
+    "narration_off": "آف"
   },
   "roles": {
     "title": "AlloFlow میں خوش آمدید",
@@ -2310,7 +2318,42 @@
     "whisper_load_failed": "Whisper لوڈ ناکام ہو گیا۔ دوسرے انجنز پر واپس آ رہا ہے۔",
     "backup_failed": "بیک اپ ناکام ہو گیا۔ دوبارہ کوشش کریں۔",
     "invalid_backup_file": "یہ درست AlloHaven بیک اپ فائل نہیں ہے۔",
-    "could_not_read_file": "وہ فائل پڑھی نہیں جا سکی۔ کیا یہ JSON بیک اپ ہے؟"
+    "could_not_read_file": "وہ فائل پڑھی نہیں جا سکی۔ کیا یہ JSON بیک اپ ہے؟",
+    "focus_streak": "{flames} {minutes} منٹ کی فوکس اسٹریک! ایسے ہی جاری رکھو!",
+    "streak_saved": "واپسی پر خوش آمدید! آپ کی {minutes} منٹ کی اسٹریک محفوظ کر لی گئی۔",
+    "points_awarded": "پوائنٹس دیے گئے!",
+    "welcome_name": "خوش آمدید، {name}!",
+    "element_not_found": "عنصر نہیں ملا: {id}",
+    "overlay_set": "اوورلے: {mode}",
+    "synced_resource": "ہم آہنگ کر دیا گیا: {title}",
+    "group_resource": "گروپ وسیلہ: {title}",
+    "preset_saved": "پری سیٹ \"{name}\" محفوظ ہو گیا!",
+    "translated_resources": "{count} وسائل کامیابی سے ترجمہ کیے گئے!",
+    "bingo_cards_count": "{count} BINGO کارڈ تیار کیے گئے!",
+    "sound_enabled": "آواز آن",
+    "sound_muted": "آواز خاموش",
+    "democracy_mode_on": "جمہوریت موڈ آن: کلاس ووٹنگ آن",
+    "democracy_mode_off": "جمہوریت موڈ آف: انفرادی کھیل",
+    "resource_moved_up": "{title} اوپر منتقل کر دیا گیا",
+    "resource_moved_down": "{title} نیچے منتقل کر دیا گیا",
+    "panels_regenerated": "{count} پینل دوبارہ تیار کیے گئے!",
+    "settings_undone": "کالعدم کر دیا گیا: {label}۔ ترتیبات بحال ہو گئیں۔ (تیار کردہ وسائل متاثر نہیں ہوتے۔)",
+    "concept_added": "تصور شامل کیا گیا: {text}",
+    "lesson_not_found": "اس یونٹ میں سبق نہیں ملا۔",
+    "probe_complete": "جانچ مکمل: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "ترتیبات اپ ڈیٹ ہو گئیں: {changes}",
+    "change_format": "فارمیٹ: {value}",
+    "change_tone": "لہجہ: {value}",
+    "change_length": "لمبائی: ~{value} الفاظ",
+    "change_language": "زبان: {value}",
+    "change_interest": "دلچسپی شامل کی گئی: {value}",
+    "backup_saved": "💾 اس سیشن کا بیک اپ آپ کے ڈاؤن لوڈز میں محفوظ کر لیا گیا (ایک پروجیکٹ فائل)۔ ابھی اس کے ساتھ کچھ کرنے کی ضرورت نہیں؛ اگر کبھی واپس آنا پڑے تو \"پروجیکٹ لوڈ کریں\" سب کچھ واپس لے آتا ہے۔",
+    "backup_saved_score": " (اسکور {score})",
+    "project_saved_multi_one": "💾 پروجیکٹ محفوظ ہو گیا ({count} رینج)؛ جاری رکھنے کے لیے اسے بعد میں لوڈ کریں",
+    "project_saved_multi_other": "💾 پروجیکٹ محفوظ ہو گیا ({count} رینجز)؛ جاری رکھنے کے لیے اسے بعد میں لوڈ کریں",
+    "project_saved": "💾 پروجیکٹ محفوظ ہو گیا؛ ترمیم جاری رکھنے کے لیے اسے بعد میں لوڈ کریں",
+    "search_result_desc": "Google تلاش کا نتیجہ: {title}",
+    "link_url_prompt": "لنک کا URL درج کریں:"
   },
   "process": {
     "source_missing": "براہ کرم تپرانا متن منبع یالًا.",
@@ -2367,7 +2410,10 @@
     "analyzing_topology": "عمل کمصمم نصاب: در حال تجزیہ طاورباورنہیںورجیا محتاورى...",
     "brainstorming": "در حال عجماعت ذهنی للأفکار...",
     "retrying_citations": "بہتر حوالوں کے لیے دوبارہ کوشش...",
-    "translating": "در حال ترجمہ…"
+    "translating": "در حال ترجمہ…",
+    "preparing_translation": "{lang} میں ترجمہ تیار کیا جا رہا ہے...",
+    "translating_item": "{current}/{total} ترجمہ کیا جا رہا ہے: {title}...",
+    "generating_panel": "پینل {current}/{total} تیار کیا جا رہا ہے..."
   },
   "progression": {
     "title": "پیش رفت نصاب",
@@ -2417,7 +2463,34 @@
     "plan_hook": "مثیر",
     "plan_independent": "خود مختار مشق",
     "col_image": "تصاوریر",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "روکیں",
+    "expand_header": "ہیڈر پھیلائیں",
+    "collapse_header": "مواد کو زیادہ جگہ دینے کے لیے ہیڈر سکیڑیں",
+    "collapse_header_short": "ہیڈر سکیڑیں",
+    "step_x_of_y": "مرحلہ {current} / {total}",
+    "english_translation": "انگریزی ترجمہ",
+    "source_references": "ماخذ متن کے حوالہ جات",
+    "activity_probe": "{activity} جانچ",
+    "word_sounds_count": "Word Sounds ({count} الفاظ)",
+    "quick_practice_mode": "فوری مشق موڈ",
+    "new_option": "نیا اختیار",
+    "meta_lesson_extensions": "سبق کی توسیع",
+    "title_extension_ideas": "توسیعی خیالات",
+    "meta_full_chat_log": "مکمل چیٹ لاگ",
+    "title_udl_consultation_log": "UDL مشاورت لاگ",
+    "meta_actionable_steps": "قابل عمل اقدامات (AI خلاصہ)",
+    "title_differentiation_strategy": "تفریق کی حکمت عملی",
+    "meta_udl_guide_advice": "UDL گائیڈ مشورہ",
+    "title_stem_assessment": "STEM تشخیص",
+    "title_explore_challenge": "دریافت چیلنج",
+    "title_fluency_maze": "🏰 روانی بھول بھلیاں",
+    "title_storyforge_config": "📖 StoryForge اسائنمنٹ",
+    "title_storyforge_submission": "📖 کہانی جمع کرانا",
+    "title_poettree_config": "🌳 PoetTree اسائنمنٹ",
+    "title_poettree_submission": "🌳 نظم جمع کرانا",
+    "title_litlab_config": "🎭 LitLab اسائنمنٹ",
+    "title_litlab_submission": "🎭 پرفارمنس جمع کرانا"
   },
   "fullpack": {
     "button_label": "مکمل وسائل پیک تیار کریں",
@@ -3518,7 +3591,12 @@
       "error_check": "ہم آہنگی کی جانچ میں ناکامی۔",
       "regenerated_success": "ہاور گیات داوربارہ تخلیق متن کے ساتھ تحسینات!",
       "regen_failed": "ناکامت داوربارہ إنشاء."
-    }
+    },
+    "skill_check": "مہارت کی جانچ",
+    "desc_skill_check": "معیارات کے مقابلے میں اپنی مہارت کی تصدیق کریں۔",
+    "desc_parent": "دیکھیں کہ یہ اسکول کے اہداف سے کیسے مطابقت رکھتا ہے",
+    "desc_6dim": "نصاب کا 6 جہتوں میں آڈٹ کرتا ہے",
+    "desc_5dim": "نصاب کا 5 جہتوں میں آڈٹ کرتا ہے (مکمل آڈٹ کے لیے معیارات شامل کریں)"
   },
   "standards": {
     "target_standard": "کے ساتھیار مسمکملقصد",
@@ -4968,7 +5046,8 @@
     "card_visuals_label": "مرئیات بطاقات",
     "card_visuals_auto": "خودکار (صرف چھوٹی اشیاء پر)",
     "card_visuals_always": "تخلیق تصااوریر ہمیشہ",
-    "card_visuals_never": "کبھی نہیں (صرف متنی کارڈ)"
+    "card_visuals_never": "کبھی نہیں (صرف متنی کارڈ)",
+    "explanation_unavailable": "ابھی وضاحت تیار نہیں ہو سکی۔ براہ کرم تھوڑی دیر بعد دوبارہ کوشش کریں۔"
   },
   "concept_map": {
     "toolbar": {
@@ -5803,7 +5882,25 @@
       "resolved_tip": "اصل آڈٹ کے مسائل تصدیقی آڈٹ میں اب نہیں ملے",
       "persisted_tip": "اصل آڈٹ کے مسائل اصنہیںح کے بعد بھی موجود ہیں",
       "introduced_tip": "نئے مسائل جو اصنہیںح سے پہلے موجود نہیں تھے"
-    }
+    },
+    "reattach_mismatch": "دوبارہ منسلک کیا گیا PDF آڈٹ شدہ سے مختلف ہے{detail}۔ پھر بھی جاری رہے گا؛ نتائج اصل آڈٹ سے غیر مطابق ہو سکتے ہیں۔",
+    "reattach_name_detail": " (نام: \"{new}\" بمقابلہ \"{old}\")",
+    "reattach_size_detail": " (سائز: {new} بمقابلہ {old} بائٹس)",
+    "audit_failed_kept": "{label}: آڈٹ ناکام؛ سابقہ نسخہ رکھا گیا۔",
+    "score_dropped_kept": "{label}: اسکور کم ہو جاتا ({prev} → {next}{axe})۔ سابقہ نسخہ رکھا گیا۔",
+    "axe_only_comparison": "، صرف axe موازنہ",
+    "axe_only_committed": "{label}: AI تصدیق دستیاب نہیں؛ صرف یقینی axe-core اسکور سے تصدیق کی گئی۔",
+    "reinserted_ai": "{count} دوبارہ شامل (AI)",
+    "reinserted_sentence": "{count} دوبارہ شامل (جملہ)",
+    "reinserted_fuzzy": "{count} دوبارہ شامل (تخمینی)",
+    "in_recovery_appendix": "{count} بحالی ضمیمہ میں",
+    "duplicates_removed_one": "{count} نقل ہٹا دی گئی",
+    "duplicates_removed_other": "{count} نقول ہٹا دی گئیں",
+    "auto_continue_round": "خودکار-تسلسل راؤنڈ {round}/{max}: {detail}، اسکور {score}/100 (ہدف {target})...",
+    "violation_one": "{count} خلاف ورزی",
+    "violation_other": "{count} خلاف ورزیاں",
+    "ai_issue_one": "{count} AI-نشان زدہ مسئلہ",
+    "ai_issue_other": "{count} AI-نشان زدہ مسائل"
   },
   "persona": {
     "title": "انٹرویو موڈ",
@@ -9691,7 +9788,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS بینر بند کریں",
     "dismiss_button": "بند کریں",
-    "audit_queue_help": "دستاویز پر کلک کریں تاکہ اسے لائیں اور رسائی پائپ لائن میں لوڈ کریں۔ کچھ LMS فائلوں کے لیے ضروری ہو سکتا ہے کہ آپ اس براؤزر میں LMS میں سائن ان ہوں۔"
+    "audit_queue_help": "دستاویز پر کلک کریں تاکہ اسے لائیں اور رسائی پائپ لائن میں لوڈ کریں۔ کچھ LMS فائلوں کے لیے ضروری ہو سکتا ہے کہ آپ اس براؤزر میں LMS میں سائن ان ہوں۔",
+    "queued_one": "LMS سے {count} دستاویز قطار میں",
+    "queued_other": "LMS سے {count} دستاویزات قطار میں",
+    "fetching": "{name} حاصل کیا جا رہا ہے...",
+    "loaded_ready": "{name} لوڈ ہو گیا؛ آڈٹ کے لیے تیار",
+    "fetch_failed": "{name} حاصل کرنے میں ناکام: {error}۔ فائل کو LMS تصدیق کی ضرورت ہو سکتی ہے۔"
   },
   "annotation": {
     "undo_tooltip": "آخری تشریح کو واپس لیں ({count} دستیاب) — Ctrl/Cmd+Z",
@@ -9703,7 +9805,9 @@
     "list_button": "📋 فہرست"
   },
   "visual_support": {
-    "teacher_modal_aria": "دعم بصری سے استادک"
+    "teacher_modal_aria": "دعم بصری سے استادک",
+    "now": "ابھی",
+    "read_aloud": "بلند آواز سے پڑھیں"
   },
   "canvas_settings": {
     "title": "اعلیٰ ترتیبات",
@@ -9882,7 +9986,7 @@
       "cumrecord_title": "سجل تراکمی",
       "deescalate_desc": "سانس کی مشقیں، بصری ٹائمر، حسی وقفے اور ربط — حقیقی وقت میں سکون کی معاونت",
       "deescalate_title": "آنہیںت نزع تصعید",
-      "drstrategy_desc": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+      "drstrategy_desc": "درست تفریقی تقویت کی حکمت عملی منتخب کریں (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "DR حکمتِ عملی منتخب کنندہ",
       "dtt_desc": "منفرد آزمائشی تربیت — مہارت کے معیار اور خودکار پیش رفت کے ساتھ آزمائش بہ آزمائش ریکارڈنگ",
       "dtt_title": "DTT ڈیٹا شیٹ",
@@ -10599,7 +10703,7 @@
       "communication_log": "سجلّ تاوراصل",
       "conditional_probability": "انہیںحہاور گیاال شرطی",
       "create_your_first_replacement_behavior_plan": "اپنا پہلا متبادل رویاتی منصوبہ بنائیں۔",
-      "crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": "CRF (ہر بار) ← FR-2 ← FR-3 ← FR-5 ← VR-5 ← VR-8 ← فطری تقویت",
+      "crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": "CRF (ہر بار) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → فطری تقویت",
       "crossstudent_comparison": "طالب علموں کے درمیان موازنہ",
       "cultural_context_reflection": "تأمّل سیاق ثقامیں",
       "cumulative_record": "سجلّ تراکمی",
@@ -10610,7 +10714,7 @@
       "day_streak": "دنوں کی لگاتار قطار",
       "define_the_behaviors_settings_or_students_for_stag": "حدّد راوریہیات یا ترتیبات یا طنہیںب للتدخّل مُدرَّج.",
       "describe_your_research_question_and_let_ai_recomme": "جماعت ساورال بحثک اوردع ذہانت انہیںصطناعی یاورصی بأفضل تصمیم.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training کے ساتھ تتبّع إتقان اورالتقدّم تلقائی",
+      "discrete_trial_training_with_mastery_tracking_and": "مہارت کی نگرانی اور خودکار پیش رفت کے ساتھ Discrete Trial Training",
       "document_whether_interventions_are_implemented_as": "اورثّق ما اگر کانت تدخّنہیںت تُنفَّذ کما صُمِّمت",
       "done": "ہاور گیاّ",
       "drop_a_snapshot_file_here": "یہاں اسنیپ شاٹ فائل چھوڑیں",
@@ -12349,5 +12453,27 @@
     "no_match": "کوئی مماثل کمانڈ نہیں۔ بوٹ چیٹ (اور جلد ہی آواز) آزاد طرز کی درخواستیں سمجھتی ہے۔",
     "placeholder": "کوئی کمانڈ ٹائپ کریں — “بڑا متن”، “educator hub”، “یہ صفحہ پڑھیں”…",
     "run": "چلائیں"
+  },
+  "voice_engine": {
+    "preparing": "وائس انجن تیار کیا جا رہا ہے...",
+    "downloading_model": "وائس ماڈل ڈاؤن لوڈ ہو رہا ہے",
+    "loading_memory": "میموری میں لوڈ ہو رہا ہے",
+    "loading_model_memory": "وائس ماڈل میموری میں لوڈ ہو رہا ہے"
+  },
+  "voice_control": {
+    "listening": "سن رہا ہے؛ ختم کرنے کے لیے “stop listening” کہیں",
+    "stop_aria": "صوتی کنٹرول روکیں"
+  },
+  "dynamic_assessment": {
+    "return_title": "یہ وسیلہ ڈائنامک اسیسمنٹ سے تیار کیا گیا تھا۔ ڈائنامک اسیسمنٹ ماڈیول دوبارہ کھولنے کے لیے کلک کریں۔",
+    "return_aria": "ڈائنامک اسیسمنٹ پر واپس جائیں",
+    "return_label": "ڈائنامک اسیسمنٹ پر واپس جائیں",
+    "item_badge": "آئٹم {num}"
+  },
+  "story_gallery": {
+    "title": "کہانی گیلری",
+    "byline": "بقلم {author} · {words} الفاظ · {used}/{total} ذخیرہ الفاظ",
+    "student": "طالب علم",
+    "score": "اسکور: {score}"
   }
 }

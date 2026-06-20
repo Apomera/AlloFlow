@@ -1698,7 +1698,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} {minutes} မံးနံးအတၢ်သူၣ်ဆူၣ်သးဆူၣ်အစှၤ! မၤအီၤဒ်အံၤလီၤ!",
+    "streak_saved": "ဘၣ်ဆၢဂ့ၤက့ၤလၢနက့ၤဟဲက့ၤ! နၤ {minutes} မံးနံးအစှၤဘၣ်တၢ်ပာ်ကီၤအီၤလံ.",
+    "points_awarded": "ဟ့ၣ်လီၤနီၣ်ဂံၢ်လံ!",
+    "welcome_name": "ဘၣ်ဆၢဂ့ၤ, {name}!",
+    "element_not_found": "တထံၣ်န့၁်တၢ်ဂ့ၢ်: {id}",
+    "overlay_set": "တၢ်ကးဘၢ: {mode}",
+    "synced_resource": "ဘၣ်တၢ်ဒ်သိးလိ၁်အီၤ: {title}",
+    "group_resource": "ကရၢအတၢ်ဖီၣ်ဃ၁်: {title}",
+    "preset_saved": "ဘၣ်တၢ်ပာ်ကီၤ preset \"{name}\"!",
+    "translated_resources": "ကွဲးကျိ၁်ထံ {count} တၢ်ဖီၣ်ဃ၁်ဂ့ၤဂ့ၤလံ!",
+    "bingo_cards_count": "မၤ BINGO ခးပၢ် {count} ဘ့ၣ်လံ!",
+    "sound_enabled": "အိးထီၣ်အကလုၢ်",
+    "sound_muted": "ကးတံ၁်အကလုၢ်",
+    "democracy_mode_on": "အိးထီၣ်ဒံၣ်မိၣ်ကရ့ၣ်စံၣ်ကျဲ: ကၠိအတၢ်ဖးအိးထီၣ်",
+    "democracy_mode_off": "ကးတံ၁်ဒံၣ်မိၣ်ကရ့ၣ်စံၣ်ကျဲ: ဒၣ်တၢ်ဂဲၤလိ၁်ထဲတဂၤ",
+    "resource_moved_up": "သုးထီၣ် {title} ဆူထး",
+    "resource_moved_down": "သုးလီၤ {title} ဆူဖီလ၁်",
+    "panels_regenerated": "မၤကဒီး panel {count} လံ!",
+    "settings_undone": "မၤက့ၤကဒါ: {label}. မၤက့ၤ settings လံ. (တၢ်ဖီၣ်ဃ၁်လၢဘၣ်တၢ်မၤအီၤတဘၣ်တၢ်မၤဟးဂီၤဘၣ်.)",
+    "concept_added": "ထၢနု၁်တၢ်ဆိကမိၣ်: {text}",
+    "lesson_not_found": "တထံၣ်န့၁်တၢ်မၤလိလၢ unit အံၤအပူၤဘၣ်.",
+    "probe_complete": "တၢ်မၤကွၢ်ဝံၤလံ: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "မၤသီထီၣ် settings လံ: {changes}",
+    "change_format": "က့ၢ်ဂီၤ: {value}",
+    "change_tone": "အကလုၢ်: {value}",
+    "change_length": "အထီ: ~{value} တၢ်ကတိၤ",
+    "change_language": "ကျိ၁်: {value}",
+    "change_interest": "ထၢနု၁်တၢ်သးစဲ: {value}",
+    "backup_saved": "💾 ဘၣ်တၢ်ပာ်ကီၤ session အံၤအ backup လၢနၤ Downloads အပူၤ (project file). ခဲအံၤတလိၣ်မၤအီၤနီတမံၤဘၣ်; မ့မ့ၢ်နဘၣ်က့ၤဟဲက့ၤတဘျီဘျီန့ၣ်, \"Load Project\" မၤက့ၤခဲလၢ၁်.",
+    "backup_saved_score": " (နီၣ်ဂံၢ် {score})",
+    "project_saved_multi_one": "💾 ပာ်ကီၤ project လံ ({count} range); မၤအါထီၣ်အဂီၢ်ခံကတၢၢ်တမံၤ load အီၤ",
+    "project_saved_multi_other": "💾 ပာ်ကီၤ project လံ ({count} range); မၤအါထီၣ်အဂီၢ်ခံကတၢၢ်တမံၤ load အီၤ",
+    "project_saved": "💾 ပာ်ကီၤ project လံ; မၤဘှီအီၤအါထီၣ်အဂီၢ်ခံကတၢၢ်တမံၤ load အီၤ",
+    "search_result_desc": "Google တၢ်ဃုထံၣ်အစၢ: {title}",
+    "link_url_prompt": "ထၢနု၁် link URL:"
   },
   "large_file": {
     "modal_title": "Import Large Audio File",
@@ -1714,7 +1749,8 @@
     "cancel_transcription": "ပၢ်ကွံာ် Transcription",
     "chunk_info": "Audio မ့ၢ် split into 5-minute chunks လ၁် processing",
     "chunk_progress": "Chunk {current} အ {total}",
-    "audio_only_error": "Currently only audio files (MP3, WAV, etc.) မ့ၢ် supported လ၁် chunked transcription."
+    "audio_only_error": "Currently only audio files (MP3, WAV, etc.) မ့ၢ် supported လ၁် chunked transcription.",
+    "starting": "စးထီၣ်ဝဲ..."
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -1818,7 +1854,8 @@
     "open_storyforge_aria": "အိးထီၣ် StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based တၢ်သံကွၢ်",
-    "open_stem_lab_explore_aria": "အိးထီၣ် STEM Lab Explore"
+    "open_stem_lab_explore_aria": "အိးထီၣ် STEM Lab Explore",
+    "stem_lab_explore": "ဃုသ့ၣ်ညါ"
   },
   "history": {
     "load_project": "Load Project",
@@ -4494,7 +4531,25 @@
       "resolved_tip": "တၢ်ဂ့ၢ်လၢတၢ်စိၣ်စိၣ်အခုထ မ့ၢ်တၢ်ထံၣ်လီၤလၢၤလၢအဝံၤတၢ်စိၣ်စိၣ်",
       "persisted_tip": "တၢ်ဂ့ၢ်လၢတၢ်စိၣ်စိၣ်အခုထ မ့ၢ်အိၣ်ဒၣ်လၢၤလၢအဝံၤတၢ်မၤလီၤ",
       "introduced_tip": "တၢ်ဂ့ၢ်အသီလၢတအိၣ်လၢၤလၢအဝံၤတၢ်မၤလီၤ"
-    }
+    },
+    "reattach_mismatch": "PDF လၢဘၣ်တၢ်စၢဃ၁်ကဒါအီၤလိၤဆီဒီးလၢဘၣ်တၢ်မၤကွၢ်အီၤ{detail}. ဘၣ်ဆၣ်ကမၤအါထီၣ်ဒံး; အစၢတဘၣ်လိ၁်ဒီးတၢ်မၤကွၢ်အခီၣ်ထံးသ့.",
+    "reattach_name_detail": " (မံၤ: \"{new}\" ဒီး \"{old}\")",
+    "reattach_size_detail": " (အဒိၣ်: {new} ဒီး {old} bytes)",
+    "audit_failed_kept": "{label}: တၢ်မၤကွၢ်တဘၣ်; ပာ်ကီၤ version အလီၢ်လံၤ.",
+    "score_dropped_kept": "{label}: နီၣ်ဂံၢ်ကစှၤလီၤ ({prev} → {next}{axe}). ပာ်ကီၤ version အလီၢ်လံၤ.",
+    "axe_only_comparison": ", axe ထဲတၢ်ထိၣ်သတြီၤ",
+    "axe_only_committed": "{label}: AI တၢ်အၢၣ်လီၤတအိၣ်; ဒၣ် axe-core နီၣ်ဂံၢ်ဧိၤအၢၣ်လီၤ.",
+    "reinserted_ai": "{count} ထၢနု၁်ကဒါ (AI)",
+    "reinserted_sentence": "{count} ထၢနု၁်ကဒါ (တၢ်ကတိၤဒိ)",
+    "reinserted_fuzzy": "{count} ထၢနု၁်ကဒါ (ဘူးဘူး)",
+    "in_recovery_appendix": "{count} လၢတၢ်မၤက့ၤ appendix အပူၤ",
+    "duplicates_removed_one": "ထုးကွံ၁် {count} လၢအဒ်သိး",
+    "duplicates_removed_other": "ထုးကွံ၁် {count} လၢအဒ်သိး",
+    "auto_continue_round": "တၢ်မၤအါထီၣ်လၢအသးဝံၣ် round {round}/{max}: {detail}, နီၣ်ဂံၢ် {score}/100 (ပတီၢ် {target})...",
+    "violation_one": "{count} တၢ်လုၢ်သ့ၣ်ခါပတာ်",
+    "violation_other": "{count} တၢ်လုၢ်သ့ၣ်ခါပတာ်",
+    "ai_issue_one": "{count} တၢ်ဂ့ၢ်ကီလၢ AI ပာ်ပနီၣ်",
+    "ai_issue_other": "{count} တၢ်ဂ့ၢ်ကီလၢ AI ပာ်ပနီၣ်"
   },
   "concept_sort": {
     "title": "တၢ်ဆိကမိၣ် Sort",
@@ -4568,7 +4623,8 @@
     "card_visuals_label": "Card visuals",
     "card_visuals_auto": "Auto (only လ၁်ဖီခိၣ် short အပှ)",
     "card_visuals_always": "Always generate တၢ်ဂီၤ",
-    "card_visuals_never": "Never (text-only cards)"
+    "card_visuals_never": "Never (text-only cards)",
+    "explanation_unavailable": "ခဲအံၤမၤတၢ်ပာ်ဖျါတသ့ဘၣ်. ဝံသးစူၤမၤကွၢ်ကဒီးခံကတၢၢ်တမံၤ."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -4974,7 +5030,12 @@
       "error_check": "Failed ဆူ check alignment.",
       "regenerated_success": "Text regenerated ဒီး improvements!",
       "regen_failed": "Regeneration failed."
-    }
+    },
+    "skill_check": "တၢ်သ့တၢ်ဘၣ်မၤကွၢ်",
+    "desc_skill_check": "မၤကွၢ်နတၢ်သ့တၢ်ဘၣ်ဒီးထံၣ်ဒိၣ်ထံၣ်ထီ.",
+    "desc_parent": "ကွၢ်လၢအံၤဘၣ်လိ၁်ဒီးကၠိအတၢ်ပညိၣ်ဒ်လဲၣ်",
+    "desc_6dim": "မၤကွၢ်တၢ်မၤလိအတၢ်ရဲၣ်တၢ်ကျဲၤလၢ 6 ကပၤ",
+    "desc_5dim": "မၤကွၢ်တၢ်မၤလိအတၢ်ရဲၣ်တၢ်ကျဲၤလၢ 5 ကပၤ (တၢ်မၤကွၢ်လၢ၁်လၢ၁်ဆ့ဆ့အဂီၢ်ထၢနု၁်ထံၣ်ဒိၣ်ထံၣ်ထီ)"
   },
   "standards": {
     "target_standard": "တၢ်ပညိၣ် Standard",
@@ -5186,7 +5247,34 @@
     "plan_hook": "Hook",
     "plan_independent": "Independent Practice",
     "col_image": "တၢ်ဂီၤ",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "ပတု၁်",
+    "expand_header": "မၤလဲၢ်ထီၣ်ခိၣ်တီ",
+    "collapse_header": "ဖျိၣ်ထီၣ်ခိၣ်တီဒ်သိးတၢ်ဂ့ၢ်ကဒိးန့ၢ်လီၢ်အါထီၣ်",
+    "collapse_header_short": "ဖျိၣ်ထီၣ်ခိၣ်တီ",
+    "step_x_of_y": "ကွၢ်ဆၢ {current} / {total}",
+    "english_translation": "အဲကလံးကျိ၁်တၢ်ကွဲးကျိ၁်ထံ",
+    "source_references": "ခီၣ်ထံးလံ၁်မဲ၁်ဖျၢၣ်အတၢ်ဆဲးကျိး",
+    "activity_probe": "{activity} မၤကွၢ်",
+    "word_sounds_count": "Word Sounds (တၢ်ကတိၤ {count})",
+    "quick_practice_mode": "တၢ်မၤလိချ့ချ့ကျဲ",
+    "new_option": "တၢ်ဃုထၢအသီ",
+    "meta_lesson_extensions": "တၢ်မၤလိအတၢ်မၤအါထီၣ်",
+    "title_extension_ideas": "တၢ်မၤအါထီၣ်အတၢ်ဆိကမိၣ်",
+    "meta_full_chat_log": "တၢ်ကတိၤသကိးအတၢ်မၤနီၣ်လၢ၁်လၢ၁်ဆ့ဆ့",
+    "title_udl_consultation_log": "UDL တၢ်ဟ့ၣ်ကူၣ်အတၢ်မၤနီၣ်",
+    "meta_actionable_steps": "ကွၢ်ဆၢလၢမၤသ့ (AI တၢ်ဂ့ၢ်ဖုၣ်)",
+    "title_differentiation_strategy": "တၢ်လီၤဆီအကျဲစ့",
+    "meta_udl_guide_advice": "UDL တၢ်နဲၣ်ကျဲအတၢ်ဟ့ၣ်ကူၣ်",
+    "title_stem_assessment": "STEM တၢ်ဆၢတဲ၁်",
+    "title_explore_challenge": "တၢ်ဃုသ့ၣ်ညါအတၢ်ထီဒါ",
+    "title_fluency_maze": "🏰 တၢ်ကတိၤချ့ Maze",
+    "title_storyforge_config": "📖 StoryForge တၢ်မၤ",
+    "title_storyforge_submission": "📖 တၢ်ဆှၢထီၣ်တၢ်ပူ",
+    "title_poettree_config": "🌳 PoetTree တၢ်မၤ",
+    "title_poettree_submission": "🌳 တၢ်ဆှၢထီၣ်ထါ",
+    "title_litlab_config": "🎭 LitLab တၢ်မၤ",
+    "title_litlab_submission": "🎭 တၢ်ဆှၢထီၣ်တၢ်ဒုးနဲၣ်"
   },
   "persona": {
     "title": "Interview Mode",
@@ -8260,7 +8348,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing content topology...",
     "brainstorming": "Brainstorming ideas...",
     "retrying_citations": "Retrying လ၁် better citations...",
-    "translating": "Translating…"
+    "translating": "Translating…",
+    "preparing_translation": "ကတဲ၁်ကတီၤတၢ်ကွဲးကျိ၁်ထံဆူ {lang}...",
+    "translating_item": "ကွဲးကျိ၁်ထံ {current}/{total}: {title}...",
+    "generating_panel": "မၤ panel {current}/{total}..."
   },
   "process": {
     "source_missing": "Please provide source text first.",
@@ -9556,7 +9647,8 @@
     "loading_resources": "Loading resources...",
     "preparing_workspace": "Preparing နၤအ workspace...",
     "almost_ready": "Almost ready...",
-    "loading_screen_aria": "AlloFlow loading screen"
+    "loading_screen_aria": "AlloFlow loading screen",
+    "preparing_environment": "ကတဲ၁်ကတီၤနတၢ်မၤလိအလီၢ်ကဝီၤ..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -11202,7 +11294,12 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "ဆဲးကၠုၥ် document ဆူ fetch ဒီး load it into အသုံးပြုနိုင်စွမ်း pipeline. တနီၤ LMS files may require နၤ ဆူ be logged လ၁် ဆူ LMS လ၁် အံၤ browser."
+    "audit_queue_help": "ဆဲးကၠုၥ် document ဆူ fetch ဒီး load it into အသုံးပြုနိုင်စွမ်း pipeline. တနီၤ LMS files may require နၤ ဆူ be logged လ၁် ဆူ LMS လ၁် အံၤ browser.",
+    "queued_one": "လံ၁်တီလံ၁်မီ {count} လၢ LMS အကျါအိၣ်လၢကျဲ",
+    "queued_other": "လံ၁်တီလံ၁်မီ {count} လၢ LMS အကျါအိၣ်လၢကျဲ",
+    "fetching": "ဃု {name}...",
+    "loaded_ready": "Load {name} လံ; ကတဲ၁်ကတီၤလၢတၢ်မၤကွၢ်အဂီၢ်",
+    "fetch_failed": "ဃု {name} တန့ၢ်ဘၣ်: {error}. လံ၁်တီလံ၁်မီကလိၣ်ဘၣ် LMS တၢ်အၢၣ်လီၤသ့."
   },
   "annotation": {
     "undo_tooltip": "Undo last annotation ({count} available) — Ctrl/Cmd+Z",
@@ -11222,7 +11319,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visual Support from နၤအ သရၣ်"
+    "teacher_modal_aria": "Visual Support from နၤအ သရၣ်",
+    "now": "ခဲအံၤ",
+    "read_aloud": "ဖးကလုၢ်ဖးဒိၣ်"
   },
   "canvas_settings": {
     "title": "Advanced Settings",
@@ -11239,7 +11338,12 @@
     "read_all_button": "ဖးတၢ် All",
     "stop_button": "ပတုၥ်",
     "focus_narration_label": "Keyboard Focus Narration",
-    "focus_narration_on_hint": "Tab ဆူ hear controls"
+    "focus_narration_on_hint": "Tab ဆူ hear controls",
+    "reading": "ဖးဝဲ...",
+    "item_aria": "စံၣ်လၢတၢ်နၢ်ဟူအဂီၢ်: {text}",
+    "footer_stats": "{count} တၢ်ဂ့ၢ် · စံၣ်တၢ်ဂ့ၢ်တမံၤလၢ်လၢ်လၢတၢ်နၢ်ဟူအဂီၢ် · Tab တၢ်တဲဖျါ {state}",
+    "narration_on": "အိး",
+    "narration_off": "ကး"
   },
   "teacher": {
     "local_only": "Local only",
@@ -12218,5 +12322,27 @@
     "no_match": "တၢ်ပၢလၢအဘၣ်လိာ်တအိၣ်ဘၣ်. bot chat (ဒီးကလုၢ်ဖဲတယံာ်) နၢ်ပၢၢ်တၢ်ဃ့ထီၣ်လၢအလီၤဖျါ.",
     "placeholder": "ကွဲးတၢ်ပၢ — “လံာ်မဲာ်ဒိၣ်ထီၣ်”, “educator hub”, “ဖးကဘျံးပၤအံၤ”…",
     "run": "မၤ"
+  },
+  "voice_engine": {
+    "preparing": "ကတဲ၁်ကတီၤ အကလုၢ် engine...",
+    "downloading_model": "Download အကလုၢ် model",
+    "loading_memory": "Load ဆူ memory",
+    "loading_model_memory": "Load အကလုၢ် model ဆူ memory"
+  },
+  "voice_control": {
+    "listening": "ဒိကနၣ်ဝဲ; ဝံၤအဂီၢ်တဲ “stop listening”",
+    "stop_aria": "ပတု၁်အကလုၢ်တၢ်ပၢ"
+  },
+  "dynamic_assessment": {
+    "return_title": "တၢ်ဖီၣ်ဃ၁်အံၤဘၣ်တၢ်မၤအီၤလၢ Dynamic Assessment. စံၣ်လၢအိးထီၣ်ကဒါ Dynamic Assessment module အဂီၢ်.",
+    "return_aria": "က့ၤကဒါဆူ Dynamic Assessment",
+    "return_label": "က့ၤကဒါဆူ Dynamic Assessment",
+    "item_badge": "တၢ်ဂ့ၢ် {num}"
+  },
+  "story_gallery": {
+    "title": "တၢ်ပူအတၢ်ဒုးနဲၣ်",
+    "byline": "လၢ {author} · {words} တၢ်ကတိၤ · {used}/{total} တၢ်ကတိၤ",
+    "student": "ကၠိဖိ",
+    "score": "နီၣ်ဂံၢ်: {score}"
   }
 }

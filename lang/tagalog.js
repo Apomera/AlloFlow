@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Nabigo ang pag-load ng Whisper. Bumabalik sa ibang mga engine.",
     "backup_failed": "Nabigo ang backup. Subukan muli.",
     "invalid_backup_file": "Hindi wastong AlloHaven backup file.",
-    "could_not_read_file": "Hindi mabasa ang file na iyon. JSON backup ba ito?"
+    "could_not_read_file": "Hindi mabasa ang file na iyon. JSON backup ba ito?",
+    "focus_streak": "{flames} {minutes}-minutong streak ng pagtutok! Ituloy mo lang!",
+    "streak_saved": "Maligayang pagbabalik! Na-save ang iyong {minutes}-min na streak.",
+    "points_awarded": "Naigawad ang mga puntos!",
+    "welcome_name": "Maligayang pagdating, {name}!",
+    "element_not_found": "Hindi nahanap ang elemento: {id}",
+    "overlay_set": "Overlay: {mode}",
+    "synced_resource": "Na-sync: {title}",
+    "group_resource": "Resource ng grupo: {title}",
+    "preset_saved": "Na-save ang preset na \"{name}\"!",
+    "translated_resources": "Matagumpay na naisalin ang {count} resource!",
+    "bingo_cards_count": "Nakagawa ng {count} BINGO card!",
+    "sound_enabled": "Naka-on ang tunog",
+    "sound_muted": "Naka-mute ang tunog",
+    "democracy_mode_on": "Naka-on ang Democracy Mode: ON ang pagboto ng klase",
+    "democracy_mode_off": "Naka-off ang Democracy Mode: solong paglalaro",
+    "resource_moved_up": "Inakyat ang {title}",
+    "resource_moved_down": "Ibinaba ang {title}",
+    "panels_regenerated": "{count} panel ang muling nabuo!",
+    "settings_undone": "Ibinalik: {label}. Naibalik ang mga setting. (Hindi apektado ang mga nabuong resource.)",
+    "concept_added": "Naidagdag na konsepto: {text}",
+    "lesson_not_found": "Hindi nahanap ang aralin sa unit na ito.",
+    "probe_complete": "Tapos na ang probe: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Na-update ang mga setting: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Tono: {value}",
+    "change_length": "Haba: ~{value} salita",
+    "change_language": "Wika: {value}",
+    "change_interest": "Naidagdag na interes: {value}",
+    "backup_saved": "💾 May na-save na backup ng session na ito sa iyong Downloads (isang project file). Wala kang kailangang gawin dito ngayon; kung kailangan mong bumalik balang araw, ibabalik ng \"Load Project\" ang lahat.",
+    "backup_saved_score": " (iskor {score})",
+    "project_saved_multi_one": "💾 Na-save ang project ({count} range); i-load ito mamaya para magpatuloy",
+    "project_saved_multi_other": "💾 Na-save ang project ({count} range); i-load ito mamaya para magpatuloy",
+    "project_saved": "💾 Na-save ang project; i-load ito mamaya para magpatuloy sa pag-edit",
+    "search_result_desc": "Resulta ng Paghahanap sa Google: {title}",
+    "link_url_prompt": "Ilagay ang URL ng link:"
   },
   "large_file": {
     "modal_title": "I-import Large audio file",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Kanselahin Transcription",
     "chunk_info": "audio ay split sa loob 5-minute chunks para sa processing",
     "chunk_progress": "Chunk {current} ng {total}",
-    "audio_only_error": "Currently lamang audio file (MP3, WAV, etc.) ay supported para sa chunked transcription."
+    "audio_only_error": "Currently lamang audio file (MP3, WAV, etc.) ay supported para sa chunked transcription.",
+    "starting": "Sinisimulan..."
   },
   "formatting": {
     "bold": "Bold (**teksto**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Buksan StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "dokumento-Batay mga tanong",
-    "open_stem_lab_explore_aria": "Buksan STEM lab Tuklasin"
+    "open_stem_lab_explore_aria": "Buksan STEM lab Tuklasin",
+    "stem_lab_explore": "Tuklasin"
   },
   "history": {
     "load_project": "I-load Project",
@@ -4488,7 +4525,25 @@
       "resolved_tip": "Mga isyu mula sa orihinal na audit na hindi na nakita sa verification audit",
       "persisted_tip": "Mga isyu mula sa orihinal na audit na nananatili pagkatapos ng pag-aayos",
       "introduced_tip": "Mga bagong isyu na hindi nag-exist bago ang pag-aayos"
-    }
+    },
+    "reattach_mismatch": "Iba ang muling-naka-attach na PDF sa na-audit{detail}. Magpapatuloy pa rin; maaaring hindi tugma ang mga resulta sa orihinal na audit.",
+    "reattach_name_detail": " (pangalan: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (laki: {new} vs. {old} bytes)",
+    "audit_failed_kept": "{label}: nabigo ang audit; itinago ang nakaraang bersyon.",
+    "score_dropped_kept": "{label}: bababa sana ang iskor ({prev} → {next}{axe}). Itinago ang nakaraang bersyon.",
+    "axe_only_comparison": ", paghahambing sa axe lamang",
+    "axe_only_committed": "{label}: hindi available ang AI verification; kinumpirma gamit lamang ang deterministikong iskor ng axe-core.",
+    "reinserted_ai": "{count} ang muling naipasok (AI)",
+    "reinserted_sentence": "{count} ang muling naipasok (pangungusap)",
+    "reinserted_fuzzy": "{count} ang muling naipasok (tinatayang)",
+    "in_recovery_appendix": "{count} sa recovery appendix",
+    "duplicates_removed_one": "{count} duplicate ang inalis",
+    "duplicates_removed_other": "{count} duplicate ang inalis",
+    "auto_continue_round": "Auto-continue round {round}/{max}: {detail}, iskor {score}/100 (target {target})...",
+    "violation_one": "{count} paglabag",
+    "violation_other": "{count} paglabag",
+    "ai_issue_one": "{count} isyung na-flag ng AI",
+    "ai_issue_other": "{count} isyung na-flag ng AI"
   },
   "concept_sort": {
     "title": "Konsepto Ayusin",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "card biswal",
     "card_visuals_auto": "Awtomatiko (lamang sa maikli aytem)",
     "card_visuals_always": "Always bumuo imahe",
-    "card_visuals_never": "Never (teksto-lamang card)"
+    "card_visuals_never": "Never (teksto-lamang card)",
+    "explanation_unavailable": "Hindi makagawa ng paliwanag ngayon. Pakisubukan muli mamaya."
   },
   "dbq": {
     "title": "dokumento Pagsusuri (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed sa suriin pagkakahanay.",
       "regenerated_success": "teksto regenerated kasama improvements!",
       "regen_failed": "Nabigo ang muling pagbuo."
-    }
+    },
+    "skill_check": "Pagsusuri ng kasanayan",
+    "desc_skill_check": "I-verify ang iyong kahusayan batay sa mga pamantayan.",
+    "desc_parent": "Tingnan kung paano ito tumutugma sa mga layunin ng paaralan",
+    "desc_6dim": "Ina-audit ang kurikulum sa 6 na dimensyon",
+    "desc_5dim": "Ina-audit ang kurikulum sa 5 dimensyon (magdagdag ng mga pamantayan para sa buong audit)"
   },
   "standards": {
     "target_standard": "Target pamantayan",
@@ -5180,7 +5241,34 @@
     "plan_hook": "Pampukaw",
     "plan_independent": "Independent magsanay",
     "col_image": "imahe",
-    "word_sounds_studio": "mga salita Word Sounds Studio"
+    "word_sounds_studio": "mga salita Word Sounds Studio",
+    "stop": "Itigil",
+    "expand_header": "Palawakin ang header",
+    "collapse_header": "I-collapse ang header para bigyan ng mas maraming espasyo ang nilalaman",
+    "collapse_header_short": "I-collapse ang header",
+    "step_x_of_y": "Hakbang {current} ng {total}",
+    "english_translation": "Pagsasaling-Ingles",
+    "source_references": "Mga Sanggunian ng Source Text",
+    "activity_probe": "Probe ng {activity}",
+    "word_sounds_count": "Word Sounds ({count} salita)",
+    "quick_practice_mode": "Quick Practice Mode",
+    "new_option": "Bagong opsyon",
+    "meta_lesson_extensions": "Mga Extension ng Aralin",
+    "title_extension_ideas": "Mga Ideya sa Extension",
+    "meta_full_chat_log": "Buong Chat Log",
+    "title_udl_consultation_log": "UDL Consultation Log",
+    "meta_actionable_steps": "Mga Hakbang na Maisasagawa (AI Summary)",
+    "title_differentiation_strategy": "Estratehiya sa Differentiation",
+    "meta_udl_guide_advice": "Payo ng UDL Guide",
+    "title_stem_assessment": "STEM Assessment",
+    "title_explore_challenge": "Explore Challenge",
+    "title_fluency_maze": "🏰 Fluency Maze",
+    "title_storyforge_config": "📖 StoryForge Assignment",
+    "title_storyforge_submission": "📖 Pagsusumite ng Kuwento",
+    "title_poettree_config": "🌳 PoetTree Assignment",
+    "title_poettree_submission": "🌳 Pagsusumite ng Tula",
+    "title_litlab_config": "🎭 LitLab Assignment",
+    "title_litlab_submission": "🎭 Pagsusumite ng Pagtatanghal"
   },
   "persona": {
     "title": "Interview mode",
@@ -8308,7 +8396,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing nilalaman topology...",
     "brainstorming": "Nag-iisip ng mga ideya...",
     "retrying_citations": "Retrying para sa mas mahusay citations...",
-    "translating": "Isinasalin…"
+    "translating": "Isinasalin…",
+    "preparing_translation": "Inihahanda ang pagsasalin sa {lang}...",
+    "translating_item": "Isinasalin ang {current}/{total}: {title}...",
+    "generating_panel": "Bumubuo ng panel {current}/{total}..."
   },
   "process": {
     "source_missing": "pakiusap magbigay pinagkunan teksto una.",
@@ -9604,7 +9695,8 @@
     "loading_resources": "Loading mga mapagkukunan...",
     "preparing_workspace": "Preparing iyong workspace...",
     "almost_ready": "Halos handa na...",
-    "loading_screen_aria": "Screen ng pag-load ng AlloFlow"
+    "loading_screen_aria": "Screen ng pag-load ng AlloFlow",
+    "preparing_environment": "Inihahanda ang iyong kapaligiran sa pagkatuto..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9628,7 +9720,7 @@
       "abc_title": "ABC datos",
       "abc_desc": "Mag-record ng mga obserbasyon sa antecedent, pag-uugali, at consequence",
       "obs_title": "Sa direkta obserbasyon",
-      "obs_desc": "Real-oras interval, frequency, o duration recording",
+      "obs_desc": "Real-time na pagtatala ng interval, frequency, o duration",
       "analysis_title": "AI Pagsusuri",
       "analysis_desc": "AI-powered pag-uugali pattern pagsusuri & recommendations",
       "overview_title": "Pangkalahatan",
@@ -9662,13 +9754,13 @@
       "triangulation_title": "Triangulasyon",
       "triangulation_desc": "Cross-sanggunian 3+ datos sources para sa convergence",
       "impact_title": "Calculator ng Epekto",
-      "impact_desc": "Quantify pag-uugali frequency, duration, at annual cost",
+      "impact_desc": "Sukatin ang frequency, duration, at taunang gastos ng pag-uugali",
       "crisis_title": "Crisis Plano",
       "crisis_desc": "Three-tier crisis interbensyon protocol generator",
       "traffic_title": "Ilaw ng Trapiko",
       "traffic_desc": "mag-aaral-facing red/yellow/green pag-uugali zone poster",
       "datasheet_title": "datos Sheet",
-      "datasheet_desc": "mai-print frequency, duration, ABC, o latency datos sheets",
+      "datasheet_desc": "Mai-print na data sheet para sa frequency, duration, ABC, o latency",
       "homenote_title": "Tala sa Bahay",
       "homenote_desc": "AI-drafted magulang communication kasama tono selector",
       "fidelity_title": "Tsek-listahan ng Katapatan",
@@ -9701,7 +9793,7 @@
       "commlog_title": "Talaan ng Komunikasyon",
       "condprob_desc": "Foreground vs background probability pagsusuri sa validate ABC hypotheses kasama datos",
       "condprob_title": "Conditional Probability",
-      "consent_desc": "Customizable consent form para sa magulang datos exchange — i-edit, i-print, ibahagi as JSON",
+      "consent_desc": "Nababagong consent form para sa palitan ng datos ng magulang — i-edit, i-print, ibahagi bilang JSON",
       "consent_title": "Tagapamahala ng FERPA Consent",
       "counseling_desc": "AI role-maglaro kasama mag-aaral personas para sa counseling magsanay",
       "counseling_title": "Counseling Simulasyon",
@@ -9881,7 +9973,7 @@
     },
     "export": {
       "title": "I-export datos",
-      "download": "I-download I-export"
+      "download": "I-download ang Export"
     },
     "record": {
       "title": "Pagsusuri ng Dosye",
@@ -10144,7 +10236,7 @@
       "paste_share_code_here": "I-paste ibahagi code here...",
       "person": "Tao\\",
       "phase_label": "Yugto",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does ito address?)",
+      "rationale_which_antecedent_does_this_address": "Katwiran (aling antecedent ang tinutugunan nito?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect sa iyong approach...\\n• ano worked well?\\n• ano would ikaw do differently?\\n• ano mga estratehiya do ikaw gusto sa magsanay susunod?",
       "reinforcement_how_you": "⭐ Reinforcement (paano ikaw\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement pag-uugali (functionally katumbas)",
@@ -10217,7 +10309,7 @@
       "data_cleared": "datos cleared",
       "data_loaded_from_cloud": "☁️ datos loaded mula sa cloud",
       "drafting_failed": "Nabigo ang pagdadraft",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval kumpletuhin — REINFORCE! No target pag-uugali occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 Kumpleto na ang DRO interval — MAG-REINFORCE! Walang naganap na target na pag-uugali!",
       "each_phase_needs_at_least_2_data_points": "bawat phase needs at least 2 datos punto",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached sa IEP Prep!",
       "effect_sizes_calculated": "Nakalkula na ang mga effect size!",
@@ -10284,7 +10376,7 @@
       "need_at_least_2_phases_in_the_graph_baseline_inter": "Kailangan at least 2 phases sa ang graph (baseline + interbensyon)",
       "need_at_least_3_items": "Kailangan at least 3 aytem",
       "no_entries_to_export": "No entries sa i-export",
-      "no_graph_found_to_export": "No graph found sa i-export",
+      "no_graph_found_to_export": "Walang natagpuang graph na i-export",
       "no_valid_data_found_in_csv": "No valid datos found sa CSV",
       "not_a_valid_alloflow_snapshot_file": "hindi isang valid AlloFlow snapshot file",
       "not_a_valid_consent_template_file": "hindi isang valid consent template file",
@@ -10324,7 +10416,7 @@
       "reinforce_now": "🎉 REINFORCE ngayon!",
       "reinforcers_recommended": "Inirekomenda ang mga reinforcer ✨",
       "replacement_plan_added": "Replacement plano added",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Ulat nabuo — gamitin I-print/I-save as PDF sa ang bago tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "Nabuo na ang ulat — gamitin ang I-print/I-save bilang PDF sa bagong tab!",
       "reset_to_default_template": "I-reset sa default template",
       "reset_to_defaults": "I-reset sa defaults",
       "response_failed_try_again": "Tugon failed — subukan again",
@@ -10457,7 +10549,7 @@
       "full_student_summary": "Buo mag-aaral Buod",
       "functional_communication_training_planning_tool": "Functional Communication Training planning mga kasangkapan",
       "generate_a_multiweek_intervention_plan_based_on_yo": "Bumuo isang multi-week interbensyon plano batay sa iyong collected ABC datos at AI pagsusuri.",
-      "generate_a_professional_printready_progress_report": "Bumuo isang professional, i-print-ready pag-unlad ulat kasama inline tsart, datos summaries, at AI recommendations. One-i-click PDF i-export via browser i-print.",
+      "generate_a_professional_printready_progress_report": "Bumuo ng propesyonal, mai-print na ulat ng pag-unlad na may kasamang inline na chart, buod ng datos, at mga rekomendasyon ng AI. One-click na PDF export sa pamamagitan ng browser print.",
       "generate_a_unique_scenario_tailored_to_your_traini": "Bumuo isang unique scenario tailored sa iyong training needs.",
       "generate_compliant_iep_behavioral_goals_from_obser": "Bumuo compliant IEP behavioral layunin mula sa obserbasyon datos kasama present antas, SMART layunin, at pag-unlad monitoring.",
       "generate_iepready_progress_monitoring_paragraphs_f": "Bumuo IEP-ready pag-unlad monitoring talata mula sa iyong accumulated behavioral datos.",
@@ -10575,7 +10667,7 @@
       "top_behavior": "Top pag-uugali",
       "total_contacts": "Kabuuang Kontak",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track pag-uugali frequency higit oras kasama aim linya, phase mga pagbabago, at trend pagsusuri.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Subaybayan ang frequency ng pag-uugali sa paglipas ng panahon gamit ang aim line, mga pagbabago sa phase, at pagsusuri ng trend.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track pag-uugali at home paggamit simple, everyday wika. Ito tumutulong iyong child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track iyong feelings, earn badge, at bumuo streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-batay wika sa loob asset-focused descriptions",
@@ -10760,7 +10852,7 @@
       "developing": "Umuunlad",
       "discontinue": "Itigil",
       "dismiss": "Isara",
-      "document_baseline_frequency_for_flagged_students": "dokumento baseline frequency para sa flagged mag-aaral",
+      "document_baseline_frequency_for_flagged_students": "Idokumento ang baseline frequency para sa mga na-flag na mag-aaral",
       "document_outcomes_and_lessons_learned": "dokumento outcomes at aralin learned",
       "document_the_confirmed_function": "dokumento ang confirmed function",
       "document_the_hypothesis_in_session_notes": "dokumento ang haka-haka sa sesyon mga tala",
@@ -10826,8 +10918,8 @@
       "level_mean": "antas (Mean)",
       "maintenance_tracker": "Tagasubaybay ng Pagpapanatili",
       "make_tier_movement_decision_stay_fade_intensify": "Gumawa tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → pag-uugali → consequence landass",
-      "map_each_target_behavior_to_a_replacement": "Map bawat target pag-uugali sa isang replacement",
+      "map_antecedent_behavior_consequence_pathways": "Imapa ang mga daan ng antecedent → pag-uugali → consequence",
+      "map_each_target_behavior_to_a_replacement": "Itugma ang bawat target na pag-uugali sa isang kapalit",
       "materials_access": "Mga materyales Access",
       "measure_effect_size_of_interventions": "Sukatin effect size ng interbensyon",
       "model": "Modelo",
@@ -10863,10 +10955,10 @@
       "percentage": "porsyento",
       "phone": "Telepono",
       "phone_call": "Tawag",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plano isang reinforcement schedule para sa replacement pag-uugali",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Magplano ng iskedyul ng reinforcement para sa mga kapalit na pag-uugali",
       "plan_data_collection_methods_and_frequency": "Plano datos collection methods at frequency",
       "plan_fidelity_monitoring": "Plano Fidelity Monitoring",
-      "plan_reinforcement_for_replacement_behaviors": "Plano reinforcement para sa replacement pag-uugali",
+      "plan_reinforcement_for_replacement_behaviors": "Magplano ng reinforcement para sa mga kapalit na pag-uugali",
       "plan_replacement_behaviors": "Plano Replacement pag-uugali",
       "plan_weekly_progress_monitoring_data_collection": "Plano weekly pag-unlad monitoring datos collection",
       "positivecorrective_ratio": "Ratio ng Positibo:Pagwawasto",
@@ -10908,7 +11000,7 @@
       "sensory": "Pandama",
       "sensory_break_menu": "Sensory Break menu",
       "sensoryautomatic": "Sensory/awtomatiko",
-      "sensoryautomatic_function": "Sensory/awtomatiko Function",
+      "sensoryautomatic_function": "Sensory/Automatic na Function",
       "sensoryrelated": "May Kaugnayan sa Sensory",
       "session_tracker": "sesyon Tracker",
       "set_a_6week_intervention_cycle": "Itakda isang 6-week interbensyon cycle",
@@ -11004,7 +11096,7 @@
       "incorrect": "Mali",
       "independent": "Sarili",
       "intensity": "Tindi",
-      "interval_and_latency_recording": "Interval at latency recording",
+      "interval_and_latency_recording": "Pagtatala ng interval at latency",
       "level": "antas",
       "mastered": "Nabihasa",
       "momentary_time_sampling": "Momentary oras sampling",
@@ -11065,7 +11157,7 @@
       "step_collect_more": "Collect higit pa datos",
       "step_collect_more_desc": "Magdagdag higit pa obserbasyon sesyon sa strengthen ang dataset.",
       "step_hypothesis": "haka-haka",
-      "step_hypothesis_desc": "Draft isang working haka-haka ng pag-uugali function.",
+      "step_hypothesis_desc": "Bumuo ng panimulang haka-haka tungkol sa function ng pag-uugali.",
       "step_record_abc": "I-record ang datos ng ABC",
       "step_record_abc_desc": "dokumento antecedents, pag-uugali, at consequences.",
       "step_report": "Ulat",
@@ -11129,7 +11221,7 @@
     "aria": {
       "delete_goal": "Tanggalin ang layunin",
       "probe_schedule": "Iskedyul ng probe",
-      "behavior_function": "Function ng behavior"
+      "behavior_function": "Function ng pag-uugali"
     },
     "maintenance": {
       "probe_schedule_label_v2": "Standard ABA maintenance probe levels"
@@ -11250,7 +11342,12 @@
   "lms": {
     "dismiss_banner_aria": "I-dismiss ang LMS banner",
     "dismiss_button": "Isara",
-    "audit_queue_help": "I-click isang dokumento sa kunin at i-load it sa loob ang pagiging madaling magamit pipeline. Ilan LMS file maaaring require ikaw sa be logged sa sa ang LMS sa ito browser."
+    "audit_queue_help": "I-click isang dokumento sa kunin at i-load it sa loob ang pagiging madaling magamit pipeline. Ilan LMS file maaaring require ikaw sa be logged sa sa ang LMS sa ito browser.",
+    "queued_one": "{count} dokumento ang naka-queue mula sa LMS",
+    "queued_other": "{count} dokumento ang naka-queue mula sa LMS",
+    "fetching": "Kinukuha ang {name}...",
+    "loaded_ready": "Na-load ang {name}; handa nang i-audit",
+    "fetch_failed": "Nabigong kunin ang {name}: {error}. Maaaring kailanganin ng file ang LMS authentication."
   },
   "annotation": {
     "undo_tooltip": "Undo huli annotation ({count} magagamit) — Ctrl/Cmd+Z",
@@ -11270,7 +11367,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "biswal suporta mula sa iyong guro"
+    "teacher_modal_aria": "biswal suporta mula sa iyong guro",
+    "now": "NGAYON",
+    "read_aloud": "Basahin nang Malakas"
   },
   "canvas_settings": {
     "title": "advanced mga setting",
@@ -11287,7 +11386,12 @@
     "read_all_button": "Basahin lahat",
     "stop_button": "Itigil",
     "focus_narration_label": "Keyboard Tutok Narration",
-    "focus_narration_on_hint": "Tab sa hear controls"
+    "focus_narration_on_hint": "Tab sa hear controls",
+    "reading": "Binabasa...",
+    "item_aria": "I-click para marinig: {text}",
+    "footer_stats": "{count} item · I-click ang anumang item para marinig ito · Tab narration {state}",
+    "narration_on": "ON",
+    "narration_off": "OFF"
   },
   "teacher": {
     "local_only": "Local lamang",
@@ -12463,5 +12567,27 @@
     "no_match": "Walang tugmang utos. Nauunawaan ng bot chat (at sa lalong madaling panahon, boses) ang mga malayang kahilingan.",
     "placeholder": "Mag-type ng utos — “mas malaking teksto”, “educator hub”, “basahin ang pahinang ito”…",
     "run": "patakbuhin"
+  },
+  "voice_engine": {
+    "preparing": "Inihahanda ang voice engine...",
+    "downloading_model": "Dina-download ang voice model",
+    "loading_memory": "Nilo-load sa memory",
+    "loading_model_memory": "Nilo-load ang voice model sa memory"
+  },
+  "voice_control": {
+    "listening": "Nakikinig; sabihin ang “stop listening” para tapusin",
+    "stop_aria": "Itigil ang voice control"
+  },
+  "dynamic_assessment": {
+    "return_title": "Ang resource na ito ay nabuo ng Dynamic Assessment. I-click para muling buksan ang Dynamic Assessment module.",
+    "return_aria": "Bumalik sa Dynamic Assessment",
+    "return_label": "Bumalik sa Dynamic Assessment",
+    "item_badge": "item {num}"
+  },
+  "story_gallery": {
+    "title": "Story Gallery",
+    "byline": "Ni {author} · {words} salita · {used}/{total} bokabularyo",
+    "student": "Mag-aaral",
+    "score": "Iskor: {score}"
   }
 }

@@ -1692,7 +1692,42 @@
     "backup_failed": "Backup failed. Încearcă again.",
     "invalid_backup_file": "nu un valid AlloHaven backup fișier.",
     "could_not_read_file": "Could nu citește acela fișier. este it un JSON backup?",
-    "tts_failed": "Citirea cu voce tare a eșuat. Vă rugăm să încercați din nou."
+    "tts_failed": "Citirea cu voce tare a eșuat. Vă rugăm să încercați din nou.",
+    "focus_streak": "{flames} Serie de concentrare de {minutes} minute! Continuă tot așa!",
+    "streak_saved": "Bine ai revenit! Seria ta de {minutes} min a fost salvată.",
+    "points_awarded": "Puncte acordate!",
+    "welcome_name": "Bun venit, {name}!",
+    "element_not_found": "Element negăsit: {id}",
+    "overlay_set": "Suprapunere: {mode}",
+    "synced_resource": "Sincronizat: {title}",
+    "group_resource": "Resursă de grup: {title}",
+    "preset_saved": "Presetare \"{name}\" salvată!",
+    "translated_resources": "{count} resurse traduse cu succes!",
+    "bingo_cards_count": "{count} cartonașe BINGO generate!",
+    "sound_enabled": "Sunet activat",
+    "sound_muted": "Sunet dezactivat",
+    "democracy_mode_on": "Mod democrație activat: votul clasei ACTIVAT",
+    "democracy_mode_off": "Mod democrație dezactivat: joc individual",
+    "resource_moved_up": "{title} mutat în sus",
+    "resource_moved_down": "{title} mutat în jos",
+    "panels_regenerated": "{count} panouri regenerate!",
+    "settings_undone": "Anulat: {label}. Setări restaurate. (Resursele generate nu sunt afectate.)",
+    "concept_added": "Concept adăugat: {text}",
+    "lesson_not_found": "Lecția nu a fost găsită în această unitate.",
+    "probe_complete": "Verificare finalizată: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Setări actualizate: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Ton: {value}",
+    "change_length": "Lungime: ~{value} cuvinte",
+    "change_language": "Limbă: {value}",
+    "change_interest": "Interes adăugat: {value}",
+    "backup_saved": "💾 O copie de rezervă a acestei sesiuni a fost salvată în Descărcările tale (un fișier de proiect). Nu trebuie să faci nimic cu ea acum; dacă vreodată va trebui să revii, \"Încarcă proiectul\" restaurează totul.",
+    "backup_saved_score": " (scor {score})",
+    "project_saved_multi_one": "💾 Proiect salvat ({count} interval); încarcă-l mai târziu pentru a continua",
+    "project_saved_multi_other": "💾 Proiect salvat ({count} intervale); încarcă-l mai târziu pentru a continua",
+    "project_saved": "💾 Proiect salvat; încarcă-l mai târziu pentru a continua editarea",
+    "search_result_desc": "Rezultat căutare Google: {title}",
+    "link_url_prompt": "Introdu URL-ul linkului:"
   },
   "large_file": {
     "modal_title": "Importă Large audio fișier",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Anulează Transcription",
     "chunk_info": "audio este split în 5-minute chunks pentru processing",
     "chunk_progress": "Chunk {current} de {total}",
-    "audio_only_error": "Currently only audio fișier (MP3, WAV, etc.) sunt supported pentru chunked transcription."
+    "audio_only_error": "Currently only audio fișier (MP3, WAV, etc.) sunt supported pentru chunked transcription.",
+    "starting": "Se pornește..."
   },
   "formatting": {
     "bold": "Aldin (**text**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Deschide StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "document-Based întrebare",
-    "open_stem_lab_explore_aria": "Deschide STEM laborator Explorează"
+    "open_stem_lab_explore_aria": "Deschide STEM laborator Explorează",
+    "stem_lab_explore": "Explorează"
   },
   "history": {
     "load_project": "Încarcă Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight culoare",
       "insert_table_aria": "Insert tabel",
       "insert_table_title": "Insert accessible tabel"
-    }
+    },
+    "reattach_mismatch": "PDF-ul reatașat diferă de cel auditat{detail}. Se va continua oricum; rezultatele pot fi inconsecvente cu auditul original.",
+    "reattach_name_detail": " (nume: \"{new}\" față de \"{old}\")",
+    "reattach_size_detail": " (dimensiune: {new} față de {old} octeți)",
+    "audit_failed_kept": "{label}: auditul a eșuat; s-a păstrat versiunea anterioară.",
+    "score_dropped_kept": "{label}: scorul ar fi scăzut ({prev} → {next}{axe}). S-a păstrat versiunea anterioară.",
+    "axe_only_comparison": ", comparație doar axe",
+    "axe_only_committed": "{label}: verificarea IA indisponibilă; confirmat doar cu scorul determinist axe-core.",
+    "reinserted_ai": "{count} reintroduse (IA)",
+    "reinserted_sentence": "{count} reintroduse (propoziție)",
+    "reinserted_fuzzy": "{count} reintroduse (aproximativ)",
+    "in_recovery_appendix": "{count} în anexa de recuperare",
+    "duplicates_removed_one": "{count} duplicat eliminat",
+    "duplicates_removed_other": "{count} duplicate eliminate",
+    "auto_continue_round": "Rundă de continuare automată {round}/{max}: {detail}, scor {score}/100 (țintă {target})...",
+    "violation_one": "{count} încălcare",
+    "violation_other": "{count} încălcări",
+    "ai_issue_one": "{count} problemă semnalată de IA",
+    "ai_issue_other": "{count} probleme semnalate de IA"
   },
   "concept_sort": {
     "title": "Concept Sortează",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "card vizual",
     "card_visuals_auto": "Auto (only pe scurt element)",
     "card_visuals_always": "Always generează imagine",
-    "card_visuals_never": "Never (text-only card)"
+    "card_visuals_never": "Never (text-only card)",
+    "explanation_unavailable": "Nu s-a putut genera o explicație acum. Te rog încearcă din nou într-o clipă."
   },
   "dbq": {
     "title": "document Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed la check alignment.",
       "regenerated_success": "text regenerated cu improvements!",
       "regen_failed": "Regenerarea a eșuat."
-    }
+    },
+    "skill_check": "Verificarea competențelor",
+    "desc_skill_check": "Verifică-ți stăpânirea în raport cu standardele.",
+    "desc_parent": "Vedeți cum se aliniază acest lucru cu obiectivele școlii",
+    "desc_6dim": "Auditează curriculumul pe 6 dimensiuni",
+    "desc_5dim": "Auditează curriculumul pe 5 dimensiuni (adăugați standarde pentru auditul complet)"
   },
   "standards": {
     "target_standard": "Target standard",
@@ -5180,7 +5241,34 @@
     "plan_hook": "Captare",
     "plan_independent": "Independent exersează",
     "col_image": "imagine",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Oprește",
+    "expand_header": "Extinde antetul",
+    "collapse_header": "Restrânge antetul pentru a oferi mai mult spațiu conținutului",
+    "collapse_header_short": "Restrânge antetul",
+    "step_x_of_y": "Pasul {current} din {total}",
+    "english_translation": "Traducere în engleză",
+    "source_references": "Referințe ale textului sursă",
+    "activity_probe": "Verificare {activity}",
+    "word_sounds_count": "Word Sounds ({count} cuvinte)",
+    "quick_practice_mode": "Mod de practică rapidă",
+    "new_option": "Opțiune nouă",
+    "meta_lesson_extensions": "Extinderi ale lecției",
+    "title_extension_ideas": "Idei de extindere",
+    "meta_full_chat_log": "Jurnal complet al conversației",
+    "title_udl_consultation_log": "Jurnal de consultare UDL",
+    "meta_actionable_steps": "Pași aplicabili (rezumat IA)",
+    "title_differentiation_strategy": "Strategie de diferențiere",
+    "meta_udl_guide_advice": "Sfaturi din Ghidul UDL",
+    "title_stem_assessment": "Evaluare STEM",
+    "title_explore_challenge": "Provocare de explorare",
+    "title_fluency_maze": "🏰 Labirintul fluenței",
+    "title_storyforge_config": "📖 Temă StoryForge",
+    "title_storyforge_submission": "📖 Trimitere poveste",
+    "title_poettree_config": "🌳 Temă PoetTree",
+    "title_poettree_submission": "🌳 Trimitere poezie",
+    "title_litlab_config": "🎭 Temă LitLab",
+    "title_litlab_submission": "🎭 Trimitere spectacol"
   },
   "persona": {
     "title": "Interview mod",
@@ -8308,7 +8396,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing conținut topology...",
     "brainstorming": "Se generează idei...",
     "retrying_citations": "Retrying pentru mai bun citations...",
-    "translating": "Se traduce…"
+    "translating": "Se traduce…",
+    "preparing_translation": "Se pregătește traducerea în {lang}...",
+    "translating_item": "Se traduce {current}/{total}: {title}...",
+    "generating_panel": "Se generează panoul {current}/{total}..."
   },
   "process": {
     "source_missing": "vă rog provide sursă text primul.",
@@ -9604,7 +9695,8 @@
     "loading_resources": "Loading resurse...",
     "preparing_workspace": "Preparing tău workspace...",
     "almost_ready": "Aproape gata...",
-    "loading_screen_aria": "Ecran de încărcare AlloFlow"
+    "loading_screen_aria": "Ecran de încărcare AlloFlow",
+    "preparing_environment": "Se pregătește mediul tău de învățare..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9677,7 +9769,7 @@
       "feasibility_desc": "5-întrebare contextual fit evaluare cu AI recommendations",
       "gas_title": "Rubrică GAS",
       "gas_desc": "obiectiv Attainment Scaling cu AI-generat descriptors",
-      "pocket_title": "Pocket BIP",
+      "pocket_title": "BIP de buzunar",
       "pocket_desc": "Compact index-card BIP summary pentru clipboard carry",
       "abagraph_desc": "Publication-standard grafic cu phase linie, trend linie, și vizual analysis",
       "abagraph_title": "ABA grafic Engine",
@@ -9951,7 +10043,7 @@
       "generate": "AI Generează GAS Descriptors"
     },
     "pocket": {
-      "title": "Pocket BIP",
+      "title": "BIP de buzunar",
       "generate": "AI Generează Pocket BIP"
     },
     "no_entries_match": "Nu entries match tău filters",
@@ -11250,7 +11342,12 @@
   "lms": {
     "dismiss_banner_aria": "Închide bannerul LMS",
     "dismiss_button": "Închide",
-    "audit_queue_help": "Apasă un document la preia și încarcă it în accessibility pipeline. Some LMS fișier may require tu la be logged în la LMS în acesta browser."
+    "audit_queue_help": "Apasă un document la preia și încarcă it în accessibility pipeline. Some LMS fișier may require tu la be logged în la LMS în acesta browser.",
+    "queued_one": "{count} document în coadă din LMS",
+    "queued_other": "{count} documente în coadă din LMS",
+    "fetching": "Se preia {name}...",
+    "loaded_ready": "{name} încărcat; gata pentru audit",
+    "fetch_failed": "Nu s-a putut prelua {name}: {error}. Fișierul poate necesita autentificare LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo ultimul annotation ({count} disponibil) — Ctrl/Cmd+Z",
@@ -11270,7 +11367,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "vizual suport din tău profesor"
+    "teacher_modal_aria": "vizual suport din tău profesor",
+    "now": "ACUM",
+    "read_aloud": "Citește cu voce tare"
   },
   "canvas_settings": {
     "title": "avansat setări",
@@ -11287,7 +11386,12 @@
     "read_all_button": "Citește toate",
     "stop_button": "Oprește",
     "focus_narration_label": "Narațiune focalizare tastatură",
-    "focus_narration_on_hint": "Tab la hear controls"
+    "focus_narration_on_hint": "Tab la hear controls",
+    "reading": "Se citește...",
+    "item_aria": "Clic pentru a auzi: {text}",
+    "footer_stats": "{count} elemente · Clic pe orice element pentru a-l auzi · Narațiune Tab {state}",
+    "narration_on": "ACTIV",
+    "narration_off": "INACTIV"
   },
   "teacher": {
     "local_only": "Doar local",
@@ -12463,5 +12567,27 @@
     "no_match": "Nicio comandă care să se potrivească. Conversația cu botul (și în curând vocea) înțelege cereri în formă liberă.",
     "placeholder": "Scrie o comandă — „text mai mare”, „centru educatori”, „citește această pagină”…",
     "run": "rulează"
+  },
+  "voice_engine": {
+    "preparing": "Se pregătește motorul vocal...",
+    "downloading_model": "Se descarcă modelul vocal",
+    "loading_memory": "Se încarcă în memorie",
+    "loading_model_memory": "Se încarcă modelul vocal în memorie"
+  },
+  "voice_control": {
+    "listening": "Ascult; spune „stop listening” pentru a termina",
+    "stop_aria": "Oprește controlul vocal"
+  },
+  "dynamic_assessment": {
+    "return_title": "Această resursă a fost generată de Evaluarea Dinamică. Clic pentru a redeschide modulul Evaluare Dinamică.",
+    "return_aria": "Înapoi la Evaluarea Dinamică",
+    "return_label": "Înapoi la Evaluarea Dinamică",
+    "item_badge": "element {num}"
+  },
+  "story_gallery": {
+    "title": "Galeria de povești",
+    "byline": "De {author} · {words} cuvinte · {used}/{total} vocabular",
+    "student": "Elev",
+    "score": "Scor: {score}"
   }
 }

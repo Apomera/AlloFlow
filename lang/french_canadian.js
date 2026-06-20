@@ -945,7 +945,8 @@
     "cancel_transcription": "Annuler la transcription",
     "chunk_info": "L'audio est divisé en morceaux de 5 minutes pour le traitement",
     "chunk_progress": "Morceau {current} sur {total}",
-    "audio_only_error": "Actuellement, seuls les fichiers audio (MP3, WAV, etc.) sont pris en charge pour la transcription par morceaux."
+    "audio_only_error": "Actuellement, seuls les fichiers audio (MP3, WAV, etc.) sont pris en charge pour la transcription par morceaux.",
+    "starting": "Démarrage..."
   },
   "header": {
     "app_name": "AlloFlow",
@@ -1029,7 +1030,8 @@
     "open_storyforge_aria": "Ouvrir StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Questions basées sur des documents",
-    "open_stem_lab_explore_aria": "Ouvrir STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Ouvrir STEM Lab Explore",
+    "stem_lab_explore": "Explorer"
   },
   "history": {
     "load_project": "Charger un projet",
@@ -2088,7 +2090,42 @@
     "whisper_load_failed": "Échec du chargement de Whisper. Repli sur d'autres moteurs.",
     "backup_failed": "Échec de la sauvegarde. Réessayez.",
     "invalid_backup_file": "Ce n'est pas un fichier de sauvegarde AlloHaven valide.",
-    "could_not_read_file": "Impossible de lire ce fichier. Est-ce une sauvegarde JSON?"
+    "could_not_read_file": "Impossible de lire ce fichier. Est-ce une sauvegarde JSON?",
+    "focus_streak": "{flames} Série de concentration de {minutes} minutes ! Continue comme ça !",
+    "streak_saved": "Content de te revoir ! Ta série de {minutes} min a été enregistrée.",
+    "points_awarded": "Points attribués !",
+    "welcome_name": "Bienvenue, {name} !",
+    "element_not_found": "Élément introuvable : {id}",
+    "overlay_set": "Superposition : {mode}",
+    "synced_resource": "Synchronisé : {title}",
+    "group_resource": "Ressource de groupe : {title}",
+    "preset_saved": "Préréglage « {name} » enregistré !",
+    "translated_resources": "{count} ressources traduites avec succès !",
+    "bingo_cards_count": "{count} cartes BINGO générées !",
+    "sound_enabled": "Son activé",
+    "sound_muted": "Son coupé",
+    "democracy_mode_on": "Mode démocratie activé : vote de la classe ACTIVÉ",
+    "democracy_mode_off": "Mode démocratie désactivé : jeu en solo",
+    "resource_moved_up": "{title} déplacé vers le haut",
+    "resource_moved_down": "{title} déplacé vers le bas",
+    "panels_regenerated": "{count} panneaux régénérés !",
+    "settings_undone": "Annulé : {label}. Paramètres restaurés. (Les ressources générées ne sont pas affectées.)",
+    "concept_added": "Concept ajouté : {text}",
+    "lesson_not_found": "Leçon introuvable dans cette unité.",
+    "probe_complete": "Sondage terminé : {correct}/{total} ({accuracy} %)",
+    "settings_updated": "Paramètres mis à jour : {changes}",
+    "change_format": "Format : {value}",
+    "change_tone": "Ton : {value}",
+    "change_length": "Longueur : ~{value} mots",
+    "change_language": "Langue : {value}",
+    "change_interest": "Intérêt ajouté : {value}",
+    "backup_saved": "💾 Une sauvegarde de cette session a été enregistrée dans tes Téléchargements (un fichier de projet). Rien à faire avec pour l'instant ; si tu as besoin de revenir un jour, « Charger le projet » récupère tout.",
+    "backup_saved_score": " (score {score})",
+    "project_saved_multi_one": "💾 Projet enregistré ({count} plage) ; charge-le plus tard pour continuer",
+    "project_saved_multi_other": "💾 Projet enregistré ({count} plages) ; charge-le plus tard pour continuer",
+    "project_saved": "💾 Projet enregistré ; charge-le plus tard pour continuer la modification",
+    "search_result_desc": "Résultat de recherche Google : {title}",
+    "link_url_prompt": "Saisis l'URL du lien :"
   },
   "word_sounds": {
     "title": "Word Sounds Studio",
@@ -4300,7 +4337,7 @@
       "role": "Rôle",
       "schedules_of_reinforcement": "Horaires de renforcement",
       "session": "Session",
-      "sessions": "Sessions",
+      "sessions": "Séances",
       "social": "Social",
       "social_validity": "Validité sociale",
       "task_analysis": "Analyse de tâche",
@@ -4352,7 +4389,7 @@
       "step_report_desc": "Générer le rapport FBA pour l'équipe.",
       "step_select_student": "Sélectionner l'élève",
       "step_select_student_desc": "Choisir quel élève fait l'objet de cette FBA.",
-      "step_sessions": "Sessions",
+      "step_sessions": "Séances",
       "step_sessions_desc": "Mener des sessions d'observation à travers les contextes et les moments."
     },
     "goal": "Objectif",
@@ -5878,7 +5915,25 @@
       "resolved_tip": "Problèmes de l'audit initial qui ne sont plus détectés lors de la vérification",
       "persisted_tip": "Problèmes de l'audit initial toujours présents après la correction",
       "introduced_tip": "Nouveaux problèmes qui n'existaient pas avant la correction"
-    }
+    },
+    "reattach_mismatch": "Le PDF rejoint diffère de celui qui a été audité{detail}. La procédure continue quand même ; les résultats peuvent être incohérents avec l'audit d'origine.",
+    "reattach_name_detail": " (nom : « {new} » contre « {old} »)",
+    "reattach_size_detail": " (taille : {new} contre {old} octets)",
+    "audit_failed_kept": "{label} : l'audit a échoué ; la version précédente a été conservée.",
+    "score_dropped_kept": "{label} : le score aurait baissé ({prev} → {next}{axe}). La version précédente a été conservée.",
+    "axe_only_comparison": ", comparaison axe uniquement",
+    "axe_only_committed": "{label} : vérification par IA indisponible ; validé uniquement avec le score déterministe axe-core.",
+    "reinserted_ai": "{count} réinsérés (IA)",
+    "reinserted_sentence": "{count} réinsérés (phrase)",
+    "reinserted_fuzzy": "{count} réinsérés (approximatif)",
+    "in_recovery_appendix": "{count} dans l'annexe de récupération",
+    "duplicates_removed_one": "{count} doublon supprimé",
+    "duplicates_removed_other": "{count} doublons supprimés",
+    "auto_continue_round": "Tour de continuation automatique {round}/{max} : {detail}, score {score}/100 (objectif {target})...",
+    "violation_one": "{count} infraction",
+    "violation_other": "{count} infractions",
+    "ai_issue_one": "{count} problème signalé par l'IA",
+    "ai_issue_other": "{count} problèmes signalés par l'IA"
   },
   "export": {
     "district_resource": "Ressource de district AlloFlow",
@@ -6373,7 +6428,8 @@
     "card_visuals_label": "Visuels des cartes",
     "card_visuals_auto": "Auto (uniquement sur les éléments courts)",
     "card_visuals_always": "Toujours générer des images",
-    "card_visuals_never": "Jamais (cartes texte uniquement)"
+    "card_visuals_never": "Jamais (cartes texte uniquement)",
+    "explanation_unavailable": "Impossible de générer une explication pour le moment. Réessaie dans un instant."
   },
   "outline": {
     "title": "Organisateur visuel",
@@ -6837,7 +6893,34 @@
     "plan_hook": "Accroche",
     "plan_independent": "Pratique autonome",
     "col_image": "Image",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Arrêter",
+    "expand_header": "Développer l'en-tête",
+    "collapse_header": "Réduire l'en-tête pour donner plus d'espace au contenu",
+    "collapse_header_short": "Réduire l'en-tête",
+    "step_x_of_y": "Étape {current} sur {total}",
+    "english_translation": "Traduction anglaise",
+    "source_references": "Références du texte source",
+    "activity_probe": "Sondage {activity}",
+    "word_sounds_count": "Word Sounds ({count} mots)",
+    "quick_practice_mode": "Mode pratique rapide",
+    "new_option": "Nouvelle option",
+    "meta_lesson_extensions": "Prolongements de la leçon",
+    "title_extension_ideas": "Idées de prolongement",
+    "meta_full_chat_log": "Journal complet du chat",
+    "title_udl_consultation_log": "Journal de consultation UDL",
+    "meta_actionable_steps": "Étapes concrètes (résumé IA)",
+    "title_differentiation_strategy": "Stratégie de différenciation",
+    "meta_udl_guide_advice": "Conseils du Guide UDL",
+    "title_stem_assessment": "Évaluation STEM",
+    "title_explore_challenge": "Défi d'exploration",
+    "title_fluency_maze": "🏰 Labyrinthe de fluidité",
+    "title_storyforge_config": "📖 Devoir StoryForge",
+    "title_storyforge_submission": "📖 Soumission d'histoire",
+    "title_poettree_config": "🌳 Devoir PoetTree",
+    "title_poettree_submission": "🌳 Soumission de poème",
+    "title_litlab_config": "🎭 Devoir LitLab",
+    "title_litlab_submission": "🎭 Soumission de performance"
   },
   "dashboard": {
     "title": "Tableau de bord de notation de l'enseignant",
@@ -7348,7 +7431,10 @@
     "analyzing_topology": "En tant que concepteur du curriculum : analyse de la topologie du contenu...",
     "brainstorming": "Brainstorming d'idées...",
     "retrying_citations": "Nouvel essai pour de meilleures citations...",
-    "translating": "Traduction…"
+    "translating": "Traduction…",
+    "preparing_translation": "Préparation de la traduction en {lang}...",
+    "translating_item": "Traduction de {current}/{total} : {title}...",
+    "generating_panel": "Génération du panneau {current}/{total}..."
   },
   "learner": {
     "total_xp": "XP total",
@@ -9507,7 +9593,12 @@
       "error_check": "Échec de la vérification d'alignement.",
       "regenerated_success": "Texte régénéré avec améliorations !",
       "regen_failed": "Échec de la régénération."
-    }
+    },
+    "skill_check": "Vérification des compétences",
+    "desc_skill_check": "Vérifie ta maîtrise par rapport aux normes.",
+    "desc_parent": "Voyez comment cela correspond aux objectifs de l'école",
+    "desc_6dim": "Audite le programme selon 6 dimensions",
+    "desc_5dim": "Audite le programme selon 5 dimensions (ajoutez des normes pour l'audit complet)"
   },
   "process": {
     "source_missing": "Veuillez d'abord fournir un texte source.",
@@ -10147,7 +10238,8 @@
     "loading_resources": "Chargement des ressources...",
     "preparing_workspace": "Préparation de votre espace de travail...",
     "almost_ready": "Presque prêt...",
-    "loading_screen_aria": "Écran de chargement d'AlloFlow"
+    "loading_screen_aria": "Écran de chargement d'AlloFlow",
+    "preparing_environment": "Préparation de ton environnement d'apprentissage..."
   },
   "report_writer": {
     "loading": "Chargement de Report Writer...",
@@ -10208,7 +10300,12 @@
   "lms": {
     "dismiss_banner_aria": "Ignorer la bannière LMS",
     "dismiss_button": "Ignorer",
-    "audit_queue_help": "Cliquez sur un document pour le récupérer et le charger dans le pipeline d'accessibilité. Certains fichiers LMS peuvent nécessiter que vous soyez connecté au LMS dans ce navigateur."
+    "audit_queue_help": "Cliquez sur un document pour le récupérer et le charger dans le pipeline d'accessibilité. Certains fichiers LMS peuvent nécessiter que vous soyez connecté au LMS dans ce navigateur.",
+    "queued_one": "{count} document en file d'attente depuis le LMS",
+    "queued_other": "{count} documents en file d'attente depuis le LMS",
+    "fetching": "Récupération de {name}...",
+    "loaded_ready": "{name} chargé ; prêt pour l'audit",
+    "fetch_failed": "Échec de récupération de {name} : {error}. Le fichier peut nécessiter une authentification LMS."
   },
   "annotation": {
     "undo_tooltip": "Annuler la dernière annotation ({count} disponibles), Ctrl/Cmd+Z",
@@ -10228,7 +10325,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Soutien visuel de votre enseignant"
+    "teacher_modal_aria": "Soutien visuel de votre enseignant",
+    "now": "MAINTENANT",
+    "read_aloud": "Lire à voix haute"
   },
   "canvas_settings": {
     "title": "Paramètres avancés",
@@ -10245,7 +10344,12 @@
     "read_all_button": "Tout lire",
     "stop_button": "Arrêter",
     "focus_narration_label": "Narration du focus du clavier",
-    "focus_narration_on_hint": "Tab pour entendre les commandes"
+    "focus_narration_on_hint": "Tab pour entendre les commandes",
+    "reading": "Lecture...",
+    "item_aria": "Clique pour écouter : {text}",
+    "footer_stats": "{count} éléments · Clique sur un élément pour l'écouter · Narration Tab {state}",
+    "narration_on": "ACTIVÉE",
+    "narration_off": "DÉSACTIVÉE"
   },
   "fab": {
     "visual_supports": "Soutiens visuels"
@@ -12136,5 +12240,27 @@
     "no_match": "Aucune commande correspondante. Le clavardage du bot (et bientôt la voix) comprend les demandes en langage libre.",
     "placeholder": "Tapez une commande — « plus gros texte », « carrefour de l’enseignant », « lire cette page »…",
     "run": "exécuter"
+  },
+  "voice_engine": {
+    "preparing": "Préparation du moteur vocal...",
+    "downloading_model": "Téléchargement du modèle vocal",
+    "loading_memory": "Chargement en mémoire",
+    "loading_model_memory": "Chargement du modèle vocal en mémoire"
+  },
+  "voice_control": {
+    "listening": "Écoute en cours ; dis « stop listening » pour terminer",
+    "stop_aria": "Arrêter la commande vocale"
+  },
+  "dynamic_assessment": {
+    "return_title": "Cette ressource a été générée par l'Évaluation dynamique. Cliquez pour rouvrir le module d'Évaluation dynamique.",
+    "return_aria": "Retour à l'Évaluation dynamique",
+    "return_label": "Retour à l'Évaluation dynamique",
+    "item_badge": "élément {num}"
+  },
+  "story_gallery": {
+    "title": "Galerie d'histoires",
+    "byline": "Par {author} · {words} mots · {used}/{total} vocabulaire",
+    "student": "Élève",
+    "score": "Score : {score}"
   }
 }

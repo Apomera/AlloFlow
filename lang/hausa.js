@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Ɗaukar Whisper ya gaza. Ana komawa kan sauran injuna.",
     "backup_failed": "Ajiyar ta gaza. Sake gwadawa.",
     "invalid_backup_file": "Ba fayil ɗin ajiyar AlloHaven mai inganci ba.",
-    "could_not_read_file": "Ba a iya karanta wannan fayil ba. Shin ajiyar JSON ce?"
+    "could_not_read_file": "Ba a iya karanta wannan fayil ba. Shin ajiyar JSON ce?",
+    "focus_streak": "{flames} Jerin mai da hankali na minti {minutes}! Ci gaba haka!",
+    "streak_saved": "Barka da dawowa! An ajiye jerin ka na minti {minutes}.",
+    "points_awarded": "An ba da maki!",
+    "welcome_name": "Barka da zuwa, {name}!",
+    "element_not_found": "Ba a sami sinadari ba: {id}",
+    "overlay_set": "Murfi: {mode}",
+    "synced_resource": "An daidaita: {title}",
+    "group_resource": "Albarkatun ƙungiya: {title}",
+    "preset_saved": "An ajiye saiti \"{name}\"!",
+    "translated_resources": "An fassara albarkatu {count} cikin nasara!",
+    "bingo_cards_count": "An ƙirƙiri katunan BINGO {count}!",
+    "sound_enabled": "An kunna sauti",
+    "sound_muted": "An kashe sauti",
+    "democracy_mode_on": "An kunna yanayin dimokuradiyya: zaɓen aji A KUNNE",
+    "democracy_mode_off": "An kashe yanayin dimokuradiyya: wasa kaɗai",
+    "resource_moved_up": "An matsar da {title} sama",
+    "resource_moved_down": "An matsar da {title} ƙasa",
+    "panels_regenerated": "An sake ƙirƙiri faifai {count}!",
+    "settings_undone": "An warware: {label}. An mayar da saitunan. (Albarkatun da aka ƙirƙira ba a shafa su ba.)",
+    "concept_added": "An ƙara ra'ayi: {text}",
+    "lesson_not_found": "Ba a sami darasi a wannan sashe ba.",
+    "probe_complete": "An gama bincike: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "An sabunta saitunan: {changes}",
+    "change_format": "Tsari: {value}",
+    "change_tone": "Sauti: {value}",
+    "change_length": "Tsawo: ~{value} kalmomi",
+    "change_language": "Harshe: {value}",
+    "change_interest": "An ƙara sha'awa: {value}",
+    "backup_saved": "💾 An ajiye kwafin wannan zama a cikin Sauke-saukenka (fayil ɗin aiki). Babu abin yi da shi yanzu; idan ka taɓa buƙatar dawowa, \"Loda Aiki\" yana mayar da komai.",
+    "backup_saved_score": " (maki {score})",
+    "project_saved_multi_one": "💾 An ajiye aiki ({count} kewayo); loda shi daga baya don ci gaba",
+    "project_saved_multi_other": "💾 An ajiye aiki ({count} kewaye); loda shi daga baya don ci gaba",
+    "project_saved": "💾 An ajiye aiki; loda shi daga baya don ci gaba da gyara",
+    "search_result_desc": "Sakamakon Bincike na Google: {title}",
+    "link_url_prompt": "Shigar da URL na mahaɗi:"
   },
   "large_file": {
     "modal_title": "Shigo Large sauti fayil",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Soke Transcription",
     "chunk_info": "sauti shi ne split cikin 5-minute chunks don processing",
     "chunk_progress": "Chunk {current} na {total}",
-    "audio_only_error": "Currently only sauti fayil (MP3, WAV, etc.) su ne supported don chunked transcription."
+    "audio_only_error": "Currently only sauti fayil (MP3, WAV, etc.) su ne supported don chunked transcription.",
+    "starting": "Ana farawa..."
   },
   "formatting": {
     "bold": "Bold (**rubutu**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Buɗe StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "takarda-Bisa tambaya",
-    "open_stem_lab_explore_aria": "Buɗe STEM lab Bincika"
+    "open_stem_lab_explore_aria": "Buɗe STEM lab Bincika",
+    "stem_lab_explore": "Bincika"
   },
   "history": {
     "load_project": "Ɗora Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight launi",
       "insert_table_aria": "Insert tebur",
       "insert_table_title": "Insert accessible tebur"
-    }
+    },
+    "reattach_mismatch": "PDF da aka sake haɗawa ya bambanta da wanda aka bincika{detail}. Za a ci gaba duk da haka; sakamako na iya kasancewa bai dace da bincike na asali ba.",
+    "reattach_name_detail": " (suna: \"{new}\" da \"{old}\")",
+    "reattach_size_detail": " (girma: {new} da {old} bytes)",
+    "audit_failed_kept": "{label}: bincike ya gaza; an riƙe sigar baya.",
+    "score_dropped_kept": "{label}: maki zai ragu ({prev} → {next}{axe}). An riƙe sigar baya.",
+    "axe_only_comparison": ", kwatancen axe kawai",
+    "axe_only_committed": "{label}: tabbatar da AI babu; an tabbatar da makin axe-core kawai.",
+    "reinserted_ai": "{count} an sake sakawa (AI)",
+    "reinserted_sentence": "{count} an sake sakawa (jimla)",
+    "reinserted_fuzzy": "{count} an sake sakawa (kusan)",
+    "in_recovery_appendix": "{count} a cikin ƙarin dawowa",
+    "duplicates_removed_one": "An cire kwafi {count}",
+    "duplicates_removed_other": "An cire kwafi {count}",
+    "auto_continue_round": "Zagaye na ci gaba ta atomatik {round}/{max}: {detail}, maki {score}/100 (manufa {target})...",
+    "violation_one": "Take {count}",
+    "violation_other": "Take {count}",
+    "ai_issue_one": "Matsala {count} da AI ya yiwa alama",
+    "ai_issue_other": "Matsaloli {count} da AI ya yiwa alama"
   },
   "concept_sort": {
     "title": "Concept Tsara",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "kati gani",
     "card_visuals_auto": "Auto (only kan gajere abu)",
     "card_visuals_always": "Always samar da hoto",
-    "card_visuals_never": "Never (rubutu-only kati)"
+    "card_visuals_never": "Never (rubutu-only kati)",
+    "explanation_unavailable": "Ba a iya samar da bayani yanzu ba. Da fatan za a sake gwadawa nan da ɗan lokaci."
   },
   "dbq": {
     "title": "takarda Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed zuwa check alignment.",
       "regenerated_success": "rubutu regenerated tare da improvements!",
       "regen_failed": "Sake samarwa ya kasa."
-    }
+    },
+    "skill_check": "Binciken ƙwarewa",
+    "desc_skill_check": "Tabbatar da ƙwarewarka dangane da ƙa'idoji.",
+    "desc_parent": "Duba yadda wannan ya dace da manufofin makaranta",
+    "desc_6dim": "Yana bincika manhaja a fuskoki 6",
+    "desc_5dim": "Yana bincika manhaja a fuskoki 5 (ƙara ƙa'idoji don cikakken bincike)"
   },
   "standards": {
     "target_standard": "Target mizani",
@@ -5188,7 +5249,34 @@
     "plan_hook": "Ƙugiya",
     "plan_independent": "Independent horo",
     "col_image": "hoto",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Tsaya",
+    "expand_header": "Faɗaɗa kanun",
+    "collapse_header": "Naɗe kanun don ba da ƙarin sarari ga abun ciki",
+    "collapse_header_short": "Naɗe kanun",
+    "step_x_of_y": "Mataki {current} na {total}",
+    "english_translation": "Fassarar Turanci",
+    "source_references": "Nassoshin Rubutun Tushe",
+    "activity_probe": "Binciken {activity}",
+    "word_sounds_count": "Word Sounds (kalmomi {count})",
+    "quick_practice_mode": "Yanayin Aiki na Sauri",
+    "new_option": "Sabon zaɓi",
+    "meta_lesson_extensions": "Faɗaɗa Darasi",
+    "title_extension_ideas": "Ra'ayoyin Faɗaɗawa",
+    "meta_full_chat_log": "Cikakken Tarihin Hira",
+    "title_udl_consultation_log": "Tarihin Shawarar UDL",
+    "meta_actionable_steps": "Matakai masu Aiki (Taƙaitaccen AI)",
+    "title_differentiation_strategy": "Dabarar Bambantawa",
+    "meta_udl_guide_advice": "Shawarar Jagoran UDL",
+    "title_stem_assessment": "Kimanta STEM",
+    "title_explore_challenge": "Ƙalubalen Bincike",
+    "title_fluency_maze": "🏰 Mazen Ƙwarewa",
+    "title_storyforge_config": "📖 Aikin StoryForge",
+    "title_storyforge_submission": "📖 Mika Labari",
+    "title_poettree_config": "🌳 Aikin PoetTree",
+    "title_poettree_submission": "🌳 Mika Waƙa",
+    "title_litlab_config": "🎭 Aikin LitLab",
+    "title_litlab_submission": "🎭 Mika Wasan kwaikwayo"
   },
   "persona": {
     "title": "Interview yanayi",
@@ -8316,7 +8404,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing abun ciki topology...",
     "brainstorming": "Ana neman ra'ayoyi...",
     "retrying_citations": "Retrying don ya fi kyau citations...",
-    "translating": "Ana fassarawa…"
+    "translating": "Ana fassarawa…",
+    "preparing_translation": "Ana shirya fassara zuwa {lang}...",
+    "translating_item": "Ana fassara {current}/{total}: {title}...",
+    "generating_panel": "Ana ƙirƙirar faifai {current}/{total}..."
   },
   "process": {
     "source_missing": "don Allah provide tushe rubutu na farko.",
@@ -9612,7 +9703,8 @@
     "loading_resources": "Loading albarkatu...",
     "preparing_workspace": "Preparing naka workspace...",
     "almost_ready": "Kusan a shirye...",
-    "loading_screen_aria": "Allon lodi na AlloFlow"
+    "loading_screen_aria": "Allon lodi na AlloFlow",
+    "preparing_environment": "Ana shirya muhallin koyon ka..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9634,9 +9726,9 @@
       "randomize": "Bazuwa",
       "select_student_first": "Zaɓi ɗalibi above zuwa get started",
       "abc_title": "ABC bayanai",
-      "abc_desc": "Record antecedent, hali, da consequence lura",
+      "abc_desc": "Rubuta lura na antecedent, hali, da consequence",
       "obs_title": "Kai-tsaye lura",
-      "obs_desc": "Lokaci-zahiri interval, frequency, ko duration recording",
+      "obs_desc": "Rikodin interval na lokaci-zahiri, yawa, ko tsawon lokaci",
       "analysis_title": "Binciken AI",
       "analysis_desc": "AI-powered hali pattern analysis & recommendations",
       "overview_title": "Bayyani",
@@ -9670,13 +9762,13 @@
       "triangulation_title": "Triangulation",
       "triangulation_desc": "Cross-reference 3+ bayanai sources don convergence",
       "impact_title": "Mai Kirga Tasiri",
-      "impact_desc": "Quantify hali frequency, duration, da annual cost",
+      "impact_desc": "Auna yawan hali, tsawon lokaci, da kuɗin shekara",
       "crisis_title": "Shirin Rikici",
       "crisis_desc": "Mai samar da yarjejeniyar shiga tsakani ta matakai uku na rikici",
       "traffic_title": "Hasken Hanya",
       "traffic_desc": "ɗalibi-facing red/yellow/green hali zone poster",
       "datasheet_title": "bayanai Sheet",
-      "datasheet_desc": "Printable frequency, duration, ABC, ko latency bayanai sheets",
+      "datasheet_desc": "Takaddun bayanan yawa, tsawon lokaci, ABC, ko latency da ake iya bugawa",
       "homenote_title": "Sakon Gida",
       "homenote_desc": "AI-drafted iyaye communication tare da sauti selector",
       "fidelity_title": "Jerin Aminci",
@@ -9685,7 +9777,7 @@
       "feasibility_desc": "5-tambaya contextual fit tantance tare da AI recommendations",
       "gas_title": "Ma'aunin GAS",
       "gas_desc": "manufa Attainment Scaling tare da AI- samar descriptors",
-      "pocket_title": "Pocket BIP",
+      "pocket_title": "BIP na Aljihu",
       "pocket_desc": "Compact index-kati BIP summary don clipboard carry",
       "abagraph_desc": "Publication-mizani jadawali tare da phase layi, trend layi, da gani analysis",
       "abagraph_title": "ABA jadawali Engine",
@@ -9959,7 +10051,7 @@
       "generate": "AI Samar da GAS Descriptors"
     },
     "pocket": {
-      "title": "Pocket BIP",
+      "title": "BIP na Aljihu",
       "generate": "AI Samar da Pocket BIP"
     },
     "no_entries_match": "A'a entries match naka filters",
@@ -9999,7 +10091,7 @@
     "reinforcer_sensory": "🌀 Hankali",
     "quiz_fba_purpose": "menene shi ne primary purpose na FBA?",
     "quiz_replacement": "menene shi ne replacement hali?",
-    "search_placeholder": "Bincika antecedent, hali, consequence, notes, saiti...",
+    "search_placeholder": "Bincika antecedent, hali, consequence, bayanan kula, saiti...",
     "quick_fill_placeholder": "e.g. \"ɗalibi threw paper during math lokacin asked zuwa nuna work, malami redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"change consequence zuwa malami redirected\"",
     "now": "yanzu",
@@ -10152,7 +10244,7 @@
       "paste_share_code_here": "Manna raba code here...",
       "person": "Mutum\\",
       "phase_label": "Suna mataki",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does wannan address?)",
+      "rationale_which_antecedent_does_this_address": "Dalili (wane antecedent wannan ke magancewa?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect kan naka approach...\\n• menene worked well?\\n• menene would kai do differently?\\n• menene dabaru do kai want zuwa horo na gaba?",
       "reinforcement_how_you": "⭐ Reinforcement (yaya kai\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement hali (functionally equivalent)",
@@ -10225,7 +10317,7 @@
       "data_cleared": "bayanai cleared",
       "data_loaded_from_cloud": "☁️ bayanai loaded daga cloud",
       "drafting_failed": "Tsarawa ya gaza",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval kammala — REINFORCE! A'a target hali occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval ya kammala — REINFORCE! Babu wani hali da aka nufa da ya faru!",
       "each_phase_needs_at_least_2_data_points": "kowane phase needs at least 2 bayanai wuri",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached zuwa IEP Prep!",
       "effect_sizes_calculated": "An lissafa girman tasiri!",
@@ -10583,7 +10675,7 @@
       "top_behavior": "Top hali",
       "total_contacts": "Jimillar Lambobin Sadarwa",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track hali frequency over time tare da aim layi, phase changes, da trend analysis.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Bibiyar yawan hali a kan lokaci tare da layukan nufi, sauye-sauyen phase, da nazarin yanayin canji.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track hali at home amfani mai sauƙi, everyday harshe. wannan taimakos naka child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track naka feelings, earn lamba, da build streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-bisa harshe cikin asset-focused descriptions",
@@ -10768,7 +10860,7 @@
       "developing": "Bunkasa",
       "discontinue": "Daina",
       "dismiss": "Kore",
-      "document_baseline_frequency_for_flagged_students": "takarda baseline frequency don flagged ɗalibi",
+      "document_baseline_frequency_for_flagged_students": "Rubuta yawan baseline don ɗaliban da aka yiwa alama",
       "document_outcomes_and_lessons_learned": "takarda outcomes da darasi learned",
       "document_the_confirmed_function": "takarda confirmed function",
       "document_the_hypothesis_in_session_notes": "takarda tunani zama notes",
@@ -10834,8 +10926,8 @@
       "level_mean": "matakin (Mean)",
       "maintenance_tracker": "Mai Bin Diddigin Kulawa",
       "make_tier_movement_decision_stay_fade_intensify": "Yi tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → hali → consequence pathways",
-      "map_each_target_behavior_to_a_replacement": "Map kowane target hali zuwa replacement",
+      "map_antecedent_behavior_consequence_pathways": "Tsara hanyoyin antecedent → hali → consequence",
+      "map_each_target_behavior_to_a_replacement": "Tsara kowane hali da aka nufa zuwa madadinsa",
       "materials_access": "Materials Shiga",
       "measure_effect_size_of_interventions": "Auna effect size na interventions",
       "model": "Yanayil",
@@ -10871,10 +10963,10 @@
       "percentage": "kashi cikin ɗari",
       "phone": "Waya",
       "phone_call": "Kira",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plan reinforcement schedule don replacement hali",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Tsara jadawalin reinforcement don halayen madadi",
       "plan_data_collection_methods_and_frequency": "Plan bayanai collection methods da frequency",
       "plan_fidelity_monitoring": "Lura da Amincin Shirin",
-      "plan_reinforcement_for_replacement_behaviors": "Plan reinforcement don replacement hali",
+      "plan_reinforcement_for_replacement_behaviors": "Tsara reinforcement don halayen madadi",
       "plan_replacement_behaviors": "Plan Replacement hali",
       "plan_weekly_progress_monitoring_data_collection": "Plan weekly ci gaba monitoring bayanai collection",
       "positivecorrective_ratio": "Rabon Tabbatacce:Gyara",
@@ -10916,7 +11008,7 @@
       "sensory": "Na hankali",
       "sensory_break_menu": "Sensory Break jerin abinci",
       "sensoryautomatic": "Sensory/na atomatik",
-      "sensoryautomatic_function": "Sensory/na atomatik Function",
+      "sensoryautomatic_function": "Sensory/Automatic Function",
       "sensoryrelated": "Mai Alaka da Hankali",
       "session_tracker": "zama Tracker",
       "set_a_6week_intervention_cycle": "Saita 6-week intervention cycle",
@@ -11012,7 +11104,7 @@
       "incorrect": "Kuskure",
       "independent": "Kai kaɗai",
       "intensity": "Ƙarfi",
-      "interval_and_latency_recording": "Interval da latency recording",
+      "interval_and_latency_recording": "Rikodin interval da latency",
       "level": "matakin",
       "mastered": "An iya",
       "momentary_time_sampling": "Daukar samfurin lokaci na dan kankanin lokaci",
@@ -11060,7 +11152,7 @@
       "tip_good_coverage": "mai kyau coverage across days.",
       "tip_good_diversity": "mai kyau diversity across antecedents.",
       "tip_great_volume": "Great girma na entries don analysis.",
-      "tip_last_entry_ago": "na ƙarshe entry was recorded while ago.",
+      "tip_last_entry_ago": "An rubuta shigarwa na ƙarshe tun ɗan lokaci.",
       "tip_missing_fields": "Some entries su ne missing wajibi fields.",
       "tip_spread_days": "Entries su ne well spread across days.",
       "volume": "girma"
@@ -11073,7 +11165,7 @@
       "step_collect_more": "Collect ƙari bayanai",
       "step_collect_more_desc": "Ƙara ƙari lura zama zuwa strengthen dataset.",
       "step_hypothesis": "tunani",
-      "step_hypothesis_desc": "Draft working tunani na hali function.",
+      "step_hypothesis_desc": "Tsara hasashen aiki na ayyukan hali.",
       "step_record_abc": "Record ABC bayanai",
       "step_record_abc_desc": "takarda antecedents, hali, da consequences.",
       "step_report": "Rahoto",
@@ -11258,7 +11350,12 @@
   "lms": {
     "dismiss_banner_aria": "Kashe alamar LMS",
     "dismiss_button": "Kore",
-    "audit_queue_help": "Danna takarda zuwa kawo da ɗora it cikin accessibility pipeline. Some LMS fayil may require kai zuwa be logged zuwa LMS wannan browser."
+    "audit_queue_help": "Danna takarda zuwa kawo da ɗora it cikin accessibility pipeline. Some LMS fayil may require kai zuwa be logged zuwa LMS wannan browser.",
+    "queued_one": "Takarda {count} a layi daga LMS",
+    "queued_other": "Takardu {count} a layi daga LMS",
+    "fetching": "Ana ɗauko {name}...",
+    "loaded_ready": "An loda {name}; a shirye don bincike",
+    "fetch_failed": "An gaza ɗauko {name}: {error}. Fayil na iya buƙatar tabbatar da LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo na ƙarshe annotation ({count} akwai) — Ctrl/Cmd+Z",
@@ -11278,7 +11375,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "gani tallafi daga naka malami"
+    "teacher_modal_aria": "gani tallafi daga naka malami",
+    "now": "YANZU",
+    "read_aloud": "Karanta da ƙarfi"
   },
   "canvas_settings": {
     "title": "na ci-gaba saiti",
@@ -11295,7 +11394,12 @@
     "read_all_button": "Karanta duka",
     "stop_button": "Tsayar",
     "focus_narration_label": "Bayanin Mai da Hankalin Madannin",
-    "focus_narration_on_hint": "Tab zuwa hear controls"
+    "focus_narration_on_hint": "Tab zuwa hear controls",
+    "reading": "Ana karantawa...",
+    "item_aria": "Danna don ji: {text}",
+    "footer_stats": "Abubuwa {count} · Danna kowane abu don ji · Ba da labari na Tab {state}",
+    "narration_on": "A KUNNE",
+    "narration_off": "A KASHE"
   },
   "teacher": {
     "local_only": "Cikin gida",
@@ -12471,5 +12575,27 @@
     "no_match": "Babu umarni mai dacewa. Hirar bot (kuma nan ba da jimawa ba murya) tana fahimtar buƙatu na 'yanci.",
     "placeholder": "Rubuta umarni — “babban rubutu”, “cibiyar malamai”, “karanta wannan shafin”…",
     "run": "gudanar"
+  },
+  "voice_engine": {
+    "preparing": "Ana shirya injin murya...",
+    "downloading_model": "Ana sauke samfurin murya",
+    "loading_memory": "Ana lodawa cikin ƙwaƙwalwa",
+    "loading_model_memory": "Ana loda samfurin murya cikin ƙwaƙwalwa"
+  },
+  "voice_control": {
+    "listening": "Ana saurara; ka ce “stop listening” don ƙarewa",
+    "stop_aria": "Tsayar da sarrafa murya"
+  },
+  "dynamic_assessment": {
+    "return_title": "An ƙirƙiri wannan albarkatu ta Kimanta Mai Ƙarfi. Danna don sake buɗe sashin Kimanta Mai Ƙarfi.",
+    "return_aria": "Koma Kimanta Mai Ƙarfi",
+    "return_label": "Koma Kimanta Mai Ƙarfi",
+    "item_badge": "abu {num}"
+  },
+  "story_gallery": {
+    "title": "Hoton Labarai",
+    "byline": "Daga {author} · kalmomi {words} · {used}/{total} ƙamus",
+    "student": "Ɗalibi",
+    "score": "Maki: {score}"
   }
 }

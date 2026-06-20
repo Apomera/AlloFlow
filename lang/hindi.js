@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper लोड विफल। अन्य इंजनों पर लौटाया जा रहा है।",
     "backup_failed": "बैकअप विफल रहा। पुनः प्रयास करें।",
     "invalid_backup_file": "अमान्य बैकअप फ़ाइल",
-    "could_not_read_file": "फ़ाइल नहीं पढ़ी जा सकी"
+    "could_not_read_file": "फ़ाइल नहीं पढ़ी जा सकी",
+    "focus_streak": "{flames} {minutes} मिनट की फ़ोकस स्ट्रीक! ऐसे ही जारी रखो!",
+    "streak_saved": "वापसी पर स्वागत है! आपकी {minutes} मिनट की स्ट्रीक सहेजी गई।",
+    "points_awarded": "अंक प्रदान किए गए!",
+    "welcome_name": "स्वागत है, {name}!",
+    "element_not_found": "तत्व नहीं मिला: {id}",
+    "overlay_set": "ओवरले: {mode}",
+    "synced_resource": "सिंक किया गया: {title}",
+    "group_resource": "समूह संसाधन: {title}",
+    "preset_saved": "प्रीसेट \"{name}\" सहेजा गया!",
+    "translated_resources": "{count} संसाधन सफलतापूर्वक अनुवादित किए गए!",
+    "bingo_cards_count": "{count} BINGO कार्ड तैयार किए गए!",
+    "sound_enabled": "ध्वनि चालू",
+    "sound_muted": "ध्वनि म्यूट",
+    "democracy_mode_on": "लोकतंत्र मोड चालू: कक्षा मतदान चालू",
+    "democracy_mode_off": "लोकतंत्र मोड बंद: एकल खेल",
+    "resource_moved_up": "{title} को ऊपर ले जाया गया",
+    "resource_moved_down": "{title} को नीचे ले जाया गया",
+    "panels_regenerated": "{count} पैनल पुनः तैयार किए गए!",
+    "settings_undone": "पूर्ववत किया गया: {label}। सेटिंग्स पुनर्स्थापित। (तैयार किए गए संसाधन प्रभावित नहीं होते।)",
+    "concept_added": "अवधारणा जोड़ी गई: {text}",
+    "lesson_not_found": "इस इकाई में पाठ नहीं मिला।",
+    "probe_complete": "जाँच पूर्ण: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "सेटिंग्स अपडेट की गईं: {changes}",
+    "change_format": "प्रारूप: {value}",
+    "change_tone": "स्वर: {value}",
+    "change_length": "लंबाई: ~{value} शब्द",
+    "change_language": "भाषा: {value}",
+    "change_interest": "रुचि जोड़ी गई: {value}",
+    "backup_saved": "💾 इस सत्र का बैकअप आपके डाउनलोड में सहेजा गया (एक प्रोजेक्ट फ़ाइल)। अभी इसके साथ कुछ करने की ज़रूरत नहीं है; यदि आपको कभी वापस आना पड़े, तो \"प्रोजेक्ट लोड करें\" सब कुछ वापस ले आता है।",
+    "backup_saved_score": " (स्कोर {score})",
+    "project_saved_multi_one": "💾 प्रोजेक्ट सहेजा गया ({count} रेंज); जारी रखने के लिए इसे बाद में लोड करें",
+    "project_saved_multi_other": "💾 प्रोजेक्ट सहेजा गया ({count} रेंज); जारी रखने के लिए इसे बाद में लोड करें",
+    "project_saved": "💾 प्रोजेक्ट सहेजा गया; संपादन जारी रखने के लिए इसे बाद में लोड करें",
+    "search_result_desc": "Google खोज परिणाम: {title}",
+    "link_url_prompt": "लिंक का URL दर्ज करें:"
   },
   "large_file": {
     "modal_title": "आयात करें Large ऑडियो फ़ाइल",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "रद्द करें Transcription",
     "chunk_info": "ऑडियो है split में 5-minute chunks के लिए processing",
     "chunk_progress": "Chunk {current} का {total}",
-    "audio_only_error": "Currently केवल ऑडियो फ़ाइल (MP3, WAV, etc.) हैं समर्थन के लिए chunked transcription."
+    "audio_only_error": "Currently केवल ऑडियो फ़ाइल (MP3, WAV, etc.) हैं समर्थन के लिए chunked transcription.",
+    "starting": "शुरू हो रहा है..."
   },
   "formatting": {
     "bold": "Bold (**पाठ**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "खोलें StoryForge",
     "storyforge_label": "स्टोरीफोर्ज",
     "tool_dbq_aria": "दस्तावेज़-आधारित प्रश्न",
-    "open_stem_lab_explore_aria": "खोलें STEM प्रयोगशाला अन्वेषण करें"
+    "open_stem_lab_explore_aria": "खोलें STEM प्रयोगशाला अन्वेषण करें",
+    "stem_lab_explore": "अन्वेषण करें"
   },
   "history": {
     "load_project": "लोड करें Project",
@@ -4488,7 +4525,25 @@
       "resolved_tip": "मूल ऑडिट से समस्याएं अब सत्यापन ऑडिट में नहीं मिलीं",
       "persisted_tip": "मूल ऑडिट से समस्याएं सुधार के बाद भी मौजूद हैं",
       "introduced_tip": "नई समस्याएं जो सुधार से पहले मौजूद नहीं थीं"
-    }
+    },
+    "reattach_mismatch": "पुनः संलग्न किया गया PDF ऑडिट किए गए से भिन्न है{detail}। फिर भी जारी रहेगा; परिणाम मूल ऑडिट के साथ असंगत हो सकते हैं।",
+    "reattach_name_detail": " (नाम: \"{new}\" बनाम \"{old}\")",
+    "reattach_size_detail": " (आकार: {new} बनाम {old} बाइट)",
+    "audit_failed_kept": "{label}: ऑडिट विफल; पिछला संस्करण रखा गया।",
+    "score_dropped_kept": "{label}: स्कोर गिर जाता ({prev} → {next}{axe})। पिछला संस्करण रखा गया।",
+    "axe_only_comparison": ", केवल axe तुलना",
+    "axe_only_committed": "{label}: AI सत्यापन उपलब्ध नहीं; केवल नियतात्मक axe-core स्कोर के साथ पुष्टि की गई।",
+    "reinserted_ai": "{count} पुनः सम्मिलित (AI)",
+    "reinserted_sentence": "{count} पुनः सम्मिलित (वाक्य)",
+    "reinserted_fuzzy": "{count} पुनः सम्मिलित (अनुमानित)",
+    "in_recovery_appendix": "{count} पुनर्प्राप्ति परिशिष्ट में",
+    "duplicates_removed_one": "{count} डुप्लिकेट हटाया गया",
+    "duplicates_removed_other": "{count} डुप्लिकेट हटाए गए",
+    "auto_continue_round": "स्वतः जारी राउंड {round}/{max}: {detail}, स्कोर {score}/100 (लक्ष्य {target})...",
+    "violation_one": "{count} उल्लंघन",
+    "violation_other": "{count} उल्लंघन",
+    "ai_issue_one": "{count} AI-चिह्नित समस्या",
+    "ai_issue_other": "{count} AI-चिह्नित समस्याएँ"
   },
   "concept_sort": {
     "title": "अवधारणा क्रमबद्ध करें",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "कार्ड दृश्य",
     "card_visuals_auto": "स्वतः (केवल पर छोटा आइटम)",
     "card_visuals_always": "Always उत्पन्न करें छवि",
-    "card_visuals_never": "Never (पाठ-केवल कार्ड)"
+    "card_visuals_never": "Never (पाठ-केवल कार्ड)",
+    "explanation_unavailable": "अभी स्पष्टीकरण तैयार नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
   },
   "dbq": {
     "title": "दस्तावेज़ विश्लेषण (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed को जाँच संरेखण.",
       "regenerated_success": "पाठ regenerated के साथ improvements!",
       "regen_failed": "पुनर्जनन विफल हुआ।"
-    }
+    },
+    "skill_check": "कौशल जाँच",
+    "desc_skill_check": "मानकों के विरुद्ध अपनी दक्षता सत्यापित करें।",
+    "desc_parent": "देखें कि यह स्कूल के लक्ष्यों से कैसे मेल खाता है",
+    "desc_6dim": "पाठ्यक्रम का 6 आयामों में ऑडिट करता है",
+    "desc_5dim": "पाठ्यक्रम का 5 आयामों में ऑडिट करता है (पूर्ण ऑडिट के लिए मानक जोड़ें)"
   },
   "standards": {
     "target_standard": "लक्ष्य मानक",
@@ -5180,7 +5241,34 @@
     "plan_hook": "आकर्षण",
     "plan_independent": "Independent अभ्यास करें",
     "col_image": "छवि",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "रोकें",
+    "expand_header": "हेडर विस्तृत करें",
+    "collapse_header": "सामग्री को अधिक स्थान देने के लिए हेडर संक्षिप्त करें",
+    "collapse_header_short": "हेडर संक्षिप्त करें",
+    "step_x_of_y": "चरण {current} / {total}",
+    "english_translation": "अंग्रेज़ी अनुवाद",
+    "source_references": "स्रोत पाठ संदर्भ",
+    "activity_probe": "{activity} जाँच",
+    "word_sounds_count": "Word Sounds ({count} शब्द)",
+    "quick_practice_mode": "त्वरित अभ्यास मोड",
+    "new_option": "नया विकल्प",
+    "meta_lesson_extensions": "पाठ विस्तार",
+    "title_extension_ideas": "विस्तार विचार",
+    "meta_full_chat_log": "पूर्ण चैट लॉग",
+    "title_udl_consultation_log": "UDL परामर्श लॉग",
+    "meta_actionable_steps": "क्रियान्वयन योग्य चरण (AI सारांश)",
+    "title_differentiation_strategy": "विभेदीकरण रणनीति",
+    "meta_udl_guide_advice": "UDL गाइड सलाह",
+    "title_stem_assessment": "STEM मूल्यांकन",
+    "title_explore_challenge": "अन्वेषण चुनौती",
+    "title_fluency_maze": "🏰 प्रवाह भूलभुलैया",
+    "title_storyforge_config": "📖 StoryForge असाइनमेंट",
+    "title_storyforge_submission": "📖 कहानी सबमिशन",
+    "title_poettree_config": "🌳 PoetTree असाइनमेंट",
+    "title_poettree_submission": "🌳 कविता सबमिशन",
+    "title_litlab_config": "🎭 LitLab असाइनमेंट",
+    "title_litlab_submission": "🎭 प्रदर्शन सबमिशन"
   },
   "persona": {
     "title": "Interview मोड",
@@ -8308,7 +8396,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing सामग्री topology...",
     "brainstorming": "विचार मंथन कर रहे हैं...",
     "retrying_citations": "Retrying के लिए बेहतर citations...",
-    "translating": "अनुवाद कर रहे हैं…"
+    "translating": "अनुवाद कर रहे हैं…",
+    "preparing_translation": "{lang} में अनुवाद तैयार किया जा रहा है...",
+    "translating_item": "{current}/{total} अनुवादित किया जा रहा है: {title}...",
+    "generating_panel": "पैनल {current}/{total} तैयार किया जा रहा है..."
   },
   "process": {
     "source_missing": "कृपया प्रदान स्रोत पाठ पहला.",
@@ -9604,7 +9695,8 @@
     "loading_resources": "Loading संसाधन...",
     "preparing_workspace": "Preparing आपका workspace...",
     "almost_ready": "लगभग तैयार है...",
-    "loading_screen_aria": "AlloFlow loading स्क्रीन"
+    "loading_screen_aria": "AlloFlow loading स्क्रीन",
+    "preparing_environment": "आपका सीखने का परिवेश तैयार किया जा रहा है..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9616,7 +9708,7 @@
     "obs_momentary": "Momentary समय Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional व्यवहार मूल्यांकन, ABC डेटा collection, और व्यवहार हस्तक्षेप योजना उपकरण.",
+      "subtitle": "Functional Behavior Assessment (कार्यात्मक व्यवहार मूल्यांकन), ABC डेटा संग्रह, और Behavior Intervention Plan (व्यवहार हस्तक्षेप योजना) उपकरण।",
       "open_btn": "खोलें BehaviorLens",
       "select_student": "चुनें छात्र",
       "choose_student": "— चुनें एक छात्र —",
@@ -9736,7 +9828,7 @@
       "iepprep_title": "IEP बैठक तैयारी",
       "intervention_desc": "मापने योग्य लक्ष्यों और मील के पत्थरों के साथ AI-निर्मित बहु-सप्ताह हस्तक्षेप योजना",
       "intervention_title": "हस्तक्षेप योजना",
-      "ioacalc_desc": "6 विधियों के साथ Inter-Observer Agreement — बिंदु-दर-बिंदु, अंतराल, स्कोर/अस्कोर, सटीक गणना",
+      "ioacalc_desc": "6 विधियों के साथ Inter-Observer Agreement — बिंदु-दर-बिंदु, अंतराल, स्कोर्ड/अनस्कोर्ड, सटीक गणना",
       "ioacalc_title": "IOA कैलकुलेटर",
       "latency_desc": "औसत, मध्य और सीमा आँकड़ों के साथ उत्तेजना-से-प्रतिक्रिया समय माप",
       "latency_title": "विलंबता रिकॉर्डर",
@@ -9759,7 +9851,7 @@
       "prefassess_title": "Preference मूल्यांकन",
       "progress_desc": "संचित व्यवहार डेटा से IEP-तैयार प्रगति निगरानी अनुच्छेद",
       "progress_title": "प्रगति कथा",
-      "progressreport_desc": "AI-generated प्रगति reports के साथ डेटा summaries, trend विश्लेषण, लक्ष्य प्रगति, और अभिभावक-मित्रवत भाषा विकल्प",
+      "progressreport_desc": "AI द्वारा निर्मित प्रगति रिपोर्ट, जिनमें डेटा सारांश, प्रवृत्ति विश्लेषण, लक्ष्य प्रगति, और अभिभावक-अनुकूल भाषा विकल्प शामिल हैं",
       "progressreport_title": "प्रगति Reports",
       "qualitycheck_desc": "विशिष्ट सुधार सुझावों के साथ आपकी ABC प्रविष्टियों की AI-संचालित समीक्षा",
       "qualitycheck_title": "डेटा गुणवत्ता जाँच",
@@ -9778,7 +9870,7 @@
       "restorative_desc": "क्षति मरम्मत, समुदाय मंडलों, और पुनर्एकीकरण सम्मेलनों के लिए चरण-दर-चरण स्क्रिप्ट",
       "restorative_title": "पुनर्स्थापनात्मक संवाद मार्गदर्शिका",
       "riskscreen_title": "जोखिम Screening",
-      "sandbox_desc": "लोड करें अनुकरण किया गया छात्र डेटा के लिए PD, pre-service training, या सीखना ABA बिना वास्तविक छात्र",
+      "sandbox_desc": "PD, सेवा-पूर्व प्रशिक्षण, या वास्तविक छात्रों के बिना ABA सीखने के लिए अनुकरणित छात्र डेटा लोड करें",
       "sandbox_title": "अभ्यास करें Sandbox",
       "save_workspace": "सहेजें Workspace",
       "scatterplot_desc": "अस्थायी पैटर्न की पहचान के लिए दिन-का-समय × व्यवहार ग्रिड — ABC डेटा से स्वतः भरता है",
@@ -9791,7 +9883,7 @@
       "sessionnotes_title": "सत्र नोट्स",
       "sessiontracker_desc": "दर गणना के साथ व्यवस्थित सत्र-आधारित व्यवहार माप",
       "sessiontracker_title": "सत्र डेटा Tracker",
-      "snapshot_desc": "निर्यात करें & आयात करें JSON snapshots के लिए अभिभावक–शिक्षक डेटा exchange",
+      "snapshot_desc": "अभिभावक–शिक्षक डेटा आदान-प्रदान के लिए JSON स्नैपशॉट निर्यात और आयात करें",
       "snapshot_title": "छात्र स्नैपशॉट विनिमय",
       "socialvalidity_desc": "उपचार स्वीकार्यता मापने के लिए TARF और IRP-15 पैमाने — प्रकाशन हेतु आवश्यक",
       "socialvalidity_title": "सामाजिक Validity",
@@ -9991,7 +10083,7 @@
     "reinforcer_sensory": "🌀 संवेदी",
     "quiz_fba_purpose": "FBA का प्राथमिक उद्देश्य क्या है?",
     "quiz_replacement": "क्या है एक replacement व्यवहार?",
-    "search_placeholder": "खोजें antecedent, व्यवहार, consequence, नोट्स, सेटिंग...",
+    "search_placeholder": "पूर्ववर्ती (antecedent), व्यवहार, परिणाम (consequence), नोट्स, सेटिंग खोजें...",
     "quick_fill_placeholder": "उदा. \"जब काम दिखाने को कहा गया तो छात्र ने गणित के दौरान कागज़ फेंका, शिक्षक ने शांति से पुनर्निर्देशित किया\"",
     "nl_edit_placeholder": "उदा. \"परिणाम को बदलकर शिक्षक ने पुनर्निर्देशित किया करें\"",
     "now": "अब",
@@ -10091,7 +10183,7 @@
     "cycle_de_escalation": "शांति की ओर",
     "cycle_recovery": "पुनःप्राप्ति",
     "quiz_opt_punish": "को punish छात्र",
-    "quiz_opt_identify_why": "को पहचानना WHY एक व्यवहार occurs",
+    "quiz_opt_identify_why": "किसी व्यवहार के होने का कारण (WHY) पहचानने के लिए",
     "quiz_opt_any_stops": "कोई भी व्यवहार जो समस्या को रोकता है",
     "analysis": {
       "hypothesized_function": "अनुमानित कार्य",
@@ -10164,7 +10256,7 @@
       "topic_purpose_of_contact": "विषय / संपर्क का उद्देश्य",
       "type_full_name": "प्रकार पूर्ण name",
       "type_language_eg_spanish_arabic_somali": "भाषा टाइप करें (जैसे, स्पैनिश, अरबी, सोमाली)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "प्रकार आपका अवलोकन, note, या क्लिक करें mic को dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "अपना अवलोकन या नोट टाइप करें, या बोलकर लिखवाने के लिए माइक पर क्लिक करें...",
       "type_your_response_here_be_thorough_and_use_profes": "अपना उत्तर यहां टाइप करें। विस्तृत रहें और पेशेवर भाषा का उपयोग करें...",
       "what_behavior_will_change": "क्या व्यवहार होगा बदलाव?",
       "what_could_you_or_a_grownup_do_differently": "आप या कोई बड़ा व्यक्ति अलग तरीके से क्या कर सकते थे?",
@@ -10359,7 +10451,7 @@
       "triangulation_complete": "Triangulation पूरा करें ✨",
       "wizard_failed": "विज़ार्ड failed",
       "workspace_loaded_n_entries_n_notes": "कार्यक्षेत्र लोड किया गया (${a} प्रविष्टियां, ${b} नोट्स) 📂",
-      "you_have_unsaved_changes_consider_saving_your_work": "💡 आप है unसहेजें परिवर्तन — विचार saving आपका workspace.",
+      "you_have_unsaved_changes_consider_saving_your_work": "💡 आपके पास असहेजे परिवर्तन हैं — अपना कार्यक्षेत्र सहेजने पर विचार करें।",
       "autofilled_from_phase_tagged_entries": "चरण-टैग की गई प्रविष्टियों से स्वतः भरा गया।",
       "enter_task_name": "दर्ज करें एक task name.",
       "need_2_baseline_2_intervention_entries_with_phase_tags": "चरण टैग के साथ कम से कम 2 आधाररेखा और 2 हस्तक्षेप प्रविष्टियों की आवश्यकता है।",
@@ -10456,7 +10548,7 @@
       "from_abc_data": "से ABC डेटा:",
       "full_student_summary": "पूर्ण छात्र सारांश",
       "functional_communication_training_planning_tool": "FCT योजना उपकरण",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "उत्पन्न करें एक multi-week हस्तक्षेप योजना आधारित पर आपका collected ABC डेटा और AI विश्लेषण.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "अपने संग्रहित ABC डेटा और AI विश्लेषण के आधार पर एक बहु-सप्ताहीय हस्तक्षेप योजना तैयार करें।",
       "generate_a_professional_printready_progress_report": "इनलाइन चार्ट, डेटा सारांश, और AI अनुशंसाओं के साथ एक पेशेवर, प्रिंट-तैयार प्रगति रिपोर्ट तैयार करें। ब्राउज़र प्रिंट के माध्यम से एक-क्लिक PDF निर्यात।",
       "generate_a_unique_scenario_tailored_to_your_traini": "अपनी प्रशिक्षण आवश्यकताओं के अनुरूप एक अनूठा परिदृश्य तैयार करें।",
       "generate_compliant_iep_behavioral_goals_from_obser": "उत्पन्न करें compliant IEP behavioral लक्ष्य से अवलोकन डेटा के साथ present स्तर, SMART लक्ष्य, और प्रगति monitoring.",
@@ -10491,10 +10583,10 @@
       "mastery": "महारत:",
       "mastery_independent_for": "Mastery: Independent के लिए",
       "mean": "माध्य",
-      "measure_time_between_stimulus_presentation_and_beh": "मापें समय के बीच stimulus प्रस्तुति और behavioral प्रतिक्रिया",
+      "measure_time_between_stimulus_presentation_and_beh": "उद्दीपन प्रस्तुति और व्यवहारिक प्रतिक्रिया के बीच का समय मापें",
       "median": "माध्यिका",
       "methods_used": "उपयोग की गई विधियाँ",
-      "modify_the_environment_to_prevent_behaviors_before": "संशोधित करें environment को prevent व्यवहार पहले वे शुरू करें",
+      "modify_the_environment_to_prevent_behaviors_before": "व्यवहारों को शुरू होने से पहले रोकने के लिए वातावरण में बदलाव करें",
       "mtssrti_tier_manager": "MTSS/RTI स्तर manager",
       "my_progress_quest": "My प्रगति खोज",
       "natural_language_abc_entry": "प्राकृतिक भाषा ABC प्रविष्टि",
@@ -10512,7 +10604,7 @@
       "no_sessions_yet": "नहीं सत्र yet.",
       "no_students": "नहीं छात्र",
       "no_students_in_caseload": "नहीं छात्र में caseload.",
-      "no_team_notes_yet_start_the_conversation": "नहीं team नोट्स yet. शुरू करें बातचीत!",
+      "no_team_notes_yet_start_the_conversation": "अभी तक कोई टीम नोट नहीं। बातचीत शुरू करें!",
       "no_workspaces_loaded_yet": "नहीं workspaces loaded yet",
       "objective": "Objective",
       "observations": "अवलोकन",
@@ -10534,10 +10626,10 @@
       "publicationstandard_singlecase_design_graphs": "प्रकाशन-मानक एकल-केस डिज़ाइन ग्राफ़",
       "quick_switch": "तेज़ बदलें",
       "range": "परास",
-      "read_through_the_module_content_above_then_click_c": "पढ़ें के माध्यम से module सामग्री above, फिर क्लिक करें पूरा करें below.",
+      "read_through_the_module_content_above_then_click_c": "ऊपर दी गई मॉड्यूल सामग्री को पढ़ें, फिर नीचे 'पूरा करें' पर क्लिक करें।",
       "realtime_calming_tools_for_inthemoment_support": "तत्क्षण सहायता के लिए वास्तविक-समय शांत करने वाले उपकरण",
       "recent_moods": "हाल की मनोदशाएँ:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record सत्र के साथ सत्र डेटा Tracker, या बदलें को मैनुअल Entry मोड.",
+      "record_sessions_with_the_session_data_tracker_or_s": "Session Data Tracker से सत्र रिकॉर्ड करें, या मैनुअल प्रविष्टि मोड पर स्विच करें।",
       "recording": "रिकॉर्ड हो रहा है...",
       "relationship_map": "संबंध मानचित्र",
       "remember_cultural_humility_is_a_lifelong_practice": "याद रखें: सांस्कृतिक विनम्रता एक आजीवन अभ्यास है। प्रत्येक चिंतन आपको एक अधिक न्यायसंगत व्यवसायी बनाता है।",
@@ -10565,18 +10657,18 @@
       "summary": "सारांश:",
       "systematic_behavioral_measurement_across_sessions": "सत्रों में व्यवस्थित व्यवहार मापन",
       "systematic_reinforcer_identification_using_evidenc": "साक्ष्य-आधारित प्रोटोकॉल का उपयोग करते हुए व्यवस्थित प्रबलक पहचान",
-      "tap_each_item_when_student_engages_with_it": "Tap प्रत्येक आइटम जब छात्र engages के साथ it",
+      "tap_each_item_when_student_engages_with_it": "जब छात्र किसी वस्तु के साथ संलग्न हो, तब प्रत्येक वस्तु पर टैप करें",
       "target_behavior": "लक्ष्य व्यवहार",
       "task_analysis": "Task विश्लेषण",
       "taskskill_name": "कार्य/कौशल नाम",
       "teacher": "शिक्षक",
       "team_collaboration_notes": "Team सहयोग नोट्स",
-      "test_your_behavioral_analysis_knowledge_80_to_earn": "परीक्षा आपका behavioral विश्लेषण knowledge — 80% को अर्जित करें आपका बैज",
+      "test_your_behavioral_analysis_knowledge_80_to_earn": "अपने व्यवहार विश्लेषण ज्ञान की परीक्षा लें — बैज अर्जित करने के लिए 80%",
       "top_behavior": "Top व्यवहार",
       "total_contacts": "कुल संपर्क",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track व्यवहार frequency के ऊपर समय के साथ aim रेखा, phase परिवर्तन, और trend विश्लेषण.",
-      "track_behaviors_at_home_using_simple_everyday_lang": "Track व्यवहार at home उपयोग करते हुए सरल, everyday भाषा. यह मदद आपका child\\",
+      "track_behavior_frequency_over_time_with_aim_lines": "समय के साथ व्यवहार की आवृत्ति को लक्ष्य रेखाओं (aim lines), चरण परिवर्तनों, और प्रवृत्ति विश्लेषण के साथ ट्रैक करें।",
+      "track_behaviors_at_home_using_simple_everyday_lang": "सरल, रोज़मर्रा की भाषा का उपयोग करते हुए घर पर व्यवहारों को ट्रैक करें। यह आपके बच्चे\\",
       "track_your_feelings_earn_badges_and_build_streaks": "अपनी भावनाओं को ट्रैक करें, बैज अर्जित करें, और निरंतरता बनाएं!",
       "transform_deficitbased_language_into_assetfocused": "कमी-आधारित भाषा को संपत्ति-केंद्रित विवरणों में बदलें",
       "translate_to_any_language": "Translate को कोई भी भाषा:",
@@ -10629,7 +10721,7 @@
     "allobot_chat": {
       "card_desc": "चैट के साथ AI के बारे में व्यवहार रणनीतियां, FBA, BIP, और हस्तक्षेप planning",
       "empty_desc": "मैं FBA रणनीतियों, हस्तक्षेप विचारों, डेटा व्याख्या, उत्तेजना-कम करने की तकनीकों, और अधिक में मदद कर सकता हूँ।",
-      "empty_title": "Ask me anything के बारे में व्यवहार विश्लेषण!",
+      "empty_title": "व्यवहार विश्लेषण के बारे में मुझसे कुछ भी पूछें!",
       "placeholder": "Ask के बारे में व्यवहार, रणनीतियां, FBA, BIP...",
       "subtitle": "AI-संचालित व्यवहार विश्लेषण सहायक",
       "title": "AlloBot से पूछें"
@@ -10827,7 +10919,7 @@
       "maintenance_tracker": "रखरखाव ट्रैकर",
       "make_tier_movement_decision_stay_fade_intensify": "स्तर परिवर्तन निर्णय लें (रहें / कम करें / तीव्र करें)",
       "map_antecedent_behavior_consequence_pathways": "पूर्ववर्ती → व्यवहार → परिणाम मार्गों का मानचित्रण करें",
-      "map_each_target_behavior_to_a_replacement": "Map प्रत्येक लक्ष्य व्यवहार को एक replacement",
+      "map_each_target_behavior_to_a_replacement": "प्रत्येक लक्ष्य व्यवहार को एक प्रतिस्थापन (replacement) व्यवहार से मैप करें",
       "materials_access": "सामग्री पहुंच",
       "measure_effect_size_of_interventions": "हस्तक्षेपों के प्रभाव आकार को मापें",
       "model": "modal",
@@ -11250,7 +11342,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS बैनर बंद करें",
     "dismiss_button": "खारिज करें",
-    "audit_queue_help": "किसी दस्तावेज़ को प्राप्त करने और उसे पहुँच-योग्यता पाइपलाइन में लोड करने के लिए उस पर क्लिक करें। कुछ LMS फ़ाइलों के लिए आपको इस ब्राउज़र में LMS में लॉग-इन होने की आवश्यकता हो सकती है।"
+    "audit_queue_help": "किसी दस्तावेज़ को प्राप्त करने और उसे पहुँच-योग्यता पाइपलाइन में लोड करने के लिए उस पर क्लिक करें। कुछ LMS फ़ाइलों के लिए आपको इस ब्राउज़र में LMS में लॉग-इन होने की आवश्यकता हो सकती है।",
+    "queued_one": "LMS से {count} दस्तावेज़ कतार में",
+    "queued_other": "LMS से {count} दस्तावेज़ कतार में",
+    "fetching": "{name} प्राप्त किया जा रहा है...",
+    "loaded_ready": "{name} लोड हुआ; ऑडिट के लिए तैयार",
+    "fetch_failed": "{name} प्राप्त करने में विफल: {error}। फ़ाइल को LMS प्रमाणीकरण की आवश्यकता हो सकती है।"
   },
   "annotation": {
     "undo_tooltip": "Undo अंतिम annotation ({count} उपलब्ध) — Ctrl/Cmd+Z",
@@ -11270,7 +11367,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "दृश्य समर्थन से आपका शिक्षक"
+    "teacher_modal_aria": "दृश्य समर्थन से आपका शिक्षक",
+    "now": "अभी",
+    "read_aloud": "ज़ोर से पढ़ें"
   },
   "canvas_settings": {
     "title": "उन्नत सेटिंग्स",
@@ -11287,7 +11386,12 @@
     "read_all_button": "पढ़ें सभी",
     "stop_button": "रोकें",
     "focus_narration_label": "कीबोर्ड फोकस कथन",
-    "focus_narration_on_hint": "Tab को hear controls"
+    "focus_narration_on_hint": "Tab को hear controls",
+    "reading": "पढ़ा जा रहा है...",
+    "item_aria": "सुनने के लिए क्लिक करें: {text}",
+    "footer_stats": "{count} आइटम · किसी भी आइटम को सुनने के लिए क्लिक करें · Tab वर्णन {state}",
+    "narration_on": "चालू",
+    "narration_off": "बंद"
   },
   "teacher": {
     "local_only": "Local केवल",
@@ -12254,5 +12358,27 @@
     "no_match": "कोई मिलता-जुलता कमांड नहीं। बॉट चैट (और जल्द ही वॉइस) मुक्त-रूप अनुरोधों को समझती है।",
     "placeholder": "एक कमांड टाइप करें — “बड़ा टेक्स्ट”, “educator hub”, “यह पृष्ठ पढ़ें”…",
     "run": "चलाएँ"
+  },
+  "voice_engine": {
+    "preparing": "वॉयस इंजन तैयार किया जा रहा है...",
+    "downloading_model": "वॉयस मॉडल डाउनलोड हो रहा है",
+    "loading_memory": "मेमोरी में लोड हो रहा है",
+    "loading_model_memory": "वॉयस मॉडल मेमोरी में लोड हो रहा है"
+  },
+  "voice_control": {
+    "listening": "सुन रहा है; समाप्त करने के लिए “stop listening” कहें",
+    "stop_aria": "वॉयस नियंत्रण रोकें"
+  },
+  "dynamic_assessment": {
+    "return_title": "यह संसाधन डायनामिक असेसमेंट द्वारा तैयार किया गया था। डायनामिक असेसमेंट मॉड्यूल को फिर से खोलने के लिए क्लिक करें।",
+    "return_aria": "डायनामिक असेसमेंट पर लौटें",
+    "return_label": "डायनामिक असेसमेंट पर लौटें",
+    "item_badge": "आइटम {num}"
+  },
+  "story_gallery": {
+    "title": "कहानी गैलरी",
+    "byline": "{author} द्वारा · {words} शब्द · {used}/{total} शब्दावली",
+    "student": "छात्र",
+    "score": "स्कोर: {score}"
   }
 }

@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Bokoti ya Whisper ekweyi. Ezali kozonga na moteur mosusu.",
     "backup_failed": "Bobombi ekweyi. Meka lisusu.",
     "invalid_backup_file": "Ezali te fichier ya bobombi ya AlloHaven ya solo.",
-    "could_not_read_file": "Tokoki te kotanga fichier wana. Ezali bobombi ya JSON?"
+    "could_not_read_file": "Tokoki te kotanga fichier wana. Ezali bobombi ya JSON?",
+    "focus_streak": "{flames} Molɔngɔ ya bokɛngɛli ya miniti {minutes}! Kobá bongo!",
+    "streak_saved": "Boyei malamu lisusu! Molɔngɔ na yo ya miniti {minutes} ebombami.",
+    "points_awarded": "Bapesi punti!",
+    "welcome_name": "Boyei malamu, {name}!",
+    "element_not_found": "Eloko ezwami te: {id}",
+    "overlay_set": "Etanda: {mode}",
+    "synced_resource": "Esangisami: {title}",
+    "group_resource": "Esaleli ya etuluku: {title}",
+    "preset_saved": "Prɛsɛ \"{name}\" ebombami!",
+    "translated_resources": "Babongoli bisaleli {count} na elonga!",
+    "bingo_cards_count": "Basali bakarte {count} ya BINGO!",
+    "sound_enabled": "Mongongo epelisami",
+    "sound_muted": "Mongongo ekangami",
+    "democracy_mode_on": "Mode ya demokrasi epelisami: bovoti ya kelasi EPELISAMI",
+    "democracy_mode_off": "Mode ya demokrasi ekangami: kosakana yo moko",
+    "resource_moved_up": "{title} ematisami likolo",
+    "resource_moved_down": "{title} ekitisami nse",
+    "panels_regenerated": "Bapanɔ {count} basali yango lisusu!",
+    "settings_undone": "Elongwami: {label}. Babongisi ya mibateli ezongisami. (Bisaleli oyo basalaki ebebi te.)",
+    "concept_added": "Likanisi ebakisami: {text}",
+    "lesson_not_found": "Liteya ezwami te na eteni oyo.",
+    "probe_complete": "Botali esili: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Babongisi ya mibateli ebongwani: {changes}",
+    "change_format": "Lolenge: {value}",
+    "change_tone": "Mongongo: {value}",
+    "change_length": "Bolai: ~{value} maloba",
+    "change_language": "Monɔkɔ: {value}",
+    "change_interest": "Mposa ebakisami: {value}",
+    "backup_saved": "💾 Kopi ya bobateli ya sesion oyo ebombami na Batelechargement na yo (fisye ya projɛ). Osengeli kosala na yango eloko te sikoyo; soko mokolo mosusu osengeli kozonga, \"Kozwa Projɛ\" ezongisaka biloko nyonso.",
+    "backup_saved_score": " (litɔmɔ {score})",
+    "project_saved_multi_one": "💾 Projɛ ebombami (etando {count}); zwa yango na nsima mpo na kokoba",
+    "project_saved_multi_other": "💾 Projɛ ebombami (etando {count}); zwa yango na nsima mpo na kokoba",
+    "project_saved": "💾 Projɛ ebombami; zwa yango na nsima mpo na kokoba kobongisa",
+    "search_result_desc": "Mbano ya Boluki ya Google: {title}",
+    "link_url_prompt": "Kɔtɛla URL ya liyangani:"
   },
   "large_file": {
     "modal_title": "Kotisá Large mongongo fichier",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Boyá Transcription",
     "chunk_info": "mongongo ezali split na 5-minute chunks mpo na processing",
     "chunk_progress": "Chunk {current} ya {total}",
-    "audio_only_error": "Currently only mongongo fichier (MP3, WAV, etc.) ezali supported mpo na chunked transcription."
+    "audio_only_error": "Currently only mongongo fichier (MP3, WAV, etc.) ezali supported mpo na chunked transcription.",
+    "starting": "Ebandi..."
   },
   "formatting": {
     "bold": "Bold (**makomi**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Fungolá StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "mokanda-Na motuna",
-    "open_stem_lab_explore_aria": "Fungolá STEM laboratoire Luka"
+    "open_stem_lab_explore_aria": "Fungolá STEM laboratoire Luka",
+    "stem_lab_explore": "Koluka"
   },
   "history": {
     "load_project": "Tiyá Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight langi",
       "insert_table_aria": "Insert tableau",
       "insert_table_title": "Insert epesami tableau"
-    }
+    },
+    "reattach_mismatch": "PDF oyo bakangisi lisusu ekeseni na oyo batalaki{detail}. Ekokoba ata bongo; mbano ekoki kokokana te na botali ya liboso.",
+    "reattach_name_detail": " (nkombo: \"{new}\" na \"{old}\")",
+    "reattach_size_detail": " (bonene: {new} na {old} bayiti)",
+    "audit_failed_kept": "{label}: botali elongi te; babombi vɛrsion ya liboso.",
+    "score_dropped_kept": "{label}: litɔmɔ elingaki kokita ({prev} → {next}{axe}). Babombi vɛrsion ya liboso.",
+    "axe_only_comparison": ", bokokanisi ya axe kaka",
+    "axe_only_committed": "{label}: botali ya AI ezali te; bandimi kaka na litɔmɔ ya sikisiki ya axe-core.",
+    "reinserted_ai": "{count} bakɔtisi lisusu (AI)",
+    "reinserted_sentence": "{count} bakɔtisi lisusu (fraze)",
+    "reinserted_fuzzy": "{count} bakɔtisi lisusu (pene-pene)",
+    "in_recovery_appendix": "{count} na lisanga ya bozongisi",
+    "duplicates_removed_one": "Bolongoli {count} oyo ezalaki mbala mibale",
+    "duplicates_removed_other": "Bolongoli {count} oyo ezalaki mbala mibale",
+    "auto_continue_round": "Tour ya bokobi ya yango moko {round}/{max}: {detail}, litɔmɔ {score}/100 (mokano {target})...",
+    "violation_one": "Bobuki {count}",
+    "violation_other": "Bobuki {count}",
+    "ai_issue_one": "Mokakatano {count} oyo AI elakisi",
+    "ai_issue_other": "Mikakatano {count} oyo AI elakisi"
   },
   "concept_sort": {
     "title": "Likanisi Tia na molongo",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "karte elilingi",
     "card_visuals_auto": "Auto (only likoló mokuse eloko)",
     "card_visuals_always": "Always sala elilingi",
-    "card_visuals_never": "Never (makomi-only karte)"
+    "card_visuals_never": "Never (makomi-only karte)",
+    "explanation_unavailable": "Bokoki te kobimisa ndimbola sikoyo. Svp meka lisusu nsima ya mwa ntango."
   },
   "dbq": {
     "title": "mokanda Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed na check kosengisa.",
       "regenerated_success": "makomi regenerated na improvements!",
       "regen_failed": "Bosali lisusu esili na mabe."
-    }
+    },
+    "skill_check": "Botali ya mayele",
+    "desc_skill_check": "Talela boyebi na yo na kotala na bikateli.",
+    "desc_parent": "Tala ndenge oyo eyokani na mikano ya eteyelo",
+    "desc_6dim": "Etalaka programme ya kelasi na bilembo 6",
+    "desc_5dim": "Etalaka programme ya kelasi na bilembo 5 (bakisa bikateli mpo na botali mobimba)"
   },
   "standards": {
     "target_standard": "Mokano mibeko",
@@ -5180,7 +5241,34 @@
     "plan_hook": "Bobendani",
     "plan_independent": "Independent salela",
     "col_image": "elilingi",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Tɛlɛmisa",
+    "expand_header": "Fungola motó",
+    "collapse_header": "Kanga motó mpo na kopesa esika mingi na makomi",
+    "collapse_header_short": "Kanga motó",
+    "step_x_of_y": "Litambe {current} ya {total}",
+    "english_translation": "Libongoli ya Lingelesi",
+    "source_references": "Bandimbola ya Makomi ya Liboke",
+    "activity_probe": "Botali ya {activity}",
+    "word_sounds_count": "Word Sounds (maloba {count})",
+    "quick_practice_mode": "Mode ya Momesano ya Mbangu",
+    "new_option": "Poni ya sika",
+    "meta_lesson_extensions": "Bayilolingi ya Liteya",
+    "title_extension_ideas": "Makanisi ya Boyili",
+    "meta_full_chat_log": "Bokomi Mobimba ya Lisolo",
+    "title_udl_consultation_log": "Bokomi ya Botuni ya UDL",
+    "meta_actionable_steps": "Matambe ya Kosala (Bokuse ya AI)",
+    "title_differentiation_strategy": "Mwango ya Bokeseni",
+    "meta_udl_guide_advice": "Toli ya Motambwisi UDL",
+    "title_stem_assessment": "Botali ya STEM",
+    "title_explore_challenge": "Mokakatano ya Koluka",
+    "title_fluency_maze": "🏰 Labirɛnti ya Bokoki",
+    "title_storyforge_config": "📖 Mosala StoryForge",
+    "title_storyforge_submission": "📖 Botindi Lisolo",
+    "title_poettree_config": "🌳 Mosala PoetTree",
+    "title_poettree_submission": "🌳 Botindi Loyembo",
+    "title_litlab_config": "🎭 Mosala LitLab",
+    "title_litlab_submission": "🎭 Botindi Bomonisi"
   },
   "persona": {
     "title": "Interview lolenge",
@@ -8257,7 +8345,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing mateya topology...",
     "brainstorming": "Ezali kokanisa makanisi...",
     "retrying_citations": "Retrying mpo na malamu koleka citations...",
-    "translating": "Ezali kobongola…"
+    "translating": "Ezali kobongola…",
+    "preparing_translation": "Ebongisi libongoli na {lang}...",
+    "translating_item": "Ebongoli {current}/{total}: {title}...",
+    "generating_panel": "Ebimisi panɔ {current}/{total}..."
   },
   "process": {
     "source_missing": "nabondeli yo provide esika ya kobimisa makomi ya liboso.",
@@ -9553,7 +9644,8 @@
     "loading_resources": "Loading biloko...",
     "preparing_workspace": "Preparing yo workspace...",
     "almost_ready": "Pene na kosila...",
-    "loading_screen_aria": "AlloFlow loading écran"
+    "loading_screen_aria": "AlloFlow loading écran",
+    "preparing_environment": "Ebongisi esika na yo ya boyekoli..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9575,9 +9667,9 @@
       "randomize": "Bobongoli",
       "select_student_first": "Poná moyekoli above na get started",
       "abc_title": "ABC bilembo",
-      "abc_desc": "Record antecedent, ezalela, na consequence botali",
+      "abc_desc": "Komaka botali ya antecedent, ezalela, na consequence",
       "obs_title": "Na sembo botali",
-      "obs_desc": "Ngonga ya solo interval, frequency, to duration recording",
+      "obs_desc": "Kokoma na ntango ya solo: interval, mbala na mbala, to durée",
       "analysis_title": "Bokatoli AI",
       "analysis_desc": "AI-powered ezalela pattern analysis & recommendations",
       "overview_title": "Mokuse",
@@ -9611,13 +9703,13 @@
       "triangulation_title": "Triangulation",
       "triangulation_desc": "Cross-référence 3+ bilembo sources mpo na convergence",
       "impact_title": "Esaleli ya Botángi ya Bopusi",
-      "impact_desc": "Quantify ezalela frequency, duration, na annual cost",
+      "impact_desc": "Kotanga mbala na mbala ya ezalela, durée, na motuya ya mbula",
       "crisis_title": "Crisis Mwango",
       "crisis_desc": "Esaleli ya kosala protocole ya kosalisa na ntango ya likama na bingumba misato",
       "traffic_title": "Mwinda ya Nzela",
       "traffic_desc": "moyekoli-facing red/yellow/green ezalela zone poster",
       "datasheet_title": "bilembo Sheet",
-      "datasheet_desc": "ya kobimisa frequency, duration, ABC, to latency bilembo sheets",
+      "datasheet_desc": "Bafeyi ya bilembo oyo ekoki kobima na imprimante: mbala na mbala, durée, ABC, to latence",
       "homenote_title": "Likomi Ndako",
       "homenote_desc": "AI-drafted moboti communication na mongongo selector",
       "fidelity_title": "Liste ya Bosembo",
@@ -9940,7 +10032,7 @@
     "reinforcer_sensory": "🌀 Bomoni",
     "quiz_fba_purpose": "nini ezali primary purpose ya FBA?",
     "quiz_replacement": "nini ezali replacement ezalela?",
-    "search_placeholder": "Lukáká antecedent, ezalela, consequence, notes, bobongisi...",
+    "search_placeholder": "Luka antecedent, ezalela, consequence, banote, esika...",
     "quick_fill_placeholder": "e.g. \"moyekoli threw paper during mituya tángo asked na lakisá work, molakisi redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"mbongwana consequence na molakisi redirected\"",
     "now": "sik'oyo",
@@ -10093,7 +10185,7 @@
       "paste_share_code_here": "Pasiká kabolá code here...",
       "person": "Moto\\",
       "phase_label": "Nkombo etape",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does oyo address?)",
+      "rationale_which_antecedent_does_this_address": "Ntina (ezali kosimba antecedent nini?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect likoló yo approach...\\n• nini worked well?\\n• nini would yo do differently?\\n• nini stratégies do yo want na salela oyo elandi?",
       "reinforcement_how_you": "⭐ Reinforcement (how yo\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement ezalela (functionally equivalent)",
@@ -10524,7 +10616,7 @@
       "top_behavior": "Top ezalela",
       "total_contacts": "Bokutani Nyonso",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ezalela frequency likoló time na aim molongo, phase mbongwana, na trend analysis.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Landa mbala na mbala ya ezalela na boumeli ya ntango na milongo ya mokano, mbongwana ya phase, na botali ya trend.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track ezalela at home kosalela pete, everyday monoko. Oyo lisalisis yo child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track yo feelings, earn elembo, na kotonga streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-na monoko na asset-focused descriptions",
@@ -10709,7 +10801,7 @@
       "developing": "Ekoli",
       "discontinue": "Tika",
       "dismiss": "Longola",
-      "document_baseline_frequency_for_flagged_students": "mokanda baseline frequency mpo na flagged moyekoli",
+      "document_baseline_frequency_for_flagged_students": "Komaka mbala na mbala ya ebandeli (baseline) mpo na bayekoli oyo balembolami",
       "document_outcomes_and_lessons_learned": "mokanda outcomes na liteya learned",
       "document_the_confirmed_function": "mokanda confirmed function",
       "document_the_hypothesis_in_session_notes": "mokanda hypothesis na tángo notes",
@@ -10775,7 +10867,7 @@
       "level_mean": "niveau (Mean)",
       "maintenance_tracker": "Molandi ya Bobateli",
       "make_tier_movement_decision_stay_fade_intensify": "Salá tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → ezalela → consequence pathways",
+      "map_antecedent_behavior_consequence_pathways": "Sala carte ya banzela: antecedent → ezalela → consequence",
       "map_each_target_behavior_to_a_replacement": "Map mokó mokó mokano ezalela na replacement",
       "materials_access": "Biloko kokota",
       "measure_effect_size_of_interventions": "Meka effect size ya interventions",
@@ -10812,10 +10904,10 @@
       "percentage": "pourcentage",
       "phone": "Telefon",
       "phone_call": "Kobenga",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Mwango reinforcement schedule mpo na replacement ezalela",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Sala mwango ya programme ya renforcement mpo na bizaleli ya bopesi-esika",
       "plan_data_collection_methods_and_frequency": "Mwango bilembo collection methods na frequency",
       "plan_fidelity_monitoring": "Mwango Fidelity Monitoring",
-      "plan_reinforcement_for_replacement_behaviors": "Mwango reinforcement mpo na replacement ezalela",
+      "plan_reinforcement_for_replacement_behaviors": "Sala mwango ya renforcement mpo na bizaleli ya bopesi-esika",
       "plan_replacement_behaviors": "Mwango Replacement ezalela",
       "plan_weekly_progress_monitoring_data_collection": "Mwango weekly bokoli monitoring bilembo collection",
       "positivecorrective_ratio": "Lopɛlɛlɛ Malamu:Bobongisi",
@@ -10857,7 +10949,7 @@
       "sensory": "Bomoni",
       "sensory_break_menu": "Sensory Break menu",
       "sensoryautomatic": "Sensory/ya yango moko",
-      "sensoryautomatic_function": "Sensory/ya yango moko Function",
+      "sensoryautomatic_function": "Function ya bomoni-nzoto (Sensory)/ya yango moko (Automatic)",
       "sensoryrelated": "Etali na Bizaleli ya Nzoto",
       "session_tracker": "tángo Tracker",
       "set_a_6week_intervention_cycle": "Tiá 6-week intervention cycle",
@@ -10953,7 +11045,7 @@
       "incorrect": "Mabe",
       "independent": "Ye moko",
       "intensity": "Makasi",
-      "interval_and_latency_recording": "Interval na latency recording",
+      "interval_and_latency_recording": "Kokoma ya interval na latence",
       "level": "niveau",
       "mastered": "Eyebani",
       "momentary_time_sampling": "Bozwi ya tango ya mokuse",
@@ -11001,7 +11093,7 @@
       "tip_good_coverage": "malamu coverage across days.",
       "tip_good_diversity": "malamu diversity across antecedents.",
       "tip_great_volume": "Monene volume ya entries mpo na analysis.",
-      "tip_last_entry_ago": "ya nsuka entry was recorded while ago.",
+      "tip_last_entry_ago": "Entrée ya nsuka ekomamaki eleki mwa ntango.",
       "tip_missing_fields": "Mosusu entries ezali missing esengeli fields.",
       "tip_spread_days": "Entries ezali well spread across days.",
       "volume": "Boike"
@@ -11014,7 +11106,7 @@
       "step_collect_more": "Collect mingi bilembo",
       "step_collect_more_desc": "Bakisá mingi botali tángo na strengthen dataset.",
       "step_hypothesis": "Hipotezi",
-      "step_hypothesis_desc": "Draft working hypothesis ya ezalela function.",
+      "step_hypothesis_desc": "Koma ebandeli ya hypothèse ya mosala (function) ya ezalela.",
       "step_record_abc": "Record ABC bilembo",
       "step_record_abc_desc": "mokanda antecedents, ezalela, na consequences.",
       "step_report": "Lapolo",
@@ -11199,7 +11291,12 @@
   "lms": {
     "dismiss_banner_aria": "Longola banner ya LMS",
     "dismiss_button": "Longola",
-    "audit_queue_help": "Finá mokanda na kamatá na tiyá it na bokokoki pipeline. Mosusu LMS fichier may require yo na be logged na na LMS na oyo browser."
+    "audit_queue_help": "Finá mokanda na kamatá na tiyá it na bokokoki pipeline. Mosusu LMS fichier may require yo na be logged na na LMS na oyo browser.",
+    "queued_one": "Mokanda {count} ezali na molɔngɔ ya LMS",
+    "queued_other": "Mikanda {count} ezali na molɔngɔ ya LMS",
+    "fetching": "Ezali kozwa {name}...",
+    "loaded_ready": "{name} ekɔti; pene mpo na botali",
+    "fetch_failed": "Bozwi {name} elongi te: {error}. Fisye ekoki kosɛnga botali ya LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo ya nsuka annotation ({count} ezali) — Ctrl/Cmd+Z",
@@ -11219,7 +11316,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "elilingi lisalisi uta yo molakisi"
+    "teacher_modal_aria": "elilingi lisalisi uta yo molakisi",
+    "now": "SIKOYO",
+    "read_aloud": "Tánga na Mongongo Makasi"
   },
   "canvas_settings": {
     "title": "ya likolo bobongisi",
@@ -11236,7 +11335,12 @@
     "read_all_button": "Tángá nyonso",
     "stop_button": "Tikalá",
     "focus_narration_label": "Bolobeli ya Likebi ya Klavye",
-    "focus_narration_on_hint": "Tab na hear controls"
+    "focus_narration_on_hint": "Tab na hear controls",
+    "reading": "Ezali kotanga...",
+    "item_aria": "Finá mpo na koyoka: {text}",
+    "footer_stats": "Biloko {count} · Finá eloko nyonso mpo na koyoka yango · Lisolo ya Tab {state}",
+    "narration_on": "EPELISAMI",
+    "narration_off": "EKANGAMI"
   },
   "teacher": {
     "local_only": "Awa kaka",
@@ -12412,5 +12516,27 @@
     "no_match": "Motindo oyo ekokani te. Lisolo ya bot (mpe noki mongongo) esosolaka biloseni ya nzela nyonso.",
     "placeholder": "Koma motindo — “makomi minene”, “educator hub”, “tángela ngai lokasa oyo”…",
     "run": "sala"
+  },
+  "voice_engine": {
+    "preparing": "Ebongisi motɛ ya mongongo...",
+    "downloading_model": "Etelechargé modɛlɛ ya mongongo",
+    "loading_memory": "Ekɔtisi na mémoire",
+    "loading_model_memory": "Ekɔtisi modɛlɛ ya mongongo na mémoire"
+  },
+  "voice_control": {
+    "listening": "Ezali koyoka; loba “stop listening” mpo na kosukisa",
+    "stop_aria": "Tɛlɛmisa contrôle ya mongongo"
+  },
+  "dynamic_assessment": {
+    "return_title": "Esaleli oyo ebimaki na Botali ya Bobongwani. Finá mpo na kofungola lisusu modidi ya Botali ya Bobongwani.",
+    "return_aria": "Zonga na Botali ya Bobongwani",
+    "return_label": "Zonga na Botali ya Bobongwani",
+    "item_badge": "eloko {num}"
+  },
+  "story_gallery": {
+    "title": "Galeri ya Masolo",
+    "byline": "Na {author} · maloba {words} · {used}/{total} maloba",
+    "student": "Moyekoli",
+    "score": "Litɔmɔ: {score}"
   }
 }

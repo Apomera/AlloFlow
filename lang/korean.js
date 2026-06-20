@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper 불러오기에 실패했습니다. 다른 엔진으로 대체합니다.",
     "backup_failed": "백업에 실패했습니다. 다시 시도해 주십시오.",
     "invalid_backup_file": "잘못된 백업 파일",
-    "could_not_read_file": "파일을 읽을 수 없습니다"
+    "could_not_read_file": "파일을 읽을 수 없습니다",
+    "focus_streak": "{flames} {minutes}분 집중 연속 기록! 계속 이어가세요!",
+    "streak_saved": "다시 오신 것을 환영합니다! {minutes}분 연속 기록이 저장되었습니다.",
+    "points_awarded": "포인트가 지급되었습니다!",
+    "welcome_name": "환영합니다, {name}님!",
+    "element_not_found": "요소를 찾을 수 없습니다: {id}",
+    "overlay_set": "오버레이: {mode}",
+    "synced_resource": "동기화됨: {title}",
+    "group_resource": "그룹 리소스: {title}",
+    "preset_saved": "프리셋 \"{name}\"이(가) 저장되었습니다!",
+    "translated_resources": "{count}개의 리소스를 성공적으로 번역했습니다!",
+    "bingo_cards_count": "{count}개의 BINGO 카드를 생성했습니다!",
+    "sound_enabled": "소리 켜짐",
+    "sound_muted": "소리 음소거됨",
+    "democracy_mode_on": "민주주의 모드 켜짐: 학급 투표 켜짐",
+    "democracy_mode_off": "민주주의 모드 꺼짐: 단독 플레이",
+    "resource_moved_up": "{title}을(를) 위로 이동했습니다",
+    "resource_moved_down": "{title}을(를) 아래로 이동했습니다",
+    "panels_regenerated": "{count}개의 패널을 다시 생성했습니다!",
+    "settings_undone": "실행 취소됨: {label}. 설정이 복원되었습니다. (생성된 리소스는 영향을 받지 않습니다.)",
+    "concept_added": "개념 추가됨: {text}",
+    "lesson_not_found": "이 단원에서 수업을 찾을 수 없습니다.",
+    "probe_complete": "검사 완료: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "설정이 업데이트되었습니다: {changes}",
+    "change_format": "형식: {value}",
+    "change_tone": "어조: {value}",
+    "change_length": "길이: 약 {value}단어",
+    "change_language": "언어: {value}",
+    "change_interest": "관심사 추가됨: {value}",
+    "backup_saved": "💾 이 세션의 백업이 다운로드 폴더에 저장되었습니다(프로젝트 파일). 지금은 아무것도 하지 않아도 됩니다. 나중에 다시 돌아와야 할 경우 \"프로젝트 불러오기\"로 모든 것을 복원할 수 있습니다.",
+    "backup_saved_score": " (점수 {score})",
+    "project_saved_multi_one": "💾 프로젝트가 저장되었습니다({count}개 범위). 나중에 불러와 계속하세요",
+    "project_saved_multi_other": "💾 프로젝트가 저장되었습니다({count}개 범위). 나중에 불러와 계속하세요",
+    "project_saved": "💾 프로젝트가 저장되었습니다. 나중에 불러와 편집을 계속하세요",
+    "search_result_desc": "Google 검색 결과: {title}",
+    "link_url_prompt": "링크 URL을 입력하세요:"
   },
   "large_file": {
     "modal_title": "가져오기 Large 오디오 파일",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "취소 Transcription",
     "chunk_info": "오디오 입니다 split 안으로 5-minute chunks 위한 processing",
     "chunk_progress": "Chunk {current} 의 {total}",
-    "audio_only_error": "Currently 만 오디오 파일 (MP3, WAV, etc.) 입니다 지원 위한 chunked transcription."
+    "audio_only_error": "Currently 만 오디오 파일 (MP3, WAV, etc.) 입니다 지원 위한 chunked transcription.",
+    "starting": "시작하는 중..."
   },
   "formatting": {
     "bold": "Bold (**텍스트**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "StoryForge 열기",
     "storyforge_label": "스토리포지",
     "tool_dbq_aria": "문서-기반 질문",
-    "open_stem_lab_explore_aria": "STEM 실험실 탐색 열기"
+    "open_stem_lab_explore_aria": "STEM 실험실 탐색 열기",
+    "stem_lab_explore": "탐색"
   },
   "history": {
     "load_project": "프로젝트 불러오기",
@@ -4488,7 +4525,25 @@
       "resolved_tip": "원래 감사에서 확인된 문제가 검증 감사에서 더 이상 발견되지 않음",
       "persisted_tip": "수정 후에도 원래 감사의 문제가 여전히 존재",
       "introduced_tip": "수정 전에는 존재하지 않았던 새로운 문제"
-    }
+    },
+    "reattach_mismatch": "다시 첨부한 PDF가 감사한 파일과 다릅니다{detail}. 그래도 계속 진행합니다. 결과가 원래 감사와 일치하지 않을 수 있습니다.",
+    "reattach_name_detail": " (이름: \"{new}\" 대 \"{old}\")",
+    "reattach_size_detail": " (크기: {new} 대 {old} 바이트)",
+    "audit_failed_kept": "{label}: 감사에 실패했습니다. 이전 버전을 유지했습니다.",
+    "score_dropped_kept": "{label}: 점수가 하락했을 것입니다({prev} → {next}{axe}). 이전 버전을 유지했습니다.",
+    "axe_only_comparison": ", axe 전용 비교",
+    "axe_only_committed": "{label}: AI 검증을 사용할 수 없습니다. 결정적 axe-core 점수로만 확정했습니다.",
+    "reinserted_ai": "{count}개 다시 삽입됨 (AI)",
+    "reinserted_sentence": "{count}개 다시 삽입됨 (문장)",
+    "reinserted_fuzzy": "{count}개 다시 삽입됨 (유사)",
+    "in_recovery_appendix": "{count}개가 복구 부록에 있음",
+    "duplicates_removed_one": "{count}개의 중복 항목 제거됨",
+    "duplicates_removed_other": "{count}개의 중복 항목 제거됨",
+    "auto_continue_round": "자동 계속 라운드 {round}/{max}: {detail}, 점수 {score}/100 (목표 {target})...",
+    "violation_one": "{count}건의 위반",
+    "violation_other": "{count}건의 위반",
+    "ai_issue_one": "{count}건의 AI 표시 문제",
+    "ai_issue_other": "{count}건의 AI 표시 문제"
   },
   "concept_sort": {
     "title": "개념 정렬",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "카드 시각",
     "card_visuals_auto": "자동 (만 위에 짧은 항목)",
     "card_visuals_always": "Always 생성 이미지",
-    "card_visuals_never": "Never (텍스트-만 카드)"
+    "card_visuals_never": "Never (텍스트-만 카드)",
+    "explanation_unavailable": "지금은 설명을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요."
   },
   "dbq": {
     "title": "문서 분석 (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed 에 확인 정렬.",
       "regenerated_success": "텍스트 regenerated 함께 improvements!",
       "regen_failed": "재생성에 실패하였습니다."
-    }
+    },
+    "skill_check": "기술 점검",
+    "desc_skill_check": "기준에 따라 숙련도를 확인하세요.",
+    "desc_parent": "이것이 학교 목표와 어떻게 부합하는지 확인하세요",
+    "desc_6dim": "6개 차원에서 교육과정을 감사합니다",
+    "desc_5dim": "5개 차원에서 교육과정을 감사합니다(전체 감사를 위해 기준을 추가하세요)"
   },
   "standards": {
     "target_standard": "대상 표준",
@@ -5180,7 +5241,34 @@
     "plan_hook": "도입",
     "plan_independent": "Independent 연습",
     "col_image": "이미지",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "중지",
+    "expand_header": "헤더 펼치기",
+    "collapse_header": "콘텐츠 공간을 더 확보하려면 헤더 접기",
+    "collapse_header_short": "헤더 접기",
+    "step_x_of_y": "{total}단계 중 {current}단계",
+    "english_translation": "영어 번역",
+    "source_references": "원본 텍스트 참조",
+    "activity_probe": "{activity} 검사",
+    "word_sounds_count": "Word Sounds ({count}단어)",
+    "quick_practice_mode": "빠른 연습 모드",
+    "new_option": "새 옵션",
+    "meta_lesson_extensions": "수업 확장",
+    "title_extension_ideas": "확장 아이디어",
+    "meta_full_chat_log": "전체 채팅 기록",
+    "title_udl_consultation_log": "UDL 상담 기록",
+    "meta_actionable_steps": "실행 가능한 단계 (AI 요약)",
+    "title_differentiation_strategy": "차별화 전략",
+    "meta_udl_guide_advice": "UDL 가이드 조언",
+    "title_stem_assessment": "STEM 평가",
+    "title_explore_challenge": "탐색 챌린지",
+    "title_fluency_maze": "🏰 유창성 미로",
+    "title_storyforge_config": "📖 StoryForge 과제",
+    "title_storyforge_submission": "📖 이야기 제출",
+    "title_poettree_config": "🌳 PoetTree 과제",
+    "title_poettree_submission": "🌳 시 제출",
+    "title_litlab_config": "🎭 LitLab 과제",
+    "title_litlab_submission": "🎭 공연 제출"
   },
   "persona": {
     "title": "Interview 모드",
@@ -8308,7 +8396,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing 콘텐츠 topology...",
     "brainstorming": "아이디어를 브레인스토밍하는 중입니다...",
     "retrying_citations": "Retrying 위한 더 좋은 citations...",
-    "translating": "번역 중입니다…"
+    "translating": "번역 중입니다…",
+    "preparing_translation": "{lang}(으)로 번역을 준비하는 중...",
+    "translating_item": "{current}/{total} 번역 중: {title}...",
+    "generating_panel": "패널 {current}/{total} 생성 중..."
   },
   "process": {
     "source_missing": "부디 제공 소스 텍스트 첫 번째.",
@@ -9604,7 +9695,8 @@
     "loading_resources": "Loading 리소스...",
     "preparing_workspace": "Preparing 당신의 workspace...",
     "almost_ready": "거의 준비되었습니다...",
-    "loading_screen_aria": "AlloFlow loading 화면"
+    "loading_screen_aria": "AlloFlow loading 화면",
+    "preparing_environment": "학습 환경을 준비하는 중..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9778,7 +9870,7 @@
       "restorative_desc": "피해 회복, 공동체 서클 및 재통합 회의를 위한 단계별 스크립트",
       "restorative_title": "회복적 대화 안내서",
       "riskscreen_title": "위험 Screening",
-      "sandbox_desc": "불러오기 시뮬레이션된 학생 데이터 위한 PD, pre-service training, 또는 학습 ABA 없이 실제 학생",
+      "sandbox_desc": "전문성 개발(PD), 예비교사 연수, 또는 실제 학생 없이 ABA를 학습하기 위해 시뮬레이션된 학생 데이터를 불러옵니다",
       "sandbox_title": "연습 Sandbox",
       "save_workspace": "저장 Workspace",
       "scatterplot_desc": "시간대별 × 행동 그리드로 시간적 패턴 식별 — ABC 데이터에서 자동 채워짐",
@@ -9991,7 +10083,7 @@
     "reinforcer_sensory": "🌀 감각",
     "quiz_fba_purpose": "FBA의 주된 목적은 무엇입니까?",
     "quiz_replacement": "무엇 입니다 replacement 행동?",
-    "search_placeholder": "검색 antecedent, 행동, consequence, 메모, 설정...",
+    "search_placeholder": "선행사건, 행동, 후속결과, 메모, 설정 검색...",
     "quick_fill_placeholder": "예: \"학생이 수학 시간에 풀이 과정을 보여달라는 요청을 받고 종이를 던졌으며, 교사가 차분히 방향을 다시 잡아주었습니다\"",
     "nl_edit_placeholder": "예: \"결과를 교사가 방향을 다시 잡아준 것으로 변경\"",
     "now": "지금",
@@ -10575,7 +10667,7 @@
       "top_behavior": "Top 행동",
       "total_contacts": "전체 연락 횟수",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track 행동 frequency 위에 시간 함께 aim 선, phase 변경, 및 trend 분석.",
+      "track_behavior_frequency_over_time_with_aim_lines": "목표선, 국면 변경, 추세 분석을 통해 시간 경과에 따른 행동 빈도를 추적합니다.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track 행동 at home 사용 간단, everyday 언어. 이것 도움 당신의 child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "감정을 추적하고, 배지를 획득하며, 연속 기록을 쌓으십시오!",
       "transform_deficitbased_language_into_assetfocused": "결손 기반 언어를 자산 중심 설명으로 변환",
@@ -11250,7 +11342,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS 배너 닫기",
     "dismiss_button": "닫기",
-    "audit_queue_help": "클릭 문서 에 가져오기 및 불러오기 it 안으로 접근성 pipeline. 일부 LMS 파일 할 수 있다 require 당신 에 be logged 안에 에 LMS 안에 이것 browser."
+    "audit_queue_help": "클릭 문서 에 가져오기 및 불러오기 it 안으로 접근성 pipeline. 일부 LMS 파일 할 수 있다 require 당신 에 be logged 안에 에 LMS 안에 이것 browser.",
+    "queued_one": "LMS에서 {count}개의 문서가 대기 중",
+    "queued_other": "LMS에서 {count}개의 문서가 대기 중",
+    "fetching": "{name} 가져오는 중...",
+    "loaded_ready": "{name} 로드됨; 감사 준비 완료",
+    "fetch_failed": "{name} 가져오기 실패: {error}. 파일에 LMS 인증이 필요할 수 있습니다."
   },
   "annotation": {
     "undo_tooltip": "Undo 마지막 annotation ({count} 사용 가능) — Ctrl/Cmd+Z",
@@ -11270,7 +11367,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "시각 지원 에서 당신의 교사"
+    "teacher_modal_aria": "시각 지원 에서 당신의 교사",
+    "now": "지금",
+    "read_aloud": "소리 내어 읽기"
   },
   "canvas_settings": {
     "title": "고급 설정",
@@ -11287,7 +11386,12 @@
     "read_all_button": "읽기 모든",
     "stop_button": "중지",
     "focus_narration_label": "키보드 초점 내레이션",
-    "focus_narration_on_hint": "Tab 에 hear controls"
+    "focus_narration_on_hint": "Tab 에 hear controls",
+    "reading": "읽는 중...",
+    "item_aria": "클릭하여 듣기: {text}",
+    "footer_stats": "{count}개 항목 · 항목을 클릭하면 들을 수 있습니다 · Tab 내레이션 {state}",
+    "narration_on": "켜짐",
+    "narration_off": "꺼짐"
   },
   "teacher": {
     "local_only": "Local 만",
@@ -12254,5 +12358,27 @@
     "no_match": "일치하는 명령이 없습니다. 봇 채팅(곧 음성도)이 자유로운 형식의 요청을 이해합니다.",
     "placeholder": "명령을 입력하세요 — “글자 크게”, “educator hub”, “이 페이지 읽기”…",
     "run": "실행"
+  },
+  "voice_engine": {
+    "preparing": "음성 엔진을 준비하는 중...",
+    "downloading_model": "음성 모델을 다운로드하는 중",
+    "loading_memory": "메모리에 로드하는 중",
+    "loading_model_memory": "음성 모델을 메모리에 로드하는 중"
+  },
+  "voice_control": {
+    "listening": "듣는 중; 끝내려면 “stop listening”이라고 말하세요",
+    "stop_aria": "음성 제어 중지"
+  },
+  "dynamic_assessment": {
+    "return_title": "이 리소스는 동적 평가로 생성되었습니다. 동적 평가 모듈을 다시 열려면 클릭하세요.",
+    "return_aria": "동적 평가로 돌아가기",
+    "return_label": "동적 평가로 돌아가기",
+    "item_badge": "항목 {num}"
+  },
+  "story_gallery": {
+    "title": "이야기 갤러리",
+    "byline": "{author} 작 · {words}단어 · 어휘 {used}/{total}",
+    "student": "학생",
+    "score": "점수: {score}"
   }
 }

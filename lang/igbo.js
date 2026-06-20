@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Mbudata Whisper dara. Na-alaghachi azụ na engine ndị ọzọ.",
     "backup_failed": "Ndabere dara. Nwaa ọzọ.",
     "invalid_backup_file": "Ọ bụghị faịlụ ndabere AlloHaven ziri ezi.",
-    "could_not_read_file": "Enweghị ike ịgụ faịlụ ahụ. Ọ bụ ndabere JSON?"
+    "could_not_read_file": "Enweghị ike ịgụ faịlụ ahụ. Ọ bụ ndabere JSON?",
+    "focus_streak": "{flames} Usoro nlebara anya nke nkeji {minutes}! Gaa n'ihu otú a!",
+    "streak_saved": "Nnọọ ọzọ! E chekwara usoro gị nke nkeji {minutes}.",
+    "points_awarded": "Enyere akara!",
+    "welcome_name": "Nnọọ, {name}!",
+    "element_not_found": "Ahụghị mmewere: {id}",
+    "overlay_set": "Mkpuchi: {mode}",
+    "synced_resource": "Emekọrọ: {title}",
+    "group_resource": "Akụ otu: {title}",
+    "preset_saved": "Echekwara ntọala \"{name}\"!",
+    "translated_resources": "Atụgharịrị akụ {count} nke ọma!",
+    "bingo_cards_count": "Emepụtara kaadị BINGO {count}!",
+    "sound_enabled": "Agbanyere ụda",
+    "sound_muted": "Gbanyụrụ ụda",
+    "democracy_mode_on": "Agbanyere ọnọdụ ọchịchị onye kwuo uche ya: ịtụ vootu klas AGBANYERE",
+    "democracy_mode_off": "Gbanyụrụ ọnọdụ ọchịchị onye kwuo uche ya: igwu naanị gị",
+    "resource_moved_up": "Bugara {title} elu",
+    "resource_moved_down": "Bugara {title} ala",
+    "panels_regenerated": "Emepụtaghachiri ogwe {count}!",
+    "settings_undone": "Emegharịrị: {label}. Weghachiri ntọala. (Akụ e mepụtara emetụtaghị.)",
+    "concept_added": "Agbakwunyere echiche: {text}",
+    "lesson_not_found": "Ahụghị nkuzi na nkeji a.",
+    "probe_complete": "Nyocha zuru ezu: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Emelitere ntọala: {changes}",
+    "change_format": "Ụdị: {value}",
+    "change_tone": "Ụda olu: {value}",
+    "change_length": "Ogologo: ~{value} okwu",
+    "change_language": "Asụsụ: {value}",
+    "change_interest": "Agbakwunyere mmasị: {value}",
+    "backup_saved": "💾 E chekwara ndabere nke nnọkọ a na Nbudata gị (otu faịlụ ọrụ). Ọ dịghị ihe ị ga-eme ya ugbu a; ọ bụrụ na ị chọọ ịlọghachi mgbe ọ bụla, \"Bulite Ọrụ\" na-eweghachi ihe niile.",
+    "backup_saved_score": " (akara {score})",
+    "project_saved_multi_one": "💾 Echekwara ọrụ ({count} oghere); bulite ya ma emechaa iji gaa n'ihu",
+    "project_saved_multi_other": "💾 Echekwara ọrụ ({count} oghere); bulite ya ma emechaa iji gaa n'ihu",
+    "project_saved": "💾 Echekwara ọrụ; bulite ya ma emechaa iji gaa n'ihu idezi",
+    "search_result_desc": "Nsonaazụ Ọchụchọ Google: {title}",
+    "link_url_prompt": "Tinye URL njikọ:"
   },
   "large_file": {
     "modal_title": "Bubata Large olu faịlụ",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Kagbuo Transcription",
     "chunk_info": "olu bụ split na 5-minute chunks maka processing",
     "chunk_progress": "Chunk {current} nke {total}",
-    "audio_only_error": "Currently only olu faịlụ (MP3, WAV, etc.) bụ supported maka chunked transcription."
+    "audio_only_error": "Currently only olu faịlụ (MP3, WAV, etc.) bụ supported maka chunked transcription.",
+    "starting": "Na-amalite..."
   },
   "formatting": {
     "bold": "Bold (**ederede**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Mepee StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "akwụkwọ-Dabere ajụjụ",
-    "open_stem_lab_explore_aria": "Mepee STEM ụlọ nyocha Nyochaa"
+    "open_stem_lab_explore_aria": "Mepee STEM ụlọ nyocha Nyochaa",
+    "stem_lab_explore": "Nyochaa"
   },
   "history": {
     "load_project": "Bulite Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight agwa",
       "insert_table_aria": "Insert tebụl",
       "insert_table_title": "Insert accessible tebụl"
-    }
+    },
+    "reattach_mismatch": "PDF e jikọtaghachiri dị iche na nke a nyochara{detail}. A ga-aga n'ihu na agbanyeghị; nsonaazụ nwere ike ọ gaghị akwekọ na nyocha mbụ.",
+    "reattach_name_detail": " (aha: \"{new}\" megide \"{old}\")",
+    "reattach_size_detail": " (nha: {new} megide {old} bytes)",
+    "audit_failed_kept": "{label}: nyocha dara; e debere ụdị gara aga.",
+    "score_dropped_kept": "{label}: akara gaara agbada ({prev} → {next}{axe}). E debere ụdị gara aga.",
+    "axe_only_comparison": ", ntụnyere axe naanị",
+    "axe_only_committed": "{label}: nkwenye AI adịghị; ejiri naanị akara axe-core doro anya kwenye.",
+    "reinserted_ai": "{count} etinyeghachiri (AI)",
+    "reinserted_sentence": "{count} etinyeghachiri (ahịrịokwu)",
+    "reinserted_fuzzy": "{count} etinyeghachiri (ihe dị nso)",
+    "in_recovery_appendix": "{count} na mgbakwunye mgbake",
+    "duplicates_removed_one": "Wepụrụ oyiri {count}",
+    "duplicates_removed_other": "Wepụrụ oyiri {count}",
+    "auto_continue_round": "Agba ngaghari akpaaka {round}/{max}: {detail}, akara {score}/100 (ebumnuche {target})...",
+    "violation_one": "Mmebi {count}",
+    "violation_other": "Mmebi {count}",
+    "ai_issue_one": "Nsogbu {count} nke AI kọwara",
+    "ai_issue_other": "Nsogbu {count} nke AI kọwara"
   },
   "concept_sort": {
     "title": "Concept Hazie",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "kaadị ihu",
     "card_visuals_auto": "Auto (only na mkpụmkpụ ihe)",
     "card_visuals_always": "Always mepụta foto",
-    "card_visuals_never": "Never (ederede-only kaadị)"
+    "card_visuals_never": "Never (ederede-only kaadị)",
+    "explanation_unavailable": "Enweghị ike imepụta nkọwa ugbu a. Biko nwaa ọzọ obere oge."
   },
   "dbq": {
     "title": "akwụkwọ Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed na check alignment.",
       "regenerated_success": "ederede regenerated na improvements!",
       "regen_failed": "Mmepụta ọzọ dara."
-    }
+    },
+    "skill_check": "Nyocha nka",
+    "desc_skill_check": "Kwenye ọkaibe gị megide ụkpụrụ.",
+    "desc_parent": "Hụ ka nke a si dabara na ebumnuche ụlọ akwụkwọ",
+    "desc_6dim": "Na-enyocha usoro ọmụmụ n'akụkụ 6",
+    "desc_5dim": "Na-enyocha usoro ọmụmụ n'akụkụ 5 (tinye ụkpụrụ maka nyocha zuru ezu)"
   },
   "standards": {
     "target_standard": "Target ọkwa",
@@ -5188,7 +5249,34 @@
     "plan_hook": "Ihe Ndọrọ",
     "plan_independent": "Independent omume",
     "col_image": "foto",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Kwụsị",
+    "expand_header": "Gbasaa isi",
+    "collapse_header": "Mkpọ isi ka e nye ọdịnaya ohere ka ukwuu",
+    "collapse_header_short": "Mkpọ isi",
+    "step_x_of_y": "Nzọụkwụ {current} nke {total}",
+    "english_translation": "Ntụgharị Bekee",
+    "source_references": "Ntụaka Ederede Isi Mmalite",
+    "activity_probe": "Nyocha {activity}",
+    "word_sounds_count": "Word Sounds (okwu {count})",
+    "quick_practice_mode": "Ọnọdụ Omume Ngwa Ngwa",
+    "new_option": "Nhọrọ ọhụrụ",
+    "meta_lesson_extensions": "Mgbatị Nkuzi",
+    "title_extension_ideas": "Echiche Mgbatị",
+    "meta_full_chat_log": "Ndekọ Nkata Zuru Ezu",
+    "title_udl_consultation_log": "Ndekọ Ndụmọdụ UDL",
+    "meta_actionable_steps": "Nzọụkwụ Enwere Ike Ime (Nchịkọta AI)",
+    "title_differentiation_strategy": "Atụmatụ Ịdị Iche",
+    "meta_udl_guide_advice": "Ndụmọdụ Nduzi UDL",
+    "title_stem_assessment": "Ntụle STEM",
+    "title_explore_challenge": "Ihe Ịma Aka Nyocha",
+    "title_fluency_maze": "🏰 Maze Nkwuru Okwu",
+    "title_storyforge_config": "📖 Ọrụ StoryForge",
+    "title_storyforge_submission": "📖 Nzipu Akụkọ",
+    "title_poettree_config": "🌳 Ọrụ PoetTree",
+    "title_poettree_submission": "🌳 Nzipu Uri",
+    "title_litlab_config": "🎭 Ọrụ LitLab",
+    "title_litlab_submission": "🎭 Nzipu Ngosi"
   },
   "persona": {
     "title": "Interview ọnọdụ",
@@ -8265,7 +8353,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing ọdịnaya topology...",
     "brainstorming": "Na-eche echiche...",
     "retrying_citations": "Retrying maka ka mma citations...",
-    "translating": "Na-asụgharị…"
+    "translating": "Na-asụgharị…",
+    "preparing_translation": "Na-akwado ntụgharị gaa {lang}...",
+    "translating_item": "Na-atụgharị {current}/{total}: {title}...",
+    "generating_panel": "Na-emepụta ogwe {current}/{total}..."
   },
   "process": {
     "source_missing": "biko provide ebe sitere ederede mbụ.",
@@ -9561,7 +9652,8 @@
     "loading_resources": "Loading ihe enyemaka...",
     "preparing_workspace": "Preparing gị workspace...",
     "almost_ready": "Fọrọ nke nta ịdị njikere...",
-    "loading_screen_aria": "Ihuenyo nbudata AlloFlow"
+    "loading_screen_aria": "Ihuenyo nbudata AlloFlow",
+    "preparing_environment": "Na-akwado gburugburu mmụta gị..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9583,9 +9675,9 @@
       "randomize": "Gbaa Aka",
       "select_student_first": "Họrọ otu nwa akwụkwọ above na get started",
       "abc_title": "ABC data",
-      "abc_desc": "Record antecedent, omume, na consequence nlebanya",
+      "abc_desc": "Dekọọ nlebanya antecedent, omume, na consequence",
       "obs_title": "Na-ekwu okwu nlebanya",
-      "obs_desc": "Oge real interval, frequency, maọbụ duration recording",
+      "obs_desc": "Ndekọ interval, ugboro ole, maọbụ ogologo oge n'oge dị adị",
       "analysis_title": "Nyocha AI",
       "analysis_desc": "AI-powered omume pattern analysis & recommendations",
       "overview_title": "Nlerentị",
@@ -9619,13 +9711,13 @@
       "triangulation_title": "Atụtụ Atọ",
       "triangulation_desc": "Cross-reference 3+ data sources maka convergence",
       "impact_title": "Ihe Ngụkọ Mmetụta",
-      "impact_desc": "Quantify omume frequency, duration, na annual cost",
+      "impact_desc": "Tụọ ugboro ole omume na-eme, ogologo oge ya, na ọnụ ahịa kwa afọ",
       "crisis_title": "Atụmatụ Nsogbu",
       "crisis_desc": "Ihe na-emepụta usoro mmebe nsogbu nke ọkwa atọ",
       "traffic_title": "Ọkụ Ụzọ",
       "traffic_desc": "nwa akwụkwọ-facing red/yellow/green omume zone poster",
       "datasheet_title": "data Sheet",
-      "datasheet_desc": "Printable frequency, duration, ABC, maọbụ latency data sheets",
+      "datasheet_desc": "Mpempe data ndị enwere ike ibipụta maka ugboro ole, ogologo oge, ABC, maọbụ latency",
       "homenote_title": "Ndetu Ụlọ",
       "homenote_desc": "AI-drafted nne na nna communication na ụda selector",
       "fidelity_title": "Ndepụta Nkwado Ọnọdụ",
@@ -9948,7 +10040,7 @@
     "reinforcer_sensory": "🌀 Mmetụta",
     "quiz_fba_purpose": "gịnị bụ primary purpose nke otu FBA?",
     "quiz_replacement": "gịnị bụ otu replacement omume?",
-    "search_placeholder": "Chọọ antecedent, omume, consequence, notes, ntọala...",
+    "search_placeholder": "Chọọ antecedent, omume, consequence, ndetu, ntọala...",
     "quick_fill_placeholder": "e.g. \"nwa akwụkwọ threw paper during math mgbe asked na gosi work, onye nkụzi redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"change consequence na onye nkụzi redirected\"",
     "now": "ugbu a",
@@ -10101,7 +10193,7 @@
       "paste_share_code_here": "Mado kesaa code here...",
       "person": "Onye\\",
       "phase_label": "Akara Ọkwa",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does nke otu address?)",
+      "rationale_which_antecedent_does_this_address": "Ihe kpatara ya (kedu antecedent nke a na-edozi?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect na gị approach...\\n• gịnị worked well?\\n• gịnị would gị do differently?\\n• gịnị atụmatụ do gị want na omume na-esote?",
       "reinforcement_how_you": "⭐ Reinforcement (kedu gị\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement omume (functionally equivalent)",
@@ -10174,7 +10266,7 @@
       "data_cleared": "data cleared",
       "data_loaded_from_cloud": "☁️ data loaded site na cloud",
       "drafting_failed": "Edemede dara",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval mechaa — REINFORCE! Mba target omume occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 Interval DRO emechaala — REINFORCE! Ọ dịghị omume ebumnuche mere!",
       "each_phase_needs_at_least_2_data_points": "nke ọ bụla phase needs at least 2 data ebe",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached na IEP Prep!",
       "effect_sizes_calculated": "Agbakọtala ogo mmetụta!",
@@ -10532,7 +10624,7 @@
       "top_behavior": "Top omume",
       "total_contacts": "Ngụkọta Kọntaktị",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track omume frequency over time na aim ahịrị, phase changes, na trend analysis.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Soro ugboro ole omume na-eme n'ọtụtụ oge site na aim lines, mgbanwe phase, na nyocha trend.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track omume at home iji dị mfe, everyday asụsụ. nke otu enyemakas gị child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track gị feelings, earn akara, na build streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-dabere asụsụ na asset-focused descriptions",
@@ -10717,7 +10809,7 @@
       "developing": "Na-eto",
       "discontinue": "Kwụsị",
       "dismiss": "Wepụ",
-      "document_baseline_frequency_for_flagged_students": "akwụkwọ baseline frequency maka flagged nwa akwụkwọ",
+      "document_baseline_frequency_for_flagged_students": "Dekọọ ugboro ole baseline maka ụmụ akwụkwọ akara ya",
       "document_outcomes_and_lessons_learned": "akwụkwọ outcomes na nkuzi learned",
       "document_the_confirmed_function": "akwụkwọ confirmed function",
       "document_the_hypothesis_in_session_notes": "akwụkwọ echiche na nnọkọ notes",
@@ -10783,8 +10875,8 @@
       "level_mean": "ọkwa (Mean)",
       "maintenance_tracker": "Onye Na-eso Nlekọta",
       "make_tier_movement_decision_stay_fade_intensify": "Mee tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → omume → consequence pathways",
-      "map_each_target_behavior_to_a_replacement": "Map nke ọ bụla target omume na otu replacement",
+      "map_antecedent_behavior_consequence_pathways": "Sepụta ụzọ antecedent → omume → consequence",
+      "map_each_target_behavior_to_a_replacement": "Sepụta omume ebumnuche ọ bụla na omume nnọchi ya",
       "materials_access": "Materials Nweta",
       "measure_effect_size_of_interventions": "Tụọ effect size nke interventions",
       "model": "Ọnọdụl",
@@ -10820,10 +10912,10 @@
       "percentage": "pasent",
       "phone": "Ekwentị",
       "phone_call": "Oku ekwentị",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plan otu reinforcement schedule maka replacement omume",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Hazie usoro reinforcement maka omume nnọchi",
       "plan_data_collection_methods_and_frequency": "Plan data collection methods na frequency",
       "plan_fidelity_monitoring": "Nlekọta Ntụkwasị Obi Atụmatụ",
-      "plan_reinforcement_for_replacement_behaviors": "Plan reinforcement maka replacement omume",
+      "plan_reinforcement_for_replacement_behaviors": "Hazie reinforcement maka omume nnọchi",
       "plan_replacement_behaviors": "Plan Replacement omume",
       "plan_weekly_progress_monitoring_data_collection": "Plan weekly ọganihu monitoring data collection",
       "positivecorrective_ratio": "Ọnụego Ezi:Nrụzi",
@@ -10865,7 +10957,7 @@
       "sensory": "Mmetụta ahụ",
       "sensory_break_menu": "Sensory Break menu",
       "sensoryautomatic": "Sensory/akpaaka",
-      "sensoryautomatic_function": "Sensory/akpaaka Function",
+      "sensoryautomatic_function": "Ọrụ Sensory/Akpaaka",
       "sensoryrelated": "Metụtara Mmetụta",
       "session_tracker": "nnọkọ Tracker",
       "set_a_6week_intervention_cycle": "Tọọ otu 6-week intervention cycle",
@@ -10961,7 +11053,7 @@
       "incorrect": "Ezighị ezi",
       "independent": "Naanị ya",
       "intensity": "Ike",
-      "interval_and_latency_recording": "Interval na latency recording",
+      "interval_and_latency_recording": "Ndekọ interval na latency",
       "level": "ọkwa",
       "mastered": "Mụtara",
       "momentary_time_sampling": "Nlele oge nwa oge",
@@ -11009,7 +11101,7 @@
       "tip_good_coverage": "mma coverage across days.",
       "tip_good_diversity": "mma diversity across antecedents.",
       "tip_great_volume": "Great ọtụtụ nke entries maka analysis.",
-      "tip_last_entry_ago": "ikpeazụ entry was recorded otu while ago.",
+      "tip_last_entry_ago": "E dekọrọ ihe e tinyere ikpeazụ obere oge gara aga.",
       "tip_missing_fields": "Some entries bụ missing achọrọ fields.",
       "tip_spread_days": "Entries bụ well spread across days.",
       "volume": "ọtụtụ"
@@ -11022,7 +11114,7 @@
       "step_collect_more": "Collect karịa data",
       "step_collect_more_desc": "Tinye karịa nlebanya nnọkọ na strengthen dataset.",
       "step_hypothesis": "echiche",
-      "step_hypothesis_desc": "Draft otu working echiche nke omume function.",
+      "step_hypothesis_desc": "Detuo echiche na-arụ ọrụ banyere ọrụ omume.",
       "step_record_abc": "Record ABC data",
       "step_record_abc_desc": "akwụkwọ antecedents, omume, na consequences.",
       "step_report": "Akụkọ",
@@ -11207,7 +11299,12 @@
   "lms": {
     "dismiss_banner_aria": "Wepụ ọkọlọtọ LMS",
     "dismiss_button": "Wepụ",
-    "audit_queue_help": "Pịa otu akwụkwọ na weta na bulite it na accessibility pipeline. Some LMS faịlụ may require gị na be logged na na LMS na nke otu browser."
+    "audit_queue_help": "Pịa otu akwụkwọ na weta na bulite it na accessibility pipeline. Some LMS faịlụ may require gị na be logged na na LMS na nke otu browser.",
+    "queued_one": "Akwụkwọ {count} n'ahịrị site na LMS",
+    "queued_other": "Akwụkwọ {count} n'ahịrị site na LMS",
+    "fetching": "Na-eweta {name}...",
+    "loaded_ready": "Ebunyere {name}; njikere maka nyocha",
+    "fetch_failed": "Enweghị ike iweta {name}: {error}. Faịlụ nwere ike ịchọ nyocha LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo ikpeazụ annotation ({count} dị) — Ctrl/Cmd+Z",
@@ -11227,7 +11324,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "ihu nkwado site na gị onye nkụzi"
+    "teacher_modal_aria": "ihu nkwado site na gị onye nkụzi",
+    "now": "UGBU A",
+    "read_aloud": "Gụpụta n'oké olu"
   },
   "canvas_settings": {
     "title": "dị elu ntọala",
@@ -11244,7 +11343,12 @@
     "read_all_button": "Gụọ niile",
     "stop_button": "Kwụsị",
     "focus_narration_label": "Akụkọ Lekwasị Anya Keyboard",
-    "focus_narration_on_hint": "Tab na hear controls"
+    "focus_narration_on_hint": "Tab na hear controls",
+    "reading": "Na-agụ...",
+    "item_aria": "Pịa ka ị nụ: {text}",
+    "footer_stats": "Ihe {count} · Pịa ihe ọ bụla ka ị nụ ya · Nkọwa Tab {state}",
+    "narration_on": "AGBANYE",
+    "narration_off": "GBANYỤRỤ"
   },
   "teacher": {
     "local_only": "Naanị ebe a",
@@ -12420,5 +12524,27 @@
     "no_match": "Ọ dịghị iwu dabara adaba. Mkparịta ụka bot (na n'oge na-adịghị anya, olu) na-aghọta arịrịọ enweghị usoro.",
     "placeholder": "Pịnye iwu — “ederede buru ibu”, “educator hub”, “gụọ ibe a”…",
     "run": "gbaa"
+  },
+  "voice_engine": {
+    "preparing": "Na-akwado igwe olu...",
+    "downloading_model": "Na-ebudata ụdị olu",
+    "loading_memory": "Na-ebunye na ebe nchekwa",
+    "loading_model_memory": "Na-ebunye ụdị olu na ebe nchekwa"
+  },
+  "voice_control": {
+    "listening": "Na-ege ntị; kwuo “stop listening” iji kwụsị",
+    "stop_aria": "Kwụsị njikwa olu"
+  },
+  "dynamic_assessment": {
+    "return_title": "E mepụtara akụ a site na Nyocha Dị Ike. Pịa ka imeghee modul Nyocha Dị Ike ọzọ.",
+    "return_aria": "Laghachi na Nyocha Dị Ike",
+    "return_label": "Laghachi na Nyocha Dị Ike",
+    "item_badge": "ihe {num}"
+  },
+  "story_gallery": {
+    "title": "Ngosi Akụkọ",
+    "byline": "Site n'aka {author} · okwu {words} · {used}/{total} okwu",
+    "student": "Nwa akwụkwọ",
+    "score": "Akara: {score}"
   }
 }

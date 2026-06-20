@@ -1697,7 +1697,42 @@
     "whisper_load_failed": "Whisper-Modell konnte nicht geladen werden",
     "backup_failed": "Sicherung fehlgeschlagen. Bitte erneut versuchen.",
     "invalid_backup_file": "Ungültige Sicherungsdatei",
-    "could_not_read_file": "Datei konnte nicht gelesen werden"
+    "could_not_read_file": "Datei konnte nicht gelesen werden",
+    "focus_streak": "{flames} {minutes}-minütige Fokus-Serie! Mach weiter so!",
+    "streak_saved": "Willkommen zurück! Deine {minutes}-Minuten-Serie wurde gespeichert.",
+    "points_awarded": "Punkte vergeben!",
+    "welcome_name": "Willkommen, {name}!",
+    "element_not_found": "Element nicht gefunden: {id}",
+    "overlay_set": "Overlay: {mode}",
+    "synced_resource": "Synchronisiert: {title}",
+    "group_resource": "Gruppenressource: {title}",
+    "preset_saved": "Voreinstellung \"{name}\" gespeichert!",
+    "translated_resources": "{count} Ressourcen erfolgreich übersetzt!",
+    "bingo_cards_count": "{count} BINGO-Karten erstellt!",
+    "sound_enabled": "Ton eingeschaltet",
+    "sound_muted": "Ton stummgeschaltet",
+    "democracy_mode_on": "Demokratiemodus aktiviert: Klassenabstimmung EIN",
+    "democracy_mode_off": "Demokratiemodus deaktiviert: Einzelspiel",
+    "resource_moved_up": "{title} nach oben verschoben",
+    "resource_moved_down": "{title} nach unten verschoben",
+    "panels_regenerated": "{count} Panels neu generiert!",
+    "settings_undone": "Rückgängig gemacht: {label}. Einstellungen wiederhergestellt. (Generierte Ressourcen sind nicht betroffen.)",
+    "concept_added": "Konzept hinzugefügt: {text}",
+    "lesson_not_found": "Lektion in dieser Einheit nicht gefunden.",
+    "probe_complete": "Test abgeschlossen: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Einstellungen aktualisiert: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Ton: {value}",
+    "change_length": "Länge: ~{value} Wörter",
+    "change_language": "Sprache: {value}",
+    "change_interest": "Interesse hinzugefügt: {value}",
+    "backup_saved": "💾 Eine Sicherung dieser Sitzung wurde in deinen Downloads gespeichert (eine Projektdatei). Du musst jetzt nichts damit tun; falls du jemals zurückkehren musst, stellt \"Projekt laden\" alles wieder her.",
+    "backup_saved_score": " (Punktzahl {score})",
+    "project_saved_multi_one": "💾 Projekt gespeichert ({count} Bereich); lade es später, um fortzufahren",
+    "project_saved_multi_other": "💾 Projekt gespeichert ({count} Bereiche); lade es später, um fortzufahren",
+    "project_saved": "💾 Projekt gespeichert; lade es später, um die Bearbeitung fortzusetzen",
+    "search_result_desc": "Google-Suchergebnis: {title}",
+    "link_url_prompt": "Link-URL eingeben:"
   },
   "large_file": {
     "modal_title": "Importieren Groß Audio Datei",
@@ -1713,7 +1748,8 @@
     "cancel_transcription": "Abbrechen Transcription",
     "chunk_info": "Audio ist split in 5-Minute chunks für processing",
     "chunk_progress": "Chunk {current} von {total}",
-    "audio_only_error": "Currently nur Audio Dateis (MP3, WAV, usw.) sind supported für chunked transcription."
+    "audio_only_error": "Currently nur Audio Dateis (MP3, WAV, usw.) sind supported für chunked transcription.",
+    "starting": "Wird gestartet..."
   },
   "formatting": {
     "bold": "Fett (**Text**)",
@@ -1817,7 +1853,8 @@
     "open_storyforge_aria": "Öffnen StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Basierend Frages",
-    "open_stem_lab_explore_aria": "Öffnen STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Öffnen STEM Lab Explore",
+    "stem_lab_explore": "Erkunden"
   },
   "history": {
     "load_project": "Laden Project",
@@ -4493,7 +4530,25 @@
       "resolved_tip": "Probleme aus der ursprünglichen Prüfung, die in der Verifikationsprüfung nicht mehr gefunden werden",
       "persisted_tip": "Probleme aus der ursprünglichen Prüfung, die nach der Korrektur noch vorhanden sind",
       "introduced_tip": "Neue Probleme, die vor der Korrektur nicht existierten"
-    }
+    },
+    "reattach_mismatch": "Das erneut angehängte PDF unterscheidet sich vom geprüften{detail}. Es wird trotzdem fortgefahren; die Ergebnisse können von der ursprünglichen Prüfung abweichen.",
+    "reattach_name_detail": " (Name: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (Größe: {new} vs. {old} Bytes)",
+    "audit_failed_kept": "{label}: Prüfung fehlgeschlagen; vorherige Version beibehalten.",
+    "score_dropped_kept": "{label}: Die Punktzahl wäre gesunken ({prev} → {next}{axe}). Vorherige Version beibehalten.",
+    "axe_only_comparison": ", nur axe-Vergleich",
+    "axe_only_committed": "{label}: KI-Überprüfung nicht verfügbar; nur mit der deterministischen axe-core-Punktzahl bestätigt.",
+    "reinserted_ai": "{count} wieder eingefügt (KI)",
+    "reinserted_sentence": "{count} wieder eingefügt (Satz)",
+    "reinserted_fuzzy": "{count} wieder eingefügt (ungefähr)",
+    "in_recovery_appendix": "{count} im Wiederherstellungsanhang",
+    "duplicates_removed_one": "{count} Duplikat entfernt",
+    "duplicates_removed_other": "{count} Duplikate entfernt",
+    "auto_continue_round": "Automatische Fortsetzungsrunde {round}/{max}: {detail}, Punktzahl {score}/100 (Ziel {target})...",
+    "violation_one": "{count} Verstoß",
+    "violation_other": "{count} Verstöße",
+    "ai_issue_one": "{count} von der KI markiertes Problem",
+    "ai_issue_other": "{count} von der KI markierte Probleme"
   },
   "concept_sort": {
     "title": "Konzept-Sortierung",
@@ -4567,7 +4622,8 @@
     "card_visuals_label": "Kartenbilder",
     "card_visuals_auto": "Auto (nur auf short Elemente)",
     "card_visuals_always": "Always generieren Bilds",
-    "card_visuals_never": "Never (Text-nur cards)"
+    "card_visuals_never": "Never (Text-nur cards)",
+    "explanation_unavailable": "Es konnte gerade keine Erklärung generiert werden. Bitte versuche es gleich noch einmal."
   },
   "dbq": {
     "title": "Document Analyse (DBQ)",
@@ -4973,7 +5029,12 @@
       "error_check": "Fehlgeschlagen zu prüfen Ausrichtung.",
       "regenerated_success": "Text neu generierend mit improvements!",
       "regen_failed": "ReGenerierung fehlgeschlagen."
-    }
+    },
+    "skill_check": "Kompetenzprüfung",
+    "desc_skill_check": "Überprüfe deine Beherrschung anhand der Standards.",
+    "desc_parent": "Sehen Sie, wie dies zu den Schulzielen passt",
+    "desc_6dim": "Prüft den Lehrplan anhand von 6 Dimensionen",
+    "desc_5dim": "Prüft den Lehrplan anhand von 5 Dimensionen (Standards für die vollständige Prüfung hinzufügen)"
   },
   "standards": {
     "target_standard": "Tarerhalten Standard",
@@ -5185,7 +5246,34 @@
     "plan_hook": "Einstieg",
     "plan_independent": "Ichndependent Practice",
     "col_image": "Bild",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Stopp",
+    "expand_header": "Kopfzeile erweitern",
+    "collapse_header": "Kopfzeile einklappen, um dem Inhalt mehr Platz zu geben",
+    "collapse_header_short": "Kopfzeile einklappen",
+    "step_x_of_y": "Schritt {current} von {total}",
+    "english_translation": "Englische Übersetzung",
+    "source_references": "Quelltextverweise",
+    "activity_probe": "{activity}-Test",
+    "word_sounds_count": "Word Sounds ({count} Wörter)",
+    "quick_practice_mode": "Schnellübungsmodus",
+    "new_option": "Neue Option",
+    "meta_lesson_extensions": "Unterrichtserweiterungen",
+    "title_extension_ideas": "Erweiterungsideen",
+    "meta_full_chat_log": "Vollständiges Chat-Protokoll",
+    "title_udl_consultation_log": "UDL-Beratungsprotokoll",
+    "meta_actionable_steps": "Umsetzbare Schritte (KI-Zusammenfassung)",
+    "title_differentiation_strategy": "Differenzierungsstrategie",
+    "meta_udl_guide_advice": "Rat des UDL-Leitfadens",
+    "title_stem_assessment": "STEM-Bewertung",
+    "title_explore_challenge": "Erkundungs-Challenge",
+    "title_fluency_maze": "🏰 Flüssigkeits-Labyrinth",
+    "title_storyforge_config": "📖 StoryForge-Aufgabe",
+    "title_storyforge_submission": "📖 Geschichten-Einreichung",
+    "title_poettree_config": "🌳 PoetTree-Aufgabe",
+    "title_poettree_submission": "🌳 Gedicht-Einreichung",
+    "title_litlab_config": "🎭 LitLab-Aufgabe",
+    "title_litlab_submission": "🎭 Aufführungs-Einreichung"
   },
   "persona": {
     "title": "IchnterAnsicht Modus",
@@ -8313,7 +8401,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing Inhalt topology...",
     "brainstorming": "Ideen werden gesammelt...",
     "retrying_citations": "Reversuchening für better citations...",
-    "translating": "Wird überfestlegenzt…"
+    "translating": "Wird überfestlegenzt…",
+    "preparing_translation": "Übersetzung nach {lang} wird vorbereitet...",
+    "translating_item": "Übersetze {current}/{total}: {title}...",
+    "generating_panel": "Panel {current}/{total} wird generiert..."
   },
   "process": {
     "source_missing": "Bitte bereitstellen QuellText erste.",
@@ -9609,7 +9700,8 @@
     "loading_resources": "Ressourcen werden geladen...",
     "preparing_workspace": "Arbeitsbereich wird vorbereitet...",
     "almost_ready": "Fast bereit...",
-    "loading_screen_aria": "AlloFlow-Ladebildschirm"
+    "loading_screen_aria": "AlloFlow-Ladebildschirm",
+    "preparing_environment": "Deine Lernumgebung wird vorbereitet..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9633,7 +9725,7 @@
       "abc_title": "ABC Daten",
       "abc_desc": "Antezedenz, Verhalten und Konsequenz beobachten und aufzeichnen",
       "obs_title": "Live-Beobachtung",
-      "obs_desc": "Real-Zeit interval, frequency, oder duration recording",
+      "obs_desc": "Echtzeit-Erfassung von Intervall, Häufigkeit oder Dauer",
       "analysis_title": "AI Analyse",
       "analysis_desc": "AI-powirred Verhalten pattern Analyse & recommendations",
       "overview_title": "OverAnsicht",
@@ -9667,13 +9759,13 @@
       "triangulation_title": "Triangulation",
       "triangulation_desc": "Cross-Referenz 3+ Daten sources für convergence",
       "impact_title": "Auswirk Calculator",
-      "impact_desc": "Quantify Verhalten frequency, duration, und annual cost",
+      "impact_desc": "Häufigkeit, Dauer und jährliche Kosten des Verhaltens quantifizieren",
       "crisis_title": "Krisenplan",
       "crisis_desc": "Three-Stufe crisis intervention protocol generator",
       "traffic_title": "Traffic Hell",
       "traffic_desc": "Schüler-facing red/yelniedrig/green Verhalten zone poster",
       "datasheet_title": "Daten Sheet",
-      "datasheet_desc": "Druckaktivieren frequency, duration, ABC, oder latency Daten sheets",
+      "datasheet_desc": "Druckbare Datenblätter für Häufigkeit, Dauer, ABC oder Latenz",
       "homenote_title": "Home Notiz",
       "homenote_desc": "AI-drafted Elternteil communication mit tone auswähleneinr",
       "fidelity_title": "Fidelity Prüfenlist",
@@ -9995,8 +10087,8 @@
     "coping_movement": "🏃 Verschiebenment",
     "reinforcer_sensory": "🌀 Sensorisch",
     "quiz_fba_purpose": "was ist die primary purpose von ein FBA?",
-    "quiz_replacement": "was ist ein replacement Verhalten?",
-    "search_placeholder": "Suchen antecedent, Verhalten, consequence, Notizs, Einstellung...",
+    "quiz_replacement": "Was ist ein Ersatzverhalten?",
+    "search_placeholder": "Auslöser, Verhalten, Konsequenz, Notizen, Setting durchsuchen...",
     "quick_fill_placeholder": "z. B. \"Schüler threw paper während Mathematik wenn asked zu anzeigen Arbeit, Lehrer redirected calmly\"",
     "nl_edit_placeholder": "z. B. \"ändern consequence zu Lehrer redirected\"",
     "now": "Neinw",
@@ -10118,7 +10210,7 @@
       "counts_per_session_3_5_2_8_4": "Anzahls pro Sitzung: 3, 5, 2, 8, 4...",
       "describe_the_scenario_you_want_to_practice_with": "Describe die scenario du möchten zu practice mit...",
       "describe_the_student_persona_eg_you_are_a_3rd_grad": "Describe die Schüler persona... z. B., \"Du sind ein 3rd grader who becomes anxious während Mathematik und tends zu cry und shut down...\"",
-      "describe_what_your_child_did": "Describe was dein child did...",
+      "describe_what_your_child_did": "Beschreiben Sie, was Ihr Kind getan hat...",
       "eg_12_15_14_13_16": "z. B. 12, 15, 14, 13, 16",
       "eg_5": "z. B. 5",
       "eg_8_6_5_4_3": "z. B. 8, 6, 5, 4, 3",
@@ -10149,8 +10241,8 @@
       "paste_share_code_here": "Einfügen teilen Code here...",
       "person": "Person\\",
       "phase_label": "Phasenname",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does dies hinzufügenress?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect auf dein approach...\\n• was worked wirll?\\n• was would du do differently?\\n• was strategies do du möchten zu practice nächste?",
+      "rationale_which_antecedent_does_this_address": "Begründung (welchen Auslöser adressiert dies?)",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflektieren Sie über Ihr Vorgehen...\\n• Was hat gut funktioniert?\\n• Was würden Sie anders machen?\\n• Welche Strategien möchten Sie als Nächstes üben?",
       "reinforcement_how_you": "⭐ Reinforcement (how du\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement Verhalten (Funktionally equivalent)",
       "respond_as_the_counselor": "Respond as die counselor...",
@@ -10172,7 +10264,7 @@
       "type_your_observation_note_or_click_the_mic_to_dic": "Gib deinen ein Beobachtung, Notiz, oder klicken die mic zu dictate...",
       "type_your_response_here_be_thorough_and_use_profes": "Gib deinen ein Antwort here. Be thorough und verwenden professional Sprache...",
       "what_behavior_will_change": "was Verhalten wird ändern?",
-      "what_could_you_or_a_grownup_do_differently": "was could du oder ein grown-up do differently?",
+      "what_could_you_or_a_grownup_do_differently": "Was könntest du oder ein Erwachsener anders machen?",
       "what_environmental_change_will_you_make": "was environmental ändern wird du machen?",
       "what_made_you_feel_this_way_optional": "was made du feel dies way? (Optional)",
       "what_supports_are_needed": "was unterstützt sind brauchened?",
@@ -10222,7 +10314,7 @@
       "data_cleared": "Daten leerened",
       "data_loaded_from_cloud": "☁️ Daten ladened von cloud",
       "drafting_failed": "Drafting fehlgeschlagen",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval abschließen — REIchNFORCE! Nein target Verhalten occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO-Intervall abgeschlossen — VERSTÄRKEN! Kein Zielverhalten aufgetreten!",
       "each_phase_needs_at_least_2_data_points": "jeder phase brauchens at least 2 Daten Punkte",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached zu IchEP Prep!",
       "effect_sizes_calculated": "Effektstärken berechnet!",
@@ -10580,7 +10672,7 @@
       "top_behavior": "Top Verhalten",
       "total_contacts": "Gesamt Contacts",
       "total_entries": "Gesamt entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track Verhalten frequency über Zeit mit aim lines, phase Änderungen, und trend Analyse.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Verfolgen Sie die Verhaltenshäufigkeit über die Zeit mit Ziellinien, Phasenwechseln und Trendanalyse.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track Verhaltens at home verwendend einfach, everyTag Sprache. dies Hilfes dein child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track dein feelings, earn schlechtges, und bauen streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-basierend Sprache in asfestlegen-focverwendend Beschreibungs",
@@ -10731,7 +10823,7 @@
       "build_smart_goals_from_analysis": "Bauen SMART Ziels von Analyse",
       "canvas_environment_local_storage_only": "Kannvas environment — local storage nur",
       "challenging": "Herausfordernd",
-      "champion": "Champion",
+      "champion": "Verantwortliche/r",
       "classroom_structure": "Klasseroom Struktur",
       "clear_chat_history": "Leeren chat Verlauf",
       "collect_baseline_data": "Collect Baseline Daten",
@@ -10765,7 +10857,7 @@
       "developing": "Entwickelnd",
       "discontinue": "Disfortfahren",
       "dismiss": "Schließen",
-      "document_baseline_frequency_for_flagged_students": "Document baseline frequency für flagged Schülers",
+      "document_baseline_frequency_for_flagged_students": "Baseline-Häufigkeit für markierte Schüler dokumentieren",
       "document_outcomes_and_lessons_learned": "Document outcomes und Lektions learned",
       "document_the_confirmed_function": "Document die bestätigened Funktion",
       "document_the_hypothesis_in_session_notes": "Document die hypothesis in Sitzung Notizs",
@@ -10831,8 +10923,8 @@
       "level_mean": "Stufe (Mean)",
       "maintenance_tracker": "Aufrechterhaltungs-Tracker",
       "make_tier_movement_decision_stay_fade_intensify": "Machen Stufe verschiebenment decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → Verhalten → consequence pathways",
-      "map_each_target_behavior_to_a_replacement": "Map jeder target Verhalten zu ein replacement",
+      "map_antecedent_behavior_consequence_pathways": "Auslöser → Verhalten → Konsequenz-Pfade abbilden",
+      "map_each_target_behavior_to_a_replacement": "Jedes Zielverhalten einem Ersatzverhalten zuordnen",
       "materials_access": "Materialien Access",
       "measure_effect_size_of_interventions": "Measure effect Größe von interventions",
       "model": "Modusl",
@@ -10868,10 +10960,10 @@
       "percentage": "Prozent",
       "phone": "Telefon",
       "phone_call": "Anruf",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plan ein reinforcement schedule für replacement Verhaltens",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Einen Verstärkungsplan für Ersatzverhalten erstellen",
       "plan_data_collection_methods_and_frequency": "Plan Daten collection methods und frequency",
       "plan_fidelity_monitoring": "Überwachung der Plantreue",
-      "plan_reinforcement_for_replacement_behaviors": "Plan reinforcement für replacement Verhaltens",
+      "plan_reinforcement_for_replacement_behaviors": "Verstärkung für Ersatzverhalten planen",
       "plan_replacement_behaviors": "Plan Replacement Verhaltens",
       "plan_weekly_progress_monitoring_data_collection": "Plan wirekly Fortschritt monitoring Daten collection",
       "positivecorrective_ratio": "Positive:Richtigive Ratio",
@@ -11009,7 +11101,7 @@
       "incorrect": "Ichnrichtig",
       "independent": "Ichndependent",
       "intensity": "Ichntensity",
-      "interval_and_latency_recording": "Ichnterval und latency recording",
+      "interval_and_latency_recording": "Intervall- und Latenzaufzeichnung",
       "level": "Stufe",
       "mastered": "Gemeistert",
       "momentary_time_sampling": "Momentary Zeit sampling",
@@ -11036,8 +11128,8 @@
       "trend_dashboard": "Trend Dashboard",
       "value": "Wert",
       "voicetoabc": "Stimme-zu-ABC",
-      "what_is_a_replacement_behavior": "was ist ein replacement Verhalten?",
-      "what_is_reinforcement_really": "was ist reinforcement, really?",
+      "what_is_a_replacement_behavior": "Was ist ein Ersatzverhalten?",
+      "what_is_reinforcement_really": "Was ist Verstärkung eigentlich?",
       "when_to_consult_specialists": "wenn zu consult speciaListen",
       "whole_interval": "Gesamtintervall",
       "workspace_sharing": "Arbeitsbereich-Freigabe",
@@ -11256,7 +11348,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS-Banner schließen",
     "dismiss_button": "Schließen",
-    "audit_queue_help": "Klicken ein document zu fetch und laden it in die Barrierefreiheit pipeline. Einige LMS Dateis kann require du zu be logged in zu die LMS in dies browser."
+    "audit_queue_help": "Klicken ein document zu fetch und laden it in die Barrierefreiheit pipeline. Einige LMS Dateis kann require du zu be logged in zu die LMS in dies browser.",
+    "queued_one": "{count} Dokument aus dem LMS in der Warteschlange",
+    "queued_other": "{count} Dokumente aus dem LMS in der Warteschlange",
+    "fetching": "{name} wird abgerufen...",
+    "loaded_ready": "{name} geladen; bereit zur Prüfung",
+    "fetch_failed": "{name} konnte nicht abgerufen werden: {error}. Die Datei erfordert möglicherweise eine LMS-Authentifizierung."
   },
   "annotation": {
     "undo_tooltip": "Undo letzte Anmerkung ({count} verfügbar) — Ctrl/Cmd+Z",
@@ -11276,7 +11373,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visuell Unterstützung von dein Lehrer"
+    "teacher_modal_aria": "Visuell Unterstützung von dein Lehrer",
+    "now": "JETZT",
+    "read_aloud": "Vorlesen"
   },
   "canvas_settings": {
     "title": "Fortgeschritten Einstellungen",
@@ -11293,7 +11392,12 @@
     "read_all_button": "Alles lesen",
     "stop_button": "Stopp",
     "focus_narration_label": "Tastaturfokus-Erzählung",
-    "focus_narration_on_hint": "Tab drücken, um Steuerungen zu hören"
+    "focus_narration_on_hint": "Tab drücken, um Steuerungen zu hören",
+    "reading": "Wird gelesen...",
+    "item_aria": "Klicken zum Anhören: {text}",
+    "footer_stats": "{count} Elemente · Klicke auf ein beliebiges Element, um es anzuhören · Tab-Erzählung {state}",
+    "narration_on": "EIN",
+    "narration_off": "AUS"
   },
   "teacher": {
     "local_only": "Local nur",
@@ -12260,5 +12364,27 @@
     "no_match": "Kein passender Befehl. Der Bot-Chat (und bald die Sprachsteuerung) versteht frei formulierte Anfragen.",
     "placeholder": "Gib einen Befehl ein — „größerer Text“, „Educator Hub“, „diese Seite vorlesen“…",
     "run": "ausführen"
+  },
+  "voice_engine": {
+    "preparing": "Sprach-Engine wird vorbereitet...",
+    "downloading_model": "Sprachmodell wird heruntergeladen",
+    "loading_memory": "Wird in den Speicher geladen",
+    "loading_model_memory": "Sprachmodell wird in den Speicher geladen"
+  },
+  "voice_control": {
+    "listening": "Hört zu; sage „stop listening“, um zu beenden",
+    "stop_aria": "Sprachsteuerung stoppen"
+  },
+  "dynamic_assessment": {
+    "return_title": "Diese Ressource wurde durch Dynamische Bewertung erstellt. Klicke, um das Modul für Dynamische Bewertung erneut zu öffnen.",
+    "return_aria": "Zurück zur Dynamischen Bewertung",
+    "return_label": "Zurück zur Dynamischen Bewertung",
+    "item_badge": "Element {num}"
+  },
+  "story_gallery": {
+    "title": "Geschichtengalerie",
+    "byline": "Von {author} · {words} Wörter · {used}/{total} Vokabeln",
+    "student": "Schüler",
+    "score": "Punktzahl: {score}"
   }
 }

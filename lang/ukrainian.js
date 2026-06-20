@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Не вдалося завантажити Whisper. Переходимо до інших рушіїв.",
     "backup_failed": "Резервне копіювання не вдалося. Спробуйте ще раз.",
     "invalid_backup_file": "Недійсний файл резервної копії AlloHaven.",
-    "could_not_read_file": "Не вдалося прочитати цей файл. Це резервна копія JSON?"
+    "could_not_read_file": "Не вдалося прочитати цей файл. Це резервна копія JSON?",
+    "focus_streak": "{flames} Серія зосередження на {minutes} хв! Так тримати!",
+    "streak_saved": "З поверненням! Твою серію на {minutes} хв збережено.",
+    "points_awarded": "Бали нараховано!",
+    "welcome_name": "Вітаємо, {name}!",
+    "element_not_found": "Елемент не знайдено: {id}",
+    "overlay_set": "Накладання: {mode}",
+    "synced_resource": "Синхронізовано: {title}",
+    "group_resource": "Груповий ресурс: {title}",
+    "preset_saved": "Пресет «{name}» збережено!",
+    "translated_resources": "Успішно перекладено ресурсів: {count}!",
+    "bingo_cards_count": "Створено карток BINGO: {count}!",
+    "sound_enabled": "Звук увімкнено",
+    "sound_muted": "Звук вимкнено",
+    "democracy_mode_on": "Режим демократії увімкнено: голосування класу УВІМК",
+    "democracy_mode_off": "Режим демократії вимкнено: одиночна гра",
+    "resource_moved_up": "{title} переміщено вгору",
+    "resource_moved_down": "{title} переміщено вниз",
+    "panels_regenerated": "Панелей перегенеровано: {count}!",
+    "settings_undone": "Скасовано: {label}. Налаштування відновлено. (Створені ресурси не зачеплено.)",
+    "concept_added": "Додано поняття: {text}",
+    "lesson_not_found": "Урок не знайдено в цьому розділі.",
+    "probe_complete": "Перевірку завершено: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Налаштування оновлено: {changes}",
+    "change_format": "Формат: {value}",
+    "change_tone": "Тон: {value}",
+    "change_length": "Довжина: ~{value} слів",
+    "change_language": "Мова: {value}",
+    "change_interest": "Додано інтерес: {value}",
+    "backup_saved": "💾 Резервну копію цього сеансу збережено в твої «Завантаження» (файл проєкту). Зараз з нею нічого робити не потрібно; якщо колись знадобиться повернутися, «Завантажити проєкт» відновить усе.",
+    "backup_saved_score": " (бал {score})",
+    "project_saved_multi_one": "💾 Проєкт збережено ({count} діапазон); завантаж його пізніше, щоб продовжити",
+    "project_saved_multi_other": "💾 Проєкт збережено ({count} діапазонів); завантаж його пізніше, щоб продовжити",
+    "project_saved": "💾 Проєкт збережено; завантаж його пізніше, щоб продовжити редагування",
+    "search_result_desc": "Результат пошуку Google: {title}",
+    "link_url_prompt": "Введіть URL-адресу посилання:"
   },
   "large_file": {
     "modal_title": "Імпортувати Large аудіо файли",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Скасувати Transcription",
     "chunk_info": "аудіо є split в 5-minute chunks для processing",
     "chunk_progress": "Chunk {current} {total}",
-    "audio_only_error": "Currently тільки аудіо файли (MP3, WAV, etc.) є supported для chunked transcription."
+    "audio_only_error": "Currently тільки аудіо файли (MP3, WAV, etc.) є supported для chunked transcription.",
+    "starting": "Запуск…"
   },
   "formatting": {
     "bold": "Bold (**текст**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Відкрити StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "документи-На основі питання",
-    "open_stem_lab_explore_aria": "Відкрити STEM лабораторія Дослідити"
+    "open_stem_lab_explore_aria": "Відкрити STEM лабораторія Дослідити",
+    "stem_lab_explore": "Дослідити"
   },
   "history": {
     "load_project": "Завантажити Project",
@@ -4488,7 +4525,25 @@
       "resolved_tip": "Проблеми з початкового аудиту, які більше не виявлено в перевірному аудиті",
       "persisted_tip": "Проблеми з початкового аудиту все ще присутні після виправлення",
       "introduced_tip": "Нові проблеми, яких не існувало до виправлення"
-    }
+    },
+    "reattach_mismatch": "Повторно прикріплений PDF відрізняється від перевіреного{detail}. Усе одно продовжуємо; результати можуть не відповідати початковій перевірці.",
+    "reattach_name_detail": " (ім'я: «{new}» проти «{old}»)",
+    "reattach_size_detail": " (розмір: {new} проти {old} байт)",
+    "audit_failed_kept": "{label}: перевірка не вдалася; збережено попередню версію.",
+    "score_dropped_kept": "{label}: бал би знизився ({prev} → {next}{axe}). Збережено попередню версію.",
+    "axe_only_comparison": ", порівняння лише за axe",
+    "axe_only_committed": "{label}: перевірка ШІ недоступна; підтверджено лише детермінованим балом axe-core.",
+    "reinserted_ai": "{count} повторно вставлено (ШІ)",
+    "reinserted_sentence": "{count} повторно вставлено (речення)",
+    "reinserted_fuzzy": "{count} повторно вставлено (приблизно)",
+    "in_recovery_appendix": "{count} у додатку відновлення",
+    "duplicates_removed_one": "Видалено дублікат: {count}",
+    "duplicates_removed_other": "Видалено дублікатів: {count}",
+    "auto_continue_round": "Автопродовження, раунд {round}/{max}: {detail}, бал {score}/100 (ціль {target})…",
+    "violation_one": "{count} порушення",
+    "violation_other": "Порушень: {count}",
+    "ai_issue_one": "{count} проблема, позначена ШІ",
+    "ai_issue_other": "Проблем, позначених ШІ: {count}"
   },
   "concept_sort": {
     "title": "Концепція Сортувати",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "картки візуальний",
     "card_visuals_auto": "Авто (тільки на короткий елементи)",
     "card_visuals_always": "Always створити зображення",
-    "card_visuals_never": "Never (текст-тільки картки)"
+    "card_visuals_never": "Never (текст-тільки картки)",
+    "explanation_unavailable": "Зараз не вдалося згенерувати пояснення. Спробуй ще раз за мить."
   },
   "dbq": {
     "title": "документи Аналіз (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed до перевірити вирівнювання.",
       "regenerated_success": "текст regenerated з improvements!",
       "regen_failed": "Не вдалося згенерувати повторно."
-    }
+    },
+    "skill_check": "Перевірка навичок",
+    "desc_skill_check": "Перевір своє опанування за стандартами.",
+    "desc_parent": "Подивіться, як це відповідає цілям школи",
+    "desc_6dim": "Перевіряє навчальну програму за 6 вимірами",
+    "desc_5dim": "Перевіряє навчальну програму за 5 вимірами (додайте стандарти для повної перевірки)"
   },
   "standards": {
     "target_standard": "Ціль стандарти",
@@ -5180,7 +5241,34 @@
     "plan_hook": "Зачіпка",
     "plan_independent": "Independent практика",
     "col_image": "зображення",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Стоп",
+    "expand_header": "Розгорнути заголовок",
+    "collapse_header": "Згорнути заголовок, щоб дати більше місця вмісту",
+    "collapse_header_short": "Згорнути заголовок",
+    "step_x_of_y": "Крок {current} з {total}",
+    "english_translation": "Англійський переклад",
+    "source_references": "Посилання на вихідний текст",
+    "activity_probe": "Перевірка: {activity}",
+    "word_sounds_count": "Word Sounds ({count} слів)",
+    "quick_practice_mode": "Режим швидкої практики",
+    "new_option": "Новий варіант",
+    "meta_lesson_extensions": "Розширення уроку",
+    "title_extension_ideas": "Ідеї розширення",
+    "meta_full_chat_log": "Повний журнал чату",
+    "title_udl_consultation_log": "Журнал консультацій UDL",
+    "meta_actionable_steps": "Практичні кроки (резюме ШІ)",
+    "title_differentiation_strategy": "Стратегія диференціації",
+    "meta_udl_guide_advice": "Поради посібника UDL",
+    "title_stem_assessment": "Оцінювання STEM",
+    "title_explore_challenge": "Дослідницький виклик",
+    "title_fluency_maze": "🏰 Лабіринт швидкочитання",
+    "title_storyforge_config": "📖 Завдання StoryForge",
+    "title_storyforge_submission": "📖 Надсилання історії",
+    "title_poettree_config": "🌳 Завдання PoetTree",
+    "title_poettree_submission": "🌳 Надсилання вірша",
+    "title_litlab_config": "🎭 Завдання LitLab",
+    "title_litlab_submission": "🎭 Надсилання виступу"
   },
   "persona": {
     "title": "Interview режим",
@@ -8308,7 +8396,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing вміст topology...",
     "brainstorming": "Генерування ідей...",
     "retrying_citations": "Retrying для кращий citations...",
-    "translating": "Переклад…"
+    "translating": "Переклад…",
+    "preparing_translation": "Підготовка перекладу на {lang}…",
+    "translating_item": "Переклад {current}/{total}: {title}…",
+    "generating_panel": "Створення панелі {current}/{total}…"
   },
   "process": {
     "source_missing": "будь ласка надати джерело текст перший.",
@@ -9604,7 +9695,8 @@
     "loading_resources": "Loading ресурси...",
     "preparing_workspace": "Preparing ваш workspace...",
     "almost_ready": "Майже готово...",
-    "loading_screen_aria": "AlloFlow loading екран"
+    "loading_screen_aria": "AlloFlow loading екран",
+    "preparing_environment": "Підготовка твого навчального середовища…"
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9616,7 +9708,7 @@
     "obs_momentary": "Momentary Час Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional поведінка оцінювання, ABC дані collection, та поведінка втручання План інструмент.",
+      "subtitle": "Інструменти для функціональної оцінки поведінки (FBA), збору ABC-даних і складання плану втручання (BIP).",
       "open_btn": "Відкрити BehaviorLens",
       "select_student": "Вибрати учні",
       "choose_student": "— Вибрати учні —",
@@ -9646,7 +9738,7 @@
       "record_title": "Record Огляд",
       "record_desc": "Вставте IEP/оцінювання для AI-підсумовування",
       "hypothesis_title": "гіпотеза діаграми",
-      "hypothesis_desc": "візуальний →B→C→Function flow графіки з AI генерація",
+      "hypothesis_desc": "Візуальна блок-схема A→B→C→Функція з генерацією на основі AI",
       "goals_title": "SMART цілі",
       "goals_desc": "AI-generated SMART поведінка цілі з прогрес відстеження",
       "contract_title": "поведінка Contract",
@@ -9728,8 +9820,8 @@
       "gamify_title": "My прогрес квести",
       "glossary_desc": "25+ термінів ABA з можливістю пошуку, із простими визначеннями та реальними прикладами",
       "glossary_title": "ABA Концепція глосарій",
-      "homelog_desc": "Simplified батьки-дружній поведінка logging з everyday мови",
-      "homelog_title": "Home поведінка Log",
+      "homelog_desc": "Спрощене ведення журналу поведінки для батьків зрозумілою повсякденною мовою",
+      "homelog_title": "Домашній журнал поведінки",
       "iepgoals_desc": "AI-генеровані поточні рівні, SMART-цілі, завдання, пристосування та плани моніторингу прогресу",
       "iepgoals_title": "IEP цілі Generator",
       "iepprep_desc": "AI-генерований пакет підготовки до зустрічі зі зведенням даних, ключовими тезами та наступними кроками",
@@ -9753,13 +9845,13 @@
       "observations": "спостереження",
       "pdpath_desc": "Керовані вступні модулі для покрокової побудови навичок ABA",
       "pdpath_title": "PD Навчання Path",
-      "predict_desc": "AI-powered pattern аналіз predicting коли, де, та що тригери поведінка — з prevention стратегії",
+      "predict_desc": "Аналіз патернів на основі AI, що прогнозує, коли, де і що провокує поведінку — з профілактичними стратегіями",
       "predict_title": "Прогнозна аналітика",
       "prefassess_desc": "Систематичне визначення підкріплювачів — протоколи MSWO, парного стимулу та вільного операнта",
       "prefassess_title": "Preference оцінювання",
       "progress_desc": "Готові для IEP абзаци моніторингу прогресу з накопичених поведінкових даних",
       "progress_title": "прогрес Розповідь",
-      "progressreport_desc": "AI-generated прогрес reports з дані summaries, trend аналіз, цілі прогрес, та батьки-дружній мови опції",
+      "progressreport_desc": "Згенеровані AI звіти про прогрес зі зведенням даних, аналізом тенденцій, прогресом у досягненні цілей і можливістю викладу зрозумілою для батьків мовою",
       "progressreport_title": "прогрес Reports",
       "qualitycheck_desc": "AI-огляд ваших записів ABC з конкретними пропозиціями покращень",
       "qualitycheck_title": "дані Якість Перевірити",
@@ -9778,7 +9870,7 @@
       "restorative_desc": "Покрокові сценарії для відновлення шкоди, кіл спільноти та конференцій реінтеграції",
       "restorative_title": "Посібник з відновної розмови",
       "riskscreen_title": "Скринінг ризиків",
-      "sandbox_desc": "Завантажити simulated учні дані для PD, pre-service training, або навчання ABA без реальний учні",
+      "sandbox_desc": "Завантажте змодельовані дані учня для професійного розвитку (PD), додипломної підготовки чи вивчення ABA без реальних учнів",
       "sandbox_title": "практика Sandbox",
       "save_workspace": "Зберегти Workspace",
       "scatterplot_desc": "Сітка час доби × поведінка для виявлення часових шаблонів — автоматично заповнюється з даних ABC",
@@ -9791,7 +9883,7 @@
       "sessionnotes_title": "сесії Нотатки",
       "sessiontracker_desc": "Систематичне посесійне вимірювання поведінки з обчисленням темпу",
       "sessiontracker_title": "сесії дані Tracker",
-      "snapshot_desc": "Експортувати & імпортувати JSON snapshots для батьки–вчителі дані exchange",
+      "snapshot_desc": "Експорт та імпорт JSON-знімків для обміну даними між батьками та вчителями",
       "snapshot_title": "Обмін знімками учня",
       "socialvalidity_desc": "Шкали TARF та IRP-15 для вимірювання прийнятності втручання — необхідно для публікації",
       "socialvalidity_title": "Соціальна валідність",
@@ -9886,7 +9978,7 @@
     "record": {
       "title": "Record Огляд",
       "analyze": "AI-підсумок",
-      "desc": "Вставити IEP цілі, evaluation reports, або прогрес нотатки для AI-powered аналіз.",
+      "desc": "Вставте цілі IEP, звіти про оцінювання або нотатки про прогрес для аналізу на основі AI.",
       "placeholder": "Вставити документи текст here..."
     },
     "hypothesis": {
@@ -9991,7 +10083,7 @@
     "reinforcer_sensory": "🌀 Сенсорне",
     "quiz_fba_purpose": "Яка основна мета FBA?",
     "quiz_replacement": "що є replacement поведінка?",
-    "search_placeholder": "Пошук antecedent, поведінка, consequence, нотатки, налаштування...",
+    "search_placeholder": "Пошук за антецедентом, поведінкою, наслідком, нотатками, середовищем...",
     "quick_fill_placeholder": "напр. \"Учень кинув папір під час математики, коли його попросили показати роботу, вчитель спокійно перенаправив\"",
     "nl_edit_placeholder": "напр. \"змінити наслідок на вчитель перенаправив\"",
     "now": "зараз",
@@ -10091,7 +10183,7 @@
     "cycle_de_escalation": "Деескалація",
     "cycle_recovery": "Відновлення",
     "quiz_opt_punish": "До punish учні",
-    "quiz_opt_identify_why": "До ідентифікувати WHY поведінка occurs",
+    "quiz_opt_identify_why": "Щоб з'ясувати, ЧОМУ виникає поведінка",
     "quiz_opt_any_stops": "Будь-яка поведінка, яка зупиняє проблему",
     "analysis": {
       "hypothesized_function": "Гіпотетична функція",
@@ -10141,7 +10233,7 @@
       "new_behavior_label": "новий поведінка label...",
       "optional": "необов'язковий",
       "outcome_key_takeaways_optional": "Результат / ключові висновки (необов'язково)",
-      "paste_share_code_here": "Вставити поділитися code here...",
+      "paste_share_code_here": "Вставте код спільного доступу тут...",
       "person": "Особа\\",
       "phase_label": "Назва фази",
       "rationale_which_antecedent_does_this_address": "Обґрунтування (який антецедент це адресує?)",
@@ -10164,7 +10256,7 @@
       "topic_purpose_of_contact": "Тема / мета контакту",
       "type_full_name": "Тип повний name",
       "type_language_eg_spanish_arabic_somali": "Введіть мову (напр., іспанська, арабська, сомалі)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "Тип ваш спостереження, note, або натиснути mic до dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "Введіть своє спостереження, нотатку або натисніть мікрофон, щоб продиктувати...",
       "type_your_response_here_be_thorough_and_use_profes": "Введіть вашу відповідь тут. Будьте ретельними та використовуйте професійну мову...",
       "what_behavior_will_change": "що поведінка буде зміна?",
       "what_could_you_or_a_grownup_do_differently": "Що ви або дорослий могли б зробити інакше?",
@@ -10288,7 +10380,7 @@
       "no_valid_data_found_in_csv": "Дійсних даних у CSV не знайдено",
       "not_a_valid_alloflow_snapshot_file": "Недійсний файл знімка AlloFlow",
       "not_a_valid_consent_template_file": "Недійсний файл шаблону згоди",
-      "not_quite_try_again": "не quite — спробувати again!",
+      "not_quite_try_again": "Не зовсім — спробуйте ще раз!",
       "note_added": "Нотатку додано",
       "note_added_2": "Нотатку додано ✏️",
       "note_deleted": "Нотатку видалено",
@@ -10391,7 +10483,7 @@
       "add_abc_entries_to_see_progress_over_time": "Додати ABC entries до бачити прогрес над час",
       "add_abc_entries_to_see_visual_trend_data": "Додайте записи ABC, щоб побачити візуальні дані тенденцій.",
       "add_connections_to_build_the_relationship_map": "Додайте зв'язки, щоб побудувати карту стосунків.",
-      "add_data_points_above_or_paste_csv_data_to_get_sta": "Додати дані точки above або вставити CSV дані до get started.",
+      "add_data_points_above_or_paste_csv_data_to_get_sta": "Додайте точки даних вище або вставте CSV-дані, щоб розпочати.",
       "additional_context_optional": "Additional Контекст (необов'язковий)",
       "ai_analysis": "AI Аналіз",
       "ai_context_available": "AI Контекст доступний",
@@ -10437,7 +10529,7 @@
       "data_quality_score": "дані Якість бали",
       "data_to_include": "дані до Включити",
       "day_streak": "Днів поспіль",
-      "define_the_behaviors_settings_or_students_for_stag": "Define поведінка, налаштування, або учні для staggered втручання.",
+      "define_the_behaviors_settings_or_students_for_stag": "Визначте види поведінки, середовища або учнів для поетапного втручання.",
       "describe_your_research_question_and_let_ai_recomme": "Опишіть ваше дослідницьке питання та дозвольте AI рекомендувати найкращий дизайн.",
       "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training з відстеженням володіння та автоматичним переходом",
       "document_whether_interventions_are_implemented_as": "Документуйте, чи втручання впроваджуються як заплановано",
@@ -10456,10 +10548,10 @@
       "from_abc_data": "від ABC дані:",
       "full_student_summary": "Повний учні Підсумок",
       "functional_communication_training_planning_tool": "Інструмент планування Функціонального Комунікативного Навчання",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "Створити multi-week втручання план на основі на ваш collected ABC дані та AI аналіз.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "Створіть багатотижневий план втручання на основі зібраних ABC-даних та аналізу AI.",
       "generate_a_professional_printready_progress_report": "Згенеруйте професійний, готовий до друку звіт про прогрес із вбудованими графіками, підсумками даних та AI-рекомендаціями. Експорт PDF одним натисканням через друк браузера.",
       "generate_a_unique_scenario_tailored_to_your_traini": "Згенеруйте унікальний сценарій, адаптований до ваших навчальних потреб.",
-      "generate_compliant_iep_behavioral_goals_from_obser": "Створити compliant IEP behavioral цілі від спостереження дані з present рівні, SMART цілі, та прогрес monitoring.",
+      "generate_compliant_iep_behavioral_goals_from_obser": "Створіть відповідні вимогам поведінкові цілі IEP на основі даних спостережень із поточними рівнями, SMART-цілями та моніторингом прогресу.",
       "generate_iepready_progress_monitoring_paragraphs_f": "Згенеруйте готові для IEP абзаци моніторингу прогресу з ваших накопичених поведінкових даних.",
       "generate_tailored_recommendations_based_on_the_beh": "Згенеруйте адаптовані рекомендації на основі поведінкових даних та обраної аудиторії.",
       "generated": "Згенеровано:",
@@ -10470,7 +10562,7 @@
       "graph_phases": "графіки Phases",
       "graph_title": "графіки Title",
       "high": "Високий",
-      "home_behavior_log": "Home поведінка Log",
+      "home_behavior_log": "Домашній журнал поведінки",
       "how_often_and_when_to_deliver_reinforcement_use_th": "Як часто та коли надавати підкріплення. Використовуйте інструмент Token Board для впровадження цих графіків на практиці.",
       "identify_temporal_patterns_in_behavior_occurrence": "Визначте часові патерни у виникненні поведінки",
       "iep_behavior_goal_generator": "IEP поведінка цілі Generator",
@@ -10483,7 +10575,7 @@
       "interventions": "втручання",
       "last_entry": "останній Entry",
       "latency_recorder": "Реєстратор латентності",
-      "load_multiple_student_workspace_files_to_compare_b": "Завантажити кілька учні workspace файли до порівняти поведінка шаблони, intensity рівні, та trends side-by-side.",
+      "load_multiple_student_workspace_files_to_compare_b": "Завантажте кілька файлів робочих просторів учнів, щоб порівняти патерни поведінки, рівні інтенсивності та тенденції поряд.",
       "low": "Низький",
       "maintenance_generalization": "Підтримка та генералізація",
       "map_target_behaviors_to_functionally_equivalent_re": "Зіставте цільові поведінки з функціонально еквівалентними замінами",
@@ -10494,19 +10586,19 @@
       "measure_time_between_stimulus_presentation_and_beh": "Виміряйте час між пред'явленням стимулу та поведінковою реакцією",
       "median": "Медіана",
       "methods_used": "Використані методи",
-      "modify_the_environment_to_prevent_behaviors_before": "Змінити environment до prevent поведінка перед вони почати",
+      "modify_the_environment_to_prevent_behaviors_before": "Змініть середовище, щоб запобігти поведінці ще до її початку",
       "mtssrti_tier_manager": "MTSS/RTI Рівень Manager",
       "my_progress_quest": "My прогрес квести",
       "natural_language_abc_entry": "Запис ABC природною мовою",
       "need_at_least_3_abc_entries_for_pattern_detection": "Потрібно щонайменше 3 записи ABC для виявлення патернів.",
       "need_at_least_5_abc_entries_for_pattern_analysis": "Потрібно щонайменше 5 ABC-записів для аналізу патернів.",
-      "no_abc_entries_to_check_yet_start_collecting_data": "No ABC entries до перевірити yet. Почати collecting дані перший!",
+      "no_abc_entries_to_check_yet_start_collecting_data": "Поки що немає ABC-записів для перевірки. Спершу почніть збирати дані!",
       "no_behavioral_data_recorded": "Поведінкові дані не зафіксовано",
       "no_contacts_logged_yet_consistent_communication_bu": "Контакти ще не зафіксовано. Послідовна комунікація будує довіру!",
       "no_data_yet": "No дані yet",
       "no_entries_yet_tap_log_a_behavior_to_get_started": "Записів ще немає. Натисніть «Зафіксувати поведінку», щоб почати!",
       "no_occurrence": "Випадок не зафіксовано",
-      "no_reflections_yet_tap_the_button_above_to_check_i": "No роздум yet. Tap кнопки above до перевірити в з yourself!",
+      "no_reflections_yet_tap_the_button_above_to_check_i": "Поки що немає рефлексій. Натисніть кнопку вище, щоб перевірити свій стан!",
       "no_session_data_recorded_yet": "No сесії дані recorded yet.",
       "no_sessions_recorded_yet": "No сесії recorded yet.",
       "no_sessions_yet": "No сесії yet.",
@@ -10534,10 +10626,10 @@
       "publicationstandard_singlecase_design_graphs": "Графіки одиничного дизайну випадку публікаційного стандарту",
       "quick_switch": "швидкий Перемкнути",
       "range": "Діапазон",
-      "read_through_the_module_content_above_then_click_c": "Читати через module вміст above, потім натиснути Завершити below.",
+      "read_through_the_module_content_above_then_click_c": "Прочитайте вміст модуля вище, а потім натисніть «Завершити» нижче.",
       "realtime_calming_tools_for_inthemoment_support": "Інструменти заспокоєння в реальному часі для підтримки в моменті",
       "recent_moods": "Останні настрої:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record сесії з сесії дані Tracker, або перемкнути до ручний Entry режим.",
+      "record_sessions_with_the_session_data_tracker_or_s": "Записуйте сесії за допомогою трекера даних сесій або перемкніться в режим ручного введення.",
       "recording": "Запис...",
       "relationship_map": "Карта стосунків",
       "remember_cultural_humility_is_a_lifelong_practice": "Пам'ятайте: культурна скромність — це практика на все життя. Кожна рефлексія робить вас більш справедливим практиком.",
@@ -10565,24 +10657,24 @@
       "summary": "Підсумок:",
       "systematic_behavioral_measurement_across_sessions": "Систематичне поведінкове вимірювання між сесіями",
       "systematic_reinforcer_identification_using_evidenc": "Систематична ідентифікація підкріплювачів із використанням доказових протоколів",
-      "tap_each_item_when_student_engages_with_it": "Tap кожен елементи коли учні engages з it",
+      "tap_each_item_when_student_engages_with_it": "Натискайте на кожен предмет, коли учень з ним взаємодіє",
       "target_behavior": "Ціль поведінка",
       "task_analysis": "Task Аналіз",
       "taskskill_name": "Назва задачі/навички",
       "teacher": "вчителі",
       "team_collaboration_notes": "Team Collaboration Нотатки",
-      "test_your_behavioral_analysis_knowledge_80_to_earn": "тести ваш behavioral аналіз knowledge — 80% до earn ваш значки",
+      "test_your_behavioral_analysis_knowledge_80_to_earn": "Перевірте свої знання з поведінкового аналізу — 80%, щоб отримати свій значок",
       "top_behavior": "Top поведінка",
       "total_contacts": "Усього контактів",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track поведінка frequency над час з aim лінії, phase зміни, та trend аналіз.",
-      "track_behaviors_at_home_using_simple_everyday_lang": "Track поведінка at home використання простий, everyday мови. Це допомагає ваш child\\",
+      "track_behavior_frequency_over_time_with_aim_lines": "Відстежуйте частоту поведінки в часі за допомогою цільових ліній, фазових змін та аналізу тенденцій.",
+      "track_behaviors_at_home_using_simple_everyday_lang": "Відстежуйте поведінку вдома, використовуючи просту повсякденну мову. Це допомагає вашій дитині\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Відстежуйте свої почуття, заробляйте значки та будуйте серії!",
       "transform_deficitbased_language_into_assetfocused": "Перетворіть мову на основі дефіциту на описи, орієнтовані на активи",
       "translate_to_any_language": "Translate до будь-який мови:",
       "treatment_integrity": "Цілісність втручання",
       "trend": "Тренд",
-      "type_or_paste_your_observation_notes_in_everyday_e": "Тип або вставити ваш спостереження нотатки в everyday English. AI буде структура them в proper ABC entries.",
+      "type_or_paste_your_observation_notes_in_everyday_e": "Введіть або вставте свої нотатки спостережень повсякденною англійською мовою. AI структурує їх у належні ABC-записи.",
       "use_these_criteria_when_examining_your_graph": "Використовуйте ці критерії при аналізі вашого графіка:",
       "use_this_flow_to_hypothesize_the_function_of_a_cha": "Використовуйте цей потік, щоб висунути гіпотезу про функцію складної поведінки.",
       "visual_multitiered_system_of_supports_assign_stude": "Візуальна багаторівнева система підтримки. Розподіляйте учнів за рівнями, отримуйте рекомендації щодо розміщення на основі AI.",
@@ -10629,7 +10721,7 @@
     "allobot_chat": {
       "card_desc": "чат з AI про поведінка стратегії, FBA, BIP, та втручання planning",
       "empty_desc": "Я можу допомогти зі стратегіями FBA, ідеями втручання, інтерпретацією даних, техніками деескалації та іншим.",
-      "empty_title": "Ask me anything про поведінка аналіз!",
+      "empty_title": "Запитайте мене про будь-що, пов'язане з аналізом поведінки!",
       "placeholder": "Ask про поведінка, стратегії, FBA, BIP...",
       "subtitle": "Асистент поведінкового аналізу на основі AI",
       "title": "Запитати AlloBot"
@@ -10649,7 +10741,7 @@
       "saved": "сесії збережено ✅"
     },
     "homelog": {
-      "title": "Home поведінка Log"
+      "title": "Домашній журнал поведінки"
     },
     "interval": {
       "save": "Зберегти сесії",
@@ -10670,7 +10762,7 @@
       "saved": "спостереження сесії збережено ✅",
       "session_notes": "сесії нотатки...",
       "start_to_begin": "Запустіть таймер, щоб почати вимірювання латентності",
-      "tap_when_starts": "Tap коли поведінка starts",
+      "tap_when_starts": "Натисніть, коли поведінка починається",
       "title": "Наживо спостереження",
       "waiting_for_behavior": "⏳ Waiting для поведінка..."
     },
@@ -10827,7 +10919,7 @@
       "maintenance_tracker": "Трекер підтримки",
       "make_tier_movement_decision_stay_fade_intensify": "Прийміть рішення про переміщення за рівнями (залишити / згасити / посилити)",
       "map_antecedent_behavior_consequence_pathways": "Скартографуйте шляхи антецедент → поведінка → наслідок",
-      "map_each_target_behavior_to_a_replacement": "Map кожен ціль поведінка до replacement",
+      "map_each_target_behavior_to_a_replacement": "Зіставте кожну цільову поведінку із замінною",
       "materials_access": "Матеріали Доступ",
       "measure_effect_size_of_interventions": "Виміряйте розмір ефекту втручань",
       "model": "Режим",
@@ -10849,7 +10941,7 @@
       "not_feasible": "не Feasible",
       "not_started": "не Started",
       "observation_methods": "спостереження Methods",
-      "observe_across_multiple_settings_classroom_recess_etc": "Observe через кілька налаштування (клас, recess, etc.)",
+      "observe_across_multiple_settings_classroom_recess_etc": "Спостерігайте в різних середовищах (клас, перерва тощо)",
       "okay": "Гаразд",
       "on_track": "На Track",
       "outcome_evaluation": "Оцінка результатів",
@@ -11250,7 +11342,12 @@
   "lms": {
     "dismiss_banner_aria": "Закрити банер LMS",
     "dismiss_button": "Закрити",
-    "audit_queue_help": "Натисніть на документ, щоб отримати його та завантажити в конвеєр доступності. Деякі файли LMS можуть вимагати, щоб ви були авторизовані в LMS у цьому браузері."
+    "audit_queue_help": "Натисніть на документ, щоб отримати його та завантажити в конвеєр доступності. Деякі файли LMS можуть вимагати, щоб ви були авторизовані в LMS у цьому браузері.",
+    "queued_one": "{count} документ у черзі з LMS",
+    "queued_other": "{count} документів у черзі з LMS",
+    "fetching": "Отримання {name}…",
+    "loaded_ready": "{name} завантажено; готово до перевірки",
+    "fetch_failed": "Не вдалося отримати {name}: {error}. Файл може потребувати автентифікації LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo останній annotation ({count} доступний) — Ctrl/Cmd+Z",
@@ -11270,7 +11367,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "візуальний підтримка від ваш вчителі"
+    "teacher_modal_aria": "візуальний підтримка від ваш вчителі",
+    "now": "ЗАРАЗ",
+    "read_aloud": "Прочитати вголос"
   },
   "canvas_settings": {
     "title": "розширений налаштування",
@@ -11287,7 +11386,12 @@
     "read_all_button": "Читати всі",
     "stop_button": "Зупинити",
     "focus_narration_label": "Клавіатура Фокус Narration",
-    "focus_narration_on_hint": "Tab до hear controls"
+    "focus_narration_on_hint": "Tab до hear controls",
+    "reading": "Читання…",
+    "item_aria": "Натисни, щоб почути: {text}",
+    "footer_stats": "{count} елементів · Натисни будь-який елемент, щоб почути його · Озвучення за Tab {state}",
+    "narration_on": "УВІМК",
+    "narration_off": "ВИМК"
   },
   "teacher": {
     "local_only": "Local тільки",
@@ -12463,5 +12567,27 @@
     "no_match": "Немає відповідної команди. Чат із ботом (а невдовзі й голос) розуміє довільні запити.",
     "placeholder": "Уведіть команду — «більший текст», «центр педагога», «прочитати цю сторінку»…",
     "run": "виконати"
+  },
+  "voice_engine": {
+    "preparing": "Підготовка голосового рушія…",
+    "downloading_model": "Завантаження голосової моделі",
+    "loading_memory": "Завантаження в пам'ять",
+    "loading_model_memory": "Завантаження голосової моделі в пам'ять"
+  },
+  "voice_control": {
+    "listening": "Слухаю; скажи «stop listening», щоб завершити",
+    "stop_aria": "Зупинити голосове керування"
+  },
+  "dynamic_assessment": {
+    "return_title": "Цей ресурс створено за допомогою динамічного оцінювання. Натисни, щоб знову відкрити модуль динамічного оцінювання.",
+    "return_aria": "Повернутися до динамічного оцінювання",
+    "return_label": "Повернутися до динамічного оцінювання",
+    "item_badge": "елемент {num}"
+  },
+  "story_gallery": {
+    "title": "Галерея історій",
+    "byline": "Автор: {author} · {words} слів · {used}/{total} словник",
+    "student": "Учень",
+    "score": "Бал: {score}"
   }
 }

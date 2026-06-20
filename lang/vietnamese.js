@@ -1695,7 +1695,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Chuỗi tập trung {minutes} phút! Cứ tiếp tục nhé!",
+    "streak_saved": "Chào mừng trở lại! Chuỗi {minutes} phút của bạn đã được lưu.",
+    "points_awarded": "Đã trao điểm!",
+    "welcome_name": "Chào mừng, {name}!",
+    "element_not_found": "Không tìm thấy phần tử: {id}",
+    "overlay_set": "Lớp phủ: {mode}",
+    "synced_resource": "Đã đồng bộ: {title}",
+    "group_resource": "Tài nguyên nhóm: {title}",
+    "preset_saved": "Đã lưu cài đặt sẵn \"{name}\"!",
+    "translated_resources": "Đã dịch thành công {count} tài nguyên!",
+    "bingo_cards_count": "Đã tạo {count} thẻ BINGO!",
+    "sound_enabled": "Đã bật âm thanh",
+    "sound_muted": "Đã tắt âm thanh",
+    "democracy_mode_on": "Đã bật Chế độ dân chủ: bỏ phiếu cả lớp BẬT",
+    "democracy_mode_off": "Đã tắt Chế độ dân chủ: chơi một mình",
+    "resource_moved_up": "Đã di chuyển {title} lên",
+    "resource_moved_down": "Đã di chuyển {title} xuống",
+    "panels_regenerated": "Đã tạo lại {count} bảng!",
+    "settings_undone": "Đã hoàn tác: {label}. Đã khôi phục cài đặt. (Các tài nguyên đã tạo không bị ảnh hưởng.)",
+    "concept_added": "Đã thêm khái niệm: {text}",
+    "lesson_not_found": "Không tìm thấy bài học trong đơn vị này.",
+    "probe_complete": "Hoàn thành khảo sát: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Đã cập nhật cài đặt: {changes}",
+    "change_format": "Định dạng: {value}",
+    "change_tone": "Giọng điệu: {value}",
+    "change_length": "Độ dài: ~{value} từ",
+    "change_language": "Ngôn ngữ: {value}",
+    "change_interest": "Đã thêm sở thích: {value}",
+    "backup_saved": "💾 Một bản sao lưu của phiên này đã được lưu vào mục Tải xuống của bạn (một tệp dự án). Hiện tại không cần làm gì với nó; nếu sau này bạn cần quay lại, \"Tải dự án\" sẽ khôi phục mọi thứ.",
+    "backup_saved_score": " (điểm {score})",
+    "project_saved_multi_one": "💾 Đã lưu dự án ({count} phạm vi); tải lại sau để tiếp tục",
+    "project_saved_multi_other": "💾 Đã lưu dự án ({count} phạm vi); tải lại sau để tiếp tục",
+    "project_saved": "💾 Đã lưu dự án; tải lại sau để tiếp tục chỉnh sửa",
+    "search_result_desc": "Kết quả Tìm kiếm của Google: {title}",
+    "link_url_prompt": "Nhập URL liên kết:"
   },
   "large_file": {
     "modal_title": "Nhập tệp âm thanh lớn",
@@ -1711,7 +1746,8 @@
     "cancel_transcription": "Hủy phiên âm",
     "chunk_info": "Âm thanh được chia thành các đoạn 5 phút để xử lý",
     "chunk_progress": "Đoạn {current} trên {total}",
-    "audio_only_error": "Hiện tại chỉ các tệp âm thanh (MP3, WAV, v.v.) được hỗ trợ cho phiên âm theo đoạn."
+    "audio_only_error": "Hiện tại chỉ các tệp âm thanh (MP3, WAV, v.v.) được hỗ trợ cho phiên âm theo đoạn.",
+    "starting": "Đang bắt đầu..."
   },
   "formatting": {
     "bold": "Đậm (**văn bản**)",
@@ -1815,7 +1851,8 @@
     "open_storyforge_aria": "Mở StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Câu hỏi dựa trên tài liệu",
-    "open_stem_lab_explore_aria": "Mở khám phá Phòng STEM"
+    "open_stem_lab_explore_aria": "Mở khám phá Phòng STEM",
+    "stem_lab_explore": "Khám phá"
   },
   "history": {
     "load_project": "Tải dự án",
@@ -4491,7 +4528,25 @@
       "resolved_tip": "Các vấn đề từ kiểm toán ban đầu không còn được tìm thấy trong kiểm toán xác minh",
       "persisted_tip": "Các vấn đề từ kiểm toán ban đầu vẫn còn sau khi sửa",
       "introduced_tip": "Các vấn đề mới không tồn tại trước khi sửa"
-    }
+    },
+    "reattach_mismatch": "Tệp PDF đính kèm lại khác với tệp đã được kiểm tra{detail}. Vẫn sẽ tiếp tục; kết quả có thể không nhất quán với bản kiểm tra gốc.",
+    "reattach_name_detail": " (tên: \"{new}\" so với \"{old}\")",
+    "reattach_size_detail": " (kích thước: {new} so với {old} byte)",
+    "audit_failed_kept": "{label}: kiểm tra thất bại; đã giữ lại phiên bản trước.",
+    "score_dropped_kept": "{label}: điểm sẽ giảm ({prev} → {next}{axe}). Đã giữ lại phiên bản trước.",
+    "axe_only_comparison": ", chỉ so sánh bằng axe",
+    "axe_only_committed": "{label}: không có xác minh bằng AI; chỉ xác nhận bằng điểm axe-core xác định.",
+    "reinserted_ai": "{count} đã chèn lại (AI)",
+    "reinserted_sentence": "{count} đã chèn lại (câu)",
+    "reinserted_fuzzy": "{count} đã chèn lại (gần đúng)",
+    "in_recovery_appendix": "{count} trong phụ lục khôi phục",
+    "duplicates_removed_one": "Đã xóa {count} bản trùng lặp",
+    "duplicates_removed_other": "Đã xóa {count} bản trùng lặp",
+    "auto_continue_round": "Vòng tiếp tục tự động {round}/{max}: {detail}, điểm {score}/100 (mục tiêu {target})...",
+    "violation_one": "{count} vi phạm",
+    "violation_other": "{count} vi phạm",
+    "ai_issue_one": "{count} vấn đề do AI gắn cờ",
+    "ai_issue_other": "{count} vấn đề do AI gắn cờ"
   },
   "concept_sort": {
     "title": "Tri ý Phân loại",
@@ -4565,7 +4620,8 @@
     "card_visuals_label": "Hình ảnh thẻ",
     "card_visuals_auto": "Tự động (chỉ trên các mục ngắn)",
     "card_visuals_always": "Luôn tạo hình ảnh",
-    "card_visuals_never": "Không bao giờ (thẻ chỉ văn bản)"
+    "card_visuals_never": "Không bao giờ (thẻ chỉ văn bản)",
+    "explanation_unavailable": "Hiện không thể tạo lời giải thích. Vui lòng thử lại sau giây lát."
   },
   "dbq": {
     "title": "Phân tích Tài liệu (DBQ)",
@@ -4971,7 +5027,12 @@
       "error_check": "Kiểm tra liên kết thất bại.",
       "regenerated_success": "Đã tạo lại văn bản với các cải tiến!",
       "regen_failed": "Tạo lại thất bại."
-    }
+    },
+    "skill_check": "Kiểm tra kỹ năng",
+    "desc_skill_check": "Xác minh mức độ thành thạo của bạn so với các tiêu chuẩn.",
+    "desc_parent": "Xem điều này phù hợp với mục tiêu của trường như thế nào",
+    "desc_6dim": "Kiểm tra chương trình học theo 6 khía cạnh",
+    "desc_5dim": "Kiểm tra chương trình học theo 5 khía cạnh (thêm tiêu chuẩn để kiểm tra đầy đủ)"
   },
   "standards": {
     "target_standard": "Tiêu chuẩn Mục tiêu",
@@ -5183,7 +5244,34 @@
     "plan_hook": "Điểm Thu hút",
     "plan_independent": "Luyện tập Độc lập",
     "col_image": "Hình ảnh",
-    "word_sounds_studio": "Word Sounds"
+    "word_sounds_studio": "Word Sounds",
+    "stop": "Dừng",
+    "expand_header": "Mở rộng tiêu đề",
+    "collapse_header": "Thu gọn tiêu đề để có thêm không gian cho nội dung",
+    "collapse_header_short": "Thu gọn tiêu đề",
+    "step_x_of_y": "Bước {current} trên {total}",
+    "english_translation": "Bản dịch tiếng Anh",
+    "source_references": "Tham chiếu văn bản nguồn",
+    "activity_probe": "Khảo sát {activity}",
+    "word_sounds_count": "Word Sounds ({count} từ)",
+    "quick_practice_mode": "Chế độ luyện tập nhanh",
+    "new_option": "Tùy chọn mới",
+    "meta_lesson_extensions": "Phần mở rộng bài học",
+    "title_extension_ideas": "Ý tưởng mở rộng",
+    "meta_full_chat_log": "Nhật ký trò chuyện đầy đủ",
+    "title_udl_consultation_log": "Nhật ký tư vấn UDL",
+    "meta_actionable_steps": "Các bước khả thi (tóm tắt bằng AI)",
+    "title_differentiation_strategy": "Chiến lược phân hóa",
+    "meta_udl_guide_advice": "Lời khuyên của Hướng dẫn UDL",
+    "title_stem_assessment": "Đánh giá STEM",
+    "title_explore_challenge": "Thử thách khám phá",
+    "title_fluency_maze": "🏰 Mê cung trôi chảy",
+    "title_storyforge_config": "📖 Bài tập StoryForge",
+    "title_storyforge_submission": "📖 Bài nộp truyện",
+    "title_poettree_config": "🌳 Bài tập PoetTree",
+    "title_poettree_submission": "🌳 Bài nộp thơ",
+    "title_litlab_config": "🎭 Bài tập LitLab",
+    "title_litlab_submission": "🎭 Bài nộp trình diễn"
   },
   "persona": {
     "title": "Chế độ Phỏng vấn",
@@ -7333,7 +7421,10 @@
     "analyzing_topology": "Đóng vai Nhà thiết kế Chương trình: Đang phân tích cấu trúc nội dung...",
     "brainstorming": "Đang động não ý tưởng...",
     "retrying_citations": "Đang thử lại để có trích dẫn tốt hơn...",
-    "translating": "Đang dịch…"
+    "translating": "Đang dịch…",
+    "preparing_translation": "Đang chuẩn bị dịch sang {lang}...",
+    "translating_item": "Đang dịch {current}/{total}: {title}...",
+    "generating_panel": "Đang tạo bảng {current}/{total}..."
   },
   "process": {
     "source_missing": "Vui lòng cung cấp văn bản nguồn trước.",
@@ -10158,7 +10249,8 @@
     "loading_resources": "Đang tải tài nguyên...",
     "preparing_workspace": "Đang chuẩn bị không gian làm việc của bạn...",
     "almost_ready": "Gần xong...",
-    "loading_screen_aria": "Màn hình tải AlloFlow"
+    "loading_screen_aria": "Màn hình tải AlloFlow",
+    "preparing_environment": "Đang chuẩn bị môi trường học tập của bạn..."
   },
   "educator_hub": {
     "title": "Công cụ Giáo dục",
@@ -10275,7 +10367,12 @@
   "lms": {
     "dismiss_banner_aria": "Bỏ qua banner LMS",
     "dismiss_button": "Bỏ qua",
-    "audit_queue_help": "Nhấp vào một tài liệu để lấy và tải nó vào pipeline khả năng tiếp cận. Một số tệp LMS có thể yêu cầu bạn đăng nhập vào LMS trong trình duyệt này."
+    "audit_queue_help": "Nhấp vào một tài liệu để lấy và tải nó vào pipeline khả năng tiếp cận. Một số tệp LMS có thể yêu cầu bạn đăng nhập vào LMS trong trình duyệt này.",
+    "queued_one": "{count} tài liệu trong hàng đợi từ LMS",
+    "queued_other": "{count} tài liệu trong hàng đợi từ LMS",
+    "fetching": "Đang tải {name}...",
+    "loaded_ready": "Đã tải {name}; sẵn sàng để kiểm tra",
+    "fetch_failed": "Không tải được {name}: {error}. Tệp có thể yêu cầu xác thực LMS."
   },
   "annotation": {
     "undo_tooltip": "Hoàn tác chú thích cuối ({count} có sẵn) — Ctrl/Cmd+Z",
@@ -10295,7 +10392,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Hỗ trợ Trực quan từ giáo viên của bạn"
+    "teacher_modal_aria": "Hỗ trợ Trực quan từ giáo viên của bạn",
+    "now": "BÂY GIỜ",
+    "read_aloud": "Đọc to"
   },
   "canvas_settings": {
     "title": "Cài đặt Nâng cao",
@@ -10312,7 +10411,12 @@
     "read_all_button": "Đọc Tất cả",
     "stop_button": "Dừng",
     "focus_narration_label": "Tường thuật Tiêu điểm Bàn phím",
-    "focus_narration_on_hint": "Tab để nghe các điều khiển"
+    "focus_narration_on_hint": "Tab để nghe các điều khiển",
+    "reading": "Đang đọc...",
+    "item_aria": "Nhấp để nghe: {text}",
+    "footer_stats": "{count} mục · Nhấp vào bất kỳ mục nào để nghe · Thuyết minh bằng Tab {state}",
+    "narration_on": "BẬT",
+    "narration_off": "TẮT"
   },
   "teacher": {
     "local_only": "Chỉ cục bộ",
@@ -12131,5 +12235,27 @@
     "no_match": "Không có lệnh phù hợp. Trò chuyện với bot (và sắp tới là giọng nói) hiểu được các yêu cầu tự do.",
     "placeholder": "Nhập một lệnh — “chữ to hơn”, “trung tâm giáo viên”, “đọc trang này”…",
     "run": "chạy"
+  },
+  "voice_engine": {
+    "preparing": "Đang chuẩn bị công cụ giọng nói...",
+    "downloading_model": "Đang tải mô hình giọng nói",
+    "loading_memory": "Đang tải vào bộ nhớ",
+    "loading_model_memory": "Đang tải mô hình giọng nói vào bộ nhớ"
+  },
+  "voice_control": {
+    "listening": "Đang nghe; nói “stop listening” để kết thúc",
+    "stop_aria": "Dừng điều khiển bằng giọng nói"
+  },
+  "dynamic_assessment": {
+    "return_title": "Tài nguyên này được tạo bởi Đánh giá động. Nhấp để mở lại mô-đun Đánh giá động.",
+    "return_aria": "Quay lại Đánh giá động",
+    "return_label": "Quay lại Đánh giá động",
+    "item_badge": "mục {num}"
+  },
+  "story_gallery": {
+    "title": "Thư viện truyện",
+    "byline": "Bởi {author} · {words} từ · {used}/{total} từ vựng",
+    "student": "Học sinh",
+    "score": "Điểm: {score}"
   }
 }

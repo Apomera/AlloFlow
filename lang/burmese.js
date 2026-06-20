@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper ဖွင့်ခြင်း မအောင်မြင်ပါ။ အခြားအင်ဂျင်များသို့ ပြန်ပြောင်းနေသည်။",
     "backup_failed": "အရံကူး မအောင်မြင်ပါ။ ထပ်ကြိုးစားပါ။",
     "invalid_backup_file": "မှန်ကန်သော AlloHaven အရံကူး ဖိုင် မဟုတ်ပါ။",
-    "could_not_read_file": "ထိုဖိုင်ကို ဖတ်၍ မရပါ။ JSON အရံကူး ဖိုင်ဖြစ်ပါသလား။"
+    "could_not_read_file": "ထိုဖိုင်ကို ဖတ်၍ မရပါ။ JSON အရံကူး ဖိုင်ဖြစ်ပါသလား။",
+    "focus_streak": "{flames} {minutes} မိနစ် အာရုံစူးစိုက်မှု ဆက်တိုက်စံချိန်! ဒီအတိုင်းဆက်လုပ်ပါ!",
+    "streak_saved": "ပြန်လည်ကြိုဆိုပါတယ်! သင်၏ {minutes} မိနစ် ဆက်တိုက်စံချိန်ကို သိမ်းဆည်းပြီးပါပြီ။",
+    "points_awarded": "အမှတ်များ ပေးအပ်ပြီးပါပြီ!",
+    "welcome_name": "ကြိုဆိုပါတယ်၊ {name}!",
+    "element_not_found": "ဒြပ်စင်ကို ရှာမတွေ့ပါ: {id}",
+    "overlay_set": "အလွှာ: {mode}",
+    "synced_resource": "ထပ်တူပြုပြီး: {title}",
+    "group_resource": "အဖွဲ့အရင်းအမြစ်: {title}",
+    "preset_saved": "ကြိုတင်သတ်မှတ်ချက် \"{name}\" ကို သိမ်းဆည်းပြီး!",
+    "translated_resources": "အရင်းအမြစ် {count} ခုကို အောင်မြင်စွာ ဘာသာပြန်ပြီး!",
+    "bingo_cards_count": "BINGO ကတ် {count} ခု ဖန်တီးပြီး!",
+    "sound_enabled": "အသံ ဖွင့်ထားသည်",
+    "sound_muted": "အသံ ပိတ်ထားသည်",
+    "democracy_mode_on": "ဒီမိုကရေစီမုဒ် ဖွင့်ထားသည်: အတန်းမဲပေးမှု ဖွင့်ထားသည်",
+    "democracy_mode_off": "ဒီမိုကရေစီမုဒ် ပိတ်ထားသည်: တစ်ဦးတည်းကစားမှု",
+    "resource_moved_up": "{title} ကို အပေါ်သို့ ရွှေ့ပြီး",
+    "resource_moved_down": "{title} ကို အောက်သို့ ရွှေ့ပြီး",
+    "panels_regenerated": "panel {count} ခုကို ပြန်လည်ဖန်တီးပြီး!",
+    "settings_undone": "ပြန်ဖျက်ပြီး: {label}။ ဆက်တင်များကို ပြန်လည်ထားပြီး။ (ဖန်တီးထားသော အရင်းအမြစ်များ မထိခိုက်ပါ။)",
+    "concept_added": "သဘောတရား ထည့်ပြီး: {text}",
+    "lesson_not_found": "ဤယူနစ်တွင် သင်ခန်းစာ ရှာမတွေ့ပါ။",
+    "probe_complete": "စစ်ဆေးမှု ပြီးဆုံး: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "ဆက်တင်များ အပ်ဒိတ်လုပ်ပြီး: {changes}",
+    "change_format": "ဖော်မတ်: {value}",
+    "change_tone": "လေသံ: {value}",
+    "change_length": "အရှည်: ~{value} စကားလုံး",
+    "change_language": "ဘာသာစကား: {value}",
+    "change_interest": "စိတ်ဝင်စားမှု ထည့်ပြီး: {value}",
+    "backup_saved": "💾 ဤစက်ရှင်၏ အရန်ကူးယူမှုကို သင်၏ ဒေါင်းလုဒ်များတွင် သိမ်းဆည်းပြီး (ပရောဂျက်ဖိုင်)။ ယခု ၎င်းနှင့် ဘာမှ လုပ်ရန်မလို; တစ်ချိန်ချိန်တွင် ပြန်လာရန် လိုအပ်ပါက \"ပရောဂျက် တင်ရန်\" က အရာအားလုံးကို ပြန်ယူပေးသည်။",
+    "backup_saved_score": " (ရမှတ် {score})",
+    "project_saved_multi_one": "💾 ပရောဂျက် သိမ်းဆည်းပြီး ({count} အပိုင်းအခြား); ဆက်လုပ်ရန် နောက်မှ တင်ပါ",
+    "project_saved_multi_other": "💾 ပရောဂျက် သိမ်းဆည်းပြီး ({count} အပိုင်းအခြား); ဆက်လုပ်ရန် နောက်မှ တင်ပါ",
+    "project_saved": "💾 ပရောဂျက် သိမ်းဆည်းပြီး; တည်းဖြတ်မှု ဆက်လုပ်ရန် နောက်မှ တင်ပါ",
+    "search_result_desc": "Google ရှာဖွေမှု ရလဒ်: {title}",
+    "link_url_prompt": "လင့်ခ် URL ထည့်ပါ:"
   },
   "large_file": {
     "modal_title": "တင်သွင်းပါ Large အသံ ဖိုင်",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "ဖျက်သိမ်းပါ Transcription",
     "chunk_info": "အသံ ဖြစ်သည် split ထဲသို့ 5-minute chunks အတွက် processing",
     "chunk_progress": "Chunk {current} ၏ {total}",
-    "audio_only_error": "Currently သာ အသံ ဖိုင် (MP3, WAV, etc.) ဖြစ်ကြသည် supported အတွက် chunked transcription."
+    "audio_only_error": "Currently သာ အသံ ဖိုင် (MP3, WAV, etc.) ဖြစ်ကြသည် supported အတွက် chunked transcription.",
+    "starting": "စတင်နေသည်..."
   },
   "formatting": {
     "bold": "Bold (**စာသား**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "ဖွင့်ပါ StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "စာရွက်စာတမ်း-အပေါ်အခြေခံ မေးခွန်း",
-    "open_stem_lab_explore_aria": "ဖွင့်ပါ STEM ဓာတ်ခွဲခန်း ရှာဖွေပါ"
+    "open_stem_lab_explore_aria": "ဖွင့်ပါ STEM ဓာတ်ခွဲခန်း ရှာဖွေပါ",
+    "stem_lab_explore": "ရှာဖွေပါ"
   },
   "history": {
     "load_project": "တင်ပါ Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight အရောင်",
       "insert_table_aria": "Insert ဇယား",
       "insert_table_title": "Insert အသုံးပြုနိုင် ဇယား"
-    }
+    },
+    "reattach_mismatch": "ပြန်တွဲထားသော PDF သည် စစ်ဆေးထားသည်နှင့် ကွဲပြားသည်{detail}။ မည်သို့ပင်ဖြစ်စေ ဆက်လက်လုပ်ဆောင်မည်; ရလဒ်များသည် မူရင်းစစ်ဆေးမှုနှင့် ကိုက်ညီမှုမရှိနိုင်ပါ။",
+    "reattach_name_detail": " (အမည်: \"{new}\" နှင့် \"{old}\")",
+    "reattach_size_detail": " (အရွယ်အစား: {new} နှင့် {old} bytes)",
+    "audit_failed_kept": "{label}: စစ်ဆေးမှု မအောင်မြင်ပါ; ယခင်ဗားရှင်းကို သိမ်းထားသည်။",
+    "score_dropped_kept": "{label}: ရမှတ် ကျဆင်းမည် ({prev} → {next}{axe})။ ယခင်ဗားရှင်းကို သိမ်းထားသည်။",
+    "axe_only_comparison": "၊ axe သာ နှိုင်းယှဉ်မှု",
+    "axe_only_committed": "{label}: AI အတည်ပြုမှု မရရှိနိုင်ပါ; တိကျသော axe-core ရမှတ်ဖြင့်သာ အတည်ပြုသည်။",
+    "reinserted_ai": "{count} ပြန်ထည့်ပြီး (AI)",
+    "reinserted_sentence": "{count} ပြန်ထည့်ပြီး (ဝါကျ)",
+    "reinserted_fuzzy": "{count} ပြန်ထည့်ပြီး (ခန့်မှန်း)",
+    "in_recovery_appendix": "{count} ပြန်လည်ရယူမှု နောက်ဆက်တွဲတွင်",
+    "duplicates_removed_one": "ပွားနေသော {count} ခု ဖယ်ရှားပြီး",
+    "duplicates_removed_other": "ပွားနေသော {count} ခု ဖယ်ရှားပြီး",
+    "auto_continue_round": "အလိုအလျောက်-ဆက်လက်ခြင်း အကြိမ် {round}/{max}: {detail}, ရမှတ် {score}/100 (ပန်းတိုင် {target})...",
+    "violation_one": "ချိုးဖောက်မှု {count}",
+    "violation_other": "ချိုးဖောက်မှု {count}",
+    "ai_issue_one": "AI အမှတ်အသားပြုထားသော ပြဿနာ {count}",
+    "ai_issue_other": "AI အမှတ်အသားပြုထားသော ပြဿနာ {count}"
   },
   "concept_sort": {
     "title": "အယူအဆ စီစဉ်ပါ",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "ကတ် အမြင်",
     "card_visuals_auto": "Auto (သာ အပေါ် တို အရာ)",
     "card_visuals_always": "Always ထုတ်လုပ်ပါ ပုံ",
-    "card_visuals_never": "Never (စာသား-သာ ကတ်)"
+    "card_visuals_never": "Never (စာသား-သာ ကတ်)",
+    "explanation_unavailable": "ယခု ရှင်းလင်းချက် မဖန်တီးနိုင်ပါ။ ကျေးဇူးပြု၍ ခဏအကြာတွင် ထပ်ကြိုးစားပါ။"
   },
   "dbq": {
     "title": "စာရွက်စာတမ်း ခွဲခြမ်းစိတ်ဖြာမှု (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed သို့ စစ်ဆေး အလိုက်အညီ.",
       "regenerated_success": "စာသား regenerated ဖြင့် improvements!",
       "regen_failed": "ပြန်လည်ထုတ်လုပ်ခြင်း မအောင်မြင်ပါ။"
-    }
+    },
+    "skill_check": "ကျွမ်းကျင်မှု စစ်ဆေးခြင်း",
+    "desc_skill_check": "စံနှုန်းများနှင့် နှိုင်းယှဉ်၍ သင်၏ ကျွမ်းကျင်မှုကို အတည်ပြုပါ။",
+    "desc_parent": "ဤအရာသည် ကျောင်း၏ ရည်မှန်းချက်များနှင့် မည်သို့ ကိုက်ညီသည်ကို ကြည့်ပါ",
+    "desc_6dim": "သင်ရိုးကို အတိုင်းအတာ 6 ခုဖြင့် စစ်ဆေးသည်",
+    "desc_5dim": "သင်ရိုးကို အတိုင်းအတာ 5 ခုဖြင့် စစ်ဆေးသည် (ပြည့်စုံသော စစ်ဆေးမှုအတွက် စံနှုန်းများ ထည့်ပါ)"
   },
   "standards": {
     "target_standard": "ပစ်မှတ် စံချိန်",
@@ -5180,7 +5241,34 @@
     "plan_hook": "စိတ်ဆွဲ",
     "plan_independent": "Independent လေ့ကျင့်ပါ",
     "col_image": "ပုံ",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "ရပ်ပါ",
+    "expand_header": "ခေါင်းစီးကို ချဲ့ပါ",
+    "collapse_header": "အကြောင်းအရာအတွက် နေရာပိုပေးရန် ခေါင်းစီးကို ခေါက်ပါ",
+    "collapse_header_short": "ခေါင်းစီးကို ခေါက်ပါ",
+    "step_x_of_y": "အဆင့် {current} / {total}",
+    "english_translation": "အင်္ဂလိပ်ဘာသာပြန်",
+    "source_references": "မူရင်းစာသား ကိုးကားချက်များ",
+    "activity_probe": "{activity} စစ်ဆေးမှု",
+    "word_sounds_count": "Word Sounds ({count} စကားလုံး)",
+    "quick_practice_mode": "အမြန် လေ့ကျင့်မှုမုဒ်",
+    "new_option": "ရွေးချယ်မှုအသစ်",
+    "meta_lesson_extensions": "သင်ခန်းစာ တိုးချဲ့မှုများ",
+    "title_extension_ideas": "တိုးချဲ့မှု အကြံဉာဏ်များ",
+    "meta_full_chat_log": "ပြည့်စုံသော ချတ်မှတ်တမ်း",
+    "title_udl_consultation_log": "UDL တိုင်ပင်မှု မှတ်တမ်း",
+    "meta_actionable_steps": "လုပ်ဆောင်နိုင်သော အဆင့်များ (AI အကျဉ်းချုပ်)",
+    "title_differentiation_strategy": "ကွဲပြားမှု မဟာဗျူဟာ",
+    "meta_udl_guide_advice": "UDL လမ်းညွှန် အကြံဉာဏ်",
+    "title_stem_assessment": "STEM အကဲဖြတ်မှု",
+    "title_explore_challenge": "ရှာဖွေမှု စိန်ခေါ်မှု",
+    "title_fluency_maze": "🏰 ကျွမ်းကျင်မှု ဝင်္ကပါ",
+    "title_storyforge_config": "📖 StoryForge လုပ်ငန်း",
+    "title_storyforge_submission": "📖 ဇာတ်လမ်း တင်သွင်းမှု",
+    "title_poettree_config": "🌳 PoetTree လုပ်ငန်း",
+    "title_poettree_submission": "🌳 ကဗျာ တင်သွင်းမှု",
+    "title_litlab_config": "🎭 LitLab လုပ်ငန်း",
+    "title_litlab_submission": "🎭 ဖျော်ဖြေမှု တင်သွင်းမှု"
   },
   "persona": {
     "title": "Interview မုဒ်",
@@ -8257,7 +8345,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing အကြောင်းအရာ topology...",
     "brainstorming": "အကြံဉာဏ်များ စဉ်းစားနေသည်...",
     "retrying_citations": "Retrying အတွက် ပိုကောင်း citations...",
-    "translating": "ဘာသာပြန်နေသည်…"
+    "translating": "ဘာသာပြန်နေသည်…",
+    "preparing_translation": "{lang} သို့ ဘာသာပြန်ရန် ပြင်ဆင်နေသည်...",
+    "translating_item": "{current}/{total} ဘာသာပြန်နေသည်: {title}...",
+    "generating_panel": "panel {current}/{total} ဖန်တီးနေသည်..."
   },
   "process": {
     "source_missing": "ကျေးဇူးပြု၍ provide အရင်းအမြစ် စာသား ပထမ.",
@@ -9553,7 +9644,8 @@
     "loading_resources": "Loading အရင်းအမြစ်များ...",
     "preparing_workspace": "Preparing သင်၏ workspace...",
     "almost_ready": "နီးပါးပြီ...",
-    "loading_screen_aria": "AlloFlow loading ဖန်သားပြင်"
+    "loading_screen_aria": "AlloFlow loading ဖန်သားပြင်",
+    "preparing_environment": "သင်၏ သင်ယူမှု ပတ်ဝန်းကျင်ကို ပြင်ဆင်နေသည်..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9565,7 +9657,7 @@
     "obs_momentary": "Momentary အချိန် Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional အပြုအမူ အကဲဖြတ်ခြင်း, ABC ဒေတာ collection, နှင့် အပြုအမူ ဝင်ရောက်စွက်ဖက် အစီအစဉ် ကိရိယာများ.",
+      "subtitle": "Functional အပြုအမူ အကဲဖြတ်ခြင်း (FBA)၊ ABC ဒေတာ စုဆောင်းခြင်း၊ နှင့် အပြုအမူ ဝင်ရောက်စွက်ဖက်မှု အစီအစဉ် (BIP) ကိရိယာများ။",
       "open_btn": "ဖွင့်ပါ BehaviorLens",
       "select_student": "ရွေးချယ်ပါ ကျောင်းသား",
       "choose_student": "— ရွေးချယ်ပါ ကျောင်းသား —",
@@ -9940,7 +10032,7 @@
     "reinforcer_sensory": "🌀 အာရုံ",
     "quiz_fba_purpose": "FBA ၏ အဓိက ရည်ရွယ်ချက်မှာ အဘယ်နည်း။",
     "quiz_replacement": "ဘာ ဖြစ်သည် replacement အပြုအမူ?",
-    "search_placeholder": "ရှာဖွေပါ antecedent, အပြုအမူ, consequence, မှတ်စုများ, ဆက်တင်...",
+    "search_placeholder": "antecedent၊ အပြုအမူ၊ consequence၊ မှတ်စုများ၊ setting ကို ရှာဖွေပါ...",
     "quick_fill_placeholder": "ဥပမာ \"အလုပ်ပြသခိုင်းသောအခါ သင်္ချာချိန်တွင် ကျောင်းသားက စက္ကူပစ်ပြီး၊ ဆရာက တည်ငြိမ်စွာ လမ်းကြောင်းပြောင်းပေးခဲ့သည်\"",
     "nl_edit_placeholder": "ဥပမာ \"နောက်ဆက်တွဲ ရလဒ်ကို ဆရာက လမ်းကြောင်းပြောင်းပေးခဲ့သည် ဟု ပြောင်းပါ\"",
     "now": "ယခု",
@@ -10113,7 +10205,7 @@
       "topic_purpose_of_contact": "အကြောင်းအရာ / ဆက်သွယ်ရသည့် ရည်ရွယ်ချက်",
       "type_full_name": "အမျိုးအစား အပြည့်အ၀ name",
       "type_language_eg_spanish_arabic_somali": "ဘာသာစကား ရိုက်ထည့်ပါ (ဥပမာ စပိန်၊ အာရဗီ၊ ဆိုမာလီ)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "အမျိုးအစား သင်၏ အကဲခတ်, note, သို့မဟုတ် နှိပ်ပါ mic သို့ dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "သင်၏ အကဲခတ်ချက်၊ မှတ်စုကို ရိုက်ထည့်ပါ၊ သို့မဟုတ် နှုတ်ဖြင့်ပြောဆိုရန် mic ကို နှိပ်ပါ...",
       "type_your_response_here_be_thorough_and_use_profes": "သင်၏ တုံ့ပြန်ချက်ကို ဤနေရာတွင် ရိုက်ထည့်ပါ။ စေ့စပ်သေချာစွာ ရေးပြီး ပညာရှင်ဆန်သော ဘာသာစကားကို အသုံးပြုပါ...",
       "what_behavior_will_change": "ဘာ အပြုအမူ မည် ပြောင်းလဲ?",
       "what_could_you_or_a_grownup_do_differently": "သင် သို့မဟုတ် လူကြီးတစ်ဦးက မည်သို့ ကွဲပြားစွာ လုပ်ဆောင်နိုင်မည်နည်း?",
@@ -10308,7 +10400,7 @@
       "triangulation_complete": "Triangulation ပြီးစီးပါ ✨",
       "wizard_failed": "wizard failed",
       "workspace_loaded_n_entries_n_notes": "Workspace load ပြီးပါပြီ (entries N ခု၊ notes N ခု) 📂",
-      "you_have_unsaved_changes_consider_saving_your_work": "💡 သင် ရှိသည် unသိမ်းဆည်းပါ ပြောင်းလဲမှု — စဉ်းစား saving သင်၏ workspace.",
+      "you_have_unsaved_changes_consider_saving_your_work": "💡 မသိမ်းဆည်းရသေးသော ပြောင်းလဲမှုများ ရှိနေသည် — သင်၏ workspace ကို သိမ်းဆည်းရန် စဉ်းစားပါ။",
       "autofilled_from_phase_tagged_entries": "phase-tagged entries မှ အလိုအလျောက်ဖြည့်ပြီးပါပြီ။",
       "enter_task_name": "ထည့်ပါ task name.",
       "need_2_baseline_2_intervention_entries_with_phase_tags": "phase tags ပါသော baseline အနည်းဆုံး 2 ခုနှင့် intervention အနည်းဆုံး 2 ခု လိုအပ်သည်။",
@@ -10386,7 +10478,7 @@
       "data_quality_score": "ဒေတာ အရည်အသွေး ရမှတ်",
       "data_to_include": "ဒေတာ သို့ ထည့်သွင်းပါ",
       "day_streak": "ရက်ဆက်",
-      "define_the_behaviors_settings_or_students_for_stag": "Define အပြုအမူ, ဆက်တင်များ, သို့မဟုတ် ကျောင်းသား အတွက် staggered ဝင်ရောက်စွက်ဖက်.",
+      "define_the_behaviors_settings_or_students_for_stag": "staggered ဝင်ရောက်စွက်ဖက်မှုအတွက် အပြုအမူများ၊ setting များ၊ သို့မဟုတ် ကျောင်းသားများကို သတ်မှတ်ပါ။",
       "describe_your_research_question_and_let_ai_recomme": "သင်၏ သုတေသန မေးခွန်းကို ဖော်ပြပြီး AI ကို အကောင်းဆုံး design အကြံပြုခိုင်းပါ။",
       "discrete_trial_training_with_mastery_tracking_and": "ကျွမ်းကျင်မှု ခြေရာခံခြင်းနှင့် အလိုအလျောက်တိုးခြင်းဖြင့် Discrete Trial Training",
       "document_whether_interventions_are_implemented_as": "interventions များကို ဒီဇိုင်းအတိုင်း အကောင်အထည်ဖော်ခြင်း ရှိမရှိ မှတ်တမ်းတင်ပါ",
@@ -10405,7 +10497,7 @@
       "from_abc_data": "မှ ABC ဒေတာ:",
       "full_student_summary": "အပြည့်အ၀ ကျောင်းသား အကျဉ်းချုပ်",
       "functional_communication_training_planning_tool": "Functional Communication Training စီစဉ်ရေး tool",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "ထုတ်လုပ်ပါ multi-week ဝင်ရောက်စွက်ဖက် အစီအစဉ် အပေါ်အခြေခံ အပေါ် သင်၏ collected ABC ဒေတာ နှင့် AI ခွဲခြမ်းစိတ်ဖြာမှု.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "သင် စုဆောင်းထားသော ABC ဒေတာနှင့် AI ခွဲခြမ်းစိတ်ဖြာမှုကို အခြေခံ၍ ရက်သတ္တပတ်များစွာ ကြာသော ဝင်ရောက်စွက်ဖက်မှု အစီအစဉ်တစ်ခု ထုတ်ပေးပါ။",
       "generate_a_professional_printready_progress_report": "ပါဝင်သော charts၊ ဒေတာအနှစ်ချုပ်များ၊ နှင့် AI အကြံပြုချက်များပါသော ပညာရှင်ဆန်ပြီး print-ready တိုးတက်မှု အစီရင်ခံစာကို ထုတ်ပေးပါ။ browser print မှတစ်ဆင့် တစ်ချက်နှိပ်ရုံဖြင့် PDF export လုပ်ပါ။",
       "generate_a_unique_scenario_tailored_to_your_traini": "သင်၏ လေ့ကျင့်ရေး လိုအပ်ချက်များနှင့် ကိုက်ညီသော ထူးခြားသော scenario ကို ထုတ်ပေးပါ။",
       "generate_compliant_iep_behavioral_goals_from_obser": "ထုတ်လုပ်ပါ compliant IEP behavioral ပန်းတိုင် မှ အကဲခတ် ဒေတာ ဖြင့် present အဆင့်, SMART ပန်းတိုင်, နှင့် တိုးတက်မှု monitoring.",
@@ -10443,7 +10535,7 @@
       "measure_time_between_stimulus_presentation_and_beh": "လှုံ့ဆော်မှု ပေးအပ်ချိန်နှင့် အပြုအမူ တုံ့ပြန်မှုကြား အချိန်ကို တိုင်းတာပါ",
       "median": "အလယ်တန်",
       "methods_used": "အသုံးပြုခဲ့သော နည်းလမ်းများ",
-      "modify_the_environment_to_prevent_behaviors_before": "ပြုပြင်ပါ environment သို့ prevent အပြုအမူ မတိုင်မီ ၎င်းတို့ စတင်ပါ",
+      "modify_the_environment_to_prevent_behaviors_before": "အပြုအမူများ မစတင်မီ ၎င်းတို့ကို ကာကွယ်ရန် ပတ်ဝန်းကျင်ကို ပြုပြင်ပြောင်းလဲပါ",
       "mtssrti_tier_manager": "MTSS/RTI အဆင့်များ မန်နေဂျာ",
       "my_progress_quest": "My တိုးတက်မှု တာဝန်",
       "natural_language_abc_entry": "သဘာဝ ဘာသာစကား ABC ထည့်သွင်းမှု",
@@ -10455,7 +10547,7 @@
       "no_data_yet": "မဟုတ်ပါ ဒေတာ yet",
       "no_entries_yet_tap_log_a_behavior_to_get_started": "ထည့်သွင်းမှု မရှိသေးပါ။ စတင်ရန် \"Log a Behavior\" ကို နှိပ်ပါ။",
       "no_occurrence": "မဟုတ်ပါ occurrence",
-      "no_reflections_yet_tap_the_button_above_to_check_i": "မဟုတ်ပါ ပြန်လည်သုံးသပ်ခြင်း yet. Tap ခလုတ် above သို့ စစ်ဆေး တွင် ဖြင့် yourself!",
+      "no_reflections_yet_tap_the_button_above_to_check_i": "ပြန်လည်သုံးသပ်ချက် မရှိသေးပါ။ မိမိကိုယ်ကို စစ်ဆေးရန် အပေါ်ရှိ ခလုတ်ကို နှိပ်ပါ။",
       "no_session_data_recorded_yet": "မဟုတ်ပါ sessions ဒေတာ recorded yet.",
       "no_sessions_recorded_yet": "မဟုတ်ပါ sessions recorded yet.",
       "no_sessions_yet": "မဟုတ်ပါ sessions yet.",
@@ -10468,7 +10560,7 @@
       "optional_message": "ရွေးချယ်စရာ မက်ဆေ့ချ်",
       "or_explore_the_pd_learning_path": "သို့မဟုတ် ရှာဖွေပါ PD သင်ယူခြင်း Path →",
       "parent": "မိဘ",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ကပ်ပါ one တန်ဖိုး per မျဉ်း. ပံ့ပိုးမှု ပုံစံ: \"5\", \"sessions 1: 5\", သို့မဟုတ် \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "တစ်လိုင်းလျှင် တန်ဖိုးတစ်ခု ကူးထည့်ပါ။ ပုံစံများ: \"5\"၊ \"Session 1: 5\"၊ သို့မဟုတ် \"1,5\" ကို ပံ့ပိုးသည်",
       "pd_learning_path": "PD သင်ယူခြင်း Path",
       "please_use_chrome_edge_or_safari_for_voice_input": "ကျေးဇူးပြု၍ အသုံးပြုပါ Chrome, Edge, သို့မဟုတ် Safari အတွက် အသံ ထည့်သွင်းမှု.",
       "practice_clinical_reasoning_with_aigenerated_case": "AI-ဖန်တီးထားသော ဖြစ်ရပ်လေ့လာမှုများဖြင့် ဆေးကုသမှု ကျိုးကြောင်းဆင်ခြင်ခြင်းကို လေ့ကျင့်ပါ။ သင်၏ တုံ့ပြန်ချက်များအပေါ် ကျွမ်းကျင်-အဆင့် တုံ့ပြန်ချက် ရယူပါ။",
@@ -10483,7 +10575,7 @@
       "publicationstandard_singlecase_design_graphs": "ထုတ်ဝေ-စံ single-case ဒီဇိုင်း ဂရပ်များ",
       "quick_switch": "မြန် ပြောင်းပါ",
       "range": "အကွာ",
-      "read_through_the_module_content_above_then_click_c": "ဖတ်ပါ မှတဆင့် module အကြောင်းအရာ above, ထို့နောက် နှိပ်ပါ ပြီးစီးပါ below.",
+      "read_through_the_module_content_above_then_click_c": "အပေါ်ရှိ module အကြောင်းအရာကို အစအဆုံး ဖတ်ပြီးနောက်၊ အောက်ရှိ ပြီးစီးပါ ကို နှိပ်ပါ။",
       "realtime_calming_tools_for_inthemoment_support": "လက်ငင်း ပံ့ပိုးမှုအတွက် real-time အေးချမ်းစေသော ကိရိယာများ",
       "recent_moods": "မကြာသေးမီက စိတ်ခံစားမှုများ-",
       "record_sessions_with_the_session_data_tracker_or_s": "Session Data Tracker ဖြင့် session များကို မှတ်တမ်းတင်ပါ၊ သို့မဟုတ် Manual Entry mode သို့ ပြောင်းပါ။",
@@ -10514,7 +10606,7 @@
       "summary": "အကျဉ်းချုပ်:",
       "systematic_behavioral_measurement_across_sessions": "session များတွင် စနစ်တကျ အပြုအမူ တိုင်းတာမှု",
       "systematic_reinforcer_identification_using_evidenc": "သက်သေအခြေပြု လုပ်ထုံးလုပ်နည်းများကို အသုံးပြု၍ စနစ်တကျ reinforcer ဖော်ထုတ်မှု",
-      "tap_each_item_when_student_engages_with_it": "Tap တစ်ခုစီ အရာ အခါ ကျောင်းသား engages ဖြင့် it",
+      "tap_each_item_when_student_engages_with_it": "ကျောင်းသား အရာဝတ္ထုတစ်ခုစီနှင့် ထိတွေ့ဆက်ဆံသည့်အခါ ၎င်းကို နှိပ်ပါ",
       "target_behavior": "ပစ်မှတ် အပြုအမူ",
       "task_analysis": "Task ခွဲခြမ်းစိတ်ဖြာမှု",
       "taskskill_name": "တာဝန်/ကျွမ်းကျင်မှု နာမည်",
@@ -10524,7 +10616,7 @@
       "top_behavior": "Top အပြုအမူ",
       "total_contacts": "စုစုပေါင်း ဆက်သွယ်မှုများ",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track အပြုအမူ frequency အပေါ် အချိန် ဖြင့် aim မျဉ်း, phase ပြောင်းလဲမှု, နှင့် trend ခွဲခြမ်းစိတ်ဖြာမှု.",
+      "track_behavior_frequency_over_time_with_aim_lines": "aim line များ၊ phase ပြောင်းလဲမှုများ၊ နှင့် trend ခွဲခြမ်းစိတ်ဖြာမှုဖြင့် အပြုအမူ frequency ကို အချိန်ကြာလာသည်နှင့်အမျှ ခြေရာခံပါ။",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track အပြုအမူ at home အသုံးပြုခြင်း ရိုးရှင်း, everyday ဘာသာစကား. ဤ အကူအညီ သင်၏ child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "သင်၏ ခံစားချက်များကို ခြေရာခံပါ၊ badge များ ရယူပါ၊ streak များ တည်ဆောက်ပါ။",
       "transform_deficitbased_language_into_assetfocused": "ချို့တဲ့မှု-အခြေပြု ဘာသာစကားကို ပိုင်ဆိုင်မှု-အာရုံစိုက် ဖော်ပြချက်များအဖြစ် ပြောင်းလဲပါ",
@@ -10578,7 +10670,7 @@
     "allobot_chat": {
       "card_desc": "စကားပြော ဖြင့် AI အကြောင်း အပြုအမူ နည်းဗျူဟာများ, FBA, BIP, နှင့် ဝင်ရောက်စွက်ဖက် planning",
       "empty_desc": "FBA မဟာဗျူဟာများ၊ ဝင်ရောက်ထောက်ပံ့မှု အကြံဥာဏ်များ၊ ဒေတာ အဓိပ္ပာယ်ဖွင့်ဆိုမှု၊ စိတ်အေးငြိမ်အောင် ပြုလုပ်နည်းများနှင့် အခြားအရာများတွင် ကျွန်ုပ် ကူညီနိုင်ပါသည်။",
-      "empty_title": "Ask me anything အကြောင်း အပြုအမူ ခွဲခြမ်းစိတ်ဖြာမှု!",
+      "empty_title": "အပြုအမူ ခွဲခြမ်းစိတ်ဖြာမှုနှင့် ပတ်သက်၍ ဘာမဆို ကျွန်ုပ်ကို မေးပါ!",
       "placeholder": "Ask အကြောင်း အပြုအမူ, နည်းဗျူဟာများ, FBA, BIP...",
       "subtitle": "AI အကူအညီဖြင့် အပြုအမူ ခွဲခြမ်းစိတ်ဖြာရေး လက်ထောက်",
       "title": "AlloBot ကိုမေး"
@@ -11199,7 +11291,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS ဘန်နာကို ပိတ်ရန်",
     "dismiss_button": "ပယ်ဖျက်",
-    "audit_queue_help": "စာရွက်စာတမ်းတစ်ခုကို ရယူပြီး အသုံးပြုနိုင်စွမ်း pipeline ထဲသို့ တင်ရန် နှိပ်ပါ။ အချို့ LMS ဖိုင်များသည် ဤ browser တွင် LMS သို့ ဝင်ရောက်ထားရန် လိုအပ်နိုင်သည်။"
+    "audit_queue_help": "စာရွက်စာတမ်းတစ်ခုကို ရယူပြီး အသုံးပြုနိုင်စွမ်း pipeline ထဲသို့ တင်ရန် နှိပ်ပါ။ အချို့ LMS ဖိုင်များသည် ဤ browser တွင် LMS သို့ ဝင်ရောက်ထားရန် လိုအပ်နိုင်သည်။",
+    "queued_one": "LMS မှ စာရွက်စာတမ်း {count} ခု တန်းစီထားသည်",
+    "queued_other": "LMS မှ စာရွက်စာတမ်း {count} ခု တန်းစီထားသည်",
+    "fetching": "{name} ကို ရယူနေသည်...",
+    "loaded_ready": "{name} တင်ပြီး; စစ်ဆေးရန် အသင့်",
+    "fetch_failed": "{name} ရယူ၍ မရပါ: {error}။ ဖိုင်သည် LMS အထောက်အထားစိစစ်မှု လိုအပ်နိုင်သည်။"
   },
   "annotation": {
     "undo_tooltip": "Undo နောက်ဆုံး annotation ({count} ရရှိနိုင်) — Ctrl/Cmd+Z",
@@ -11219,7 +11316,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "အမြင် ပံ့ပိုးမှု မှ သင်၏ ဆရာ"
+    "teacher_modal_aria": "အမြင် ပံ့ပိုးမှု မှ သင်၏ ဆရာ",
+    "now": "ယခု",
+    "read_aloud": "အသံထွက် ဖတ်ပါ"
   },
   "canvas_settings": {
     "title": "အဆင့်မြင့် ဆက်တင်များ",
@@ -11236,7 +11335,12 @@
     "read_all_button": "ဖတ်ပါ အားလုံး",
     "stop_button": "ရပ်ပါ",
     "focus_narration_label": "ကီးဘုတ် အာရုံ Narration",
-    "focus_narration_on_hint": "Tab သို့ hear controls"
+    "focus_narration_on_hint": "Tab သို့ hear controls",
+    "reading": "ဖတ်နေသည်...",
+    "item_aria": "နားထောင်ရန် နှိပ်ပါ: {text}",
+    "footer_stats": "{count} ခု · မည်သည့်အရာကိုမဆို နားထောင်ရန် နှိပ်ပါ · Tab ဇာတ်ကြောင်း {state}",
+    "narration_on": "ဖွင့်",
+    "narration_off": "ပိတ်"
   },
   "teacher": {
     "local_only": "Local သာ",
@@ -12412,5 +12516,27 @@
     "no_match": "ကိုက်ညီသော အမိန့် မရှိပါ။ ဘော့ ချက်တ် (နှင့် မကြာမီ အသံ) သည် လွတ်လပ်သော တောင်းဆိုမှုများကို နားလည်သည်။",
     "placeholder": "အမိန့်တစ်ခု ရိုက်ပါ — “စာသားကြီးအောင်”၊ “educator hub”၊ “ဤစာမျက်နှာ ဖတ်ပါ”…",
     "run": "လုပ်ဆောင်"
+  },
+  "voice_engine": {
+    "preparing": "အသံအင်ဂျင်ကို ပြင်ဆင်နေသည်...",
+    "downloading_model": "အသံမော်ဒယ်ကို ဒေါင်းလုဒ်လုပ်နေသည်",
+    "loading_memory": "မှတ်ဉာဏ်ထဲ တင်နေသည်",
+    "loading_model_memory": "အသံမော်ဒယ်ကို မှတ်ဉာဏ်ထဲ တင်နေသည်"
+  },
+  "voice_control": {
+    "listening": "နားထောင်နေသည်; ပြီးဆုံးရန် “stop listening” ဟု ပြောပါ",
+    "stop_aria": "အသံထိန်းချုပ်မှု ရပ်ပါ"
+  },
+  "dynamic_assessment": {
+    "return_title": "ဤအရင်းအမြစ်ကို Dynamic Assessment ဖြင့် ဖန်တီးထားသည်။ Dynamic Assessment မော်ဂျူးကို ပြန်ဖွင့်ရန် နှိပ်ပါ။",
+    "return_aria": "Dynamic Assessment သို့ ပြန်သွားရန်",
+    "return_label": "Dynamic Assessment သို့ ပြန်သွားရန်",
+    "item_badge": "အရာ {num}"
+  },
+  "story_gallery": {
+    "title": "ဇာတ်လမ်း ပြခန်း",
+    "byline": "{author} ရေးသားသည် · {words} စကားလုံး · {used}/{total} ဝေါဟာရ",
+    "student": "ကျောင်းသား",
+    "score": "ရမှတ်: {score}"
   }
 }

@@ -618,7 +618,8 @@
     "open_storyforge_aria": "打開 StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "基於文檔的問題",
-    "open_stem_lab_explore_aria": "打開 STEM Lab 探索"
+    "open_stem_lab_explore_aria": "打開 STEM Lab 探索",
+    "stem_lab_explore": "探索"
   },
   "toolbar": {
     "show_bot": "顯示 AI 助手",
@@ -677,7 +678,8 @@
     "loading_resources": "正在載入資源...",
     "preparing_workspace": "正在準備你的工作區...",
     "almost_ready": "即將就緒...",
-    "loading_screen_aria": "AlloFlow 載入屏幕"
+    "loading_screen_aria": "AlloFlow 載入屏幕",
+    "preparing_environment": "正在準備你的學習環境…"
   },
   "entry": {
     "placeholder": "例如：紅隼",
@@ -920,7 +922,8 @@
     "cancel_transcription": "取消轉錄",
     "chunk_info": "音頻拆分成 5 分鐘的片段進行處理",
     "chunk_progress": "第 {current} 段 / 共 {total} 段",
-    "audio_only_error": "目前僅支持音頻文件(MP3、WAV 等)進行分段轉錄。"
+    "audio_only_error": "目前僅支持音頻文件(MP3、WAV 等)進行分段轉錄。",
+    "starting": "正在開始…"
   },
   "formatting": {
     "bold": "粗體 (**文本**)",
@@ -1200,7 +1203,12 @@
     "read_all_button": "全部朗讀",
     "stop_button": "停止",
     "focus_narration_label": "鍵盘焦點朗讀",
-    "focus_narration_on_hint": "按 Tab 聽控件"
+    "focus_narration_on_hint": "按 Tab 聽控件",
+    "reading": "正在朗讀…",
+    "item_aria": "點擊收聽：{text}",
+    "footer_stats": "{count} 個項目 · 點擊任意項目即可收聽 · Tab 旁白 {state}",
+    "narration_on": "開",
+    "narration_off": "關"
   },
   "roles": {
     "title": "歡迎使用 AlloFlow",
@@ -2298,7 +2306,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} {minutes} 分鐘專注連勝！繼續保持！",
+    "streak_saved": "歡迎回來！已儲存你的 {minutes} 分鐘連勝。",
+    "points_awarded": "已獎勵積分！",
+    "welcome_name": "歡迎，{name}！",
+    "element_not_found": "找不到元素：{id}",
+    "overlay_set": "疊加層：{mode}",
+    "synced_resource": "已同步：{title}",
+    "group_resource": "小組資源：{title}",
+    "preset_saved": "預設「{name}」已儲存！",
+    "translated_resources": "已成功翻譯 {count} 個資源！",
+    "bingo_cards_count": "已產生 {count} 張 BINGO 卡！",
+    "sound_enabled": "已開啟聲音",
+    "sound_muted": "已靜音",
+    "democracy_mode_on": "已啟用民主模式：全班投票已開啟",
+    "democracy_mode_off": "已停用民主模式：單人模式",
+    "resource_moved_up": "已將 {title} 上移",
+    "resource_moved_down": "已將 {title} 下移",
+    "panels_regenerated": "已重新產生 {count} 個面板！",
+    "settings_undone": "已復原：{label}。已還原設定。（產生的資源不受影響。）",
+    "concept_added": "已新增概念：{text}",
+    "lesson_not_found": "在本單元中找不到該課程。",
+    "probe_complete": "探測完成：{correct}/{total}（{accuracy}%）",
+    "settings_updated": "設定已更新：{changes}",
+    "change_format": "格式：{value}",
+    "change_tone": "語氣：{value}",
+    "change_length": "長度：約 {value} 個詞",
+    "change_language": "語言：{value}",
+    "change_interest": "已新增興趣：{value}",
+    "backup_saved": "💾 本次工作階段的備份已儲存到你的「下載」中（一個專案檔案）。現在無需對它做任何操作；如果之後需要返回，「載入專案」會復原所有內容。",
+    "backup_saved_score": "（得分 {score}）",
+    "project_saved_multi_one": "💾 專案已儲存（{count} 個範圍）；稍後載入即可繼續",
+    "project_saved_multi_other": "💾 專案已儲存（{count} 個範圍）；稍後載入即可繼續",
+    "project_saved": "💾 專案已儲存；稍後載入即可繼續編輯",
+    "search_result_desc": "Google 搜尋結果：{title}",
+    "link_url_prompt": "輸入連結網址："
   },
   "wizard": {
     "title": "快速開始",
@@ -2474,7 +2517,10 @@
     "analyzing_topology": "扮演課程設計師：正在分析內容拓扑...",
     "brainstorming": "正在頭腦風暴...",
     "retrying_citations": "正在重試以獲得更好的引用...",
-    "translating": "正在翻譯…"
+    "translating": "正在翻譯…",
+    "preparing_translation": "正在準備翻譯為 {lang}…",
+    "translating_item": "正在翻譯 {current}/{total}：{title}…",
+    "generating_panel": "正在產生面板 {current}/{total}…"
   },
   "progression": {
     "title": "課程進展",
@@ -2524,7 +2570,34 @@
     "plan_hook": "導入",
     "plan_independent": "獨立練習",
     "col_image": "圖片",
-    "word_sounds_studio": "Word Sounds工作室"
+    "word_sounds_studio": "Word Sounds工作室",
+    "stop": "停止",
+    "expand_header": "展開頁首",
+    "collapse_header": "收合頁首以給內容騰出更多空間",
+    "collapse_header_short": "收合頁首",
+    "step_x_of_y": "第 {current} 步，共 {total} 步",
+    "english_translation": "英文翻譯",
+    "source_references": "來源文字參考",
+    "activity_probe": "{activity} 探測",
+    "word_sounds_count": "Word Sounds（{count} 個詞）",
+    "quick_practice_mode": "快速練習模式",
+    "new_option": "新選項",
+    "meta_lesson_extensions": "課程拓展",
+    "title_extension_ideas": "拓展創意",
+    "meta_full_chat_log": "完整聊天記錄",
+    "title_udl_consultation_log": "UDL 諮詢記錄",
+    "meta_actionable_steps": "可執行步驟（AI 摘要）",
+    "title_differentiation_strategy": "差異化策略",
+    "meta_udl_guide_advice": "UDL 指南建議",
+    "title_stem_assessment": "STEM 評估",
+    "title_explore_challenge": "探索挑戰",
+    "title_fluency_maze": "🏰 流利度迷宮",
+    "title_storyforge_config": "📖 StoryForge 作業",
+    "title_storyforge_submission": "📖 故事提交",
+    "title_poettree_config": "🌳 PoetTree 作業",
+    "title_poettree_submission": "🌳 詩歌提交",
+    "title_litlab_config": "🎭 LitLab 作業",
+    "title_litlab_submission": "🎭 表演提交"
   },
   "fullpack": {
     "button_label": "生成完整資源包",
@@ -3686,7 +3759,8 @@
     "card_visuals_label": "卡片視覺",
     "card_visuals_auto": "自動(僅短項目)",
     "card_visuals_always": "始终生成圖片",
-    "card_visuals_never": "從不(纯文本卡片)"
+    "card_visuals_never": "從不(纯文本卡片)",
+    "explanation_unavailable": "目前無法產生解釋。請稍後再試。"
   },
   "concept_map": {
     "toolbar": {
@@ -4493,7 +4567,25 @@
       "resolved_tip": "原審計中的問題在驗證審計中不再發現",
       "persisted_tip": "原審計中的問題在修復後仍然存在",
       "introduced_tip": "修復前不存在的新問題"
-    }
+    },
+    "reattach_mismatch": "重新附加的 PDF 與已稽核的不同{detail}。仍將繼續；結果可能與原始稽核不一致。",
+    "reattach_name_detail": "（名稱：「{new}」對比「{old}」）",
+    "reattach_size_detail": "（大小：{new} 對比 {old} 位元組）",
+    "audit_failed_kept": "{label}：稽核失敗；已保留先前版本。",
+    "score_dropped_kept": "{label}：分數原本會下降（{prev} → {next}{axe}）。已保留先前版本。",
+    "axe_only_comparison": "，僅 axe 比較",
+    "axe_only_committed": "{label}：AI 驗證無法使用；僅以確定性的 axe-core 分數確認。",
+    "reinserted_ai": "{count} 個已重新插入（AI）",
+    "reinserted_sentence": "{count} 個已重新插入（句子）",
+    "reinserted_fuzzy": "{count} 個已重新插入（模糊）",
+    "in_recovery_appendix": "{count} 個在復原附錄中",
+    "duplicates_removed_one": "已移除 {count} 個重複項",
+    "duplicates_removed_other": "已移除 {count} 個重複項",
+    "auto_continue_round": "自動繼續第 {round}/{max} 輪：{detail}，分數 {score}/100（目標 {target}）…",
+    "violation_one": "{count} 項違規",
+    "violation_other": "{count} 項違規",
+    "ai_issue_one": "{count} 個 AI 標記的問題",
+    "ai_issue_other": "{count} 個 AI 標記的問題"
   },
   "groups": {
     "title": "差異化分組",
@@ -4707,7 +4799,9 @@
     "syntax_scramble": "句法重組遇到錯誤。"
   },
   "visual_support": {
-    "teacher_modal_aria": "來自你老師的視覺支持"
+    "teacher_modal_aria": "來自你老師的視覺支持",
+    "now": "現在",
+    "read_aloud": "朗讀"
   },
   "report_writer": {
     "loading": "正在載入報告撰寫器……",
@@ -4737,7 +4831,12 @@
   "lms": {
     "dismiss_banner_aria": "關閉 LMS 横幅",
     "dismiss_button": "關閉",
-    "audit_queue_help": "點擊文檔以獲取並載入到無障礙管線中。某些 LMS 文件可能要求你已在此瀏覽器中登錄 LMS。"
+    "audit_queue_help": "點擊文檔以獲取並載入到無障礙管線中。某些 LMS 文件可能要求你已在此瀏覽器中登錄 LMS。",
+    "queued_one": "{count} 個文件已從 LMS 排隊",
+    "queued_other": "{count} 個文件已從 LMS 排隊",
+    "fetching": "正在擷取 {name}…",
+    "loaded_ready": "{name} 已載入；可供稽核",
+    "fetch_failed": "無法擷取 {name}：{error}。該檔案可能需要 LMS 身分驗證。"
   },
   "student_dashboard": {
     "level_progress": "等級進度",
@@ -5176,7 +5275,12 @@
       "error_check": "無法檢查對齊。",
       "regenerated_success": "已重新生成改進後的文本！",
       "regen_failed": "重新生成失敗。"
-    }
+    },
+    "skill_check": "技能檢查",
+    "desc_skill_check": "對照標準檢驗你的掌握程度。",
+    "desc_parent": "了解這與學校目標的契合程度",
+    "desc_6dim": "從 6 個維度稽核課程",
+    "desc_5dim": "從 5 個維度稽核課程（新增標準以進行完整稽核）"
   },
   "explore": {
     "challenge_number_line": "數轴挑戰",
@@ -12128,5 +12232,27 @@
     "no_match": "找不到符合的指令。機器人對話（以及即將推出的語音）能理解自由輸入的需求。",
     "placeholder": "輸入指令 —「放大文字」、「教育者中心」、「讀出這個頁面」…",
     "run": "執行"
+  },
+  "voice_engine": {
+    "preparing": "正在準備語音引擎…",
+    "downloading_model": "正在下載語音模型",
+    "loading_memory": "正在載入記憶體",
+    "loading_model_memory": "正在將語音模型載入記憶體"
+  },
+  "voice_control": {
+    "listening": "正在聆聽；說「stop listening」以結束",
+    "stop_aria": "停止語音控制"
+  },
+  "dynamic_assessment": {
+    "return_title": "此資源由動態評估產生。點擊可重新開啟動態評估模組。",
+    "return_aria": "返回動態評估",
+    "return_label": "返回動態評估",
+    "item_badge": "第 {num} 項"
+  },
+  "story_gallery": {
+    "title": "故事畫廊",
+    "byline": "作者 {author} · {words} 個詞 · {used}/{total} 詞彙",
+    "student": "學生",
+    "score": "得分：{score}"
   }
 }

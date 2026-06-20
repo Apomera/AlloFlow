@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper onerari nequit. Ad alia machinamenta recurritur.",
     "backup_failed": "Subsidium defecit. Iterum conare.",
     "invalid_backup_file": "Hoc non est validum subsidii fasciculum AlloHaven.",
-    "could_not_read_file": "Hoc fasciculum legi non potuit. Estne subsidium JSON?"
+    "could_not_read_file": "Hoc fasciculum legi non potuit. Estne subsidium JSON?",
+    "focus_streak": "{flames} Series intentionis {minutes} minutarum! Sic perge!",
+    "streak_saved": "Salve iterum! Series tua {minutes} minutarum servata est.",
+    "points_awarded": "Puncta data sunt!",
+    "welcome_name": "Salve, {name}!",
+    "element_not_found": "Elementum non inventum: {id}",
+    "overlay_set": "Superpositio: {mode}",
+    "synced_resource": "Synchronizatum: {title}",
+    "group_resource": "Facultas gregis: {title}",
+    "preset_saved": "Praeconfiguratio \"{name}\" servata!",
+    "translated_resources": "{count} facultates feliciter translatae sunt!",
+    "bingo_cards_count": "{count} chartae BINGO creatae sunt!",
+    "sound_enabled": "Sonus activatus",
+    "sound_muted": "Sonus silentiatus",
+    "democracy_mode_on": "Modus democratiae activatus: suffragium classis ACTIVUM",
+    "democracy_mode_off": "Modus democratiae inactivatus: lusus solitarius",
+    "resource_moved_up": "{title} sursum motum",
+    "resource_moved_down": "{title} deorsum motum",
+    "panels_regenerated": "{count} tabulae regeneratae sunt!",
+    "settings_undone": "Revocatum: {label}. Configurationes restitutae. (Facultates creatae non afficiuntur.)",
+    "concept_added": "Conceptus additus: {text}",
+    "lesson_not_found": "Lectio in hac unitate non inventa.",
+    "probe_complete": "Probatio completa: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Configurationes renovatae: {changes}",
+    "change_format": "Forma: {value}",
+    "change_tone": "Tonus: {value}",
+    "change_length": "Longitudo: ~{value} verba",
+    "change_language": "Lingua: {value}",
+    "change_interest": "Studium additum: {value}",
+    "backup_saved": "💾 Exemplar huius sessionis in Receptaculis tuis servatum est (plica operis). Nihil nunc cum eo faciendum est; si umquam redire debes, \"Opus Onerare\" omnia restituit.",
+    "backup_saved_score": " (punctum {score})",
+    "project_saved_multi_one": "💾 Opus servatum ({count} intervallum); postea onera ut pergas",
+    "project_saved_multi_other": "💾 Opus servatum ({count} intervalla); postea onera ut pergas",
+    "project_saved": "💾 Opus servatum; postea onera ut editionem pergas",
+    "search_result_desc": "Eventus Quaestionis Google: {title}",
+    "link_url_prompt": "URL nexus insere:"
   },
   "large_file": {
     "modal_title": "Importā Large sonus tabula",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Abrogā Transcription",
     "chunk_info": "sonus est split into 5-minute chunks prō processing",
     "chunk_progress": "Chunk {current} {total}",
-    "audio_only_error": "Currently only sonus tabula (MP3, WAV, etc.) sunt supported prō chunked transcription."
+    "audio_only_error": "Currently only sonus tabula (MP3, WAV, etc.) sunt supported prō chunked transcription.",
+    "starting": "Incipiens..."
   },
   "formatting": {
     "bold": "Bold (**textus**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Aperī StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "documentum-Based quaestiō",
-    "open_stem_lab_explore_aria": "Aperī STEM officīna Explōrā"
+    "open_stem_lab_explore_aria": "Aperī STEM officīna Explōrā",
+    "stem_lab_explore": "Explorare"
   },
   "history": {
     "load_project": "Onerā Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Color illuminationis",
       "insert_table_aria": "Insert tabula",
       "insert_table_title": "Insert accessibilis tabula"
-    }
+    },
+    "reattach_mismatch": "PDF rursus annexum differt ab eo quod recognitum est{detail}. Tamen procedet; eventus cum recognitione originali inconstantes esse possunt.",
+    "reattach_name_detail": " (nomen: \"{new}\" contra \"{old}\")",
+    "reattach_size_detail": " (magnitudo: {new} contra {old} bytes)",
+    "audit_failed_kept": "{label}: recognitio defecit; versio prior servata est.",
+    "score_dropped_kept": "{label}: punctum cecidisset ({prev} → {next}{axe}). Versio prior servata est.",
+    "axe_only_comparison": ", comparatio solius axe",
+    "axe_only_committed": "{label}: verificatio AI non praesto; solum puncto deterministico axe-core confirmatum.",
+    "reinserted_ai": "{count} reinserta (AI)",
+    "reinserted_sentence": "{count} reinserta (sententia)",
+    "reinserted_fuzzy": "{count} reinserta (approximatum)",
+    "in_recovery_appendix": "{count} in appendice recuperationis",
+    "duplicates_removed_one": "{count} duplicatum remotum",
+    "duplicates_removed_other": "{count} duplicata remota",
+    "auto_continue_round": "Circulus automaticae continuationis {round}/{max}: {detail}, punctum {score}/100 (propositum {target})...",
+    "violation_one": "{count} violatio",
+    "violation_other": "{count} violationes",
+    "ai_issue_one": "{count} quaestio ab AI notata",
+    "ai_issue_other": "{count} quaestiones ab AI notatae"
   },
   "concept_sort": {
     "title": "Conceptus Dispōne",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "schedula vīsuālis",
     "card_visuals_auto": "Auto (only in brevis rēs)",
     "card_visuals_always": "Always generā imāgō",
-    "card_visuals_never": "Never (textus-only schedula)"
+    "card_visuals_never": "Never (textus-only schedula)",
+    "explanation_unavailable": "Explicatio nunc creari non potuit. Quaeso paulo post iterum conare."
   },
   "dbq": {
     "title": "documentum Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed ad check aliniātiō.",
       "regenerated_success": "textus regenerated cum improvements!",
       "regen_failed": "Regeneratio defecit."
-    }
+    },
+    "skill_check": "Examen peritiae",
+    "desc_skill_check": "Peritiam tuam contra normas verifica.",
+    "desc_parent": "Vide quomodo hoc cum propositis scholae congruat",
+    "desc_6dim": "Curriculum in 6 dimensionibus recognoscit",
+    "desc_5dim": "Curriculum in 5 dimensionibus recognoscit (normas adde ad plenam recognitionem)"
   },
   "standards": {
     "target_standard": "Scopus norma",
@@ -5188,7 +5249,34 @@
     "plan_hook": "Hamus",
     "plan_independent": "Independent exercē",
     "col_image": "imāgō",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Siste",
+    "expand_header": "Capitulum expandere",
+    "collapse_header": "Capitulum contrahere ut contento plus spatii detur",
+    "collapse_header_short": "Capitulum contrahere",
+    "step_x_of_y": "Gradus {current} ex {total}",
+    "english_translation": "Translatio Anglica",
+    "source_references": "Referentiae Textus Fontis",
+    "activity_probe": "Probatio {activity}",
+    "word_sounds_count": "Word Sounds ({count} verba)",
+    "quick_practice_mode": "Modus Exercitationis Celeris",
+    "new_option": "Nova optio",
+    "meta_lesson_extensions": "Extensiones Lectionis",
+    "title_extension_ideas": "Ideae Extensionis",
+    "meta_full_chat_log": "Plenum Diarium Colloquii",
+    "title_udl_consultation_log": "Diarium Consultationis UDL",
+    "meta_actionable_steps": "Gradus Actibiles (Summarium AI)",
+    "title_differentiation_strategy": "Strategia Differentiationis",
+    "meta_udl_guide_advice": "Consilium Ducis UDL",
+    "title_stem_assessment": "Aestimatio STEM",
+    "title_explore_challenge": "Provocatio Explorationis",
+    "title_fluency_maze": "🏰 Labyrinthus Facundiae",
+    "title_storyforge_config": "📖 Pensum StoryForge",
+    "title_storyforge_submission": "📖 Submissio Fabulae",
+    "title_poettree_config": "🌳 Pensum PoetTree",
+    "title_poettree_submission": "🌳 Submissio Carminis",
+    "title_litlab_config": "🎭 Pensum LitLab",
+    "title_litlab_submission": "🎭 Submissio Spectaculi"
   },
   "persona": {
     "title": "Interview modus",
@@ -8316,7 +8404,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing contentum topology...",
     "brainstorming": "Notiones excogitantur...",
     "retrying_citations": "Retrying prō melior citations...",
-    "translating": "Vertitur…"
+    "translating": "Vertitur…",
+    "preparing_translation": "Translationem in {lang} parans...",
+    "translating_item": "Transferens {current}/{total}: {title}...",
+    "generating_panel": "Tabulam {current}/{total} generans..."
   },
   "process": {
     "source_missing": "amābō provide fōns textus prīmus.",
@@ -9612,7 +9703,8 @@
     "loading_resources": "Loading subsidia...",
     "preparing_workspace": "Preparing tuus workspace...",
     "almost_ready": "Paene paratum...",
-    "loading_screen_aria": "AlloFlow loading scrīnium"
+    "loading_screen_aria": "AlloFlow loading scrīnium",
+    "preparing_environment": "Ambitum discendi tuum parans..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9637,7 +9729,7 @@
       "abc_desc": "Record antecedent, mōrēs, et consequence observātiō",
       "obs_title": "Vīvus observātiō",
       "obs_desc": "Real-time interval, frequency, aut duration recording",
-      "analysis_title": "AI Analysis",
+      "analysis_title": "Analysis AI",
       "analysis_desc": "AI-powered mōrēs pattern analysis & recommendations",
       "overview_title": "Conspectus",
       "overview_desc": "mōrēs trends, tabula, et summārium statistics",
@@ -9685,7 +9777,7 @@
       "feasibility_desc": "5-quaestiō contextual fit aestimātiō cum AI recommendations",
       "gas_title": "GAS Norma",
       "gas_desc": "fīnis Attainment Scaling cum AI-generātum descriptors",
-      "pocket_title": "Pocket BIP",
+      "pocket_title": "BIP Portatilis",
       "pocket_desc": "Compact index-schedula BIP summārium prō clipboard carry",
       "abagraph_desc": "Publication-norma graphēma cum phase līnea, trend līnea, et vīsuālis analysis",
       "abagraph_title": "ABA graphēma Engine",
@@ -9959,7 +10051,7 @@
       "generate": "AI Generā GAS Descriptors"
     },
     "pocket": {
-      "title": "Pocket BIP",
+      "title": "BIP Portatilis",
       "generate": "AI Generā Pocket BIP"
     },
     "no_entries_match": "Minimē entries match tuus filters",
@@ -10401,7 +10493,7 @@
       "add_connections_to_build_the_relationship_map": "Adde connections ad aedificāre relationship map.",
       "add_data_points_above_or_paste_csv_data_to_get_sta": "Adde data pūnctum above aut adfīge CSV data ad get started.",
       "additional_context_optional": "Additional Context (optātīvus)",
-      "ai_analysis": "AI Analysis",
+      "ai_analysis": "Analysis AI",
       "ai_context_available": "AI Context praestō",
       "ai_is_analyzing_your_transcript": "AI est analyzing tuus transcript...",
       "ai_observation_coach": "AI observātiō Coach",
@@ -11258,7 +11350,12 @@
   "lms": {
     "dismiss_banner_aria": "Vexillum LMS dimittere",
     "dismiss_button": "Dimitte",
-    "audit_queue_help": "Pulsā documentum ad adfer et onerā it into accessibilitas pipeline. Aliquī LMS tabula may require tu ad be logged in ad LMS in hoc browser."
+    "audit_queue_help": "Pulsā documentum ad adfer et onerā it into accessibilitas pipeline. Aliquī LMS tabula may require tu ad be logged in ad LMS in hoc browser.",
+    "queued_one": "{count} documentum in ordine ex LMS",
+    "queued_other": "{count} documenta in ordine ex LMS",
+    "fetching": "{name} arcessens...",
+    "loaded_ready": "{name} oneratum; ad recognitionem paratum",
+    "fetch_failed": "{name} arcessere defecit: {error}. Plica authenticationem LMS requirere potest."
   },
   "annotation": {
     "undo_tooltip": "Undo ultimus annotation ({count} praestō) — Ctrl/Cmd+Z",
@@ -11278,7 +11375,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "vīsuālis subsidium ā tuus magister"
+    "teacher_modal_aria": "vīsuālis subsidium ā tuus magister",
+    "now": "NUNC",
+    "read_aloud": "Clara voce legere"
   },
   "canvas_settings": {
     "title": "prōvectus cōnstitūtiōnēs",
@@ -11295,7 +11394,12 @@
     "read_all_button": "Lege omnia",
     "stop_button": "Dēsiste",
     "focus_narration_label": "Narratio Foci Claviaturae",
-    "focus_narration_on_hint": "Tab ad hear controls"
+    "focus_narration_on_hint": "Tab ad hear controls",
+    "reading": "Legens...",
+    "item_aria": "Clicca ut audias: {text}",
+    "footer_stats": "{count} res · Clicca quamlibet rem ut eam audias · Narratio Tab {state}",
+    "narration_on": "ACTIVA",
+    "narration_off": "INACTIVA"
   },
   "teacher": {
     "local_only": "Tantum Locale",
@@ -12273,5 +12377,27 @@
     "no_match": "Nullum mandatum congruens. Colloquium roboticum (et mox vox) postulationes liberas intellegit.",
     "placeholder": "Mandatum scribe — “textus maior”, “centrum educatoris”, “lege hanc paginam”…",
     "run": "exsequere"
+  },
+  "voice_engine": {
+    "preparing": "Machina vocis parans...",
+    "downloading_model": "Exemplar vocis descendens",
+    "loading_memory": "In memoriam onerans",
+    "loading_model_memory": "Exemplar vocis in memoriam onerans"
+  },
+  "voice_control": {
+    "listening": "Audiens; dic “stop listening” ut finias",
+    "stop_aria": "Imperium vocis sistere"
+  },
+  "dynamic_assessment": {
+    "return_title": "Haec facultas ab Aestimatione Dynamica generata est. Clicca ut modulum Aestimationis Dynamicae rursus aperias.",
+    "return_aria": "Redire ad Aestimationem Dynamicam",
+    "return_label": "Redire ad Aestimationem Dynamicam",
+    "item_badge": "res {num}"
+  },
+  "story_gallery": {
+    "title": "Pinacotheca Fabularum",
+    "byline": "Ab {author} · {words} verba · {used}/{total} vocabularium",
+    "student": "Discipulus",
+    "score": "Punctum: {score}"
   }
 }

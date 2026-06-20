@@ -618,7 +618,8 @@
     "open_storyforge_aria": "فتح StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "أسئلة قائمة على الوثائق",
-    "open_stem_lab_explore_aria": "فتح استكشاف مختبر STEM"
+    "open_stem_lab_explore_aria": "فتح استكشاف مختبر STEM",
+    "stem_lab_explore": "استكشاف"
   },
   "toolbar": {
     "show_bot": "إظهار مساعد الذكاء الاصطناعي",
@@ -677,7 +678,8 @@
     "loading_resources": "جارٍ تحميل الموارد...",
     "preparing_workspace": "جارٍ تجهيز مساحة عملك...",
     "almost_ready": "أوشكنا...",
-    "loading_screen_aria": "شاشة تحميل AlloFlow"
+    "loading_screen_aria": "شاشة تحميل AlloFlow",
+    "preparing_environment": "جارٍ تجهيز بيئة التعلّم الخاصة بك..."
   },
   "entry": {
     "placeholder": "مثل: الصقر الأحمر",
@@ -920,7 +922,8 @@
     "cancel_transcription": "إلغاء التفريغ",
     "chunk_info": "يُقسَّم الصوت إلى أجزاء مدة كلٍّ منها 5 دقائق للمعالجة",
     "chunk_progress": "الجزء {current} من {total}",
-    "audio_only_error": "يُدعم حاليًا فقط الملفات الصوتية (MP3 وWAV وغيرها) للتفريغ بالأجزاء."
+    "audio_only_error": "يُدعم حاليًا فقط الملفات الصوتية (MP3 وWAV وغيرها) للتفريغ بالأجزاء.",
+    "starting": "جارٍ البدء..."
   },
   "formatting": {
     "bold": "غامق (**نص**)",
@@ -1200,7 +1203,12 @@
     "read_all_button": "اقرأ الكل",
     "stop_button": "إيقاف",
     "focus_narration_label": "سرد تركيز لوحة المفاتيح",
-    "focus_narration_on_hint": "اضغط Tab لسماع عناصر التحكم"
+    "focus_narration_on_hint": "اضغط Tab لسماع عناصر التحكم",
+    "reading": "جارٍ القراءة...",
+    "item_aria": "انقر للاستماع: {text}",
+    "footer_stats": "{count} عنصر · انقر على أي عنصر للاستماع إليه · سرد Tab {state}",
+    "narration_on": "مُفعَّل",
+    "narration_off": "مُعطَّل"
   },
   "roles": {
     "title": "مرحبًا بك في AlloFlow",
@@ -2298,7 +2306,42 @@
     "whisper_load_failed": "فشل تحميل Whisper. يتم الرجوع إلى محركات أخرى.",
     "backup_failed": "فشلت النسخة الاحتياطية. حاول مرة أخرى.",
     "invalid_backup_file": "ليس ملف نسخة احتياطية صالحًا لـ AlloHaven.",
-    "could_not_read_file": "تعذر قراءة هذا الملف. هل هو نسخة احتياطية بصيغة JSON؟"
+    "could_not_read_file": "تعذر قراءة هذا الملف. هل هو نسخة احتياطية بصيغة JSON؟",
+    "focus_streak": "{flames} سلسلة تركيز لمدة {minutes} دقيقة! واصل التقدم!",
+    "streak_saved": "مرحبًا بعودتك! تم حفظ سلسلتك التي استمرت {minutes} دقيقة.",
+    "points_awarded": "تم منح النقاط!",
+    "welcome_name": "مرحبًا، {name}!",
+    "element_not_found": "العنصر غير موجود: {id}",
+    "overlay_set": "التراكب: {mode}",
+    "synced_resource": "تمت المزامنة: {title}",
+    "group_resource": "مورد المجموعة: {title}",
+    "preset_saved": "تم حفظ الإعداد المسبق \"{name}\"!",
+    "translated_resources": "تمت ترجمة {count} مورد بنجاح!",
+    "bingo_cards_count": "تم إنشاء {count} بطاقة BINGO!",
+    "sound_enabled": "تم تفعيل الصوت",
+    "sound_muted": "تم كتم الصوت",
+    "democracy_mode_on": "تم تفعيل وضع الديمقراطية: تصويت الصف مُفعَّل",
+    "democracy_mode_off": "تم إيقاف وضع الديمقراطية: لعب فردي",
+    "resource_moved_up": "تم نقل {title} للأعلى",
+    "resource_moved_down": "تم نقل {title} للأسفل",
+    "panels_regenerated": "تمت إعادة إنشاء {count} لوحة!",
+    "settings_undone": "تم التراجع: {label}. تمت استعادة الإعدادات. (الموارد المُنشأة غير متأثرة.)",
+    "concept_added": "تمت إضافة مفهوم: {text}",
+    "lesson_not_found": "لم يتم العثور على الدرس في هذه الوحدة.",
+    "probe_complete": "اكتمل الاختبار: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "تم تحديث الإعدادات: {changes}",
+    "change_format": "التنسيق: {value}",
+    "change_tone": "النبرة: {value}",
+    "change_length": "الطول: ~{value} كلمة",
+    "change_language": "اللغة: {value}",
+    "change_interest": "تمت إضافة اهتمام: {value}",
+    "backup_saved": "💾 تم حفظ نسخة احتياطية من هذه الجلسة في تنزيلاتك (ملف مشروع). لا حاجة لفعل شيء بها الآن؛ إذا احتجت يومًا إلى العودة، فإن \"تحميل المشروع\" يستعيد كل شيء.",
+    "backup_saved_score": " (الدرجة {score})",
+    "project_saved_multi_one": "💾 تم حفظ المشروع ({count} نطاق)؛ حمّله لاحقًا للمتابعة",
+    "project_saved_multi_other": "💾 تم حفظ المشروع ({count} نطاقات)؛ حمّله لاحقًا للمتابعة",
+    "project_saved": "💾 تم حفظ المشروع؛ حمّله لاحقًا لمواصلة التحرير",
+    "search_result_desc": "نتيجة بحث Google: {title}",
+    "link_url_prompt": "أدخل عنوان URL للرابط:"
   },
   "process": {
     "source_missing": "يُرجى تقديم نص المصدر أولًا.",
@@ -2355,7 +2398,10 @@
     "analyzing_topology": "العمل كمصمم منهج: جارٍ تحليل طوبولوجيا المحتوى...",
     "brainstorming": "جارٍ العصف الذهني للأفكار...",
     "retrying_citations": "إعادة المحاولة للحصول على استشهادات أفضل...",
-    "translating": "جارٍ الترجمة…"
+    "translating": "جارٍ الترجمة…",
+    "preparing_translation": "جارٍ تجهيز الترجمة إلى {lang}...",
+    "translating_item": "جارٍ ترجمة {current}/{total}: {title}...",
+    "generating_panel": "جارٍ إنشاء اللوحة {current}/{total}..."
   },
   "progression": {
     "title": "تقدم المنهج",
@@ -2405,7 +2451,34 @@
     "plan_hook": "المثير",
     "plan_independent": "الممارسة المستقلة",
     "col_image": "صورة",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "إيقاف",
+    "expand_header": "توسيع الترويسة",
+    "collapse_header": "طيّ الترويسة لإعطاء المحتوى مساحة أكبر",
+    "collapse_header_short": "طيّ الترويسة",
+    "step_x_of_y": "الخطوة {current} من {total}",
+    "english_translation": "الترجمة الإنجليزية",
+    "source_references": "مراجع النص المصدر",
+    "activity_probe": "اختبار {activity}",
+    "word_sounds_count": "Word Sounds ({count} كلمة)",
+    "quick_practice_mode": "وضع التدريب السريع",
+    "new_option": "خيار جديد",
+    "meta_lesson_extensions": "امتدادات الدرس",
+    "title_extension_ideas": "أفكار الامتداد",
+    "meta_full_chat_log": "سجل المحادثة الكامل",
+    "title_udl_consultation_log": "سجل استشارة UDL",
+    "meta_actionable_steps": "خطوات قابلة للتنفيذ (ملخص بالذكاء الاصطناعي)",
+    "title_differentiation_strategy": "استراتيجية التمايز",
+    "meta_udl_guide_advice": "نصيحة دليل UDL",
+    "title_stem_assessment": "تقييم STEM",
+    "title_explore_challenge": "تحدي الاستكشاف",
+    "title_fluency_maze": "🏰 متاهة الطلاقة",
+    "title_storyforge_config": "📖 مهمة StoryForge",
+    "title_storyforge_submission": "📖 تقديم القصة",
+    "title_poettree_config": "🌳 مهمة PoetTree",
+    "title_poettree_submission": "🌳 تقديم القصيدة",
+    "title_litlab_config": "🎭 مهمة LitLab",
+    "title_litlab_submission": "🎭 تقديم الأداء"
   },
   "fullpack": {
     "button_label": "إنشاء حزمة موارد كاملة",
@@ -3506,7 +3579,12 @@
       "error_check": "فشل فحص المواءمة.",
       "regenerated_success": "تمت إعادة إنشاء النص مع تحسينات!",
       "regen_failed": "فشلت إعادة الإنشاء."
-    }
+    },
+    "skill_check": "التحقق من المهارة",
+    "desc_skill_check": "تحقّق من إتقانك وفقًا للمعايير.",
+    "desc_parent": "اطّلع على مدى توافق هذا مع أهداف المدرسة",
+    "desc_6dim": "يدقّق المنهج عبر 6 أبعاد",
+    "desc_5dim": "يدقّق المنهج عبر 5 أبعاد (أضف معايير للتدقيق الكامل)"
   },
   "standards": {
     "target_standard": "المعيار المستهدف",
@@ -4956,7 +5034,8 @@
     "card_visuals_label": "مرئيات البطاقات",
     "card_visuals_auto": "تلقائي (فقط للعناصر القصيرة)",
     "card_visuals_always": "إنشاء صور دائمًا",
-    "card_visuals_never": "أبدًا (بطاقات نصية فقط)"
+    "card_visuals_never": "أبدًا (بطاقات نصية فقط)",
+    "explanation_unavailable": "تعذّر إنشاء شرح الآن. يرجى المحاولة مرة أخرى بعد لحظة."
   },
   "concept_map": {
     "toolbar": {
@@ -5791,7 +5870,25 @@
       "resolved_tip": "المشكلات من التدقيق الأصلي لم تعد موجودة في تدقيق التحقق",
       "persisted_tip": "المشكلات من التدقيق الأصلي لا تزال موجودة بعد الإصلاح",
       "introduced_tip": "مشكلات جديدة لم تكن موجودة قبل الإصلاح"
-    }
+    },
+    "reattach_mismatch": "ملف PDF المُعاد إرفاقه يختلف عن الملف الذي تم تدقيقه{detail}. ستتم المتابعة على أي حال؛ قد تكون النتائج غير متسقة مع التدقيق الأصلي.",
+    "reattach_name_detail": " (الاسم: \"{new}\" مقابل \"{old}\")",
+    "reattach_size_detail": " (الحجم: {new} مقابل {old} بايت)",
+    "audit_failed_kept": "{label}: فشل التدقيق؛ تم الاحتفاظ بالنسخة السابقة.",
+    "score_dropped_kept": "{label}: كانت الدرجة ستنخفض ({prev} → {next}{axe}). تم الاحتفاظ بالنسخة السابقة.",
+    "axe_only_comparison": "، مقارنة بـ axe فقط",
+    "axe_only_committed": "{label}: التحقق بالذكاء الاصطناعي غير متاح؛ تم التأكيد بدرجة axe-core الحتمية فقط.",
+    "reinserted_ai": "{count} أُعيد إدراجها (ذكاء اصطناعي)",
+    "reinserted_sentence": "{count} أُعيد إدراجها (جملة)",
+    "reinserted_fuzzy": "{count} أُعيد إدراجها (تقريبي)",
+    "in_recovery_appendix": "{count} في ملحق الاسترداد",
+    "duplicates_removed_one": "تمت إزالة {count} نسخة مكررة",
+    "duplicates_removed_other": "تمت إزالة {count} نسخة مكررة",
+    "auto_continue_round": "جولة المتابعة التلقائية {round}/{max}: {detail}، الدرجة {score}/100 (الهدف {target})...",
+    "violation_one": "{count} مخالفة",
+    "violation_other": "{count} مخالفة",
+    "ai_issue_one": "{count} مشكلة رصدها الذكاء الاصطناعي",
+    "ai_issue_other": "{count} مشكلة رصدها الذكاء الاصطناعي"
   },
   "persona": {
     "title": "وضع المقابلة",
@@ -9679,7 +9776,12 @@
   "lms": {
     "dismiss_banner_aria": "إغلاق لافتة LMS",
     "dismiss_button": "إغلاق",
-    "audit_queue_help": "انقر على مستند لجلبه وتحميله في خط أنابيب الإتاحة. قد تتطلب بعض ملفات LMS تسجيل الدخول إلى LMS في هذا المتصفح."
+    "audit_queue_help": "انقر على مستند لجلبه وتحميله في خط أنابيب الإتاحة. قد تتطلب بعض ملفات LMS تسجيل الدخول إلى LMS في هذا المتصفح.",
+    "queued_one": "{count} مستند في قائمة الانتظار من LMS",
+    "queued_other": "{count} مستند في قائمة الانتظار من LMS",
+    "fetching": "جارٍ جلب {name}...",
+    "loaded_ready": "تم تحميل {name}؛ جاهز للتدقيق",
+    "fetch_failed": "تعذّر جلب {name}: {error}. قد يتطلب الملف مصادقة LMS."
   },
   "annotation": {
     "undo_tooltip": "تراجع عن آخر تعليق ({count} متاحة) — Ctrl/Cmd+Z",
@@ -9691,7 +9793,9 @@
     "list_button": "📋 قائمة"
   },
   "visual_support": {
-    "teacher_modal_aria": "دعم بصري من معلمك"
+    "teacher_modal_aria": "دعم بصري من معلمك",
+    "now": "الآن",
+    "read_aloud": "قراءة بصوت عالٍ"
   },
   "canvas_settings": {
     "title": "الإعدادات المتقدمة",
@@ -9870,7 +9974,7 @@
       "cumrecord_title": "سجل تراكمي",
       "deescalate_desc": "تمارين تنفس، مؤقتات بصرية، استراحات حسية، وتأريض — دعم تهدئة في الوقت الفعلي",
       "deescalate_title": "أدوات نزع التصعيد",
-      "drstrategy_desc": "Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)",
+      "drstrategy_desc": "اختر استراتيجية التعزيز التفاضلي المناسبة (DRA، DRI، DRO، DRL)",
       "drstrategy_title": "محدد استراتيجية DR",
       "dtt_desc": "التدريب على المحاولات المنفصلة — تسجيل تجربة بتجربة مع معايير إتقان وتقدم تلقائي",
       "dtt_title": "ورقة بيانات DTT",
@@ -9914,7 +10018,7 @@
       "pdpath_title": "مسار التطوير المهني",
       "predict_desc": "تحليل أنماط مدعوم بالذكاء الاصطناعي يتنبأ بمتى وأين وماذا يثير السلوكيات — مع استراتيجيات منع",
       "predict_title": "رؤى تنبُّئية",
-      "prefassess_desc": "تحديد منهجي للمعززات — بروتوكولات MSWO والمنبه المُقترَن و Free Operant",
+      "prefassess_desc": "تحديد منهجي للمعززات — بروتوكولات MSWO والمنبه المُقترَن والتشغيل الحر (Free Operant)",
       "prefassess_title": "تقييم التفضيل",
       "progress_desc": "فقرات مراقبة تقدم جاهزة لـ IEP من بيانات سلوكية متراكمة",
       "progress_title": "سرد التقدم",
@@ -10598,7 +10702,7 @@
       "day_streak": "سلسلة الأيام",
       "define_the_behaviors_settings_or_students_for_stag": "حدّد السلوكيات أو الإعدادات أو الطلاب للتدخّل المُدرَّج.",
       "describe_your_research_question_and_let_ai_recomme": "صف سؤال بحثك ودع الذكاء الاصطناعي يوصي بأفضل تصميم.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training مع تتبّع الإتقان والتقدّم التلقائي",
+      "discrete_trial_training_with_mastery_tracking_and": "التدريب بالمحاولات المنفصلة (Discrete Trial Training) مع تتبّع الإتقان والتقدّم التلقائي",
       "document_whether_interventions_are_implemented_as": "وثّق ما إذا كانت التدخّلات تُنفَّذ كما صُمِّمت",
       "done": "تمّ",
       "drop_a_snapshot_file_here": "أفلت ملف لقطة هنا",
@@ -12128,5 +12232,27 @@
     "no_match": "لا يوجد أمر مطابق. تفهم دردشة الروبوت (وقريباً الصوت) الطلبات الحرة.",
     "placeholder": "اكتب أمراً — “نص أكبر”، “مركز المعلّم”، “اقرأ هذه الصفحة”…",
     "run": "تشغيل"
+  },
+  "voice_engine": {
+    "preparing": "جارٍ تجهيز محرك الصوت...",
+    "downloading_model": "جارٍ تنزيل نموذج الصوت",
+    "loading_memory": "جارٍ التحميل في الذاكرة",
+    "loading_model_memory": "جارٍ تحميل نموذج الصوت في الذاكرة"
+  },
+  "voice_control": {
+    "listening": "جارٍ الاستماع؛ قل “stop listening” للإنهاء",
+    "stop_aria": "إيقاف التحكم الصوتي"
+  },
+  "dynamic_assessment": {
+    "return_title": "تم إنشاء هذا المورد بواسطة التقييم الديناميكي. انقر لإعادة فتح وحدة التقييم الديناميكي.",
+    "return_aria": "العودة إلى التقييم الديناميكي",
+    "return_label": "العودة إلى التقييم الديناميكي",
+    "item_badge": "عنصر {num}"
+  },
+  "story_gallery": {
+    "title": "معرض القصص",
+    "byline": "بقلم {author} · {words} كلمة · {used}/{total} مفردات",
+    "student": "طالب",
+    "score": "الدرجة: {score}"
   }
 }

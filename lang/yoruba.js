@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Gbígbé Whisper kùnà. Ń padà sí àwọn ẹ́njìnnì mìíràn.",
     "backup_failed": "Èdìdì padà kùnà. Gbìyànjú lẹ́ẹ̀kan sí i.",
     "invalid_backup_file": "Kì í ṣe fáìlì èdìdì AlloHaven tó tọ̀nà.",
-    "could_not_read_file": "A kò lè ka fáìlì yẹn. Ṣé èdìdì JSON ni?"
+    "could_not_read_file": "A kò lè ka fáìlì yẹn. Ṣé èdìdì JSON ni?",
+    "focus_streak": "{flames} Ìtẹ̀síwájú ìfọkànsí ìṣẹ́jú {minutes}! Máa bá a lọ bẹ́ẹ̀!",
+    "streak_saved": "Káàbọ̀ padà! A ti fipamọ́ ìtẹ̀síwájú ìṣẹ́jú {minutes} rẹ.",
+    "points_awarded": "A ti fún ọ ní àmì!",
+    "welcome_name": "Káàbọ̀, {name}!",
+    "element_not_found": "Kò rí èròjà: {id}",
+    "overlay_set": "Ìbòmọ́lé: {mode}",
+    "synced_resource": "A ti ìmúlò: {title}",
+    "group_resource": "Ohun-èlò ẹgbẹ́: {title}",
+    "preset_saved": "A ti fipamọ́ ìtòsílẹ̀ \"{name}\"!",
+    "translated_resources": "A ti túmọ̀ ohun-èlò {count} ní àṣeyọrí!",
+    "bingo_cards_count": "A ti ṣẹ̀dá káàdì BINGO {count}!",
+    "sound_enabled": "A ti tan ohùn",
+    "sound_muted": "A ti pa ohùn",
+    "democracy_mode_on": "A ti tan ìpò tiwa-n-tiwa: ìdìbò kíláàsì TÁN",
+    "democracy_mode_off": "A ti pa ìpò tiwa-n-tiwa: eré nìkan",
+    "resource_moved_up": "A ti gbé {title} sókè",
+    "resource_moved_down": "A ti gbé {title} sísàlẹ̀",
+    "panels_regenerated": "A ti tún ṣẹ̀dá pánẹ́lì {count}!",
+    "settings_undone": "A ti yí padà: {label}. A ti dá ìtòsí padà. (Àwọn ohun-èlò tí a ṣẹ̀dá kò ní ìyọnu.)",
+    "concept_added": "A ti fi èrò kún un: {text}",
+    "lesson_not_found": "Kò rí ẹ̀kọ́ nínú ẹ̀ka yìí.",
+    "probe_complete": "Àyẹ̀wò parí: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "A ti ṣe àfikún ìtòsí: {changes}",
+    "change_format": "Ọ̀nà: {value}",
+    "change_tone": "Ohùn: {value}",
+    "change_length": "Gígùn: ~{value} ọ̀rọ̀",
+    "change_language": "Èdè: {value}",
+    "change_interest": "A ti fi ìfẹ́ kún un: {value}",
+    "backup_saved": "💾 A ti fipamọ́ ẹ̀dà ìpamọ́ ìpàdé yìí sínú Àwọn Ìgbàsílẹ̀ rẹ (fáìlì iṣẹ́ kan). Kò sí ohun tí o ní láti ṣe pẹ̀lú rẹ̀ báyìí; tí o bá nílò láti padà nígbà kan, \"Gbé Iṣẹ́ Wọlé\" yóò mú gbogbo rẹ̀ padà.",
+    "backup_saved_score": " (àmì {score})",
+    "project_saved_multi_one": "💾 A ti fipamọ́ iṣẹ́ ({count} àyè); gbé e wọlé lẹ́yìn-ọ̀-rẹyìn láti tẹ̀síwájú",
+    "project_saved_multi_other": "💾 A ti fipamọ́ iṣẹ́ ({count} àyè); gbé e wọlé lẹ́yìn-ọ̀-rẹyìn láti tẹ̀síwájú",
+    "project_saved": "💾 A ti fipamọ́ iṣẹ́; gbé e wọlé lẹ́yìn-ọ̀-rẹyìn láti tẹ̀síwájú àtúnṣe",
+    "search_result_desc": "Àbájáde Ìwáṣẹ́ Google: {title}",
+    "link_url_prompt": "Tẹ URL ọ̀nà-ìjápọ̀ sí:"
   },
   "large_file": {
     "modal_title": "Mu wa Large ohun faili",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Fagilee Transcription",
     "chunk_info": "ohun jẹ split sí inú 5-minute chunks fun processing",
     "chunk_progress": "Chunk {current} ti {total}",
-    "audio_only_error": "Currently only ohun faili (MP3, WAV, etc.) jẹ supported fun chunked transcription."
+    "audio_only_error": "Currently only ohun faili (MP3, WAV, etc.) jẹ supported fun chunked transcription.",
+    "starting": "Ó ń bẹ̀rẹ̀..."
   },
   "formatting": {
     "bold": "Bold (**ọrọ**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Ṣii StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "iwe ṣẹ-Ti o da lori ibeere",
-    "open_stem_lab_explore_aria": "Ṣii STEM iwadi Wadii"
+    "open_stem_lab_explore_aria": "Ṣii STEM iwadi Wadii",
+    "stem_lab_explore": "Ṣàwárí"
   },
   "history": {
     "load_project": "Ko Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight awọ",
       "insert_table_aria": "Insert tabili",
       "insert_table_title": "Insert accessible tabili"
-    }
+    },
+    "reattach_mismatch": "PDF tí a tún so mọ́ yàtọ̀ sí èyí tí a yẹ̀wò{detail}. Yóò tẹ̀síwájú síbẹ̀; àwọn àbájáde lè má bá àyẹ̀wò ìpilẹ̀ṣẹ̀ mu.",
+    "reattach_name_detail": " (orúkọ: \"{new}\" lòdì sí \"{old}\")",
+    "reattach_size_detail": " (ìwọ̀n: {new} lòdì sí {old} bytes)",
+    "audit_failed_kept": "{label}: àyẹ̀wò kùnà; a pa ẹ̀dà tẹ́lẹ̀ mọ́.",
+    "score_dropped_kept": "{label}: àmì ìbá ti dín kù ({prev} → {next}{axe}). A pa ẹ̀dà tẹ́lẹ̀ mọ́.",
+    "axe_only_comparison": ", ìfiwéra axe nìkan",
+    "axe_only_committed": "{label}: ìjẹ́rìí AI kò sí; a fìdí rẹ̀ múlẹ̀ pẹ̀lú àmì axe-core tí ó dájú nìkan.",
+    "reinserted_ai": "{count} tún fi sí (AI)",
+    "reinserted_sentence": "{count} tún fi sí (gbólóhùn)",
+    "reinserted_fuzzy": "{count} tún fi sí (ní àìpé)",
+    "in_recovery_appendix": "{count} nínú àfikún ìmúpadà",
+    "duplicates_removed_one": "A yọ ẹ̀dà-méjì {count} kúrò",
+    "duplicates_removed_other": "A yọ ẹ̀dà-méjì {count} kúrò",
+    "auto_continue_round": "Ìyíká ìtẹ̀síwájú aládàáṣe {round}/{max}: {detail}, àmì {score}/100 (àfojúsùn {target})...",
+    "violation_one": "Ìrúfin {count}",
+    "violation_other": "Ìrúfin {count}",
+    "ai_issue_one": "Ìṣòro {count} tí AI samì sí",
+    "ai_issue_other": "Ìṣòro {count} tí AI samì sí"
   },
   "concept_sort": {
     "title": "Concept Si",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "kaadi oju",
     "card_visuals_auto": "Auto (only lori kuru nkan)",
     "card_visuals_always": "Always ṣẹda aworan",
-    "card_visuals_never": "Never (ọrọ-only kaadi)"
+    "card_visuals_never": "Never (ọrọ-only kaadi)",
+    "explanation_unavailable": "Kò lè ṣẹ̀dá àlàyé báyìí. Jọ̀wọ́ tún gbìyànjú ní ìṣẹ́jú díẹ̀."
   },
   "dbq": {
     "title": "iwe ṣẹ Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed si check alignment.",
       "regenerated_success": "ọrọ regenerated pẹlu improvements!",
       "regen_failed": "Ìmúpadà-ṣẹ̀dá kùnà."
-    }
+    },
+    "skill_check": "Àyẹ̀wò ọgbọ́n",
+    "desc_skill_check": "Jẹ́rìí ìmọ̀ rẹ lòdì sí àwọn ìlànà.",
+    "desc_parent": "Wo bí èyí ṣe bá àwọn àfojúsùn ilé-ẹ̀kọ́ mu",
+    "desc_6dim": "Ó ń yẹ̀ ìwé-ẹ̀kọ́ wò ní ojú-ìwòye 6",
+    "desc_5dim": "Ó ń yẹ̀ ìwé-ẹ̀kọ́ wò ní ojú-ìwòye 5 (fi àwọn ìlànà kún un fún àyẹ̀wò kíkún)"
   },
   "standards": {
     "target_standard": "Target eto",
@@ -5188,7 +5249,34 @@
     "plan_hook": "Ìfàmọ́ra",
     "plan_independent": "Independent ṣe adaṣe",
     "col_image": "aworan",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Dúró",
+    "expand_header": "Fẹ̀ orí-ìwé",
+    "collapse_header": "Ká orí-ìwé láti fún àkóónú ní àyè púpọ̀ sí i",
+    "collapse_header_short": "Ká orí-ìwé",
+    "step_x_of_y": "Ìgbésẹ̀ {current} nínú {total}",
+    "english_translation": "Ìtumọ̀ Gẹ̀ẹ́sì",
+    "source_references": "Àwọn Ìtọ́kasí Ọ̀rọ̀ Orísun",
+    "activity_probe": "Àyẹ̀wò {activity}",
+    "word_sounds_count": "Word Sounds (ọ̀rọ̀ {count})",
+    "quick_practice_mode": "Ìpò Àdánwò Yíyára",
+    "new_option": "Àṣàyàn tuntun",
+    "meta_lesson_extensions": "Àfikún Ẹ̀kọ́",
+    "title_extension_ideas": "Àwọn Èrò Àfikún",
+    "meta_full_chat_log": "Àkọsílẹ̀ Ìbárasọ̀rọ̀ Kíkún",
+    "title_udl_consultation_log": "Àkọsílẹ̀ Ìjíròrò UDL",
+    "meta_actionable_steps": "Àwọn Ìgbésẹ̀ Ṣíṣe (Àkótán AI)",
+    "title_differentiation_strategy": "Ọgbọ́n Ìyàtọ̀",
+    "meta_udl_guide_advice": "Ìmọ̀ràn Ìtọ́sọ́nà UDL",
+    "title_stem_assessment": "Ìgbéléwọ̀n STEM",
+    "title_explore_challenge": "Ìpèníjà Ìṣàwárí",
+    "title_fluency_maze": "🏰 Mazé Ìfọ̀rọ̀sọ̀rọ̀",
+    "title_storyforge_config": "📖 Iṣẹ́ StoryForge",
+    "title_storyforge_submission": "📖 Ìfisílẹ̀ Ìtàn",
+    "title_poettree_config": "🌳 Iṣẹ́ PoetTree",
+    "title_poettree_submission": "🌳 Ìfisílẹ̀ Ewì",
+    "title_litlab_config": "🎭 Iṣẹ́ LitLab",
+    "title_litlab_submission": "🎭 Ìfisílẹ̀ Ìṣe"
   },
   "persona": {
     "title": "Interview ọna",
@@ -8265,7 +8353,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing akoonu topology...",
     "brainstorming": "Ń ronú àwọn èrò...",
     "retrying_citations": "Retrying fun dara julọ citations...",
-    "translating": "Ń túmọ̀…"
+    "translating": "Ń túmọ̀…",
+    "preparing_translation": "Ń múra ìtumọ̀ sí {lang} sílẹ̀...",
+    "translating_item": "Ń túmọ̀ {current}/{total}: {title}...",
+    "generating_panel": "Ń ṣẹ̀dá pánẹ́lì {current}/{total}..."
   },
   "process": {
     "source_missing": "jọwọ provide orisun ọrọ akọkọ.",
@@ -9561,7 +9652,8 @@
     "loading_resources": "Loading awọn ohun elo...",
     "preparing_workspace": "Preparing rẹ workspace...",
     "almost_ready": "Ó fẹ́rẹ̀ẹ́ ṣetán...",
-    "loading_screen_aria": "Ìbòjú ìkójọpọ̀ AlloFlow"
+    "loading_screen_aria": "Ìbòjú ìkójọpọ̀ AlloFlow",
+    "preparing_environment": "Ń múra àyíká ẹ̀kọ́ rẹ sílẹ̀..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9583,9 +9675,9 @@
       "randomize": "Dàrú",
       "select_student_first": "Yan akẹkọọ above si get started",
       "abc_title": "ABC data",
-      "abc_desc": "Record antecedent, iwa, ati consequence akiyesi",
+      "abc_desc": "Ṣàkọsílẹ̀ àwọn àkíyèsí ohun tó ṣáájú, ìwà, àti àbájáde",
       "obs_title": "Taara akiyesi",
-      "obs_desc": "Akoko gidi interval, frequency, tabi duration recording",
+      "obs_desc": "Gbígbasílẹ̀ interval, iye ìgbà, tàbí àkókò-gígùn ní àkókò gidi",
       "analysis_title": "Àyẹ̀wò AI",
       "analysis_desc": "AI-powered iwa pattern analysis & recommendations",
       "overview_title": "Àkópọ̀",
@@ -9619,13 +9711,13 @@
       "triangulation_title": "Ìfìmáa-mẹ́ta",
       "triangulation_desc": "Cross-reference 3+ data sources fun convergence",
       "impact_title": "Aṣirò Ipa",
-      "impact_desc": "Quantify iwa frequency, duration, ati annual cost",
+      "impact_desc": "Díwọ̀n iye ìgbà ìwà, àkókò-gígùn, àti ìnáwó ọdọọdún",
       "crisis_title": "Ètò Ìṣòro",
       "crisis_desc": "Aṣẹ̀dá ìlànà ìdásí ìpọ́njú onípele-mẹ́ta",
       "traffic_title": "Iná Tirà́fíìkì",
       "traffic_desc": "akẹkọọ-facing red/yellow/green iwa zone poster",
       "datasheet_title": "data Sheet",
-      "datasheet_desc": "Printable frequency, duration, ABC, tabi latency data sheets",
+      "datasheet_desc": "Àwọn ìwé-ìṣàkọsílẹ̀ tó ṣe é tẹ̀ jáde fún iye ìgbà, àkókò-gígùn, ABC, tàbí latency",
       "homenote_title": "Àkọsílẹ̀ Ilé",
       "homenote_desc": "AI-drafted obi communication pẹlu ohun selector",
       "fidelity_title": "Àtòjọ Ìṣòótọ́",
@@ -9948,7 +10040,7 @@
     "reinforcer_sensory": "🌀 Ìmọ̀lára",
     "quiz_fba_purpose": "kini jẹ primary purpose ti FBA?",
     "quiz_replacement": "kini jẹ replacement iwa?",
-    "search_placeholder": "Wa antecedent, iwa, consequence, notes, eto...",
+    "search_placeholder": "Wá ohun tó ṣáájú, ìwà, àbájáde, àwọn àkọsílẹ̀, àyíká...",
     "quick_fill_placeholder": "e.g. \"akẹkọọ threw paper during math nigba ti asked si fihan work, olukọ redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"change consequence si olukọ redirected\"",
     "now": "bayi",
@@ -10101,7 +10193,7 @@
       "paste_share_code_here": "Lẹ pin code here...",
       "person": "Ènìyàn\\",
       "phase_label": "Àmì Ìpele",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does eyi address?)",
+      "rationale_which_antecedent_does_this_address": "Ìdí (ohun tó ṣáájú wo ni èyí ń kojú?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect lori rẹ approach...\\n• kini worked well?\\n• kini would iwọ do differently?\\n• kini awọn ilana do iwọ want si ṣe adaṣe ti o tẹle?",
       "reinforcement_how_you": "⭐ Reinforcement (bawo iwọ\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement iwa (functionally equivalent)",
@@ -10174,7 +10266,7 @@
       "data_cleared": "data cleared",
       "data_loaded_from_cloud": "☁️ data loaded lati cloud",
       "drafting_failed": "Àkọsílẹ̀ kùnà",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval pari — REINFORCE! Rara target iwa occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 Interval DRO ti parí — MÚLÓKUN! Kò sí ìwà àfojúsùn tó wáyé!",
       "each_phase_needs_at_least_2_data_points": "kọọkan phase needs at least 2 data aaye",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached si IEP Prep!",
       "effect_sizes_calculated": "A ṣírò ìwọ̀n ipa!",
@@ -10532,7 +10624,7 @@
       "top_behavior": "Top iwa",
       "total_contacts": "Àpapọ̀ Ìbáraẹnisọ̀rọ̀",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track iwa frequency over time pẹlu aim ila, phase changes, ati trend analysis.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Tọpasẹ̀ iye ìgbà ìwà ní àkókò pẹ̀lú àwọn ìlà àfojúsùn, ìyípadà phase, àti ìtúpalẹ̀ ìṣísẹ̀.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track iwa at home lilo rọrun, everyday ede. eyi ìrànlọ́wọ́s rẹ child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track rẹ feelings, earn baaji, ati build streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-ti o da lori ede sí inú asset-focused descriptions",
@@ -10717,7 +10809,7 @@
       "developing": "Ń dàgbà",
       "discontinue": "Dáwọ́dúró",
       "dismiss": "Lé jáde",
-      "document_baseline_frequency_for_flagged_students": "iwe ṣẹ baseline frequency fun flagged akẹkọọ",
+      "document_baseline_frequency_for_flagged_students": "Ṣàkọsílẹ̀ iye ìgbà baseline fún àwọn akẹ́kọ̀ọ́ tí a fàmì sí",
       "document_outcomes_and_lessons_learned": "iwe ṣẹ outcomes ati ẹkọ learned",
       "document_the_confirmed_function": "iwe ṣẹ confirmed function",
       "document_the_hypothesis_in_session_notes": "iwe ṣẹ asọtẹlẹ ninu apejọ notes",
@@ -10783,8 +10875,8 @@
       "level_mean": "ipele (Mean)",
       "maintenance_tracker": "Olùtọpasẹ̀ Ìtọ́jú",
       "make_tier_movement_decision_stay_fade_intensify": "Ṣe tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → iwa → consequence pathways",
-      "map_each_target_behavior_to_a_replacement": "Map kọọkan target iwa si replacement",
+      "map_antecedent_behavior_consequence_pathways": "Ṣàwòrán àwọn ọ̀nà ohun tó ṣáájú → ìwà → àbájáde",
+      "map_each_target_behavior_to_a_replacement": "Ṣàwòrán ìwà àfojúsùn kọ̀ọ̀kan sí ìwà àfidípò",
       "materials_access": "Materials Iwọle",
       "measure_effect_size_of_interventions": "Wọn effect size ti interventions",
       "model": "Ìpòsíl",
@@ -10820,10 +10912,10 @@
       "percentage": "ogorun",
       "phone": "Fóònù",
       "phone_call": "Ìpè Fóònù",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Plan reinforcement schedule fun replacement iwa",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Gbé ètò ìmúlókun kalẹ̀ fún àwọn ìwà àfidípò",
       "plan_data_collection_methods_and_frequency": "Plan data collection methods ati frequency",
       "plan_fidelity_monitoring": "Àbójútó Ìṣòtítọ́ Ètò",
-      "plan_reinforcement_for_replacement_behaviors": "Plan reinforcement fun replacement iwa",
+      "plan_reinforcement_for_replacement_behaviors": "Gbé ìmúlókun kalẹ̀ fún àwọn ìwà àfidípò",
       "plan_replacement_behaviors": "Plan Replacement iwa",
       "plan_weekly_progress_monitoring_data_collection": "Plan weekly ilọsiwaju monitoring data collection",
       "positivecorrective_ratio": "Ìpín Rere:Àtúnṣe",
@@ -10865,7 +10957,7 @@
       "sensory": "Ìmọ̀lára",
       "sensory_break_menu": "Sensory Break akojọ ṣayan",
       "sensoryautomatic": "Sensory/aifọwọyi",
-      "sensoryautomatic_function": "Sensory/aifọwọyi Function",
+      "sensoryautomatic_function": "Iṣẹ́ Ìmọ̀lára/Aifọwọ́yi",
       "sensoryrelated": "Tí ó Jẹmọ́ Ìmọ̀lára",
       "session_tracker": "apejọ Tracker",
       "set_a_6week_intervention_cycle": "Ṣeto 6-week intervention cycle",
@@ -10961,7 +11053,7 @@
       "incorrect": "Àìtọ́",
       "independent": "Olómìnira",
       "intensity": "Ìkíkanra",
-      "interval_and_latency_recording": "Interval ati latency recording",
+      "interval_and_latency_recording": "Gbígbasílẹ̀ interval àti latency",
       "level": "ipele",
       "mastered": "Ó Mọ̀ọ́n",
       "momentary_time_sampling": "Àyẹ̀wò Àkókò Ojú-ẹsẹ̀",
@@ -11009,7 +11101,7 @@
       "tip_good_coverage": "dara coverage across days.",
       "tip_good_diversity": "dara diversity across antecedents.",
       "tip_great_volume": "Great iwọn ti entries fun analysis.",
-      "tip_last_entry_ago": "kẹhin entry was recorded while ago.",
+      "tip_last_entry_ago": "A ṣàkọsílẹ̀ ìtẹ̀wọlé tó kẹ́yìn ní ìgbà díẹ̀ sẹ́yìn.",
       "tip_missing_fields": "Some entries jẹ missing pataki fields.",
       "tip_spread_days": "Entries jẹ well spread across days.",
       "volume": "iwọn"
@@ -11022,7 +11114,7 @@
       "step_collect_more": "Collect sii data",
       "step_collect_more_desc": "Fikun sii akiyesi apejọ si strengthen dataset.",
       "step_hypothesis": "asọtẹlẹ",
-      "step_hypothesis_desc": "Draft working asọtẹlẹ ti iwa function.",
+      "step_hypothesis_desc": "Ṣe àkọpọ̀ àbá-èrò ìṣiṣẹ́ nípa iṣẹ́ ìwà.",
       "step_record_abc": "Record ABC data",
       "step_record_abc_desc": "iwe ṣẹ antecedents, iwa, ati consequences.",
       "step_report": "Ìròyìn",
@@ -11207,7 +11299,12 @@
   "lms": {
     "dismiss_banner_aria": "Pa àkíyèsí LMS rẹ́",
     "dismiss_button": "Yọ Kúrò",
-    "audit_queue_help": "Tẹ iwe ṣẹ si mu wa ati ko it sí inú accessibility pipeline. Some LMS faili may require iwọ si be logged ninu si LMS ninu eyi browser."
+    "audit_queue_help": "Tẹ iwe ṣẹ si mu wa ati ko it sí inú accessibility pipeline. Some LMS faili may require iwọ si be logged ninu si LMS ninu eyi browser.",
+    "queued_one": "Ìwé {count} ní ìlà láti LMS",
+    "queued_other": "Ìwé {count} ní ìlà láti LMS",
+    "fetching": "Ń mú {name} wá...",
+    "loaded_ready": "A ti gbé {name} wọlé; ó ti ṣetán fún àyẹ̀wò",
+    "fetch_failed": "Kò lè mú {name} wá: {error}. Fáìlì lè nílò ìfọwọ́sí LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo kẹhin annotation ({count} wa) — Ctrl/Cmd+Z",
@@ -11227,7 +11324,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "oju atilẹyin lati rẹ olukọ"
+    "teacher_modal_aria": "oju atilẹyin lati rẹ olukọ",
+    "now": "BÁYÌÍ",
+    "read_aloud": "Kà sókè"
   },
   "canvas_settings": {
     "title": "si ti ni ilọsiwaju eto",
@@ -11244,7 +11343,12 @@
     "read_all_button": "Ka gbogbo",
     "stop_button": "Duro",
     "focus_narration_label": "Ìtúmọ̀ Àfiyèsí Kọ́ńpútà-Pádì",
-    "focus_narration_on_hint": "Tab si hear controls"
+    "focus_narration_on_hint": "Tab si hear controls",
+    "reading": "Ń kà...",
+    "item_aria": "Tẹ̀ láti gbọ́: {text}",
+    "footer_stats": "Nǹkan {count} · Tẹ ohunkóhun láti gbọ́ ọ · Ìtàn Tab {state}",
+    "narration_on": "TÁN",
+    "narration_off": "PÁ"
   },
   "teacher": {
     "local_only": "Ti Agbègbè Nìkan",
@@ -12420,5 +12524,27 @@
     "no_match": "Kò sí àṣẹ tó bára mu. Ìfọ̀rọ̀wérọ̀ bọ́ọ̀tì (àti laìpẹ́ ohùn) lóye àwọn ìbéèrè aláìní-ìlànà.",
     "placeholder": "Tẹ àṣẹ kan — “ọ̀rọ̀ títóbi”, “ibùdó olùkọ́”, “ka ojú-ìwé yìí”…",
     "run": "ṣiṣẹ́"
+  },
+  "voice_engine": {
+    "preparing": "Ń múra ẹ̀rọ ohùn sílẹ̀...",
+    "downloading_model": "Ń gba àwòṣe ohùn sílẹ̀",
+    "loading_memory": "Ń kó sínú ìrántí",
+    "loading_model_memory": "Ń kó àwòṣe ohùn sínú ìrántí"
+  },
+  "voice_control": {
+    "listening": "Ń tẹ́tí; sọ “stop listening” láti parí",
+    "stop_aria": "Dúró ìdarí ohùn"
+  },
+  "dynamic_assessment": {
+    "return_title": "A ṣẹ̀dá ohun-èlò yìí pẹ̀lú Ìgbéléwọ̀n Alágbára. Tẹ̀ láti tún ṣí módúlù Ìgbéléwọ̀n Alágbára.",
+    "return_aria": "Padà sí Ìgbéléwọ̀n Alágbára",
+    "return_label": "Padà sí Ìgbéléwọ̀n Alágbára",
+    "item_badge": "nǹkan {num}"
+  },
+  "story_gallery": {
+    "title": "Àwòrán Ìtàn",
+    "byline": "Láti ọwọ́ {author} · ọ̀rọ̀ {words} · {used}/{total} ọ̀rọ̀-ìpèsè",
+    "student": "Akẹ́kọ̀ọ́",
+    "score": "Àmì: {score}"
   }
 }

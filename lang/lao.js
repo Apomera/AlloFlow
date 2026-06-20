@@ -625,7 +625,8 @@
     "open_storyforge_aria": "ເປີດ StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ຄຳຖາມອີງເອກະສານ",
-    "open_stem_lab_explore_aria": "ເປີດ STEM Lab Explore"
+    "open_stem_lab_explore_aria": "ເປີດ STEM Lab Explore",
+    "stem_lab_explore": "ສຳຫຼວດ"
   },
   "meta": {
     "engagement_ideas": "ໄອເດຍການມີສ່ວນຮ່ວມ",
@@ -721,7 +722,8 @@
     "cancel_transcription": "ຍົກເລີກການຖອດສຽງ",
     "chunk_info": "ສຽງຖືກແບ່ງເປັນສ່ວນ 5 ນາທີເພື່ອປະມວນຜົນ",
     "chunk_progress": "ສ່ວນທີ່ {current} ຈາກ {total}",
-    "audio_only_error": "ປັດຈຸບັນຮອງຮັບສະເພາະໄຟລ໌ສຽງ (MP3, WAV, ແລະອື່ນໆ) ສຳລັບການຖອດສຽງແບບແບ່ງສ່ວນ"
+    "audio_only_error": "ປັດຈຸບັນຮອງຮັບສະເພາະໄຟລ໌ສຽງ (MP3, WAV, ແລະອື່ນໆ) ສຳລັບການຖອດສຽງແບບແບ່ງສ່ວນ",
+    "starting": "ກຳລັງເລີ່ມ..."
   },
   "formatting": {
     "bold": "ໂຕໜາ (**text**)",
@@ -779,7 +781,8 @@
     "loading_resources": "ກຳລັງໂຫລດຊັບພະຍາກອນ...",
     "preparing_workspace": "ກຳລັງກຽມພື້ນທີ່ເຮັດວຽກຂອງເຈົ້າ...",
     "almost_ready": "ໃກ້ພ້ອມແລ້ວ...",
-    "loading_screen_aria": "ໜ້າຈໍກຳລັງໂຫລດຂອງ AlloFlow"
+    "loading_screen_aria": "ໜ້າຈໍກຳລັງໂຫລດຂອງ AlloFlow",
+    "preparing_environment": "ກຳລັງກະກຽມສະພາບແວດລ້ອມການຮຽນຮູ້ຂອງເຈົ້າ..."
   },
   "tools": {
     "source": "ເນື້ອຫາຕົ້ນສະບັບ",
@@ -1074,7 +1077,12 @@
     "read_all_button": "ອ່ານທັງໝົດ",
     "stop_button": "ຢຸດ",
     "focus_narration_label": "ການບັນຍາຍໂຟກັດດ້ວຍແປ້ນພິມ",
-    "focus_narration_on_hint": "ກົດ Tab ເພື່ອຟັງປຸ່ມຄວບຄຸມ"
+    "focus_narration_on_hint": "ກົດ Tab ເພື່ອຟັງປຸ່ມຄວບຄຸມ",
+    "reading": "ກຳລັງອ່ານ...",
+    "item_aria": "ຄລິກເພື່ອຟັງ: {text}",
+    "footer_stats": "{count} ລາຍການ · ຄລິກລາຍການໃດກໍ່ໄດ້ເພື່ອຟັງ · ການບັນຍາຍ Tab {state}",
+    "narration_on": "ເປີດ",
+    "narration_off": "ປິດ"
   },
   "guided": {
     "indicator_title": "ໂໝດມີໄກດ໌",
@@ -2830,7 +2838,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} ສະຖິຕິສຸມໃສ່ຕໍ່ເນື່ອງ {minutes} ນາທີ! ສືບຕໍ່ແບບນີ້!",
+    "streak_saved": "ຍິນດີຕ້ອນຮັບກັບມາ! ສະຖິຕິຕໍ່ເນື່ອງ {minutes} ນາທີຂອງເຈົ້າຖືກບັນທຶກແລ້ວ.",
+    "points_awarded": "ມອບຄະແນນແລ້ວ!",
+    "welcome_name": "ຍິນດີຕ້ອນຮັບ, {name}!",
+    "element_not_found": "ບໍ່ພົບອົງປະກອບ: {id}",
+    "overlay_set": "ຊັ້ນວາງທັບ: {mode}",
+    "synced_resource": "ຊິ້ງຄ໌ແລ້ວ: {title}",
+    "group_resource": "ຊັບພະຍາກອນກຸ່ມ: {title}",
+    "preset_saved": "ບັນທຶກການຕັ້ງຄ່າລ່ວງໜ້າ \"{name}\" ແລ້ວ!",
+    "translated_resources": "ແປຊັບພະຍາກອນ {count} ລາຍການສຳເລັດແລ້ວ!",
+    "bingo_cards_count": "ສ້າງບັດ BINGO {count} ໃບແລ້ວ!",
+    "sound_enabled": "ເປີດສຽງແລ້ວ",
+    "sound_muted": "ປິດສຽງແລ້ວ",
+    "democracy_mode_on": "ເປີດໂໝດປະຊາທິປະໄຕ: ການລົງຄະແນນຂອງຫ້ອງເປີດຢູ່",
+    "democracy_mode_off": "ປິດໂໝດປະຊາທິປະໄຕ: ຫຼິ້ນຄົນດຽວ",
+    "resource_moved_up": "ຍ້າຍ {title} ຂຶ້ນ",
+    "resource_moved_down": "ຍ້າຍ {title} ລົງ",
+    "panels_regenerated": "ສ້າງແຜງ {count} ໃໝ່ແລ້ວ!",
+    "settings_undone": "ຍົກເລີກແລ້ວ: {label}. ກູ້ຄືນການຕັ້ງຄ່າແລ້ວ. (ຊັບພະຍາກອນທີ່ສ້າງຂຶ້ນບໍ່ໄດ້ຮັບຜົນກະທົບ.)",
+    "concept_added": "ເພີ່ມແນວຄິດແລ້ວ: {text}",
+    "lesson_not_found": "ບໍ່ພົບບົດຮຽນໃນໜ່ວຍນີ້.",
+    "probe_complete": "ການກວດສອບສຳເລັດ: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "ອັບເດດການຕັ້ງຄ່າແລ້ວ: {changes}",
+    "change_format": "ຮູບແບບ: {value}",
+    "change_tone": "ໂທນສຽງ: {value}",
+    "change_length": "ຄວາມຍາວ: ~{value} ຄຳ",
+    "change_language": "ພາສາ: {value}",
+    "change_interest": "ເພີ່ມຄວາມສົນໃຈແລ້ວ: {value}",
+    "backup_saved": "💾 ບັນທຶກສຳຮອງຂອງເຊດຊັນນີ້ໄວ້ໃນດາວໂຫຼດຂອງເຈົ້າແລ້ວ (ໄຟລ໌ໂປຣເຈັກ). ຕອນນີ້ບໍ່ຕ້ອງເຮັດຫຍັງກັບມັນ; ຖ້າເຈົ້າຕ້ອງການກັບມາໃນເວລາໃດກໍ່ຕາມ, \"ໂຫຼດໂປຣເຈັກ\" ຈະກູ້ຄືນທຸກຢ່າງ.",
+    "backup_saved_score": " (ຄະແນນ {score})",
+    "project_saved_multi_one": "💾 ບັນທຶກໂປຣເຈັກແລ້ວ ({count} ໄລຍະ); ໂຫຼດມັນພາຍຫຼັງເພື່ອສືບຕໍ່",
+    "project_saved_multi_other": "💾 ບັນທຶກໂປຣເຈັກແລ້ວ ({count} ໄລຍະ); ໂຫຼດມັນພາຍຫຼັງເພື່ອສືບຕໍ່",
+    "project_saved": "💾 ບັນທຶກໂປຣເຈັກແລ້ວ; ໂຫຼດມັນພາຍຫຼັງເພື່ອສືບຕໍ່ການແກ້ໄຂ",
+    "search_result_desc": "ຜົນການຄົ້ນຫາ Google: {title}",
+    "link_url_prompt": "ປ້ອນ URL ຂອງລິ້ງ:"
   },
   "wizard": {
     "title": "ເລີ່ມຕົ້ນດ່ວນ",
@@ -3277,7 +3320,10 @@
     "analyzing_topology": "ບົດບາດຜູ້ອອກແບບຫຼັກສູດ: ກຳລັງວິເຄາະໂຄງສ້າງເນື້ອຫາ...",
     "brainstorming": "ກຳລັງລະດົມຄວາມຄິດ...",
     "retrying_citations": "ກຳລັງລອງໃໝ່ເພື່ອການອ້າງອີງທີ່ດີກວ່າ...",
-    "translating": "ກຳລັງແປ..."
+    "translating": "ກຳລັງແປ...",
+    "preparing_translation": "ກຳລັງກະກຽມການແປເປັນ {lang}...",
+    "translating_item": "ກຳລັງແປ {current}/{total}: {title}...",
+    "generating_panel": "ກຳລັງສ້າງແຜງ {current}/{total}..."
   },
   "output": {
     "analysis_complexity": "ຄວາມຊັບຊ້ອນຂອງຂໍ້ຄວາມ",
@@ -3315,7 +3361,34 @@
     "plan_hook": "ເປີດບົດຮຽນ",
     "plan_independent": "ຝຶກອິດສະຫຼະ",
     "col_image": "ຮູບ",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "ຢຸດ",
+    "expand_header": "ຂະຫຍາຍສ່ວນຫົວ",
+    "collapse_header": "ຫຍໍ້ສ່ວນຫົວເພື່ອໃຫ້ເນື້ອຫາມີພື້ນທີ່ຫຼາຍຂຶ້ນ",
+    "collapse_header_short": "ຫຍໍ້ສ່ວນຫົວ",
+    "step_x_of_y": "ຂັ້ນຕອນ {current} / {total}",
+    "english_translation": "ການແປພາສາອັງກິດ",
+    "source_references": "ການອ້າງອີງຂໍ້ຄວາມຕົ້ນສະບັບ",
+    "activity_probe": "ການກວດສອບ {activity}",
+    "word_sounds_count": "Word Sounds ({count} ຄຳ)",
+    "quick_practice_mode": "ໂໝດຝຶກຊ້ອມໄວ",
+    "new_option": "ຕົວເລືອກໃໝ່",
+    "meta_lesson_extensions": "ສ່ວນຂະຫຍາຍບົດຮຽນ",
+    "title_extension_ideas": "ແນວຄິດສ່ວນຂະຫຍາຍ",
+    "meta_full_chat_log": "ບັນທຶກການສົນທະນາເຕັມ",
+    "title_udl_consultation_log": "ບັນທຶກການປຶກສາ UDL",
+    "meta_actionable_steps": "ຂັ້ນຕອນທີ່ປະຕິບັດໄດ້ (ສະຫຼຸບ AI)",
+    "title_differentiation_strategy": "ຍຸດທະສາດການແຍກຄວາມແຕກຕ່າງ",
+    "meta_udl_guide_advice": "ຄຳແນະນຳຄູ່ມື UDL",
+    "title_stem_assessment": "ການປະເມີນ STEM",
+    "title_explore_challenge": "ສິ່ງທ້າທາຍການສຳຫຼວດ",
+    "title_fluency_maze": "🏰 ເຂົາວົງກົດຄວາມຄ່ອງແຄ້ວ",
+    "title_storyforge_config": "📖 ວຽກ StoryForge",
+    "title_storyforge_submission": "📖 ການສົ່ງເລື່ອງ",
+    "title_poettree_config": "🌳 ວຽກ PoetTree",
+    "title_poettree_submission": "🌳 ການສົ່ງບົດກະວີ",
+    "title_litlab_config": "🎭 ວຽກ LitLab",
+    "title_litlab_submission": "🎭 ການສົ່ງການສະແດງ"
   },
   "fullpack": {
     "button_label": "ສ້າງຊຸດຊັບພະຍາກອນເຕັມຮູບແບບ",
@@ -3611,7 +3684,12 @@
       "error_check": "ກວດສອບການສອດຄ່ອງລົ້ມເຫລວ",
       "regenerated_success": "ສ້າງຂໍ້ຄວາມໃໝ່ພ້ອມການປັບປຸງແລ້ວ!",
       "regen_failed": "ການສ້າງໃໝ່ລົ້ມເຫລວ"
-    }
+    },
+    "skill_check": "ການກວດສອບທັກສະ",
+    "desc_skill_check": "ກວດສອບຄວາມຊຳນານຂອງເຈົ້າທຽບກັບມາດຕະຖານ.",
+    "desc_parent": "ເບິ່ງວ່ານີ້ສອດຄ່ອງກັບເປົ້າໝາຍຂອງໂຮງຮຽນແນວໃດ",
+    "desc_6dim": "ກວດສອບຫຼັກສູດໃນ 6 ມິຕິ",
+    "desc_5dim": "ກວດສອບຫຼັກສູດໃນ 5 ມິຕິ (ເພີ່ມມາດຕະຖານສຳລັບການກວດສອບເຕັມ)"
   },
   "standards": {
     "target_standard": "ມາດຕະຖານເປົ້າໝາຍ",
@@ -5740,7 +5818,25 @@
       "highlight_color": "Highlight color",
       "insert_table_aria": "Insert table",
       "insert_table_title": "Insert accessible table"
-    }
+    },
+    "reattach_mismatch": "PDF ທີ່ແນບໃໝ່ແຕກຕ່າງຈາກທີ່ກວດສອບ{detail}. ຈະສືບຕໍ່ຢ່າງໃດກໍ່ຕາມ; ຜົນລັບອາດບໍ່ສອດຄ່ອງກັບການກວດສອບເດີມ.",
+    "reattach_name_detail": " (ຊື່: \"{new}\" ທຽບກັບ \"{old}\")",
+    "reattach_size_detail": " (ຂະໜາດ: {new} ທຽບກັບ {old} ໄບຕ໌)",
+    "audit_failed_kept": "{label}: ການກວດສອບລົ້ມເຫລວ; ເກັບເວີຊັນກ່ອນໜ້າໄວ້.",
+    "score_dropped_kept": "{label}: ຄະແນນຈະຫຼຸດລົງ ({prev} → {next}{axe}). ເກັບເວີຊັນກ່ອນໜ້າໄວ້.",
+    "axe_only_comparison": ", ປຽບທຽບ axe ເທົ່ານັ້ນ",
+    "axe_only_committed": "{label}: ການຢືນຢັນ AI ບໍ່ມີ; ຢືນຢັນດ້ວຍຄະແນນ axe-core ທີ່ກຳນົດໄດ້ເທົ່ານັ້ນ.",
+    "reinserted_ai": "{count} ໃສ່ຄືນ (AI)",
+    "reinserted_sentence": "{count} ໃສ່ຄືນ (ປະໂຫຍກ)",
+    "reinserted_fuzzy": "{count} ໃສ່ຄືນ (ປະມານ)",
+    "in_recovery_appendix": "{count} ໃນພາກຜະໜວກກູ້ຄືນ",
+    "duplicates_removed_one": "ລຶບລາຍການຊ້ຳ {count} ແລ້ວ",
+    "duplicates_removed_other": "ລຶບລາຍການຊ້ຳ {count} ແລ້ວ",
+    "auto_continue_round": "ຮອບສືບຕໍ່ອັດຕະໂນມັດ {round}/{max}: {detail}, ຄະແນນ {score}/100 (ເປົ້າໝາຍ {target})...",
+    "violation_one": "{count} ການລະເມີດ",
+    "violation_other": "{count} ການລະເມີດ",
+    "ai_issue_one": "{count} ບັນຫາທີ່ AI ໝາຍໄວ້",
+    "ai_issue_other": "{count} ບັນຫາທີ່ AI ໝາຍໄວ້"
   },
   "concept_sort": {
     "title": "Concept Sort",
@@ -5814,7 +5910,8 @@
     "card_visuals_label": "Card visuals",
     "card_visuals_auto": "Auto (only on short items)",
     "card_visuals_always": "Always generate images",
-    "card_visuals_never": "Never (text-only cards)"
+    "card_visuals_never": "Never (text-only cards)",
+    "explanation_unavailable": "ບໍ່ສາມາດສ້າງຄຳອະທິບາຍໄດ້ໃນຕອນນີ້. ກະລຸນາລອງໃໝ່ໃນອີກບໍ່ດົນ."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -11247,7 +11344,12 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser."
+    "audit_queue_help": "Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.",
+    "queued_one": "ເອກະສານ {count} ໃນຄິວຈາກ LMS",
+    "queued_other": "ເອກະສານ {count} ໃນຄິວຈາກ LMS",
+    "fetching": "ກຳລັງດຶງ {name}...",
+    "loaded_ready": "ໂຫຼດ {name} ແລ້ວ; ພ້ອມສຳລັບການກວດສອບ",
+    "fetch_failed": "ດຶງ {name} ບໍ່ສຳເລັດ: {error}. ໄຟລ໌ອາດຕ້ອງການການຢືນຢັນຕົວຕົນ LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo last annotation ({count} available), Ctrl/Cmd+Z",
@@ -11267,7 +11369,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visual Support from your teacher"
+    "teacher_modal_aria": "Visual Support from your teacher",
+    "now": "ຕອນນີ້",
+    "read_aloud": "ອ່ານອອກສຽງ"
   },
   "canvas_settings": {
     "title": "Advanced Settings",
@@ -12225,5 +12329,27 @@
     "no_match": "ບໍ່ມີຄຳສັ່ງທີ່ກົງກັນ. ການສົນທະນາກັບບອດ (ແລະ ໃນໄວໆນີ້ສຽງ) ເຂົ້າໃຈຄຳຮ້ອງຂໍແບບອິດສະຫຼະ.",
     "placeholder": "ພິມຄຳສັ່ງ — “ຕົວໜັງສືໃຫຍ່ຂຶ້ນ”, “ສູນຄູສອນ”, “ອ່ານໜ້ານີ້”…",
     "run": "ດຳເນີນ"
+  },
+  "voice_engine": {
+    "preparing": "ກຳລັງກະກຽມເຄື່ອງຈັກສຽງ...",
+    "downloading_model": "ກຳລັງດາວໂຫຼດແບບຈຳລອງສຽງ",
+    "loading_memory": "ກຳລັງໂຫຼດເຂົ້າໜ່ວຍຄວາມຈຳ",
+    "loading_model_memory": "ກຳລັງໂຫຼດແບບຈຳລອງສຽງເຂົ້າໜ່ວຍຄວາມຈຳ"
+  },
+  "voice_control": {
+    "listening": "ກຳລັງຟັງ; ເວົ້າ “stop listening” ເພື່ອຈົບ",
+    "stop_aria": "ຢຸດການຄວບຄຸມດ້ວຍສຽງ"
+  },
+  "dynamic_assessment": {
+    "return_title": "ຊັບພະຍາກອນນີ້ຖືກສ້າງໂດຍ Dynamic Assessment. ຄລິກເພື່ອເປີດໂມດູນ Dynamic Assessment ຄືນໃໝ່.",
+    "return_aria": "ກັບໄປ Dynamic Assessment",
+    "return_label": "ກັບໄປ Dynamic Assessment",
+    "item_badge": "ລາຍການ {num}"
+  },
+  "story_gallery": {
+    "title": "ຫໍສະແດງເລື່ອງ",
+    "byline": "ໂດຍ {author} · {words} ຄຳ · {used}/{total} ຄຳສັບ",
+    "student": "ນັກຮຽນ",
+    "score": "ຄະແນນ: {score}"
   }
 }

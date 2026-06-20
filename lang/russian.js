@@ -1691,7 +1691,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Серия концентрации {minutes} мин! Так держать!",
+    "streak_saved": "С возвращением! Твоя серия {minutes} мин сохранена.",
+    "points_awarded": "Очки начислены!",
+    "welcome_name": "Добро пожаловать, {name}!",
+    "element_not_found": "Элемент не найден: {id}",
+    "overlay_set": "Наложение: {mode}",
+    "synced_resource": "Синхронизировано: {title}",
+    "group_resource": "Групповой ресурс: {title}",
+    "preset_saved": "Предустановка «{name}» сохранена!",
+    "translated_resources": "Успешно переведено ресурсов: {count}!",
+    "bingo_cards_count": "Создано карточек BINGO: {count}!",
+    "sound_enabled": "Звук включён",
+    "sound_muted": "Звук отключён",
+    "democracy_mode_on": "Режим демократии включён: голосование класса ВКЛ",
+    "democracy_mode_off": "Режим демократии отключён: одиночная игра",
+    "resource_moved_up": "{title} перемещён вверх",
+    "resource_moved_down": "{title} перемещён вниз",
+    "panels_regenerated": "Панелей перегенерировано: {count}!",
+    "settings_undone": "Отменено: {label}. Настройки восстановлены. (Созданные ресурсы не затронуты.)",
+    "concept_added": "Добавлено понятие: {text}",
+    "lesson_not_found": "Урок не найден в этом разделе.",
+    "probe_complete": "Проверка завершена: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Настройки обновлены: {changes}",
+    "change_format": "Формат: {value}",
+    "change_tone": "Тон: {value}",
+    "change_length": "Длина: ~{value} слов",
+    "change_language": "Язык: {value}",
+    "change_interest": "Добавлен интерес: {value}",
+    "backup_saved": "💾 Резервная копия этого сеанса сохранена в твои «Загрузки» (файл проекта). Сейчас с ней ничего делать не нужно; если когда-нибудь понадобится вернуться, «Загрузить проект» восстановит всё.",
+    "backup_saved_score": " (балл {score})",
+    "project_saved_multi_one": "💾 Проект сохранён ({count} диапазон); загрузи его позже, чтобы продолжить",
+    "project_saved_multi_other": "💾 Проект сохранён ({count} диапазонов); загрузи его позже, чтобы продолжить",
+    "project_saved": "💾 Проект сохранён; загрузи его позже, чтобы продолжить редактирование",
+    "search_result_desc": "Результат поиска Google: {title}",
+    "link_url_prompt": "Введите URL ссылки:"
   },
   "large_file": {
     "modal_title": "Импорт большого аудиофайла",
@@ -1707,7 +1742,8 @@
     "cancel_transcription": "Отменить транскрипцию",
     "chunk_info": "Аудио разделено на 5-минутные блоки для обработки",
     "chunk_progress": "Блок {current} из {total}",
-    "audio_only_error": "В настоящее время для поэтапной транскрипции поддерживаются только аудиофайлы (MP3, WAV и т.д.)."
+    "audio_only_error": "В настоящее время для поэтапной транскрипции поддерживаются только аудиофайлы (MP3, WAV и т.д.).",
+    "starting": "Запуск…"
   },
   "formatting": {
     "bold": "Жирный (**текст**)",
@@ -1811,7 +1847,8 @@
     "open_storyforge_aria": "Открыть StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Документально-ориентированные вопросы",
-    "open_stem_lab_explore_aria": "Открыть STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Открыть STEM Lab Explore",
+    "stem_lab_explore": "Исследовать"
   },
   "history": {
     "load_project": "Загрузить проект",
@@ -4487,7 +4524,25 @@
       "resolved_tip": "Проблемы из исходного аудита больше не обнаружены при проверке",
       "persisted_tip": "Проблемы из исходного аудита всё ещё присутствуют после исправления",
       "introduced_tip": "Новые проблемы, которых не было до исправления"
-    }
+    },
+    "reattach_mismatch": "Повторно прикреплённый PDF отличается от проверенного{detail}. Всё равно продолжаем; результаты могут не соответствовать исходной проверке.",
+    "reattach_name_detail": " (имя: «{new}» против «{old}»)",
+    "reattach_size_detail": " (размер: {new} против {old} байт)",
+    "audit_failed_kept": "{label}: проверка не удалась; сохранена предыдущая версия.",
+    "score_dropped_kept": "{label}: балл бы снизился ({prev} → {next}{axe}). Сохранена предыдущая версия.",
+    "axe_only_comparison": ", сравнение только по axe",
+    "axe_only_committed": "{label}: проверка ИИ недоступна; подтверждено только детерминированным баллом axe-core.",
+    "reinserted_ai": "{count} повторно вставлено (ИИ)",
+    "reinserted_sentence": "{count} повторно вставлено (предложение)",
+    "reinserted_fuzzy": "{count} повторно вставлено (приблизительно)",
+    "in_recovery_appendix": "{count} в приложении восстановления",
+    "duplicates_removed_one": "Удалён дубликат: {count}",
+    "duplicates_removed_other": "Удалено дубликатов: {count}",
+    "auto_continue_round": "Автопродолжение, раунд {round}/{max}: {detail}, балл {score}/100 (цель {target})…",
+    "violation_one": "{count} нарушение",
+    "violation_other": "Нарушений: {count}",
+    "ai_issue_one": "{count} проблема, отмеченная ИИ",
+    "ai_issue_other": "Проблем, отмеченных ИИ: {count}"
   },
   "concept_sort": {
     "title": "Сортировка понятий",
@@ -4561,7 +4616,8 @@
     "card_visuals_label": "Визуалы карточек",
     "card_visuals_auto": "Авто (только на коротких элементах)",
     "card_visuals_always": "Всегда создавать изображения",
-    "card_visuals_never": "Никогда (только текстовые карточки)"
+    "card_visuals_never": "Никогда (только текстовые карточки)",
+    "explanation_unavailable": "Сейчас не удалось сгенерировать объяснение. Попробуй ещё раз через мгновение."
   },
   "dbq": {
     "title": "Анализ документов (DBQ)",
@@ -4967,7 +5023,12 @@
       "error_check": "Не удалось проверить соответствие.",
       "regenerated_success": "Текст перегенерирован с улучшениями!",
       "regen_failed": "Перегенерация не удалась."
-    }
+    },
+    "skill_check": "Проверка навыков",
+    "desc_skill_check": "Проверь своё освоение по стандартам.",
+    "desc_parent": "Посмотрите, как это соответствует целям школы",
+    "desc_6dim": "Проверяет учебную программу по 6 измерениям",
+    "desc_5dim": "Проверяет учебную программу по 5 измерениям (добавьте стандарты для полной проверки)"
   },
   "standards": {
     "target_standard": "Целевой стандарт",
@@ -5179,7 +5240,34 @@
     "plan_hook": "Завязка",
     "plan_independent": "Независимая практика",
     "col_image": "Изображение",
-    "word_sounds_studio": "Word Sounds"
+    "word_sounds_studio": "Word Sounds",
+    "stop": "Стоп",
+    "expand_header": "Развернуть заголовок",
+    "collapse_header": "Свернуть заголовок, чтобы освободить место для содержимого",
+    "collapse_header_short": "Свернуть заголовок",
+    "step_x_of_y": "Шаг {current} из {total}",
+    "english_translation": "Перевод на английский",
+    "source_references": "Ссылки на исходный текст",
+    "activity_probe": "Проверка: {activity}",
+    "word_sounds_count": "Word Sounds ({count} слов)",
+    "quick_practice_mode": "Режим быстрой практики",
+    "new_option": "Новый вариант",
+    "meta_lesson_extensions": "Расширения урока",
+    "title_extension_ideas": "Идеи расширения",
+    "meta_full_chat_log": "Полный журнал чата",
+    "title_udl_consultation_log": "Журнал консультаций UDL",
+    "meta_actionable_steps": "Практические шаги (резюме ИИ)",
+    "title_differentiation_strategy": "Стратегия дифференциации",
+    "meta_udl_guide_advice": "Советы руководства UDL",
+    "title_stem_assessment": "Оценка STEM",
+    "title_explore_challenge": "Исследовательский вызов",
+    "title_fluency_maze": "🏰 Лабиринт беглости",
+    "title_storyforge_config": "📖 Задание StoryForge",
+    "title_storyforge_submission": "📖 Отправка истории",
+    "title_poettree_config": "🌳 Задание PoetTree",
+    "title_poettree_submission": "🌳 Отправка стихотворения",
+    "title_litlab_config": "🎭 Задание LitLab",
+    "title_litlab_submission": "🎭 Отправка выступления"
   },
   "persona": {
     "title": "Режим интервью",
@@ -8329,7 +8417,10 @@
     "analyzing_topology": "Действую как разработчик учебной программы: Анализ топологии содержания...",
     "brainstorming": "Brainstorm идей...",
     "retrying_citations": "Повтор для лучших цитат...",
-    "translating": "Перевод…"
+    "translating": "Перевод…",
+    "preparing_translation": "Подготовка перевода на {lang}…",
+    "translating_item": "Перевод {current}/{total}: {title}…",
+    "generating_panel": "Создание панели {current}/{total}…"
   },
   "process": {
     "source_missing": "Пожалуйста, сначала предоставьте исходный текст.",
@@ -9625,7 +9716,8 @@
     "loading_resources": "Загрузка ресурсов...",
     "preparing_workspace": "Подготовка рабочего пространства...",
     "almost_ready": "Почти готово...",
-    "loading_screen_aria": "Экран загрузки AlloFlow"
+    "loading_screen_aria": "Экран загрузки AlloFlow",
+    "preparing_environment": "Подготовка твоей учебной среды…"
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9734,7 +9826,7 @@
       "deescalate_title": "Набор инструментов де-эскалации",
       "drstrategy_desc": "Выберите правильную стратегию дифференциального подкрепления (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "Селектор стратегии DR",
-      "dtt_desc": "Discrete Trial Training — запись по испытаниям с критериями мастерства и автопродвижением",
+      "dtt_desc": "Discrete Trial Training — запись по отдельным пробам с критериями усвоения и автопереходом",
       "dtt_title": "Лист данных DTT",
       "effectsize_desc": "Вычисляйте Tau-U, NAP и PND для количественной оценки эффективности вмешательства с визуальным сравнением фаз",
       "effectsize_title": "Калькулятор размера эффекта",
@@ -9814,7 +9906,7 @@
       "sessiontracker_title": "Трекер данных сессий",
       "snapshot_desc": "Экспортируйте и импортируйте JSON-снимки для обмена данными родитель-учитель",
       "snapshot_title": "Обмен снимками ученика",
-      "socialvalidity_desc": "Шкалы TARF и IRP-15 для измерения принятия лечения — требуется для публикации",
+      "socialvalidity_desc": "Шкалы TARF и IRP-15 для оценки приемлемости вмешательства — требуется для публикации",
       "socialvalidity_title": "Социальная валидность",
       "taskanalysis_desc": "Разбивайте навыки на обучаемые шаги с прямым, обратным или полным цепочечным освоением и отслеживанием подсказок",
       "taskanalysis_title": "Анализ задачи",
@@ -10460,7 +10552,7 @@
       "day_streak": "Серия дней",
       "define_the_behaviors_settings_or_students_for_stag": "Определите поведение, обстановку или учеников для ступенчатого вмешательства.",
       "describe_your_research_question_and_let_ai_recomme": "Опишите ваш исследовательский вопрос, и пусть ИИ порекомендует лучший дизайн.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training с отслеживанием мастерства и автопродвижением",
+      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training с отслеживанием усвоения и автопереходом",
       "document_whether_interventions_are_implemented_as": "Документируйте, реализуются ли вмешательства как разработаны",
       "done": "Готово",
       "drop_a_snapshot_file_here": "Перетащите файл снимка сюда",
@@ -11272,7 +11364,12 @@
   "lms": {
     "dismiss_banner_aria": "Закрыть баннер LMS",
     "dismiss_button": "Закрыть",
-    "audit_queue_help": "Нажмите на документ, чтобы получить его и загрузить в конвейер доступности. Некоторые файлы LMS могут требовать, чтобы вы были авторизованы в LMS в этом браузере."
+    "audit_queue_help": "Нажмите на документ, чтобы получить его и загрузить в конвейер доступности. Некоторые файлы LMS могут требовать, чтобы вы были авторизованы в LMS в этом браузере.",
+    "queued_one": "{count} документ в очереди из LMS",
+    "queued_other": "{count} документов в очереди из LMS",
+    "fetching": "Получение {name}…",
+    "loaded_ready": "{name} загружен; готов к проверке",
+    "fetch_failed": "Не удалось получить {name}: {error}. Файл может потребовать аутентификации LMS."
   },
   "annotation": {
     "undo_tooltip": "Отменить последнюю аннотацию ({count} доступно) — Ctrl/Cmd+Z",
@@ -11292,7 +11389,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Визуальная поддержка от вашего учителя"
+    "teacher_modal_aria": "Визуальная поддержка от вашего учителя",
+    "now": "СЕЙЧАС",
+    "read_aloud": "Прочитать вслух"
   },
   "canvas_settings": {
     "title": "Расширенные настройки",
@@ -11309,7 +11408,12 @@
     "read_all_button": "Читать всё",
     "stop_button": "Стоп",
     "focus_narration_label": "Озвучивание фокуса клавиатуры",
-    "focus_narration_on_hint": "Нажмите Tab, чтобы услышать элементы управления"
+    "focus_narration_on_hint": "Нажмите Tab, чтобы услышать элементы управления",
+    "reading": "Чтение…",
+    "item_aria": "Нажми, чтобы услышать: {text}",
+    "footer_stats": "{count} элементов · Нажми на любой элемент, чтобы услышать его · Озвучивание по Tab {state}",
+    "narration_on": "ВКЛ",
+    "narration_off": "ВЫКЛ"
   },
   "teacher": {
     "local_only": "Только локально",
@@ -12276,5 +12380,27 @@
     "no_match": "Нет подходящей команды. Чат с ботом (а вскоре и голос) понимает запросы в свободной форме.",
     "placeholder": "Введите команду — «крупнее текст», «центр педагога», «прочитать эту страницу»…",
     "run": "выполнить"
+  },
+  "voice_engine": {
+    "preparing": "Подготовка голосового движка…",
+    "downloading_model": "Загрузка голосовой модели",
+    "loading_memory": "Загрузка в память",
+    "loading_model_memory": "Загрузка голосовой модели в память"
+  },
+  "voice_control": {
+    "listening": "Слушаю; скажи «stop listening», чтобы закончить",
+    "stop_aria": "Остановить голосовое управление"
+  },
+  "dynamic_assessment": {
+    "return_title": "Этот ресурс создан с помощью динамического оценивания. Нажми, чтобы снова открыть модуль динамического оценивания.",
+    "return_aria": "Вернуться к динамическому оцениванию",
+    "return_label": "Вернуться к динамическому оцениванию",
+    "item_badge": "элемент {num}"
+  },
+  "story_gallery": {
+    "title": "Галерея историй",
+    "byline": "Автор: {author} · {words} слов · {used}/{total} словарь",
+    "student": "Ученик",
+    "score": "Балл: {score}"
   }
 }

@@ -622,7 +622,8 @@
     "open_storyforge_aria": "StoryForgeを開く",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ドキュメントベースの質問",
-    "open_stem_lab_explore_aria": "STEM Lab Exploreを開く"
+    "open_stem_lab_explore_aria": "STEM Lab Exploreを開く",
+    "stem_lab_explore": "探索"
   },
   "launch_pad": {
     "subtitle": "学習パスウェイを選択",
@@ -1007,7 +1008,8 @@
     "cancel_transcription": "文字起こしをキャンセル",
     "chunk_info": "処理のために音声は5分のチャンクに分割されます",
     "chunk_progress": "チャンク {current}/{total}",
-    "audio_only_error": "現在、チャンク文字起こしは音声ファイル(MP3、WAVなど)のみサポートされています。"
+    "audio_only_error": "現在、チャンク文字起こしは音声ファイル(MP3、WAVなど)のみサポートされています。",
+    "starting": "開始しています..."
   },
   "formatting": {
     "bold": "太字 (**text**)",
@@ -1061,7 +1063,8 @@
     "loading_resources": "リソースを読み込み中...",
     "preparing_workspace": "ワークスペースを準備中...",
     "almost_ready": "まもなく完了...",
-    "loading_screen_aria": "AlloFlow 読み込み画面"
+    "loading_screen_aria": "AlloFlow 読み込み画面",
+    "preparing_environment": "学習環境を準備しています..."
   },
   "entry": {
     "placeholder": "例： Red Falcon",
@@ -1081,7 +1084,12 @@
     "read_all_button": "すべて読む",
     "stop_button": "停止",
     "focus_narration_label": "キーボードフォーカスのナレーション",
-    "focus_narration_on_hint": "Tabキーでコントロールを聞く"
+    "focus_narration_on_hint": "Tabキーでコントロールを聞く",
+    "reading": "読み上げ中...",
+    "item_aria": "クリックして聞く：{text}",
+    "footer_stats": "{count}項目 · 任意の項目をクリックすると聞けます · Tabナレーション{state}",
+    "narration_on": "オン",
+    "narration_off": "オフ"
   },
   "codenames": {
     "adjectives": [
@@ -1991,7 +1999,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} {minutes}分間の集中ストリーク！その調子です！",
+    "streak_saved": "おかえりなさい！{minutes}分のストリークを保存しました。",
+    "points_awarded": "ポイントを付与しました！",
+    "welcome_name": "ようこそ、{name}さん！",
+    "element_not_found": "要素が見つかりません：{id}",
+    "overlay_set": "オーバーレイ：{mode}",
+    "synced_resource": "同期しました：{title}",
+    "group_resource": "グループリソース：{title}",
+    "preset_saved": "プリセット「{name}」を保存しました！",
+    "translated_resources": "{count}件のリソースを正常に翻訳しました！",
+    "bingo_cards_count": "{count}枚のBINGOカードを生成しました！",
+    "sound_enabled": "サウンドをオンにしました",
+    "sound_muted": "サウンドをミュートしました",
+    "democracy_mode_on": "民主主義モードをオンにしました：クラス投票オン",
+    "democracy_mode_off": "民主主義モードをオフにしました：ソロプレイ",
+    "resource_moved_up": "{title}を上に移動しました",
+    "resource_moved_down": "{title}を下に移動しました",
+    "panels_regenerated": "{count}個のパネルを再生成しました！",
+    "settings_undone": "元に戻しました：{label}。設定を復元しました。（生成済みのリソースには影響しません。）",
+    "concept_added": "概念を追加しました：{text}",
+    "lesson_not_found": "このユニットにレッスンが見つかりません。",
+    "probe_complete": "プローブが完了しました：{correct}/{total}（{accuracy}%）",
+    "settings_updated": "設定を更新しました：{changes}",
+    "change_format": "形式：{value}",
+    "change_tone": "トーン：{value}",
+    "change_length": "長さ：約{value}語",
+    "change_language": "言語：{value}",
+    "change_interest": "興味を追加しました：{value}",
+    "backup_saved": "💾 このセッションのバックアップをダウンロードに保存しました（プロジェクトファイル）。今は何もする必要はありません。いつか戻る必要があるときは、「プロジェクトを読み込む」ですべてを復元できます。",
+    "backup_saved_score": "（スコア{score}）",
+    "project_saved_multi_one": "💾 プロジェクトを保存しました（{count}範囲）。後で読み込んで続行してください",
+    "project_saved_multi_other": "💾 プロジェクトを保存しました（{count}範囲）。後で読み込んで続行してください",
+    "project_saved": "💾 プロジェクトを保存しました。後で読み込んで編集を続けてください",
+    "search_result_desc": "Google検索結果：{title}",
+    "link_url_prompt": "リンクのURLを入力してください："
   },
   "settings": {
     "immersive_options": "イマーシブオプション",
@@ -2315,7 +2358,10 @@
     "analyzing_topology": "カリキュラムデザイナーとして活動中： コンテンツトポロジーを分析中...",
     "brainstorming": "アイデアをブレインストーミング中...",
     "retrying_citations": "より良い引用のために再試行中...",
-    "translating": "翻訳中…"
+    "translating": "翻訳中…",
+    "preparing_translation": "{lang}への翻訳を準備しています...",
+    "translating_item": "{current}/{total}を翻訳しています：{title}...",
+    "generating_panel": "パネル{current}/{total}を生成しています..."
   },
   "progression": {
     "title": "カリキュラム進行",
@@ -2365,7 +2411,34 @@
     "plan_hook": "フック",
     "plan_independent": "自主練習",
     "col_image": "画像",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "停止",
+    "expand_header": "ヘッダーを展開",
+    "collapse_header": "コンテンツのスペースを広げるためにヘッダーを折りたたむ",
+    "collapse_header_short": "ヘッダーを折りたたむ",
+    "step_x_of_y": "ステップ{current}/{total}",
+    "english_translation": "英語訳",
+    "source_references": "出典テキストの参照",
+    "activity_probe": "{activity}プローブ",
+    "word_sounds_count": "Word Sounds（{count}語）",
+    "quick_practice_mode": "クイック練習モード",
+    "new_option": "新しい選択肢",
+    "meta_lesson_extensions": "レッスンの発展",
+    "title_extension_ideas": "発展のアイデア",
+    "meta_full_chat_log": "完全なチャットログ",
+    "title_udl_consultation_log": "UDL相談ログ",
+    "meta_actionable_steps": "実行可能なステップ（AI要約）",
+    "title_differentiation_strategy": "個別化の戦略",
+    "meta_udl_guide_advice": "UDLガイドのアドバイス",
+    "title_stem_assessment": "STEM評価",
+    "title_explore_challenge": "探索チャレンジ",
+    "title_fluency_maze": "🏰 流暢さの迷路",
+    "title_storyforge_config": "📖 StoryForge課題",
+    "title_storyforge_submission": "📖 物語の提出",
+    "title_poettree_config": "🌳 PoetTree課題",
+    "title_poettree_submission": "🌳 詩の提出",
+    "title_litlab_config": "🎭 LitLab課題",
+    "title_litlab_submission": "🎭 パフォーマンスの提出"
   },
   "fullpack": {
     "button_label": "フルリソースパックを生成",
@@ -3704,7 +3777,12 @@
       "error_check": "整合性のチェックに失敗しました。",
       "regenerated_success": "改善されたテキストを再生成しました！",
       "regen_failed": "再生成に失敗しました。"
-    }
+    },
+    "skill_check": "スキルチェック",
+    "desc_skill_check": "基準に照らして習熟度を確認しましょう。",
+    "desc_parent": "これが学校の目標とどのように一致するかをご覧ください",
+    "desc_6dim": "6つの観点でカリキュラムを監査します",
+    "desc_5dim": "5つの観点でカリキュラムを監査します（完全な監査には基準を追加してください）"
   },
   "standards": {
     "target_standard": "ターゲット基準",
@@ -5595,7 +5673,8 @@
     "card_visuals_label": "カードビジュアル",
     "card_visuals_auto": "自動 (短いアイテムのみ)",
     "card_visuals_always": "常に画像を生成",
-    "card_visuals_never": "なし (テキストのみのカード)"
+    "card_visuals_never": "なし (テキストのみのカード)",
+    "explanation_unavailable": "現在、説明を生成できませんでした。しばらくしてからもう一度お試しください。"
   },
   "class_analytics": {
     "title": "クラス分析",
@@ -7650,7 +7729,12 @@
   "lms": {
     "dismiss_banner_aria": "LMSバナーを閉じる",
     "dismiss_button": "閉じる",
-    "audit_queue_help": "ドキュメントをクリックして取得し、アクセシビリティパイプラインに読み込みます。一部のLMSファイルでは、このブラウザでLMSにログインする必要がある場合があります。"
+    "audit_queue_help": "ドキュメントをクリックして取得し、アクセシビリティパイプラインに読み込みます。一部のLMSファイルでは、このブラウザでLMSにログインする必要がある場合があります。",
+    "queued_one": "LMSから{count}件の文書がキューに入っています",
+    "queued_other": "LMSから{count}件の文書がキューに入っています",
+    "fetching": "{name}を取得しています...",
+    "loaded_ready": "{name}を読み込みました。監査の準備ができました",
+    "fetch_failed": "{name}の取得に失敗しました：{error}。ファイルにLMS認証が必要な場合があります。"
   },
   "live_polling": {
     "open_aria": "ライブ投票を開く",
@@ -7661,7 +7745,9 @@
     "button": "🎨 ピクショナリー"
   },
   "visual_support": {
-    "teacher_modal_aria": "先生からのビジュアルサポート"
+    "teacher_modal_aria": "先生からのビジュアルサポート",
+    "now": "今",
+    "read_aloud": "読み上げ"
   },
   "tour": {
     "input_panel_title": "入力パネル",
@@ -8141,7 +8227,25 @@
       "resolved_tip": "元の監査からの問題が検証監査で見つからなくなりました",
       "persisted_tip": "修正後も元の監査からの問題がまだ残っています",
       "introduced_tip": "修正前には存在しなかった新しい問題"
-    }
+    },
+    "reattach_mismatch": "再添付されたPDFは監査されたものと異なります{detail}。それでも続行します。結果は元の監査と一致しない可能性があります。",
+    "reattach_name_detail": "（名前：「{new}」対「{old}」）",
+    "reattach_size_detail": "（サイズ：{new}対{old}バイト）",
+    "audit_failed_kept": "{label}：監査に失敗しました。以前のバージョンを保持しました。",
+    "score_dropped_kept": "{label}：スコアが下がるところでした（{prev} → {next}{axe}）。以前のバージョンを保持しました。",
+    "axe_only_comparison": "、axeのみの比較",
+    "axe_only_committed": "{label}：AI検証は利用できません。確定的なaxe-coreスコアのみで確定しました。",
+    "reinserted_ai": "{count}件を再挿入（AI）",
+    "reinserted_sentence": "{count}件を再挿入（文）",
+    "reinserted_fuzzy": "{count}件を再挿入（あいまい）",
+    "in_recovery_appendix": "{count}件が復元付録に",
+    "duplicates_removed_one": "{count}件の重複を削除しました",
+    "duplicates_removed_other": "{count}件の重複を削除しました",
+    "auto_continue_round": "自動継続ラウンド{round}/{max}：{detail}、スコア{score}/100（目標{target}）...",
+    "violation_one": "{count}件の違反",
+    "violation_other": "{count}件の違反",
+    "ai_issue_one": "{count}件のAIが指摘した問題",
+    "ai_issue_other": "{count}件のAIが指摘した問題"
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -8936,7 +9040,7 @@
       "use_these_criteria_when_examining_your_graph": "グラフを調べる際にこれらの基準を使用：",
       "use_this_flow_to_hypothesize_the_function_of_a_cha": "このフローを使用して困難な行動の機能を仮説化。",
       "visual_multitiered_system_of_supports_assign_stude": "視覚的多層支援システム。生徒を層に割り当て、AI駆動の配置推奨事項を取得。",
-      "voicetoabc": "Voice-to-ABC",
+      "voicetoabc": "音声からABC",
       "weeks": "週：",
       "welcome_to_behaviorlens": "BehaviorLensへようこそ",
       "workspace_sharing": "ワークスペース共有",
@@ -12326,5 +12430,27 @@
     "no_match": "一致するコマンドがありません。ボットチャット（まもなく音声も）は自由な形式のリクエストを理解します。",
     "placeholder": "コマンドを入力 —「文字を大きく」「Educator Hub」「このページを読む」…",
     "run": "実行"
+  },
+  "voice_engine": {
+    "preparing": "音声エンジンを準備しています...",
+    "downloading_model": "音声モデルをダウンロードしています",
+    "loading_memory": "メモリに読み込んでいます",
+    "loading_model_memory": "音声モデルをメモリに読み込んでいます"
+  },
+  "voice_control": {
+    "listening": "聞き取り中。終了するには「stop listening」と言ってください",
+    "stop_aria": "音声コントロールを停止"
+  },
+  "dynamic_assessment": {
+    "return_title": "このリソースは動的アセスメントによって生成されました。クリックすると動的アセスメントモジュールを再度開きます。",
+    "return_aria": "動的アセスメントに戻る",
+    "return_label": "動的アセスメントに戻る",
+    "item_badge": "項目{num}"
+  },
+  "story_gallery": {
+    "title": "ストーリーギャラリー",
+    "byline": "{author}作 · {words}語 · 語彙{used}/{total}",
+    "student": "生徒",
+    "score": "スコア：{score}"
   }
 }

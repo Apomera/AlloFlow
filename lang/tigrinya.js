@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper ምጽዓን ኣይተኻእለን። ናብ ካልኦት ኤንጂናት ይምለስ ኣሎ።",
     "backup_failed": "ምትኽኻእ ኣይተኻእለን። እንደገና ፈትን።",
     "invalid_backup_file": "ቅቡል ናይ AlloHaven ምትኽኻእ ፋይል ኣይኮነን።",
-    "could_not_read_file": "እቲ ፋይል ምንባብ ኣይተኻእለን። JSON ምትኽኻእ ድዩ?"
+    "could_not_read_file": "እቲ ፋይል ምንባብ ኣይተኻእለን። JSON ምትኽኻእ ድዩ?",
+    "focus_streak": "{flames} ናይ {minutes} ደቒቕ ቀጻሊ ኣቓልቦ! ከምኡ ቀጽል!",
+    "streak_saved": "እንቋዕ ብደሓን ተመለስካ! ናትካ ናይ {minutes} ደቒቕ ቀጻሊ ተዓቝቡ።",
+    "points_awarded": "ነጥብታት ተዋሂቡ!",
+    "welcome_name": "እንቋዕ ብደሓን መጻእካ፣ {name}!",
+    "element_not_found": "ዓንቀጽ ኣይተረኽበን: {id}",
+    "overlay_set": "ዝሽፍን ሽፋን: {mode}",
+    "synced_resource": "ተመሳሲሉ: {title}",
+    "group_resource": "ናይ ጉጅለ ሃብቲ: {title}",
+    "preset_saved": "ቅድመ-ምድላው \"{name}\" ተዓቝቡ!",
+    "translated_resources": "{count} ሃብትታት ብዓወት ተተርጒሞም!",
+    "bingo_cards_count": "{count} ናይ BINGO ካርድታት ተፈጢሮም!",
+    "sound_enabled": "ድምጺ ተኸፊቱ",
+    "sound_muted": "ድምጺ ተዓጽዩ",
+    "democracy_mode_on": "ናይ ዲሞክራሲ ኩነታት ተኸፊቱ: ናይ ክፍሊ ድምጺ ምሃብ ተኸፊቱ",
+    "democracy_mode_off": "ናይ ዲሞክራሲ ኩነታት ተዓጽዩ: በይንኻ ምጽዋት",
+    "resource_moved_up": "{title} ንላዕሊ ተንቀሳቒሱ",
+    "resource_moved_down": "{title} ንታሕቲ ተንቀሳቒሱ",
+    "panels_regenerated": "{count} ፓነላት እንደገና ተፈጢሮም!",
+    "settings_undone": "ተመሊሱ: {label}። ቅንብራት ተመሊሱ። (ዝተፈጥሩ ሃብትታት ኣይተተንከፉን።)",
+    "concept_added": "ሓሳብ ተወሲኹ: {text}",
+    "lesson_not_found": "ኣብዚ ኣሃዱ ትምህርቲ ኣይተረኽበን።",
+    "probe_complete": "መርመራ ተወዲኡ: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "ቅንብራት ተሓዲሱ: {changes}",
+    "change_format": "ቅርጺ: {value}",
+    "change_tone": "ቃና: {value}",
+    "change_length": "ንውሓት: ~{value} ቃላት",
+    "change_language": "ቋንቋ: {value}",
+    "change_interest": "ድሌት ተወሲኹ: {value}",
+    "backup_saved": "💾 ናይዚ ክፍለ-ግዜ ድሕነት ቅዳሕ ኣብ ምውራዳትካ ተዓቝቡ (ናይ ፕሮጀክት ፋይል)። ሕጂ ምስኡ ዝግበር የብልካን፤ ኣብ ዝኾነ ግዜ ክትምለስ እንተድኣ ኣድልዩካ፣ \"ፕሮጀክት ጽዓን\" ኩሉ ይመልሶ።",
+    "backup_saved_score": " (ነጥቢ {score})",
+    "project_saved_multi_one": "💾 ፕሮጀክት ተዓቝቡ ({count} ክሊ); ንምቕጻል ጸኒሕካ ጽዓኖ",
+    "project_saved_multi_other": "💾 ፕሮጀክት ተዓቝቡ ({count} ክሊታት); ንምቕጻል ጸኒሕካ ጽዓኖ",
+    "project_saved": "💾 ፕሮጀክት ተዓቝቡ; ምስትኽኻል ንምቕጻል ጸኒሕካ ጽዓኖ",
+    "search_result_desc": "ናይ Google ፍለጋ ውጽኢት: {title}",
+    "link_url_prompt": "ናይ መላግቦ URL ኣእቱ:"
   },
   "large_file": {
     "modal_title": "ኣእቱ Large ድምጺ ፋይል",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "ሰርዝ Transcription",
     "chunk_info": "ድምጺ እዩ split ናብ ውሽጢ 5-minute chunks ንዓ processing",
     "chunk_progress": "Chunk {current} ናይ {total}",
-    "audio_only_error": "Currently ጥራይ ድምጺ ፋይል (MP3, WAV, etc.) እዮም supported ንዓ chunked transcription."
+    "audio_only_error": "Currently ጥራይ ድምጺ ፋይል (MP3, WAV, etc.) እዮም supported ንዓ chunked transcription.",
+    "starting": "ይጅምር ኣሎ..."
   },
   "formatting": {
     "bold": "Bold (**ጽሑፍ**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "ክፈት StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ሰነድ-መሰረት ሕቶ",
-    "open_stem_lab_explore_aria": "ክፈት STEM ላቦራቶሪ ድለ"
+    "open_stem_lab_explore_aria": "ክፈት STEM ላቦራቶሪ ድለ",
+    "stem_lab_explore": "ኣናድ"
   },
   "history": {
     "load_project": "ጽዓን Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight ሕብሪ",
       "insert_table_aria": "Insert ሰንጠረጅ",
       "insert_table_title": "Insert ኪበጻሕ ዝኽእል ሰንጠረጅ"
-    }
+    },
+    "reattach_mismatch": "እንደገና ዝተተሓሓዘ PDF ካብቲ ዝተመርመረ ይፍለ{detail}። ብዝኾነ ይቕጽል; ውጽኢታት ምስቲ በዓል መንታዊ መርመራ ዘይሰማማዕ ክኸውን ይኽእል።",
+    "reattach_name_detail": " (ስም: \"{new}\" ኣንጻር \"{old}\")",
+    "reattach_size_detail": " (ዓቐን: {new} ኣንጻር {old} ባይት)",
+    "audit_failed_kept": "{label}: መርመራ ኣይተዓወተን; ናይ ቀደም ዝነበረ ቅዳሕ ተዓቒቡ።",
+    "score_dropped_kept": "{label}: ነጥቢ ምወረደ ({prev} → {next}{axe})። ናይ ቀደም ዝነበረ ቅዳሕ ተዓቒቡ።",
+    "axe_only_comparison": "፣ ናይ axe ጥራይ ምውድዳር",
+    "axe_only_committed": "{label}: ናይ AI ምርግጋጽ የለን; ብናይ ውሱን axe-core ነጥቢ ጥራይ ተረጋጊጹ።",
+    "reinserted_ai": "{count} እንደገና ተኣታትዩ (AI)",
+    "reinserted_sentence": "{count} እንደገና ተኣታትዩ (ምሉእ ሓሳብ)",
+    "reinserted_fuzzy": "{count} እንደገና ተኣታትዩ (ግምታዊ)",
+    "in_recovery_appendix": "{count} ኣብ ምምላስ መመላእታ",
+    "duplicates_removed_one": "{count} ድርብ ተወጊዱ",
+    "duplicates_removed_other": "{count} ድርብታት ተወጊዶም",
+    "auto_continue_round": "ናይ ባዕሉ-ምቕጻል ዙር {round}/{max}: {detail}፣ ነጥቢ {score}/100 (ሸቶ {target})...",
+    "violation_one": "{count} ጥሕሰት",
+    "violation_other": "{count} ጥሕሰታት",
+    "ai_issue_one": "{count} ብ AI ዝተመልከተ ጸገም",
+    "ai_issue_other": "{count} ብ AI ዝተመልከቱ ጸገማት"
   },
   "concept_sort": {
     "title": "ሓሳብ ኣሰናዲ",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "ካርድ ምርኢት",
     "card_visuals_auto": "Auto (ጥራይ ኣብ ሓጺር ኣቕሓ)",
     "card_visuals_always": "Always ፍጠር ስእሊ",
-    "card_visuals_never": "Never (ጽሑፍ-ጥራይ ካርድ)"
+    "card_visuals_never": "Never (ጽሑፍ-ጥራይ ካርድ)",
+    "explanation_unavailable": "ሕጂ መብርሂ ክፍጠር ኣይከኣለን። በጃኻ ድሕሪ ቑሩብ ግዜ እንደገና ፈትን።"
   },
   "dbq": {
     "title": "ሰነድ ትንታነ (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed ናብ ምርመራ ምስራዕ.",
       "regenerated_success": "ጽሑፍ regenerated ምስ improvements!",
       "regen_failed": "ድጋን ምፍጣር ኣይተዓወተን።"
-    }
+    },
+    "skill_check": "ናይ ክእለት መርመራ",
+    "desc_skill_check": "ክእለትካ ምስ ስታንዳርዳት ኣረጋግጽ።",
+    "desc_parent": "እዚ ምስ ናይ ቤት ትምህርቲ ሸቶታት ብኸመይ ከም ዝሰማማዕ ርአ",
+    "desc_6dim": "ስርዓተ-ትምህርቲ ብ6 ሕንጻጻት ይምርምር",
+    "desc_5dim": "ስርዓተ-ትምህርቲ ብ5 ሕንጻጻት ይምርምር (ንምሉእ መርመራ ስታንዳርዳት ወስኽ)"
   },
   "standards": {
     "target_standard": "ዕላማ መዐቀኒ",
@@ -5180,7 +5241,34 @@
     "plan_hook": "መሳሕቢ",
     "plan_independent": "Independent ተለማመድ",
     "col_image": "ስእሊ",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "ደው ኣብል",
+    "expand_header": "ርእሲ ኣግፍሕ",
+    "collapse_header": "ንትሕዝቶ ተወሳኺ ቦታ ንምሃብ ርእሲ ዕጸፍ",
+    "collapse_header_short": "ርእሲ ዕጸፍ",
+    "step_x_of_y": "ስጉምቲ {current} / {total}",
+    "english_translation": "ናይ እንግሊዝኛ ትርጉም",
+    "source_references": "ናይ ምንጪ ጽሑፍ መወከስታት",
+    "activity_probe": "ናይ {activity} መርመራ",
+    "word_sounds_count": "Word Sounds ({count} ቃላት)",
+    "quick_practice_mode": "ቅልጡፍ ናይ ምልምማድ ኩነታት",
+    "new_option": "ሓድሽ ምርጫ",
+    "meta_lesson_extensions": "ናይ ትምህርቲ መስፋሕፍሒ",
+    "title_extension_ideas": "ናይ መስፋሕፍሒ ሓሳባት",
+    "meta_full_chat_log": "ምሉእ ናይ ዕላል መዝገብ",
+    "title_udl_consultation_log": "ናይ UDL ምኽሪ መዝገብ",
+    "meta_actionable_steps": "ተግባራዊ ክኾኑ ዝኽእሉ ስጉምትታት (ናይ AI ጽማቝ)",
+    "title_differentiation_strategy": "ናይ ምፍልላይ ስትራተጂ",
+    "meta_udl_guide_advice": "ናይ UDL መምርሒ ምኽሪ",
+    "title_stem_assessment": "ናይ STEM ገምጋም",
+    "title_explore_challenge": "ናይ ምንዳይ ብደሆ",
+    "title_fluency_maze": "🏰 ናይ ቅልጥፍና ላቢሪንት",
+    "title_storyforge_config": "📖 ናይ StoryForge ዕዮ",
+    "title_storyforge_submission": "📖 ናይ ዛንታ ምቕራብ",
+    "title_poettree_config": "🌳 ናይ PoetTree ዕዮ",
+    "title_poettree_submission": "🌳 ናይ ግጥሚ ምቕራብ",
+    "title_litlab_config": "🎭 ናይ LitLab ዕዮ",
+    "title_litlab_submission": "🎭 ናይ ኣቀራርባ ምቕራብ"
   },
   "persona": {
     "title": "Interview ኣገባብ",
@@ -8257,7 +8345,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing ትሕዝቶ topology...",
     "brainstorming": "ሓሳባት ይፍጠሩ ኣለዉ...",
     "retrying_citations": "Retrying ንዓ ዝሓሸ citations...",
-    "translating": "ይትርጎም ኣሎ…"
+    "translating": "ይትርጎም ኣሎ…",
+    "preparing_translation": "ናብ {lang} ትርጉም የዳሉ ኣሎ...",
+    "translating_item": "{current}/{total} ይትርጉም ኣሎ: {title}...",
+    "generating_panel": "ፓነል {current}/{total} ይፈጥር ኣሎ..."
   },
   "process": {
     "source_missing": "በጃኹም provide ምንጪ ጽሑፍ ቀዳማይ.",
@@ -9553,7 +9644,8 @@
     "loading_resources": "Loading ጸጋታት...",
     "preparing_workspace": "Preparing ናትካ workspace...",
     "almost_ready": "ኣብ ቀረባ ግዜ ድልው...",
-    "loading_screen_aria": "AlloFlow loading መርኣዪ"
+    "loading_screen_aria": "AlloFlow loading መርኣዪ",
+    "preparing_environment": "ናይ ትምህርቲ ከባቢኻ የዳሉ ኣሎ..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9565,7 +9657,7 @@
     "obs_momentary": "Momentary ግዜ Sampling",
     "hub": {
       "title": "BehaviorLens",
-      "subtitle": "Functional ባህሪ ግምገማ, ABC ዳታ collection, ከምኡውን ባህሪ ኢድ ምእታው ውጥን መሳርሒታት.",
+      "subtitle": "ስነ-ተግባራዊ ናይ ባህሪ ግምገማ (FBA)፡ ናይ ABC ዳታ ኣከፋፍላ፡ ከምኡውን ናይ ባህሪ ኢድ-ምትእትታው ውጥን (BIP) መሳርሒታት።",
       "open_btn": "ክፈት BehaviorLens",
       "select_student": "ምረጽ ተምሃራይ",
       "choose_student": "— ምረጽ ሓደ ተምሃራይ —",
@@ -9638,7 +9730,7 @@
       "antecedentmod_desc": "ባህርያት ከይጀመሩ ንምክልኻል ብ AI ዝሰላሰል ለበዋታት ናይ ኣከባቢያዊ ለውጢ",
       "antecedentmod_title": "መርሓ ናይ ቅድመ ኩነታት ለውጢ",
       "avg_intensity": "ማእከላይ ድሕታር",
-      "bcbahandoff_desc": "ንBCBAs ናይ ዳታ dashboard + ንምኽሪ ዝሕተም ናይ ምትሕልላፍ ጥቕልል",
+      "bcbahandoff_desc": "ንBCBAታት ናይ ዳታ ሰሌዳ + ንምኽሪ ዝሕተም ናይ ምትሕልላፍ ጥቕልል",
       "bcbahandoff_title": "BCBA ምኽሪ",
       "biascheck_desc": "ኣብ ዳታኻ ቅዲታት ብለዋህ የቕርብ ንተኽእሎ ስውር ኣድልዎ ንምስትንታን — ዕቤት፡ ዘይ ጥፍኣት",
       "biascheck_title": "ናይ ኣድልዎ ምርኣይ ሞኒተር",
@@ -9708,7 +9800,7 @@
       "prefassess_title": "Preference ግምገማ",
       "progress_desc": "ካብ ዝተኣከበ ናይ ባህሪ ዳታ ንIEP ዝበቅዕ ናይ ኣረጋግጻ ምክትታል ኣንቀጻት",
       "progress_title": "ዕቤት ኣዘንታዊ",
-      "progressreport_desc": "AI-generated ዕቤት reports ምስ ዳታ summaries, trend ትንታነ, ዕላማ ዕቤት, ከምኡውን ወላዲ-ምስ ዝሰማማዕ ቋንቋ ኣማራጺታት",
+      "progressreport_desc": "ብAI ዝፍጠር ናይ ዕቤት ጸብጻባት ምስ ናይ ዳታ ጽማቝ፡ ናይ ኣንፈት ትንታነ፡ ናይ ዕላማ ዕቤት፡ ከምኡውን ምስ ወለዲ ዝሰማማዕ ቋንቋ ኣማራጺ",
       "progressreport_title": "ዕቤት Reports",
       "qualitycheck_desc": "ብ AI ዝሰላሰል ምስ ፍሉያት ናይ ምምሕያሽ ለበዋታት ናይ ABC ቅራቤታትካ ምግምጋም",
       "qualitycheck_title": "ዳታ ጽሬት ምርመራ",
@@ -9940,7 +10032,7 @@
     "reinforcer_sensory": "🌀 ስምዒት",
     "quiz_fba_purpose": "ቀንዲ ዕላማ FBA እንታይ እዩ?",
     "quiz_replacement": "እንታይ እዩ ሓደ replacement ባህሪ?",
-    "search_placeholder": "ድለ antecedent, ባህሪ, consequence, መዘኻኸሪ, ስርዓት...",
+    "search_placeholder": "ቅድመ-ኩነት (antecedent)፡ ባህሪ፡ ሳዕቤን (consequence)፡ መዘኻኸሪ፡ ኩነታት ድለ...",
     "quick_fill_placeholder": "ንኣብነት \"ተመሃራይ ኣብ ናይ ቊጽሪ ትምህርቲ ስራሕ ከርኢ ምስ ተሓቶ ወረቐት ደርብዩ፡ መምህር ብህዳአ ኣናተኸ\"",
     "nl_edit_placeholder": "ንኣብነት \"ሳዕቤን ናብ መምህር ኣናተኸ ቀይር\"",
     "now": "ሕጂ",
@@ -10040,7 +10132,7 @@
     "cycle_de_escalation": "ምውራድ",
     "cycle_recovery": "ምሕዋይ",
     "quiz_opt_punish": "ናብ punish ተምሃራይ",
-    "quiz_opt_identify_why": "ናብ ምልላይ WHY ሓደ ባህሪ occurs",
+    "quiz_opt_identify_why": "ሓደ ባህሪ ስለ ምንታይ ከም ዘጋጥም (WHY) ንምልላይ",
     "quiz_opt_any_stops": "ዝኾነ ነቲ ጸገም ዘቕልል ባህሪ",
     "analysis": {
       "hypothesized_function": "ግምታዊ ተግባር",
@@ -10113,7 +10205,7 @@
       "topic_purpose_of_contact": "ኣርእስቲ / ዕላማ ምትእስሳር",
       "type_full_name": "ዓይነት ምሉእ name",
       "type_language_eg_spanish_arabic_somali": "ቋንቋ ጽሓፍ (ንኣብነት፡ ስፓኒሽ፡ ዓረብ፡ ሶማል)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "ዓይነት ናትካ ምክትታል, note, ወይ ጠውቕ mic ናብ dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "ናትካ ምክትታል ወይ መዘኻኸሪ ጽሓፍ፡ ወይ ንምድማጽ ናይቲ ማይክ ኣርማ ጠውቕ...",
       "type_your_response_here_be_thorough_and_use_profes": "ምላሽካ ኣብዚ ጽሓፍ። ጥንቁቕ ኩን ሞያዊ ቋንቋ ተጠቐም...",
       "what_behavior_will_change": "እንታይ ባህሪ ክ ለውጢ?",
       "what_could_you_or_a_grownup_do_differently": "ንስኻ ወይ ዓቢ ሰብ እንታይ ብዝተፈለየ መገዲ ምገበረ?",
@@ -10386,7 +10478,7 @@
       "data_quality_score": "ዳታ ጽሬት ነጥቢ",
       "data_to_include": "ዳታ ናብ ኣካትት",
       "day_streak": "መዓልታት",
-      "define_the_behaviors_settings_or_students_for_stag": "Define ባህሪ, ስርዓታት, ወይ ተምሃራይ ንዓ staggered ኢድ ምእታው.",
+      "define_the_behaviors_settings_or_students_for_stag": "ንተደራራቢ (staggered) ኢድ-ምትእትታው ዝኾኑ ባህርያት፡ ኩነታት፡ ወይ ተምሃሮ ሰምር።",
       "describe_your_research_question_and_let_ai_recomme": "ናይ ምርምር ሕቶኻ ግለጽ እሞ AI ዝበለጸ ዲዛይን ክመክረካ ሕደግ።",
       "discrete_trial_training_with_mastery_tracking_and": "ብናይ ዕውትነት ምክትታልን ኣውቶ-ምቕጻልን ዘለዎ Discrete Trial Training",
       "document_whether_interventions_are_implemented_as": "ኢንተርቨንሽናት ከም ዝተደልዩ ይትግበሩ እንተኾኑ ሰንዶ",
@@ -10405,7 +10497,7 @@
       "from_abc_data": "ካብ ABC ዳታ:",
       "full_student_summary": "ምሉእ ተምሃራይ ጽማቝ",
       "functional_communication_training_planning_tool": "ናይ Functional Communication Training መደብ መሳርሒ",
-      "generate_a_multiweek_intervention_plan_based_on_yo": "ፍጠር ሓደ multi-week ኢድ ምእታው ውጥን መሰረት ኣብ ናትካ collected ABC ዳታ ከምኡውን AI ትንታነ.",
+      "generate_a_multiweek_intervention_plan_based_on_yo": "ኣብ ዝኣከብካዮ ናይ ABC ዳታን ናይ AI ትንታነን ተመርኲስካ ናይ ብዙሕ-ሰሙን ኢድ-ምትእትታው ውጥን ፍጠር።",
       "generate_a_professional_printready_progress_report": "ሞያዊ፣ ንሕታም-ድልው ናይ ምዕባለ ጸብጻብ ምስ ኣብ-መስመር ቻርትታት፣ ናይ ዳታ ኣጠቓላሊታት፣ ከምኡ'ውን ናይ AI ምሕባራት ኣፍሪ። ሓደ-ጠወቕ ናይ PDF ኤክስፖርት ብናይ ብራውዘር ሕታም።",
       "generate_a_unique_scenario_tailored_to_your_traini": "ንናይ ስልጠናኻ ድሌታት ዝተዳለወ ፍሉይ ሲናርዮ ፍጠር።",
       "generate_compliant_iep_behavioral_goals_from_obser": "ፍጠር compliant IEP behavioral ዕላማ ካብ ምክትታል ዳታ ምስ present ደረጃ, SMART ዕላማ, ከምኡውን ዕቤት monitoring.",
@@ -10455,7 +10547,7 @@
       "no_data_yet": "ኣይኮነን ዳታ yet",
       "no_entries_yet_tap_log_a_behavior_to_get_started": "ክሳብ ሕጂ ዝኾነ ምእታው የለን። ንምጅማር \"Log a Behavior\" ጠውቕ!",
       "no_occurrence": "ኣይኮነን occurrence",
-      "no_reflections_yet_tap_the_button_above_to_check_i": "ኣይኮነን ምስልጣን yet. Tap መልጎም above ናብ ምርመራ ኣብ ምስ yourself!",
+      "no_reflections_yet_tap_the_button_above_to_check_i": "ክሳብ ሕጂ ዝኾነ ሓሳብ የለን። ምስ ነፍስኻ ንምፍታሽ ኣብ ላዕሊ ዘሎ መልጎም ጠውቕ!",
       "no_session_data_recorded_yet": "ኣይኮነን ኣኼባ ዳታ recorded yet.",
       "no_sessions_recorded_yet": "ኣይኮነን ኣኼባ recorded yet.",
       "no_sessions_yet": "ኣይኮነን ኣኼባ yet.",
@@ -10468,7 +10560,7 @@
       "optional_message": "ኣማራጺ መልእኽቲ",
       "or_explore_the_pd_learning_path": "ወይ ድለ PD ምምሃር Path →",
       "parent": "ወላዲ",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ለጥፍ one ዋጋ per መስመር. ደገፍ ቅርጻ: \"5\", \"ኣኼባ 1: 5\", ወይ \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "ኣብ ነፍሲወከፍ መስመር ሓደ ዋጋ ለጥፍ። ዝድገፉ ቅርጻታት፥ \"5\"፡ \"ኣኼባ 1: 5\"፡ ወይ \"1,5\"",
       "pd_learning_path": "PD ምምሃር Path",
       "please_use_chrome_edge_or_safari_for_voice_input": "በጃኹም ተጠቐም Chrome, Edge, ወይ Safari ንዓ ድምጺ መእተዊ.",
       "practice_clinical_reasoning_with_aigenerated_case": "ብ AI-ዝፍጠሩ ናይ ጉዳይ መጽናዕትታት ናይ ክሊኒካዊ ምክንያት ኣለማመድ። ኣብ ምላሻትካ ናይ ክኢላ-ደረጃ ግብረ መልሲ ርከብ።",
@@ -10483,10 +10575,10 @@
       "publicationstandard_singlecase_design_graphs": "ናይ ሕታም-ደረጃ ናይ ሓደ-ጉዳይ ድዛይን ግራፋት",
       "quick_switch": "ቅልጡፍ ቀይር",
       "range": "ጽፍሒ",
-      "read_through_the_module_content_above_then_click_c": "ኣንብብ ብ module ትሕዝቶ above, ድሕሪኡ ጠውቕ ወድእ below.",
+      "read_through_the_module_content_above_then_click_c": "ኣብ ላዕሊ ዘሎ ትሕዝቶ ናይቲ ሞዱል ኣንቢብካ፡ ድሕሪኡ ኣብ ታሕቲ ዘሎ \"ወድእ\" ጠውቕ።",
       "realtime_calming_tools_for_inthemoment_support": "ኣብ-ቅጽበት ደገፍ ናይ ቅጽበት ሰላማዊ መሳርሕታት",
       "recent_moods": "ቀረባ ስምዒታት፡",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record ኣኼባ ምስ ኣኼባ ዳታ Tracker, ወይ ቀይር ናብ ብኢድ Entry ኣገባብ.",
+      "record_sessions_with_the_session_data_tracker_or_s": "ኣኼባታት ብናይ ኣኼባ ዳታ መኸታተሊ መዝግብ፡ ወይ ናብ ናይ ኢድ ምእታው ኣገባብ ቀይር።",
       "recording": "ይምዝግብ ኣሎ...",
       "relationship_map": "ካርታ ርክብ",
       "remember_cultural_humility_is_a_lifelong_practice": "ዘክር፥ ባህላዊ ትሕትና ናይ ምሉእ ዕድመ ልምምድ እዩ። ነፍሲ ወከፍ ኣስተንትኖ ዝያዳ ፍትሓዊ ፈጻሚ ይገብረካ።",
@@ -10514,7 +10606,7 @@
       "summary": "ጽማቝ:",
       "systematic_behavioral_measurement_across_sessions": "ኣብ ዝተፈላለዩ ኣኼባታት ስርዓታዊ ናይ ባህሪ ልኬት",
       "systematic_reinforcer_identification_using_evidenc": "ብመርትዖ ዝተደገፉ ፕሮቶኮላት ብምጥቃም ስርዓታዊ ምልላይ ናይ ኣጠናኻሪ",
-      "tap_each_item_when_student_engages_with_it": "Tap ነፍሲወከፍ ኣቕሓ መዓስ ተምሃራይ engages ምስ it",
+      "tap_each_item_when_student_engages_with_it": "ተምሃራይ ምስ ነፍሲወከፍ ኣቕሓ ኪዋሳእ ከሎ ነቲ ኣቕሓ ጠውቖ",
       "target_behavior": "ዕላማ ባህሪ",
       "task_analysis": "Task ትንታነ",
       "taskskill_name": "ናይ ስራሕ/ክእለት ስም",
@@ -10524,7 +10616,7 @@
       "top_behavior": "Top ባህሪ",
       "total_contacts": "ጠቕላላ ርክባት",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track ባህሪ frequency ኣብ ልዕሊ ግዜ ምስ aim መስመር, phase ለውጢ, ከምኡውን trend ትንታነ.",
+      "track_behavior_frequency_over_time_with_aim_lines": "ናይ ባህሪ ድግግሞሽ ኣብ ምስ ግዜ ብናይ ሸቶ መስመራት፡ ናይ ምዕራፍ ለውጥታት፡ ከምኡውን ናይ ኣንፈት ትንታነ ተኸታተሎ።",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track ባህሪ at home ምጥቃም ቐሊል, everyday ቋንቋ. እዚ ሓገዝ ናትካ child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "ስምዒታትካ ኣካታተል፣ ባጅታት ኣጥሪ፣ ቀጻልነት ሃንጽ!",
       "transform_deficitbased_language_into_assetfocused": "ናይ ጋባ-ዝሰረሐ ቋንቋ ናብ ናይ ሓብቲ-ዝተተኮረ መግለጺታት ቀይር",
@@ -10776,7 +10868,7 @@
       "maintenance_tracker": "ናይ ምሕላው ተኸታታሊ",
       "make_tier_movement_decision_stay_fade_intensify": "ናይ ደረጃ ምንቅስቓስ ውሳነ ግበር (ጽናሕ / ዘሕል / ኣጽንዕ)",
       "map_antecedent_behavior_consequence_pathways": "ቀዳማይ → ባህሪ → ሳዕቤን መንገድታት ኣራኽብ",
-      "map_each_target_behavior_to_a_replacement": "Map ነፍሲወከፍ ዕላማ ባህሪ ናብ ሓደ replacement",
+      "map_each_target_behavior_to_a_replacement": "ንነፍሲወከፍ ዕላማ ባህሪ ምስ ተካኢ ባህሪ ኣዛምዶ",
       "materials_access": "ጽሑፋት መእተዊ",
       "measure_effect_size_of_interventions": "ናይ ኢንተርቨንሽን ናይ ጽልዋ ስፍሓት ለክዕ",
       "model": "ኣገባብ",
@@ -11199,7 +11291,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS ባነር ኣጥፍእ",
     "dismiss_button": "ስረዝ",
-    "audit_queue_help": "ሓደ ሰነድ ንምምጻእን ናብ ናይ ተበጻሕነት መስርሕ ንምጽዓኑን ጠውቖ። ገለ ናይ LMS ፋይላት ኣብዚ browser ናብ LMS ኣቲኻ ክትህሉ ክደልዩ ይኽእሉ።"
+    "audit_queue_help": "ሓደ ሰነድ ንምምጻእን ናብ ናይ ተበጻሕነት መስርሕ ንምጽዓኑን ጠውቖ። ገለ ናይ LMS ፋይላት ኣብዚ browser ናብ LMS ኣቲኻ ክትህሉ ክደልዩ ይኽእሉ።",
+    "queued_one": "{count} ሰነድ ካብ LMS ኣብ ሰልፊ",
+    "queued_other": "{count} ሰነዳት ካብ LMS ኣብ ሰልፊ",
+    "fetching": "{name} ይረክብ ኣሎ...",
+    "loaded_ready": "{name} ተጻዒኑ; ንመርመራ ድሉው",
+    "fetch_failed": "{name} ምርካብ ኣይተኻእለን: {error}። ፋይል ናይ LMS ምርግጋጽ ክደሊ ይኽእል።"
   },
   "annotation": {
     "undo_tooltip": "Undo መወዳእታ annotation ({count} ዝርከብ) — Ctrl/Cmd+Z",
@@ -11219,7 +11316,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "ምርኢት ደገፍ ካብ ናትካ መምህር"
+    "teacher_modal_aria": "ምርኢት ደገፍ ካብ ናትካ መምህር",
+    "now": "ሕጂ",
+    "read_aloud": "ዓው ኢልካ ኣንብብ"
   },
   "canvas_settings": {
     "title": "ዝያዳ ስርዓታት",
@@ -11236,7 +11335,12 @@
     "read_all_button": "ኣንብብ ኩሉ",
     "stop_button": "ደው በል",
     "focus_narration_label": "Keyboard ኣተኩሮ Narration",
-    "focus_narration_on_hint": "Tab ናብ hear controls"
+    "focus_narration_on_hint": "Tab ናብ hear controls",
+    "reading": "የንብብ ኣሎ...",
+    "item_aria": "ንምስማዕ ጠውቕ: {text}",
+    "footer_stats": "{count} ኣቕሑ · ዝኾነ ኣቕሓ ንምስማዕ ጠውቕ · ናይ Tab ኣገላልጻ {state}",
+    "narration_on": "ክፉት",
+    "narration_off": "ዕጹው"
   },
   "teacher": {
     "local_only": "Local ጥራይ",
@@ -12412,5 +12516,27 @@
     "no_match": "ዝሰማማዕ ትእዛዝ የለን። ናይ ቦት ዕላል (ብቐረባ ድማ ድምጺ) ናጻ ጠለባት ይርዳእ።",
     "placeholder": "ትእዛዝ ጽሓፍ — “ዓቢ ጽሑፍ”፣ “educator hub”፣ “ነዛ ገጽ ኣንብብ”…",
     "run": "ኣካይድ"
+  },
+  "voice_engine": {
+    "preparing": "ናይ ድምጺ ሞተር የዳሉ ኣሎ...",
+    "downloading_model": "ናይ ድምጺ ሞዴል የውርድ ኣሎ",
+    "loading_memory": "ናብ ማህደረ-ትዝታ ይጽዕን ኣሎ",
+    "loading_model_memory": "ናይ ድምጺ ሞዴል ናብ ማህደረ-ትዝታ ይጽዕን ኣሎ"
+  },
+  "voice_control": {
+    "listening": "ይሰምዕ ኣሎ; ንምውዳእ “stop listening” በል",
+    "stop_aria": "ናይ ድምጺ ቁጽጽር ደው ኣብል"
+  },
+  "dynamic_assessment": {
+    "return_title": "እዚ ሃብቲ ብ Dynamic Assessment ተፈጢሩ። ናይ Dynamic Assessment ሞዱል እንደገና ንምኽፋት ጠውቕ።",
+    "return_aria": "ናብ Dynamic Assessment ተመለስ",
+    "return_label": "ናብ Dynamic Assessment ተመለስ",
+    "item_badge": "ኣቕሓ {num}"
+  },
+  "story_gallery": {
+    "title": "ናይ ዛንታ ማእከል",
+    "byline": "ብ {author} · {words} ቃላት · {used}/{total} መዝገበ-ቃላት",
+    "student": "ተማሃራይ",
+    "score": "ነጥቢ: {score}"
   }
 }

@@ -1692,7 +1692,42 @@
     "backup_failed": "Backup failed. Coba again.",
     "invalid_backup_file": "File cadangan tidak valid",
     "could_not_read_file": "Tidak dapat membaca file",
-    "tts_failed": "Baca dengan suara nyaring gagal. Silakan coba lagi."
+    "tts_failed": "Baca dengan suara nyaring gagal. Silakan coba lagi.",
+    "focus_streak": "{flames} Rentetan fokus {minutes} menit! Teruskan!",
+    "streak_saved": "Selamat datang kembali! Rentetan {minutes} menitmu telah disimpan.",
+    "points_awarded": "Poin diberikan!",
+    "welcome_name": "Selamat datang, {name}!",
+    "element_not_found": "Elemen tidak ditemukan: {id}",
+    "overlay_set": "Hamparan: {mode}",
+    "synced_resource": "Disinkronkan: {title}",
+    "group_resource": "Sumber daya grup: {title}",
+    "preset_saved": "Prasetel \"{name}\" disimpan!",
+    "translated_resources": "{count} sumber daya berhasil diterjemahkan!",
+    "bingo_cards_count": "{count} kartu BINGO dibuat!",
+    "sound_enabled": "Suara diaktifkan",
+    "sound_muted": "Suara dibisukan",
+    "democracy_mode_on": "Mode demokrasi aktif: pemungutan suara kelas AKTIF",
+    "democracy_mode_off": "Mode demokrasi nonaktif: permainan tunggal",
+    "resource_moved_up": "{title} dipindahkan ke atas",
+    "resource_moved_down": "{title} dipindahkan ke bawah",
+    "panels_regenerated": "{count} panel dibuat ulang!",
+    "settings_undone": "Dibatalkan: {label}. Pengaturan dipulihkan. (Sumber daya yang dibuat tidak terpengaruh.)",
+    "concept_added": "Konsep ditambahkan: {text}",
+    "lesson_not_found": "Pelajaran tidak ditemukan di unit ini.",
+    "probe_complete": "Pemeriksaan selesai: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Pengaturan diperbarui: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Nada: {value}",
+    "change_length": "Panjang: ~{value} kata",
+    "change_language": "Bahasa: {value}",
+    "change_interest": "Minat ditambahkan: {value}",
+    "backup_saved": "💾 Cadangan sesi ini telah disimpan di Unduhanmu (berkas proyek). Tidak perlu melakukan apa pun dengannya sekarang; jika suatu saat kamu perlu kembali, \"Muat Proyek\" mengembalikan semuanya.",
+    "backup_saved_score": " (skor {score})",
+    "project_saved_multi_one": "💾 Proyek disimpan ({count} rentang); muat nanti untuk melanjutkan",
+    "project_saved_multi_other": "💾 Proyek disimpan ({count} rentang); muat nanti untuk melanjutkan",
+    "project_saved": "💾 Proyek disimpan; muat nanti untuk melanjutkan pengeditan",
+    "search_result_desc": "Hasil Penelusuran Google: {title}",
+    "link_url_prompt": "Masukkan URL tautan:"
   },
   "large_file": {
     "modal_title": "Impor Large audio berkas",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Batal Transcription",
     "chunk_info": "audio adalah split ke dalam 5-minute chunks untuk processing",
     "chunk_progress": "Chunk {current} {total}",
-    "audio_only_error": "Currently hanya audio berkas (MP3, WAV, etc.) adalah supported untuk chunked transcription."
+    "audio_only_error": "Currently hanya audio berkas (MP3, WAV, etc.) adalah supported untuk chunked transcription.",
+    "starting": "Memulai..."
   },
   "formatting": {
     "bold": "Bold (**teks**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Buka StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "dokumen-Berdasarkan pertanyaan",
-    "open_stem_lab_explore_aria": "Buka STEM laboratorium Jelajahi"
+    "open_stem_lab_explore_aria": "Buka STEM laboratorium Jelajahi",
+    "stem_lab_explore": "Jelajahi"
   },
   "history": {
     "load_project": "Muat Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight warna",
       "insert_table_aria": "Insert tabel",
       "insert_table_title": "Insert dapat diakses tabel"
-    }
+    },
+    "reattach_mismatch": "PDF yang dilampirkan ulang berbeda dari yang diaudit{detail}. Tetap akan dilanjutkan; hasil mungkin tidak konsisten dengan audit asli.",
+    "reattach_name_detail": " (nama: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (ukuran: {new} vs. {old} byte)",
+    "audit_failed_kept": "{label}: audit gagal; versi sebelumnya dipertahankan.",
+    "score_dropped_kept": "{label}: skor akan turun ({prev} → {next}{axe}). Versi sebelumnya dipertahankan.",
+    "axe_only_comparison": ", perbandingan hanya axe",
+    "axe_only_committed": "{label}: verifikasi AI tidak tersedia; dikonfirmasi hanya dengan skor deterministik axe-core.",
+    "reinserted_ai": "{count} disisipkan ulang (AI)",
+    "reinserted_sentence": "{count} disisipkan ulang (kalimat)",
+    "reinserted_fuzzy": "{count} disisipkan ulang (perkiraan)",
+    "in_recovery_appendix": "{count} di lampiran pemulihan",
+    "duplicates_removed_one": "{count} duplikat dihapus",
+    "duplicates_removed_other": "{count} duplikat dihapus",
+    "auto_continue_round": "Putaran lanjut otomatis {round}/{max}: {detail}, skor {score}/100 (target {target})...",
+    "violation_one": "{count} pelanggaran",
+    "violation_other": "{count} pelanggaran",
+    "ai_issue_one": "{count} masalah yang ditandai AI",
+    "ai_issue_other": "{count} masalah yang ditandai AI"
   },
   "concept_sort": {
     "title": "Konsep Urutkan",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "kartu visual",
     "card_visuals_auto": "Otomatis (hanya di pendek item)",
     "card_visuals_always": "Always hasilkan gambar",
-    "card_visuals_never": "Never (teks-hanya kartu)"
+    "card_visuals_never": "Never (teks-hanya kartu)",
+    "explanation_unavailable": "Tidak dapat membuat penjelasan saat ini. Silakan coba lagi sebentar lagi."
   },
   "dbq": {
     "title": "dokumen Analisis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed ke periksa penyelarasan.",
       "regenerated_success": "teks redihasilkan dengan improvements!",
       "regen_failed": "Regenerasi gagal."
-    }
+    },
+    "skill_check": "Pemeriksaan keterampilan",
+    "desc_skill_check": "Verifikasi penguasaanmu terhadap standar.",
+    "desc_parent": "Lihat bagaimana ini selaras dengan tujuan sekolah",
+    "desc_6dim": "Mengaudit kurikulum dalam 6 dimensi",
+    "desc_5dim": "Mengaudit kurikulum dalam 5 dimensi (tambahkan standar untuk audit lengkap)"
   },
   "standards": {
     "target_standard": "Target standar",
@@ -5188,7 +5249,34 @@
     "plan_hook": "Pemikat",
     "plan_independent": "Independent berlatih",
     "col_image": "gambar",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Hentikan",
+    "expand_header": "Perluas header",
+    "collapse_header": "Ciutkan header untuk memberi lebih banyak ruang pada konten",
+    "collapse_header_short": "Ciutkan header",
+    "step_x_of_y": "Langkah {current} dari {total}",
+    "english_translation": "Terjemahan Inggris",
+    "source_references": "Referensi Teks Sumber",
+    "activity_probe": "Pemeriksaan {activity}",
+    "word_sounds_count": "Word Sounds ({count} kata)",
+    "quick_practice_mode": "Mode Latihan Cepat",
+    "new_option": "Opsi baru",
+    "meta_lesson_extensions": "Perluasan Pelajaran",
+    "title_extension_ideas": "Ide Perluasan",
+    "meta_full_chat_log": "Log Obrolan Lengkap",
+    "title_udl_consultation_log": "Log Konsultasi UDL",
+    "meta_actionable_steps": "Langkah yang Dapat Ditindaklanjuti (Ringkasan AI)",
+    "title_differentiation_strategy": "Strategi Diferensiasi",
+    "meta_udl_guide_advice": "Saran Panduan UDL",
+    "title_stem_assessment": "Penilaian STEM",
+    "title_explore_challenge": "Tantangan Eksplorasi",
+    "title_fluency_maze": "🏰 Labirin Kefasihan",
+    "title_storyforge_config": "📖 Tugas StoryForge",
+    "title_storyforge_submission": "📖 Pengiriman Cerita",
+    "title_poettree_config": "🌳 Tugas PoetTree",
+    "title_poettree_submission": "🌳 Pengiriman Puisi",
+    "title_litlab_config": "🎭 Tugas LitLab",
+    "title_litlab_submission": "🎭 Pengiriman Pertunjukan"
   },
   "persona": {
     "title": "Interview mode",
@@ -8316,7 +8404,10 @@
     "analyzing_topology": "Acting sebagai Curriculum Designer: Analyzing konten topology...",
     "brainstorming": "Curah ide...",
     "retrying_citations": "Retrying untuk lebih baik citations...",
-    "translating": "Menerjemahkan…"
+    "translating": "Menerjemahkan…",
+    "preparing_translation": "Menyiapkan terjemahan ke {lang}...",
+    "translating_item": "Menerjemahkan {current}/{total}: {title}...",
+    "generating_panel": "Membuat panel {current}/{total}..."
   },
   "process": {
     "source_missing": "mohon sediakan sumber teks pertama.",
@@ -9612,7 +9703,8 @@
     "loading_resources": "Loading sumber daya...",
     "preparing_workspace": "Preparing Anda workspace...",
     "almost_ready": "Hampir siap...",
-    "loading_screen_aria": "AlloFlow loading layar"
+    "loading_screen_aria": "AlloFlow loading layar",
+    "preparing_environment": "Menyiapkan lingkungan belajarmu..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9636,7 +9728,7 @@
       "abc_title": "ABC data",
       "abc_desc": "Catat pengamatan antecedent, perilaku, dan konsekuensi",
       "obs_title": "Langsung pengamatan",
-      "obs_desc": "Nyata-waktu interval, frequency, atau duration recording",
+      "obs_desc": "Perekaman interval, frekuensi, atau durasi secara real-time",
       "analysis_title": "AI Analisis",
       "analysis_desc": "AI-powered perilaku pattern analisis & recommendations",
       "overview_title": "Ikhtisar",
@@ -9670,13 +9762,13 @@
       "triangulation_title": "Triangulasi",
       "triangulation_desc": "Cross-referensi 3+ data sources untuk convergence",
       "impact_title": "Kalkulator Dampak",
-      "impact_desc": "Quantify perilaku frequency, duration, dan annual cost",
+      "impact_desc": "Mengukur frekuensi, durasi, dan biaya tahunan perilaku",
       "crisis_title": "Crisis Rencana",
       "crisis_desc": "Three-tingkat crisis intervention protocol generator",
       "traffic_title": "Lampu Lalu Lintas",
       "traffic_desc": "siswa-facing red/yellow/green perilaku zone poster",
       "datasheet_title": "data Sheet",
-      "datasheet_desc": "Printable frequency, duration, ABC, atau latency data sheets",
+      "datasheet_desc": "Lembar data frekuensi, durasi, ABC, atau latensi yang dapat dicetak",
       "homenote_title": "Catatan Rumah",
       "homenote_desc": "AI-drafted orang tua communication dengan nada selector",
       "fidelity_title": "Daftar Periksa Fidelitas",
@@ -9999,7 +10091,7 @@
     "reinforcer_sensory": "🌀 Sensori",
     "quiz_fba_purpose": "apa adalah primary purpose sebuah FBA?",
     "quiz_replacement": "apa adalah sebuah replacement perilaku?",
-    "search_placeholder": "Cari antecedent, perilaku, consequence, catatan, pengaturan...",
+    "search_placeholder": "Cari antecedent, perilaku, consequence, catatan, setting...",
     "quick_fill_placeholder": "misal \"siswa threw paper selama matematika ketika asked ke tampilkan kerja, guru redirected calmly\"",
     "nl_edit_placeholder": "misal \"perubahan consequence ke guru redirected\"",
     "now": "sekarang",
@@ -10225,7 +10317,7 @@
       "data_cleared": "data cleared",
       "data_loaded_from_cloud": "☁️ data loaded dari cloud",
       "drafting_failed": "Pendrafan gagal",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval selesai — REINFORCE! Tidak target perilaku occurred!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 Interval DRO selesai — REINFORCE! Tidak ada perilaku target yang terjadi!",
       "each_phase_needs_at_least_2_data_points": "setiap phase needs di least 2 data titik",
       "effect_sizes_attached_to_iep_prep": "Effect sizes attached ke IEP Prep!",
       "effect_sizes_calculated": "Ukuran efek dihitung!",
@@ -10583,7 +10675,7 @@
       "top_behavior": "Top perilaku",
       "total_contacts": "Total Kontak",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track perilaku frequency lebih waktu dengan aim garis, phase perubahan, dan trend analisis.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Lacak frekuensi perilaku dari waktu ke waktu dengan aim line, perubahan fase, dan analisis tren.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track perilaku di home menggunakan sederhana, everyday bahasa. ini membantu Anda child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track Anda feelings, dapatkan lencana, dan membangun streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-berdasarkan bahasa ke dalam asset-focused descriptions",
@@ -10768,7 +10860,7 @@
       "developing": "Berkembang",
       "discontinue": "Hentikan",
       "dismiss": "Tutup",
-      "document_baseline_frequency_for_flagged_students": "dokumen baseline frequency untuk flagged siswa",
+      "document_baseline_frequency_for_flagged_students": "Dokumentasikan frekuensi baseline untuk siswa yang ditandai",
       "document_outcomes_and_lessons_learned": "dokumen outcomes dan pelajaran learned",
       "document_the_confirmed_function": "dokumen confirmed function",
       "document_the_hypothesis_in_session_notes": "dokumen hipotesis di sesi catatan",
@@ -10834,8 +10926,8 @@
       "level_mean": "tingkat (Mean)",
       "maintenance_tracker": "Pelacak Pemeliharaan",
       "make_tier_movement_decision_stay_fade_intensify": "Buat tingkat movement keputusan (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → perilaku → consequence pathways",
-      "map_each_target_behavior_to_a_replacement": "Map setiap target perilaku ke sebuah replacement",
+      "map_antecedent_behavior_consequence_pathways": "Petakan alur antecedent → perilaku → consequence",
+      "map_each_target_behavior_to_a_replacement": "Petakan setiap perilaku target ke perilaku pengganti",
       "materials_access": "Bahan Akses",
       "measure_effect_size_of_interventions": "Ukur effect size interventions",
       "model": "Model",
@@ -10871,10 +10963,10 @@
       "percentage": "persentase",
       "phone": "Telepon",
       "phone_call": "Panggilan Telepon",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Rencana sebuah reinforcement schedule untuk replacement perilaku",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Rencanakan jadwal reinforcement untuk perilaku pengganti",
       "plan_data_collection_methods_and_frequency": "Rencana data collection methods dan frequency",
       "plan_fidelity_monitoring": "Rencana Fidelity Monitoring",
-      "plan_reinforcement_for_replacement_behaviors": "Rencana reinforcement untuk replacement perilaku",
+      "plan_reinforcement_for_replacement_behaviors": "Rencanakan reinforcement untuk perilaku pengganti",
       "plan_replacement_behaviors": "Rencana Replacement perilaku",
       "plan_weekly_progress_monitoring_data_collection": "Rencana weekly kemajuan monitoring data collection",
       "positivecorrective_ratio": "Rasio Positif:Korektif",
@@ -10916,7 +11008,7 @@
       "sensory": "Sensori",
       "sensory_break_menu": "Sensory Break menu",
       "sensoryautomatic": "Sensory/otomatis",
-      "sensoryautomatic_function": "Sensory/otomatis Function",
+      "sensoryautomatic_function": "Fungsi Sensorik/Otomatis",
       "sensoryrelated": "Terkait Sensorik",
       "session_tracker": "sesi Tracker",
       "set_a_6week_intervention_cycle": "Atur sebuah 6-week intervention cycle",
@@ -11012,7 +11104,7 @@
       "incorrect": "Salah",
       "independent": "Mandiri",
       "intensity": "Intensitas",
-      "interval_and_latency_recording": "Interval dan latency recording",
+      "interval_and_latency_recording": "Perekaman interval dan latensi",
       "level": "tingkat",
       "mastered": "Dikuasai",
       "momentary_time_sampling": "Momentary waktu sampling",
@@ -11073,7 +11165,7 @@
       "step_collect_more": "Collect lebih data",
       "step_collect_more_desc": "Tambah lebih pengamatan sesi ke strengthen dataset.",
       "step_hypothesis": "hipotesis",
-      "step_hypothesis_desc": "Draft sebuah working hipotesis perilaku function.",
+      "step_hypothesis_desc": "Susun hipotesis kerja tentang fungsi perilaku.",
       "step_record_abc": "Rekam data ABC",
       "step_record_abc_desc": "dokumen antecedents, perilaku, dan konsekuensi.",
       "step_report": "Laporan",
@@ -11258,7 +11350,12 @@
   "lms": {
     "dismiss_banner_aria": "Tutup banner LMS",
     "dismiss_button": "Tutup",
-    "audit_queue_help": "Klik sebuah dokumen ke ambil dan muat itu ke dalam aksesibilitas pipeline. beberapa LMS berkas dapat require Anda ke menjadi logged di ke LMS di ini browser."
+    "audit_queue_help": "Klik sebuah dokumen ke ambil dan muat itu ke dalam aksesibilitas pipeline. beberapa LMS berkas dapat require Anda ke menjadi logged di ke LMS di ini browser.",
+    "queued_one": "{count} dokumen dalam antrean dari LMS",
+    "queued_other": "{count} dokumen dalam antrean dari LMS",
+    "fetching": "Mengambil {name}...",
+    "loaded_ready": "{name} dimuat; siap untuk audit",
+    "fetch_failed": "Gagal mengambil {name}: {error}. Berkas mungkin memerlukan autentikasi LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo terakhir annotation ({count} tersedia) — Ctrl/Cmd+Z",
@@ -11278,7 +11375,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "visual dukungan dari Anda guru"
+    "teacher_modal_aria": "visual dukungan dari Anda guru",
+    "now": "SEKARANG",
+    "read_aloud": "Baca dengan Lantang"
   },
   "canvas_settings": {
     "title": "lanjutan pengaturan",
@@ -11295,7 +11394,12 @@
     "read_all_button": "Baca semua",
     "stop_button": "Berhenti",
     "focus_narration_label": "Papan ketik Fokus Narration",
-    "focus_narration_on_hint": "Tab ke hear controls"
+    "focus_narration_on_hint": "Tab ke hear controls",
+    "reading": "Membaca...",
+    "item_aria": "Klik untuk mendengar: {text}",
+    "footer_stats": "{count} item · Klik item mana pun untuk mendengarnya · Narasi Tab {state}",
+    "narration_on": "AKTIF",
+    "narration_off": "NONAKTIF"
   },
   "teacher": {
     "local_only": "Local hanya",
@@ -12471,5 +12575,27 @@
     "no_match": "Tidak ada perintah yang cocok. Obrolan bot (dan segera suara) memahami permintaan bebas.",
     "placeholder": "Ketik perintah — “perbesar teks”, “educator hub”, “bacakan halaman ini”…",
     "run": "jalankan"
+  },
+  "voice_engine": {
+    "preparing": "Menyiapkan mesin suara...",
+    "downloading_model": "Mengunduh model suara",
+    "loading_memory": "Memuat ke memori",
+    "loading_model_memory": "Memuat model suara ke memori"
+  },
+  "voice_control": {
+    "listening": "Mendengarkan; ucapkan “stop listening” untuk mengakhiri",
+    "stop_aria": "Hentikan kontrol suara"
+  },
+  "dynamic_assessment": {
+    "return_title": "Sumber daya ini dibuat oleh Penilaian Dinamis. Klik untuk membuka kembali modul Penilaian Dinamis.",
+    "return_aria": "Kembali ke Penilaian Dinamis",
+    "return_label": "Kembali ke Penilaian Dinamis",
+    "item_badge": "item {num}"
+  },
+  "story_gallery": {
+    "title": "Galeri Cerita",
+    "byline": "Oleh {author} · {words} kata · {used}/{total} kosakata",
+    "student": "Siswa",
+    "score": "Skor: {score}"
   }
 }

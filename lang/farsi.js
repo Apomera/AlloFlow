@@ -638,7 +638,8 @@
     "open_storyforge_aria": "باز کردن StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "سؤانهت لیست روی وثائق",
-    "open_stem_lab_explore_aria": "باز کردن استکشاف مختبر STEM"
+    "open_stem_lab_explore_aria": "باز کردن استکشاف مختبر STEM",
+    "stem_lab_explore": "کاوش"
   },
   "toolbar": {
     "show_bot": "نمایش دستیار اوش مصنوعی",
@@ -697,7 +698,8 @@
     "loading_resources": "بارگذاری منابع...",
     "preparing_workspace": "آماده‌سازی فضای کاری شما...",
     "almost_ready": "تقریباً آماده...",
-    "loading_screen_aria": "صفحه بارگذاری AlloFlow"
+    "loading_screen_aria": "صفحه بارگذاری AlloFlow",
+    "preparing_environment": "در حال آماده‌سازی محیط یادگیری تو..."
   },
   "entry": {
     "placeholder": "مثنهً شاهین قرمز",
@@ -940,7 +942,8 @@
     "cancel_transcription": "لغو تفریغ",
     "chunk_info": "صدا برای پردازش به قطعات ۵ دقیقه‌ای تقسیم می‌شود",
     "chunk_progress": "بخش {current} از {total}",
-    "audio_only_error": "در حال حاضر فقط فایل‌های صوتی (MP3، WAV و غیره) برای رونویسی تکه‌ای پشتیبانی می‌شوند."
+    "audio_only_error": "در حال حاضر فقط فایل‌های صوتی (MP3، WAV و غیره) برای رونویسی تکه‌ای پشتیبانی می‌شوند.",
+    "starting": "در حال شروع..."
   },
   "formatting": {
     "bold": "پررنگ (**متن**)",
@@ -1220,7 +1223,12 @@
     "read_all_button": "خواندن همه",
     "stop_button": "توقف",
     "focus_narration_label": "روایت تمرکز صفحه‌کلید",
-    "focus_narration_on_hint": "Tab بزنید تا کنترل‌ها را بشنوید"
+    "focus_narration_on_hint": "Tab بزنید تا کنترل‌ها را بشنوید",
+    "reading": "در حال خواندن...",
+    "item_aria": "برای شنیدن کلیک کن: {text}",
+    "footer_stats": "{count} مورد · برای شنیدن هر مورد روی آن کلیک کن · روایت Tab {state}",
+    "narration_on": "روشن",
+    "narration_off": "خاموش"
   },
   "roles": {
     "title": "به AlloFlow خوش آمدید",
@@ -2318,7 +2326,42 @@
     "whisper_load_failed": "مدل Whisper بارگذاری نشد",
     "backup_failed": "پشتیبان‌گیری ناموفق بود. دوباره امتحان کنید.",
     "invalid_backup_file": "فایل پشتیبان نامعتبر",
-    "could_not_read_file": "فایل قابل خواندن نیست"
+    "could_not_read_file": "فایل قابل خواندن نیست",
+    "focus_streak": "{flames} زنجیره تمرکز {minutes} دقیقه‌ای! همین‌طور ادامه بده!",
+    "streak_saved": "خوش آمدی! زنجیره {minutes} دقیقه‌ای تو ذخیره شد.",
+    "points_awarded": "امتیازها اعطا شد!",
+    "welcome_name": "خوش آمدی، {name}!",
+    "element_not_found": "عنصر یافت نشد: {id}",
+    "overlay_set": "هم‌پوشانی: {mode}",
+    "synced_resource": "همگام‌سازی شد: {title}",
+    "group_resource": "منبع گروه: {title}",
+    "preset_saved": "پیش‌تنظیم «{name}» ذخیره شد!",
+    "translated_resources": "{count} منبع با موفقیت ترجمه شد!",
+    "bingo_cards_count": "{count} کارت BINGO ساخته شد!",
+    "sound_enabled": "صدا روشن شد",
+    "sound_muted": "صدا بی‌صدا شد",
+    "democracy_mode_on": "حالت دموکراسی روشن شد: رأی‌گیری کلاس روشن",
+    "democracy_mode_off": "حالت دموکراسی خاموش شد: بازی انفرادی",
+    "resource_moved_up": "{title} به بالا منتقل شد",
+    "resource_moved_down": "{title} به پایین منتقل شد",
+    "panels_regenerated": "{count} پنل دوباره ساخته شد!",
+    "settings_undone": "لغو شد: {label}. تنظیمات بازیابی شد. (منابع تولیدشده تحت تأثیر قرار نمی‌گیرند.)",
+    "concept_added": "مفهوم اضافه شد: {text}",
+    "lesson_not_found": "درس در این واحد یافت نشد.",
+    "probe_complete": "بررسی کامل شد: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "تنظیمات به‌روزرسانی شد: {changes}",
+    "change_format": "قالب: {value}",
+    "change_tone": "لحن: {value}",
+    "change_length": "طول: ~{value} کلمه",
+    "change_language": "زبان: {value}",
+    "change_interest": "علاقه اضافه شد: {value}",
+    "backup_saved": "💾 یک نسخه پشتیبان از این جلسه در بارگیری‌های تو ذخیره شد (یک فایل پروژه). اکنون لازم نیست کاری با آن انجام دهی؛ اگر روزی نیاز به بازگشت داشتی، «بارگذاری پروژه» همه‌چیز را بازمی‌گرداند.",
+    "backup_saved_score": " (امتیاز {score})",
+    "project_saved_multi_one": "💾 پروژه ذخیره شد ({count} محدوده)؛ بعداً آن را بارگذاری کن تا ادامه دهی",
+    "project_saved_multi_other": "💾 پروژه ذخیره شد ({count} محدوده)؛ بعداً آن را بارگذاری کن تا ادامه دهی",
+    "project_saved": "💾 پروژه ذخیره شد؛ بعداً آن را بارگذاری کن تا ویرایش را ادامه دهی",
+    "search_result_desc": "نتیجه جستجوی Google: {title}",
+    "link_url_prompt": "نشانی URL پیوند را وارد کن:"
   },
   "process": {
     "source_missing": "لطفاً تقدیمی متن منبع یالًا.",
@@ -2375,7 +2418,10 @@
     "analyzing_topology": "عمل کمصمم برنامه درسی: در حال تحلیل طوبولوجیا محتوا...",
     "brainstorming": "در حال عپایه ذهنی للأفکار...",
     "retrying_citations": "دوباره تلاش للحصول روی استشهادات أفضل...",
-    "translating": "در حال ترجمه…"
+    "translating": "در حال ترجمه…",
+    "preparing_translation": "در حال آماده‌سازی ترجمه به {lang}...",
+    "translating_item": "در حال ترجمه {current}/{total}: {title}...",
+    "generating_panel": "در حال تولید پنل {current}/{total}..."
   },
   "progression": {
     "title": "پیشرفت برنامه درسی",
@@ -2425,7 +2471,34 @@
     "plan_hook": "مثیر",
     "plan_independent": "تمرین مستقل",
     "col_image": "تصویر",
-    "word_sounds_studio": "استودیو صداهای کلمات"
+    "word_sounds_studio": "استودیو صداهای کلمات",
+    "stop": "توقف",
+    "expand_header": "گسترش سرصفحه",
+    "collapse_header": "جمع کردن سرصفحه برای دادن فضای بیشتر به محتوا",
+    "collapse_header_short": "جمع کردن سرصفحه",
+    "step_x_of_y": "گام {current} از {total}",
+    "english_translation": "ترجمه انگلیسی",
+    "source_references": "ارجاعات متن منبع",
+    "activity_probe": "بررسی {activity}",
+    "word_sounds_count": "Word Sounds ({count} کلمه)",
+    "quick_practice_mode": "حالت تمرین سریع",
+    "new_option": "گزینه جدید",
+    "meta_lesson_extensions": "گسترش‌های درس",
+    "title_extension_ideas": "ایده‌های گسترش",
+    "meta_full_chat_log": "گزارش کامل گفتگو",
+    "title_udl_consultation_log": "گزارش مشاوره UDL",
+    "meta_actionable_steps": "گام‌های عملی (خلاصه هوش مصنوعی)",
+    "title_differentiation_strategy": "راهبرد تمایز",
+    "meta_udl_guide_advice": "توصیه راهنمای UDL",
+    "title_stem_assessment": "ارزیابی STEM",
+    "title_explore_challenge": "چالش کاوش",
+    "title_fluency_maze": "🏰 هزارتوی روانی",
+    "title_storyforge_config": "📖 تکلیف StoryForge",
+    "title_storyforge_submission": "📖 ارسال داستان",
+    "title_poettree_config": "🌳 تکلیف PoetTree",
+    "title_poettree_submission": "🌳 ارسال شعر",
+    "title_litlab_config": "🎭 تکلیف LitLab",
+    "title_litlab_submission": "🎭 ارسال اجرا"
   },
   "fullpack": {
     "button_label": "تولید بسته منابع کامل",
@@ -3526,7 +3599,12 @@
       "error_check": "بررسی هم‌راستایی ناموفق بود.",
       "regenerated_success": "متن با بهبودها مجدداً تولید شد!",
       "regen_failed": "ناموفقت دوباره ایجاد."
-    }
+    },
+    "skill_check": "بررسی مهارت",
+    "desc_skill_check": "تسلط خود را در برابر استانداردها بررسی کن.",
+    "desc_parent": "ببینید این چگونه با اهداف مدرسه همسو می‌شود",
+    "desc_6dim": "برنامه درسی را در ۶ بُعد ممیزی می‌کند",
+    "desc_5dim": "برنامه درسی را در ۵ بُعد ممیزی می‌کند (برای ممیزی کامل استانداردها را اضافه کنید)"
   },
   "standards": {
     "target_standard": "استاندارد هدف",
@@ -4976,7 +5054,8 @@
     "card_visuals_label": "مرئیات کارت‌ها",
     "card_visuals_auto": "خودکار (فقط روی آیتم‌های کوتاه)",
     "card_visuals_always": "ایجاد تصاویر همیشه",
-    "card_visuals_never": "هرگز (کارت‌های فقط متنی)"
+    "card_visuals_never": "هرگز (کارت‌های فقط متنی)",
+    "explanation_unavailable": "اکنون نمی‌توان توضیحی تولید کرد. لطفاً لحظه‌ای دیگر دوباره تلاش کن."
   },
   "concept_map": {
     "toolbar": {
@@ -5811,7 +5890,25 @@
       "resolved_tip": "مسائل از حسابرسی اصلی دیگر در حسابرسی تأیید یافت نمی‌شوند",
       "persisted_tip": "مسائل از حسابرسی اصلی پس از اصلاح هنوز موجود هستند",
       "introduced_tip": "مسائل جدیدی که قبل از اصلاح وجود نداشتند"
-    }
+    },
+    "reattach_mismatch": "PDF دوباره پیوست‌شده با موردی که ممیزی شده متفاوت است{detail}. به‌هرحال ادامه می‌یابد؛ نتایج ممکن است با ممیزی اصلی ناسازگار باشند.",
+    "reattach_name_detail": " (نام: «{new}» در برابر «{old}»)",
+    "reattach_size_detail": " (اندازه: {new} در برابر {old} بایت)",
+    "audit_failed_kept": "{label}: ممیزی ناموفق بود؛ نسخه قبلی حفظ شد.",
+    "score_dropped_kept": "{label}: امتیاز کاهش می‌یافت ({prev} → {next}{axe}). نسخه قبلی حفظ شد.",
+    "axe_only_comparison": "، مقایسه فقط axe",
+    "axe_only_committed": "{label}: تأیید هوش مصنوعی در دسترس نیست؛ فقط با امتیاز قطعی axe-core تأیید شد.",
+    "reinserted_ai": "{count} دوباره درج‌شده (هوش مصنوعی)",
+    "reinserted_sentence": "{count} دوباره درج‌شده (جمله)",
+    "reinserted_fuzzy": "{count} دوباره درج‌شده (تقریبی)",
+    "in_recovery_appendix": "{count} در پیوست بازیابی",
+    "duplicates_removed_one": "{count} مورد تکراری حذف شد",
+    "duplicates_removed_other": "{count} مورد تکراری حذف شد",
+    "auto_continue_round": "دور ادامه خودکار {round}/{max}: {detail}، امتیاز {score}/100 (هدف {target})...",
+    "violation_one": "{count} تخلف",
+    "violation_other": "{count} تخلف",
+    "ai_issue_one": "{count} مسئله علامت‌گذاری‌شده توسط هوش مصنوعی",
+    "ai_issue_other": "{count} مسئله علامت‌گذاری‌شده توسط هوش مصنوعی"
   },
   "persona": {
     "title": "حالت Persona",
@@ -9699,7 +9796,12 @@
   "lms": {
     "dismiss_banner_aria": "بستن بنر LMS",
     "dismiss_button": "بستن",
-    "audit_queue_help": "روی یک سند کلیک کنید تا واکشی و در خط لوله دسترس‌پذیری بارگذاری شود. ممکن است برخی فایل‌های LMS نیاز داشته باشند در این مرورگر وارد LMS باشید."
+    "audit_queue_help": "روی یک سند کلیک کنید تا واکشی و در خط لوله دسترس‌پذیری بارگذاری شود. ممکن است برخی فایل‌های LMS نیاز داشته باشند در این مرورگر وارد LMS باشید.",
+    "queued_one": "{count} سند از LMS در صف",
+    "queued_other": "{count} سند از LMS در صف",
+    "fetching": "در حال دریافت {name}...",
+    "loaded_ready": "{name} بارگذاری شد؛ آماده برای ممیزی",
+    "fetch_failed": "دریافت {name} ناموفق بود: {error}. ممکن است فایل به احراز هویت LMS نیاز داشته باشد."
   },
   "annotation": {
     "undo_tooltip": "لغو آخرین حاشیه‌نویسی ({count} در دسترس) — Ctrl/Cmd+Z",
@@ -9711,7 +9813,9 @@
     "list_button": "📋 لیست"
   },
   "visual_support": {
-    "teacher_modal_aria": "دعم بصری از بالمک"
+    "teacher_modal_aria": "دعم بصری از بالمک",
+    "now": "اکنون",
+    "read_aloud": "خواندن با صدای بلند"
   },
   "canvas_settings": {
     "title": "تنظیمات پیشرفته",
@@ -10618,7 +10722,7 @@
       "day_streak": "روزهای پیاپی",
       "define_the_behaviors_settings_or_students_for_stag": "حدّد رفتاریات یا تنظیمات یا فیلد للتدخّل مُدرَّج.",
       "describe_your_research_question_and_let_ai_recomme": "پایه سوال بحثک ودع اوش مصنوعی یوصی بأفضل تصمیم.",
-      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training با تتبّع إتقان وپیشرفت خودکار",
+      "discrete_trial_training_with_mastery_tracking_and": "Discrete Trial Training با پیگیری تسلط و پیشرفت خودکار",
       "document_whether_interventions_are_implemented_as": "وثّق ما اگر بود تدخّخیرت تُنفَّذ کما صُمِّمت",
       "done": "انجام شد",
       "drop_a_snapshot_file_here": "یک فایل عکس فوری را اینجا رها کنید",
@@ -12358,5 +12462,27 @@
     "no_match": "فرمان منطبقی نیست. گفتگوی بات (و به‌زودی صدا) درخواست‌های آزاد را می‌فهمد.",
     "placeholder": "یک فرمان تایپ کنید — «متن بزرگ‌تر»، «مرکز مربیان»، «این صفحه را بخوان»…",
     "run": "اجرا"
+  },
+  "voice_engine": {
+    "preparing": "در حال آماده‌سازی موتور صدا...",
+    "downloading_model": "در حال بارگیری مدل صدا",
+    "loading_memory": "در حال بارگذاری در حافظه",
+    "loading_model_memory": "در حال بارگذاری مدل صدا در حافظه"
+  },
+  "voice_control": {
+    "listening": "در حال شنیدن؛ برای پایان «stop listening» بگو",
+    "stop_aria": "توقف کنترل صوتی"
+  },
+  "dynamic_assessment": {
+    "return_title": "این منبع توسط ارزیابی پویا تولید شده است. برای بازکردن دوباره ماژول ارزیابی پویا کلیک کن.",
+    "return_aria": "بازگشت به ارزیابی پویا",
+    "return_label": "بازگشت به ارزیابی پویا",
+    "item_badge": "مورد {num}"
+  },
+  "story_gallery": {
+    "title": "گالری داستان",
+    "byline": "نوشته {author} · {words} کلمه · {used}/{total} واژگان",
+    "student": "دانش‌آموز",
+    "score": "امتیاز: {score}"
   }
 }

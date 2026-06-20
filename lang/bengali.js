@@ -1703,7 +1703,42 @@
     "whisper_load_failed": "Whisper লোড ব্যর্থ। অন্যান্য ইঞ্জিনে ফিরে যাওয়া হচ্ছে।",
     "backup_failed": "ব্যাকআপ ব্যর্থ। আবার চেষ্টা করুন।",
     "invalid_backup_file": "এটি একটি বৈধ AlloHaven ব্যাকআপ ফাইল নয়।",
-    "could_not_read_file": "সেই ফাইলটি পড়া যায়নি। এটি কি একটি JSON ব্যাকআপ?"
+    "could_not_read_file": "সেই ফাইলটি পড়া যায়নি। এটি কি একটি JSON ব্যাকআপ?",
+    "focus_streak": "{flames} {minutes} মিনিটের ফোকাস স্ট্রিক! এভাবেই চালিয়ে যাও!",
+    "streak_saved": "ফিরে আসায় স্বাগতম! তোমার {minutes} মিনিটের স্ট্রিক সংরক্ষণ করা হয়েছে।",
+    "points_awarded": "পয়েন্ট দেওয়া হয়েছে!",
+    "welcome_name": "স্বাগতম, {name}!",
+    "element_not_found": "উপাদান পাওয়া যায়নি: {id}",
+    "overlay_set": "ওভারলে: {mode}",
+    "synced_resource": "সিঙ্ক করা হয়েছে: {title}",
+    "group_resource": "গ্রুপ রিসোর্স: {title}",
+    "preset_saved": "প্রিসেট \"{name}\" সংরক্ষিত হয়েছে!",
+    "translated_resources": "{count}টি রিসোর্স সফলভাবে অনুবাদ করা হয়েছে!",
+    "bingo_cards_count": "{count}টি BINGO কার্ড তৈরি করা হয়েছে!",
+    "sound_enabled": "শব্দ চালু",
+    "sound_muted": "শব্দ নিঃশব্দ",
+    "democracy_mode_on": "গণতন্ত্র মোড চালু: শ্রেণির ভোট চালু",
+    "democracy_mode_off": "গণতন্ত্র মোড বন্ধ: একক খেলা",
+    "resource_moved_up": "{title} উপরে সরানো হয়েছে",
+    "resource_moved_down": "{title} নিচে সরানো হয়েছে",
+    "panels_regenerated": "{count}টি প্যানেল পুনরায় তৈরি করা হয়েছে!",
+    "settings_undone": "পূর্বাবস্থায় ফেরানো হয়েছে: {label}। সেটিংস পুনরুদ্ধার করা হয়েছে। (তৈরি করা রিসোর্স প্রভাবিত হয় না।)",
+    "concept_added": "ধারণা যোগ করা হয়েছে: {text}",
+    "lesson_not_found": "এই ইউনিটে পাঠ পাওয়া যায়নি।",
+    "probe_complete": "পরীক্ষা সম্পূর্ণ: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "সেটিংস আপডেট করা হয়েছে: {changes}",
+    "change_format": "ফরম্যাট: {value}",
+    "change_tone": "সুর: {value}",
+    "change_length": "দৈর্ঘ্য: ~{value} শব্দ",
+    "change_language": "ভাষা: {value}",
+    "change_interest": "আগ্রহ যোগ করা হয়েছে: {value}",
+    "backup_saved": "💾 এই সেশনের একটি ব্যাকআপ তোমার ডাউনলোডে সংরক্ষণ করা হয়েছে (একটি প্রজেক্ট ফাইল)। এখন এটি নিয়ে কিছু করার দরকার নেই; যদি কখনও ফিরে আসতে হয়, \"প্রজেক্ট লোড করুন\" সব ফিরিয়ে আনে।",
+    "backup_saved_score": " (স্কোর {score})",
+    "project_saved_multi_one": "💾 প্রজেক্ট সংরক্ষিত ({count}টি পরিসর); চালিয়ে যেতে এটি পরে লোড করো",
+    "project_saved_multi_other": "💾 প্রজেক্ট সংরক্ষিত ({count}টি পরিসর); চালিয়ে যেতে এটি পরে লোড করো",
+    "project_saved": "💾 প্রজেক্ট সংরক্ষিত; সম্পাদনা চালিয়ে যেতে এটি পরে লোড করো",
+    "search_result_desc": "Google অনুসন্ধান ফলাফল: {title}",
+    "link_url_prompt": "লিঙ্কের URL লিখুন:"
   },
   "large_file": {
     "modal_title": "আমদানি বড় অডিও ফাইল",
@@ -1719,7 +1754,8 @@
     "cancel_transcription": "বাতিল Transcription",
     "chunk_info": "অডিও হয় split এ 5-মিনিট chunks জন্য processing",
     "chunk_progress": "Chunk {current} এর {total}",
-    "audio_only_error": "Currently শুধুমাত্র অডিও ফাইল (MP3, WAV, ইত্যাদি) হয় supported জন্য chunked transcription."
+    "audio_only_error": "Currently শুধুমাত্র অডিও ফাইল (MP3, WAV, ইত্যাদি) হয় supported জন্য chunked transcription.",
+    "starting": "শুরু হচ্ছে..."
   },
   "formatting": {
     "bold": "মোটা (**টেক্সট**)",
@@ -1823,7 +1859,8 @@
     "open_storyforge_aria": "খুলুন StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based প্রশ্ন",
-    "open_stem_lab_explore_aria": "খুলুন STEM Lab Explore"
+    "open_stem_lab_explore_aria": "খুলুন STEM Lab Explore",
+    "stem_lab_explore": "অন্বেষণ"
   },
   "history": {
     "load_project": "লোড করুন Project",
@@ -4499,7 +4536,25 @@
       "highlight_color": "উচ্চহালকা রঙ",
       "insert_table_aria": "টেবিল সন্নিবেশ করুন",
       "insert_table_title": "Insert অ্যাক্সেসযোগ্য table"
-    }
+    },
+    "reattach_mismatch": "পুনঃসংযুক্ত PDF নিরীক্ষিতটির থেকে আলাদা{detail}। তবুও চালিয়ে যাওয়া হবে; ফলাফল মূল নিরীক্ষার সাথে অসংগত হতে পারে।",
+    "reattach_name_detail": " (নাম: \"{new}\" বনাম \"{old}\")",
+    "reattach_size_detail": " (আকার: {new} বনাম {old} বাইট)",
+    "audit_failed_kept": "{label}: নিরীক্ষা ব্যর্থ; পূর্ববর্তী সংস্করণ রাখা হয়েছে।",
+    "score_dropped_kept": "{label}: স্কোর কমে যেত ({prev} → {next}{axe})। পূর্ববর্তী সংস্করণ রাখা হয়েছে।",
+    "axe_only_comparison": ", শুধুমাত্র axe তুলনা",
+    "axe_only_committed": "{label}: AI যাচাই উপলব্ধ নয়; শুধুমাত্র নির্ধারক axe-core স্কোর দিয়ে নিশ্চিত করা হয়েছে।",
+    "reinserted_ai": "{count}টি পুনঃসন্নিবেশিত (AI)",
+    "reinserted_sentence": "{count}টি পুনঃসন্নিবেশিত (বাক্য)",
+    "reinserted_fuzzy": "{count}টি পুনঃসন্নিবেশিত (আনুমানিক)",
+    "in_recovery_appendix": "{count}টি পুনরুদ্ধার পরিশিষ্টে",
+    "duplicates_removed_one": "{count}টি সদৃশ সরানো হয়েছে",
+    "duplicates_removed_other": "{count}টি সদৃশ সরানো হয়েছে",
+    "auto_continue_round": "স্বয়ংক্রিয়-চালিয়ে যাওয়া রাউন্ড {round}/{max}: {detail}, স্কোর {score}/100 (লক্ষ্য {target})...",
+    "violation_one": "{count}টি লঙ্ঘন",
+    "violation_other": "{count}টি লঙ্ঘন",
+    "ai_issue_one": "{count}টি AI-চিহ্নিত সমস্যা",
+    "ai_issue_other": "{count}টি AI-চিহ্নিত সমস্যা"
   },
   "concept_sort": {
     "title": "ধারণা সাজান",
@@ -4573,7 +4628,8 @@
     "card_visuals_label": "কার্ড ভিজ্যুয়াল",
     "card_visuals_auto": "স্বয়ংক্রিয় (শুধুমাত্র on short আইটেম)",
     "card_visuals_always": "Always তৈরি করুন চিত্র",
-    "card_visuals_never": "Never (পাঠ্য-শুধুমাত্র cards)"
+    "card_visuals_never": "Never (পাঠ্য-শুধুমাত্র cards)",
+    "explanation_unavailable": "এই মুহূর্তে ব্যাখ্যা তৈরি করা যায়নি। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করো।"
   },
   "dbq": {
     "title": "Document বিশ্লেষণ (DBQ)",
@@ -4979,7 +5035,12 @@
       "error_check": "ব্যর্থ এর চেক সারিবদ্ধতা.",
       "regenerated_success": "পাঠ্য পুনরায় তৈরি সাথে improvements!",
       "regen_failed": "Regeneration ব্যর্থ."
-    }
+    },
+    "skill_check": "দক্ষতা যাচাই",
+    "desc_skill_check": "মান অনুযায়ী তোমার দক্ষতা যাচাই করো।",
+    "desc_parent": "এটি কীভাবে স্কুলের লক্ষ্যের সাথে মেলে দেখুন",
+    "desc_6dim": "৬টি মাত্রায় পাঠ্যক্রম নিরীক্ষা করে",
+    "desc_5dim": "৫টি মাত্রায় পাঠ্যক্রম নিরীক্ষা করে (পূর্ণ নিরীক্ষার জন্য মান যোগ করুন)"
   },
   "standards": {
     "target_standard": "লক্ষ্য মান",
@@ -5191,7 +5252,34 @@
     "plan_hook": "হুক",
     "plan_independent": "স্বাধীন অনুশীলন",
     "col_image": "চিত্র",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "থামান",
+    "expand_header": "হেডার প্রসারিত করুন",
+    "collapse_header": "বিষয়বস্তুকে আরও জায়গা দিতে হেডার সংকুচিত করুন",
+    "collapse_header_short": "হেডার সংকুচিত করুন",
+    "step_x_of_y": "ধাপ {current} / {total}",
+    "english_translation": "ইংরেজি অনুবাদ",
+    "source_references": "উৎস পাঠ্যের রেফারেন্স",
+    "activity_probe": "{activity} পরীক্ষা",
+    "word_sounds_count": "Word Sounds ({count} শব্দ)",
+    "quick_practice_mode": "দ্রুত অনুশীলন মোড",
+    "new_option": "নতুন বিকল্প",
+    "meta_lesson_extensions": "পাঠ সম্প্রসারণ",
+    "title_extension_ideas": "সম্প্রসারণ ধারণা",
+    "meta_full_chat_log": "সম্পূর্ণ চ্যাট লগ",
+    "title_udl_consultation_log": "UDL পরামর্শ লগ",
+    "meta_actionable_steps": "কার্যকর পদক্ষেপ (AI সারাংশ)",
+    "title_differentiation_strategy": "পৃথকীকরণ কৌশল",
+    "meta_udl_guide_advice": "UDL গাইড পরামর্শ",
+    "title_stem_assessment": "STEM মূল্যায়ন",
+    "title_explore_challenge": "অন্বেষণ চ্যালেঞ্জ",
+    "title_fluency_maze": "🏰 সাবলীলতা গোলকধাঁধা",
+    "title_storyforge_config": "📖 StoryForge অ্যাসাইনমেন্ট",
+    "title_storyforge_submission": "📖 গল্প জমা",
+    "title_poettree_config": "🌳 PoetTree অ্যাসাইনমেন্ট",
+    "title_poettree_submission": "🌳 কবিতা জমা",
+    "title_litlab_config": "🎭 LitLab অ্যাসাইনমেন্ট",
+    "title_litlab_submission": "🎭 পরিবেশনা জমা"
   },
   "persona": {
     "title": "Interview মোড",
@@ -8319,7 +8407,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing বিষয়বস্তু topology...",
     "brainstorming": "ধারণা চিন্তা করা হচ্ছে...",
     "retrying_citations": "Retry জন্য better citations...",
-    "translating": "অনুবাদ করা হচ্ছে…"
+    "translating": "অনুবাদ করা হচ্ছে…",
+    "preparing_translation": "{lang}-এ অনুবাদ প্রস্তুত করা হচ্ছে...",
+    "translating_item": "{current}/{total} অনুবাদ করা হচ্ছে: {title}...",
+    "generating_panel": "প্যানেল {current}/{total} তৈরি করা হচ্ছে..."
   },
   "process": {
     "source_missing": "দয়া করে provide উৎস পাঠ্য প্রথম.",
@@ -9615,7 +9706,8 @@
     "loading_resources": "সম্পদ লোড করা হচ্ছে...",
     "preparing_workspace": "আপনার কর্মক্ষেত্র প্রস্তুত করা হচ্ছে...",
     "almost_ready": "প্রায় প্রস্তুত...",
-    "loading_screen_aria": "AlloFlow লোডিং স্ক্রিন"
+    "loading_screen_aria": "AlloFlow লোডিং স্ক্রিন",
+    "preparing_environment": "তোমার শেখার পরিবেশ প্রস্তুত করা হচ্ছে..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9646,7 +9738,7 @@
       "overview_desc": "আচরণগত প্রবণতা, চার্ট, এবং সারসংক্ষেপ পরিসংখ্যান",
       "freq_title": "Frequency গণনা",
       "freq_desc": "দ্রুত গণনা এবং প্রতি-মিনিটে-হার ট্র্যাকিং",
-      "interval_title": "interval Recording",
+      "interval_title": "ইন্টারভাল রেকর্ডিং",
       "interval_desc": "আংশিক, সম্পূর্ণ, বা ক্ষণিক সময় স্যাম্পলিং গ্রিড",
       "token_title": "টোকেন বোর্ড",
       "token_desc": "কাস্টমাইজযোগ্য টোকেন সহ ভিজ্যুয়াল রিইনফোর্সমেন্ট বোর্ড",
@@ -9657,7 +9749,7 @@
       "record_title": "Record পর্যালোচনা",
       "record_desc": "AI-চালিত সংক্ষেপণের জন্য IEP/মূল্যায়ন পেস্ট করুন",
       "hypothesis_title": "অনুমান চিত্র",
-      "hypothesis_desc": "দৃশ্যমান এক→B→C→ফাংশন flow chart সাথে এআই প্রজন্ম",
+      "hypothesis_desc": "AI জেনারেশন সহ দৃশ্যমান A→B→C→ফাংশন ফ্লো চার্ট",
       "goals_title": "SMART লক্ষ্য",
       "goals_desc": "AI-generated করুন SMART আচরণ লক্ষ্য সাথে অগ্রগতি ট্র্যাকিং",
       "contract_title": "আচরণ Contract",
@@ -9724,7 +9816,7 @@
       "deescalate_title": "ডি-এসকেলেশন টুলকিট",
       "drstrategy_desc": "সঠিক ডিফারেনশিয়াল রিইনফোর্সমেন্ট কৌশল বেছে নিন (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "DR Strategy নির্বাচনবা",
-      "dtt_desc": "Discrete Trial Training — দক্ষতার মানদণ্ড এবং অটো-অ্যাডভান্স সহ পরীক্ষা-বাই-পরীক্ষা রেকর্ডিং",
+      "dtt_desc": "Discrete Trial Training — দক্ষতার মানদণ্ড ও অটো-অ্যাডভান্স সহ প্রতিটি ট্রায়াল-ভিত্তিক রেকর্ডিং",
       "dtt_title": "DTT ডেটা Sheet",
       "effectsize_desc": "ভিজ্যুয়াল ফেজ তুলনা সহ ইন্টারভেনশনের কার্যকারিতা পরিমাপ করতে Tau-U, NAP, এবং PND গণনা করুন",
       "effectsize_title": "প্রভাব আকার ক্যালকুলেটর",
@@ -9792,7 +9884,7 @@
       "sandbox_desc": "PD, পূর্ব-সেবা প্রশিক্ষণ, বা প্রকৃত ছাত্র ছাড়াই ABA শেখার জন্য সিমুলেটেড ছাত্র ডেটা লোড করুন",
       "sandbox_title": "অনুশীলন স্যান্ডবক্স",
       "save_workspace": "সংরক্ষণ Workspace",
-      "scatterplot_desc": "সময়-এর-দিন × আচরণ grid এর চিহ্নিত temporal প্যাটার্ন — স্বয়ংক্রিয়-populates থেকে ABC ডেটা",
+      "scatterplot_desc": "সময়ভিত্তিক প্যাটার্ন শনাক্ত করতে দিনের-সময় × আচরণ গ্রিড — ABC ডেটা থেকে স্বয়ংক্রিয়ভাবে পূরণ হয়",
       "scatterplot_title": "Scatterplot বিশ্লেষণ",
       "scdmanager_desc": "AB, ABAB, একাধিক বেসলাইন, পর্যায়ক্রমিক চিকিৎসা, পরিবর্তনশীল মানদণ্ড",
       "scdmanager_title": "SCD ম্যানেজার",
@@ -9802,7 +9894,7 @@
       "sessionnotes_title": "সেশন নোট",
       "sessiontracker_desc": "হার গণনা সহ পদ্ধতিগত সেশন-ভিত্তিক আচরণগত পরিমাপ",
       "sessiontracker_title": "সেশন ডেটা Tracker",
-      "snapshot_desc": "রপ্তানি & আমদানি JSON snapshots জন্য অভিভাবক–শিক্ষক ডেটা exchange",
+      "snapshot_desc": "অভিভাবক–শিক্ষক ডেটা আদান-প্রদানের জন্য JSON স্ন্যাপশট রপ্তানি ও আমদানি করুন",
       "snapshot_title": "ছাত্র স্ন্যাপশট বিনিময়",
       "socialvalidity_desc": "চিকিৎসা গ্রহণযোগ্যতা পরিমাপের জন্য TARF এবং IRP-15 স্কেল — প্রকাশনার জন্য প্রয়োজনীয়",
       "socialvalidity_title": "সামাজিক Validity",
@@ -9815,7 +9907,7 @@
       "trends_desc": "তীব্রতার প্রবণতা, পরিবেশের ফ্রিকোয়েন্সি, এবং দিন/সময় হিটম্যাপ দেখানো SVG চার্ট",
       "trends_title": "প্রবণতা ড্যাশবোর্ড",
       "bipgen_title": "BIP জেনারেটর",
-      "bipgen_desc": "Draft এক আচরণ intervention পরিকল্পনা থেকে আপনার ডেটা.",
+      "bipgen_desc": "আপনার ডেটা থেকে একটি Behavior Intervention Plan খসড়া তৈরি করুন।",
       "cantdowontdo_title": "পারে না / করবে না",
       "cantdowontdo_desc": "সঠিক সহায়তা বাছাই করতে দক্ষতা বনাম কর্মক্ষমতা ঘাটতি বাছাই করুন।",
       "competingpathways_title": "প্রতিযোগী পথ",
@@ -9828,7 +9920,7 @@
       "practicum_title": "ভার্চুয়াল প্র্যাকটিকাম",
       "practicum_desc": "শুরু থেকে শেষ পর্যন্ত একটি নির্দেশিত অনুশীলন কেস চালান।",
       "replacementbehavior_title": "Replacement আচরণ",
-      "replacementbehavior_desc": "identify এক একই-ফাংশন আচরণ সেই meets শিক্ষার্থী’s প্রয়োজন.",
+      "replacementbehavior_desc": "শিক্ষার্থীর প্রয়োজন পূরণ করে এমন একটি একই-ফাংশনের আচরণ শনাক্ত করুন।",
       "wizard_title": "আচরণ Lens Wizard",
       "riskscreen_desc_v2": "নিরাপত্তা প্রতিফলনের চেকলিস্ট + AI প্যাটার্ন সনাক্তকরণ (এটি একটি আনুষ্ঠানিক হুমকি মূল্যায়ন সরঞ্জাম নয়)",
       "opdef_desc_v2": "অস্পষ্ট বর্ণনাগুলিকে ABA-এর মানক মাত্রা + ডেড ম্যান টেস্ট ব্যবহার করে পর্যবেক্ষণযোগ্য, পরিমাপযোগ্য সংজ্ঞায় রূপান্তর করুন (AI-সহায়তা সহ, BACB-প্রত্যয়িত পণ্য নয়)"
@@ -10002,7 +10094,7 @@
     "reinforcer_sensory": "🌀 সংবেদী",
     "quiz_fba_purpose": "একটি FBA-এর প্রাথমিক উদ্দেশ্য কী?",
     "quiz_replacement": "একটি প্রতিস্থাপন আচরণ কী?",
-    "search_placeholder": "অনুসন্ধান antecedent, আচরণ, consequence, নোট, সেটিং...",
+    "search_placeholder": "antecedent, আচরণ, consequence, নোট, সেটিং অনুসন্ধান করুন...",
     "quick_fill_placeholder": "যেমন \"কাজ দেখাতে বলা হলে গণিতের সময় ছাত্র কাগজ ছুঁড়েছিল, শিক্ষক শান্তভাবে পুনঃনির্দেশ করেছিলেন\"",
     "nl_edit_placeholder": "যেমন \"পরিণতিকে শিক্ষক পুনঃনির্দেশিত-এ পরিবর্তন করুন\"",
     "now": "এখন",
@@ -10102,7 +10194,7 @@
     "cycle_de_escalation": "উত্তেজনা প্রশমন",
     "cycle_recovery": "পুনরুদ্ধার",
     "quiz_opt_punish": "কে punish শিক্ষার্থী",
-    "quiz_opt_identify_why": "কে চিহ্নিত WHY এক আচরণ occurs",
+    "quiz_opt_identify_why": "একটি আচরণ কেন ঘটে তা শনাক্ত করতে",
     "quiz_opt_any_stops": "Any আচরণ সেই থামান problem",
     "analysis": {
       "hypothesized_function": "Hypothesized ফাংশন",
@@ -10175,7 +10267,7 @@
       "topic_purpose_of_contact": "বিষয় / যোগাযোগের উদ্দেশ্য",
       "type_full_name": "ধরন পূর্ণ নাম",
       "type_language_eg_spanish_arabic_somali": "ভাষা টাইপ করুন (যেমন, স্প্যানিশ, আরবি, সোমালি)",
-      "type_your_observation_note_or_click_the_mic_to_dic": "ধরন আপনার পর্যবেক্ষণ, নোট, বা ক্লিক mic এর dictate...",
+      "type_your_observation_note_or_click_the_mic_to_dic": "আপনার পর্যবেক্ষণ, নোট টাইপ করুন, অথবা ডিকটেট করতে মাইকে ক্লিক করুন...",
       "type_your_response_here_be_thorough_and_use_profes": "এখানে আপনার প্রতিক্রিয়া টাইপ করুন। সম্পূর্ণ হন এবং পেশাদার ভাষা ব্যবহার করুন...",
       "what_behavior_will_change": "কোন আচরণ পরিবর্তিত হবে?",
       "what_could_you_or_a_grownup_do_differently": "আপনি বা একজন প্রাপ্তবয়স্ক ভিন্নভাবে কী করতে পারেন?",
@@ -10299,7 +10391,7 @@
       "no_valid_data_found_in_csv": "না valid ডেটা পাওয়া গেছে মধ্যে CSV",
       "not_a_valid_alloflow_snapshot_file": "একটি বৈধ AlloFlow স্ন্যাপশট ফাইল নয়",
       "not_a_valid_consent_template_file": "একটি বৈধ সম্মতি টেমপ্লেট ফাইল নয়",
-      "not_quite_try_again": "not quite — আবার চেষ্টা করুন!",
+      "not_quite_try_again": "একদম ঠিক নয় — আবার চেষ্টা করুন!",
       "note_added": "নোট যোগ করুন",
       "note_added_2": "নোট যোগ করুন ✏️",
       "note_deleted": "নোট মুছুন",
@@ -10515,7 +10607,7 @@
       "no_behavioral_data_recorded": "না আচরণ ডেটা recorded",
       "no_contacts_logged_yet_consistent_communication_bu": "এখনো কোনো যোগাযোগ লগ করা হয়নি। ধারাবাহিক যোগাযোগ বিশ্বাস গড়ে তোলে!",
       "no_data_yet": "না ডেটা yet",
-      "no_entries_yet_tap_log_a_behavior_to_get_started": "না entries yet. ট্যাপ \"Log এক আচরণ\" এর পান শুরু!",
+      "no_entries_yet_tap_log_a_behavior_to_get_started": "এখনও কোনো এন্ট্রি নেই। শুরু করতে \"Log a Behavior\"-এ ট্যাপ করুন!",
       "no_occurrence": "না occurrence",
       "no_reflections_yet_tap_the_button_above_to_check_i": "এখনো কোনো প্রতিফলন নেই। নিজের সাথে চেক-ইন করতে উপরের বোতাম ট্যাপ করুন!",
       "no_session_data_recorded_yet": "না সেশন ডেটা recorded yet.",
@@ -10545,7 +10637,7 @@
       "publicationstandard_singlecase_design_graphs": "প্রকাশনা-মানের একক-কেস ডিজাইন গ্রাফ",
       "quick_switch": "দ্রুত পরিবর্তন",
       "range": "পরিসর",
-      "read_through_the_module_content_above_then_click_c": "পড়ুন মাধ্যমে module বিষয়বস্তু above, তারপর ক্লিক সম্পূর্ণ করুন below.",
+      "read_through_the_module_content_above_then_click_c": "উপরের মডিউল বিষয়বস্তুটি পড়ুন, তারপর নিচে সম্পূর্ণ-এ ক্লিক করুন।",
       "realtime_calming_tools_for_inthemoment_support": "মুহূর্তের সহায়তার জন্য লাইভ শান্তকারী সরঞ্জাম",
       "recent_moods": "সাম্প্রতিক মেজাজ:",
       "record_sessions_with_the_session_data_tracker_or_s": "সেশন ডেটা ট্র্যাকার দিয়ে সেশন রেকর্ড করুন, অথবা ম্যানুয়াল এন্ট্রি মোডে স্যুইচ করুন।",
@@ -10640,7 +10732,7 @@
     "allobot_chat": {
       "card_desc": "আচরণগত কৌশল, FBA, BIP, এবং হস্তক্ষেপ পরিকল্পনা সম্পর্কে AI-এর সাথে চ্যাট করুন",
       "empty_desc": "আমি FBA কৌশল, হস্তক্ষেপের ধারণা, ডেটা ব্যাখ্যা, উত্তেজনা প্রশমন কৌশল এবং আরও অনেক কিছুতে সাহায্য করতে পারি।",
-      "empty_title": "Ask me anything সম্পর্কে আচরণ বিশ্লেষণ!",
+      "empty_title": "আচরণ বিশ্লেষণ সম্পর্কে আমাকে যেকোনো কিছু জিজ্ঞাসা করুন!",
       "placeholder": "আচরণ, কৌশল, FBA, BIP সম্পর্কে জিজ্ঞাসা করুন...",
       "subtitle": "AI-চালিত আচরণিক বিশ্লেষণ সহকারী",
       "title": "AlloBot-কে জিজ্ঞাসা"
@@ -10666,7 +10758,7 @@
       "save": "সংরক্ষণ সেশন",
       "saved": "interval সেশন সংরক্ষণ ✅",
       "start": "শুরু Recording",
-      "title": "interval Recording"
+      "title": "ইন্টারভাল রেকর্ডিং"
     },
     "intervention": {
       "title": "AI হস্তক্ষেপ পরিকল্পনা জেনারেটর"
@@ -11262,7 +11354,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS ব্যানার বরখাস্ত করুন",
     "dismiss_button": "বাতিল",
-    "audit_queue_help": "ক্লিক এক document এর fetch এবং লোড করুন it এ অভিগম্যতা pipeline. কিছু LMS ফাইল পারে require আপনি এর be logged মধ্যে এর LMS মধ্যে এই browser."
+    "audit_queue_help": "ক্লিক এক document এর fetch এবং লোড করুন it এ অভিগম্যতা pipeline. কিছু LMS ফাইল পারে require আপনি এর be logged মধ্যে এর LMS মধ্যে এই browser.",
+    "queued_one": "LMS থেকে {count}টি নথি সারিতে",
+    "queued_other": "LMS থেকে {count}টি নথি সারিতে",
+    "fetching": "{name} আনা হচ্ছে...",
+    "loaded_ready": "{name} লোড হয়েছে; নিরীক্ষার জন্য প্রস্তুত",
+    "fetch_failed": "{name} আনতে ব্যর্থ: {error}। ফাইলের LMS প্রমাণীকরণ প্রয়োজন হতে পারে।"
   },
   "annotation": {
     "undo_tooltip": "Undo শেষ annotation ({count} উপলব্ধ) — Ctrl/Cmd+Z",
@@ -11282,7 +11379,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "দৃশ্যমান Support থেকে আপনার শিক্ষক"
+    "teacher_modal_aria": "দৃশ্যমান Support থেকে আপনার শিক্ষক",
+    "now": "এখন",
+    "read_aloud": "জোরে পড়ুন"
   },
   "canvas_settings": {
     "title": "Advanced সেটিং",
@@ -11299,7 +11398,12 @@
     "read_all_button": "সব পড়ুন",
     "stop_button": "বন্ধ",
     "focus_narration_label": "কীবোর্ড ফোকাস ন্যারেশন",
-    "focus_narration_on_hint": "নিয়ন্ত্রণ শুনতে Tab চাপুন"
+    "focus_narration_on_hint": "নিয়ন্ত্রণ শুনতে Tab চাপুন",
+    "reading": "পড়া হচ্ছে...",
+    "item_aria": "শুনতে ক্লিক করুন: {text}",
+    "footer_stats": "{count}টি আইটেম · যেকোনো আইটেম শুনতে ক্লিক করুন · Tab বর্ণনা {state}",
+    "narration_on": "চালু",
+    "narration_off": "বন্ধ"
   },
   "teacher": {
     "local_only": "Local শুধুমাত্র",
@@ -12475,5 +12579,27 @@
     "no_match": "কোনো মিলে যাওয়া কমান্ড নেই। বট চ্যাট (এবং শীঘ্রই ভয়েস) মুক্ত-রূপের অনুরোধ বোঝে।",
     "placeholder": "একটি কমান্ড টাইপ করুন — “বড় লেখা”, “educator hub”, “এই পৃষ্ঠা পড়ুন”…",
     "run": "চালান"
+  },
+  "voice_engine": {
+    "preparing": "ভয়েস ইঞ্জিন প্রস্তুত করা হচ্ছে...",
+    "downloading_model": "ভয়েস মডেল ডাউনলোড করা হচ্ছে",
+    "loading_memory": "মেমরিতে লোড করা হচ্ছে",
+    "loading_model_memory": "ভয়েস মডেল মেমরিতে লোড করা হচ্ছে"
+  },
+  "voice_control": {
+    "listening": "শুনছে; শেষ করতে “stop listening” বলো",
+    "stop_aria": "ভয়েস নিয়ন্ত্রণ থামান"
+  },
+  "dynamic_assessment": {
+    "return_title": "এই রিসোর্সটি ডায়নামিক অ্যাসেসমেন্ট দ্বারা তৈরি হয়েছে। ডায়নামিক অ্যাসেসমেন্ট মডিউল পুনরায় খুলতে ক্লিক করুন।",
+    "return_aria": "ডায়নামিক অ্যাসেসমেন্টে ফিরুন",
+    "return_label": "ডায়নামিক অ্যাসেসমেন্টে ফিরুন",
+    "item_badge": "আইটেম {num}"
+  },
+  "story_gallery": {
+    "title": "গল্প গ্যালারি",
+    "byline": "{author} দ্বারা · {words} শব্দ · {used}/{total} শব্দভান্ডার",
+    "student": "শিক্ষার্থী",
+    "score": "স্কোর: {score}"
   }
 }

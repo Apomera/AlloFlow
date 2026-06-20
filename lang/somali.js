@@ -618,7 +618,8 @@
     "open_storyforge_aria": "Fur StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Su'aalo ku Saleysan Dukumeentiga",
-    "open_stem_lab_explore_aria": "Fur Sahminta STEM Lab"
+    "open_stem_lab_explore_aria": "Fur Sahminta STEM Lab",
+    "stem_lab_explore": "Sahmin"
   },
   "toolbar": {
     "show_bot": "Tus Kaalmiyaha AI",
@@ -652,7 +653,8 @@
     "loading_resources": "Khayraadka waa la soo dejinayaa...",
     "preparing_workspace": "Goobta shaqadaada waa la diyaarinayaa...",
     "almost_ready": "Ku dhowaan diyaar...",
-    "loading_screen_aria": "Shaashadda AlloFlow ee soo dejinta"
+    "loading_screen_aria": "Shaashadda AlloFlow ee soo dejinta",
+    "preparing_environment": "Diyaarinaya deegaankaaga waxbarashada..."
   },
   "entry": {
     "placeholder": "tusaale Gorgor Cas",
@@ -895,7 +897,8 @@
     "cancel_transcription": "Jooji Qorista",
     "chunk_info": "Codka waxaa loo qaybiyaa qaybo 5-daqiiqo ah si loo qabto",
     "chunk_progress": "Qayb {current} ee {total}",
-    "audio_only_error": "Hadda waxaa kaliya la taageero faylasha codka (MP3, WAV, iwm) ee qorista qaybsan."
+    "audio_only_error": "Hadda waxaa kaliya la taageero faylasha codka (MP3, WAV, iwm) ee qorista qaybsan.",
+    "starting": "Bilaabaya..."
   },
   "formatting": {
     "bold": "Adag (**qoraal**)",
@@ -1175,7 +1178,12 @@
     "read_all_button": "Akhri Dhammaan",
     "stop_button": "Jooji",
     "focus_narration_label": "Sheekaynta Diiradda Kibootku",
-    "focus_narration_on_hint": "Riix Tab si aad u maqasho kontoroolada"
+    "focus_narration_on_hint": "Riix Tab si aad u maqasho kontoroolada",
+    "reading": "Akhrinaya...",
+    "item_aria": "Guji si aad u maqasho: {text}",
+    "footer_stats": "{count} shay · Guji shay kasta si aad u maqasho · Sheekaynta Tab {state}",
+    "narration_on": "SHIDAN",
+    "narration_off": "DEMMAN"
   },
   "roles": {
     "title": "Ku soo dhowoow AlloFlow",
@@ -1714,7 +1722,10 @@
     "analyzing_topology": "Anigoo u shaqaynaya Naqshadeeyaha Manhajka: Falanqaynta qaab-dhismeedka nuxurka...",
     "brainstorming": "Fikradaha waa la soo saarayaa...",
     "retrying_citations": "Tixraacyo wanaagsan ayaa mar kale loo isku dayayaa...",
-    "translating": "Waa la tarjumaynayaa…"
+    "translating": "Waa la tarjumaynayaa…",
+    "preparing_translation": "Diyaarinaya turjumaadda {lang}...",
+    "translating_item": "Turjumaya {current}/{total}: {title}...",
+    "generating_panel": "Soo saaraya guddiga {current}/{total}..."
   },
   "progression": {
     "title": "Horumarka Manhajka",
@@ -1764,7 +1775,34 @@
     "plan_hook": "Soo-jiidasho",
     "plan_independent": "Ku-celcelis Madax-bannaan",
     "col_image": "Sawir",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Jooji",
+    "expand_header": "Balaari madaxa",
+    "collapse_header": "Soo koob madaxa si aad u siiso macluumaadka meel dheeraad ah",
+    "collapse_header_short": "Soo koob madaxa",
+    "step_x_of_y": "Tallaabada {current} ee {total}",
+    "english_translation": "Turjumaadda Ingiriisiga",
+    "source_references": "Tixraacyada qoraalka asalka ah",
+    "activity_probe": "Baaritaanka {activity}",
+    "word_sounds_count": "Word Sounds ({count} eray)",
+    "quick_practice_mode": "Habka tababbarka degdega ah",
+    "new_option": "Doorasho cusub",
+    "meta_lesson_extensions": "Kordhinta casharka",
+    "title_extension_ideas": "Fikradaha kordhinta",
+    "meta_full_chat_log": "Diiwaanka sheekaysiga oo dhan",
+    "title_udl_consultation_log": "Diiwaanka la-tashiga UDL",
+    "meta_actionable_steps": "Tallaabooyin la qaadi karo (kooban AI)",
+    "title_differentiation_strategy": "Istaraatiijiyadda kala duwanaynta",
+    "meta_udl_guide_advice": "Talada Hagaha UDL",
+    "title_stem_assessment": "Qiimaynta STEM",
+    "title_explore_challenge": "Caqabadda sahaminta",
+    "title_fluency_maze": "🏰 Marinka fasaaxadda",
+    "title_storyforge_config": "📖 Hawsha StoryForge",
+    "title_storyforge_submission": "📖 Gudbinta sheekada",
+    "title_poettree_config": "🌳 Hawsha PoetTree",
+    "title_poettree_submission": "🌳 Gudbinta gabayga",
+    "title_litlab_config": "🎭 Hawsha LitLab",
+    "title_litlab_submission": "🎭 Gudbinta bandhigga"
   },
   "fullpack": {
     "button_label": "Samee Xirmo Kheyraad Dhameystiran",
@@ -2540,7 +2578,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Taxane diirad ah oo {minutes} daqiiqo ah! Sii wad!",
+    "streak_saved": "Ku soo dhawoow! Taxanahaagii {minutes} daqiiqo waa la kaydiyay.",
+    "points_awarded": "Dhibcaha waa la bixiyay!",
+    "welcome_name": "Ku soo dhawoow, {name}!",
+    "element_not_found": "Curiyaha lama helin: {id}",
+    "overlay_set": "Daboolka: {mode}",
+    "synced_resource": "La isku waafajiyay: {title}",
+    "group_resource": "Kheyraadka kooxda: {title}",
+    "preset_saved": "Habayntii hore \"{name}\" waa la kaydiyay!",
+    "translated_resources": "Si guul leh ayaa loo turjumay {count} kheyraad!",
+    "bingo_cards_count": "Waxaa la sameeyay {count} kaarka BINGO!",
+    "sound_enabled": "Codka waa la shiday",
+    "sound_muted": "Codka waa la aamusiiyay",
+    "democracy_mode_on": "Habka dimuqraadiyadda waa la shiday: codbixinta fasalka WAA SHIDAN",
+    "democracy_mode_off": "Habka dimuqraadiyadda waa la demiyay: ciyaar keligaa",
+    "resource_moved_up": "{title} kor loo qaaday",
+    "resource_moved_down": "{title} hoos loo dhigay",
+    "panels_regenerated": "{count} guddi ayaa dib loo sameeyay!",
+    "settings_undone": "La burisay: {label}. Dejintii waa la soo celiyay. (Kheyraadka la sameeyay ma saameynayaan.)",
+    "concept_added": "Fikrad la daray: {text}",
+    "lesson_not_found": "Casharka lagama helin cutubkan.",
+    "probe_complete": "Baaritaanku waa dhammaaday: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Dejinta waa la cusbooneysiiyay: {changes}",
+    "change_format": "Qaab: {value}",
+    "change_tone": "Cod: {value}",
+    "change_length": "Dherer: ~{value} eray",
+    "change_language": "Luqad: {value}",
+    "change_interest": "Xiiso la daray: {value}",
+    "backup_saved": "💾 Nuqul kaydin ah oo fadhigan ah ayaa lagu kaydiyay Soo-dejintaada (faylka mashruuca). Hadda waxba kama qaban; haddii aad waligaa u baahato inaad ku soo noqoto, \"Soo Raran Mashruuca\" wax walba wuu soo celin.",
+    "backup_saved_score": " (dhibco {score})",
+    "project_saved_multi_one": "💾 Mashruuca waa la kaydiyay ({count} kala duwan); soo raran ka dib si aad u sii wadato",
+    "project_saved_multi_other": "💾 Mashruuca waa la kaydiyay ({count} kala duwan); soo raran ka dib si aad u sii wadato",
+    "project_saved": "💾 Mashruuca waa la kaydiyay; soo raran ka dib si aad u sii wadato wax ka beddelka",
+    "search_result_desc": "Natiijada Raadinta Google: {title}",
+    "link_url_prompt": "Geli URL-ka xiriiriyaha:"
   },
   "analysis": {
     "title": "Falanqee Qalabka Isha",
@@ -4696,7 +4769,12 @@
       "error_check": "Hubinta habsamida way fashilantay.",
       "regenerated_success": "Qoraalka waxaa la dib u sameeyay hagaajinta!",
       "regen_failed": "Dib-u-samayntu way fashilantay."
-    }
+    },
+    "skill_check": "Hubinta xirfadda",
+    "desc_skill_check": "Hubi heerkaaga marka loo eego heerarka.",
+    "desc_parent": "Arag sida tani ula jaanqaadeyso yoolalka dugsiga",
+    "desc_6dim": "Wuxuu hubiyaa manhajka 6 cabbir",
+    "desc_5dim": "Wuxuu hubiyaa manhajka 5 cabbir (ku dar heerar si loo helo hubin buuxda)"
   },
   "standards": {
     "target_standard": "Heerka Bartilmaameedka",
@@ -4956,7 +5034,8 @@
     "card_visuals_label": "Muuqaalada kaadhka",
     "card_visuals_auto": "Toos (kaliya shayada gaaban)",
     "card_visuals_always": "Had iyo jeer samee sawiro",
-    "card_visuals_never": "Weligaa (kaadhka qoraal kaliya ah)"
+    "card_visuals_never": "Weligaa (kaadhka qoraal kaliya ah)",
+    "explanation_unavailable": "Hadda lama soo saari karin sharraxaad. Fadlan isku day mar kale daqiiqad ka dib."
   },
   "concept_map": {
     "toolbar": {
@@ -6400,10 +6479,17 @@
   "lms": {
     "dismiss_banner_aria": "Saar baararka LMS",
     "dismiss_button": "Saar",
-    "audit_queue_help": "Riix dukumeenti si aad u soo qaado oo aad u soo dejiso pipeline-ka helitaanka. Faylasha LMS qaarkood waxay u baahan karaan inaad ku jirto LMS-ka brawsarkan."
+    "audit_queue_help": "Riix dukumeenti si aad u soo qaado oo aad u soo dejiso pipeline-ka helitaanka. Faylasha LMS qaarkood waxay u baahan karaan inaad ku jirto LMS-ka brawsarkan.",
+    "queued_one": "{count} dokumenti ayaa safka ku jira ee LMS",
+    "queued_other": "{count} dokumenti ayaa safka ku jira ee LMS",
+    "fetching": "Soo qaadanaya {name}...",
+    "loaded_ready": "{name} waa la soo raray; diyaar u ah hubinta",
+    "fetch_failed": "Lama soo qaadan karin {name}: {error}. Faylku wuxuu u baahan karaa xaqiijinta LMS."
   },
   "visual_support": {
-    "teacher_modal_aria": "Taageero Muuqaal ah oo macallinkaaga"
+    "teacher_modal_aria": "Taageero Muuqaal ah oo macallinkaaga",
+    "now": "HADDA",
+    "read_aloud": "Kor u akhri"
   },
   "note_taking": {
     "template_label": "Nooca qaabka",
@@ -6880,7 +6966,25 @@
       "resolved_tip": "Arrimaha ka soo jeeda hubinta asalka ah ee aan dib looga heli karin hubinta xaqiijinta",
       "persisted_tip": "Arrimaha hubinta asalka ah ee wali jira hagaajinta ka dib",
       "introduced_tip": "Arrimo cusub oo aan jirin ka hor hagaajinta"
-    }
+    },
+    "reattach_mismatch": "PDF-ka dib loo lifaaqay wuu ka duwan yahay kii la hubiyay{detail}. Si kastaba ha noqotee waa la sii wadi doonaa; natiijooyinku ma waafaqsana karaan hubintii asalka ahayd.",
+    "reattach_name_detail": " (magac: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (cabbir: {new} vs. {old} bytes)",
+    "audit_failed_kept": "{label}: hubintu way fashilantay; waxaa la hayaa nooca hore.",
+    "score_dropped_kept": "{label}: dhibcuhu way hoos u dhici lahaayeen ({prev} → {next}{axe}). Waxaa la hayaa nooca hore.",
+    "axe_only_comparison": ", isbarbardhig axe oo keliya",
+    "axe_only_committed": "{label}: xaqiijinta AI lama heli karo; waxaa lagu xaqiijiyay dhibcaha go'an ee axe-core oo keliya.",
+    "reinserted_ai": "{count} dib loo geliyay (AI)",
+    "reinserted_sentence": "{count} dib loo geliyay (jumlad)",
+    "reinserted_fuzzy": "{count} dib loo geliyay (qiyaas)",
+    "in_recovery_appendix": "{count} ku jira lifaaqa soo-kabashada",
+    "duplicates_removed_one": "{count} nuqul la saaray",
+    "duplicates_removed_other": "{count} nuqul la saaray",
+    "auto_continue_round": "Wareegga sii-socoshada otomaatigga ah {round}/{max}: {detail}, dhibco {score}/100 (bartilmaameed {target})...",
+    "violation_one": "{count} xadgudub",
+    "violation_other": "{count} xadgudub",
+    "ai_issue_one": "{count} arrin AI calaamadeysay",
+    "ai_issue_other": "{count} arrin AI calaamadeysay"
   },
   "about": {
     "title": "Ku saabsan AlloFlow v1.0",
@@ -12283,5 +12387,27 @@
     "no_match": "Ma jiro amar u dhigma. Sheekada bot-ka (iyo dhowaan codka) waxay fahmaan codsiyo qaab-furan.",
     "placeholder": "Qor amar — “qoraal weyn”, “xarunta macallinka”, “bogga ii akhri”…",
     "run": "socodsii"
+  },
+  "voice_engine": {
+    "preparing": "Diyaarinaya mishiinka codka...",
+    "downloading_model": "Soo dejinaya moodelka codka",
+    "loading_memory": "Ku rarista xusuusta",
+    "loading_model_memory": "Moodelka codka ku rarista xusuusta"
+  },
+  "voice_control": {
+    "listening": "Dhageysanaya; dheh “stop listening” si aad u dhammeyso",
+    "stop_aria": "Jooji xakamaynta codka"
+  },
+  "dynamic_assessment": {
+    "return_title": "Kheyraadkan waxaa soo saaray Qiimaynta Firfircoon. Guji si aad dib u furto moodalka Qiimaynta Firfircoon.",
+    "return_aria": "Ku noqo Qiimaynta Firfircoon",
+    "return_label": "Ku noqo Qiimaynta Firfircoon",
+    "item_badge": "shay {num}"
+  },
+  "story_gallery": {
+    "title": "Bandhigga sheekooyinka",
+    "byline": "{author} qoray · {words} eray · {used}/{total} ereybixin",
+    "student": "Arday",
+    "score": "Dhibco: {score}"
   }
 }

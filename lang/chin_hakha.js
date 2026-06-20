@@ -1698,7 +1698,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Minute {minutes} lungthin pumhnak zultu! Cuti bantukin zulh rih!",
+    "streak_saved": "Na rak kir tikah kan i lawm! Na minute {minutes} zultu cu khoihfel a si.",
+    "points_awarded": "Point pek a si!",
+    "welcome_name": "Na rak ra, {name}!",
+    "element_not_found": "Thil hmuh a si lo: {id}",
+    "overlay_set": "Cunglei: {mode}",
+    "synced_resource": "Pehtlaih a si: {title}",
+    "group_resource": "Group thil: {title}",
+    "preset_saved": "Preset \"{name}\" khoih a si!",
+    "translated_resources": "Thil {count} cu ttha tein lehmi a si!",
+    "bingo_cards_count": "BINGO card {count} ser a si!",
+    "sound_enabled": "Aw ka a si",
+    "sound_muted": "Aw khar a si",
+    "democracy_mode_on": "Democracy lam ka a si: sang voot a ka",
+    "democracy_mode_off": "Democracy lam khar a si: namahte lentecelhnak",
+    "resource_moved_up": "{title} a cunglei thlennak a si",
+    "resource_moved_down": "{title} a tanglei thlennak a si",
+    "panels_regenerated": "Panel {count} ser tthan a si!",
+    "settings_undone": "Tialeng a si: {label}. Settings tlamtling tthan a si. (Sermi thil cu a hman lo.)",
+    "concept_added": "Ruahnak tel a si: {text}",
+    "lesson_not_found": "Hi unit ah cawnnak hmuh a si lo.",
+    "probe_complete": "Hngalhfiannak a dih: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Settings thar a si: {changes}",
+    "change_format": "Format: {value}",
+    "change_tone": "Aw: {value}",
+    "change_length": "Saupi: ~{value} biafang",
+    "change_language": "Holh: {value}",
+    "change_interest": "Duhnak tel a si: {value}",
+    "backup_saved": "💾 Hi session backup cu na Downloads ah khoih a si (project file). Atu ah zeihmanh tuah a herh lo; zeitik hmanh i na kir duh ahcun, \"Load Project\" nih a vialte a let chap.",
+    "backup_saved_score": " (score {score})",
+    "project_saved_multi_one": "💾 Project khoih a si ({count} range); zulh awkah a hnu ah load",
+    "project_saved_multi_other": "💾 Project khoih a si ({count} range); zulh awkah a hnu ah load",
+    "project_saved": "💾 Project khoih a si; ser zulh awkah a hnu ah load",
+    "search_result_desc": "Google Kawlnak result: {title}",
+    "link_url_prompt": "Link URL chunh:"
   },
   "large_file": {
     "modal_title": "Import Large Audio file",
@@ -1714,7 +1749,8 @@
     "cancel_transcription": "Cawl Transcription",
     "chunk_info": "Audio si split into 5-minute chunks caah processing",
     "chunk_progress": "Chunk {current} i {total}",
-    "audio_only_error": "Currently only audio file (MP3, WAV, etc.) si supported caah chunked transcription."
+    "audio_only_error": "Currently only audio file (MP3, WAV, etc.) si supported caah chunked transcription.",
+    "starting": "Thawk lio..."
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -1818,7 +1854,8 @@
     "open_storyforge_aria": "Ka StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based biahalnak",
-    "open_stem_lab_explore_aria": "Ka STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Ka STEM Lab Explore",
+    "stem_lab_explore": "Kawl"
   },
   "history": {
     "load_project": "Load Project",
@@ -4494,7 +4531,25 @@
       "highlight_color": "Highlight color",
       "insert_table_aria": "Insert table",
       "insert_table_title": "Insert i ngeih khawh table"
-    }
+    },
+    "reattach_mismatch": "Pehtlaih tthanmi PDF cu check ttuanmi he a danglam{detail}. Asinain zulh a si lai; result cu a hmasa check he a i tlak lo kho.",
+    "reattach_name_detail": " (min: \"{new}\" le \"{old}\")",
+    "reattach_size_detail": " (size: {new} le {old} bytes)",
+    "audit_failed_kept": "{label}: check a tlin lo; a hmasa version khoih a si.",
+    "score_dropped_kept": "{label}: score a tum kho ({prev} → {next}{axe}). A hmasa version khoih a si.",
+    "axe_only_comparison": ", axe lawng zohkhenh",
+    "axe_only_committed": "{label}: AI fehnak a um lo; axe-core score lawng he fehter a si.",
+    "reinserted_ai": "{count} chiah tthan (AI)",
+    "reinserted_sentence": "{count} chiah tthan (biafang)",
+    "reinserted_fuzzy": "{count} chiah tthan (a naih te)",
+    "in_recovery_appendix": "{count} recovery appendix ah",
+    "duplicates_removed_one": "Aphunphun {count} hlonh a si",
+    "duplicates_removed_other": "Aphunphun {count} hlonh a si",
+    "auto_continue_round": "Amah te zulh round {round}/{max}: {detail}, score {score}/100 (target {target})...",
+    "violation_one": "{count} sualnak",
+    "violation_other": "{count} sualnak",
+    "ai_issue_one": "{count} AI nih a langhtermi buaibainak",
+    "ai_issue_other": "{count} AI nih a langhtermi buaibainak"
   },
   "concept_sort": {
     "title": "Ruahnak Sort",
@@ -4568,7 +4623,8 @@
     "card_visuals_label": "Card visuals",
     "card_visuals_auto": "Auto (only cung short thil)",
     "card_visuals_always": "Always generate limceu",
-    "card_visuals_never": "Never (text-only cards)"
+    "card_visuals_never": "Never (text-only cards)",
+    "explanation_unavailable": "Atu ah fianternak ser a si kho lo. Zaangfahnak in a hnu tlawmpal ah tuah tthan."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -4974,7 +5030,12 @@
       "error_check": "Failed ah check rian buatsaihnak.",
       "regenerated_success": "Text regenerated he improvements!",
       "regen_failed": "Regeneration failed."
-    }
+    },
+    "skill_check": "Thiamnak check",
+    "desc_skill_check": "Standard he na thiamnak fehter.",
+    "desc_parent": "Hi nih sang i duhmi he zeitindah a i tlak ti zoh",
+    "desc_6dim": "Curriculum cu lam 6 in a check",
+    "desc_5dim": "Curriculum cu lam 5 in a check (a dihlak check awkah standard tel)"
   },
   "standards": {
     "target_standard": "Tinhmi Standard",
@@ -5186,7 +5247,34 @@
     "plan_hook": "Hook",
     "plan_independent": "Independent Practice",
     "col_image": "limceu",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Dinh",
+    "expand_header": "Lu kau",
+    "collapse_header": "Content hmun tam deuh pek awkah lu khumh",
+    "collapse_header_short": "Lu khumh",
+    "step_x_of_y": "Kalh {current} / {total}",
+    "english_translation": "Mirang holh lehnak",
+    "source_references": "Source Ca i Hmanhnak",
+    "activity_probe": "{activity} check",
+    "word_sounds_count": "Word Sounds (biafang {count})",
+    "quick_practice_mode": "Khulrang Hlennak Lam",
+    "new_option": "Thimnak thar",
+    "meta_lesson_extensions": "Cawnnak Kauternak",
+    "title_extension_ideas": "Kauternak Ruahnak",
+    "meta_full_chat_log": "Chat Log Kimkhat",
+    "title_udl_consultation_log": "UDL Rualpinak Log",
+    "meta_actionable_steps": "Tuah Khawhmi Kalh (AI Tawitpartu)",
+    "title_differentiation_strategy": "Danghnak Strategy",
+    "meta_udl_guide_advice": "UDL Hruaitu Ruahnak",
+    "title_stem_assessment": "STEM Hmuhnak",
+    "title_explore_challenge": "Kawlnak Halnak",
+    "title_fluency_maze": "🏰 Fluency Maze",
+    "title_storyforge_config": "📖 StoryForge Rian",
+    "title_storyforge_submission": "📖 Tuanbia Thlahnak",
+    "title_poettree_config": "🌳 PoetTree Rian",
+    "title_poettree_submission": "🌳 Hla Thlahnak",
+    "title_litlab_config": "🎭 LitLab Rian",
+    "title_litlab_submission": "🎭 Langhternak Thlahnak"
   },
   "persona": {
     "title": "Interview Mode",
@@ -8260,7 +8348,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing content topology...",
     "brainstorming": "Brainstorming ideas...",
     "retrying_citations": "Retrying caah better citations...",
-    "translating": "Translating…"
+    "translating": "Translating…",
+    "preparing_translation": "{lang} ah lehnak timhtuah lio...",
+    "translating_item": "{current}/{total} leh lio: {title}...",
+    "generating_panel": "Panel {current}/{total} ser lio..."
   },
   "process": {
     "source_missing": "Please provide source text first.",
@@ -9556,7 +9647,8 @@
     "loading_resources": "Loading resources...",
     "preparing_workspace": "Preparing nangmah workspace...",
     "almost_ready": "Almost ready...",
-    "loading_screen_aria": "AlloFlow loading screen"
+    "loading_screen_aria": "AlloFlow loading screen",
+    "preparing_environment": "Na cawnnak hmun timhtuah lio..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -11202,7 +11294,12 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "Hnen document ah fetch le load it into lutnak ngeih pipeline. Tlawmpal LMS file may require nang ah be logged ah ah LMS ah hi browser."
+    "audit_queue_help": "Hnen document ah fetch le load it into lutnak ngeih pipeline. Tlawmpal LMS file may require nang ah be logged ah ah LMS ah hi browser.",
+    "queued_one": "LMS in cabuai {count} i mthawng",
+    "queued_other": "LMS in cabuai {count} i mthawng",
+    "fetching": "{name} la lio...",
+    "loaded_ready": "{name} load a si; check awkah a timh",
+    "fetch_failed": "{name} la a si kho lo: {error}. Cabuai nih LMS fehnak a herh kho."
   },
   "annotation": {
     "undo_tooltip": "Undo last annotation ({count} available) — Ctrl/Cmd+Z",
@@ -11222,7 +11319,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visual Support from nangmah sayama"
+    "teacher_modal_aria": "Visual Support from nangmah sayama",
+    "now": "ATU",
+    "read_aloud": "Aw fennak in Rel"
   },
   "canvas_settings": {
     "title": "Advanced Settings",
@@ -11239,7 +11338,12 @@
     "read_all_button": "Rel dihlak",
     "stop_button": "Dinh",
     "focus_narration_label": "Keyboard Focus Narration",
-    "focus_narration_on_hint": "Tab ah hear controls"
+    "focus_narration_on_hint": "Tab ah hear controls",
+    "reading": "Rel lio...",
+    "item_aria": "Theih awkah click: {text}",
+    "footer_stats": "{count} thil · Thil zeihmanh theih awkah click · Tab chimnak {state}",
+    "narration_on": "KA",
+    "narration_off": "KHAR"
   },
   "teacher": {
     "local_only": "Local only",
@@ -12218,5 +12322,27 @@
     "no_match": "Aa tlukmi command a um lo. Bot chat (le a rauthiammi aw) nih a luatmi halnak hna a hngalh.",
     "placeholder": "Command ṭial — “bigger text”, “educator hub”, “read this page”…",
     "run": "ṭuan"
+  },
+  "voice_engine": {
+    "preparing": "Aw engine timhtuah lio...",
+    "downloading_model": "Aw model download lio",
+    "loading_memory": "Memory ah load lio",
+    "loading_model_memory": "Aw model cu memory ah load lio"
+  },
+  "voice_control": {
+    "listening": "Theih lio; dih awkah “stop listening” ti",
+    "stop_aria": "Aw uknak dinh"
+  },
+  "dynamic_assessment": {
+    "return_title": "Hi thil cu Dynamic Assessment in ser a si. Dynamic Assessment module ka tthan awkah click.",
+    "return_aria": "Dynamic Assessment ah kir",
+    "return_label": "Dynamic Assessment ah kir",
+    "item_badge": "thil {num}"
+  },
+  "story_gallery": {
+    "title": "Tuanbia Gallery",
+    "byline": "{author} nih · {words} biafang · {used}/{total} biafang",
+    "student": "Sianngakchia",
+    "score": "Score: {score}"
   }
 }

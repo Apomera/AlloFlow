@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Thauj Whisper tsis tau. Rov siv lwm lub cav.",
     "backup_failed": "Khaws cia tsis tau. Sim dua.",
     "invalid_backup_file": "Tsis yog cov ntaub ntawv AlloHaven backup zoo.",
-    "could_not_read_file": "Nyeem cov ntaub ntawv ntawd tsis tau. Puas yog JSON backup?"
+    "could_not_read_file": "Nyeem cov ntaub ntawv ntawd tsis tau. Puas yog JSON backup?",
+    "focus_streak": "{flames} {minutes} feeb txoj kev tsom mus ntxiv! Cia li ua li no mus ntxiv!",
+    "streak_saved": "Zoo siab tos txais koj rov qab los! Koj qhov {minutes} feeb tau muab khaws cia lawm.",
+    "points_awarded": "Tau muab cov ntsiab lus!",
+    "welcome_name": "Zoo siab tos txais, {name}!",
+    "element_not_found": "Nrhiav tsis tau lub ntsiab: {id}",
+    "overlay_set": "Txheej saum: {mode}",
+    "synced_resource": "Synced lawm: {title}",
+    "group_resource": "Pawg cov peev txheej: {title}",
+    "preset_saved": "Khaws preset \"{name}\" lawm!",
+    "translated_resources": "Txhais tau {count} cov peev txheej tiav lawm!",
+    "bingo_cards_count": "Tsim tau {count} daim npav BINGO!",
+    "sound_enabled": "Qhib suab lawm",
+    "sound_muted": "Kaw suab lawm",
+    "democracy_mode_on": "Qhib hom kev ywj pheej: kev pov npav hauv chav qhib",
+    "democracy_mode_off": "Kaw hom kev ywj pheej: ua si ib leeg",
+    "resource_moved_up": "Tau txav {title} mus saum",
+    "resource_moved_down": "Tau txav {title} mus hauv",
+    "panels_regenerated": "Rov tsim {count} cov panel lawm!",
+    "settings_undone": "Thim rov qab: {label}. Tau kho cov chaw qhia rov qab. (Cov peev txheej uas tsim tsis raug cuam tshuam.)",
+    "concept_added": "Ntxiv lub tswv yim: {text}",
+    "lesson_not_found": "Nrhiav tsis tau zaj lus qhia hauv qhov chav no.",
+    "probe_complete": "Kev tshuaj xyuas tiav: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Hloov kho cov chaw qhia lawm: {changes}",
+    "change_format": "Hom ntawv: {value}",
+    "change_tone": "Lub suab: {value}",
+    "change_length": "Ntev: ~{value} lo lus",
+    "change_language": "Hom lus: {value}",
+    "change_interest": "Ntxiv kev txaus siab: {value}",
+    "backup_saved": "💾 Tau khaws ib daim backup ntawm qhov kev sib tham no rau hauv koj cov Downloads (ib daim project file). Tam sim no tsis tas yuav ua dab tsi rau nws; yog tias koj xav rov qab los thaum twg, \"Load Project\" yuav nqa txhua yam rov qab los.",
+    "backup_saved_score": " (qhab nia {score})",
+    "project_saved_multi_one": "💾 Khaws project lawm ({count} ntu); load nws tom qab los txuas ntxiv",
+    "project_saved_multi_other": "💾 Khaws project lawm ({count} ntu); load nws tom qab los txuas ntxiv",
+    "project_saved": "💾 Khaws project lawm; load nws tom qab los txuas ntxiv kev kho",
+    "search_result_desc": "Google Tshawb Nrhiav Tau: {title}",
+    "link_url_prompt": "Sau URL ntawm txoj kev txuas:"
   },
   "large_file": {
     "modal_title": "Coj los Large suab cov ntaub ntawv",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Tso tseg Transcription",
     "chunk_info": "suab yog split rau 5-minute chunks rau processing",
     "chunk_progress": "Chunk {current} ntawm {total}",
-    "audio_only_error": "Currently only suab cov ntaub ntawv (MP3, WAV, etc.) yog supported rau chunked transcription."
+    "audio_only_error": "Currently only suab cov ntaub ntawv (MP3, WAV, etc.) yog supported rau chunked transcription.",
+    "starting": "Tab tom pib..."
   },
   "formatting": {
     "bold": "Bold (**cov ntawv**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Qhib StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "cov ntawv-Raws lo lus nug",
-    "open_stem_lab_explore_aria": "Qhib STEM chav kawm tshawb fawb Nrhiav xyuas"
+    "open_stem_lab_explore_aria": "Qhib STEM chav kawm tshawb fawb Nrhiav xyuas",
+    "stem_lab_explore": "Tshawb Nrhiav"
   },
   "history": {
     "load_project": "Nqa los Project",
@@ -4489,7 +4526,25 @@
       "highlight_color": "Highlight xim",
       "insert_table_aria": "Insert lub rooj",
       "insert_table_title": "Insert pom tau lub rooj"
-    }
+    },
+    "reattach_mismatch": "Daim PDF rov txuas txawv ntawm tus uas tau tshuaj xyuas{detail}. Tseem yuav txuas ntxiv; cov txiaj ntsig tej zaum yuav tsis sib haum nrog qhov kev tshuaj xyuas qub.",
+    "reattach_name_detail": " (npe: \"{new}\" piv rau \"{old}\")",
+    "reattach_size_detail": " (loj: {new} piv rau {old} bytes)",
+    "audit_failed_kept": "{label}: kev tshuaj xyuas ua tsis tiav; khaws daim qub cia.",
+    "score_dropped_kept": "{label}: qhab nia yuav poob ({prev} → {next}{axe}). Khaws daim qub cia.",
+    "axe_only_comparison": ", piv axe nkaus xwb",
+    "axe_only_committed": "{label}: tsis muaj AI pov thawj; pom zoo nrog qhab nia axe-core nkaus xwb.",
+    "reinserted_ai": "{count} rov ntxig (AI)",
+    "reinserted_sentence": "{count} rov ntxig (kab lus)",
+    "reinserted_fuzzy": "{count} rov ntxig (kwv yees)",
+    "in_recovery_appendix": "{count} nyob rau hauv daim ntxhuav rov qab",
+    "duplicates_removed_one": "Tshem tawm {count} qhov sib npaug",
+    "duplicates_removed_other": "Tshem tawm {count} qhov sib npaug",
+    "auto_continue_round": "Lub voj voog txuas ntxiv tas li {round}/{max}: {detail}, qhab nia {score}/100 (lub hom phiaj {target})...",
+    "violation_one": "{count} qhov ua txhaum",
+    "violation_other": "{count} qhov ua txhaum",
+    "ai_issue_one": "{count} qhov teeb meem AI tau cim",
+    "ai_issue_other": "{count} qhov teeb meem AI tau cim"
   },
   "concept_sort": {
     "title": "Lub tswv yim Muab cais",
@@ -4563,7 +4618,8 @@
     "card_visuals_label": "daim npav kev pom",
     "card_visuals_auto": "Auto (only rau saum luv yam)",
     "card_visuals_always": "Always tsim duab",
-    "card_visuals_never": "Never (cov ntawv-only daim npav)"
+    "card_visuals_never": "Never (cov ntawv-only daim npav)",
+    "explanation_unavailable": "Tsis tuaj yeem tsim kev piav qhia tam sim no. Thov sim dua tom qab ib pliag."
   },
   "dbq": {
     "title": "cov ntawv Analysis (DBQ)",
@@ -4969,7 +5025,12 @@
       "error_check": "Failed mus check kev sib raug.",
       "regenerated_success": "cov ntawv regenerated nrog improvements!",
       "regen_failed": "Tsim dua tsis tau."
-    }
+    },
+    "skill_check": "Kev tshuaj xyuas txuj ci",
+    "desc_skill_check": "Pov thawj koj txoj kev txawj piv rau cov qauv.",
+    "desc_parent": "Saib seb qhov no sib haum li cas nrog lub hom phiaj ntawm tsev kawm ntawv",
+    "desc_6dim": "Tshuaj xyuas cov ntsiab lus kawm hauv 6 sab",
+    "desc_5dim": "Tshuaj xyuas cov ntsiab lus kawm hauv 5 sab (ntxiv cov qauv rau kev tshuaj xyuas tiav)"
   },
   "standards": {
     "target_standard": "Lub hom phiaj tus qauv",
@@ -5181,7 +5242,34 @@
     "plan_hook": "Pib",
     "plan_independent": "Independent xyaum",
     "col_image": "duab",
-    "word_sounds_studio": "lo lus Word Sounds Studio"
+    "word_sounds_studio": "lo lus Word Sounds Studio",
+    "stop": "Nres",
+    "expand_header": "Nthuav lub taub hau",
+    "collapse_header": "Qhau lub taub hau kom muaj chaw ntau rau cov ntsiab lus",
+    "collapse_header_short": "Qhau lub taub hau",
+    "step_x_of_y": "Kauj ruam {current} / {total}",
+    "english_translation": "Kev Txhais Lus Askiv",
+    "source_references": "Cov Ntaub Ntawv Qhov Chaw",
+    "activity_probe": "Kev tshuaj xyuas {activity}",
+    "word_sounds_count": "Word Sounds ({count} lo lus)",
+    "quick_practice_mode": "Hom Kev Xyaum Sai",
+    "new_option": "Kev xaiv tshiab",
+    "meta_lesson_extensions": "Kev Nthuav Dav Zaj Lus",
+    "title_extension_ideas": "Cov Tswv Yim Nthuav Dav",
+    "meta_full_chat_log": "Daim Ntawv Sib Tham Tag Nrho",
+    "title_udl_consultation_log": "Daim Ntawv Sablaj UDL",
+    "meta_actionable_steps": "Cov Kauj Ruam Ua Tau (AI Cov Lus Pom)",
+    "title_differentiation_strategy": "Lub Tswv Yim Sib Txawv",
+    "meta_udl_guide_advice": "UDL Phau Qhia Lus Qhia",
+    "title_stem_assessment": "STEM Kev Ntsuam Xyuas",
+    "title_explore_challenge": "Kev Sib Tw Tshawb Nrhiav",
+    "title_fluency_maze": "🏰 Lub Maze Kev Txawj",
+    "title_storyforge_config": "📖 StoryForge Hauj Lwm",
+    "title_storyforge_submission": "📖 Xa Zaj Dab Neeg",
+    "title_poettree_config": "🌳 PoetTree Hauj Lwm",
+    "title_poettree_submission": "🌳 Xa Paj Huam",
+    "title_litlab_config": "🎭 LitLab Hauj Lwm",
+    "title_litlab_submission": "🎭 Xa Kev Ua Yeeb Yam"
   },
   "persona": {
     "title": "Interview hom",
@@ -8258,7 +8346,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing cov ntsiab topology...",
     "brainstorming": "Tab tom xav tswv yim...",
     "retrying_citations": "Retrying rau zoo dua citations...",
-    "translating": "Tab tom txhais lus…"
+    "translating": "Tab tom txhais lus…",
+    "preparing_translation": "Tab tom npaj txhais ua {lang}...",
+    "translating_item": "Tab tom txhais {current}/{total}: {title}...",
+    "generating_panel": "Tab tom tsim panel {current}/{total}..."
   },
   "process": {
     "source_missing": "thov provide qhov chaw cov ntawv thawj.",
@@ -9554,7 +9645,8 @@
     "loading_resources": "Loading kev pab cuam...",
     "preparing_workspace": "Preparing koj workspace...",
     "almost_ready": "Yuav luag npaj txhij...",
-    "loading_screen_aria": "AlloFlow lub vijtsam tab tom thauj"
+    "loading_screen_aria": "AlloFlow lub vijtsam tab tom thauj",
+    "preparing_environment": "Tab tom npaj koj qhov chaw kawm..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9609,7 +9701,7 @@
       "choice_desc": "tub ntxhais kawm-facing kev pom kev xaiv daim npav rau tus kheej-regulation",
       "audit_title": "Tshawb Xyuas Ib Puag Ncig",
       "audit_desc": "Daim ntawv txheeb xyuas chav kawm 8-nqe nrog AI kev pom zoo",
-      "triangulation_title": "Triangulation",
+      "triangulation_title": "Triangulation (sib piv peb txoj kev)",
       "triangulation_desc": "Sib piv 3+ cov chaw muab cov ntaub ntawv kom pom kev sib haum",
       "impact_title": "Lub Tshuab Xam Kev Cuam Tshuam",
       "impact_desc": "Suav tus cwj pwm zaus, ntev npaum li cas, thiab tus nqi ib xyoos",
@@ -9627,7 +9719,7 @@
       "feasibility_desc": "Kev ntsuam xyuas 5-lus nug haum rau cov chaw nrog AI kev pom zoo",
       "gas_title": "GAS Ntsuas",
       "gas_desc": "GAS (Goal Attainment Scaling) nrog cov lus piav tsim los ntawm AI",
-      "pocket_title": "Pocket BIP",
+      "pocket_title": "Pocket BIP (BIP hauv hnab)",
       "pocket_desc": "Daim ntawv sau ntsiab BIP me me rau nqa hauv clipboard",
       "abagraph_desc": "Cov duab kos tshaj tawm tau nrog cov kab phase, kab kev hloov, thiab kev tshuaj xyuas pom",
       "abagraph_title": "ABA graph Engine",
@@ -9650,7 +9742,7 @@
       "commlog_desc": "Taug qab kev sib cuag ob-txoj kev nrog tsev neeg nrog kev rov mus xyuas — kom tsis muaj tsev neeg poob",
       "commlog_title": "Phau Ntawv Sau Kev Sib Txuas Lus",
       "condprob_desc": "Kev tshuaj xyuas foreground vs background probability kom paub tseeb tias ABC hypothesis raug nrog cov ntaub ntawv",
-      "condprob_title": "Conditional Probability",
+      "condprob_title": "Conditional Probability (feem yuav tshwm raws xwm txheej)",
       "consent_desc": "Daim ntawv tso cai hloov tau rau niam txiv pauv cov ntaub ntawv — kho, luam, qhia ua JSON",
       "consent_title": "FERPA Tus Tswj Kev Pom Zoo",
       "counseling_desc": "AI role-play nrog cov tub ntxhais kawm persona rau kev xyaum sab laj",
@@ -9901,7 +9993,7 @@
       "generate": "AI Tsim GAS Descriptors"
     },
     "pocket": {
-      "title": "Pocket BIP",
+      "title": "Pocket BIP (BIP hauv hnab)",
       "generate": "AI Tsim Pocket BIP"
     },
     "no_entries_match": "Tsis muaj entry haum koj cov filter",
@@ -10020,7 +10112,7 @@
     "reinf_extra_recess": "Sij hawm so ntxiv",
     "reinf_free_drawing_time": "Sij hawm kos duab dawb",
     "reinf_computer_tablet_time": "Sij hawm siv khoos phib tawj/tablet",
-    "reinf_stickers": "Stickers",
+    "reinf_stickers": "Daim ntawv nplaum (Stickers)",
     "reinf_treasure_box_pick": "Xaiv hauv lub thawv nyiaj txiag",
     "reinf_fidget_tools": "Fidget cov cuab yeej",
     "reinf_standing_desk_time": "Sij hawm sawv ntawm rooj",
@@ -10097,17 +10189,17 @@
       "rationale_which_antecedent_does_this_address": "Rationale (qhov antecedent twg qhov no hais txog?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Xav txog koj txoj kev...\\n• Dab tsi ua tau zoo?\\n• Koj yuav ua dab tsi txawv?\\n• Cov strategies twg koj xav xyaum tom ntej no?",
       "reinforcement_how_you": "⭐ Reinforcement (yuav ua li cas koj\\",
-      "replacement_behavior_functionally_equivalent": "✅ Replacement behavior (functionally equivalent)",
+      "replacement_behavior_functionally_equivalent": "✅ Tus cwj pwm hloov chaw (functionally equivalent — ua tau tib lub luag hauj lwm)",
       "respond_as_the_counselor": "Respond as counselor...",
       "schooldistrict_name": "tsev kawm ntawv/District Name",
       "search_81_tools": "🔍 Nrhiav 81+ cov cuab yeej…",
       "search_aba_terms": "🔍 Nrhiav ABA lo lus...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Nrhiav lo lus... (e.g. \"reinforcement\", \"FBA\", \"cov ncauj lus\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Session 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "Zaug 1: 3\\nZaug 2: 7\\nZaug 3: 5\\n...",
       "setting_eg_math_class_cafeteria": "kev teeb tsa (e.g., Lej chav kawm, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Qhia tej yam koj pom hauv tsev — cov zog, kev txhawj xeeb, kab lis kev cai context, lossis cov lus pom zoo rau pawg neeg tsev kawm ntawv...",
       "step_description": "cov theem description...",
-      "target_behavior_what_you_want_to_reduce": "🎯 Target behavior (qhov koj xav txo)",
+      "target_behavior_what_you_want_to_reduce": "🎯 Target behavior (tus cwj pwm koj xav txo)",
       "teacherspecialist_name": "xib fwb/Specialist Name",
       "teaching_strategy_how_you": "📚 Teaching tswv yim (yuav ua li cas koj\\",
       "then_reward": "THEN (nqi zog)...",
@@ -10167,7 +10259,7 @@
       "data_cleared": "cov ncauj lus cleared",
       "data_loaded_from_cloud": "☁️ Cov ntaub ntawv tau load los ntawm cloud",
       "drafting_failed": "Kev npaj ntawv tsis tau",
-      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval tiav — REINFORCE! Tsis muaj target behavior tshwm sim!",
+      "dro_interval_complete_reinforce_no_target_behavior": "🎉 DRO interval tiav lawm — REINFORCE (txhawb)! Tsis muaj target behavior tshwm sim!",
       "each_phase_needs_at_least_2_data_points": "Txhua phase yuav tsum muaj tsawg kawg 2 data points",
       "effect_sizes_attached_to_iep_prep": "Effect sizes muab tso rau IEP Prep!",
       "effect_sizes_calculated": "Cov qhov ntsuas tshwm sim suav tau lawm!",
@@ -10510,7 +10602,7 @@
       "strengthbased_reframe": "Strength-Raws Reframe",
       "student": "tub ntxhais kawm:",
       "student_codename": "tub ntxhais kawm Codename",
-      "student_snapshot_exchange": "Student Snapshot Exchange",
+      "student_snapshot_exchange": "Kev Sib Pauv Daim Duab Tus Tub Ntxhais Kawm (Student Snapshot Exchange)",
       "style": "hom:",
       "summary": "Cov ntsiab lus:",
       "systematic_behavioral_measurement_across_sessions": "Kev ntsuas kev coj cwj pwm raws txheej txheem thoob plaws cov kev sib tham",
@@ -10556,7 +10648,7 @@
     "are_you_sure": "yog koj sure?",
     "clear_selection": "Tshem cov uas xaiv",
     "correlation_desc": "Cov hlwb tsaus dua qhia kev tshwm sim ua ke muaj zog ntawm tus trigger thiab kev coj cwj pwm",
-    "correlation_matrix": "Antecedent → Behavior Correlations",
+    "correlation_matrix": "Antecedent → Behavior Correlations (kev sib raug ntawm qhov ua ntej → tus cwj pwm)",
     "delete_selected": "🗑 Lwv Selected",
     "family": "Tsev Neeg",
     "family_mode": "Family hom",
@@ -10608,7 +10700,7 @@
       "title": "Kev Sau Sij Hawm"
     },
     "intervention": {
-      "title": "AI Intervention Plan Generator"
+      "title": "AI Lub Cuab Yeej Tsim Phiaj Xwm Kev Pab (AI Intervention Plan Generator)"
     },
     "obs": {
       "behavior_occurring": "🔴 kev coj noj coj ua occurring...",
@@ -10641,7 +10733,7 @@
       "title": "tub ntxhais kawm Tus kheej-Check"
     },
     "snapshot": {
-      "title": "Student Snapshot Exchange"
+      "title": "Kev Sib Pauv Daim Duab Tus Tub Ntxhais Kawm (Student Snapshot Exchange)"
     },
     "workflow": {
       "subtitle": "Xaiv ib qho kev coj qhia kauj ruam-rau-kauj ruam rau koj txheej txheem kho mob",
@@ -10741,7 +10833,7 @@
       "full_fba": "FBA Tag Nrho",
       "full_physical": "Pab Tag Nrho",
       "function": "Lub Hom Phiaj",
-      "gas_rubric": "GAS Rubric",
+      "gas_rubric": "GAS Rubric (cov qauv ntsuas GAS)",
       "generate_an_intervention_plan": "Tsim intervention kev npaj",
       "gestural": "Tes Taw",
       "gesture": "Tes Taw",
@@ -11200,7 +11292,12 @@
   "lms": {
     "dismiss_banner_aria": "Muab daim ntawv LMS tshem",
     "dismiss_button": "Tshem",
-    "audit_queue_help": "Nyem cov ntawv mus nqa thiab nqa los it rau kev nkag mus tau pipeline. Qee LMS cov ntaub ntawv may require koj mus be logged hauv mus LMS hauv qhov no browser."
+    "audit_queue_help": "Nyem cov ntawv mus nqa thiab nqa los it rau kev nkag mus tau pipeline. Qee LMS cov ntaub ntawv may require koj mus be logged hauv mus LMS hauv qhov no browser.",
+    "queued_one": "{count} daim ntawv tos hauv LMS",
+    "queued_other": "{count} daim ntawv tos hauv LMS",
+    "fetching": "Tab tom nqa {name}...",
+    "loaded_ready": "Load {name} lawm; npaj txhij rau kev tshuaj xyuas",
+    "fetch_failed": "Nqa {name} tsis tau: {error}. Cov ntaub ntawv tej zaum yuav xav tau LMS authentication."
   },
   "annotation": {
     "undo_tooltip": "Undo kawg annotation ({count} muaj) — Ctrl/Cmd+Z",
@@ -11220,7 +11317,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "kev pom kev txhawb los ntawm koj xib fwb"
+    "teacher_modal_aria": "kev pom kev txhawb los ntawm koj xib fwb",
+    "now": "TAM SIM NO",
+    "read_aloud": "Nyeem Nrov Nrov"
   },
   "canvas_settings": {
     "title": "qib siab kev teeb tsa",
@@ -11237,7 +11336,12 @@
     "read_all_button": "Nyeem tag nrho",
     "stop_button": "Nres",
     "focus_narration_label": "Kev Hais Lus Saib Keyboard Focus",
-    "focus_narration_on_hint": "Tab mus hear controls"
+    "focus_narration_on_hint": "Tab mus hear controls",
+    "reading": "Tab tom nyeem...",
+    "item_aria": "Nyem los mloog: {text}",
+    "footer_stats": "{count} yam · Nyem txhua yam los mloog · Tab piav qhia {state}",
+    "narration_on": "QHIB",
+    "narration_off": "KAW"
   },
   "teacher": {
     "local_only": "Hauv Zos Xwb",
@@ -12413,5 +12517,27 @@
     "no_match": "Tsis muaj lus haujlwm phim. Kev sib tham bot (thiab tsis ntev no suab) nkag siab cov lus thov dawb.",
     "placeholder": "Ntaus ib lo lus haujlwm — “ntawv loj dua”, “educator hub”, “nyeem nplooj no”…",
     "run": "ua"
+  },
+  "voice_engine": {
+    "preparing": "Tab tom npaj lub cav suab...",
+    "downloading_model": "Tab tom rub tawm tus qauv suab",
+    "loading_memory": "Tab tom load rau hauv lub cim xeeb",
+    "loading_model_memory": "Tab tom load tus qauv suab rau hauv lub cim xeeb"
+  },
+  "voice_control": {
+    "listening": "Tab tom mloog; hais “stop listening” los xaus",
+    "stop_aria": "Nres kev tswj suab"
+  },
+  "dynamic_assessment": {
+    "return_title": "Cov peev txheej no tau tsim los ntawm Dynamic Assessment. Nyem los rov qhib Dynamic Assessment module.",
+    "return_aria": "Rov qab mus rau Dynamic Assessment",
+    "return_label": "Rov qab mus rau Dynamic Assessment",
+    "item_badge": "yam {num}"
+  },
+  "story_gallery": {
+    "title": "Chaw Tshwaj Dab Neeg",
+    "byline": "Los ntawm {author} · {words} lo lus · {used}/{total} cov lus",
+    "student": "Tub ntxhais kawm",
+    "score": "Qhab nia: {score}"
   }
 }

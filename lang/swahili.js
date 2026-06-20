@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Upakiaji wa Whisper umeshindwa. Tunarudi kwenye injini nyingine.",
     "backup_failed": "Hifadhi nakala imeshindwa. Jaribu tena.",
     "invalid_backup_file": "Si faili halali ya hifadhi nakala ya AlloHaven.",
-    "could_not_read_file": "Imeshindwa kusoma faili hilo. Je, ni hifadhi nakala ya JSON?"
+    "could_not_read_file": "Imeshindwa kusoma faili hilo. Je, ni hifadhi nakala ya JSON?",
+    "focus_streak": "{flames} Mfululizo wa umakini wa dakika {minutes}! Endelea hivyo!",
+    "streak_saved": "Karibu tena! Mfululizo wako wa dakika {minutes} umehifadhiwa.",
+    "points_awarded": "Pointi zimetolewa!",
+    "welcome_name": "Karibu, {name}!",
+    "element_not_found": "Kipengele hakikupatikana: {id}",
+    "overlay_set": "Tabaka: {mode}",
+    "synced_resource": "Imesawazishwa: {title}",
+    "group_resource": "Rasilimali ya kikundi: {title}",
+    "preset_saved": "Mpangilio \"{name}\" umehifadhiwa!",
+    "translated_resources": "Rasilimali {count} zimetafsiriwa kwa mafanikio!",
+    "bingo_cards_count": "Kadi {count} za BINGO zimetengenezwa!",
+    "sound_enabled": "Sauti imewashwa",
+    "sound_muted": "Sauti imenyamazishwa",
+    "democracy_mode_on": "Hali ya demokrasia imewashwa: kupiga kura kwa darasa KUMEWASHWA",
+    "democracy_mode_off": "Hali ya demokrasia imezimwa: kucheza peke yako",
+    "resource_moved_up": "{title} imepandishwa juu",
+    "resource_moved_down": "{title} imeshushwa chini",
+    "panels_regenerated": "Paneli {count} zimezalishwa upya!",
+    "settings_undone": "Imetenduliwa: {label}. Mipangilio imerejeshwa. (Rasilimali zilizozalishwa haziathiriki.)",
+    "concept_added": "Dhana imeongezwa: {text}",
+    "lesson_not_found": "Somo halikupatikana katika kipengele hiki.",
+    "probe_complete": "Uchunguzi umekamilika: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Mipangilio imesasishwa: {changes}",
+    "change_format": "Umbizo: {value}",
+    "change_tone": "Toni: {value}",
+    "change_length": "Urefu: ~{value} maneno",
+    "change_language": "Lugha: {value}",
+    "change_interest": "Mapendezi yameongezwa: {value}",
+    "backup_saved": "💾 Nakala rudufu ya kipindi hiki imehifadhiwa katika Vipakuliwa vyako (faili la mradi). Hakuna la kufanya nayo sasa; ukihitaji kurudi siku moja, \"Pakia Mradi\" hurejesha kila kitu.",
+    "backup_saved_score": " (alama {score})",
+    "project_saved_multi_one": "💾 Mradi umehifadhiwa (masafa {count}); upakie baadaye ili kuendelea",
+    "project_saved_multi_other": "💾 Mradi umehifadhiwa (masafa {count}); upakie baadaye ili kuendelea",
+    "project_saved": "💾 Mradi umehifadhiwa; upakie baadaye ili kuendelea kuhariri",
+    "search_result_desc": "Matokeo ya Utafutaji wa Google: {title}",
+    "link_url_prompt": "Weka URL ya kiungo:"
   },
   "large_file": {
     "modal_title": "Leta Large sauti faili",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "Ghairi Transcription",
     "chunk_info": "sauti ni split ndani 5-minute chunks kwa processing",
     "chunk_progress": "Chunk {current} ya {total}",
-    "audio_only_error": "Currently tu sauti faili (MP3, WAV, etc.) ni supported kwa chunked transcription."
+    "audio_only_error": "Currently tu sauti faili (MP3, WAV, etc.) ni supported kwa chunked transcription.",
+    "starting": "Inaanza..."
   },
   "formatting": {
     "bold": "Bold (**maandishi**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "Fungua StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "hati-Kulingana maswali",
-    "open_stem_lab_explore_aria": "Fungua STEM maabara Chunguza"
+    "open_stem_lab_explore_aria": "Fungua STEM maabara Chunguza",
+    "stem_lab_explore": "Chunguza"
   },
   "history": {
     "load_project": "Pakia Project",
@@ -4488,7 +4525,25 @@
       "resolved_tip": "Matatizo kutoka ukaguzi wa asili ambayo hayapatikani tena katika ukaguzi wa uthibitisho",
       "persisted_tip": "Matatizo kutoka ukaguzi wa asili bado yapo baada ya marekebisho",
       "introduced_tip": "Matatizo mapya ambayo hayakuwepo kabla ya marekebisho"
-    }
+    },
+    "reattach_mismatch": "PDF iliyoambatishwa upya inatofautiana na iliyokaguliwa{detail}. Itaendelea hata hivyo; matokeo yanaweza kutolingana na ukaguzi wa awali.",
+    "reattach_name_detail": " (jina: \"{new}\" dhidi ya \"{old}\")",
+    "reattach_size_detail": " (ukubwa: {new} dhidi ya {old} baiti)",
+    "audit_failed_kept": "{label}: ukaguzi umeshindwa; toleo la awali limehifadhiwa.",
+    "score_dropped_kept": "{label}: alama ingeshuka ({prev} → {next}{axe}). Toleo la awali limehifadhiwa.",
+    "axe_only_comparison": ", ulinganishi wa axe pekee",
+    "axe_only_committed": "{label}: uthibitishaji wa AI haupatikani; imethibitishwa kwa alama dhabiti ya axe-core pekee.",
+    "reinserted_ai": "{count} zimeingizwa upya (AI)",
+    "reinserted_sentence": "{count} zimeingizwa upya (sentensi)",
+    "reinserted_fuzzy": "{count} zimeingizwa upya (kadirio)",
+    "in_recovery_appendix": "{count} katika kiambatisho cha urejeshaji",
+    "duplicates_removed_one": "Nakala {count} imeondolewa",
+    "duplicates_removed_other": "Nakala {count} zimeondolewa",
+    "auto_continue_round": "Raundi ya kuendelea kiotomatiki {round}/{max}: {detail}, alama {score}/100 (lengo {target})...",
+    "violation_one": "Ukiukaji {count}",
+    "violation_other": "Ukiukaji {count}",
+    "ai_issue_one": "Suala {count} lililowekewa alama na AI",
+    "ai_issue_other": "Masuala {count} yaliyowekewa alama na AI"
   },
   "concept_sort": {
     "title": "Dhana Panga",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "kadi kuona",
     "card_visuals_auto": "Otomatiki (tu juu ya fupi kipengele)",
     "card_visuals_always": "Always tengeneza picha",
-    "card_visuals_never": "Never (maandishi-tu kadi)"
+    "card_visuals_never": "Never (maandishi-tu kadi)",
+    "explanation_unavailable": "Imeshindwa kutoa maelezo sasa hivi. Tafadhali jaribu tena baada ya muda mfupi."
   },
   "dbq": {
     "title": "hati Uchambuzi (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed kwa angalia mpangilio.",
       "regenerated_success": "maandishi regenerated na improvements!",
       "regen_failed": "Kuzalisha upya kumeshindikana."
-    }
+    },
+    "skill_check": "Ukaguzi wa ujuzi",
+    "desc_skill_check": "Thibitisha umahiri wako dhidi ya viwango.",
+    "desc_parent": "Angalia jinsi hili linavyolingana na malengo ya shule",
+    "desc_6dim": "Hukagua mtaala katika vipimo 6",
+    "desc_5dim": "Hukagua mtaala katika vipimo 5 (ongeza viwango kwa ukaguzi kamili)"
   },
   "standards": {
     "target_standard": "Lengo kiwango",
@@ -5180,7 +5241,34 @@
     "plan_hook": "Kichocheo",
     "plan_independent": "Independent fanya mazoezi",
     "col_image": "picha",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Simamisha",
+    "expand_header": "Panua kichwa",
+    "collapse_header": "Kunja kichwa ili kutoa nafasi zaidi kwa maudhui",
+    "collapse_header_short": "Kunja kichwa",
+    "step_x_of_y": "Hatua {current} kati ya {total}",
+    "english_translation": "Tafsiri ya Kiingereza",
+    "source_references": "Marejeleo ya Maandishi ya Chanzo",
+    "activity_probe": "Uchunguzi wa {activity}",
+    "word_sounds_count": "Word Sounds (maneno {count})",
+    "quick_practice_mode": "Hali ya Mazoezi ya Haraka",
+    "new_option": "Chaguo jipya",
+    "meta_lesson_extensions": "Viendelezo vya Somo",
+    "title_extension_ideas": "Mawazo ya Kiendelezo",
+    "meta_full_chat_log": "Kumbukumbu Kamili ya Gumzo",
+    "title_udl_consultation_log": "Kumbukumbu ya Ushauri wa UDL",
+    "meta_actionable_steps": "Hatua Zinazotekelezeka (Muhtasari wa AI)",
+    "title_differentiation_strategy": "Mkakati wa Utofautishaji",
+    "meta_udl_guide_advice": "Ushauri wa Mwongozo wa UDL",
+    "title_stem_assessment": "Tathmini ya STEM",
+    "title_explore_challenge": "Changamoto ya Kuchunguza",
+    "title_fluency_maze": "🏰 Maze ya Ufasaha",
+    "title_storyforge_config": "📖 Kazi ya StoryForge",
+    "title_storyforge_submission": "📖 Uwasilishaji wa Hadithi",
+    "title_poettree_config": "🌳 Kazi ya PoetTree",
+    "title_poettree_submission": "🌳 Uwasilishaji wa Shairi",
+    "title_litlab_config": "🎭 Kazi ya LitLab",
+    "title_litlab_submission": "🎭 Uwasilishaji wa Maonyesho"
   },
   "persona": {
     "title": "Interview hali",
@@ -8308,7 +8396,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing maudhui topology...",
     "brainstorming": "Inabuni mawazo...",
     "retrying_citations": "Retrying kwa bora zaidi citations...",
-    "translating": "Inatafsiri…"
+    "translating": "Inatafsiri…",
+    "preparing_translation": "Inatayarisha tafsiri kwa {lang}...",
+    "translating_item": "Inatafsiri {current}/{total}: {title}...",
+    "generating_panel": "Inazalisha paneli {current}/{total}..."
   },
   "process": {
     "source_missing": "tafadhali toa chanzo maandishi ya kwanza.",
@@ -9604,7 +9695,8 @@
     "loading_resources": "Loading rasilimali...",
     "preparing_workspace": "Preparing yako workspace...",
     "almost_ready": "Karibu tayari...",
-    "loading_screen_aria": "AlloFlow loading skrini"
+    "loading_screen_aria": "AlloFlow loading skrini",
+    "preparing_environment": "Inatayarisha mazingira yako ya kujifunza..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9628,7 +9720,7 @@
       "abc_title": "ABC data",
       "abc_desc": "Rekodi uchunguzi wa kichocheo, tabia, na matokeo",
       "obs_title": "Moja kwa moja uchunguzi",
-      "obs_desc": "Real-wakati interval, frequency, au duration recording",
+      "obs_desc": "Kurekodi kwa wakati halisi kwa kipindi, marudio, au muda",
       "analysis_title": "AI Uchambuzi",
       "analysis_desc": "AI-powered tabia pattern uchambuzi & recommendations",
       "overview_title": "Muhtasari",
@@ -9662,13 +9754,13 @@
       "triangulation_title": "Utatuzi wa Pembetatu",
       "triangulation_desc": "Cross-rejea 3+ data sources kwa convergence",
       "impact_title": "Kikokotoo cha Athari",
-      "impact_desc": "Quantify tabia frequency, duration, na annual cost",
+      "impact_desc": "Kadiria marudio ya tabia, muda, na gharama ya mwaka",
       "crisis_title": "Crisis Mpango",
       "crisis_desc": "Three-tier crisis uingiliaji protocol generator",
       "traffic_title": "Taa za Trafiki",
       "traffic_desc": "mwanafunzi-facing red/yellow/green tabia zone poster",
       "datasheet_title": "data Sheet",
-      "datasheet_desc": "inayoweza kuchapishwa frequency, duration, ABC, au latency data sheets",
+      "datasheet_desc": "Karatasi za takwimu za marudio, muda, ABC, au latency zinazoweza kuchapishwa",
       "homenote_title": "Barua Nyumbani",
       "homenote_desc": "AI-drafted mzazi communication na mwoneko selector",
       "fidelity_title": "Orodha ya Uaminifu",
@@ -9991,7 +10083,7 @@
     "reinforcer_sensory": "🌀 Hisia",
     "quiz_fba_purpose": "nini ni primary purpose ya FBA?",
     "quiz_replacement": "nini ni replacement tabia?",
-    "search_placeholder": "Tafuta antecedent, tabia, consequence, maelezo, mpangilio...",
+    "search_placeholder": "Tafuta kichocheo, tabia, matokeo, maelezo, mpangilio...",
     "quick_fill_placeholder": "e.g. \"mwanafunzi threw paper wakati hesabu wakati asked kwa onyesha kazi, mwalimu redirected calmly\"",
     "nl_edit_placeholder": "e.g. \"badiliko consequence kwa mwalimu redirected\"",
     "now": "sasa",
@@ -10144,7 +10236,7 @@
       "paste_share_code_here": "Bandika shiriki code here...",
       "person": "Mtu\\",
       "phase_label": "Lebo ya awamu",
-      "rationale_which_antecedent_does_this_address": "Rationale (which antecedent does hii address?)",
+      "rationale_which_antecedent_does_this_address": "Sababu (ni kichocheo kipi hii inashughulikia?)",
       "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect juu ya yako approach...\\n• nini worked well?\\n• nini would wewe do differently?\\n• nini mikakati do wewe taka kwa fanya mazoezi inayofuata?",
       "reinforcement_how_you": "⭐ Reinforcement (jinsi wewe\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement tabia (functionally sawa na)",
@@ -10575,7 +10667,7 @@
       "top_behavior": "Top tabia",
       "total_contacts": "Jumla ya Mawasiliano",
       "total_entries": "Total entries:",
-      "track_behavior_frequency_over_time_with_aim_lines": "Track tabia frequency juu wakati na aim mstari, phase mabadiliko, na trend uchambuzi.",
+      "track_behavior_frequency_over_time_with_aim_lines": "Fuatilia marudio ya tabia kwa muda kwa mistari ya lengo, mabadiliko ya awamu, na uchambuzi wa mwelekeo.",
       "track_behaviors_at_home_using_simple_everyday_lang": "Track tabia at home kutumia rahisi, everyday lugha. Hii inasaidia yako child\\",
       "track_your_feelings_earn_badges_and_build_streaks": "Track yako feelings, earn beji, na jenga streaks!",
       "transform_deficitbased_language_into_assetfocused": "Transform deficit-kulingana lugha ndani asset-focused descriptions",
@@ -10760,7 +10852,7 @@
       "developing": "Inakua",
       "discontinue": "Sitisha",
       "dismiss": "Ondoa",
-      "document_baseline_frequency_for_flagged_students": "hati baseline frequency kwa flagged mwanafunzi",
+      "document_baseline_frequency_for_flagged_students": "Andika marudio ya msingi kwa wanafunzi walioalamishwa",
       "document_outcomes_and_lessons_learned": "hati outcomes na somo learned",
       "document_the_confirmed_function": "hati confirmed function",
       "document_the_hypothesis_in_session_notes": "hati dhana katika kipindi maelezo",
@@ -10826,7 +10918,7 @@
       "level_mean": "kiwango (Mean)",
       "maintenance_tracker": "Kifuatiliaji cha Matengenezo",
       "make_tier_movement_decision_stay_fade_intensify": "Tengeneza tier movement decision (stay / fade / intensify)",
-      "map_antecedent_behavior_consequence_pathways": "Map antecedent → tabia → consequence pathways",
+      "map_antecedent_behavior_consequence_pathways": "Chora njia za kichocheo → tabia → matokeo",
       "map_each_target_behavior_to_a_replacement": "Map kila lengo tabia kwa replacement",
       "materials_access": "Vifaa Fikia",
       "measure_effect_size_of_interventions": "Pima effect size ya uingiliaji",
@@ -10863,10 +10955,10 @@
       "percentage": "asilimia",
       "phone": "Simu",
       "phone_call": "Simu",
-      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Mpango reinforcement schedule kwa replacement tabia",
+      "plan_a_reinforcement_schedule_for_replacement_behaviors": "Panga ratiba ya uimarishaji kwa tabia mbadala",
       "plan_data_collection_methods_and_frequency": "Mpango data collection methods na frequency",
       "plan_fidelity_monitoring": "Mpango Fidelity Monitoring",
-      "plan_reinforcement_for_replacement_behaviors": "Mpango reinforcement kwa replacement tabia",
+      "plan_reinforcement_for_replacement_behaviors": "Panga uimarishaji kwa tabia mbadala",
       "plan_replacement_behaviors": "Mpango Replacement tabia",
       "plan_weekly_progress_monitoring_data_collection": "Mpango weekly maendeleo monitoring data collection",
       "positivecorrective_ratio": "Uwiano wa Chanya:Marekebisho",
@@ -10908,7 +11000,7 @@
       "sensory": "Hisia",
       "sensory_break_menu": "Sensory Break menyu",
       "sensoryautomatic": "Sensory/kiotomatiki",
-      "sensoryautomatic_function": "Sensory/kiotomatiki Function",
+      "sensoryautomatic_function": "Kazi ya Kihisia/Kiotomatiki",
       "sensoryrelated": "Inayohusiana na Hisia",
       "session_tracker": "kipindi Tracker",
       "set_a_6week_intervention_cycle": "Weka 6-week uingiliaji cycle",
@@ -11004,7 +11096,7 @@
       "incorrect": "Sio sahihi",
       "independent": "Kujitegemea",
       "intensity": "Nguvu",
-      "interval_and_latency_recording": "Interval na latency recording",
+      "interval_and_latency_recording": "Kurekodi kwa kipindi na latency",
       "level": "kiwango",
       "mastered": "Umefanikiwa",
       "momentary_time_sampling": "Momentary wakati sampling",
@@ -11065,7 +11157,7 @@
       "step_collect_more": "Collect zaidi data",
       "step_collect_more_desc": "Ongeza zaidi uchunguzi kipindi kwa strengthen dataset.",
       "step_hypothesis": "dhana",
-      "step_hypothesis_desc": "Draft working dhana ya tabia function.",
+      "step_hypothesis_desc": "Andaa dhana ya awali kuhusu kazi ya tabia.",
       "step_record_abc": "Rekodi data ya ABC",
       "step_record_abc_desc": "hati antecedents, tabia, na consequences.",
       "step_report": "Ripoti",
@@ -11250,7 +11342,12 @@
   "lms": {
     "dismiss_banner_aria": "Ondoa bendera ya LMS",
     "dismiss_button": "Ondoa",
-    "audit_queue_help": "Bofya hati kwa leta na pakia it ndani ufikivu pipeline. Baadhi LMS faili inaweza require wewe kwa be logged katika kwa LMS katika hii browser."
+    "audit_queue_help": "Bofya hati kwa leta na pakia it ndani ufikivu pipeline. Baadhi LMS faili inaweza require wewe kwa be logged katika kwa LMS katika hii browser.",
+    "queued_one": "Hati {count} imepangwa foleni kutoka LMS",
+    "queued_other": "Hati {count} zimepangwa foleni kutoka LMS",
+    "fetching": "Inaleta {name}...",
+    "loaded_ready": "{name} imepakiwa; tayari kwa ukaguzi",
+    "fetch_failed": "Imeshindwa kuleta {name}: {error}. Faili linaweza kuhitaji uthibitishaji wa LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo ya mwisho annotation ({count} inapatikana) — Ctrl/Cmd+Z",
@@ -11270,7 +11367,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "kuona msaada kutoka yako mwalimu"
+    "teacher_modal_aria": "kuona msaada kutoka yako mwalimu",
+    "now": "SASA",
+    "read_aloud": "Soma kwa Sauti"
   },
   "canvas_settings": {
     "title": "ya juu mipangilio",
@@ -11287,7 +11386,12 @@
     "read_all_button": "Soma yote",
     "stop_button": "Simamisha",
     "focus_narration_label": "Kibodi Lengo Narration",
-    "focus_narration_on_hint": "Tab kwa hear controls"
+    "focus_narration_on_hint": "Tab kwa hear controls",
+    "reading": "Inasoma...",
+    "item_aria": "Bofya ili kusikia: {text}",
+    "footer_stats": "Vipengele {count} · Bofya kipengele chochote ili kukisikia · Masimulizi ya Tab {state}",
+    "narration_on": "IMEWASHWA",
+    "narration_off": "IMEZIMWA"
   },
   "teacher": {
     "local_only": "Local tu",
@@ -12463,5 +12567,27 @@
     "no_match": "Hakuna amri inayolingana. Gumzo la roboti (na hivi karibuni sauti) huelewa maombi ya namna yoyote.",
     "placeholder": "Andika amri — “maandishi makubwa”, “kitovu cha mwalimu”, “soma ukurasa huu”…",
     "run": "endesha"
+  },
+  "voice_engine": {
+    "preparing": "Inatayarisha injini ya sauti...",
+    "downloading_model": "Inapakua modeli ya sauti",
+    "loading_memory": "Inapakia kwenye kumbukumbu",
+    "loading_model_memory": "Inapakia modeli ya sauti kwenye kumbukumbu"
+  },
+  "voice_control": {
+    "listening": "Inasikiliza; sema “stop listening” ili kumaliza",
+    "stop_aria": "Simamisha udhibiti wa sauti"
+  },
+  "dynamic_assessment": {
+    "return_title": "Rasilimali hii ilizalishwa na Tathmini Inayobadilika. Bofya ili kufungua tena moduli ya Tathmini Inayobadilika.",
+    "return_aria": "Rudi kwa Tathmini Inayobadilika",
+    "return_label": "Rudi kwa Tathmini Inayobadilika",
+    "item_badge": "kipengele {num}"
+  },
+  "story_gallery": {
+    "title": "Matunzio ya Hadithi",
+    "byline": "Na {author} · maneno {words} · {used}/{total} msamiati",
+    "student": "Mwanafunzi",
+    "score": "Alama: {score}"
   }
 }

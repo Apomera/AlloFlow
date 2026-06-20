@@ -618,7 +618,8 @@
     "open_storyforge_aria": "打开 StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "基于文档的问题",
-    "open_stem_lab_explore_aria": "打开 STEM Lab 探索"
+    "open_stem_lab_explore_aria": "打开 STEM Lab 探索",
+    "stem_lab_explore": "探索"
   },
   "toolbar": {
     "show_bot": "显示 AI 助手",
@@ -677,7 +678,8 @@
     "loading_resources": "正在加载资源...",
     "preparing_workspace": "正在准备你的工作区...",
     "almost_ready": "即将就绪...",
-    "loading_screen_aria": "AlloFlow 加载屏幕"
+    "loading_screen_aria": "AlloFlow 加载屏幕",
+    "preparing_environment": "正在准备你的学习环境…"
   },
   "entry": {
     "placeholder": "例如：红隼",
@@ -920,7 +922,8 @@
     "cancel_transcription": "取消转录",
     "chunk_info": "音频拆分成 5 分钟的片段进行处理",
     "chunk_progress": "第 {current} 段 / 共 {total} 段",
-    "audio_only_error": "目前仅支持音频文件(MP3、WAV 等)进行分段转录。"
+    "audio_only_error": "目前仅支持音频文件(MP3、WAV 等)进行分段转录。",
+    "starting": "正在开始…"
   },
   "formatting": {
     "bold": "粗体 (**文本**)",
@@ -1200,7 +1203,12 @@
     "read_all_button": "全部朗读",
     "stop_button": "停止",
     "focus_narration_label": "键盘焦点朗读",
-    "focus_narration_on_hint": "按 Tab 听控件"
+    "focus_narration_on_hint": "按 Tab 听控件",
+    "reading": "正在朗读…",
+    "item_aria": "点击收听：{text}",
+    "footer_stats": "{count} 个项目 · 点击任意项目即可收听 · Tab 旁白 {state}",
+    "narration_on": "开",
+    "narration_off": "关"
   },
   "roles": {
     "title": "欢迎使用 AlloFlow",
@@ -2298,7 +2306,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} {minutes} 分钟专注连胜！继续保持！",
+    "streak_saved": "欢迎回来！已保存你的 {minutes} 分钟连胜。",
+    "points_awarded": "已奖励积分！",
+    "welcome_name": "欢迎，{name}！",
+    "element_not_found": "未找到元素：{id}",
+    "overlay_set": "叠加层：{mode}",
+    "synced_resource": "已同步：{title}",
+    "group_resource": "小组资源：{title}",
+    "preset_saved": "预设“{name}”已保存！",
+    "translated_resources": "已成功翻译 {count} 个资源！",
+    "bingo_cards_count": "已生成 {count} 张 BINGO 卡！",
+    "sound_enabled": "已开启声音",
+    "sound_muted": "已静音",
+    "democracy_mode_on": "已启用民主模式：全班投票已开启",
+    "democracy_mode_off": "已停用民主模式：单人模式",
+    "resource_moved_up": "已将 {title} 上移",
+    "resource_moved_down": "已将 {title} 下移",
+    "panels_regenerated": "已重新生成 {count} 个面板！",
+    "settings_undone": "已撤销：{label}。已恢复设置。（生成的资源不受影响。）",
+    "concept_added": "已添加概念：{text}",
+    "lesson_not_found": "在本单元中未找到该课程。",
+    "probe_complete": "探测完成：{correct}/{total}（{accuracy}%）",
+    "settings_updated": "设置已更新：{changes}",
+    "change_format": "格式：{value}",
+    "change_tone": "语气：{value}",
+    "change_length": "长度：约 {value} 个词",
+    "change_language": "语言：{value}",
+    "change_interest": "已添加兴趣：{value}",
+    "backup_saved": "💾 本次会话的备份已保存到你的“下载”中（一个项目文件）。现在无需对它做任何操作；如果以后需要返回，“加载项目”会恢复所有内容。",
+    "backup_saved_score": "（得分 {score}）",
+    "project_saved_multi_one": "💾 项目已保存（{count} 个范围）；稍后加载即可继续",
+    "project_saved_multi_other": "💾 项目已保存（{count} 个范围）；稍后加载即可继续",
+    "project_saved": "💾 项目已保存；稍后加载即可继续编辑",
+    "search_result_desc": "Google 搜索结果：{title}",
+    "link_url_prompt": "输入链接网址："
   },
   "wizard": {
     "title": "快速开始",
@@ -2474,7 +2517,10 @@
     "analyzing_topology": "扮演课程设计师：正在分析内容拓扑...",
     "brainstorming": "正在头脑风暴...",
     "retrying_citations": "正在重试以获得更好的引用...",
-    "translating": "正在翻译…"
+    "translating": "正在翻译…",
+    "preparing_translation": "正在准备翻译为 {lang}…",
+    "translating_item": "正在翻译 {current}/{total}：{title}…",
+    "generating_panel": "正在生成面板 {current}/{total}…"
   },
   "progression": {
     "title": "课程进展",
@@ -2524,7 +2570,34 @@
     "plan_hook": "导入",
     "plan_independent": "独立练习",
     "col_image": "图片",
-    "word_sounds_studio": "Word Sounds工作室"
+    "word_sounds_studio": "Word Sounds工作室",
+    "stop": "停止",
+    "expand_header": "展开页眉",
+    "collapse_header": "收起页眉以给内容腾出更多空间",
+    "collapse_header_short": "收起页眉",
+    "step_x_of_y": "第 {current} 步，共 {total} 步",
+    "english_translation": "英文翻译",
+    "source_references": "源文本参考",
+    "activity_probe": "{activity} 探测",
+    "word_sounds_count": "Word Sounds（{count} 个词）",
+    "quick_practice_mode": "快速练习模式",
+    "new_option": "新选项",
+    "meta_lesson_extensions": "课程拓展",
+    "title_extension_ideas": "拓展创意",
+    "meta_full_chat_log": "完整聊天记录",
+    "title_udl_consultation_log": "UDL 咨询记录",
+    "meta_actionable_steps": "可执行步骤（AI 摘要）",
+    "title_differentiation_strategy": "差异化策略",
+    "meta_udl_guide_advice": "UDL 指南建议",
+    "title_stem_assessment": "STEM 评估",
+    "title_explore_challenge": "探索挑战",
+    "title_fluency_maze": "🏰 流利度迷宫",
+    "title_storyforge_config": "📖 StoryForge 作业",
+    "title_storyforge_submission": "📖 故事提交",
+    "title_poettree_config": "🌳 PoetTree 作业",
+    "title_poettree_submission": "🌳 诗歌提交",
+    "title_litlab_config": "🎭 LitLab 作业",
+    "title_litlab_submission": "🎭 表演提交"
   },
   "fullpack": {
     "button_label": "生成完整资源包",
@@ -3686,7 +3759,8 @@
     "card_visuals_label": "卡片视觉",
     "card_visuals_auto": "自动(仅短项目)",
     "card_visuals_always": "始终生成图片",
-    "card_visuals_never": "从不(纯文本卡片)"
+    "card_visuals_never": "从不(纯文本卡片)",
+    "explanation_unavailable": "目前无法生成解释。请稍后再试。"
   },
   "concept_map": {
     "toolbar": {
@@ -4493,7 +4567,25 @@
       "resolved_tip": "原审计中的问题在验证审计中不再发现",
       "persisted_tip": "原审计中的问题在修复后仍然存在",
       "introduced_tip": "修复前不存在的新问题"
-    }
+    },
+    "reattach_mismatch": "重新附加的 PDF 与已审核的不同{detail}。仍将继续；结果可能与原始审核不一致。",
+    "reattach_name_detail": "（名称：“{new}”对比“{old}”）",
+    "reattach_size_detail": "（大小：{new} 对比 {old} 字节）",
+    "audit_failed_kept": "{label}：审核失败；已保留先前版本。",
+    "score_dropped_kept": "{label}：得分本会下降（{prev} → {next}{axe}）。已保留先前版本。",
+    "axe_only_comparison": "，仅 axe 比较",
+    "axe_only_committed": "{label}：AI 验证不可用；仅以确定性的 axe-core 得分确认。",
+    "reinserted_ai": "{count} 个已重新插入（AI）",
+    "reinserted_sentence": "{count} 个已重新插入（句子）",
+    "reinserted_fuzzy": "{count} 个已重新插入（模糊）",
+    "in_recovery_appendix": "{count} 个在恢复附录中",
+    "duplicates_removed_one": "已移除 {count} 个重复项",
+    "duplicates_removed_other": "已移除 {count} 个重复项",
+    "auto_continue_round": "自动继续第 {round}/{max} 轮：{detail}，得分 {score}/100（目标 {target}）…",
+    "violation_one": "{count} 项违规",
+    "violation_other": "{count} 项违规",
+    "ai_issue_one": "{count} 个 AI 标记的问题",
+    "ai_issue_other": "{count} 个 AI 标记的问题"
   },
   "groups": {
     "title": "差异化分组",
@@ -4707,7 +4799,9 @@
     "syntax_scramble": "句法重组遇到错误。"
   },
   "visual_support": {
-    "teacher_modal_aria": "来自你老师的视觉支持"
+    "teacher_modal_aria": "来自你老师的视觉支持",
+    "now": "现在",
+    "read_aloud": "朗读"
   },
   "report_writer": {
     "loading": "正在加载报告撰写器……",
@@ -4737,7 +4831,12 @@
   "lms": {
     "dismiss_banner_aria": "关闭 LMS 横幅",
     "dismiss_button": "关闭",
-    "audit_queue_help": "点击文档以获取并加载到无障碍管线中。某些 LMS 文件可能要求你已在此浏览器中登录 LMS。"
+    "audit_queue_help": "点击文档以获取并加载到无障碍管线中。某些 LMS 文件可能要求你已在此浏览器中登录 LMS。",
+    "queued_one": "{count} 个文档已从 LMS 排队",
+    "queued_other": "{count} 个文档已从 LMS 排队",
+    "fetching": "正在获取 {name}…",
+    "loaded_ready": "{name} 已加载；可供审核",
+    "fetch_failed": "无法获取 {name}：{error}。该文件可能需要 LMS 身份验证。"
   },
   "student_dashboard": {
     "level_progress": "等级进度",
@@ -5176,7 +5275,12 @@
       "error_check": "无法检查对齐。",
       "regenerated_success": "已重新生成改进后的文本！",
       "regen_failed": "重新生成失败。"
-    }
+    },
+    "skill_check": "技能检查",
+    "desc_skill_check": "对照标准检验你的掌握程度。",
+    "desc_parent": "了解这与学校目标的契合程度",
+    "desc_6dim": "从 6 个维度审核课程",
+    "desc_5dim": "从 5 个维度审核课程（添加标准以进行完整审核）"
   },
   "explore": {
     "challenge_number_line": "数轴挑战",
@@ -12128,5 +12232,27 @@
     "no_match": "没有匹配的命令。机器人对话（很快还有语音）可理解自由形式的请求。",
     "placeholder": "输入命令 — “放大文字”、“教育者中心”、“朗读此页”…",
     "run": "运行"
+  },
+  "voice_engine": {
+    "preparing": "正在准备语音引擎…",
+    "downloading_model": "正在下载语音模型",
+    "loading_memory": "正在载入内存",
+    "loading_model_memory": "正在将语音模型载入内存"
+  },
+  "voice_control": {
+    "listening": "正在聆听；说“stop listening”以结束",
+    "stop_aria": "停止语音控制"
+  },
+  "dynamic_assessment": {
+    "return_title": "此资源由动态评估生成。点击可重新打开动态评估模块。",
+    "return_aria": "返回动态评估",
+    "return_label": "返回动态评估",
+    "item_badge": "第 {num} 项"
+  },
+  "story_gallery": {
+    "title": "故事画廊",
+    "byline": "作者 {author} · {words} 个词 · {used}/{total} 词汇",
+    "student": "学生",
+    "score": "得分：{score}"
   }
 }

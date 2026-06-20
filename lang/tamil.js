@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "Whisper ஏற்றுதல் தோல்வியடைந்தது. மற்ற இயந்திரங்களுக்கு திரும்புகிறது.",
     "backup_failed": "காப்புப்பிரதி தோல்வியடைந்தது. மீண்டும் முயலவும்.",
     "invalid_backup_file": "சரியான AlloHaven காப்புப்பிரதி கோப்பு அல்ல.",
-    "could_not_read_file": "அந்த கோப்பை படிக்க முடியவில்லை. அது JSON காப்புப்பிரதியா?"
+    "could_not_read_file": "அந்த கோப்பை படிக்க முடியவில்லை. அது JSON காப்புப்பிரதியா?",
+    "focus_streak": "{flames} {minutes} நிமிட கவன தொடர்! இப்படியே தொடர்ந்து செய்!",
+    "streak_saved": "மீண்டும் வரவேற்கிறோம்! உனது {minutes} நிமிட தொடர் சேமிக்கப்பட்டது.",
+    "points_awarded": "புள்ளிகள் வழங்கப்பட்டன!",
+    "welcome_name": "வரவேற்கிறோம், {name}!",
+    "element_not_found": "உறுப்பு கிடைக்கவில்லை: {id}",
+    "overlay_set": "மேலடுக்கு: {mode}",
+    "synced_resource": "ஒத்திசைக்கப்பட்டது: {title}",
+    "group_resource": "குழு வளம்: {title}",
+    "preset_saved": "முன்னமைவு \"{name}\" சேமிக்கப்பட்டது!",
+    "translated_resources": "{count} வளங்கள் வெற்றிகரமாக மொழிபெயர்க்கப்பட்டன!",
+    "bingo_cards_count": "{count} BINGO அட்டைகள் உருவாக்கப்பட்டன!",
+    "sound_enabled": "ஒலி இயக்கப்பட்டது",
+    "sound_muted": "ஒலி முடக்கப்பட்டது",
+    "democracy_mode_on": "ஜனநாயக முறை இயக்கப்பட்டது: வகுப்பு வாக்களிப்பு இயக்கத்தில்",
+    "democracy_mode_off": "ஜனநாயக முறை முடக்கப்பட்டது: தனி விளையாட்டு",
+    "resource_moved_up": "{title} மேலே நகர்த்தப்பட்டது",
+    "resource_moved_down": "{title} கீழே நகர்த்தப்பட்டது",
+    "panels_regenerated": "{count} பலகங்கள் மீண்டும் உருவாக்கப்பட்டன!",
+    "settings_undone": "செயல்தவிர்க்கப்பட்டது: {label}. அமைப்புகள் மீட்டமைக்கப்பட்டன. (உருவாக்கப்பட்ட வளங்கள் பாதிக்கப்படாது.)",
+    "concept_added": "கருத்து சேர்க்கப்பட்டது: {text}",
+    "lesson_not_found": "இந்த அலகில் பாடம் கிடைக்கவில்லை.",
+    "probe_complete": "சோதனை முடிந்தது: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "அமைப்புகள் புதுப்பிக்கப்பட்டன: {changes}",
+    "change_format": "வடிவம்: {value}",
+    "change_tone": "தொனி: {value}",
+    "change_length": "நீளம்: ~{value} சொற்கள்",
+    "change_language": "மொழி: {value}",
+    "change_interest": "ஆர்வம் சேர்க்கப்பட்டது: {value}",
+    "backup_saved": "💾 இந்த அமர்வின் காப்புப்பிரதி உனது பதிவிறக்கங்களில் சேமிக்கப்பட்டது (ஒரு திட்டக் கோப்பு). இப்போது அதைப் பற்றி எதுவும் செய்ய வேண்டியதில்லை; எப்போதேனும் திரும்ப வர வேண்டுமானால், \"திட்டத்தை ஏற்று\" அனைத்தையும் மீட்டெடுக்கும்.",
+    "backup_saved_score": " (மதிப்பெண் {score})",
+    "project_saved_multi_one": "💾 திட்டம் சேமிக்கப்பட்டது ({count} வரம்பு); தொடர பின்னர் ஏற்று",
+    "project_saved_multi_other": "💾 திட்டம் சேமிக்கப்பட்டது ({count} வரம்புகள்); தொடர பின்னர் ஏற்று",
+    "project_saved": "💾 திட்டம் சேமிக்கப்பட்டது; திருத்தத்தைத் தொடர பின்னர் ஏற்று",
+    "search_result_desc": "Google தேடல் முடிவு: {title}",
+    "link_url_prompt": "இணைப்பின் URL ஐ உள்ளிடவும்:"
   },
   "large_file": {
     "modal_title": "இறக்குமதி Large ஒலி கோப்பு",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "ரத்துசெய் Transcription",
     "chunk_info": "ஒலி ஆகும் split உள்ளே 5-minute chunks க்கு processing",
     "chunk_progress": "Chunk {current} இன் {total}",
-    "audio_only_error": "Currently only ஒலி கோப்பு (MP3, WAV, etc.) ஆகும் supported க்கு chunked transcription."
+    "audio_only_error": "Currently only ஒலி கோப்பு (MP3, WAV, etc.) ஆகும் supported க்கு chunked transcription.",
+    "starting": "தொடங்குகிறது..."
   },
   "formatting": {
     "bold": "Bold (**உரை**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "திற StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ஆவணம்-அடிப்படையிலான கேள்வி",
-    "open_stem_lab_explore_aria": "திற STEM ஆய்வகம் ஆராய்"
+    "open_stem_lab_explore_aria": "திற STEM ஆய்வகம் ஆராய்",
+    "stem_lab_explore": "ஆராய்"
   },
   "history": {
     "load_project": "ஏற்று Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight நிறம்",
       "insert_table_aria": "Insert அட்டவணை",
       "insert_table_title": "Insert accessible அட்டவணை"
-    }
+    },
+    "reattach_mismatch": "மீண்டும் இணைக்கப்பட்ட PDF தணிக்கை செய்யப்பட்டதிலிருந்து வேறுபடுகிறது{detail}. எப்படியும் தொடரும்; முடிவுகள் அசல் தணிக்கையுடன் முரண்படலாம்.",
+    "reattach_name_detail": " (பெயர்: \"{new}\" எதிராக \"{old}\")",
+    "reattach_size_detail": " (அளவு: {new} எதிராக {old} பைட்டுகள்)",
+    "audit_failed_kept": "{label}: தணிக்கை தோல்வியடைந்தது; முந்தைய பதிப்பு வைக்கப்பட்டது.",
+    "score_dropped_kept": "{label}: மதிப்பெண் குறைந்திருக்கும் ({prev} → {next}{axe}). முந்தைய பதிப்பு வைக்கப்பட்டது.",
+    "axe_only_comparison": ", axe மட்டும் ஒப்பீடு",
+    "axe_only_committed": "{label}: AI சரிபார்ப்பு கிடைக்கவில்லை; உறுதியான axe-core மதிப்பெண்ணுடன் மட்டும் உறுதி செய்யப்பட்டது.",
+    "reinserted_ai": "{count} மீண்டும் சேர்க்கப்பட்டது (AI)",
+    "reinserted_sentence": "{count} மீண்டும் சேர்க்கப்பட்டது (வாக்கியம்)",
+    "reinserted_fuzzy": "{count} மீண்டும் சேர்க்கப்பட்டது (தோராயம்)",
+    "in_recovery_appendix": "{count} மீட்பு பிற்சேர்க்கையில்",
+    "duplicates_removed_one": "{count} நகல் அகற்றப்பட்டது",
+    "duplicates_removed_other": "{count} நகல்கள் அகற்றப்பட்டன",
+    "auto_continue_round": "தானியங்கி-தொடர் சுற்று {round}/{max}: {detail}, மதிப்பெண் {score}/100 (இலக்கு {target})...",
+    "violation_one": "{count} மீறல்",
+    "violation_other": "{count} மீறல்கள்",
+    "ai_issue_one": "{count} AI-குறிக்கப்பட்ட சிக்கல்",
+    "ai_issue_other": "{count} AI-குறிக்கப்பட்ட சிக்கல்கள்"
   },
   "concept_sort": {
     "title": "Concept வரிசைப்படுத்து",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "அட்டை காட்சி",
     "card_visuals_auto": "தானியங்கி (குறுகிய பொருள்களில் மட்டும்)",
     "card_visuals_always": "Always உருவாக்கு படம்",
-    "card_visuals_never": "ஒருபோதும் இல்லை (உரை-மட்டும் அட்டைகள்)"
+    "card_visuals_never": "ஒருபோதும் இல்லை (உரை-மட்டும் அட்டைகள்)",
+    "explanation_unavailable": "இப்போது விளக்கத்தை உருவாக்க முடியவில்லை. தயவுசெய்து சிறிது நேரத்தில் மீண்டும் முயற்சிக்கவும்."
   },
   "dbq": {
     "title": "ஆவணம் Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed க்கு check alignment.",
       "regenerated_success": "உரை regenerated உடன் improvements!",
       "regen_failed": "மீளுருவாக்கம் தோல்வியடைந்தது."
-    }
+    },
+    "skill_check": "திறன் சோதனை",
+    "desc_skill_check": "தரநிலைகளுக்கு எதிராக உனது தேர்ச்சியைச் சரிபார்.",
+    "desc_parent": "இது பள்ளி இலக்குகளுடன் எவ்வாறு பொருந்துகிறது என்பதைப் பாருங்கள்",
+    "desc_6dim": "பாடத்திட்டத்தை 6 பரிமாணங்களில் தணிக்கை செய்கிறது",
+    "desc_5dim": "பாடத்திட்டத்தை 5 பரிமாணங்களில் தணிக்கை செய்கிறது (முழு தணிக்கைக்கு தரநிலைகளைச் சேர்க்கவும்)"
   },
   "standards": {
     "target_standard": "Target தரநிலை",
@@ -5188,7 +5249,34 @@
     "plan_hook": "தூண்டல்",
     "plan_independent": "Independent பயிற்சி செய்",
     "col_image": "படம்",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "நிறுத்து",
+    "expand_header": "தலைப்பை விரிவாக்கு",
+    "collapse_header": "உள்ளடக்கத்திற்கு அதிக இடம் தர தலைப்பைச் சுருக்கு",
+    "collapse_header_short": "தலைப்பைச் சுருக்கு",
+    "step_x_of_y": "படி {current} / {total}",
+    "english_translation": "ஆங்கில மொழிபெயர்ப்பு",
+    "source_references": "மூல உரை குறிப்புகள்",
+    "activity_probe": "{activity} சோதனை",
+    "word_sounds_count": "Word Sounds ({count} சொற்கள்)",
+    "quick_practice_mode": "விரைவு பயிற்சி முறை",
+    "new_option": "புதிய விருப்பம்",
+    "meta_lesson_extensions": "பாட விரிவாக்கங்கள்",
+    "title_extension_ideas": "விரிவாக்க யோசனைகள்",
+    "meta_full_chat_log": "முழு அரட்டை பதிவு",
+    "title_udl_consultation_log": "UDL ஆலோசனை பதிவு",
+    "meta_actionable_steps": "செயல்படக்கூடிய படிகள் (AI சுருக்கம்)",
+    "title_differentiation_strategy": "வேறுபடுத்தல் உத்தி",
+    "meta_udl_guide_advice": "UDL வழிகாட்டி ஆலோசனை",
+    "title_stem_assessment": "STEM மதிப்பீடு",
+    "title_explore_challenge": "ஆராய்ச்சி சவால்",
+    "title_fluency_maze": "🏰 சரளத் தளம்",
+    "title_storyforge_config": "📖 StoryForge பணி",
+    "title_storyforge_submission": "📖 கதை சமர்ப்பிப்பு",
+    "title_poettree_config": "🌳 PoetTree பணி",
+    "title_poettree_submission": "🌳 கவிதை சமர்ப்பிப்பு",
+    "title_litlab_config": "🎭 LitLab பணி",
+    "title_litlab_submission": "🎭 நிகழ்ச்சி சமர்ப்பிப்பு"
   },
   "persona": {
     "title": "Interview பயன்முறை",
@@ -8317,7 +8405,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing உள்ளடக்கம் topology...",
     "brainstorming": "யோசனைகள் சிந்திக்கப்படுகின்றன...",
     "retrying_citations": "Retrying க்கு சிறந்த citations...",
-    "translating": "மொழிபெயர்க்கப்படுகிறது…"
+    "translating": "மொழிபெயர்க்கப்படுகிறது…",
+    "preparing_translation": "{lang} மொழிபெயர்ப்பு தயாராகிறது...",
+    "translating_item": "{current}/{total} மொழிபெயர்க்கப்படுகிறது: {title}...",
+    "generating_panel": "பலகம் {current}/{total} உருவாக்கப்படுகிறது..."
   },
   "process": {
     "source_missing": "தயவுசெய்து provide மூலம் உரை முதல்.",
@@ -9613,7 +9704,8 @@
     "loading_resources": "Loading வளங்கள்...",
     "preparing_workspace": "Preparing உங்கள் workspace...",
     "almost_ready": "ஏறக்குறைய தயார்...",
-    "loading_screen_aria": "AlloFlow ஏற்றுதல் திரை"
+    "loading_screen_aria": "AlloFlow ஏற்றுதல் திரை",
+    "preparing_environment": "உனது கற்றல் சூழல் தயாராகிறது..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9722,7 +9814,7 @@
       "deescalate_title": "தணிப்பு கருவித்தொகுப்பு",
       "drstrategy_desc": "சரியான வேறுபாட்டு வலுவூட்டல் உத்தியைத் தேர்ந்தெடுக்கவும் (DRA, DRI, DRO, DRL)",
       "drstrategy_title": "DR உத்தி Selector",
-      "dtt_desc": "Discrete Trial Training (DTT) — தேர்ச்சி அளவுகோல்கள் மற்றும் தானியங்கி-முன்னேற்றத்துடன் சோதனை-வாரியான பதிவு",
+      "dtt_desc": "Discrete Trial Training — தேர்ச்சி அளவுகோல்கள் மற்றும் தானியங்கி-முன்னேற்றத்துடன் சோதனை-வாரியான பதிவு",
       "dtt_title": "DTT தரவு Sheet",
       "effectsize_desc": "காட்சி கட்ட ஒப்பீட்டுடன் தலையீட்டு செயல்திறனை அளவிட Tau-U, NAP, மற்றும் PND-ஐக் கணக்கிடவும்",
       "effectsize_title": "விளைவு அளவு கணிப்பான்",
@@ -9768,7 +9860,7 @@
       "prefassess_title": "Preference மதிப்பீடு",
       "progress_desc": "திரட்டப்பட்ட நடத்தை தரவிலிருந்து IEP-தயார் முன்னேற்ற கண்காணிப்பு பத்திகள்",
       "progress_title": "முன்னேற்றம் Narrative",
-      "progressreport_desc": "AI-generated முன்னேற்றம் reports உடன் தரவு summaries, trend analysis, இலக்கு முன்னேற்றம், மற்றும் பெற்றோர்-நட்பான மொழி விருப்பங்கள்",
+      "progressreport_desc": "தரவு சுருக்கங்கள், போக்கு பகுப்பாய்வு, இலக்கு முன்னேற்றம், மற்றும் பெற்றோர்-நட்பான மொழி விருப்பத்துடன் AI-உருவாக்கிய முன்னேற்ற அறிக்கைகள்",
       "progressreport_title": "முன்னேற்றம் Reports",
       "qualitycheck_desc": "குறிப்பிட்ட மேம்பாட்டுப் பரிந்துரைகளுடன் உங்கள் ABC உள்ளீடுகளின் AI-இயக்கப்படும் மதிப்பாய்வு",
       "qualitycheck_title": "தரவு Quality Check",
@@ -9800,7 +9892,7 @@
       "sessionnotes_title": "அமர்வு Notes",
       "sessiontracker_desc": "விகித கணக்கீட்டுடன் முறையான அமர்வு-அடிப்படையிலான நடத்தை அளவீடு",
       "sessiontracker_title": "அமர்வு தரவு Tracker",
-      "snapshot_desc": "ஏற்றுமதி & இறக்குமதி JSON snapshots க்கு பெற்றோர்–ஆசிரியர் தரவு exchange",
+      "snapshot_desc": "பெற்றோர்–ஆசிரியர் தரவுப் பரிமாற்றத்திற்கான JSON snapshots-ஐ ஏற்றுமதி & இறக்குமதி செய்யவும்",
       "snapshot_title": "மாணவர் ஸ்னாப்ஷாட் பரிமாற்றம்",
       "socialvalidity_desc": "சிகிச்சை ஏற்புத்திறனை அளவிடுவதற்கான TARF மற்றும் IRP-15 அளவீடுகள் — வெளியீட்டிற்கு அவசியம்",
       "socialvalidity_title": "சமூக Validity",
@@ -10263,7 +10355,7 @@
       "graph_data_attached_to_iep_prep": "வரைபடத் தரவு IEP தயாரிப்புடன் இணைக்கப்பட்டது!",
       "graph_data_ready_autofill_available_in_effect_size": "வரைபடத் தரவு தயார் — விளைவு அளவில் தானாக நிரப்புதல் கிடைக்கிறது!",
       "home_log_exported_as_snapshot": "வீட்டுப் பதிவு ஒரு ஸ்னாப்ஷாட்டாக ஏற்றுமதி செய்யப்பட்டது 📦",
-      "home_note_generated": "Home note உருவாக்கப்பட்டது ✨",
+      "home_note_generated": "வீட்டுக் குறிப்பு உருவாக்கப்பட்டது ✨",
       "hypothesis_generated": "கருதுகோள் உருவாக்கப்பட்டது ✨",
       "iep_goals_generated": "IEP இலக்கு உருவாக்கப்பட்டது!",
       "iep_prep_packet_generated": "IEP தயாரிப்புத் தொகுப்பு உருவாக்கப்பட்டது ✨",
@@ -10333,7 +10425,7 @@
       "reinforce_now": "🎉 REINFORCE இப்போது!",
       "reinforcers_recommended": "வலுவூட்டிகள் பரிந்துரைக்கப்பட்டன ✨",
       "replacement_plan_added": "மாற்றுத் திட்டம் சேர்க்கப்பட்டது",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report உருவாக்கப்பட்டது — பயன்படுத்து அச்சிடு/சேமி as PDF இல் புதிய tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "அறிக்கை உருவாக்கப்பட்டது — புதிய தாவலில் Print/Save as PDF-ஐப் பயன்படுத்தவும்!",
       "reset_to_default_template": "மீட்டமை க்கு இயல்புநிலை template",
       "reset_to_defaults": "மீட்டமை க்கு defaults",
       "response_failed_try_again": "பதில் தோல்வியடைந்தது — மீண்டும் முயற்சிக்கவும்",
@@ -10400,7 +10492,7 @@
       "add_abc_entries_to_see_progress_over_time": "காலப்போக்கில் முன்னேற்றத்தைக் காண ABC உள்ளீடுகளைச் சேர்க்கவும்",
       "add_abc_entries_to_see_visual_trend_data": "காட்சி போக்குத் தரவைக் காண ABC உள்ளீடுகளைச் சேர்க்கவும்.",
       "add_connections_to_build_the_relationship_map": "உறவு வரைபடத்தை உருவாக்க இணைப்புகளைச் சேர்க்கவும்.",
-      "add_data_points_above_or_paste_csv_data_to_get_sta": "சேர் தரவு புள்ளி above அல்லது ஒட்டு CSV தரவு க்கு get started.",
+      "add_data_points_above_or_paste_csv_data_to_get_sta": "மேலே தரவுப் புள்ளிகளைச் சேர்க்கவும் அல்லது தொடங்க CSV தரவை ஒட்டவும்.",
       "additional_context_optional": "கூடுதல் சூழல் (விருப்பத்தேர்வு)",
       "ai_analysis": "AI பகுப்பாய்வு",
       "ai_context_available": "AI Context கிடைக்கும்",
@@ -10436,7 +10528,7 @@
       "collect_some_abc_data_first_to_generate_a_meaningf": "அர்த்தமுள்ள தொகுப்பை உருவாக்க முதலில் சில ABC தரவைச் சேகரிக்கவும்.",
       "communication_log": "தகவல்தொடர்பு பதிவு",
       "conditional_probability": "நிபந்தனை நிகழ்தகவு",
-      "create_your_first_replacement_behavior_plan": "உருவாக்கு உங்கள் முதல் replacement நடத்தை plan.",
+      "create_your_first_replacement_behavior_plan": "உங்கள் முதல் மாற்று நடத்தைத் திட்டத்தை உருவாக்கவும்.",
       "crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor": "CRF (ஒவ்வொரு முறையும்) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → இயற்கை வலுவூட்டல்",
       "crossstudent_comparison": "குறுக்கு-மாணவர் ஒப்பீடு",
       "cultural_context_reflection": "கலாச்சார சூழல் பிரதிபலிப்பு",
@@ -10528,7 +10620,7 @@
       "optional_message": "விருப்பமான செய்தி",
       "or_explore_the_pd_learning_path": "அல்லது PD கற்றல் பாதையை ஆராயுங்கள் →",
       "parent": "பெற்றோர்",
-      "paste_one_value_per_line_supports_formats_5_sessio": "ஒட்டு one மதிப்பு per கோடு. ஆதரவு வடிவம்: \"5\", \"அமர்வு 1: 5\", அல்லது \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "ஒரு வரிக்கு ஒரு மதிப்பை ஒட்டவும். ஆதரிக்கப்படும் வடிவங்கள்: \"5\", \"அமர்வு 1: 5\", அல்லது \"1,5\"",
       "pd_learning_path": "PD கற்றல் பாதை",
       "please_use_chrome_edge_or_safari_for_voice_input": "தயவுசெய்து பயன்படுத்து Chrome, Edge, அல்லது Safari க்கு குரல் உள்ளீடு.",
       "practice_clinical_reasoning_with_aigenerated_case": "AI-உருவாக்கப்பட்ட வழக்கு ஆய்வுகளுடன் மருத்துவ பகுத்தறிவை பயிற்சி செய்யுங்கள். உங்கள் பதில்களில் நிபுணர்-நிலை கருத்தைப் பெறுங்கள்.",
@@ -10546,7 +10638,7 @@
       "read_through_the_module_content_above_then_click_c": "மேலே உள்ள தொகுதி உள்ளடக்கத்தை படித்து, கீழே Complete ஐ கிளிக் செய்யவும்.",
       "realtime_calming_tools_for_inthemoment_support": "தற்கணத்திற்கான நிஜ-நேர அமைதிப்படுத்தும் கருவிகள்",
       "recent_moods": "சமீபத்திய மனநிலைகள்:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record அமர்வு உடன் அமர்வு தரவு Tracker, அல்லது மாற்று க்கு கையேடு Entry பயன்முறை.",
+      "record_sessions_with_the_session_data_tracker_or_s": "Session Data Tracker மூலம் அமர்வுகளைப் பதிவு செய்யவும், அல்லது கையேடு உள்ளீட்டுப் பயன்முறைக்கு மாறவும்.",
       "recording": "பதிவு செய்கிறது...",
       "relationship_map": "உறவு வரைபடம்",
       "remember_cultural_humility_is_a_lifelong_practice": "நினைவில் கொள்ளுங்கள்: கலாச்சார பணிவு ஒரு வாழ்நாள் பயிற்சி. ஒவ்வொரு பிரதிபலிப்பும் உங்களை மிகவும் சமமான பயிற்சியாளராக்குகிறது.",
@@ -10574,7 +10666,7 @@
       "summary": "Summary:",
       "systematic_behavioral_measurement_across_sessions": "அமர்வுகள் முழுவதும் முறையான நடத்தை அளவீடு",
       "systematic_reinforcer_identification_using_evidenc": "ஆதார-அடிப்படையிலான நெறிமுறைகளைப் பயன்படுத்தி முறையான பலப்படுத்தி அடையாளம்",
-      "tap_each_item_when_student_engages_with_it": "Tap ஒவ்வொன்றும் பொருள் போது மாணவர் engages உடன் it",
+      "tap_each_item_when_student_engages_with_it": "மாணவர் ஒவ்வொரு பொருளுடன் ஈடுபடும்போது அதைத் தட்டவும்",
       "target_behavior": "Target நடத்தை",
       "task_analysis": "பணி பகுப்பாய்வு",
       "taskskill_name": "பணி/திறன் பெயர்",
@@ -10585,7 +10677,7 @@
       "total_contacts": "மொத்த தொடர்புகள்",
       "total_entries": "Total entries:",
       "track_behavior_frequency_over_time_with_aim_lines": "இலக்குக் கோடுகள், கட்ட மாற்றங்கள் மற்றும் போக்கு பகுப்பாய்வுடன் காலப்போக்கில் நடத்தை அதிர்வெண்ணைக் கண்காணிக்கவும்.",
-      "track_behaviors_at_home_using_simple_everyday_lang": "Track நடத்தை at home பயன்படுத்தி எளிய, everyday மொழி. இது உதவி உங்கள் child\\",
+      "track_behaviors_at_home_using_simple_everyday_lang": "எளிய, அன்றாட மொழியைப் பயன்படுத்தி வீட்டில் நடத்தைகளைக் கண்காணிக்கவும். இது உங்கள் குழந்தைக்கு\\",
       "track_your_feelings_earn_badges_and_build_streaks": "உங்கள் உணர்வுகளைக் கண்காணியுங்கள், பேட்ஜ்களைப் பெறுங்கள், தொடர்ச்சிகளை உருவாக்குங்கள்!",
       "transform_deficitbased_language_into_assetfocused": "பற்றாக்குறை-அடிப்படையிலான மொழியை சொத்து-கவனம் செலுத்தப்பட்ட விளக்கங்களாக மாற்றுங்கள்",
       "translate_to_any_language": "Translate க்கு any மொழி:",
@@ -11259,7 +11351,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS பதாகையை நிராகரி",
     "dismiss_button": "நிராகரி",
-    "audit_queue_help": "கிளிக் செய் ஒரு ஆவணம் க்கு பெறு மற்றும் ஏற்று it உள்ளே accessibility pipeline. Some LMS கோப்பு may require நீங்கள் க்கு be logged இல் க்கு LMS இல் இது browser."
+    "audit_queue_help": "கிளிக் செய் ஒரு ஆவணம் க்கு பெறு மற்றும் ஏற்று it உள்ளே accessibility pipeline. Some LMS கோப்பு may require நீங்கள் க்கு be logged இல் க்கு LMS இல் இது browser.",
+    "queued_one": "LMS இலிருந்து {count} ஆவணம் வரிசையில்",
+    "queued_other": "LMS இலிருந்து {count} ஆவணங்கள் வரிசையில்",
+    "fetching": "{name} பெறப்படுகிறது...",
+    "loaded_ready": "{name} ஏற்றப்பட்டது; தணிக்கைக்குத் தயார்",
+    "fetch_failed": "{name} பெற முடியவில்லை: {error}. கோப்புக்கு LMS அங்கீகாரம் தேவைப்படலாம்."
   },
   "annotation": {
     "undo_tooltip": "Undo கடைசி annotation ({count} கிடைக்கும்) — Ctrl/Cmd+Z",
@@ -11279,7 +11376,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "காட்சி ஆதரவு இருந்து உங்கள் ஆசிரியர்"
+    "teacher_modal_aria": "காட்சி ஆதரவு இருந்து உங்கள் ஆசிரியர்",
+    "now": "இப்போது",
+    "read_aloud": "உரக்கப் படி"
   },
   "canvas_settings": {
     "title": "மேம்பட்ட அமைப்புகள்",
@@ -11296,7 +11395,12 @@
     "read_all_button": "படி எல்லாம்",
     "stop_button": "நிறுத்து",
     "focus_narration_label": "விசைப்பலகை கவன விவரிப்பு",
-    "focus_narration_on_hint": "Tab க்கு hear controls"
+    "focus_narration_on_hint": "Tab க்கு hear controls",
+    "reading": "படிக்கிறது...",
+    "item_aria": "கேட்க கிளிக் செய்: {text}",
+    "footer_stats": "{count} உருப்படிகள் · எந்த உருப்படியையும் கேட்க கிளிக் செய் · Tab விவரிப்பு {state}",
+    "narration_on": "இயக்கம்",
+    "narration_off": "முடக்கம்"
   },
   "teacher": {
     "local_only": "உள்ளூர் மட்டும்",
@@ -12472,5 +12576,27 @@
     "no_match": "பொருந்தும் கட்டளை இல்லை. பாட் அரட்டை (மற்றும் விரைவில் குரல்) தடையற்ற வேண்டுகோள்களைப் புரிந்துகொள்கிறது.",
     "placeholder": "ஒரு கட்டளையைத் தட்டச்சு செய்யுங்கள் — “பெரிய உரை”, “கல்வியாளர் மையம்”, “இந்தப் பக்கத்தைப் படி”…",
     "run": "இயக்கு"
+  },
+  "voice_engine": {
+    "preparing": "குரல் இயந்திரம் தயாராகிறது...",
+    "downloading_model": "குரல் மாதிரி பதிவிறக்கப்படுகிறது",
+    "loading_memory": "நினைவகத்தில் ஏற்றப்படுகிறது",
+    "loading_model_memory": "குரல் மாதிரி நினைவகத்தில் ஏற்றப்படுகிறது"
+  },
+  "voice_control": {
+    "listening": "கேட்கிறது; முடிக்க “stop listening” என்று சொல்",
+    "stop_aria": "குரல் கட்டுப்பாட்டை நிறுத்து"
+  },
+  "dynamic_assessment": {
+    "return_title": "இந்த வளம் டைனமிக் அசெஸ்மென்ட் மூலம் உருவாக்கப்பட்டது. டைனமிக் அசெஸ்மென்ட் தொகுதியை மீண்டும் திறக்க கிளிக் செய்.",
+    "return_aria": "டைனமிக் அசெஸ்மென்ட்டுக்குத் திரும்பு",
+    "return_label": "டைனமிக் அசெஸ்மென்ட்டுக்குத் திரும்பு",
+    "item_badge": "உருப்படி {num}"
+  },
+  "story_gallery": {
+    "title": "கதை தொகுப்பு",
+    "byline": "{author} எழுதியது · {words} சொற்கள் · {used}/{total} சொற்களஞ்சியம்",
+    "student": "மாணவர்",
+    "score": "மதிப்பெண்: {score}"
   }
 }

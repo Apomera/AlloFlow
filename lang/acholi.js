@@ -1698,7 +1698,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Lawiny me cworre pi dakika {minutes}! Med ki timo kit meno!",
+    "streak_saved": "Iyab odoco! Kigwoko lawiny mamegi me dakika {minutes}.",
+    "points_awarded": "Kimiyo point!",
+    "welcome_name": "Iyab, {name}!",
+    "element_not_found": "Pe kinongo gin: {id}",
+    "overlay_set": "Lawi malo: {mode}",
+    "synced_resource": "Kiribo: {title}",
+    "group_resource": "Jami me dul: {title}",
+    "preset_saved": "Kigwoko preset \"{name}\"!",
+    "translated_resources": "Kiloko jami {count} maber!",
+    "bingo_cards_count": "Kiyubo karte BINGO {count}!",
+    "sound_enabled": "Kiyabo dwan",
+    "sound_muted": "Kijuko dwan",
+    "democracy_mode_on": "Kiyabo yo me democracy: cuk me kilaci tye ka tic",
+    "democracy_mode_off": "Kijuko yo me democracy: tugo keni",
+    "resource_moved_up": "Kiwilo {title} malo",
+    "resource_moved_down": "Kiwilo {title} piny",
+    "panels_regenerated": "Kiyubo panel {count} odoco!",
+    "settings_undone": "Kidwoko: {label}. Kidwoko settings. (Jami ma kiyubo pe gimaki.)",
+    "concept_added": "Kimedo tam: {text}",
+    "lesson_not_found": "Pe kinongo kwan i unit man.",
+    "probe_complete": "Tem otum: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Kiketo settings manyen: {changes}",
+    "change_format": "Kit: {value}",
+    "change_tone": "Dwan: {value}",
+    "change_length": "Borre: ~{value} lok",
+    "change_language": "Leb: {value}",
+    "change_interest": "Kimedo mit: {value}",
+    "backup_saved": "💾 Kigwoko backup me kare man i Downloads mamegi (project file). Kombedi pe mitte me timo gin mo; ka imito dwogo i kare mo keken, \"Load Project\" dwoko jami ducu.",
+    "backup_saved_score": " (point {score})",
+    "project_saved_multi_one": "💾 Kigwoko project ({count} range); load en lacen me mede",
+    "project_saved_multi_other": "💾 Kigwoko project ({count} range); load en lacen me mede",
+    "project_saved": "💾 Kigwoko project; load en lacen me mede yubo",
+    "search_result_desc": "Adwogi me Yenyo pa Google: {title}",
+    "link_url_prompt": "Ket URL me link:"
   },
   "large_file": {
     "modal_title": "Import Large Audio buk",
@@ -1714,7 +1749,8 @@
     "cancel_transcription": "Kwer Transcription",
     "chunk_info": "Audio tye split into 5-minute chunks pi processing",
     "chunk_progress": "Chunk {current} pa {total}",
-    "audio_only_error": "Currently only audio buk (MP3, WAV, etc.) tye supported pi chunked transcription."
+    "audio_only_error": "Currently only audio buk (MP3, WAV, etc.) tye supported pi chunked transcription.",
+    "starting": "Tye ka cako..."
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -1818,7 +1854,8 @@
     "open_storyforge_aria": "Yab StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based lapeny",
-    "open_stem_lab_explore_aria": "Yab STEM Lab Explore"
+    "open_stem_lab_explore_aria": "Yab STEM Lab Explore",
+    "stem_lab_explore": "Yeny"
   },
   "history": {
     "load_project": "Load Project",
@@ -4494,7 +4531,25 @@
       "highlight_color": "Highlight color",
       "insert_table_aria": "Insert table",
       "insert_table_title": "Insert ngeyo nongo table"
-    }
+    },
+    "reattach_mismatch": "PDF ma kimedo odoco pat ki ma kirommo{detail}. Bi mede ento; adwogi twero bedo ma pe rwatte ki rom mukwongo.",
+    "reattach_name_detail": " (nying: \"{new}\" iwi \"{old}\")",
+    "reattach_size_detail": " (ditte: {new} iwi {old} bytes)",
+    "audit_failed_kept": "{label}: rom opoto; kigwoko version mukwongo.",
+    "score_dropped_kept": "{label}: point dok piny ({prev} → {next}{axe}). Kigwoko version mukwongo.",
+    "axe_only_comparison": ", rom me axe keken",
+    "axe_only_committed": "{label}: rom me AI pe tye; kimoko ki point me axe-core keken.",
+    "reinserted_ai": "{count} kidwoko (AI)",
+    "reinserted_sentence": "{count} kidwoko (ukungu)",
+    "reinserted_fuzzy": "{count} kidwoko (cok)",
+    "in_recovery_appendix": "{count} i appendix me dwoko",
+    "duplicates_removed_one": "Kigolo {count} ma rwatte",
+    "duplicates_removed_other": "Kigolo {count} ma rwatte",
+    "auto_continue_round": "Round me mede pi kene {round}/{max}: {detail}, point {score}/100 (target {target})...",
+    "violation_one": "{count} turo cik",
+    "violation_other": "{count} turo cik",
+    "ai_issue_one": "{count} peko ma AI ojeno",
+    "ai_issue_other": "{count} peko ma AI ojeno"
   },
   "concept_sort": {
     "title": "Tam Sort",
@@ -4568,7 +4623,8 @@
     "card_visuals_label": "Card visuals",
     "card_visuals_auto": "Auto (only wi short jami)",
     "card_visuals_always": "Always generate cal",
-    "card_visuals_never": "Never (text-only cards)"
+    "card_visuals_never": "Never (text-only cards)",
+    "explanation_unavailable": "Pe twero yubo lok manyen kombedi. Tem doki lacen manok."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
@@ -4974,7 +5030,12 @@
       "error_check": "Failed i check aribo.",
       "regenerated_success": "Text regenerated ki improvements!",
       "regen_failed": "Regeneration failed."
-    }
+    },
+    "skill_check": "Rom me lwak",
+    "desc_skill_check": "Rom lwak mamegi ki cik.",
+    "desc_parent": "Nen kit ma man rwatte ki yub me gang kwan",
+    "desc_6dim": "Rommo curriculum i yo 6",
+    "desc_5dim": "Rommo curriculum i yo 5 (med cik me rom matwal)"
   },
   "standards": {
     "target_standard": "Kit Standard",
@@ -5186,7 +5247,34 @@
     "plan_hook": "Hook",
     "plan_independent": "Independent Practice",
     "col_image": "cal",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Cung",
+    "expand_header": "Yar wic",
+    "collapse_header": "Kan wic me miyo content kabedo malac",
+    "collapse_header_short": "Kan wic",
+    "step_x_of_y": "Tic {current} / {total}",
+    "english_translation": "Lok me Leb Munu",
+    "source_references": "Lok me Coc Macon",
+    "activity_probe": "Tem me {activity}",
+    "word_sounds_count": "Word Sounds (lok {count})",
+    "quick_practice_mode": "Yo me Tem Oyot",
+    "new_option": "Yero manyen",
+    "meta_lesson_extensions": "Mede me Kwan",
+    "title_extension_ideas": "Tam me Mede",
+    "meta_full_chat_log": "Coc me Lok Ducu",
+    "title_udl_consultation_log": "Coc me Peny pa UDL",
+    "meta_actionable_steps": "Tic ma Twero Timme (Cwiny me AI)",
+    "title_differentiation_strategy": "Yub me Pokke",
+    "meta_udl_guide_advice": "Tam me Lawote UDL",
+    "title_stem_assessment": "Rom me STEM",
+    "title_explore_challenge": "Peko me Yeny",
+    "title_fluency_maze": "🏰 Maze me Niang",
+    "title_storyforge_config": "📖 Tic me StoryForge",
+    "title_storyforge_submission": "📖 Cwalo Ododo",
+    "title_poettree_config": "🌳 Tic me PoetTree",
+    "title_poettree_submission": "🌳 Cwalo Wer",
+    "title_litlab_config": "🎭 Tic me LitLab",
+    "title_litlab_submission": "🎭 Cwalo Nyuto"
   },
   "persona": {
     "title": "Interview Mode",
@@ -8260,7 +8348,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing content topology...",
     "brainstorming": "Brainstorming ideas...",
     "retrying_citations": "Retrying pi better citations...",
-    "translating": "Translating…"
+    "translating": "Translating…",
+    "preparing_translation": "Tye ka yubo lok i {lang}...",
+    "translating_item": "Tye ka loko {current}/{total}: {title}...",
+    "generating_panel": "Tye ka yubo panel {current}/{total}..."
   },
   "process": {
     "source_missing": "Please provide source text first.",
@@ -9556,7 +9647,8 @@
     "loading_resources": "Loading resources...",
     "preparing_workspace": "Preparing mamegi workspace...",
     "almost_ready": "Almost ready...",
-    "loading_screen_aria": "AlloFlow loading gicaa"
+    "loading_screen_aria": "AlloFlow loading gicaa",
+    "preparing_environment": "Tye ka yubo kabedo me kwan mamegi..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -11202,7 +11294,12 @@
   "lms": {
     "dismiss_banner_aria": "Dismiss LMS banner",
     "dismiss_button": "Dismiss",
-    "audit_queue_help": "Dii document i fetch ki load it into yot pa donyo pipeline. Mogo LMS buk may require in i be logged i i LMS i man browser."
+    "audit_queue_help": "Dii document i fetch ki load it into yot pa donyo pipeline. Mogo LMS buk may require in i be logged i i LMS i man browser.",
+    "queued_one": "Coc {count} tye i line ki LMS",
+    "queued_other": "Coc {count} tye i line ki LMS",
+    "fetching": "Tye ka gamo {name}...",
+    "loaded_ready": "Kiloyo {name}; oyikke pi rom",
+    "fetch_failed": "Pe otwero gamo {name}: {error}. Coc twero mito rom me LMS."
   },
   "annotation": {
     "undo_tooltip": "Undo last annotation ({count} available) — Ctrl/Cmd+Z",
@@ -11222,7 +11319,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "Visual Support ki bot mamegi lapwony"
+    "teacher_modal_aria": "Visual Support ki bot mamegi lapwony",
+    "now": "KOMBEDI",
+    "read_aloud": "Kwan ki Dwan Matek"
   },
   "canvas_settings": {
     "title": "Advanced Settings",
@@ -11239,7 +11338,12 @@
     "read_all_button": "Kwan ducu",
     "stop_button": "Juk",
     "focus_narration_label": "Keyboard Focus Narration",
-    "focus_narration_on_hint": "Tab i hear controls"
+    "focus_narration_on_hint": "Tab i hear controls",
+    "reading": "Tye ka kwano...",
+    "item_aria": "Dii me winyo: {text}",
+    "footer_stats": "{count} jami · Dii jami mo keken me winyo · Wer me Tab {state}",
+    "narration_on": "TYE KA TIC",
+    "narration_off": "PE TIC"
   },
   "teacher": {
     "local_only": "Local only",
@@ -12226,5 +12330,27 @@
     "no_match": "Pe tye cik ma rwatte. Lok me bot (ki dwan oromo bino) niang kwac ma lengo.",
     "placeholder": "Coo cik — “coc madit”, “educator hub”, “kwan pot man”…",
     "run": "tim"
+  },
+  "voice_engine": {
+    "preparing": "Tye ka yubo engine me dwan...",
+    "downloading_model": "Tye ka gamo model me dwan",
+    "loading_memory": "Tye ka keto i memory",
+    "loading_model_memory": "Tye ka keto model me dwan i memory"
+  },
+  "voice_control": {
+    "listening": "Tye ka winyo; wac “stop listening” me tyeko",
+    "stop_aria": "Cung loc me dwan"
+  },
+  "dynamic_assessment": {
+    "return_title": "Jami man kiyubo ki Dynamic Assessment. Dii me yabo module me Dynamic Assessment odoco.",
+    "return_aria": "Dok i Dynamic Assessment",
+    "return_label": "Dok i Dynamic Assessment",
+    "item_badge": "jami {num}"
+  },
+  "story_gallery": {
+    "title": "Ot me Ododo",
+    "byline": "Ki {author} · {words} lok · {used}/{total} lok",
+    "student": "Lakwan",
+    "score": "Point: {score}"
   }
 }

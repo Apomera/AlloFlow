@@ -1692,7 +1692,42 @@
     "whisper_load_failed": "విస్పర్ లోడ్ విఫలమైంది. ఇతర ఇంజిన్‌లకు తిరిగి వెళుతోంది.",
     "backup_failed": "బ్యాకప్ విఫలమైంది. మళ్ళీ ప్రయత్నించండి.",
     "invalid_backup_file": "చెల్లని AlloHaven బ్యాకప్ ఫైల్ కాదు.",
-    "could_not_read_file": "ఆ ఫైల్‌ను చదవలేకపోయింది. ఇది JSON బ్యాకప్ కాదా?"
+    "could_not_read_file": "ఆ ఫైల్‌ను చదవలేకపోయింది. ఇది JSON బ్యాకప్ కాదా?",
+    "focus_streak": "{flames} {minutes} నిమిషాల ఫోకస్ స్ట్రీక్! ఇలాగే కొనసాగించు!",
+    "streak_saved": "మళ్ళీ స్వాగతం! నీ {minutes} నిమిషాల స్ట్రీక్ సేవ్ చేయబడింది.",
+    "points_awarded": "పాయింట్లు ఇవ్వబడ్డాయి!",
+    "welcome_name": "స్వాగతం, {name}!",
+    "element_not_found": "మూలకం కనుగొనబడలేదు: {id}",
+    "overlay_set": "ఓవర్‌లే: {mode}",
+    "synced_resource": "సింక్ చేయబడింది: {title}",
+    "group_resource": "సమూహ వనరు: {title}",
+    "preset_saved": "ప్రీసెట్ \"{name}\" సేవ్ చేయబడింది!",
+    "translated_resources": "{count} వనరులు విజయవంతంగా అనువదించబడ్డాయి!",
+    "bingo_cards_count": "{count} BINGO కార్డులు రూపొందించబడ్డాయి!",
+    "sound_enabled": "ధ్వని ప్రారంభించబడింది",
+    "sound_muted": "ధ్వని మ్యూట్ చేయబడింది",
+    "democracy_mode_on": "ప్రజాస్వామ్య మోడ్ ప్రారంభించబడింది: తరగతి ఓటింగ్ ఆన్",
+    "democracy_mode_off": "ప్రజాస్వామ్య మోడ్ నిలిపివేయబడింది: ఒంటరి ఆట",
+    "resource_moved_up": "{title} పైకి తరలించబడింది",
+    "resource_moved_down": "{title} కిందికి తరలించబడింది",
+    "panels_regenerated": "{count} ప్యానెల్‌లు మళ్ళీ రూపొందించబడ్డాయి!",
+    "settings_undone": "రద్దు చేయబడింది: {label}. సెట్టింగ్‌లు పునరుద్ధరించబడ్డాయి. (రూపొందించిన వనరులు ప్రభావితం కావు.)",
+    "concept_added": "భావన జోడించబడింది: {text}",
+    "lesson_not_found": "ఈ యూనిట్‌లో పాఠం కనుగొనబడలేదు.",
+    "probe_complete": "పరీక్ష పూర్తయింది: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "సెట్టింగ్‌లు నవీకరించబడ్డాయి: {changes}",
+    "change_format": "ఫార్మాట్: {value}",
+    "change_tone": "స్వరం: {value}",
+    "change_length": "పొడవు: ~{value} పదాలు",
+    "change_language": "భాష: {value}",
+    "change_interest": "ఆసక్తి జోడించబడింది: {value}",
+    "backup_saved": "💾 ఈ సెషన్ బ్యాకప్ నీ డౌన్‌లోడ్‌లలో సేవ్ చేయబడింది (ఒక ప్రాజెక్ట్ ఫైల్). ఇప్పుడు దానితో ఏమీ చేయవలసిన అవసరం లేదు; ఎప్పుడైనా తిరిగి రావాలనుకుంటే, \"ప్రాజెక్ట్ లోడ్ చేయి\" అన్నింటినీ తిరిగి తెస్తుంది.",
+    "backup_saved_score": " (స్కోర్ {score})",
+    "project_saved_multi_one": "💾 ప్రాజెక్ట్ సేవ్ చేయబడింది ({count} పరిధి); కొనసాగించడానికి దీన్ని తర్వాత లోడ్ చేయి",
+    "project_saved_multi_other": "💾 ప్రాజెక్ట్ సేవ్ చేయబడింది ({count} పరిధులు); కొనసాగించడానికి దీన్ని తర్వాత లోడ్ చేయి",
+    "project_saved": "💾 ప్రాజెక్ట్ సేవ్ చేయబడింది; సవరణ కొనసాగించడానికి దీన్ని తర్వాత లోడ్ చేయి",
+    "search_result_desc": "Google శోధన ఫలితం: {title}",
+    "link_url_prompt": "లింక్ URL ను నమోదు చేయి:"
   },
   "large_file": {
     "modal_title": "దిగుమతి చేయి Large ఆడియో ఫైల్",
@@ -1708,7 +1743,8 @@
     "cancel_transcription": "రద్దు చేయి Transcription",
     "chunk_info": "ఆడియో ఉంది split లోకి 5-minute chunks కోసం processing",
     "chunk_progress": "Chunk {current} యొక్క {total}",
-    "audio_only_error": "Currently only ఆడియో ఫైల్ (MP3, WAV, etc.) ఉన్నాయి supported కోసం chunked transcription."
+    "audio_only_error": "Currently only ఆడియో ఫైల్ (MP3, WAV, etc.) ఉన్నాయి supported కోసం chunked transcription.",
+    "starting": "ప్రారంభమవుతోంది..."
   },
   "formatting": {
     "bold": "Bold (**వచనం**)",
@@ -1812,7 +1848,8 @@
     "open_storyforge_aria": "తెరువు StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "పత్రం-ఆధారిత ప్రశ్న",
-    "open_stem_lab_explore_aria": "తెరువు STEM ప్రయోగశాల అన్వేషించు"
+    "open_stem_lab_explore_aria": "తెరువు STEM ప్రయోగశాల అన్వేషించు",
+    "stem_lab_explore": "అన్వేషించు"
   },
   "history": {
     "load_project": "లోడ్ చేయి Project",
@@ -4488,7 +4525,25 @@
       "highlight_color": "Highlight రంగు",
       "insert_table_aria": "Insert పట్టిక",
       "insert_table_title": "Insert accessible పట్టిక"
-    }
+    },
+    "reattach_mismatch": "మళ్ళీ జతచేయబడిన PDF ఆడిట్ చేయబడిన దానికి భిన్నంగా ఉంది{detail}. ఏదేమైనా కొనసాగుతుంది; ఫలితాలు అసలు ఆడిట్‌తో అసంగతంగా ఉండవచ్చు.",
+    "reattach_name_detail": " (పేరు: \"{new}\" వర్సెస్ \"{old}\")",
+    "reattach_size_detail": " (పరిమాణం: {new} వర్సెస్ {old} బైట్‌లు)",
+    "audit_failed_kept": "{label}: ఆడిట్ విఫలమైంది; మునుపటి వెర్షన్ ఉంచబడింది.",
+    "score_dropped_kept": "{label}: స్కోర్ తగ్గేది ({prev} → {next}{axe}). మునుపటి వెర్షన్ ఉంచబడింది.",
+    "axe_only_comparison": ", axe మాత్రమే పోలిక",
+    "axe_only_committed": "{label}: AI ధృవీకరణ అందుబాటులో లేదు; నిర్ధారక axe-core స్కోర్‌తో మాత్రమే నిర్ధారించబడింది.",
+    "reinserted_ai": "{count} మళ్ళీ చొప్పించబడింది (AI)",
+    "reinserted_sentence": "{count} మళ్ళీ చొప్పించబడింది (వాక్యం)",
+    "reinserted_fuzzy": "{count} మళ్ళీ చొప్పించబడింది (సుమారు)",
+    "in_recovery_appendix": "{count} రికవరీ అనుబంధంలో",
+    "duplicates_removed_one": "{count} నకిలీ తొలగించబడింది",
+    "duplicates_removed_other": "{count} నకిలీలు తొలగించబడ్డాయి",
+    "auto_continue_round": "ఆటో-కొనసాగింపు రౌండ్ {round}/{max}: {detail}, స్కోర్ {score}/100 (లక్ష్యం {target})...",
+    "violation_one": "{count} ఉల్లంఘన",
+    "violation_other": "{count} ఉల్లంఘనలు",
+    "ai_issue_one": "{count} AI-గుర్తించబడిన సమస్య",
+    "ai_issue_other": "{count} AI-గుర్తించబడిన సమస్యలు"
   },
   "concept_sort": {
     "title": "Concept క్రమబద్ధీకరించు",
@@ -4562,7 +4617,8 @@
     "card_visuals_label": "కార్డ్ దృశ్య",
     "card_visuals_auto": "Auto (only పై చిన్న అంశం)",
     "card_visuals_always": "Always రూపొందించు చిత్రం",
-    "card_visuals_never": "ఎప్పుడూ లేదు (టెక్స్ట్-మాత్రమే కార్డులు)"
+    "card_visuals_never": "ఎప్పుడూ లేదు (టెక్స్ట్-మాత్రమే కార్డులు)",
+    "explanation_unavailable": "ప్రస్తుతం వివరణను రూపొందించడం సాధ్యం కాలేదు. దయచేసి కొద్దిసేపటి తర్వాత మళ్ళీ ప్రయత్నించు."
   },
   "dbq": {
     "title": "పత్రం Analysis (DBQ)",
@@ -4968,7 +5024,12 @@
       "error_check": "Failed కు check alignment.",
       "regenerated_success": "వచనం regenerated తో improvements!",
       "regen_failed": "పునఃసృష్టి విఫలమైంది."
-    }
+    },
+    "skill_check": "నైపుణ్య తనిఖీ",
+    "desc_skill_check": "ప్రమాణాలకు వ్యతిరేకంగా నీ ప్రావీణ్యాన్ని ధృవీకరించు.",
+    "desc_parent": "ఇది పాఠశాల లక్ష్యాలతో ఎలా సరిపోతుందో చూడండి",
+    "desc_6dim": "పాఠ్యాంశాలను 6 కోణాలలో ఆడిట్ చేస్తుంది",
+    "desc_5dim": "పాఠ్యాంశాలను 5 కోణాలలో ఆడిట్ చేస్తుంది (పూర్తి ఆడిట్ కోసం ప్రమాణాలను జోడించండి)"
   },
   "standards": {
     "target_standard": "Target ప్రమాణం",
@@ -5188,7 +5249,34 @@
     "plan_hook": "హుక్",
     "plan_independent": "Independent అభ్యాసం",
     "col_image": "చిత్రం",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "ఆపు",
+    "expand_header": "హెడర్‌ను విస్తరించు",
+    "collapse_header": "కంటెంట్‌కు ఎక్కువ స్థలం ఇవ్వడానికి హెడర్‌ను కుదించు",
+    "collapse_header_short": "హెడర్‌ను కుదించు",
+    "step_x_of_y": "దశ {current} / {total}",
+    "english_translation": "ఆంగ్ల అనువాదం",
+    "source_references": "మూల వచన సూచనలు",
+    "activity_probe": "{activity} పరీక్ష",
+    "word_sounds_count": "Word Sounds ({count} పదాలు)",
+    "quick_practice_mode": "త్వరిత అభ్యాస మోడ్",
+    "new_option": "కొత్త ఎంపిక",
+    "meta_lesson_extensions": "పాఠ విస్తరణలు",
+    "title_extension_ideas": "విస్తరణ ఆలోచనలు",
+    "meta_full_chat_log": "పూర్తి చాట్ లాగ్",
+    "title_udl_consultation_log": "UDL సంప్రదింపు లాగ్",
+    "meta_actionable_steps": "చర్య తీసుకోదగిన దశలు (AI సారాంశం)",
+    "title_differentiation_strategy": "విభజన వ్యూహం",
+    "meta_udl_guide_advice": "UDL గైడ్ సలహా",
+    "title_stem_assessment": "STEM మూల్యాంకనం",
+    "title_explore_challenge": "అన్వేషణ సవాలు",
+    "title_fluency_maze": "🏰 ప్రవాహ చిక్కుదారి",
+    "title_storyforge_config": "📖 StoryForge అసైన్‌మెంట్",
+    "title_storyforge_submission": "📖 కథ సమర్పణ",
+    "title_poettree_config": "🌳 PoetTree అసైన్‌మెంట్",
+    "title_poettree_submission": "🌳 కవిత సమర్పణ",
+    "title_litlab_config": "🎭 LitLab అసైన్‌మెంట్",
+    "title_litlab_submission": "🎭 ప్రదర్శన సమర్పణ"
   },
   "persona": {
     "title": "Interview మోడ్",
@@ -8316,7 +8404,10 @@
     "analyzing_topology": "Acting as Curriculum Designer: Analyzing కంటెంట్ topology...",
     "brainstorming": "ఆలోచనలను మథిస్తోంది...",
     "retrying_citations": "Retrying కోసం మెరుగైన citations...",
-    "translating": "అనువదిస్తోంది…"
+    "translating": "అనువదిస్తోంది…",
+    "preparing_translation": "{lang} లోకి అనువాదం సిద్ధం చేయబడుతోంది...",
+    "translating_item": "{current}/{total} అనువదించబడుతోంది: {title}...",
+    "generating_panel": "ప్యానెల్ {current}/{total} రూపొందించబడుతోంది..."
   },
   "process": {
     "source_missing": "దయచేసి provide మూలం వచనం మొదటి.",
@@ -9612,7 +9703,8 @@
     "loading_resources": "Loading వనరులు...",
     "preparing_workspace": "Preparing మీ workspace...",
     "almost_ready": "దాదాపు సిద్ధంగా ఉంది...",
-    "loading_screen_aria": "AlloFlow లోడింగ్ తెర"
+    "loading_screen_aria": "AlloFlow లోడింగ్ తెర",
+    "preparing_environment": "నీ అభ్యాస వాతావరణం సిద్ధం చేయబడుతోంది..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
@@ -9799,7 +9891,7 @@
       "sessionnotes_title": "సెషన్ Notes",
       "sessiontracker_desc": "రేటు గణనతో క్రమబద్ధమైన సెషన్-ఆధారిత ప్రవర్తనా కొలత",
       "sessiontracker_title": "సెషన్ డేటా Tracker",
-      "snapshot_desc": "ఎగుమతి చేయి & దిగుమతి చేయి JSON snapshots కోసం తల్లిదండ్రి–ఉపాధ్యాయుడు డేటా exchange",
+      "snapshot_desc": "తల్లిదండ్రి–ఉపాధ్యాయుల డేటా మార్పిడి కోసం JSON స్నాప్‌షాట్‌లను ఎగుమతి & దిగుమతి చేయండి",
       "snapshot_title": "విద్యార్థి స్నాప్‌షాట్ ఎక్స్ఛేంజ్",
       "socialvalidity_desc": "చికిత్స ఆమోదయోగ్యతను కొలవడానికి TARF మరియు IRP-15 స్కేల్స్ — ప్రచురణ కోసం అవసరం",
       "socialvalidity_title": "సామాజిక Validity",
@@ -10149,7 +10241,7 @@
       "new_behavior_label": "కొత్త ప్రవర్తన label...",
       "optional": "ఐచ్ఛిక",
       "outcome_key_takeaways_optional": "ఫలితం / కీలక అంశాలు (ఐచ్ఛికం)",
-      "paste_share_code_here": "అతికించు భాగస్వామ్యం చేయి code here...",
+      "paste_share_code_here": "భాగస్వామ్య కోడ్‌ను ఇక్కడ అతికించండి...",
       "person": "వ్యక్తి\\",
       "phase_label": "దశ లేబుల్",
       "rationale_which_antecedent_does_this_address": "హేతువు (ఇది ఏ పూర్వ-సూచకాన్ని పరిష్కరిస్తుంది?)",
@@ -10332,7 +10424,7 @@
       "reinforce_now": "🎉 REINFORCE ఇప్పుడు!",
       "reinforcers_recommended": "ప్రోత్సాహకాలు సిఫార్సు చేయబడ్డాయి ✨",
       "replacement_plan_added": "ప్రత్యామ్నాయ ప్రణాళిక జోడించబడింది",
-      "report_generated_use_printsave_as_pdf_in_the_new_t": "Report రూపొందించబడింది — ఉపయోగించు ప్రింట్ చేయి/సేవ్ చేయి as PDF లో కొత్త tab!",
+      "report_generated_use_printsave_as_pdf_in_the_new_t": "నివేదిక రూపొందించబడింది — కొత్త ట్యాబ్‌లో ప్రింట్/PDFగా సేవ్ చేయి ఉపయోగించండి!",
       "reset_to_default_template": "రీసెట్ చేయి కు డిఫాల్ట్ template",
       "reset_to_defaults": "రీసెట్ చేయి కు defaults",
       "response_failed_try_again": "ప్రతిస్పందన విఫలమైంది — మళ్లీ ప్రయత్నించండి",
@@ -10527,7 +10619,7 @@
       "optional_message": "ఐచ్ఛిక సందేశం",
       "or_explore_the_pd_learning_path": "లేదా PD అభ్యాస మార్గాన్ని అన్వేషించండి →",
       "parent": "తల్లిదండ్రి",
-      "paste_one_value_per_line_supports_formats_5_sessio": "అతికించు one విలువ per రేఖ. మద్దతు ఫార్మాట్: \"5\", \"సెషన్ 1: 5\", లేదా \"1,5\"",
+      "paste_one_value_per_line_supports_formats_5_sessio": "ప్రతి పంక్తికి ఒక విలువను అతికించండి. మద్దతు ఉన్న ఫార్మాట్‌లు: \"5\", \"సెషన్ 1: 5\", లేదా \"1,5\"",
       "pd_learning_path": "PD అభ్యాస మార్గం",
       "please_use_chrome_edge_or_safari_for_voice_input": "దయచేసి ఉపయోగించు Chrome, Edge, లేదా Safari కోసం వాయిస్ ఇన్‌పుట్.",
       "practice_clinical_reasoning_with_aigenerated_case": "AI-రూపొందించిన కేస్ స్టడీలతో క్లినికల్ తార్కికతను సాధన చేయండి. మీ ప్రతిస్పందనలపై నిపుణ-స్థాయి ఫీడ్‌బ్యాక్‌ను పొందండి.",
@@ -10545,7 +10637,7 @@
       "read_through_the_module_content_above_then_click_c": "పైన ఉన్న మాడ్యూల్ కంటెంట్‌ను చదవండి, ఆపై దిగువన Complete క్లిక్ చేయండి.",
       "realtime_calming_tools_for_inthemoment_support": "క్షణ-లో మద్దతు కోసం రియల్-టైమ్ ప్రశాంతత సాధనాలు",
       "recent_moods": "ఇటీవలి మనోభావాలు:",
-      "record_sessions_with_the_session_data_tracker_or_s": "Record సెషన్ తో సెషన్ డేటా Tracker, లేదా మార్చు కు మాన్యువల్ Entry మోడ్.",
+      "record_sessions_with_the_session_data_tracker_or_s": "సెషన్ డేటా ట్రాకర్‌తో సెషన్‌లను నమోదు చేయండి, లేదా మాన్యువల్ ఎంట్రీ మోడ్‌కు మారండి.",
       "recording": "రికార్డ్ చేస్తోంది...",
       "relationship_map": "సంబంధాల పటం",
       "remember_cultural_humility_is_a_lifelong_practice": "గుర్తుంచుకోండి: సాంస్కృతిక వినయం జీవితకాల అభ్యాసం. ప్రతి ప్రతిబింబం మిమ్మల్ని మరింత న్యాయమైన అభ్యాసకులుగా చేస్తుంది.",
@@ -10573,7 +10665,7 @@
       "summary": "Summary:",
       "systematic_behavioral_measurement_across_sessions": "సెషన్‌ల అంతటా క్రమబద్ధమైన ప్రవర్తనా కొలత",
       "systematic_reinforcer_identification_using_evidenc": "సాక్ష్యం-ఆధారిత ప్రోటోకాల్‌లను ఉపయోగించి క్రమబద్ధమైన రీన్‌ఫోర్సర్ గుర్తింపు",
-      "tap_each_item_when_student_engages_with_it": "Tap ప్రతి అంశం ఎప్పుడు విద్యార్థి engages తో it",
+      "tap_each_item_when_student_engages_with_it": "విద్యార్థి దానితో నిమగ్నమైనప్పుడు ప్రతి అంశాన్ని నొక్కండి",
       "target_behavior": "Target ప్రవర్తన",
       "task_analysis": "పని విశ్లేషణ",
       "taskskill_name": "పని/నైపుణ్యం పేరు",
@@ -10678,7 +10770,7 @@
       "saved": "పరిశీలన సెషన్ సేవ్ చేయబడింది ✅",
       "session_notes": "సెషన్ notes...",
       "start_to_begin": "లేటెన్సీ కొలత ప్రారంభించడానికి టైమర్‌ను ప్రారంభించండి",
-      "tap_when_starts": "Tap ఎప్పుడు ప్రవర్తన starts",
+      "tap_when_starts": "ప్రవర్తన ప్రారంభమైనప్పుడు నొక్కండి",
       "title": "ప్రత్యక్ష పరిశీలన",
       "waiting_for_behavior": "⏳ Waiting కోసం ప్రవర్తన..."
     },
@@ -11258,7 +11350,12 @@
   "lms": {
     "dismiss_banner_aria": "LMS బ్యానర్‌ను తీసివేయండి",
     "dismiss_button": "తొలగించు",
-    "audit_queue_help": "క్లిక్ చేయి ఒక పత్రం కు తీసుకురా మరియు లోడ్ చేయి it లోకి accessibility pipeline. Some LMS ఫైల్ may require మీరు కు be logged లో కు LMS లో ఇది browser."
+    "audit_queue_help": "క్లిక్ చేయి ఒక పత్రం కు తీసుకురా మరియు లోడ్ చేయి it లోకి accessibility pipeline. Some LMS ఫైల్ may require మీరు కు be logged లో కు LMS లో ఇది browser.",
+    "queued_one": "LMS నుండి {count} పత్రం వరుసలో",
+    "queued_other": "LMS నుండి {count} పత్రాలు వరుసలో",
+    "fetching": "{name} పొందబడుతోంది...",
+    "loaded_ready": "{name} లోడ్ చేయబడింది; ఆడిట్‌కు సిద్ధం",
+    "fetch_failed": "{name} పొందడంలో విఫలమైంది: {error}. ఫైల్‌కు LMS ప్రామాణీకరణ అవసరం కావచ్చు."
   },
   "annotation": {
     "undo_tooltip": "Undo చివరి annotation ({count} అందుబాటులో) — Ctrl/Cmd+Z",
@@ -11278,7 +11375,9 @@
     "button": "🎨 Pictionary"
   },
   "visual_support": {
-    "teacher_modal_aria": "దృశ్య మద్దతు నుండి మీ ఉపాధ్యాయుడు"
+    "teacher_modal_aria": "దృశ్య మద్దతు నుండి మీ ఉపాధ్యాయుడు",
+    "now": "ఇప్పుడు",
+    "read_aloud": "బిగ్గరగా చదువు"
   },
   "canvas_settings": {
     "title": "అధునాతన సెట్టింగులు",
@@ -11295,7 +11394,12 @@
     "read_all_button": "చదువు అన్నీ",
     "stop_button": "ఆపు",
     "focus_narration_label": "కీబోర్డ్ ఫోకస్ వ్యాఖ్యానం",
-    "focus_narration_on_hint": "Tab కు hear controls"
+    "focus_narration_on_hint": "Tab కు hear controls",
+    "reading": "చదువుతోంది...",
+    "item_aria": "వినడానికి క్లిక్ చేయి: {text}",
+    "footer_stats": "{count} అంశాలు · ఏదైనా అంశాన్ని వినడానికి క్లిక్ చేయి · Tab వివరణ {state}",
+    "narration_on": "ఆన్",
+    "narration_off": "ఆఫ్"
   },
   "teacher": {
     "local_only": "స్థానికం మాత్రమే",
@@ -12471,5 +12575,27 @@
     "no_match": "సరిపోలే ఆదేశం లేదు. బాట్ చాట్ (మరియు త్వరలో వాయిస్) స్వేచ్ఛా-రూప అభ్యర్థనలను అర్థం చేసుకుంటుంది.",
     "placeholder": "ఒక ఆదేశాన్ని టైప్ చేయండి — “పెద్ద టెక్స్ట్”, “educator hub”, “ఈ పేజీని చదవండి”…",
     "run": "నడపండి"
+  },
+  "voice_engine": {
+    "preparing": "వాయిస్ ఇంజిన్ సిద్ధం చేయబడుతోంది...",
+    "downloading_model": "వాయిస్ మోడల్ డౌన్‌లోడ్ అవుతోంది",
+    "loading_memory": "మెమరీలో లోడ్ అవుతోంది",
+    "loading_model_memory": "వాయిస్ మోడల్ మెమరీలో లోడ్ అవుతోంది"
+  },
+  "voice_control": {
+    "listening": "వింటోంది; ముగించడానికి “stop listening” అని చెప్పు",
+    "stop_aria": "వాయిస్ నియంత్రణను ఆపు"
+  },
+  "dynamic_assessment": {
+    "return_title": "ఈ వనరు డైనమిక్ అసెస్‌మెంట్ ద్వారా రూపొందించబడింది. డైనమిక్ అసెస్‌మెంట్ మాడ్యూల్‌ను మళ్ళీ తెరవడానికి క్లిక్ చేయి.",
+    "return_aria": "డైనమిక్ అసెస్‌మెంట్‌కు తిరిగి వెళ్ళు",
+    "return_label": "డైనమిక్ అసెస్‌మెంట్‌కు తిరిగి వెళ్ళు",
+    "item_badge": "అంశం {num}"
+  },
+  "story_gallery": {
+    "title": "కథ గ్యాలరీ",
+    "byline": "{author} రచన · {words} పదాలు · {used}/{total} పదజాలం",
+    "student": "విద్యార్థి",
+    "score": "స్కోర్: {score}"
   }
 }

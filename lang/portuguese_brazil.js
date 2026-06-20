@@ -618,7 +618,8 @@
     "open_storyforge_aria": "Abrir o StoryForge",
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Perguntas Baseadas em Documentos",
-    "open_stem_lab_explore_aria": "Abrir Explorar STEM Lab"
+    "open_stem_lab_explore_aria": "Abrir Explorar STEM Lab",
+    "stem_lab_explore": "Explorar"
   },
   "welcome": {
     "load": "Carregar Arquivo de Aula",
@@ -634,7 +635,8 @@
     "loading_resources": "Carregando recursos...",
     "preparing_workspace": "Preparando seu espaço de trabalho...",
     "almost_ready": "Quase pronto...",
-    "loading_screen_aria": "Tela de carregamento do AlloFlow"
+    "loading_screen_aria": "Tela de carregamento do AlloFlow",
+    "preparing_environment": "Preparando seu ambiente de aprendizagem..."
   },
   "entry": {
     "placeholder": "ex.: Falcão Vermelho",
@@ -920,7 +922,8 @@
     "cancel_transcription": "Cancelar Transcrição",
     "chunk_info": "O áudio é dividido em partes de 5 minutos para processamento",
     "chunk_progress": "Parte {current} de {total}",
-    "audio_only_error": "No momento, somente arquivos de áudio (MP3, WAV, etc.) são suportados para transcrição em partes."
+    "audio_only_error": "No momento, somente arquivos de áudio (MP3, WAV, etc.) são suportados para transcrição em partes.",
+    "starting": "Iniciando..."
   },
   "formatting": {
     "bold": "Negrito (**texto**)",
@@ -1200,7 +1203,12 @@
     "read_all_button": "Ler Tudo",
     "stop_button": "Parar",
     "focus_narration_label": "Narração ao Focar com o Teclado",
-    "focus_narration_on_hint": "Pressione Tab para ouvir os controles"
+    "focus_narration_on_hint": "Pressione Tab para ouvir os controles",
+    "reading": "Lendo...",
+    "item_aria": "Clique para ouvir: {text}",
+    "footer_stats": "{count} itens · Clique em qualquer item para ouvi-lo · Narração por Tab {state}",
+    "narration_on": "ATIVADA",
+    "narration_off": "DESATIVADA"
   },
   "roles": {
     "title": "Bem-vindo ao AlloFlow",
@@ -1987,7 +1995,42 @@
     "whisper_load_failed": "Whisper load failed. Falling back to other engines.",
     "backup_failed": "Backup failed. Try again.",
     "invalid_backup_file": "Not a valid AlloHaven backup file.",
-    "could_not_read_file": "Could not read that file. Is it a JSON backup?"
+    "could_not_read_file": "Could not read that file. Is it a JSON backup?",
+    "focus_streak": "{flames} Sequência de foco de {minutes} minutos! Continue assim!",
+    "streak_saved": "Bem-vindo de volta! Sua sequência de {minutes} min foi salva.",
+    "points_awarded": "Pontos concedidos!",
+    "welcome_name": "Bem-vindo, {name}!",
+    "element_not_found": "Elemento não encontrado: {id}",
+    "overlay_set": "Sobreposição: {mode}",
+    "synced_resource": "Sincronizado: {title}",
+    "group_resource": "Recurso do grupo: {title}",
+    "preset_saved": "Predefinição \"{name}\" salva!",
+    "translated_resources": "{count} recursos traduzidos com sucesso!",
+    "bingo_cards_count": "{count} cartelas de BINGO geradas!",
+    "sound_enabled": "Som ativado",
+    "sound_muted": "Som silenciado",
+    "democracy_mode_on": "Modo democracia ativado: votação da turma ATIVADA",
+    "democracy_mode_off": "Modo democracia desativado: jogo individual",
+    "resource_moved_up": "{title} movido para cima",
+    "resource_moved_down": "{title} movido para baixo",
+    "panels_regenerated": "{count} painéis regenerados!",
+    "settings_undone": "Desfeito: {label}. Configurações restauradas. (Os recursos gerados não são afetados.)",
+    "concept_added": "Conceito adicionado: {text}",
+    "lesson_not_found": "Lição não encontrada nesta unidade.",
+    "probe_complete": "Sondagem concluída: {correct}/{total} ({accuracy}%)",
+    "settings_updated": "Configurações atualizadas: {changes}",
+    "change_format": "Formato: {value}",
+    "change_tone": "Tom: {value}",
+    "change_length": "Comprimento: ~{value} palavras",
+    "change_language": "Idioma: {value}",
+    "change_interest": "Interesse adicionado: {value}",
+    "backup_saved": "💾 Um backup desta sessão foi salvo nos seus Downloads (um arquivo de projeto). Não há nada a fazer com ele agora; se você precisar voltar algum dia, \"Carregar Projeto\" recupera tudo.",
+    "backup_saved_score": " (pontuação {score})",
+    "project_saved_multi_one": "💾 Projeto salvo ({count} intervalo); carregue-o depois para continuar",
+    "project_saved_multi_other": "💾 Projeto salvo ({count} intervalos); carregue-o depois para continuar",
+    "project_saved": "💾 Projeto salvo; carregue-o depois para continuar editando",
+    "search_result_desc": "Resultado da Pesquisa do Google: {title}",
+    "link_url_prompt": "Insira a URL do link:"
   },
   "settings": {
     "immersive_options": "Opções Imersivas",
@@ -2474,7 +2517,10 @@
     "analyzing_topology": "Atuando como Designer Curricular: analisando a topologia do conteúdo...",
     "brainstorming": "Brainstorm de ideias...",
     "retrying_citations": "Tentando novamente por melhores citações...",
-    "translating": "Traduzindo…"
+    "translating": "Traduzindo…",
+    "preparing_translation": "Preparando a tradução para {lang}...",
+    "translating_item": "Traduzindo {current}/{total}: {title}...",
+    "generating_panel": "Gerando painel {current}/{total}..."
   },
   "progression": {
     "title": "Progressão Curricular",
@@ -2524,7 +2570,34 @@
     "plan_hook": "Gancho",
     "plan_independent": "Prática Independente",
     "col_image": "Imagem",
-    "word_sounds_studio": "Word Sounds Studio"
+    "word_sounds_studio": "Word Sounds Studio",
+    "stop": "Parar",
+    "expand_header": "Expandir cabeçalho",
+    "collapse_header": "Recolher o cabeçalho para dar mais espaço ao conteúdo",
+    "collapse_header_short": "Recolher cabeçalho",
+    "step_x_of_y": "Etapa {current} de {total}",
+    "english_translation": "Tradução em inglês",
+    "source_references": "Referências do texto de origem",
+    "activity_probe": "Sondagem de {activity}",
+    "word_sounds_count": "Word Sounds ({count} palavras)",
+    "quick_practice_mode": "Modo de prática rápida",
+    "new_option": "Nova opção",
+    "meta_lesson_extensions": "Extensões da lição",
+    "title_extension_ideas": "Ideias de extensão",
+    "meta_full_chat_log": "Registro completo do chat",
+    "title_udl_consultation_log": "Registro de consulta UDL",
+    "meta_actionable_steps": "Etapas práticas (resumo de IA)",
+    "title_differentiation_strategy": "Estratégia de diferenciação",
+    "meta_udl_guide_advice": "Conselhos do Guia UDL",
+    "title_stem_assessment": "Avaliação STEM",
+    "title_explore_challenge": "Desafio de exploração",
+    "title_fluency_maze": "🏰 Labirinto de fluência",
+    "title_storyforge_config": "📖 Tarefa do StoryForge",
+    "title_storyforge_submission": "📖 Envio de história",
+    "title_poettree_config": "🌳 Tarefa do PoetTree",
+    "title_poettree_submission": "🌳 Envio de poema",
+    "title_litlab_config": "🎭 Tarefa do LitLab",
+    "title_litlab_submission": "🎭 Envio de apresentação"
   },
   "fullpack": {
     "button_label": "Gerar Pacote Completo de Recursos",
@@ -3506,7 +3579,12 @@
       "error_check": "Falha ao verificar o alinhamento.",
       "regenerated_success": "Texto regenerado com melhorias!",
       "regen_failed": "Falha na regeneração."
-    }
+    },
+    "skill_check": "Verificação de habilidades",
+    "desc_skill_check": "Verifique seu domínio em relação aos padrões.",
+    "desc_parent": "Veja como isso se alinha aos objetivos da escola",
+    "desc_6dim": "Audita o currículo em 6 dimensões",
+    "desc_5dim": "Audita o currículo em 5 dimensões (adicione padrões para a auditoria completa)"
   },
   "standards": {
     "target_standard": "Padrão-Alvo",
@@ -4956,7 +5034,8 @@
     "card_visuals_label": "Visuais dos cartões",
     "card_visuals_auto": "Automático (apenas em itens curtos)",
     "card_visuals_always": "Sempre gerar imagens",
-    "card_visuals_never": "Nunca (cartões só com texto)"
+    "card_visuals_never": "Nunca (cartões só com texto)",
+    "explanation_unavailable": "Não foi possível gerar uma explicação agora. Tente novamente em um instante."
   },
   "concept_map": {
     "toolbar": {
@@ -7801,7 +7880,12 @@
   "lms": {
     "dismiss_banner_aria": "Dispensar faixa do LMS",
     "dismiss_button": "Dispensar",
-    "audit_queue_help": "Clique em um documento para buscá-lo e carregá-lo no pipeline de acessibilidade. Alguns arquivos do LMS podem exigir que você esteja logado no LMS neste navegador."
+    "audit_queue_help": "Clique em um documento para buscá-lo e carregá-lo no pipeline de acessibilidade. Alguns arquivos do LMS podem exigir que você esteja logado no LMS neste navegador.",
+    "queued_one": "{count} documento na fila do LMS",
+    "queued_other": "{count} documentos na fila do LMS",
+    "fetching": "Buscando {name}...",
+    "loaded_ready": "{name} carregado; pronto para auditoria",
+    "fetch_failed": "Falha ao buscar {name}: {error}. O arquivo pode exigir autenticação no LMS."
   },
   "annotation": {
     "undo_tooltip": "Desfazer última anotação ({count} disponíveis) — Ctrl/Cmd+Z",
@@ -7813,7 +7897,9 @@
     "list_button": "📋 Lista"
   },
   "visual_support": {
-    "teacher_modal_aria": "Apoio Visual do seu professor"
+    "teacher_modal_aria": "Apoio Visual do seu professor",
+    "now": "AGORA",
+    "read_aloud": "Ler em voz alta"
   },
   "canvas_settings": {
     "title": "Configurações Avançadas",
@@ -8720,7 +8806,25 @@
       "resolved_tip": "Problemas da auditoria original que não foram mais encontrados na verificação",
       "persisted_tip": "Problemas da auditoria original ainda presentes após a correção",
       "introduced_tip": "Novos problemas que não existiam antes da correção"
-    }
+    },
+    "reattach_mismatch": "O PDF reanexado difere do que foi auditado{detail}. O processo continuará mesmo assim; os resultados podem ser inconsistentes com a auditoria original.",
+    "reattach_name_detail": " (nome: \"{new}\" vs. \"{old}\")",
+    "reattach_size_detail": " (tamanho: {new} vs. {old} bytes)",
+    "audit_failed_kept": "{label}: a auditoria falhou; a versão anterior foi mantida.",
+    "score_dropped_kept": "{label}: a pontuação teria caído ({prev} → {next}{axe}). A versão anterior foi mantida.",
+    "axe_only_comparison": ", comparação somente com axe",
+    "axe_only_committed": "{label}: verificação por IA indisponível; confirmado apenas com a pontuação determinística do axe-core.",
+    "reinserted_ai": "{count} reinseridos (IA)",
+    "reinserted_sentence": "{count} reinseridos (frase)",
+    "reinserted_fuzzy": "{count} reinseridos (aproximado)",
+    "in_recovery_appendix": "{count} no apêndice de recuperação",
+    "duplicates_removed_one": "{count} duplicata removida",
+    "duplicates_removed_other": "{count} duplicatas removidas",
+    "auto_continue_round": "Rodada de continuação automática {round}/{max}: {detail}, pontuação {score}/100 (meta {target})...",
+    "violation_one": "{count} violação",
+    "violation_other": "{count} violações",
+    "ai_issue_one": "{count} problema sinalizado pela IA",
+    "ai_issue_other": "{count} problemas sinalizados pela IA"
   },
   "stem": {
     "common": {
@@ -10579,7 +10683,7 @@
       "cancel": "Cancelar",
       "caseload_dashboard": "Painel da Carga de Casos",
       "chaining_method": "Método de Encadeamento",
-      "checkins": "Check-Ins",
+      "checkins": "Acompanhamentos",
       "choose_the_right_differential_reinforcement_strate": "Escolha a estratégia certa de reforço diferencial",
       "click_ai_generate_checklist_to_create_items_based": "Clique em \"IA Gerar Checklist\" para criar itens baseados no BIP",
       "click_load_student_workspaces_and_select_multiple": "Clique em \"Carregar Espaços de Trabalho de Alunos\" e selecione múltiplos arquivos .json salvos do BehaviorLens",
@@ -12128,5 +12232,27 @@
     "no_match": "Nenhum comando correspondente. O chat do bot (e em breve a voz) entende solicitações em texto livre.",
     "placeholder": "Digite um comando — “texto maior”, “hub do educador”, “ler esta página”…",
     "run": "executar"
+  },
+  "voice_engine": {
+    "preparing": "Preparando o mecanismo de voz...",
+    "downloading_model": "Baixando o modelo de voz",
+    "loading_memory": "Carregando na memória",
+    "loading_model_memory": "Carregando o modelo de voz na memória"
+  },
+  "voice_control": {
+    "listening": "Ouvindo; diga “stop listening” para terminar",
+    "stop_aria": "Parar o controle por voz"
+  },
+  "dynamic_assessment": {
+    "return_title": "Este recurso foi gerado pela Avaliação Dinâmica. Clique para reabrir o módulo de Avaliação Dinâmica.",
+    "return_aria": "Voltar à Avaliação Dinâmica",
+    "return_label": "Voltar à Avaliação Dinâmica",
+    "item_badge": "item {num}"
+  },
+  "story_gallery": {
+    "title": "Galeria de histórias",
+    "byline": "Por {author} · {words} palavras · {used}/{total} vocabulário",
+    "student": "Aluno",
+    "score": "Pontuação: {score}"
   }
 }
