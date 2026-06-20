@@ -2103,6 +2103,11 @@ window.StemLab = window.StemLab || {
                   React.createElement("h3", { className: "font-black text-violet-900" }, "Logic Gate Simulator"),
                   React.createElement("span", { className: "text-xs text-violet-400 font-bold" }, "Toggle inputs to see the output live")
                 ),
+                // Binary-state legend — clarifies what the 1s and 0s on the wires mean
+                React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[11px] font-bold" },
+                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-emerald-500 text-white text-center leading-4" }, "1"), React.createElement("span", { className: "text-emerald-700" }, "HIGH · true · on")),
+                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-slate-300 text-slate-700 text-center leading-4" }, "0"), React.createElement("span", { className: "text-slate-500" }, "LOW · false · off"))
+                ),
                 // Gate selector
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   GATE_TYPES.map(function(gt) {
