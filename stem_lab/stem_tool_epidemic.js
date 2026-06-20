@@ -1076,6 +1076,13 @@ window.StemLab = window.StemLab || {
           gridChildren.push(h('text', { key: 'herdt', x: w - padR - 2, y: herdY - 4, textAnchor: 'end', fill: '#f59e0b', fontSize: 8, fontWeight: 'bold' }, 'Herd immunity: S < ' + (100 - herdThresh).toFixed(0) + '%'));
         }
 
+        // ── Healthcare-capacity line ("flatten the curve") — an infected peak
+        // ABOVE this overwhelms hospitals; the whole point of flattening is to
+        // keep the curve under it. Matches the "below 20%" Flatten challenge. ──
+        var capY = yPos(20);
+        gridChildren.push(h('line', { key: 'capline', x1: padL, x2: w - padR, y1: capY, y2: capY, stroke: '#ef4444', strokeWidth: 1, strokeDasharray: '2,2', opacity: 0.75 }));
+        gridChildren.push(h('text', { key: 'capt', x: padL + 2, y: capY - 3, textAnchor: 'start', fill: '#ef4444', fontSize: 8, fontWeight: 'bold' }, '🏥 Healthcare capacity (~20%)'));
+
         // area fills + lines
         var curves = [];
         compartments.forEach(function(comp) {
