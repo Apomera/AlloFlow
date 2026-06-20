@@ -793,6 +793,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             );
           })(),
 
+          // ── Focus-visible demo (criterion 2.4.7) — taught in prose, now you
+          // can FEEL it. Tab between the two buttons: one shows a clear focus
+          // ring, the other hides it (a real WCAG failure for keyboard users). ──
+          h('div', { className: 'rounded-2xl border-2 border-teal-300 bg-white p-4 mb-3' },
+            h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '⌨️ Focus-visible demo (2.4.7)'),
+            h('p', { className: 'text-[11px] text-slate-600 mb-3' }, 'Press Tab to move between these two buttons. One shows where keyboard focus is; the other hides it — a keyboard-only user would be lost.'),
+            h('div', { className: 'flex flex-wrap gap-5' },
+              h('div', { className: 'text-center' },
+                h('button', { type: 'button', className: 'px-4 py-2 rounded-lg bg-teal-700 text-white font-bold text-xs hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-amber-400' }, 'Tab to me ✅'),
+                h('div', { className: 'text-[10px] text-green-700 font-bold mt-1' }, 'Visible focus ring')),
+              h('div', { className: 'text-center' },
+                h('button', { type: 'button', className: 'px-4 py-2 rounded-lg bg-slate-600 text-white font-bold text-xs hover:bg-slate-700 focus:outline-none', style: { outline: 'none' } }, 'Tab to me ❌'),
+                h('div', { className: 'text-[10px] text-red-600 font-bold mt-1' }, 'Focus hidden — fails 2.4.7'))
+            )
+          ),
+
           WCAG_CRITERIA.map(function(criterion) {
             var isExpanded = selectedCriterion === criterion.id;
             return h('div', { key: criterion.id,
