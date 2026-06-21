@@ -100,6 +100,77 @@ var _alloStructuralFoundations = function (html) {
   var _foundations = { present: present, checked: 18 };
   return _foundations;
 };
+// ── Deterministic contrast PAIR fixer (2026-06-21) ──
+// Generalizes the foreground-only luminance descent: reach `target` contrast while choosing WHICH colour
+// to move. 'auto' moves the FOREGROUND first (least disruptive to the surface) and only adjusts the
+// BACKGROUND as a fallback when the fg alone can't reach the target — the "forced into an ugly extreme"
+// case the foreground-only fixer used to leave behind. The AI micro-tool overrides with preserve='fg'
+// (keep a brand TEXT colour → move bg), 'bg' (keep a brand SURFACE → move fg), or 'both' (split). Pure +
+// null-safe → { fg, bg, moved:'none'|'fg'|'bg'|'both' }. The AI only ever picks the STRATEGY; every hex is
+// computed HERE, deterministically — colour math never goes to the model (the fix_contrast hallucination
+// guard, "categoHistoryHistory", is exactly why). Single return → no 2-space `return {` (integrity hook).
+var _alloContrastFixPair = function (fgHex, bgHex, target, preserve) {
+  target = (typeof target === 'number' && target > 0) ? target : 4.5;
+  preserve = preserve || 'auto';
+  var _hex = function (hex) {
+    if (!hex) return null;
+    var s = String(hex).trim();
+    if (s[0] === '#') { var h = s.slice(1); if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; if (h.length < 6) return null; return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)]; }
+    var m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    return m ? [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])] : null;
+  };
+  var _toHex = function (c) { return '#' + [c[0], c[1], c[2]].map(function (x) { return Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0'); }).join(''); };
+  var _s = function (c) { c = c / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  var _lum = function (c) { return 0.2126 * _s(c[0]) + 0.7152 * _s(c[1]) + 0.0722 * _s(c[2]); };
+  var _cr = function (a, b) { var l1 = _lum(a), l2 = _lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+  var _lighten = function (c) { return [c[0] + (255 - c[0]) * 0.15, c[1] + (255 - c[1]) * 0.15, c[2] + (255 - c[2]) * 0.15]; };
+  var _darken = function (c) { return [c[0] * 0.82, c[1] * 0.82, c[2] * 0.82]; };
+  var _dist = function (a, b) { return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]); };
+  var _toward = function (mover, anchor, toWhite) {
+    var m = [mover[0], mover[1], mover[2]];
+    for (var i = 0; i < 40 && _cr(m, anchor) < target; i++) m = toWhite ? _lighten(m) : _darken(m);
+    return m;
+  };
+  // Move `mover` to maximize contrast with `anchor`. Try BOTH directions — a colour already at an extreme
+  // (e.g. white text) can only reach the ratio by crossing the OTHER way — and prefer whichever REACHES
+  // the target with the smaller change (so we don't over-distort when either direction works).
+  var _away = function (mover, anchor) {
+    var up = _toward(mover, anchor, true), down = _toward(mover, anchor, false);
+    var cu = _cr(up, anchor), cd = _cr(down, anchor);
+    if (cu >= target && cd >= target) return _dist(up, mover) <= _dist(down, mover) ? up : down;
+    if (cu >= target) return up;
+    if (cd >= target) return down;
+    return cu >= cd ? up : down; // neither reaches (rare) — best effort
+  };
+  var fg = _hex(fgHex), bg = _hex(bgHex);
+  var _fg = fg, _bg = bg;
+  if (fg && bg && _cr(fg, bg) < target) {
+    if (preserve === 'fg') {
+      _bg = _away(bg, fg);
+      if (_cr(fg, _bg) < target) _fg = _away(fg, _bg);
+    } else if (preserve === 'bg') {
+      _fg = _away(fg, bg);
+      if (_cr(_fg, bg) < target) _bg = _away(bg, _fg);
+    } else if (preserve === 'both') {
+      var fgDark = _lum(fg) < _lum(bg);
+      var f = [fg[0], fg[1], fg[2]], b = [bg[0], bg[1], bg[2]];
+      for (var k = 0; k < 40 && _cr(f, b) < target; k++) { f = fgDark ? _darken(f) : _lighten(f); b = fgDark ? _lighten(b) : _darken(b); }
+      _fg = f; _bg = b;
+    } else { // 'auto': move fg first (preserve the surface); fall back to bg only if fg can't reach target
+      _fg = _away(fg, bg);
+      if (_cr(_fg, bg) < target) _bg = _away(bg, _fg);
+    }
+  }
+  // moved = what ACTUALLY changed; a no-op returns the ORIGINAL inputs untouched (consumers skip on 'none').
+  var _moved = 'none', _fgOut = fgHex, _bgOut = bgHex;
+  if (fg && bg) {
+    var _fHex = _toHex(_fg), _bHex = _toHex(_bg);
+    var _fc = _fHex !== _toHex(fg), _bc = _bHex !== _toHex(bg);
+    if (_fc || _bc) { _moved = (_fc && _bc) ? 'both' : (_fc ? 'fg' : 'bg'); _fgOut = _fHex; _bgOut = _bHex; }
+  }
+  var _res = { fg: _fgOut, bg: _bgOut, moved: _moved };
+  return _res;
+};
 
 // ── Numeric/value-fidelity helper (2026-06-20) ──────────────────────────────
 // Extract a MULTISET (Map: normalized-token → count) of number-like tokens so the integrity gate can
@@ -3702,50 +3773,23 @@ var createDocPipeline = function(deps) {
     // foreground via luminance-descent and injects an inline style attribute — inline
     // beats any class or <style>-block rule that caused the original violation.
     fix_color_contrast: {
-      category: 'VISUAL', wcag: '1.4.3', params: '{target, fgColor, bgColor, expectedContrastRatio}',
+      category: 'VISUAL', wcag: '1.4.3', params: '{target, fgColor, bgColor, expectedContrastRatio, preserve}',
       fn: function(html, p) {
         if (!p || !p.target || !p.fgColor || !p.bgColor) return html;
-        var parseColor = function(c) {
-          if (!c) return null;
-          var s = String(c).trim();
-          if (s[0] === '#') {
-            var h = s.slice(1);
-            if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-            if (h.length < 6) return null;
-            return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
-          }
-          var m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
-          return m ? [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])] : null;
-        };
-        var rgbToHex = function(r,g,b) { return '#' + [r,g,b].map(function(x) { return Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0'); }).join(''); };
-        var lum = function(r,g,b) {
-          var map = function(c) { c = c/255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
-          return 0.2126*map(r) + 0.7152*map(g) + 0.0722*map(b);
-        };
-        var ratio = function(a,b) { var l1=lum(a[0],a[1],a[2]), l2=lum(b[0],b[1],b[2]); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
-        var fgRgb = parseColor(p.fgColor);
-        var bgRgb = parseColor(p.bgColor);
-        if (!fgRgb || !bgRgb) return html;
-        var target = p.expectedContrastRatio || 4.5;
-        var r = fgRgb[0], g = fgRgb[1], b = fgRgb[2];
-        var isDarkBg = lum(bgRgb[0],bgRgb[1],bgRgb[2]) < 0.18;
-        for (var i = 0; i < 30; i++) {
-          if (ratio([r,g,b], bgRgb) >= target) break;
-          if (isDarkBg) {
-            r = Math.min(255, Math.round(r + (255-r)*0.15));
-            g = Math.min(255, Math.round(g + (255-g)*0.15));
-            b = Math.min(255, Math.round(b + (255-b)*0.15));
-          } else {
-            r = Math.max(0, Math.round(r*0.82));
-            g = Math.max(0, Math.round(g*0.82));
-            b = Math.max(0, Math.round(b*0.82));
-          }
-        }
-        var newFg = rgbToHex(r,g,b);
+        // Deterministic which-colour-to-move fix. The AI supplies ONLY the strategy in `preserve`
+        // ('fg' = keep a brand TEXT colour → move the surface; 'bg' = keep a brand SURFACE → move the
+        // text; 'both' = split; default 'auto' = move the text first, touch the background only if the
+        // text alone can't reach the ratio). Every hex is computed by _alloContrastFixPair — colour
+        // values never come from the model (the fix_contrast "categoHistoryHistory" guard is why).
+        var _fix = _alloContrastFixPair(p.fgColor, p.bgColor, p.expectedContrastRatio || 4.5, p.preserve);
+        if (!_fix || _fix.moved === 'none') return html;
         return _applyToAxeTarget(html, p.target, function(el) {
           var existing = el.getAttribute('style') || '';
-          var cleaned = existing.replace(/(?:^|;)\s*color\s*:\s*[^;]+/gi, '').replace(/^;+/, '').trim();
-          el.setAttribute('style', (cleaned ? cleaned + ';' : '') + 'color:' + newFg);
+          var cleaned = existing.replace(/(?:^|;)\s*color\s*:\s*[^;]+/gi, '').replace(/(?:^|;)\s*background-color\s*:\s*[^;]+/gi, '').replace(/^;+/, '').trim();
+          var _decls = [];
+          if (_fix.moved === 'fg' || _fix.moved === 'both') _decls.push('color:' + _fix.fg);
+          if (_fix.moved === 'bg' || _fix.moved === 'both') _decls.push('background-color:' + _fix.bg);
+          el.setAttribute('style', (cleaned ? cleaned + ';' : '') + _decls.join(';'));
         });
       }
     },
@@ -10988,13 +11032,14 @@ HTML section ${chunkNum}/${chunks.length}:
       const bgHex = parseColor(bgRaw);
       if (!fgHex || !bgHex) return;
       try {
-        const newRgb = fixFg(hexToRgb(fgHex), hexToRgb(bgHex));
-        const newHex = rgbToHex(newRgb[0], newRgb[1], newRgb[2]);
-        if (newHex.toLowerCase() === fgHex.toLowerCase()) return;
+        // Deterministic which-colour-to-move fix (auto): move the foreground first, fall back to the
+        // BACKGROUND only when the fg alone can't reach the ratio (the "forced into an ugly extreme" case).
+        const _fix = _alloContrastFixPair(fgHex, bgHex);
+        if (!_fix || _fix.moved === 'none') return;
         const safeSel = targetSel.replace(/[{};<>]/g, '').trim();
         if (!safeSel || safeSel.length > 300 || seenSel.has(safeSel)) return;
         seenSel.add(safeSel);
-        items.push({ sel: safeSel, newHex });
+        items.push({ sel: safeSel, newFg: _fix.fg, newBg: _fix.bg, moveBg: (_fix.moved === 'bg' || _fix.moved === 'both') });
       } catch (e) { /* skip malformed node */ }
     });
 
@@ -11011,15 +11056,24 @@ HTML section ${chunkNum}/${chunks.length}:
       if (typeof DOMParser !== 'undefined') {
         const parser = new DOMParser();
         const dom = parser.parseFromString(html, 'text/html');
-        items.forEach(({ sel, newHex }) => {
+        // For the stuck case (the pair-fixer also moved the BACKGROUND) only set background-color when the
+        // element OWNS its background (inline bg, or a self-bg element like a button / cell / badge) — never
+        // patch a background behind plain text that inherits its surface from an ancestor.
+        const _ownsBg = (el) => {
+          if (/background/i.test(el.getAttribute('style') || '')) return true;
+          const _tag = (el.tagName || '').toUpperCase();
+          return _tag === 'BUTTON' || _tag === 'A' || _tag === 'TH' || _tag === 'TD' || _tag === 'MARK' || _tag === 'CODE' || _tag === 'KBD' || _tag === 'SUMMARY' || _tag === 'CAPTION';
+        };
+        items.forEach(({ sel, newFg, newBg, moveBg }) => {
           let el = null;
           try { el = dom.querySelector(sel); } catch (e) { /* invalid selector */ }
           if (!el) return;
-          // Strip any existing color:... from the element's own inline style, then
-          // prepend the new color with !important so declaration order + importance
-          // both favor it.
-          const prior = (el.getAttribute('style') || '').replace(/(?:^|;)\s*color\s*:[^;]*;?/gi, '').replace(/^;+/, '');
-          const next = 'color:' + newHex + ' !important' + (prior ? ';' + prior : '');
+          // Strip any existing color (and background-color, when we're setting one) from the element's own
+          // inline style, then prepend the new declarations with !important so order + importance favor them.
+          let prior = (el.getAttribute('style') || '').replace(/(?:^|;)\s*color\s*:[^;]*;?/gi, '').replace(/^;+/, '');
+          const _applyBg = moveBg && _ownsBg(el);
+          if (_applyBg) prior = prior.replace(/(?:^|;)\s*background-color\s*:[^;]*;?/gi, '').replace(/^;+/, '');
+          const next = 'color:' + newFg + ' !important' + (_applyBg ? ';background-color:' + newBg + ' !important' : '') + (prior ? ';' + prior : '');
           el.setAttribute('style', next);
           domFixCount++;
         });
@@ -11039,7 +11093,7 @@ HTML section ${chunkNum}/${chunks.length}:
     // ── Fallback path: stylesheet rules (used only when DOMParser unavailable or
     // all querySelector lookups failed — e.g. malformed axe selectors). Inline
     // `!important` on the element still beats this, so this is a best-effort tail.
-    const rules = items.map(it => it.sel + ' { color: ' + it.newHex + ' !important; }');
+    const rules = items.map(it => it.sel + ' { color: ' + it.newFg + ' !important; }'); // fg-only: the no-DOM fallback can't check bg ownership, so it never patches a background
     const overrideStyle = '<style id="alloflow-contrast-overrides">\n/* Axe-guided contrast fixes — stylesheet fallback for ' + rules.length + ' element' + (rules.length === 1 ? '' : 's') + ' */\n' + rules.join('\n') + '\n</style>';
 
     let fixed = html.replace(/<style id="alloflow-contrast-overrides">[\s\S]*?<\/style>\s*/i, '');
@@ -26868,6 +26922,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     ocrBlockLayout: _alloOcrBlockLayout, // exposed for tests: the scanned-OCR block-fallback line distribution
     structuralFoundations: _alloStructuralFoundations, // the view's foundations scorecard calls this (single source for the regex set)
     weightedDeductions: _alloWeightedDeductions, // #5: single source for the output-audit deduction (single-chunk + chunked-merge)
+    contrastFixPair: _alloContrastFixPair, // deterministic which-colour-to-move contrast fixer (auto | preserve fg/bg/both)
     applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
     generateFullPackHTML: _wrap(generateFullPackHTML),
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
@@ -26889,5 +26944,6 @@ window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // 
 window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
+window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
