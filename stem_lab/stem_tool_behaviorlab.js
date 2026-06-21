@@ -3208,7 +3208,7 @@ dataRef.current = d;
                       padding: '2px 8px', borderRadius: 999,
                       background: 'rgba(251,191,36,0.12)',
                       border: '1px solid rgba(251,191,36,0.40)',
-                      color: '#fcd34d', fontSize: 10, fontWeight: 700,
+                      color: 'var(--allo-stem-text, #fcd34d)', fontSize: 10, fontWeight: 700,
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
                   ),

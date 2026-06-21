@@ -15811,7 +15811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 20, fontWeight: 900, color: era.color, letterSpacing: '-0.01em' } }, era.name),
                 h('div', { style: { fontSize: 12, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', background: 'rgba(251,146,60,0.1)', padding: '3px 8px', borderRadius: 6 } },
                   era.startMya + '–' + era.endMya + ' million years ago')),
-              h('div', { style: { fontSize: 16, fontWeight: 700, color: '#fde68a', marginBottom: 12 } },
+              h('div', { style: { fontSize: 16, fontWeight: 700, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 12 } },
                 era.headline),
               h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } },
                 era.event,
@@ -17020,7 +17020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 8 } }, a.description),
                     h('div', { style: { padding: '8px 12px', background: 'rgba(251,191,36,0.1)', borderLeft: '3px solid #fbbf24', borderRadius: 6 } },
                       h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✨ Why this matters'),
-                      h('div', { style: { fontSize: 11, color: '#fde68a', lineHeight: 1.6, fontStyle: 'italic' } }, a.significance)));
+                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6, fontStyle: 'italic' } }, a.significance)));
                 })))
           ) : null,
 

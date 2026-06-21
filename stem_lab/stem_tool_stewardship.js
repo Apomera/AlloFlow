@@ -1626,7 +1626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               )
             ),
             h('div', {
-              style: { padding: 12, borderRadius: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', marginBottom: 14, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 }
+              style: { padding: 12, borderRadius: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', marginBottom: 14, fontSize: 12.5, color: 'var(--allo-stem-text, #fef3c7)', lineHeight: 1.55 }
             },
               h('strong', null, '⚠️ AI scenario notice: '),
               scenario.aiDisclaimer
@@ -1856,7 +1856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('ul', { style: { margin: '10px 0 0 18px', padding: 0, fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 scenario.sources.map(function(src, i) { return h('li', { key: i }, src); })
               ),
-              h('div', { style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11, color: '#fef3c7', fontStyle: 'italic' } },
+              h('div', { style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #fef3c7)', fontStyle: 'italic' } },
                 scenario.aiDisclaimer
               )
             ),

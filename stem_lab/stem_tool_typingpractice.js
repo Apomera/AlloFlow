@@ -13102,7 +13102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Pause overlay
             battleSt.paused ? h('div', {
               role: 'status',
-              style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', textAlign: 'center', color: '#fcd34d', fontSize: 13, fontWeight: 700 }
+              style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', textAlign: 'center', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 13, fontWeight: 700 }
             }, '⏸ Paused — both stacks frozen. Press Resume or Esc to continue.') : null,
             // Difficulty + cadence footer
             h('div', { style: { marginTop: 14, fontSize: 11, color: palette.textMute, textAlign: 'center', fontStyle: 'italic' } },

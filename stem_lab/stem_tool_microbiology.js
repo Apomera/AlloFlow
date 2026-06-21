@@ -1523,7 +1523,7 @@
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.35)', borderRight: '1px solid rgba(245,158,11,0.35)', borderBottom: '1px solid rgba(245,158,11,0.35)', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, 'Somatic vs germline editing'),
-                    h('p', { style: { margin: 0, fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                    h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                       'SOMATIC editing changes DNA in body cells of a living person. The edits affect that person only; not their children. (Casgevy for sickle cell is somatic.) GERMLINE editing changes DNA in sperm, eggs, or embryos. The edits pass to every cell of the resulting person AND to their descendants. The scientific consensus is: somatic editing is ethically OK for treating disease; germline editing is not currently OK because we cannot anticipate the consequences across generations.'
                     )
                   ),
@@ -1610,7 +1610,7 @@
                   h('div', { style: { fontSize: 11, color: '#ec4899', marginTop: 6, fontStyle: 'italic' } }, 'Generally tougher to treat - outer membrane blocks many antibiotics. Often need fluoroquinolones, aminoglycosides, or specific β-lactams that penetrate the outer membrane.')
                 )
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.6 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6 } },
                 h('strong', null, 'Why this matters clinically: '),
                 'A sample of urine, blood, sputum, or CSF can be Gram-stained in 3 minutes. The result alone narrows the field of suspected pathogens dramatically. Empirical antibiotic therapy (started before full identification) is chosen partly based on the Gram result. Endotoxin (the LPS on Gram-negative cells) is a major driver of septic shock - a Gram-negative bloodstream infection is medically more dangerous in some ways than a Gram-positive one.'
               ),
@@ -2118,7 +2118,7 @@
                 h('strong', null, 'Honest framing: '), topic.caveat
               )
             ),
-            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
               h('strong', null, 'The cross-tool connection: '),
               'This section pairs naturally with the Astronomy tool\'s exoplanet + habitable-zone + Drake-equation sections. The biology side (what kind of life COULD exist) and the astronomy side (where habitable worlds COULD be) are now converging into a single field called ASTROBIOLOGY. NASA + ESA both have active astrobiology programs (NASA has the Astrobiology Institute + NExSS network; ESA has the ExoMars + planned ENVISION missions). It is one of the most genuinely interdisciplinary fields in modern science.'
             )
@@ -2184,7 +2184,7 @@
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 17 } }, selected.name),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Resolution range: ' + selected.range),
             h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.what),
-            h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.55 } },
+            h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55 } },
               h('strong', null, 'Limit: '), selected.limit
             )
           ),
@@ -2412,7 +2412,7 @@
                   );
                 })
               ),
-              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)', fontSize: 12, color: '#fde68a', lineHeight: 1.6 } },
+              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.35)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6 } },
                 h('strong', null, 'Key insight: '),
                 'Antibiotics that work via the cell wall (β-lactams, vancomycin) are useless against organisms without a typical bacterial cell wall - including all viruses, fungi, and humans. This is why antibiotics don\'t treat the flu or a cold. The body has no equivalent target.'
               )
@@ -2451,7 +2451,7 @@
                   h('li', null, h('strong', null, 'Free of antibiotic resistance: '), 'A phage that kills MRSA does so by an entirely different mechanism than methicillin. The MRSA bacteria\'s resistance to the antibiotic is irrelevant.')
                 )
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65, marginBottom: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65, marginBottom: 10 } },
                 h('strong', null, 'The complications: '),
                 h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
                   h('li', null, h('strong', null, 'Identification needed: '), 'Treatment requires knowing the exact bacterial strain + having a phage that targets it. Takes days for the lab work - sometimes longer than antibiotic empirical treatment would.'),
@@ -2738,7 +2738,7 @@
                 h('strong', null, 'The first 1,000 days: '),
                 'Conception → 2nd birthday. The most consequential window for microbiome shaping. Vaginal vs cesarean birth, breastfeeding duration, antibiotic exposure, daycare attendance, household pets - all influence the microbiome the child carries into adulthood. Many adult health outcomes (asthma, allergies, autoimmune conditions, obesity risk) correlate with first-1,000-day microbial events. Interventions to support healthy infant microbiome assembly (vaginal seeding for C-section babies, careful antibiotic stewardship, breastfeeding support) are actively researched + sometimes practiced.'
               ),
-              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, 'What you can do, at any life stage: '),
                 'Eat 30+ different plant species per week (the strongest single predictor of gut microbiome diversity in the American Gut Project + similar studies). Limit antibiotic use to clear medical necessity. Sleep enough. Maintain social contact + outdoor time. Manage chronic stress. Consume fermented foods regularly. Reduce ultra-processed foods. The microbiome is one of the most modifiable aspects of human health - most days you make food + lifestyle choices that shape it.'
               )
@@ -3368,7 +3368,7 @@
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'Cross-tool connection: '),
                   'For King Middle\'s EL Education place-based pedagogy: Maine\'s salt marshes, bogs, forests, and Gulf of Maine waters all participate in these microbial-climate cycles. The Wells Reserve, the Schoodic Institute at Acadia, and the University of Maine Climate Change Institute run citizen-science programs that students can join. This section pairs with ClimateExplorer + Stewardship Studio in the broader AlloFlow curriculum.'
                 )
@@ -3472,7 +3472,7 @@
                   h('li', null, h('strong', null, 'Bacillus subtilis (spore formation): '), 'Under starvation + high density, this soil bacterium forms tough spores that survive for thousands of years. Quorum tells the colony whether to commit to sporulation.')
                 )
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, 'Why biofilms make antibiotic resistance worse: '),
                 'A bacterium inside a biofilm is 100-1000× more resistant to antibiotics than the same bacterium swimming free. Three reasons: (1) the matrix physically blocks antibiotic penetration; (2) cells deep inside grow slowly + many antibiotics only work on growing cells; (3) close contact enables rapid horizontal gene transfer of resistance genes. Many chronic infections (cystic fibrosis lung, prosthetic joint, endocarditis) are biofilm infections - they cannot be cured by antibiotics alone + often require surgical removal of the infected device.'
               )
@@ -3595,7 +3595,7 @@
                   )
                 )
               ),
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, 'How antibodies stop pathogens (4 mechanisms): '),
                 h('ol', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.65 } },
                   h('li', null, h('strong', null, 'Neutralization: '), 'Blocks the pathogen from binding its target cell. (How antiviral antibodies prevent infection.)'),
@@ -3681,7 +3681,7 @@
             h('div', null,
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, 'Innate immunity'),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 4 } }, 'Innate immunity'),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, 'The fast, general defense. Skin, mucus, stomach acid, macrophages, neutrophils, natural killer cells. Acts within minutes to hours. Same response to any pathogen - no specific memory.')
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + EMERALD } },
@@ -3936,7 +3936,7 @@
                 h('strong', null, 'Why so many in the first 2 years? '),
                 'The infant immune system is still learning what is dangerous + what is not. The diseases on this schedule were once major killers of children: pertussis (whooping cough), Hib meningitis, measles, polio. Spacing the doses follows the immune system\'s development. Multiple antigens in the same shot (DTaP, MMR, PCV) is well-tolerated - the immune system encounters thousands of antigens daily from microbes everywhere; vaccines add a tiny calibrated set.'
               ),
-              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.6 } },
+              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6 } },
                 h('strong', null, 'Disease coverage thresholds (herd immunity): '),
                 'Measles needs ~95% population vaccination. Pertussis, ~92%. Polio, ~80-85%. Varicella, ~85-90%. When coverage drops below the threshold, outbreaks return - as Maine + neighboring New Hampshire have seen with pertussis. The schedule reflects what protects both the individual + the community.'
               ),
@@ -4177,7 +4177,7 @@
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
             h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
-            h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 10, fontStyle: 'italic' } }, 'Cultures: ' + selected.cultures),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 10, fontStyle: 'italic' } }, 'Cultures: ' + selected.cultures),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + EMERALD, marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.how)

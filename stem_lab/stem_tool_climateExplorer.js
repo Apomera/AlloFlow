@@ -3809,7 +3809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('br'),
                         'Support: ' + Math.round(s.support) + '/' + def.targets.support
                       ),
-                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)' } },
                         el('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
                       ) : null
                     );
@@ -3827,7 +3827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Avg decarb ' + baselineAvgDecarb)
                     )
                   ),
-                  el('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                  el('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, fontStyle: 'italic' } },
                     actualAvgDecarb > baselineAvgDecarb + 15
                       ? 'Your campaign moved Maine substantially ahead of where neglect would have left it. That gap is the cumulative effect of every period\'s policy choice compounded by feedback rules.'
                       : (actualAvgDecarb > baselineAvgDecarb

@@ -21117,7 +21117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             })(),
             h('div', { style: { background: 'rgba(251,191,36,0.08)', borderRadius: '10px', padding: '12px', border: '1px solid rgba(251,191,36,0.3)' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '4px' } }, 'Practice'),
-              h('div', { style: { fontSize: '11px', color: '#fcd34d' } }, les.practice)
+              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, #fcd34d)' } }, les.practice)
             )
           )
         );
@@ -21152,7 +21152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var cats = [
           { id: 'all', label: 'All', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' },
           { id: 'regulatory', label: 'Regulatory', color: '#fff' },
-          { id: 'warning', label: 'Warning', color: '#fde047' },
+          { id: 'warning', label: 'Warning', color: 'var(--allo-stem-text, #fde047)' },
           { id: 'construction', label: 'Construction', color: '#f97316' },
           { id: 'school', label: 'School', color: '#ca8a04' },
           { id: 'guide', label: 'Guide', color: '#1e3a8a' }
@@ -22018,7 +22018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }, '🎓 Coaching (' + drivingStats.events.length + ')') : null,
               // Certificate button (only if passed with A or B)
               !isFreeExplore && combined >= 80 ? h('button', { onClick: function() { upd('view', 'certificate'); },
-                style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.15)', color: '#fcd34d', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '📜 Certificate') : null
+                style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '📜 Certificate') : null
             )
           )
         );
@@ -24853,7 +24853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, '✅ Got It')
           ) : h('button', {
             onClick: function() { upd('permitFlashFlipped', true); },
-            style: { width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fde68a', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+            style: { width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: 'var(--allo-stem-text, #fde68a)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
           }, 'Reveal Answer'),
           // Utility row
           h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'space-between', marginTop: '12px' } },
@@ -26882,7 +26882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', null,
                 h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '4px' } }, 'Step ' + rs.step + ': ' + rs.title),
                 h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.5', marginBottom: '4px' } }, rs.desc),
-                h('div', { style: { fontSize: '10px', color: '#fde68a', lineHeight: '1.4' } }, '💡 ' + rs.tip)
+                h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text, #fde68a)', lineHeight: '1.4' } }, '💡 ' + rs.tip)
               )
             );
           }),
@@ -26918,7 +26918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               it.rules.map(function(r, ri) {
                 return h('div', { key: ri, style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6', paddingLeft: '10px', borderLeft: '2px solid #14b8a6', marginBottom: '4px' } }, '• ' + r);
               }),
-              h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '6px' } }, '💡 ' + it.tip)
+              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text, #fde68a)', marginTop: '6px' } }, '💡 ' + it.tip)
             );
           })
         );

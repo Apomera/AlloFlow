@@ -4014,7 +4014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ),
 
               h('div', {
-                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: '#fde68a' }
+                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: 'var(--allo-stem-text, #fde68a)' }
               },
                 h('strong', { style: { color: '#fbbf24' } }, 'How a year works: '),
                 'each year splits into a ',
@@ -4153,7 +4153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, 'Health ' + baselineHealth + ' / Yield ' + baselineYield)
                   )
                 ),
-                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, fontStyle: 'italic' } },
                   actualHealth > baselineHealth + 8 || actualYield > baselineYield + 50
                     ? 'Your stewardship pulled the mosaic substantially ahead of where neglect would have left it. That gap is the cultural infrastructure you built.'
                     : (actualHealth > baselineHealth - 2
@@ -4170,7 +4170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, marginTop: 8 } },
                   Object.keys(lifetimeHarvest).map(function(zid) {
                     var lh = lifetimeHarvest[zid];
-                    return h('div', { key: zid, style: { fontSize: 12.5, color: '#fde68a' } },
+                    return h('div', { key: zid, style: { fontSize: 12.5, color: 'var(--allo-stem-text, #fde68a)' } },
                       h('span', { style: { fontSize: 16, marginRight: 6 } }, lh.icon),
                       sumHarvestText(lh.parts)
                     );
@@ -4302,7 +4302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, '🌾 This year the community gathered'),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 6, marginTop: 6 } },
                   lastSnap.harvest.map(function(harv) {
-                    return h('div', { key: harv.id, style: { fontSize: 12.5, color: '#fde68a' } },
+                    return h('div', { key: harv.id, style: { fontSize: 12.5, color: 'var(--allo-stem-text, #fde68a)' } },
                       h('span', { style: { fontSize: 16, marginRight: 6 } }, harv.icon),
                       harv.text
                     );
