@@ -247,6 +247,24 @@
           top2.mass += ELEMENTS[el].m * n2;
           top2.elems[el] = (top2.elems[el] || 0) + n2;
         }
+      } else if (clean[i] === '·' || clean[i] === '.') {
+        // Hydrate / addition dot: "·5H2O" = 5 waters of crystallization. Read the
+        // multiplier, parse the remainder of the formula, and fold it in multiplied
+        // by that count — so the molar mass of CuSO4·5H2O counts all five waters,
+        // not one. (Previously the dot AND the multiplier digit were skipped, giving
+        // a badly wrong molar mass for every hydrate.)
+        i++;
+        var hcnt = '';
+        while (i < clean.length && clean[i] >= '0' && clean[i] <= '9') { hcnt += clean[i]; i++; }
+        var hn = hcnt ? parseInt(hcnt, 10) : 1;
+        var sub = parseFormula(clean.slice(i));
+        var topH = stack[stack.length - 1];
+        topH.mass += sub.mass * hn;
+        var hk = Object.keys(sub.elems);
+        for (var hi = 0; hi < hk.length; hi++) {
+          topH.elems[hk[hi]] = (topH.elems[hk[hi]] || 0) + sub.elems[hk[hi]] * hn;
+        }
+        break;
       } else { i++; }
     }
     return stack[0];
