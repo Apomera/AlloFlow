@@ -16073,7 +16073,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // blended above, so the reported score + axeViolations described a document the user is NOT
       // downloading and the injected landmarks/headings were never audited. Re-run ONLY the cheap
       // deterministic engines (the AI half is unchanged — restored source words are not a11y
-      // regressions) and re-blend with the same consensus + (ai+det)/2. Gated so the common no-op
+      // regressions) and re-score with the same consensus min(ai, det). Gated so the common no-op
       // path keeps identical behavior + cost. Fail-soft: on any error the pre-restore numbers stand.
       const _imageRecoveryInjected = accessibleHtml.indexOf('data-image-recovery="true"') !== -1;
       if (_autoRestore || _imageRecoveryInjected) {
