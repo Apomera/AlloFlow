@@ -551,7 +551,7 @@
         rows.map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: '#fef3c7', fontWeight: 700 } }, r[1])
+            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -974,7 +974,7 @@
         rows.map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '50% 50%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: '#fef3c7', fontWeight: 700 } }, r[1])
+            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -1319,7 +1319,7 @@
         rows.map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: '#fef3c7', fontWeight: 700 } }, r[1])
+            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -1601,7 +1601,7 @@
         rows.map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '50% 50%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: '#fef3c7', fontWeight: 700 } }, r[1])
+            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -1914,7 +1914,7 @@
         rows.map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: '#fef3c7', fontWeight: 700 } }, r[1])
+            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -2224,7 +2224,7 @@
         rows.map(function(r, i) {
           return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '40% 60%', gap: 6, padding: '3px 0', borderBottom: i < rows.length - 1 ? '1px solid #1e293b' : 'none' } },
             h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r[0]),
-            h('span', { style: { color: '#fef3c7', fontWeight: 700 } }, r[1])
+            h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, r[1])
           );
         })
       ),
@@ -3165,7 +3165,7 @@
               }
             },
               h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.06em', textTransform: 'uppercase' } }, s.topic),
-              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fef3c7' } }, s.title),
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #fef3c7)' } }, s.title),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, s.research_question),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, '→ ' + s.tab.charAt(0).toUpperCase() + s.tab.slice(1) + ' tab')
             );
@@ -3198,7 +3198,7 @@
               }
             },
               h('div', { style: { fontSize: 22 } }, card.icon),
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, card.label),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #fef3c7)' } }, card.label),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } }, card.sub)
             );
           })
@@ -3247,8 +3247,8 @@
     },
       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⚠ Common misconceptions'),
       items.map(function(it, i) {
-        return h('div', { key: i, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
-          h('div', { style: { fontWeight: 700, color: '#fef3c7', marginBottom: 2 } }, '✗ ' + it.wrong),
+        return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
+          h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 2 } }, '✗ ' + it.wrong),
           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, '✓ ' + it.right)
         );
       })
@@ -3346,7 +3346,7 @@
         resp.error
           ? h('div', { style: { fontSize: 12, color: '#fca5a5' } }, '⚠ ' + resp.error)
           : h('div', null,
-              _isNum(resp.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fef3c7', marginBottom: 6 } },
+              _isNum(resp.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 6 } },
                 'Score: ' + resp.score + ' / 10'
               ),
               Array.isArray(resp.strengths) && resp.strengths.length > 0 && h('div', { style: { marginBottom: 8 } },
@@ -3363,7 +3363,7 @@
               ),
               resp.improved_version && h('div', null,
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a5b4fc', marginBottom: 2 } }, '📝 Model explanation'),
-                h('div', { style: { fontSize: 11, color: '#fef3c7', fontStyle: 'italic', padding: 8, background: 'rgba(99,102,241,0.10)', borderRadius: 6, lineHeight: 1.6 } },
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fef3c7)', fontStyle: 'italic', padding: 8, background: 'rgba(99,102,241,0.10)', borderRadius: 6, lineHeight: 1.6 } },
                   resp.improved_version
                 )
               )
@@ -3765,7 +3765,7 @@
             }
           },
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Question ' + (qi + 1) + ' of ' + d.quizQuestions.length),
-            h('div', { style: { fontSize: 13, color: '#fef3c7', fontWeight: 700, marginBottom: 8, lineHeight: 1.45 } }, q.q),
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700, marginBottom: 8, lineHeight: 1.45 } }, q.q),
             q.choices.map(function(choice, ci) {
               var isPicked = pickedIdx === ci;
               var isThisCorrect = ci === q.correct;
@@ -4036,7 +4036,7 @@
         role: 'note', 'aria-label': 'Sample problem context'
       },
         h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 } }, '📚 ' + researchQuestion.topic),
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7', marginBottom: 4 } }, researchQuestion.title),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 4 } }, researchQuestion.title),
         h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 6 } }, researchQuestion.research_question),
         researchQuestion.hint && h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '💡 ' + researchQuestion.hint),
         h('button', {
@@ -6326,7 +6326,7 @@
                   h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 8px' } }, p.physics),
                   h('div', { style: { fontSize: 9, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Where you can see it'),
                   h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, p.whereSeen),
-                  p.funFact && h('div', { style: { fontSize: 11, fontStyle: 'italic', color: '#fcd34d', padding: '6px 10px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 6 } }, '💡 ' + p.funFact)
+                  p.funFact && h('div', { style: { fontSize: 11, fontStyle: 'italic', color: 'var(--allo-stem-text, #fcd34d)', padding: '6px 10px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 6 } }, '💡 ' + p.funFact)
                 )
               );
             })
@@ -7006,9 +7006,9 @@
                       return h('li', { key: 'c'+i, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, c);
                     })
                   ),
-                  s.quote && h('div', { style: { fontSize: 11, fontStyle: 'italic', color: '#fcd34d', padding: '8px 12px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 6, marginBottom: 8 } }, '"' + s.quote.replace(/^"|"$/g, '') + '"'),
+                  s.quote && h('div', { style: { fontSize: 11, fontStyle: 'italic', color: 'var(--allo-stem-text, #fcd34d)', padding: '8px 12px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.20)', borderRadius: 6, marginBottom: 8 } }, '"' + s.quote.replace(/^"|"$/g, '') + '"'),
                   s.legacy && h('div', null,
-                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Legacy'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Legacy'),
                     h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, s.legacy)
                   )
                 )
@@ -7139,7 +7139,7 @@
     });
     return h('div', null,
       h('div', { style: { background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
-        h('h3', { style: { color: '#fcd34d', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📜 History of Optics'),
+        h('h3', { style: { color: 'var(--allo-stem-text, #fcd34d)', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📜 History of Optics'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, OPTICS_HISTORY.length + ' milestones from antiquity through the modern day, including Maine context. Use the search to find any era or event.')
       ),
       h('input', { type: 'text', value: d.histQuery || '',
@@ -7156,7 +7156,7 @@
                 h('div', { style: { position: 'absolute', left: -22, top: 2, width: 14, height: 14, borderRadius: '50%', background: '#fbbf24', border: '2px solid #0f172a' } }),
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 4, flexWrap: 'wrap' } },
                   h('span', { style: { fontSize: 16, lineHeight: 1 } }, e.icon),
-                  h('span', { style: { fontSize: 13, fontWeight: 900, color: '#fcd34d', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.year),
+                  h('span', { style: { fontSize: 13, fontWeight: 900, color: 'var(--allo-stem-text, #fcd34d)', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.year),
                   h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '· ' + e.region)
                 ),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 3 } }, e.event),
@@ -7498,7 +7498,7 @@
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, i.cons),
               h('div', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 700, marginBottom: 3 } }, '📍 Where you find it'),
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, i.where),
-              h('div', { style: { fontSize: 11, color: '#fcd34d', fontWeight: 700, marginBottom: 3 } }, '📜 History'),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fcd34d)', fontWeight: 700, marginBottom: 3 } }, '📜 History'),
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: 0 } }, i.history)
             )
           );
@@ -7729,7 +7729,7 @@
             ),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, fontStyle: 'italic', marginBottom: 4 } }, '🎯 ' + k.goal),
             isOpen && h('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(251,146,60,0.25)' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 4 } }, '📦 Materials'),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', marginBottom: 4 } }, '📦 Materials'),
               h('ul', { style: { margin: '0 0 10px', paddingLeft: 18 } },
                 (k.materials || []).map(function(m, i) { return h('li', { key: 'm'+i, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, m); })
               ),
@@ -8079,7 +8079,7 @@
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, c.day),
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', marginBottom: 3 } }, '📈 Job growth'),
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, c.growth),
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '🦞 In Maine'),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', marginBottom: 3 } }, '🦞 In Maine'),
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, c.maine)
             )
           );
@@ -8431,7 +8431,7 @@
             ),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, p.problem),
             isOpen && h('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(59,130,246,0.25)' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '📋 Given'),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', marginBottom: 3 } }, '📋 Given'),
               h('ul', { style: { margin: '0 0 8px', paddingLeft: 18 } },
                 (p.given || []).map(function(g, i) { return h('li', { key: 'g'+i, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, fontFamily: 'ui-monospace, Menlo, monospace' } }, g); })
               ),
@@ -8440,7 +8440,7 @@
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 3 } }, '🧮 Solution'),
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 8px' } }, p.solution),
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 3 } }, '✓ Answer'),
-              h('p', { style: { fontSize: 12, color: '#fcd34d', fontWeight: 700, lineHeight: 1.55, margin: '0 0 8px', padding: '6px 10px', background: 'rgba(251,191,36,0.08)', borderRadius: 6 } }, p.answer),
+              h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #fcd34d)', fontWeight: 700, lineHeight: 1.55, margin: '0 0 8px', padding: '6px 10px', background: 'rgba(251,191,36,0.08)', borderRadius: 6 } }, p.answer),
               p.pitfalls && h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', marginBottom: 3 } }, '🪤 Common pitfall'),
                 h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, p.pitfalls))
@@ -8788,7 +8788,7 @@
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
               h('span', { style: { fontSize: 20 } }, r.icon),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fcd34d', lineHeight: 1.2 } }, r.title),
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', lineHeight: 1.2 } }, r.title),
                 h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.04em' } }, r.category)
               )
             ),
@@ -8813,7 +8813,7 @@
               h('span', { style: { fontSize: 20 } }, s.icon),
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fca5a5', flex: 1 } }, s.title)
             ),
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '🎬 Scenario'),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', marginBottom: 3 } }, '🎬 Scenario'),
             h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 8px' } }, s.scenario),
             h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', marginBottom: 3 } }, '⚠ Risk'),
             h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 8px' } }, s.risk),
@@ -8822,7 +8822,7 @@
             h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', marginBottom: 3 } }, '🛡 Prevention'),
             h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 8px' } }, s.prevention),
             s.maine && h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '🦞 Maine context'),
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', marginBottom: 3 } }, '🦞 Maine context'),
               h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0, fontStyle: 'italic' } }, s.maine))
           );
         })
@@ -9144,7 +9144,7 @@
                 })
               ),
               s.keyFigure && h('div', { style: { padding: '10px 14px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', borderLeft: '4px solid #fbbf24', borderRadius: 6, marginBottom: 10 } },
-                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fcd34d', marginBottom: 4 } }, '🔑 Key insight'),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', marginBottom: 4 } }, '🔑 Key insight'),
                 h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, s.keyFigure)),
               s.misconceptions && h('div', { style: { padding: '10px 14px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 6 } },
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', marginBottom: 4 } }, '⚠ Common misconception'),
@@ -9503,7 +9503,7 @@
             ),
             h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 6px' } }, g.def),
             g.etymology && h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, '📜 ' + g.etymology),
-            g.example && h('div', { style: { fontSize: 10, color: '#fcd34d', marginBottom: 4 } }, '💡 ' + g.example),
+            g.example && h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #fcd34d)', marginBottom: 4 } }, '💡 ' + g.example),
             g.related && h('div', { style: { fontSize: 9, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.04em' } }, '↪ ' + g.related)
           );
         })
@@ -11710,7 +11710,7 @@
           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'kg·m/s')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: '12px 14px' } },
           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, '# PER WATT'),
-          h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fcd34d', fontFamily: 'monospace' } }, (1 / energyJ).toExponential(2)),
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: 'var(--allo-stem-text, #fcd34d)', fontFamily: 'monospace' } }, (1 / energyJ).toExponential(2)),
           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'photons/sec')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(244,63,94,0.30)', borderRadius: 10, padding: '12px 14px' } },
           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'kJ/mol'),
@@ -11966,7 +11966,7 @@
           h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'vs dark-adapted eye')),
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 10, padding: 12 } },
           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'MAX USEFUL MAG'),
-          h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fcd34d', fontFamily: 'monospace' } }, maxMag.toFixed(0) + 'x'),
+          h('div', { style: { fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #fcd34d)', fontFamily: 'monospace' } }, maxMag.toFixed(0) + 'x'),
           h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '~50x per inch'))
       ),
       h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(100,116,139,0.30)', borderRadius: 10 } },

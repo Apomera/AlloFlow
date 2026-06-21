@@ -57,6 +57,17 @@ describe('opticsLab — mirror engine (rendered)', () => {
   });
 });
 
+describe('opticsLab — home-screen contrast (light-mode readability)', () => {
+  it('card titles are theme-aware, not hardcoded cream (#fef3c7) that vanishes in light mode', () => {
+    const html = render({ mode: 'home' });
+    // The sample-problem + topic-card titles now use var(--allo-stem-text) so they
+    // stay readable in light mode (the cream is only a dark-mode fallback).
+    expect(html).toContain('var(--allo-stem-text, #fef3c7)');
+    // ...and there is no bare cream text color left on the (light) home screen.
+    expect(/color:\s*#fef3c7\b/.test(html)).toBe(false);
+  });
+});
+
 describe('opticsLab — slider a11y (aria-valuetext speaks the image result)', () => {
   it('lens sliders expose the computed image via aria-valuetext', () => {
     const html = render({ mode: 'lenses', lensType: 'converging', lensFocal: 10, lensDo: 30 });
