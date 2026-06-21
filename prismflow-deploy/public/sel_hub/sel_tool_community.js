@@ -1061,7 +1061,7 @@ window.SelHub = window.SelHub || {
                 placeholder: band === 'elementary' ? 'My cultural superpower is...' : 'My unique cultural strength is...',
                 style: { width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 12, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 10 }
               }),
-              h('button', { 'aria-label': 'Toggle sound',
+              h('button', { 
                 onClick: function() {
                   if (!superpower.trim()) { addToast('Write your cultural superpower first!', 'error'); return; }
                   upd({ superpowerSaved: true });

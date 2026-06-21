@@ -1473,7 +1473,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                   curQ.options.map(function(opt, oi) {
                     var styleColors = { competing: '#ef4444', avoiding: '#94a3b8', accommodating: '#3b82f6', compromising: '#f59e0b', collaborating: '#10b981' };
-                    return h('button', { 'aria-label': 'Toggle sound',
+                    return h('button', { 
                       key: oi,
                       onClick: function() {
                         var newAnswers = Object.assign({}, sqAnswers);

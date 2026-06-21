@@ -36059,7 +36059,7 @@ window.SelHub = window.SelHub || {
 
               // Controls
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-                !isComplete && h('button', { 'aria-label': 'Toggle sound',
+                !isComplete && h('button', { 
                   onClick: function() {
                     if (breathingActive) {
                       upd('breathingActive', false);
@@ -36154,7 +36154,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 } },
               sensations.map(function(sens) {
                 var isChosen = scanSelection.sensation === sens;
-                return h('button', { 'aria-label': 'Toggle sound',
+                return h('button', { 
                   key: sens,
                   onClick: function() {
                     var newSelections = Object.assign({}, bodySelections);
@@ -36169,7 +36169,7 @@ window.SelHub = window.SelHub || {
                   }
                 }, sens);
               }),
-              h('button', { 'aria-label': ', gap: 8, justifyContent:',
+              h('button', { 
                 onClick: function() {
                   var newSelections = Object.assign({}, bodySelections);
                   newSelections[scanArea.id] = Object.assign({}, scanSelection, { sensation: 'nothing' });

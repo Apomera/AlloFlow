@@ -978,7 +978,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 TRIGGER_TAGS.map(function(tag) {
                   var isOn = ciTriggers.indexOf(tag) !== -1;
-                  return h('button', { 'aria-label': 'Toggle sound',
+                  return h('button', { 
                     key: tag,
                     onClick: function() {
                       var newArr = isOn ? ciTriggers.filter(function(t) { return t !== tag; }) : ciTriggers.concat([tag]);
@@ -1073,7 +1073,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 COPING_STRATEGIES[showCoping].map(function(strat, idx) {
-                  return h('button', { 'aria-label': 'Toggle sound',
+                  return h('button', { 
                     key: idx,
                     onClick: function() {
                       var newTapped = Object.assign({}, copingTapped);
@@ -1129,7 +1129,7 @@ window.SelHub = window.SelHub || {
                       background: isDone ? '#22c55e11' : '#1e293b', transition: 'all 0.2s'
                     }
                   },
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', { 
                       onClick: function() {
                         var newCompleted = Object.assign({}, playlistCompleted);
                         if (isDone) {

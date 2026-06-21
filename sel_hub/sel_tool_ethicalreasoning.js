@@ -978,7 +978,7 @@ window.SelHub = window.SelHub || {
 
             return h('div', {  className: 'space-y-4' },
               // Back button
-              h('button', { 'aria-label': '},', onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
+              h('button', {  onClick: function() { updMulti({ branchingId: null, branchChoice: null, branchReflection: '', branchAIDiscussion: null }); }, className: 'text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Scenarios'),
 
               // Scenario card
               h('div', {  className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 p-5' },
@@ -987,7 +987,7 @@ window.SelHub = window.SelHub || {
                   h('h3', { className: 'text-lg font-black text-slate-800' }, sc.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, sc.scenario),
-                callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(sc.scenario); }, className: 'mt-2 text-[10px] text-emerald-600 hover:text-emerald-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
+                callTTS && h('button', {  onClick: function() { callTTS(sc.scenario); }, className: 'mt-2 text-[10px] text-emerald-600 hover:text-emerald-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
               ),
 
               // Choices
@@ -1120,7 +1120,7 @@ window.SelHub = window.SelHub || {
             return h('div', {  key: fw.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isActive ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-slate-200 bg-white hover:border-indigo-300')
             },
-              h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
+              h('button', {  onClick: function() {
                 upd('frameworkId', isActive ? null : fw.id);
                 if (!isActive) {
                   var studied = (d.frameworksStudied || []).slice();
@@ -1192,12 +1192,12 @@ window.SelHub = window.SelHub || {
                 h('h3', { className: 'text-lg font-black text-slate-800' }, selectedDilemma.title),
                 h('span', {  className: 'text-[10px] text-slate-600 font-bold uppercase' }, selectedDilemma.category)
               ),
-              h('button', { 'aria-label': '},', onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
+              h('button', {  onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
             ),
             h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
               gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario
             ),
-            callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario); }, className: 'mt-2 text-[10px] text-indigo-500 hover:text-indigo-700 font-bold' }, '\uD83D\uDD0A Read Aloud')
+            callTTS && h('button', {  onClick: function() { callTTS(gradeBand === 'elementary' && selectedDilemma.gradeBands.elementary ? selectedDilemma.gradeBands.elementary : selectedDilemma.scenario); }, className: 'mt-2 text-[10px] text-indigo-500 hover:text-indigo-700 font-bold' }, '\uD83D\uDD0A Read Aloud')
           ),
 
           // Stakeholders
@@ -1357,7 +1357,7 @@ window.SelHub = window.SelHub || {
               // Scenario
               h('div', {  className: 'bg-white rounded-2xl border-2 border-purple-200 p-5' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-4' }, sc.scenario),
-                callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
+                callTTS && h('button', {  onClick: function() { callTTS(sc.scenario); }, className: 'text-[10px] text-purple-500 hover:text-purple-700 font-bold mb-3 block' }, '\uD83D\uDD0A Read Aloud'),
 
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-2' }, 'What would you do, and WHY? (The "why" is what matters most)'),
                 h('textarea', { value: answers[sc.id] || '', onChange: function(e) {
@@ -1471,7 +1471,7 @@ window.SelHub = window.SelHub || {
           // Active debate
           d.debateTopicObj && h('div', {  className: 'space-y-4' },
             // Back button
-            h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
+            h('button', {  onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
               className: 'text-xs text-slate-600 hover:text-slate-600 font-bold'
             }, '\u2190 All Topics'),
 
@@ -2094,7 +2094,7 @@ window.SelHub = window.SelHub || {
             return h('div', {  key: phil.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isExpanded ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-white hover:border-purple-300')
             },
-              h('button', { 'aria-label': 'px-4 pb-4 space-y-3', onClick: function() {
+              h('button', {  onClick: function() {
                 if (!isExpanded) {
                   if (explored.indexOf(phil.id) === -1) explored.push(phil.id);
                   updMulti({ philExpanded: phil.id, philosophersExplored: explored });

@@ -1069,7 +1069,7 @@ window.SelHub = window.SelHub || {
                     h('div', null,
                       h('span', {  className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Greeting'),
                       h('p', { className: 'text-sm font-bold text-slate-800' }, hl.greeting),
-                      callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
+                      callTTS && h('button', {  onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
@@ -1687,7 +1687,7 @@ window.SelHub = window.SelHub || {
             // Voice from the culture
             cultureData.voices && h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-xl p-4' },
               h('p', { className: 'text-sm text-amber-800 italic leading-relaxed' }, '\uD83D\uDCAC ', cultureData.voices),
-              callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(cultureData.voices); }, className: 'mt-1 text-[10px] text-amber-500 hover:text-amber-700 font-bold' }, '\uD83D\uDD0A Hear this')
+              callTTS && h('button', {  onClick: function() { callTTS(cultureData.voices); }, className: 'mt-1 text-[10px] text-amber-500 hover:text-amber-700 font-bold' }, '\uD83D\uDD0A Hear this')
             ),
 
             // Reflection

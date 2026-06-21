@@ -19445,7 +19445,7 @@ window.SelHub = window.SelHub || {
                       h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4, lineHeight: 1.5 } }, p.phrase),
                       h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '\u2192 ' + p.when)
                     ),
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', { 
                       onClick: function() {
                         if (!practiced) {
                           var newPP = Object.assign({}, ppPracticed);
@@ -19575,7 +19575,7 @@ window.SelHub = window.SelHub || {
                 onClick: function() { speakScript(buildSasScript(curSas, sasParts)); },
                 style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\uD83D\uDD0A Hear It Again'),
-              h('button', { 'aria-label': 'Toggle sound',
+              h('button', { 
                 onClick: function() {
                   if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
                   var newDone = sasCompleted + 1;
@@ -19725,7 +19725,7 @@ window.SelHub = window.SelHub || {
                   [1, 2, 3, 4, 5].map(function(val) {
                     var isSelected = currentVal === val;
                     var labels = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'];
-                    return h('button', { 'aria-label': 'Toggle sound',
+                    return h('button', { 
                       key: val,
                       onClick: function() {
                         var newAnswers = Object.assign({}, assessAnswers);

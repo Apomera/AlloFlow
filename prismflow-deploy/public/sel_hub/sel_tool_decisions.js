@@ -809,7 +809,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
               ['honesty', 'kindness', 'fairness', 'loyalty', 'courage', 'respect', 'responsibility', 'safety', 'inclusion', 'integrity', 'compassion', 'independence', 'generosity', 'self-care'].map(function(v) {
                 var selected = dtValues.indexOf(v) >= 0;
-                return h('button', { 'aria-label': 'Toggle sound',
+                return h('button', { 
                   key: v,
                   onClick: function() {
                     var newVals = selected ? dtValues.filter(function(x) { return x !== v; }) : dtValues.concat([v]);
@@ -1605,7 +1605,7 @@ window.SelHub = window.SelHub || {
                     var isSelected = answered === choice;
                     var colors = { agree: '#22c55e', sometimes: '#f59e0b', disagree: '#ef4444' };
                     var labels = { agree: 'Agree', sometimes: 'It Depends', disagree: 'Disagree' };
-                    return h('button', { 'aria-label': 'Toggle sound',
+                    return h('button', { 
                       key: choice,
                       onClick: function() {
                         var newAnswers = Object.assign({}, mcAnswers);
