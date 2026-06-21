@@ -723,6 +723,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           sky.addColorStop(0, '#0ea5e9'); sky.addColorStop(1, '#bae6fd');
           ctx2d.fillStyle = sky;
           ctx2d.fillRect(0, 0, W, H * 0.75);
+          // Warm sun with a soft glow, high on the right (atmosphere; clouds drift over it)
+          var sunX = W * 0.84, sunY = H * 0.16;
+          var sunGlow = ctx2d.createRadialGradient(sunX, sunY, 2, sunX, sunY, 70);
+          sunGlow.addColorStop(0, 'rgba(254,240,138,0.95)');
+          sunGlow.addColorStop(0.25, 'rgba(253,224,71,0.45)');
+          sunGlow.addColorStop(1, 'rgba(253,224,71,0)');
+          ctx2d.fillStyle = sunGlow;
+          ctx2d.fillRect(sunX - 70, sunY - 70, 140, 140);
+          ctx2d.fillStyle = 'rgba(255,251,235,0.95)';
+          ctx2d.beginPath(); ctx2d.arc(sunX, sunY, 14, 0, 2 * Math.PI); ctx2d.fill();
 
           // World → screen mapping. Camera follows bike, vertical origin at mid-height.
           var camX = posRef.current;

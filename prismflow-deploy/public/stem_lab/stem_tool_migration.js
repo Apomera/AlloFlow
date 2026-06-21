@@ -582,8 +582,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               b.energy = Math.min(100, b.energy + 0.003 * simSpeed);
             }
 
-            // Vortex trail particles behind each bird's wingtips
-            c.globalAlpha = 0.15;
+            // Vortex trail particles behind each bird's wingtips — additive so the wingtip
+            // vortices glow (the upwash that following birds draft on)
+            c.save();
+            c.globalCompositeOperation = 'lighter';
+            c.globalAlpha = 0.22;
             for (var vbi = 0; vbi < birds.length; vbi++) {
               var vb = birds[vbi];
               var vortCol = isDark ? 'rgba(125,211,252,0.3)' : 'rgba(56,189,248,0.15)';
@@ -596,7 +599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 c.beginPath(); c.arc(tx, ty2, 2, 0, Math.PI * 2); c.fill();
               }
             }
-            c.globalAlpha = 1;
+            c.restore();
 
             // Show upwash zones (faint cones behind each bird)
             c.globalAlpha = 0.06;

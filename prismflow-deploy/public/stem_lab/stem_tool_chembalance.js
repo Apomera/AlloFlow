@@ -20519,10 +20519,13 @@
                       var by = (b.y || 0.10) * H;
                       var bw = b.w * W;
                       var bh = (b.rows / 7) * H * 0.50;
+                      c2.save();
+                      c2.shadowColor = b.color; c2.shadowBlur = 10;
                       c2.fillStyle = b.color + '50';
                       c2.fillRect(bx, by, bw, bh);
                       c2.strokeStyle = b.color; c2.lineWidth = 1.5;
                       c2.strokeRect(bx, by, bw, bh);
+                      c2.restore();
                       c2.font = 'bold 10px sans-serif'; c2.fillStyle = b.color; c2.textAlign = 'center';
                       c2.fillText(b.name, bx + bw / 2, by + bh / 2 + 4);
                     });

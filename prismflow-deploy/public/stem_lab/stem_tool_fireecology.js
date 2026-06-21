@@ -3069,6 +3069,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Fire effect overlay — enhanced with layered flames, heat shimmer, sparks
             if (burning) {
+              // Fire light (glow + flame tongues) blends additively so the blaze reads hotter
+              cx.save(); cx.globalCompositeOperation = 'lighter';
               // Base fire glow at ground level
               var fireGlow = cx.createRadialGradient(w * 0.5, groundY, 0, w * 0.5, groundY, w * 0.6);
               fireGlow.addColorStop(0, 'rgba(251,146,60,' + (0.22 + Math.sin(tick * 0.05) * 0.06).toFixed(3) + ')');
@@ -3100,6 +3102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   cx.fill();
                 }
               }
+              cx.restore();
 
               // Smoke columns — rising, expanding, fading
               for (var si = 0; si < 20; si++) {

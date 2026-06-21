@@ -730,15 +730,24 @@ window.StemLab = window.StemLab || {
               var rx = registerX - rW/2, ry = registerY - rH/2;
               // Body
               c.fillStyle = '#374151'; c.fillRect(rx, ry, rW, rH);
+              // Metallic top-light sheen on the register body (candlelit depth)
+              var regSheen = c.createLinearGradient(0, ry, 0, ry + rH);
+              regSheen.addColorStop(0, 'rgba(255,255,255,0.10)');
+              regSheen.addColorStop(0.4, 'rgba(255,255,255,0)');
+              c.fillStyle = regSheen;
+              c.fillRect(rx, ry, rW, rH);
               c.strokeStyle = '#1f2937'; c.lineWidth = 2; c.strokeRect(rx, ry, rW, rH);
               // LCD screen (dim — power outage)
               c.fillStyle = '#1e1b4b'; c.fillRect(rx + 8, ry + 8, rW - 16, 24);
               c.strokeStyle = '#3730a3'; c.lineWidth = 1; c.strokeRect(rx + 8, ry + 8, rW - 16, 24);
               // LCD text — show "OFFLINE" since the power is out
+              c.save();
+              c.shadowColor = 'rgba(252, 211, 77, 0.9)'; c.shadowBlur = 8;
               c.fillStyle = 'rgba(252, 211, 77, 0.65)';
               c.font = 'bold 12px monospace';
               c.textAlign = 'center'; c.textBaseline = 'middle';
               c.fillText('OFFLINE', rx + rW/2, ry + 20);
+              c.restore();
               // Keypad pattern
               c.fillStyle = '#4b5563';
               for (var kr = 0; kr < 3; kr++) for (var kc = 0; kc < 3; kc++) {

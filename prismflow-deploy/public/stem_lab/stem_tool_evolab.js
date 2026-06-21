@@ -1234,6 +1234,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ctx.arc(c.x, c.y, 8, 0, 2 * Math.PI);
             ctx.fill();
             ctx.stroke();
+            // Faint specular sheen for a rounded body — kept subtle so the camouflage colour still reads
+            var evShine = ctx.createRadialGradient(c.x - 2.6, c.y - 2.6, 0.5, c.x - 2.6, c.y - 2.6, 6);
+            evShine.addColorStop(0, 'rgba(255,255,255,0.18)');
+            evShine.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = evShine;
+            ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, 2 * Math.PI); ctx.fill();
             // Subtle eye dot for character
             ctx.fillStyle = '#1e293b';
             ctx.beginPath(); ctx.arc(c.x + 2, c.y - 2, 1.2, 0, 2 * Math.PI); ctx.fill();

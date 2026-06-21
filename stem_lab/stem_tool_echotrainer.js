@@ -1502,6 +1502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           if ((currentViewMode2d === 'echo' || isMinimap) && pulsesRef.current.length > 0) {
             var nowEv = Date.now();
+            gfx.save(); gfx.globalCompositeOperation = 'lighter';
             pulsesRef.current.forEach(function(pulse) {
               var evAge = (nowEv - pulse.birth) / 1000; var evRadius = evAge * SPEED_OF_SOUND * 0.5; var evAlpha = Math.max(0, 1 - evAge * 1.5);
               if (evAlpha <= 0) return;
@@ -1512,6 +1513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 for (var eai = 0; eai < agents.length; eai++) { var ea = agents[eai]; var eadx = ea.x - pulse.x, eady = ea.y - pulse.y; var eadist = Math.sqrt(eadx * eadx + eady * eady); if (Math.abs(eadist - evRadius) < ea.radius + 12) { var eaInt = evAlpha * ea.ref * (1 - Math.abs(eadist - evRadius) / (ea.radius + 12)); var eaColor = ea.kind === 'car' ? '255,196,124' : ea.kind === 'bat' ? '196,181,253' : ea.kind === 'deer' ? '163,230,53' : ea.kind === 'bird' ? '103,232,249' : ea.kind === 'jogger' ? '251,146,60' : ea.kind === 'cyclist' ? '244,114,182' : '255,156,156'; gfx.fillStyle = 'rgba(' + eaColor + ',' + (eaInt * 0.6) + ')'; gfx.beginPath(); gfx.arc(ea.x, ea.y, ea.radius + 3, 0, Math.PI * 2); gfx.fill(); } }
               }
             });
+            gfx.restore();
           }
           if (!isMinimap && player._bumpCooldown > 15) { gfx.fillStyle = 'rgba(239,68,68,' + ((player._bumpCooldown - 15) / 5 * 0.15) + ')'; gfx.fillRect(0, 0, map.W, map.H); }
           gfx.fillStyle = '#6366f1'; gfx.beginPath(); gfx.arc(player.x, player.y, isMinimap ? 5 : 8, 0, Math.PI * 2); gfx.fill();

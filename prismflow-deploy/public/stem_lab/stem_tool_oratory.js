@@ -257,6 +257,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       ctx2d.fillText('range ' + rangeHz + ' Hz · ' + (wide ? 'lively' : 'flat — vary more'), 6, H - 6);
     })();
 
+    ctx2d.save();
+    ctx2d.shadowColor = 'rgba(255,255,255,0.45)'; ctx2d.shadowBlur = 5;
     ctx2d.beginPath();
     ctx2d.lineWidth = 2.5;
     var started = false;
@@ -278,6 +280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       }
     }
     ctx2d.stroke();
+    ctx2d.restore();
 
     // Current pitch dot
     var lastPitch = pitchHistory[pitchHistory.length - 1];

@@ -580,7 +580,7 @@ var d = labToolData || {};
 
               // Demand curve (downward sloping, shifted)
 
-              ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.beginPath();
+              ctx.save(); ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 8; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.beginPath();
 
               for (var dx = 0; dx <= 100; dx++) {
 
@@ -596,7 +596,7 @@ var d = labToolData || {};
 
               ctx.stroke();
 
-              ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Inter, system-ui';
+              ctx.restore(); ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Inter, system-ui';
 
               ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 30, gy + 30 - sdDemandShift * 25);
 
@@ -604,7 +604,7 @@ var d = labToolData || {};
 
               // Supply curve (upward sloping, shifted)
 
-              ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath();
+              ctx.save(); ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8; ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath();
 
               for (var sx = 0; sx <= 100; sx++) {
 
@@ -620,7 +620,7 @@ var d = labToolData || {};
 
               ctx.stroke();
 
-              ctx.fillStyle = '#ef4444';
+              ctx.restore(); ctx.fillStyle = '#ef4444';
 
               ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 30, gy + gh - 30 - sdSupplyShift * 25);
 
