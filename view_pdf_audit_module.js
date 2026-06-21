@@ -1703,6 +1703,24 @@ function PdfAuditView(props) {
   const [veraPdfResult, setVeraPdfResult] = useState(null);
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
   const [veraPdfFixing, setVeraPdfFixing] = useState(false);
+  const _recordVeraPdfRules = (verdict, source) => {
+    try {
+      if (!verdict || verdict.error) return;
+      const g2 = window.__alloVeraPdfRuleStats = window.__alloVeraPdfRuleStats || { taggedExports: 0, cleanExports: 0, failures: {}, repairRequests: {} };
+      const rules = Array.isArray(verdict.failedRules) ? verdict.failedRules : [];
+      if (source === "export" || source === "validate") {
+        g2.taggedExports++;
+        if (verdict.compliant && rules.length === 0) g2.cleanExports++;
+      }
+      const bucket = source === "repair" ? g2.repairRequests : g2.failures;
+      for (const r of rules) {
+        const k = "\xA7" + (r.clause || "?") + " t" + (r.testNumber != null ? r.testNumber : "?");
+        bucket[k] = (bucket[k] || 0) + (r.count || 1);
+      }
+      warnLog && warnLog("[veraPDF-telemetry] " + source + ": " + (rules.length ? rules.map((r) => "\xA7" + r.clause + "t" + r.testNumber).join(", ") : "none") + " | cumulative " + (source === "repair" ? "repairRequests" : "failures") + "=" + JSON.stringify(bucket) + (source !== "repair" ? " | clean " + g2.cleanExports + "/" + g2.taggedExports + " exports" : ""));
+    } catch (_) {
+    }
+  };
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => {
     try {
       return localStorage.getItem("alloflow_pdf_auto_verapdf") !== "false";
@@ -3601,6 +3619,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
               const _vrV = _viaIframe ? await validateOnIframe(_veraIframe, _tbV) : await validateOnWarmWindow(_veraWarm, _tbV);
               _validated = true;
               setVeraPdfResult(_vrV);
+              _recordVeraPdfRules(_vrV, "export");
               setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: (/* @__PURE__ */ new Date()).toISOString() } : { fileName: pendingPdfFile?.name || "document.pdf", veraPdf: _vrV, generatedAt: (/* @__PURE__ */ new Date()).toISOString() });
               if (_vrV && !_vrV.error) addToast((_vrV.compliant ? "\u2705 " : "\u26A0 ") + (t("toasts.auto_verapdf_done") || "Independent veraPDF (ISO 14289-1) validation complete") + (_vrV.compliant ? "" : " \u2014 " + (_vrV.failedRules ? _vrV.failedRules.length : 0) + " rule(s) flagged \u2014 see the Self-check section"), _vrV.compliant ? "success" : "warning");
             }
@@ -6692,6 +6711,7 @@ Return ONLY JSON:
           try {
             const _vr = await runVeraPdfValidation(_lastTaggedBytesRef.current);
             setVeraPdfResult(_vr);
+            _recordVeraPdfRules(_vr, "validate");
             setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: _vr, veraPdfAt: (/* @__PURE__ */ new Date()).toISOString() } : prev);
           } catch (e) {
             setVeraPdfResult({ error: String(e && e.message || e) });
@@ -6710,6 +6730,7 @@ Return ONLY JSON:
         "data-help-ignore": "true",
         onClick: async () => {
           setVeraPdfFixing(true);
+          _recordVeraPdfRules(veraPdfResult, "repair");
           try {
             const _rem = await runVeraPdfRemediate(_lastTaggedBytesRef.current);
             if (_rem && _rem.repairedB64) {

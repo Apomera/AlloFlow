@@ -1703,6 +1703,21 @@ function PdfAuditView(props) {
   const [veraPdfResult, setVeraPdfResult] = useState(null);   // {compliant, failedChecks, failedRules:[{clause,testNumber,message,count}]} | {error}
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
   const [veraPdfFixing, setVeraPdfFixing] = useState(false);  // closed-loop remediation in progress
+  // Architecture telemetry (2026-06-21): record which ISO 14289-1 rules an AlloFlow-tagged export actually
+  // FAILS, and which the closed-loop is asked to repair — to settle empirically whether the pdf-lib/PDFBox
+  // repair loop is redundant with createTaggedPdf's native tagging (the consolidation question). Rule IDs
+  // only — no document content, no PII. Read it any time from the console with: __alloVeraPdfRuleStats
+  const _recordVeraPdfRules = (verdict, source) => {
+    try {
+      if (!verdict || verdict.error) return;
+      const g = (window.__alloVeraPdfRuleStats = window.__alloVeraPdfRuleStats || { taggedExports: 0, cleanExports: 0, failures: {}, repairRequests: {} });
+      const rules = Array.isArray(verdict.failedRules) ? verdict.failedRules : [];
+      if (source === 'export' || source === 'validate') { g.taggedExports++; if (verdict.compliant && rules.length === 0) g.cleanExports++; }
+      const bucket = source === 'repair' ? g.repairRequests : g.failures;
+      for (const r of rules) { const k = '§' + (r.clause || '?') + ' t' + (r.testNumber != null ? r.testNumber : '?'); bucket[k] = (bucket[k] || 0) + (r.count || 1); }
+      warnLog && warnLog('[veraPDF-telemetry] ' + source + ': ' + (rules.length ? rules.map(r => '§' + r.clause + 't' + r.testNumber).join(', ') : 'none') + ' | cumulative ' + (source === 'repair' ? 'repairRequests' : 'failures') + '=' + JSON.stringify(bucket) + (source !== 'repair' ? (' | clean ' + g.cleanExports + '/' + g.taggedExports + ' exports') : ''));
+    } catch (_) {}
+  };
   // (2026-06-20) Auto-validate the remediated output with veraPDF after Make Accessible — default ON.
   // Warmed inside the click gesture (so the popup is allowed) + validated at the end; opt-out persisted.
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
@@ -3389,6 +3404,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const _vrV = _viaIframe ? await validateOnIframe(_veraIframe, _tbV) : await validateOnWarmWindow(_veraWarm, _tbV); // popup path closes the window on completion; iframe stays warm
                             _validated = true;
                             setVeraPdfResult(_vrV);
+                            _recordVeraPdfRules(_vrV, 'export'); // what the native tagger left failing on a fresh export
                             setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: new Date().toISOString() } : { fileName: pendingPdfFile?.name || 'document.pdf', veraPdf: _vrV, generatedAt: new Date().toISOString() });
                             if (_vrV && !_vrV.error) addToast((_vrV.compliant ? '✅ ' : '⚠ ') + (t('toasts.auto_verapdf_done') || 'Independent veraPDF (ISO 14289-1) validation complete') + (_vrV.compliant ? '' : ' — ' + (_vrV.failedRules ? _vrV.failedRules.length : 0) + ' rule(s) flagged — see the Self-check section'), _vrV.compliant ? 'success' : 'warning');
                           }
@@ -8407,6 +8423,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     try {
                                       const _vr = await runVeraPdfValidation(_lastTaggedBytesRef.current);
                                       setVeraPdfResult(_vr);
+                                      _recordVeraPdfRules(_vr, 'validate'); // on-demand validation of the tagged bytes
                                       // Persist the independent verdict onto lastTaggedValidation so it survives + flows
                                       // into the downloadable report (it was previously transient UI-only state).
                                       setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vr, veraPdfAt: new Date().toISOString() } : prev);
@@ -8444,6 +8461,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <button type="button" disabled={veraPdfFixing} data-help-ignore="true"
                                         onClick={async () => {
                                           setVeraPdfFixing(true);
+                                          _recordVeraPdfRules(veraPdfResult, 'repair'); // the rules the native tagger left for the patch loop to fix
                                           try {
                                             const _rem = await runVeraPdfRemediate(_lastTaggedBytesRef.current);
                                             if (_rem && _rem.repairedB64) {
