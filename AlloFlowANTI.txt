@@ -9973,6 +9973,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     let id;
     const fire = () => {
       warnLog('[PdfFix] Dead-man switch fired: no pipeline activity for ' + (IDLE_LIMIT / 60000) + 'min on "' + stepAtStart + '" — clearing.');
+      // (2026-06-20) Don't just clear the UI — INVALIDATE the stalled run so its late-resolving promise
+      // can't (a) keep burning Canvas quota via the auto-continue loop, or (b) stomp fresh state. Abort
+      // the auto-continue controller if one is live, and bump the run generation so the pipeline's
+      // completion write (which captured the gen at start) discards a now-stale result.
+      try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
+      try { if (typeof window !== 'undefined') { window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1; window.__alloPdfAbortSignal = null; } } catch (_) {}
       setPdfFixLoading(false);
       setPdfFixStep('');
       if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');

@@ -4727,11 +4727,12 @@ var createDocPipeline = function(deps) {
         hasTextLayer: true,
       };
     }
+    let pdf = null; // (2026-06-20) freed in finally to release the pdf.js worker doc — undestroyed docs accumulated over a batch (mid-batch memory leak)
     try {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
       const bytes = _b64ToBytes(base64);
-      const pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (text layer)');
+      pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (text layer)');
       const pages = [];
       // 2026-06-08: per-page try/catch — a single-page parse error previously
       // threw all the way out of the loop, the outer catch returned
@@ -4794,7 +4795,7 @@ var createDocPipeline = function(deps) {
         warnLog('[PDF Det] extractPdfTextDeterministic failed:', msg);
       }
       return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, isScanned: true, error: msg, isEncrypted, isCorrupt, pageErrors: [] };
-    }
+    } finally { if (pdf) { try { pdf.destroy(); } catch (_) {} } }
   };
 
   // ── AcroForm field-value extraction (DARK in slice 1, 2026-06-07) ──
@@ -5945,13 +5946,14 @@ var createDocPipeline = function(deps) {
   };
 
   const extractPdfTextTesseract = async (base64, onProgress, lang) => {
+    let pdf = null; // (2026-06-20) freed in finally to release the pdf.js worker doc (batch memory leak)
     try {
       await ensurePdfJsLoaded();
       await ensureTesseractLoaded();
       if (!window.pdfjsLib || !window.Tesseract) throw new Error('pdf.js or Tesseract unavailable');
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
       const bytes = _b64ToBytes(base64); // capped at _MAX_PDF_BYTES (was raw atob — uncapped OOM on low-RAM devices)
-      const pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (OCR)');
+      pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (OCR)');
       const useLang = lang || 'eng';
       // 2026-06-08: per-page try/catch — a single page's OOM/canvas/recognize
       // failure previously bubbled to the outer catch and threw away ALL pages'
@@ -6016,7 +6018,7 @@ var createDocPipeline = function(deps) {
     } catch (e) {
       warnLog('[Tesseract] extractPdfTextTesseract failed:', e && e.message);
       return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message, pageErrors: [] };
-    }
+    } finally { if (pdf) { try { pdf.destroy(); } catch (_) {} } }
   };
 
   // Render + OCR a SPECIFIC SET of 1-indexed pages (Tesseract only — zero API cost). Used to
@@ -6025,12 +6027,13 @@ var createDocPipeline = function(deps) {
   // empty map on any failure so the caller can always keep its original text-layer result.
   const _ocrSpecificPages = async (base64, pageNums, lang) => {
     const out = {};
+    let pdf = null; // (2026-06-20) freed in finally to release the pdf.js worker doc (batch memory leak)
     try {
       await ensurePdfJsLoaded();
       await ensureTesseractLoaded();
       if (!window.pdfjsLib || !window.Tesseract) return out;
       const bytes = _b64ToBytes(base64);
-      const pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (mixed-page OCR)');
+      pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (mixed-page OCR)');
       const useLang = lang || 'eng';
       for (let i = 0; i < pageNums.length; i++) {
         const p = pageNums[i];
@@ -6050,6 +6053,7 @@ var createDocPipeline = function(deps) {
         finally { if (canvas) { try { canvas.width = 0; canvas.height = 0; } catch (_) {} } }
       }
     } catch (_e) { try { warnLog('[Mixed-page OCR] setup failed (keeping text-layer): ' + (_e && _e.message)); } catch (_) {} }
+    finally { if (pdf) { try { pdf.destroy(); } catch (_) {} } }
     return out;
   };
 
@@ -12408,6 +12412,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _silentMode = !!_onProgress;
     if (!_silentMode && !_auditResult) { addToast(t('toasts.cannot_fix_audit_results_found'), 'error'); return null; }
     if (!_silentMode) { setPdfFixLoading(true); setPdfFixResult(null); }
+    // Zombie-run guard (2026-06-20): bump a generation token at run start. If the dead-man watchdog
+    // later gives up on THIS run (it bumps the token too) and the teacher starts another document, our
+    // late-resolving promise must NOT stomp the newer state — the completion write below checks the
+    // token still matches before calling setPdfFixResult.
+    let _myRunGen = 0;
+    if (!_silentMode && typeof window !== 'undefined') { _myRunGen = (window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1); }
 
     const beforeScore = (_auditResult?.score) || 0;
     const fullPageCount = (_auditResult?.pageCount) || 1;
@@ -12672,6 +12682,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             }
           } else if (det) {
             if (det.isEncrypted) window.__lastExtractEncrypted = true; // password-cause: remember for the <20-char abort message below
+            // (2026-06-20) Adopt the REAL page count from pdf.js for the scanned branch too — the text
+            // branch already does (above). Otherwise OCR chunking falls back to the rough base64-size
+            // estimate (effectivePageCount @ ~12522), which can UNDERcount and silently drop trailing
+            // pages from the Vision range. det.pageCount is authoritative even when the doc is scanned.
+            if (det.pageCount > 0) effectivePageCount = det.pageCount;
             warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
           }
         }
@@ -16046,6 +16061,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // audits still need the UI updates AND the multi-session auto-save
       // at the bottom, so they fall through.
       if (_silentMode) return _result;
+
+      // Zombie-run guard (2026-06-20): if the watchdog invalidated this run and a newer run started
+      // (generation mismatch), DROP this result — a late promise must not overwrite the fresh state.
+      if (typeof window !== 'undefined' && window.__alloPdfRunGen !== _myRunGen) {
+        warnLog('[fixAndVerifyPdf] Stale run (gen ' + _myRunGen + ' != current ' + window.__alloPdfRunGen + ') — discarding result so it cannot stomp a newer run.');
+        return null;
+      }
 
       // Single-file mode: update UI state
       setPdfFixResult(_result);
