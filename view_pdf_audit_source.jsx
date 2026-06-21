@@ -8549,7 +8549,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         const _re = await createTaggedPdf(_bytes, _freshFixResult, { title: (_tbm.title && _tbm.title.trim()) || pdfFixResult.title || (pendingPdfFile?.name || 'document.pdf'), lang: (_tbm.lang && _tbm.lang.trim()) || 'en', author: (_tbm.author && _tbm.author.trim()) || undefined, subject: 'Restored via Tier B re-run' });
                                         const afterTd = _re && _re.roundTrip && _re.roundTrip.textDiff;
                                         const afterResidual = afterTd && typeof afterTd.residualMissingCount === 'number' ? afterTd.residualMissingCount : null;
-                                        setLastTaggedValidation(prev => prev ? { ...prev, roundTrip: _re.roundTrip || prev.roundTrip, postExportValidator: _re.postExportValidator || prev.postExportValidator, pdfUa1Checks: _re.pdfUa1Checks || prev.pdfUa1Checks, generatedAt: new Date().toISOString() } : prev);
+                                        // These are NEW bytes (the restored content was re-tagged) that veraPDF never validated.
+                                        // Point the manual-validate ref at the fresh bytes AND DROP the stale prev.veraPdf — otherwise
+                                        // the Adobe-style report would claim "Conformant (veraPDF · ISO 14289-1 verified)" for a file
+                                        // that was never validated (critic gap #3, 2026-06-21). Self-checks are recomputed on the new bytes.
+                                        const _reBytes = (_re && _re.bytes) ? _re.bytes : _re;
+                                        if (_reBytes instanceof Uint8Array) _lastTaggedBytesRef.current = _reBytes;
+                                        setLastTaggedValidation(prev => prev ? { ...prev, roundTrip: _re.roundTrip || prev.roundTrip, postExportValidator: _re.postExportValidator || prev.postExportValidator, pdfUa1Checks: _re.pdfUa1Checks || prev.pdfUa1Checks, veraPdf: null, veraPdfAt: null, generatedAt: new Date().toISOString() } : prev);
                                         const restoredCount = allRestored.length;
                                         const unresolvedCount = allUnplaceable.length;
                                         const _msg = `Restored ${restoredCount} inline${unresolvedCount > 0 ? `; ${unresolvedCount} preserved in Content Recovery` : ''}. Residual missing: ${residual} → ${afterResidual != null ? afterResidual : '?'}.`;

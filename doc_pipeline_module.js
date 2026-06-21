@@ -961,13 +961,19 @@ var _flattenAuditIssues = function(audit) {
 };
 var _diffIssueResolution = function(preFlat, verification) {
   if (!Array.isArray(preFlat) || !verification || !Array.isArray(verification.issues)) return null;
-  var _keyOf = function(s){ return (s || '').toLowerCase().substring(0, 40); };
+  // Key off the issue's text REGARDLESS of which field carries it (.issue / .description / .text — the
+  // auto-continue loop and various producers use different ones), so an issue whose text lives in
+  // .description isn't keyed to '' and silently dropped from BOTH resolved and persisted (critic gap #1,
+  // 2026-06-21). Also widen the prefix 40→80 + fold in the WCAG code so two distinct issues sharing a
+  // 40-char boilerplate prefix ("Heading levels should…") don't collapse to one key (which mis-counted a
+  // still-present issue as Resolved). (object in, not just a string)
+  var _keyOf = function(i){ var t = ((i && (i.issue || i.description || i.text)) || '').toLowerCase().trim(); return t ? (t.substring(0, 80) + '|' + ((i && i.wcag) || '')) : ''; };
   var _postFlat = (verification.issues || []).map(function(i){ return Object.assign({}, i); });
-  var _postKeys = new Set(_postFlat.map(function(i){ return _keyOf(i.issue); }).filter(Boolean));
-  var _preKeys = new Set(preFlat.map(function(i){ return _keyOf(i.issue); }).filter(Boolean));
-  var _resolved = preFlat.filter(function(i){ var k = _keyOf(i.issue); return k && !_postKeys.has(k); });
-  var _persisted = preFlat.filter(function(i){ var k = _keyOf(i.issue); return k && _postKeys.has(k); });
-  var _introduced = _postFlat.filter(function(i){ var k = _keyOf(i.issue); return k && !_preKeys.has(k); });
+  var _postKeys = new Set(_postFlat.map(_keyOf).filter(Boolean));
+  var _preKeys = new Set(preFlat.map(_keyOf).filter(Boolean));
+  var _resolved = preFlat.filter(function(i){ var k = _keyOf(i); return k && !_postKeys.has(k); });
+  var _persisted = preFlat.filter(function(i){ var k = _keyOf(i); return k && _postKeys.has(k); });
+  var _introduced = _postFlat.filter(function(i){ var k = _keyOf(i); return k && !_preKeys.has(k); });
   var _bySev = function(arr, sev){ return arr.filter(function(i){ return (i.severity || '').toLowerCase() === sev; }).length; };
   // NB: assigned-then-returned (not a bare `return {`) so check-pipeline-integrity.js's naive
   // first-`\n  return {` scan still finds the FACTORY's export block below, not this helper's object.
@@ -16829,7 +16835,11 @@ tr { page-break-inside: avoid; }
       const _vfail = (_vera.failedRules && _vera.failedRules.length) || 0;
       conformanceLabel = 'Non-Conformant (veraPDF · ISO 14289-1' + (_vfail ? ', ' + _vfail + ' rule' + (_vfail === 1 ? '' : 's') + ' failed' : '') + ')';
       conformanceColor = '#dc2626';
-    } else if (_vera && _vera.compliant === true && conformanceLabel.indexOf('Non-Conformant') === -1) {
+    } else if (_vera && _vera.compliant === true && conformanceLabel.indexOf('Non-Conformant') === -1 && conformanceLabel.indexOf('Mostly') === -1) {
+      // Only claim the green ISO-verified headline when veraPDF says compliant AND the current-bytes
+      // self-check agrees. A compliant veraPDF verdict sitting next to self-check FAILURES ('Mostly
+      // Conformant') is a contradiction that usually means the veraPDF result is STALE (validated different
+      // bytes, e.g. before a Tier-B re-tag) — don't upgrade to green in that case. (critic gap #3, 2026-06-21)
       conformanceLabel = 'Conformant (veraPDF · ISO 14289-1 verified)';
       conformanceColor = '#16a34a';
     }
@@ -18498,6 +18508,7 @@ tr { page-break-inside: avoid; }
         // stream with one BDC/EMC and tag it as a single /P. Keeps Stage 3
         // output exactly as it was when Stage 4 isn't applicable (scanned
         // PDFs, Stage 4 parse failures, pdf.js load failures).
+        let _pageArtifactOnly = false; // a scanned page with NO OCR text → image is /Artifact, no StructElem (tagging-pdfua-2)
         try {
           const node = page.node;
           const rawContents = node.get(PDFName.of('Contents'));
@@ -18519,18 +18530,28 @@ tr { page-break-inside: avoid; }
             newArr.push(_mkCS(' EMC\n'), _mkCS('/P <</MCID 0>> BDC\n'));
             for (let k = _origContentCount; k < _contentRefs.length; k++) newArr.push(_contentRefs[k]);
             newArr.push(_mkCS(' EMC\n'));
+          } else if (isScanned && _origContentCount > 0) {
+            // SCANNED but NO OCR text was appended (a blank or unreadable page → _contentRefs.length ===
+            // _origContentCount): the ONLY content is the page IMAGE. Falling to the born-digital /P wrap
+            // below would tag an image as a text paragraph — the exact veraPDF §7.1 "content neither
+            // Artifact nor tagged" failure the OCR-split exists to avoid, just relocated to the no-text
+            // page. Mark the whole image /Artifact (decorative) and emit NO StructElem/StructParents for it.
+            // (tagging-pdfua-2, 2026-06-21)
+            newArr = [_mkCS('/Artifact BMC\n')].concat(_contentRefs).concat([_mkCS(' EMC\n')]);
+            _pageArtifactOnly = true;
           } else {
             // Born-digital Stage-4 fallback (or no separable image): single /P MCID 0 wrap, as before.
             newArr = [_mkCS('/P <</MCID 0>> BDC\n')].concat(_contentRefs).concat([_mkCS('\nEMC\n')]);
           }
           node.set(PDFName.of('Contents'), context.obj(newArr));
-          node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
+          // An artifact-only page has no tagged content → no StructParents (artifacts aren't in the tree).
+          if (!_pageArtifactOnly) node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
         } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
 
-        // Per-page StructElem (type /P) with a single MCR K-child pointing
-        // at the page's MCID 0. Validators walk this from content → tag
-        // tree.
-        try {
+        // Per-page StructElem (type /P) with a single MCR K-child pointing at the page's MCID 0. SKIPPED
+        // for an artifact-only page — there is no MCID-0 tagged content to point at (the image is
+        // /Artifact), and a /P StructElem with no real content is itself a §7.1 problem. (tagging-pdfua-2)
+        if (!_pageArtifactOnly) try {
           const mcrDict = context.obj({
             Type: PDFName.of('MCR'),
             Pg: page.ref,
@@ -19256,6 +19277,11 @@ tr { page-break-inside: avoid; }
         } catch (textErr) {
           try { warnLog('[createTaggedPdf] per-page text extract failed (non-fatal): ' + (textErr && textErr.message)); } catch(_) {}
         }
+        // Free the pdf.js worker doc now its last use (per-heading page mapping, just above) is done — it is
+        // released NOWHERE else, so without this every born-digital tagged export leaks a worker doc + its
+        // ArrayBuffer copy, compounding over a batch ZIP. (tagging-pdfua-1, 2026-06-21 — the leak the
+        // reliability-quick-wins commit explicitly deferred.) Best-effort; downstream only uses pageTexts.
+        try { if (pdfjsDocForTagging) { await pdfjsDocForTagging.destroy(); pdfjsDocForTagging = null; } } catch (_) {}
         const _findPageForHeading = (text) => {
           if (!text) return -1;
           // Normalize the same way the page text was: lowercase, collapsed
@@ -21043,9 +21069,18 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // token (e.g. a curly-vs-straight apostrophe that slipped past _arNorm) as missing. If
           // origWord already abuts this splice point, treat it as present and DON'T re-insert —
           // otherwise we duplicate it ("isn't isn't", "Louise's Louise's", "Shawn's . Shawn's").
-          const _adjWin = orig.slice(Math.max(0, origCursor - origWord.length - 2), origCursor + origWord.length + 2).toLowerCase();
-          if (origWord && _adjWin.indexOf(origWord.toLowerCase()) !== -1) {
-            placed = true; // already present at the anchor — nothing to insert
+          // Word-boundary + apostrophe-normalized adjacency check (ocr-fidelity-5, 2026-06-21): extract the
+          // actual TOKEN on each side of the splice point and compare it to origWord as a WHOLE normalized
+          // token — NOT a raw substring of a fixed window. The old indexOf-substring test falsely skipped a
+          // genuinely-missing short word that is a substring of an adjacent token ("art" by "start", "cat"
+          // by "category"), dropping a real restoration; and being apostrophe-naive it never actually caught
+          // the curly/straight case it documents. Normalizing here catches "isn't isn't" too (defense-in-depth).
+          const _normTok = function (s) { return String(s || '').toLowerCase().replace(/[‘’ʼ´`]/g, "'").replace(/^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu, ''); };
+          const _ow = _normTok(origWord);
+          const _leftTok = _normTok((orig.slice(0, origCursor).match(/[\p{L}\p{N}'‘’ʼ]+$/u) || [''])[0]);
+          const _rightTok = _normTok((orig.slice(origCursor).match(/^[\p{L}\p{N}'‘’ʼ]+/u) || [''])[0]);
+          if (_ow && (_ow === _leftTok || _ow === _rightTok)) {
+            placed = true; // the EXACT word already abuts this splice point — nothing to insert
           } else {
             const needsLeadingSpace = origCursor > 0 && !/\s/.test(orig[origCursor - 1]);
             const needsTrailingSpace = origCursor < orig.length && !/\s/.test(orig[origCursor]);
