@@ -439,6 +439,7 @@ window.StemLab = window.StemLab || {
       num += dx * (ys[i2] - my);
       denom += dx * dx;
     }
+    if (denom === 0) return { error: 'All x values are identical — the slope is undefined (a vertical line has no finite slope). Vary the predictor and try again.' };
     var slope = num / denom;
     var intercept = my - slope * mx;
     // SS calculations
