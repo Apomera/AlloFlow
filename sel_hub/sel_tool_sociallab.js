@@ -618,7 +618,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '14px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', fontSize: '13px', lineHeight: 1.5 }
               },
-                h('span', { style: { background: '#f1f5f9', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '12px', color: '#94a3b8', flexShrink: 0 } }, String.fromCharCode(65 + oi)),
+                h('span', { style: { background: '#f1f5f9', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '12px', color: '#475569', flexShrink: 0 } }, String.fromCharCode(65 + oi)),
                 h('span', null, opt.text)
               );
             })
@@ -718,7 +718,7 @@ window.SelHub = window.SelHub || {
             }),
             chatLoading && h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
               h('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' } }, '🗣️'),
-              h('div', { style: { background: '#e0e7ff', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#94a3b8' } }, aiScenario.peerName + ' is typing...')
+              h('div', { style: { background: '#e0e7ff', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#475569' } }, aiScenario.peerName + ' is typing...')
             ),
             h('div', { ref: chatEndRef })
           ),

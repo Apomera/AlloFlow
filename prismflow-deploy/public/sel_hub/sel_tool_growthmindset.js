@@ -457,7 +457,7 @@ window.SelHub = window.SelHub || {
               },
               style: { padding: '10px 20px', background: '#fff', border: '2px solid #a7f3d0', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: EMERALD, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
             }, '\u2190 Previous'),
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8', fontWeight: 600, background: '#f0fdf4', padding: '4px 12px', borderRadius: '8px' } },
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#475569', fontWeight: 600, background: '#f0fdf4', padding: '4px 12px', borderRadius: '8px' } },
               (brainFactIdx % facts.length + 1) + ' / ' + facts.length
             ),
             h('button', {

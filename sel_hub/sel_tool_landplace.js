@@ -503,7 +503,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
                 h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, entry.text)
               );
             })
-          ) : h('div', { style: { padding: 18, borderRadius: 10, background: '#0f172a', textAlign: 'center', color: '#64748b', fontSize: 13 } },
+          ) : h('div', { style: { padding: 18, borderRadius: 10, background: '#0f172a', textAlign: 'center', color: '#94a3b8', fontSize: 13 } },
             'No entries yet. Save one above to start the practice.'
           ),
 
