@@ -1110,6 +1110,7 @@ var createDocPipeline = function(deps) {
   var _GEMINI_MAX_CONCURRENT = 3;
   var _GEMINI_STORM_MIN = 1;        // effective cap while throttled
   var _GEMINI_STORM_TRIP = 2;       // consecutive canvas-auth failures that trip the breaker
+  var _GEMINI_TRANSIENT_TRIP = 3;   // (2026-06-20) consecutive EMPTY-BODY/timeout failures that trip the breaker — the Canvas proxy also throttles by returning empty 200s + timeouts (not just 401s), which the auth path above never detected; a bit higher than auth's trip since transient is noisier
   var _GEMINI_COOLDOWN_MS = 12000;  // pause before NEW calls start once storming
   var _GEMINI_RECOVER_HITS = 4;     // consecutive successes needed to restore full concurrency
   var _GEMINI_AUTH_RETRIES = 3;     // canvas-throttle retries (exponential backoff) before giving up
@@ -1117,6 +1118,7 @@ var createDocPipeline = function(deps) {
   var _geminiInFlight = 0;
   var _geminiWaiters = [];
   var _geminiAuthStreak = 0;        // consecutive canvas-auth failures
+  var _geminiTransientStreak = 0;   // (2026-06-20) consecutive empty-body/timeout failures (the throttle manifestation that ISN'T a 401)
   var _geminiOkStreak = 0;          // consecutive successes (drives recovery)
   var _geminiCooldownUntil = 0;     // epoch ms; no NEW call starts before this
   var _geminiCooldownTimer = null;
@@ -1168,8 +1170,30 @@ var createDocPipeline = function(deps) {
       }
     }
   };
+  // (2026-06-20) Empty-body / timeout storm = the SAME Canvas throttle as the 401 path, just a
+  // different manifestation. The proxy, under sustained fan-out, returns empty 200 bodies + times
+  // out instead of a clean 401 — so the auth breaker above never saw it and the pipeline kept
+  // hammering (the 30-min empty-response grind). Treat a sustained cluster as a throttle signal and
+  // back off to 1 concurrent + an escalating cooldown so the proxy recovers (counter-intuitively
+  // faster end-to-end — same rationale as the auth breaker). Fed from _geminiCall's generic-transient path.
+  var _geminiNoteTransientFail = function() {
+    _geminiOkStreak = 0;
+    _geminiTransientStreak++;
+    if (_geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP) {
+      var _cd = Math.min(90000, _GEMINI_COOLDOWN_MS * (_geminiTransientStreak - _GEMINI_TRANSIENT_TRIP + 1));
+      if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Empty-body/timeout storm (' + _geminiTransientStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown (likely a Canvas rate-limit surfacing as empty responses)');
+      _geminiCap = _GEMINI_STORM_MIN;
+      _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
+      _pipelineStats.authThrottles = (_pipelineStats.authThrottles || 0) + 1;
+      if (!_geminiStormAnnounced && _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP + 2) {
+        _geminiStormAnnounced = true;
+        _pipeLog('Throttle', 'The AI service is rate-limiting this session — it is returning empty responses under load (a temporary throttle, not an AlloFlow error). Backing off to let it recover; this run will be slow. Large or scanned documents hit this sooner — a smaller doc or waiting a few minutes helps.');
+      }
+    }
+  };
   var _geminiNoteSuccess = function() {
     _geminiAuthStreak = 0;
+    _geminiTransientStreak = 0;
     if (_geminiCap < _GEMINI_MAX_CONCURRENT) {
       _geminiOkStreak++;
       if (_geminiOkStreak >= _GEMINI_RECOVER_HITS) {
@@ -1209,8 +1233,10 @@ var createDocPipeline = function(deps) {
           warnLog('[Retry] ' + (label || 'API call') + ' Canvas throttle — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
           return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
         }
-        // Generic timeout/transient: a single retry, as before.
-        if (n >= 1) throw err;
+        // Generic timeout/transient: a single retry, as before. (2026-06-20) On the FINAL give-up,
+        // count this call toward the empty-body/timeout storm signal so a sustained cluster trips the
+        // same breaker the 401 path does — Canvas throttles via empty 200s + timeouts, not only 401s.
+        if (n >= 1) { _geminiNoteTransientFail(); throw err; }
         warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
         return _attempt(n + 1);
       });
@@ -9241,7 +9267,12 @@ HTML section ${chunkNum}/${chunks.length}:
       // "score unavailable — partial audit" instead of a falsely-high score. Downstream Number.isFinite
       // guards skip a null score (same path as the NaN / single-doc _scoreDegraded branch). This is the
       // "left for the maintainer" reroute the old comment deferred.
-      const _coverageTooLow = chunks.length > 0 && (_failedChunks / chunks.length) > 0.25;
+      // (2026-06-20) Require failures to be absolutely material (>=2) OR fewer than 2 sections audited —
+      // not the bare >25% ratio — so ONE transient empty-body failure on a tiny 2-3 chunk audit doesn't
+      // null the WHOLE score (which then drove the auto-continue loop to grind under a throttle storm).
+      // Truth table: 4/30 fail → null; 1/2 fail (1 audited) → null; 1/3 fail (2 audited) → KEPT (and still
+      // carries the partial-coverage disclosure below); 3/8 fail → null. A genuinely-thin audit still nulls.
+      const _coverageTooLow = chunks.length > 0 && (_failedChunks / chunks.length) > 0.25 && (_failedChunks >= 2 || _auditedCount < 2);
       warnLog(`[Output Audit] Chunked: ${_auditedCount}/${chunks.length} sections returned${_partialAudit ? ' (' + _failedChunks + ' FAILED' + (_coverageTooLow ? ' — coverage too low, score NULLED' : ' — score covers audited sections only') + ')' : ''}, ${mergedIssues.length} unique issues, ${passCount} passes (${structuralPasses.length} structural), raw deductions ${rawDeductions}, pass factor ${passFactor.toFixed(2)}, score ${_coverageTooLow ? 'null (degraded)' : mergedScore}`);
       return {
         score: _coverageTooLow ? null : mergedScore,
