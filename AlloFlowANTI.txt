@@ -10451,11 +10451,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const PDF_REGRESSION_TOLERANCE = 5;
   const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
-    // AI unavailable → fall back to the deterministic axe-core score rather
-    // than discarding the fix (an axe-only measurement beats losing the work).
+    // Weakest-layer-governs: delegate to the engine's single source of truth (a window static set when
+    // doc_pipeline_module loads) so this monolith copy can NEVER re-drift to a mean — it silently did twice.
+    const _ch = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.computeHeadline;
+    if (typeof _ch === 'function') return _ch(aiScore, axeScore);
+    // Fallback (byte-identical contract to computeHeadline) until the engine module has loaded:
+    // AI unavailable → fall back to the deterministic axe-core score rather than discarding the fix.
     if (aiScore == null) return (typeof axeScore === 'number') ? axeScore : null;
     if (typeof axeScore !== 'number') return aiScore;
-    return Math.min(aiScore, axeScore); // weakest-layer-governs (2026-06-21; was the /2 mean — this site was missed in the redesign)
+    return Math.min(aiScore, axeScore);
   };
   const commitOrRevertPdfFix = (prev, candidate, extras, label) => {
     const newAi = candidate.ai?.score ?? null;
@@ -15951,7 +15955,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
         let _det = (result.axe && typeof result.axe.score === 'number') ? result.axe.score : null;
         if (_det !== null && _ea && typeof _ea.score === 'number') _det = Math.min(_det, _ea.score);
-        const newScore = (_det !== null) ? Math.min(reVerify.score, _det) : reVerify.score;
+        const newScore = (_det !== null) ? blendAiAxe(reVerify.score, _det) : reVerify.score; // shared weakest-layer (delegates to computeHeadline)
         // NOISE-AWARE COMMIT-OR-REVERT (loop fix, 2026-06-15): the blended score is half AI-rubric
         // (noisy), so reverting whenever newScore < prior threw away genuinely-improved rounds on a
         // mere AI wobble and stalled the loop short of target. Revert ONLY on a REAL regression: the

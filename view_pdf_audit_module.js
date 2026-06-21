@@ -1721,6 +1721,13 @@ function PdfAuditView(props) {
     } catch (_) {
     }
   };
+  const _computeHeadline = (content, automated) => {
+    const _f = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.computeHeadline;
+    if (typeof _f === "function") return _f(content, automated);
+    if (content == null || typeof content !== "number") return typeof automated === "number" ? automated : null;
+    if (typeof automated !== "number") return content;
+    return Math.min(content, automated);
+  };
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => {
     try {
       return localStorage.getItem("alloflow_pdf_auto_verapdf") !== "false";
@@ -3088,7 +3095,7 @@ function PdfAuditView(props) {
       ]);
       const aiScore = aiResult?.score ?? null;
       const axeScore = axeResult?.score ?? null;
-      const blended = aiScore !== null && axeScore !== null ? Math.min(aiScore, axeScore) : axeScore ?? aiScore ?? 0;
+      const blended = aiScore !== null && axeScore !== null ? _computeHeadline(aiScore, axeScore) : axeScore ?? aiScore ?? 0;
       setPdfAuditResult({
         score: blended,
         _aiOnlyScore: aiScore,
@@ -3130,7 +3137,7 @@ function PdfAuditView(props) {
         const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
         if (autoFix?.html) fixed = autoFix.html;
         const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
-        const finalScore = finalAi && finalAxe ? Math.min(finalAi.score || 0, finalAxe.score || 0) : finalAi?.score || 0;
+        const finalScore = finalAi && finalAxe ? _computeHeadline(finalAi.score || 0, finalAxe.score || 0) : finalAi?.score || 0;
         setPdfFixResult({
           accessibleHtml: fixed,
           beforeScore: 0,
@@ -5250,7 +5257,7 @@ Return ONLY JSON:
                   warnLog("[Re-fix] AI re-verification returned null for section " + (chunk.index + 1) + "; not committing new HTML.");
                   addToast(t("toasts.re_fix_verification_unavailable_kept"), "warning");
                 } else {
-                  const newScore = reAxe ? Math.min(reAi.score || 0, reAxe.score || 0) : reAi.score;
+                  const newScore = reAxe ? _computeHeadline(reAi.score || 0, reAxe.score || 0) : reAi.score;
                   setPdfFixResult((prev) => ({
                     ...prev,
                     accessibleHtml: result.html,
@@ -5498,7 +5505,7 @@ Return ONLY JSON:
       const _beforeEa = pdfAuditResult?._baselineSecondEngineAudit?.score ?? null;
       const initialAxeRaw = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
       const initialAxe = initialAxeRaw !== null && _beforeEa !== null ? Math.min(initialAxeRaw, _beforeEa) : initialAxeRaw;
-      const blendedBefore = initialBlended ?? (initialAi !== null && initialAxe !== null ? Math.min(initialAxe, initialAi) : initialAi ?? null);
+      const blendedBefore = initialBlended ?? (initialAi !== null && initialAxe !== null ? _computeHeadline(initialAxe, initialAi) : initialAi ?? null);
       const beforeDisplay = blendedBefore ?? "?";
       const afterDisplay = blendedAfter !== null ? blendedAfter : "?";
       const gain = blendedAfter !== null && blendedBefore !== null ? blendedAfter - blendedBefore : 0;
@@ -5636,7 +5643,7 @@ Return ONLY JSON:
                 warnLog("[Re-fix] AI re-verification returned null for section " + (ci + 1) + "; not committing new HTML.");
                 addToast(t("toasts.re_fix_verification_unavailable_kept"), "warning");
               } else {
-                const newScore = reAxe ? Math.min(reAi.score || 0, reAxe.score || 0) : reAi.score;
+                const newScore = reAxe ? _computeHeadline(reAi.score || 0, reAxe.score || 0) : reAi.score;
                 setPdfFixResult((prev) => ({
                   ...prev,
                   accessibleHtml: result.html,
@@ -7456,7 +7463,7 @@ Return ONLY JSON:
             const [_wv, _wa] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
             if (_wv && Number.isFinite(_wv.score)) {
               const _wdet = _wa && typeof _wa.score === "number" ? _wa.score : null;
-              const _wscore = _wdet !== null ? Math.min(_wv.score, _wdet) : _wv.score;
+              const _wscore = _wdet !== null ? _computeHeadline(_wv.score, _wdet) : _wv.score;
               setPdfFixResult((prev) => prev ? {
                 ...prev,
                 verificationAudit: _wv,

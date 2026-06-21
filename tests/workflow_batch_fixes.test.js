@@ -91,12 +91,14 @@ describe('lang-ell: override wrong en, preserve a region subtag', () => {
 });
 
 describe('anti-drift: the host auto-continue loop scores by min + clears the degraded flag', () => {
-  it('the loop uses min(reVerify.score, _det), not the /2 mean', () => {
-    expect(host).toMatch(/const newScore = \(_det !== null\) \? Math\.min\(reVerify\.score, _det\) : reVerify\.score;/);
+  it('the loop routes its headline through the shared blendAiAxe (delegating helper), not a raw min/mean', () => {
+    expect(host).toMatch(/const newScore = \(_det !== null\) \? blendAiAxe\(reVerify\.score, _det\) : reVerify\.score;/);
+    expect(host).not.toMatch(/const newScore = \(_det !== null\) \? Math\.min\(reVerify\.score, _det\)/);
     expect(host).not.toMatch(/Math\.round\(\(reVerify\.score \+ _det\) \/ 2\)/);
   });
-  it('blendAiAxe is min, not the /2 mean', () => {
-    expect(host).toMatch(/return Math\.min\(aiScore, axeScore\);/);
+  it('blendAiAxe delegates to the shared computeHeadline; its fallback is min, never the /2 mean', () => {
+    expect(host).toMatch(/if \(typeof _ch === 'function'\) return _ch\(aiScore, axeScore\);/);
+    expect(host).toMatch(/return Math\.min\(aiScore, axeScore\);/); // the fallback, used only until the engine module loads
     expect(host).not.toMatch(/return Math\.round\(\(aiScore \+ axeScore\) \/ 2\);/);
   });
   it('a completed re-verify clears _aiVerificationIncomplete on the primary path', () => {

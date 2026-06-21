@@ -14,6 +14,22 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 // deductions — the old `pass factor` discount of up to 40% on UNVERIFIED self-praise was removed.)
 var _alloIssueWeight = function (count) { return Math.min(3, 1 + Math.log2(Math.max(1, Math.floor(Number(count) || 1)))); };
 var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, iss) { return s + base * _alloIssueWeight(iss && iss.count); }, 0); };
+// ── Headline score: the SINGLE source of truth for "weakest-layer-governs" (2026-06-21) ──
+// The headline = the LOWER of the content (AI-rubric) and automated (axe/EqualAccess) layers — the
+// governing layer, never a mean. Null-safe to match blendAiAxe's existing contract: a layer that
+// didn't run cannot govern, so the other stands alone. Authored as a top-level pure fn (NOT a
+// 2-space `return {` — avoids the check-pipeline-integrity factory-export heuristic) and exposed both
+// as a factory instance member (the view reaches it via its _docPipeline prop) and a window static
+// (the AlloFlowANTI monolith reaches it via the global). This kills the duplication-drift that twice
+// left the monolith's copy on the old /2 mean after the engine had moved to min(). Operand-building
+// (automated = min(axe, EA); content = 100 - deduction) and governing MODES (degraded-AI →
+// deterministic-only, axe-failed → content-only, perfect → 100) stay at the CALL SITES — this does
+// ONLY the null-safe min so it stays pure.
+var _alloComputeHeadline = function (content, automated) {
+  if (content == null || typeof content !== 'number') return (typeof automated === 'number') ? automated : null;
+  if (typeof automated !== 'number') return content;
+  return Math.min(content, automated);
+};
 
 // ── Numeric/value-fidelity helper (2026-06-20) ──────────────────────────────
 // Extract a MULTISET (Map: normalized-token → count) of number-like tokens so the integrity gate can
@@ -7432,7 +7448,7 @@ Return ONLY valid JSON:
           // (the "46" that meant neither 'terrible' nor 'fine'). min() also matches the auto-fix loop's
           // own stop gate (axe==0 AND ai>=target). Both layer scores are shown SEPARATELY in the UI.
           const aiOnlyScore = triangulated.score;
-          const governingInitial = Math.min(aiOnlyScore, deterministicBaseline);
+          const governingInitial = _alloComputeHeadline(aiOnlyScore, deterministicBaseline);
           triangulated.score = governingInitial;
           triangulated._aiOnlyScore = aiOnlyScore;
           triangulated._deterministicScore = deterministicBaseline;
@@ -8581,7 +8597,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     // Headline = weakest layer (min), same method as the initial audit for a consistent comparison.
     let finalScore = curVerification ? curVerification.score : afterScore;
     if (finalScore !== null && curAxeResults && typeof curAxeResults.score === 'number') {
-      const governingFinal = Math.min(finalScore, curAxeResults.score);
+      const governingFinal = _alloComputeHeadline(finalScore, curAxeResults.score);
       warnLog(`[Batch] Final headline (weakest-layer): min(AI ${finalScore}, axe ${curAxeResults.score}) = ${governingFinal}`);
       finalScore = governingFinal;
     }
@@ -15798,7 +15814,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // shown SEPARATELY in the UI. The honest real-bytes PDF/UA verdict is independent veraPDF, surfaced
         // as its own badge. (Earlier 2026-06-20 note: the 75/25 deterministic upweight was removed for the
         // same by-construction reason before the switch to min.)
-        const governingFinal = Math.min(finalAfterScore, deterministicScore);
+        const governingFinal = _alloComputeHeadline(finalAfterScore, deterministicScore);
         warnLog(`[PDF Fix] Final headline (weakest-layer): min(AI ${finalAfterScore}, deterministic ${deterministicScore} [axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}]) = ${governingFinal}`);
         finalAfterScore = governingFinal;
       } else if (_aiDegraded && axeScoreAvailable) {
@@ -16156,7 +16172,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (_reAi !== null && !_reAiDegraded && _reAxeOk) {
             axeCoreFailed = false;
             _aiVerificationIncomplete = false;
-            const _reGoverning = Math.min(_reAi, _reDet); // weakest-layer-governs (2026-06-21; was mean)
+            const _reGoverning = _alloComputeHeadline(_reAi, _reDet); // weakest-layer-governs via shared computeHeadline (2026-06-21; was mean)
             warnLog('[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI ' + _reAi + ', deterministic ' + _reDet + ') = ' + _reGoverning + ' (was ' + finalAfterScore + ')');
             finalAfterScore = _reGoverning;
           } else if (_reAiDegraded && _reAxeOk) {
@@ -26786,6 +26802,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateResourceHTML: _wrap(generateResourceHTML),
     EXPORT_THEMES,
     STYLE_SEEDS,
+    computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
     applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
     generateFullPackHTML: _wrap(generateFullPackHTML),
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
@@ -26803,5 +26820,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');

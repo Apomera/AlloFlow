@@ -62,16 +62,16 @@ describe('content score is reproducible from the displayed issue list (floored a
 });
 
 describe('anti-drift: the engine ships min (not mean) + a reproducible content score', () => {
-  it('the final headline is min(content, deterministic), and the old mean is gone', () => {
-    expect(pipeSrc).toMatch(/const governingFinal = Math\.min\(finalAfterScore, deterministicScore\)/);
+  it('every governing site routes through the SINGLE shared computeHeadline (no per-site min to re-drift)', () => {
+    expect(pipeSrc).toMatch(/const governingFinal = _alloComputeHeadline\(finalAfterScore, deterministicScore\)/);
     expect(pipeSrc).not.toMatch(/Math\.round\(\(finalAfterScore \+ deterministicScore\) \/ 2\)/);
   });
-  it('the initial/before headline is min too', () => {
-    expect(pipeSrc).toMatch(/const governingInitial = Math\.min\(aiOnlyScore, deterministicBaseline\)/);
+  it('the initial/before headline routes through the shared fn too', () => {
+    expect(pipeSrc).toMatch(/const governingInitial = _alloComputeHeadline\(aiOnlyScore, deterministicBaseline\)/);
     expect(pipeSrc).not.toMatch(/Math\.round\(\(aiOnlyScore \+ deterministicBaseline\) \/ 2\)/);
   });
-  it('the re-blend after recovery is min', () => {
-    expect(pipeSrc).toMatch(/const _reGoverning = Math\.min\(_reAi, _reDet\)/);
+  it('the re-blend after recovery routes through the shared fn', () => {
+    expect(pipeSrc).toMatch(/const _reGoverning = _alloComputeHeadline\(_reAi, _reDet\)/);
   });
   it('the content score is the deduction on the CONSOLIDATED displayed list, not the per-auditor mean', () => {
     expect(pipeSrc).toMatch(/_consolidatedContentScore = Math\.max\(0, 100 - Math\.round\(_consolidatedDed\)\)/);
@@ -84,6 +84,29 @@ describe('anti-drift: the engine ships min (not mean) + a reproducible content s
   });
   it('_scoreSource reports "min", not "blended"', () => {
     expect(pipeSrc).toMatch(/axeCoreFailed \? 'content-only' : 'min'/);
+  });
+});
+
+describe('single source of truth: one computeHeadline, consumed everywhere (2026-06-21 extraction)', () => {
+  const antiSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  it('the engine defines ONE pure null-safe-min computeHeadline as a top-level fn', () => {
+    expect(pipeSrc).toMatch(/var _alloComputeHeadline = function \(content, automated\) \{/);
+    expect(pipeSrc).toMatch(/if \(typeof automated !== 'number'\) return content;\s*\n\s*return Math\.min\(content, automated\);/);
+  });
+  it('it is exposed both as a factory instance member (view prop) and a window static (monolith)', () => {
+    expect(pipeSrc).toMatch(/computeHeadline: _alloComputeHeadline,/);
+    expect(pipeSrc).toMatch(/window\.AlloModules\.createDocPipeline\.computeHeadline = _alloComputeHeadline;/);
+  });
+  it('the view helper delegates to the shared static, with an identical inline fallback', () => {
+    expect(viewSrc).toMatch(/const _computeHeadline = \(content, automated\) => \{/);
+    expect(viewSrc).toMatch(/window\.AlloModules\.createDocPipeline\.computeHeadline;/);
+  });
+  it('the monolith blendAiAxe delegates to the shared static (so it can never re-drift to a mean)', () => {
+    expect(antiSrc).toMatch(/const _ch = window\.AlloModules && window\.AlloModules\.createDocPipeline && window\.AlloModules\.createDocPipeline\.computeHeadline;/);
+    expect(antiSrc).toMatch(/if \(typeof _ch === 'function'\) return _ch\(aiScore, axeScore\);/);
+    // the monolith's auto-continue round routes its headline through the delegating helper, not a raw min
+    expect(antiSrc).toMatch(/const newScore = \(_det !== null\) \? blendAiAxe\(reVerify\.score, _det\)/);
+    expect(antiSrc).not.toMatch(/const newScore = \(_det !== null\) \? Math\.min\(reVerify\.score, _det\)/);
   });
 });
 
@@ -110,8 +133,8 @@ describe('anti-drift: the view shows two layers + the governing one, never an av
     expect(viewSrc).toMatch(/Checks passed \(informational\)/);
     expect(viewSrc).not.toMatch(/text-green-700 font-bold"><span>Passed<\/span>/);
   });
-  it('the Workbench recompute uses min and clears the stale incomplete flag (VDH-1)', () => {
-    expect(viewSrc).toMatch(/const _wscore = \(_wdet !== null\) \? Math\.min\(_wv\.score, _wdet\)/);
+  it('the Workbench recompute routes through the shared headline fn and clears the stale incomplete flag (VDH-1)', () => {
+    expect(viewSrc).toMatch(/const _wscore = \(_wdet !== null\) \? _computeHeadline\(_wv\.score, _wdet\)/);
     expect(viewSrc).toMatch(/_aiVerificationIncomplete: false,/);
   });
   it('the sticky dashboard bar neutralizes when the AI audit was incomplete (VDH-2)', () => {

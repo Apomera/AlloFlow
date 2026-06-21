@@ -1718,6 +1718,17 @@ function PdfAuditView(props) {
       warnLog && warnLog('[veraPDF-telemetry] ' + source + ': ' + (rules.length ? rules.map(r => '§' + r.clause + 't' + r.testNumber).join(', ') : 'none') + ' | cumulative ' + (source === 'repair' ? 'repairRequests' : 'failures') + '=' + JSON.stringify(bucket) + (source !== 'repair' ? (' | clean ' + g.cleanExports + '/' + g.taggedExports + ' exports') : ''));
     } catch (_) {}
   };
+  // Headline score: route every view-layer min() through the engine's single source of truth (2026-06-21).
+  // Reaches the shared computeHeadline via the global static (set when doc_pipeline_module loads); falls back
+  // to an identical inline null-safe min if the engine module hasn't loaded yet. This is why the four refix/
+  // web-audit/Workbench handlers below can't re-drift to a mean independently of the engine.
+  const _computeHeadline = (content, automated) => {
+    const _f = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.computeHeadline;
+    if (typeof _f === 'function') return _f(content, automated);
+    if (content == null || typeof content !== 'number') return (typeof automated === 'number') ? automated : null;
+    if (typeof automated !== 'number') return content;
+    return Math.min(content, automated);
+  };
   // (2026-06-20) Auto-validate the remediated output with veraPDF after Make Accessible — default ON.
   // Warmed inside the click gesture (so the popup is allowed) + validated at the end; opt-out persisted.
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
@@ -2745,7 +2756,7 @@ function PdfAuditView(props) {
                         ]);
                         const aiScore = aiResult?.score ?? null;
                         const axeScore = axeResult?.score ?? null;
-                        const blended = (aiScore !== null && axeScore !== null) ? Math.min(aiScore, axeScore) : (axeScore ?? aiScore ?? 0); // weakest-layer-governs (was mean)
+                        const blended = (aiScore !== null && axeScore !== null) ? _computeHeadline(aiScore, axeScore) : (axeScore ?? aiScore ?? 0); // weakest-layer-governs (shared)
                         setPdfAuditResult({
                           score: blended,
                           _aiOnlyScore: aiScore,
@@ -2784,7 +2795,7 @@ function PdfAuditView(props) {
                           const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
                           if (autoFix?.html) fixed = autoFix.html;
                           const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
-                          const finalScore = (finalAi && finalAxe) ? Math.min((finalAi.score || 0), (finalAxe.score || 0)) : (finalAi?.score || 0); // weakest-layer-governs (was mean)
+                          const finalScore = (finalAi && finalAxe) ? _computeHeadline((finalAi.score || 0), (finalAxe.score || 0)) : (finalAi?.score || 0); // weakest-layer-governs (shared)
                           setPdfFixResult({
                             accessibleHtml: fixed,
                             beforeScore: 0,
@@ -6318,7 +6329,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               warnLog('[Re-fix] AI re-verification returned null for section ' + (chunk.index + 1) + '; not committing new HTML.');
                                               addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                             } else {
-                                              const newScore = reAxe ? Math.min((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (was mean)
+                                              const newScore = reAxe ? _computeHeadline((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (shared)
                                               setPdfFixResult(prev => ({
                                                 ...prev,
                                                 accessibleHtml: result.html,
@@ -6670,7 +6681,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _beforeEa = pdfAuditResult?._baselineSecondEngineAudit?.score ?? null;
                         const initialAxeRaw = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
                         const initialAxe = (initialAxeRaw !== null && _beforeEa !== null) ? Math.min(initialAxeRaw, _beforeEa) : initialAxeRaw;
-                        const blendedBefore = initialBlended ?? ((initialAi !== null && initialAxe !== null) ? Math.min(initialAxe, initialAi) : (initialAi ?? null));
+                        const blendedBefore = initialBlended ?? ((initialAi !== null && initialAxe !== null) ? _computeHeadline(initialAxe, initialAi) : (initialAi ?? null));
                         const beforeDisplay = blendedBefore ?? '?';
                         const afterDisplay = blendedAfter !== null ? blendedAfter : '?';
                         const gain = (blendedAfter !== null && blendedBefore !== null) ? blendedAfter - blendedBefore : 0;
@@ -7143,7 +7154,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             warnLog('[Re-fix] AI re-verification returned null for section ' + (ci + 1) + '; not committing new HTML.');
                                             addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                           } else {
-                                            const newScore = reAxe ? Math.min((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (was mean)
+                                            const newScore = reAxe ? _computeHeadline((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (shared)
                                             setPdfFixResult(prev => ({
                                               ...prev,
                                               accessibleHtml: result.html,
@@ -9216,7 +9227,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const [_wv, _wa] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
                                 if (_wv && Number.isFinite(_wv.score)) {
                                   const _wdet = (_wa && typeof _wa.score === 'number') ? _wa.score : null;
-                                  const _wscore = (_wdet !== null) ? Math.min(_wv.score, _wdet) : _wv.score; // weakest-layer-governs (was mean)
+                                  const _wscore = (_wdet !== null) ? _computeHeadline(_wv.score, _wdet) : _wv.score; // weakest-layer-governs (shared)
                                   setPdfFixResult(prev => prev ? ({ ...prev,
                                     verificationAudit: _wv,
                                     afterScore: _wscore,
