@@ -405,7 +405,7 @@ function calcPH(vol) {
     if (ratio < 2) { var pKa2 = -Math.log10(Kas[1]); return Math.max(0, Math.min(14, pKa2 + Math.log10((ratio - 1) / (2 - ratio)))); }
     if (Math.abs(ratio - 2) < 0.02) return (-Math.log10(Kas[1]) + (-Math.log10(Kas[2]))) / 2;
     if (ratio < 3) { var pKa3 = -Math.log10(Kas[2]); return Math.max(0, Math.min(14, pKa3 + Math.log10((ratio - 2) / (3 - ratio)))); }
-    if (Math.abs(ratio - 3) < 0.02) return Math.min(14, 14 + Math.log10(Math.sqrt(Kw / Kas[2] * CaP / (totalVP * 1000))));
+    if (Math.abs(ratio - 3) < 0.02) return Math.min(14, 14 + Math.log10(Math.sqrt(Kw / Kas[2] * (molesAcidP / totalVP)))); // [OH-]=sqrt(Kb·C), C = phosphate conc = molesAcidP/totalVP
     var excessB = molesBaseP - 3 * molesAcidP;
     return Math.max(0, Math.min(14, 14 + Math.log10(excessB / totalVP)));
   }
@@ -442,7 +442,15 @@ function calcPH(vol) {
 
       var pKa = -Math.log10(Ka);
 
-      return Math.max(0, Math.min(14, pKa + Math.log10(molesBase / excess)));
+      // Henderson–Hasselbalch governs the buffer region, but very near the start
+      // (only a trace of base added) it dips below the pure-weak-acid pH because
+      // it ignores the acid's own dissociation. Take the higher (physically
+      // correct) of the two so the curve rises monotonically from the initial pH.
+      var hh = pKa + Math.log10(molesBase / excess);
+
+      var weakAcidAlonePH = -Math.log10(Math.sqrt(Ka * (excess / totalVolL)));
+
+      return Math.max(0, Math.min(14, Math.max(hh, weakAcidAlonePH)));
 
     }
 
