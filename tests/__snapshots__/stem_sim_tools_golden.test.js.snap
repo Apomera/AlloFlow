@@ -408,10 +408,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for wave 
   "buttons": 68,
   "canvases": 1,
   "inputs": 8,
-  "lengthBucket": 113,
+  "lengthBucket": 114,
   "paths": 0,
   "selects": 0,
-  "sha": "40643b64dcc7257a",
+  "sha": "a2741ec0d94e53f5",
   "svgs": 0,
 }
 `;

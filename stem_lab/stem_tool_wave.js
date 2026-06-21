@@ -1548,6 +1548,7 @@ const d = labToolData.wave;
                      type: "number", value: a,
 
                      'aria-label': 'Wave amplitude',
+                     'aria-valuetext': a + ' — amplitude sets the wave height (loudness and energy)',
 
                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('amplitude', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(v, f); } catch(ex){} } },
 
@@ -1566,6 +1567,7 @@ const d = labToolData.wave;
                      type: "number", value: f,
 
                      'aria-label': 'Wave frequency',
+                     'aria-valuetext': f + ' hertz, period ' + (f ? (1 / f).toFixed(2) : '∞') + ' seconds — frequency sets the pitch',
 
                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) { upd('frequency', v); try { if (typeof checkWaveMatch !== 'undefined') checkWaveMatch(a, v); } catch(ex){} } },
 
