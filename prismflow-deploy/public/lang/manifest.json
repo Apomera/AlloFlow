@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-06-21T10:04:19.660Z",
-  "count": 60,
+  "generated": "2026-06-21T12:38:48.153Z",
+  "count": 61,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -72,6 +72,13 @@
       "display": "Dari",
       "keys": 11245,
       "bytes": 1162998,
+      "updated": "2026-06-21"
+    },
+    {
+      "slug": "dutch",
+      "display": "Dutch",
+      "keys": 11198,
+      "bytes": 1213606,
       "updated": "2026-06-21"
     },
     {
