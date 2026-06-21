@@ -19110,7 +19110,7 @@ window.SelHub = window.SelHub || {
             rtCards.map(function(card, ci) {
               var isViewed = !!rtViewedSet[card.id];
               var isCurrent = (rtIdx % rtCards.length) === ci;
-              return h('button', { 'aria-label': card.icon,
+              return h('button', { 
                 key: card.id,
                 onClick: function() { upd({ rtIdx: ci, rtRevealed: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : isViewed ? '#334155' : '#33415566'), background: isCurrent ? ACCENT_DIM : '#1e293b', cursor: 'pointer', textAlign: 'center' }
@@ -19208,7 +19208,7 @@ window.SelHub = window.SelHub || {
             voCompleted > 0 && h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } }, voCompleted + ' sessions completed'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               voScenarios.map(function(sc, si) {
-                return h('button', { 'aria-label': sc.authority.emoji,
+                return h('button', { 
                   key: sc.id,
                   onClick: function() {
                     upd({ voScenarioIdx: si, voMode: 'chat', voChatHistory: [{ role: 'authority', text: sc.authority.openingLine }], voConfidence: sc.initialConfidence, voTurnCount: 0, voInputText: '' });
@@ -19232,7 +19232,7 @@ window.SelHub = window.SelHub || {
         if (voMode === 'chat') {
           voiceContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-              h('button', { 'aria-label': curVo.authority.emoji, onClick: function() { upd({ voMode: null, voChatHistory: [], voConfidence: 30, voTurnCount: 0, voInputText: '' }); }, style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
+              h('button', {  onClick: function() { upd({ voMode: null, voChatHistory: [], voConfidence: 30, voTurnCount: 0, voInputText: '' }); }, style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
               h('span', { style: { fontSize: 20 } }, curVo.authority.emoji),
               h('div', null,
                 h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, curVo.authority.name),
@@ -19776,7 +19776,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
             LETTER_TEMPLATES.map(function(lt, li) {
               var isCurrent = (ltIdx % LETTER_TEMPLATES.length) === li;
-              return h('button', { 'aria-label': lt.icon,
+              return h('button', { 
                 key: lt.id,
                 onClick: function() { upd({ ltIdx: li, ltFields: {}, ltPreview: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isCurrent ? ACCENT : '#334155'), background: isCurrent ? ACCENT_DIM : '#1e293b', cursor: 'pointer', textAlign: 'center' }

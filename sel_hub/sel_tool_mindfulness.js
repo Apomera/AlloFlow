@@ -22358,7 +22358,7 @@ window.SelHub = window.SelHub || {
             BREATH_PATTERNS.map(function(pat, i) {
               var isSel = breathPatternIdx === i;
               var used = breathPatternsUsed[pat.id];
-              return h('button', { 'aria-label': pat.emoji,
+              return h('button', { 
                 key: pat.id,
                 onClick: function() { upd('breathPatternIdx', i); if (soundEnabled) sfxClick(); },
                 style: {
@@ -22930,7 +22930,7 @@ window.SelHub = window.SelHub || {
           !activeActivity && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_ACTIVITIES.map(function(act) {
               var done = activityDone[act.id];
-              return h('button', { 'aria-label': act.emoji,
+              return h('button', { 
                 key: act.id,
                 onClick: function() { upd({ activeActivity: act.id, activityStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
@@ -23412,7 +23412,7 @@ window.SelHub = window.SelHub || {
           !movementActiveId && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_MOVEMENTS.map(function(ex) {
               var done = movementsDone[ex.id];
-              return h('button', { 'aria-label': ex.emoji,
+              return h('button', { 
                 key: ex.id,
                 onClick: function() { upd({ movementActiveId: ex.id, movementStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
@@ -23823,7 +23823,7 @@ window.SelHub = window.SelHub || {
           !techActiveId && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             GROUNDING_TECHNIQUES.map(function(tech) {
               var done = techsDone[tech.id];
-              return h('button', { 'aria-label': tech.emoji,
+              return h('button', { 
                 key: tech.id,
                 onClick: function() {
                   upd({ techActiveId: tech.id, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false });

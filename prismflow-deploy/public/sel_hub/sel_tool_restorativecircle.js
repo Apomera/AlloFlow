@@ -1140,7 +1140,7 @@ window.SelHub = window.SelHub || {
           // Circle type cards
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             CIRCLE_TYPES.map(function(ct) {
-              return h('button', { 'aria-label': ct.emoji,
+              return h('button', { 
                 key: ct.id,
                 onClick: function() { updMulti({ circleType: ct.id, tab: 'circle', promptIdx: 0, circleActive: true, customPrompts: null }); ctx.awardXP(5); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-md ' +
@@ -2184,7 +2184,7 @@ window.SelHub = window.SelHub || {
                 (isExpanded ? 'border-amber-400 shadow-lg' : 'border-slate-200 hover:border-amber-300')
             },
               // Header (always visible)
-              h('button', { 'aria-label': role.emoji,
+              h('button', { 
                 onClick: function() {
                   upd('expandedRole', isExpanded ? null : role.id);
                   if (!isExpanded) {

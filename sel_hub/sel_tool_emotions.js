@@ -18451,7 +18451,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = checkinFamily === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() { upd({ checkinFamily: fam.id, checkinFeeling: null }); if (soundEnabled) sfxClick(); },
                   style: {
@@ -18865,7 +18865,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 } },
                 EMOTION_FAMILIES.map(function(fam) {
                   var isSel = empathyAnswer === fam.id;
-                  return h('button', { 'aria-label': fam.emoji,
+                  return h('button', { 
                     key: fam.id,
                     onClick: function() { upd('empathyAnswer', fam.id); if (soundEnabled) sfxClick(); },
                     style: {
@@ -18961,7 +18961,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = scenarioAnswer === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() { upd('scenarioAnswer', fam.id); if (soundEnabled) sfxClick(); },
                   style: {
@@ -19405,7 +19405,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = mixEmotion1 === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() {
                     upd({ mixEmotion1: fam.id, mixResult: null, mixAiCustom: null });
@@ -19435,7 +19435,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.filter(function(f) { return f.id !== mixEmotion1; }).map(function(fam) {
                 var isSel = mixEmotion2 === fam.id;
-                return h('button', { 'aria-label': fam.emoji,
+                return h('button', { 
                   key: fam.id,
                   onClick: function() {
                     upd({ mixEmotion2: fam.id, mixResult: null, mixAiCustom: null });

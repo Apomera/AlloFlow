@@ -1686,7 +1686,7 @@ window.SelHub = window.SelHub || {
               { mode: 'affirm', icon: '\uD83D\uDCAB', title: 'Affirmations', desc: 'Remind yourself of what\'s true when emotions lie' },
               { mode: 'scan', icon: '\uD83E\uDEC0', title: 'Body Scan', desc: 'Find and release tension in your body' }
             ].map(function(item) {
-              return h('button', { 'aria-label': item.icon,
+              return h('button', { 
                 key: item.mode,
                 onClick: function() {
                   upd('cdMode', item.mode);
@@ -1988,7 +1988,7 @@ window.SelHub = window.SelHub || {
               h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 16 } }, 'Pick a conflict to practice. Talk to the character and try to resolve it peacefully.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 rpScenarios.map(function(sc, si) {
-                  return h('button', { 'aria-label': sc.character.emoji,
+                  return h('button', { 
                     key: sc.id,
                     onClick: function() {
                       upd({ rpScenarioIdx: si, rpSubMode: 'chat', rpChatHistory: [{ role: 'character', text: sc.character.openingLine }], rpRapport: sc.initialRapport, rpTurnCount: 0, rpHintUsed: false, rpInputText: '' });
@@ -2013,7 +2013,7 @@ window.SelHub = window.SelHub || {
             roleplayContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' } },
               // Header
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-                h('button', { 'aria-label': curRPScenario.character.emoji, onClick: function() { upd({ rpSubMode: 'select', rpChatHistory: [], rpRapport: 50, rpTurnCount: 0, rpInputText: '' }); }, style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
+                h('button', {  onClick: function() { upd({ rpSubMode: 'select', rpChatHistory: [], rpRapport: 50, rpTurnCount: 0, rpInputText: '' }); }, style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
                 h('span', { style: { fontSize: 20 } }, curRPScenario.character.emoji),
                 h('span', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, curRPScenario.character.name),
                 h('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 'auto' } }, 'Turn ' + rpTurnCount + '/20')
@@ -2275,7 +2275,7 @@ window.SelHub = window.SelHub || {
             roleplayContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100%' } },
               // Header
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
-                h('button', { 'aria-label': curMedScenario.charA.emoji, onClick: function() { upd({ rpSubMode: 'select', medChatHistory2: [], medHarmony: 30, medTurnCount: 0, medInputText: '' }); }, style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
+                h('button', {  onClick: function() { upd({ rpSubMode: 'select', medChatHistory2: [], medHarmony: 30, medTurnCount: 0, medInputText: '' }); }, style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2190'),
                 h('span', { style: { fontSize: 16 } }, curMedScenario.charA.emoji),
                 h('span', { style: { fontSize: 12, color: '#94a3b8' } }, 'vs'),
                 h('span', { style: { fontSize: 16 } }, curMedScenario.charB.emoji),

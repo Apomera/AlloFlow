@@ -914,7 +914,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             FEELINGS_MAP.map(function(f) {
               var isSelected = selectedFeeling === f.id;
-              return h('button', { 'aria-label': f.emoji,
+              return h('button', { 
                 key: f.id,
                 onClick: function() { upd('feeling', f.id); ctx.awardXP(3); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] ' +
@@ -1061,7 +1061,7 @@ window.SelHub = window.SelHub || {
 
           !selectedIssue && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             issues.map(function(issue) {
-              return h('button', { 'aria-label': issue.emoji,
+              return h('button', { 
                 key: issue.id,
                 onClick: function() {
                   upd('selectedIssue', issue.id);
@@ -1090,7 +1090,7 @@ window.SelHub = window.SelHub || {
             var issue = issues.find(function(i) { return i.id === selectedIssue; });
             if (!issue) return null;
             return h('div', { className: 'space-y-4' },
-              h('button', { 'aria-label': issue.emoji,
+              h('button', { 
                 onClick: function() { upd('selectedIssue', null); },
                 className: 'text-xs text-teal-600 font-bold hover:text-teal-800 flex items-center gap-1'
               }, h(ArrowLeft, { size: 14 }), 'Back to all issues'),

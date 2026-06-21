@@ -839,7 +839,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', justifyContent: 'center', gap: 10 } },
                 MOODS.map(function(m) {
                   var isSelected = ciMood === m.id;
-                  return h('button', { 'aria-label': m.emoji,
+                  return h('button', { 
                     key: m.id,
                     onClick: function() {
                       upd({ ciMood: m.id, ciSubEmotion: null });
@@ -868,7 +868,7 @@ window.SelHub = window.SelHub || {
                     var isSel = ciSubEmotion === sub.label;
                     var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
                     var col = moodColor ? moodColor.color : ACCENT;
-                    return h('button', { 'aria-label': sub.emoji,
+                    return h('button', { 
                       key: sub.label,
                       onClick: function() {
                         upd('ciSubEmotion', isSel ? null : sub.label);
@@ -898,7 +898,7 @@ window.SelHub = window.SelHub || {
                       var isSel = ciExpandedEmotion === exp.label;
                       var moodColor = MOODS.find(function(m) { return m.id === ciMood; });
                       var col = moodColor ? moodColor.color : ACCENT;
-                      return h('button', { 'aria-label': exp.emoji,
+                      return h('button', { 
                         key: exp.label,
                         onClick: function() {
                           upd('ciExpandedEmotion', isSel ? null : exp.label);
