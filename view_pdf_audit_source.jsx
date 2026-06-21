@@ -1764,6 +1764,17 @@ function PdfAuditView(props) {
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_verapdf', String(pdfAutoVeraPdf)); } catch (_) {} }, [pdfAutoVeraPdf]);
   const _lastTaggedBytesRef = useRef(null);                   // shipped tagged-PDF bytes, for on-demand veraPDF validation
+  // Stable per-result modification timestamp (validate-what-you-ship, 2026-06-21): the auto-validate tags
+  // one PDF and the download tags another; with a per-call new Date() they differ by timestamp so the
+  // veraPDF verdict never attests to the downloaded file. Threading the SAME modDate (keyed on result
+  // IDENTITY — a fresh remediation/edit gets a new stamp) makes createTaggedPdf emit byte-identical
+  // timestamps, so for content-equal docs the validated bytes == the downloaded bytes.
+  const _taggedModDateRef = useRef({ result: null, date: null });
+  const _stableModDate = (result) => {
+    if (!result) return undefined;
+    if (_taggedModDateRef.current.result !== result) _taggedModDateRef.current = { result, date: new Date().toISOString() };
+    return _taggedModDateRef.current.date;
+  };
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
@@ -3438,7 +3449,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const _dmV = _deriveDocMeta(_fr.accessibleHtml, pendingPdfFile?.name);
                           const _ovV = pdfMetaOverride || {};
                           setVeraPdfBusy(true);
-                          const _resV = await createTaggedPdf(_bytesV, _fr, { title: (_ovV.title && _ovV.title.trim()) || _dmV.title, lang: (_ovV.lang && _ovV.lang.trim()) || _dmV.lang || 'en', author: (_ovV.author && _ovV.author.trim()) || undefined, subject: 'Remediated for accessibility by AlloFlow' });
+                          const _resV = await createTaggedPdf(_bytesV, _fr, { title: (_ovV.title && _ovV.title.trim()) || _dmV.title, lang: (_ovV.lang && _ovV.lang.trim()) || _dmV.lang || 'en', author: (_ovV.author && _ovV.author.trim()) || undefined, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(_fr) });
                           const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
                           if (_tbV) {
                             _lastTaggedBytesRef.current = _tbV;
@@ -7454,7 +7465,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
                                 const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name);
                                 const _ov = pdfMetaOverride || {};
-                                const _result = await createTaggedPdf(bytes, pdfFixResult, { title: (_ov.title && _ov.title.trim()) || _dm.title, lang: (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en', subject: 'Remediated for accessibility by AlloFlow' });
+                                const _result = await createTaggedPdf(bytes, pdfFixResult, { title: (_ov.title && _ov.title.trim()) || _dm.title, lang: (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en', subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(pdfFixResult) });
                                 const tBytes = _result && _result.bytes ? _result.bytes : _result;
                                 if (!tBytes) return { error: 'tagged PDF generation returned no bytes' };
                                 const u8 = new Uint8Array(tBytes);
@@ -8143,7 +8154,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const title = (_ov.title && _ov.title.trim()) || _dm.title;
                               const lang = (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en';
                               const _author = (_ov.author && _ov.author.trim()) || undefined;
-                              const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow' });
+                              const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(pdfFixResult) });
                               // createTaggedPdf returns { bytes, summary, pdfUa1Checks }.
                               // Tolerate older shapes for users on stale CDN-cached modules.
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;

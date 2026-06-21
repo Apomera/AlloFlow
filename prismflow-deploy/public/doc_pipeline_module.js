@@ -17545,6 +17545,15 @@ tr { page-break-inside: avoid; }
   const createTaggedPdf = async (originalPdfBytes, fixResult, meta) => {
     _symbolRunsExcludedTotal = 0;
     meta = meta || {};
+    // Deterministic modification timestamp (validate-what-you-ship, 2026-06-21): when meta.modDate is
+    // supplied (the view threads one stable value per result), re-tagging the SAME content produces
+    // byte-identical timestamps — so the PDF the veraPDF run VALIDATES is byte-identical to the one the
+    // user DOWNLOADS, instead of two PDFs that differ only by a per-call new Date(). Falls back to now()
+    // for callers that don't thread it (behavior-preserving). (Source CreationDate is already preserved —
+    // there is no setCreationDate call.)
+    const _modDateRaw = meta.modDate ? new Date(meta.modDate) : new Date();
+    const _modDate = isNaN(_modDateRaw.getTime()) ? new Date() : _modDateRaw;
+    const _modIso = _modDate.toISOString().replace(/\.\d{3}Z$/, 'Z');
     if (!window.PDFLib || !window.PDFLib.PDFDocument) {
       throw new Error('pdf-lib not loaded — call _ensurePdfLib() first');
     }
@@ -17567,7 +17576,7 @@ tr { page-break-inside: avoid; }
     let _uaDeclared = false;
     try { doc.setProducer('AlloFlow Accessibility Pipeline'); _producerStamped = true; }
     catch(prodErr) { try { warnLog('[createTaggedPdf] WARNING: could not stamp Producer metadata — output keeps the source Producer and is not marked as AlloFlow-processed: ' + (prodErr && prodErr.message)); } catch(_) {} }
-    try { doc.setModificationDate(new Date()); } catch(_) {}
+    try { doc.setModificationDate(_modDate); } catch(_) {}
     // ── Document language (Catalog/Lang) ──
     // Required by PDF/UA-1 §7.2. pdf-lib doesn't expose a high-level setter
     // so we write it directly into the Catalog.
@@ -19731,7 +19740,7 @@ tr { page-break-inside: avoid; }
       const pdfTitle = (meta.title || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
       const pdfSubject = (meta.subject || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
       const pdfLang = lang.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      const _now = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      const _now = _modIso; // deterministic when meta.modDate threaded (validate==download)
       const xmp = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="AlloFlow PDF/UA-1 Pipeline">
   <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">

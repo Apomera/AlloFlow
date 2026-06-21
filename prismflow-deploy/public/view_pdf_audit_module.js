@@ -1777,6 +1777,12 @@ function PdfAuditView(props) {
     }
   }, [pdfAutoVeraPdf]);
   const _lastTaggedBytesRef = useRef(null);
+  const _taggedModDateRef = useRef({ result: null, date: null });
+  const _stableModDate = (result) => {
+    if (!result) return void 0;
+    if (_taggedModDateRef.current.result !== result) _taggedModDateRef.current = { result, date: (/* @__PURE__ */ new Date()).toISOString() };
+    return _taggedModDateRef.current.date;
+  };
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try {
@@ -3654,7 +3660,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
             const _dmV = _deriveDocMeta(_fr.accessibleHtml, pendingPdfFile?.name);
             const _ovV = pdfMetaOverride || {};
             setVeraPdfBusy(true);
-            const _resV = await createTaggedPdf(_bytesV, _fr, { title: _ovV.title && _ovV.title.trim() || _dmV.title, lang: _ovV.lang && _ovV.lang.trim() || _dmV.lang || "en", author: _ovV.author && _ovV.author.trim() || void 0, subject: "Remediated for accessibility by AlloFlow" });
+            const _resV = await createTaggedPdf(_bytesV, _fr, { title: _ovV.title && _ovV.title.trim() || _dmV.title, lang: _ovV.lang && _ovV.lang.trim() || _dmV.lang || "en", author: _ovV.author && _ovV.author.trim() || void 0, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(_fr) });
             const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
             if (_tbV) {
               _lastTaggedBytesRef.current = _tbV;
@@ -5842,7 +5848,7 @@ Return ONLY JSON:
             for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
             const _dm = _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name);
             const _ov = pdfMetaOverride || {};
-            const _result = await createTaggedPdf(bytes, pdfFixResult, { title: _ov.title && _ov.title.trim() || _dm.title, lang: _ov.lang && _ov.lang.trim() || _dm.lang || "en", subject: "Remediated for accessibility by AlloFlow" });
+            const _result = await createTaggedPdf(bytes, pdfFixResult, { title: _ov.title && _ov.title.trim() || _dm.title, lang: _ov.lang && _ov.lang.trim() || _dm.lang || "en", subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(pdfFixResult) });
             const tBytes = _result && _result.bytes ? _result.bytes : _result;
             if (!tBytes) return { error: "tagged PDF generation returned no bytes" };
             const u8 = new Uint8Array(tBytes);
@@ -6450,7 +6456,7 @@ Return ONLY JSON:
             const title = _ov.title && _ov.title.trim() || _dm.title;
             const lang = _ov.lang && _ov.lang.trim() || _dm.lang || "en";
             const _author = _ov.author && _ov.author.trim() || void 0;
-            const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow" });
+            const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(pdfFixResult) });
             const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
             const summary = _result && _result.summary || null;
             const pdfUa1Checks = _result && _result.pdfUa1Checks || null;
