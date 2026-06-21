@@ -284,6 +284,9 @@
     var lens = thinLens(d_o, f === Infinity ? 1e9 : f);
     var d_i = (f === Infinity) ? -d_o : (lens.error ? null : lens.d_i);
     var m = (f === Infinity) ? 1 : (lens.error ? null : lens.m);
+    // Spoken image result for the slider aria-valuetext + SVG label.
+    var _mirrorVT = (d_i == null) ? 'image at infinity'
+      : ('image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted'));
     var hImg = (m == null) ? null : m * hObj;
     // Object x (negative → in front of mirror)
     var objX = -d_o;
@@ -318,6 +321,7 @@
             value: state.reflFocal || 10,
             onChange: function(e) { upd('reflFocal', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Focal length',
+            'aria-valuetext': (state.reflFocal || 10).toFixed(1) + ' cm focal length. ' + _mirrorVT,
             style: { width: 110 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, (state.reflFocal || 10).toFixed(1))
@@ -329,6 +333,7 @@
             value: d_o,
             onChange: function(e) { upd('reflDo', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Object distance',
+            'aria-valuetext': d_o.toFixed(1) + ' cm object distance. ' + _mirrorVT,
             style: { width: 110 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
@@ -337,7 +342,7 @@
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
         role: 'img',
-        'aria-label': 'Mirror ray diagram. ' + mt + ' mirror' + (mt !== 'plane' ? ', f = ' + (f).toFixed(1) + ' cm' : '') + ', object at ' + d_o.toFixed(1) + ' cm.',
+        'aria-label': 'Mirror ray diagram. ' + mt + ' mirror' + (mt !== 'plane' ? ', f = ' + (f).toFixed(1) + ' cm' : '') + ', object at ' + d_o.toFixed(1) + ' cm. ' + _mirrorVT + '.',
         onClick: onObjDrag,
         style: { background: '#0b1220', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
       },
@@ -1029,6 +1034,10 @@
     var d_i = lens.error ? null : lens.d_i;
     var m = lens.error ? null : lens.m;
     var hImg = (m == null) ? null : m * hObj;
+    // Spoken image result for the slider aria-valuetext (so screen-reader users hear
+    // the computed image as they adjust the controls, not just the raw number).
+    var _lensVT = lens.error ? lens.error
+      : ('image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted'));
     // Coordinate space: x in cm; lens at x = 0; useful range -45 to +45
     var cmMin = -45, cmMax = 45;
     var sx = _scale(cmMin, cmMax, pad.l, W - pad.r);
@@ -1063,6 +1072,7 @@
             value: fAbs,
             onChange: function(e) { upd('lensFocal', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Focal length',
+            'aria-valuetext': fAbs.toFixed(1) + ' cm focal length. ' + _lensVT,
             style: { width: 110 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, fAbs.toFixed(1))
@@ -1074,6 +1084,7 @@
             value: d_o,
             onChange: function(e) { upd('lensDo', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Object distance',
+            'aria-valuetext': d_o.toFixed(1) + ' cm object distance. ' + _lensVT,
             style: { width: 110 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
@@ -2632,9 +2643,15 @@
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
       // ── State init ──
-      if (!labToolData || !labToolData.opticsLab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { opticsLab: {
+      // Seed defaults, but DO NOT early-return a Loading screen here: this render
+      // calls hooks (useRef/useEffect/useState) on the lines below, so a conditional
+      // early-return changes the hook count between the empty and seeded renders and
+      // throws "Rendered more hooks than during the previous render" on that
+      // transition (the opticsLab bucket is not persisted, so it is empty on every
+      // reload). We seed state and fall through with the defaults; the body reads
+      // state only via the local `d` (bucket-or-defaults), so first paint matches the
+      // next render. (Rules-of-Hooks fix, 2026-06-20.)
+      var OPTICS_DEFAULTS = {
             mode: 'home',  // home | reflection | refraction | lenses | interference | diffraction | polarization | quiz
             // Reflection
             reflMirrorType: 'concave', reflFocal: 10, reflDo: 25, reflObjH: 6,
@@ -2665,12 +2682,13 @@
             realImageFormed: false, virtualImageFormed: false,
             tirTriggered: false,
             interferenceViewed: false, diffractionViewed: false, polarizationExtinct: false
-          }});
+          };
+      if (!labToolData || !labToolData.opticsLab) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { opticsLab: OPTICS_DEFAULTS });
         });
-        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } },
-          '🔆 Initializing Optics Lab...');
       }
-      var d = labToolData.opticsLab;
+      var d = labToolData.opticsLab || OPTICS_DEFAULTS;
 
       // ── Mounted ref for async callback guards (prevents setState after unmount) ──
       var _mounted = React.useRef(true);

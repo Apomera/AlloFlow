@@ -92,10 +92,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for opticsLab 1`] = `
 {
-  "buttons": 0,
+  "buttons": 41,
   "inputs": 0,
-  "lengthBucket": 1,
-  "sha": "205b5913e8a456e9",
+  "lengthBucket": 108,
+  "sha": "2c84439d5eeb6f82",
   "svgs": 0,
 }
 `;
