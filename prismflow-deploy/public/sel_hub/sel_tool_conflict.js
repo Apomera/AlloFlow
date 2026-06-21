@@ -1873,7 +1873,7 @@ window.SelHub = window.SelHub || {
               rows: 5,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),
-            h('button', { 'aria-label': 'nuanced, respectful language for ages 15-18.',
+            h('button', {
               onClick: function() {
                 if (!medPrompt.trim()) { addToast('Describe the conflict first!', 'info'); return; }
                 if (!callGemini) { addToast('AI mediator not available.', 'error'); return; }

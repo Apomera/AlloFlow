@@ -837,7 +837,7 @@ window.SelHub = window.SelHub || {
               }
             }, t.label);
           }),
-          h('button', { 'aria-label': 'Toggle panel', onClick: function() { upd({ soundEnabled: !soundEnabled }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+          h('button', { 'aria-label': 'Toggle sound', onClick: function() { upd({ soundEnabled: !soundEnabled }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           h('button', { 'aria-label': 'Show badges', onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8', position: 'relative' } },
             '\uD83C\uDFC5',
             Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
@@ -1339,7 +1339,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Statement ' + (pwIdx + 1) + ' of ' + totalPW),
                 h('p', { style: { fontSize: 15, color: '#f1f5f9', fontWeight: 600, lineHeight: 1.6, marginBottom: 16, textAlign: 'center', minHeight: 50 } }, currentPW ? currentPW.text : ''),
                 !pwAnswers[currentPW ? currentPW.id : ''] ? h('div', { style: { display: 'flex', gap: 12, justifyContent: 'center' } },
-                  h('button', { 'aria-label': 'Answer statement',
+                  h('button', { 
                     onClick: function() {
                       if (!currentPW) return;
                       var newAns = Object.assign({}, pwAnswers);
@@ -1356,7 +1356,7 @@ window.SelHub = window.SelHub || {
                     },
                     style: { padding: '10px 24px', borderRadius: 10, border: '1px solid #22c55e44', background: '#22c55e11', color: '#22c55e', fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
                   }, '\u2191 Step Forward'),
-                  h('button', { 'aria-label': 'Answer statement',
+                  h('button', { 
                     onClick: function() {
                       if (!currentPW) return;
                       var newAns = Object.assign({}, pwAnswers);
@@ -1912,7 +1912,7 @@ window.SelHub = window.SelHub || {
                   placeholder: 'Ask a question about culture — please don’t share personal info like your name, school, or where you live.',
                   style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 12 }
                 }),
-                h('button', { 'aria-label': 'wait',
+                h('button', { 
                   onClick: function() {
                     if (!aiPrompt.trim()) return;
                     if (!callGemini) { addToast('AI coach not available.', 'error'); return; }

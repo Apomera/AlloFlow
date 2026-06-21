@@ -674,7 +674,7 @@ window.SelHub = window.SelHub || {
             }, t.label);
           }),
           // Sound toggle
-          h('button', { 'aria-label': 'Toggle panel',
+          h('button', { 'aria-label': 'Toggle sound',
             onClick: function() { upd('soundEnabled', !soundEnabled); },
             style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
