@@ -4038,7 +4038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
                 'Key debate: Did bats evolve flight first, then echolocation? Or echolocation first, then flight? The Onychonycteris fossil suggests flight came first \u2014 but the question remains open.')
             )
-          ),
+          ,
 
           // SPECIES GALLERY
           bioSection === 'species' && h('div', { className: 'space-y-3' },
@@ -4223,7 +4223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
                 'A single bat box can house 50-200 bats. Those bats will eat millions of insects each summer, naturally reducing mosquitoes and crop pests in your area. Science + engineering + conservation = win!')
             )
-          );
+          ));
       }
 
       // Anatomy canvas drawing
