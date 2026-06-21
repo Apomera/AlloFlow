@@ -1776,6 +1776,65 @@ function PdfAuditView(props) {
     window.addEventListener('message', onMsg);
     handle.ready.then(() => { try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) { cleanup(); reject(e); } });
   });
+  // ── Embedded veraPDF, popup-free when possible (2026-06-21, Aaron's progressive-enhancement idea) ──
+  // PREFER a hidden INLINE iframe over the popup: it validates the tagged bytes in-app with no separate
+  // window (no "what is this?" popup, no alt-tab). The validator page already postMessages 'verapdf-ready'
+  // to window.parent and accepts 'verapdf-validate' from any source, so it runs headless as an iframe.
+  // If the embed is blocked (e.g. a Canvas CSP frame-src restriction) it simply never readies → we fall
+  // back to the popup (warmVeraPdfWindow), today's behavior. The verdict is cached in localStorage so we
+  // don't re-probe every run. A cross-origin iframe runs in its own process (site isolation), so CheerpJ
+  // boots there without blocking AlloFlow's main thread — same isolation the popup gave us, embedded.
+  const _veraIframeRef = useRef(null); // reused warm iframe handle: { frame, warmed, ready:Promise<bool>, isReady() }
+  const _veraEmbedPref = () => { try { return localStorage.getItem('alloflow_verapdf_embed'); } catch (_) { return null; } }; // 'ok' | 'blocked' | null
+  const _setVeraEmbedPref = (v) => { try { localStorage.setItem('alloflow_verapdf_embed', v); } catch (_) {} };
+  const warmVeraPdfIframe = () => {
+    if (_veraIframeRef.current) return _veraIframeRef.current; // reuse a warm iframe across validations
+    let frame = null;
+    try {
+      frame = document.createElement('iframe');
+      frame.src = VERAPDF_VALIDATOR_URL;
+      frame.title = 'AlloFlow PDF/UA validator (background)';
+      frame.setAttribute('aria-hidden', 'true');
+      frame.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;border:0;visibility:hidden;';
+      document.body.appendChild(frame);
+    } catch (_) { return null; }
+    const handle = { frame, warmed: false };
+    handle.ready = new Promise((resolve) => {
+      const onReady = (ev) => {
+        if (frame.contentWindow && ev.source === frame.contentWindow && ev.data && ev.data.type === 'verapdf-ready') {
+          handle.warmed = true; window.removeEventListener('message', onReady); _setVeraEmbedPref('ok'); resolve(true);
+        }
+      };
+      window.addEventListener('message', onReady);
+      // No 'verapdf-ready' within 35s → assume the embed is blocked (CSP) or boot failed; mark blocked so
+      // the gesture pre-opens the popup next time. (~14s normal boot, generous margin for a slow CDN.)
+      setTimeout(() => { window.removeEventListener('message', onReady); if (!handle.warmed && _veraEmbedPref() !== 'ok') _setVeraEmbedPref('blocked'); resolve(handle.warmed); }, 35000);
+    });
+    handle.isReady = () => handle.warmed;
+    _veraIframeRef.current = handle;
+    return handle;
+  };
+  // Validate bytes on the warm iframe (no popup, no teardown — the iframe stays warm for reuse).
+  const validateOnIframe = (handle, bytes) => new Promise((resolve, reject) => {
+    if (!handle || !handle.frame || !handle.frame.contentWindow) { reject(new Error('validator iframe unavailable')); return; }
+    const cw = handle.frame.contentWindow;
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); reject(new Error('veraPDF timed out')); } }, 600000);
+    function cleanup() { clearTimeout(timer); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) { if (ev.source !== cw) return; const d = (ev && ev.data) || {}; if (d.type === 'verapdf-result') { done = true; cleanup(); if (d.error) reject(new Error(d.error)); else resolve(d.result); } }
+    window.addEventListener('message', onMsg);
+    handle.ready.then((ok) => { if (!ok) { cleanup(); reject(new Error('validator iframe not ready')); return; } try { cw.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) { cleanup(); reject(e); } });
+  });
+  // Pre-boot the embedded validator as soon as a PDF is loaded (not known-blocked) — so it's READY by
+  // Make-Accessible time and the gesture can choose iframe (popup-free) vs popup deterministically,
+  // instead of waiting for the ~14s boot mid-gesture. Skipped when the embed proved blocked before.
+  React.useEffect(() => {
+    try {
+      const _nm = (pendingPdfFile?.name || '').toLowerCase();
+      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nm);
+      if (pdfAutoVeraPdf && _isPdfIn && _veraEmbedPref() !== 'blocked' && !_veraIframeRef.current) warmVeraPdfIframe();
+    } catch (_) {}
+  }, [pendingPdfBase64, pendingPdfFile, pdfAutoVeraPdf]);
   // Human-readable tagged-PDF result lines, pinned in a dismissable panel.
   // Previously these were ~8 sequential toasts that auto-dismissed faster
   // than anyone could read them (user-testing finding 2026-06-10).
@@ -3212,11 +3271,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // click (a gesture → popup allowed), so it boots during the run and validates the tagged
                     // output at the end with no second popup. Default-on (localStorage opt-out), PDF inputs
                     // only. Popup-blocked / closed → silently falls back to the manual button below.
-                    let _veraWarm = null;
+                    let _veraWarm = null; let _veraIframe = null;
                     try {
                       const _nmIn = (pendingPdfFile?.name || '').toLowerCase();
                       const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
-                      if (pdfAutoVeraPdf && _isPdfIn) _veraWarm = warmVeraPdfWindow();
+                      if (pdfAutoVeraPdf && _isPdfIn) {
+                        _veraIframe = warmVeraPdfIframe(); // ensure the embedded validator exists (no gesture needed)
+                        // Prefer the inline iframe when it's a proven/ready transport → POPUP-FREE. Only open the
+                        // visible popup as a fallback: when the embed is known-blocked, or it hasn't readied yet on
+                        // a first run (so this run still validates). The popup MUST open in THIS gesture — its
+                        // transient activation can't survive the iframe's ~14s boot — hence the deterministic choice.
+                        const _embedViable = !!(_veraIframe && (_veraEmbedPref() === 'ok' || _veraIframe.isReady()));
+                        if (!_embedViable) _veraWarm = warmVeraPdfWindow();
+                      }
                     } catch (_) {}
                     // TRUE hands-free chain (2026-06-10 fix — user testing showed the
                     // previous handler stopped after the audit, identical to the manual
@@ -3291,7 +3358,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // the click. Generate the tagged PDF (pure compute) then validate it on the already-open,
                     // already-warm validator — no second popup. Best-effort: any failure leaves the manual
                     // "Independently validate with veraPDF" button available.
-                    if (_veraWarm && _veraWarm.win && !_veraWarm.win.closed) {
+                    // Pick the transport: the popup if one was opened (fallback path), otherwise the warm
+                    // inline iframe (popup-free path). Either validates the SAME tagged bytes with no extra UI.
+                    const _viaPopup = !!(_veraWarm && _veraWarm.win && !_veraWarm.win.closed);
+                    const _viaIframe = !_viaPopup && !!(_veraIframe && _veraIframe.isReady());
+                    if (_viaPopup || _viaIframe) {
                       let _validated = false;
                       try {
                         const _fr = pdfFixResultRef.current;
@@ -3308,7 +3379,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
                           if (_tbV) {
                             _lastTaggedBytesRef.current = _tbV;
-                            const _vrV = await validateOnWarmWindow(_veraWarm, _tbV); // closes the window on completion
+                            const _vrV = _viaIframe ? await validateOnIframe(_veraIframe, _tbV) : await validateOnWarmWindow(_veraWarm, _tbV); // popup path closes the window on completion; iframe stays warm
                             _validated = true;
                             setVeraPdfResult(_vrV);
                             setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: new Date().toISOString() } : { fileName: pendingPdfFile?.name || 'document.pdf', veraPdf: _vrV, generatedAt: new Date().toISOString() });
@@ -3316,7 +3387,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           }
                         }
                       } catch (_vErr) { try { warnLog && warnLog('[auto-veraPDF] ' + (_vErr && _vErr.message)); } catch (_) {} }
-                      finally { try { setVeraPdfBusy(false); } catch (_) {} if (!_validated) { try { if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close(); } catch (_) {} } }
+                      finally { try { setVeraPdfBusy(false); } catch (_) {} if (!_validated && _viaPopup) { try { if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close(); } catch (_) {} } }
                     } else if (_veraWarm && _veraWarm.win) { try { _veraWarm.win.close(); } catch (_) {} }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>

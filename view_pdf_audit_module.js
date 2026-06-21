@@ -1919,6 +1919,104 @@ function PdfAuditView(props) {
       }
     });
   });
+  const _veraIframeRef = useRef(null);
+  const _veraEmbedPref = () => {
+    try {
+      return localStorage.getItem("alloflow_verapdf_embed");
+    } catch (_) {
+      return null;
+    }
+  };
+  const _setVeraEmbedPref = (v) => {
+    try {
+      localStorage.setItem("alloflow_verapdf_embed", v);
+    } catch (_) {
+    }
+  };
+  const warmVeraPdfIframe = () => {
+    if (_veraIframeRef.current) return _veraIframeRef.current;
+    let frame = null;
+    try {
+      frame = document.createElement("iframe");
+      frame.src = VERAPDF_VALIDATOR_URL;
+      frame.title = "AlloFlow PDF/UA validator (background)";
+      frame.setAttribute("aria-hidden", "true");
+      frame.style.cssText = "position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;border:0;visibility:hidden;";
+      document.body.appendChild(frame);
+    } catch (_) {
+      return null;
+    }
+    const handle = { frame, warmed: false };
+    handle.ready = new Promise((resolve) => {
+      const onReady = (ev) => {
+        if (frame.contentWindow && ev.source === frame.contentWindow && ev.data && ev.data.type === "verapdf-ready") {
+          handle.warmed = true;
+          window.removeEventListener("message", onReady);
+          _setVeraEmbedPref("ok");
+          resolve(true);
+        }
+      };
+      window.addEventListener("message", onReady);
+      setTimeout(() => {
+        window.removeEventListener("message", onReady);
+        if (!handle.warmed && _veraEmbedPref() !== "ok") _setVeraEmbedPref("blocked");
+        resolve(handle.warmed);
+      }, 35e3);
+    });
+    handle.isReady = () => handle.warmed;
+    _veraIframeRef.current = handle;
+    return handle;
+  };
+  const validateOnIframe = (handle, bytes) => new Promise((resolve, reject) => {
+    if (!handle || !handle.frame || !handle.frame.contentWindow) {
+      reject(new Error("validator iframe unavailable"));
+      return;
+    }
+    const cw = handle.frame.contentWindow;
+    let done = false;
+    const timer = setTimeout(() => {
+      if (!done) {
+        cleanup();
+        reject(new Error("veraPDF timed out"));
+      }
+    }, 6e5);
+    function cleanup() {
+      clearTimeout(timer);
+      window.removeEventListener("message", onMsg);
+    }
+    function onMsg(ev) {
+      if (ev.source !== cw) return;
+      const d = ev && ev.data || {};
+      if (d.type === "verapdf-result") {
+        done = true;
+        cleanup();
+        if (d.error) reject(new Error(d.error));
+        else resolve(d.result);
+      }
+    }
+    window.addEventListener("message", onMsg);
+    handle.ready.then((ok) => {
+      if (!ok) {
+        cleanup();
+        reject(new Error("validator iframe not ready"));
+        return;
+      }
+      try {
+        cw.postMessage({ type: "verapdf-validate", bytes }, "*");
+      } catch (e) {
+        cleanup();
+        reject(e);
+      }
+    });
+  });
+  React.useEffect(() => {
+    try {
+      const _nm = (pendingPdfFile?.name || "").toLowerCase();
+      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nm);
+      if (pdfAutoVeraPdf && _isPdfIn && _veraEmbedPref() !== "blocked" && !_veraIframeRef.current) warmVeraPdfIframe();
+    } catch (_) {
+    }
+  }, [pendingPdfBase64, pendingPdfFile, pdfAutoVeraPdf]);
   const [lastTaggedReport, setLastTaggedReport] = useState(null);
   const [pptxThemeId, setPptxThemeId] = useState(() => {
     try {
@@ -3405,10 +3503,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         return;
       }
       let _veraWarm = null;
+      let _veraIframe = null;
       try {
         const _nmIn = (pendingPdfFile?.name || "").toLowerCase();
         const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
-        if (pdfAutoVeraPdf && _isPdfIn) _veraWarm = warmVeraPdfWindow();
+        if (pdfAutoVeraPdf && _isPdfIn) {
+          _veraIframe = warmVeraPdfIframe();
+          const _embedViable = !!(_veraIframe && (_veraEmbedPref() === "ok" || _veraIframe.isReady()));
+          if (!_embedViable) _veraWarm = warmVeraPdfWindow();
+        }
       } catch (_) {
       }
       setPdfFixMode("auto");
@@ -3467,7 +3570,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       if (pdfFixResultRef.current && pdfAutoSaveProject) {
         saveProjectToFile(true);
       }
-      if (_veraWarm && _veraWarm.win && !_veraWarm.win.closed) {
+      const _viaPopup = !!(_veraWarm && _veraWarm.win && !_veraWarm.win.closed);
+      const _viaIframe = !_viaPopup && !!(_veraIframe && _veraIframe.isReady());
+      if (_viaPopup || _viaIframe) {
         let _validated = false;
         try {
           const _fr = pdfFixResultRef.current;
@@ -3484,7 +3589,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
             const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
             if (_tbV) {
               _lastTaggedBytesRef.current = _tbV;
-              const _vrV = await validateOnWarmWindow(_veraWarm, _tbV);
+              const _vrV = _viaIframe ? await validateOnIframe(_veraIframe, _tbV) : await validateOnWarmWindow(_veraWarm, _tbV);
               _validated = true;
               setVeraPdfResult(_vrV);
               setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: (/* @__PURE__ */ new Date()).toISOString() } : { fileName: pendingPdfFile?.name || "document.pdf", veraPdf: _vrV, generatedAt: (/* @__PURE__ */ new Date()).toISOString() });
@@ -3501,7 +3606,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
             setVeraPdfBusy(false);
           } catch (_) {
           }
-          if (!_validated) {
+          if (!_validated && _viaPopup) {
             try {
               if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close();
             } catch (_) {

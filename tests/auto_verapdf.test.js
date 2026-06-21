@@ -35,8 +35,11 @@ describe('anti-drift: warm-at-gesture + validate-at-end is wired', () => {
     expect(viewSrc).toMatch(/const validateOnWarmWindow = \(handle, bytes\) =>/);
     expect(viewSrc).toMatch(/win = window\.open\(VERAPDF_VALIDATOR_URL/);
   });
-  it('the Make Accessible click warms the validator (gated on the pref + PDF input)', () => {
-    expect(viewSrc).toMatch(/if \(pdfAutoVeraPdf && _isPdfIn\) _veraWarm = warmVeraPdfWindow\(\)/);
+  it('the Make Accessible click warms the validator (gated on the pref + PDF input), iframe-first with popup fallback', () => {
+    // 2026-06-21: prefer the embedded iframe; only open the popup when the embed is not viable.
+    expect(viewSrc).toMatch(/if \(pdfAutoVeraPdf && _isPdfIn\) \{/);
+    expect(viewSrc).toMatch(/_veraIframe = warmVeraPdfIframe\(\)/);
+    expect(viewSrc).toMatch(/if \(!_embedViable\) _veraWarm = warmVeraPdfWindow\(\)/);
   });
   it('the end of the handler generates the tagged PDF + validates on the warm window', () => {
     expect(viewSrc).toMatch(/await createTaggedPdf\(_bytesV, _fr,/);

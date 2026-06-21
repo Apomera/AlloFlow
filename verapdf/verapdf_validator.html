@@ -52,6 +52,10 @@
 
   const $ = (id) => document.getElementById(id);
   const setStatus = (m) => { $('status').textContent = m; };
+  // Pipeline-driven (AlloFlow opened this as a popup/iframe and will postMessage bytes) vs standalone
+  // (a person opened the URL to check any PDF). When driven, the "Choose File" picker is irrelevant and
+  // confusing, so we hide it and explain the window is part of AlloFlow's automatic accessibility check.
+  const _driven = !!window.opener || (window.parent && window.parent !== window);
   let foundry, ua1, FileInputStream, ready = false, _lib = null;
 
   // tiny throwaway PDF for warm-up (correct byte offsets via UTF-8 length)
@@ -284,8 +288,14 @@
       cheerpOSAddStringFile('/str/warm.pdf', warmPdf());
       await validatePath('/str/warm.pdf');
       ready = true;
-      setStatus('✅ Validator ready. Pick a PDF (or it accepts bytes via postMessage).');
-      $('pick').disabled = false;
+      if (_driven) {
+        // Part of AlloFlow's pipeline: no manual file step — AlloFlow sends the remediated PDF's bytes.
+        setStatus('✅ Connected to AlloFlow — this window is part of the automatic accessibility check. It validates your remediated PDF and sends the result back to AlloFlow. You can leave it open.');
+        $('pick').style.display = 'none';
+      } else {
+        setStatus('✅ Validator ready. Pick a PDF (or it accepts bytes via postMessage).');
+        $('pick').disabled = false;
+      }
       announceReady();
     } catch (e) {
       setStatus('❌ Boot failed: ' + (e && (e.message || e)));
@@ -305,10 +315,14 @@
   window.addEventListener('message', async (ev) => {
     const d = ev.data || {};
     if (d.type === 'verapdf-validate' && d.bytes && ready) {
+      setStatus('⏳ Validating the PDF AlloFlow sent…');
       try {
         const r = await validateBytes(d.bytes);
+        render(r); // show the verdict in this window too (useful when it's the visible popup fallback)
+        setStatus(r.compliant ? '✅ PDF/UA-1: conformant — result sent back to AlloFlow.' : '❌ PDF/UA-1: ' + r.failedRules.length + ' rule(s) — result sent back to AlloFlow.');
         (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', result: r }, '*');
       } catch (e) {
+        setStatus('❌ Validation error — reported back to AlloFlow.');
         (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, '*');
       }
     }
