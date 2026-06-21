@@ -18798,7 +18798,7 @@ window.SelHub = window.SelHub || {
                   ),
                   h('button', { 'aria-label': 'Next Clue',
                     onClick: function() { upd({ bodyLangIdx: bodyLangIdx + 1, bodyLangRevealed: null }); },
-                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#b45309', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, 'Next Clue \u2192')
                 )
           );

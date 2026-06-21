@@ -248,7 +248,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           complete ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#bbf7d0', marginBottom: 8 } }, '📊 See your profile'),
             h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'See profile',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#22c55e', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ My profile')
+              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ My profile')
           ) : null,
 
           // Cross-link to VIA Strengths

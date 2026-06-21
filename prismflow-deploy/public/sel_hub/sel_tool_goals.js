@@ -1265,7 +1265,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 'bold' } }, goalOfTheWeek.text || '(unnamed)'),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
                     h('div', { style: { flex: 1, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', maxWidth: 120 } },
-                      h('div', { style: { width: (goalOfTheWeek.progress || 0) + '%', height: '100%', background: '#22c55e', borderRadius: 3 } })
+                      h('div', { style: { width: (goalOfTheWeek.progress || 0) + '%', height: '100%', background: '#15803d', borderRadius: 3 } })
                     ),
                     h('span', { style: { fontSize: 10, color: '#34d399', fontWeight: 'bold' } }, (goalOfTheWeek.progress || 0) + '%')
                   )
@@ -1415,7 +1415,7 @@ window.SelHub = window.SelHub || {
                       var ta = document.getElementById('celebration-journal');
                       var text = ta ? ta.value : '';
                       saveCompletionJournal(celebGoal.id, text);
-                    }, style: { padding: '8px 16px', borderRadius: 8, background: '#22c55e', color: '#fff', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Save Journal'),
+                    }, style: { padding: '8px 16px', borderRadius: 8, background: '#15803d', color: '#fff', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Save Journal'),
                     h('button', { onClick: function() { shareAchievement(celebGoal); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Share Achievement'),
                     h('button', { onClick: function() { dismissCelebration(); addGoal('', 'personal'); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', color: '#c4b5fd', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Set Next Goal'),
                     h('button', { 'aria-label': 'Dismiss', onClick: function() { dismissCelebration(); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(99,102,241,0.1)', color: '#94a3b8', fontSize: 11, cursor: 'pointer' } }, 'Dismiss')

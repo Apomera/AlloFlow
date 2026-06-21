@@ -19768,7 +19768,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 style: { padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } },
                 CAPACITIES.map(function(c) { return h('option', { key: c.value, value: c.value }, c.label); })),
               h('button', { onClick: addTap, 'aria-label': 'Add tap',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#a78bfa', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
               h('summary', { style: { cursor: 'pointer', fontSize: 11, color: '#94a3b8' } }, 'Need ideas? Tap a starter'),

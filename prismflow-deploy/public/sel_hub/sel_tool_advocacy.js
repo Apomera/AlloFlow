@@ -17413,7 +17413,7 @@ window.SelHub = window.SelHub || {
                 ? h('button', { onClick: prevPage, style: { padding: '8px 14px', borderRadius: 8, border: '1.5px solid #334155', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '← Previous')
                 : h('span', null),
               pageRated === pageItems.length && pageIdx < totalPages - 1 && h('button', { onClick: nextPage, style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#a5b4fc', color: '#0f172a', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Next →'),
-              pageIdx === totalPages - 1 && pageRated === pageItems.length && h('button', { onClick: nextPage, style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✓ See my profile')
+              pageIdx === totalPages - 1 && pageRated === pageItems.length && h('button', { onClick: nextPage, style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✓ See my profile')
             )
           )
         );
@@ -19589,7 +19589,7 @@ window.SelHub = window.SelHub || {
                   if (soundEnabled) sfxCorrect();
                   addToast('Script practiced! Great job finding your voice.', 'success');
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\u2705 Mark as Practiced')
             )
           ),
@@ -19843,7 +19843,7 @@ window.SelHub = window.SelHub || {
                 tryAwardBadge('letter_writer');
                 if (soundEnabled) sfxCorrect();
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '\uD83D\uDCCB Copy & Save')
           ),
           // Preview

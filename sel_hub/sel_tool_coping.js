@@ -26759,7 +26759,7 @@ window.SelHub = window.SelHub || {
                     upd('pmrPhase', 'release');
                     if (soundEnabled) sfxRelease();
                   },
-                  style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                  style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                 }, '\uD83C\uDF3F Release'),
                 pmrPhase === 'release' && h('button', { 'aria-label': 'Back',
                   onClick: function() {

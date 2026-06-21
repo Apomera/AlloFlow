@@ -288,7 +288,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             // Done buttons
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { onClick: function() { done(true); }, 'aria-label': 'Done. This helped.',
-                style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#22c55e', color: '#fff', fontWeight: 800, fontSize: 14 } }, '✓ Done. That helped.'),
+                style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 800, fontSize: 14 } }, '✓ Done. That helped.'),
               h('button', { onClick: function() { done(false); }, 'aria-label': 'Done. Try a different one.',
                 style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: '#fde68a', cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '⤴ Try a different one'),
               h('button', { onClick: exit, 'aria-label': 'Exit without logging',

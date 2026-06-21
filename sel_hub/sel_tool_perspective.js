@@ -2090,7 +2090,7 @@ window.SelHub = window.SelHub || {
                     logPractice('exercise', curBYJ.id);
                     if (newExDone >= 3) tryAwardBadge('empathy_builder');
                   },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#b45309', color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
                 }, '\uD83D\uDD13 Reveal the Full Story')
               )
             :
@@ -2373,7 +2373,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 12, fontWeight: 700, color: '#f59e0b' } }, Math.round((hfCorrect / hfTotal) * 100) + '%')
             ),
             h('div', { style: { height: 8, borderRadius: 4, background: '#334155', overflow: 'hidden' } },
-              h('div', { style: { height: '100%', borderRadius: 4, background: '#f59e0b', width: Math.round((hfCorrect / hfTotal) * 100) + '%', transition: 'width 0.3s' } })
+              h('div', { style: { height: '100%', borderRadius: 4, background: '#b45309', width: Math.round((hfCorrect / hfTotal) * 100) + '%', transition: 'width 0.3s' } })
             )
           ),
           // Recent practice log

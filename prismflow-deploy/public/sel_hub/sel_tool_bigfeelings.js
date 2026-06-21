@@ -19952,7 +19952,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
             // Patterns: triggers, body signs, cool-downs
             (d.myTriggers || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: '#f59e0b', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My triggers'),
+              h('div', { style: { background: '#b45309', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My triggers'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: '#0f172a', fontSize: 12.5, lineHeight: 1.8 } },
                 d.myTriggers.map(function(t, i) { return h('li', { key: i }, t); })
               )

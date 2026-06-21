@@ -1242,7 +1242,7 @@ window.SelHub = window.SelHub || {
                   callTTS ? h('button', { 'aria-label': 'Read Analysis Aloud', onClick: function() { speak(interviewResult); }, style: { marginBottom: 12, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer' } }, '\uD83D\uDD0A Read Analysis Aloud') : null,
                   h('div', { style: { display: 'flex', gap: 8 } },
                     h('button', { 'aria-label': 'Start Over', onClick: function() { upd({ interviewResult: null, interviewAnswers: {}, interviewStep: 0, interviewComplete: false }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Start Over'),
-                    h('button', { 'aria-label': 'Go Select Strengths', onClick: function() { upd({ tab: 'discover' }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2B50 Go Select Strengths')
+                    h('button', { 'aria-label': 'Go Select Strengths', onClick: function() { upd({ tab: 'discover' }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2B50 Go Select Strengths')
                   )
                 );
               }
@@ -1258,7 +1258,7 @@ window.SelHub = window.SelHub || {
                 ),
                 // Progress bar
                 h('div', { style: { width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', marginBottom: 16, overflow: 'hidden' } },
-                  h('div', { style: { width: Math.round((interviewStep / questions.length) * 100) + '%', height: '100%', background: '#f59e0b', borderRadius: 3, transition: 'width 0.3s' } })
+                  h('div', { style: { width: Math.round((interviewStep / questions.length) * 100) + '%', height: '100%', background: '#b45309', borderRadius: 3, transition: 'width 0.3s' } })
                 ),
                 // Question card
                 h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 16 } },
@@ -1276,7 +1276,7 @@ window.SelHub = window.SelHub || {
                   h('button', { 'aria-label': 'Previous', onClick: function() { if (interviewStep > 0) upd({ interviewStep: interviewStep - 1 }); }, disabled: interviewStep === 0, style: { padding: '8px 16px', borderRadius: 8, background: interviewStep > 0 ? 'rgba(255,255,255,0.05)' : 'transparent', color: interviewStep > 0 ? '#94a3b8' : '#334155', border: '1px solid ' + (interviewStep > 0 ? 'rgba(99,102,241,0.15)' : 'transparent'), fontSize: 12, cursor: interviewStep > 0 ? 'pointer' : 'default' } }, '\u2190 Previous'),
                   h('div', { style: { display: 'flex', gap: 8 } },
                     interviewStep < questions.length - 1 ?
-                      h('button', { 'aria-label': 'Next', onClick: function() { upd({ interviewStep: interviewStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
+                      h('button', { 'aria-label': 'Next', onClick: function() { upd({ interviewStep: interviewStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
                       h('button', { 'aria-label': 'Discover My Strengths', onClick: analyzeInterview, disabled: answeredCount < 3 || interviewAnalyzing, style: { padding: '8px 20px', borderRadius: 8, background: answeredCount >= 3 ? '#22c55e' : '#334155', color: answeredCount >= 3 ? '#0f172a' : '#94a3b8', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: answeredCount >= 3 ? 'pointer' : 'default' } }, interviewAnalyzing ? '\u23F3 Analyzing...' : '\uD83C\uDF1F Discover My Strengths')
                   )
                 ),
@@ -1332,7 +1332,7 @@ window.SelHub = window.SelHub || {
                     ),
                     h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, scenarioChoice.choice.feedback),
                     h('div', { style: { display: 'flex', gap: 8, marginTop: 12 } },
-                      h('button', { 'aria-label': 'Next Scenario', onClick: function() { upd({ scenarioChoice: null, scenarioIdx: (scenarioIdx + 1) % scenarios.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u27A1 Next Scenario'),
+                      h('button', { 'aria-label': 'Next Scenario', onClick: function() { upd({ scenarioChoice: null, scenarioIdx: (scenarioIdx + 1) % scenarios.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u27A1 Next Scenario'),
                       h('button', { 'aria-label': 'Try Again', onClick: function() { upd({ scenarioChoice: null }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Try Again')
                     )
                   )
@@ -1351,7 +1351,7 @@ window.SelHub = window.SelHub || {
                     'Read each situation and identify which strength is being used. Test how well you can spot strengths in action!'
                   ),
                   h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 16 } }, quizData.length + ' questions \u2022 Best score: ' + quizBest + '/' + quizData.length),
-                  h('button', { 'aria-label': 'Start Quiz', onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '12px 30px', borderRadius: 10, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAE Start Quiz')
+                  h('button', { 'aria-label': 'Start Quiz', onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '12px 30px', borderRadius: 10, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAE Start Quiz')
                 );
               }
               if (quizDone) {
@@ -1365,7 +1365,7 @@ window.SelHub = window.SelHub || {
                     'Good start! The more you practice, the better you\'ll get.'
                   ),
                   h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-                    h('button', { 'aria-label': 'Play Again', onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
+                    h('button', { 'aria-label': 'Play Again', onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
                     h('button', { 'aria-label': 'Back', onClick: function() { upd({ quizActive: false, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Back')
                   )
                 );
@@ -1394,7 +1394,7 @@ window.SelHub = window.SelHub || {
                     } else {
                       upd({ quizIdx: nextIdx, quizFeedback: null });
                     }
-                  }, style: { marginTop: 8, padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, quizIdx + 1 >= quizData.length ? '\uD83C\uDFC1 See Results' : '\u27A1 Next')
+                  }, style: { marginTop: 8, padding: '8px 16px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, quizIdx + 1 >= quizData.length ? '\uD83C\uDFC1 See Results' : '\u27A1 Next')
                 ) :
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                   q.options.map(function(opt) {
@@ -1498,7 +1498,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCD6'),
                   h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to write stories about using them.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
 
@@ -1515,7 +1515,7 @@ window.SelHub = window.SelHub || {
                   stories.length === 0 ?
                     h('div', { style: { textAlign: 'center', padding: 30, color: '#94a3b8' } },
                       h('p', { style: { fontSize: 13 } }, 'No stories yet. Write your first one!'),
-                      h('button', { 'aria-label': 'Write a Story', onClick: function() { upd({ storyViewMode: 'write' }); }, style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u270D\uFE0F Write a Story')
+                      h('button', { 'aria-label': 'Write a Story', onClick: function() { upd({ storyViewMode: 'write' }); }, style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u270D\uFE0F Write a Story')
                     ) :
                     stories.slice().reverse().map(function(story, si) {
                       return h('div', { key: 'story' + si, style: { padding: 14, marginBottom: 12, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' } },
@@ -1651,7 +1651,7 @@ window.SelHub = window.SelHub || {
                   h('button', { 'aria-label': 'Previous', onClick: function() { if (storyStep > 0) upd({ storyStep: storyStep - 1 }); }, disabled: storyStep === 0, style: { padding: '8px 16px', borderRadius: 8, background: storyStep > 0 ? 'rgba(255,255,255,0.05)' : 'transparent', color: storyStep > 0 ? '#94a3b8' : '#334155', border: '1px solid ' + (storyStep > 0 ? 'rgba(99,102,241,0.15)' : 'transparent'), fontSize: 12, cursor: storyStep > 0 ? 'pointer' : 'default' } }, '\u2190 Previous'),
                   h('div', { style: { display: 'flex', gap: 8 } },
                     storyStep < storyPrompts.length - 1 ?
-                      h('button', { 'aria-label': 'Next', onClick: function() { upd({ storyStep: storyStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
+                      h('button', { 'aria-label': 'Next', onClick: function() { upd({ storyStep: storyStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
                       h('div', { style: { display: 'flex', gap: 6 } },
                         callGemini ? h('button', { onClick: getAiFeedback, disabled: !allFilled || storyAiLoading, style: { padding: '8px 14px', borderRadius: 8, background: allFilled ? 'rgba(99,102,241,0.15)' : '#334155', color: allFilled ? '#a5b4fc' : '#94a3b8', border: '1px solid ' + (allFilled ? 'rgba(99,102,241,0.3)' : 'transparent'), fontSize: 12, cursor: allFilled ? 'pointer' : 'default' } }, storyAiLoading ? '\u23F3 Getting feedback...' : '\uD83E\uDD16 Get AI Feedback') : null,
                         h('button', { 'aria-label': 'Save Story', onClick: saveStory, disabled: !allFilled, style: { padding: '8px 20px', borderRadius: 8, background: allFilled ? '#22c55e' : '#334155', color: allFilled ? '#0f172a' : '#94a3b8', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: allFilled ? 'pointer' : 'default' } }, '\uD83D\uDCBE Save Story')
@@ -1685,7 +1685,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDD0D'),
                   h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then compare them to different roles.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
 
@@ -1833,7 +1833,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\u26A1'),
                   h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'Go to the Discover tab so we can give you daily challenges based on YOUR strengths.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
 
@@ -1883,7 +1883,7 @@ window.SelHub = window.SelHub || {
                   callTTS ? h('button', { onClick: function() { speak('Today\u0027s challenge: Use your ' + todayStrength.label + ' strength. ' + todayChallenge); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '\uD83D\uDD0A Read Aloud') : null,
                   todayDone ?
                     h('div', { style: { fontSize: 13, color: '#34d399', fontWeight: 'bold' } }, '\uD83C\uDF1F Great job! Come back tomorrow for a new challenge.') :
-                    h('button', { 'aria-label': 'I Did It! (+10 XP)', onClick: completeChallenge, style: { padding: '12px 30px', borderRadius: 10, background: '#22c55e', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 I Did It! (+10 XP)')
+                    h('button', { 'aria-label': 'I Did It! (+10 XP)', onClick: completeChallenge, style: { padding: '12px 30px', borderRadius: 10, background: '#15803d', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 I Did It! (+10 XP)')
                 ),
 
                 // Stats
@@ -2039,7 +2039,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCCB'),
                   h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'Select some strengths first!'),
                   h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths, then come back to plan how to use them.'),
-                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
+                  h('button', { 'aria-label': 'Go Discover', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Go Discover')
                 );
               }
               return h('div', null,
@@ -2133,7 +2133,7 @@ window.SelHub = window.SelHub || {
                       navigator.clipboard.writeText(text).then(function() {
                         if (addToast) addToast('\uD83D\uDCCB Question copied! Share it with someone you trust.', 'success');
                       }).catch(function() {});
-                    }, style: { padding: '6px 14px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Copy Question'),
+                    }, style: { padding: '6px 14px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Copy Question'),
                     h('button', { 'aria-label': 'Different Question', onClick: function() { upd({ askFriendIdx: (askFriendIdx + 1) % ASK_FRIEND_TEMPLATES.length }); }, style: { padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(99,102,241,0.15)', fontSize: 11, cursor: 'pointer' } }, '\u27A1 Different Question')
                   )
                 ),
@@ -2234,7 +2234,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
-                h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
+                h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               // Quick questions
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
@@ -2260,7 +2260,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\u2B50'),
                   h('p', { style: { fontSize: 14, color: '#94a3b8' } }, 'No strengths selected yet.'),
                   h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'Go to the Discover tab to identify your strengths!'),
-                  h('button', { 'aria-label': 'Start Discovering', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Start Discovering')
+                  h('button', { 'aria-label': 'Start Discovering', onClick: function() { upd({ tab: 'discover' }); }, style: { marginTop: 12, padding: '8px 20px', borderRadius: 8, background: '#b45309', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\u2B50 Start Discovering')
                 ) :
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 'bold', color: '#fbbf24', marginBottom: 12 } }, '\u2B50 Your Strengths Profile'),

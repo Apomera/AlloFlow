@@ -1894,7 +1894,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
               h('button', { 'aria-label': 'Convert Another Conflict',
                 onClick: function() { upd({ conflictInput: '', conflictResult: null }); if (soundEnabled) sfxClick(); },
-                style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: '#b45309', color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\u267B\uFE0F Convert Another Conflict')
             ),
 

@@ -19812,7 +19812,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); parkInput(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } }),
               h('button', { onClick: parkInput, 'aria-label': 'Park worry',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Park')
+                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#b45309', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Park')
             )
           ),
 
@@ -20158,7 +20158,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
             // My patterns
             (d.myTriggers || []).length > 0 ? h('div', { style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: '#f59e0b', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My common triggers'),
+              h('div', { style: { background: '#b45309', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My common triggers'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: '#0f172a', fontSize: 12.5, lineHeight: 1.8 } },
                 d.myTriggers.map(function(t, i) { return h('li', { key: i }, t); })
               )
@@ -20179,7 +20179,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             ) : null,
 
             (d.myWhatHelps || []).length > 0 ? h('div', { style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: '#22c55e', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🛟 What actually helps me'),
+              h('div', { style: { background: '#15803d', color: '#fff', padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🛟 What actually helps me'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: '#0f172a', fontSize: 12.5, lineHeight: 1.8 } },
                 d.myWhatHelps.map(function(t, i) { return h('li', { key: i }, t); })
               )

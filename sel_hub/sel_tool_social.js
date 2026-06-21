@@ -1382,7 +1382,7 @@ window.SelHub = window.SelHub || {
                   ),
                   h('button', { 'aria-label': 'Next Question',
                     onClick: function() { upd({ blQuizIdx: blQuizIdx + 1, blQuizAnswer: null, blQuizRevealed: false }); },
-                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#b45309', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, 'Next Question \u2192')
                 )
           );
@@ -1475,7 +1475,7 @@ window.SelHub = window.SelHub || {
             ),
             h('button', { 'aria-label': 'Next Scenario',
               onClick: function() { upd({ coopIdx: coopIdx + 1, coopChoice: null, coopRevealed: false }); },
-              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, 'Next Scenario \u2192')
           )
         );
@@ -1789,7 +1789,7 @@ window.SelHub = window.SelHub || {
                   ),
                   h('button', { 'aria-label': 'Next Question',
                     onClick: function() { upd({ blrQuizIdx: blrQuizIdx + 1, blrQuizAnswer: null, blrQuizShow: false }); },
-                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                    style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: '#b45309', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                   }, 'Next Question \u2192')
                 )
           );

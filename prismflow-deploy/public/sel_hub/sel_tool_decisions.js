@@ -974,7 +974,7 @@ window.SelHub = window.SelHub || {
                   upd({ dtIdx: dtIdx + 1, dtStep: 0, dtValues: [], dtChoice: null, dtReflection: '', dtAiResp: null });
                   ctx.announceToSR && ctx.announceToSR('Decision tree completed, next scenario loaded');
                 },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\u2705 Complete & Next')
             ),
             // AI Response

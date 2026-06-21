@@ -856,7 +856,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap', justifyContent: 'center' } },
               fStart > 0 && !fPaused
                 ? h('button', { onClick: pauseTimer, 'aria-label': 'Pause',
-                    style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '⏸ Pause')
+                    style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#b45309', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '⏸ Pause')
                 : h('button', { onClick: startTimer, 'aria-label': 'Start',
                     style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: CYAN, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, fPaused ? '▶ Resume' : '▶ Start'),
               h('button', { onClick: skipPhase, 'aria-label': 'Skip',

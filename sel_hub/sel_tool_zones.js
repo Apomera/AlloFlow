@@ -37022,7 +37022,7 @@ if (activeTab === 'checkin_flow') {
           style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
         h('button', { onClick: function() { upd({ cfStep: 2, cfPredicted: _predictZone() }); if (soundEnabled) sfxClick(); },
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: '#a78bfa', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'See your zone →')
       )
     ) : cfStep === 2 ? h('div', { style: { padding: 18, borderRadius: 12, background: ZONE_COLORS[cfPredicted] + '22', border: '3px solid ' + ZONE_COLORS[cfPredicted] } },

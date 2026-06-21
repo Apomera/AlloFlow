@@ -360,7 +360,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
               h('thead', null,
                 h('tr', null,
                   h('th', { style: { width: '15%' } }),
-                  h('th', { style: { padding: 8, background: '#22c55e', color: '#fff', fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'PROS'),
+                  h('th', { style: { padding: 8, background: '#15803d', color: '#fff', fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'PROS'),
                   h('th', { style: { padding: 8, background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'CONS')
                 )
               ),

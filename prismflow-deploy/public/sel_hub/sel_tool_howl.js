@@ -18571,7 +18571,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
             );
           }),
           h('button', { onClick: function() { goto('home'); if (announceToSR) announceToSR('Goals saved'); },
-            style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#f59e0b', color: '#fff', fontWeight: 800, fontSize: 13 } }, 'Save and return to home →')
+            style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#b45309', color: '#fff', fontWeight: 800, fontSize: 13 } }, 'Save and return to home →')
         );
       }
 
@@ -18669,7 +18669,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
             );
           }),
           h('button', { onClick: function() { goto('home'); if (addToast) addToast('Check-in saved', 'success'); if (announceToSR) announceToSR('Weekly check-in saved'); },
-            style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#a78bfa', color: '#fff', fontWeight: 800, fontSize: 13 } }, '✓ Save and return to home')
+            style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#7c3aed', color: '#fff', fontWeight: 800, fontSize: 13 } }, '✓ Save and return to home')
         );
       }
 
@@ -19587,9 +19587,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
               h('div', { style: { fontSize: 11, color: '#64748b' } }, 'Step ' + (step + 1) + ' of ' + steps.length),
               step < steps.length - 1
                 ? h('button', { onClick: function() { gotoStep(step + 1); },
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#a78bfa', color: '#fff', fontWeight: 700, fontSize: 12 } }, 'Next →')
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 12 } }, 'Next →')
                 : h('button', { onClick: function() { gotoStep(0); if (addToast) addToast('Conference rehearsal saved — visit Print to export', 'success'); },
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 12 } }, '✓ Save draft')
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 12 } }, '✓ Save draft')
             )
           ),
 
@@ -19950,7 +19950,7 @@ if (activeTab === 'protocol_run') {
             h('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, (p.origin || '') + ' · ' + (p.durationMin || '?') + ' min · ' + (p.groupSize || '?')),
             h('p', { style: { margin: '6px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, p.forWhat),
             h('button', { onClick: function() { upd({ pfId: p.id, pfPhase: 0, pfStart: Date.now(), pfRunning: false }); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: 6, border: 'none', background: '#a78bfa', color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '6px 14px', borderRadius: 6, border: 'none', background: '#7c3aed', color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
             }, '▶ Use this protocol')
           );
         })
@@ -20189,7 +20189,7 @@ if (activeTab === 'opener_random') {
         )
       ) : h('div', { style: { padding: 30, borderRadius: 12, background: '#0f172a', textAlign: 'center' } },
         h('button', { onClick: _pick,
-          style: { padding: '14px 28px', borderRadius: 8, border: 'none', background: '#a78bfa', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '14px 28px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
         }, '🎲 Pick an opener')
       ),
       orUsed.length > 0 ? h('div', { style: { marginTop: 14, padding: 10, borderRadius: 10, background: '#1e293b' } },

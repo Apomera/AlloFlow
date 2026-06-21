@@ -210,7 +210,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           activities.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 8 } }, '⭐ Log what you have done and how it went'),
             h('button', { onClick: function() { goto('log'); }, 'aria-label': 'Rate completed activities',
-              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#f59e0b', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ Log + rate')
+              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#b45309', color: '#fff', fontWeight: 800, fontSize: 13 } }, '→ Log + rate')
           ) : null,
 
           doneCount >= 3 ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },

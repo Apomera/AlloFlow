@@ -19058,7 +19058,7 @@
               : stIdx < SPOT_TELLS_ITEMS.length - 1
                 ? h('button', {
                     onClick: function() { upd('stIdx', stIdx + 1); },
-                    style: { padding: '8px 14px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                    style: { padding: '8px 14px', background: '#b45309', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                   }, 'Next scenario →')
                 : h('button', {
                     onClick: function() {

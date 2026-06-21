@@ -440,7 +440,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
                   onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addAction(id); } },
                   style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: 13 } }),
                 h('button', { onClick: function() { addAction(id); }, 'aria-label': 'Add action',
-                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Add')
+                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 12 } }, '+ Add')
               )
             );
           }),

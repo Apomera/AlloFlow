@@ -233,7 +233,7 @@ window.SelHub = window.SelHub || {
             return h('button', { key: t.id, role: 'tab', className: 'sel-tab' + (a ? ' sel-tab-active' : ''), 'aria-selected': a ? 'true' : 'false', onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
               style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#ddd6fe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + PURPLE + ', #6d28d9)' : explored ? 'rgba(124,58,237,0.06)' : 'transparent', color: a ? '#fff' : explored ? '#5b21b6' : '#94a3b8', fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: a ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
-              explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#a78bfa', marginLeft: '2px' } }) : null
+              explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#7c3aed', marginLeft: '2px' } }) : null
             );
           }),
           h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: PURPLE, fontWeight: 700, whiteSpace: 'nowrap', background: '#ede9fe', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),

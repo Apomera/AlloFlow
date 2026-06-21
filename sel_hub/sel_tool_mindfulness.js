@@ -22767,7 +22767,7 @@ window.SelHub = window.SelHub || {
                   if (newEntries.length >= 15) tryAwardBadge('gratitude_15');
                   logPractice('gratitude', 'journal');
                 },
-                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
               callGemini && gratDraft.trim().length > 10 && h('button', {
@@ -23289,7 +23289,7 @@ window.SelHub = window.SelHub || {
                       tryAwardBadge('zen_master');
                     }
                   },
-                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                  style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                 }, '\u2705 Mark Complete')
               ),
 
@@ -25105,7 +25105,7 @@ if (activeTab === 'beforeafter') {
         })
       ),
       h('button', { onClick: function() { upd({ baStage: 'review' }); if (soundEnabled) sfxComplete(); },
-        style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: '#15803d', color: '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, 'See the difference')
     ) : h('div', { style: { padding: 18, borderRadius: 12, background: '#042f2e', border: '2px solid #5eead4' } },
       h('h3', { style: { margin: 0, color: '#5eead4', fontSize: 22, fontWeight: 800, textAlign: 'center' } }, 'Your shift'),

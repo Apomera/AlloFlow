@@ -1791,7 +1791,7 @@
                   announceToSR('Resumed ' + continueTool.label);
                 },
                 'aria-label': 'Continue with ' + continueTool.label,
-                style: { padding: '10px 16px', minHeight: 44, borderRadius: 10, background: '#f59e0b', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+                style: { padding: '10px 16px', minHeight: 44, borderRadius: 10, background: '#b45309', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
               },
                 h('span', { 'aria-hidden': 'true' }, continueTool.icon),
                 'Continue \u2192'

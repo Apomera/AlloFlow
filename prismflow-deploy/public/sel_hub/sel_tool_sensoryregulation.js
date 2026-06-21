@@ -388,7 +388,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               )
             ),
             h('button', { onClick: addActivity, 'aria-label': 'Add to sensory diet',
-              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 13 } }, '+ Add')
+              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 13 } }, '+ Add')
           ),
 
           activities.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' } },

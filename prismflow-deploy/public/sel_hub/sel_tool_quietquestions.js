@@ -257,7 +257,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             ),
 
             h('button', { onClick: saveResponse, 'aria-label': 'Save response',
-              style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#a78bfa', color: '#fff', fontWeight: 700, fontSize: 13 } }, '+ Save'),
+              style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 13 } }, '+ Save'),
             h('span', { style: { marginLeft: 8, fontSize: 11, color: '#64748b' } }, 'Your responses are private to this device unless you choose to share.')
           ),
 
