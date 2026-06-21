@@ -6592,6 +6592,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         )}
                       </div>
+                      {/* PDF/UA-1 conformance verdict (2026-06-20) — the INDEPENDENT ISO 14289-1 check on the
+                          EXPORTED bytes, shown BESIDE the content score, never blended into it (different
+                          artifact: the actual file vs the HTML content; the content score's axe half passes
+                          "by construction" and can't see byte-level tagging — this is what catches that).
+                          Prefers the veraPDF verdict, falls back to the self-check. */}
+                      {(() => {
+                        if (veraPdfBusy) return (<div className="text-center mt-1.5"><span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700">⏳ {t('pdf_audit.pdfua_badge.validating') || 'Validating PDF/UA-1 (ISO 14289-1) with veraPDF…'}</span></div>);
+                        const _ltv = lastTaggedValidation;
+                        if (!_ltv) return null;
+                        const _v = _ltv.veraPdf;
+                        const _pev = _ltv.postExportValidator && _ltv.postExportValidator.summary;
+                        const _sc = _ltv.pdfUa1Checks && _ltv.pdfUa1Checks.summary;
+                        let label = null, fail = false, indep = false;
+                        if (_v && !_v.error) { indep = true; fail = _v.compliant === false; label = fail ? ((_v.failedRules ? _v.failedRules.length : 0) + ' rule(s) fail') : 'conformant'; }
+                        else if (_pev) { fail = (_pev.fail || 0) > 0; label = (_pev.pass || 0) + '/' + ((_pev.pass || 0) + (_pev.fail || 0)); }
+                        else if (_sc) { fail = (_sc.fail || 0) > 0; label = (_sc.conformancePct || 0) + '%'; }
+                        if (!label) return null;
+                        return (
+                          <div className="text-center mt-1.5">
+                            <span className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ' + (fail ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')}
+                              title={(t('pdf_audit.pdfua_badge.title') || 'PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF — the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).') + (indep ? ' Independently validated by veraPDF.' : ' AlloFlow self-check — run "Independently validate with veraPDF" for the authoritative verdict.')}>
+                              {(fail ? '❌' : '✅')} {t('pdf_audit.pdfua_badge.lead') || 'PDF/UA-1'}{indep ? '' : ' (self-check)'}: {label}
+                            </span>
+                          </div>
+                        );
+                      })()}
                       {/* Individual engine scores with /2 formula */}
                       <div className="text-center mt-1 text-[11px]">
                         <div className="inline-flex items-center gap-1 flex-wrap justify-center">
