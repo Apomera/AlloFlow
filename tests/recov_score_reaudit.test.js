@@ -1,10 +1,10 @@
 // recov-score-order (2026-06-15): the final score + axeViolations were blended BEFORE
 // auto-restore (word appendix) and deferred-image recovery (image section) mutated the
 // HTML, so the reported number described a doc the user wasn't downloading and the injected
-// landmarks/headings were never audited. The fix re-runs the deterministic engines + re-blends
-// (same consensus + (ai+det)/2) when a recovery mutation occurred. We test: the premise (the
-// recovery section + heading really get injected), the re-blend math (a changed post-restore
-// axe score yields a different final), and anti-drift on the gated block + ordering.
+// landmarks/headings were never audited. The fix re-runs the deterministic engines + re-scores
+// (same consensus + min(ai,det) — weakest-layer-governs since 2026-06-21) when a recovery mutation
+// occurred. We test: the premise (the recovery section + heading really get injected), the re-score
+// math (a changed post-restore axe score yields a different final), and anti-drift on the gated block.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -17,11 +17,11 @@ const arStart = src.indexOf('const applyWordRestoration = (html, missingList, so
 const arEnd = src.indexOf('\n  // ── Stage A: Gemini-targeted sentence re-insertion ──', arStart);
 const applyWordRestoration = new Function('warnLog', src.slice(arStart, arEnd) + '\n; return applyWordRestoration;')(() => {});
 
-// Mirror of the consensus + blend the re-audit uses.
+// Mirror of the consensus + headline the re-audit uses (weakest-layer-governs: min, not mean).
 const reBlend = (ai, axe, ea) => {
   const det = typeof axe === 'number' ? (typeof ea === 'number' ? Math.min(axe, ea) : axe) : null;
-  if (ai !== null && typeof axe === 'number') return Math.round((ai + det) / 2);
-  return null; // axe unavailable → not blendable
+  if (ai !== null && typeof axe === 'number') return Math.min(ai, det);
+  return null; // axe unavailable → not scorable against the automated layer
 };
 
 describe('recov-score-order — premise: recovery injects an unaudited landmark + heading', () => {
@@ -33,18 +33,18 @@ describe('recov-score-order — premise: recovery injects an unaudited landmark 
   });
 });
 
-describe('recov-score-order — re-blend changes the reported number when the doc changed', () => {
-  it('a lower post-restore axe score yields a lower final than the pre-restore blend', () => {
+describe('recov-score-order — re-score changes the reported number when the doc changed', () => {
+  it('a lower post-restore axe score yields a lower final than the pre-restore headline', () => {
     const ai = 80;
-    const preBlend = reBlend(ai, 90, null);   // before recovery: axe 90 → 85
-    const postBlend = reBlend(ai, 60, null);  // injected un-leveled <h2> trips axe heading-order → 60 → 70
-    expect(preBlend).toBe(85);
-    expect(postBlend).toBe(70);
+    const preBlend = reBlend(ai, 90, null);   // before recovery: min(80,90) → 80
+    const postBlend = reBlend(ai, 60, null);  // injected un-leveled <h2> trips axe heading-order → min(80,60) → 60
+    expect(preBlend).toBe(80);
+    expect(postBlend).toBe(60);
     expect(postBlend).not.toBe(preBlend);      // the shipped score now reflects the downloaded doc
   });
   it('uses the more-conservative of axe/EA (consensus) and degrades to AI-only when axe is gone', () => {
-    expect(reBlend(80, 70, 50)).toBe(65);      // min(70,50)=50 → (80+50)/2
-    expect(reBlend(80, null, null)).toBe(null); // axe unavailable → not blended (caller sets axeCoreFailed)
+    expect(reBlend(80, 70, 50)).toBe(50);      // det=min(70,50)=50 → min(80,50)=50 (the governing layer)
+    expect(reBlend(80, null, null)).toBe(null); // axe unavailable → not scored against automated (caller sets axeCoreFailed)
   });
 });
 
@@ -52,7 +52,7 @@ describe('recov-score-order — anti-drift on the gated re-audit block', () => {
   it('the gated, fail-soft re-audit/re-blend block is present', () => {
     expect(src).toContain('const _imageRecoveryInjected = accessibleHtml.indexOf(\'data-image-recovery="true"\') !== -1;');
     expect(src).toContain('if (_autoRestore || _imageRecoveryInjected) {');
-    expect(src).toContain('Re-blended score after recovery mutations');
+    expect(src).toContain('Re-scored after recovery mutations (weakest-layer)');
   });
   it('the triage vars it reassigns were promoted to let', () => {
     expect(src).toContain('let axeViolations = axeResults ? axeResults.totalViolations : 0;');

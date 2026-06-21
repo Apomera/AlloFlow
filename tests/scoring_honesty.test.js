@@ -10,28 +10,31 @@ import { resolve } from 'node:path';
 const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
-// ── Mirror of the chunked-merge occurrence-count derivation (kept in sync via anti-drift) ──
-const issueCount = (iss, pagesArr) => Math.max(iss.count || 1, pagesArr.length);
+// ── Mirror of the chunked-merge occurrence-count derivation (realPages ONLY; chunk-index fallbacks are
+//    display-only and never counted, so a boundary-straddling violation counts once) (2026-06-21) ──
+const issueCount = (iss, realPageCount) => Math.max(iss.count || 1, realPageCount || 1);
 // ── Mirror of the partial-audit floor ──
 const coverageTooLow = (totalChunks, failedChunks) => totalChunks > 0 && (failedChunks / totalChunks) > 0.25;
 
-describe('count-weighting fires from the page multiset (chunked path)', () => {
-  it('an issue on 3 pages with no AI count → count 3 (not 1)', () => {
-    expect(issueCount({}, [5, 12, 20])).toBe(3);
+describe('count-weighting fires from DISTINCT REAL pages (chunked path)', () => {
+  it('an issue on 3 distinct real pages with no AI count → count 3 (not 1)', () => {
+    expect(issueCount({}, 3)).toBe(3);
   });
-  it('keeps the larger of AI-count and page-count', () => {
-    expect(issueCount({ count: 2 }, [5])).toBe(2);
-    expect(issueCount({ count: 1 }, [3, 8, 9, 14])).toBe(4);
+  it('keeps the larger of AI-count and real-page-count', () => {
+    expect(issueCount({ count: 2 }, 1)).toBe(2);
+    expect(issueCount({ count: 1 }, 4)).toBe(4);
   });
-  it('a single-occurrence issue with no pages → 1', () => {
-    expect(issueCount({}, [])).toBe(1);
+  it('a single-occurrence issue with no real pages → 1', () => {
+    expect(issueCount({}, 0)).toBe(1);
+  });
+  it('REGRESSION (audit-floor-countweight-1): a boundary straddler seen in 2 adjacent chunks but with NO real page anchor counts ONCE, not 2', () => {
+    // Before the fix this was Math.max(count||1, pagesArr.length) where pagesArr = {chunkN, chunkN+1} → 2.
+    expect(issueCount({}, 0)).toBe(1);
   });
   it('a 20-page missing-alt now outweighs a 1-page one (the whole point)', () => {
-    const twenty = issueCount({}, Array.from({ length: 20 }, (_, i) => i + 1));
-    const one = issueCount({}, [4]);
-    expect(twenty).toBe(20);
-    expect(one).toBe(1);
-    expect(twenty).toBeGreaterThan(one);
+    expect(issueCount({}, 20)).toBe(20);
+    expect(issueCount({}, 1)).toBe(1);
+    expect(issueCount({}, 20)).toBeGreaterThan(issueCount({}, 1));
   });
 });
 
@@ -74,8 +77,11 @@ describe('anti-drift: the buyback UI is gone', () => {
 });
 
 describe('anti-drift: doc_pipeline ships the audit-honesty fixes', () => {
-  it('the chunked merge derives count from the page multiset', () => {
-    expect(pipeSrc).toMatch(/count: Math\.max\(iss\.count \|\| 1, pagesArr\.length\)/);
+  it('the chunked merge derives count from DISTINCT REAL pages only (not chunk-index fallbacks that double-count boundary straddlers)', () => {
+    // audit-floor-countweight-1 (2026-06-21): count from realPages.size, never pagesArr.length.
+    expect(pipeSrc).toMatch(/count: Math\.max\(iss\.count \|\| 1, realPageCount \|\| 1\)/);
+    expect(pipeSrc).toMatch(/const realPage = _extractPageNum\(issue\.location\)/);
+    expect(pipeSrc).not.toMatch(/count: Math\.max\(iss\.count \|\| 1, pagesArr\.length\)/);
   });
   it('the partial-audit floor nulls the score past the threshold', () => {
     expect(pipeSrc).toMatch(/_coverageTooLow = chunks\.length > 0 && \(_failedChunks \/ chunks\.length\) > 0\.25/);

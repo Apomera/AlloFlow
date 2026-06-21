@@ -15,7 +15,8 @@ const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx')
 const aiDegraded = (v) => !!(!v || v.score === null || v._scoreDegraded || v.synthesized);
 const finalScore = (v, det, axeAvailable) => {
   const ai = v ? v.score : null;
-  if (ai !== null && !aiDegraded(v) && axeAvailable) return { score: Math.round((ai + det) / 2), incomplete: false };
+  // weakest-layer-governs (2026-06-21): headline = min(content, automated), NOT a mean.
+  if (ai !== null && !aiDegraded(v) && axeAvailable) return { score: Math.min(ai, det), incomplete: false };
   if (aiDegraded(v) && axeAvailable) return { score: det, incomplete: true };
   return { score: ai, incomplete: false }; // axe unavailable → AI-only
 };
@@ -42,11 +43,11 @@ describe('score selection — show the reliable structural number when AI is deg
   it('a synthesized axe-only stand-in → deterministic headline + incomplete (no fake AI verify)', () => {
     expect(finalScore({ score: 88, synthesized: true }, 88, true)).toEqual({ score: 88, incomplete: true });
   });
-  it('a normal complete audit → real 50/50 blend, not flagged incomplete', () => {
-    expect(finalScore({ score: 80 }, 90, true)).toEqual({ score: 85, incomplete: false });
+  it('a normal complete audit → min(content, automated), not flagged incomplete', () => {
+    expect(finalScore({ score: 80 }, 90, true)).toEqual({ score: 80, incomplete: false }); // min(80,90)=80
   });
-  it('a partial-but-scored audit keeps the blend (the adversarial guard)', () => {
-    expect(finalScore({ score: 70, _partialAudit: true }, 90, true)).toEqual({ score: 80, incomplete: false });
+  it('a partial-but-scored audit keeps the governing-layer score (the adversarial guard)', () => {
+    expect(finalScore({ score: 70, _partialAudit: true }, 90, true)).toEqual({ score: 70, incomplete: false }); // min(70,90)=70
   });
 });
 

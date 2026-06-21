@@ -7076,11 +7076,16 @@ Return ONLY valid JSON:
         const passCount = (a.passes || []).length;
         const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
         const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back (was rawDed * (1 - passRatio*0.4))
-        // If Gemini's score diverges significantly from the rubric calculation, override it
-        if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
-          warnLog(`[PDF Audit] Auditor score ${a.score} overridden to ${calculatedScore} (${critCount}C/${seriousCount}S/${modCount}M/${minCount}m, ${passCount} passes)`);
-          a.score = calculatedScore;
+        // Transparency (2026-06-21): the auditor's score is ALWAYS the deterministic rubric calculation,
+        // never the model's self-reported number. The model was asked to do ~40-term arithmetic in-head
+        // (unreliable), and the prior ±12 "keep the model's number if it's close" gate meant the displayed
+        // score had two indistinguishable provenances. One provenance now → the score is always
+        // reconstructable from the displayed issue list. (_aiReportedScore preserves the model's value.)
+        if (typeof a.score === 'number' && a.score !== calculatedScore) {
+          a._aiReportedScore = a.score;
+          if (Math.abs(a.score - calculatedScore) > 12) warnLog(`[PDF Audit] Auditor self-score ${a.score} replaced by deduction-grounded ${calculatedScore} (${critCount}C/${seriousCount}S/${modCount}M/${minCount}m, ${passCount} passes)`);
         }
+        a.score = calculatedScore;
       });
 
       // ── Adaptive audit: check for score divergence or low confidence → add more audits ──
@@ -7104,7 +7109,8 @@ Return ONLY valid JSON:
           const passCount = (a.passes || []).length;
           const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
           const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back
-          if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) a.score = calculatedScore;
+          if (typeof a.score === 'number' && a.score !== calculatedScore) a._aiReportedScore = a.score;
+          a.score = calculatedScore; // always deduction-grounded — never the model's self-reported number (2026-06-21)
         });
         parsedAudits.push(...extraParsed);
         warnLog(`[PDF Audit] Adaptive: now ${parsedAudits.length} total audits (was ${initialScores.length})`);
@@ -7222,8 +7228,22 @@ Return ONLY valid JSON:
         return { ...issue, auditorAgreement: issueFrequency[k] || 1 };
       });
 
+      // Reproducible content score (2026-06-21): compute the headline AI score by running the SAME
+      // deduction rubric over the CONSOLIDATED issue list the UI actually displays (the cross-auditor
+      // union, deduped + count-weighted + floored at 0) — NOT by averaging each auditor's score on its
+      // own private list. This closes the gap the user flagged: previously the shown score (mean of
+      // per-auditor scores) could not be reconstructed from the shown issues (the deduped union). The
+      // per-auditor `scores`/SD/ICC are retained ONLY as the auditor-agreement band, not the headline.
+      const _mCritical = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.critical)));
+      const _mSerious  = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.serious || a.major)));
+      const _mModerate = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.moderate)));
+      const _mMinor    = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.minor)));
+      const _consolidatedDed = _alloBinDed(_mCritical, 15) + _alloBinDed(_mSerious, 10) + _alloBinDed(_mModerate, 5) + _alloBinDed(_mMinor, 2);
+      const _consolidatedContentScore = Math.max(0, 100 - Math.round(_consolidatedDed));
       const triangulated = {
-        score: avgScore,
+        score: _consolidatedContentScore, // headline = deduction on the displayed consolidated list (reproducible)
+        _aiPanelMeanScore: avgScore,       // mean of the N per-auditor scores — retained for the agreement band only
+        _consolidatedDeductions: Math.round(_consolidatedDed),
         scores,
         scoreSD,
         scoreRange,
@@ -7238,10 +7258,10 @@ Return ONLY valid JSON:
         summary: scoreRange > 25
           ? `Scores varied significantly (range: ${scoreRange}, SD: ${scoreSD}) across ${n} audits. ${parsedAudits[0].summary}`
           : `${parsedAudits[0].summary} (${n}-pass self-consistency, SD: ${scoreSD})`,
-        critical: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.critical))),
-        serious: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.serious || a.major))),
-        moderate: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.moderate))),
-        minor: _attachAgreement(mergeIssues(...parsedAudits.map(a => a.minor))),
+        critical: _mCritical,
+        serious: _mSerious,
+        moderate: _mModerate,
+        minor: _mMinor,
         issueFrequency,
         passes: [...new Set(parsedAudits.flatMap(a => a.passes || []))],
         pageCount: parsedAudits.find(a => a.pageCount)?.pageCount,
@@ -7314,12 +7334,16 @@ Return ONLY valid JSON:
           const _eaOk = baselineEa && typeof baselineEa.score === 'number';
           const deterministicBaseline = _eaOk ? Math.min(baselineAxe.score, baselineEa.score) : baselineAxe.score;
           warnLog(`[PDF Audit] Baseline deterministic: axe ${baselineAxe.score} (${baselineAxe.totalViolations} violations)${_eaOk ? ', EqualAccess ' + baselineEa.score + ' (' + baselineEa.failViolations + ' fails) — using the more conservative' : ' (EA unavailable)'}`);
-          // Blend initial score: 50/50 AI + deterministic engines
+          // Weakest-layer-governs (2026-06-21): the headline is the LOWER of the content score and the
+          // deterministic engines, NOT their mean. A document is only as accessible as its worst
+          // dimension; averaging let a by-construction-high automated score mask a failing content score
+          // (the "46" that meant neither 'terrible' nor 'fine'). min() also matches the auto-fix loop's
+          // own stop gate (axe==0 AND ai>=target). Both layer scores are shown SEPARATELY in the UI.
           const aiOnlyScore = triangulated.score;
-          const blendedInitial = Math.round((aiOnlyScore + deterministicBaseline) / 2);
-          // Mutate the triangulated object so the returned result carries the blended score
-          triangulated.score = blendedInitial;
+          const governingInitial = Math.min(aiOnlyScore, deterministicBaseline);
+          triangulated.score = governingInitial;
           triangulated._aiOnlyScore = aiOnlyScore;
+          triangulated._deterministicScore = deterministicBaseline;
           triangulated._baselineAxeScore = baselineAxe.score;
           triangulated._baselineAxeAudit = baselineAxe;
           triangulated._baselineSecondEngineAudit = baselineEa || null;
@@ -8455,12 +8479,12 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       log('Final audit failed (using loop result): ' + batchFinalErr.message);
     }
 
-    // Blend final score with axe-core (same 50/50 method as initial audit for consistent comparison)
+    // Headline = weakest layer (min), same method as the initial audit for a consistent comparison.
     let finalScore = curVerification ? curVerification.score : afterScore;
     if (finalScore !== null && curAxeResults && typeof curAxeResults.score === 'number') {
-      const blendedFinal = Math.round((finalScore + curAxeResults.score) / 2);
-      warnLog(`[Batch] Final blended score: AI ${finalScore} + axe ${curAxeResults.score} = ${blendedFinal}`);
-      finalScore = blendedFinal;
+      const governingFinal = Math.min(finalScore, curAxeResults.score);
+      warnLog(`[Batch] Final headline (weakest-layer): min(AI ${finalScore}, axe ${curAxeResults.score}) = ${governingFinal}`);
+      finalScore = governingFinal;
     }
     const needsExpertReview = (finalScore !== null && finalScore < 70) || (curAxeResults ? curAxeResults.critical.length : 0) > 0;
     const elapsed = Math.round((Date.now() - beforeStartTime) / 1000);
@@ -9054,18 +9078,22 @@ Return ONLY JSON:
           const _nh = _normLocatorText(htmlContent); // normalize the haystack ONCE, not per-issue (review: avoids O(n²))
           parsed.issues.forEach((iss) => { try { iss.locator = _resolveIssueLocator(iss.location, _nh, iss.pages); } catch (_) {} });
           try { const _ex = parsed.issues.filter((i) => i.locator && i.locator.kind === 'exact').length; warnLog('[audit] issue locators: ' + _ex + '/' + parsed.issues.length + ' resolved to an exact text anchor'); } catch (_) {}
-          const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0) * _alloIssueWeight(i && i.count), 0); // C: count-weighted
+          // A single chunk has no cross-chunk page multiset, so there is no occurrence count to weight by
+          // (audit-floor-countweight-2, 2026-06-21): deduct once per unique violation. (The chunked path
+          // below DOES count-weight from distinct real pages.) Dropped the always-×1 _alloIssueWeight call
+          // here so the two paths are honestly distinguished rather than implying parity.
+          const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
           // D: unverified model-asserted "passes" no longer buy back deductions (removed the up-to-40% pass-factor discount).
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions));
-          if (Math.abs((parsed.score || 0) - calculatedScore) > 12) {
-            // Transparency: don't silently overwrite the auditor's number. Log the
-            // divergence and keep the AI-reported score so the report can disclose
-            // that the displayed score is the stricter deduction-grounded calculation.
-            try { warnLog('[audit] AI-reported score ' + parsed.score + ' diverged >12 pts from the deduction-calculated ' + calculatedScore + ' — using the calculated (deduction-grounded) score.'); } catch(_) {}
+          // Transparency (2026-06-21): the displayed score is ALWAYS the deduction-grounded calculation,
+          // never the model's self-reported number (one provenance → reconstructable from the issue list).
+          // _aiReportedScore preserves the model's value for disclosure; dropped the prior ±12 keep-it-if-close gate.
+          if (typeof parsed.score === 'number' && parsed.score !== calculatedScore) {
+            if (Math.abs(parsed.score - calculatedScore) > 12) { try { warnLog('[audit] AI self-score ' + parsed.score + ' replaced by deduction-grounded ' + calculatedScore + '.'); } catch(_) {} }
             parsed._aiReportedScore = parsed.score;
             parsed._scoreAdjusted = true;
-            parsed.score = calculatedScore;
           }
+          parsed.score = calculatedScore;
         }
         // vision-parseaudit-nan: never let a non-finite score escape this branch. With issues[]
         // we can deduction-ground it; without issues[] the audit is degraded → null ("AI score
@@ -9158,12 +9186,18 @@ HTML section ${chunkNum}/${chunks.length}:
           const categoryWords = (issue.issue || '').toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(w => w.length > 3).slice(0, 3).sort().join('_');
           const key = wcag ? `${wcag}_${severity}` : `${severity}_${categoryWords}`;
           if (!seenIssues.has(key)) {
-            seenIssues.set(key, { ...issue, pages: new Set() });
+            seenIssues.set(key, { ...issue, pages: new Set(), realPages: new Set() });
           }
-          // Add this occurrence's page number to the issue's page set.
+          // Add this occurrence's page number to the issue's page set. CRITICAL (audit-floor-countweight-1,
+          // 2026-06-21): track REAL page anchors separately from chunk-index fallbacks. Chunks overlap by
+          // 800 chars, so a single violation straddling a 16KB boundary is re-reported by both adjacent
+          // chunks → pages {n, n+1}. Counting that as 2 occurrences doubled its deduction for ONE real
+          // violation (and made the same doc score differently depending only on where boundaries fell).
+          // Only DISTINCT REAL page numbers feed the occurrence count; chunk-index pages are display-only.
           const stored = seenIssues.get(key);
-          const pageNum = _extractPageNum(issue.location) || (chunkResults.length > 1 ? chunkIdx + 1 : null);
-          if (pageNum != null) stored.pages.add(pageNum);
+          const realPage = _extractPageNum(issue.location);
+          if (realPage != null) { stored.pages.add(realPage); stored.realPages.add(realPage); }
+          else if (chunkResults.length > 1) { stored.pages.add(chunkIdx + 1); }
         });
         // Deduplicate passes by normalized keywords — Gemini phrases the same pass
         // differently per chunk ("No images found" vs "No images without alt text detected")
@@ -9182,11 +9216,14 @@ HTML section ${chunkNum}/${chunks.length}:
       // consumers (the report renderer) get serializable data.
       let mergedIssues = [...seenIssues.values()].map(iss => {
         const pagesArr = iss.pages ? [...iss.pages].sort((a, b) => a - b) : [];
-        // Count-weighting fix (2026-06-20): derive the issue's occurrence count from the page
-        // multiset accumulated across chunks. Without this, _alloIssueWeight(i.count) below got the
-        // AI's per-chunk self-reported count (usually 1 / absent), so in the chunked path — every
-        // multi-page report — a doc with ONE missing-alt and a doc with TWENTY deducted identically.
-        return { ...iss, pages: pagesArr, count: Math.max(iss.count || 1, pagesArr.length) };
+        // Count-weighting (2026-06-20, corrected 2026-06-21): derive the occurrence count from the count
+        // of DISTINCT REAL page anchors only (realPages) — never from chunk-index fallbacks, which
+        // double-count a boundary-straddling violation seen by two overlapping chunks. Falls back to the
+        // AI's self-reported count, then 1. So a doc with ONE missing-alt and one with TWENTY (on distinct
+        // pages) still deduct differently, but a single violation near a chunk seam counts once.
+        const realPageCount = iss.realPages ? iss.realPages.size : 0;
+        const { realPages, ...rest } = iss;
+        return { ...rest, pages: pagesArr, count: Math.max(iss.count || 1, realPageCount || 1) };
       });
 
       // ── Structural pass detection on full document ──
@@ -15610,17 +15647,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let _aiVerificationIncomplete = false;
       const _aiDegraded = !verification || verification.score === null || verification._scoreDegraded || verification.synthesized;
       if (finalAfterScore !== null && !_aiDegraded && axeScoreAvailable) {
-        // Blend the AI rubric with the deterministic WCAG engines, 50/50.
-        // (REMOVED 2026-06-20 — the 75/25 deterministic upweight that fired when the doc was axe-CLEAN +
-        // deterministic>=90. Its premise — "a document that PASSES the real checkers shouldn't be dragged
-        // below target by rubric noise" — was FALSE here: axeResults is axe run on the HTML RECONSTRUCTION
-        // (_stripChromeForAudit(accessibleHtml) above), which passes by construction — NOT on the real
-        // exported PDF bytes. So the upweight inflated the CONTENT score on a by-construction signal. The
-        // honest real-bytes conformance verdict is independent veraPDF, surfaced SEPARATELY; the content
-        // score stays an even 50/50 AI + deterministic and is no longer lifted by reconstruction-axe.)
-        const blendedFinal = Math.round((finalAfterScore + deterministicScore) / 2);
-        warnLog(`[PDF Fix] Final blended score (50/50): AI ${finalAfterScore} + deterministic ${deterministicScore} (axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}) = ${blendedFinal}`);
-        finalAfterScore = blendedFinal;
+        // Weakest-layer-governs (2026-06-21): the headline is min(AI rubric, deterministic engines), NOT
+        // their mean. Averaging two scores that measure different things (the AI reads content/semantics;
+        // axe runs on the HTML RECONSTRUCTION — _stripChromeForAudit(accessibleHtml) — which passes "by
+        // construction" and is blind to byte-level tagging) produced a midpoint that described neither and
+        // let the inflated automated half mask a failing content half. min() reports the governing (worst)
+        // layer, matches the auto-fix loop's stop gate (axe==0 AND ai>=target), and both layer scores are
+        // shown SEPARATELY in the UI. The honest real-bytes PDF/UA verdict is independent veraPDF, surfaced
+        // as its own badge. (Earlier 2026-06-20 note: the 75/25 deterministic upweight was removed for the
+        // same by-construction reason before the switch to min.)
+        const governingFinal = Math.min(finalAfterScore, deterministicScore);
+        warnLog(`[PDF Fix] Final headline (weakest-layer): min(AI ${finalAfterScore}, deterministic ${deterministicScore} [axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}]) = ${governingFinal}`);
+        finalAfterScore = governingFinal;
       } else if (_aiDegraded && axeScoreAvailable) {
         // AI semantic audit incomplete but the deterministic engines DID run → headline = the reliable
         // structural score (min of axe/EA), flagged so the UI labels it honestly (not a blend, not green).
@@ -15976,9 +16014,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (_reAi !== null && !_reAiDegraded && _reAxeOk) {
             axeCoreFailed = false;
             _aiVerificationIncomplete = false;
-            const _reBlended = Math.round((_reAi + _reDet) / 2);
-            warnLog('[PDF Fix] Re-blended score after recovery mutations: AI ' + _reAi + ' + deterministic ' + _reDet + ' = ' + _reBlended + ' (was ' + finalAfterScore + ')');
-            finalAfterScore = _reBlended;
+            const _reGoverning = Math.min(_reAi, _reDet); // weakest-layer-governs (2026-06-21; was mean)
+            warnLog('[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI ' + _reAi + ', deterministic ' + _reDet + ') = ' + _reGoverning + ' (was ' + finalAfterScore + ')');
+            finalAfterScore = _reGoverning;
           } else if (_reAiDegraded && _reAxeOk) {
             // AI incomplete post-recovery but deterministic re-audit is good → reliable structural score, labeled.
             axeCoreFailed = false;
@@ -15990,6 +16028,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             // mark axe as failed so the triage/_scoreIsBlended stay consistent. (#11)
             axeCoreFailed = true;
             if (_reAi !== null) finalAfterScore = _reAi;
+            // The score is now AI-only, NOT deterministic-only — clear the incomplete flag so the headline
+            // renders the "AI rubric only (automated checks unavailable)" label, not the inverted
+            // "structural-only; AI incomplete" one. (score-blend-degraded-2, 2026-06-21)
+            _aiVerificationIncomplete = false;
             warnLog('[PDF Fix] WARNING: axe-core unavailable on re-audit after recovery — final score is AI-only (' + _reAi + ').');
           }
           // Recompute triage values that feed _result so the banner matches the shipped doc.
@@ -16062,7 +16104,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         _axeCoreFailed: axeCoreFailed,
         _scoreIsBlended: !axeCoreFailed && !_aiVerificationIncomplete && finalAfterScore !== null,
         _aiVerificationIncomplete,
-        _scoreSource: _aiVerificationIncomplete ? 'deterministic-only' : (axeCoreFailed ? 'ai-only' : 'blended'),
+        _scoreSource: _aiVerificationIncomplete ? 'deterministic-only' : (axeCoreFailed ? 'content-only' : 'min'), // headline = min(content, automated) — the governing layer (2026-06-21)
         autoFixPasses,
         needsExpertReview,
         expertReviewReason, // 'accessibility' | 'content-fidelity' | 'both' | null — drives banner copy
@@ -16184,6 +16226,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // literal "doesn't work every time" trap: the teacher acts on the last/loudest message.
         addToast(`⚠️ Score ${beforeScore} → ${finalAfterScore}${fixNote}, but some source text may be missing — review the Diff before distributing.`, 'warning');
         try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {}
+      } else if (_aiVerificationIncomplete && finalAfterScore !== null) {
+        // The AI semantic audit was throttle-degraded → finalAfterScore is a deterministic structural-only
+        // number, not a verified content score, and beforeScore (a blend) vs finalAfterScore
+        // (deterministic-only) is not the same methodology, so the +gain is not meaningful. Mirror the
+        // neutral headline; no "remediated!" claim and no success chord. (score-blend-degraded-1, 2026-06-21)
+        addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}. Re-run for a full verified score.`, 'warning');
+        try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       } else if (finalAfterScore !== null && finalAfterScore >= 80) {
         addToast(`✅ PDF remediated! Score: ${beforeScore} → ${finalAfterScore} (+${scoreGain})${fixNote}`, 'success');
         try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}

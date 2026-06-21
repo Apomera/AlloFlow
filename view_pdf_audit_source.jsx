@@ -2664,7 +2664,7 @@ function PdfAuditView(props) {
                         ]);
                         const aiScore = aiResult?.score ?? null;
                         const axeScore = axeResult?.score ?? null;
-                        const blended = (aiScore !== null && axeScore !== null) ? Math.round((aiScore + axeScore) / 2) : (axeScore ?? aiScore ?? 0);
+                        const blended = (aiScore !== null && axeScore !== null) ? Math.min(aiScore, axeScore) : (axeScore ?? aiScore ?? 0); // weakest-layer-governs (was mean)
                         setPdfAuditResult({
                           score: blended,
                           _aiOnlyScore: aiScore,
@@ -2703,7 +2703,7 @@ function PdfAuditView(props) {
                           const autoFix = await autoFixAxeViolations(fixed, await runAxeAudit(fixed), pdfAutoFixPasses);
                           if (autoFix?.html) fixed = autoFix.html;
                           const [finalAi, finalAxe] = await Promise.all([auditOutputAccessibility(fixed), runAxeAudit(fixed)]);
-                          const finalScore = (finalAi && finalAxe) ? Math.round(((finalAi.score || 0) + (finalAxe.score || 0)) / 2) : (finalAi?.score || 0);
+                          const finalScore = (finalAi && finalAxe) ? Math.min((finalAi.score || 0), (finalAxe.score || 0)) : (finalAi?.score || 0); // weakest-layer-governs (was mean)
                           setPdfFixResult({
                             accessibleHtml: fixed,
                             beforeScore: 0,
@@ -4199,7 +4199,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Overview */}
                       <div className="bg-white rounded-lg border border-slate-400 p-2.5 space-y-1">
                         <div className="flex justify-between"><span>{t('pdf_audit.score.total_checks') || 'Total checks performed'}</span><span className="font-bold">{totalChecks}</span></div>
-                        <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
+                        <div className="flex justify-between text-slate-500"><span title={t('pdf_audit.score.passed_info_title') || 'Informational only — the score is deduction-based (100 minus issues), NOT this pass ratio. A check that "passed" was found present, not independently verified for quality.'}>{t('pdf_audit.score.passed_checks') || 'Checks passed (informational)'}</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>{t('pdf_audit.score.issues_found') || 'Issues found'}</span><span>{totalIssues}</span></div>
                         {totalIssues > 0 && (
                           <div className="text-[11px] text-slate-600 pl-2">{[critCount > 0 && `${critCount} critical`, seriousCount > 0 && `${seriousCount} serious`, modCount > 0 && `${modCount} moderate`, minCount > 0 && `${minCount} minor`].filter(Boolean).join(', ')}</div>
@@ -4214,16 +4214,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-[11px] font-black text-purple-600 uppercase">{t('pdf_audit.score.ai_rubric_label') || 'AI Rubric'}</span>
                           </div>
                           <div className="text-[11px] text-purple-800 space-y-0.5">
-                            <div>{t('pdf_audit.score.starts_at_100') || 'Starts at 100, deducts per issue type'}</div>
+                            {(() => {
+                              // This doc's ACTUAL arithmetic — reconstructable from the issue list shown below.
+                              const _ded = pdfAuditResult._consolidatedDeductions;
+                              if (typeof _ded !== 'number') return (<div>{t('pdf_audit.score.starts_at_100') || '100 minus a count-weighted deduction per issue (floored at 0).'}</div>);
+                              const _floored = _ded > 100;
+                              return (<div><span className="font-mono">100 {'−'} {_ded} = {aiScore}</span>{_floored ? (' ' + (t('pdf_audit.score.floored_note') || '(floored at 0 — deductions exceed 100; with this many critical issues the 0–100 scale can’t rank further)')) : ''}</div>);
+                            })()}
                             {totalIssues > 0 && <div>{totalIssues} issues found</div>}
                           </div>
                           <details data-help-key="pdf_audit_results_score_how_ai_details" className="mt-1 text-[11px]">
-                            <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">{t('pdf_audit.score.how_ai_scores') || 'How AI scores'}</summary>
+                            <summary className="cursor-pointer text-purple-500 hover:text-purple-800 font-bold">{t('pdf_audit.score.how_ai_scores') || 'How the content score works'}</summary>
                             <div className="mt-1 space-y-0.5 text-purple-700">
-                              <div>{t('pdf_audit.score.ai_critical_rule') || 'Critical: -15 each (lang, title, alt, landmark, contrast)'}</div>
-                              <div>{t('pdf_audit.score.ai_major_rule') || 'Major: -10 each (headings, tables, forms)'}</div>
-                              <div>{t('pdf_audit.score.ai_minor_rule') || 'Minor: -5 each (skip-nav, landmarks, links, lists)'}</div>
-                              <div>{t('pdf_audit.score.ai_passes_rule_v2') || 'Passes are listed but do NOT reduce the score (they are not independently verified)'}</div>
+                              <div>{t('pdf_audit.score.ai_weights_v3') || 'Critical −15 · Serious −10 · Moderate −5 · Minor −2, per unique issue'}</div>
+                              <div>{t('pdf_audit.score.ai_countweight_rule') || 'A repeated issue deducts more, scaled by how many places it occurs (×1 to ×3).'}</div>
+                              <div>{t('pdf_audit.score.ai_floor_rule') || 'Floored at 0. Computed from the issue list shown — no model-reported number is used.'}</div>
+                              <div>{t('pdf_audit.score.ai_passes_rule_v3') || 'Passes are informational; the score is 100 minus deductions, so passes don’t change it.'}</div>
                             </div>
                           </details>
                         </div>
@@ -4311,22 +4317,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                         )}
                       </div>
-                      {/* Blend formula with /2 */}
+                      {/* Headline = the lower (governing) layer — min, NEVER an average. The two layers
+                          measure different things (content semantics vs automated WCAG on the reconstruction),
+                          so averaging them produced a midpoint that described neither. (weakest-layer, 2026-06-21) */}
                       {isBlended && (
                         <div className="bg-white rounded-lg border-2 border-slate-300 p-2.5 text-center">
                           <div className="text-sm">
-                            <span className="text-slate-600">(</span>
-                            <span className="text-purple-800 font-black">{aiScore}</span>
-                            <span className="text-slate-600 mx-1">+</span>
-                            <span className="text-blue-800 font-black">{deterministicShown}</span>
-                            <span className="text-slate-600">)</span>
-                            <span className="text-slate-600 mx-1">/</span>
-                            <span className="text-slate-600 font-bold">2</span>
+                            <span className="text-slate-600 font-bold">{t('pdf_audit.score.lower_of') || 'lower of'}{' '}</span>
+                            <span className="text-purple-800 font-black" title={t('pdf_audit.score.content_short') || 'content'}>{aiScore}</span>
+                            <span className="text-slate-600 mx-1">{t('pdf_audit.score.and_word') || 'and'}</span>
+                            <span className="text-blue-800 font-black" title={t('pdf_audit.score.automated_short') || 'automated'}>{deterministicShown}</span>
                             <span className="text-slate-600 mx-2">=</span>
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
                             <span className="text-slate-600 text-xs">/100</span>
                           </div>
-                          <div className="text-[11px] text-slate-600 mt-0.5">{_eaIsLower ? ((t('pdf_audit.score.average_conservative') || 'AI averaged with the more conservative deterministic engine — Equal Access ') + deterministicShown + (t('pdf_audit.score.average_conservative2') || ' was lower than axe ') + axeScore + '.') : (t('pdf_audit.score.average_both') || 'Average of both engines (equal weight)')}</div>
+                          <div className="text-[11px] text-slate-600 mt-0.5">{(aiScore <= deterministicShown) ? (t('pdf_audit.score.governed_by_content') || 'Governed by the content layer — the AI rubric scored lower.') : (t('pdf_audit.score.governed_by_automated') || 'Governed by the automated layer — the WCAG checkers scored lower.')} {t('pdf_audit.score.no_average_note') || 'The two layers measure different things and are shown separately, never averaged.'}</div>
                         </div>
                       )}
                     </div>
@@ -6213,7 +6218,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               warnLog('[Re-fix] AI re-verification returned null for section ' + (chunk.index + 1) + '; not committing new HTML.');
                                               addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                             } else {
-                                              const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
+                                              const newScore = reAxe ? Math.min((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (was mean)
                                               setPdfFixResult(prev => ({
                                                 ...prev,
                                                 accessibleHtml: result.html,
@@ -6375,8 +6380,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
-                            <span className="text-xs font-black text-emerald-800 whitespace-nowrap" title={t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.'}>
-                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span> <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{t('pdf_audit.dashboard.content_tag') || 'content'}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
+                            <span className={'text-xs font-black whitespace-nowrap ' + (pdfFixResult._aiVerificationIncomplete ? 'text-slate-500' : 'text-emerald-800')} title={(pdfFixResult._aiVerificationIncomplete ? ((t('pdf_audit.dashboard.score_incomplete_title') || 'Structural/automated checks only — the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.') + ' ') : '') + (t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.')}>
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span> <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{pdfFixResult._aiVerificationIncomplete ? (t('pdf_audit.dashboard.content_structural_tag') || 'structural only') : (t('pdf_audit.dashboard.content_tag') || 'content')}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
                             </span>
                             {/* #1 score↔fidelity coupling — a high accessibility number must not read as
                                 "all good" when source content may not have carried over. */}
@@ -6547,11 +6552,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                       {/* Before → After Score */}
                       {(() => {
-                        // Score honesty (audit 2026-06-13): pdfFixResult.afterScore is
-                        // ALREADY the engine's canonical blend — round((AI + min(axe,EA))/2).
-                        // Display it DIRECTLY; re-blending it with axe inflated the headline
-                        // and the signed report. The breakdown chips show the TRUE operands
-                        // (AI-only = verificationAudit.score; deterministic = min(axe,EA)).
+                        // Score honesty (2026-06-13; weakest-layer 2026-06-21): pdfFixResult.afterScore is
+                        // ALREADY the engine's canonical headline — min(AI content, min(axe,EA) automated),
+                        // the LOWER (governing) layer, NOT an average. Display it DIRECTLY; the breakdown
+                        // below shows the TRUE operands separately (content = verificationAudit.score;
+                        // automated = min(axe,EA)) and names which layer governs — never an averaged number.
                         const afterAxe = pdfFixResult.axeAudit?.score ?? null;
                         const afterEa = pdfFixResult.secondEngineAudit?.score ?? null;
                         const afterDet = (afterAxe !== null && afterEa !== null) ? Math.min(afterAxe, afterEa) : (afterAxe ?? afterEa ?? null);
@@ -6562,7 +6567,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _beforeEa = pdfAuditResult?._baselineSecondEngineAudit?.score ?? null;
                         const initialAxeRaw = pdfAuditResult?._baselineAxeScore ?? pdfFixResult.beforeAxeScore ?? null;
                         const initialAxe = (initialAxeRaw !== null && _beforeEa !== null) ? Math.min(initialAxeRaw, _beforeEa) : initialAxeRaw;
-                        const blendedBefore = initialBlended ?? ((initialAi !== null && initialAxe !== null) ? Math.round((initialAxe + initialAi) / 2) : (initialAi ?? null));
+                        const blendedBefore = initialBlended ?? ((initialAi !== null && initialAxe !== null) ? Math.min(initialAxe, initialAi) : (initialAi ?? null));
                         const beforeDisplay = blendedBefore ?? '?';
                         const afterDisplay = blendedAfter !== null ? blendedAfter : '?';
                         const gain = (blendedAfter !== null && blendedBefore !== null) ? blendedAfter - blendedBefore : 0;
@@ -6618,22 +6623,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         );
                       })()}
-                      {/* Individual engine scores with /2 formula */}
+                      {/* Two layers, shown SEPARATELY. The headline above is the LOWER (governing) layer \u2014
+                          never an average. (weakest-layer-governs, 2026-06-21) */}
                       <div className="text-center mt-1 text-[11px]">
-                        <div className="inline-flex items-center gap-1 flex-wrap justify-center">
-                          <span className="text-slate-600">(</span>
-                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric (self-consistency)'}>AI: {initialAi ?? '?'}{'\u2192'}{_aiIncomplete ? (t('pdf_audit.score.ai_incomplete_short') || 'incomplete') : (afterAi ?? '?')}</span>
-                          {/* When the AI semantic audit was throttle-degraded/partial, the headline shows the
+                        <div className="inline-flex items-center gap-1.5 flex-wrap justify-center">
+                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.content_label') || 'Content & semantics \u2014 the AI rubric reading of meaning, alt-text quality and reading order. Reproducible: 100 minus the count-weighted deductions for the issues listed below.'}>{t('pdf_audit.score.content_short') || 'content'}: {initialAi ?? '?'}{'\u2192'}{_aiIncomplete ? (t('pdf_audit.score.ai_incomplete_short') || 'incomplete') : (afterAi ?? '?')}</span>
+                          {/* When the AI semantic audit was throttle-degraded, the headline falls back to the
                               DETERMINISTIC structural score (the reliable, completed engine) \u2014 labeled so it's
-                              never read as an AI-verified or blended number. Otherwise show the real blend, or
-                              the honest AI-only note when axe-core itself was unavailable. */}
+                              never read as an AI-verified result. Otherwise show both layers + name the governing one. */}
                           {_aiIncomplete ? (
-                          <span className="text-slate-600">) {'\u2014'} {t('pdf_audit.score.det_only_incomplete') || 'structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score'}</span>
+                          <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.det_only_incomplete') || 'structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score'}</span>
                           ) : pdfFixResult._scoreIsBlended ? (<>
-                          <span className="text-slate-600">+</span>
-                          <span className="text-blue-700 font-bold" title={t('pdf_audit.score.det_label') || 'Deterministic engines \u2014 the more conservative of axe-core / IBM Equal Access'}>checks: {initialAxe ?? '?'}{'\u2192'}{afterDet ?? '?'}</span>
-                          <span className="text-slate-600">) / 2</span>
-                          </>) : (<span className="text-slate-600">) {'\u2014'} AI rubric only (automated checks unavailable)</span>)}
+                          <span className="text-slate-400">{'\u00b7'}</span>
+                          <span className="text-blue-700 font-bold" title={t('pdf_audit.score.automated_label') || 'Automated WCAG \u2014 the stricter of axe-core / IBM Equal Access, run on the HTML reconstruction (passes by construction; blind to byte-level PDF tagging \u2014 see the PDF/UA badge).'}>{t('pdf_audit.score.automated_short') || 'automated'}: {initialAxe ?? '?'}{'\u2192'}{afterDet ?? '?'}</span>
+                          <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.governing_lead') || 'headline = the lower (governing) layer'}{(typeof afterAi === 'number' && typeof afterDet === 'number') ? ' (' + ((afterAi <= afterDet) ? (t('pdf_audit.score.content_short') || 'content') : (t('pdf_audit.score.automated_short') || 'automated')) + ')' : ''}</span>
+                          </>) : (<span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.ai_only_note') || 'AI content rubric only (automated checks unavailable)'}</span>)}
                         </div>
                       </div>
                       </>);
@@ -7036,7 +7040,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             warnLog('[Re-fix] AI re-verification returned null for section ' + (ci + 1) + '; not committing new HTML.');
                                             addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                           } else {
-                                            const newScore = reAxe ? Math.round(((reAi.score || 0) + (reAxe.score || 0)) / 2) : reAi.score;
+                                            const newScore = reAxe ? Math.min((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (was mean)
                                             setPdfFixResult(prev => ({
                                               ...prev,
                                               accessibleHtml: result.html,
@@ -9101,11 +9105,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const [_wv, _wa] = await Promise.all([auditOutputAccessibility(result.html), runAxeAudit(result.html)]);
                                 if (_wv && Number.isFinite(_wv.score)) {
                                   const _wdet = (_wa && typeof _wa.score === 'number') ? _wa.score : null;
-                                  const _wscore = (_wdet !== null) ? Math.round((_wv.score + _wdet) / 2) : _wv.score;
+                                  const _wscore = (_wdet !== null) ? Math.min(_wv.score, _wdet) : _wv.score; // weakest-layer-governs (was mean)
                                   setPdfFixResult(prev => prev ? ({ ...prev,
                                     verificationAudit: _wv,
                                     afterScore: _wscore,
                                     _scoreIsBlended: _wdet !== null,
+                                    // This re-audit produced a COMPLETE AI score — clear any stale throttle-degraded
+                                    // flag from the original run so the headline stops showing "AI incomplete" /
+                                    // structural-only on a now-fully-verified score. (VDH-1, 2026-06-21)
+                                    _aiVerificationIncomplete: false,
+                                    _scoreSource: _wdet !== null ? 'min' : 'content-only',
                                     axeAudit: _wa || prev.axeAudit,
                                     axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
                                     issueResolution: (typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
