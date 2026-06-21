@@ -7368,7 +7368,7 @@ Return ONLY valid JSON:
           if (!_skipUi) {
             setPdfAuditResult(prev => ({
               ...prev,
-              score: blendedInitial,
+              score: governingInitial,
               _aiOnlyScore: aiOnlyScore,
               _baselineAxeScore: baselineAxe.score,
               _baselineAxeAudit: baselineAxe,

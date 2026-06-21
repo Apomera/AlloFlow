@@ -109,6 +109,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "=== Step 0.6: render-path free-variable gate ==="
   node dev-tools/check_render_refs.cjs --quiet
   echo "  ✓ no render-path free vars in CDN modules."
+  node dev-tools/check_free_vars.cjs
+  echo "  ✓ no NEW undeclared identifiers in the big sources (the blendedInitial ReferenceError class)."
   node dev-tools/check_keyless_map.cjs --quiet
   echo "  ✓ no keyless list children in CDN modules / STEM tools."
   node dev-tools/check_stem_render.cjs --quiet
