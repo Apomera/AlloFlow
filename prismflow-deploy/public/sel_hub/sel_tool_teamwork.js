@@ -1838,7 +1838,7 @@ window.SelHub = window.SelHub || {
                 rows: 4,
                 style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }
               }),
-              h('button', { 'aria-label': 'professional coaching language for ages 15-18.',
+              h('button', { 
                 onClick: function() {
                   if (!conflictInput.trim()) { addToast('Describe the conflict first!', 'info'); return; }
                   if (conflictInput.trim().length < 15) { addToast('Please describe the conflict in more detail.', 'info'); return; }

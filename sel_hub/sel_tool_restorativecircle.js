@@ -2285,7 +2285,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'flex gap-2 bg-slate-100 rounded-xl p-1' },
             ['personA', 'personB'].map(function(person) {
               var personLabel = person === 'personA' ? '\uD83D\uDC64 Person A' : '\uD83D\uDC65 Person B';
-              return h('button', { 'aria-label': 'text-slate-600 hover:text-amber-600',
+              return h('button', { 
                 key: person,
                 onClick: function() { upd('empathyPerson', person); },
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
@@ -2509,7 +2509,7 @@ window.SelHub = window.SelHub || {
                         : 'Which approach do you think would be more effective and why?'
                     ),
                     h('div', { className: 'flex gap-2' },
-                      h('button', { 'aria-label': 'comparisonScenariosRated',
+                      h('button', { 
                         onClick: function() {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'punitive';
@@ -2520,7 +2520,7 @@ window.SelHub = window.SelHub || {
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
                           (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                       }, gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive'),
-                      h('button', { 'aria-label': 'compareReflections',
+                      h('button', { 
                         onClick: function() {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'restorative';

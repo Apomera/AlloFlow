@@ -1515,7 +1515,7 @@ window.SelHub = window.SelHub || {
               rows: 4,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),
-            h('button', { 'aria-label': 'thoughtful, nuanced language for ages 15-18',
+            h('button', { 
               onClick: function() {
                 if (!aiPrompt.trim()) { addToast('Describe a situation first!', 'info'); return; }
                 if (!callGemini) { addToast('AI coach is not available right now.', 'error'); return; }

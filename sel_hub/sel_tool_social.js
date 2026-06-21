@@ -1873,7 +1873,7 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: '#0ea5e9', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, '\u2705 Submit'),
 
-              callGemini && ldDraft.trim().length > 5 && h('button', { 'aria-label': 'summarize the key points and emotions',
+              callGemini && ldDraft.trim().length > 5 && h('button', { 
                 onClick: function() {
                   var lSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
                     ? window.SelHub.safeRehearseCheck(ldDraft, { toolId: 'social_listen', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
