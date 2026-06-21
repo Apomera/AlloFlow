@@ -1775,6 +1775,7 @@ function PdfAuditView(props) {
     if (_taggedModDateRef.current.result !== result) _taggedModDateRef.current = { result, date: new Date().toISOString() };
     return _taggedModDateRef.current.date;
   };
+  const [_issueSourceOpen, _setIssueSourceOpen] = useState({}); // per-issue "peek source" inline expand (keyed 'ai'+i / 'axe'+i)
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
@@ -2601,6 +2602,45 @@ function PdfAuditView(props) {
     try { setExpertCommandInput('Fix this WCAG ' + (issue.wcag || '') + ' issue' + where + ': ' + (issue.issue || '')); } catch (_) {}
     try { const wb = document.getElementById('allo-sec-workbench'); if (wb) { wb.open = true; wb.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } catch (_) {}
     addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
+  };
+  // Peek the SOURCE of an issue WITHOUT opening the preview. Recovers the real HTML element from the
+  // stored remediated accessibleHtml (parsed off-screen via DOMParser, found by the SAME anchor text the
+  // preview-jump uses), plus the pre-computed visible-text context (locator.before/snippet/after). For a
+  // document/page-level issue there is no precise spot — return the raw anchor + page numbers honestly,
+  // never a guessed location (the locator's fail-safe contract).
+  const _peekIssueSource = (issue) => {
+    const loc = issue && issue.locator;
+    const exact = !!(loc && loc.kind === 'exact' && loc.snippet);
+    const anchor = _issueAnchor(issue);
+    const out = {
+      exact,
+      before: exact ? String(loc.before || '') : '',
+      snippet: exact ? String(loc.snippet || '') : '',
+      after: exact ? String(loc.after || '') : '',
+      pages: (loc && Array.isArray(loc.pages) && loc.pages.length) ? loc.pages : null,
+      rawLocation: (issue && typeof issue.location === 'string') ? issue.location.trim() : '',
+      html: null,
+    };
+    if (anchor && anchor.length >= 8 && pdfFixResult && pdfFixResult.accessibleHtml && typeof DOMParser !== 'undefined') {
+      try {
+        const dom = new DOMParser().parseFromString(pdfFixResult.accessibleHtml, 'text/html');
+        const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+        const needle = norm(anchor);
+        if (needle && dom.body) {
+          let found = null;
+          const _INLINE = /^(STRONG|EM|B|I|U|SPAN|A|CODE|SMALL|SUB|SUP|MARK|ABBR|CITE|Q|S|DEL|INS|FONT|LABEL)$/;
+          const w = dom.createTreeWalker(dom.body, NodeFilter.SHOW_TEXT, null);
+          let node; while ((node = w.nextNode())) { if (norm(node.textContent).indexOf(needle) !== -1) {
+            let el = node.parentElement; // climb past inline wrappers to the block element so the source shows structural context (e.g. <p><strong>…</strong></p>, not just <strong>)
+            while (el && el.parentElement && el.parentElement !== dom.body && _INLINE.test(el.tagName)) el = el.parentElement;
+            found = el; break;
+          } }
+          if (!found) { const blocks = dom.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote,caption,a'); for (const b of blocks) { if (norm(b.textContent).indexOf(needle) !== -1) { found = b; break; } } }
+          if (found && found.outerHTML) out.html = found.outerHTML.length > 4000 ? (found.outerHTML.slice(0, 4000) + '…') : found.outerHTML;
+        }
+      } catch (_) {}
+    }
+    return out;
   };
   // Same actions for an axe violation — its nodeDetails[0].target is an EXACT CSS selector (more
   // precise than the AI text-anchor search), so Find resolves it directly against the live preview.
@@ -6916,15 +6956,48 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {(pdfFixResult.verificationAudit.issues || []).length > 0 && (
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Remaining Issues ({pdfFixResult.verificationAudit.issues.length})</div>
-                              {pdfFixResult.verificationAudit.issues.map((issue, i) => (
-                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-amber-800 mb-1">
-                                  <span className="flex-1 leading-snug">• {issue.issue} <span className="text-amber-500">({issue.wcag})</span></span>
-                                  {_issueAnchor(issue) && (
-                                    <button onClick={() => _jumpToIssue(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + issue.issue}>🔎 {t('pdf_audit.issue.find') || 'Find'}</button>
-                                  )}
-                                  <button onClick={() => _issueToWorkbench(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + issue.issue}>🛠</button>
+                              {pdfFixResult.verificationAudit.issues.map((issue, i) => {
+                                const _srcKey = 'ai' + i;
+                                const _srcOpen = !!_issueSourceOpen[_srcKey];
+                                return (
+                                <div key={i} className="mb-1">
+                                  <div className="flex items-start gap-1.5 text-[11px] text-amber-800">
+                                    <span className="flex-1 leading-snug">• {issue.issue} <span className="text-amber-500">({issue.wcag})</span></span>
+                                    <button onClick={() => _setIssueSourceOpen(prev => ({ ...prev, [_srcKey]: !prev[_srcKey] }))} className="shrink-0 px-1.5 py-0.5 rounded bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 font-bold" aria-expanded={_srcOpen} title={t('pdf_audit.issue.source_title') || 'Show the source of this issue inline — no need to open the preview'} aria-label={(t('pdf_audit.issue.source_aria') || 'Show source') + ': ' + issue.issue}>👁 {t('pdf_audit.issue.source') || 'Source'}</button>
+                                    {_issueAnchor(issue) && (
+                                      <button onClick={() => _jumpToIssue(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + issue.issue}>🔎 {t('pdf_audit.issue.find') || 'Find'}</button>
+                                    )}
+                                    <button onClick={() => _issueToWorkbench(issue)} className="shrink-0 px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + issue.issue}>🛠</button>
+                                  </div>
+                                  {_srcOpen && (() => {
+                                    const _src = _peekIssueSource(issue);
+                                    return (
+                                      <div className="mt-1 mb-1.5 rounded-lg border border-amber-200 bg-white p-2 text-[11px] text-slate-700" role="region" aria-label={(t('pdf_audit.issue.source_region') || 'Source of issue') + ': ' + issue.issue}>
+                                        {_src.html ? (
+                                          <>
+                                            <div className="font-bold text-slate-500 mb-1">{t('pdf_audit.issue.source_html') || 'Source (from the remediated document)'}{_src.pages ? ' · ' + (t('pdf_audit.issue.source_page') || 'page') + ' ' + _src.pages.join(', ') : ''}</div>
+                                            <pre className="whitespace-pre-wrap break-words bg-slate-50 border border-slate-200 rounded p-1.5 max-h-48 overflow-auto font-mono text-[10px] leading-snug">{_src.html}</pre>
+                                          </>
+                                        ) : _src.exact ? (
+                                          <>
+                                            <div className="font-bold text-slate-500 mb-1">{t('pdf_audit.issue.source_context') || 'Context (text around this issue)'}</div>
+                                            <div className="bg-slate-50 border border-slate-200 rounded p-1.5 leading-relaxed">
+                                              <span className="text-slate-400">…{_src.before} </span><mark className="bg-amber-200 text-amber-900 font-semibold px-0.5 rounded">{_src.snippet}</mark><span className="text-slate-400"> {_src.after}…</span>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <div className="text-slate-600">
+                                            {t('pdf_audit.issue.source_coarse') || 'This issue is document- or page-level — there is no single text spot to show.'}
+                                            {_src.pages ? ' ' + (t('pdf_audit.issue.source_page_cap') || 'Page') + ' ' + _src.pages.join(', ') + '.' : ''}
+                                            {_src.rawLocation && !/^document$/i.test(_src.rawLocation) ? <> <span className="text-slate-400">{t('pdf_audit.issue.source_anchor') || 'Auditor note'}:</span> <span className="italic">“{_src.rawLocation.slice(0, 140)}”</span></> : null}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                           {(pdfFixResult.verificationAudit.passes || []).length > 0 && (
