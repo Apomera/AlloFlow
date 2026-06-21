@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -12809,7 +12809,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // branch already does (above). Otherwise OCR chunking falls back to the rough base64-size
             // estimate (effectivePageCount @ ~12522), which can UNDERcount and silently drop trailing
             // pages from the Vision range. det.pageCount is authoritative even when the doc is scanned.
-            if (det.pageCount > 0) effectivePageCount = det.pageCount;
+            // ocr-fidelity-2 (2026-06-21): when a partial pageRange is active, NARROW to the selected
+            // pages (like the text branch above) — otherwise numChunks is sized to the WHOLE doc and the
+            // Vision loop fires dozens of out-of-range "pages 12 through 10" calls (wasted quota + the risk
+            // of hallucinated out-of-range pseudo-pages in fullText). det.pageCount remains the absolute
+            // clamp via _rangeMax (= _rangeStart + effectivePageCount - 1) below.
+            if (det.pageCount > 0) {
+              effectivePageCount = (_pageRange && _pageRange[1])
+                ? Math.max(1, Math.min(det.pageCount, _pageRange[1]) - Math.max(1, _pageRange[0] || 1) + 1)
+                : det.pageCount;
+            }
             warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
           }
         }
@@ -12931,6 +12940,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // + i*PAGES_PER_CHUNK, cap at _rangeEnd. When no range is set,
             // _rangeStart=1 so this reduces to the original 1-based chunking.
             const startPage = _rangeStart + i * PAGES_PER_CHUNK;
+            // ocr-fidelity-2 (2026-06-21): defensive guard — once the chunk start passes the range end,
+            // every further chunk is out of range (startPage only grows). Stop instead of emitting
+            // "pages 12 through 10" prompts (wasted Vision calls + out-of-range pseudo-pages).
+            if (startPage > _rangeEnd) break;
             const endPage = Math.min(_rangeStart + (i + 1) * PAGES_PER_CHUNK - 1, _rangeEnd);
             chunkPromises.push(
               callGeminiVision(
@@ -14849,13 +14862,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // ("first"→"first1st"). Guards: skip <3-char fragments, match only on Unicode letter/digit
           // boundaries (punctuation neighbors still allowed, so "word." is still fixable) so a
           // correction can never splice into the middle of a word, and skip whole-token match storms.
+          // The corrections are derived from PLAIN OCR text but applied to the HTML string, so the
+          // apply must be MARKUP-AWARE (ocr-fidelity-1, 2026-06-21): a `wrong` that is also an HTML/ARIA
+          // token ("main", "section", "title", "image") would otherwise rewrite <main>→<Main>,
+          // role="main"→role="Main" (broken landmark), attributes, or alt text. The replace regex matches
+          // a full tag OR the word, and the function replacer leaves tags untouched — only body TEXT
+          // between tags is corrected. The function replacer also inserts `r` LITERALLY, so a `right`
+          // value containing $&/$`/$n can't splice surrounding text (ocr-fidelity-3).
           const _grEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           for (const [, c] of allCorrections) {
             const w = c.wrong, r = c.right;
             if (!w || w.length < 3) continue;                              // too short to apply safely
-            let _grRe;
-            try { _grRe = new RegExp('(?<![\\p{L}\\p{N}])' + _grEsc(w) + '(?![\\p{L}\\p{N}])', 'gu'); }
-            catch (_) { continue; }
+            let _grRe, _grReSafe;
+            try {
+              _grRe = new RegExp('(?<![\\p{L}\\p{N}])' + _grEsc(w) + '(?![\\p{L}\\p{N}])', 'gu'); // word-only, for the storm-cap count
+              _grReSafe = new RegExp('<[^>]*>|(?<![\\p{L}\\p{N}])' + _grEsc(w) + '(?![\\p{L}\\p{N}])', 'gu'); // tag-OR-word, for the actual replace
+            } catch (_) { continue; }
             const _grHits = accessibleHtml.match(_grRe);
             if (!_grHits || _grHits.length === 0) continue;
             // A targeted OCR/spelling fix should hit only a handful of sites; a whole-token match
@@ -14863,8 +14885,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             // it document-wide. (Boundary-anchoring already stops the interior corruption like th→though;
             // legit morphological fixes such as word→words still apply since they match few times.)
             if (_grHits.length > 30) { warnLog('[Grammar] skipping over-broad correction "' + w + '" (' + _grHits.length + ' matches)'); continue; }
-            accessibleHtml = accessibleHtml.replace(_grRe, r);
-            fixCount++;
+            let _grApplied = 0;
+            accessibleHtml = accessibleHtml.replace(_grReSafe, function(m) {
+              if (m.charCodeAt(0) === 60) return m; // '<' → a full HTML tag: never rewrite inside markup
+              _grApplied++;
+              return r;                             // function replacer → `r` is inserted literally (no $ substitution)
+            });
+            if (_grApplied > 0) fixCount++;
           }
           if (fixCount > 0) {
             warnLog(`[PDF Fix] Grammar/spelling: fixed ${fixCount}/${allCorrections.size} issues across ${grammarChunks.length} sections`);
@@ -26648,11 +26675,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
