@@ -14,6 +14,14 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 // deductions — the old `pass factor` discount of up to 40% on UNVERIFIED self-praise was removed.)
 var _alloIssueWeight = function (count) { return Math.min(3, 1 + Math.log2(Math.max(1, Math.floor(Number(count) || 1)))); };
 var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, iss) { return s + base * _alloIssueWeight(iss && iss.count); }, 0); };
+// Weighted deduction sum: Σ (per-issue deduction × sub-linear count-weight). The SINGLE source for the
+// output-audit deduction so the single-chunk and chunked-merge paths can't drift apart by chunk boundary
+// (#5, 2026-06-21). Behavior-preserving: AI-returned issues carry no `count`, so weight = 1× (= "deduct
+// once per violation") on the single-chunk path; the chunked path's realPage-derived counts get exactly
+// the count-weighting they already had. Either way the FORMULA is now identical across paths.
+var _alloWeightedDeductions = function (issues) {
+  return (issues || []).reduce(function (s, i) { return s + ((i && i.deduction) || 0) * _alloIssueWeight(i && i.count); }, 0);
+};
 // ── Headline score: the SINGLE source of truth for "weakest-layer-governs" (2026-06-21) ──
 // The headline = the LOWER of the content (AI-rubric) and automated (axe/EqualAccess) layers — the
 // governing layer, never a mean. Null-safe to match blendAiAxe's existing contract: a layer that
@@ -9255,11 +9263,12 @@ Return ONLY JSON:
           const _nh = _normLocatorText(htmlContent); // normalize the haystack ONCE, not per-issue (review: avoids O(n²))
           parsed.issues.forEach((iss) => { try { iss.locator = _resolveIssueLocator(iss.location, _nh, iss.pages); } catch (_) {} });
           try { const _ex = parsed.issues.filter((i) => i.locator && i.locator.kind === 'exact').length; warnLog('[audit] issue locators: ' + _ex + '/' + parsed.issues.length + ' resolved to an exact text anchor'); } catch (_) {}
-          // A single chunk has no cross-chunk page multiset, so there is no occurrence count to weight by
-          // (audit-floor-countweight-2, 2026-06-21): deduct once per unique violation. (The chunked path
-          // below DOES count-weight from distinct real pages.) Dropped the always-×1 _alloIssueWeight call
-          // here so the two paths are honestly distinguished rather than implying parity.
-          const totalDeductions = parsed.issues.reduce((sum, i) => sum + (i.deduction || 0), 0);
+          // Output-audit deduction via the SINGLE shared fn (#5, 2026-06-21) — the SAME formula the chunked
+          // path below uses, so a doc can't score differently just because it landed in one chunk vs many.
+          // A single chunk has no cross-chunk page multiset, and AI-returned issues carry no `count`, so the
+          // weight is 1× here (= "deduct once per violation") — behavior-preserving; the chunked path's
+          // realPage-derived counts get the same weighting through the same function.
+          const totalDeductions = _alloWeightedDeductions(parsed.issues);
           // D: unverified model-asserted "passes" no longer buy back deductions (removed the up-to-40% pass-factor discount).
           const calculatedScore = Math.max(0, 100 - Math.round(totalDeductions));
           // Transparency (2026-06-21): the displayed score is ALWAYS the deduction-grounded calculation,
@@ -9434,7 +9443,7 @@ HTML section ${chunkNum}/${chunks.length}:
       try { const _ex = mergedIssues.filter((i) => i.locator && i.locator.kind === 'exact').length; warnLog('[Output Audit] issue locators: ' + _ex + '/' + mergedIssues.length + ' resolved to an exact text anchor'); } catch (_) {}
       const passCount = mergedPassList.length;
       // Score from merged deductions — each unique violation type counted ONCE
-      const rawDeductions = mergedIssues.reduce((sum, i) => sum + (i.deduction || 0) * _alloIssueWeight(i && i.count), 0); // C: count-weighted
+      const rawDeductions = _alloWeightedDeductions(mergedIssues); // #5: shared weighted-deduction fn (same formula as the single-chunk path)
       const issueCount = mergedIssues.length;
       const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0; // informational only
       const passFactor = 1; // D: unverified passes no longer buy back deductions (was 1 - passRatio*0.4)
@@ -26858,6 +26867,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
     ocrBlockLayout: _alloOcrBlockLayout, // exposed for tests: the scanned-OCR block-fallback line distribution
     structuralFoundations: _alloStructuralFoundations, // the view's foundations scorecard calls this (single source for the regex set)
+    weightedDeductions: _alloWeightedDeductions, // #5: single source for the output-audit deduction (single-chunk + chunked-merge)
     applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
     generateFullPackHTML: _wrap(generateFullPackHTML),
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
@@ -26878,5 +26888,6 @@ window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
 window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
+window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
