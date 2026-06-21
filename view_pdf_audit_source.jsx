@@ -16,6 +16,30 @@
 // no-op fallback keeps the modal working on hosts that predate the hook.
 const _alloUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
 
+// OCR language picker options (2026-06-20). Every code here is supported by the pipeline's
+// _toTesseractLang map, so picking one makes the scanned-PDF OCR use the right Tesseract model
+// (its word boxes drive the searchable text layer; 'eng' mis-segments non-Latin scripts). '' = the
+// auto-detect default. ELL-relevant languages (Somali, Arabic, Pashto, Amharic…) lead the list.
+const OCR_LANG_OPTIONS = [
+  { code: 'es', label: '🇪🇸 Spanish — Español' }, { code: 'so', label: '🇸🇴 Somali — Soomaali' },
+  { code: 'ar', label: '🇸🇦 Arabic — العربية' }, { code: 'vi', label: '🇻🇳 Vietnamese — Tiếng Việt' },
+  { code: 'ps', label: '🇦🇫 Pashto — پښتو' }, { code: 'fa', label: '🇮🇷 Dari / Farsi — فارسی' },
+  { code: 'am', label: '🇪🇹 Amharic — አማርኛ' }, { code: 'ti', label: '🇪🇷 Tigrinya — ትግርኛ' },
+  { code: 'sw', label: '🇰🇪 Swahili — Kiswahili' }, { code: 'ht', label: '🇭🇹 Haitian Creole — Kreyòl' },
+  { code: 'fr', label: '🇫🇷 French — Français' }, { code: 'pt', label: '🇧🇷 Portuguese — Português' },
+  { code: 'zh', label: '🇨🇳 Chinese — 中文' }, { code: 'ru', label: '🇷🇺 Russian — Русский' },
+  { code: 'uk', label: '🇺🇦 Ukrainian — Українська' }, { code: 'ur', label: '🇵🇰 Urdu — اردو' },
+  { code: 'hi', label: '🇮🇳 Hindi — हिन्दी' }, { code: 'bn', label: '🇧🇩 Bengali — বাংলা' },
+  { code: 'pa', label: '🇮🇳 Punjabi — ਪੰਜਾਬੀ' }, { code: 'gu', label: '🇮🇳 Gujarati — ગુજરાતી' },
+  { code: 'ta', label: '🇮🇳 Tamil — தமிழ்' }, { code: 'th', label: '🇹🇭 Thai — ไทย' },
+  { code: 'km', label: '🇰🇭 Khmer — ខ្មែរ' }, { code: 'my', label: '🇲🇲 Burmese — မြန်မာ' },
+  { code: 'ja', label: '🇯🇵 Japanese — 日本語' }, { code: 'ko', label: '🇰🇷 Korean — 한국어' },
+  { code: 'tl', label: '🇵🇭 Tagalog' }, { code: 'tr', label: '🇹🇷 Turkish — Türkçe' },
+  { code: 'de', label: '🇩🇪 German — Deutsch' }, { code: 'it', label: '🇮🇹 Italian — Italiano' },
+  { code: 'pl', label: '🇵🇱 Polish — Polski' }, { code: 'el', label: '🇬🇷 Greek — Ελληνικά' },
+  { code: 'he', label: '🇮🇱 Hebrew — עברית' },
+];
+
 // ── Accessible Word (.docx) export ──────────────────────────────────────────
 // _ensureDocxLib: lazy-load the docx UMD build (window.docx). Mirror chain —
 // cdnjs does NOT carry the docx UMD build, so two verified mirrors only.
@@ -1647,7 +1671,7 @@ function PdfAuditView(props) {
     setPdfBatchQueue, setPdfBatchSummary, setPdfFixLoading, setPdfFixMode,
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
-    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64,
+    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64,
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
     pdfRunHistory, setPdfRunHistory
   } = props;
@@ -3255,6 +3279,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       <input data-help-key="pdf_audit_view_max_fix_passes_slider" type="range" min="0" max="15" value={pdfAutoFixPasses} onChange={(e) => setPdfAutoFixPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.max_fix_passes_aria') || 'Max fix pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0 (off)</span><span>8 (default)</span><span>15 (max)</span></div>
+                    </div>
+                    {/* OCR language (2026-06-20): for SCANNED/image PDFs, let the teacher tell the pipeline
+                        the language so Tesseract uses the right model — serves ELL handouts. '' = auto-detect. */}
+                    <div>
+                      <div className="flex justify-between text-[11px] mb-0.5">
+                        <span className="font-bold text-slate-600">{t('pdf_audit.settings.ocr_lang') || 'Scanned-doc OCR language'}</span>
+                        {!pdfOcrLanguage && <span className="text-slate-600">{t('pdf_audit.settings.ocr_auto') || 'Auto-detect'}</span>}
+                      </div>
+                      <select data-help-key="pdf_audit_view_ocr_language" value={pdfOcrLanguage || ''} onChange={(e) => setPdfOcrLanguage(e.target.value)} aria-label={t('pdf_audit.settings.ocr_lang_aria') || 'OCR language for scanned documents'} className="w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700">
+                        <option value="">🌐 {t('pdf_audit.settings.ocr_auto_long') || 'Auto-detect (recommended)'}</option>
+                        {OCR_LANG_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.label}</option>)}
+                      </select>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{t('pdf_audit.settings.ocr_lang_hint') || 'Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.'}</div>
                     </div>
                     <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
                       <input data-help-key="pdf_audit_view_auto_continue_toggle" type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />

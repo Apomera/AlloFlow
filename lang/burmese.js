@@ -2821,10 +2821,10 @@
     "announcement_mismatch": "မ ကိုက်ညီ. -5 အမှတ်. ကတ် flipped နောက်ပြန်.",
     "mode_switch_confirm": "Changing မုဒ် မည် restart ဤ round. ဆက်လုပ်ပါ?",
     "modes": {
-      "smart": "Auto (ဝေါဟာရ ? အမြင်)",
-      "term_def": "ဝေါဟာရ ? အဓိပ္ပါယ်",
-      "term_image": "ဝေါဟာရ ? Picture",
-      "image_def": "Picture ? အဓိပ္ပါယ်",
+      "smart": "Auto (ဝေါဟာရ → အမြင်)",
+      "term_def": "ဝေါဟာရ → အဓိပ္ပါယ်",
+      "term_image": "ဝေါဟာရ → Picture",
+      "image_def": "Picture → အဓိပ္ပါယ်",
       "mixed": "Mix It Up (အားလုံး Types)"
     },
     "board_aria": "Memory ဂိမ်း Board",

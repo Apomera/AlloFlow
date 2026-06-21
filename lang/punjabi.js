@@ -2821,10 +2821,10 @@
     "announcement_mismatch": "ਨਹੀਂ ਇੱਕ ਮੇਲ. -5 ਬਿੰਦੂ. ਕਾਰਡ flipped ਵਾਪਸ.",
     "mode_switch_confirm": "Changing ਮੋਡ ਹੋਵੇਗਾ restart ਇਹ round. ਜਾਰੀ ਰੱਖੋ?",
     "modes": {
-      "smart": "Auto (ਸ਼ਬਦ ? ਦ੍ਰਿਸ਼ਟੀ)",
-      "term_def": "ਸ਼ਬਦ ? ਪਰਿਭਾਸ਼ਾ",
-      "term_image": "ਸ਼ਬਦ ? Picture",
-      "image_def": "Picture ? ਪਰਿਭਾਸ਼ਾ",
+      "smart": "Auto (ਸ਼ਬਦ → ਦ੍ਰਿਸ਼ਟੀ)",
+      "term_def": "ਸ਼ਬਦ → ਪਰਿਭਾਸ਼ਾ",
+      "term_image": "ਸ਼ਬਦ → Picture",
+      "image_def": "Picture → ਪਰਿਭਾਸ਼ਾ",
       "mixed": "Mix It Up (ਸਾਰੇ Types)"
     },
     "board_aria": "Memory ਖੇਡ Board",

@@ -4490,10 +4490,10 @@
     "announcement_mismatch": "Maaha match. -5 Dhibco. Kaadhka waa la rogay.",
     "mode_switch_confirm": "Beddelka habka wuxuu dib u bilaabayaa wareeggan. Sii wad?",
     "modes": {
-      "smart": "Toos (Eray ? Muuqaal)",
-      "term_def": "Eray ? Qeexitaan",
-      "term_image": "Eray ? Sawir",
-      "image_def": "Sawir ? Qeexitaan",
+      "smart": "Toos (Eray → Muuqaal)",
+      "term_def": "Eray → Qeexitaan",
+      "term_image": "Eray → Sawir",
+      "image_def": "Sawir → Qeexitaan",
       "mixed": "Isku Dar (Dhammaan Noocyada)"
     },
     "board_aria": "Sabuuradda Ciyaarta Xusuusta",

@@ -12421,6 +12421,36 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     let _myRunGen = 0;
     if (!_silentMode && typeof window !== 'undefined') { _myRunGen = (window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1); }
 
+    // (2026-06-20) Apply the AUDIT-DETECTED document language to <html lang>. Two prior spots only
+    // fixed a MISSING or INVALID attribute — so a Somali/Spanish ELL handout shipped as lang="en"
+    // (the pipeline's default) kept the wrong language, mis-announcing the WHOLE document to a screen
+    // reader, AND the audit reported the lang attribute as a PASS. This helper ALSO overrides a
+    // valid-but-wrong attribute when the audit confidently detected a DIFFERENT non-English language.
+    // It only overrides TO a detected non-en code (never flips a valid non-en down to 'en' on a weak
+    // signal). Used at both the initial deterministic-fix block and inside the auto-fix loop.
+    const _applyDetectedLang = (html) => {
+      try {
+        const _vl = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
+        const _nm = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'vietnamese': 'vi', 'haitian': 'ht', 'haitian creole': 'ht', 'somali': 'so', 'hebrew': 'he', 'russian': 'ru' };
+        const _adRaw = (_auditResult && _auditResult.documentLanguage) ? String(_auditResult.documentLanguage).trim().toLowerCase().replace(/_/g, '-') : '';
+        const _ad = _vl.test(_adRaw) ? _adRaw : null;
+        if (!/lang=/i.test(html)) {
+          return html.replace(/<html/i, '<html lang="' + (_ad || 'en') + '"');
+        }
+        return html.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
+          const trimmed = String(langVal).trim().toLowerCase().replace(/_/g, '-');
+          const invalid = !trimmed || !_vl.test(trimmed);
+          const overrideToDetected = !invalid && _ad && _ad !== 'en' && _ad !== trimmed;
+          if (invalid || overrideToDetected) {
+            const fixed = _ad || _nm[trimmed] || 'en';
+            try { warnLog('  Deterministic: lang="' + langVal + '" → "' + fixed + '" (' + (_ad ? (overrideToDetected ? 'audit-detected, overrode valid ' + trimmed : 'audit-detected') : (_nm[trimmed] ? 'name-mapped' : 'fallback')) + ')'); } catch (_) {}
+            return '<html' + before + 'lang="' + fixed + '"';
+          }
+          return m;
+        });
+      } catch (_) { return html; }
+    };
+
     const beforeScore = (_auditResult?.score) || 0;
     const fullPageCount = (_auditResult?.pageCount) || 1;
     // Normalize pageRange: if the user's selected range exactly covers the
@@ -14845,25 +14875,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           });
         }
 
-        // 3. Ensure <html> has valid lang attribute (BCP 47)
-        if (!accessibleHtml.includes('lang=')) {
-          accessibleHtml = accessibleHtml.replace(/<html/, '<html lang="en"');
-          aiFixCount++;
-        } else {
-          const validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-          accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
-            const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
-            if (!trimmed || !validLangPat.test(trimmed)) {
-              const lMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar' };
-              const fixed = lMap[trimmed] || 'en';
-              aiFixCount++;
-              warnLog(`[Det Fix] Invalid lang="${langVal}" → lang="${fixed}"`);
-              return `<html${before}lang="${fixed}"`;
-            }
-            if (trimmed !== langVal) { aiFixCount++; return `<html${before}lang="${trimmed}"`; }
-            return m;
-          });
-        }
+        // 3. Ensure <html> has a valid lang attribute (BCP 47) — and that it matches the
+        // audit-detected document language (override a valid-but-wrong 'en' on ELL docs).
+        { const _bL = accessibleHtml; accessibleHtml = _applyDetectedLang(accessibleHtml); if (accessibleHtml !== _bL) aiFixCount++; }
 
         // 4. Ensure <title> is non-empty
         if (/<title>\s*<\/title>/.test(accessibleHtml) || !accessibleHtml.includes('<title>')) {
@@ -15103,29 +15117,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             __roleFixCount++; return '';
           });
           if (__roleFixCount > 0) warnLog(`  Deterministic: fixed ${__roleFixCount} invalid ARIA roles`);
-          // Fix invalid lang attribute. Priority order:
-          //   1. Existing valid BCP-47 lang on the document — preserve it.
-          //   2. Source language detected by the audit (pdfAuditResult.documentLanguage,
-          //      majority-voted across auditors).
-          //   3. Word-form fallback ('english' → 'en', 'spanish' → 'es', etc.).
-          //   4. Final fallback: 'en'.
-          // The audit-detected path is preferred so Spanish/Arabic/Vietnamese source PDFs
-          // get correctly tagged rather than forced to English.
-          accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
-            const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
-            const validLang = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-            if (!trimmed || !validLang.test(trimmed)) {
-              const langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'vietnamese': 'vi', 'haitian': 'ht', 'haitian creole': 'ht', 'somali': 'so', 'hebrew': 'he', 'russian': 'ru' };
-              const auditDetected = (pdfAuditResult && pdfAuditResult.documentLanguage && validLang.test(pdfAuditResult.documentLanguage))
-                ? pdfAuditResult.documentLanguage
-                : null;
-              const fixed = auditDetected || langMap[trimmed] || 'en';
-              const source = auditDetected ? 'audit-detected' : (langMap[trimmed] ? 'name-mapped' : 'fallback');
-              warnLog(`  Deterministic: fixed invalid lang="${langVal}" → "${fixed}" (${source})`);
-              return `<html${before}lang="${fixed}"`;
-            }
-            return m;
-          });
+          // Lang attribute: preserve a valid attribute UNLESS the audit detected a different non-English
+          // language (override the pipeline's default 'en' on an ELL doc); fill missing/invalid from the
+          // audit-detected language, then a word-form fallback, then 'en'. (shared helper, 2026-06-20)
+          accessibleHtml = _applyDetectedLang(accessibleHtml);
 
           // Re-audit with 2 AI engines + axe-core (2 provides averaging + disagreement detection while saving ~33% API calls vs 3)
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
