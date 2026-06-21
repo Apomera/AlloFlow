@@ -1889,6 +1889,28 @@ window.SelHub = window.SelHub || {
                   'Use ' + (band === 'elementary' ? 'simple, warm language for ages 5-10.' : band === 'middle' ? 'supportive language for ages 11-14.' : 'nuanced, respectful language for ages 15-18.') + '\n' +
                   'Never take sides. Help them see all perspectives. Keep it under 300 words.\n\n' +
                   'Student\'s conflict: ' + medPrompt;
+                // Triage the free-text conflict description (mirrors the role-play path); the
+                // AI Mediator input previously skipped safety assessment entirely.
+                if (window.SelHub && window.SelHub.assessSafety) {
+                  window.SelHub.assessSafety(medPrompt, band, 'conflict', callGemini)
+                    .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                    .then(function(_safety) {
+                      _safety = _safety || { tier: 0 };
+                      if (_safety.tier >= 2 && onSafetyFlag) {
+                        onSafetyFlag({
+                          category: 'ai_conflict_mediator_' + (_safety.category || 'concerning'),
+                          match: _safety.rationale || 'SEL conflict mediator safety concern',
+                          severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                          source: 'sel_conflict',
+                          context: medPrompt.substring(0, 100),
+                          timestamp: new Date().toISOString(),
+                          aiGenerated: true,
+                          confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                          tier: _safety.tier
+                        });
+                      }
+                    });
+                }
                 callGemini(sysPrompt).then(function(result) {
                   var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                   upd('medResponse', text); upd('medLoading', false);

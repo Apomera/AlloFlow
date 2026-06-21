@@ -790,6 +790,7 @@ window.SelHub = window.SelHub || {
           'Rate their argument strength: Developing / Solid / Compelling / Master Debater\n' +
           'Be encouraging and age-appropriate.';
 
+        _runSafetyAssess(((d.debateArgs || '') + '\n' + (d.debateCounter || '')).trim(), 'debate'); // triage student free-text before AI
         callGemini(prompt).then(function(resp) {
           var completed = (d.debatesCompleted || 0) + 1;
           updMulti({ debateFeedback: resp, aiLoading: false, debatesCompleted: completed });
@@ -820,6 +821,7 @@ window.SelHub = window.SelHub || {
           '4. End with an encouraging thought about their moral growth.\n\n' +
           'IMPORTANT: Be warm, encouraging, and age-appropriate. Never make the student feel judged. All levels are valid developmental stages. Frame everything as "your reasoning style" not "your level."';
 
+        _runSafetyAssess(answerTexts.join('\n'), 'kohlberg'); // triage student free-text before AI
         callGemini(prompt).then(function(resp) {
           updMulti({ kohlbergFeedback: resp, kohlbergComplete: true, aiLoading: false });
           ctx.awardXP(15);
@@ -1073,6 +1075,7 @@ window.SelHub = window.SelHub || {
                       '2. Offers one new perspective they might not have considered\n' +
                       '3. Asks one follow-up question\n' +
                       'Be warm, age-appropriate, and non-judgmental.';
+                    _runSafetyAssess(d.branchReflection || '', 'branch'); // triage student free-text before AI
                     callGemini(prompt).then(function(resp) {
                       updMulti({ branchAIDiscussion: resp, aiLoading: false });
                       ctx.awardXP(5);
@@ -1897,6 +1900,7 @@ window.SelHub = window.SelHub || {
                   '2. Notes how their top value might guide them in ethical dilemmas\n' +
                   '3. Gently mentions one value NOT in their top 5 that could complement their choices\n' +
                   '4. Affirms that their values are valid and will serve them well.\nBe warm, non-judgmental, and age-appropriate.';
+                _runSafetyAssess(d.valuesReflection || '', 'values'); // triage student free-text before AI
                 callGemini(prompt).then(function(resp) {
                   updMulti({ valuesAIResp: resp, valuesComplete: true, aiLoading: false });
                   ctx.awardXP(10);

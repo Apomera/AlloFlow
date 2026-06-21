@@ -2364,6 +2364,15 @@ window.SelHub = window.SelHub || {
                 '2. Identify areas of MISUNDERSTANDING (where one person may not see the other\'s viewpoint).\n' +
                 '3. Suggest 2-3 specific bridge-building actions they could take to repair the relationship.\n' +
                 'Be warm, empathetic, and constructive. Use simple language.';
+              // Local safety pre-check on the free-text empathy-map fields (mirrors
+              // askCircleFacilitator); the empathy-map AI path previously skipped it.
+              var _empSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                ? window.SelHub.safeRehearseCheck(summary, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
+                : { action: 'continue' };
+              if (_empSafety.action === 'block') {
+                updMulti({ empathyAnalysis: window.SelHub.rehearseBreakCharacterText(_empSafety.severity), aiLoading: false });
+                return;
+              }
               callGemini(aiPrompt).then(function(resp) {
                 updMulti({ empathyAnalysis: resp, aiLoading: false });
                 incrementBadgeStat('empathyMapsCompleted', 1);

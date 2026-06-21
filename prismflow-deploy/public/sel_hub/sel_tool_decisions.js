@@ -1090,6 +1090,29 @@ window.SelHub = window.SelHub || {
                   '4. End with a thought-provoking question\n\n' +
                   'IMPORTANT: Never say one side is "right." Ethical dilemmas are valuable BECAUSE they have no clear answer.\n' +
                   'Keep it under 200 words. Use ' + (band === 'elementary' ? 'warm, simple language.' : band === 'middle' ? 'clear, engaging language.' : 'intellectually stimulating language.');
+                // Triage the student's free-text arguments/verdict before the AI (mirrors the Decision-Tree path).
+                if (window.SelHub && window.SelHub.assessSafety) {
+                  var _edIn = (edSideA + '\n' + edSideB + '\n' + edVerdict);
+                  window.SelHub.assessSafety(_edIn, band, 'decisions', callGemini)
+                    .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                    .then(function(_safety) {
+                      _safety = _safety || { tier: 0 };
+                      if (_safety.tier >= 2 && onSafetyFlag) {
+                        onSafetyFlag({
+                          category: 'ai_decisions_dilemma_' + (_safety.category || 'concerning'),
+                          match: _safety.rationale || 'SEL decisions safety concern',
+                          severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                          source: 'sel_decisions',
+                          context: _edIn.substring(0, 100),
+                          timestamp: new Date().toISOString(),
+                          aiGenerated: true,
+                          confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                          tier: _safety.tier
+                        });
+                      }
+                      upd('_decisionsTier', _safety.tier || 0);
+                    });
+                }
                 callGemini(prompt).then(function(result) {
                   var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                   upd('edAiResp', resp);
@@ -1506,6 +1529,28 @@ window.SelHub = window.SelHub || {
                   '4. End with a thought-provoking question that goes deeper\n\n' +
                   'Use ' + (band === 'elementary' ? 'simple, engaging language for ages 5-10.' : band === 'middle' ? 'clear, inspiring language for ages 11-14.' : 'intellectually rich language for ages 15-18.') + '\n' +
                   'Keep it under 200 words. Honor their thinking while pushing it further.';
+                // Triage the student's free-text reflection before the AI (mirrors the Decision-Tree path).
+                if (window.SelHub && window.SelHub.assessSafety) {
+                  window.SelHub.assessSafety(rwReflection, band, 'decisions', callGemini)
+                    .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                    .then(function(_safety) {
+                      _safety = _safety || { tier: 0 };
+                      if (_safety.tier >= 2 && onSafetyFlag) {
+                        onSafetyFlag({
+                          category: 'ai_decisions_realworld_' + (_safety.category || 'concerning'),
+                          match: _safety.rationale || 'SEL decisions safety concern',
+                          severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                          source: 'sel_decisions',
+                          context: rwReflection.substring(0, 100),
+                          timestamp: new Date().toISOString(),
+                          aiGenerated: true,
+                          confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                          tier: _safety.tier
+                        });
+                      }
+                      upd('_decisionsTier', _safety.tier || 0);
+                    });
+                }
                 callGemini(prompt).then(function(result) {
                   var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                   upd('rwAiResp', resp);
