@@ -1130,7 +1130,7 @@ var createDocPipeline = function(deps) {
   var _GEMINI_TRANSIENT_TRIP = 3;   // (2026-06-20) consecutive EMPTY-BODY/timeout failures that trip the breaker — the Canvas proxy also throttles by returning empty 200s + timeouts (not just 401s), which the auth path above never detected; a bit higher than auth's trip since transient is noisier
   var _GEMINI_COOLDOWN_MS = 12000;  // pause before NEW calls start once storming
   var _GEMINI_RECOVER_HITS = 4;     // consecutive successes needed to restore full concurrency
-  var _GEMINI_AUTH_RETRIES = 3;     // canvas-throttle retries (exponential backoff) before giving up
+  var _GEMINI_AUTH_RETRIES = 1;     // (2026-06-21) ONE quick jittered retry, then DEFER the call to the end-of-pass catch-up drain — was 3, which serialized 4 attempts/call through escalating cooldowns and burned 6-17 min PER CALL on a sustained rate-limit. A rate-limit eases over TIME, so revisiting later (catch-up) beats grinding inline now.
   var _geminiCap = _GEMINI_MAX_CONCURRENT;
   var _geminiInFlight = 0;
   var _geminiWaiters = [];
@@ -1149,6 +1149,18 @@ var createDocPipeline = function(deps) {
         _geminiCooldownTimer = setTimeout(function() { _geminiCooldownTimer = null; _geminiPump(); }, (_geminiCooldownUntil - now) + 15);
       }
       return;
+    }
+    // TIME-DECAY recovery (2026-06-21): each ELAPSED cooldown restores ONE concurrency step, independent of
+    // the success streak. The old model restored ONLY on _GEMINI_RECOVER_HITS consecutive successes — which
+    // a trickle of intermittent failures (the actual Canvas rate-limit pattern) can NEVER reach, pinning
+    // cap=1 for the whole run and serializing everything (the 2-hour grind). A rate-limit eases over TIME,
+    // so recover over time: gently (one step per elapsed cooldown, not a jump back to full) to probe rather
+    // than re-storm. Consumed by zeroing _geminiCooldownUntil so one elapsed cooldown bumps once; the next
+    // failure re-arms it. The fast _geminiNoteSuccess path (4 clean successes → full) still applies too.
+    if (_geminiCap < _GEMINI_MAX_CONCURRENT && _geminiCooldownUntil > 0) {
+      _geminiCap = Math.min(_GEMINI_MAX_CONCURRENT, _geminiCap + 1);
+      _geminiCooldownUntil = 0;
+      if (_geminiCap >= _GEMINI_MAX_CONCURRENT) _geminiStormAnnounced = false;
     }
     while (_geminiInFlight < _geminiCap && _geminiWaiters.length) {
       _geminiInFlight++;
@@ -1173,7 +1185,7 @@ var createDocPipeline = function(deps) {
     if (_geminiAuthStreak >= _GEMINI_STORM_TRIP) {
       // Escalate the cooldown as the storm PERSISTS (12s → up to 90s): stop hammering a throttled
       // proxy so its quota window can recover. Each new call / retry waits the longer cooldown.
-      var _cd = Math.min(90000, _GEMINI_COOLDOWN_MS * (_geminiAuthStreak - _GEMINI_STORM_TRIP + 1));
+      var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiAuthStreak - _GEMINI_STORM_TRIP + 1)); // cap 25s (was 90s) — with time-decay recovery + catch-up drain, a long serializing cooldown only stretches the run
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown');
       _geminiCap = _GEMINI_STORM_MIN;
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
@@ -1197,7 +1209,7 @@ var createDocPipeline = function(deps) {
     _geminiOkStreak = 0;
     _geminiTransientStreak++;
     if (_geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP) {
-      var _cd = Math.min(90000, _GEMINI_COOLDOWN_MS * (_geminiTransientStreak - _GEMINI_TRANSIENT_TRIP + 1));
+      var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiTransientStreak - _GEMINI_TRANSIENT_TRIP + 1)); // cap 25s (was 90s)
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Empty-body/timeout storm (' + _geminiTransientStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown (likely a Canvas rate-limit surfacing as empty responses)');
       _geminiCap = _GEMINI_STORM_MIN;
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
@@ -1250,6 +1262,12 @@ var createDocPipeline = function(deps) {
   var _pulsePipelineWatchdog = function () {
     try { if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: { ts: (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0, tag: 'Throttle', msg: 'retry/cooldown — pipeline alive' } })); } catch (_) {}
   };
+  // Was this error a Canvas THROTTLE (vs a content/config problem)? Drives defer-and-revisit: a chunk that
+  // failed on a throttle is worth revisiting after a pause (the rate-limit eases over time); a content
+  // rejection is not. (2026-06-21)
+  var _isThrottleErr = function (e) {
+    return !!(e && (e.canvasTransientAuth || (e.message && /API_AUTH_FAILED|RESOURCE_EXHAUSTED|throttle|rate[\s-]?limit|\b429\b|Empty response body|Timeout/i.test(e.message))));
+  };
   // Per-attempt gated call with breaker-aware retry. EACH attempt re-acquires a slot, so a tripped
   // breaker (reduced cap + cooldown) also throttles the retries. Canvas-auth (transient 401/403)
   // gets up to _GEMINI_AUTH_RETRIES exponential-backoff retries; other transient/timeout errors get
@@ -1274,7 +1292,9 @@ var createDocPipeline = function(deps) {
         if (_canvasAuthRetry) {
           _geminiNoteAuthFail(); // trip/escalate the breaker so this AND subsequent calls back off
           if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — Canvas throttle persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
-          var _backoff = Math.min(20000, 2500 * Math.pow(2, n)); // 2.5s, 5s, 10s (capped 20s)
+          // Jittered backoff (2026-06-21): ±30% randomization so a batch of calls that all 401 at once
+          // don't retry in lockstep and re-storm the proxy on the same tick.
+          var _backoff = Math.round(Math.min(20000, 2500 * Math.pow(2, n)) * (0.7 + Math.random() * 0.6));
           warnLog('[Retry] ' + (label || 'API call') + ' Canvas throttle — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
           _pulsePipelineWatchdog(); // a retry is activity — keep the dead-man watchdog from clearing a throttled-but-alive run (fix A)
           return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
@@ -2313,7 +2333,8 @@ var createDocPipeline = function(deps) {
     }
     // Multi-chunk: fix ALL fragments in PARALLEL for speed
     warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (parallel)`);
-    const fixed = await Promise.all(chunks.map(async (part, ci) => {
+    const _deferredIdx = []; // chunk indices a Canvas THROTTLE skipped — revisited by the catch-up drain below
+    const _fixOneChunk = async (part, ci) => {
       const isFirst = ci === 0, isLast = ci === chunks.length - 1;
       const fragNote = isFirst
         ? 'This is FRAGMENT 1 — it may begin with <!DOCTYPE>/<html>/<head>/<body>/<main>.'
@@ -2392,9 +2413,31 @@ var createDocPipeline = function(deps) {
         }
       } catch (e) {
         warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} failed:`, e?.message);
+        if (_isThrottleErr(e)) _deferredIdx.push(ci); // throttle-skipped → revisit in the catch-up drain
         return part;
       }
-    }));
+    };
+    const fixed = await Promise.all(chunks.map((part, ci) => _fixOneChunk(part, ci)));
+    // ── Defer-and-revisit catch-up drain (2026-06-21) ── Chunks a Canvas THROTTLE skipped were kept as their
+    // ORIGINAL above + recorded in _deferredIdx (vs the old behavior: grind 4 inline retries/chunk through
+    // 90s cooldowns, or silently ship unfixed). A rate-limit eases over TIME, so PAUSE to let the window
+    // breathe, then REVISIT just those chunks with the SAME fixer and splice the result back at the SAME
+    // index. Fail-safe: _fixOneChunk returns the original on any failure, so a splice can only IMPROVE the
+    // result. Skipped when ALL chunks were deferred (a total stall → let the auto-fix loop / resumable save
+    // handle it, don't spin).
+    if (_deferredIdx.length && _deferredIdx.length < chunks.length) {
+      let _todo = _deferredIdx.slice();
+      for (let _round = 0; _round < 2 && _todo.length; _round++) {
+        warnLog(`[aiFixChunked:${label}] catch-up round ${_round + 1}: revisiting ${_todo.length} throttle-deferred chunk(s) after a pause`);
+        _pulsePipelineWatchdog(); // a deliberate catch-up pause is activity, not a stall
+        await new Promise(function (r) { setTimeout(r, 8000); }); // let the rate-limit window ease before revisiting
+        _deferredIdx.length = 0; // re-collect any chunk STILL throttled this round
+        const _again = await Promise.all(_todo.map(function (ci) { return _fixOneChunk(chunks[ci], ci).then(function (out) { return { ci: ci, out: out }; }); }));
+        for (const { ci, out } of _again) { if (out != null) fixed[ci] = out; } // splice back at the SAME index (original-on-failure = harmless no-op)
+        _todo = _deferredIdx.slice();
+      }
+      if (_todo.length) warnLog(`[aiFixChunked:${label}] catch-up: ${_todo.length} chunk(s) still rate-limited — shipped as original (will be re-attempted next pass / on resume)`);
+    }
     // 2026-06-07: aggregate text-preservation gate. Backstop against the
     // hypothetical adversarial case where EVERY chunk's AI output legitimately
     // lands in [0.95, 1.0) text-floor band — across N chunks the compound floor
