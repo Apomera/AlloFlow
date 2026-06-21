@@ -18902,7 +18902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 className: 'px-6 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-md transition-all hover:scale-[1.02]'
               }, '\uD83D\uDD04 Start New Colony \u2014 Apply What You Learned')
             )
-          ),
+          ,
 
           // Seasonal goals — live checklist with ✓ / ⏳ markers
           // Each goal is a predicate on current state so students can see at a
@@ -19259,7 +19259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state thermal marker; no temperature score; no reveal — by design.')
             );
           })()
-        );
+        ));
       })();
     }
   });
