@@ -59,6 +59,39 @@ var _alloOcrBlockLayout = function (text, pageH) {
   var _result = { lines: out, lineHeight: lh, size: size };
   return _result;
 };
+// ── Structural foundations: the length-INDEPENDENT, deterministic accessibility checks (2026-06-21) ──
+// These are document-level pass/fail features (lang/title/landmarks/headings/list-semantics/table-headers/
+// labels/ARIA-roles) that don't scale with document length — so a long doc that gets the bones right
+// shouldn't have those wins buried under a pile of per-instance content issues. Single source of truth for
+// the regex set (the chunked-audit pass-merge calls this too). HONESTY: presence-only — it confirms a
+// tag/attribute EXISTS, not that its value is correct (e.g. lang="en" on a French doc still "present").
+// The view renders a "foundations present" scorecard from this; it is NOT a conformance score.
+var _alloStructuralFoundations = function (html) {
+  var htmlContent = String(html || '');
+  var lc = htmlContent.toLowerCase();
+  var present = [];
+  if (/<html[^>]*lang="[a-z]{2,3}/.test(lc)) present.push('HTML lang attribute is present');
+  if (/<title>[^<]+<\/title>/.test(lc)) present.push('Page title is present and descriptive');
+  if (/<main[\s>]/.test(lc)) present.push('A <main> landmark defines the primary content area');
+  if (/<nav[\s>]/.test(lc)) present.push('Navigation landmark (<nav>) is present');
+  if (/<header[\s>]/.test(lc)) present.push('Header landmark is present');
+  if (/<footer[\s>]/.test(lc)) present.push('Footer landmark is present');
+  if (/<h1[\s>]/.test(lc)) present.push('Level 1 heading (h1) establishes the document topic');
+  if (/<h2[\s>]/.test(lc)) present.push('Section headings (h2) provide document structure');
+  if (/<a[^>]*href=/.test(lc) && !/<a[^>]*>click here<\/a>/i.test(htmlContent)) present.push('Links use descriptive text');
+  if (/<ul[\s>]/.test(lc) && /<li[\s>]/.test(lc)) present.push('Semantic list markup (ul/li) is used');
+  if (/<ol[\s>]/.test(lc) && /<li[\s>]/.test(lc)) present.push('Ordered lists (ol/li) are used for sequential content');
+  if (/<table[\s>]/.test(lc) && /<th[\s>]/.test(lc)) present.push('Table headers (th) are used for data tables');
+  if (/<th[^>]*scope=/.test(lc)) present.push('Table header scope attributes define data relationships');
+  if (/skip.*content|skip.*nav/i.test(htmlContent)) present.push('Skip-to-content link is provided for keyboard navigation');
+  if (/<img[^>]*alt="[^"]+"/i.test(htmlContent)) present.push('All images have a non-empty alt attribute (description quality not verified)');
+  if (/<figcaption[\s>]/.test(lc)) present.push('Figure captions provide image descriptions');
+  if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) present.push('Form elements have associated labels');
+  if (/role="(main|navigation|banner|contentinfo|complementary)"/.test(lc)) present.push('ARIA landmark roles are used for page structure');
+  // checked = the number of distinct foundation TYPES this looks for (the denominator for "N of M present").
+  var _foundations = { present: present, checked: 18 };
+  return _foundations;
+};
 
 // ── Numeric/value-fidelity helper (2026-06-20) ──────────────────────────────
 // Extract a MULTISET (Map: normalized-token → count) of number-like tokens so the integrity gate can
@@ -9373,26 +9406,10 @@ HTML section ${chunkNum}/${chunks.length}:
       // ── Structural pass detection on full document ──
       // Chunked audits underreport passes because most chunks are plain content.
       // Check the full HTML structure once for global accessibility features.
-      const structuralPasses = [];
-      const lc = htmlContent.toLowerCase();
-      if (/<html[^>]*lang="[a-z]{2,3}/.test(lc)) structuralPasses.push('HTML lang attribute is present'); // honesty (2026-06-20): presence only — value is NOT validated against the document's actual language here
-      if (/<title>[^<]+<\/title>/.test(lc)) structuralPasses.push('Page title is present and descriptive');
-      if (/<main[\s>]/.test(lc)) structuralPasses.push('A <main> landmark defines the primary content area');
-      if (/<nav[\s>]/.test(lc)) structuralPasses.push('Navigation landmark (<nav>) is present');
-      if (/<header[\s>]/.test(lc)) structuralPasses.push('Header landmark is present');
-      if (/<footer[\s>]/.test(lc)) structuralPasses.push('Footer landmark is present');
-      if (/<h1[\s>]/.test(lc)) structuralPasses.push('Level 1 heading (h1) establishes the document topic');
-      if (/<h2[\s>]/.test(lc)) structuralPasses.push('Section headings (h2) provide document structure');
-      if (/<a[^>]*href=/.test(lc) && !/<a[^>]*>click here<\/a>/i.test(htmlContent)) structuralPasses.push('Links use descriptive text');
-      if (/<ul[\s>]/.test(lc) && /<li[\s>]/.test(lc)) structuralPasses.push('Semantic list markup (ul/li) is used');
-      if (/<ol[\s>]/.test(lc) && /<li[\s>]/.test(lc)) structuralPasses.push('Ordered lists (ol/li) are used for sequential content');
-      if (/<table[\s>]/.test(lc) && /<th[\s>]/.test(lc)) structuralPasses.push('Table headers (th) are used for data tables');
-      if (/<th[^>]*scope=/.test(lc)) structuralPasses.push('Table header scope attributes define data relationships');
-      if (/skip.*content|skip.*nav/i.test(htmlContent)) structuralPasses.push('Skip-to-content link is provided for keyboard navigation');
-      if (/<img[^>]*alt="[^"]+"/i.test(htmlContent)) structuralPasses.push('All images have a non-empty alt attribute (description quality not verified)'); // honesty (2026-06-20): presence only — the text auditor sees the alt string, not the image
-      if (/<figcaption[\s>]/.test(lc)) structuralPasses.push('Figure captions provide image descriptions');
-      if (/<label[\s>]/.test(lc) || /aria-label/.test(lc)) structuralPasses.push('Form elements have associated labels');
-      if (/role="(main|navigation|banner|contentinfo|complementary)"/.test(lc)) structuralPasses.push('ARIA landmark roles are used for page structure');
+      // Structural foundations via the shared single-source fn (2026-06-21) — the SAME regex set the view's
+      // "foundations present" scorecard renders from (exposed as _docPipeline.structuralFoundations), so the
+      // chunked-audit pass list and the scorecard can never disagree.
+      const structuralPasses = _alloStructuralFoundations(htmlContent).present;
       // Merge structural passes with chunk-reported passes (dedup by key)
       structuralPasses.forEach(sp => {
         const spKey = sp.toLowerCase().replace(/[^a-z\s]/g, '').trim().split(/\s+/).filter(w => w.length > 2).sort().slice(0, 5).join('_');
@@ -26840,6 +26857,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     STYLE_SEEDS,
     computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
     ocrBlockLayout: _alloOcrBlockLayout, // exposed for tests: the scanned-OCR block-fallback line distribution
+    structuralFoundations: _alloStructuralFoundations, // the view's foundations scorecard calls this (single source for the regex set)
     applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
     generateFullPackHTML: _wrap(generateFullPackHTML),
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
@@ -26859,5 +26877,6 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
 window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
+window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');

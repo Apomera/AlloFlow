@@ -1729,6 +1729,36 @@ function PdfAuditView(props) {
     if (typeof automated !== 'number') return content;
     return Math.min(content, automated);
   };
+  // #1 Trend (2026-06-21): the headline floors at 0, so re-auditing a doc after real remediation can read
+  // "0 → 0" and hide the progress. Persist each audit's deduction + issue-count per file (keyed like the
+  // chunk session: name|size|pageCount) and surface the delta vs the PRIOR audit so improvement is visible
+  // even at a floored 0. The effect reads the previous snapshot, stashes it, THEN writes the current — so a
+  // re-audit of the same file always compares against the run before it. Display-only; no scoring change.
+  const [_scoreTrend, _setScoreTrend] = useState(null);
+  React.useEffect(() => {
+    try {
+      if (!pdfAuditResult || !pendingPdfFile || typeof pdfAuditResult._consolidatedDeductions !== 'number') { _setScoreTrend(null); return; }
+      const _key = 'alloflow_score_trend_' + (pendingPdfFile.name || 'doc') + '|' + (pendingPdfFile.size || 0) + '|' + (pdfAuditResult.pageCount || 0);
+      const _total = (pdfAuditResult.critical || []).length + (pdfAuditResult.serious || []).length + (pdfAuditResult.moderate || []).length + (pdfAuditResult.minor || []).length;
+      const _cur = { ded: pdfAuditResult._consolidatedDeductions, count: _total, date: pdfAuditResult.timestamp || null };
+      let _prior = null;
+      try { const _raw = localStorage.getItem(_key); if (_raw) _prior = JSON.parse(_raw); } catch (_) {}
+      // Only a DIFFERENT prior snapshot is a trend (an identical re-render of the same audit isn't).
+      _setScoreTrend((_prior && (_prior.ded !== _cur.ded || _prior.count !== _cur.count)) ? { prior: _prior, cur: _cur } : null);
+      try { localStorage.setItem(_key, JSON.stringify(_cur)); } catch (_) {}
+    } catch (_) { _setScoreTrend(null); }
+  }, [pdfAuditResult, pendingPdfFile]);
+  // #3 Structural foundations (2026-06-21): the length-INDEPENDENT, deterministic checks (lang/title/
+  // landmarks/headings/list-semantics/table-headers/labels/ARIA) — document-level wins that a long doc
+  // shouldn't have buried under per-instance content issues. Computed from the engine's single-source fn
+  // (so it can never disagree with the audit's own pass list); memoized on the remediated HTML. The view
+  // renders a "foundations present" scorecard (presence only — not a conformance score).
+  const _structuralFoundations = React.useMemo(() => {
+    const _html = pdfFixResult && pdfFixResult.accessibleHtml;
+    const _fn = _docPipeline && _docPipeline.structuralFoundations;
+    if (!_html || typeof _fn !== 'function') return null;
+    try { return _fn(_html); } catch (_) { return null; }
+  }, [pdfFixResult && pdfFixResult.accessibleHtml]);
   // (2026-06-20) Auto-validate the remediated output with veraPDF after Make Accessible — default ON.
   // Warmed inside the click gesture (so the popup is allowed) + validated at the end; opt-out persisted.
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
@@ -4243,6 +4273,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </p>
                     );
                   })()}
+                  {/* #1 Trend: progress since the prior audit of this file — visible even while a floored score sits at 0. */}
+                  {_scoreTrend && (() => {
+                    const _resolved = _scoreTrend.prior.count - _scoreTrend.cur.count;
+                    const _dedDelta = _scoreTrend.prior.ded - _scoreTrend.cur.ded;
+                    const _better = _dedDelta > 0 || _resolved > 0;
+                    return (
+                      <p className="text-[11px] opacity-95 mt-1 font-semibold" title={t('pdf_audit.score.trend_tip') || 'Change since your last audit of this file — visible even while a floored score sits at 0.'}>
+                        {_better ? '📈 ' : '📉 '}{t('pdf_audit.score.since_last') || 'Since your last audit'}: {_scoreTrend.prior.count} → {_scoreTrend.cur.count} {t('pdf_audit.score.issues_word') || 'issues'}, {t('pdf_audit.score.deduction') || 'deduction'} {_scoreTrend.prior.ded} → {_scoreTrend.cur.ded}{_resolved > 0 ? ' (' + _resolved + ' ' + (t('pdf_audit.score.resolved') || 'resolved') + ')' : (_resolved < 0 ? ' (' + (-_resolved) + ' ' + (t('pdf_audit.score.new_word') || 'new') + ')' : '')}
+                      </p>
+                    );
+                  })()}
                 </div>
                 )}
 
@@ -6526,6 +6567,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {_vio !== null && (
                               <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold ' + (_vio === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700')}>
                                 {_vio === 0 ? (t('pdf_audit.dashboard.zero_issues') || '0 content issues') : _vio + ' ' + (t('pdf_audit.dashboard.issues_left') || 'content issues')}
+                              </span>
+                            )}
+                            {/* #3 Structural foundations: length-independent wins, scored on their OWN axis so a long
+                                document's per-issue pile can't bury them. Presence only — never a conformance score. */}
+                            {_structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && (
+                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800"
+                                title={(t('pdf_audit.dashboard.foundations_title') || 'Length-independent structural foundations DETECTED in the remediated document — presence only, not validated for correctness, and separate from the per-issue content score above. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
+                                🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'foundations'}
                               </span>
                             )}
                             {/* Distinct PDF/UA verdict for the EXPORTED tagged PDF — separate from the content score above.

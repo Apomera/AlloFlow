@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // ── mirror of the companion computation ──
 const companion = (r) => {
@@ -64,5 +65,76 @@ describe('anti-drift: the companion is wired into the audit card and never calle
   });
   it('the companion tooltip explicitly disclaims it is NOT the score', () => {
     expect(viewSrc).toMatch(/This is NOT the score/);
+  });
+});
+
+// ── #1 Trend (delta vs the prior audit of this file) ──
+const trendDelta = (prior, cur) => ({ resolved: prior.count - cur.count, dedDelta: prior.ded - cur.ded });
+
+describe('#1 trend — progress is legible even when both runs floor at 0', () => {
+  it('47 issues / ded 210 → 18 / ded 140 reads as "29 resolved" though both score 0', () => {
+    const d = trendDelta({ count: 47, ded: 210 }, { count: 18, ded: 140 });
+    expect(d.resolved).toBe(29);
+    expect(d.dedDelta).toBe(70);
+    expect(Math.max(0, 100 - 210)).toBe(0);
+    expect(Math.max(0, 100 - 140)).toBe(0); // both floored — the score can't show it, the trend can
+  });
+  it('a regression (more issues) reads negative', () => {
+    const d = trendDelta({ count: 10, ded: 40 }, { count: 14, ded: 60 });
+    expect(d.resolved).toBe(-4);
+    expect(d.dedDelta).toBeLessThan(0);
+  });
+  it('the view persists + reads the trend keyed per file (name|size|pageCount), display-only', () => {
+    expect(viewSrc).toMatch(/'alloflow_score_trend_' \+ \(pendingPdfFile\.name \|\| 'doc'\)/);
+    expect(viewSrc).toMatch(/_setScoreTrend\(\(_prior && \(_prior\.ded !== _cur\.ded \|\| _prior\.count !== _cur\.count\)\) \? \{ prior: _prior, cur: _cur \} : null\)/);
+  });
+});
+
+// ── #3 Structural foundations (live engine fn) ──
+async function liveFoundations() {
+  globalThis.window = globalThis.window || globalThis;
+  await import(resolve(process.cwd(), 'doc_pipeline_module.js'));
+  return window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.structuralFoundations;
+}
+
+describe('#3 structural foundations — length-independent checks on their own axis', () => {
+  it('the live module exposes structuralFoundations', async () => {
+    expect(typeof (await liveFoundations())).toBe('function');
+  });
+  it('a well-structured doc detects many foundations; checked is the fixed denominator', async () => {
+    const fn = await liveFoundations();
+    const html = '<html lang="en"><head><title>Report</title></head><body><main><nav></nav><h1>Title</h1><h2>Section</h2><ul><li>a</li></ul><table><th scope="col">H</th></table><img alt="a chart"><label>Name</label></main></body></html>';
+    const f = fn(html);
+    expect(f.checked).toBe(18);
+    expect(f.present).toContain('HTML lang attribute is present');
+    expect(f.present).toContain('A <main> landmark defines the primary content area');
+    expect(f.present.length).toBeGreaterThanOrEqual(8);
+  });
+  it('a bare doc detects (almost) none', async () => {
+    const fn = await liveFoundations();
+    const f = fn('<html><body><p>hi</p></body></html>');
+    expect(f.present.length).toBeLessThanOrEqual(1);
+  });
+  it('honesty: presence only — the alt-text foundation says correctness is NOT verified', async () => {
+    const fn = await liveFoundations();
+    const f = fn('<img alt="x">');
+    expect(f.present.some((p) => /alt attribute/.test(p) && /not verified/.test(p))).toBe(true);
+  });
+});
+
+describe('anti-drift: structural foundations are single-sourced + wired (never a conformance score)', () => {
+  it('the engine defines the fn and the chunked-audit pass list uses it (one regex set)', () => {
+    expect(pipeSrc).toMatch(/var _alloStructuralFoundations = function \(html\) \{/);
+    expect(pipeSrc).toMatch(/const structuralPasses = _alloStructuralFoundations\(htmlContent\)\.present;/);
+    // the old inline 18-regex block is gone (no longer building structuralPasses by hand)
+    expect(pipeSrc).not.toMatch(/const structuralPasses = \[\];\s*\n\s*const lc = htmlContent\.toLowerCase\(\);/);
+  });
+  it('the view renders the foundations chip from _docPipeline.structuralFoundations (maps to the export)', () => {
+    expect(viewSrc).toMatch(/const _fn = _docPipeline && _docPipeline\.structuralFoundations;/);
+    expect(viewSrc).toMatch(/_structuralFoundations\.present\.length/);
+  });
+  it('the foundations chip is labeled presence-only and separate from the content score', () => {
+    expect(viewSrc).toMatch(/presence only/);
+    expect(viewSrc).toMatch(/separate from the per-issue content score/);
   });
 });

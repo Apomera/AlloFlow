@@ -1728,6 +1728,41 @@ function PdfAuditView(props) {
     if (typeof automated !== "number") return content;
     return Math.min(content, automated);
   };
+  const [_scoreTrend, _setScoreTrend] = useState(null);
+  React.useEffect(() => {
+    try {
+      if (!pdfAuditResult || !pendingPdfFile || typeof pdfAuditResult._consolidatedDeductions !== "number") {
+        _setScoreTrend(null);
+        return;
+      }
+      const _key = "alloflow_score_trend_" + (pendingPdfFile.name || "doc") + "|" + (pendingPdfFile.size || 0) + "|" + (pdfAuditResult.pageCount || 0);
+      const _total = (pdfAuditResult.critical || []).length + (pdfAuditResult.serious || []).length + (pdfAuditResult.moderate || []).length + (pdfAuditResult.minor || []).length;
+      const _cur = { ded: pdfAuditResult._consolidatedDeductions, count: _total, date: pdfAuditResult.timestamp || null };
+      let _prior = null;
+      try {
+        const _raw = localStorage.getItem(_key);
+        if (_raw) _prior = JSON.parse(_raw);
+      } catch (_) {
+      }
+      _setScoreTrend(_prior && (_prior.ded !== _cur.ded || _prior.count !== _cur.count) ? { prior: _prior, cur: _cur } : null);
+      try {
+        localStorage.setItem(_key, JSON.stringify(_cur));
+      } catch (_) {
+      }
+    } catch (_) {
+      _setScoreTrend(null);
+    }
+  }, [pdfAuditResult, pendingPdfFile]);
+  const _structuralFoundations = React.useMemo(() => {
+    const _html = pdfFixResult && pdfFixResult.accessibleHtml;
+    const _fn = _docPipeline && _docPipeline.structuralFoundations;
+    if (!_html || typeof _fn !== "function") return null;
+    try {
+      return _fn(_html);
+    } catch (_) {
+      return null;
+    }
+  }, [pdfFixResult && pdfFixResult.accessibleHtml]);
   const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => {
     try {
       return localStorage.getItem("alloflow_pdf_auto_verapdf") !== "false";
@@ -4129,6 +4164,11 @@ Return ONLY JSON:
       if (_total === 0 && typeof _ded !== "number") return null;
       const _perPage = typeof _ded === "number" && typeof _pages === "number" && _pages > 0 ? _ded / _pages : null;
       return /* @__PURE__ */ React.createElement("p", { className: "text-[11px] opacity-80 mt-1.5", title: t("pdf_audit.score.companion_tip") || "A density read so a long document is not judged the same as a short one \u2014 the same issues spread over more pages are less pervasive. These numbers keep moving as you remediate even while a floored score sits at 0. This is NOT the score; the score above reflects only confirmed issues." }, "\u{1F4CA} ", _total, " ", t("pdf_audit.score.confirmed_issues") || (_total === 1 ? "confirmed issue" : "confirmed issues"), typeof _ded === "number" ? " \xB7 " + (t("pdf_audit.score.deduction") || "deduction") + " " + _ded : "", _perPage != null ? " \xB7 " + _perPage.toFixed(1) + " " + (t("pdf_audit.score.per_page") || "per page across") + " " + _pages + " " + (_pages === 1 ? t("pdf_audit.score.page") || "page" : t("pdf_audit.score.pages") || "pages") : "");
+    })(), _scoreTrend && (() => {
+      const _resolved = _scoreTrend.prior.count - _scoreTrend.cur.count;
+      const _dedDelta = _scoreTrend.prior.ded - _scoreTrend.cur.ded;
+      const _better = _dedDelta > 0 || _resolved > 0;
+      return /* @__PURE__ */ React.createElement("p", { className: "text-[11px] opacity-95 mt-1 font-semibold", title: t("pdf_audit.score.trend_tip") || "Change since your last audit of this file \u2014 visible even while a floored score sits at 0." }, _better ? "\u{1F4C8} " : "\u{1F4C9} ", t("pdf_audit.score.since_last") || "Since your last audit", ": ", _scoreTrend.prior.count, " \u2192 ", _scoreTrend.cur.count, " ", t("pdf_audit.score.issues_word") || "issues", ", ", t("pdf_audit.score.deduction") || "deduction", " ", _scoreTrend.prior.ded, " \u2192 ", _scoreTrend.cur.ded, _resolved > 0 ? " (" + _resolved + " " + (t("pdf_audit.score.resolved") || "resolved") + ")" : _resolved < 0 ? " (" + -_resolved + " " + (t("pdf_audit.score.new_word") || "new") + ")" : "");
     })()), /* @__PURE__ */ React.createElement("div", { className: "p-5 space-y-4", "aria-labelledby": "pdf-audit-title" }, (!pdfFixResult || pdfAuditTab === "original") && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap", role: "list", "aria-label": t("pdf_audit.doc_props.aria") || "Document properties" }, pdfAuditResult.hasSearchableText !== void 0 && /* @__PURE__ */ React.createElement("span", { role: "listitem", className: `px-2 py-1 rounded-full text-[11px] font-bold ${pdfAuditResult.hasSearchableText ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}` }, pdfAuditResult.hasSearchableText ? "\u2713 Searchable Text" : "\u2717 No Text Layer"), pdfAuditResult.hasImages && /* @__PURE__ */ React.createElement("span", { role: "listitem", className: "px-2 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700" }, t("pdf_audit.doc_props.contains_images") || "Contains Images"), pdfAuditResult.hasTables && /* @__PURE__ */ React.createElement("span", { role: "listitem", className: "px-2 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700" }, t("pdf_audit.doc_props.contains_tables") || "Contains Tables"), pdfAuditResult.hasForms && /* @__PURE__ */ React.createElement("span", { role: "listitem", className: "px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700" }, t("pdf_audit.doc_props.contains_forms") || "Contains Forms"), pdfAuditResult.pageCount && /* @__PURE__ */ React.createElement("span", { role: "listitem", className: "px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600" }, pdfAuditResult.pageCount, " pages")), pdfAuditResult.scores?.length > 1 && /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_results_reliability_details", className: "bg-indigo-50 rounded-lg border border-indigo-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-indigo-700 uppercase tracking-widest cursor-pointer hover:bg-indigo-100 transition-colors" }, "\u{1F4CA} Auditor Consistency (", pdfAuditResult.reliability || "N/A", " agreement)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-indigo-700" }, pdfAuditResult.ci95?.[0], "\u2013", pdfAuditResult.ci95?.[1]), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase", title: t("pdf_audit.reliability.ci95_title") || "Spread of repeated AI estimates across re-prompts (reproducibility) \u2014 NOT the measurement uncertainty of the document\u2019s true accessibility" }, "95% CI (re-prompt spread)")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black text-indigo-700" }, pdfAuditResult.scoreSD), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase" }, t("pdf_audit.reliability.std_dev") || "Standard Deviation")), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: `text-lg font-black ${pdfAuditResult.icc >= 0.75 ? "text-green-700" : pdfAuditResult.icc >= 0.5 ? "text-amber-700" : "text-red-700"}` }, pdfAuditResult.icc), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase", title: t("pdf_audit.reliability.icc_title") || "Custom 1\u2212(SD/50) index; not textbook ICC" }, t("pdf_audit.reliability.icc_label") || "Auditor Consistency (ICC-like)")), pdfAuditResult.cronbachAlpha !== null && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: `text-lg font-black ${pdfAuditResult.cronbachAlpha >= 0.7 ? "text-green-700" : "text-amber-700"}` }, pdfAuditResult.cronbachAlpha), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold uppercase", title: t("pdf_audit.reliability.cronbach_title") || "CV + pairwise hybrid heuristic across AI passes; not textbook Cronbach\u2019s \u03B1" }, t("pdf_audit.reliability.cronbach") || "Auditor Consistency (\u03B1-like)"))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-600 space-y-0.5" }, /* @__PURE__ */ React.createElement("div", { className: "italic text-slate-500 normal-case" }, t("pdf_audit.reliability.basis_note") || "These figures measure how consistently the AI auditors agreed with each other across re-prompts (reproducibility) \u2014 they are NOT the measurement uncertainty of the document\u2019s true accessibility, and a tight range does not mean the score is correct."), /* @__PURE__ */ React.createElement("div", null, "SEM: \xB1", pdfAuditResult.scoreSEM, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "(re-prompt spread)"), " | Range: ", pdfAuditResult.scoreRange, " | Auditors: ", pdfAuditResult.auditorCount, "/", pdfAuditResult.requestedAuditors), /* @__PURE__ */ React.createElement("div", null, "Individual scores: ", pdfAuditResult.scores.join(", ")), /* @__PURE__ */ React.createElement("div", null, pdfAuditResult.icc >= 0.9 ? "\u2705 Excellent agreement \u2014 auditors highly consistent" : pdfAuditResult.icc >= 0.75 ? "\u2705 Good agreement \u2014 scores clustered tightly" : pdfAuditResult.icc >= 0.5 ? "\u26A0\uFE0F Moderate agreement \u2014 some variation between auditors" : "\u26A0\uFE0F Variable agreement \u2014 consider increasing auditor count")))), (() => {
       const critCount = (pdfAuditResult.critical || []).length;
       const seriousCount = (pdfAuditResult.serious || pdfAuditResult.major || []).length;
@@ -5390,7 +5430,18 @@ Return ONLY JSON:
           title: t("pdf_audit.dashboard.fidelity_limited_title") || "This is an ACCESSIBILITY score only. Some source content may not have carried over" + (typeof pdfFixResult.integrityCoverage === "number" ? " (" + pdfFixResult.integrityCoverage + "% of source text preserved)" : "") + " \u2014 verify content fidelity (review the Diff) before distributing."
         },
         t("pdf_audit.dashboard.fidelity_limited") || "\u26A0 verify content"
-      ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold " + (_vio === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _vio === 0 ? t("pdf_audit.dashboard.zero_issues") || "0 content issues" : _vio + " " + (t("pdf_audit.dashboard.issues_left") || "content issues")), veraPdfBusy && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-indigo-100 text-indigo-700", title: t("pdf_audit.pdfua_badge.validating") || "Validating PDF/UA-1 (ISO 14289-1) with veraPDF\u2026" }, "\u23F3 ", t("pdf_audit.dashboard.pdfua_validating") || "PDF/UA: validating\u2026"), !veraPdfBusy && lastTaggedValidation && (() => {
+      ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold " + (_vio === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _vio === 0 ? t("pdf_audit.dashboard.zero_issues") || "0 content issues" : _vio + " " + (t("pdf_audit.dashboard.issues_left") || "content issues")), _structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800",
+          title: (t("pdf_audit.dashboard.foundations_title") || "Length-independent structural foundations DETECTED in the remediated document \u2014 presence only, not validated for correctness, and separate from the per-issue content score above. Present:") + " " + _structuralFoundations.present.join("; ")
+        },
+        "\u{1F3D7}\uFE0F ",
+        _structuralFoundations.present.length,
+        _structuralFoundations.checked ? "/" + _structuralFoundations.checked : "",
+        " ",
+        t("pdf_audit.dashboard.foundations") || "foundations"
+      ), veraPdfBusy && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-indigo-100 text-indigo-700", title: t("pdf_audit.pdfua_badge.validating") || "Validating PDF/UA-1 (ISO 14289-1) with veraPDF\u2026" }, "\u23F3 ", t("pdf_audit.dashboard.pdfua_validating") || "PDF/UA: validating\u2026"), !veraPdfBusy && lastTaggedValidation && (() => {
         const _v = lastTaggedValidation.veraPdf;
         const _pev = lastTaggedValidation.postExportValidator && lastTaggedValidation.postExportValidator.summary;
         const _sc = lastTaggedValidation.pdfUa1Checks && lastTaggedValidation.pdfUa1Checks.summary;
