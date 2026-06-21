@@ -1020,13 +1020,40 @@ window.StemLab = window.StemLab || {
           cx.fillStyle = 'rgba(15,23,42,0.85)';
           cx.fillRect(0, 0, cw, ch);
           var colors = { S: '#3b82f6', I: '#ef4444', R: '#22c55e' };
+          // Faint transmission-radius halos around infected agents (shows the contagion reach)
+          cx.save();
+          cx.globalCompositeOperation = 'lighter';
+          for (var jh = 0; jh < particles.length; jh++) {
+            var ph = particles[jh];
+            if (ph.state !== 'I') continue;
+            var halo = cx.createRadialGradient(ph.x, ph.y, 0, ph.x, ph.y, infRadius);
+            halo.addColorStop(0, 'rgba(239,68,68,0.15)');
+            halo.addColorStop(1, 'rgba(239,68,68,0)');
+            cx.fillStyle = halo;
+            cx.beginPath(); cx.arc(ph.x, ph.y, infRadius, 0, Math.PI * 2); cx.fill();
+          }
+          cx.restore();
+          // Susceptible + recovered dots
           for (var j = 0; j < particles.length; j++) {
             var p = particles[j];
+            if (p.state === 'I') continue;
             cx.beginPath();
             cx.arc(p.x, p.y, 3, 0, Math.PI * 2);
             cx.fillStyle = colors[p.state] || '#94a3b8';
             cx.fill();
           }
+          // Infected dots last, with a hot glow so outbreaks read at a glance
+          cx.save();
+          cx.shadowColor = '#ef4444'; cx.shadowBlur = 8;
+          cx.fillStyle = colors.I;
+          for (var ji = 0; ji < particles.length; ji++) {
+            var pI = particles[ji];
+            if (pI.state !== 'I') continue;
+            cx.beginPath();
+            cx.arc(pI.x, pI.y, 3.3, 0, Math.PI * 2);
+            cx.fill();
+          }
+          cx.restore();
           // legend
           cx.font = '10px system-ui';
           cx.fillStyle = '#3b82f6'; cx.fillText('\u25CF Susceptible', 10, ch - 8);

@@ -647,9 +647,13 @@
             c.save();
             c.translate(cx, baseY - 40);
             c.rotate(tilt);
-            c.strokeStyle = scaleSolved ? '#22c55e' : '#6366f1';
+            var beamCol = scaleSolved ? '#22c55e' : '#6366f1';
+            c.save();
+            c.shadowColor = beamCol; c.shadowBlur = scaleSolved ? 16 : 8;
+            c.strokeStyle = beamCol;
             c.lineWidth = 4;
             c.beginPath(); c.moveTo(-w * 0.35, 0); c.lineTo(w * 0.35, 0); c.stroke();
+            c.restore();
 
             // Left pan
             var panW = 90;
@@ -683,10 +687,13 @@
             if (scaleSolved) {
               c.fillStyle = 'rgba(34,197,94,0.2)';
               c.fillRect(0, 0, w, 28);
+              c.save();
+              c.shadowColor = 'rgba(34,197,94,0.9)'; c.shadowBlur = 10;
               c.fillStyle = '#22c55e';
               c.font = 'bold 14px sans-serif';
               c.textAlign = 'center';
               c.fillText('\u2705 Balanced! Equation solved!', cx, 19);
+              c.restore();
             }
           };
 

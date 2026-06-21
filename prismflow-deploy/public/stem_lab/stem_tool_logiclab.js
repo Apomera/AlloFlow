@@ -2452,6 +2452,9 @@ window.StemLab = window.StemLab || {
                       var gx = W * 0.55, gy = H * 0.5;
                       c2.strokeStyle = op.color;
                       c2.lineWidth = 2;
+                      // Gate + signal paths glow in the op colour
+                      c2.save();
+                      c2.shadowColor = op.color; c2.shadowBlur = 12;
                       // Input lines
                       c2.beginPath();
                       c2.moveTo(gx - 60, gy - 12);
@@ -2460,7 +2463,7 @@ window.StemLab = window.StemLab || {
                       c2.lineTo(gx - 20, gy + 12);
                       c2.stroke();
                       // Gate body (AND/OR shape)
-                      c2.fillStyle = 'rgba(167,139,250,0.2)';
+                      c2.fillStyle = 'rgba(167,139,250,0.28)';
                       c2.beginPath();
                       if (op.name === 'AND' || op.name === 'NAND') {
                         c2.moveTo(gx - 20, gy - 18);
@@ -2488,6 +2491,7 @@ window.StemLab = window.StemLab || {
                       c2.moveTo(gx + (op.name === 'NAND' ? 25 : 20), gy);
                       c2.lineTo(gx + 60, gy);
                       c2.stroke();
+                      c2.restore();
                       // Labels
                       c2.fillStyle = '#fef3c7';
                       c2.font = 'bold 11px monospace';

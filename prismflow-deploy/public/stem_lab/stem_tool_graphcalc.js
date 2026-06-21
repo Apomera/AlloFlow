@@ -525,7 +525,7 @@
               expr = expr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
               if (/sin|cos|tan/.test(expr)) usedTrig = true;
               var compiled = math.compile(expr);
-              c.strokeStyle = fn.color; c.lineWidth = 2.5; if (fi === 0) { c.shadowColor = fn.color; c.shadowBlur = 9; } c.beginPath();
+              c.strokeStyle = fn.color; c.lineWidth = 2.5; c.shadowColor = fn.color; c.shadowBlur = 8; c.beginPath();
               var started = false; var plotStep = xRange / W; var prevPpy = null;
               for (var mx = win.xmin; mx <= win.xmax; mx += plotStep) {
                 try {
@@ -548,7 +548,7 @@
           // Zeros & intersections markers
           if (d._zeros) d._zeros.forEach(function(z) {
             var zx = toPixelX(z.x); var zy = toPixelY(0);
-            c.beginPath(); c.arc(zx, zy, 5, 0, Math.PI * 2); c.fillStyle = '#34d399'; c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
+            c.save(); c.shadowColor = '#34d399'; c.shadowBlur = 8; c.beginPath(); c.arc(zx, zy, 5, 0, Math.PI * 2); c.fillStyle = '#34d399'; c.fill(); c.restore(); c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
             c.fillStyle = '#34d399'; c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillText('x=' + Number(z.x.toPrecision(4)), zx, zy - 10);
           });
           if (d._intersections) d._intersections.forEach(function(pt) {

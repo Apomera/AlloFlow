@@ -3003,7 +3003,9 @@ return React.createElement("div", {
               c2.strokeRect(burX - 6, burY, 12, burH);
               c2.font = '8px monospace'; c2.fillStyle = '#7dd3fc'; c2.textAlign = 'left';
               c2.fillText('NaOH', burX + 10, burY + 12);
-              // Drip
+              // Drip — glowing NaOH beads
+              c2.save();
+              c2.shadowColor = 'rgba(125,211,252,0.9)'; c2.shadowBlur = 6;
               for (var dr = 0; dr < 3; dr++) {
                 var drY = burY + burH + 10 + ((t * 50 + dr * 18) % 40);
                 c2.fillStyle = '#7dd3fc';
@@ -3011,6 +3013,7 @@ return React.createElement("div", {
                 c2.arc(burX, drY, 2, 0, Math.PI * 2);
                 c2.fill();
               }
+              c2.restore();
               // Beaker
               var bkY = H * 0.55;
               var bkW = 70;
@@ -3027,6 +3030,12 @@ return React.createElement("div", {
               else solColor = 'rgba(217, 70, 239, 0.7)'; // pink past 8.3
               c2.fillStyle = solColor;
               c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 55);
+              // Liquid-surface sheen (depth highlight, not a color/pH change)
+              var solSheen = c2.createLinearGradient(0, bkY + 5, 0, bkY + 30);
+              solSheen.addColorStop(0, 'rgba(255,255,255,0.20)');
+              solSheen.addColorStop(1, 'rgba(255,255,255,0)');
+              c2.fillStyle = solSheen;
+              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 25);
               c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#cbd5e1'; c2.textAlign = 'center';
               c2.fillText('HCl + indicator', burX, bkY + 75);
               // RIGHT: pH vs volume plot
@@ -3047,7 +3056,9 @@ return React.createElement("div", {
               c2.setLineDash([]);
               c2.font = '7px monospace'; c2.fillStyle = '#fbbf24'; c2.textAlign = 'center';
               c2.fillText('Equivalence', plotX + plotW * 0.50, plotY + plotH - 4);
-              // Plot curve up to current cyc
+              // Plot curve up to current cyc — neon glow on the key data trace
+              c2.save();
+              c2.shadowColor = 'rgba(16,185,129,0.85)'; c2.shadowBlur = 8;
               c2.strokeStyle = '#10b981'; c2.lineWidth = 2;
               c2.beginPath();
               for (var px = 0; px <= cyc * plotW; px++) {
@@ -3061,13 +3072,18 @@ return React.createElement("div", {
                 else c2.lineTo(plotX + px, py);
               }
               c2.stroke();
-              // Current marker
+              c2.restore();
+              // Current marker — glowing pulse so the eye tracks the titration point
               var cpX = plotX + cyc * plotW;
               var cpY = plotY + (1 - pH / 14) * plotH;
+              var cpPulse = 5 + Math.sin(t * 4) * 1.2;
+              c2.save();
+              c2.shadowColor = 'rgba(253,224,71,0.95)'; c2.shadowBlur = 12;
               c2.fillStyle = '#fde047';
               c2.beginPath();
-              c2.arc(cpX, cpY, 5, 0, Math.PI * 2);
+              c2.arc(cpX, cpY, cpPulse, 0, Math.PI * 2);
               c2.fill();
+              c2.restore();
               c2.fillStyle = 'rgba(0,0,0,0.85)';
               c2.fillRect(8, H - 18, W - 16, 16);
               c2.font = 'bold 9px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';

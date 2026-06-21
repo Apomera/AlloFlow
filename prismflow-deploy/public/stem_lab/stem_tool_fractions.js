@@ -11099,18 +11099,31 @@ window.StemLab = window.StemLab || {
                   var cx = fi * cellW + cellW / 2;
                   var cy = H * 0.40;
                   var R = 35;
-                  // Pie chart
+                  // Pie chart — filled slices glow softly; a glossy dome highlight on top
                   for (var slc = 0; slc < f.den; slc++) {
                     var a1 = (slc / f.den) * Math.PI * 2 - Math.PI / 2;
                     var a2 = ((slc + 1) / f.den) * Math.PI * 2 - Math.PI / 2;
-                    c2.fillStyle = slc < f.num ? f.color : '#1e293b';
+                    var filled = slc < f.num;
+                    c2.save();
+                    if (filled) { c2.shadowColor = f.color; c2.shadowBlur = 10; }
+                    c2.fillStyle = filled ? f.color : '#1e293b';
                     c2.beginPath();
                     c2.moveTo(cx, cy);
                     c2.arc(cx, cy, R, a1, a2);
                     c2.closePath();
                     c2.fill();
+                    c2.restore();
                     c2.strokeStyle = '#020210'; c2.lineWidth = 0.5; c2.stroke();
                   }
+                  // Glossy dome highlight (upper-left light) clipped to the pie
+                  c2.save();
+                  c2.beginPath(); c2.arc(cx, cy, R, 0, Math.PI * 2); c2.clip();
+                  var glossF = c2.createRadialGradient(cx - R * 0.35, cy - R * 0.4, 1, cx - R * 0.35, cy - R * 0.4, R * 1.2);
+                  glossF.addColorStop(0, 'rgba(255,255,255,0.28)');
+                  glossF.addColorStop(0.5, 'rgba(255,255,255,0)');
+                  c2.fillStyle = glossF;
+                  c2.fillRect(cx - R, cy - R, R * 2, R * 2);
+                  c2.restore();
                   c2.strokeStyle = f.color; c2.lineWidth = 1.5;
                   c2.beginPath();
                   c2.arc(cx, cy, R, 0, Math.PI * 2);

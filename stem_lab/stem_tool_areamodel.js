@@ -1056,6 +1056,12 @@ window.StemLab = window.StemLab || {
                   // Right side (3 \u00D7 2) = 6
                   c2.fillStyle = phase < 1 ? 'rgba(251,113,133,0.5)' : '#fb7185';
                   c2.fillRect(ox + 4 * unit, oy, 2 * unit, 3 * unit);
+                  // Glossy top-light sheen across the area tiles (depth, not a value change)
+                  var amSheen = c2.createLinearGradient(0, oy, 0, oy + 3 * unit);
+                  amSheen.addColorStop(0, 'rgba(255,255,255,0.18)');
+                  amSheen.addColorStop(0.5, 'rgba(255,255,255,0)');
+                  c2.fillStyle = amSheen;
+                  c2.fillRect(ox, oy, 6 * unit, 3 * unit);
                   // Grid
                   c2.strokeStyle = 'rgba(255,255,255,0.3)';
                   c2.lineWidth = 0.5;
@@ -1071,13 +1077,16 @@ window.StemLab = window.StemLab || {
                     c2.lineTo(ox + 6 * unit, oy + j * unit);
                     c2.stroke();
                   }
-                  // Divider
+                  // Divider — glowing so the split between the two products pops
+                  c2.save();
+                  c2.shadowColor = 'rgba(253,224,71,0.9)'; c2.shadowBlur = 8;
                   c2.strokeStyle = '#fde047';
                   c2.lineWidth = 3;
                   c2.beginPath();
                   c2.moveTo(ox + 4 * unit, oy);
                   c2.lineTo(ox + 4 * unit, oy + 3 * unit);
                   c2.stroke();
+                  c2.restore();
                   // Labels
                   c2.fillStyle = '#22d3ee';
                   c2.font = 'bold 14px serif';

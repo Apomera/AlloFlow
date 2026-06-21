@@ -1286,7 +1286,9 @@ window.StemLab = window.StemLab || {
                         c2.moveTo(ox - cellW * 0.4, oy); c2.lineTo(ox + cellW * 0.4, oy);
                         c2.moveTo(ox, oy - cellH * 0.4); c2.lineTo(ox, oy + cellH * 0.4);
                         c2.stroke();
-                        // Curve
+                        // Curve — neon glow per function color + a light bead tracing it
+                        c2.save();
+                        c2.shadowColor = fn.color; c2.shadowBlur = 7;
                         c2.strokeStyle = fn.color; c2.lineWidth = 2;
                         c2.beginPath();
                         for (var x = -cellW * 0.4; x <= cellW * 0.4; x++) {
@@ -1297,6 +1299,14 @@ window.StemLab = window.StemLab || {
                           else c2.lineTo(ox + x, py);
                         }
                         c2.stroke();
+                        // Light bead sweeping along the curve (stays within the cell)
+                        var beadX = -cellW * 0.4 + ((t * 0.22 + fi * 0.13) % 1) * cellW * 0.8;
+                        var beadY = oy - fn.f(beadX / 12) * 8;
+                        if (beadY > oy - cellH * 0.46 && beadY < oy + cellH * 0.46) {
+                          c2.shadowBlur = 10; c2.fillStyle = '#ffffff';
+                          c2.beginPath(); c2.arc(ox + beadX, beadY, 2.3, 0, Math.PI * 2); c2.fill();
+                        }
+                        c2.restore();
                         // Label
                         c2.font = 'bold 9px sans-serif'; c2.fillStyle = fn.color; c2.textAlign = 'center';
                         c2.fillText(fn.name, ox, oy + cellH * 0.45);

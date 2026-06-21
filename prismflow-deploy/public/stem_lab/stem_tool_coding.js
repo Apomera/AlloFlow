@@ -564,16 +564,21 @@
               // Depth-based opacity and width
               var opacity = Math.max(0.2, Math.min(1.0, avgScale));
               var lineWidth = Math.max(0.5, (l.width || 2) * avgScale);
+              var strokeCol = l.color || '#6366f1';
               ctx3d.beginPath();
               ctx3d.moveTo(p1.x, p1.y);
               ctx3d.lineTo(p2.x, p2.y);
-              ctx3d.strokeStyle = l.color || '#6366f1';
+              ctx3d.strokeStyle = strokeCol;
               ctx3d.lineWidth = lineWidth;
               ctx3d.globalAlpha = opacity;
               ctx3d.lineCap = 'round';
+              // Neon trail — the turtle's path glows in its own colour (scales with depth)
+              ctx3d.shadowColor = strokeCol;
+              ctx3d.shadowBlur = Math.max(2, 6 * avgScale);
               ctx3d.stroke();
             }
             ctx3d.globalAlpha = 1.0;
+            ctx3d.shadowBlur = 0;
           }
 
           // ── 3D Grid Floor ──
@@ -1726,6 +1731,12 @@
               var tp = project3D(turtleState.x - 250, turtleState.y - 250, turtleZ);
               ctx.save();
               ctx.translate(tp.x, tp.y);
+              // Soft glow halo under the turtle "pen" so it reads as the active drawing point
+              var tGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, 16 * tp.scale);
+              tGlow.addColorStop(0, 'rgba(94,234,212,0.45)');
+              tGlow.addColorStop(1, 'rgba(94,234,212,0)');
+              ctx.fillStyle = tGlow;
+              ctx.beginPath(); ctx.arc(0, 0, 16 * tp.scale, 0, Math.PI * 2); ctx.fill();
               ctx.rotate((turtleState.angle + 90) * Math.PI / 180);
               ctx.font = (18 * tp.scale).toFixed(0) + 'px sans-serif';
               ctx.textAlign = 'center';

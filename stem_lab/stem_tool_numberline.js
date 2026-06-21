@@ -1985,10 +1985,13 @@ window.StemLab = window.StemLab || {
                       c2.fillStyle = '#020210';
                       c2.fillRect(0, 0, W, H);
                       var midY = H / 2;
+                      c2.save();
+                      c2.shadowColor = 'rgba(125,211,252,0.6)'; c2.shadowBlur = 5;
                       c2.strokeStyle = '#7dd3fc'; c2.lineWidth = 2;
                       c2.beginPath();
                       c2.moveTo(20, midY); c2.lineTo(W - 20, midY);
                       c2.stroke();
+                      c2.restore();
                       var pxPerUnit = (W - 40) / 20;
                       for (var v = -10; v <= 10; v++) {
                         var px = (W / 2) + v * pxPerUnit;
@@ -2000,7 +2003,9 @@ window.StemLab = window.StemLab || {
                       }
                       var current = Math.round(7 * Math.sin(t * 0.8));
                       var cpx = (W / 2) + current * pxPerUnit;
-                      // Arrow from 0 to current
+                      // Arrow from 0 to current — glowing amber so the magnitude reads at a glance
+                      c2.save();
+                      c2.shadowColor = 'rgba(251,191,36,0.85)'; c2.shadowBlur = 8;
                       c2.strokeStyle = '#fbbf24'; c2.lineWidth = 3;
                       c2.beginPath();
                       c2.moveTo(W / 2, midY - 15); c2.lineTo(cpx, midY - 15);
@@ -2010,6 +2015,7 @@ window.StemLab = window.StemLab || {
                       c2.moveTo(cpx, midY - 15); c2.lineTo(cpx + ahx, midY - 18);
                       c2.moveTo(cpx, midY - 15); c2.lineTo(cpx + ahx, midY - 12);
                       c2.stroke();
+                      c2.restore();
                       c2.fillStyle = '#fbbf24'; c2.font = 'bold 10px sans-serif'; c2.textAlign = 'center';
                       c2.fillText('|' + current + '| = ' + Math.abs(current), (W / 2 + cpx) / 2, midY - 20);
                       c2.fillStyle = '#dc2626';
