@@ -294,7 +294,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for punne
   "lengthBucket": 82,
   "paths": 2,
   "selects": 4,
-  "sha": "e96568ab5232160d",
+  "sha": "f74cae8558404eb3",
   "svgs": 1,
 }
 `;

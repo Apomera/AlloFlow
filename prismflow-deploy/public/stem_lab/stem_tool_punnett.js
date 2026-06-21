@@ -1291,6 +1291,7 @@ window.StemLab = window.StemLab || {
 
           var askAI = function() {
             if (!aiQuestion.trim()) return;
+            if (typeof ctx.callGemini !== 'function') { updMulti({ _aiResponse: 'AI tutor is not available right now.', _aiLoading: false }); return; }
             updMulti({ _aiLoading: true, _aiResponse: '' });
             var prompt = 'You are a friendly genetics tutor helping a student learn about genetics and Punnett squares. ' +
               'They are in the "' + subtool + '" section of the Punnett Square Lab. ' +
@@ -1322,9 +1323,15 @@ window.StemLab = window.StemLab || {
               ['X' + momAlleles[1] + 'X' + dadXAllele, 'X' + momAlleles[1] + 'Y']
             ];
           } else {
+            // Normalize each heterozygote to dominant-allele-first (uppercase-first) so
+            // 'tT' and 'Tt' count as ONE genotype. Without this, Tt × Tt renders a wrong
+            // 1:1:1:1 genotype ratio instead of the correct 1:2:1 (the dihybrid grid below
+            // already normalizes). Sex-linked genotypes are multi-char (XCXC / XCY) and are
+            // handled in the branch above, so this only touches 2-char autosomal genotypes.
+            var normGeno = function(g) { return (g.length === 2 && g[0] > g[1]) ? g[1] + g[0] : g; };
             grid = [
-              [parent1[0] + parent2[0], parent1[0] + parent2[1]],
-              [parent1[1] + parent2[0], parent1[1] + parent2[1]]
+              [normGeno(parent1[0] + parent2[0]), normGeno(parent1[0] + parent2[1])],
+              [normGeno(parent1[1] + parent2[0]), normGeno(parent1[1] + parent2[1])]
             ];
           }
 
@@ -1896,7 +1903,7 @@ window.StemLab = window.StemLab || {
                   h('tbody', null, parent1.map(function(a, r) {
                     var rowLabel = isSexLinked ? 'X' + a : a;
                     return h('tr', { key: r },
-                      h('td', { className: 'w-16 h-16 text-center text-lg font-bold text-violet-600 bg-violet-50 border border-violet-200' }, rowLabel),
+                      h('th', { scope: 'row', className: 'w-16 h-16 text-center text-lg font-bold text-violet-600 bg-violet-50 border border-violet-200' }, rowLabel),
                       grid[r].map(function(g, c) {
                         var p = phenotype(g);
                         var pc = phenoColor(p);
@@ -2187,7 +2194,7 @@ window.StemLab = window.StemLab || {
                       )),
                       h('tbody', null, diGametes1.map(function(gam, ri) {
                         return h('tr', { key: ri },
-                          h('td', { className: 'w-14 h-14 text-center text-xs font-bold text-violet-600 bg-violet-50 border border-violet-200' }, gam),
+                          h('th', { scope: 'row', className: 'w-14 h-14 text-center text-xs font-bold text-violet-600 bg-violet-50 border border-violet-200' }, gam),
                           diGrid[ri].map(function(geno, ci) {
                             var dp = diPhenotype(geno);
                             var dpc = diPhenoColor(dp);
