@@ -3225,7 +3225,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // STOP-AWARE: the user's Stop must be durable across the retry boundary (runAutoFixLoop
                     // resets the abort flag at entry, so without these checks the wrapper would relaunch it).
                     let _loopTries = 0, _prevScore = -1;
-                    while (r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped()) {
+                    // (2026-06-20) Throttle bail: if the AI semantic audit was degraded (the service is being
+                    // throttled) AND the deterministic checks are already CLEAN, more AI passes can't help —
+                    // they'd just grind against the throttle. Ship the structural result with a clear message
+                    // instead of looping. (The pipeline now sets afterScore to the deterministic score under
+                    // degradation, so this is the one residual case where the loop would otherwise still run.)
+                    const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
+                    if (_aiThrottledClean) addToast(t('toasts.ai_throttled_shipped') || '⚠ The AI service is throttled, so the AI semantic score is incomplete — but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.', 'warning');
+                    while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped()) {
                       await runAutoFixLoop(8);
                       if (_stopped()) break; // user pressed Stop during the loop — honor it, don't relaunch
                       r = pdfFixResultRef.current;
@@ -4846,15 +4853,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';
                                 const totalFixes = (chunk.deterministicFixCount || 0) + (chunk.surgicalFixCount || 0);
-                                const scoreColor = chunk.score >= 80 ? 'text-green-700' : chunk.score >= 60 ? 'text-amber-700' : 'text-red-700';
+                                // (2026-06-20) A section whose audit didn't return a number (AI throttled) must
+                                // NOT be painted red 0 — that reads as "scored zero / broken" when it's just "not
+                                // scored yet". Render it neutral slate with an honest "not scored" label.
+                                const _hasScore = typeof chunk.score === 'number';
+                                const scoreColor = !_hasScore ? 'text-slate-500' : chunk.score >= 80 ? 'text-green-700' : chunk.score >= 60 ? 'text-amber-700' : 'text-red-700';
                                 return (
-                                  <div key={ci} className={`flex items-center gap-x-2 gap-y-1 px-3 py-2 rounded-lg border text-xs flex-wrap ${isWorking ? 'bg-indigo-50 border-indigo-200 animate-pulse' : chunk.score >= 80 ? 'bg-green-50 border-green-200' : chunk.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-                                    <span>{isWorking ? '⏳' : chunk.score >= 80 ? '✅' : chunk.score >= 60 ? '🟡' : '🔴'}</span>
+                                  <div key={ci} className={`flex items-center gap-x-2 gap-y-1 px-3 py-2 rounded-lg border text-xs flex-wrap ${isWorking ? 'bg-indigo-50 border-indigo-200 animate-pulse' : !_hasScore ? 'bg-slate-50 border-slate-200' : chunk.score >= 80 ? 'bg-green-50 border-green-200' : chunk.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                                    <span>{isWorking ? '⏳' : !_hasScore ? '⋯' : chunk.score >= 80 ? '✅' : chunk.score >= 60 ? '🟡' : '🔴'}</span>
                                     <span className="font-bold text-slate-800">§{(chunk.index || ci) + 1}</span>
                                     {!isWorking && <>
                                       <span className="text-slate-600" aria-hidden="true">·</span>
                                       <span className="text-slate-700">WCAG</span>
-                                      <span className={`font-black ${scoreColor}`}>{chunk.score}/100</span>
+                                      <span className={`font-black ${scoreColor}`}>{_hasScore ? chunk.score + '/100' : (t('pdf_audit.live_chunk.not_scored') || 'not scored (AI throttled)')}</span>
                                       {totalFixes > 0 && <>
                                         <span className="text-slate-600" aria-hidden="true">·</span>
                                         <span
@@ -6480,6 +6491,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const beforeDisplay = blendedBefore ?? '?';
                         const afterDisplay = blendedAfter !== null ? blendedAfter : '?';
                         const gain = (blendedAfter !== null && blendedBefore !== null) ? blendedAfter - blendedBefore : 0;
+                        // Degraded-AI honesty (2026-06-20): when the AI semantic audit was throttle-degraded,
+                        // the pipeline set afterScore to the reliable DETERMINISTIC structural number and
+                        // flagged it. Render it NEUTRAL (slate, no green, no +gain) + labeled below, so a
+                        // structural-only score is never read as a confident AI-verified result.
+                        const _aiIncomplete = !!pdfFixResult._aiVerificationIncomplete;
                         return (<>
                       <div className="flex items-center justify-center gap-4">
                         <div className="text-center">
@@ -6490,12 +6506,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                         <div className="text-2xl text-slate-600">{'\u2192'}</div>
                         <div className="text-center">
-                          <div className={`text-3xl font-black ${(blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}>
+                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-500' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}>
                             {afterDisplay}<span className="text-sm opacity-60">/100</span>
                           </div>
                           <div className="text-[11px] font-bold text-slate-600 uppercase">After</div>
                         </div>
-                        {gain > 0 && (
+                        {gain > 0 && !_aiIncomplete && (
                           <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
                             +{gain}
                           </div>
@@ -6503,13 +6519,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       {/* Individual engine scores with /2 formula */}
                       <div className="text-center mt-1 text-[11px]">
-                        <div className="inline-flex items-center gap-1">
+                        <div className="inline-flex items-center gap-1 flex-wrap justify-center">
                           <span className="text-slate-600">(</span>
-                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric (self-consistency)'}>AI: {initialAi ?? '?'}{'\u2192'}{afterAi ?? '?'}</span>
-                          {/* Only show the "+ checks / 2" BLEND formula when a blend actually happened. When
-                              axe-core was unavailable the score is AI-only, so asserting a 50/50 EA blend
-                              that didn't occur was misleading (the formula didn't equal the headline). */}
-                          {pdfFixResult._scoreIsBlended ? (<>
+                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.ai_rubric_label') || 'AI Rubric (self-consistency)'}>AI: {initialAi ?? '?'}{'\u2192'}{_aiIncomplete ? (t('pdf_audit.score.ai_incomplete_short') || 'incomplete') : (afterAi ?? '?')}</span>
+                          {/* When the AI semantic audit was throttle-degraded/partial, the headline shows the
+                              DETERMINISTIC structural score (the reliable, completed engine) \u2014 labeled so it's
+                              never read as an AI-verified or blended number. Otherwise show the real blend, or
+                              the honest AI-only note when axe-core itself was unavailable. */}
+                          {_aiIncomplete ? (
+                          <span className="text-slate-600">) {'\u2014'} {t('pdf_audit.score.det_only_incomplete') || 'structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score'}</span>
+                          ) : pdfFixResult._scoreIsBlended ? (<>
                           <span className="text-slate-600">+</span>
                           <span className="text-blue-700 font-bold" title={t('pdf_audit.score.det_label') || 'Deterministic engines \u2014 the more conservative of axe-core / IBM Equal Access'}>checks: {initialAxe ?? '?'}{'\u2192'}{afterDet ?? '?'}</span>
                           <span className="text-slate-600">) / 2</span>
@@ -6590,7 +6609,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Verification details */}
                       {pdfFixResult.verificationAudit && (
                         <div className="space-y-2">
-                          <div className="text-xs text-emerald-700 font-medium">{pdfFixResult.verificationAudit.summary}</div>
+                          {/* (2026-06-20) When the AI audit was throttle-degraded, the raw summary says
+                              "Score unavailable…" — but the headline now shows the deterministic structural
+                              score. Render ONE reconciled amber line instead of the contradictory green one. */}
+                          <div className={`text-xs font-medium ${pdfFixResult._aiVerificationIncomplete ? 'text-amber-700' : 'text-emerald-700'}`}>{pdfFixResult._aiVerificationIncomplete
+                            ? (t('pdf_audit.verification.ai_incomplete_summary') || ('AI semantic verification incomplete' + (pdfFixResult.verificationAudit.chunksAudited != null && pdfFixResult.verificationAudit.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '') + '. The score shown is structural/automated checks; re-run for a full AI-verified score.'))
+                            : pdfFixResult.verificationAudit.summary}</div>
                           {(pdfFixResult.verificationAudit.issues || []).length > 0 && (
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Remaining Issues ({pdfFixResult.verificationAudit.issues.length})</div>

@@ -15600,7 +15600,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         ? (eaScoreAvailable ? Math.min(axeResults.score, eaResults.score) : axeResults.score)
         : null;
       let axeCoreFailed = false;
-      if (finalAfterScore !== null && axeScoreAvailable) {
+      // Degraded AI (2026-06-20): the AI rubric did NOT produce a trustworthy score this run — no audit,
+      // a null/NaN score, the partial-audit floor tripped, or a synthesized axe-only stand-in. NOT keyed
+      // off _partialAudit (a 29/30 audit that still produced a real number is trustworthy → keeps the
+      // blend). The AI rubric and the deterministic engines read DIFFERENT things; when the AI half is
+      // INCOMPLETE we show the reliable deterministic structural score, clearly labeled "AI semantic
+      // audit incomplete" — never a blended/AI-verified composite (no overclaim of verification that
+      // didn't finish).
+      let _aiVerificationIncomplete = false;
+      const _aiDegraded = !verification || verification.score === null || verification._scoreDegraded || verification.synthesized;
+      if (finalAfterScore !== null && !_aiDegraded && axeScoreAvailable) {
         // Blend the AI rubric with the deterministic WCAG engines, 50/50.
         // (REMOVED 2026-06-20 — the 75/25 deterministic upweight that fired when the doc was axe-CLEAN +
         // deterministic>=90. Its premise — "a document that PASSES the real checkers shouldn't be dragged
@@ -15612,6 +15621,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const blendedFinal = Math.round((finalAfterScore + deterministicScore) / 2);
         warnLog(`[PDF Fix] Final blended score (50/50): AI ${finalAfterScore} + deterministic ${deterministicScore} (axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}) = ${blendedFinal}`);
         finalAfterScore = blendedFinal;
+      } else if (_aiDegraded && axeScoreAvailable) {
+        // AI semantic audit incomplete but the deterministic engines DID run → headline = the reliable
+        // structural score (min of axe/EA), flagged so the UI labels it honestly (not a blend, not green).
+        finalAfterScore = deterministicScore;
+        _aiVerificationIncomplete = true;
+        warnLog('[PDF Fix] AI semantic audit incomplete (degraded/partial/synthesized) — headline = deterministic structural ' + deterministicScore + ' (min of axe/EqualAccess); re-run for a full AI-verified score.');
       } else if (!axeScoreAvailable) {
         // Dual-engine guarantee is broken — surface this to the UI so the banner can warn users.
         axeCoreFailed = true;
@@ -15956,12 +15971,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // the re-blend below actually used — not a stale EA from before recovery. (A2-MED, 2026-06-18)
           if (_reEaOk) eaResults = _reEa; else eaResults = null;
           const _reDet = _reAxeOk ? (_reEaOk ? Math.min(_reAxe.score, _reEa.score) : _reAxe.score) : null;
+          const _reAiDegraded = !verification || verification.score === null || verification._scoreDegraded || verification.synthesized;
           const _reAi = verification ? verification.score : afterScore;
-          if (_reAi !== null && _reAxeOk) {
+          if (_reAi !== null && !_reAiDegraded && _reAxeOk) {
             axeCoreFailed = false;
+            _aiVerificationIncomplete = false;
             const _reBlended = Math.round((_reAi + _reDet) / 2);
             warnLog('[PDF Fix] Re-blended score after recovery mutations: AI ' + _reAi + ' + deterministic ' + _reDet + ' = ' + _reBlended + ' (was ' + finalAfterScore + ')');
             finalAfterScore = _reBlended;
+          } else if (_reAiDegraded && _reAxeOk) {
+            // AI incomplete post-recovery but deterministic re-audit is good → reliable structural score, labeled.
+            axeCoreFailed = false;
+            _aiVerificationIncomplete = true;
+            finalAfterScore = _reDet;
+            warnLog('[PDF Fix] AI semantic audit incomplete on re-audit — headline = deterministic structural ' + _reDet + '.');
           } else if (!_reAxeOk) {
             // Fresh deterministic re-audit failed: don't keep a stale blend — go AI-only and
             // mark axe as failed so the triage/_scoreIsBlended stay consistent. (#11)
@@ -16037,7 +16060,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         axeScore: axeResults ? axeResults.score : null,
         axeViolations: axeResults ? axeResults.totalViolations : 0,
         _axeCoreFailed: axeCoreFailed,
-        _scoreIsBlended: !axeCoreFailed && finalAfterScore !== null,
+        _scoreIsBlended: !axeCoreFailed && !_aiVerificationIncomplete && finalAfterScore !== null,
+        _aiVerificationIncomplete,
+        _scoreSource: _aiVerificationIncomplete ? 'deterministic-only' : (axeCoreFailed ? 'ai-only' : 'blended'),
         autoFixPasses,
         needsExpertReview,
         expertReviewReason, // 'accessibility' | 'content-fidelity' | 'both' | null — drives banner copy
