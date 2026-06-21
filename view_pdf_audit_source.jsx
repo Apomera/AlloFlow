@@ -1774,7 +1774,14 @@ function PdfAuditView(props) {
     function cleanup() { clearTimeout(timer); clearInterval(closePoll); window.removeEventListener('message', onMsg); }
     function onMsg(ev) { const d = (ev && ev.data) || {}; if (d.type === 'verapdf-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); } }
     window.addEventListener('message', onMsg);
-    handle.ready.then(() => { try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) { cleanup(); reject(e); } });
+    // Fast-fail when warming failed (verapdf-closedloop-2): the warm popup resolves `ready` with
+    // warmed=false after a 90s boot timeout but stays OPEN, and a not-booted page silently drops the
+    // validate message — so without this check the only escape was the 600s timer = a ~10-min stuck
+    // "Validating…" spinner. Reject fast + close the dead popup so the manual button takes over.
+    handle.ready.then(() => {
+      if (!handle.warmed) { cleanup(); try { win.close(); } catch (e) {} reject(new Error('veraPDF validator did not start (boot/CDN failure)')); return; }
+      try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) { cleanup(); reject(e); }
+    });
   });
   // ── Embedded veraPDF, popup-free when possible (2026-06-21, Aaron's progressive-enhancement idea) ──
   // PREFER a hidden INLINE iframe over the popup: it validates the tagged bytes in-app with no separate
@@ -6478,7 +6485,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {/* Distinct PDF/UA verdict for the EXPORTED tagged PDF — separate from the content score above.
                                 Prefers the independent veraPDF verdict; falls back to the byte/self-check. A failing
                                 PDF/UA chip never lets a green content chip stand alone (the inconsistency we fixed). */}
-                            {lastTaggedValidation && (() => {
+                            {veraPdfBusy && (
+                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-indigo-100 text-indigo-700" title={t('pdf_audit.pdfua_badge.validating') || 'Validating PDF/UA-1 (ISO 14289-1) with veraPDF…'}>⏳ {t('pdf_audit.dashboard.pdfua_validating') || 'PDF/UA: validating…'}</span>
+                            )}
+                            {!veraPdfBusy && lastTaggedValidation && (() => {
                               const _v = lastTaggedValidation.veraPdf;
                               const _pev = lastTaggedValidation.postExportValidator && lastTaggedValidation.postExportValidator.summary;
                               const _sc = lastTaggedValidation.pdfUa1Checks && lastTaggedValidation.pdfUa1Checks.summary;

@@ -1911,6 +1911,15 @@ function PdfAuditView(props) {
     }
     window.addEventListener("message", onMsg);
     handle.ready.then(() => {
+      if (!handle.warmed) {
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(new Error("veraPDF validator did not start (boot/CDN failure)"));
+        return;
+      }
       try {
         win.postMessage({ type: "verapdf-validate", bytes }, "*");
       } catch (e) {
@@ -5346,7 +5355,7 @@ Return ONLY JSON:
           title: t("pdf_audit.dashboard.fidelity_limited_title") || "This is an ACCESSIBILITY score only. Some source content may not have carried over" + (typeof pdfFixResult.integrityCoverage === "number" ? " (" + pdfFixResult.integrityCoverage + "% of source text preserved)" : "") + " \u2014 verify content fidelity (review the Diff) before distributing."
         },
         t("pdf_audit.dashboard.fidelity_limited") || "\u26A0 verify content"
-      ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold " + (_vio === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _vio === 0 ? t("pdf_audit.dashboard.zero_issues") || "0 content issues" : _vio + " " + (t("pdf_audit.dashboard.issues_left") || "content issues")), lastTaggedValidation && (() => {
+      ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold " + (_vio === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _vio === 0 ? t("pdf_audit.dashboard.zero_issues") || "0 content issues" : _vio + " " + (t("pdf_audit.dashboard.issues_left") || "content issues")), veraPdfBusy && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-indigo-100 text-indigo-700", title: t("pdf_audit.pdfua_badge.validating") || "Validating PDF/UA-1 (ISO 14289-1) with veraPDF\u2026" }, "\u23F3 ", t("pdf_audit.dashboard.pdfua_validating") || "PDF/UA: validating\u2026"), !veraPdfBusy && lastTaggedValidation && (() => {
         const _v = lastTaggedValidation.veraPdf;
         const _pev = lastTaggedValidation.postExportValidator && lastTaggedValidation.postExportValidator.summary;
         const _sc = lastTaggedValidation.pdfUa1Checks && lastTaggedValidation.pdfUa1Checks.summary;

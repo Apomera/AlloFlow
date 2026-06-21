@@ -22,7 +22,8 @@ const applyDetectedLang = (html, detected) => {
   return html.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
     const trimmed = String(langVal).trim().toLowerCase().replace(/_/g, '-');
     const invalid = !trimmed || !vl.test(trimmed);
-    const overrideToDetected = !invalid && ad && ad !== 'en' && ad !== trimmed;
+    const adBase = ad ? ad.split('-')[0] : ''; const trimBase = trimmed.split('-')[0];
+    const overrideToDetected = !invalid && ad && ad !== 'en' && adBase !== trimBase; // base-code compare preserves es-MX (lang-ell-3)
     if (invalid || overrideToDetected) { const fixed = ad || nm[trimmed] || 'en'; return '<html' + before + 'lang="' + fixed + '"'; }
     return m;
   });
@@ -44,6 +45,9 @@ describe('apply detected language to <html lang>', () => {
   });
   it('leaves a correct attribute alone when detection agrees', () => {
     expect(langOf(applyDetectedLang('<html lang="so"><body>', 'so'))).toBe('so');
+  });
+  it('PRESERVES a region subtag (es-MX) when the audit only detected the bare base (es) — lang-ell-3', () => {
+    expect(langOf(applyDetectedLang('<html lang="es-MX"><body>', 'es'))).toBe('es-MX');
   });
   it('an invalid attribute with no detection name-maps then falls back', () => {
     expect(langOf(applyDetectedLang('<html lang="spanish"><body>', null))).toBe('es');
@@ -85,7 +89,7 @@ describe('OCR picker: every option resolves to a real Tesseract model (no fake c
 describe('anti-drift: both ELL fixes are wired end-to-end', () => {
   it('the pipeline defines _applyDetectedLang with the override-to-detected condition', () => {
     expect(pipeSrc).toMatch(/const _applyDetectedLang = \(html\) =>/);
-    expect(pipeSrc).toMatch(/_ad !== 'en' && _ad !== trimmed/);
+    expect(pipeSrc).toMatch(/_ad !== 'en' && _adBase !== _trimBase/);
     expect((pipeSrc.match(/_applyDetectedLang\(/g) || []).length).toBeGreaterThanOrEqual(2); // 2 call sites (def uses `= (html)`)
   });
   it('the host owns pdfOcrLanguage state + exposes it to the pipeline', () => {

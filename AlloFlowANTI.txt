@@ -10455,7 +10455,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     // than discarding the fix (an axe-only measurement beats losing the work).
     if (aiScore == null) return (typeof axeScore === 'number') ? axeScore : null;
     if (typeof axeScore !== 'number') return aiScore;
-    return Math.round((aiScore + axeScore) / 2);
+    return Math.min(aiScore, axeScore); // weakest-layer-governs (2026-06-21; was the /2 mean — this site was missed in the redesign)
   };
   const commitOrRevertPdfFix = (prev, candidate, extras, label) => {
     const newAi = candidate.ai?.score ?? null;
@@ -15941,17 +15941,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
           break;
         }
-        // Sweep 2026-06-11 [1]: keep afterScore's SEMANTICS stable across
-        // rounds. fixAndVerifyPdf writes blend(AI, min(axe, EqualAccess));
-        // rounds used to overwrite it with a raw single AI score — the
-        // target check then compared apples to oranges and the consensus
-        // panel showed stale engine results. Recompute the same blend with
-        // fresh deterministic runs each round.
+        // Sweep 2026-06-11 [1]: keep afterScore's SEMANTICS stable across rounds. fixAndVerifyPdf writes
+        // the weakest-layer headline min(AI content, min(axe, EqualAccess)); rounds used to overwrite it
+        // with a raw single AI score — the target check then compared apples to oranges and the consensus
+        // panel showed stale engine results. Recompute the SAME governing-layer score (min, NOT a mean —
+        // weakest-layer-governs, 2026-06-21; this loop had been left on the old /2 mean) with fresh
+        // deterministic runs each round.
         let _ea = null;
         try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
         let _det = (result.axe && typeof result.axe.score === 'number') ? result.axe.score : null;
         if (_det !== null && _ea && typeof _ea.score === 'number') _det = Math.min(_det, _ea.score);
-        const newScore = (_det !== null) ? Math.round((reVerify.score + _det) / 2) : reVerify.score;
+        const newScore = (_det !== null) ? Math.min(reVerify.score, _det) : reVerify.score;
         // NOISE-AWARE COMMIT-OR-REVERT (loop fix, 2026-06-15): the blended score is half AI-rubric
         // (noisy), so reverting whenever newScore < prior threw away genuinely-improved rounds on a
         // mere AI wobble and stalled the loop short of target. Revert ONLY on a REAL regression: the
@@ -15986,6 +15986,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           issueResolution: _roundIR,
           afterScore: newScore,
           _scoreIsBlended: _det !== null,
+          // A completed re-verify clears any throttle-degraded flag from the ORIGINAL run, so a now-fully-
+          // AI-verified auto-continue score stops being shown as "AI verification incomplete" / slate /
+          // deterministic-only. (Critic's #1 miss — same root bug as the Workbench recompute VDH-1, but on
+          // the primary automated path. Only clear when this round's audit produced a real score.) 2026-06-21
+          _aiVerificationIncomplete: (typeof reVerify.score === 'number') ? false : cur._aiVerificationIncomplete,
+          _scoreSource: (typeof reVerify.score === 'number') ? (_det !== null ? 'min' : 'content-only') : cur._scoreSource,
           axeScore: result.axe && typeof result.axe.score === 'number' ? result.axe.score : cur.axeScore,
           axeViolations: result.axe ? result.axe.totalViolations : cur.axeViolations,
           secondEngineAudit: _ea || cur.secondEngineAudit,

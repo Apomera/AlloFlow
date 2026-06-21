@@ -26,10 +26,25 @@ var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, 
 var _extractNumericTokens = function (text) {
   var m = String(text || '').match(/\d[\d,]*(?:\.\d+)?/g) || [];
   var counts = new Map();
-  for (var i = 0; i < m.length; i++) {
-    var norm = m[i].replace(/,/g, '');
-    if (norm.replace(/\./g, '').length < 2) continue; // skip single digits (list markers / "page 1")
+  var _add = function (norm) {
+    // Canonicalize numerically-equal decimal forms so equivalent re-formats don't false-flag as a drop:
+    // strip trailing decimal zeros (3.50 → 3.5) and a bare trailing dot (3. → 3). (numeric-fidelity-3, 2026-06-21)
+    if (norm.indexOf('.') !== -1) norm = norm.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+    if (norm.replace(/\./g, '').length < 2) return; // skip single digits (list markers / "page 1")
     counts.set(norm, (counts.get(norm) || 0) + 1);
+  };
+  for (var i = 0; i < m.length; i++) {
+    var tok = m[i];
+    // A comma is a thousands separator ONLY in a strict \d{1,3}(,\d{3})+ shape. A comma-separated LIST of
+    // numbers ("standards 1,2,3", "ids 12,34,56") was previously glued into one number ("123456") then
+    // false-reported as LOST once remediation reflowed the list into separate tokens — so only strip TRUE
+    // thousands commas; otherwise SPLIT the run into separate tokens. (numeric-fidelity-1, 2026-06-21)
+    if (tok.indexOf(',') !== -1) {
+      if (/^\d{1,3}(,\d{3})+(?:\.\d+)?$/.test(tok)) { _add(tok.replace(/,/g, '')); }
+      else { tok.split(',').forEach(function (p) { if (p) _add(p); }); }
+    } else {
+      _add(tok);
+    }
   }
   return counts;
 };
@@ -8426,8 +8441,15 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         }
         accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
           const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
-          if (!trimmed || !_validLangPat.test(trimmed)) {
-            log(`  Deterministic: fixed invalid lang="${langVal}" → "${_detectedLang}" (${_detectedLang === 'en' ? 'fallback' : 'detected from audit'})`);
+          const invalid = !trimmed || !_validLangPat.test(trimmed);
+          // Also override a VALID-but-wrong lang="en" to the audit-detected non-English language — the same
+          // upgrade the single-doc path got, which the batch path had been missing (a Spanish/Somali source
+          // emitted as valid en mis-announces the whole doc to a screen reader). Base-code compare preserves
+          // a region subtag (es-MX). (lang-ell-2 + -3, 2026-06-21)
+          const _dBase = _detectedLang.split('-')[0];
+          const overrideToDetected = !invalid && _detectedLang && _detectedLang !== 'en' && _dBase !== trimmed.split('-')[0];
+          if (invalid || overrideToDetected) {
+            log(`  Deterministic: ${invalid ? 'fixed invalid' : 'overrode valid'} lang="${langVal}" → "${_detectedLang}" (${_detectedLang === 'en' ? 'fallback' : 'detected from audit'})`);
             return `<html${before}lang="${_detectedLang}"`;
           }
           return m;
@@ -12529,7 +12551,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         return html.replace(/<html([^>]*)lang=["']([^"']*)["']/i, (m, before, langVal) => {
           const trimmed = String(langVal).trim().toLowerCase().replace(/_/g, '-');
           const invalid = !trimmed || !_vl.test(trimmed);
-          const overrideToDetected = !invalid && _ad && _ad !== 'en' && _ad !== trimmed;
+          // Compare BASE codes so a more-specific valid region subtag (es-MX, pt-BR, zh-TW) is preserved
+          // when the audit only detected the bare base (es, pt, zh) — only a genuine language change
+          // (en→es) overrides. (lang-ell-3, 2026-06-21) Was `_ad !== trimmed` which dropped es-MX→es.
+          const _trimBase = trimmed.split('-')[0];
+          const _adBase = _ad ? _ad.split('-')[0] : '';
+          const overrideToDetected = !invalid && _ad && _ad !== 'en' && _adBase !== _trimBase;
           if (invalid || overrideToDetected) {
             const fixed = _ad || _nm[trimmed] || 'en';
             try { warnLog('  Deterministic: lang="' + langVal + '" → "' + fixed + '" (' + (_ad ? (overrideToDetected ? 'audit-detected, overrode valid ' + trimmed : 'audit-detected') : (_nm[trimmed] ? 'name-mapped' : 'fallback')) + ')'); } catch (_) {}
@@ -12868,14 +12895,21 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // later, unrelated file that happens to share the name can't pick up stale text. Ground
       // truth is then recorded by the vision-ocr fallback below (the cached text IS OCR text).
       try {
-        if ((!extractedText || extractedText.length <= 100) && typeof window !== 'undefined') {
+        if (typeof window !== 'undefined') {
+          // Read AND clear the seed UNCONDITIONALLY — TRUE single-use. The consume used to live inside the
+          // length gate below, so a BORN-DIGITAL resume (deterministic text wins, >100 chars) skipped the
+          // block and left the seed on the window global, where a later DIFFERENT scanned file sharing the
+          // same name could pick it up and inject the prior doc's text. (multisession-resume-3, 2026-06-21)
           const _seed = window.__resumeExtractedText;
-          if (!_forceFullOcr && _seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
+          window.__resumeExtractedText = null;
+          if ((!extractedText || extractedText.length <= 100) && !_forceFullOcr && _seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
             extractedText = _seed.text;
             warnLog('[Resume] Reusing cached extracted text (' + extractedText.length + ' chars) from a saved project — skipping re-extraction/OCR');
-            if (typeof addToast === 'function') addToast(t('toasts.resume_reused_cached_text') || 'Reused your saved text from the unfinished session — no re-scanning needed.', 'info');
+            // Honesty (multisession-resume-2): the cache is the PRIOR pass's OCR text. If the teacher changed
+            // the OCR language since, this reuses the old language's text — so don't claim "no re-scanning
+            // needed" unconditionally; point them to "Re-scan with OCR" if the language changed.
+            if (typeof addToast === 'function') addToast(t('toasts.resume_reused_cached_text') || 'Reused your saved text from the unfinished session. If you changed the OCR language since, use "Re-scan with OCR" to redo it.', 'info');
           }
-          window.__resumeExtractedText = null; // consume once (stale-/collision-guard)
         }
       } catch (_seedErr) { /* seed reuse is best-effort — never block extraction */ }
 
@@ -18241,9 +18275,13 @@ tr { page-break-inside: avoid; }
         // Information". Strip the leading "#"/"##"/"*" syntax Vision injects; keep real content (ordered
         // "1." numbers, dashes, body text). This is local to the text-layer draw — the upstream
         // extractedText / HTML generation (which USES the heading structure) is untouched.
+        // Strip Vision markdown heading/bullet markers from the INVISIBLE searchable/SR text layer — but
+        // NOT a literal leading '#'/'*' that's real content (ocr-fidelity-4, 2026-06-21): don't eat '#' when
+        // it's the "number of" idiom ("# of students"), a digit ("# 5 things"), or a '#'-ladder; don't eat
+        // '*' unless a letter-led bullet follows (preserves "* 5 apples", "*= x", a literal "* ").
         const ocrText = (((ocrEntry && (ocrEntry.text || ocrEntry.content || ocrEntry.fullText || '')) || '')
-          .replace(/^[ \t]*#{1,6}[ \t]+/gm, '')
-          .replace(/^[ \t]*\*[ \t]+/gm, ''));
+          .replace(/^[ \t]*#{1,6}[ \t]+(?!\d|of\b|#)/gm, '')
+          .replace(/^[ \t]*\*[ \t]+(?=[A-Za-z])/gm, ''));
         if (ocrText && ocrText.trim()) {
           _ocrTotalChars += ocrText.length;
           _ocrPagesWithText++;
