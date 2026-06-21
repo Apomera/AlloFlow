@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -1202,10 +1202,29 @@ var createDocPipeline = function(deps) {
         _geminiCap = _GEMINI_MAX_CONCURRENT;
         _geminiOkStreak = 0;
         _geminiStormAnnounced = false; // ready to warn again if a NEW storm starts later
+        // CB-2 (2026-06-21): also clear the cooldown. The last storm may have pushed _geminiCooldownUntil
+        // up to 90s out; without this, _geminiPump still refuses to start queued waiters until that stale
+        // timestamp elapses, so "restoring concurrency to 3" was a lie for up to ~90s.
+        _geminiCooldownUntil = 0;
         warnLog('[GeminiGate] Throttle cleared — restoring concurrency to ' + _GEMINI_MAX_CONCURRENT);
         _geminiPump();
       }
     }
+  };
+  // CB-1 (2026-06-21): clear the breaker at the START of a run. createDocPipeline is a session singleton,
+  // so the breaker state (reduced cap + escalated cooldown + "storm announced") persists across documents.
+  // A storm in document A that ended before 4 recovery successes left document B already throttled to 1
+  // concurrent + a stale cooldown, plus a stale "Canvas is rate-limiting" message — even though B is not
+  // being throttled. A storm signal must be EARNED by the current run, not inherited. (In-flight waiters
+  // are not cleared — only the trip state; _geminiPump picks the restored cap up immediately.)
+  var _resetGeminiBreaker = function() {
+    _geminiCap = _GEMINI_MAX_CONCURRENT;
+    _geminiAuthStreak = 0;
+    _geminiTransientStreak = 0;
+    _geminiOkStreak = 0;
+    _geminiCooldownUntil = 0;
+    _geminiStormAnnounced = false;
+    if (_geminiCooldownTimer) { try { clearTimeout(_geminiCooldownTimer); } catch (_) {} _geminiCooldownTimer = null; }
   };
   // Per-attempt gated call with breaker-aware retry. EACH attempt re-acquires a slot, so a tripped
   // breaker (reduced cap + cooldown) also throttles the retries. Canvas-auth (transient 401/403)
@@ -12469,6 +12488,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     _pipelineStats.apiCalls = 0; _pipelineStats.visionCalls = 0; _pipelineStats.totalApiMs = 0; _pipelineStats.retries = 0;
     _pipelineStats.startTime = performance.now(); _pipelineStats.stepTimes = {};
     _pipelineStats.lastOpenStep = null; _pipelineStats.lastOpenStepLabel = '';
+    // CB-1 (2026-06-21): clear the Gemini circuit-breaker so a storm from a PREVIOUS document in this
+    // session (the pipeline is a singleton) doesn't start THIS run already throttled to 1 concurrent with
+    // a stale cooldown + stale "rate-limiting" message. The current run earns its own storm signal.
+    _resetGeminiBreaker();
     _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 });
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
@@ -26625,11 +26648,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateAccessibilityReportHtml: _wrap(generateAccessibilityReportHtml),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

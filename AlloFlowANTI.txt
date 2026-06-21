@@ -9977,6 +9977,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // can't (a) keep burning Canvas quota via the auto-continue loop, or (b) stomp fresh state. Abort
       // the auto-continue controller if one is live, and bump the run generation so the pipeline's
       // completion write (which captured the gen at start) discards a now-stale result.
+      // CRITICAL (acl-1, 2026-06-21): set the STOP ref too — controller.abort() only kills the single
+      // in-flight fetch; runAutoFixLoop and the Make-Accessible retry wrapper break on this ref, not on
+      // signal.aborted. Without it the watchdog could not stop the loop it exists to stop, and the
+      // wrapper fired up to 3 FRESH full re-runs against the same throttle. Mirrors the reset path (10348).
+      try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
       try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
       try { if (typeof window !== 'undefined') { window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1; window.__alloPdfAbortSignal = null; } } catch (_) {}
       setPdfFixLoading(false);
@@ -15856,6 +15861,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const _abortCtrl = new AbortController();
     pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
     if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
+    // Run-generation guard (acl-1, 2026-06-21): capture the gen at entry. The watchdog fire() bumps
+    // window.__alloPdfRunGen when it invalidates a stalled run; if a NEW run then starts, this loop's
+    // late rounds must NOT write stale results over the fresh state. fixAndVerifyPdf already has this
+    // guard — runAutoFixLoop did not, so a post-watchdog round could stomp a teacher's next document.
+    const _myRunGen = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    const _genStale = () => (typeof window !== 'undefined') && ((window.__alloPdfRunGen || 0) !== _myRunGen);
     setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
     const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
@@ -15867,7 +15878,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       let lastIssues = Infinity;
       let stagnantRounds = 0;
       for (let round = 0; round < maxRounds; round++) {
-        if (pdfAutoContinueAbortRef.current) break;
+        if (pdfAutoContinueAbortRef.current || _genStale()) break;
         if (!cur || !cur.axeAudit) break;
         if ((cur.afterScore || 0) >= pdfTargetScore) break;
         const _vio = cur.axeAudit.totalViolations || 0;
@@ -15985,6 +15996,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           chunkWeightedScore: result.chunkWeightedScore || cur.chunkWeightedScore,
         });
         const snapshot = cur;
+        // Gen guard (acl-1): a fresh run started while this round was in flight → discard this stale
+        // round's writes instead of stomping the new run's state, and stop looping.
+        if (_genStale()) break;
         // Sweep 2026-06-11 [3]: sync the ref NOW — the finally-block
         // auto-save reads pdfFixResultRef and was one render behind,
         // silently missing the last round's improvements.
