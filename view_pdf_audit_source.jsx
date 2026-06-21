@@ -1703,6 +1703,10 @@ function PdfAuditView(props) {
   const [veraPdfResult, setVeraPdfResult] = useState(null);   // {compliant, failedChecks, failedRules:[{clause,testNumber,message,count}]} | {error}
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
   const [veraPdfFixing, setVeraPdfFixing] = useState(false);  // closed-loop remediation in progress
+  // (2026-06-20) Auto-validate the remediated output with veraPDF after Make Accessible — default ON.
+  // Warmed inside the click gesture (so the popup is allowed) + validated at the end; opt-out persisted.
+  const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => { try { return localStorage.getItem('alloflow_pdf_auto_verapdf') !== 'false'; } catch (_) { return true; } });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_verapdf', String(pdfAutoVeraPdf)); } catch (_) {} }, [pdfAutoVeraPdf]);
   const _lastTaggedBytesRef = useRef(null);                   // shipped tagged-PDF bytes, for on-demand veraPDF validation
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
@@ -1741,6 +1745,36 @@ function PdfAuditView(props) {
       else if (d.type === 'verapdf-remediate-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
     }
     window.addEventListener('message', onMsg);
+  });
+  // ── Auto veraPDF (2026-06-20) ── Open + WARM the validator window INSIDE a user gesture (the
+  // Make Accessible click), so the popup is allowed and the ~25MB CheerpJ JVM boots during the
+  // (minutes-long) remediation. The window stays OPEN; validateOnWarmWindow() reuses it at the end
+  // to validate the tagged OUTPUT with NO second popup (which would be blocked off-gesture). This is
+  // the "warm-up-during-remediation" optimization the comment above anticipated, and it's Aaron's
+  // "run veraPDF at the audit kickoff" idea — the kickoff IS the gesture.
+  const warmVeraPdfWindow = () => {
+    let win = null;
+    try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=420,height=320'); } catch (e) {}
+    if (!win) return null; // popup blocked even within the gesture → caller falls back to the manual button
+    const handle = { win, warmed: false };
+    handle.ready = new Promise((resolve) => {
+      const onReady = (ev) => { const d = (ev && ev.data) || {}; if (d.type === 'verapdf-ready') { handle.warmed = true; window.removeEventListener('message', onReady); resolve(true); } };
+      window.addEventListener('message', onReady);
+      setTimeout(() => { window.removeEventListener('message', onReady); resolve(handle.warmed); }, 90000); // give up warming after 90s (boot/CDN fail)
+    });
+    return handle;
+  };
+  // Validate bytes on an ALREADY-OPEN warm window (no new popup). Closes the window on completion.
+  const validateOnWarmWindow = (handle, bytes) => new Promise((resolve, reject) => {
+    if (!handle || !handle.win || handle.win.closed) { reject(new Error('validator window unavailable')); return; }
+    const win = handle.win;
+    let done = false;
+    const timer = setTimeout(() => { if (!done) { cleanup(); reject(new Error('veraPDF timed out')); } }, 600000);
+    const closePoll = setInterval(() => { if (!done && win.closed) { cleanup(); reject(new Error('validator window closed')); } }, 1000);
+    function cleanup() { clearTimeout(timer); clearInterval(closePoll); window.removeEventListener('message', onMsg); }
+    function onMsg(ev) { const d = (ev && ev.data) || {}; if (d.type === 'verapdf-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); } }
+    window.addEventListener('message', onMsg);
+    handle.ready.then(() => { try { win.postMessage({ type: 'verapdf-validate', bytes: bytes }, '*'); } catch (e) { cleanup(); reject(e); } });
   });
   // Human-readable tagged-PDF result lines, pinned in a dismissable panel.
   // Previously these were ~8 sequential toasts that auto-dismissed faster
@@ -3173,7 +3207,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     applied: auto post-fix mode + auto-continue-to-target forced on. */}
                 <div className="mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4">
                   <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
-                    if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } 
+                    if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
+                    // (2026-06-20) Auto veraPDF: open + warm the independent ISO validator NOW, inside this
+                    // click (a gesture → popup allowed), so it boots during the run and validates the tagged
+                    // output at the end with no second popup. Default-on (localStorage opt-out), PDF inputs
+                    // only. Popup-blocked / closed → silently falls back to the manual button below.
+                    let _veraWarm = null;
+                    try {
+                      const _nmIn = (pendingPdfFile?.name || '').toLowerCase();
+                      const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
+                      if (pdfAutoVeraPdf && _isPdfIn) _veraWarm = warmVeraPdfWindow();
+                    } catch (_) {}
                     // TRUE hands-free chain (2026-06-10 fix — user testing showed the
                     // previous handler stopped after the audit, identical to the manual
                     // path): audit → Fix & Verify → auto-continue to target → autosave.
@@ -3243,6 +3287,37 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       await new Promise((res) => setTimeout(res, 1500 * _loopTries));
                     }
                     if (pdfFixResultRef.current && pdfAutoSaveProject) { saveProjectToFile(true); }
+                    // (2026-06-20) Auto veraPDF: validate the remediated OUTPUT on the warm window opened at
+                    // the click. Generate the tagged PDF (pure compute) then validate it on the already-open,
+                    // already-warm validator — no second popup. Best-effort: any failure leaves the manual
+                    // "Independently validate with veraPDF" button available.
+                    if (_veraWarm && _veraWarm.win && !_veraWarm.win.closed) {
+                      let _validated = false;
+                      try {
+                        const _fr = pdfFixResultRef.current;
+                        const _okLib = _fr && _fr.accessibleHtml ? await _ensurePdfLib() : false;
+                        const _b64v = _okLib ? await ensurePdfBase64() : null;
+                        if (_b64v) {
+                          const _binV = atob(_b64v);
+                          const _bytesV = new Uint8Array(_binV.length);
+                          for (let _i = 0; _i < _binV.length; _i++) _bytesV[_i] = _binV.charCodeAt(_i);
+                          const _dmV = _deriveDocMeta(_fr.accessibleHtml, pendingPdfFile?.name);
+                          const _ovV = pdfMetaOverride || {};
+                          setVeraPdfBusy(true);
+                          const _resV = await createTaggedPdf(_bytesV, _fr, { title: (_ovV.title && _ovV.title.trim()) || _dmV.title, lang: (_ovV.lang && _ovV.lang.trim()) || _dmV.lang || 'en', author: (_ovV.author && _ovV.author.trim()) || undefined, subject: 'Remediated for accessibility by AlloFlow' });
+                          const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
+                          if (_tbV) {
+                            _lastTaggedBytesRef.current = _tbV;
+                            const _vrV = await validateOnWarmWindow(_veraWarm, _tbV); // closes the window on completion
+                            _validated = true;
+                            setVeraPdfResult(_vrV);
+                            setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: new Date().toISOString() } : { fileName: pendingPdfFile?.name || 'document.pdf', veraPdf: _vrV, generatedAt: new Date().toISOString() });
+                            if (_vrV && !_vrV.error) addToast((_vrV.compliant ? '✅ ' : '⚠ ') + (t('toasts.auto_verapdf_done') || 'Independent veraPDF (ISO 14289-1) validation complete') + (_vrV.compliant ? '' : ' — ' + (_vrV.failedRules ? _vrV.failedRules.length : 0) + ' rule(s) flagged — see the Self-check section'), _vrV.compliant ? 'success' : 'warning');
+                          }
+                        }
+                      } catch (_vErr) { try { warnLog && warnLog('[auto-veraPDF] ' + (_vErr && _vErr.message)); } catch (_) {} }
+                      finally { try { setVeraPdfBusy(false); } catch (_) {} if (!_validated) { try { if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close(); } catch (_) {} } }
+                    } else if (_veraWarm && _veraWarm.win) { try { _veraWarm.win.close(); } catch (_) {} }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
                   </button>
@@ -8227,6 +8302,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     ? '⏳ ' + (t('pdf_audit.verapdf.running') || 'Validating with veraPDF… (first run downloads ~25 MB, ~15s)')
                                     : '🔎 ' + (t('pdf_audit.verapdf.btn') || 'Independently validate with veraPDF (ISO 14289-1)')}
                                 </button>
+                                <label className="flex items-start gap-1.5 mt-1 text-[10px] text-slate-600 cursor-pointer" title={t('pdf_audit.verapdf.auto_toggle_title') || 'When on, AlloFlow opens + warms the veraPDF validator during Make Accessible and validates the tagged output automatically — no extra click. Turn off to validate only on demand.'}>
+                                  <input type="checkbox" checked={pdfAutoVeraPdf} onChange={(e) => setPdfAutoVeraPdf(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.verapdf.auto_toggle_aria') || 'Auto-validate with veraPDF after Make Accessible'} />
+                                  <span>{t('pdf_audit.verapdf.auto_toggle') || 'Auto-validate with veraPDF after every Make Accessible (recommended)'}</span>
+                                </label>
                                 {veraPdfResult && veraPdfResult.error && (
                                   <p className="text-amber-700 mt-1">{t('pdf_audit.verapdf.unavailable') || 'veraPDF validation unavailable'} ({veraPdfResult.error}) — {t('pdf_audit.verapdf.fallback') || 'rely on the self-check above and verify in PAC 2024.'}</p>
                                 )}

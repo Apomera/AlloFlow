@@ -1703,6 +1703,19 @@ function PdfAuditView(props) {
   const [veraPdfResult, setVeraPdfResult] = useState(null);
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
   const [veraPdfFixing, setVeraPdfFixing] = useState(false);
+  const [pdfAutoVeraPdf, setPdfAutoVeraPdf] = useState(() => {
+    try {
+      return localStorage.getItem("alloflow_pdf_auto_verapdf") !== "false";
+    } catch (_) {
+      return true;
+    }
+  });
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("alloflow_pdf_auto_verapdf", String(pdfAutoVeraPdf));
+    } catch (_) {
+    }
+  }, [pdfAutoVeraPdf]);
   const _lastTaggedBytesRef = useRef(null);
   const runVeraPdfValidation = (bytes) => new Promise((resolve, reject) => {
     let win = null;
@@ -1833,6 +1846,78 @@ function PdfAuditView(props) {
       }
     }
     window.addEventListener("message", onMsg);
+  });
+  const warmVeraPdfWindow = () => {
+    let win = null;
+    try {
+      win = window.open(VERAPDF_VALIDATOR_URL, "alloflow-verapdf", "width=420,height=320");
+    } catch (e) {
+    }
+    if (!win) return null;
+    const handle = { win, warmed: false };
+    handle.ready = new Promise((resolve) => {
+      const onReady = (ev) => {
+        const d = ev && ev.data || {};
+        if (d.type === "verapdf-ready") {
+          handle.warmed = true;
+          window.removeEventListener("message", onReady);
+          resolve(true);
+        }
+      };
+      window.addEventListener("message", onReady);
+      setTimeout(() => {
+        window.removeEventListener("message", onReady);
+        resolve(handle.warmed);
+      }, 9e4);
+    });
+    return handle;
+  };
+  const validateOnWarmWindow = (handle, bytes) => new Promise((resolve, reject) => {
+    if (!handle || !handle.win || handle.win.closed) {
+      reject(new Error("validator window unavailable"));
+      return;
+    }
+    const win = handle.win;
+    let done = false;
+    const timer = setTimeout(() => {
+      if (!done) {
+        cleanup();
+        reject(new Error("veraPDF timed out"));
+      }
+    }, 6e5);
+    const closePoll = setInterval(() => {
+      if (!done && win.closed) {
+        cleanup();
+        reject(new Error("validator window closed"));
+      }
+    }, 1e3);
+    function cleanup() {
+      clearTimeout(timer);
+      clearInterval(closePoll);
+      window.removeEventListener("message", onMsg);
+    }
+    function onMsg(ev) {
+      const d = ev && ev.data || {};
+      if (d.type === "verapdf-result") {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        if (d.error) reject(new Error(d.error));
+        else resolve(d.result);
+      }
+    }
+    window.addEventListener("message", onMsg);
+    handle.ready.then(() => {
+      try {
+        win.postMessage({ type: "verapdf-validate", bytes }, "*");
+      } catch (e) {
+        cleanup();
+        reject(e);
+      }
+    });
   });
   const [lastTaggedReport, setLastTaggedReport] = useState(null);
   const [pptxThemeId, setPptxThemeId] = useState(() => {
@@ -3319,6 +3404,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
         return;
       }
+      let _veraWarm = null;
+      try {
+        const _nmIn = (pendingPdfFile?.name || "").toLowerCase();
+        const _isPdfIn = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmIn);
+        if (pdfAutoVeraPdf && _isPdfIn) _veraWarm = warmVeraPdfWindow();
+      } catch (_) {
+      }
       setPdfFixMode("auto");
       setPdfAuditResult(null);
       addToast(t("toasts.auditing_remediating_pdf"), "info");
@@ -3374,6 +3466,53 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       }
       if (pdfFixResultRef.current && pdfAutoSaveProject) {
         saveProjectToFile(true);
+      }
+      if (_veraWarm && _veraWarm.win && !_veraWarm.win.closed) {
+        let _validated = false;
+        try {
+          const _fr = pdfFixResultRef.current;
+          const _okLib = _fr && _fr.accessibleHtml ? await _ensurePdfLib() : false;
+          const _b64v = _okLib ? await ensurePdfBase64() : null;
+          if (_b64v) {
+            const _binV = atob(_b64v);
+            const _bytesV = new Uint8Array(_binV.length);
+            for (let _i = 0; _i < _binV.length; _i++) _bytesV[_i] = _binV.charCodeAt(_i);
+            const _dmV = _deriveDocMeta(_fr.accessibleHtml, pendingPdfFile?.name);
+            const _ovV = pdfMetaOverride || {};
+            setVeraPdfBusy(true);
+            const _resV = await createTaggedPdf(_bytesV, _fr, { title: _ovV.title && _ovV.title.trim() || _dmV.title, lang: _ovV.lang && _ovV.lang.trim() || _dmV.lang || "en", author: _ovV.author && _ovV.author.trim() || void 0, subject: "Remediated for accessibility by AlloFlow" });
+            const _tbV = _resV && _resV.bytes ? _resV.bytes : _resV;
+            if (_tbV) {
+              _lastTaggedBytesRef.current = _tbV;
+              const _vrV = await validateOnWarmWindow(_veraWarm, _tbV);
+              _validated = true;
+              setVeraPdfResult(_vrV);
+              setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: _vrV, veraPdfAt: (/* @__PURE__ */ new Date()).toISOString() } : { fileName: pendingPdfFile?.name || "document.pdf", veraPdf: _vrV, generatedAt: (/* @__PURE__ */ new Date()).toISOString() });
+              if (_vrV && !_vrV.error) addToast((_vrV.compliant ? "\u2705 " : "\u26A0 ") + (t("toasts.auto_verapdf_done") || "Independent veraPDF (ISO 14289-1) validation complete") + (_vrV.compliant ? "" : " \u2014 " + (_vrV.failedRules ? _vrV.failedRules.length : 0) + " rule(s) flagged \u2014 see the Self-check section"), _vrV.compliant ? "success" : "warning");
+            }
+          }
+        } catch (_vErr) {
+          try {
+            warnLog && warnLog("[auto-veraPDF] " + (_vErr && _vErr.message));
+          } catch (_) {
+          }
+        } finally {
+          try {
+            setVeraPdfBusy(false);
+          } catch (_) {
+          }
+          if (!_validated) {
+            try {
+              if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close();
+            } catch (_) {
+            }
+          }
+        }
+      } else if (_veraWarm && _veraWarm.win) {
+        try {
+          _veraWarm.win.close();
+        } catch (_) {
+        }
       }
     }, className: "w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl" }, "\u2728 ", t("pdf_audit.one_click.label") || "Make Accessible", " ", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.badge") || "fully automatic \u2014 audit, fix, verify, repeat to target")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 text-center" }, t("pdf_audit.one_click.desc") || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.', typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => startPipelineTour("triage"), className: "ml-2 text-indigo-600 underline font-bold hover:text-indigo-800", "data-help-ignore": "true" }, "\u2728 ", t("pdf_audit.tour.triage_cta") || "60-second tour")), /* @__PURE__ */ React.createElement("details", { className: "text-left mt-2 text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-center hover:text-slate-700" }, "\u2139\uFE0F ", t("pdf_audit.title2.summary") || "Why schools are required to do this (ADA Title II)"), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-2" }, t("pdf_audit.title2.body") || "The US Department of Justice\u2019s ADA Title II rule requires WCAG 2.1 AA digital accessibility from state and local government entities \u2014 including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence \u2014 every document you fix now is one fewer at the deadline. (Informational, not legal advice.)"))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_settings_panel", className: "text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600" }, "\u2699\uFE0F Pipeline Settings"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Audit Passes: ", pdfAuditorCount), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAuditorCount <= 2 ? "Fast" : pdfAuditorCount <= 5 ? "Balanced" : pdfAuditorCount <= 7 ? "Thorough" : "Research-grade")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_audit_passes_slider", type: "range", min: "1", max: "10", value: pdfAuditorCount, onChange: (e) => setPdfAuditorCount(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.audit_passes_aria") || "Number of audit passes" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "1 (quick)"), /* @__PURE__ */ React.createElement("span", null, "5 (default)"), /* @__PURE__ */ React.createElement("span", null, "10 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Target Score: ", pdfTargetScore), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfTargetScore >= 95 ? "Near-perfect" : pdfTargetScore >= 90 ? "Excellent" : pdfTargetScore >= 80 ? "Good" : "Minimum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_target_score_slider", type: "range", min: "60", max: "100", step: "5", value: pdfTargetScore, onChange: (e) => setPdfTargetScore(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.target_score_aria") || "Target accessibility score" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "60 (min)"), /* @__PURE__ */ React.createElement("span", null, "90 (default)"), /* @__PURE__ */ React.createElement("span", null, "100"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Max Fix Passes: ", pdfAutoFixPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAutoFixPasses === 0 ? "Disabled" : pdfAutoFixPasses <= 3 ? "Quick" : pdfAutoFixPasses <= 5 ? "Standard" : pdfAutoFixPasses <= 8 ? "Thorough" : "Maximum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_max_fix_passes_slider", type: "range", min: "0", max: "15", value: pdfAutoFixPasses, onChange: (e) => setPdfAutoFixPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.max_fix_passes_aria") || "Max fix pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0 (off)"), /* @__PURE__ */ React.createElement("span", null, "8 (default)"), /* @__PURE__ */ React.createElement("span", null, "15 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, t("pdf_audit.settings.ocr_lang") || "Scanned-doc OCR language"), !pdfOcrLanguage && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("pdf_audit.settings.ocr_auto") || "Auto-detect")), /* @__PURE__ */ React.createElement("select", { "data-help-key": "pdf_audit_view_ocr_language", value: pdfOcrLanguage || "", onChange: (e) => setPdfOcrLanguage(e.target.value), "aria-label": t("pdf_audit.settings.ocr_lang_aria") || "OCR language for scanned documents", className: "w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u{1F310} ", t("pdf_audit.settings.ocr_auto_long") || "Auto-detect (recommended)"), OCR_LANG_OPTIONS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.code, value: o.code }, o.label))), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, t("pdf_audit.settings.ocr_lang_hint") || "Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200" }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_auto_continue_toggle", type: "checkbox", checked: pdfAutoContinue, onChange: (e) => setPdfAutoContinue(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.settings.auto_continue_aria") || "Auto-continue remediation until target score" }), /* @__PURE__ */ React.createElement("span", null, "\u{1F501} ", /* @__PURE__ */ React.createElement("b", null, "Auto-continue"), " until score \u2265 ", /* @__PURE__ */ React.createElement("b", null, pdfTargetScore), " \u2014 runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Polish Passes: ", pdfPolishPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfPolishPasses === 0 ? "None" : pdfPolishPasses === 1 ? "Standard" : "Extra polish")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_polish_passes_slider", type: "range", min: "0", max: "3", value: pdfPolishPasses, onChange: (e) => setPdfPolishPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.polish_passes_aria") || "Polish pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0"), /* @__PURE__ */ React.createElement("span", null, "2 (default)"), /* @__PURE__ */ React.createElement("span", null, "3"))))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_branding_panel", className: "bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors" }, "\u2728 Output Style & Branding (optional)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t("pdf_audit.brand.heading") || "Brand Colors"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.brand.where_from") || "Where do the colors come from?"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
       "button",
@@ -6410,7 +6549,7 @@ Return ONLY JSON:
         className: "font-bold text-indigo-700 hover:underline disabled:opacity-60 outline-none"
       },
       veraPdfBusy ? "\u23F3 " + (t("pdf_audit.verapdf.running") || "Validating with veraPDF\u2026 (first run downloads ~25 MB, ~15s)") : "\u{1F50E} " + (t("pdf_audit.verapdf.btn") || "Independently validate with veraPDF (ISO 14289-1)")
-    ), veraPdfResult && veraPdfResult.error && /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 mt-1" }, t("pdf_audit.verapdf.unavailable") || "veraPDF validation unavailable", " (", veraPdfResult.error, ") \u2014 ", t("pdf_audit.verapdf.fallback") || "rely on the self-check above and verify in PAC 2024."), veraPdfResult && !veraPdfResult.error && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, veraPdfResult.compliant ? "\u2705 " + (t("pdf_audit.verapdf.pass") || "Passes PDF/UA-1 (independently validated by veraPDF)") : "\u274C " + ((veraPdfResult.failedRules ? veraPdfResult.failedRules.length : 0) + " " + (t("pdf_audit.verapdf.failed") || "rule(s) failed (veraPDF)"))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 mt-1" }, veraPdfResult.failedRules.map((f, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-red-700 leading-snug" }, "ISO 14289-1 \xA7", f.clause, " (test ", f.testNumber, "): ", f.message, f.count > 1 ? " \xD7" + f.count : ""))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && _lastTaggedBytesRef.current && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-1.5 mt-1 text-[10px] text-slate-600 cursor-pointer", title: t("pdf_audit.verapdf.auto_toggle_title") || "When on, AlloFlow opens + warms the veraPDF validator during Make Accessible and validates the tagged output automatically \u2014 no extra click. Turn off to validate only on demand." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: pdfAutoVeraPdf, onChange: (e) => setPdfAutoVeraPdf(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.verapdf.auto_toggle_aria") || "Auto-validate with veraPDF after Make Accessible" }), /* @__PURE__ */ React.createElement("span", null, t("pdf_audit.verapdf.auto_toggle") || "Auto-validate with veraPDF after every Make Accessible (recommended)")), veraPdfResult && veraPdfResult.error && /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 mt-1" }, t("pdf_audit.verapdf.unavailable") || "veraPDF validation unavailable", " (", veraPdfResult.error, ") \u2014 ", t("pdf_audit.verapdf.fallback") || "rely on the self-check above and verify in PAC 2024."), veraPdfResult && !veraPdfResult.error && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, veraPdfResult.compliant ? "\u2705 " + (t("pdf_audit.verapdf.pass") || "Passes PDF/UA-1 (independently validated by veraPDF)") : "\u274C " + ((veraPdfResult.failedRules ? veraPdfResult.failedRules.length : 0) + " " + (t("pdf_audit.verapdf.failed") || "rule(s) failed (veraPDF)"))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 mt-1" }, veraPdfResult.failedRules.map((f, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-red-700 leading-snug" }, "ISO 14289-1 \xA7", f.clause, " (test ", f.testNumber, "): ", f.message, f.count > 1 ? " \xD7" + f.count : ""))), veraPdfResult.failedRules && veraPdfResult.failedRules.length > 0 && _lastTaggedBytesRef.current && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
