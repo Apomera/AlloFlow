@@ -17,6 +17,11 @@ const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min
 const JAR = 'C:/tmp/verapdf-cli.jar';
 const OUT = 'C:/tmp/scanned_tagged_out.pdf';
 const PAGES = parseInt(process.env.PAGES || '1', 10); // PAGES=8 to mirror a real multi-page scan
+// BLANK=1 → a scanned page with NO OCR text (a blank / unreadable scan). The fixtures otherwise all carry
+// OCR text, so they never exercised the no-OCR branch where createTaggedPdf USED to wrap the bare page
+// IMAGE in /P (a §7.1 "content neither Artifact nor tagged" failure). With the tagging-pdfua-2 fix the
+// image is marked /Artifact, so the gate below must STILL pass PDF/UA-1.  BLANK=1 node dev-tools/demo/scanned_tag_harness.cjs
+const BLANK = process.env.BLANK === '1';
 
 // minimal valid 1×1 white PNG — drawn to fill the page as the "scan"
 const PNG_1x1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -93,9 +98,10 @@ for (const ln of LINES) {
       if (!res || !res.bytes) return { error: 'createTaggedPdf returned no bytes' };
       return { ok: true, b64: b2b64(res.bytes), selfCheck: (res.postExportValidator && res.postExportValidator.summary) || null };
     } catch (e) { return { error: String((e && (e.stack || e.message)) || e) }; }
-  }, { html: ACCESSIBLE_HTML, words: WORDS, png: PNG_1x1, pages: PAGES });
+  }, { html: ACCESSIBLE_HTML, words: BLANK ? [] : WORDS, png: PNG_1x1, pages: PAGES });
 
   await browser.close();
+  if (BLANK) console.log('(BLANK mode: no OCR text — the page image must be tagged /Artifact, not /P)');
   if (!result || result.error) { console.log('TAG ERROR:', result && result.error); if (errs.length) console.log('page errors:\n' + errs.slice(0, 5).join('\n')); process.exit(1); }
   fs.writeFileSync(OUT, Buffer.from(result.b64, 'base64'));
   console.log('✓ tagged PDF written: ' + OUT + ' (' + fs.statSync(OUT).size + ' bytes)');
