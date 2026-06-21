@@ -30,6 +30,35 @@ var _alloComputeHeadline = function (content, automated) {
   if (typeof automated !== 'number') return content;
   return Math.min(content, automated);
 };
+// ── Scanned-OCR block-fallback layout: spread a page's OCR text top-to-bottom (2026-06-21) ──
+// Pure layout math for the createTaggedPdf block fallback (used when a scanned page has OCR TEXT but
+// no per-word boxes). The OLD fallback drew the whole text as ONE size:1 run at a fixed top y, so the
+// wrapped lines stacked into a ~1pt sliver at the page top ("OCR stuck at the top of some pages").
+// This returns one entry per line with a y that steps DOWN the page, so the invisible (searchable +
+// SR-readable) layer reads top-to-bottom. Extracted as a pure fn so the distribution is unit-testable
+// without rendering. Lines with no newlines (e.g. Vision text) are chunked into ~12-word pseudo-lines
+// so a single run still flows down. Drawing/font selection stays in _drawBlockLayer.
+var _alloOcrBlockLayout = function (text, pageH) {
+  var H = (typeof pageH === 'number' && pageH > 0) ? pageH : 792;
+  var lines = String(text || '').split(/\r?\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  if (lines.length <= 1) {
+    var toks = String(text || '').split(/\s+/).filter(Boolean);
+    lines = [];
+    for (var t = 0; t < toks.length; t += 12) lines.push(toks.slice(t, t + 12).join(' '));
+  }
+  var lh = lines.length ? Math.max(6, Math.min(16, (H - 72) / lines.length)) : 0;
+  var size = lines.length ? Math.max(1, Math.min(lh * 0.85, 12)) : 0;
+  var out = [];
+  for (var i = 0; i < lines.length; i++) {
+    var yy = (H - 36) - i * lh;
+    if (yy < 24) break; // overflowed the page bottom — omit the tail (only on extremely long pages)
+    out.push({ text: lines[i], y: yy, size: size });
+  }
+  // Build the result in a var (NOT a 2-space `return {…}`): the pre-commit pipeline-integrity check
+  // treats the first `\n  return {` as the factory export block, so a top-level helper must not use one.
+  var _result = { lines: out, lineHeight: lh, size: size };
+  return _result;
+};
 
 // ── Numeric/value-fidelity helper (2026-06-20) ──────────────────────────────
 // Extract a MULTISET (Map: normalized-token → count) of number-like tokens so the integrity gate can
@@ -16762,7 +16791,7 @@ tr { page-break-inside: avoid; }
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Serious</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-10</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels, contrast below 4.5:1</td></tr>
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#d97706">Moderate</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-5</td><td style="padding:8px;border:1px solid #e2e8f0">Missing skip-to-content link, missing landmarks, non-descriptive links, bullet characters instead of lists</td></tr>
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#2563eb">Minor</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-2</td><td style="padding:8px;border:1px solid #e2e8f0">Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Mitigate</td><td style="padding:8px;border:1px solid #e2e8f0">Each passed check reduces deduction impact up to 15% (strengths offset weaknesses, capped)</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Informational</td><td style="padding:8px;border:1px solid #e2e8f0">Passed checks are listed for transparency but do <strong>not</strong> buy back deductions — the score reflects only confirmed issues, so it stays reconstructable from the list above.</td></tr>
       </tbody>
     </table>
     <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2). Each unique violation counted once. Passing checks proportionally offset deductions — a document that passes 90% of checks receives up to 36% reduction in effective deductions, reflecting that remaining violations represent a small proportion of the overall content. Final score is a 50/50 blend of AI rubric score and axe-core (Deque) automated checker score.</p>`;
@@ -18392,23 +18421,30 @@ tr { page-break-inside: avoid; }
           // no scanned page with text ever ships without a searchable/SR text layer. countDrops
           // is false on the last-resort call (the per-word path already tallied those drops).
           const _drawBlockLayer = async (countDrops) => {
-            const _drawOpts = (font) => ({ x: 36, y: (sz && sz.height ? sz.height : 792) - 36, size: 1, font, opacity: 0, lineHeight: 1, maxWidth: (sz && sz.width ? sz.width : 612) - 72 });
-            if (_uniFont) {
-              try { page.drawText(ocrText, _drawOpts(_uniFont)); return true; }
-              catch (uniErr) {
-                if (countDrops) _ocrDroppedChars += _countNonWinAnsi(ocrText);
-                try { const helv = await _getHelv(); if (helv) { page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); return true; } } catch(_) {}
-                try { warnLog('[createTaggedPdf] unicode OCR draw failed p' + (pi+1) + ' — fell back to Helvetica: ' + (uniErr && uniErr.message)); } catch(_) {}
-                return false;
-              }
-            } else {
-              if (countDrops) _ocrDroppedChars += _countNonWinAnsi(ocrText);
+            // Per-LINE flow (2026-06-21): the old fallback drew the WHOLE page's OCR text as ONE size:1 run
+            // at a fixed top y, so pdf-lib stacked every wrapped line into a ~1pt sliver at the page top —
+            // the "OCR stuck at the top of some pages" bug. _alloOcrBlockLayout spreads the lines top-to-
+            // bottom instead. This path runs ONLY when per-word boxes are unavailable (Tesseract failed /
+            // Vision text won / dim or rotation mismatch); it keeps the invisible layer searchable + SR-
+            // readable IN ORDER, not pixel-aligned (the per-word path above is the aligned one). No maxWidth
+            // → each line is one visual line at its own y (no wrap-overlap); long lines extend right, invisibly.
+            const _layout = _alloOcrBlockLayout(ocrText, (sz && sz.height ? sz.height : 792));
+            if (!_layout.lines.length) return false;
+            const _lineOpts = (font, yy) => ({ x: 36, y: yy, size: _layout.size, font, opacity: 0, lineHeight: _layout.lineHeight });
+            let _font = _uniFont, _fold = false;
+            if (!_font) { _font = await _getHelv(); _fold = true; if (countDrops) _ocrDroppedChars += _countNonWinAnsi(ocrText); }
+            if (!_font) { try { warnLog('[createTaggedPdf] invisible OCR text layer: no font p' + (pi+1)); } catch(_) {} return false; }
+            let _drew = false;
+            for (const _ln of _layout.lines) {
               try {
-                const helv = await _getHelv();
-                if (helv) { page.drawText(_toWinAnsi(ocrText), _drawOpts(helv)); return true; }
-              } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
-              return false;
+                page.drawText(_fold ? _toWinAnsi(_ln.text) : _ln.text, _lineOpts(_font, _ln.y));
+                _drew = true;
+              } catch (_lErr) { // a unicode line failed to encode → fold THIS line to Helvetica
+                if (_uniFont) { try { const _h = await _getHelv(); if (_h) { if (countDrops) _ocrDroppedChars += _countNonWinAnsi(_ln.text); page.drawText(_toWinAnsi(_ln.text), _lineOpts(_h, _ln.y)); _drew = true; } } catch(_) {} }
+              }
             }
+            if (!_drew) { try { warnLog('[createTaggedPdf] invisible OCR text layer drew nothing p' + (pi+1)); } catch(_) {} }
+            return _drew;
           };
           if (_perWord) {
             const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
@@ -26803,6 +26839,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     EXPORT_THEMES,
     STYLE_SEEDS,
     computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
+    ocrBlockLayout: _alloOcrBlockLayout, // exposed for tests: the scanned-OCR block-fallback line distribution
     applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
     generateFullPackHTML: _wrap(generateFullPackHTML),
     runPdfBatchRemediation: _wrapAsync(runPdfBatchRemediation),
@@ -26821,5 +26858,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
+window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
