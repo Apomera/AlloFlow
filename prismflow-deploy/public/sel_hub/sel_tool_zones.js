@@ -36875,6 +36875,8 @@ if (activeTab === 'wheel') {
           return h('path', { key: z.id, d: _quadrantPath(i), fill: z.color, opacity: isSel ? 1 : 0.7,
             stroke: isSel ? '#fff' : '#0f172a', strokeWidth: isSel ? 4 : 2,
             style: { cursor: 'pointer', transition: 'opacity 0.3s' },
+            role: 'button', tabIndex: 0, 'aria-label': z.label + ' zone', 'aria-pressed': isSel ? 'true' : 'false',
+            onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ zwSelected: isSel ? null : z.id }); if (soundEnabled) sfxClick(); } },
             onClick: function() { upd({ zwSelected: isSel ? null : z.id }); if (soundEnabled) sfxClick(); }
           });
         }),
@@ -37697,6 +37699,8 @@ if (activeTab === 'compass') {
           var fill = zone ? ZONE_COLORS[zone] : '#1e293b';
           var sel = compassHour === hour;
           return h('path', { key: hour, d: _arcPath(hour, hour + 1, 70, 140), fill: fill, opacity: zone ? 0.8 : 0.3, stroke: sel ? '#fff' : '#0f172a', strokeWidth: sel ? 3 : 1, style: { cursor: 'pointer' },
+            role: 'button', tabIndex: 0, 'aria-label': hour + ':00' + (zone ? ', ' + zone + ' zone' : ''), 'aria-pressed': sel ? 'true' : 'false',
+            onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ compassHour: hour }); if (soundEnabled) sfxClick(); } },
             onClick: function() { upd({ compassHour: hour }); if (soundEnabled) sfxClick(); }
           });
         }),
@@ -37853,6 +37857,8 @@ if (activeTab === 'descriptors') {
         filtered.slice(0, 80).map(function(de) {
           var isOpen = dlOpen === de.id;
           return h('div', { key: de.id, style: { padding: 10, borderRadius: 8, background: '#1e293b', borderLeft: '3px solid ' + ZONE_COLORS[de.zone], border: '1px solid #334155', cursor: 'pointer' },
+            role: 'button', tabIndex: 0, 'aria-expanded': isOpen ? 'true' : 'false',
+            onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ dlOpen: isOpen ? null : de.id }); if (soundEnabled) sfxClick(); } },
             onClick: function() { upd({ dlOpen: isOpen ? null : de.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },

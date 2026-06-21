@@ -242,6 +242,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                 var dashStyle = p.c.direction === 'to-me' ? '0' : (p.c.direction === 'from-me' ? '4 3' : '0');
                 return h('g', { key: p.c.id,
                   onClick: function() { setCC({ selectedConnId: p.c.id, view: 'add', drafts: { name: p.c.name, categoryId: p.c.categoryId, direction: p.c.direction, strength: p.c.strength, notes: p.c.notes || '' } }); },
+                  onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
                   style: { cursor: 'pointer' },
                   role: 'button', tabIndex: 0,
                   'aria-label': p.c.name + ' (' + p.cat.label + ', strength ' + p.c.strength + ', ' + dirArrow(p.c.direction) + ')'

@@ -1989,6 +1989,8 @@ window.SelHub = window.SelHub || {
               return h('div', {                 key: piece.id,
                 className: 'rounded-2xl border-2 p-4 transition-all cursor-pointer hover:shadow-md ' +
                   (isSelected ? 'border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200' : 'border-slate-200 bg-white hover:border-amber-300'),
+                role: 'button', tabIndex: 0, 'aria-pressed': isSelected ? 'true' : 'false',
+                onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
                 onClick: function() { upd('talkingPiece', piece.id); ctx.awardXP(3); }
               },
                 h('div', { className: 'flex items-center gap-3 mb-2' },

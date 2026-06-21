@@ -1690,6 +1690,9 @@ window.SelHub = window.SelHub || {
               tipItems.map(function(tip) {
                 var isRead = !!icRead[tip.id];
                 return h('div', { key: tip.id,
+                  role: 'button', tabIndex: isRead ? -1 : 0,
+                  'aria-pressed': isRead ? 'true' : 'false',
+                  onKeyDown: function(ev) { if (!isRead && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar')) { ev.preventDefault(); ev.currentTarget.click(); } },
                   onClick: function() {
                     if (!isRead) {
                       var newRead = Object.assign({}, icRead);
