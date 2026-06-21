@@ -4224,6 +4224,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   )}
                   {pdfAuditResult.scoreRange > 25 && <p className="text-xs mt-1 bg-white/20 inline-block px-3 py-1 rounded-full font-bold">Note: Score variance is high (range: {pdfAuditResult.scoreRange}) — this is normal for documents with low accessibility scores</p>}
                   <p className="text-sm opacity-90 mt-1">{pdfAuditResult.summary}</p>
+                  {/* Companion metrics (2026-06-21): the headline stays an honest deduction floored at 0, so a
+                      long good-faith document and a hopeless one can both read "0". These labeled companions —
+                      the underlying issue COUNT + deduction (which keep moving as you remediate, even while a
+                      floored score sits at 0) and a per-PAGE density (so a long doc isn't judged like a short
+                      one) — restore that resolution WITHOUT inflating the score. Never labeled "score". */}
+                  {(() => {
+                    const _crit = (pdfAuditResult.critical || []).length, _ser = (pdfAuditResult.serious || []).length;
+                    const _mod = (pdfAuditResult.moderate || []).length, _min = (pdfAuditResult.minor || []).length;
+                    const _total = _crit + _ser + _mod + _min;
+                    const _ded = pdfAuditResult._consolidatedDeductions;
+                    const _pages = pdfAuditResult.pageCount;
+                    if (_total === 0 && typeof _ded !== 'number') return null;
+                    const _perPage = (typeof _ded === 'number' && typeof _pages === 'number' && _pages > 0) ? (_ded / _pages) : null;
+                    return (
+                      <p className="text-[11px] opacity-80 mt-1.5" title={t('pdf_audit.score.companion_tip') || 'A density read so a long document is not judged the same as a short one — the same issues spread over more pages are less pervasive. These numbers keep moving as you remediate even while a floored score sits at 0. This is NOT the score; the score above reflects only confirmed issues.'}>
+                        {'📊 '}{_total} {t('pdf_audit.score.confirmed_issues') || (_total === 1 ? 'confirmed issue' : 'confirmed issues')}{typeof _ded === 'number' ? ' · ' + (t('pdf_audit.score.deduction') || 'deduction') + ' ' + _ded : ''}{_perPage != null ? ' · ' + _perPage.toFixed(1) + ' ' + (t('pdf_audit.score.per_page') || 'per page across') + ' ' + _pages + ' ' + (_pages === 1 ? (t('pdf_audit.score.page') || 'page') : (t('pdf_audit.score.pages') || 'pages')) : ''}
+                      </p>
+                    );
+                  })()}
                 </div>
                 )}
 
