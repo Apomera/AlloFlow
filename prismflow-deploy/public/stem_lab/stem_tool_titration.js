@@ -18,7 +18,7 @@
   function titrTone(f,d,tp,v) { var ac=getTitrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxTitrClick() { titrTone(600,0.03,"sine",0.04); }
   function sfxTitrSuccess() { titrTone(523,0.08,"sine",0.07); setTimeout(function(){titrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){titrTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("titr-a11y")){var _s=document.createElement("style");_s.id="titr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("titr-a11y")){var _s=document.createElement("style");_s.id="titr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
 window.StemLab.registerTool('titrationLab', {
   label: 'Titration Lab',
@@ -336,6 +336,12 @@ var accuracyLog = d.accuracyLog || [];
 var maxVol = 50;
 
 var Veq = (preset.concAcid * preset.volAcid) / preset.concBase;
+// Per-preset equivalence volume. The acid–base formula above is right for the
+// standard presets, but redox (5:1 Fe²⁺:MnO₄⁻) and back-titration (only the
+// leftover excess acid is titrated) reach equivalence at a different volume —
+// and calcPH already inflects there, so the chart marker/tips must match it.
+if (preset.redox) Veq = Veq / 5;
+else if (preset.backTitration) Veq = ((preset.excessAcidMoles || 0.003) / preset.concBase) * 1000;
 
 var Kw = 1e-14;
 
@@ -558,6 +564,19 @@ if (indicatorAnalysisOn) {
 var titrationErrorMl = (indicatorAnalysisOn && endpointVol != null) ? Math.abs(endpointVol - Veq) : 0;
 var titrationErrorPct = (indicatorAnalysisOn && Veq > 0) ? (titrationErrorMl / Veq * 100) : 0;
 var indicatorMismatch = indicatorAnalysisOn && !equivInBand;
+
+// WCAG 4.1.3: announce the live pH + endpoint status to screen-reader users
+// whenever the titrant volume changes. The visual pH readout, curve, and flask
+// color have no other non-visual channel; #allo-live-titration (created on first
+// run) is the polite live region. Guarded on volume change so unrelated
+// re-renders do not re-announce.
+if (safetyChecked && labTab === 'titrate' && typeof document !== 'undefined') {
+  var _titrLive = document.getElementById('allo-live-titration');
+  if (_titrLive && window._titrLastAnnouncedVol !== volumeAdded) {
+    window._titrLastAnnouncedVol = volumeAdded;
+    _titrLive.textContent = volumeAdded.toFixed(1) + ' mL added. pH ' + currentPH.toFixed(2) + '. ' + indicatorStatus + '.';
+  }
+}
 
 
 
@@ -1807,6 +1826,8 @@ return React.createElement("div", {
 
         'aria-label': 'Titrant volume',
 
+        'aria-valuetext': volumeAdded.toFixed(1) + ' milliliters, pH ' + currentPH.toFixed(2) + ', ' + indicatorStatus,
+
         className: "flex-1 min-w-[120px] accent-cyan-400",
 
         style: { height: '6px' }
@@ -2043,6 +2064,10 @@ return React.createElement("div", {
       React.createElement("svg", {
 
         viewBox: '0 0 ' + svgW + ' ' + svgH, className: "w-full", preserveAspectRatio: "xMidYMid meet",
+
+        role: "img",
+
+        'aria-label': 'Titration curve for ' + preset.label + '. Currently ' + volumeAdded.toFixed(1) + ' mL of titrant added at pH ' + currentPH.toFixed(2) + '. Equivalence point near ' + Veq.toFixed(1) + ' mL at pH ' + equivPH.toFixed(2) + '.',
 
         style: { maxHeight: '340px' }
 

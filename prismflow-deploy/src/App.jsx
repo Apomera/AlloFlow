@@ -4439,7 +4439,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '48461295';
+    var pluginCdnVersion = '23ff1b89';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -9212,7 +9212,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                         const gradeLevel = myProfile.gradeLevel || '5th Grade';
                         // Flag/endonym overrides for languages where the display name benefits from a flag or native script.
                         // The fallback ('🌐 ' + targetLang) handles every language in the manifest — this dict is just for known popular ones.
-                        const langNames = { 'English': '🇺🇸 English', 'Turkish': '🇹🇷 Türkçe', 'Spanish': '🇪🇸 Español', 'Spanish (Latin America)': '🇪🇸 Español', 'Spanish (Castilian)': '🇪🇸 Español', 'French': '🇫🇷 Français', 'French (Canadian)': '🇨🇦 Français', 'Arabic': '🇸🇦 العربية', 'Somali': '🇸🇴 Soomaali', 'Vietnamese': '🇻🇳 Tiếng Việt', 'Portuguese': '🇧🇷 Português', 'Portuguese (Brazil)': '🇧🇷 Português', 'Portuguese (Angola)': '🇦🇴 Português', 'Mandarin': '🇨🇳 中文', 'Chinese (Simplified)': '🇨🇳 中文', 'Chinese (Traditional)': '🇹🇼 中文', 'Korean': '🇰🇷 한국어', 'Tagalog': '🇵🇭 Tagalog', 'Russian': '🇷🇺 Русский', 'Japanese': '🇯🇵 日本語', 'German': '🇩🇪 Deutsch', 'Italian': '🇮🇹 Italiano', 'Polish': '🇵🇱 Polski', 'Ukrainian': '🇺🇦 Українська', 'Hindi': '🇮🇳 हिन्दी', 'Bengali': '🇧🇩 বাংলা', 'Punjabi': '🇮🇳 ਪੰਜਾਬੀ', 'Tamil': '🇮🇳 தமிழ்', 'Urdu': '🇵🇰 اردو', 'Farsi': '🇮🇷 فارسی', 'Pashto': '🇦🇫 پښتو', 'Dari': '🇦🇫 دری', 'Hebrew': '🇮🇱 עברית', 'Greek': '🇬🇷 Ελληνικά', 'Latin': '🏛 Latīna', 'Indonesian': '🇮🇩 Indonesia', 'Malay': '🇲🇾 Melayu', 'Thai': '🇹🇭 ไทย', 'Lao': '🇱🇦 ລາວ', 'Khmer': '🇰🇭 ខ្មែរ', 'Burmese': '🇲🇲 မြန်မာ', 'Nepali': '🇳🇵 नेपाली', 'Swahili': '🇰🇪 Kiswahili', 'Hausa': '🇳🇬 Hausa', 'Yoruba': '🇳🇬 Yorùbá', 'Igbo': '🇳🇬 Igbo', 'Amharic': '🇪🇹 አማርኛ', 'Tigrinya': '🇪🇷 ትግርኛ', 'Haitian Creole': '🇭🇹 Kreyòl', 'Lingala': '🇨🇩 Lingála', 'Kinyarwanda': '🇷🇼 Kinyarwanda', 'Kirundi': '🇧🇮 Kirundi', 'Acholi': '🇺🇬 Acholi', 'Karen': '🇲🇲 Karen', 'Chin (Hakha)': '🇲🇲 Hakha', 'Chin (Falam)': '🇲🇲 Falam', 'Hmong': '🇱🇦 Hmoob', 'Mongolian': '🇲🇳 Монгол', 'Maay Maay': '🇸🇴 Af-Maay', 'Marshallese': '🇲🇭 Kajin M̧ajeļ' };
+                        const langNames = { 'English': '🇺🇸 English', 'Turkish': '🇹🇷 Türkçe', 'Gujarati': '🇮🇳 ગુજરાતી', 'Marathi': '🇮🇳 मराठी', 'Spanish': '🇪🇸 Español', 'Spanish (Latin America)': '🇪🇸 Español', 'Spanish (Castilian)': '🇪🇸 Español', 'French': '🇫🇷 Français', 'French (Canadian)': '🇨🇦 Français', 'Arabic': '🇸🇦 العربية', 'Somali': '🇸🇴 Soomaali', 'Vietnamese': '🇻🇳 Tiếng Việt', 'Portuguese': '🇧🇷 Português', 'Portuguese (Brazil)': '🇧🇷 Português', 'Portuguese (Angola)': '🇦🇴 Português', 'Mandarin': '🇨🇳 中文', 'Chinese (Simplified)': '🇨🇳 中文', 'Chinese (Traditional)': '🇹🇼 中文', 'Korean': '🇰🇷 한국어', 'Tagalog': '🇵🇭 Tagalog', 'Russian': '🇷🇺 Русский', 'Japanese': '🇯🇵 日本語', 'German': '🇩🇪 Deutsch', 'Italian': '🇮🇹 Italiano', 'Polish': '🇵🇱 Polski', 'Ukrainian': '🇺🇦 Українська', 'Hindi': '🇮🇳 हिन्दी', 'Bengali': '🇧🇩 বাংলা', 'Punjabi': '🇮🇳 ਪੰਜਾਬੀ', 'Tamil': '🇮🇳 தமிழ்', 'Urdu': '🇵🇰 اردو', 'Farsi': '🇮🇷 فارسی', 'Pashto': '🇦🇫 پښتو', 'Dari': '🇦🇫 دری', 'Hebrew': '🇮🇱 עברית', 'Greek': '🇬🇷 Ελληνικά', 'Latin': '🏛 Latīna', 'Indonesian': '🇮🇩 Indonesia', 'Malay': '🇲🇾 Melayu', 'Thai': '🇹🇭 ไทย', 'Lao': '🇱🇦 ລາວ', 'Khmer': '🇰🇭 ខ្មែរ', 'Burmese': '🇲🇲 မြန်မာ', 'Nepali': '🇳🇵 नेपाली', 'Swahili': '🇰🇪 Kiswahili', 'Hausa': '🇳🇬 Hausa', 'Yoruba': '🇳🇬 Yorùbá', 'Igbo': '🇳🇬 Igbo', 'Amharic': '🇪🇹 አማርኛ', 'Tigrinya': '🇪🇷 ትግርኛ', 'Haitian Creole': '🇭🇹 Kreyòl', 'Lingala': '🇨🇩 Lingála', 'Kinyarwanda': '🇷🇼 Kinyarwanda', 'Kirundi': '🇧🇮 Kirundi', 'Acholi': '🇺🇬 Acholi', 'Karen': '🇲🇲 Karen', 'Chin (Hakha)': '🇲🇲 Hakha', 'Chin (Falam)': '🇲🇲 Falam', 'Hmong': '🇱🇦 Hmoob', 'Mongolian': '🇲🇳 Монгол', 'Maay Maay': '🇸🇴 Af-Maay', 'Marshallese': '🇲🇭 Kajin M̧ajeļ' };
                         (async () => {
                           try {
                             const prompt = bp.mode === 'translate'
@@ -9973,6 +9973,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     let id;
     const fire = () => {
       warnLog('[PdfFix] Dead-man switch fired: no pipeline activity for ' + (IDLE_LIMIT / 60000) + 'min on "' + stepAtStart + '" — clearing.');
+      // (2026-06-20) Don't just clear the UI — INVALIDATE the stalled run so its late-resolving promise
+      // can't (a) keep burning Canvas quota via the auto-continue loop, or (b) stomp fresh state. Abort
+      // the auto-continue controller if one is live, and bump the run generation so the pipeline's
+      // completion write (which captured the gen at start) discards a now-stale result.
+      try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
+      try { if (typeof window !== 'undefined') { window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1; window.__alloPdfAbortSignal = null; } } catch (_) {}
       setPdfFixLoading(false);
       setPdfFixStep('');
       if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');
@@ -16022,7 +16028,40 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
   }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, addToast, pdfAutoSaveProject]);
 
-  const saveProjectToFile = React.useCallback((isAuto) => {
+  const saveProjectToFile = React.useCallback((isAuto, _override) => {
+    // Incomplete/interrupted run (resumable-incomplete-project 2026-06-20): a hard AI
+    // failure (auth/quota/network) banked the extracted text + source bytes via the
+    // pipeline (window.__lastIncompleteProject). Serialize that as a version-2 project
+    // the "Continue a previous session" loader resumes — no re-scan. This path has NO
+    // finished accessibleHtml, so it bypasses the success-only guard below.
+    if (_override && _override.incomplete) {
+      try {
+        const proj = {
+          version: 2,
+          incomplete: true,
+          savedAt: _override.savedAt || new Date().toISOString(),
+          fileName: _override.fileName || pendingPdfFile?.name || 'document.pdf',
+          extractedText: _override.extractedText || '',
+          pdfBase64: _override.base64 || null,
+          failureReason: _override.failureReason || 'other',
+          failStage: _override.failStage || null,
+          failMessage: _override.failMessage || null,
+          auditResult: _override.auditResult || pdfAuditResult || null,
+          pageCount: (_override.auditResult && _override.auditResult.pageCount) || (pdfAuditResult && pdfAuditResult.pageCount) || null,
+          runHistory: pdfRunHistoryRef.current,
+          prefs: {
+            auditors: pdfAuditorCount,
+            polishPasses: pdfPolishPasses,
+            maxFixPasses: pdfAutoFixPasses,
+            targetScore: pdfTargetScore,
+            builderFont: (() => { try { return localStorage.getItem('allo_selected_font') || null; } catch (_) { return null; } })(),
+          },
+        };
+        const blob = new Blob([JSON.stringify(proj)], { type: 'application/json' });
+        safeDownloadBlob(blob, (proj.fileName || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-unfinished.alloflow.json');
+        return true;
+      } catch (e) { try { warnLog('[saveProjectToFile] incomplete save failed:', e && e.message); } catch (_) {} return false; }
+    }
     const cur = pdfFixResultRef.current;
     if (!cur || !cur.accessibleHtml) return false;
     const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '');
@@ -16111,9 +16150,35 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // reliability gate. Stage attribution comes from the pipeline's last-open
   // step (getPipelineStats). Re-throws so every caller's existing error UI is
   // unchanged. Covers single-file + batch + page-range call sites at once.
+  // Resumable incomplete project (2026-06-20): the pipeline banks the extracted text +
+  // source bytes on window.__lastIncompleteProject when a hard AI failure (auth/quota/
+  // network) hits AFTER extraction. Here (host side, where saveProjectToFile + addToast
+  // live) we turn that into a downloaded .alloflow.json the teacher can resume, plus an
+  // honest explanation of what happened. Runs after BOTH the swallowed single-file path
+  // and the re-thrown batch path; no-ops when there's nothing banked.
+  const _maybeSaveIncompleteProject = () => {
+    try {
+      const _inc = (typeof window !== 'undefined') ? window.__lastIncompleteProject : null;
+      if (!_inc || !_inc.incomplete) return;
+      window.__lastIncompleteProject = null; // consume once
+      const _saved = saveProjectToFile(false, _inc);
+      const _why = _inc.failureReason === 'auth' ? 'the AI service rejected the request (an API key / permission problem)'
+        : _inc.failureReason === 'quota' ? 'the AI service hit a usage or quota limit'
+        : _inc.failureReason === 'network' ? 'the connection to the AI service dropped'
+        : 'the AI service was briefly unavailable';
+      if (typeof addToast === 'function') {
+        addToast(_saved
+          ? ('💾 ' + (t('toasts.incomplete_project_saved') || ('Remediation stopped because ' + _why + ' — but your scanned/extracted text was saved to a project file in your Downloads. Use “Continue a previous session” to pick up where it left off, no re-scanning needed.')))
+          : (t('toasts.incomplete_project_save_failed') || ('Remediation stopped because ' + _why + '. Your extracted text is preserved in this browser session.')),
+          _saved ? 'warning' : 'error');
+      }
+    } catch (_) { /* recovery save is best-effort — never mask the original failure */ }
+  };
   const fixAndVerifyPdf = async (opts) => {
     try {
-      return await _rawFixAndVerifyPdf(opts);
+      const _r = await _rawFixAndVerifyPdf(opts);
+      _maybeSaveIncompleteProject();
+      return _r;
     } catch (err) {
       try {
         const _st = (_docPipeline && _docPipeline.getPipelineStats) ? _docPipeline.getPipelineStats() : {};
@@ -16136,6 +16201,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           return next.length > 200 ? next.slice(-200) : next;
         });
       } catch (_) {}
+      _maybeSaveIncompleteProject();
       throw err;
     }
   };

@@ -2821,9 +2821,9 @@
     "mode_switch_confirm": "Zmiana trybu zrestartuje tę rundę. Kontynuować?",
     "modes": {
       "smart": "Auto (termin? wizualizacja)",
-      "term_def": "Termin ? Definicja",
-      "term_image": "Termin ? Obrazek",
-      "image_def": "Obrazek ? Definicja",
+      "term_def": "Termin → Definicja",
+      "term_image": "Termin → Obrazek",
+      "image_def": "Obrazek → Definicja",
       "mixed": "Wymieszaj (wszystkie typy)"
     },
     "board_aria": "Plansza gry Memory",
