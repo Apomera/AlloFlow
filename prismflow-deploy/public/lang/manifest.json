@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-06-21T12:38:48.153Z",
-  "count": 61,
+  "generated": "2026-06-21T13:58:17.327Z",
+  "count": 62,
   "total_keys_expected": 9307,
   "available": [
     {
@@ -184,6 +184,13 @@
       "display": "Japanese",
       "keys": 11298,
       "bytes": 865115,
+      "updated": "2026-06-21"
+    },
+    {
+      "slug": "kannada",
+      "display": "Kannada",
+      "keys": 11198,
+      "bytes": 2590705,
       "updated": "2026-06-21"
     },
     {
