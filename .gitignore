@@ -172,3 +172,4 @@ tests/e2e/artifacts/
 help_gaps/
 dev-tools/stem_i18n_report/user_facing.csv
 dev-tools/stem_i18n_report/inventory.json
+dev-tools/stem_i18n_report/ui_strings_stem_*.json
