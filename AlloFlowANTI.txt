@@ -10523,7 +10523,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const onChunkStart = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; if (prev.find(c => c.index === idx)) return prev; return [...prev, { ...e.detail, status: 'working' }]; }); };
     const onChunkFixed = (e) => { setLiveChunkStream(prev => { const idx = e.detail.index; const existing = prev.find(c => c.index === idx); if (existing) { return prev.map(c => c.index === idx ? { ...e.detail, status: 'complete' } : c); } return [...prev, { ...e.detail, status: 'complete' }]; }); setChunkSaveFlash(true); setTimeout(() => setChunkSaveFlash(false), 2000); };
     const onChunkRefixed = (e) => { setLiveChunkStream(prev => prev.map(c => c.index === e.detail.index ? { ...e.detail, status: 'complete' } : c)); };
-    const onSessionComplete = () => { setLiveChunkSessionActive(false); };
+    const onSessionComplete = () => {
+      setLiveChunkSessionActive(false);
+      // Resolve any card still on 'working': a chunk that was throttle-deferred / failed never gets an
+      // alloflow:chunk-fixed event, so without this it dangles on "Fixing…" AFTER the run finished — the
+      // event-driven Live Remediation Review decoupling from the pipeline's actual completion (the
+      // "Review complete" + "Fixing…" contradiction). Mark them terminal + honestly AI-skipped (the
+      // section shipped as original because the AI rewrite was rate-limited), not falsely verified.
+      setLiveChunkStream(prev => prev.map(c => c.status === 'working'
+        ? { ...c, status: 'complete', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true, score: (typeof c.score === 'number' ? c.score : 0) }
+        : c));
+    };
     window.addEventListener('alloflow:chunk-session-start', onSessionStart);
     window.addEventListener('alloflow:chunk-start', onChunkStart);
     window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
