@@ -4145,7 +4145,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 {(!pdfFixResult || pdfAuditTab === 'original') && (
                 <div data-help-key="pdf_audit_results_score_badge" className={`p-6 text-center ${pdfAuditResult.score >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : pdfAuditResult.score >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-600' : 'bg-gradient-to-r from-red-500 to-rose-600'} text-white rounded-t-2xl`}>
                   <div className="text-5xl font-black mb-1" aria-label={`Score: ${pdfAuditResult.score >= 0 ? pdfAuditResult.score : 'unknown'} out of 100`}>{pdfAuditResult.score >= 0 ? pdfAuditResult.score : '?'}<span className="text-2xl opacity-80" aria-hidden="true">/100</span></div>
-                  <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(AI + axe-core blend)</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-70">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
+                  <h3 className="text-lg font-bold" id="pdf-audit-title">{pdfAuditResult._officeInput ? 'Document Accessibility Score' : 'PDF Accessibility Score'} {pdfAuditResult._scoreIsBlended ? <span className="text-xs font-normal opacity-70">(lower of AI &amp; axe-core)</span> : pdfAuditResult._officeInput ? <span className="text-xs font-normal opacity-70">(axe-core on extracted text)</span> : <span className="text-xs font-normal opacity-70">(AI Rubric)</span>}</h3>
                   {pdfAuditResult.scores && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>}
                   {pdfAuditResult.structTree && pdfAuditResult.structTree.hasTags && (() => {
                     const rc = pdfAuditResult.structTree.roleCounts || {};
@@ -4158,29 +4158,35 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   })()}
                   {pdfAuditResult._scoreIsBlended ? (
                     <>
-                      <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Blended: {pdfAuditResult.score} (50/50)</p>
+                      <p className="text-[11px] opacity-70 mt-0.5">AI Rubric: {pdfAuditResult._aiOnlyScore} | axe-core: {pdfAuditResult._baselineAxeScore} | Governing: {pdfAuditResult.score} (the lower of the two — never averaged)</p>
                       {(() => {
                         const ai = pdfAuditResult._aiOnlyScore;
                         const axe = pdfAuditResult._baselineAxeScore;
                         if (ai == null || axe == null) return null;
                         const spread = Math.abs(ai - axe);
-                        // A critical axe violation is surfaced REGARDLESS of spread — a
-                        // passing blended average must not mask a hard WCAG failure.
+                        // A critical axe violation is surfaced REGARDLESS of spread — a high automated
+                        // score must not mask a hard WCAG failure.
                         const axeCrit = ((pdfAuditResult._baselineAxeAudit || {}).critical || []).length;
-                        if (spread < 15 && !axeCrit) return null;
+                        // Image-only scan (no text layer): axe runs on a near-EMPTY reconstruction, so its
+                        // high score is purely by-construction — calling that "structurally compliant" is the
+                        // exact trap we warn about. Always surface the OCR message for a scan. (2026-06-21)
+                        const noTextLayer = pdfAuditResult.hasSearchableText === false;
+                        if (spread < 15 && !axeCrit && !noTextLayer) return null;
                         // AI lower than axe → semantic issues (alt text, heading meaning) that axe can't see
                         // axe lower than AI → code-level WCAG failures that the rubric didn't weight enough
                         const aiWeaker = ai < axe;
-                        const msg = axeCrit
-                          ? (t('pdf_audit.divergence.critical_override') || 'axe-core found {n} critical WCAG violation(s) — review them before trusting the blended score; an average can hide a hard failure').replace('{n}', String(axeCrit))
+                        const msg = noTextLayer
+                          ? (t('pdf_audit.divergence.no_text_layer') || 'Image-only scan — no searchable text layer. The high automated score is by construction (the checker only sees an empty text reconstruction, not the scanned pages); this document needs OCR before it can be made accessible.')
+                          : axeCrit
+                          ? (t('pdf_audit.divergence.critical_override') || 'axe-core found {n} critical WCAG violation(s) — review them before trusting the score; the governing (lower) layer should already reflect this').replace('{n}', String(axeCrit))
                           : aiWeaker
                           ? (t('pdf_audit.divergence.semantic') || 'Structurally compliant but semantically weak — AI flagged content quality (alt text, heading meaning, reading order) that axe-core can\'t detect')
                           : (t('pdf_audit.divergence.structural') || 'Code-level WCAG violations detected — axe-core found machine-checkable failures the AI rubric weighted lightly');
-                        return <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title={axeCrit ? `Critical violations: ${axeCrit}` : `Spread: ${spread} points`}>{'⚠️'} {msg}</p>;
+                        return <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title={noTextLayer ? 'Image-only scan (no text layer) — needs OCR' : axeCrit ? `Critical violations: ${axeCrit}` : `Spread: ${spread} points`}>{'⚠️'} {msg}</p>;
                       })()}
                     </>
                   ) : (
-                    <p className="text-[11px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (50/50 blend)</p>
+                    <p className="text-[11px] opacity-60 mt-0.5">axe-core automated verification will be added after Fix & Verify (then the lower of the two layers governs)</p>
                   )}
                   {pdfAuditResult.scoreRange > 25 && <p className="text-xs mt-1 bg-white/20 inline-block px-3 py-1 rounded-full font-bold">Note: Score variance is high (range: {pdfAuditResult.scoreRange}) — this is normal for documents with low accessibility scores</p>}
                   <p className="text-sm opacity-90 mt-1">{pdfAuditResult.summary}</p>
