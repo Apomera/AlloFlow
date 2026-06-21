@@ -1276,6 +1276,7 @@ window.StemLab = window.StemLab || {
                 h('input', {
                   type: 'range', 'aria-label': 'Voltage slider', min: 1, max: 24, step: 0.5,
                   value: voltage,
+                  'aria-valuetext': voltage + ' volts. ' + (current === 0 ? 'Open circuit, no current flows.' : ((isShort ? 'Short circuit! ' : '') + 'Total resistance ' + totalR.toFixed(1) + ' ohms, current ' + current.toFixed(3) + ' amps.')),
                   onChange: function(e) { upd('voltage', parseFloat(e.target.value)); },
                   className: 'flex-1 accent-yellow-500 bg-slate-800 rounded-lg h-1.5 appearance-none cursor-pointer'
                 }),
@@ -3240,11 +3241,11 @@ window.StemLab = window.StemLab || {
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 } },
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Voltage'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.voltage + ' V')),
-              h('input', { type: 'range', min: 1, max: 48, step: 0.5, value: iq.voltage, onChange: function(e) { setKey('voltage', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': 'Voltage', 'aria-valuetext': iq.voltage + ' volts, current ' + current.toFixed(3) + ' amps, power ' + power.toFixed(3) + ' watts', min: 1, max: 48, step: 0.5, value: iq.voltage, onChange: function(e) { setKey('voltage', parseFloat(e.target.value)); }, style: { width: '100%' } })
             ),
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, 'Resistance'), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.resistance + ' Ω')),
-              h('input', { type: 'range', min: 1, max: 1000, step: 1, value: iq.resistance, onChange: function(e) { setKey('resistance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': 'Resistance', 'aria-valuetext': iq.resistance + ' ohms, current ' + current.toFixed(3) + ' amps, power ' + power.toFixed(3) + ' watts', min: 1, max: 1000, step: 1, value: iq.resistance, onChange: function(e) { setKey('resistance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
