@@ -19683,7 +19683,7 @@ if (activeTab === 'plutchik') {
   );
   // Detail panel for selected petal
   var detailPanel = null;
-  if (pwSel) {
+  if (pwSel && PLUTCHIK_PRIMARIES.some(function (x) { return x.id === pwSel.primary; })) {
     var primary = PLUTCHIK_PRIMARIES.find(function(x) { return x.id === pwSel.primary; });
     var info = primary[pwSel.intensity];
     // Find adjacent dyads
