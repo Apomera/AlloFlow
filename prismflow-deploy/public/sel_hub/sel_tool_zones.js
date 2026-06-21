@@ -37079,7 +37079,7 @@ if (activeTab === 'checkin_flow') {
         h('button', { onClick: function() { upd({ cfStep: 2 }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
-        h('button', { onClick: function() { upd({ cfStep: 0, cfBody: [], cfThought: [], cfPredicted: null, cfIntensity: 5, cfChosenStrategy: null }); if (soundEnabled) sfxComplete(); addToast && addToast('Check-in saved. You did the noticing — that matters.', 'success'); },
+        h('button', { onClick: function() { upd({ cfStep: 0, cfBody: [], cfThought: [], cfPredicted: null, cfIntensity: 5, cfChosenStrategy: null }); if (soundEnabled) sfxCheckin(); addToast && addToast('Check-in saved. You did the noticing — that matters.', 'success'); },
           style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'Save & restart')
       )

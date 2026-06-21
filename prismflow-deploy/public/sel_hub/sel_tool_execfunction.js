@@ -217,6 +217,7 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var onSafetyFlag = ctx.onSafetyFlag || null;
+      var announceToSR = ctx.announceToSR; // was used at the distraction-log site but never declared (ReferenceError)
       var band = ctx.gradeBand || 'middle';
 
       var d = (ctx.toolData && ctx.toolData.execfunction) || {};
