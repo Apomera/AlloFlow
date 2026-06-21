@@ -1241,6 +1241,15 @@ var createDocPipeline = function(deps) {
     _geminiStormAnnounced = false;
     if (_geminiCooldownTimer) { try { clearTimeout(_geminiCooldownTimer); } catch (_) {} _geminiCooldownTimer = null; }
   };
+  // Pulse the dead-man watchdog (reset its 8-min idle timer): a RETRY / throttle cooldown IS pipeline
+  // activity, not silence. The [Retry]/[GeminiGate] throttle logs are plain warnLog and never fired
+  // 'alloflow:pipeline-warn' (only _pipeLog's start/done/step events do), so under a sustained Canvas
+  // throttle — where every call is stuck retrying for >8 min with no _pipeLog event — the watchdog read
+  // "8 min of silence" and CLEARED a slow-but-progressing run (looked like a premature bail). Emit a
+  // heartbeat on each retry so the watchdog fires only on TRUE inactivity. (2026-06-21, fix A)
+  var _pulsePipelineWatchdog = function () {
+    try { if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: { ts: (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0, tag: 'Throttle', msg: 'retry/cooldown — pipeline alive' } })); } catch (_) {}
+  };
   // Per-attempt gated call with breaker-aware retry. EACH attempt re-acquires a slot, so a tripped
   // breaker (reduced cap + cooldown) also throttles the retries. Canvas-auth (transient 401/403)
   // gets up to _GEMINI_AUTH_RETRIES exponential-backoff retries; other transient/timeout errors get
@@ -1267,6 +1276,7 @@ var createDocPipeline = function(deps) {
           if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — Canvas throttle persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
           var _backoff = Math.min(20000, 2500 * Math.pow(2, n)); // 2.5s, 5s, 10s (capped 20s)
           warnLog('[Retry] ' + (label || 'API call') + ' Canvas throttle — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
+          _pulsePipelineWatchdog(); // a retry is activity — keep the dead-man watchdog from clearing a throttled-but-alive run (fix A)
           return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
         }
         // Generic timeout/transient: a single retry, as before. (2026-06-20) On the FINAL give-up,
@@ -1274,6 +1284,7 @@ var createDocPipeline = function(deps) {
         // same breaker the 401 path does — Canvas throttles via empty 200s + timeouts, not only 401s.
         if (n >= 1) { _geminiNoteTransientFail(); throw err; }
         warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
+        _pulsePipelineWatchdog(); // a retry is activity (fix A)
         return _attempt(n + 1);
       });
     };
