@@ -4439,7 +4439,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '23ff1b89';
+    var pluginCdnVersion = '951639a5';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -10545,6 +10545,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfPolishPasses, setPdfPolishPasses] = useState(2);
   const [pdfAutoFixPasses, setPdfAutoFixPasses] = useState(8);
   const [pdfTargetScore, setPdfTargetScore] = useState(90);
+  // OCR language override (2026-06-20): '' = auto-detect (a Vision call picks the ISO code). A manual
+  // choice lets a teacher tell the pipeline a scanned handout is e.g. Somali so Tesseract uses the right
+  // model — its word boxes drive the searchable text layer, and 'eng' mis-segments non-Latin scripts.
+  // Directly serves the ELL population. Read by the pipeline via window.__docPipelineState.pdfOcrLanguage.
+  const [pdfOcrLanguage, setPdfOcrLanguage] = useState(() => { try { return localStorage.getItem('alloflow_pdf_ocr_lang') || ''; } catch { return ''; } });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_ocr_lang', pdfOcrLanguage || ''); } catch {} }, [pdfOcrLanguage]);
   // Run history (2026-06-10): one summary row per completed remediation.
   // Canvas has NO cross-session storage (maintainer-verified), so this rides
   // INSIDE the .alloflow.json project file — saved with every project,
@@ -15763,7 +15769,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     currentUiLanguage, isIndependentMode, isParentMode,
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
     pdfAutoSaveProject,
-    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore,
+    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore, pdfOcrLanguage,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
     pdfBatchQueue, pdfBatchSummary, pdfExperimentMode, pdfExperimentRuns,
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
@@ -27547,7 +27553,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setPdfAutoFixPasses, setPdfAutoSaveProject, setPdfBatchMode, setPdfBatchQueue, setPdfBatchSummary,
           setPdfFixLoading, setPdfFixMode, setPdfFixResult, setPdfFixStep, setPdfMultiSession,
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
-          setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, setPendingPdfBase64, setPendingPdfFile,
+          setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64, setPendingPdfFile,
           setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
           pdfRunHistory, setPdfRunHistory
       })}
