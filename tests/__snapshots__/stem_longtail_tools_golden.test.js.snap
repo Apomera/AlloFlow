@@ -142,10 +142,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for playlab 1`] = `
 {
-  "buttons": 0,
-  "inputs": 0,
-  "lengthBucket": 0,
-  "sha": "8164937dc3bec60f",
+  "buttons": 169,
+  "inputs": 4,
+  "lengthBucket": 412,
+  "sha": "d52a431fe154d176",
   "svgs": 0,
 }
 `;

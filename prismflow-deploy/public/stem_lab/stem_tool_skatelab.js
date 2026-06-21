@@ -1668,9 +1668,13 @@ window.StemLab = window.StemLab || {
       var callGemini = ctx.callGemini;
 
       // ── State init ──────────────────────────────────────────────
-      if (!labToolData || !labToolData.skatelab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { skatelab: {
+      // Seed defaults, but DO NOT early-return a Loading screen: this render calls
+      // hooks (useRef/useState/useEffect) below, so a conditional early-return changes
+      // the hook count between the empty and seeded renders and throws "Rendered more
+      // hooks than during the previous render" on that transition (the bucket is not
+      // persisted, so it is empty on every reload). Seed and fall through; the body
+      // reads state only via the local `d`. (Rules-of-Hooks fix, 2026-06-20.)
+      var SKATELAB_DEFAULTS = {
             mode: 'halfpipe',
             vehicle: 'skate',
             gravity: 9.81,
@@ -1803,11 +1807,13 @@ window.StemLab = window.StemLab || {
             coachOpens: 0,         // count of "Ask Coach" presses, for quest
             lastResult: null,
             running: false
-          }});
+          };
+      if (!labToolData || !labToolData.skatelab) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { skatelab: SKATELAB_DEFAULTS });
         });
-        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text, #cbd5e1)', textAlign: 'center' } }, 'Initializing SkateLab...');
       }
-      var d = labToolData.skatelab;
+      var d = labToolData.skatelab || SKATELAB_DEFAULTS;
       function upd(k, v) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev);

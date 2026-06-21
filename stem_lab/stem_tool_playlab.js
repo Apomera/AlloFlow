@@ -1771,9 +1771,13 @@ window.StemLab = window.StemLab || {
       var awardXP = ctx.awardXP;
 
       // State init
-      if (!labToolData || !labToolData.playlab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: {
+      // Seed defaults, but DO NOT early-return a Loading screen: this render calls
+      // hooks (useRef/useState/useEffect) below, so a conditional early-return changes
+      // the hook count between the empty and seeded renders and throws "Rendered more
+      // hooks than during the previous render" on that transition (the bucket is not
+      // persisted, so it is empty on every reload). Seed and fall through; the body
+      // reads state only via the local `d`. (Rules-of-Hooks fix, 2026-06-20.)
+      var PLAYLAB_DEFAULTS = {
             // Sport mode — toggle between American football + soccer.
             // Each sport has its own field, formations/plays, defensive
             // shapes, and visual scale (yards vs meters). State for both
@@ -1846,11 +1850,13 @@ window.StemLab = window.StemLab || {
               setPieceRun: false,
               setPieceTypesRun: {}
             }
-          }});
+          };
+      if (!labToolData || !labToolData.playlab) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: PLAYLAB_DEFAULTS });
         });
-        return h('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text, #334155)' } }, 'Loading PlayLab…');
       }
-      var d = labToolData.playlab;
+      var d = labToolData.playlab || PLAYLAB_DEFAULTS;
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.playlab); next[key] = val;

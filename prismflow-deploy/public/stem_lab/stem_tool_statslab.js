@@ -1432,9 +1432,13 @@ window.StemLab = window.StemLab || {
       var callGemini = ctx.callGemini;
 
       // ── State init ──
-      if (!labToolData || !labToolData.statsLab) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { statsLab: {
+      // Seed defaults, but DO NOT early-return a Loading screen: this render calls
+      // hooks (useRef/useState/useEffect) below, so a conditional early-return changes
+      // the hook count between the empty and seeded renders and throws "Rendered more
+      // hooks than during the previous render" on that transition (the bucket is not
+      // persisted, so it is empty on every reload). Seed and fall through; the body
+      // reads state only via the local `d`. (Rules-of-Hooks fix, 2026-06-20.)
+      var STATSLAB_DEFAULTS = {
             testsRun: 0,
             mode: 'home',                  // 'home' | 'wizard' | 'data' | 'test' | 'results'
             wizardStep: 0,
@@ -1462,12 +1466,13 @@ window.StemLab = window.StemLab || {
             // Show toggles
             showMath: false,
             showWizard: false
-          }});
+          };
+      if (!labToolData || !labToolData.statsLab) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { statsLab: STATSLAB_DEFAULTS });
         });
-        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } },
-          '📊 Initializing Statistics Lab...');
       }
-      var d = labToolData.statsLab;
+      var d = labToolData.statsLab || STATSLAB_DEFAULTS;
 
       // ── Concept-mastery state + Canvas-survival persistence ──
       // The StemLab host's localStorage block does not include statsLab,
