@@ -857,7 +857,7 @@ window.SelHub = window.SelHub || {
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }
               }),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', {
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write a reflection first!', 'info'); return; }
                     upd('roleReflectionSaved', true);
@@ -974,7 +974,7 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: s, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: '#0f172a' } },
                     h('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1, textTransform: 'capitalize' } }, s.replace(/-/g, ' ')),
                     [1, 2, 3, 4, 5].map(function(star) {
-                      return h('button', { 'aria-label': 'Toggle sound',
+                      return h('button', { 'aria-label': 'Rate ' + s.replace(/-/g, ' ') + ': ' + star + ' star' + (star === 1 ? '' : 's'),
                         key: star,
                         onClick: function() {
                           var newRatings = Object.assign({}, challengeRatings);
@@ -1062,7 +1062,7 @@ window.SelHub = window.SelHub || {
                   var isChosen = scenarioAnswers[curSc.id] === ci;
                   var showFeedback = revealed && isChosen;
                   return h('div', { key: ci },
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         if (answered) return;
                         var newAnswers = Object.assign({}, scenarioAnswers);
@@ -1233,7 +1233,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 4 } }, 'Low'),
                     [1, 2, 3, 4, 5].map(function(val) {
                       var isSelected = rating === val;
-                      return h('button', { 'aria-label': 'Toggle sound',
+                      return h('button', {
                         key: val,
                         onClick: function() {
                           if (quizSubmitted) return;
@@ -1539,7 +1539,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                     q.options.map(function(opt, oi) {
                       var isSelected = commStyleAnswers[qi] === opt.style;
-                      return h('button', { 'aria-label': 'Toggle sound',
+                      return h('button', {
                         key: oi,
                         onClick: function() {
                           var newAns = Object.assign({}, commStyleAnswers);
@@ -1733,7 +1733,7 @@ window.SelHub = window.SelHub || {
                   var isChosen = vtAnswers[curVt.id] === ci;
                   var showFeedback = vtReveal && isChosen;
                   return h('div', { key: ci },
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         if (vtAnswered) return;
                         var newAns = Object.assign({}, vtAnswers);
@@ -2008,7 +2008,7 @@ window.SelHub = window.SelHub || {
 
             // Save / Export buttons
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
-              h('button', { 'aria-label': 'Toggle sound',
+              h('button', {
                 onClick: function() {
                   var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
                   if (totalCards < 3) { addToast('Add at least 3 cards total to save!', 'info'); return; }

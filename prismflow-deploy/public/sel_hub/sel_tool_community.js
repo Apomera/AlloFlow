@@ -838,7 +838,7 @@ window.SelHub = window.SelHub || {
             }, t.label);
           }),
           h('button', { 'aria-label': 'Toggle panel', onClick: function() { upd({ soundEnabled: !soundEnabled }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-          h('button', { 'aria-label': 'Toggle panel', onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8', position: 'relative' } },
+          h('button', { 'aria-label': 'Show badges', onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8', position: 'relative' } },
             '\uD83C\uDFC5',
             Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
           )
@@ -1524,7 +1524,7 @@ window.SelHub = window.SelHub || {
                   )
                 ),
                 // Mark as reviewed
-                !maReviewed[currentMA.id] && h('button', { 'aria-label': 'Review example',
+                !maReviewed[currentMA.id] && h('button', {
                   onClick: function() {
                     var newRev = Object.assign({}, maReviewed);
                     newRev[currentMA.id] = true;
@@ -1630,7 +1630,7 @@ window.SelHub = window.SelHub || {
             ),
             // Export button
             hFilled >= 2 && h('div', { style: { textAlign: 'center' } },
-              h('button', { 'aria-label': 'Export button',
+              h('button', {
                 onClick: function() {
                   var lines = ['=== MY CULTURAL HERITAGE PROJECT ===', ''];
                   HERITAGE_SECTIONS.forEach(function(sec) {

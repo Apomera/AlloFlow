@@ -22506,7 +22506,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 20 } },
               scanSteps.length + ' body areas \u2022 ~' + Math.round(scanSteps.reduce(function(s,st) { return s + st.seconds; }, 0) / 60) + ' minutes'
             ),
-            h('button', { 'aria-label': 'Toggle sound',
+            h('button', {
               onClick: function() {
                 upd({ scanStep: 0, scanTimeLeft: scanSteps[0].seconds, scanActive: true });
                 if (soundEnabled) sfxBowl();
@@ -22770,7 +22770,7 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
-              callGemini && gratDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
+              callGemini && gratDraft.trim().length > 10 && h('button', {
                 onClick: function() {
                   // Safety pre-check on free-write gratitude draft. Block on
                   // critical content (gratitude entries CAN contain dark thoughts).
@@ -23203,7 +23203,7 @@ window.SelHub = window.SelHub || {
                     )
                   )
                 ),
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', { 'aria-label': (isFav ? 'Remove ' : 'Add ') + script.name + (isFav ? ' from favorites' : ' to favorites'),
                   onClick: function(e) {
                     e.stopPropagation();
                     var newFavs = Object.assign({}, meditationFavs);
@@ -23295,7 +23295,7 @@ window.SelHub = window.SelHub || {
 
               // Favorite toggle
               h('div', { style: { textAlign: 'center', marginTop: 12 } },
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', {
                   onClick: function() {
                     var newFavs = Object.assign({}, meditationFavs);
                     if (newFavs[sc.id]) { delete newFavs[sc.id]; } else { newFavs[sc.id] = true; }
@@ -23608,7 +23608,7 @@ window.SelHub = window.SelHub || {
                     rows: 3,
                     style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
                   }),
-                  h('button', { 'aria-label': 'Toggle sound',
+                  h('button', {
                     onClick: function() {
                       var next = techRainStep + 1;
                       upd('techRainStep', next);
@@ -23779,7 +23779,7 @@ window.SelHub = window.SelHub || {
                       })
                     ),
 
-                    h('button', { 'aria-label': 'Toggle sound',
+                    h('button', {
                       onClick: function() {
                         var next = techStep + 1;
                         upd('techStep', next);

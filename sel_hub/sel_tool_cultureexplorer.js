@@ -930,7 +930,7 @@ window.SelHub = window.SelHub || {
             { id: 'journal', label: '\uD83D\uDCD3 Journal' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
           ].map(function(t) {
-            return h('button', { 'aria-label': 'aria-selected', key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
+            return h('button', { key: t.id, role: 'tab', 'aria-selected': tab === t.id, onClick: function() { upd('tab', t.id); },
               className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[10px] font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
             }, t.label);
           })
@@ -993,7 +993,7 @@ window.SelHub = window.SelHub || {
                 onKeyDown: function(e) { if (e.key === 'Enter' && customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
                 'aria-label': 'Search for a culture'
               }),
-              h('button', { 'aria-label': 'traditions', onClick: function() { if (customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
+              h('button', { onClick: function() { if (customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
                 disabled: !customCulture.trim(),
                 className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
               }, 'Explore')
@@ -1009,7 +1009,7 @@ window.SelHub = window.SelHub || {
               h('div', {  className: 'p-3 flex flex-wrap gap-2' },
                 region.cultures.map(function(culture) {
                   var isExplored = exploredCultures.indexOf(culture) >= 0;
-                  return h('button', { 'aria-label': 'Explore', key: culture,
+                  return h('button', { key: culture,
                     onClick: function() { updMulti({ culture: culture, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(culture, 'traditions'); },
                     className: 'px-3 py-1.5 rounded-full text-xs font-bold border transition-all hover:scale-105 ' +
                       (isExplored ? 'bg-cyan-100 border-cyan-600 text-cyan-700' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600 hover:bg-cyan-50')
@@ -1032,7 +1032,7 @@ window.SelHub = window.SelHub || {
             Object.keys(WORLD_MAP_DATA).map(function(key) {
               var reg = WORLD_MAP_DATA[key];
               var visited = mapRegionsVisited.indexOf(key) >= 0;
-              return h('button', { 'aria-label': 'border-slate-200', key: key, onClick: function() {
+              return h('button', { key: key, onClick: function() {
                   var newVisited = mapRegionsVisited.indexOf(key) < 0 ? mapRegionsVisited.concat([key]) : mapRegionsVisited;
                   updMulti({ mapRegion: key, mapRegionsVisited: newVisited });
                   ctx.awardXP(3);
@@ -1101,7 +1101,7 @@ window.SelHub = window.SelHub || {
                     )
                   ),
                   // Deep dive button
-                  h('button', { 'aria-label': 'Explore', onClick: function() {
+                  h('button', { onClick: function() {
                       updMulti({ culture: hl.name, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null });
                       exploreCulture(hl.name, 'traditions');
                     },
@@ -1131,7 +1131,7 @@ window.SelHub = window.SelHub || {
             var wantToTry = recipesWantToTry.indexOf(recipe.id) >= 0;
             return h('div', {  key: recipe.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (wantToTry ? 'border-amber-300' : 'border-slate-200') },
               // Header
-              h('button', { 'aria-label': 'recipeExpanded', onClick: function() { upd('recipeExpanded', isExpanded ? null : recipe.id); },
+              h('button', { onClick: function() { upd('recipeExpanded', isExpanded ? null : recipe.id); },
                 className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
               },
                 h('span', { className: 'text-2xl' }, recipe.emoji),
@@ -1192,7 +1192,7 @@ window.SelHub = window.SelHub || {
             var explored = musicExplored.indexOf(trad.id) >= 0;
             return h('div', {  key: trad.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (explored ? 'border-indigo-300' : 'border-slate-200') },
               // Header
-              h('button', { 'aria-label': 'Header', onClick: function() {
+              h('button', { onClick: function() {
                   upd('musicExpanded', isExpanded ? null : trad.id);
                   if (!isExpanded) markMusicExplored(trad.id);
                 },
@@ -1284,7 +1284,7 @@ window.SelHub = window.SelHub || {
               var isRead = storiesRead.indexOf(story.id) >= 0;
               return h('div', {  key: story.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (isRead ? 'border-emerald-300' : 'border-slate-200') },
                 // Header
-                h('button', { 'aria-label': 'storyExpanded', onClick: function() { upd('storyExpanded', isExpanded ? null : story.id); },
+                h('button', { onClick: function() { upd('storyExpanded', isExpanded ? null : story.id); },
                   className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
                 },
                   h('span', { className: 'text-2xl' }, story.emoji),
@@ -1370,7 +1370,7 @@ window.SelHub = window.SelHub || {
               var currentMonth = new Date().getMonth();
               var isCurrent = idx === currentMonth;
               var isViewed = calendarMonthsViewed.indexOf(m.month) >= 0;
-              return h('button', { 'aria-label': 'border-slate-200 bg-white', key: idx, onClick: function() {
+              return h('button', { key: idx, onClick: function() {
                   upd('calendarMonth', idx);
                   upd('calendarEventExpanded', null);
                   markCalendarMonth(idx);
@@ -1389,7 +1389,7 @@ window.SelHub = window.SelHub || {
 
           // Month detail view
           (calendarMonth !== null && calendarMonth !== undefined && CULTURAL_CALENDAR[calendarMonth]) && h('div', {  className: 'space-y-3' },
-            h('button', { 'aria-label': 'calendarEventExpanded', onClick: function() { upd('calendarMonth', null); upd('calendarEventExpanded', null); },
+            h('button', { onClick: function() { upd('calendarMonth', null); upd('calendarEventExpanded', null); },
               className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Months'),
 
             h('div', {  className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200 p-4 text-center' },
@@ -1400,7 +1400,7 @@ window.SelHub = window.SelHub || {
             CULTURAL_CALENDAR[calendarMonth].celebrations.map(function(event, ei) {
               var isEventExpanded = calendarEventExpanded === ei;
               return h('div', {  key: ei, className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
-                h('button', { 'aria-label': 'calendarEventExpanded', onClick: function() { upd('calendarEventExpanded', isEventExpanded ? null : ei); },
+                h('button', { onClick: function() { upd('calendarEventExpanded', isEventExpanded ? null : ei); },
                   className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
                 },
                   h('div', {  className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-600 shrink-0' }, String(ei + 1)),
@@ -1485,7 +1485,7 @@ window.SelHub = window.SelHub || {
                 langMatchPairs.map(function(card) {
                   var isMatched = langMatchMatched.indexOf(card.match + '_done') >= 0;
                   var isSelected = langMatchSelected && langMatchSelected.id === card.id;
-                  return h('button', { 'aria-label': 'languages!', key: card.id,
+                  return h('button', { key: card.id,
                     onClick: function() { if (!isMatched && !langMatchWon) handleLangMatchSelect(card); },
                     disabled: isMatched,
                     className: 'p-2 rounded-lg text-xs font-bold border-2 transition-all min-h-[48px] ' +
@@ -1538,7 +1538,7 @@ window.SelHub = window.SelHub || {
               h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Topic'),
               h('div', {  className: 'flex flex-wrap gap-2' },
                 COMPARISON_TOPICS.map(function(topic) {
-                  return h('button', { 'aria-label': 'compTopic', key: topic.id, onClick: function() { upd('compTopic', topic.id); },
+                  return h('button', { key: topic.id, onClick: function() { upd('compTopic', topic.id); },
                     className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
                       (compTopic === topic.id ? 'bg-cyan-700 text-white border-cyan-600' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600')
                   }, topic.emoji + ' ' + topic.label);
@@ -1635,7 +1635,7 @@ window.SelHub = window.SelHub || {
           // Aspect selector
           h('div', {  className: 'flex flex-wrap gap-2' },
             EXPLORE_ASPECTS.map(function(aspect) {
-              return h('button', { 'aria-label': 'Select culture', key: aspect.id,
+              return h('button', { key: aspect.id,
                 onClick: function() { updMulti({ aspect: aspect.id, cultureData: null, cultureImage: null, followUpAnswer: null }); exploreCulture(selectedCulture, aspect.id); },
                 className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
                   (selectedAspect === aspect.id ? 'bg-cyan-700 text-white border-cyan-600 shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600')
@@ -1713,7 +1713,7 @@ window.SelHub = window.SelHub || {
                   className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Follow-up question'
                 }),
-                h('button', { 'aria-label': 'followUpQ', onClick: function() { if (d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
+                h('button', { onClick: function() { if (d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
                   disabled: aiLoading, className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 disabled:opacity-40 transition-colors'
                 }, aiLoading ? '...' : 'Ask')
               )
@@ -1728,7 +1728,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Regenerate image
-            callImagen && h('button', { 'aria-label': 'Select culture', onClick: function() {
+            callImagen && h('button', { onClick: function() {
               upd('imageLoading', true);
               var newPrompt = 'Beautiful illustration representing ' + selectedCulture + ' culture, ' + (EXPLORE_ASPECTS.find(function(a) { return a.id === selectedAspect; }) || {}).label + '. Respectful, accurate, fine art quality, warm lighting. NO text, NO stereotypes.';
               callImagen(newPrompt, 400, 0.8).then(function(img) { updMulti({ cultureImage: img, imageLoading: false }); }).catch(function() { upd('imageLoading', false); });
@@ -1786,7 +1786,7 @@ window.SelHub = window.SelHub || {
                   } else {
                     btnClass += 'bg-white border-slate-200 text-slate-700 hover:border-cyan-600 hover:bg-cyan-50';
                   }
-                  return h('button', { 'aria-label': 'Select answer', key: oi, onClick: function() { handleQuizAnswer(oi); }, disabled: answered,
+                  return h('button', { key: oi, onClick: function() { handleQuizAnswer(oi); }, disabled: answered,
                     className: btnClass
                   }, String.fromCharCode(65 + oi) + '. ' + opt);
                 })
@@ -1814,7 +1814,7 @@ window.SelHub = window.SelHub || {
               h('button', { onClick: startQuiz,
                 className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
               }, '\uD83D\uDD04 Try Again'),
-              h('button', { 'aria-label': 'choose', onClick: function() { upd('tab', 'choose'); },
+              h('button', { onClick: function() { upd('tab', 'choose'); },
                 className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors'
               }, '\uD83C\uDF0D Explore More Cultures')
             )
@@ -1869,7 +1869,7 @@ window.SelHub = window.SelHub || {
                     className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
                     'aria-label': jp.prompt
                   }),
-                  entryVal.length > 20 && !completed && h('button', { 'aria-label': 've Explored:', onClick: function() {
+                  entryVal.length > 20 && !completed && h('button', { onClick: function() {
                       var newCompleted = journalPromptsCompleted.concat([jp.id]);
                       var newCount = journalCount + 1;
                       updMulti({ journalPromptsCompleted: newCompleted, journalCount: newCount });
@@ -1892,7 +1892,7 @@ window.SelHub = window.SelHub || {
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, 'Cultures You\'ve Explored:'),
             h('div', {  className: 'flex flex-wrap gap-2' },
               exploredCultures.map(function(c) {
-                return h('button', { 'aria-label': 'traditions', key: c, onClick: function() { updMulti({ culture: c, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(c, 'traditions'); },
+                return h('button', { key: c, onClick: function() { updMulti({ culture: c, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(c, 'traditions'); },
                   className: 'px-3 py-1.5 bg-cyan-100 border border-cyan-600 rounded-full text-xs font-bold text-cyan-700 hover:bg-cyan-200 transition-colors'
                 }, '\u2713 ' + c);
               })

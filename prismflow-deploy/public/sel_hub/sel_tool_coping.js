@@ -26520,7 +26520,7 @@ window.SelHub = window.SelHub || {
                 cursor: 'pointer', fontWeight: selectedType === null ? 700 : 500, fontSize: 12
               }
             }, 'All'),
-            Object.keys(favorites).length > 0 && h('button', { 'aria-label': 'Favorites ( )',
+            Object.keys(favorites).length > 0 && h('button', {
               onClick: function() { upd('selectedType', selectedType === '_fav' ? null : '_fav'); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '6px 14px', borderRadius: 20, border: selectedType === '_fav' ? '2px solid #ef4444' : '1px solid #334155',
@@ -26530,7 +26530,7 @@ window.SelHub = window.SelHub || {
             }, '\u2764\uFE0F Favorites (' + Object.keys(favorites).length + ')'),
             STRATEGY_TYPES.map(function(type) {
               var isActive = selectedType === type.id;
-              return h('button', { 'aria-label': 'Toggle sound',
+              return h('button', {
                 key: type.id,
                 onClick: function() { upd('selectedType', isActive ? null : type.id); if (soundEnabled) sfxClick(); },
                 style: {
@@ -26569,7 +26569,7 @@ window.SelHub = window.SelHub || {
                 style: { borderRadius: 14, border: '1px solid ' + (typeObj ? typeObj.color + '44' : '#334155'), background: '#1e293b', overflow: 'hidden' }
               },
                 // Header (always visible)
-                h('button', { 'aria-label': 'Toggle sound',
+                h('button', {
                   onClick: function() {
                     var newExpanded = isExpanded ? null : strat.id;
                     var newViewed = Object.assign({}, viewedStrats);
@@ -26692,7 +26692,7 @@ window.SelHub = window.SelHub || {
                 { id: 'calm_counting', icon: '\uD83D\uDD22', title: 'Calm Counting', desc: 'Count backwards to engage your thinking brain', color: '#3b82f6' },
                 { id: 'self_talk', icon: '\uD83D\uDCAC', title: 'Positive Self-Talk Generator', desc: 'Turn harsh inner critic into a supportive inner coach', color: '#ec4899' }
               ].map(function(mode) {
-                return h('button', { 'aria-label': mode.icon,
+                return h('button', { 'aria-label': mode.title,
                   key: mode.id,
                   onClick: function() { upd('practiceMode', mode.id); if (soundEnabled) sfxClick(); },
                   style: {
@@ -26847,7 +26847,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              h('button', { 'aria-label': 'Toggle sound',
+              h('button', {
                 onClick: function() {
                   stopBreathTimer();
                   var pat = BREATH_PATTERNS[breathPatternIdx] || BREATH_PATTERNS[0];
@@ -26962,7 +26962,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
                 MOVEMENT_EXERCISES.map(function(ex, idx) {
                   var isSel = moveExIdx === idx;
-                  return h('button', { 'aria-label': ex.icon,
+                  return h('button', { 'aria-label': ex.name,
                     key: ex.id,
                     onClick: function() { upd('moveExIdx', idx); if (soundEnabled) sfxClick(); },
                     style: {
@@ -27142,7 +27142,7 @@ window.SelHub = window.SelHub || {
                 placeholder: band === 'elementary' ? 'Type a mean thought here... Don\'t share personal info (like your full name).' : 'Enter a negative thought... Don\'t share personal info (names, school, etc.).',
                 style: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box', marginBottom: 8 }
               }),
-              callGemini && tfCustomThought.trim() && h('button', { 'aria-label': 'Toggle sound',
+              callGemini && tfCustomThought.trim() && h('button', {
                 onClick: function() {
                   // Safety pre-check on the student's typed thought before
                   // sending to the AI. Critical content (self-harm, harm-to-
@@ -27432,7 +27432,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Generate button
-            callGemini && stInput.trim() && h('button', { 'aria-label': 'Generate button',
+            callGemini && stInput.trim() && h('button', {
               onClick: function() {
                 // Safety pre-check on student's typed inner-critic statement.
                 // If it contains critical-tier content, surface crisis
@@ -28340,14 +28340,14 @@ window.SelHub = window.SelHub || {
             h('span', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9' } },
               band === 'elementary' ? '\uD83C\uDF24\uFE0F How are you feeling right now?' : '\uD83C\uDF24\uFE0F Quick Check-In'
             ),
-            h('button', { 'aria-label': 'Toggle sound',
+            h('button', { 'aria-label': 'Skip',
               onClick: function() { upd({ dailyMoodDate: todayStr, dailyMood: 'skip' }); },
               style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }
             }, '\u2715')
           ),
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
             CHECKIN_MOODS.map(function(mood) {
-              return h('button', { 'aria-label': 'info',
+              return h('button', {
                 key: mood.id,
                 onClick: function() {
                   upd({ dailyMood: mood.id, dailyMoodDate: todayStr });

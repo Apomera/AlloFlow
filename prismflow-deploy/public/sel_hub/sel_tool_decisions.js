@@ -1756,7 +1756,7 @@ window.SelHub = window.SelHub || {
               rows: 5,
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),
-            h('button', { 'aria-label': 's decision:',
+            h('button', {
               onClick: function() {
                 if (!advPrompt.trim()) { addToast('Describe your decision first!', 'info'); return; }
                 if (!callGemini) { addToast('AI advisor is not available right now.', 'error'); return; }

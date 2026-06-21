@@ -1175,7 +1175,7 @@ window.SelHub = window.SelHub || {
             ),
             // Reveal / show explanation
             !isRevealed ?
-              h('button', { 'aria-label': 'Toggle sound',
+              h('button', {
                 onClick: function() {
                   var newRevealed = Object.assign({}, scenRevealed);
                   newRevealed[revKey] = true;
@@ -1368,7 +1368,7 @@ window.SelHub = window.SelHub || {
           ),
           // Save & next buttons
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-            h('button', { 'aria-label': 'Toggle sound',
+            h('button', {
               onClick: function() {
                 if (!emThink && !emFeel && !emSay && !emDo) {
                   addToast('Fill in at least one quadrant first!', 'info');
@@ -1443,7 +1443,7 @@ window.SelHub = window.SelHub || {
               var isWrong = hfRevealed && isChosen && opt !== curHf.realFeeling;
               var bg = isCorrect ? '#22c55e33' : isWrong ? '#ef444433' : isChosen ? ACCENT_DIM : '#1e293b';
               var bdr = isCorrect ? '#22c55e' : isWrong ? '#ef4444' : isChosen ? ACCENT : '#334155';
-              return h('button', { 'aria-label': 'Toggle sound',
+              return h('button', {
                 key: opt,
                 onClick: function() {
                   if (hfRevealed) return;
@@ -2193,7 +2193,7 @@ window.SelHub = window.SelHub || {
           // Mark explored & navigate
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
             !isBiasExplored ?
-              h('button', { 'aria-label': 'Toggle sound',
+              h('button', {
                 onClick: function() {
                   var newExplored = Object.assign({}, biasExplored);
                   newExplored[biasExKey] = true;
@@ -2260,7 +2260,7 @@ window.SelHub = window.SelHub || {
           ),
           // Buttons
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
-            h('button', { 'aria-label': 'Toggle sound',
+            h('button', {
               onClick: function() {
                 if (guidedJText.trim().split(/\s+/).length < 10) { addToast('Write at least a few sentences first!', 'info'); return; }
                 var timestamp = new Date().toISOString();
