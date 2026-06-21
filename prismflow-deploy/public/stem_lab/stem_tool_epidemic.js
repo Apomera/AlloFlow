@@ -2523,7 +2523,7 @@ window.StemLab = window.StemLab || {
                       h('br'),
                       'Trust: ' + Math.round(g.trust) + '/100'
                     ),
-                    h('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: '#fde68a', lineHeight: 1.5 } },
+                    h('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5 } },
                       '👥 ' + art.cases.toLocaleString() + ' people sick',
                       h('br'),
                       '⚱️ ' + art.deaths.toLocaleString() + ' lives lost',
@@ -2547,7 +2547,7 @@ window.StemLab = window.StemLab || {
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, Math.round(baselineTotalCases).toLocaleString() + ' sick · ' + Math.round(baselineTotalDeaths).toLocaleString() + ' lost · projected continuous overload')
                   )
                 ),
-                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, fontStyle: 'italic' } },
                   baselineTotalDeaths > actualTotalDeaths + 200
                     ? 'Your interventions prevented an estimated ' + Math.round(baselineTotalDeaths - actualTotalDeaths).toLocaleString() + ' deaths in this county. That is the difference between active public health response and laissez-faire.'
                     : (actualTotalDeaths > baselineTotalDeaths

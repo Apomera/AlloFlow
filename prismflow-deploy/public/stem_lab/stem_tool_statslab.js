@@ -2207,11 +2207,11 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { color: '#fbbf24', fontWeight: 800, marginBottom: 4 } }, label + ' (n = ' + x.length + ')'),
         h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 } },
-          h('span', null, 'M = ', h('b', { style: { color: '#fef3c7' } }, isFinite(m) ? m.toFixed(2) : '—')),
-          h('span', null, 'SD = ', h('b', { style: { color: '#fef3c7' } }, isFinite(sd) ? sd.toFixed(2) : '—')),
-          h('span', null, 'Mdn = ', h('b', { style: { color: '#fef3c7' } }, isFinite(md) ? md.toFixed(2) : '—')),
-          h('span', null, 'min = ', h('b', { style: { color: '#fef3c7' } }, min)),
-          h('span', null, 'max = ', h('b', { style: { color: '#fef3c7' } }, max)),
+          h('span', null, 'M = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(m) ? m.toFixed(2) : '—')),
+          h('span', null, 'SD = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(sd) ? sd.toFixed(2) : '—')),
+          h('span', null, 'Mdn = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(md) ? md.toFixed(2) : '—')),
+          h('span', null, 'min = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, min)),
+          h('span', null, 'max = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, max)),
           h('span', null, 'skew = ', h('b', { style: { color: skBadge.color } }, isFinite(sk) ? sk.toFixed(2) : '—'))
         ),
         h('div', { style: { marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' } },
@@ -2442,7 +2442,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { labels: labels }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Category ' + (i + 1) + ' label',
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, boxSizing: 'border-box' }
             }),
             h('input', {
               type: 'number', value: row.obs,
@@ -2520,7 +2520,7 @@ window.StemLab = window.StemLab || {
                         upd('chiIndepData', Object.assign({}, d.chiIndepData, { cols: cols }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Column ' + (ci + 1) + ' label',
-                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
+                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
                     })
                   );
                 }),
@@ -2549,7 +2549,7 @@ window.StemLab = window.StemLab || {
                         upd('chiIndepData', Object.assign({}, d.chiIndepData, { rows: rows }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' label',
-                      style: { width: 100, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700 }
+                      style: { width: 100, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700 }
                     })
                   ),
                   d.chiIndepData.cols.map(function(_, ci) {
@@ -2640,7 +2640,7 @@ window.StemLab = window.StemLab || {
               type: 'text', value: d.multiRegData.yLabel || 'Y',
               onChange: function(e) { upd('multiRegData', Object.assign({}, d.multiRegData, { yLabel: e.target.value })); },
               'data-sl-focusable': 'true', 'aria-label': 'Outcome variable label',
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           h('button', {
@@ -2679,7 +2679,7 @@ window.StemLab = window.StemLab || {
                   );
                 }),
                 h('th', { style: { padding: 4 } },
-                  h('div', { style: { width: 80, padding: 4, color: '#fef3c7', fontSize: 11, fontWeight: 800, textAlign: 'center' } }, d.multiRegData.yLabel || 'Y')
+                  h('div', { style: { width: 80, padding: 4, color: 'var(--allo-stem-text, #fef3c7)', fontSize: 11, fontWeight: 800, textAlign: 'center' } }, d.multiRegData.yLabel || 'Y')
                 ),
                 h('th', null)
               )
@@ -2713,7 +2713,7 @@ window.StemLab = window.StemLab || {
                         upd('multiRegData', Object.assign({}, d.multiRegData, { y: y }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' outcome',
-                      style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
+                      style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
                     })
                   ),
                   h('td', { style: { padding: 2 } },
@@ -2866,7 +2866,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '⚠ Assumption checks'),
         assumptionPreview.map(function(w, i) {
-          return h('div', { key: i, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.5, marginBottom: 4 } }, '• ' + w.msg);
+          return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, marginBottom: 4 } }, '• ' + w.msg);
         })
       ),
       // Visual preview of the loaded data for the selected test
@@ -3292,7 +3292,7 @@ window.StemLab = window.StemLab || {
               style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, padding: '6px 8px' }
             },
               h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, s[0]),
-              h('div', { style: { color: '#fef3c7', fontWeight: 700 } }, s[1])
+              h('div', { style: { color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700 } }, s[1])
             );
           })
         ),
@@ -3610,7 +3610,7 @@ window.StemLab = window.StemLab || {
               }
             },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Question ' + (qi + 1) + ' of ' + d.quizQuestions.length),
-              h('div', { style: { fontSize: 13, color: '#fef3c7', fontWeight: 700, marginBottom: 8, lineHeight: 1.45 } }, q.q),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #fef3c7)', fontWeight: 700, marginBottom: 8, lineHeight: 1.45 } }, q.q),
               q.choices.map(function(choice, ci) {
                 var isPicked = pickedIdx === ci;
                 var isThisCorrect = ci === q.correct;
@@ -3822,7 +3822,7 @@ window.StemLab = window.StemLab || {
           d.aiGradeResponse.error
             ? h('div', { style: { fontSize: 12, color: '#fca5a5' } }, '⚠ ' + d.aiGradeResponse.error)
             : h('div', null,
-                _isNum(d.aiGradeResponse.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fef3c7', marginBottom: 6 } },
+                _isNum(d.aiGradeResponse.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 6 } },
                   'Score: ' + d.aiGradeResponse.score + ' / 10'
                 ),
                 Array.isArray(d.aiGradeResponse.strengths) && d.aiGradeResponse.strengths.length > 0 && h('div', { style: { marginBottom: 8 } },
@@ -3839,7 +3839,7 @@ window.StemLab = window.StemLab || {
                 ),
                 d.aiGradeResponse.improved_version && h('div', null,
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a5b4fc', marginBottom: 2 } }, '📝 Model interpretation'),
-                  h('div', { style: { fontSize: 11, color: '#fef3c7', fontStyle: 'italic', padding: 8, background: 'rgba(99,102,241,0.10)', borderRadius: 6, lineHeight: 1.6 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fef3c7)', fontStyle: 'italic', padding: 8, background: 'rgba(99,102,241,0.10)', borderRadius: 6, lineHeight: 1.6 } },
                     d.aiGradeResponse.improved_version
                   )
                 )
@@ -4350,7 +4350,7 @@ window.StemLab = window.StemLab || {
               h('span', { style: { color: '#fca5a5' } }, 'Type I (α): ', h('b', null, va.toFixed(3))),
               h('span', { style: { color: '#93c5fd' } }, 'Type II (β): ', h('b', null, beta.toFixed(3))),
               h('span', { style: { color: '#86efac' } }, 'Power (1−β): ', h('b', null, power.toFixed(3))),
-              h('span', { style: { color: '#fef3c7' } }, 'NCP: ', h('b', null, ncp.toFixed(2)))
+              h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, 'NCP: ', h('b', null, ncp.toFixed(2)))
             ),
             power < 0.50 && h('div', { style: { marginTop: 6, color: '#fbbf24', fontStyle: 'italic' } },
               '⚠ Power below 0.50 — fewer than half of studies of this size would detect this effect. Consider larger n.'
@@ -5512,8 +5512,8 @@ window.StemLab = window.StemLab || {
     },
       h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⚠ Common misconceptions to avoid'),
       items.map(function(it, i) {
-        return h('div', { key: i, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
-          h('div', { style: { fontWeight: 700, color: '#fef3c7', marginBottom: 2 } }, '✗ ' + it.wrong),
+        return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
+          h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 2 } }, '✗ ' + it.wrong),
           h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, '✓ ' + it.right)
         );
       })

@@ -2936,7 +2936,7 @@ window.StemLab = window.StemLab || {
             style: {
               background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)',
               borderRadius: 10, padding: 14, marginBottom: 14, fontSize: 14,
-              lineHeight: 1.55, color: '#fde68a'
+              lineHeight: 1.55, color: 'var(--allo-stem-text, #fde68a)'
             }
           },
             h('div', { style: { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, color: '#f59e0b', marginBottom: 6 } }, '📜 The story'),
@@ -3069,7 +3069,7 @@ window.StemLab = window.StemLab || {
               title: 'Capture the current setup as a reusable preset',
               style: {
                 padding: '5px 10px', fontSize: 10, fontWeight: 700,
-                background: 'rgba(167,139,250,0.18)', color: '#fef3c7',
+                background: 'rgba(167,139,250,0.18)', color: 'var(--allo-stem-text, #fef3c7)',
                 border: '1px solid rgba(167,139,250,0.45)',
                 borderRadius: 999, cursor: 'pointer', minHeight: 24
               }
@@ -3250,7 +3250,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': 'Print this scenario as a student activity sheet',
                 'data-sk-focusable': 'true',
                 title: 'Print classroom-friendly activity sheet with the questions',
-                style: { background: 'rgba(167,139,250,0.18)', border: '1px solid rgba(167,139,250,0.45)', color: '#fef3c7', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer', minHeight: 28 }
+                style: { background: 'rgba(167,139,250,0.18)', border: '1px solid rgba(167,139,250,0.45)', color: 'var(--allo-stem-text, #fef3c7)', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer', minHeight: 28 }
               }, '🖨️ Print'),
               h('button', {
                 onClick: function() { upd('activeScenarioId', null); skAnnounce('Lesson dismissed.'); },
@@ -3629,7 +3629,7 @@ window.StemLab = window.StemLab || {
           },
             h('h3', {
               id: 'sk-save-title',
-              style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }
+              style: { margin: '0 0 6px', color: 'var(--allo-stem-text, #fef3c7)', fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }
             }, '💾 Save current setup as a scenario'),
             h('p', { style: { margin: '0 0 12px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               'Capture the current ' + d.mode + ' configuration so it shows in the scenario row alongside the famous tricks. Pick a short, memorable name.'),
@@ -3648,7 +3648,7 @@ window.StemLab = window.StemLab || {
               'data-sk-focusable': 'true',
               style: {
                 width: '100%', padding: '8px 12px', fontSize: 13,
-                background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7',
+                background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)',
                 border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 8, outline: 'none',
                 marginBottom: 14, boxSizing: 'border-box'
               }
@@ -3886,7 +3886,7 @@ window.StemLab = window.StemLab || {
             border: '1px solid rgba(245,158,11,0.45)',
             borderRadius: 10, padding: '10px 12px',
             marginBottom: 10,
-            fontSize: 12, color: '#fde68a', lineHeight: 1.55
+            fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55
           }
         },
           h('div', { style: { fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, '⚠️ This is a simulation. Real skating isn\'t.'),
@@ -4251,7 +4251,7 @@ window.StemLab = window.StemLab || {
                     background: 'rgba(245,158,11,0.10)',
                     border: '1px solid rgba(245,158,11,0.45)',
                     borderRadius: 8, padding: '8px 10px',
-                    fontSize: 11, color: '#fde68a', lineHeight: 1.5
+                    fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5
                   }
                 },
                   h('b', { style: { color: '#fbbf24' } }, '⚠️ Real-world safety: '),
@@ -4273,7 +4273,7 @@ window.StemLab = window.StemLab || {
                       'data-sk-focusable': 'true',
                       style: {
                         width: '100%', padding: '6px 10px', fontSize: 12, fontWeight: 600,
-                        background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7',
+                        background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)',
                         border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6,
                         boxSizing: 'border-box', minHeight: 32
                       }
@@ -4294,7 +4294,7 @@ window.StemLab = window.StemLab || {
                       'data-sk-focusable': 'true',
                       style: {
                         width: 64, padding: '6px 10px', fontSize: 16, fontWeight: 600,
-                        background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7',
+                        background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)',
                         border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6,
                         textAlign: 'center', boxSizing: 'border-box', minHeight: 32
                       }
@@ -4422,7 +4422,7 @@ window.StemLab = window.StemLab || {
             h('button', {
               onClick: newGap, disabled: d.running,
               'data-sk-focusable': 'true',
-              style: { marginTop: 8, padding: '6px 10px', background: 'rgba(254,243,199,0.10)', color: '#fef3c7', border: '1px solid rgba(254,243,199,0.30)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+              style: { marginTop: 8, padding: '6px 10px', background: 'rgba(254,243,199,0.10)', color: 'var(--allo-stem-text, #fef3c7)', border: '1px solid rgba(254,243,199,0.30)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
             }, '🎲 New Gap')
           )
         ),
@@ -4517,7 +4517,7 @@ window.StemLab = window.StemLab || {
                   placeholder: '0.0',
                   style: {
                     width: 90, padding: '6px 8px', fontSize: 13, fontWeight: 700,
-                    background: 'var(--allo-stem-canvas, #0f172a)', color: '#fef3c7',
+                    background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)',
                     border: '1px solid ' + (predValid ? '#a855f7' : '#475569'),
                     borderRadius: 6
                   }

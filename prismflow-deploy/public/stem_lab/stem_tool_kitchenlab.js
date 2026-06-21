@@ -1783,7 +1783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 fontSize: 28, flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } }, '🍳'),
             h('div', { style: { flex: 1, minWidth: 240 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: '#fde68a', letterSpacing: '-0.01em' } }, 'Kitchen Lab'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', letterSpacing: '-0.01em' } }, 'Kitchen Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fdba74', background: 'rgba(251,146,60,0.12)',
                     border: '1px solid rgba(251,146,60,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   sectionCount + ' sections')),
@@ -2206,7 +2206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: subheaderStyle() }, '🍽️ Foods that ' + tech.name.toLowerCase() + ' well'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               tech.foodExamples.map(function(f, i) {
-                return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: '#fde68a', fontWeight: 600 } }, f);
+                return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', fontWeight: 600 } }, f);
               })))
         );
       }
@@ -2218,7 +2218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         return h('div', null,
           panelHeader(emoji + ' ' + title, lede),
           h('div', { style: cardStyle() },
-            h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 10 } }, '🚧 Coming in the next ship'),
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 10 } }, '🚧 Coming in the next ship'),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
               'This section is being built. Below is what\'s planned. The architecture pieces are in place — content depth is what\'s in flight.'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.8 } },
@@ -2239,9 +2239,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: subheaderStyle() }, '🔬 What\'s actually happening'),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.7 } },
               'Maillard is a cascade of chemical reactions between ',
-              h('b', { style: { color: '#fde68a' } }, 'amino acids'),
+              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, 'amino acids'),
               ' (the building blocks of protein) and ',
-              h('b', { style: { color: '#fde68a' } }, 'reducing sugars'),
+              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, 'reducing sugars'),
               ' (glucose, fructose, lactose — sugars that can give up an electron). It needs heat to start (~280°F / 140°C surface temp), and once running it produces:'),
             h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.8, margin: '10px 0 0 0', padding: '0 0 0 20px' } },
               h('li', null, h('b', { style: { color: '#fb923c' } }, 'Melanoidins'), ' — the brown pigments. Why crust is brown.'),
@@ -2253,7 +2253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: subheaderStyle() }, '🌡️ Temperature Explorer'),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               'Drag the slider to see what\'s happening at different surface temperatures. Note: ',
-              h('b', { style: { color: '#fde68a' } }, 'surface temp ≠ internal temp'),
+              h('b', { style: { color: 'var(--allo-stem-text, #fde68a)' } }, 'surface temp ≠ internal temp'),
               ' ≠ pan temp. Surface temp can be much higher than internal because the surface is touching the hot pan or air.'),
             h('div', { style: { marginBottom: 16 } },
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
@@ -2347,7 +2347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     borderLeft: '3px solid ' + color, padding: '12px 14px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: color, marginBottom: 6 } }, p.ph),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, p.effect),
-                  h('div', { style: { fontSize: 11, color: '#fde68a', lineHeight: 1.55, background: 'rgba(251,146,60,0.08)', padding: '6px 8px', borderRadius: 6 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55, background: 'rgba(251,146,60,0.08)', padding: '6px 8px', borderRadius: 6 } },
                     h('b', null, '💡 Use: '), p.use));
               }))),
 
@@ -2365,7 +2365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 ' (Group 2A). It\'s the same compound used in some industrial polymer manufacturing.'),
               h('p', { style: { margin: '0 0 10px 0' } },
                 'Foods most affected: french fries, potato chips, breakfast cereal, toast (especially dark), coffee, baked goods. The darker the brown, the more acrylamide. The FDA campaign tagline:'),
-              h('p', { style: { margin: '0 0 10px 0', padding: '8px 12px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, fontWeight: 700, color: '#fde68a', textAlign: 'center' } },
+              h('p', { style: { margin: '0 0 10px 0', padding: '8px 12px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, fontWeight: 700, color: 'var(--allo-stem-text, #fde68a)', textAlign: 'center' } },
                 '"Go for gold, not brown."'),
               h('p', { style: { margin: 0 } },
                 'Practical advice: aim for golden-yellow on starchy foods, not deep brown. Don\'t store potatoes in the fridge (cold storage raises their reducing-sugar content → more acrylamide when cooked).')))
@@ -3776,7 +3776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
               rec.teaches.map(function(t, i) {
                 return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)',
-                  border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: '#fde68a', fontWeight: 600 } }, t);
+                  border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', fontWeight: 600 } }, t);
               }))),
 
           // ─── Newly unlocked achievements banner ───

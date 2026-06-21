@@ -840,7 +840,7 @@
                 })
               ),
               loadMode === 'vehicle'
-                ? h('div', { style: { fontSize: 11.5, color: '#fde68a', lineHeight: 1.6, padding: 8, background: 'rgba(245,158,11,0.10)', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)' } },
+                ? h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6, padding: 8, background: 'rgba(245,158,11,0.10)', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)' } },
                     h('strong', null, 'Moving-load analysis: '),
                     'real bridges are designed by sliding the worst possible vehicle across every point on the span and recording the maximum force in each member. The "influence line" of a member is how its force varies with the load\'s position. Each member has its own worst case — usually NOT in the same place as the worst case for any other member.'
                   )
@@ -1063,7 +1063,7 @@
                         h('strong', null, 'Note: '),
                         'Cost estimate is material-only — doesn\'t include labor, fabrication, transport, fastening, or maintenance over the bridge\'s lifetime. Real bridge economics also factor in durability (steel maintenance vs concrete) + replacement cycle. But raw material cost is the starting line.'
                       ),
-                      h('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, color: '#fde68a', lineHeight: 1.6 } },
+                      h('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6 } },
                         h('strong', null, 'Click the winner: '),
                         h('button', {
                           onClick: function() { upd({ materialId: top5[0].material.id, crossSectionMm2: top5[0].crossMm2 }); },
@@ -1243,7 +1243,7 @@
               })
             ),
 
-            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
               h('strong', null, 'Why sag matters: '),
               'Shallower sag (less drop in the cable) means the cable is more horizontal, which means MORE horizontal tension is needed to support the same deck weight. Cable tension scales as 1/sag — halving the sag doubles the cable force. Real suspension bridges use sag/span ratios around 1:8 to 1:12 to balance cable cost (more sag = lower force = thinner cable) against tower height (more sag = taller towers needed to clear the deck above water/road). Golden Gate sag ratio: 1:11. Akashi-Kaikyō: 1:10.'
             ),
@@ -1386,7 +1386,7 @@
                   h('strong', null, 'Why arches stand for centuries: '),
                   'Compression is what stone, brick, and concrete handle best. Roman arch bridges from 100 BCE are still in use because: (1) they are entirely in compression, no tension anywhere; (2) the abutments resist the horizontal thrust through sheer mass; (3) compressive forces have no fatigue limit in the way that bending or tension do — stone under steady compression effectively lasts forever.'
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65, marginTop: 8 } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65, marginTop: 8 } },
                   h('strong', null, 'Why high thrust matters: '),
                   'Flatter arches (smaller rise) need much more horizontal thrust. Roman arches were typically semicircular (rise = half the span) for that reason — the thrust is moderate and easily resisted. Modern shallow steel arches need enormous engineered abutments anchored into rock, or tied-arch designs where horizontal tie rods at deck level absorb the thrust (so the abutments only resist vertical load). Sydney Harbour Bridge and New River Gorge are tied-arch designs.'
                 )
@@ -1695,7 +1695,7 @@
                   h('strong', null, 'Cable-stayed vs suspension — the trade: '),
                   'A SUSPENSION bridge has ONE main cable carrying everything; very long spans possible but the deck is more flexible. A CABLE-STAYED bridge has many independent stays each handling its tributary load; stiffer in wind, easier to build (no main-cable spinning + no separate anchorages — the tower handles compression directly), but maximum economic span is ~1,100 m (vs ~2,000 m for suspension). Most new long bridges built since 1990 are cable-stayed.'
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'Why longer stays carry MORE force: '),
                   'A stay near the tower is steep (mostly vertical). It carries its tributary load mostly along its axis with a small horizontal component. A stay farther from the tower is shallow (mostly horizontal). To support the same vertical load with a low angle, it needs a HUGE total tension force. Hence the longest stays at the far ends of the span are the most heavily loaded — usually visibly thicker on real bridges.'
                 )
@@ -2188,7 +2188,7 @@
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.limits)
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'The US infrastructure picture: '),
                   'About 1 in 13 US bridges (~46,000 of 619,000) is in "poor" condition according to FHWA. Average bridge age is ~44 years; many were built in the 1950s-1970s federal highway expansion + are now reaching the end of their original design life. The 2021 Infrastructure Investment and Jobs Act allocated $40 billion specifically for bridge repair + replacement — the largest US bridge investment since 1956. Done well: substantial life-extension via repair + retrofit. Done poorly: replace-everything cycles that miss the opportunity to keep historic structures functioning longer.'
                 ),
@@ -2287,7 +2287,7 @@
                   'Eugène Freyssinet (France, 1928) + Gustave Magnel (Belgium, 1940s) developed prestressed concrete. The technique required high-strength steel wire (developed 1900-30) — earlier "low-carbon" steel relaxed under sustained load + lost the precompression. Now standard worldwide for medium-span bridges (30-200 m). The Confederation Bridge (Canada, 12.9 km of prestressed concrete) + most US highway overpasses are prestressed.'
                 ),
 
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'Why this matters: '),
                   'A reinforced concrete beam cracks under service load → the cracks are tiny + don\'t reduce strength, but they let water + chloride ions reach the rebar → rebar corrosion is the #1 cause of premature concrete bridge deterioration. A prestressed beam stays in compression under service loads → no cracks → no chloride ingress → much longer life. Prestressed bridges often last 100+ years; reinforced concrete bridges often need major repair at 50-70.'
                 ),
@@ -2404,7 +2404,7 @@
                     })
                   )
                 ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65, marginTop: 10 } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65, marginTop: 10 } },
                   h('strong', null, 'Why scour kills bridges: '),
                   'Flowing water erodes soil from around bridge piers. As scour deepens, the foundation loses bearing area. Eventually it tips or the pier sinks. Schoharie Creek (1987, NY) collapsed during a flood from scour. The 2001 Hatchie River bridge (Tennessee) failure also. About 60% of US bridge failures involve scour. Modern bridges include scour-monitoring instruments + countermeasures (riprap, sheet piles, deeper foundations). The 1995 Federal Highway Administration requires every bridge over water to have a scour evaluation.'
                 )
@@ -4237,7 +4237,7 @@
         var massKg = a.totalLen * areaM2 * mat.densityKgM3;
         var costUsd = a.totalLen * areaM2 * mat.costPerM3;
         return h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid ' + AMBER, marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid ' + AMBER, marginBottom: 12, fontSize: 12.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
             h('strong', null, '🖨 Bridge design specification sheet. '),
             'A one-page artifact for engineering portfolios, design competitions, classroom presentations, or maker-faire submissions. Contains the design parameters, the stress analysis result, the material properties, and your design notes.'
           ),

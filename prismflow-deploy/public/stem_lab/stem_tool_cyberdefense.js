@@ -3295,7 +3295,7 @@
                     el('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 10 } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' } },
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 7px', borderRadius: 3 } }, 'RED TEAM MOVE'),
-                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
+                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
                         warRoomTtsAvailable && el('button', {
                           onClick: function() {
                             var title = redCard.title || '';
@@ -3406,7 +3406,7 @@
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', marginBottom: 8 } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' } },
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 7px', borderRadius: 3 } }, 'RED TEAM'),
-                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
+                        mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
                         warRoomTtsAvailable && el('button', {
                           onClick: function() {
                             var title = (step.red && step.red.title) || '';
@@ -3553,7 +3553,7 @@
                       combos.length > 0 && el('div', null,
                         el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Combos worth setting up'),
                         combos.map(function(c, i) {
-                          return el('div', { key: i, style: { padding: '3px 0', fontSize: 11, color: '#fde68a' } },
+                          return el('div', { key: i, style: { padding: '3px 0', fontSize: 11, color: 'var(--allo-stem-text, #fde68a)' } },
                             el('span', { style: { fontWeight: 800 } }, '\u2728 ' + c.label),
                             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, ' \u2014 ' + c.ids.map(function(bid) { var bc = blueTeamCards.filter(function(b) { return b.id === bid; })[0]; return bc ? bc.label : bid; }).join(' + '))
                           );
@@ -3582,7 +3582,7 @@
                       { k: '(in Quiz) N',      t: 'Next question after answering' }
                     ].map(function(row, i) {
                       return el('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                        el('kbd', { style: { padding: '3px 8px', borderRadius: 4, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', color: '#fde68a', fontFamily: 'monospace', fontSize: 11, fontWeight: 800, minWidth: 48, textAlign: 'center' } }, row.k),
+                        el('kbd', { style: { padding: '3px 8px', borderRadius: 4, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', color: 'var(--allo-stem-text, #fde68a)', fontFamily: 'monospace', fontSize: 11, fontWeight: 800, minWidth: 48, textAlign: 'center' } }, row.k),
                         el('span', { style: { flex: 1 } }, row.t)
                       );
                     })
@@ -4830,7 +4830,7 @@
                     el('button', {
                       onClick: function() { startCampaign(warRoomDifficulty, warRoomCampaignTheme); },
                       'aria-label': 'Replay the same setup with a fresh roll of cards',
-                      style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.35)', background: 'rgba(234,179,8,0.15)', color: '#fcd34d', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                      style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.35)', background: 'rgba(234,179,8,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDD04 Replay Same Setup'),
                     el('button', {
                       onClick: function() {
@@ -5213,7 +5213,7 @@
                           el('span', { style: { fontSize: 11, color: '#a5b4fc', fontWeight: 800 } }, 'WHAT HAPPENED'),
                           warRoomRedAction && mitreTechniques[warRoomRedAction.id] && el('span', {
                             title: 'MITRE ATT&CK: ' + mitreTechniques[warRoomRedAction.id].name,
-                            style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
+                            style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
                             mitreTechniques[warRoomRedAction.id].id + ' \u2022 ' + mitreTechniques[warRoomRedAction.id].name)
                         ),
                         el('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
@@ -5267,7 +5267,7 @@
                       res.outcome === 'succeeded' && !warRoomRetryUsedThisRound && !warLiveIsObserving && el('button', {
                         onClick: tryAgainRound, 'aria-label': 'Try this round again with the same scenario',
                         title: 'Revert this round and replay it from scratch (once per round).',
-                        style: { width: '100%', marginBottom: 8, padding: '10px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(234,179,8,0.15)', color: '#fcd34d', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                        style: { width: '100%', marginBottom: 8, padding: '10px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(234,179,8,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                         '\uD83D\uDD04 Try This Round Again'),
                       res.outcome === 'succeeded' && warRoomRetryUsedThisRound && !warLiveIsObserving && el('div', {
                         style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic', textAlign: 'center' } },
@@ -5324,7 +5324,7 @@
                           el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, warRoomCurrentStage.name),
                           warRoomRedAction && mitreTechniques[warRoomRedAction.id] && el('span', {
                             title: 'MITRE ATT&CK: ' + mitreTechniques[warRoomRedAction.id].name,
-                            style: { fontSize: 9, fontWeight: 800, color: '#fcd34d', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
+                            style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
                             mitreTechniques[warRoomRedAction.id].id),
                           warRoomRedAction && warRoomRedAction._aiGenerated && el('span', { style: { fontSize: 9, fontWeight: 800, color: '#a5b4fc', background: 'rgba(99,102,241,0.2)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3 } }, '\uD83E\uDD16 AI'),
                           warRoomTtsAvailable && el('button', {
@@ -5443,7 +5443,7 @@
                         return el('div', { 'aria-live': 'polite', style: { marginTop: 6, padding: 8, borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)' } },
                           el('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, marginBottom: 3 } }, '\u2728 COMBO STAGED'),
                           staged.map(function(c) {
-                            return el('div', { key: c.id, style: { fontSize: 11, color: '#fde68a', lineHeight: 1.4 } }, c.label + ' \u2014 ' + c.description);
+                            return el('div', { key: c.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.4 } }, c.label + ' \u2014 ' + c.description);
                           })
                         );
                       })(),
@@ -5466,7 +5466,7 @@
                           var catList = Object.keys(cats).join(' or ');
                           return el('div', null,
                             el('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, marginBottom: 3 } }, '\uD83D\uDCA1 HINT'),
-                            el('div', { style: { fontSize: 11.5, color: '#fde68a', lineHeight: 1.5 } }, 'The ideal defense this round falls in the ', el('strong', null, catList), ' category.')
+                            el('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5 } }, 'The ideal defense this round falls in the ', el('strong', null, catList), ' category.')
                           );
                         })()
                       ),

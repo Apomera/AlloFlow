@@ -2453,7 +2453,7 @@
                     h('li', null, h('strong', null, 'Main sequence ignition: '), 'After ~10-100 million years (Sun-like) or much faster (massive stars), the core reaches ~10 million K. Hydrogen fusion starts. The star is "born" + joins the main sequence. The protoplanetary disk\'s remaining material forms planets.')
                   )
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'The Pillars of Creation: '),
                   'Hubble\'s famous 1995 image of the Eagle Nebula shows three towering columns of gas + dust, each several light-years tall, being eroded by ultraviolet radiation from nearby young hot stars. New stars are forming inside the pillars. JWST re-imaged them in 2022 in infrared, revealing the protostars more clearly than ever. The pillars themselves may have already been destroyed by a supernova ~6,000 years ago — but the light hasn\'t reached us yet.'
                 )
@@ -2465,7 +2465,7 @@
           sectionCard('☀️ Our Sun — closest, most important star',
             (function() {
               var LAYERS = [
-                { id: 'core', name: 'Core', color: '#fde047',
+                { id: 'core', name: 'Core', color: 'var(--allo-stem-text, #fde047)',
                   size: '~25% of solar radius (175,000 km)',
                   temp: '15 million K',
                   what: 'Where nuclear fusion happens. Hydrogen fuses to helium via the proton-proton chain. Releases the energy that powers the Sun — and Earth. Density at the center: 150 g/cm³ (10× lead).',
@@ -2483,7 +2483,7 @@
                   what: 'Plasma boils like water in a pot. Hot blobs rise to the surface, cool, sink. The granulated appearance of the Sun\'s surface is the tops of these convection cells.',
                   why: 'Different parts of the Sun rotate at different speeds (equator faster than poles — "differential rotation"). The motion winds up magnetic field lines, eventually causing them to snap + reorganize, which drives the 11-year solar cycle.'
                 },
-                { id: 'photosphere', name: 'Photosphere', color: '#fef3c7',
+                { id: 'photosphere', name: 'Photosphere', color: 'var(--allo-stem-text, #fef3c7)',
                   size: 'A 500-km layer (the "visible surface")',
                   temp: '5,778 K',
                   what: 'The "surface" of the Sun is the layer from which most visible light escapes. Below: opaque. Above: transparent. Granulation, sunspots, and faculae live here.',
@@ -2573,7 +2573,7 @@
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, fontStyle: 'italic' } }, selL.why)
                 ),
                 // Solar cycle + space weather
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'The 11-year solar cycle: '),
                   'Sunspot count varies on an ~11-year cycle (the "Schwabe cycle," 1843). At solar minimum: few or no sunspots; aurora rare. At solar maximum: many sunspots, frequent CMEs, vivid aurora, possible satellite + power-grid impacts. Solar Cycle 25 (current) peaked in 2024-25; the 2024 May Mother\'s Day Storm was the strongest in 20 years. The Sun\'s magnetic poles flip every cycle (so the FULL cycle is actually 22 years).'
                 ),
@@ -2809,7 +2809,7 @@
                     h('strong', null, 'Honest framing: '), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'Safety reminder: '),
                   'NEVER look directly at the Sun without certified solar-eclipse glasses (ISO 12312-2) or a solar-filtered telescope. Even brief exposure can permanently damage your retina. Sunspots ARE visible through proper solar filters; many citizen-science projects (like the Sunspotter or AAVSO Solar Section) let you participate in solar observation safely.'
                 )
@@ -3018,7 +3018,7 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fde047', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: 'var(--allo-stem-text, #fde047)', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
@@ -3169,7 +3169,7 @@
                 })
               ),
 
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, '📚 About stellar nomenclature: '),
                 'Stars have multiple naming schemes. (1) PROPER NAMES — Arabic, Greek, Latin, occasionally Mayan or Chinese origin (Sirius, Vega, Betelgeuse). The IAU formally approved a list of 313 traditional names in 2016. (2) BAYER designation — Greek letter + constellation (α Centauri, β Persei). Roughly orders stars by brightness within the constellation. (3) FLAMSTEED numbers — sequential numbers within a constellation by right ascension (61 Cygni). (4) HIPPARCOS/Gaia catalogs — modern systematic catalog numbers (HIP, HD, TYC, Gaia DR-X). For amateur observers, the proper-name + Bayer system is what you\'ll encounter; for professional astronomy, the systematic catalog numbers dominate.'
               )
@@ -3317,7 +3317,7 @@
                   )
                 ),
 
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'The 1919 confirmation: '),
                   'Arthur Eddington led an expedition to the island of Príncipe to observe a total solar eclipse on May 29 1919. Without the Sun\'s glare, stars near its edge could be photographed. The shift in their apparent positions matched Einstein\'s prediction (~1.75 arcseconds at the solar limb), not Newton\'s (~0.87 arcseconds). News went global; on November 7 1919 the Times of London announced "Revolution in Science." Einstein went from physicist to public figure overnight.'
                 )
@@ -3357,7 +3357,7 @@
                   })
                 ),
 
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'The CMB is everywhere. '),
                   'About 1% of the static on an old analog TV channel comes from the cosmic microwave background. Penzias + Wilson stumbled into it in 1964 looking for radio sources, won the 1978 Nobel. COBE (1992) showed it has the perfect blackbody spectrum predicted by Big Bang theory. WMAP (2003) + Planck (2013) mapped tiny temperature fluctuations ±18 microkelvin — the seeds that grew into galaxies + clusters. All four are foundational tools of modern cosmology.'
                 ),
@@ -4230,7 +4230,7 @@
                   h('strong', null, 'Current detection programs: '),
                   'NASA + ESA + amateur observatories worldwide. NASA\'s Center for NEO Studies tracks ~35,000+ known near-Earth asteroids (as of 2024). The Catalina Sky Survey, Pan-STARRS, ATLAS find dozens of new ones per month. The Vera C. Rubin Observatory (Chile, first light 2025) is expected to find tens of thousands more in its first few years. The Sun-direction "blind spot" remains a major gap; NASA\'s NEO Surveyor space telescope (launching 2027-28) will close it.'
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, 'Deflection options: '),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.65 } },
                     h('li', null, h('strong', null, 'Kinetic impactor: '), 'Crash a spacecraft into it (DART approach). Most mature option. Effective with years of warning.'),
@@ -5700,7 +5700,7 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fde68a', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, 'Honest framing: '), topic.caveat
@@ -6420,12 +6420,12 @@
                 selectedTarget.eyepiece
               ),
 
-              targetTooBig ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+              targetTooBig ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, '⚠️ Target is larger than your field of view. '),
                 'Try a longer focal-length eyepiece (lower magnification, wider FOV).'
               ) : null,
 
-              targetTooSmall ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+              targetTooSmall ? h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, '⚠️ Target is small relative to atmospheric seeing. '),
                 'Use higher magnification + wait for steady atmosphere.'
               ) : null
