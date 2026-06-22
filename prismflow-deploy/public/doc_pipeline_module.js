@@ -23166,7 +23166,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       <label class="mcq-label">
                                           ${isWorksheet
                                               ? fillableCircle()
-                                              : `<input aria-label={t('common.text_field')} type="radio" name="q_${item.id}_${i}" value="${optIdx}">`}
+                                              : `<input type="radio" name="q_${item.id}_${i}" value="${optIdx}">`}
                                           ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${q.optionImageUrls[optIdx]}" alt="${opt}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
                                           <span>${opt} ${q.options_en && q.options_en[optIdx] ? `<span style="color:#888; font-size:0.9em;">(${q.options_en[optIdx]})</span>` : ''}</span>
                                       </label>
@@ -24780,7 +24780,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       ` : '';
       const rawHtml = `
       <!DOCTYPE html>
-      <html lang="${({'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'})[currentUiLanguage] || 'en'}" dir="${direction}">
+      <html lang="${({'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'})[leveledTextLanguage || currentUiLanguage] || 'en'}" dir="${direction}">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -8,6 +8,11 @@ var cleanJson = window.__alloUtils && window.__alloUtils.cleanJson;
 if (!cleanJson) cleanJson = function(t) { try { return JSON.parse(t); } catch(e) { return null; } };
 var processGrounding = window.__alloUtils && window.__alloUtils.processGrounding;
 if (!processGrounding) processGrounding = function(t) { return t; };
+// This is a SEPARATELY-loaded CDN module, so the main bundle's `let safeJsonParse` is not in scope — a
+// bare call ReferenceErrors (swallowed by the dialogue try/catch → Dialogue mode silently never produced
+// its formatted SPEAKER: script). Shim from window.__alloUtils like cleanJson/processGrounding above.
+var safeJsonParse = window.__alloUtils && window.__alloUtils.safeJsonParse;
+if (!safeJsonParse) safeJsonParse = function(t) { try { return t ? JSON.parse(t) : null; } catch(e) { return null; } };
 
 var createContentEngine = function(deps) {
   var callGemini = deps.callGemini;
@@ -236,7 +241,7 @@ var createContentEngine = function(deps) {
     return repairedText;
   };
   // Filter non-educational sources (YouTube music, IMDB, Rotten Tomatoes, social media, shopping)
-  var _rejectSourceUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
+  var _rejectSourceUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /\/\/(?:[^/]*\.)?(?:twitter|x)\.com(?:[/:?#]|$)/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
   var _rejectSourceTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
   var filterSources = function(chunks) {
     if (!chunks || !Array.isArray(chunks)) return chunks;
@@ -249,12 +254,17 @@ var createContentEngine = function(deps) {
     });
   };
   var generateBibliographyString = function(metadata, citationStyle, title) {
-    citationStyle = citationStyle || 'Links Only'; title = title || 'Verified Sources';
+    // Honesty (2026-06-21): these entries are raw AI-search grounding chunks — Gemini can ground on a
+    // mismatched/wrong page and the links are often ephemeral redirects. Do NOT title them "Verified
+    // Sources" (the old default — it overclaimed) and DO carry a verify-before-citing caveat so a teacher
+    // never hands a student an unverified link presented as authoritative.
+    citationStyle = citationStyle || 'Links Only'; title = title || 'Referenced Sources';
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
     var chunks = filterSources(metadata.groundingChunks);
     if (chunks.length === 0) return "";
-    var bib = '\n\n### ' + title + '\n\n';
-    chunks.forEach(function(chunk, i) { var t = (chunk.web && chunk.web.title) || "Unknown Source"; var u = (chunk.web && chunk.web.uri) || "#"; bib += (i+1) + '. [' + t + '](' + u + ')\n\n'; });
+    var _caveat = (t && t('content.sources_unverified_note')) || 'These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it.';
+    var bib = '\n\n### ' + title + '\n\n*' + _caveat + '*\n\n';
+    chunks.forEach(function(chunk, i) { var _ti = (chunk.web && chunk.web.title) || "Unknown Source"; var u = (chunk.web && chunk.web.uri) || "#"; bib += (i+1) + '. [' + _ti + '](' + u + ')\n\n'; });
     return bib;
   };
   var sanitizeRawUrls = function(text) {
@@ -541,6 +551,7 @@ var createContentEngine = function(deps) {
            const wordsPerSection = Math.ceil(targetWords / sections.length);
            let allGroundingChunks = [];
            let currentCitationOffset = 0;
+           let _sectionFailures = 0; // sections skipped because even the no-grounding fallback hard-failed (rate-limit) — surfaced after the loop instead of aborting the whole doc
            // Track per-section text so each subsequent prompt can include a recap of
            // what's already been written. Without this, Gemini sees only the section
            // title + the same research brief every chunk — the result is near-
@@ -692,7 +703,18 @@ You MUST:
                            await new Promise(r => setTimeout(r, 1500));
                        } else {
                            warnLog(`[Citations] ⚠️ Section ${i + 1}/${sections.length} ("${sectionTitle}") grounding failed after ${attempt + 1} attempts, falling back to no-grounding. Citations for this section will be missing.`);
-                           result = await callGemini(sectionPrompt, false, false);
+                           try {
+                               result = await callGemini(sectionPrompt, false, false);
+                           } catch (fallbackErr) {
+                               // Don't let ONE section's hard failure (quota/auth/transient) abort the WHOLE
+                               // multi-section document — skip this section, keep everything built so far, and
+                               // surface it. (Was: unguarded → the error escaped the loop into the outer catch,
+                               // discarding all prior sections with no bibliography and no resume.)
+                               warnLog(`[Citations] ✗ Section ${i + 1}/${sections.length} ("${sectionTitle}") failed even without grounding: ${fallbackErr && fallbackErr.message}. Skipping it; keeping the rest of the document.`);
+                               result = '';
+                               _sectionFailures++;
+                               groundingSuccess = true; // stop retrying this section; move on
+                           }
                        }
                    }
                }
@@ -864,6 +886,12 @@ You MUST:
                     .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))[ \t]+(?=\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()/g, '$1, ')
                     // 5. Final collapse of 2+ tabs/spaces (preserve newlines).
                     .replace(/[ \t]{2,}/g, ' ');
+           }
+           // Surface a partial generation instead of silently shipping a doc with empty sections (the
+           // no-grounding fallback above now degrades a hard-failed section to empty rather than aborting).
+           if (_sectionFailures > 0) {
+               warnLog(`[Generate] ${_sectionFailures} of ${sections.length} section(s) could not be generated (AI rate-limited) — kept the rest.`);
+               try { addToast('⚠ ' + _sectionFailures + ' of ' + sections.length + ' section(s) could not be generated (the AI service was rate-limited) — the rest were kept. Re-run to fill the gaps.', 'warning'); } catch (_) {}
            }
            if (effIncludeCitations) {
                 const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;

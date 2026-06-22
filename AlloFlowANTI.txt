@@ -2281,7 +2281,7 @@ const filterEducationalSources = (chunks) => {
     if (_m && typeof _m.filterEducationalSources === 'function') return _m.filterEducationalSources(chunks);
     throw new Error('[filterEducationalSources] TextPipelineHelpers module not loaded — reload the page');
 };
-const generateBibliographyString = (metadata, citationStyle = 'Links Only', title = 'Verified Sources') => {
+const generateBibliographyString = (metadata, citationStyle = 'Links Only', title = 'Referenced Sources') => {
     const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
     if (_m && typeof _m.generateBibliographyString === 'function') return _m.generateBibliographyString(metadata, citationStyle, title);
     throw new Error('[generateBibliographyString] TextPipelineHelpers module not loaded — reload the page');
