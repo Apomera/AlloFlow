@@ -4808,7 +4808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer' } },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, t.icon),
                   h('div', { style: { fontWeight: 700, fontSize: 15, color: T.text, marginBottom: 4 } }, t.name),
-                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.4 } }, t.intro)
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.4 } }, __alloT('stem.autorepair.' + (k) + '_intro', t.intro))
                 );
               })
             ),
@@ -5372,7 +5372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('span', { style: { fontSize: 10, color: T.dim, padding: '2px 8px', borderRadius: 12, background: T.bg, border: '1px solid ' + T.border } }, item.urgency),
                   isChecked && h('span', { style: { fontSize: 16, color: T.good } }, '✓')
                 ),
-                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, item.detail),
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.autorepair.' + (item.id) + '_detail', item.detail)),
                 h('div', { style: { fontSize: 12, color: isChecked ? '#a7f3d0' : T.text, lineHeight: 1.5 } },
                   h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.action', '🎯 Action: ')), item.action)
               );
@@ -5758,7 +5758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
                   h('div', { style: { fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 4 } }, s.name, done && ' ✓'),
                   h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, __alloT('stem.autorepair.decision_points', ' decision points')),
-                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, s.intro)
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, __alloT('stem.autorepair.' + (s.id) + '_intro', s.intro))
                 );
               })
             ),

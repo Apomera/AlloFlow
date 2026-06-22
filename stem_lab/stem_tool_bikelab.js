@@ -312,6 +312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     tags: ['physics', 'mechanics', 'life-skills', 'repair', 'energy', 'gearing'],
 
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
@@ -1822,7 +1823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         ),
                         isDone && h('span', { className: 'bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-[11px] font-bold' }, t('stem.bikelab.done', '✓ Done'))
                       ),
-                      h('p', { className: 'text-sm text-slate-600 mt-2' }, j.description)
+                      h('p', { className: 'text-sm text-slate-600 mt-2' }, __alloT('stem.bikelab.' + (j.id) + '_description', j.description))
                     )
                   );
                 })

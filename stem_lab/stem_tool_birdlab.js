@@ -10011,7 +10011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     }, '⏱️ PB ' + formatTime(pb));
                   })()
                 ),
-                h('p', { className: 'text-sm text-slate-800' }, habitat.description)
+                h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.birdlab.' + (habitatId) + '_description', habitat.description))
               ),
               h('div', { className: 'flex items-center gap-3 flex-wrap justify-end' },
                 // Streak meter
@@ -11837,9 +11837,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         __alloT('stem.birdlab.playing_synthesized_rhythm_open_merlin', '🎶 Playing synthesized rhythm — open Merlin Bird ID for the real recording.'))
                     ),
                     h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' },
-                      h('strong', null, __alloT('stem.birdlab.what_it_sounds_like', 'What it sounds like: ')), c.description),
+                      h('strong', null, __alloT('stem.birdlab.what_it_sounds_like', 'What it sounds like: ')), __alloT('stem.birdlab.' + (c.id) + '_description', c.description)),
                     h('p', { className: 'text-xs text-emerald-800 leading-relaxed' },
-                      h('strong', null, __alloT('stem.birdlab.tip', '💡 Tip: ')), c.tip)
+                      h('strong', null, __alloT('stem.birdlab.tip', '💡 Tip: ')), __alloT('stem.birdlab.' + (c.id) + '_tip', c.tip))
                   );
                 })
               )

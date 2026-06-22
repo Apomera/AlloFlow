@@ -654,6 +654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       { id: 'doppler_master', label: 'Identify 5 Doppler shifts correctly', icon: '\uD83C\uDF0A', check: function(d) { return (d.dopplerCorrect || 0) >= 5; }, progress: function(d) { return (d.dopplerCorrect || 0) + '/5'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -833,8 +834,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { className: 'text-center mb-3' },
                   h('div', { className: 'text-3xl mb-1' }, sp.emoji),
                   h('div', { className: 'text-sm font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sp.name),
-                  h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') }, sp.subtitle)),
-                h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, sp.desc),
+                  h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') }, __alloT('stem.echolocation.' + (sp.id) + '_subtitle', sp.subtitle))),
+                h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.echolocation.' + (sp.id) + '_desc', sp.desc)),
                 // Stats visualization
                 h('div', { className: 'space-y-0.5 mb-3' },
                   statBar('Sonar Range', sp.sonarRange, 300, '#6366f1'),
@@ -4469,7 +4470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                       className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-500'
                     }, t('stem.echolocation.play', '\uD83D\uDD0A Play'))
                   ),
-                  h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, animal.desc),
+                  h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.echolocation.' + (animal.id) + '_desc', animal.desc)),
                   h('div', { className: 'flex gap-2 mt-2 text-[11px]' },
                     h('span', { className: 'px-2 py-0.5 rounded', style: { background: animal.color + '30', color: animal.color } },
                       animal.range),

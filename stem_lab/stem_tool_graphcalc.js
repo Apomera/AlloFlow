@@ -814,7 +814,7 @@
                   return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.08)', opacity: earned ? 1 : 0.5 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                       h('span', { style: { fontSize: '16px' } }, earned ? b.icon : '\uD83D\uDD12'),
-                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#94a3b8' } }, b.label), h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, b.desc)),
+                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#94a3b8' } }, b.label), h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.' + (b.id) + '_desc', b.desc))),
                       earned ? h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: '#a78bfa', fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
                     ));
                 })

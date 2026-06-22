@@ -1372,6 +1372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ],
 
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -3278,7 +3279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       h('span', { className: 'text-2xl' }, et.icon),
                       h('div', null,
                         h('div', { className: headingClass + ' text-sm' }, et.label),
-                        h('div', { className: subTextClass }, et.desc))));
+                        h('div', { className: subTextClass }, __alloT('stem.oratory.' + (et.id) + '_desc', et.desc)))));
                 })),
               // AI generation note
               h('div', { className: subTextClass + ' text-center mt-2 italic' },
@@ -3648,7 +3649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     h('div', { className: 'text-2xl font-mono w-8 text-center flex-shrink-0 ' + (isDark ? 'text-violet-400' : 'text-violet-600') }, pat.icon),
                     h('div', null,
                       h('div', { className: headingClass + ' text-sm' }, pat.label),
-                      h('div', { className: subTextClass + ' mb-1' }, pat.desc),
+                      h('div', { className: subTextClass + ' mb-1' }, __alloT('stem.oratory.' + (pat.id) + '_desc', pat.desc)),
                       h('div', { className: 'text-xs italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, '"' + pat.phrase + '"'))));
               }))
           );

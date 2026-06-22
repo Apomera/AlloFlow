@@ -1239,7 +1239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               },
                 h('div', { className: 'text-3xl mb-2' }, w.emoji),
                 h('div', { className: 'font-bold text-slate-800' }, w.name),
-                h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, w.desc),
+                h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, __alloT('stem.worldbuilder.' + (w.id) + '_desc', w.desc)),
                 h('div', { className: 'text-[11px] text-violet-500 font-bold mt-2' }, w.rooms.length + ' locations to explore')
               );
             })

@@ -607,6 +607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       { id: 'optimal_80', label: 'Score 80%+ optimal decisions in a mission', icon: '\uD83E\uDDE0', check: function(d) { return (d.spaceExplorer || {}).bestOptimalPct >= 80; }, progress: function(d) { return ((d.spaceExplorer || {}).bestOptimalPct || 0) + '% best'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = window.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -1065,7 +1066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     return h('span', { key: i, className: 'text-[11px]', 'aria-hidden': 'true' }, i < dest.difficulty ? '\u2B50' : '\u2606');
                   })
                 ),
-                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission(s) to unlock' : dest.desc),
+                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission(s) to unlock' : __alloT('stem.spaceexplorer.' + (dest.id) + '_desc', dest.desc)),
                 !locked && (function() {
                   var stats = (d.destStats || {})[dest.id];
                   if (!stats) return null;
@@ -1099,7 +1100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', { className: 'text-xl' }, tech.emoji),
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold ' + (owned ? 'text-green-300' : 'text-white') }, tech.name + (owned ? ' \u2705' : '')),
-                  h('p', { className: 'text-[11px] text-slate-400' }, tech.desc)
+                  h('p', { className: 'text-[11px] text-slate-400' }, __alloT('stem.spaceexplorer.' + (tech.id) + '_desc', tech.desc))
                 ),
                 !owned && h('button', {
                   disabled: !canBuy,

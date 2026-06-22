@@ -1481,6 +1481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       { id: 'ai_first_bank',     label: 'Generate AI questions for a spell', icon: '\u2728', check: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); return Object.keys(c).some(function(k) { return (c[k] || []).length > 0; }); }, progress: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); var total = Object.keys(c).reduce(function(t, k) { return t + (c[k] || []).length; }, 0); return total + ' AI questions'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = window.React;
       var h = React.createElement;
@@ -2328,7 +2329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('span', { className: 'font-bold text-sm', style: { color: dp.color } }, dp.name),
                     picked && h('span', { className: 'ml-auto text-violet-700 font-bold text-xs' }, '\u2713')
                   ),
-                  h('div', { className: 'text-[10px] leading-snug text-slate-600 mb-1' }, dp.desc),
+                  h('div', { className: 'text-[10px] leading-snug text-slate-600 mb-1' }, __alloT('stem.allobotsage.' + (diffId) + '_desc', dp.desc)),
                   h('div', { className: 'text-[9px] text-slate-500 font-mono' },
                     'crit \u2264' + dp.critWindowSec + 's \u00b7 ' + dp.rooms + ' rooms \u00b7 ' + dp.playerHp + ' HP \u00b7 ' + dp.essenceMult + 'x essence'
                   )
@@ -2569,7 +2570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       )
                     )
                   ),
-                  h('div', { className: 'text-[11px] mb-3 ' + (selected ? 'opacity-95' : 'text-slate-600') + ' italic leading-snug' }, sec.subtitle),
+                  h('div', { className: 'text-[11px] mb-3 ' + (selected ? 'opacity-95' : 'text-slate-600') + ' italic leading-snug' }, __alloT('stem.allobotsage.' + (sec.id) + '_subtitle', sec.subtitle)),
                   // Boss preview
                   unlocked && sectorBosses.length > 0 && h('div', { className: 'mb-2' },
                     h('div', { className: 'text-[9px] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, t('stem.allobotsage.bosses', 'Bosses')),

@@ -16496,7 +16496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   h('span', { style: { fontSize: 22 } }, z.icon),
                   h('strong', { style: { fontSize: 13, color: T.accentHi } }, z.name)
                 ),
-                h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, z.desc),
+                h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, __alloT('stem.learning_lab.' + (z.id) + '_desc', z.desc)),
                 h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
                   h('strong', { style: { color: T.warn } }, __alloT('stem.learning_lab.teaching_implication', '🎯 Teaching implication: ')), z.teaching)
               );
@@ -17879,7 +17879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 h('span', { 'aria-hidden': 'true', style: { background: hue, color: s.n === 0 ? '#fff' : '#000', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 } }, s.n),
                 h('div', null,
                   h('strong', { style: { fontSize: 12, color: hue } }, s.name),
-                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, s.desc)));
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, __alloT('stem.learning_lab.' + (s.id) + '_desc', s.desc))));
             })
           ),
           h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, lineHeight: 1.55 } },

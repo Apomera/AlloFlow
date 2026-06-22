@@ -964,7 +964,7 @@
               h('div', { style: { fontSize: 11, color: '#94a3b8' } }, phase.pct + '% illuminated · day ' + phase.age + ' of ~29.5')
             ),
             h('div', null,
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, phase.desc),
+              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, __alloT('stem.astronomy.' + (phase.id) + '_desc', phase.desc)),
               h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.6 } },
                 h('strong', { style: { color: '#a5b4fc' } }, 'Visibility: '),
                 phase.visibility

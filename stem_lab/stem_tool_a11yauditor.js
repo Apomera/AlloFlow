@@ -80,6 +80,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
     color: 'teal',
     category: 'coding',
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
@@ -833,7 +834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 )
               ),
               isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
-                h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, criterion.desc),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, __alloT('stem.a11yauditor.' + (criterion.id) + '_desc', criterion.desc)),
                 h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
                   h('p', { className: 'text-xs text-teal-800 font-medium' }, t('stem.a11yauditor.impact', '👤 Impact: '), criterion.impact)
                 ),
@@ -1042,7 +1043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               return h('div', { key: badge.id, className: 'text-center p-3 rounded-xl border-2 transition-all ' + (earned ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50') },
                 h('div', { className: 'text-2xl' }, badge.icon),
                 h('div', { className: 'text-[11px] font-bold text-slate-700 mt-1' }, badge.name),
-                h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, badge.desc)
+                h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, __alloT('stem.a11yauditor.' + (badge.id) + '_desc', badge.desc))
               );
             })
           )

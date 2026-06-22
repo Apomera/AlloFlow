@@ -5567,7 +5567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     })()),
                   h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, drill.name),
                   h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px', lineHeight: '1.4' } },
-                    done ? 'You already did this drill today. Try it again or pick another from the menu.' : drill.description)
+                    done ? 'You already did this drill today. Try it again or pick another from the menu.' : __alloT('stem.typingpractice.' + (pick) + '_description', drill.description))
                 ),
                 h('button', {
                   onClick: function() { startDrill(drill.id); },
@@ -7086,7 +7086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       )
                     ),
                     // Description
-                    h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.55' } }, pack.description),
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.55' } }, __alloT('stem.typingpractice.' + (pack.id) + '_description', pack.description)),
                     // Snippet preview — italic, accent-bordered quote block
                     h('div', {
                       style: {

@@ -446,6 +446,7 @@ window.StemLab = window.StemLab || {
       { id: 'complete_3_challenges', label: 'Complete 3 circuit challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.challengesDone || 0) >= 3; }, progress: function(d) { return (d.challengesDone || 0) + '/3'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
 
@@ -1550,7 +1551,7 @@ window.StemLab = window.StemLab || {
                     title: preset.desc
                   },
                     h('span', { className: 'font-bold text-slate-200 block' }, preset.label),
-                    h('span', { className: 'text-[10px] text-slate-400 mt-0.5 block' }, preset.desc)
+                    h('span', { className: 'text-[10px] text-slate-400 mt-0.5 block' }, __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc))
                   );
                 })
               )
@@ -1663,7 +1664,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-base' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', null,
                       h('p', { className: 'font-bold ' + (earned ? 'text-amber-300' : 'text-slate-500') }, b.name),
-                      h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-400/80' : 'text-slate-600') }, b.desc)
+                      h('p', { className: 'text-[10px] ' + (earned ? 'text-amber-400/80' : 'text-slate-600') }, __alloT('stem.circuit.' + (b.id) + '_desc', b.desc))
                     )
                   );
                 })
@@ -2534,7 +2535,7 @@ window.StemLab = window.StemLab || {
                   scenario.answerIndex === stg.picked ? '✓ Correct' : '✗ Try the reasoning')
               ),
               stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[11px] text-slate-700 leading-relaxed' },
-                h('strong', { className: 'text-amber-900' }, 'Why: '), scenario.explanation)
+                h('strong', { className: 'text-amber-900' }, 'Why: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation))
             );
           }),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2' },

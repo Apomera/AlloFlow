@@ -8698,7 +8698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               },
                 h('div', { className: 'text-2xl mb-1' }, x.icon),
                 h('div', { className: 'text-sm font-bold text-cyan-200 mb-1' }, x.label),
-                h('div', { className: 'text-xs text-slate-300 leading-snug' }, x.desc)
+                h('div', { className: 'text-xs text-slate-300 leading-snug' }, __alloT('stem.assessmentliteracy.' + (x.id) + '_desc', x.desc))
               );
             })
           )

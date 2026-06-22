@@ -1482,6 +1482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       { id: 'create_burn_plan', label: 'Create a prescribed burn plan', icon: '\uD83D\uDCDD', check: function(d) { return d.burnResult !== null && d.burnResult !== undefined; }, progress: function(d) { return d.burnResult ? 'Created!' : 'Not yet'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -3972,7 +3973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 4 } },
                       'Fire return: ' + (z.fireReturn >= 50 ? 'almost never' : 'every ' + z.fireReturn + ' years')
                     ),
-                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, z.desc),
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.fireecology.' + (z.id) + '_desc', z.desc)),
                     h('div', { style: { color: '#fbbf24', fontSize: 11.5, marginBottom: 8 } }, '✨ ' + z.culturalUse),
                     z.deepDive ? h('button', {
                       onClick: function() { openDeepDive(z.id); },
@@ -4010,7 +4011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                       }
                     },
                       h('div', { style: { fontWeight: 800, fontSize: 13 } }, diff.label),
-                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, diff.desc)
+                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.fireecology.' + (dkey) + '_desc', diff.desc))
                     );
                   })
                 )
@@ -4893,7 +4894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                       style: { padding: '10px 16px', borderRadius: 8, border: '2px solid ' + (active ? '#f97316' : '#334155'), background: active ? '#431407' : '#0f172a', color: active ? '#fb923c' : '#94a3b8', cursor: 'pointer', fontSize: 13, fontWeight: active ? 700 : 500, maxWidth: 200 }
                     },
                       h('div', { style: { fontWeight: 700 } }, gd.label),
-                      h('div', { style: { fontSize: 11, marginTop: 2, lineHeight: 1.3 } }, gd.description)
+                      h('div', { style: { fontSize: 11, marginTop: 2, lineHeight: 1.3 } }, __alloT('stem.fireecology.' + (key) + '_description', gd.description))
                     );
                   })
                 ),

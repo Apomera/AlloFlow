@@ -18680,7 +18680,7 @@
                   },
                     h('div', { className: 'text-2xl mb-1' }, c.icon),
                     h('div', { className: 'text-sm font-bold text-' + c.color + '-700 mb-1' }, c.label),
-                    h('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, c.desc),
+                    h('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, __alloT('stem.chembalance.' + (c.id) + '_desc', c.desc)),
                     h('div', { className: 'text-[10px] text-' + c.color + '-600 font-mono' }, c.sections.length + ' sub-tools')
                   );
                 })
@@ -18888,7 +18888,7 @@
                     h('span', { className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
                   ),
                   isOpen && h('div', { className: 'px-3 pb-3' },
-                    h('p', { className: 'text-xs text-slate-600 mb-2' }, rt.desc),
+                    h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.chembalance.' + (rt.id) + '_desc', rt.desc)),
                     h('div', { className: 'space-y-1' },
                       rt.examples.map(function(ex, ei) {
                         return h('div', { key: ei, className: 'flex items-center gap-2 bg-' + rt.color + '-50 rounded-lg p-2 border border-' + rt.color + '-100' },
@@ -19109,7 +19109,7 @@
                     )
                   ),
                   isOpen && h('div', { className: 'mt-2 pt-2 border-t border-red-200' },
-                    h('p', { className: 'text-xs text-slate-600 mb-1' }, sym.desc),
+                    h('p', { className: 'text-xs text-slate-600 mb-1' }, __alloT('stem.chembalance.' + (sym.id) + '_desc', sym.desc)),
                     h('p', { className: 'text-[11px] text-red-600 font-bold' }, 'Examples: ' + sym.examples)
                   )
                 );

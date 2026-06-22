@@ -1982,6 +1982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     ],
 
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -3862,7 +3863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       h('span', { className: 'text-lg' }, ex.icon),
                       h('span', { className: headingClass + ' text-sm' }, ex.label),
                       h('span', { className: subTextClass + ' ml-auto' }, '~' + ex.duration + 's')),
-                    h('div', { className: subTextClass }, ex.desc)
+                    h('div', { className: subTextClass }, __alloT('stem.singing.' + (ex.id) + '_desc', ex.desc))
                   );
                 })
               )

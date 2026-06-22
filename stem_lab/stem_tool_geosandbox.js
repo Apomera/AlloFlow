@@ -726,6 +726,7 @@ window.StemLab = window.StemLab || {
     cleanup: function() { cleanupScene(); },
 
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -1251,7 +1252,7 @@ window.StemLab = window.StemLab || {
               return h('div', { key: id, className: 'flex flex-col items-center text-center p-2 rounded-lg transition-all ' + (earned ? 'bg-purple-500/20 border border-purple-400/40' : 'bg-slate-800/40 border border-slate-700/30 opacity-50') },
                 h('span', { className: 'text-xl mb-1' }, earned ? b.icon : '\uD83D\uDD12'),
                 h('span', { className: 'text-[11px] font-bold ' + (earned ? 'text-purple-200' : 'text-slate-200') }, b.name),
-                h('span', { className: 'text-[11px] ' + (earned ? 'text-purple-300/70' : 'text-slate-600') }, b.desc)
+                h('span', { className: 'text-[11px] ' + (earned ? 'text-purple-300/70' : 'text-slate-600') }, __alloT('stem.geosandbox.' + (id) + '_desc', b.desc))
               );
             })
           )

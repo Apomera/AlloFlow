@@ -1752,7 +1752,7 @@
                     title: tgt.note
                   },
                     h('div', { className: 'text-sm font-black ' + (match ? 'text-emerald-800' : 'text-slate-800') }, tgt.label),
-                    h('div', { className: 'text-[10px] text-slate-500 mt-0.5 leading-snug' }, tgt.note),
+                    h('div', { className: 'text-[10px] text-slate-500 mt-0.5 leading-snug' }, __alloT('stem.bakingscience.' + (tgt.id) + '_note', tgt.note)),
                     h('div', { className: 'mt-1 text-[10px] font-bold ' + (match ? 'text-emerald-700' : 'text-slate-500') },
                       match ? ('\u2713 ' + tr('baking.gluten.match', 'Match!')) : (tr('baking.gluten.distance', 'Distance: {n}', { n: dist }))
                     )

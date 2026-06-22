@@ -1526,7 +1526,7 @@ window.StemLab = window.StemLab || {
                         h('span', { className: 'text-sm font-black ' + (isComplete ? 'text-green-800' : 'text-indigo-900') }, lesson.title),
                         isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713')
                       ),
-                      h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, lesson.desc)
+                      h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, __alloT('stem.gamestudio.' + (lesson.id) + '_desc', lesson.desc))
                     ),
                     h('span', { className: 'text-xs font-bold ' + (isComplete ? 'text-green-500' : 'text-indigo-400') }, 'Lesson ' + (li + 1))
                   )
@@ -1578,7 +1578,7 @@ window.StemLab = window.StemLab || {
                       }, ch.difficulty === 1 ? 'Beginner' : ch.difficulty === 2 ? 'Intermediate' : 'Advanced'),
                       isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713 +' + ch.xp + ' XP')
                     ),
-                    h('p', { className: 'text-xs text-slate-600 mt-1' }, ch.desc)
+                    h('p', { className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.gamestudio.' + (ch.id) + '_desc', ch.desc))
                   )
                 ),
 
@@ -1599,7 +1599,7 @@ window.StemLab = window.StemLab || {
 
                 // Hint
                 !isComplete && !allPassed && h('div', { className: 'p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-700 mb-2' },
-                  h('strong', null, 'Hint: '), ch.hint
+                  h('strong', null, 'Hint: '), __alloT('stem.gamestudio.' + (ch.id) + '_hint', ch.hint)
                 ),
 
                 // Complete button

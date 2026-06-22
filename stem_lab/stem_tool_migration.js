@@ -245,6 +245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       { id: 'ride_thermal', label: 'Help a bird ride a thermal updraft', icon: '\uD83C\uDF00', check: function(d) { return d.thermalRidden; }, progress: function(d) { return d.thermalRidden ? '\u2713' : '\u2014'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -2586,7 +2587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('div', { className: 'text-[11px] ' + textMuted }, wt.shape)
                     )
                   ),
-                  h('div', { className: 'text-[11px] ' + textSecondary + ' leading-relaxed' }, wt.desc),
+                  h('div', { className: 'text-[11px] ' + textSecondary + ' leading-relaxed' }, __alloT('stem.migration.' + (wt.id) + '_desc', wt.desc)),
                   h('div', { className: 'flex gap-2 mt-1.5 text-[11px]' },
                     h('span', { className: accent }, 'AR: ' + wt.aspectRatio),
                     h('span', { className: textMuted }, 'Best AoA: ' + wt.bestAngle + '\u00B0'),
@@ -3071,7 +3072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('span', { className: 'text-xl', 'aria-hidden': 'true' }, nm.icon),
                       h('span', { className: 'text-xs font-bold ' + textPrimary }, nm.name)
                     ),
-                    isExpanded && h('p', { className: 'text-[11px] leading-relaxed mt-2 ' + textSecondary }, nm.desc)
+                    isExpanded && h('p', { className: 'text-[11px] leading-relaxed mt-2 ' + textSecondary }, __alloT('stem.migration.' + (nm.id) + '_desc', nm.desc))
                   )
                 );
               })

@@ -1081,6 +1081,7 @@ window.StemLab = window.StemLab || {
       { id: 'use_2_presets', label: 'Try 2 genetics presets', icon: '🔬', check: function(d) { return (d._presetsUsed || 0) >= 2; }, progress: function(d) { return (d._presetsUsed || 0) + '/2'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
 
@@ -1857,7 +1858,7 @@ window.StemLab = window.StemLab || {
                     }, info.icon + ' ' + info.label);
                   })
                 ),
-                h('p', { className: 'text-[11px] text-slate-600 italic leading-relaxed' }, modeInfo.desc)
+                h('p', { className: 'text-[11px] text-slate-600 italic leading-relaxed' }, __alloT('stem.punnett.' + (inheritMode) + '_desc', modeInfo.desc))
               ),
 
               // Parent allele selectors

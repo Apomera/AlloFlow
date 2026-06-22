@@ -254,6 +254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       { id: 'view_all_tabs', label: 'Explore all Climate Explorer sections', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 sections'; } }
     ],
     render: function(ctx) {
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var el = React.createElement;
       var labToolData = ctx.toolData;
@@ -3755,7 +3756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('strong', { style: { color: s.color } }, s.name)
                       ),
                       el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.role),
-                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, s.desc),
+                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.climateExplorer.' + (s.id) + '_desc', s.desc)),
                       s.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); }, 'aria-label': 'Deep-dive for ' + s.name,
                         style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: s.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
                       }, '\ud83d\udcda Sector deep-dive \u2192') : null
@@ -3771,7 +3772,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       return el('button', { key: dkey, onClick: function() { setPath({ difficulty: dkey }); }, 'aria-pressed': picked,
                         style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
                         el('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                        el('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                        el('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.climateExplorer.' + (dkey) + '_desc', df.desc))
                       );
                     })
                   )

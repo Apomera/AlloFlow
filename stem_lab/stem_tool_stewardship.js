@@ -2103,7 +2103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   h('span', { style: { fontSize: 20 } }, t.icon),
                   h('strong', { style: { color: earned ? '#86efac' : '#cbd5e1', fontSize: 13 } }, t.label)
                 ),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, t.desc),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, __alloT('stem.stewardship.' + (t.id) + '_desc', t.desc)),
                 earned ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 4, fontWeight: 700 } }, __alloT('stem.stewardship.earned', '✓ Earned')) : null
               );
             })

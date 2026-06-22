@@ -1711,7 +1711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#78350f', textTransform: 'uppercase', letterSpacing: '.06em' } }, __alloT('stem.llm_literacy.teacher_notes', 'Teacher Notes'))
           ),
           [
-            { label: __alloT('stem.llm_literacy.goal', 'Goal'), body: n.goal, color: '#78350f' },
+            { label: __alloT('stem.llm_literacy.goal', 'Goal'), body: __alloT('stem.llm_literacy.' + (sectionId) + '_goal', n.goal), color: '#78350f' },
             { label: __alloT('stem.llm_literacy.clinical_rationale', 'Clinical rationale'), body: n.rationale, color: '#92400e' },
             { label: __alloT('stem.llm_literacy.watch_for', 'Watch for'), body: n.watchFor, color: '#b45309' },
             { label: __alloT('stem.llm_literacy.extension', 'Extension'), body: n.extension, color: '#a16207' }

@@ -20093,7 +20093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   h('div', { style: { fontSize: '24px', shrink: 0 } }, isRescue ? '🚁' : (isPowerline ? '🔌' : (isDroneMission ? '🛸' : '🎯'))),
                   h('div', null,
                     h('div', { style: { fontSize: '12px', fontWeight: 700 } }, ch.name),
-                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, ch.desc)
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, __alloT('stem.flightsim.' + (ch.id) + '_desc', ch.desc))
                   )
                 );
               })
@@ -20109,7 +20109,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   style: { padding: '10px', borderRadius: '8px', border: '1px solid #334155', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', color: '#fff', cursor: 'pointer', textAlign: 'left' }
                 },
                   h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '2px' } }, route.name),
-                  h('div', { style: { fontSize: '10px', color: '#a78bfa' } }, route.desc),
+                  h('div', { style: { fontSize: '10px', color: '#a78bfa' } }, __alloT('stem.flightsim.' + (route.id) + '_desc', route.desc)),
                   h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '4px' } }, route.places.length + ' stops · ' + Math.round(route.speed * 0.59) + ' kts')
                 );
               })
@@ -20147,7 +20147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { background: 'linear-gradient(135deg, #0c1222, #1e3a5f)', borderRadius: '16px', padding: '24px', color: '#fff' } },
             h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' } }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
-            h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, les.content),
+            h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, __alloT('stem.flightsim.' + (selectedLesson) + '_content', les.content)),
             h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.flightsim.formula', 'Formula')),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula),

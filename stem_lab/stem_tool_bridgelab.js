@@ -1714,7 +1714,7 @@
                 h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 18 } }, t.name),
                 h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Typical span: ' + t.span)
               ),
-              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, t.desc),
+              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, __alloT('stem.bridgelab.' + (t.id) + '_desc', t.desc)),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
                   h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.strength', 'Strength')),
@@ -2096,7 +2096,7 @@
           MATERIALS.map(function(m) {
             return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, m.name),
-              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 6 } }, m.desc),
+              h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 6 } }, __alloT('stem.bridgelab.' + (m.id) + '_desc', m.desc)),
               h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, fontStyle: 'italic' } },
                 h('strong', null, 'Use: '), m.use
               )

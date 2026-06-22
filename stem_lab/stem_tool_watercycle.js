@@ -739,6 +739,7 @@
       { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } }
     ],
     render:function(ctx){
+      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React=ctx.React; var h=React.createElement;
       var labToolData=ctx.toolData; var setLabToolData=ctx.setToolData;
       var setStemLabTool=ctx.setStemLabTool;
@@ -1401,7 +1402,7 @@ const d = labToolData.waterCycle || {};
                         h('strong', { style: { color: c.color } }, c.name)
                       ),
                       h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 4 } }, c.role),
-                      h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
+                      h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.watercycle.' + (c.id) + '_desc', c.desc)),
                       c.deepDive ? h('button', {
                         onClick: function() { openStewardDeepDive(c.id); },
                         'aria-label': 'Open deep-dive for ' + c.name,
@@ -1456,7 +1457,7 @@ const d = labToolData.waterCycle || {};
                         }
                       },
                         h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                        h('div', { style: { fontSize: 11, color: picked ? (isDark ? '#bae6fd' : '#0c4a6e') : (isDark ? '#94a3b8' : '#64748b'), marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                        h('div', { style: { fontSize: 11, color: picked ? (isDark ? '#bae6fd' : '#0c4a6e') : (isDark ? '#94a3b8' : '#64748b'), marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.watercycle.' + (dkey) + '_desc', df.desc))
                       );
                     })
                   )

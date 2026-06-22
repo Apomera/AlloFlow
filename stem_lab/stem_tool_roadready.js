@@ -20617,7 +20617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ),
                 h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, s.name),
                 h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, s.speedLimit + ' mph · ' + s.weather + ' · ' + s.time),
-                h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', lineHeight: '1.4' } }, s.desc)
+                h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', lineHeight: '1.4' } }, __alloT('stem.roadready.' + (s.id) + '_desc', s.desc))
               );
             })
           )
@@ -21082,7 +21082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)), #1e1b4b)', borderRadius: '14px', padding: '24px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
             h('div', { style: { fontSize: '42px', textAlign: 'center' } }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '14px' } }, les.title),
-            h('p', { style: { fontSize: '13px', lineHeight: '1.7', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '14px' } }, les.content),
+            h('p', { style: { fontSize: '13px', lineHeight: '1.7', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '14px' } }, __alloT('stem.roadready.' + (selectedLesson) + '_content', les.content)),
             h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.formula', 'Formula')),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', fontFamily: 'monospace', marginBottom: '6px' } }, les.formula),
@@ -24910,7 +24910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '36px' } }, activePillar.icon),
               h('div', null,
                 h('div', { style: { fontSize: '17px', fontWeight: 900 } }, activePillar.title),
-                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontStyle: 'italic' } }, activePillar.summary)
+                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontStyle: 'italic' } }, __alloT('stem.roadready.' + (activePillarKey) + '_summary', activePillar.summary))
               )
             ),
             // If this pillar has a ranked ladder (right-of-way), render it numbered

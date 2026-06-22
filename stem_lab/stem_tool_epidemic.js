@@ -2470,7 +2470,7 @@ window.StemLab = window.StemLab || {
                       h('strong', { style: { color: g.color } }, g.name)
                     ),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, g.role),
-                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, g.desc),
+                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.epidemic.' + (g.id) + '_desc', g.desc)),
                     g.deepDive ? h('button', { onClick: function() { openOutbreakDeepDive(g.id); },
                       'aria-label': 'Open deep-dive for ' + g.name,
                       style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + g.color + '88', background: g.color + '22', color: g.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
@@ -2489,7 +2489,7 @@ window.StemLab = window.StemLab || {
                     return h('button', { key: dkey, onClick: function() { setOutbreak({ difficulty: dkey }); }, 'aria-pressed': picked,
                       style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
                       h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.epidemic.' + (dkey) + '_desc', df.desc))
                     );
                   })
                 )
@@ -3353,7 +3353,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-lg' + (earned ? '' : ' grayscale') }, b.icon),
                 h('div', null,
                   h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-200') }, b.name),
-                  h('p', { className: 'text-[11px] text-slate-600' }, b.desc)
+                  h('p', { className: 'text-[11px] text-slate-600' }, __alloT('stem.epidemic.' + (b.id) + '_desc', b.desc))
                 )
               );
             })
