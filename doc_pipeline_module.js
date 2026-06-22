@@ -5468,17 +5468,24 @@ var createDocPipeline = function(deps) {
       if (ratio >= targetRatio) continue;
       const fixedRgb = _fixToPass(fgRgb, bgRgb, targetRatio);
       const fixedHex = _rgbToHex(fixedRgb[0], fixedRgb[1], fixedRgb[2]);
-      if (fixedHex.toLowerCase() === fgStr.toLowerCase()) continue; // no change
+      if (fixedHex.toLowerCase() === fgStr.toLowerCase()) continue; // no change possible
 
+      // POST-VERIFY: _fixToPass moves the foreground only and bails after a fixed number
+      // of steps, so on a mid-tone background it can return an IMPROVED-but-still-failing
+      // colour. Record whether the result actually REACHED the target — `reached:false`
+      // entries are an honest "improved, still below AA" (the caller must not claim a pass).
+      const newRatio = _contrastRatio(fixedRgb, bgRgb);
       fixes.push({
         selector: selector.slice(0, 60),
         prop: 'color',
         before: fgStr,
         after: fixedHex,
         ratio: Math.round(ratio * 10) / 10,
+        newRatio: Math.round(newRatio * 10) / 10,
+        reached: newRatio >= targetRatio,
       });
 
-      // Replace the color value in the original CSS.
+      // Apply the improved colour either way (closer to AA still helps the reader).
       const before = out.slice(0, rule.declStart);
       const after = out.slice(rule.declEnd);
       // Find and replace ONLY this rule's color declaration (first match in decls).
@@ -5486,7 +5493,11 @@ var createDocPipeline = function(deps) {
       out = before + newDecls + after;
     }
 
-    return { css: out, fixes: fixes.reverse(), fixCount: fixes.length };
+    const _reached = fixes.filter((f) => f.reached);
+    const _residual = fixes.filter((f) => !f.reached);
+    // fixCount = ONLY the ones that truly reached the target (so callers can honestly say
+    // "N auto-fixed for AA"); residualCount = improved-but-still-failing, needs human review.
+    return { css: out, fixes: fixes.reverse(), fixCount: _reached.length, residualCount: _residual.length, residual: _residual.reverse() };
   };
 
   // ── Document Builder Tier 1.1: custom CSS sanitizer ──
@@ -10003,7 +10014,10 @@ HTML section ${chunkNum}/${chunks.length}:
     const typesetBytes = await doc.save();
     // Hand the typeset PDF to the standard tagger — same html, same gates,
     // same evidence-based declaration.
-    const _tagged = await createTaggedPdf(typesetBytes, fixResult, opts);
+    // Pass the content-drop signal so createTaggedPdf WITHHOLDS the PDF/UA-1 declaration when
+    // shaping-required / non-WinAnsi text was dropped — a typeset PDF missing its body content
+    // must not ship a conformance claim (the HTML/Word exports keep that content).
+    const _tagged = await createTaggedPdf(typesetBytes, fixResult, { ...opts, contentDropped: !!(_unicodeTypesetWarning && _unicodeTypesetWarning.droppedChars > 0) });
     // Surface the unicode outcome honestly in the summary the UI reads.
     if (_tagged && _tagged.summary) {
       if (_typesetFontInfo) _tagged.summary.typesetFont = _typesetFontInfo;
@@ -19727,7 +19741,11 @@ tr { page-break-inside: avoid; }
     // conformant. Declaring part 1 anyway would contradict AlloFlow's own bundled validator,
     // which FAILs "All page fonts embedded" on exactly these bytes — withhold the claim instead
     // (the evidence-based-declaration philosophy). (#1f font-embedding veto, 2026-06-15)
-    _uaDeclared = !_orphanWalkCrashed && _fontsUnrepairable.length === 0 && (_reachableLeafCountAtStamp > 0
+    // Content-loss veto (2026-06-22): the typeset export drops shaping-required / non-WinAnsi
+    // text it cannot render honestly (meta.contentDropped). A PDF that lost body content must
+    // NOT declare PDF/UA-1 — the bytes would otherwise carry a conformance claim for an
+    // incomplete document. Withholds the actual XMP stamp below, not just the summary flag.
+    _uaDeclared = !_orphanWalkCrashed && _fontsUnrepairable.length === 0 && !meta.contentDropped && (_reachableLeafCountAtStamp > 0
       ? _orphanedLeafCountAtStamp === 0
       : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || '')));
     // Observability: surface the linkage outcome in the summary so the
@@ -19769,7 +19787,7 @@ tr { page-break-inside: avoid; }
       <pdf:Producer>AlloFlow Accessibility Pipeline</pdf:Producer>
       <xmp:CreatorTool>AlloFlow Accessibility Pipeline</xmp:CreatorTool>
       <xmp:ModifyDate>${_now}</xmp:ModifyDate>
-${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:part withheld: ' + _orphanedLeafCountAtStamp + ' semantic leaf(s) remain without content linkage; AlloFlow declares PDF/UA-1 only when its own checks can stand behind it -->'}
+${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:part withheld: ' + (meta.contentDropped ? 'non-Latin / shaping-required text was dropped from this typeset PDF (use the HTML or Word export, which keep it)' : _orphanedLeafCountAtStamp + ' semantic leaf(s) remain without content linkage') + '; AlloFlow declares PDF/UA-1 only when its own checks can stand behind it -->'}
     </rdf:Description>
   </rdf:RDF>
 </x:xmpmeta>
@@ -21929,9 +21947,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const wcagNote = wcag.fixCount > 0
         ? ` · ${wcag.fixCount} contrast issue${wcag.fixCount === 1 ? '' : 's'} auto-fixed for WCAG AA`
         : '';
-      addToast(baseMsg + wcagNote, 'success');
-      if (wcag.fixCount > 0) {
-        warnLog('[Export Style] WCAG auto-fixes:', wcag.fixes);
+      // Honest residual: a foreground whose hue can't reach 4.5:1 on its background was
+      // improved but still fails — say so rather than implying everything passed.
+      const _resid = wcag.residualCount || 0;
+      const residNote = _resid > 0
+        ? ` · ⚠ ${_resid} still below AA (background needs adjusting — review before distributing)`
+        : '';
+      addToast(baseMsg + wcagNote + residNote, _resid > 0 ? 'warning' : 'success');
+      if (wcag.fixCount > 0 || _resid > 0) {
+        warnLog('[Export Style] WCAG auto-fixes:', wcag.fixes, 'residual:', wcag.residual);
       }
     } catch (err) {
       warnLog('[Export Style] Failed:', err);
@@ -26380,7 +26404,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </div>` : ''}
         <div class="a11y-badge" role="note" aria-label="Accessibility information">
           <strong>♿ Accessibility Features</strong>
-          This document was generated with WCAG 2.1 AA compliance features: semantic HTML structure, proper heading hierarchy, table header scope, landmark regions, language attribute, logical reading order, and print-optimized layout. Created with AlloFlow.
+          This document was built with accessibility in mind: semantic HTML structure, heading hierarchy, table header scope, landmark regions, a language attribute, logical reading order, and print-optimized layout. This is not an independently validated WCAG or PDF/UA conformance claim — verify with veraPDF / PAC or an accessibility checker before relying on it for compliance. Created with AlloFlow.
         </div>
         </main>
         ${_submissionSaveButton}
